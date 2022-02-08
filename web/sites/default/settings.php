@@ -32,3 +32,6 @@ $local_settings = __DIR__ . "/settings.local.php";
 if (file_exists($local_settings)) {
   include $local_settings;
 }
+
+// Set the install profile as the source of site config.
+$settings['config_sync_directory'] = 'profiles/contrib/yalesites_profile/config/sync';
