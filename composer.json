@@ -24,7 +24,8 @@
         "drupal/core-recommended": "^9.2",
         "pantheon-systems/drupal-integrations": "^9",
         "cweagans/composer-patches": "^1.7",
-        "drush/drush": "^10"
+        "drush/drush": "^10",
+        "yalesites-org/yalesites_profile": "dev-main"
     },
     "require-dev": {
         "drupal/core-dev": "^9.2"
@@ -40,7 +41,8 @@
                 "web-root": "./web"
             },
             "allowed-packages": [
-                "pantheon-systems/drupal-integrations"
+                "pantheon-systems/drupal-integrations",
+                "yalesites-org/yalesites_profile"
             ],
             "file-mapping": {
                 "[project-root]/.editorconfig": false,
