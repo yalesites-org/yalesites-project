@@ -11,6 +11,10 @@
         {
             "type": "path",
             "url": "upstream-configuration"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/yalesites-org/yalesites_profile.git"
         }
     ],
     "require": {
