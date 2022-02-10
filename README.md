@@ -6,7 +6,7 @@ YaleSites uses a hierarchy of Pantheon upstreams to deliver a consistent set of 
 * *Platform upstream (fork of base)*: A separate platform upstream contains any code that is particular to sites on the YaleSites platform (lowest tier) but should not be included on vendor-supported sites. Sites on the platform upstream will use the integrated composer workflow and will pull in build artifacts for the themes.
 * *Vendor supported upstream (fork of base)*: A separate upstream contains code specific to vendor-supported sites. It is possible that this upstream mirrors the base upstream but will still exist for unknown future needs.
 
-## Development
+## Upstream architecture
 
 This project follows the authoritative [drupal-recommended](https://github.com/pantheon-upstreams/drupal-recommended) repository managed by Pantheon. Updates to Pantheon scaffolding and Drupal Core may be pulled from this remote. Pantheon's [integrated composer](https://pantheon.io/docs/integrated-composer) is employed as part of a one-click continuous integration strategy.
 
@@ -20,8 +20,8 @@ Files and directories important to the structure of the upstream include:
    └─ settings.php
 ├─ .gitignore
 ├─ composer.json
-└─ pantheon.upstream.yml
-├─ README.md
+├─ pantheon.upstream.yml
+└─ README.md
 ```
 
 * `config/`: Not currently in use on this project.
@@ -31,3 +31,21 @@ Files and directories important to the structure of the upstream include:
 * `composer.json`: The composer file at the project root is for project settings and scaffolding. Vendor-supported sites or sites with emergent features may add dependencies or customizations here. Developers should avoid updating this file in the upstream.
 * `pantheon.upstream.yml`: The build_step: true directive in pantheon.upstream.yml enables the build step.
 * `README.md`: You are [here](#).
+
+## Local Development Environment
+
+This project supports development with Lando using the Pantheon recipe. Most local tooling, including Composer, Drush, Drupal console, and node applications are available through this recipe.
+
+### Requirements
+
+* [Composer](https://getcomposer.org/download/): PHP package manager. Version 2.x.
+* [Terminus](https://pantheon.io/docs/terminus): Pantheon CLI.
+* [Docker](https://docs.docker.com/install): Container system for virtualization.
+* [Lando](https://docs.lando.dev/basics/installation.html#system-requirements): Recipes and tools for Docker.
+
+### Setup
+* [Lando CA](https://docs.devwithlando.io/config/security.html): Optional certificate authority setup.
+* Public key for your machine uploaded to Pantheon.
+* Copy `.lando.local.example.yml` to `.lando.local.yml` and set the Pantheon environmental variables for the site you wish to work on.
+* Run `lando start`
+* Run `lando pull`
