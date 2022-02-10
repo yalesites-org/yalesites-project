@@ -1,0 +1,10 @@
+name: yalesites-web-property
+recipe: pantheon
+config:
+  framework: drupal8
+  # Disable the SOLR index
+  index: false
+  # Enable the VARNISH edge
+  edge: true
+  # Enable the REDIS cache
+  cache: true

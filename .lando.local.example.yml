@@ -1,0 +1,12 @@
+# Each YaleSite property will have unique environmental variables used to
+# connect the local lando site to the remote website hosted by Pantheon.
+# Copy and rename this file to .lando.local.yml and set any site specific
+# variables and overrides.
+
+# Set a local name for this application; this can be any value.
+name: yalesites-web-property
+config:
+  # Replace the example below with the 32 alphanumeric Pantheon site UUID.
+  id: de305d54-75b4-431b-adb2-eb6b9e546014
+  # Replace the example below with the Pantheon site name.
+  site: exampledepartment-yale-edu
