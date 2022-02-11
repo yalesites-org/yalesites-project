@@ -45,7 +45,7 @@ This project supports development with Lando using the Pantheon recipe. Most loc
 
 ### Setup
 * [Lando CA](https://docs.devwithlando.io/config/security.html): Optional certificate authority setup.
-* Public key for your machine uploaded to Pantheon.
+* [Create a machine token](https://pantheon.io/docs/machine-tokens) and log authenticate with Terminus.
 * Copy `.lando.local.example.yml` to `.lando.local.yml` and set the Pantheon environmental variables for the site you wish to work on.
 * Run `lando start`
 * Run `lando pull`
