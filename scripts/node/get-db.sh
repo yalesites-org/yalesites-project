@@ -1,3 +1,3 @@
 #!/bin/bash
 
-lando pull --code=none --database=test --files=none
+lando pull --code=none --database=dev --files=none
