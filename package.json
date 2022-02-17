@@ -1,0 +1,18 @@
+{
+  "name": "yalesites-upstream",
+  "license": "MIT",
+  "scripts": {
+    "confim": "./scripts/node/confim.sh",
+    "confex": "./scripts/node/confex.sh",
+    "import-local-db": "./scripts/node/import-data.sh",
+    "build": "./scripts/node/build.sh",
+    "rebuild": "./scripts/node/rebuild.sh",
+    "export-db": "./scripts/node/export-db.sh",
+    "get-db": "./scripts/node/get-db.sh",
+    "get-files": "./scripts/node/get-files.sh",
+    "get-assets": "./scripts/node/get-files.sh",
+    "theme": "./scripts/node/theme.sh",
+    "build-theme": "./scripts/node/build-theme.sh",
+    "lint": "./scripts/node/lint.sh"
+  }
+}
