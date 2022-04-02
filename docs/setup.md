@@ -42,19 +42,22 @@ This repository contains a custom Pantheon Upstream used to create and manage ev
 # Step 1: Clone this repository and enter the project directory.
 git clone https://github.com/yalesites-org/yalesites-project.git
 cd yalesites-project
+
+# Step 2: Ignore the composer.lock file on local dev only.
+echo 'composer.lock' >> .git/info/exclude
 ```
 
 The Pantheon Lando recipe can connect the local development environment to a remotely hosted site. Connection information is stored in a local Lando settings file and includes a Pantheon site name and UUID. While we can connect to any site running this upstream, a particular integration environment has been provisioned for engineers working on this repository or the associated YaleSites profile. Connection information for the integration environment is stored in the example Lando local file.
 
 ```bash
-# Step 2: Create a local Lando settings file to connect to the external environment.
+# Step 3: Create a local Lando settings file to connect to the external environment.
 cp .lando.local.example.yml .lando.local.yml
 ```
 
 Starting Lando will provision the containers required to run a local development environment. The `pull` command can then sync the database and files from a Pantheon-hosted site with the new local site.
 
 ```bash
-# Step 3: Start Lando and import the remote files and database.
+# Step 4: Start Lando and import the remote files and database.
 lando start
 lando pull --database=dev --files=dev --code=none
 ```
