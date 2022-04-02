@@ -11,3 +11,9 @@ config:
   id: e9eb5789-9ac8-4e8c-8901-ffbc609e89a7
   # Pantheon site name.
   site: yalesitesd9sandbox1
+tooling:
+  drush:
+    service: appserver
+    env:
+      # Set base url based on above Lando project 'name'.
+      DRUSH_OPTIONS_URI: "https://yalesites-project.lndo.site/"
