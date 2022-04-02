@@ -60,3 +60,26 @@ lando pull --database=dev --files=dev --code=none
 ```
 
 Visit the local dev site [https://yalesites-project.lndo.site/](https://yalesites-project.lndo.site/) or run `lando drush uli` to obtain a login link.
+
+## Working on the YaleSites Profile
+
+The [YaleSites installation profile](https://github.com/yalesites-org/yalesites_profile) combines a suite of modules, themes, pre-defined configurations, and custom code into a single installable package. The majority of development on YaleSite's platform will take place within this profile. The previously created local development environment is an ideal place for working on the profile within the context of a YaleSite.
+
+By default, composer dependencies are downloaded in a dist packaged version of the project with git metadata removed. When working on the `yalesites_profile` package, the originally downloaded composer dependency must be replaced with the source packaged version. This allows changes to the profile repo to be tracked in version control.
+
+```bash
+# Step 1: Configure Composer to use source packaged versions.
+lando composer config --global 'preferred-install.yalesites-org/*' source
+
+# Step 2: Manually remove the originally downloaded dist packed version.
+sudo rm -R web/profiles/contrib/yalesites_profile
+
+# Step 3: Use Composer to download the new version of the profile.
+lando composer update yalesites_profile
+
+# Step 4: Verify that the profile is tracking a remote repository.
+git -C web/profiles/contrib/yalesites_profile ls-remote --get-url
+# Returns: https://github.com/yalesites-org/yalesites_profile.git
+```
+
+Alternatively, developers can use a symbolic link or Composer local repositories to allow the profile to be tracked within the `yalesites-project`. Each option has pros and cons. Any solution using sub-modules should be avoided as Composer can not support this workflow in a meaningful way.
