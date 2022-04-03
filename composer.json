@@ -1,0 +1,11 @@
+{
+    "name": "yalesites-org/atomic",
+    "type": "drupal-theme",
+    "description": "A flexible Drupal theme for the YaleSites platform.",
+    "require": {},
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true
+    }
+}
