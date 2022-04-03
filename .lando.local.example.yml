@@ -1,8 +1,11 @@
-# Each YaleSite property will have unique environmental variables used to
-# connect the local Lando site to the remote website hosted by Pantheon.
+# This repository contains a custom Pantheon Upstream used to create and manage
+# every site on the YaleSites platform. Out of the box this project is not
+# connected to any individual Drupal site. Setting a Pantheon site name and UUID
+# allows lando to connect the local dev environment to a Pantheon environment.
+
 # Copy and rename this file to .lando.local.yml and set any site specific
-# variables and overrides. The default UUID and site name included in this file
-# will connect the local environment to a specific integration environment.
+# variables and overrides. The default values in this file will connect to the
+# YaleSite's integration environment.
 
 # Set a local name for this application; this can be any value.
 name: yalesites-project

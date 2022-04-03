@@ -44,7 +44,7 @@ git clone https://github.com/yalesites-org/yalesites-project.git
 cd yalesites-project
 
 # Step 2: Ignore the composer.lock file on local dev only.
-echo 'composer.lock' >> .git/info/exclude
+grep -qxF 'composer.lock' .git/info/exclude || echo 'composer.lock' >> .git/info/exclude
 ```
 
 The Pantheon Lando recipe can connect the local development environment to a remotely hosted site. Connection information is stored in a local Lando settings file and includes a Pantheon site name and UUID. While we can connect to any site running this upstream, a particular integration environment has been provisioned for engineers working on this repository or the associated YaleSites profile. Connection information for the integration environment is stored in the example Lando local file.
