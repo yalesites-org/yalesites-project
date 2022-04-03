@@ -1,0 +1,82 @@
+$button-radii: (
+  'soft': var(--button-radius-soft),
+  'pill': 100vmax,
+);
+$button-outline-weights: (
+  '1': var(--border-thickness-1),
+  '2': var(--border-thickness-2),
+  '4': var(--border-thickness-4),
+);
+
+.button {
+  --color-button-outline: var(--color-link);
+
+  border: var(--border-thickness-button, var(--border-thickness-2)) solid
+    var(--color-button-border);
+  border-radius: var(--border-radius-button, var(--radius-0));
+  background: var(--color-button-bg);
+  color: var(--color-button-text);
+  font-weight: var(--font-weights-mallory-500);
+  padding: var(--size-spacing-4) var(--size-spacing-7);
+
+  &:hover {
+    background: var(--color-button-bg-hover);
+    color: var(--color-button-text-hover);
+  }
+
+  &:focus {
+    outline: var(--size-thickness-2) solid var(--color-button-outline);
+    outline-offset: var(--size-thickness-2);
+  }
+
+  // Radius options
+  @each $radius, $value in $button-radii {
+    &[data-button-radius='#{$radius}'] {
+      --border-radius-button: #{$value};
+    }
+  }
+
+  // Outline weights options
+  @each $weight, $value in $button-outline-weights {
+    &[data-outline-weight='#{$weight}'] {
+      --border-thickness-button: #{$value};
+    }
+  }
+
+  // Styles
+  &[data-button-style='filled'] {
+    --color-button-bg: var(--color-button-primary);
+    --color-button-bg-hover: transparent;
+    --color-button-border: var(--color-button-primary);
+    --color-button-text: var(--color-button-secondary);
+    --color-button-text-hover: var(--color-button-primary);
+  }
+
+  &[data-button-style='outline'] {
+    --color-button-bg: transparent;
+    --color-button-bg-hover: var(--color-button-primary);
+    --color-button-border: var(--color-button-primary);
+    --color-button-text: var(--color-button-primary);
+    --color-button-text-hover: var(--color-button-secondary);
+  }
+
+  // Color schemes
+  [data-component-theme='gray-800'] &,
+  [data-component-theme='gray-700'] &,
+  [data-component-theme='blue-yale'] & {
+    --color-button-primary: var(
+      --color-theme-button-secondary,
+      var(--color-basics-white)
+    );
+    --color-button-secondary: var(
+      --color-theme-button-primary,
+      var(--color-blue-yale)
+    );
+  }
+}
+
+// Temporary place for this
+.button-group {
+  display: flex;
+  gap: var(--size-spacing-7);
+}

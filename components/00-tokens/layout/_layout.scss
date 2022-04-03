@@ -1,0 +1,16 @@
+@use '~@yalesites-org/tokens/build/scss/tokens';
+@use '../../00-tokens/functions/map';
+
+$widths: map.deep-get(tokens.$tokens, size, component-layout, width);
+
+[class*='__inner'] {
+  max-width: 100%;
+  margin-inline: auto;
+  width: var(--component-width);
+
+  @each $width, $value in $widths {
+    [data-component-width='#{$width}'] & {
+      --component-width: var(--size-component-layout-width-#{$width});
+    }
+  }
+}

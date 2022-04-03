@@ -1,0 +1,27 @@
+:root {
+  ////////////
+  // Colors //
+  ////////////
+  --color-accent: var(--color-theme-accent, var(--color-blue-medium));
+  --color-divider: var(--color-gray-500);
+
+  // prettier-ignore
+  --color-button-primary: var(--color-theme-button-primary, var(--color-blue-yale));
+
+  // prettier-ignore
+  --color-button-secondary: var(--color-theme-button-secondary, var(--color-basics-white));
+
+  // prettier-ignore
+  --color-pull-quote-accent: var(--color-theme-pull-quote-accent, var(--color-blue-yale));
+
+  ///////////
+  // Radii //
+  ///////////
+  --button-radius-soft: var(--radius-4);
+
+  /////////////
+  // Spacing //
+  /////////////
+  --spacing-page-inner: var(--size-spacing-7);
+  --spacing-page-outer: var(--size-spacing-10);
+}

@@ -1,0 +1,43 @@
+{
+  "project": {
+    "platform": "drupal",
+    "name": "atomic",
+    "machineName": "atomic"
+  },
+  "starter": {
+    "repository": "https://github.com/yalesites-org/starter-drupal.git"
+  },
+  "system": {
+    "repository": "https://github.com/yalesites-org/component-library-twig.git",
+    "checkout": "v1.7.0"
+  },
+  "variant": {
+    "platform": "drupal",
+    "structureImplementations": [
+      {
+        "name": "tokens",
+        "directory": "./components/00-tokens"
+      },
+      {
+        "name": "atoms",
+        "directory": "./components/01-atoms"
+      },
+      {
+        "name": "molecules",
+        "directory": "./components/02-molecules"
+      },
+      {
+        "name": "organisms",
+        "directory": "./components/03-organisms"
+      },
+      {
+        "name": "templates",
+        "directory": "./components/04-templates"
+      },
+      {
+        "name": "pages",
+        "directory": "./components/05-pages"
+      }
+    ]
+  }
+}

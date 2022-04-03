@@ -1,0 +1,21 @@
+{
+  "name": "starter-drupal",
+  "version": "0.0.0-development",
+  "description": "Drupal starter for YaleSites projects.",
+  "scripts": {
+    "husky:commit-msg": "commitlint --edit $1",
+    "husky:pre-commit": "lint-staged",
+    "prepare": "husky install",
+    "prettier": "prettier ./ --ignore-unknown --list-different",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@yalesites-org/eslint-config-and-other-formatting": "^1.3.3",
+    "husky": "^7.0.4"
+  },
+  "lint-staged": {
+    "components/**/*.{js,scss,php}": [
+      "npm run prettier -- --write"
+    ]
+  }
+}

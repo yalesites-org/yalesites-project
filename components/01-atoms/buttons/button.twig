@@ -1,0 +1,48 @@
+{#
+ # Available props
+ # Reference: https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/button_role#associated_aria_roles_states_and_properties
+ # - aria_pressed: whether the button is pressed or not
+ # - aria_expanded: whether the controlled grouping is expanded or not
+ # - aria_controls (required if aria_expanded is used): id of the grouping element that is controlled
+ # - button_radius: none (default), soft, or pill
+ # - button_style: filled (defualt) or outline
+ # - button_outline_weight: 1 (default), 2, or 4
+ #
+ # Available variables:
+ # - button_content - the content of the button (typically text)
+ #
+ # Available blocks:
+ # - button_content - used to replace the content of the button with something other than text
+ #   for example: to insert an icon
+ #}
+
+{% set button_base_class = button_base_class|default('button') %}
+{% set button_radius = button_radius|default('none') %}
+{% set button_style = button_style|default('filled') %}
+{% set button_outline_weight = button_outline_weight|default('2') %}
+
+{% set button_attributes = {
+  class: bem(button_base_class, button_modifiers, button_blockname),
+  'data-button-radius': button_radius,
+  'data-button-style': button_style,
+  'data-outline-weight': button_outline_weight,
+} %}
+
+{% if aria_pressed %}
+  {% set button_attributes = button_attributes|merge({
+    'aria-pressed': aria_pressed,
+  }) %}
+{% endif %}
+
+{% if aria_expanded %}
+  {% set button_attributes = button_attributes|merge({
+    'aria-expanded': aria_expanded,
+    'aira-controls': aria_controls,
+  }) %}
+{% endif %}
+
+<button {{ add_attributes(button_attributes) }}>
+  {% block button_content %}
+    {{ button_content }}
+  {% endblock %}
+</button>
