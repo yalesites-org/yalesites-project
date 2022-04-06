@@ -12,21 +12,14 @@ Pantheon's Terminus is an almost-essential command-line tool for managing sites.
 ```terminus auth:login --email=<email@example.com> --machine-token=<machine_token>```
 4. [Review documentation](https://pantheon.io/docs/terminus/) to get started with the CLI
 
-### Docker
-
-Docker is an open-source container system for setting up virtualized environments. Containers are hardware-agnostic and platform-agnostic meaning they can run anywhere.
-
-1. [Install Docker](https://docs.docker.com/install)
-2. Increase your resources: Locate the 'Resources' section in your Docker preferences. For most architectures, this project requires at least 3GB of memory and 3 CPUs. Additional CPUs and memory may be helpful but should stay under the halfway mark of your total available resources.
-3. Disable the _'Start Docker when you log in'_ setting under the 'General' tab.
-
 ### Lando
 
 This project supports development with Lando using the Pantheon recipe. This produces a local development environment that matches the hardware and configuration of the Pantheon platform. Most local tooling, including Composer, Drush, Drupal Console, and node applications are available through this recipe.
 
 1. [Review the preflight checks](https://docs.devwithlando.io/installation/preflight.html)
 2. [Download and install the latest release](https://github.com/lando/lando/releases)
-3. [Optional: Setup local certificate authority](https://docs.devwithlando.io/config/security.html)
+3. [Setup local certificate authority](https://docs.devwithlando.io/config/security.html)
+4. Increase Docker resources: Locate the 'Resources' section in your Docker preferences. For most architectures, this project requires at least 3GB of memory and 3 CPUs. Additional CPUs and memory may be helpful but should stay under the halfway mark of your total available resources. Also disable the _'Start Docker when you log in'_ setting under the 'General' tab.
 
 ### Additional tools
 
@@ -60,6 +53,7 @@ Starting Lando will provision the containers required to run a local development
 # Step 4: Start Lando and import the remote files and database.
 lando start
 lando pull --database=dev --files=dev --code=none
+lando drush cr
 ```
 
 Visit the local dev site [https://yalesites-project.lndo.site/](https://yalesites-project.lndo.site/) or run `lando drush uli` to obtain a login link.
