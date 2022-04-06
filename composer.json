@@ -15,6 +15,10 @@
         {
             "type": "vcs",
             "url": "https://github.com/yalesites-org/yalesites_profile.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/yalesites-org/atomic.git"
         }
     ],
     "require": {
