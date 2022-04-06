@@ -22,15 +22,17 @@ Commit code often and use the imperative mood when describing the nature of the 
 </details>
 
 ```bash
-type(scope): Commit message
+type(scope): commit message
 ^--^ ^---^   ^------------^
 |    |       |
-|    |       +-> Summary in present tense
+|    |       +-> Summary in present tense, lower case
 |    |
 |    +----> JIRA ticket number
 |
 +-----> Type: fix, feat, style, docs, etc...
 ```
+
+View [example conventional commit](https://www.conventionalcommits.org/en/v1.0.0/#examples) messages.
 
 ## Git workflow
 
@@ -102,11 +104,3 @@ Development standards will be rigorously enforced on this project. Drupal mainta
 - [Twig coding standards](https://www.drupal.org/docs/develop/coding-standards/twig-coding-standards)
 - [JavaScript coding stand](https://www.drupal.org/docs/develop/standards/javascript)
 - [CSS Architecture](https://www.drupal.org/docs/develop/standards/css/css-architecture-for-drupal-8)
-
-### Code linting
-
-Linting tools help avoid errors and ensure code is formatted in a way that is consistent between all contributors. It is highly encouraged to check code standards over the codebase before committing. NPM scripts are included in this project to help check your custom code for common errors. From within the project, you can run:
-
-- `npm run lint` to lint all of your custom code.
-- `npm run lint-php` to lint only custom PHP code.
-- `npm run lint-js` to lint only custom Javascript code.
