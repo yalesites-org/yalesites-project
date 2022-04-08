@@ -10,8 +10,8 @@ ckeditor_stylesheets:
   - dist/style.css
 regions:
   header: Header
+  system: System
   content: Content
-  sidebar: Sidebar
   footer: Footer
 logo: images/logo.png
 components:
