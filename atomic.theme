@@ -4,3 +4,7 @@
  * @file
  * Functions to support theming.
  */
+
+ function atomic_preprocess_region(&$variables) {
+  $variables['site_name'] = \Drupal::config('system.site')->get('name');
+}

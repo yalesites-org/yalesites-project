@@ -1,0 +1,11 @@
+{% embed "@organisms/site-header/site-header.twig" with {
+  site_name: site_name,
+  site_header__border_thickness: '8',
+} %}
+  {% block site_header__utility_nav %}
+    {{ elements.user_account_menu }}
+  {% endblock %}
+  {% block site_header__primary_nav %}
+    {{ elements.main_navigation }}
+  {% endblock %}
+{% endembed %}
