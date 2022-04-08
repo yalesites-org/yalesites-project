@@ -1,16 +1,11 @@
 {
     "name": "pantheon-upstreams/drupal-project",
-    "description": "Install Drupal 9 with Composer on Pantheon.",
+    "description": "Pantheon upstream with dependencies share by all YaleSites",
     "type": "project",
-    "license": "MIT",
     "repositories": [
         {
-            "type": "composer",
-            "url": "https://packages.drupal.org/8"
-        },
-        {
             "type": "path",
-            "url": "upstream-configuration"
+            "url": "./web/profiles/contrib/yalesites_profile"
         },
         {
             "type": "vcs",
@@ -19,6 +14,14 @@
         {
             "type": "vcs",
             "url": "https://github.com/yalesites-org/atomic.git"
+        },
+        {
+            "type": "path",
+            "url": "upstream-configuration"
+        },
+        {
+            "type": "composer",
+            "url": "https://packages.drupal.org/8"
         }
     ],
     "require": {
@@ -35,7 +38,7 @@
         "drupal/core-dev": "^9.2"
     },
     "conflict": {
-            "drupal/drupal": "*"
+        "drupal/drupal": "*"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
@@ -44,10 +47,7 @@
             "locations": {
                 "web-root": "./web"
             },
-            "allowed-packages": [
-                "pantheon-systems/drupal-integrations",
-                "yalesites-org/yalesites_profile"
-            ],
+            "allowed-packages": ["pantheon-systems/drupal-integrations"],
             "file-mapping": {
                 "[project-root]/.editorconfig": false,
                 "[project-root]/pantheon.upstream.yml": false,

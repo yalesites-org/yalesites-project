@@ -13,6 +13,7 @@
     "get-assets": "./scripts/node/get-files.sh",
     "theme": "./scripts/node/theme.sh",
     "build-theme": "./scripts/node/build-theme.sh",
-    "lint": "./scripts/node/lint.sh"
+    "lint": "./scripts/node/lint.sh",
+    "setup": "./scripts/node/setup.sh"
   }
 }
