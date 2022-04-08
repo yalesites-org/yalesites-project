@@ -5,6 +5,25 @@
  * Functions to support theming.
  */
 
+ /**
+ * Implements hook_preprocess_region().
+ */
  function atomic_preprocess_region(&$variables) {
   $variables['site_name'] = \Drupal::config('system.site')->get('name');
+}
+
+/**
+ * Implements hook_preprocess_menu().
+ */
+function atomic_preprocess_menu(&$variables, $hook) {
+  // Get the current path.
+  $current_path = \Drupal::request()->getRequestUri();
+  $items = $variables['items'];
+  foreach ($items as $key => $item) {
+    // If path is current_path, set active to li.
+    if ($item['url']->toString() == $current_path) {
+      // Add active link.
+      $variables['items'][$key]['is_active'] = true;
+    }
+  }
 }
