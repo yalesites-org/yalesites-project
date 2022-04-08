@@ -1,0 +1,6 @@
+{% include "@molecules/callout/_callout.twig" with {
+  callout__heading: content.field_heading,
+  callout__text: content.field_text,
+  callout__link__content: content.field_link[0]['#title'],
+  callout__link__url: content.field_link[0]['#url_title'],
+} %}
