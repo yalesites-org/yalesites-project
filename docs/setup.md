@@ -27,9 +27,18 @@ This project supports development with Lando using the Pantheon recipe. This pro
 * [NVM](https://github.com/nvm-sh/nvm#install--update-script): Recommended for installing and switching between Node versions.
 * Node.js (>=8.0). We recommend installing via NVM.
 
-## Project Setup
+## Project setup script
 
 This repository contains a custom Pantheon Upstream used to create and manage every site on the YaleSites platform. Out of the box this project is not connected to an individual Drupal site. To contribute to this project, we need to connect the local development environment to a Drupal site to leverage the site's files and database.
+
+```bash
+# Executing the setup script will prepare the local development environment.
+npm run setup
+```
+
+## Alternative manual setup instructions
+
+A detailed explanation of the setup script appears below.
 
 ```bash
 # Step 1: Clone this repository and enter the project directory.
@@ -58,18 +67,26 @@ lando drush cr
 
 Visit the local dev site [https://yalesites-project.lndo.site/](https://yalesites-project.lndo.site/) or run `lando drush uli` to obtain a login link.
 
-## Working on the YaleSites Profile
+## Working on projects within this repository
 
-The [YaleSites installation profile](https://github.com/yalesites-org/yalesites_profile) combines a suite of modules, themes, pre-defined configurations, and custom code into a single installable package. The majority of development on YaleSite's platform will take place within this profile. The previously created local development environment is an ideal place for working on the profile within the context of a YaleSite.
+_The steps in this section are completed in the aforementioned setup script._
 
-By default, composer dependencies are downloaded in a dist packaged version of the project with git metadata removed. When working on the `yalesites_profile` package, the originally downloaded composer dependency must be replaced with the source packaged version. This allows changes to the profile repo to be tracked in version control.
+The YaleSites platform organizes work across a series of custom modules, themes, and an installation profile. To avoid an unnecessarily monolithic architecture, each of these dependencies exist in unique repositories that are included via composer. The previously created local development environment is an ideal place for working on these projects within the context of a YaleSite.
+
+By default, composer dependencies are downloaded in a dist packaged version of the project with git metadata removed. When working on a Yale-managed package, the originally downloaded composer dependency must be replaced with the source packaged version. This allows any changes to be tracked in version control.
+
+Alternatively, developers can use a symbolic link or Composer local repositories to allow projects to be tracked in version control. Each option has pros and cons. Any solution using sub-modules should be avoided as Composer can not support this workflow in a meaningful way.
+
+### Installation profile
+
+The [YaleSites installation profile](https://github.com/yalesites-org/yalesites_profile) combines a suite of modules, themes, pre-defined configurations, and custom code into a single installable package. The majority of development on YaleSite's platform will take place within this profile.
 
 ```bash
 # Step 1: Configure Composer to use source packaged versions.
 lando composer config --global 'preferred-install.yalesites-org/*' source
 
-# Step 2: Manually remove the originally downloaded dist packed version.
-sudo rm -R web/profiles/contrib/yalesites_profile
+# Step 2: Manually remove the originally downloaded dist packaged version.
+rm -rf web/profiles/contrib/yalesites_profile
 
 # Step 3: Use Composer to download the new version of the profile.
 lando composer update yalesites_profile
@@ -79,4 +96,21 @@ git -C web/profiles/contrib/yalesites_profile ls-remote --get-url
 # Returns: https://github.com/yalesites-org/yalesites_profile.git
 ```
 
-Alternatively, developers can use a symbolic link or Composer local repositories to allow the profile to be tracked within the `yalesites-project`. Each option has pros and cons. Any solution using sub-modules should be avoided as Composer can not support this workflow in a meaningful way.
+### Atomic theme
+
+The [YaleSites Atomic theme](https://github.com/yalesites-org/atomic) is a flexible Drupal theme based on the YaleSites design system. The theme is included in the YaleSite installation profile and is the default theme for all new web properties.
+
+```bash
+# Step 1: Configure Composer to use source packaged versions.
+lando composer config --global 'preferred-install.yalesites-org/*' source
+
+# Step 2: Manually remove the originally downloaded dist packaged version.
+rm -rf web/themes/contrib/atomic
+
+# Step 3: Use Composer to download the new version of the thme.
+lando composer update atomic
+
+# Step 4: Verify that the theme is tracking a remote repository.
+git -C web/themes/contrib/atomic ls-remote --get-url
+# Returns: https://github.com/yalesites-org/atomic.git
+```

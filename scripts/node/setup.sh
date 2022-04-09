@@ -27,10 +27,12 @@ lando drush cr
 lando composer config --global 'preferred-install.yalesites-org/*' source
 
 # Manually remove the originally downloaded dist packed version.
-rm -rf web/profiles/contrib/yalesites_profile
+lando ssh -c "rm -rf web/profiles/contrib/yalesites_profile"
+lando ssh -c "rm -rf web/themes/contrib/atomic"
 
-# Use Composer to download the new version of the profile.
+# Use Composer to download the new version of the Yale projects.
 lando composer update yalesites_profile
+lando composer update atomic
 
 # Create a login link.
 lando drush uli
