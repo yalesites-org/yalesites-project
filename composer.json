@@ -4,10 +4,6 @@
     "type": "project",
     "repositories": [
         {
-            "type": "path",
-            "url": "./web/profiles/contrib/yalesites_profile"
-        },
-        {
             "type": "vcs",
             "url": "https://github.com/yalesites-org/yalesites_profile.git"
         },
