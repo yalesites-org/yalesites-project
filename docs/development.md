@@ -39,9 +39,9 @@ cd web/profiles/contrib/yalesites_profile/modules/custom
 # Custom modules are added directly to the profile repo.
 ```
 
-## Installing a contrib module
+## Installing a contrib module or theme
 
-Contributed modules extend the functionality of Drupal to add new features or alter existing functionality. Modules are added to the installation profile and pushed out to all sites on the platform. When developing locally, adding a module to the profile will not automatically rebuild the composer installed dependencies in the parent project. The following process may be followed when installing a contributed module in a local development environment.
+Contributed projects extend the functionality of Drupal to add new features or alter existing functionality. Projects are added to the installation profile and pushed out to all sites on the platform. When developing locally, adding a project to the profile will not automatically rebuild the composer installed dependencies in the parent project. The following process may be followed when installing a contributed project in a local development environment.
 
 ```bash
 # Navigate to the installation profile repository.
