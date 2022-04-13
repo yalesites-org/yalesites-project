@@ -48,13 +48,14 @@ Contributed projects extend the functionality of Drupal to add new features or a
 cd web/profiles/contrib/yalesites_profile
 # Require the new module without downloading packages in this folder.
 lando composer require drupal/PROJECT --no-update
-# Navigate to the project root.
-cd ../../..
-# Remove the lock file to force composer to fetch dependency changes.
-rm composer.lock
-# Update the installation profile.
-lando composer update yalesites_profile
+# Return the project repo root.
+cd ../../../..
+# Add the module to the project repository.
+lando composer require drupal/PROJECT
+# Do not check in changes to the project's composer.json file.
 ```
+
+This process is a work around for developers who want to work within nested repositories. This is a useful way to add the module to the local development environment with few steps, but adds unwanted changes to the project's composer.json file. Do not commit these changes as all module dependencies should only be listed in the profile repository.
 
 ## Updating a YaleSites theme
 
