@@ -14,7 +14,6 @@
     "theme": "./scripts/node/theme.sh",
     "build-theme": "./scripts/node/build-theme.sh",
     "lint": "./scripts/node/lint.sh",
-    "setup": "./scripts/node/setup.sh",
-    "update-project-modules": "./scripts/node/update-project-modules.sh"
+    "setup": "./scripts/node/setup.sh"
   }
 }
