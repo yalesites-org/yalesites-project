@@ -1,0 +1,3 @@
+{% include "@atoms/date-time/date-time.twig" with {
+  date_time__start: element['#object'].getCreatedTime|date('Y-m-d'),
+} %}

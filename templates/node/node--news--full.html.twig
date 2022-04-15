@@ -1,0 +1,6 @@
+{% include "@molecules/page-title/page-title.twig" with {
+  page_title__heading: label,
+  page_title__meta: 'By ' ~ author_name ~ date,
+} %}
+
+{{ content }}
