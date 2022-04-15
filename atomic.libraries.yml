@@ -3,3 +3,7 @@ global:
     theme:
       node_modules/@yalesites-org/component-library-twig/dist/style.css: {}
       components/_settings/_config.css: {}
+
+accordion:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/accordion/accordion.js: {}
