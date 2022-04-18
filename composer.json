@@ -1,26 +1,25 @@
 {
     "name": "pantheon-upstreams/drupal-project",
-    "description": "Install Drupal 9 with Composer on Pantheon.",
+    "description": "Pantheon upstream with dependencies share by all YaleSites",
     "type": "project",
-    "license": "MIT",
-    "repositories": [
-        {
-            "type": "composer",
-            "url": "https://packages.drupal.org/8"
-        },
-        {
-            "type": "path",
-            "url": "upstream-configuration"
-        },
-        {
+    "repositories": {
+        "profile": {
             "type": "vcs",
             "url": "https://github.com/yalesites-org/yalesites_profile.git"
         },
-        {
+        "atomic": {
             "type": "vcs",
             "url": "https://github.com/yalesites-org/atomic.git"
+        },
+        "upstream": {
+            "type": "path",
+            "url": "upstream-configuration"
+        },
+        "drupal": {
+            "type": "composer",
+            "url": "https://packages.drupal.org/8"
         }
-    ],
+    },
     "require": {
         "pantheon-upstreams/upstream-configuration": "self.version",
         "composer/installers": "^1.9",
@@ -35,7 +34,7 @@
         "drupal/core-dev": "^9.2"
     },
     "conflict": {
-            "drupal/drupal": "*"
+        "drupal/drupal": "*"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
@@ -45,8 +44,7 @@
                 "web-root": "./web"
             },
             "allowed-packages": [
-                "pantheon-systems/drupal-integrations",
-                "yalesites-org/yalesites_profile"
+                "pantheon-systems/drupal-integrations"
             ],
             "file-mapping": {
                 "[project-root]/.editorconfig": false,
@@ -55,16 +53,36 @@
             }
         },
         "installer-paths": {
-            "web/core": ["type:drupal-core"],
-            "web/libraries/{$name}": ["type:drupal-library"],
-            "web/modules/contrib/{$name}": ["type:drupal-module"],
-            "web/profiles/contrib/{$name}": ["type:drupal-profile"],
-            "web/themes/contrib/{$name}": ["type:drupal-theme"],
-            "drush/Commands/contrib/{$name}": ["type:drupal-drush"],
-            "web/modules/custom/{$name}": ["type:drupal-custom-module"],
-            "web/profiles/custom/{$name}": ["type:drupal-custom-profile"],
-            "web/themes/custom/{$name}": ["type:drupal-custom-theme"],
-            "web/private/scripts/quicksilver/{$name}/": ["type:quicksilver-script"]
+            "web/core": [
+                "type:drupal-core"
+            ],
+            "web/libraries/{$name}": [
+                "type:drupal-library"
+            ],
+            "web/modules/contrib/{$name}": [
+                "type:drupal-module"
+            ],
+            "web/profiles/contrib/{$name}": [
+                "type:drupal-profile"
+            ],
+            "web/themes/contrib/{$name}": [
+                "type:drupal-theme"
+            ],
+            "drush/Commands/contrib/{$name}": [
+                "type:drupal-drush"
+            ],
+            "web/modules/custom/{$name}": [
+                "type:drupal-custom-module"
+            ],
+            "web/profiles/custom/{$name}": [
+                "type:drupal-custom-profile"
+            ],
+            "web/themes/custom/{$name}": [
+                "type:drupal-custom-theme"
+            ],
+            "web/private/scripts/quicksilver/{$name}/": [
+                "type:quicksilver-script"
+            ]
         },
         "composer-exit-on-patch-failure": true,
         "patchLevel": {
