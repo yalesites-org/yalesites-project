@@ -75,8 +75,6 @@ The YaleSites platform organizes work across a series of custom modules, themes,
 
 By default, composer dependencies are downloaded in a dist packaged version of the project with git metadata removed. When working on a Yale-managed package, the originally downloaded composer dependency must be replaced with the source packaged version. This allows any changes to be tracked in version control.
 
-Alternatively, developers can use a symbolic link or Composer local repositories to allow projects to be tracked in version control. Each option has pros and cons. Any solution using sub-modules should be avoided as Composer can not support this workflow in a meaningful way.
-
 ### Installation profile
 
 The [YaleSites installation profile](https://github.com/yalesites-org/yalesites_profile) combines a suite of modules, themes, pre-defined configurations, and custom code into a single installable package. The majority of development on YaleSite's platform will take place within this profile.
