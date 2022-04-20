@@ -1,4 +1,5 @@
 global:
   css:
     theme:
-      dist/style.css: {}
+      node_modules/@yalesites-org/component-library-twig/dist/style.css: {}
+      components/_settings/_config.css: {}

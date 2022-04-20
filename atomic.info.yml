@@ -10,19 +10,19 @@ ckeditor_stylesheets:
   - dist/style.css
 regions:
   header: Header
+  system: System
   content: Content
-  sidebar: Sidebar
   footer: Footer
 logo: images/logo.png
 components:
   namespaces:
     tokens:
-      - components/00-tokens
+      - node_modules/@yalesites-org/component-library-twig/components/00-tokens
     atoms:
-      - components/01-atoms
+      - node_modules/@yalesites-org/component-library-twig/components/01-atoms
     molecules:
-      - components/02-molecules
+      - node_modules/@yalesites-org/component-library-twig/components/02-molecules
     organisms:
-      - components/03-organisms
+      - node_modules/@yalesites-org/component-library-twig/components/03-organisms
     page-layouts:
-      - components/04-page-layouts
+      - node_modules/@yalesites-org/component-library-twig/components/04-page-layouts
