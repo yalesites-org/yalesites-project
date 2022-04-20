@@ -1,15 +1,4 @@
-{{ dd() }}
-
-<div class="alert-wrapper">
-  Available fields are:<br/>
-  Alert id: {{ id }}<br/>
-  Alert status: {{ status }}<br/>
-  Alert type: {{ type }}<br/>
-  Alert headline: {{ headline }}<br/>
-  Alert message: {{ message }}<br/>
-  Alert link title: {{ link_title }}<br/>
-  Alert link url: {{ link_url }}
-</div>
+{{ attach_library('atomic/alert' )}}
 
 {% include "@molecules/alert/alert.twig" with {
   alert__id: id,
