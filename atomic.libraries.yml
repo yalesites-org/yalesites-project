@@ -1,4 +1,15 @@
 global:
   css:
     theme:
-      dist/style.css: {}
+      node_modules/@yalesites-org/component-library-twig/dist/style.css: {}
+      components/_settings/_config.css: {}
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/menu/menu-toggle/menu-toggle.js: {}
+
+accordion:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/accordion/accordion.js: {}
+
+primary-nav:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/03-organisms/menu/primary-nav/primary-nav.js: {}
