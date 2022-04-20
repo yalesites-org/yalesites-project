@@ -1,7 +1,7 @@
 {{ attach_library('atomic/accordion') }}
 
 {% embed "@molecules/accordion/accordion.twig" with {
-  accordion__hading: content.field_heading,
+  accordion__heading: content.field_heading,
 } %}
   {% block accordion__items %}
     {{ content.field_accordion_item }}
