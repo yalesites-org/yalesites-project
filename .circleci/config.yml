@@ -87,25 +87,25 @@ jobs:
           name: echo_a_message
           command: echo "Made it here."
 
-      #- restore_cache:
-      #    keys:
-      #      - composer-cache-{{ checksum "composer.lock" }}
-      #      - composer-cache-
-#
-      #- run:
-      #    # Set TERMINUS_ENV and related environment variables.
-      #    # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
-      #    name: setup-environment-vars
-      #    command: /build-tools-ci/scripts/set-environment
-#
-      #- run:
-      #    name: run static tests
-      #    command: ./.ci/test/static/run
-#
-      #- save_cache:
-      #    key: composer-cache-{{ checksum "composer.lock" }}
-      #    paths:
-      #      - $HOME/.composer/cache
+      - restore_cache:
+          keys:
+            - composer-cache-{{ checksum "composer.lock" }}
+            - composer-cache-
+
+      - run:
+          # Set TERMINUS_ENV and related environment variables.
+          # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
+          name: setup-environment-vars
+          command: /build-tools-ci/scripts/set-environment
+
+      - run:
+          name: run static tests
+          command: ./.ci/test/static/run
+
+      - save_cache:
+          key: composer-cache-{{ checksum "composer.lock" }}
+          paths:
+            - $HOME/.composer/cache
 
   # If needed, frontend assets compilation or similar steps
   # could be added here.
