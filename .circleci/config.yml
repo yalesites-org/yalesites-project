@@ -174,31 +174,6 @@ jobs:
           path: /tmp/artifacts
           destination: artifacts
 
-  visual_regression_test:
-    <<: *defaults
-    docker:
-      - image: backstopjs/backstopjs:4.1.9
-    steps:
-      - checkout
-
-      - attach_workspace:
-          at: /tmp/workspace
-
-      - run: cp /tmp/workspace/bash_env.txt $BASH_ENV
-      - run: echo "export CI_BUILD_URL='${CIRCLE_BUILD_URL}'" >> $BASH_ENV
-      - run: echo "export CI_NODE_INDEX='${CIRCLE_NODE_INDEX}'" >> $BASH_ENV
-      - run: echo "export CI_REPOSITORY_URL='${CIRCLE_REPOSITORY_URL}'" >> $BASH_ENV
-      - run: echo "export ARTIFACTS_DIR_URL='${CIRCLE_BUILD_URL}/artifacts/${CIRCLE_NODE_INDEX}/artifacts'" >> $BASH_ENV
-      - run: source $BASH_ENV
-
-      - run:
-          name: visual regression test
-          command: ./.ci/test/visual-regression/run
-
-      - store_artifacts:
-          path: /tmp/artifacts
-          destination: artifacts
-
   composer_lock_updater:
     <<: *defaults
     steps:
@@ -227,26 +202,17 @@ workflows:
       - deploy_to_pantheon:
           requires:
             - static_tests
-      #- visual_regression_test:
-      #    requires:
-      #      - configure_env_vars
-      #      - deploy_to_pantheon
-      #    filters:
-      #      branches:
-      #        ignore:
-      #          - master
-      #- behat_test:
-      #    requires:
-      #      - deploy_to_pantheon
-      #      - visual_regression_test
+      - behat_test:
+          requires:
+            - deploy_to_pantheon
 
-  #scheduled_update_check:
-  #  triggers:
-  #     - schedule:
-  #         cron: "0 0 * * *"
-  #         filters:
-  #           branches:
-  #            only:
-  #              - master
-  #  jobs:
-  #    - composer_lock_updater
+  scheduled_update_check:
+    triggers:
+       - schedule:
+           cron: "0 0 * * *"
+           filters:
+             branches:
+              only:
+                - master
+    jobs:
+      - composer_lock_updater
