@@ -11,9 +11,9 @@
 name: yalesites-project
 config:
   # 32 alphanumeric Pantheon site UUID.
-  id: e9eb5789-9ac8-4e8c-8901-ffbc609e89a7
+  id: fa2dcbfc-1d7f-43e7-a0d7-df4d8d9bb18c
   # Pantheon site name.
-  site: yalesitesd9sandbox1
+  site: yalesites-sandbox
 tooling:
   drush:
     service: appserver
