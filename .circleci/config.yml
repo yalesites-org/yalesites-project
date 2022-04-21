@@ -107,10 +107,7 @@ jobs:
           paths:
             - $HOME/.composer/cache
 
-  # If needed, frontend assets compilation or similar steps
-  # could be added here.
-
-  deploy_to_pantheon:
+  deploy:
     <<: *defaults
     steps:
       - checkout
@@ -128,7 +125,7 @@ jobs:
       # Deploy to Pantheon
       - run:
           name: deploy to Pantheon
-          command: ./.ci/deploy/pantheon/dev-multidev
+          command: ./.ci/deploy/dev-multidev
 
   behat_test:
     <<: *defaults
@@ -199,12 +196,12 @@ workflows:
     jobs:
       - configure_env_vars
       - static_tests
-      - deploy_to_pantheon:
+      - deploy:
           requires:
             - static_tests
-      - behat_test:
-          requires:
-            - deploy_to_pantheon
+      #- behat_test:
+      #    requires:
+      #      - deploy
 
   scheduled_update_check:
     triggers:
