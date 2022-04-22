@@ -1,0 +1,10 @@
+{{ attach_library('atomic/alert' )}}
+
+{% include "@molecules/alert/alert.twig" with {
+  alert__id: id,
+  alert__type: type,
+  alert__heading: headline,
+  alert__content: message,
+  alert__link__content: link_title,
+  alert__link__url: link_url,
+} %}
