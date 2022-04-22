@@ -83,10 +83,6 @@ jobs:
     steps:
       - checkout
 
-      - run:
-          name: echo_a_message
-          command: echo "Made it here."
-
       - restore_cache:
           keys:
             - composer-cache-{{ checksum "composer.lock" }}
@@ -124,52 +120,8 @@ jobs:
 
       # Deploy to Pantheon
       - run:
-          name: deploy to Pantheon
+          name: deploy to Pantheon Multidev
           command: ./.ci/deploy/dev-multidev
-
-  behat_test:
-    <<: *defaults
-    steps:
-      - checkout
-
-      - restore_cache:
-          keys:
-            - composer-cache-{{ checksum "composer.lock" }}
-            - composer-cache-
-
-      - run:
-          # Set TERMINUS_ENV and related environment variables.
-          # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
-          name: setup-environment-vars
-          command: /build-tools-ci/scripts/set-environment
-
-      - run:
-          # Uncomment line 26 in .ci/test/behat/initialize to create a backup
-          # prior to running Behat tests. This is useful to reset the multidev
-          # environment to the previous state after Behat tests have run.
-          name: prepare for Behat testing
-          command: ./.ci/test/behat/initialize
-
-      - run:
-          name: run acceptance tests with Behat
-          command: ./.ci/test/behat/run
-
-      - run:
-          # Uncomment line 13 in .ci/test/behat/cleanup to restore a backup
-          # after running Behat tests. This is useful to reset the multidev
-          # environment to the previous state after Behat tests have run.
-          name: clean up after Behat
-          command: ./.ci/test/behat/cleanup
-          when: always
-
-      - save_cache:
-          key: composer-cache-{{ checksum "composer.lock" }}
-          paths:
-            - $HOME/.composer/cache
-
-      - store_artifacts:
-          path: /tmp/artifacts
-          destination: artifacts
 
   composer_lock_updater:
     <<: *defaults
@@ -199,9 +151,6 @@ workflows:
       - deploy:
           requires:
             - static_tests
-      #- behat_test:
-      #    requires:
-      #      - deploy
 
   scheduled_update_check:
     triggers:

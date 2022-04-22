@@ -32,17 +32,11 @@
         "yalesites-org/yalesites_profile": "dev-main"
     },
     "require-dev": {
-        "behat/behat": "^3.10",
-        "behat/mink": "^1.10",
-        "behat/mink-extension": "^2.3",
         "dealerdirect/phpcodesniffer-composer-installer": "^0.7.2",
-        "dmore/behat-chrome-extension": "^1.4",
         "drupal/coder": "^8.3",
         "drupal/core-dev": "^9.2",
         "drupal/drupal-driver": "^2.1",
         "drupal/drupal-extension": "^4.1",
-        "genesis/behat-fail-aid": "^3.7",
-        "jcalderonzumba/mink-phantomjs-driver": "^0.3.3",
         "mikey179/vfsstream": "^1.6",
         "phpunit/phpunit": "^9.5",
         "squizlabs/php_codesniffer": "^3.6"
