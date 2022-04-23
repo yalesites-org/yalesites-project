@@ -1,13 +1,23 @@
 api_version: 1
-web_docroot: true
-# See https://pantheon.io/docs/pantheon-yml/#enforce-https--hsts for valid values.
-enforce_https: transitional
 php_version: 7.4
 database:
   version: 10.4
 drush_version: 10
+web_docroot: true
+enforce_https: transitional
 build_step: true
 protected_web_paths:
   - /private/
   - /sites/default/files/private/
   - /sites/default/files/config/
+workflows:
+  clone_database:
+    after:
+      - type: webphp
+        description: Import configuration from .yml files
+        script: scripts/quicksilver/confim.php
+  deploy:
+    after:
+      - type: webphp
+        description: Import configuration from .yml files
+        script: scripts/quicksilver/confim.php
