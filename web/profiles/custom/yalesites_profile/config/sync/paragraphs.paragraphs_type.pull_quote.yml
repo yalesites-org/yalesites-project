@@ -1,0 +1,10 @@
+uuid: e0179210-c228-4bab-8d6e-c82057138001
+langcode: en
+status: true
+dependencies: {  }
+id: pull_quote
+label: 'Pull Quote'
+icon_uuid: null
+icon_default: null
+description: ''
+behavior_plugins: {  }

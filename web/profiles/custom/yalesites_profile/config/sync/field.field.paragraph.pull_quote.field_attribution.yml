@@ -1,0 +1,19 @@
+uuid: e3c3e088-0622-4652-b567-59f0bcdfe27e
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_attribution
+    - paragraphs.paragraphs_type.pull_quote
+id: paragraph.pull_quote.field_attribution
+field_name: field_attribution
+entity_type: paragraph
+bundle: pull_quote
+label: Attribution
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

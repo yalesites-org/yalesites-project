@@ -1,0 +1,12 @@
+ys_admin.admin_yale:
+  route_name: ys_admin.admin_yale
+  parent: system.admin
+  description: 'Administer YaleSites specific components.'
+  title: YaleSites
+  weight: -8
+ys_admin.settings:
+  title: 'Site settings'
+  description: 'Change site name, email address, slogan, default front page, and error pages.'
+  route_name: ys_admin.settings
+  parent: ys_admin.admin_yale
+  weight: 0

@@ -1,0 +1,35 @@
+uuid: 342e799d-9f5e-4188-8576-6381bf68da80
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.paragraph.embed.field_link
+    - field.field.paragraph.embed.field_title_attr
+    - paragraphs.paragraphs_type.embed
+  module:
+    - link
+    - text
+id: paragraph.embed.default
+targetEntityType: paragraph
+bundle: embed
+mode: default
+content:
+  field_link:
+    type: link_default
+    weight: 0
+    region: content
+    settings:
+      placeholder_url: ''
+      placeholder_title: ''
+    third_party_settings: {  }
+  field_title_attr:
+    type: text_textfield
+    weight: 1
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+hidden:
+  created: true
+  status: true

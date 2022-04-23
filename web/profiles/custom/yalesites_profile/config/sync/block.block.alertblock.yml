@@ -1,0 +1,21 @@
+uuid: a0ac4316-3e39-4a46-a8d1-edb87feb0d52
+langcode: en
+status: true
+dependencies:
+  module:
+    - ys_alert
+  theme:
+    - bartik
+id: alertblock
+theme: bartik
+region: content
+weight: -3
+provider: null
+plugin: alert_block
+settings:
+  id: alert_block
+  label: 'Alert block'
+  label_display: '0'
+  provider: ys_alert
+  my_block_settings: null
+visibility: {  }
