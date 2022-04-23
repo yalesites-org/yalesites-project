@@ -1,0 +1,34 @@
+uuid: 210fa81a-9ab4-4750-bb34-f3d82b3392a2
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.node.page.field_content
+    - field.field.node.page.field_metatags
+    - field.field.node.page.field_teaser_media
+    - field.field.node.page.field_teaser_text
+    - field.field.node.page.field_teaser_title
+    - node.type.page
+  module:
+    - entity_reference_revisions
+    - user
+id: node.page.default
+targetEntityType: node
+bundle: page
+mode: default
+content:
+  field_content:
+    type: entity_reference_revisions_entity_view
+    label: hidden
+    settings:
+      view_mode: default
+      link: ''
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  field_metatags: true
+  field_teaser_media: true
+  field_teaser_text: true
+  field_teaser_title: true
+  links: true

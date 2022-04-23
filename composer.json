@@ -3,17 +3,13 @@
     "description": "Pantheon upstream with dependencies share by all YaleSites",
     "type": "project",
     "repositories": {
-        "profile": {
-            "type": "vcs",
-            "url": "https://github.com/yalesites-org/yalesites_profile.git"
-        },
         "atomic": {
             "type": "vcs",
             "url": "https://github.com/yalesites-org/atomic.git"
         },
-        "upstream": {
+        "profile": {
             "type": "path",
-            "url": "upstream-configuration"
+            "url": "web/profiles/custom/yalesites_profile"
         },
         "drupal": {
             "type": "composer",
@@ -21,15 +17,13 @@
         }
     },
     "require": {
-        "pantheon-upstreams/upstream-configuration": "self.version",
         "composer/installers": "^1.9",
+        "cweagans/composer-patches": "^1.7",
         "drupal/core-composer-scaffold": "^9.2",
         "drupal/core-recommended": "^9.2",
-        "pantheon-systems/drupal-integrations": "^9",
-        "cweagans/composer-patches": "^1.7",
-        "drush-ops/behat-drush-endpoint": "^9.4",
         "drush/drush": "^10",
-        "yalesites-org/yalesites_profile": "dev-main"
+        "pantheon-systems/drupal-integrations": "^9",
+        "yalesites-org/yalesites_profile": "self.version"
     },
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "^0.7.2",

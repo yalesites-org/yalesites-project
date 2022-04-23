@@ -1,0 +1,10 @@
+uuid: d2cce246-5db4-4f7e-8879-16702b657cb9
+langcode: en
+status: true
+dependencies: {  }
+id: pop_out_image
+label: 'Pop Out Image'
+icon_uuid: null
+icon_default: null
+description: ''
+behavior_plugins: {  }

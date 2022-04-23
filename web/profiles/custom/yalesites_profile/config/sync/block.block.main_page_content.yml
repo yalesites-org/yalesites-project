@@ -1,0 +1,20 @@
+uuid: 3d0dfc63-a8ad-4d22-b47d-70c9c45fe272
+langcode: en
+status: true
+dependencies:
+  module:
+    - system
+  theme:
+    - atomic
+id: main_page_content
+theme: atomic
+region: content
+weight: 2
+provider: null
+plugin: system_main_block
+settings:
+  id: system_main_block
+  label: 'Main page content'
+  label_display: '0'
+  provider: system
+visibility: {  }

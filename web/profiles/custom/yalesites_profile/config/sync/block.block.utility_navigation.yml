@@ -1,0 +1,25 @@
+uuid: a8f77193-2ace-40ab-abb4-578bb555a848
+langcode: en
+status: true
+dependencies:
+  config:
+    - system.menu.utility-navigation
+  module:
+    - system
+  theme:
+    - atomic
+id: utility_navigation
+theme: atomic
+region: header
+weight: 0
+provider: null
+plugin: 'system_menu_block:utility-navigation'
+settings:
+  id: 'system_menu_block:utility-navigation'
+  label: 'Utility navigation'
+  label_display: '0'
+  provider: system
+  level: 1
+  depth: 1
+  expand_all_items: false
+visibility: {  }

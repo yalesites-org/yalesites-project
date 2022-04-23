@@ -1,0 +1,40 @@
+uuid: ad5e143b-5a81-46c2-bb46-e31875153270
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_callout
+    - paragraphs.paragraphs_type.callout
+    - paragraphs.paragraphs_type.callout_item
+  module:
+    - entity_reference_revisions
+id: paragraph.callout.field_callout
+field_name: field_callout
+entity_type: paragraph
+bundle: callout
+label: Callout
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:paragraph'
+  handler_settings:
+    target_bundles:
+      callout_item: callout_item
+    negate: 0
+    target_bundles_drag_drop:
+      callout:
+        weight: 5
+        enabled: false
+      callout_item:
+        weight: 6
+        enabled: true
+      text:
+        weight: 7
+        enabled: false
+      text_with_image:
+        weight: 8
+        enabled: false
+field_type: entity_reference_revisions

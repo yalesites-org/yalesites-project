@@ -1,0 +1,60 @@
+uuid: b7b035dd-20de-489f-b637-c68b7403f59b
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_content
+    - node.type.page
+    - paragraphs.paragraphs_type.accordion_item
+    - paragraphs.paragraphs_type.callout_item
+  module:
+    - entity_reference_revisions
+id: node.page.field_content
+field_name: field_content
+entity_type: node
+bundle: page
+label: Content
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:paragraph'
+  handler_settings:
+    target_bundles:
+      accordion_item: accordion_item
+      callout_item: callout_item
+    negate: 1
+    target_bundles_drag_drop:
+      accordion:
+        weight: 10
+        enabled: false
+      accordion_item:
+        weight: 11
+        enabled: true
+      callout:
+        weight: 12
+        enabled: false
+      callout_item:
+        weight: 13
+        enabled: true
+      divider:
+        weight: 14
+        enabled: false
+      embed:
+        weight: 11
+        enabled: false
+      pop_out_image:
+        weight: 15
+        enabled: false
+      pull_quote:
+        weight: 16
+        enabled: false
+      text:
+        weight: 17
+        enabled: false
+      text_with_image:
+        weight: 18
+        enabled: false
+field_type: entity_reference_revisions
