@@ -1,0 +1,30 @@
+uuid: 73cdd11c-fde6-41f0-901e-9ca43a6d7fd6
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.media.text_with_image_feature_equal
+    - field.field.media.image.field_media_image
+    - media.type.image
+    - responsive_image.styles.text_with_image_feature_equal
+  module:
+    - responsive_image
+id: media.image.text_with_image_feature_equal
+targetEntityType: media
+bundle: image
+mode: text_with_image_feature_equal
+content:
+  field_media_image:
+    type: responsive_image
+    label: hidden
+    settings:
+      responsive_image_style: text_with_image_feature_equal
+      image_link: ''
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  created: true
+  name: true
+  thumbnail: true
+  uid: true

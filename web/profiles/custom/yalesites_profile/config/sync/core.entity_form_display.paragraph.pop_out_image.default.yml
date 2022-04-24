@@ -1,0 +1,36 @@
+uuid: 42241b0c-5e91-427c-9250-29b125a80e67
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.paragraph.pop_out_image.field_image
+    - field.field.paragraph.pop_out_image.field_text
+    - paragraphs.paragraphs_type.pop_out_image
+  module:
+    - text
+id: paragraph.pop_out_image.default
+targetEntityType: paragraph
+bundle: pop_out_image
+mode: default
+content:
+  field_image:
+    type: entity_reference_autocomplete
+    weight: 0
+    region: content
+    settings:
+      match_operator: CONTAINS
+      match_limit: 10
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  field_text:
+    type: text_textarea
+    weight: 1
+    region: content
+    settings:
+      rows: 5
+      placeholder: ''
+    third_party_settings: {  }
+hidden:
+  created: true
+  status: true

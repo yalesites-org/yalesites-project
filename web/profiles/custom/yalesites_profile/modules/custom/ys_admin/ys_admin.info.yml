@@ -1,0 +1,6 @@
+name: YaleSites admin
+type: module
+description: General admin module for YaleSites
+core_version_requirement: ^8 || ^9
+package: YaleSites
+configure: ys_admin.settings

@@ -8,15 +8,15 @@
 # YaleSite's integration environment.
 
 # Set a local name for this application; this can be any value.
-name: yalesites-project
+name: yalesites-platform
 config:
   # 32 alphanumeric Pantheon site UUID.
-  id: fa2dcbfc-1d7f-43e7-a0d7-df4d8d9bb18c
+  id: e9a915af-7a56-4ac8-bb19-1dfbbd17a06c
   # Pantheon site name.
-  site: yalesites-sandbox
+  site: yalesites-platform
 tooling:
   drush:
     service: appserver
     env:
       # Set base url based on above Lando project 'name'.
-      DRUSH_OPTIONS_URI: "https://yalesites-project.lndo.site/"
+      DRUSH_OPTIONS_URI: "https://yalesites-platform.lndo.site/"
