@@ -1,7 +1,7 @@
 _core:
   default_config_hash: Si63v7NnBpHAsIDNcm25nCrcaTqVSUapr03QTR5aLHw
-mailchimp_transactional_from_name: YaleSites
-mailchimp_transactional_from_email: noreply@yale.edu
+mailchimp_transactional_from_name: ''
+mailchimp_transactional_from_email: ''
 mailchimp_transactional_subaccount: null
 mailchimp_transactional_filter_format: ''
 mailchimp_transactional_track_opens: false
