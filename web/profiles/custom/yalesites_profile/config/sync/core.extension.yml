@@ -40,6 +40,8 @@ module:
   libraries: 0
   link: 0
   linkit: 0
+  mailchimp_transactional: 0
+  mailsystem: 0
   maxlength: 0
   media: 0
   media_library: 0
