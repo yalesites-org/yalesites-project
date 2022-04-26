@@ -63,6 +63,7 @@ install:
   - workflows
   - ys_admin
   - ys_alert
+  - ys_mail
 
 # Required modules
 # Note that any dependencies of the modules listed here will be installed automatically.
