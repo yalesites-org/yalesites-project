@@ -1,6 +1,7 @@
 global:
   css:
     theme:
+      'https://yale-webfonts.yalespace.org/fonts.min.css': { type: external }
       node_modules/@yalesites-org/component-library-twig/dist/style.css: {}
       components/_settings/_config.css: {}
   js:
