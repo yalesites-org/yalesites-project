@@ -1,20 +1,18 @@
-uuid: b7b035dd-20de-489f-b637-c68b7403f59b
+uuid: 3ce59613-4969-4ea3-9487-d26ee7e804a2
 langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.node.field_content
+    - field.storage.node.field_hero
     - node.type.page
-    - paragraphs.paragraphs_type.accordion_item
-    - paragraphs.paragraphs_type.callout_item
     - paragraphs.paragraphs_type.cta_banner
   module:
     - entity_reference_revisions
-id: node.page.field_content
-field_name: field_content
+id: node.page.field_hero
+field_name: field_hero
 entity_type: node
 bundle: page
-label: Content
+label: Hero
 description: ''
 required: false
 translatable: false
@@ -24,42 +22,40 @@ settings:
   handler: 'default:paragraph'
   handler_settings:
     target_bundles:
-      accordion_item: accordion_item
       cta_banner: cta_banner
-      callout_item: callout_item
-    negate: 1
+    negate: 0
     target_bundles_drag_drop:
       accordion:
-        weight: 10
+        weight: 13
         enabled: false
       accordion_item:
-        weight: 11
-        enabled: true
+        weight: 14
+        enabled: false
       callout:
-        weight: 12
+        weight: 15
         enabled: false
       callout_item:
-        weight: 13
-        enabled: true
+        weight: 16
+        enabled: false
       cta_banner:
         weight: 12
         enabled: true
       divider:
-        weight: 14
-        enabled: false
-      embed:
-        weight: 11
-        enabled: false
-      pop_out_image:
-        weight: 15
-        enabled: false
-      pull_quote:
-        weight: 16
-        enabled: false
-      text:
         weight: 17
         enabled: false
-      text_with_image:
+      embed:
         weight: 18
+        enabled: false
+      pop_out_image:
+        weight: 19
+        enabled: false
+      pull_quote:
+        weight: 20
+        enabled: false
+      text:
+        weight: 21
+        enabled: false
+      text_with_image:
+        weight: 22
         enabled: false
 field_type: entity_reference_revisions
