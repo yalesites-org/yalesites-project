@@ -1,11 +1,15 @@
-{% embed "@molecules/text-with-image/text-with-image.twig" with {
-  text_with_image__heading: content.field_heading,
-  text_with_image__subheading: content.field_subheading,
-  text_with_image__text: content.field_text,
-  text_with_image__link__content: content.field_link.0['#title'],
-  text_with_image__link__url: content.field_link.0['#url_title'],
-} %}
-  {% block text_with_image__image %}
-    {{ content.field_image }}
-  {% endblock %}
-{% endembed %}
+<div{{ attributes }}>
+  {{ title_prefix }}
+  {{ title_suffix }}
+  {% embed "@molecules/text-with-image/text-with-image.twig" with {
+    text_with_image__heading: content.field_heading,
+    text_with_image__subheading: content.field_subheading,
+    text_with_image__text: content.field_text,
+    text_with_image__link__content: content.field_link.0['#title'],
+    text_with_image__link__url: content.field_link.0['#url_title'],
+  } %}
+    {% block text_with_image__image %}
+      {{ content.field_image }}
+    {% endblock %}
+  {% endembed %}
+</div>
