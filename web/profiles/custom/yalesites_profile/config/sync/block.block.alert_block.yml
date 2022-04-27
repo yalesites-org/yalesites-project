@@ -1,0 +1,20 @@
+uuid: ebeb6fd8-d226-41aa-a5cd-f6c9c1f4fbf7
+langcode: en
+status: true
+dependencies:
+  module:
+    - ys_alert
+  theme:
+    - atomic
+id: alert_block
+theme: atomic
+region: header
+weight: 0
+provider: null
+plugin: alert_block
+settings:
+  id: alert_block
+  label: 'Alert block'
+  label_display: '0'
+  provider: ys_alert
+visibility: {  }
