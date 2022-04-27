@@ -18,5 +18,8 @@
   },
   "devDependencies": {
     "@yalesites-org/eslint-config-and-other-formatting": "^1.5.0"
+  },
+  "scripts": {
+    "prettier": "prettier web --ignore-unknown --list-different"
   }
 }
