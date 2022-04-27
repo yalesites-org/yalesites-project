@@ -15,5 +15,8 @@
     "build-theme": "./scripts/local/build-theme.sh",
     "lint": "./scripts/local/lint.sh",
     "setup": "./scripts/local/setup.sh"
+  },
+  "devDependencies": {
+    "@yalesites-org/eslint-config-and-other-formatting": "^1.5.0"
   }
 }
