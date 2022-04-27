@@ -40,6 +40,8 @@ module:
   libraries: 0
   link: 0
   linkit: 0
+  mailchimp_transactional: 0
+  mailsystem: 0
   maxlength: 0
   media: 0
   media_library: 0
@@ -67,6 +69,7 @@ module:
   workflows: 0
   ys_admin: 0
   ys_alert: 0
+  ys_mail: 0
   pathauto: 1
   xmlsitemap: 1
   externalauth: 10
