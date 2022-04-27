@@ -1,6 +1,7 @@
 global:
   css:
     theme:
+      'https://yale-webfonts.yalespace.org/fonts.min.css': { type: external }
       node_modules/@yalesites-org/component-library-twig/dist/style.css: {}
       components/_settings/_config.css: {}
   js:
@@ -9,6 +10,10 @@ global:
 accordion:
   js:
     node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/accordion/accordion.js: {}
+
+alert:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/alert/alert.js: {}
 
 primary-nav:
   js:
