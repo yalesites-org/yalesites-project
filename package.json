@@ -22,6 +22,7 @@
   "scripts": {
     "prettier": "prettier web --ignore-unknown --list-different",
     "husky:commit-msg": "commitlint --edit $1",
-    "lint:styles": "stylelint 'web/**/*.scss'"
+    "lint:styles": "stylelint 'web/**/*.scss'",
+    "lint:js": "eslint web"
   }
 }
