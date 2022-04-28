@@ -1,0 +1,10 @@
+two_column:
+  label: 'Two column'
+  category: 'YDS Layouts'
+  template: templates/layouts/two-column
+  default_region: primary
+  regions:
+    primary:
+      label: Primary content
+    secondary:
+      label: Secondary content
