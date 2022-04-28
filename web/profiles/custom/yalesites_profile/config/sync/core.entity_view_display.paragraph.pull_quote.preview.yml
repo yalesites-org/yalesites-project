@@ -1,0 +1,32 @@
+uuid: eb18c60d-4536-46f1-aa13-166afe41f001
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.paragraph.preview
+    - field.field.paragraph.pull_quote.field_attribution
+    - field.field.paragraph.pull_quote.field_text
+    - paragraphs.paragraphs_type.pull_quote
+  module:
+    - text
+id: paragraph.pull_quote.preview
+targetEntityType: paragraph
+bundle: pull_quote
+mode: preview
+content:
+  field_attribution:
+    type: string
+    label: inline
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_text:
+    type: text_default
+    label: inline
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden: {  }
