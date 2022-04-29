@@ -1,0 +1,10 @@
+uuid: badbe192-58c1-455a-870b-a6a4a4de8737
+langcode: en
+status: true
+dependencies:
+  module:
+    - media
+id: media.image_float
+label: 'Image - Float'
+targetEntityType: media
+cache: true
