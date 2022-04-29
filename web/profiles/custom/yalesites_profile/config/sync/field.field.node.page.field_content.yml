@@ -7,6 +7,7 @@ dependencies:
     - node.type.page
     - paragraphs.paragraphs_type.accordion_item
     - paragraphs.paragraphs_type.callout_item
+    - paragraphs.paragraphs_type.image
   module:
     - entity_reference_revisions
 id: node.page.field_content
@@ -24,6 +25,7 @@ settings:
   handler_settings:
     target_bundles:
       accordion_item: accordion_item
+      image: image
       callout_item: callout_item
     negate: 1
     target_bundles_drag_drop:
@@ -45,6 +47,9 @@ settings:
       embed:
         weight: 11
         enabled: false
+      image:
+        weight: 12
+        enabled: true
       pop_out_image:
         weight: 15
         enabled: false
