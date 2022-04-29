@@ -45,7 +45,7 @@
         "drupal/redirect": "^1.7",
         "drupal/twig_tweak": "^3.1",
         "drupal/xmlsitemap": "^1.2",
-        "yalesites-org/atomic": "dev-YALB-253-theming-support-artifacts"
+        "yalesites-org/atomic": "dev-YALB-476-wire-image-paragraph-artifact"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,

@@ -14,16 +14,17 @@ bundle: image
 mode: default
 content:
   field_image:
-    type: entity_reference_label
-    label: above
+    type: entity_reference_entity_view
+    label: hidden
     settings:
-      link: true
+      view_mode: full
+      link: false
     third_party_settings: {  }
     weight: 0
     region: content
   field_text:
     type: text_default
-    label: above
+    label: hidden
     settings: {  }
     third_party_settings: {  }
     weight: 1
