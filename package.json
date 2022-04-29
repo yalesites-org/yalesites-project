@@ -25,8 +25,14 @@
     "@yalesites-org/eslint-config-and-other-formatting": "^1.5.0"
   },
   "lint-staged": {
-    "web/**/*.scss": ["npm run lint:styles -- --fix"],
-    "web/**/*.js": ["npm run lint:js -- --fix"],
-    "web/**/*.{js,scss,php}": ["npm run prettier -- --write"]
+    "web/**/*.scss": [
+      "npm run lint:styles -- --fix"
+    ],
+    "web/**/*.js": [
+      "npm run lint:js -- --fix"
+    ],
+    "web/**/*.{js,scss,php}": [
+      "npm run prettier -- --write"
+    ]
   }
 }

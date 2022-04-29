@@ -7,18 +7,19 @@ Commit code often and use the imperative mood when describing the nature of the 
 <details>
   <summary>View all commit types</summary>
 
-  | Type  | SemVer | Purpose |
-  | ----- | ------ | ------- |
-  | fix | patch | Resolving a bug or issue in existing code |
-  | feat | minor | Introduces a new feature into the codebase |
-  | style | patch | Formatting, whitespace, and other non-functional changes |
-  | chore | patch | Changes that do not affect production |
-  | docs | none | Adding or editing documentation |
-  | refactor | patch | Neither fixes a bug nor adds a feature |
-  | test | none | Adds or updates test files |
-  | ci | patch | Changes to continuous integration |
-  | build | patch | Changes to build files |
-  | BREAKING CHANGE | major | Introduces a breaking API change |
+| Type            | SemVer | Purpose                                                  |
+| --------------- | ------ | -------------------------------------------------------- |
+| fix             | patch  | Resolving a bug or issue in existing code                |
+| feat            | minor  | Introduces a new feature into the codebase               |
+| style           | patch  | Formatting, whitespace, and other non-functional changes |
+| chore           | patch  | Changes that do not affect production                    |
+| docs            | none   | Adding or editing documentation                          |
+| refactor        | patch  | Neither fixes a bug nor adds a feature                   |
+| test            | none   | Adds or updates test files                               |
+| ci              | patch  | Changes to continuous integration                        |
+| build           | patch  | Changes to build files                                   |
+| BREAKING CHANGE | major  | Introduces a breaking API change                         |
+
 </details>
 
 ```bash
@@ -78,17 +79,17 @@ All changes are merged into this project using GitHub Pull Requests. The process
 
 Labels are added and removed to PRs moving through the approval workflow. Typically the changes can be merged when the PR has the ‘pass code review’, ‘pass functional review’, and ‘ready to merge’ labels.
 
-| Label  | Purpose |
-| ------------- | ------------- |
-| work in progress | The assignee is still making changes to this branch |
-| needs review | The work is ready for testing and reviewers are assigned |
-| review in progress | Indicates the review process is underway |
-| pass code review | All changes follow coding standards and best practices |
-| pass functional review | The work functions as described in the JIRA ticket |
-| ready to merge | The changes are approved and ready to be merged |
-| needs work | The PR did not pass review and feedback was provided |
-| needs help | Use if help is needed; leaving details in the comments |
-| don't merge | Do not merge the work; explanation in the comments |
+| Label                  | Purpose                                                  |
+| ---------------------- | -------------------------------------------------------- |
+| work in progress       | The assignee is still making changes to this branch      |
+| needs review           | The work is ready for testing and reviewers are assigned |
+| review in progress     | Indicates the review process is underway                 |
+| pass code review       | All changes follow coding standards and best practices   |
+| pass functional review | The work functions as described in the JIRA ticket       |
+| ready to merge         | The changes are approved and ready to be merged          |
+| needs work             | The PR did not pass review and feedback was provided     |
+| needs help             | Use if help is needed; leaving details in the comments   |
+| don't merge            | Do not merge the work; explanation in the comments       |
 
 ### Best practices
 
