@@ -42,6 +42,7 @@ install:
   - file
   - filter
   - image
+  - layout_builder
   - link
   - media
   - media_library

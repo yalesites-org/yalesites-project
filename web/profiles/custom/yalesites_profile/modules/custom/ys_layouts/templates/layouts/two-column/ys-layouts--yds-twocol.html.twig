@@ -10,12 +10,12 @@
 
 <div {{ attributes.addClass(two_column__base_class) }} data-component-width='max' data-embedded-components>
     <div {{ attributes.addClass("#{two_column__base_class}__inner") }}>
-        <div {{ attributes.addClass("#{two_column__base_class}__primary") }}>
+        <div {{ region_attributes.primary.addClass("#{two_column__base_class}__primary") }}>
             {% block two_column__primary %}
                 {{ content.primary }}
             {% endblock %}
         </div>
-        <div {{ attributes.addClass("#{two_column__base_class}__secondary") }}>
+        <div {{ region_attributes.secondary.addClass("#{two_column__base_class}__secondary") }}>
             {% block two_column__secondary %}
                 {{ content.secondary }}
             {% endblock %}
