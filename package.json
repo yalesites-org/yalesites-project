@@ -17,8 +17,8 @@
     "setup": "./scripts/local/setup.sh",
     "prettier": "prettier --write *.{json,README.md,js} './{.github,docs,web/profiles/custom,web/modules/custom,web/themes/custom}/**/*.{json,md,js,html}'",
     "husky:commit-msg": "commitlint --edit $1",
-    "lint:styles": "stylelint 'web/**/*.scss'",
-    "lint:js": "eslint web",
+    "lint:styles": "stylelint --color --fix '{web/profiles/custom,web/modules/custom,web/themes/custom}/**/*.scss'",
+    "lint:js": "eslint --color --format stylish '{web/profiles/custom,web/modules/custom,web/themes/custom}/**/*.js'",
     "husky:pre-commit": "lint-staged"
   },
   "devDependencies": {
