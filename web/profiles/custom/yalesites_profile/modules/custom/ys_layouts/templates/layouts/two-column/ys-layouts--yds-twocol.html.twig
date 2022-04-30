@@ -10,25 +10,15 @@
 
 <div {{ attributes.addClass(two_column__base_class) }} data-component-width='max' data-embedded-components>
     <div {{ attributes.addClass("#{two_column__base_class}__inner") }}>
-        {% if directory %}
-        <div {{ region_attributes.primary.addClass('yds-two-column__primary') }}>
-            {% else %}
-            <div {{ attributes.addClass("#{two_column__base_class}__primary") }}>
-                {% endif %}
-                {% block two_column__primary %}
-                    {{ content.primary }}
-                {% endblock %}
-            </div>
-            {% if directory %}
-            <div {{ region_attributes.secondary.addClass('yds-two-column__secondary') }}>
-                {% else %}
-                <div {{ attributes.addClass("#{two_column__base_class}__secondary") }}>
-                    {% endif %}
-                    {% block two_column__secondary %}
-                        {{ content.secondary }}
-                    {% endblock %}
-                </div>
-            </div>
+        <div {{ attributes.addClass("#{two_column__base_class}__primary") }}>
+            {% block two_column__primary %}
+                {{ content.primary }}
+            {% endblock %}
+        </div>
+        <div {{ attributes.addClass("#{two_column__base_class}__secondary") }}>
+            {% block two_column__secondary %}
+                {{ content.secondary }}
+            {% endblock %}
         </div>
     </div>
 </div>
