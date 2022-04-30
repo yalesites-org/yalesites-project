@@ -8,12 +8,12 @@
 
 {% set two_column__base_class = 'yds-two-column' %}
 
-<div {{ bem(two_column__base_class) }} data-component-width='max' data-embedded-components>
-    <div {{ bem('inner', [], two_column__base_class) }}>
+<div {{ attributes.addClass(two_column__base_class) }} data-component-width='max' data-embedded-components>
+    <div {{ attributes.addClass("#{two_column__base_class}__inner") }}>
         {% if directory %}
         <div {{ region_attributes.primary.addClass('yds-two-column__primary') }}>
             {% else %}
-            <div {{ bem('primary', [], two_column__base_class) }}>
+            <div {{ attributes.addClass("#{two_column__base_class}__primary") }}>
                 {% endif %}
                 {% block two_column__primary %}
                     {{ content.primary }}
@@ -22,7 +22,7 @@
             {% if directory %}
             <div {{ region_attributes.secondary.addClass('yds-two-column__secondary') }}>
                 {% else %}
-                <div {{ bem('secondary', [], two_column__base_class) }}>
+                <div {{ attributes.addClass("#{two_column__base_class}__secondary") }}>
                     {% endif %}
                     {% block two_column__secondary %}
                         {{ content.secondary }}
