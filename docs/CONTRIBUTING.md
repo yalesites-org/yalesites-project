@@ -108,6 +108,15 @@ Development standards will be rigorously enforced on this project. Drupal mainta
 
 ### Linting
 
+To run the linting, first you'll need to gain access to the [yalesites-org/eslint-config-and-other-formatting](https://github.com/yalesites-org/eslint-config-and-other-formatting) repo if you don't already have access.  
+Next, you'll need to create a Github Personal Access token to be able to pull down the Yale package.
+
+- Visit the [Github instructions for creating a Personal Access Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token).
+- Give it "Write packages" permissions. This will also check the repo permissions.
+- Export the token from your ~/.bash_profile or ~/.bashrc file by adding:
+  `export YALESITES_BUILD_TOKEN=[token]`
+- Source the file with `source ~/.bash_profile` or `source ~/.bashrc`.
+
 To run linting, you'll need to install packages in the project root and in web/core:
 
 - cd into web/core with `cd web/core` and run `yarn`
