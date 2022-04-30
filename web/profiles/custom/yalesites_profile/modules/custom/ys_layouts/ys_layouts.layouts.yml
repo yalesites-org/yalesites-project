@@ -1,0 +1,11 @@
+two_column:
+  label: 'YDS Two column'
+  category: 'YDS Layouts'
+  path: templates/layouts/two-column
+  template: ys-layouts--yds-twocol
+  default_region: primary
+  regions:
+    primary:
+      label: Primary content
+    secondary:
+      label: Secondary content

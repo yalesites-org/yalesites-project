@@ -1,0 +1,7 @@
+name: YaleSites Layouts
+type: module
+description: Layouts shared across YaleSites
+core_version_requirement: ^8 || ^9
+package: YaleSites
+dependencies:
+  - drupal:layout_builder

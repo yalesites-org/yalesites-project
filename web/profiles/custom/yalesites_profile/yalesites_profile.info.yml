@@ -64,6 +64,7 @@ install:
   - ys_admin
   - ys_alert
   - ys_mail
+  - ys_layouts
 
 # Required modules
 # Note that any dependencies of the modules listed here will be installed automatically.
