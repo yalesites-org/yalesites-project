@@ -105,3 +105,18 @@ Development standards will be rigorously enforced on this project. Drupal mainta
 - [Twig coding standards](https://www.drupal.org/docs/develop/coding-standards/twig-coding-standards)
 - [JavaScript coding stand](https://www.drupal.org/docs/develop/standards/javascript)
 - [CSS Architecture](https://www.drupal.org/docs/develop/standards/css/css-architecture-for-drupal-8)
+
+### Linting
+
+To run linting, you'll need to install packages in the project root and in web/core:
+
+- cd into web/core with `cd web/core` and run `yarn`
+- cd back to the root with `cd ../../` and run `npm install`
+
+Available npm commands for testing. All commands below can be run with `npm run [command]`. For example, `npm run lint:js`.
+
+- prettier - runs prettier code beautifier tool on docs, .github, custom modules, and custom themes directories.
+- lint:js - uses eslint to validate the JS in custom modules and themes.
+- lint:style - uses eslint to validate the CSS in custom modules and themes.
+- lint - runs both lint:js and lint:styles.
+- test - runs prettier, lint:js and lint:styles.
