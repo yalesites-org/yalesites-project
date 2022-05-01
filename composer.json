@@ -105,6 +105,7 @@
     }
   },
   "scripts": {
-    "unit-test": "echo 'No unit test step defined.'"
+    "unit-test": "echo 'No unit test step defined.'",
+    "lint": "npm run lint"
   }
 }
