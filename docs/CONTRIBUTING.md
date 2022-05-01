@@ -123,9 +123,11 @@ To run linting, you'll need to install packages in the project root and in web/c
 - cd back to the root with `cd ../../` and run `npm install`
 
 Available npm commands for testing. All commands below can be run with `npm run [command]`. For example, `npm run lint:js`.
+Adding 'fix' onto each command will automatically fix the found issues where possible. For example, `npm run lint fix`.
 
 - prettier - runs prettier code beautifier tool on docs, .github, custom modules, and custom themes directories.
 - lint:js - uses eslint to validate the JS in custom modules and themes.
 - lint:style - uses eslint to validate the CSS in custom modules and themes.
-- lint - runs both lint:js and lint:styles.
-- test - runs prettier, lint:js and lint:styles.
+- lint:php - runs PHPCS with Drupal standards.
+- lint - runs lint:styles, lint:js, and lint:php.
+- test - runs lint:styles, lint:js, lint:php and prettier.
