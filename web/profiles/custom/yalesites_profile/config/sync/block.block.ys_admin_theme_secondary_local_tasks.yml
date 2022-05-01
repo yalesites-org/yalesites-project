@@ -1,0 +1,20 @@
+uuid: 8fd2391b-f2fe-4a9b-9451-4fc02057f464
+langcode: en
+status: true
+dependencies:
+  theme:
+    - ys_admin_theme
+id: ys_admin_theme_secondary_local_tasks
+theme: ys_admin_theme
+region: pre_content
+weight: 0
+provider: null
+plugin: local_tasks_block
+settings:
+  id: local_tasks_block
+  label: 'Secondary tabs'
+  label_display: '0'
+  provider: core
+  primary: false
+  secondary: true
+visibility: {  }
