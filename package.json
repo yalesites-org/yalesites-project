@@ -13,21 +13,23 @@
     "get-assets": "./scripts/local/get-files.sh",
     "theme": "./scripts/local/theme.sh",
     "build-theme": "./scripts/local/build-theme.sh",
-    "lint": "./scripts/local/lint.sh",
     "setup": "./scripts/local/setup.sh",
-    "prettier": "prettier --write *.{json,README.md,js} './{.github,docs,web/profiles/custom,web/modules/custom,web/themes/custom}/**/*.{json,md,js,html,scss,html}'",
-    "lint:styles": "stylelint --color --fix '{web/profiles/custom,web/modules/custom,web/themes/custom}/**/*.scss'",
-    "lint:js": "eslint --color --format stylish --fix '{web/profiles/custom,web/modules/custom,web/themes/custom}/**/*.js'",
-    "test": "npm run lint && npm run prettier",
+    "prettier": "node ./scripts/local/linting/prettier.js",
+    "lint:styles": "node ./scripts/local/linting/lint-css.js",
+    "lint:js": "node ./scripts/local/linting/lint-js.js",
+    "lint:php": "node ./scripts/local/linting/lint-php.js",
+    "lint": "node ./scripts/local/linting/lint.js",
+    "test": "node ./scripts/local/linting/test.js",
     "husky:commit-msg": "commitlint --edit $1",
     "husky:pre-commit": "lint-staged"
   },
   "devDependencies": {
     "@yalesites-org/eslint-config-and-other-formatting": "^1.5.0",
+    "eslint-config-drupal": "^5.0.2",
     "eslint-plugin-jsx-a11y": "^6.5.1",
     "eslint-plugin-react": "^7.29.4",
     "eslint-plugin-yml": "^0.14.0",
-    "eslint-config-drupal": "^5.0.2"
+    "shelljs": "^0.8.5"
   },
   "lint-staged": {
     "web/**/*.scss": [
