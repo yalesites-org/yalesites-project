@@ -16,7 +16,6 @@
     "lint": "./scripts/local/lint.sh",
     "setup": "./scripts/local/setup.sh",
     "prettier": "prettier --write *.{json,README.md,js} './{.github,docs,web/profiles/custom,web/modules/custom,web/themes/custom}/**/*.{json,md,js,html,scss,html}'",
-    "lint": "npm run lint:styles && npm run lint:js",
     "lint:styles": "stylelint --color --fix '{web/profiles/custom,web/modules/custom,web/themes/custom}/**/*.scss'",
     "lint:js": "eslint --color --format stylish --fix '{web/profiles/custom,web/modules/custom,web/themes/custom}/**/*.js'",
     "test": "npm run lint && npm run prettier",

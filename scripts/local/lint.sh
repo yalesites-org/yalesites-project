@@ -2,8 +2,14 @@
 
 set -eo pipefail
 
-# Lint php code for syntax errors
+# Check CSS files for standards.
+npm run lint:styles
+
+#Check JS files for standards.
+npm run lint:js
+
+# Lint php code for syntax errors.
 composer -n lint
 
-# Check coding standards
+# Check coding standards.
 composer -n code-sniff
