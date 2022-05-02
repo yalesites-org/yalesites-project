@@ -1,26 +1,26 @@
-uuid: 112b4b74-1719-4b5f-84b0-30c5516c1d81
+uuid: a30f6169-03ed-494e-b80c-fba3edb70e17
 langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.paragraph.field_heading
-    - paragraphs.paragraphs_type.text
+    - field.storage.paragraph.field_text
+    - paragraphs.paragraphs_type.image
   module:
     - allowed_formats
     - text
 third_party_settings:
   allowed_formats:
     allowed_formats:
-      - heading_html
-id: paragraph.text.field_heading
-field_name: field_heading
+      - basic_html
+id: paragraph.image.field_text
+field_name: field_text
 entity_type: paragraph
-bundle: text
-label: Heading
+bundle: image
+label: Caption
 description: ''
 required: false
-translatable: false
+translatable: true
 default_value: {  }
 default_value_callback: ''
 settings: {  }
-field_type: text
+field_type: text_long
