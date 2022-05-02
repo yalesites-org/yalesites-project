@@ -6,6 +6,7 @@ dependencies:
     - field.storage.node.field_content
     - node.type.news
     - paragraphs.paragraphs_type.divider
+    - paragraphs.paragraphs_type.image
     - paragraphs.paragraphs_type.pop_out_image
     - paragraphs.paragraphs_type.pull_quote
     - paragraphs.paragraphs_type.text
@@ -25,6 +26,7 @@ settings:
   handler: 'default:paragraph'
   handler_settings:
     target_bundles:
+      image: image
       divider: divider
       pop_out_image: pop_out_image
       pull_quote: pull_quote
@@ -45,6 +47,12 @@ settings:
         enabled: false
       divider:
         weight: 14
+        enabled: true
+      embed:
+        weight: 18
+        enabled: false
+      image:
+        weight: 12
         enabled: true
       pop_out_image:
         weight: 15
