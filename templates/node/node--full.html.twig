@@ -1,5 +1,5 @@
-{% if content.field_hero['#is_empty'] == false %}
-  {{ content.field_hero }}
+{% if content.field_banner|render %}
+  {{ content.field_banner }}
 {% else %}
   {% include "@molecules/page-title/page-title.twig" with {
     page_title__heading: label,

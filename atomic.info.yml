@@ -4,16 +4,21 @@ description: YaleSites starter theme using Storybook and component-driven develo
 base theme: stable9
 core: 8.x
 core_version_requirement: ^8 || ^9
+
 libraries:
   - atomic/global
+
 ckeditor_stylesheets:
   - dist/style.css
+
 regions:
   header: Header
   system: System
   content: Content
   footer: Footer
+
 logo: images/logo.png
+
 components:
   namespaces:
     tokens:
