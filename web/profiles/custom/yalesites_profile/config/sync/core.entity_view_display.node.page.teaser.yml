@@ -4,8 +4,8 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.node.teaser
+    - field.field.node.page.field_banner
     - field.field.node.page.field_content
-    - field.field.node.page.field_hero
     - field.field.node.page.field_metatags
     - field.field.node.page.field_teaser_media
     - field.field.node.page.field_teaser_text
@@ -24,8 +24,8 @@ content:
     weight: 100
     region: content
 hidden:
+  field_banner: true
   field_content: true
-  field_hero: true
   field_metatags: true
   field_teaser_media: true
   field_teaser_text: true

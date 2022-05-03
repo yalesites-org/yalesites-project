@@ -1,18 +1,18 @@
-uuid: 3ce59613-4969-4ea3-9487-d26ee7e804a2
+uuid: 4636a199-7a43-4829-bc0e-7b51135dc576
 langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.node.field_hero
+    - field.storage.node.field_banner
     - node.type.page
     - paragraphs.paragraphs_type.cta_banner
   module:
     - entity_reference_revisions
-id: node.page.field_hero
-field_name: field_hero
+id: node.page.field_banner
+field_name: field_banner
 entity_type: node
 bundle: page
-label: Hero
+label: Banner
 description: ''
 required: false
 translatable: false
@@ -26,19 +26,19 @@ settings:
     negate: 0
     target_bundles_drag_drop:
       accordion:
-        weight: 13
+        weight: 12
         enabled: false
       accordion_item:
-        weight: 14
+        weight: 13
         enabled: false
       callout:
-        weight: 15
+        weight: 14
         enabled: false
       callout_item:
-        weight: 16
+        weight: 15
         enabled: false
       cta_banner:
-        weight: 12
+        weight: 16
         enabled: true
       divider:
         weight: 17
