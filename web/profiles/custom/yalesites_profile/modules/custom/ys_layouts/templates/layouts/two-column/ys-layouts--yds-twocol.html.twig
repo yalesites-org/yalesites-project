@@ -1,14 +1,16 @@
-<div class='yds-two-column' data-component-width='max' data-embedded-components>
+{% if content %}
+  <div {{ attributes.addClass('yds-two-column').setAttribute('data-component-width', 'max').setAttribute('data-embedded-components', '') }}>
     <div class='yds-two-column__inner'>
-        <div class='yds-two-column__primary'>
-            {% block two_column__primary %}
-                {{ content.primary }}
-            {% endblock %}
+      {% if content.primary %}
+        <div {{ region_attributes.primary.addClass('yds-two-column__primary') }}>
+          {{ content.primary }}
         </div>
-        <div  class='yds-two-column__secondary'>
-            {% block two_column__secondary %}
-                {{ content.secondary }}
-            {% endblock %}
+      {% endif %}
+      {% if content.secondary %}
+        <div {{ region_attributes.secondary.addClass('yds-two-column__secondary') }}>
+          {{ content.secondary }}
         </div>
+      {% endif %}
     </div>
-</div>
+  </div>
+{% endif %}
