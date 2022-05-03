@@ -1,7 +1,11 @@
-{% embed "@molecules/image/content-image.twig" with {
-  content_image__caption: content.field_text.0,
-} %}
-  {% block content_image__image %}
-    {{ content.field_image }}
-  {% endblock %}
-{% endembed %}
+<div{{ attributes }}>
+  {{ title_prefix }}
+  {{ title_suffix }}
+  {% embed "@molecules/image/content-image.twig" with {
+    content_image__caption: content.field_text.0['#text'],
+  } %}
+    {% block content_image__image %}
+      {{ content.field_image }}
+    {% endblock %}
+  {% endembed %}
+</div>
