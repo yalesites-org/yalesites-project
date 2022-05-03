@@ -1,0 +1,10 @@
+uuid: 3c96e9c0-9d97-4fa8-9dfd-7e5a52b85223
+langcode: en
+status: true
+dependencies: {  }
+id: cta_banner
+label: 'CTA Banner'
+icon_uuid: null
+icon_default: null
+description: ''
+behavior_plugins: {  }
