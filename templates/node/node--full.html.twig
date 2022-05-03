@@ -1,5 +1,9 @@
-{% include "@molecules/page-title/page-title.twig" with {
-  page_title__heading: label,
-} %}
+{% if content.field_banner.0 %}
+  {{ content.field_banner }}
+{% else %}
+  {% include "@molecules/page-title/page-title.twig" with {
+    page_title__heading: label,
+  } %}
+{% endif %}
 
-{{ content }}
+{{ content|without('field_banner') }}
