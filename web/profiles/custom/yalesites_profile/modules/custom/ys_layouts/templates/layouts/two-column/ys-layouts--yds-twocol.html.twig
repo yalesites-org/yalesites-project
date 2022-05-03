@@ -1,21 +1,11 @@
-{#
-# In this file, we're checking `if directory` in order to determine if the
-# active environment is a Drupal site. We need to do this because Drupal's
-# drag-and-drop interface needs specific attributes on the wrapper elements
-# that would not make sense, or even cause errors in environments like
-# Storybook.
-#}
-
-{% set two_column__base_class = 'yds-two-column' %}
-
-<div {{ attributes.addClass(two_column__base_class) }} data-component-width='max' data-embedded-components>
-    <div {{ attributes.addClass("#{two_column__base_class}__inner") }}>
-        <div {{ region_attributes.primary.addClass("#{two_column__base_class}__primary") }}>
+<div class='yds-two-column' data-component-width='max' data-embedded-components>
+    <div class='yds-two-column__inner'>
+        <div class='yds-two-column__primary'>
             {% block two_column__primary %}
                 {{ content.primary }}
             {% endblock %}
         </div>
-        <div {{ region_attributes.secondary.addClass("#{two_column__base_class}__secondary") }}>
+        <div  class='yds-two-column__secondary'>
             {% block two_column__secondary %}
                 {{ content.secondary }}
             {% endblock %}

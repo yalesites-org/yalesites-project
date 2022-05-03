@@ -1,6 +1,7 @@
+# YaleSites two column layout used by layout paragraphs.
 two_column:
-  label: 'YDS Two column'
-  category: 'YDS Layouts'
+  label: 'Two column'
+  category: 'YaleSites Layouts'
   path: templates/layouts/two-column
   template: ys-layouts--yds-twocol
   default_region: primary

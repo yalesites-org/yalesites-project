@@ -36,7 +36,6 @@ module:
   image_widget_crop: 0
   improve_line_breaks_filter: 0
   inline_entity_form: 0
-  layout_builder: 0
   layout_discovery: 0
   layout_paragraphs: 0
   libraries: 0
