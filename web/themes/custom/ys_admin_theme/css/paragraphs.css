@@ -1,0 +1,22 @@
+.paragraph--view-mode--preview {
+  position: relative;
+  border: 1px solid var(--colorGinBorder, gray);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.paragraph--view-mode--preview.paragraph--type--section,
+.paragraph--view-mode--preview.paragraph--type--callout {
+  padding-top: 3em;
+}
+
+.paragraph-type-label {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  background-color: rgba(var(--colorGinPrimaryRGB), 0.1);
+  color: var(--colorGinText);
+  padding: 0.5rem 1rem;
+  border-bottom-left-radius: 1rem;
+}
