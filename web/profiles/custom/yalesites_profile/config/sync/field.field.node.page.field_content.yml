@@ -7,7 +7,6 @@ dependencies:
     - node.type.page
     - paragraphs.paragraphs_type.accordion_item
     - paragraphs.paragraphs_type.callout_item
-    - paragraphs.paragraphs_type.image
   module:
     - entity_reference_revisions
 id: node.page.field_content
@@ -15,13 +14,13 @@ field_name: field_content
 entity_type: node
 bundle: page
 label: Content
-description: ''
+description: ""
 required: false
 translatable: false
-default_value: {  }
-default_value_callback: ''
+default_value: {}
+default_value_callback: ""
 settings:
-  handler: 'default:paragraph'
+  handler: "default:paragraph"
   handler_settings:
     target_bundles:
       accordion_item: accordion_item
@@ -52,7 +51,7 @@ settings:
         enabled: false
       image:
         weight: 12
-        enabled: true
+        enabled: false
       pop_out_image:
         weight: 15
         enabled: false
