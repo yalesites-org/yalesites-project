@@ -10,7 +10,7 @@
   padding-top: 3em;
 }
 
-.paragraph-type-label {
+.paragraph--view-mode--preview .paragraph-type-label {
   position: absolute;
   top: 0;
   right: 0;
