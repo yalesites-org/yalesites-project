@@ -20,3 +20,8 @@ tooling:
     env:
       # Set base url based on above Lando project 'name'.
       DRUSH_OPTIONS_URI: "https://yalesites-platform.lndo.site/"
+services:
+  appserver:
+    overrides:
+      environment:
+        COMPOSER_PROCESS_TIMEOUT: 1800
