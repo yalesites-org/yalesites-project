@@ -1,0 +1,35 @@
+name: Create Release
+
+on:
+  push:
+    branches: ['YALB-430-layout-paragraphs']
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.13
+      - name: Install
+        run: npm ci
+        env:
+          YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
+      - name: Commit Compiled Component Library
+        uses: EndBug/add-and-commit@v7
+        with:
+          add: "node_modules/@yalesites-org/component-library-twig -f"
+          message: "build: commit compiled component library"
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
+        run: npm run semantic-release
+      - name: Remove Compiled Component Library
+        uses: EndBug/add-and-commit@v7
+        with:
+          remove: "--cached -r build"
+          message: "build: removed compiled component library from git"
