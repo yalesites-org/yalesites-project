@@ -108,6 +108,10 @@ jobs:
     steps:
       - checkout
 
+      # Attach the workspace
+      - attach_workspace:
+          at: /tmp
+
       - restore_cache:
           keys:
             - composer-cache-{{ checksum "composer.lock" }}
