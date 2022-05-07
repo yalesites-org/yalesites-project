@@ -1,7 +1,7 @@
 {
-  "name": "starter-drupal",
+  "name": "@yalesites-org/atomic",
   "version": "0.0.0-development",
-  "description": "Drupal starter for YaleSites projects.",
+  "description": "Atomic theme for YaleSites projects.",
   "scripts": {
     "husky:commit-msg": "commitlint --edit $1",
     "husky:pre-commit": "lint-staged",
