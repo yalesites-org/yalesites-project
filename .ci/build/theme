@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -eo pipefail
+
+#
+# This script performs all tasks related to the site theme.
+#
+
+echo "Compiling theme..."
+
+# Compile theme files and pattern lab.
+cd ~/project-build/web/themes/contrib/atomic
+
+npm install

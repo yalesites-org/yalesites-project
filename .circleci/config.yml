@@ -2,7 +2,7 @@
 defaults: &defaults
   docker:
     - image: quay.io/pantheon-public/build-tools-ci:8.x-php7.4
-  working_directory: ~/example_drops_8_composer
+  working_directory: ~/project-build
   environment:
     #=========================================================================
     # In addition to the environment variables defined in this file, also
@@ -103,6 +103,65 @@ jobs:
           paths:
             - $HOME/.composer/cache
 
+  build_php:
+    <<: *defaults
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - composer-cache-{{ checksum "composer.lock" }}
+            - composer-cache-
+            - vendor-{{ checksum "composer.lock" }}
+            - vendor-
+
+      - run:
+          # Set TERMINUS_ENV and related environment variables.
+          # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
+          name: setup-environment-vars
+          command: /build-tools-ci/scripts/set-environment
+
+      - run:
+          name: run PHP build step
+          command: ./.ci/build/php
+
+      - save_cache:
+          key: vendor-{{ checksum "composer.lock" }}
+          paths:
+            - $CIRCLE_WORKING_DIRECTORY/vendor
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - web
+            - vendor
+            - drush
+
+  build_theme:
+    <<: *defaults
+    steps:
+      - checkout
+
+      # Attach the workspace
+      - attach_workspace:
+          at: /tmp
+
+      # Build theme.
+      - run:
+          name: Build Theme.
+          command: ./.ci/build/theme
+
+      - run:
+          # Set TERMINUS_ENV and related environment variables.
+          # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
+          name: setup-environment-vars
+          command: /build-tools-ci/scripts/set-environment
+
+      # Rsync the build artifact pieces web directory
+      - run:
+          name: sync build artifact
+          command: rsync -rz --links /tmp/web /tmp/vendor /tmp/drush .
+
   deploy:
     <<: *defaults
     steps:
@@ -148,6 +207,10 @@ workflows:
     jobs:
       - configure_env_vars
       - static_tests
+      - build_php
+      - build_theme:
+          requires:
+            - build_php
       - deploy:
           requires:
             - static_tests
