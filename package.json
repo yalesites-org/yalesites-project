@@ -2,6 +2,15 @@
   "name": "@yalesites-org/atomic",
   "version": "0.0.0-development",
   "description": "Atomic theme for YaleSites projects.",
+  "files": [
+    "components",
+    "templates",
+    "atomic.info.yml",
+    "atomic.libraries.yml",
+    "atomic.theme",
+    "project.emulsify.json",
+    "README.md"
+  ],
   "scripts": {
     "husky:commit-msg": "commitlint --edit $1",
     "husky:pre-commit": "lint-staged",
