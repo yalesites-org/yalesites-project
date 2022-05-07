@@ -1,7 +1,5 @@
 module.exports = {
-  branches: ['main'],
-  repositoryUrl:
-    'git@github.com:yalesites-org/eslint-config-and-other-formatting.git',
+  branches: ['YALB-430-layout-paragraphs'],
   plugins: [
     '@semantic-release/commit-analyzer',
     '@semantic-release/release-notes-generator',
