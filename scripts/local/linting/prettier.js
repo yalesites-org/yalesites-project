@@ -26,7 +26,7 @@ const tryFix = process.argv[2] === "fix";
 shell.echo("Linting custom project code for formatting...");
 
 // Lint for JS:
-shell.exec(`prettier *.{json,README.md,js} '{${lintIncludes}}/**/*.{${lintExt}}'`);
+shell.exec(`prettier --l *.{json,README.md,js} '{${lintIncludes}}/**/*.{${lintExt}}'`);
 
 if (tryFix) {
     shell.echo("Fixing...");
