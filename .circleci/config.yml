@@ -129,6 +129,16 @@ jobs:
           name: run PHP build step
           command: ./.ci/build/php
 
+      # Build theme.
+      - run:
+          name: Build Theme.
+          command: ./.ci/build/theme
+
+      # Rsync the build artifact pieces web directory
+      - run:
+          name: sync build artifact
+          command: rsync -rz --links /tmp/web /tmp/vendor /tmp/drush .
+
       - save_cache:
           key: vendor-{{ checksum "composer.lock" }}
           paths:
@@ -140,31 +150,6 @@ jobs:
             - web
             - vendor
             - drush
-
-  build_theme:
-    <<: *defaults
-    steps:
-      - checkout
-
-      # Attach the workspace
-      - attach_workspace:
-          at: /tmp
-
-      # Build theme.
-      - run:
-          name: Build Theme.
-          command: ./.ci/build/theme
-
-      - run:
-          # Set TERMINUS_ENV and related environment variables.
-          # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
-          name: setup-environment-vars
-          command: /build-tools-ci/scripts/set-environment
-
-      # Rsync the build artifact pieces web directory
-      - run:
-          name: sync build artifact
-          command: rsync -rz --links /tmp/web /tmp/vendor /tmp/drush .
 
   deploy:
     <<: *defaults
@@ -212,9 +197,6 @@ workflows:
       - configure_env_vars
       - static_tests
       - build_php
-      - build_theme:
-          requires:
-            - build_php
       #- deploy:
       #    requires:
       #      - static_tests
