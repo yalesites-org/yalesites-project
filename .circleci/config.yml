@@ -215,9 +215,9 @@ workflows:
       - build_theme:
           requires:
             - build_php
-      - deploy:
-          requires:
-            - static_tests
+      #- deploy:
+      #    requires:
+      #      - static_tests
 
   scheduled_update_check:
     triggers:
