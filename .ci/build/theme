@@ -14,5 +14,8 @@ cd ~/project-build/web/themes/contrib/atomic
 # Work around.
 rm .npmrc
 echo "@yalesites-org:registry=https://npm.pkg.github.com" > .npmrc
+echo -e "//npm.pkg.github.com/:_authToken=$YALESITES_BUILD_TOKEN" >> .npmrc
+
+tail .npmrc
 
 npm install
