@@ -135,9 +135,9 @@ jobs:
           command: ./.ci/build/theme
 
       # Rsync the build artifact pieces web directory
-      - run:
-          name: sync build artifact
-          command: rsync -rz --links /tmp/web /tmp/vendor /tmp/drush .
+      #- run:
+      #    name: sync build artifact
+      #    command: rsync -rz --links /tmp/web /tmp/vendor /tmp/drush .
 
       - save_cache:
           key: vendor-{{ checksum "composer.lock" }}
