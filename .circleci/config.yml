@@ -197,9 +197,9 @@ workflows:
       - configure_env_vars
       - static_tests
       - build_php
-      #- deploy:
-      #    requires:
-      #      - static_tests
+      - deploy:
+          requires:
+            - static_tests
 
   scheduled_update_check:
     triggers:
