@@ -8,5 +8,8 @@ set -eo pipefail
 # need to be persisted to other jobs.
 #
 
+# Workaround since husky is requiring a .git directory in atomic.
+composer config --global 'preferred-install.yalesites-org/*' source
+
 # Build Composer Assets
 composer -n build-assets
