@@ -94,6 +94,18 @@ jobs:
           name: setup-environment-vars
           command: /build-tools-ci/scripts/set-environment
 
+      # Create theme npmrc.
+      - run:
+          name: Create .npmrc.
+          command: mv ./.ci/.npmrc-example ./.npmrc
+
+      # Authencate npmrc.
+      - run:
+          name: Authencate .npmrc.
+          command: |
+            echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> ./.npmrc
+            echo "@yalesites-org:registry=https://npm.pkg.github.com/" >> ./.npmrc
+
       - run:
           name: run static tests
           command: ./.ci/test/static/run
