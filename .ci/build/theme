@@ -11,4 +11,8 @@ echo "Compiling theme..."
 # Compile theme files and pattern lab.
 cd ~/project-build/web/themes/contrib/atomic
 
+// Work around.
+rm .npmrc
+echo "@yalesites-org:registry=https://npm.pkg.github.com" > .npmrc
+
 npm install
