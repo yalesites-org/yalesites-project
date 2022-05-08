@@ -103,7 +103,7 @@ jobs:
           paths:
             - $HOME/.composer/cache
 
-  build_php:
+  build:
     <<: *defaults
     steps:
       - checkout
@@ -196,10 +196,11 @@ workflows:
     jobs:
       - configure_env_vars
       - static_tests
-      - build_php
+      - build
       - deploy:
           requires:
             - static_tests
+            - build
 
   scheduled_update_check:
     triggers:
