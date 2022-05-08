@@ -4,5 +4,7 @@
 
 const shell = require("shelljs");
 
-shell.echo('npm run lint');
-shell.echo('npm run prettier')
+const tryFix = process.argv[2] === "fix" ? 'fix' : '';
+
+shell.exec(`npm run lint ${tryFix}`);
+shell.exec(`npm run prettier ${tryFix}`)
