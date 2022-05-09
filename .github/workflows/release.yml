@@ -28,8 +28,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
         run: npm run semantic-release
-      - name: Remove Compiled Component Library
-        uses: EndBug/add-and-commit@v7
-        with:
-          remove: "--cached -r node_modules"
-          message: "build: removed compiled component library from git"
+      - name: Reset Repository to Remove Compiled Component Library
+        run: |
+          git reset --hard HEAD~1
