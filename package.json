@@ -8,6 +8,7 @@
     "atomic.info.yml",
     "atomic.libraries.yml",
     "atomic.theme",
+    "project.emulsify.json",
     "README.md"
   ],
   "scripts": {
