@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Atomic theme for YaleSites projects.",
   "files": [
+    "node_modules/@yalesites-org",
     "components",
     "templates",
     "atomic.info.yml",
