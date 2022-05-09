@@ -1,3 +1,7 @@
-{% include "@molecules/text/text-field.twig" with {
-  text_field__content: content.field_text,
-} %}
+<div{{ attributes }}>
+  {{ title_prefix }}
+  {{ title_suffix }}
+  {% include "@molecules/text/text-field.twig" with {
+    text_field__content: content.field_text,
+  } %}
+</div>
