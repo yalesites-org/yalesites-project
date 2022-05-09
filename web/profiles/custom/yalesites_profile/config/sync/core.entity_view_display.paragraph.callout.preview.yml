@@ -1,0 +1,25 @@
+uuid: 5a1f97dd-cc45-41e4-8271-94d63813c147
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.paragraph.preview
+    - field.field.paragraph.callout.field_callout
+    - paragraphs.paragraphs_type.callout
+  module:
+    - entity_reference_revisions
+id: paragraph.callout.preview
+targetEntityType: paragraph
+bundle: callout
+mode: preview
+content:
+  field_callout:
+    type: entity_reference_revisions_entity_view
+    label: hidden
+    settings:
+      view_mode: preview
+      link: ''
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden: {  }

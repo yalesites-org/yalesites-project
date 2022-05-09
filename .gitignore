@@ -99,3 +99,9 @@
 
 # Ignore local lando settings. Each site will have unique values.
 .lando.local.yml
+
+# Local files
+.DS_Store
+
+# Database references
+reference

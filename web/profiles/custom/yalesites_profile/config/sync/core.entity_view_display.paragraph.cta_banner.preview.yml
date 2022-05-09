@@ -1,0 +1,50 @@
+uuid: 7d0f2702-fb88-413a-b419-5c1e180bff98
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.paragraph.preview
+    - field.field.paragraph.cta_banner.field_image
+    - field.field.paragraph.cta_banner.field_link
+    - field.field.paragraph.cta_banner.field_text
+    - image.style.max_width_320
+    - paragraphs.paragraphs_type.cta_banner
+  module:
+    - link
+    - media
+    - text
+id: paragraph.cta_banner.preview
+targetEntityType: paragraph
+bundle: cta_banner
+mode: preview
+content:
+  field_image:
+    type: media_thumbnail
+    label: hidden
+    settings:
+      image_link: ''
+      image_style: max_width_320
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_link:
+    type: link
+    label: inline
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  field_text:
+    type: text_trimmed
+    label: above
+    settings:
+      trim_length: 600
+    third_party_settings: {  }
+    weight: 1
+    region: content
+hidden: {  }

@@ -1,0 +1,22 @@
+uuid: 48ecf547-a798-4db7-93a6-2592a2be347e
+langcode: en
+status: true
+dependencies:
+  module:
+    - system
+  theme:
+    - ys_admin_theme
+_core:
+  default_config_hash: aeqlWs7HwctZeZC7ADcbxfqehJzBRfZKmuZz3DsH3_4
+id: ys_admin_theme_messages
+theme: ys_admin_theme
+region: highlighted
+weight: -4
+provider: null
+plugin: system_messages_block
+settings:
+  id: system_messages_block
+  label: 'Status messages'
+  label_display: '0'
+  provider: system
+visibility: {  }

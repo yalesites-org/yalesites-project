@@ -12,6 +12,7 @@ dependencies:
     - node.type.page
   module:
     - entity_reference_revisions
+    - layout_paragraphs
     - user
 id: node.page.default
 targetEntityType: node
@@ -28,11 +29,15 @@ content:
     weight: 0
     region: content
   field_content:
-    type: entity_reference_revisions_entity_view
+    type: layout_paragraphs_builder
     label: hidden
     settings:
       view_mode: default
       link: ''
+      preview_view_mode: preview
+      nesting_depth: 0
+      require_layouts: 0
+      empty_message: ''
     third_party_settings: {  }
     weight: 1
     region: content
