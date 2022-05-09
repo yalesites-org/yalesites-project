@@ -2,7 +2,7 @@ name: Create Release
 
 on:
   push:
-    branches: ['YALB-430-layout-paragraphs']
+    branches: ['main']
 
 jobs:
   release:
