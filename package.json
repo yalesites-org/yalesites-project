@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Atomic theme for YaleSites projects.",
   "files": [
-    "node_modules/@yalesites-org",
     "components",
     "templates",
     "atomic.info.yml",
@@ -11,6 +10,9 @@
     "atomic.theme",
     "project.emulsify.json",
     "README.md"
+  ],
+  "bundledDependencies": [
+    "@yalesites-org/component-library-twig",
   ],
   "scripts": {
     "husky:commit-msg": "commitlint --edit $1",
