@@ -1,8 +1,0 @@
-{% if card_example_type == 'news' %}
-  {% if card_collection__type == 'list' and card_collection__featured == 'false' %}
-    {% set news_card__snippet = null %}
-  {% endif %}
-  {% include "@molecules/cards/news-card/news-card.twig" with {
-    news_card__image: card_collection__with_images,
-  } %}
-{% endif %}
