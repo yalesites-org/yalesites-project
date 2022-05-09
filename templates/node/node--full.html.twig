@@ -1,4 +1,4 @@
-{% if content.field_banner.0 %}
+{% if content.field_banner|render %}
   {{ content.field_banner }}
 {% else %}
   {% include "@molecules/page-title/page-title.twig" with {

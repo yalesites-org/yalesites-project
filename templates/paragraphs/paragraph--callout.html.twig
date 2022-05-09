@@ -1,4 +1,9 @@
-{% extends "@molecules/callout/callout.twig" %}
-  {% block callout__items %}
-    {{ content.field_callout }}
-  {% endblock %}
+<div{{ attributes }}>
+  {{ title_prefix }}
+  {{ title_suffix }}
+  {% embed "@molecules/callout/callout.twig" %}
+    {% block callout__items %}
+      {{ content.field_callout }}
+    {% endblock %}
+  {% endembed %}
+</div>
