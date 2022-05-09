@@ -12,7 +12,7 @@
     "README.md"
   ],
   "bundledDependencies": [
-    "@yalesites-org/component-library-twig",
+    "@yalesites-org/component-library-twig"
   ],
   "scripts": {
     "husky:commit-msg": "commitlint --edit $1",
