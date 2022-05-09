@@ -18,18 +18,8 @@ jobs:
         run: npm ci
         env:
           YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
-      - name: Commit Compiled Component Library
-        uses: EndBug/add-and-commit@v7
-        with:
-          add: "node_modules/@yalesites-org/component-library-twig -f"
-          message: "build: commit compiled component library"
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
         run: npm run semantic-release
-      - name: Remove Compiled Component Library
-        uses: EndBug/add-and-commit@v7
-        with:
-          remove: "--cached -r node_modules"
-          message: "build: removed compiled component library from git"
