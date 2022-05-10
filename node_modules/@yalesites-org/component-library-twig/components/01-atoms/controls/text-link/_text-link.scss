@@ -1,0 +1,142 @@
+@use '../../../00-tokens/tokens';
+
+:root {
+  // @LINK: https://yaleits.atlassian.net/browse/YALB-350
+  // @TODO: These color scheme custom property settings seem like they shouldn't
+  // need to live here. At some point it'd be nice to get rid of them.
+  // Color schemes
+  [data-component-theme='gray-800'],
+  [data-component-theme='blue-yale'] {
+    --link-color-base: var(--color-basic-white);
+    --link-color-hover: var(--color-blue-light);
+  }
+
+  [data-component-theme='gray-700'] {
+    --link-color-base: var(--color-basic-white);
+    --link-color-hover: var(--color-gray-300);
+  }
+
+  [data-component-theme='gray-200'] {
+    --link-color-base: var(--color-blue-yale);
+    --link-color-hover: var(--color-text);
+  }
+}
+
+// Mixin for generic links.
+// Style options are "underline" or "no-underline".
+// The style name indicates the initial appearance.
+@mixin link($style: underline, $family-weight: 'mallory-medium') {
+  @include tokens.animate('color');
+
+  position: relative;
+  color: var(--link-color-base);
+  text-decoration: none;
+  font-weight: var(--font-weights-#{$family-weight});
+
+  // Add the decorative bar under links
+  &::after {
+    @include tokens.animate('transform');
+
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: currentcolor;
+    transform-origin: left center;
+    transform: var(--link-styles-#{$style}-transform);
+  }
+
+  &:hover {
+    color: var(--link-color-hover);
+  }
+
+  // Animate the decorative bar when the link is hovered
+  &:hover::after {
+    transform: var(--link-styles-#{$style}-transform-hover);
+  }
+
+  &:focus-visible::after {
+    transform: scale(0, 1);
+  }
+}
+
+// This mixin is used to style linked headings in components that should be
+// "fully clickable". e.g. When an entire card is clickable, this applies the
+// appropriate styles to the heading inside the card.
+// NOTES:
+// - Apply the mixin to the parent item. e.g.: `.card` and it will affect
+// the `.card__heading-link` element inside.
+// - The component will likely also need some JS to round out the design and
+// functionality desired. Check `news-card.js` for an example. And/or read the
+// Cards chapter here: https://inclusive-components.design/cards.
+@mixin clickable-component-heading-link {
+  // Style the component when it's heading is focused.
+  &:focus-within {
+    @include tokens.focus-styles;
+  }
+
+  // Style the heading link inside the component.
+  [class*='__heading-link'] {
+    @include tokens.animate('color');
+
+    position: relative;
+    color: currentcolor;
+    text-decoration: none;
+    font-weight: var(--font-weights-yalenew-bold);
+
+    // Add the decorative bar under links
+    &::after {
+      @include tokens.animate('transform');
+
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: currentcolor;
+      transform-origin: left center;
+      transform: var(--link-styles-no-underline-transform);
+    }
+
+    &:focus {
+      // Setting `outline: none` is generally a huge no-no! In this case,
+      // however, we're visually and functionally making the entire component
+      // "clickable", so we've added focus styles to the component itself using
+      // `:focus-within` above, so we can safely remove this outline, since it
+      // would otherwise be redundant and create confusion as two different
+      // elements would appear to be focused at the same time.
+      outline: none;
+    }
+  }
+
+  // Style the heading link when the component is hovered.
+  &:hover [class*='__heading-link'] {
+    color: var(--link-color-base);
+
+    &::after {
+      transform: var(--link-styles-no-underline-transform-hover);
+    }
+  }
+
+  // Style the heading link when the component is focused.
+  &:focus-visible [class*='__heading-link']::after {
+    transform: scale(0, 1);
+  }
+}
+
+.text-field a {
+  @include link;
+}
+
+.link {
+  &[data-link-style='underline'] {
+    @include link;
+  }
+
+  &[data-link-style='no-underline'] {
+    @include link(no-underline);
+  }
+}
