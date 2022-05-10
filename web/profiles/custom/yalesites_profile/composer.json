@@ -45,7 +45,7 @@
         "drupal/redirect": "^1.7",
         "drupal/twig_tweak": "^3.1",
         "drupal/xmlsitemap": "^1.2",
-        "yalesites-org/atomic": "dev-YALB-430-layout-paragraphs-artifacts"
+        "yalesites-org/atomic": "^1.0"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
