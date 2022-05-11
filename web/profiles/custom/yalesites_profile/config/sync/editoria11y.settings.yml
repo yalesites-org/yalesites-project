@@ -1,0 +1,11 @@
+_core:
+  default_config_hash: NGxFi-xycxrzrGVZtCUl7MACi0jVRk130tNabvIN6ng
+content_root: ''
+no_load: ''
+ignore_containers: ''
+embedded_content_warning: ''
+allow_overflow: ''
+assertiveness: smart
+download_links: ''
+ignore_link_strings: ''
+hidden_handlers: ''
