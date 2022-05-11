@@ -1,0 +1,61 @@
+uuid: 4636a199-7a43-4829-bc0e-7b51135dc576
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_banner
+    - node.type.page
+    - paragraphs.paragraphs_type.cta_banner
+  module:
+    - entity_reference_revisions
+id: node.page.field_banner
+field_name: field_banner
+entity_type: node
+bundle: page
+label: Banner
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:paragraph'
+  handler_settings:
+    target_bundles:
+      cta_banner: cta_banner
+    negate: 0
+    target_bundles_drag_drop:
+      accordion:
+        weight: 12
+        enabled: false
+      accordion_item:
+        weight: 13
+        enabled: false
+      callout:
+        weight: 14
+        enabled: false
+      callout_item:
+        weight: 15
+        enabled: false
+      cta_banner:
+        weight: 16
+        enabled: true
+      divider:
+        weight: 17
+        enabled: false
+      embed:
+        weight: 18
+        enabled: false
+      pop_out_image:
+        weight: 19
+        enabled: false
+      pull_quote:
+        weight: 20
+        enabled: false
+      text:
+        weight: 21
+        enabled: false
+      text_with_image:
+        weight: 22
+        enabled: false
+field_type: entity_reference_revisions

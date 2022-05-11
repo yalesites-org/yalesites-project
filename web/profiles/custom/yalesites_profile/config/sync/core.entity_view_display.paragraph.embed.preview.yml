@@ -1,0 +1,37 @@
+uuid: 5153aed4-3663-4e21-8b96-541061614640
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.paragraph.preview
+    - field.field.paragraph.embed.field_link
+    - field.field.paragraph.embed.field_title_attr
+    - paragraphs.paragraphs_type.embed
+  module:
+    - link
+    - text
+id: paragraph.embed.preview
+targetEntityType: paragraph
+bundle: embed
+mode: preview
+content:
+  field_link:
+    type: link_separate
+    label: inline
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_title_attr:
+    type: text_default
+    label: inline
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
+hidden: {  }

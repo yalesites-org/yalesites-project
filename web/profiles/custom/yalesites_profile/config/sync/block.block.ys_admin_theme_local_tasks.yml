@@ -1,0 +1,22 @@
+uuid: e03d9a42-6814-4262-aec2-1914178b1d69
+langcode: en
+status: true
+dependencies:
+  theme:
+    - ys_admin_theme
+_core:
+  default_config_hash: T0wbI6qVdThbbIqXDZFg_1VZ3_ittXBdEoUH7d7ux_E
+id: ys_admin_theme_local_tasks
+theme: ys_admin_theme
+region: header
+weight: -2
+provider: null
+plugin: local_tasks_block
+settings:
+  id: local_tasks_block
+  label: 'Primary Tabs'
+  label_display: '0'
+  provider: core
+  primary: true
+  secondary: false
+visibility: {  }

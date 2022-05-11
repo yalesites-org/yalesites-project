@@ -1,0 +1,20 @@
+uuid: 45ef7ed2-4ec3-483c-a7a1-f0a13f57d4f9
+langcode: en
+status: true
+dependencies:
+  module:
+    - system
+  theme:
+    - ys_admin_theme
+id: breadcrumbs
+theme: ys_admin_theme
+region: breadcrumb
+weight: 0
+provider: null
+plugin: system_breadcrumb_block
+settings:
+  id: system_breadcrumb_block
+  label: Breadcrumbs
+  label_display: '0'
+  provider: system
+visibility: {  }

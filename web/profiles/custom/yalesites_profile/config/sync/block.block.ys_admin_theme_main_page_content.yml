@@ -1,0 +1,20 @@
+uuid: b915e824-04f2-4949-887b-d1bb6ba1502f
+langcode: en
+status: true
+dependencies:
+  module:
+    - system
+  theme:
+    - ys_admin_theme
+id: ys_admin_theme_main_page_content
+theme: ys_admin_theme
+region: content
+weight: -1
+provider: null
+plugin: system_main_block
+settings:
+  id: system_main_block
+  label: 'Main page content'
+  label_display: '0'
+  provider: system
+visibility: {  }

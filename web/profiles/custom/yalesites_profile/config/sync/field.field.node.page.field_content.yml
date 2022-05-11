@@ -7,7 +7,6 @@ dependencies:
     - node.type.page
     - paragraphs.paragraphs_type.accordion_item
     - paragraphs.paragraphs_type.callout_item
-    - paragraphs.paragraphs_type.image
   module:
     - entity_reference_revisions
 id: node.page.field_content
@@ -25,7 +24,7 @@ settings:
   handler_settings:
     target_bundles:
       accordion_item: accordion_item
-      image: image
+      cta_banner: cta_banner
       callout_item: callout_item
     negate: 1
     target_bundles_drag_drop:
@@ -41,6 +40,9 @@ settings:
       callout_item:
         weight: 13
         enabled: true
+      cta_banner:
+        weight: 12
+        enabled: true
       divider:
         weight: 14
         enabled: false
@@ -49,7 +51,7 @@ settings:
         enabled: false
       image:
         weight: 12
-        enabled: true
+        enabled: false
       pop_out_image:
         weight: 15
         enabled: false

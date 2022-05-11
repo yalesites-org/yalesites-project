@@ -16,6 +16,7 @@ module:
   config_ignore: 0
   config_split: 0
   content_moderation: 0
+  contextual: 0
   crop: 0
   ctools: 0
   datetime: 0
@@ -69,6 +70,7 @@ module:
   workflows: 0
   ys_admin: 0
   ys_alert: 0
+  ys_layouts: 0
   ys_mail: 0
   pathauto: 1
   xmlsitemap: 1
@@ -82,5 +84,5 @@ theme:
   atomic: 0
   claro: 0
   gin: 0
-  bartik: 0
+  ys_admin_theme: 0
 profile: yalesites_profile

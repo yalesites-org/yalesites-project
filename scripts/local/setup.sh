@@ -2,7 +2,7 @@
 
 # Ignore the composer.lock file on local dev only.
 if grep -qxF 'composer.lock' .git/info/exclude; then
-  echo "Excluding composer.log to keep it out of the repo."
+  echo "Excluding composer.lock to keep it out of the repo."
   echo 'composer.lock' >> .git/info/exclude
 fi
 
