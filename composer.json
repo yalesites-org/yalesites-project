@@ -105,10 +105,6 @@
         }
     },
     "scripts": {
-        "build-assets": [
-            "@prepare-for-pantheon",
-            "composer install --optimize-autoloader --no-dev"
-        ],
         "prepare-for-pantheon": "DrupalProject\\composer\\ScriptHandler::prepareForPantheon",
         "unit-test": "echo 'No unit test step defined.'",
         "lint": "find web\/modules\/custom web\/themes\/custom -name '*.php' -exec php -l {} \\;",

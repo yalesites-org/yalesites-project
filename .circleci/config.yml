@@ -49,7 +49,6 @@ defaults: &defaults
     #======================================================================================================================================
 
     NOTIFY: 'scripts/github/add-commit-comment {project} {sha} "Created multidev environment [{site}#{env}]({dashboard-url})." {site-url}'
-    ADMIN_USERNAME: admin
     # BUILD_TOOLS_VERSION: ^2.0.0-alpha4
     TERM: dumb
 
@@ -108,7 +107,6 @@ jobs:
     steps:
       - checkout
 
-      # Attach the workspace
       - attach_workspace:
           at: /tmp
 
@@ -126,18 +124,16 @@ jobs:
           command: /build-tools-ci/scripts/set-environment
 
       - run:
-          name: run PHP build step
+          name: disable Pantheon build step
+          command: ./.ci/build/disable-build-step
+
+      - run:
+          name: build PHP artifacts
           command: ./.ci/build/php
 
-      # Build theme.
       - run:
-          name: Build Theme.
+          name: build theme artifacts
           command: ./.ci/build/theme
-
-      # Rsync the build artifact pieces web directory
-      #- run:
-      #    name: sync build artifact
-      #    command: rsync -rz --links /tmp/web /tmp/vendor /tmp/drush .
 
       - save_cache:
           key: vendor-{{ checksum "composer.lock" }}
@@ -156,7 +152,6 @@ jobs:
     steps:
       - checkout
 
-      # Attach the workspace
       - attach_workspace:
           at: /tmp
 
@@ -166,7 +161,6 @@ jobs:
           name: setup-environment-vars
           command: /build-tools-ci/scripts/set-environment
 
-      # Rsync the build artifact pieces web directory
       - run:
           name: sync build artifact
           command: rsync -rz --links /tmp/web /tmp/vendor .

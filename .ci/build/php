@@ -2,14 +2,14 @@
 
 set -eo pipefail
 
-#
-# This script prepares the PHP build artifacts.
-# The web and vendor artifact directories will
-# need to be persisted to other jobs.
-#
+# This script prepares the PHP build artifacts. The web and vendor artifact
+# directories will need to be persisted to other jobs.
 
 # Workaround since husky is requiring a .git directory in atomic.
+# When building multidevs,
 composer config --global 'preferred-install.yalesites-org/*' source
 
 # Build Composer Assets
-composer -n build-assets
+echo "Building Composer assets..."
+composer -n prepare-for-pantheon
+composer install --optimize-autoloader --no-dev

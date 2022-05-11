@@ -2,11 +2,8 @@
 
 set -eo pipefail
 
-#
-# This script deploys the build artifact to Pantheon.
-# On the master branch the dev environment is used.
-# Otherwise a multidev environment is used.
-#
+# This script deploys the build artifact to Pantheon. On the master branch the
+# dev environment is used. Otherwise a multidev environment is used.
 
 # Cut gitignore at the cut mark.
 terminus build:gitignore:cut
