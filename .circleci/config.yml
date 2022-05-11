@@ -169,7 +169,7 @@ jobs:
       # Rsync the build artifact pieces web directory
       - run:
           name: sync build artifact
-          command: rsync -rz --links /tmp/web /tmp/vendor /tmp/drush .
+          command: rsync -rz --links /tmp/web /tmp/vendor .
 
       # Deploy to Pantheon
       - run:
