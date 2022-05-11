@@ -1,0 +1,10 @@
+uuid: 472c8ad5-25d9-43bc-8de6-a9892636b91e
+langcode: en
+status: true
+dependencies:
+  module:
+    - media
+id: media.banner_16_5
+label: 'Banner (16:5)'
+targetEntityType: media
+cache: true
