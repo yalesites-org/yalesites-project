@@ -196,6 +196,8 @@ workflows:
       - configure_env_vars
       - static_tests
       - build
+          requires:
+            - static_tests
       - deploy:
           requires:
             - static_tests
