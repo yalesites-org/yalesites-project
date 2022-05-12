@@ -8,6 +8,9 @@ We love your input! We want to make contributing to this project as easy and tra
 ## We Develop with Github
 We use github to host code, to track issues and feature requests, as well as accept pull requests.
 
+## Please Check for an Existing Similar PR or Issue Before Submitting Your Own
+Before you submit a new issue or pull request, be sure to check for an existing one to reduce duplicate efforts and fragmentation.
+
 ## We Use Github Flow, So All Code Changes Happen Through Pull Requests
 Pull requests are the best way to propose changes to the codebase (we use [Github Flow](https://docs.github.com/en/get-started/quickstart/github-flow)). We actively welcome your pull requests:
 
@@ -18,7 +21,6 @@ Pull requests are the best way to propose changes to the codebase (we use [Githu
 5. Submit that pull request!
 
 ## Write bug reports with detail, background, and sample code or link to view the issue
-
 **Great Bug Reports** tend to have:
 
 - A quick summary and/or background
