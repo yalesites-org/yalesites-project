@@ -200,7 +200,7 @@ workflows:
     jobs:
       - configure_env_vars
       - static_tests
-      - build
+      - build:
           requires:
             - static_tests
       - deploy:
