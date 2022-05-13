@@ -63,11 +63,11 @@ jobs:
       - run:
           # Set TERMINUS_ENV and related environment variables.
           # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
-          name: setup-environment-vars
+          name: Setup environment variables
           command: /build-tools-ci/scripts/set-environment
 
       - run:
-          name: clone-bash-env
+          name: Clone bash environment
           command: cp $BASH_ENV bash_env.txt
 
       # https://circleci.com/docs/2.0/workflows/#using-workspaces-to-share-data-among-jobs
@@ -90,11 +90,11 @@ jobs:
       - run:
           # Set TERMINUS_ENV and related environment variables.
           # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
-          name: setup-environment-vars
+          name: Setup environment variables
           command: /build-tools-ci/scripts/set-environment
 
       - run:
-          name: run static tests
+          name: Run static tests
           command: ./.ci/test/static/run
 
       - save_cache:
@@ -121,23 +121,23 @@ jobs:
       - run:
           # Set TERMINUS_ENV and related environment variables.
           # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
-          name: setup-environment-vars
+          name: Setup environment variables
           command: /build-tools-ci/scripts/set-environment
 
       - run:
-          name: disable Pantheon build step
+          name: Disable Pantheon build step
           command: ./.ci/build/disable-build-step
 
       - run:
-          name: set composer to prefer source installs
+          name: Set composer to prefer source installs
           command: ./.ci/build/set-composer-source
 
       - run:
-          name: build PHP artifacts
+          name: Build PHP artifacts
           command: ./.ci/build/php
 
       - run:
-          name: build theme artifacts
+          name: Build theme artifacts
           command: ./.ci/build/theme
 
       - save_cache:
@@ -163,17 +163,17 @@ jobs:
       - run:
           # Set TERMINUS_ENV and related environment variables.
           # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
-          name: setup-environment-vars
+          name: Setup environment variables
           command: /build-tools-ci/scripts/set-environment
 
       - run:
-          name: sync build artifact
+          name: Sync build artifact
           command: rsync -rz --links /tmp/web /tmp/vendor .
 
       # Deploy to Pantheon
       - run:
-          name: deploy to Pantheon Multidev
-          command: ./.ci/deploy/dev-multidev
+          name: Deploy to Pantheon Multidev
+          command: ./.ci/deploy/multidev
 
   composer_lock_updater:
     <<: *defaults
@@ -183,15 +183,15 @@ jobs:
       - run:
           # Set TERMINUS_ENV and related environment variables.
           # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
-          name: setup-environment-vars
+          name: Setup environment variables
           command: /build-tools-ci/scripts/set-environment
 
       - run:
-          name: authenticate with Terminus
+          name: Authenticate with Terminus
           command: terminus -n auth:login --machine-token="$TERMINUS_TOKEN"
 
       - run:
-          name: run composer lock updater
+          name: Run composer lock updater
           command: set -e && terminus project:clu $TERMINUS_SITE
 
 workflows:
