@@ -124,9 +124,9 @@ jobs:
           name: Setup environment variables
           command: /build-tools-ci/scripts/set-environment
 
-      #- run:
-      #    name: Disable Pantheon build step
-      #    command: ./.ci/build/disable-build-step
+      - run:
+          name: Disable Pantheon build step
+          command: ./.ci/build/disable-build-step
 
       - run:
           name: Set composer to prefer source installs
