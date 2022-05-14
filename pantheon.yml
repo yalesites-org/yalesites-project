@@ -1,5 +1,4 @@
 api_version: 1
-build_step: true
 # Downstream sites should not change the workflow.
 # Specifying Quicksilver workflows in pantheon.upstream.yml is not supported.
 workflows:
