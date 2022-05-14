@@ -1,8 +1,4 @@
 #!/bin/bash
 
-tail pantheon.upstream.yml
-
 # Disable the Patheon Integrated Composer for CircleCI multidev builds.
-sed -i 's/build_step: true/build_step: false/' pantheon.upstream.yml
-
-tail pantheon.upstream.yml
+sed -i 's/build_step: true/build_step: false/' pantheon.yml
