@@ -168,7 +168,7 @@ jobs:
 
       - run:
           name: Sync build artifact
-          command: rsync -rz --links /tmp/web /tmp/vendor .
+          command: rsync -rz --links /tmp/web /tmp/vendor pantheon.yml .
 
       # Deploy to Pantheon
       - run:
