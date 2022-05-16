@@ -12,11 +12,13 @@
     <div class='yds-two-column__inner'>
       {% if has_primary %}
         <div {{ region_attributes.primary.addClass('yds-two-column__primary') }}>
+          <span {{ bem('paragraph-type-label') }}>Primary Content</span>
           {{ content.primary }}
         </div>
       {% endif %}
       {% if has_secondary %}
         <div {{ region_attributes.secondary.addClass('yds-two-column__secondary') }}>
+          <span {{ bem('paragraph-type-label') }}>Secondary Content</span>
           {{ content.secondary }}
         </div>
       {% endif %}
