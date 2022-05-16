@@ -1,0 +1,13 @@
+_core:
+  default_config_hash: 3Qy8Ap9CL1suaCnYTcFq1kziOQux44inp7Ew7EMxS2Q
+sitewide_token_support: true
+field:
+  sync_frequency: 2
+  overwrite: true
+  mappings:
+    field_display_name: '[cas:attribute:givenname] [cas:attribute:sn]'
+role:
+  sync_frequency: 0
+  deny_login_no_match: false
+  deny_registration_no_match: false
+  mappings: {  }
