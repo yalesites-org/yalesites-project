@@ -1,6 +1,6 @@
 {
     "name": "pantheon-upstreams/drupal-project",
-    "description": "Pantheon upstream with dependencies share by all YaleSites",
+    "description": "Pantheon upstream with dependencies share by all YaleSites.",
     "type": "project",
     "repositories": {
         "atomic": {
