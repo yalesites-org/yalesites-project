@@ -3,7 +3,8 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.field.user.user.field_display_name
+    - field.field.user.user.field_first_name
+    - field.field.user.user.field_last_name
   module:
     - path
     - user
@@ -17,9 +18,17 @@ content:
     region: content
     settings: {  }
     third_party_settings: {  }
-  field_display_name:
+  field_first_name:
     type: string_textfield
-    weight: 31
+    weight: 32
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  field_last_name:
+    type: string_textfield
+    weight: 33
     region: content
     settings:
       size: 60

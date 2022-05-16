@@ -5,7 +5,8 @@ field:
   sync_frequency: 2
   overwrite: true
   mappings:
-    field_display_name: '[cas:attribute:givenname] [cas:attribute:sn]'
+    field_first_name: '[cas:attribute:givenname]'
+    field_last_name: '[cas:attribute:sn]'
 role:
   sync_frequency: 0
   deny_login_no_match: false
