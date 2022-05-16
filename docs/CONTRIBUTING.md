@@ -108,8 +108,7 @@ Development standards will be rigorously enforced on this project. Drupal mainta
 
 ### Linting
 
-To run the linting, first you'll need to gain access to the [yalesites-org/eslint-config-and-other-formatting](https://github.com/yalesites-org/eslint-config-and-other-formatting) repo if you don't already have access.  
-Next, you'll need to create a Github Personal Access token to be able to pull down the Yale package.
+To run the linting, you'll need to create a Github Personal Access token to be able to pull down the Yale package.
 
 - Visit the [Github instructions for creating a Personal Access Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token).
 - Give it "Write packages" permissions. This will also check the repo permissions.
