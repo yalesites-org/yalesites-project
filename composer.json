@@ -110,7 +110,10 @@
     "lint:php": [
       "./vendor/bin/phpcs --standard=Drupal --extensions=php,inc,module,install,theme --colors ./web/modules/custom",
       "./vendor/bin/phpcs --standard=Drupal --extensions=php,inc,module,install,theme --colors ./web/themes/custom",
-      "./vendor/bin/phpcs --standard=Drupal --extensions=php,inc,module,install,theme --colors ./web/profiles/custom"
+      "./vendor/bin/phpcs --standard=Drupal --extensions=php,inc,module,install,theme --colors ./web/profiles/custom",
+      "./vendor/bin/phpcs --standard=DrupalPractice --extensions=php,inc,module,install,theme --colors ./web/modules/custom",
+      "./vendor/bin/phpcs --standard=DrupalPractice --extensions=php,inc,module,install,theme --colors ./web/themes/custom",
+      "./vendor/bin/phpcs --standard=DrupalPractice --extensions=php,inc,module,install,theme --colors ./web/profiles/custom"
     ],
     "prettier": "prettier --l *.{json,README.md,js} '{.github,docs,web/profiles/custom,web/modules/custom,web/themes/custom}/**/*.{json,md,js,html,scss,html}'"
   }
