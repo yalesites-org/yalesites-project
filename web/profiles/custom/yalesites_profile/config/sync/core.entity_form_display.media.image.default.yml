@@ -6,7 +6,7 @@ dependencies:
     - field.field.media.image.field_media_image
     - media.type.image
   module:
-    - image
+    - image_widget_crop
     - path
 id: media.image.default
 targetEntityType: media
@@ -20,12 +20,19 @@ content:
     settings: {  }
     third_party_settings: {  }
   field_media_image:
-    type: image_image
+    type: image_widget_crop
     weight: 0
     region: content
     settings:
       progress_indicator: throbber
       preview_image_style: ''
+      crop_preview_image_style: crop_thumbnail
+      crop_list:
+        - banner_16_5
+      crop_types_required: {  }
+      warn_multiple_usages: true
+      show_crop_area: false
+      show_default_crop: true
     third_party_settings: {  }
   path:
     type: path

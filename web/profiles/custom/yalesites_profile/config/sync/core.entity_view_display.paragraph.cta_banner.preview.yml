@@ -7,7 +7,7 @@ dependencies:
     - field.field.paragraph.cta_banner.field_image
     - field.field.paragraph.cta_banner.field_link
     - field.field.paragraph.cta_banner.field_text
-    - image.style.max_width_320
+    - image.style.16_5_320
     - paragraphs.paragraphs_type.cta_banner
   module:
     - link
@@ -23,7 +23,7 @@ content:
     label: hidden
     settings:
       image_link: ''
-      image_style: max_width_320
+      image_style: '16_5_320'
     third_party_settings: {  }
     weight: 0
     region: content

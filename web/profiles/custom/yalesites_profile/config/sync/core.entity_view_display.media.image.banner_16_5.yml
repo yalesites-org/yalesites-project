@@ -1,0 +1,30 @@
+uuid: 4816fe32-7fd6-4d68-90ff-206b8ae21bb5
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.media.banner_16_5
+    - field.field.media.image.field_media_image
+    - media.type.image
+    - responsive_image.styles.banner_16_5_
+  module:
+    - responsive_image
+id: media.image.banner_16_5
+targetEntityType: media
+bundle: image
+mode: banner_16_5
+content:
+  field_media_image:
+    type: responsive_image
+    label: hidden
+    settings:
+      responsive_image_style: banner_16_5_
+      image_link: ''
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  created: true
+  name: true
+  thumbnail: true
+  uid: true
