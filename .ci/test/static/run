@@ -13,6 +13,11 @@ set -eo pipefail
 composer self-update --2
 composer install --no-ansi --no-interaction --optimize-autoloader --no-progress
 
+# Install Drupal packages so eslint will run
+cd web/core
+yarn install
+cd ../../
+
 # Run linting
 npm install
 npm run test
