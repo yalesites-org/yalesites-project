@@ -11,4 +11,11 @@ role:
   sync_frequency: 0
   deny_login_no_match: false
   deny_registration_no_match: false
-  mappings: {  }
+  mappings:
+    -
+      rid: ''
+      method: exact_any
+      attribute: memberOf
+      value: 'CN=yale:apps:Yalesites:Yalesites_Team:Yalesites_Team,OU=Prod,OU=YaleGroups,DC=yu,DC=yale,DC=edu'
+      negate: false
+      remove_without_match: true
