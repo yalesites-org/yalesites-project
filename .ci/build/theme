@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -eo pipefail
+
+# This script prepares the theme build artifacts. The node_modules artifact
+# directory will need to be persisted to other jobs.
+
+# Compile theme files.
+echo "Compiling theme..."
+cd ~/project-build/web/themes/contrib/atomic
+npm install
