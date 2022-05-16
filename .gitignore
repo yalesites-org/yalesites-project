@@ -86,6 +86,8 @@
 # files to other locations where it scaffolds files that are not
 # already ignored. We must also ignore these generated files.
 /web/**/.gitignore
+# Track .gitignore in custom folders
+!/web/**/custom/**/*.gitignore
 
 
 # Other common rules

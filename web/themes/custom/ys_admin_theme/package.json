@@ -1,0 +1,12 @@
+{
+  "name": "ys_admin_theme",
+  "version": "1.0.0",
+  "description": "Admin theme for YaleSites projects.",
+  "scripts": {
+    "develop": "sass --watch scss:css --style compressed",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "sass": "^1.51.0"
+  }
+}
