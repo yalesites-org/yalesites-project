@@ -1,0 +1,45 @@
+uuid: 7492bbdf-cd60-4dec-8417-24289faafca4
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.paragraph.preview
+    - field.field.paragraph.callout_item.field_heading
+    - field.field.paragraph.callout_item.field_link
+    - field.field.paragraph.callout_item.field_text
+    - paragraphs.paragraphs_type.callout_item
+  module:
+    - link
+    - text
+id: paragraph.callout_item.preview
+targetEntityType: paragraph
+bundle: callout_item
+mode: preview
+content:
+  field_heading:
+    type: text_default
+    label: inline
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_link:
+    type: link
+    label: inline
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: '0'
+      target: '0'
+    third_party_settings: {  }
+    weight: 3
+    region: content
+  field_text:
+    type: text_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 2
+    region: content
+hidden: {  }

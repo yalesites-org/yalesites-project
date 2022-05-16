@@ -1,26 +1,26 @@
-uuid: bf0204cd-301a-4ac7-9afe-1a2917fcb0b1
+uuid: bdeea214-6fee-4796-bf55-64a943c074e3
 langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.paragraph.field_subheading
-    - paragraphs.paragraphs_type.callout_item
+    - field.storage.paragraph.field_text
+    - paragraphs.paragraphs_type.cta_banner
   module:
     - allowed_formats
     - text
 third_party_settings:
   allowed_formats:
     allowed_formats:
-      - heading_html
-id: paragraph.callout_item.field_subheading
-field_name: field_subheading
+      - basic_html
+id: paragraph.cta_banner.field_text
+field_name: field_text
 entity_type: paragraph
-bundle: callout_item
-label: Subheading
+bundle: cta_banner
+label: Text
 description: ''
 required: false
 translatable: true
 default_value: {  }
 default_value_callback: ''
 settings: {  }
-field_type: text
+field_type: text_long

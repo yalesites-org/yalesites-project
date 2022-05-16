@@ -24,6 +24,7 @@ settings:
   handler_settings:
     target_bundles:
       accordion_item: accordion_item
+      cta_banner: cta_banner
       callout_item: callout_item
     negate: 1
     target_bundles_drag_drop:
@@ -39,11 +40,17 @@ settings:
       callout_item:
         weight: 13
         enabled: true
+      cta_banner:
+        weight: 12
+        enabled: true
       divider:
         weight: 14
         enabled: false
       embed:
         weight: 11
+        enabled: false
+      image:
+        weight: 12
         enabled: false
       pop_out_image:
         weight: 15

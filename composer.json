@@ -105,6 +105,8 @@
     }
   },
   "scripts": {
+    "prepare-for-pantheon": "DrupalProject\\composer\\ScriptHandler::prepareForPantheon",
+    "unit-test": "echo 'No unit test step defined.'",
     "lint:styles": "stylelint --color {web/modules/custom,web/themes/custom,web/profiles/custom}/**/*.scss",
     "lint:js": "eslint --color --format stylish {web/modules/custom,web/themes/custom,web/profiles/custom}/**/*.js",
     "lint:php": [

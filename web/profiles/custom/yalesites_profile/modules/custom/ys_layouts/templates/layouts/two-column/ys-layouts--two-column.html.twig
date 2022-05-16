@@ -1,0 +1,25 @@
+{#
+ # For each region, we need to check whether it either has content to render
+ # (used by the frontend) or has attributes (used by the backend) to know if we
+ # should render the region in a given circumstance. The 'has_primary' and
+ # 'has_secondary' checks below account for both cases.
+ #}
+{% set has_primary = content.primary|render is not empty or content.primary['#attributes'] %}
+{% set has_secondary = content.secondary|render is not empty or content.secondary['#attributes'] %}
+
+{% if content %}
+  <div {{ attributes.addClass('yds-two-column').setAttribute('data-component-width', 'max').setAttribute('data-embedded-components', '') }}>
+    <div class='yds-two-column__inner'>
+      {% if has_primary %}
+        <div {{ region_attributes.primary.addClass('yds-two-column__primary') }}>
+          {{ content.primary }}
+        </div>
+      {% endif %}
+      {% if has_secondary %}
+        <div {{ region_attributes.secondary.addClass('yds-two-column__secondary') }}>
+          {{ content.secondary }}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}

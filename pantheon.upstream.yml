@@ -5,7 +5,7 @@ database:
 drush_version: 10
 web_docroot: true
 enforce_https: transitional
-build_step: true
+build_step: false
 protected_web_paths:
   - /private/
   - /sites/default/files/private/

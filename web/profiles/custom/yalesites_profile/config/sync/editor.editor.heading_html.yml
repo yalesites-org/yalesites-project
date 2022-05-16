@@ -1,0 +1,35 @@
+uuid: ec73fe23-e68a-4f93-b70b-f82652bb3cda
+langcode: en
+status: true
+dependencies:
+  config:
+    - filter.format.heading_html
+  module:
+    - ckeditor
+format: heading_html
+editor: ckeditor
+settings:
+  toolbar:
+    rows:
+      -
+        -
+          name: Formatting
+          items:
+            - Bold
+            - Italic
+  plugins:
+    drupallink:
+      linkit_enabled: false
+      linkit_profile: ''
+    language:
+      language_list: un
+    stylescombo:
+      styles: ''
+image_upload:
+  status: false
+  scheme: public
+  directory: inline-images
+  max_size: ''
+  max_dimensions:
+    width: null
+    height: null

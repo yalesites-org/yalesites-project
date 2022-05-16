@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.paragraph.pop_out_image.field_caption
     - field.field.paragraph.pop_out_image.field_image
     - field.field.paragraph.pop_out_image.field_text
     - paragraphs.paragraphs_type.pop_out_image
@@ -13,6 +14,13 @@ targetEntityType: paragraph
 bundle: pop_out_image
 mode: default
 content:
+  field_caption:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 2
+    region: content
   field_image:
     type: entity_reference_entity_view
     label: hidden
