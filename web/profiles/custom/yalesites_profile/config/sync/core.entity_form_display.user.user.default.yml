@@ -14,13 +14,13 @@ bundle: user
 mode: default
 content:
   account:
-    weight: -10
+    weight: 0
     region: content
     settings: {  }
     third_party_settings: {  }
   field_first_name:
     type: string_textfield
-    weight: 32
+    weight: 1
     region: content
     settings:
       size: 60
@@ -28,25 +28,25 @@ content:
     third_party_settings: {  }
   field_last_name:
     type: string_textfield
-    weight: 33
+    weight: 2
     region: content
     settings:
       size: 60
       placeholder: ''
     third_party_settings: {  }
   language:
-    weight: 0
+    weight: 3
     region: content
     settings: {  }
     third_party_settings: {  }
   path:
     type: path
-    weight: 30
+    weight: 5
     region: content
     settings: {  }
     third_party_settings: {  }
   timezone:
-    weight: 6
+    weight: 4
     region: content
     settings: {  }
     third_party_settings: {  }
