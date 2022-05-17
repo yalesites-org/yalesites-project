@@ -1,0 +1,26 @@
+uuid: 961fa128-7753-481c-905c-a92cc8f7bae3
+langcode: en
+status: true
+dependencies:
+  config:
+    - crop.type.banner_16_5
+  module:
+    - crop
+name: '16_5_1920'
+label: '16:5 (1920)'
+effects:
+  fece1c6b-0f42-458c-9d89-f5c7eda22db6:
+    uuid: fece1c6b-0f42-458c-9d89-f5c7eda22db6
+    id: crop_crop
+    weight: 1
+    data:
+      crop_type: banner_16_5
+      automatic_crop_provider: null
+  bf2b35d1-7243-4fc7-a3e2-9bd4a91ec426:
+    uuid: bf2b35d1-7243-4fc7-a3e2-9bd4a91ec426
+    id: image_scale
+    weight: 2
+    data:
+      width: 1920
+      height: null
+      upscale: false

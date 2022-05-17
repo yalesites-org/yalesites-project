@@ -25,6 +25,7 @@
         "cweagans/composer-patches": "^1.7",
         "drupal/core-composer-scaffold": "^9.2",
         "drupal/core-recommended": "^9.2",
+        "drupal/editoria11y": "^1.0",
         "drush/drush": "^10",
         "pantheon-systems/drupal-integrations": "^9",
         "yalesites-org/yalesites_profile": "self.version"
@@ -109,6 +110,7 @@
         }
     },
     "scripts": {
+        "prepare-for-pantheon": "DrupalProject\\composer\\ScriptHandler::prepareForPantheon",
         "unit-test": "echo 'No unit test step defined.'",
         "lint": "find web\/modules\/custom web\/themes\/custom -name '*.php' -exec php -l {} \\;",
         "code-sniff": [

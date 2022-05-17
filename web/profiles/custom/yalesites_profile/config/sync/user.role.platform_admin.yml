@@ -1,0 +1,61 @@
+uuid: 43a84569-622f-4e8e-abb5-7c048008d7c2
+langcode: en
+status: true
+dependencies:
+  config:
+    - media.type.image
+    - node.type.news
+    - node.type.page
+  module:
+    - media
+    - node
+    - paragraphs
+    - search
+    - system
+    - taxonomy
+    - toolbar
+id: platform_admin
+label: 'Platform administrator'
+weight: 2
+is_admin: null
+permissions:
+  - 'access content overview'
+  - 'access site in maintenance mode'
+  - 'access site reports'
+  - 'access taxonomy overview'
+  - 'access toolbar'
+  - 'access user profiles'
+  - 'administer taxonomy'
+  - 'administer users'
+  - 'create image media'
+  - 'create media'
+  - 'create news content'
+  - 'create page content'
+  - 'delete any image media'
+  - 'delete any media'
+  - 'delete any news content'
+  - 'delete any page content'
+  - 'delete media'
+  - 'delete own image media'
+  - 'delete own news content'
+  - 'delete own page content'
+  - 'edit any image media'
+  - 'edit any news content'
+  - 'edit any page content'
+  - 'edit own image media'
+  - 'edit own news content'
+  - 'edit own page content'
+  - 'revert news revisions'
+  - 'revert page revisions'
+  - 'search content'
+  - 'update any media'
+  - 'update media'
+  - 'use advanced search'
+  - 'view all media revisions'
+  - 'view all revisions'
+  - 'view news revisions'
+  - 'view own unpublished content'
+  - 'view own unpublished media'
+  - 'view page revisions'
+  - 'view the administration theme'
+  - 'view unpublished paragraphs'
