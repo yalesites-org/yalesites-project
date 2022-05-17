@@ -1,0 +1,57 @@
+@use '../../00-tokens/tokens';
+@use '../../01-atoms/atoms';
+
+.card-collection {
+  @include tokens.spacing-page-section;
+}
+
+.card-collection__heading {
+  @include tokens.h2-yale-new;
+
+  margin-bottom: var(--spacing-page-section);
+}
+
+.card-collection__cards {
+  --card-collection-spacing: var(--spacing-component-gutter);
+
+  [data-collection-featured='false'] & {
+    --card-collection-spacing: var(--spacing-component-gutter-secondary);
+  }
+
+  @include atoms.list-reset;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--card-collection-spacing);
+
+  @media (min-width: tokens.$break-mobile) {
+    justify-content: center;
+
+    [data-collection-type='list'] & {
+      flex-direction: column;
+    }
+
+    [data-collection-type='grid'][data-collection-featured='true'] & > * {
+      flex: 0 1 calc(33.33% - calc(var(--card-collection-spacing) * 2 / 3));
+    }
+
+    [data-collection-type='grid'][data-collection-featured='false'] & > * {
+      flex: 0 1 calc(25% - calc(var(--card-collection-spacing) * 3 / 4));
+    }
+  }
+
+  [data-collection-type='list'] & > * {
+    @include tokens.animate(box-shadow);
+
+    padding-bottom: var(--card-collection-spacing);
+    border-bottom: var(--border-thickness-1) solid var(--color-divider-subtle);
+
+    &:hover {
+      // This shadow is hard coded because it has to be adjusted to make it
+      // appear as though it's a shadow on only the border-bottom element.
+      // There isn't currently anything else that looks like this. If there ever
+      // Is, perhaps it should be captured as a token in a new drop-shadow set.
+      box-shadow: 0 8px 6px -6px hsl(0deg 0% 0% / 16%);
+    }
+  }
+}

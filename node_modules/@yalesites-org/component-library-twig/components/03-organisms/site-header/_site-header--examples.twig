@@ -1,0 +1,7 @@
+{% for theme, value in _context.themes %}
+  <section>
+    {% include "./site-header.twig" with {
+      site_header__theme: theme,
+    } %}
+  </section><br />
+{% endfor %}
