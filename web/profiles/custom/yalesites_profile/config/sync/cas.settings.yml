@@ -1,7 +1,7 @@
 _core:
   default_config_hash: W42TeamUFaYIcLMbvbx1hngcurDgrV8-Rh_iNsgeFJc
-login_link_enabled: false
-login_link_label: 'CAS Login'
+login_link_enabled: true
+login_link_label: 'Login with CAS'
 login_success_message: ''
 server:
   version: '3.0'
