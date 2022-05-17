@@ -1,0 +1,60 @@
+uuid: 1cefeb42-bc40-4168-a483-238896f41bcd
+langcode: en
+status: true
+dependencies:
+  config:
+    - media.type.image
+    - node.type.news
+    - node.type.page
+  module:
+    - media
+    - node
+    - paragraphs
+    - search
+    - system
+    - taxonomy
+    - toolbar
+id: site_admin
+label: 'Site administrator'
+weight: 3
+is_admin: null
+permissions:
+  - 'access content overview'
+  - 'access site in maintenance mode'
+  - 'access taxonomy overview'
+  - 'access toolbar'
+  - 'access user profiles'
+  - 'administer taxonomy'
+  - 'administer users'
+  - 'create image media'
+  - 'create media'
+  - 'create news content'
+  - 'create page content'
+  - 'delete any image media'
+  - 'delete any media'
+  - 'delete any news content'
+  - 'delete any page content'
+  - 'delete media'
+  - 'delete own image media'
+  - 'delete own news content'
+  - 'delete own page content'
+  - 'edit any image media'
+  - 'edit any news content'
+  - 'edit any page content'
+  - 'edit own image media'
+  - 'edit own news content'
+  - 'edit own page content'
+  - 'revert news revisions'
+  - 'revert page revisions'
+  - 'search content'
+  - 'update any media'
+  - 'update media'
+  - 'use advanced search'
+  - 'view all media revisions'
+  - 'view all revisions'
+  - 'view news revisions'
+  - 'view own unpublished content'
+  - 'view own unpublished media'
+  - 'view page revisions'
+  - 'view the administration theme'
+  - 'view unpublished paragraphs'
