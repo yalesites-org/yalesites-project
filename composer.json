@@ -1,119 +1,123 @@
 {
-    "name": "pantheon-upstreams/drupal-project",
-    "description": "Pantheon upstream with dependencies share by all YaleSites",
-    "type": "project",
-    "repositories": {
-        "atomic": {
-            "type": "vcs",
-            "url": "https://github.com/yalesites-org/atomic.git"
-        },
-        "profile": {
-            "type": "path",
-            "url": "web/profiles/custom/yalesites_profile"
-        },
-        "drupal": {
-            "type": "composer",
-            "url": "https://packages.drupal.org/8"
-        }
+  "name": "pantheon-upstreams/drupal-project",
+  "description": "Pantheon upstream with dependencies share by all YaleSites",
+  "type": "project",
+  "repositories": {
+    "atomic": {
+      "type": "vcs",
+      "url": "https://github.com/yalesites-org/atomic.git"
     },
-    "require": {
-        "composer/installers": "^1.9",
-        "cweagans/composer-patches": "^1.7",
-        "drupal/core-composer-scaffold": "^9.2",
-        "drupal/core-recommended": "^9.2",
-        "drupal/editoria11y": "^1.0",
-        "drush/drush": "^10",
-        "pantheon-systems/drupal-integrations": "^9",
-        "yalesites-org/yalesites_profile": "self.version"
+    "profile": {
+      "type": "path",
+      "url": "web/profiles/custom/yalesites_profile"
     },
-    "require-dev": {
-        "dealerdirect/phpcodesniffer-composer-installer": "^0.7.2",
-        "drupal/coder": "^8.3",
-        "drupal/core-dev": "^9.2",
-        "drupal/drupal-driver": "^2.1",
-        "drupal/drupal-extension": "^4.1",
-        "mikey179/vfsstream": "^1.6",
-        "phpunit/phpunit": "^9.5",
-        "squizlabs/php_codesniffer": "^3.6"
-    },
-    "conflict": {
-        "drupal/drupal": "*"
-    },
-    "minimum-stability": "dev",
-    "prefer-stable": true,
-    "extra": {
-        "drupal-scaffold": {
-            "locations": {
-                "web-root": "./web"
-            },
-            "allowed-packages": [
-                "pantheon-systems/drupal-integrations"
-            ],
-            "file-mapping": {
-                "[project-root]/.editorconfig": false,
-                "[project-root]/pantheon.upstream.yml": false,
-                "[project-root]/.gitattributes": false
-            }
-        },
-        "installer-paths": {
-            "web/core": [
-                "type:drupal-core"
-            ],
-            "web/libraries/{$name}": [
-                "type:drupal-library"
-            ],
-            "web/modules/contrib/{$name}": [
-                "type:drupal-module"
-            ],
-            "web/profiles/contrib/{$name}": [
-                "type:drupal-profile"
-            ],
-            "web/themes/contrib/{$name}": [
-                "type:drupal-theme"
-            ],
-            "drush/Commands/contrib/{$name}": [
-                "type:drupal-drush"
-            ],
-            "web/modules/custom/{$name}": [
-                "type:drupal-custom-module"
-            ],
-            "web/profiles/custom/{$name}": [
-                "type:drupal-custom-profile"
-            ],
-            "web/themes/custom/{$name}": [
-                "type:drupal-custom-theme"
-            ],
-            "web/private/scripts/quicksilver/{$name}/": [
-                "type:quicksilver-script"
-            ]
-        },
-        "composer-exit-on-patch-failure": true,
-        "patchLevel": {
-            "drupal/core": "-p2"
-        }
-    },
-    "config": {
-        "preferred-install": "dist",
-        "sort-packages": true,
-        "platform": {
-            "php": "7.4"
-        },
-        "allow-plugins": {
-            "dealerdirect/phpcodesniffer-composer-installer": true,
-            "composer/installers": true,
-            "cweagans/composer-patches": true,
-            "drupal/core-composer-scaffold": true
-        }
-    },
-    "scripts": {
-        "prepare-for-pantheon": "DrupalProject\\composer\\ScriptHandler::prepareForPantheon",
-        "unit-test": "echo 'No unit test step defined.'",
-        "lint": "find web\/modules\/custom web\/themes\/custom -name '*.php' -exec php -l {} \\;",
-        "code-sniff": [
-            ".\/vendor\/bin\/phpcs --standard=Drupal --extensions=php,module,inc,install,test,profile,theme,css,info,txt,md --ignore=node_modules,bower_components,vendor .\/web\/modules\/custom",
-            ".\/vendor\/bin\/phpcs --standard=Drupal --extensions=php,module,inc,install,test,profile,theme,css,info,txt,md --ignore=node_modules,bower_components,vendor .\/web\/themes\/custom",
-            ".\/vendor\/bin\/phpcs --standard=DrupalPractice --extensions=php,module,inc,install,test,profile,theme,css,info,txt,md --ignore=node_modules,bower_components,vendor .\/web\/modules\/custom",
-            ".\/vendor\/bin\/phpcs --standard=DrupalPractice --extensions=php,module,inc,install,test,profile,theme,css,info,txt,md --ignore=node_modules,bower_components,vendor .\/web\/themes\/custom"
-        ]
+    "drupal": {
+      "type": "composer",
+      "url": "https://packages.drupal.org/8"
     }
+  },
+  "require": {
+    "composer/installers": "^1.9",
+    "cweagans/composer-patches": "^1.7",
+    "drupal/core-composer-scaffold": "^9.2",
+    "drupal/core-recommended": "^9.2",
+    "drupal/editoria11y": "^1.0",
+    "drush/drush": "^10",
+    "pantheon-systems/drupal-integrations": "^9",
+    "yalesites-org/yalesites_profile": "self.version"
+  },
+  "require-dev": {
+    "dealerdirect/phpcodesniffer-composer-installer": "^0.7.2",
+    "drupal/coder": "^8.3",
+    "drupal/core-dev": "^9.2",
+    "drupal/drupal-driver": "^2.1",
+    "drupal/drupal-extension": "^4.1",
+    "mikey179/vfsstream": "^1.6",
+    "phpunit/phpunit": "^9.5",
+    "squizlabs/php_codesniffer": "^3.6"
+  },
+  "conflict": {
+    "drupal/drupal": "*"
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "extra": {
+    "drupal-scaffold": {
+      "locations": {
+        "web-root": "./web"
+      },
+      "allowed-packages": [
+        "pantheon-systems/drupal-integrations"
+      ],
+      "file-mapping": {
+        "[project-root]/.editorconfig": false,
+        "[project-root]/pantheon.upstream.yml": false,
+        "[project-root]/.gitattributes": false
+      }
+    },
+    "installer-paths": {
+      "web/core": [
+        "type:drupal-core"
+      ],
+      "web/libraries/{$name}": [
+        "type:drupal-library"
+      ],
+      "web/modules/contrib/{$name}": [
+        "type:drupal-module"
+      ],
+      "web/profiles/contrib/{$name}": [
+        "type:drupal-profile"
+      ],
+      "web/themes/contrib/{$name}": [
+        "type:drupal-theme"
+      ],
+      "drush/Commands/contrib/{$name}": [
+        "type:drupal-drush"
+      ],
+      "web/modules/custom/{$name}": [
+        "type:drupal-custom-module"
+      ],
+      "web/profiles/custom/{$name}": [
+        "type:drupal-custom-profile"
+      ],
+      "web/themes/custom/{$name}": [
+        "type:drupal-custom-theme"
+      ],
+      "web/private/scripts/quicksilver/{$name}/": [
+        "type:quicksilver-script"
+      ]
+    },
+    "composer-exit-on-patch-failure": true,
+    "patchLevel": {
+      "drupal/core": "-p2"
+    }
+  },
+  "config": {
+    "preferred-install": "dist",
+    "sort-packages": true,
+    "platform": {
+      "php": "7.4"
+    },
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "composer/installers": true,
+      "cweagans/composer-patches": true,
+      "drupal/core-composer-scaffold": true
+    }
+  },
+  "scripts": {
+    "prepare-for-pantheon": "DrupalProject\\composer\\ScriptHandler::prepareForPantheon",
+    "build-assets": [
+      "@prepare-for-pantheon",
+      "composer install --optimize-autoloader --no-dev"
+    ],
+    "unit-test": "echo 'No unit test step defined.'",
+    "lint": "find web/modules/custom web/themes/custom -name '*.php' -exec php -l {} \\;",
+    "code-sniff": [
+      "./vendor/bin/phpcs --standard=Drupal --extensions=php,module,inc,install,test,profile,theme,css,info,txt,md --ignore=node_modules,bower_components,vendor ./web/modules/custom",
+      "./vendor/bin/phpcs --standard=Drupal --extensions=php,module,inc,install,test,profile,theme,css,info,txt,md --ignore=node_modules,bower_components,vendor ./web/themes/custom",
+      "./vendor/bin/phpcs --standard=DrupalPractice --extensions=php,module,inc,install,test,profile,theme,css,info,txt,md --ignore=node_modules,bower_components,vendor ./web/modules/custom",
+      "./vendor/bin/phpcs --standard=DrupalPractice --extensions=php,module,inc,install,test,profile,theme,css,info,txt,md --ignore=node_modules,bower_components,vendor ./web/themes/custom"
+    ]
+  }
 }
