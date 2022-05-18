@@ -1,0 +1,4 @@
+scripts-prepend-node-path=true
+always-auth=true
+@yalesites-org:registry=https://npm.pkg.github.com/
+email=yalesites@yale.edu
