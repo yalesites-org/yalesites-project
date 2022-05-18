@@ -25,6 +25,7 @@ defaults: &defaults
     # Pantheon environments. The value should be URL-encoded and follow the
     # format 'username:password' (without quotes).
     #
+    #
     # MULTIDEV_SITE_BASIC_AUTH
     # DEV_SITE_BASIC_AUTH
     # TEST_SITE_BASIC_AUTH
@@ -49,6 +50,7 @@ defaults: &defaults
     #======================================================================================================================================
 
     NOTIFY: 'scripts/github/add-commit-comment {project} {sha} "Created multidev environment [{site}#{env}]({dashboard-url})." {site-url}'
+    ADMIN_USERNAME: admin
     # BUILD_TOOLS_VERSION: ^2.0.0-alpha4
     TERM: dumb
 
@@ -63,11 +65,11 @@ jobs:
       - run:
           # Set TERMINUS_ENV and related environment variables.
           # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
-          name: Setup environment variables
+          name: setup-environment-vars
           command: /build-tools-ci/scripts/set-environment
 
       - run:
-          name: Clone bash environment
+          name: clone-bash-env
           command: cp $BASH_ENV bash_env.txt
 
       # https://circleci.com/docs/2.0/workflows/#using-workspaces-to-share-data-among-jobs
@@ -90,7 +92,7 @@ jobs:
       - run:
           # Set TERMINUS_ENV and related environment variables.
           # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
-          name: Setup environment variables
+          name: setup-environment-vars
           command: /build-tools-ci/scripts/set-environment
 
       - run:
@@ -102,39 +104,25 @@ jobs:
           paths:
             - $HOME/.composer/cache
 
-  build:
+  build_php:
     <<: *defaults
-
     steps:
       - checkout
 
-      - attach_workspace:
-          at: /tmp
-
       - restore_cache:
           keys:
-            - composer-cache-{{ checksum "composer.lock" }}
-            - composer-cache-
             - vendor-{{ checksum "composer.lock" }}
             - vendor-
 
       - run:
           # Set TERMINUS_ENV and related environment variables.
           # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
-          name: Setup environment variables
+          name: setup-environment-vars
           command: /build-tools-ci/scripts/set-environment
 
       - run:
-          name: Set composer to prefer source installs
-          command: ./.ci/build/set-composer-source
-
-      - run:
-          name: Build PHP artifacts
+          name: run PHP build step
           command: ./.ci/build/php
-
-      - run:
-          name: Build theme artifacts
-          command: ./.ci/build/theme
 
       - save_cache:
           key: vendor-{{ checksum "composer.lock" }}
@@ -148,27 +136,29 @@ jobs:
             - vendor
             - drush
 
-  deploy:
+  deploy_to_pantheon:
     <<: *defaults
     steps:
       - checkout
 
+      # Attach the workspace
       - attach_workspace:
           at: /tmp
 
       - run:
           # Set TERMINUS_ENV and related environment variables.
           # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
-          name: Setup environment variables
+          name: setup-environment-vars
           command: /build-tools-ci/scripts/set-environment
 
+      # Rsync the build artifact pieces web directory
       - run:
-          name: Sync build artifact
-          command: rsync -rz --links /tmp/web /tmp/vendor .
+          name: sync build artifact
+          command: rsync -lrz /tmp/web /tmp/vendor /tmp/drush .
 
       # Deploy to Pantheon
       - run:
-          name: Deploy to Pantheon Multidev
+          name: deploy to Pantheon
           command: ./.ci/deploy/multidev
 
   composer_lock_updater:
@@ -179,7 +169,7 @@ jobs:
       - run:
           # Set TERMINUS_ENV and related environment variables.
           # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
-          name: Setup environment variables
+          name: setup-environment-vars
           command: /build-tools-ci/scripts/set-environment
 
       - run:
@@ -187,7 +177,7 @@ jobs:
           command: terminus -n auth:login --machine-token="$TERMINUS_TOKEN"
 
       - run:
-          name: Run composer lock updater
+          name: run composer lock updater
           command: set -e && terminus project:clu $TERMINUS_SITE
 
 workflows:
@@ -196,20 +186,18 @@ workflows:
     jobs:
       - configure_env_vars
       - static_tests
-      - build:
+      - build_php
+      - deploy_to_pantheon:
           requires:
             - static_tests
-      - deploy:
-          requires:
-            - static_tests
-            - build
+            - build_php
 
   scheduled_update_check:
     triggers:
-       - schedule:
-           cron: "0 0 * * *"
-           filters:
-             branches:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
               only:
                 - master
     jobs:

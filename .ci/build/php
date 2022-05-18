@@ -7,5 +7,4 @@ set -eo pipefail
 
 # Build Composer Assets
 echo "Building Composer assets..."
-composer -n prepare-for-pantheon
-composer install --optimize-autoloader --no-dev
+composer -n build-assets
