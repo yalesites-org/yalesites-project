@@ -156,6 +156,18 @@ jobs:
       - attach_workspace:
           at: /tmp
 
+      # Create theme npmrc.
+      - run:
+          name: Create .npmrc.
+          command: mv ./.ci/.npmrc-example ./.npmrc
+
+      # Authencate npmrc.
+      - run:
+          name: Authencate .npmrc.
+          command: |
+            echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> ./.npmrc
+            echo "@yalesites-org:registry=https://npm.pkg.github.com/" >> ./.npmrc
+
       - run:
           # Set TERMINUS_ENV and related environment variables.
           # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
@@ -164,7 +176,7 @@ jobs:
 
       - run:
           name: Sync build artifact
-          command: rsync -rz --links /tmp/web /tmp/vendor .
+          command: rsync -rz --links /tmp/web /tmp/vendor /tmp/drush .
 
       # Deploy to Pantheon
       - run:
