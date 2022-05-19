@@ -1,6 +1,7 @@
 #!/bin/bash
 
-lando composer install
-npm run import-local-db
+lando composer update
+npm run get-db
+npm run get-files
 npm run confim
 lando drush uli
