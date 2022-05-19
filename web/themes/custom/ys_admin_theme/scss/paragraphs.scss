@@ -38,6 +38,11 @@
     padding: 0.5rem 1rem;
     border-bottom-left-radius: var(--radius-10);
   }
+
+  .field__items {
+    display: grid;
+    gap: 1rem;
+  }
 }
 
 // Styles for "item" components. E.g.: `accordion-item`.
@@ -54,14 +59,8 @@
   @include paragraph-preview(
     $label-bg: var(--color-gray-800),
     $label-color: var(--color-basic-white),
-    $border-radius: var(--radius-10),
-    $component-padding: 3em 0 0
+    $border-radius: var(--radius-10)
   );
-
-  *:last-child {
-    border-bottom-right-radius: var(--radius-10);
-    border-bottom-left-radius: var(--radius-10);
-  }
 }
 
 // Section__inner elements.
