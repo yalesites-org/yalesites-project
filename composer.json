@@ -7,6 +7,10 @@
             "type": "vcs",
             "url": "https://github.com/yalesites-org/atomic.git"
         },
+        "yale_cas": {
+            "type": "vcs",
+            "url": "https://github.com/yalesites-org/yale_cas.git"
+        },
         "profile": {
             "type": "path",
             "url": "web/profiles/custom/yalesites_profile"
