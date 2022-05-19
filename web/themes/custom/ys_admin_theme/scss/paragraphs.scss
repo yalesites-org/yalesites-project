@@ -1,62 +1,67 @@
+@use "../node_modules/@yalesites-org/tokens/build/css/tokens";
+
+@mixin paragraph-preview(
+  $label-bg: rgba(var(--colorGinPrimaryRGB), 0.1),
+  $label-color: var(--colorGinText),
+  $border-color: var(--color-gray-800),
+  $border-radius: var(--radius-4),
+  $component-padding: 3em 1rem 1rem
+) {
+  box-shadow: 0 0 0 1px #{$border-color};
+  border-radius: #{$border-radius};
+  padding: #{$component-padding};
+
+  > .paragraph-type-label {
+    border-top-right-radius: #{$border-radius};
+    background-color: #{$label-bg};
+    color: #{$label-color};
+  }
+}
+
+// Component wrapper provided by Layout Paragraphs.
 .js-lpb-component-list {
   display: grid;
   gap: 1rem;
 }
 
-.paragraph-type-label {
-  // Default component labels.
-  .paragraph--view-mode--preview & {
+// Default styles for paragraph previews.
+.paragraph--view-mode--preview {
+  @include paragraph-preview($border-color: var(--color-gray-600));
+
+  position: relative;
+
+  .paragraph-type-label {
     position: absolute;
     top: 0;
     right: 0;
     z-index: 1;
-    background-color: rgba(var(--colorGinPrimaryRGB), 0.1);
-    color: var(--colorGinText);
     padding: 0.5rem 1rem;
-    border-bottom-left-radius: 1rem;
-    border-top-right-radius: var(--radius-4, 0.25rem);
-  }
-
-  // Label for sections.
-  .paragraph--view-mode--preview.paragraph--type--section > & {
-      border-top-right-radius: var(--radius-10, 0.625rem);
-      background-color: #212121;
-      color: white;
-  }
-
-  // Label for section regions.
-  .paragraph--view-mode--preview .yds-two-column__primary > &,
-  .paragraph--view-mode--preview .yds-two-column__secondary > & {
-    border-top-right-radius: var(--radius-0, 0);
-    background-color: #404040;
-    color: white;
-  }
-
-  // Label for "item" components. E.g.: `accordion-item`.
-  [class*='-item'] > & {
-    border-top-right-radius: var(--radius-0, 0);
-    background-color: #d9d9d9;
+    border-bottom-left-radius: var(--radius-10);
   }
 }
 
-// Default styles for paragraph previews.
-.paragraph--view-mode--preview {
-  position: relative;
-  border: 1px solid var(--colorGinBorder, gray);
-  border-radius: var(--radius-4, 0.25rem);
-  padding: 3em 1rem 1rem;
-
-  // Styles for `-item` component previews.
-  &[class*='-item'] {
-    border-radius: var(--radius-0, 0);
-  }
+// Styles for "item" components. E.g.: `accordion-item`.
+.paragraph--view-mode--preview[class*="-item"] {
+  @include paragraph-preview(
+    $border-radius: var(--radius-0),
+    $border-color: var(--color-gray-500),
+    $label-bg: var(--color-gray-200)
+  );
 }
 
 // Styles for section previews.
-.paragraph--type--section {
-  border-color: #212121;
-  border-radius: var(--radius-10, 0.625rem);
-  padding: 3em 0 0;
+.paragraph--view-mode--preview.paragraph--type--section {
+  @include paragraph-preview(
+    $label-bg: var(--color-gray-800),
+    $label-color: var(--color-basic-white),
+    $border-radius: var(--radius-10),
+    $component-padding: 3em 0 0
+  );
+
+  *:last-child {
+    border-bottom-right-radius: var(--radius-10);
+    border-bottom-left-radius: var(--radius-10);
+  }
 }
 
 // Section__inner elements.
@@ -66,10 +71,14 @@
 }
 
 // Primary and secondary regions.
-.yds-two-column__primary,
-.yds-two-column__secondary {
-  border: 1px solid #212121;
+.paragraph--view-mode--preview .yds-two-column__primary,
+.paragraph--view-mode--preview .yds-two-column__secondary {
+  @include paragraph-preview(
+    $border-radius: var(--radius-0),
+    $label-bg: var(--color-gray-700),
+    $label-color: var(--color-basic-white)
+  );
+
   display: grid;
   gap: 1rem;
-  padding: 3em 1rem 1rem;
 }
