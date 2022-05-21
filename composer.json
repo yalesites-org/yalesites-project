@@ -116,7 +116,7 @@
   "scripts": {
     "build-assets": [
         "@prepare-for-pantheon",
-        "composer install --optimize-autoloader --no-dev"
+        "composer install --optimize-autoloader --no-dev --prefer-dist"
     ],
     "prepare-for-pantheon": "DrupalProject\\composer\\ScriptHandler::prepareForPantheon",
     "unit-test": "echo 'No unit test step defined.'",
