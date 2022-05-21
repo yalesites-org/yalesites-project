@@ -162,9 +162,9 @@ jobs:
           name: Setup environment variables
           command: /build-tools-ci/scripts/set-environment
 
-      - run:
-          name: Sync build artifact
-          command: rsync -rz --links /tmp/web /tmp/vendor .
+      #- run:
+      #    name: Sync build artifact
+      #    command: rsync -rz --links /tmp/web /tmp/vendor .
 
       # Deploy to Pantheon
       - run:
