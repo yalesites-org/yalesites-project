@@ -15,7 +15,7 @@ mode: preview
 content:
   field_text:
     type: text_trimmed
-    label: above
+    label: hidden
     settings:
       trim_length: 600
     third_party_settings: {  }

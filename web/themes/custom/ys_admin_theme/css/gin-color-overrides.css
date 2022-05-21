@@ -237,75 +237,9 @@
   --link-styles-underline-bg-color: var(--link-color-base);
 }
 
-.js-lpb-component-list {
-  display: grid;
-  gap: 1rem;
+:root [data-gin-accent] {
+  --colorGinPrimaryRGB: 39, 107, 190;
+  --colorGinText: var(--color-gray-800);
 }
 
-.paragraph--view-mode--preview {
-  box-shadow: 0 0 0 1px var(--color-gray-600);
-  border-radius: var(--radius-4);
-  padding: 3em 1rem 1rem;
-  position: relative;
-}
-.paragraph--view-mode--preview > .paragraph-type-label {
-  border-top-right-radius: var(--radius-4);
-  background-color: rgba(var(--colorGinPrimaryRGB), 0.1);
-  color: var(--colorGinText);
-}
-.paragraph--view-mode--preview .paragraph-type-label {
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 1;
-  padding: 0.5rem 1rem;
-  border-bottom-left-radius: var(--radius-10);
-}
-.paragraph--view-mode--preview .field__items {
-  display: grid;
-  gap: 1rem;
-}
-
-.paragraph--view-mode--preview[class*=-item] {
-  box-shadow: 0 0 0 1px var(--color-gray-500);
-  border-radius: var(--radius-0);
-  padding: 3em 1rem 1rem;
-}
-.paragraph--view-mode--preview[class*=-item] > .paragraph-type-label {
-  border-top-right-radius: var(--radius-0);
-  background-color: var(--color-gray-200);
-  color: var(--colorGinText);
-}
-
-.paragraph--view-mode--preview.paragraph--type--section {
-  box-shadow: 0 0 0 1px var(--color-gray-800);
-  border-radius: var(--radius-10);
-  padding: 3em 1rem 1rem;
-}
-.paragraph--view-mode--preview.paragraph--type--section > .paragraph-type-label {
-  border-top-right-radius: var(--radius-10);
-  background-color: var(--color-gray-800);
-  color: var(--color-basic-white);
-}
-
-.yds-two-column__inner {
-  display: grid;
-  gap: 1rem;
-}
-
-.paragraph--view-mode--preview .yds-two-column__primary,
-.paragraph--view-mode--preview .yds-two-column__secondary {
-  box-shadow: 0 0 0 1px var(--color-gray-800);
-  border-radius: var(--radius-0);
-  padding: 3em 1rem 1rem;
-  display: grid;
-  gap: 1rem;
-}
-.paragraph--view-mode--preview .yds-two-column__primary > .paragraph-type-label,
-.paragraph--view-mode--preview .yds-two-column__secondary > .paragraph-type-label {
-  border-top-right-radius: var(--radius-0);
-  background-color: var(--color-gray-700);
-  color: var(--color-basic-white);
-}
-
-/*# sourceMappingURL=paragraphs.css.map */
+/*# sourceMappingURL=gin-color-overrides.css.map */

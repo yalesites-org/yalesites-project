@@ -1,0 +1,21 @@
+_core:
+  default_config_hash: 3Qy8Ap9CL1suaCnYTcFq1kziOQux44inp7Ew7EMxS2Q
+sitewide_token_support: true
+field:
+  sync_frequency: 2
+  overwrite: true
+  mappings:
+    field_first_name: '[cas:attribute:givenname]'
+    field_last_name: '[cas:attribute:sn]'
+role:
+  sync_frequency: 2
+  deny_login_no_match: false
+  deny_registration_no_match: false
+  mappings:
+    -
+      rid: platform_admin
+      method: exact_any
+      attribute: memberOf
+      value: 'CN=yale:apps:Yalesites:Yalesites_Team:Yalesites_Team,OU=Prod,OU=YaleGroups,DC=yu,DC=yale,DC=edu'
+      negate: false
+      remove_without_match: true
