@@ -4,10 +4,6 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/yalesites-org/atomic.git"
-        },
-        {
-            "type": "vcs",
             "url": "https://github.com/yalesites-org/yale_cas.git"
         },
         {

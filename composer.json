@@ -7,10 +7,6 @@
       "type": "path",
       "url": "web/profiles/custom/yalesites_profile"
     },
-    "atomic": {
-      "type": "vcs",
-      "url": "https://github.com/yalesites-org/atomic.git"
-    },
     "cas": {
       "type": "vcs",
       "url": "https://github.com/yalesites-org/yale_cas.git"
@@ -116,7 +112,7 @@
   "scripts": {
     "build-assets": [
         "@prepare-for-pantheon",
-        "composer install --optimize-autoloader --no-dev --prefer-dist"
+        "composer install --optimize-autoloader --no-dev"
     ],
     "prepare-for-pantheon": "DrupalProject\\composer\\ScriptHandler::prepareForPantheon",
     "unit-test": "echo 'No unit test step defined.'",
