@@ -1,0 +1,8 @@
+@use "../node_modules/@yalesites-org/tokens/build/css/tokens";
+
+:root {
+  [data-gin-accent] {
+    --colorGinPrimaryRGB: 39, 107, 190;
+    --colorGinText: var(--color-gray-800);
+  }
+}

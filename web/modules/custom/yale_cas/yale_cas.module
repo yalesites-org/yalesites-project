@@ -1,0 +1,38 @@
+<?php
+
+/**
+ * @file
+ * Provides Yale CAS customizations.
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Alters the user entity form.
+ */
+function yale_cas_form_user_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Check for a CAS user using the same logic in cas.module.
+  $cas_user_manager = \Drupal::service('cas.user_manager');
+  $account = $form_state->getFormObject()->getEntity();
+  $cas_username = $cas_user_manager->getCasUsernameForAccount($account->id());
+
+  // We want admins to have the 'administer account settings' permission,
+  // but this allows editing of email and password for CAS users, so the
+  // fields are disabled or hidden below.
+  if ($cas_username) {
+    $form['account']['mail']['#disabled'] = TRUE;
+    $form['account']['cas_username']['#disabled'] = TRUE;
+    $form['account']['name']['#disabled'] = TRUE;
+
+    $form['account']['pass']['#access'] = FALSE;
+    $form['account']['current_pass']['#access'] = FALSE;
+
+    // Fields populated from CAS attributes should not be editable.
+    if (isset($form['field_first_name'], $form['field_last_name'])) {
+      $form['field_first_name']['#disabled'] = TRUE;
+      $form['field_last_name']['#disabled'] = TRUE;
+    }
+  }
+}

@@ -2,9 +2,9 @@
 
 This module customizes emails sent from sites on the YaleSites platform. This includes:
 
-* Setting the MailChimp API from a value stored in a Terminus secrets file.
-* Disabling the MailChimp API key field to improve the admin interface.
-* Altering email metadata to ensure useful data is sent to MailChimp.
+- Setting the MailChimp API from a value stored in a Terminus secrets file.
+- Disabling the MailChimp API key field to improve the admin interface.
+- Altering email metadata to ensure useful data is sent to MailChimp.
 
 ## Requirements
 

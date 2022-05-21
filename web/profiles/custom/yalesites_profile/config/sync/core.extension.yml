@@ -6,6 +6,7 @@ module:
   block: 0
   breakpoint: 0
   cas: 0
+  cas_attributes: 0
   chosen: 0
   chosen_lib: 0
   ckeditor: 0
@@ -69,6 +70,7 @@ module:
   user: 0
   views_ui: 0
   workflows: 0
+  yale_cas: 0
   ys_admin: 0
   ys_alert: 0
   ys_layouts: 0
