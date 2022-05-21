@@ -3,13 +3,17 @@
   "description": "Pantheon upstream with dependencies share by all YaleSites",
   "type": "project",
   "repositories": {
+    "profile": {
+      "type": "path",
+      "url": "web/profiles/custom/yalesites_profile"
+    },
     "atomic": {
       "type": "vcs",
       "url": "https://github.com/yalesites-org/atomic.git"
     },
-    "profile": {
-      "type": "path",
-      "url": "web/profiles/custom/yalesites_profile"
+    "cas": {
+      "type": "vcs",
+      "url": "https://github.com/yalesites-org/yale_cas.git"
     },
     "drupal": {
       "type": "composer",
@@ -40,6 +44,11 @@
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
+  "autoload": {
+    "classmap": [
+        "scripts/composer/ScriptHandler.php"
+    ]
+  },
   "extra": {
     "drupal-scaffold": {
       "locations": {
@@ -105,6 +114,10 @@
     }
   },
   "scripts": {
+    "build-assets": [
+        "@prepare-for-pantheon",
+        "composer install --optimize-autoloader --no-dev"
+    ],
     "prepare-for-pantheon": "DrupalProject\\composer\\ScriptHandler::prepareForPantheon",
     "unit-test": "echo 'No unit test step defined.'",
     "lint:styles": "stylelint --color {web/modules/custom,web/themes/custom,web/profiles/custom}/**/*.scss",
@@ -117,6 +130,15 @@
       "./vendor/bin/phpcs --standard=DrupalPractice --extensions=php,inc,module,install,theme --colors ./web/themes/custom",
       "./vendor/bin/phpcs --standard=DrupalPractice --extensions=php,inc,module,install,theme --colors ./web/profiles/custom"
     ],
-    "prettier": "prettier --l *.{json,README.md,js} '{.github,docs,web/profiles/custom,web/modules/custom,web/themes/custom}/**/*.{json,md,js,html,scss,html}'"
+    "prettier": "prettier --l *.{json,README.md,js} '{.github,docs,web/profiles/custom,web/modules/custom,web/themes/custom}/**/*.{json,md,js,html,scss,html}'",
+    "post-install-cmd": [
+        "DrupalProject\\composer\\ScriptHandler::createRequiredFiles"
+    ],
+    "post-update-cmd": [
+        "DrupalProject\\composer\\ScriptHandler::createRequiredFiles"
+    ],
+    "post-create-project-cmd": [
+        "DrupalProject\\composer\\ScriptHandler::createRequiredFiles"
+    ]
   }
 }

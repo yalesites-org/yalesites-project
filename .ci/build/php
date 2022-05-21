@@ -2,10 +2,11 @@
 
 set -eo pipefail
 
-# This script prepares the PHP build artifacts. The web and vendor artifact
-# directories will need to be persisted to other jobs.
+#
+# This script prepares the PHP build artifacts.
+# The web and vendor artifact directories will
+# need to be persisted to other jobs.
+#
 
 # Build Composer Assets
-echo "Building Composer assets..."
-composer -n prepare-for-pantheon
-composer install --optimize-autoloader --no-dev
+composer -n build-assets
