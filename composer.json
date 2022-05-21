@@ -3,13 +3,17 @@
   "description": "Pantheon upstream with dependencies share by all YaleSites",
   "type": "project",
   "repositories": {
+    "profile": {
+      "type": "path",
+      "url": "web/profiles/custom/yalesites_profile"
+    },
     "atomic": {
       "type": "vcs",
       "url": "https://github.com/yalesites-org/atomic.git"
     },
-    "profile": {
-      "type": "path",
-      "url": "web/profiles/custom/yalesites_profile"
+    "cas": {
+      "type": "vcs",
+      "url": "https://github.com/yalesites-org/yale_cas.git"
     },
     "drupal": {
       "type": "composer",
