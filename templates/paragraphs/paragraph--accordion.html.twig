@@ -4,7 +4,7 @@
   {{ title_prefix }}
   {{ title_suffix }}
   {% embed "@molecules/accordion/accordion.twig" with {
-    accordion__heading: content.field_heading,
+    accordion__heading: content.field_heading.0,
   } %}
     {% block accordion__items %}
       {{ content.field_accordion_item }}
