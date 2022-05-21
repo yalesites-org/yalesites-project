@@ -38,7 +38,7 @@ class MailConfigOverrides implements ConfigFactoryOverrideInterface {
     $overrides = [];
     if (in_array(self::CONFIG_GROUP, $names)) {
       $overrides[self::CONFIG_GROUP] = [
-        self::CONFIG_KEY => $this->getSecret(self::CONFIG_KEY)
+        self::CONFIG_KEY => $this->getSecret(self::CONFIG_KEY),
       ];
     }
     return $overrides;

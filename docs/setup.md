@@ -9,7 +9,7 @@ Pantheon's Terminus is an almost-essential command-line tool for managing sites.
 1. [Install Terminus](https://pantheon.io/docs/terminus/install/)
 2. [Setup a valid machine token](https://pantheon.io/docs/machine-tokens)
 3. Log in to terminus using the machine token\
-```terminus auth:login --email=<email@example.com> --machine-token=<machine_token>```
+   `terminus auth:login --email=<email@example.com> --machine-token=<machine_token>`
 4. [Review documentation](https://pantheon.io/docs/terminus/) to get started with the CLI
 
 ### Lando
@@ -23,9 +23,9 @@ This project supports development with Lando using the Pantheon recipe. This pro
 
 ### Additional tools
 
-* [Composer](https://getcomposer.org/download/): PHP package manager. Version 2.x.
-* [NVM](https://github.com/nvm-sh/nvm#install--update-script): Recommended for installing and switching between Node versions.
-* Node.js (>=8.0). We recommend installing via NVM.
+- [Composer](https://getcomposer.org/download/): PHP package manager. Version 2.x.
+- [NVM](https://github.com/nvm-sh/nvm#install--update-script): Recommended for installing and switching between Node versions.
+- Node.js (>=8.0). We recommend installing via NVM.
 
 ## Project setup script
 
