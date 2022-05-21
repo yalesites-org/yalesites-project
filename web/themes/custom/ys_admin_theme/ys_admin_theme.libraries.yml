@@ -1,0 +1,10 @@
+tokens:
+  css:
+    theme:
+      node_modules/@yalesites-org/tokens/build/tokens.css: {}
+      css/gin-color-overrides.css: {}
+
+paragraphs:
+  css:
+    theme:
+      css/paragraphs.css: {}

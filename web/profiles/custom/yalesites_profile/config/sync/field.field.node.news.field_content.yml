@@ -1,0 +1,69 @@
+uuid: c08e81c8-164b-4a1c-a8c5-4099b6197c46
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_content
+    - node.type.news
+    - paragraphs.paragraphs_type.divider
+    - paragraphs.paragraphs_type.image
+    - paragraphs.paragraphs_type.pop_out_image
+    - paragraphs.paragraphs_type.pull_quote
+    - paragraphs.paragraphs_type.text
+  module:
+    - entity_reference_revisions
+id: node.news.field_content
+field_name: field_content
+entity_type: node
+bundle: news
+label: Content
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:paragraph'
+  handler_settings:
+    target_bundles:
+      image: image
+      divider: divider
+      pop_out_image: pop_out_image
+      pull_quote: pull_quote
+      text: text
+    negate: 0
+    target_bundles_drag_drop:
+      accordion:
+        weight: 10
+        enabled: false
+      accordion_item:
+        weight: 11
+        enabled: false
+      callout:
+        weight: 12
+        enabled: false
+      callout_item:
+        weight: 13
+        enabled: false
+      divider:
+        weight: 14
+        enabled: true
+      embed:
+        weight: 18
+        enabled: false
+      image:
+        weight: 12
+        enabled: true
+      pop_out_image:
+        weight: 15
+        enabled: true
+      pull_quote:
+        weight: 16
+        enabled: true
+      text:
+        weight: 17
+        enabled: true
+      text_with_image:
+        weight: 18
+        enabled: false
+field_type: entity_reference_revisions

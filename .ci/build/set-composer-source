@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# Composer should download source (not dist) packages from YaleSites github.
+# This ensures the .git directory is included which is important for local dev
+# and for running npm install on multidev builds.
+composer config --global 'preferred-install.yalesites-org/*' source

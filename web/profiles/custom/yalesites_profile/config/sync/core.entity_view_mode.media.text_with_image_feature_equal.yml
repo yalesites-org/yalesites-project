@@ -1,0 +1,10 @@
+uuid: b855f559-38bc-4b18-bdcf-28d89d7f43a4
+langcode: en
+status: true
+dependencies:
+  module:
+    - media
+id: media.text_with_image_feature_equal
+label: 'Text with Image | Feature | Equal'
+targetEntityType: media
+cache: true

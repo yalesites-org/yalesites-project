@@ -1,0 +1,38 @@
+name: YaleSites Admin Theme
+type: theme
+base theme: gin
+description: "Admin theme for YaleSites."
+core_version_requirement: ^8.9 || ^9 || ^10
+
+libraries:
+  - claro/global-styling
+  - gin/gin
+  - ys_admin_theme/tokens
+  - ys_admin_theme/paragraphs
+
+# Regions
+regions:
+  header: "Header"
+  pre_content: "Pre-content"
+  breadcrumb: Breadcrumb
+  highlighted: Highlighted
+  help: Help
+  content: Content
+  page_top: "Page top"
+  page_bottom: "Page bottom"
+  sidebar_first: "First sidebar"
+regions_hidden:
+  - sidebar_first
+
+components:
+  namespaces:
+    tokens:
+      - /themes/custom/atomic/node_modules/@yalesites-org/component-library-twig/components/00-tokens
+    atoms:
+      - /themes/custom/atomic/node_modules/@yalesites-org/component-library-twig/components/01-atoms
+    molecules:
+      - /themes/custom/atomic/node_modules/@yalesites-org/component-library-twig/components/02-molecules
+    organisms:
+      - /themes/custom/atomic/node_modules/@yalesites-org/component-library-twig/components/03-organisms
+    page-layouts:
+      - /themes/custom/atomic/node_modules/@yalesites-org/component-library-twig/components/04-page-layouts

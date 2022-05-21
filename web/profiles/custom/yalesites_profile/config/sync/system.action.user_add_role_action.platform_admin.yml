@@ -1,0 +1,14 @@
+uuid: e6055e4c-ee05-43c4-9395-403314fb3445
+langcode: en
+status: true
+dependencies:
+  config:
+    - user.role.platform_admin
+  module:
+    - user
+id: user_add_role_action.platform_admin
+label: 'Add the Platform administrator role to the selected user(s)'
+type: user
+plugin: user_add_role_action
+configuration:
+  rid: platform_admin

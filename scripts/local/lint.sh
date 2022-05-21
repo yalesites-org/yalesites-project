@@ -1,9 +1,3 @@
-#!/bin/bash
-
-set -eo pipefail
-
-# Lint php code for syntax errors
-composer -n lint
-
-# Check coding standards
-composer -n code-sniff
+npm run lint:styles
+npm run lint:js
+npm run lint:php

@@ -1,0 +1,26 @@
+uuid: bdeea214-6fee-4796-bf55-64a943c074e3
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_text
+    - paragraphs.paragraphs_type.cta_banner
+  module:
+    - allowed_formats
+    - text
+third_party_settings:
+  allowed_formats:
+    allowed_formats:
+      - basic_html
+id: paragraph.cta_banner.field_text
+field_name: field_text
+entity_type: paragraph
+bundle: cta_banner
+label: Text
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: text_long

@@ -1,0 +1,45 @@
+uuid: 8ca0b21e-d6dc-4771-aa91-9dfb11cecc0a
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.paragraph.preview
+    - field.field.paragraph.pop_out_image.field_caption
+    - field.field.paragraph.pop_out_image.field_image
+    - field.field.paragraph.pop_out_image.field_text
+    - image.style.media_library
+    - paragraphs.paragraphs_type.pop_out_image
+  module:
+    - media
+    - text
+id: paragraph.pop_out_image.preview
+targetEntityType: paragraph
+bundle: pop_out_image
+mode: preview
+content:
+  field_caption:
+    type: text_trimmed
+    label: inline
+    settings:
+      trim_length: 600
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_image:
+    type: media_thumbnail
+    label: hidden
+    settings:
+      image_link: ''
+      image_style: media_library
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_text:
+    type: text_trimmed
+    label: above
+    settings:
+      trim_length: 600
+    third_party_settings: {  }
+    weight: 2
+    region: content
+hidden: {  }

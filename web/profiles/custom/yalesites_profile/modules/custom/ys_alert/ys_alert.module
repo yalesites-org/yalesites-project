@@ -1,0 +1,26 @@
+<?php
+
+/**
+ * @file
+ * YaleSites Alert module.
+ *
+ * This modules holds YaleSites Alerts functionality.
+ */
+
+/**
+ * Implements hook_theme().
+ */
+function ys_alert_theme($existing, $type, $theme, $path) {
+  return [
+    'ys_alert' => [
+      'variables' => [
+        'id' => '',
+        'type' => '',
+        'headline' => '',
+        'message' => '',
+        'link_title' => '',
+        'link_url' => '',
+      ],
+    ],
+  ];
+}

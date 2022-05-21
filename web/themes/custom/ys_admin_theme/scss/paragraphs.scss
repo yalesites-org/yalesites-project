@@ -1,0 +1,83 @@
+@use "../node_modules/@yalesites-org/tokens/build/css/tokens";
+
+@mixin paragraph-preview(
+  $label-bg: rgba(var(--colorGinPrimaryRGB), 0.1),
+  $label-color: var(--colorGinText),
+  $border-color: var(--color-gray-800),
+  $border-radius: var(--radius-4),
+  $component-padding: 3em 1rem 1rem
+) {
+  box-shadow: 0 0 0 1px #{$border-color};
+  border-radius: #{$border-radius};
+  padding: #{$component-padding};
+
+  > .paragraph-type-label {
+    border-top-right-radius: #{$border-radius};
+    background-color: #{$label-bg};
+    color: #{$label-color};
+  }
+}
+
+// Component wrapper provided by Layout Paragraphs.
+.js-lpb-component-list {
+  display: grid;
+  gap: 1rem;
+}
+
+// Default styles for paragraph previews.
+.paragraph--view-mode--preview {
+  @include paragraph-preview($border-color: var(--color-gray-600));
+
+  position: relative;
+
+  .paragraph-type-label {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
+    padding: 0.5rem 1rem;
+    border-bottom-left-radius: var(--radius-10);
+  }
+
+  .field__items {
+    display: grid;
+    gap: 1rem;
+  }
+}
+
+// Styles for "item" components. E.g.: `accordion-item`.
+.paragraph--view-mode--preview[class*="-item"] {
+  @include paragraph-preview(
+    $border-radius: var(--radius-0),
+    $border-color: var(--color-gray-500),
+    $label-bg: var(--color-gray-200)
+  );
+}
+
+// Styles for section previews.
+.paragraph--view-mode--preview.paragraph--type--section {
+  @include paragraph-preview(
+    $label-bg: var(--color-gray-800),
+    $label-color: var(--color-basic-white),
+    $border-radius: var(--radius-10)
+  );
+}
+
+// Section__inner elements.
+.yds-two-column__inner {
+  display: grid;
+  gap: 1rem;
+}
+
+// Primary and secondary regions.
+.paragraph--view-mode--preview .yds-two-column__primary,
+.paragraph--view-mode--preview .yds-two-column__secondary {
+  @include paragraph-preview(
+    $border-radius: var(--radius-0),
+    $label-bg: var(--color-gray-700),
+    $label-color: var(--color-basic-white)
+  );
+
+  display: grid;
+  gap: 1rem;
+}

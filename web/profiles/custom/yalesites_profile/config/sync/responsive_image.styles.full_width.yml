@@ -1,0 +1,45 @@
+uuid: 3e8949b7-f03c-4d65-afb6-bda9b7ef8a16
+langcode: en
+status: true
+dependencies:
+  config:
+    - image.style.max_width_1120
+    - image.style.max_width_1280
+    - image.style.max_width_1440
+    - image.style.max_width_1600
+    - image.style.max_width_1760
+    - image.style.max_width_1920
+    - image.style.max_width_2080
+    - image.style.max_width_2240
+    - image.style.max_width_2400
+    - image.style.max_width_320
+    - image.style.max_width_480
+    - image.style.max_width_640
+    - image.style.max_width_800
+    - image.style.max_width_960
+id: full_width
+label: 'Full Width'
+image_style_mappings:
+  -
+    image_mapping_type: sizes
+    image_mapping:
+      sizes: '(min-width: 2400px) 2400px, 100vw'
+      sizes_image_styles:
+        - max_width_1120
+        - max_width_1280
+        - max_width_1440
+        - max_width_1600
+        - max_width_1760
+        - max_width_1920
+        - max_width_2080
+        - max_width_2240
+        - max_width_2400
+        - max_width_320
+        - max_width_480
+        - max_width_640
+        - max_width_800
+        - max_width_960
+    breakpoint_id: responsive_image.viewport_sizing
+    multiplier: 1x
+breakpoint_group: responsive_image
+fallback_image_style: max_width_320

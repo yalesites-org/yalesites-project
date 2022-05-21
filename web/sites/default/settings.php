@@ -34,4 +34,4 @@ if (file_exists($local_settings)) {
 }
 
 // Set the install profile as the source of site config.
-$settings['config_sync_directory'] = 'profiles/contrib/yalesites_profile/config/sync';
+$settings['config_sync_directory'] = 'profiles/custom/yalesites_profile/config/sync';
