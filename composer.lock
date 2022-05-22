@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f4ac26630b322619eb8ebd2618003dfa",
+    "content-hash": "5f1eb74a07626d4ab8035a1e1dc81feb",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -9246,7 +9246,6 @@
                 "drupal/cas": "^2.0@beta",
                 "drupal/cas_attributes": "^2.0@beta"
             },
-            "default-branch": true,
             "type": "drupal-custom-module",
             "support": {
                 "source": "https://github.com/yalesites-org/yale_cas/tree/main",
@@ -9387,10 +9386,6 @@
                 "symfony",
                 "testing"
             ],
-            "support": {
-                "issues": "https://github.com/Behat/Behat/issues",
-                "source": "https://github.com/Behat/Behat/tree/v3.10.0"
-            },
             "time": "2021-11-02T20:09:40+00:00"
         },
         {
@@ -9450,10 +9445,6 @@
                 "gherkin",
                 "parser"
             ],
-            "support": {
-                "issues": "https://github.com/Behat/Gherkin/issues",
-                "source": "https://github.com/Behat/Gherkin/tree/v4.9.0"
-            },
             "time": "2021-10-12T13:05:09+00:00"
         },
         {
@@ -9514,10 +9505,6 @@
                 "testing",
                 "web"
             ],
-            "support": {
-                "issues": "https://github.com/minkphp/Mink/issues",
-                "source": "https://github.com/minkphp/Mink/tree/v1.10.0"
-            },
             "time": "2022-03-28T14:22:43+00:00"
         },
         {
@@ -9572,10 +9559,6 @@
                 "headless",
                 "testing"
             ],
-            "support": {
-                "issues": "https://github.com/minkphp/MinkGoutteDriver/issues",
-                "source": "https://github.com/minkphp/MinkGoutteDriver/tree/v1.3.0"
-            },
             "time": "2021-10-12T11:35:46+00:00"
         },
         {
@@ -9640,10 +9623,6 @@
                 "testing",
                 "webdriver"
             ],
-            "support": {
-                "issues": "https://github.com/minkphp/MinkSelenium2Driver/issues",
-                "source": "https://github.com/minkphp/MinkSelenium2Driver/tree/v1.6.0"
-            },
             "time": "2022-03-28T14:55:17+00:00"
         },
         {
@@ -9689,10 +9668,6 @@
                 "slug",
                 "transliterator"
             ],
-            "support": {
-                "issues": "https://github.com/Behat/Transliterator/issues",
-                "source": "https://github.com/Behat/Transliterator/tree/v1.5.0"
-            },
             "time": "2022-03-30T09:27:43+00:00"
         },
         {
@@ -9750,11 +9725,6 @@
                 "ssl",
                 "tls"
             ],
-            "support": {
-                "irc": "irc://irc.freenode.org/composer",
-                "issues": "https://github.com/composer/ca-bundle/issues",
-                "source": "https://github.com/composer/ca-bundle/tree/1.3.1"
-            },
             "funding": [
                 {
                     "url": "https://packagist.com",
@@ -9849,11 +9819,6 @@
                 "dependency",
                 "package"
             ],
-            "support": {
-                "irc": "ircs://irc.libera.chat:6697/composer",
-                "issues": "https://github.com/composer/composer/issues",
-                "source": "https://github.com/composer/composer/tree/2.2.12"
-            },
             "funding": [
                 {
                     "url": "https://packagist.com",
@@ -9919,10 +9884,6 @@
                 "composer",
                 "compression"
             ],
-            "support": {
-                "issues": "https://github.com/composer/metadata-minifier/issues",
-                "source": "https://github.com/composer/metadata-minifier/tree/1.0.0"
-            },
             "funding": [
                 {
                     "url": "https://packagist.com",
@@ -9990,10 +9951,6 @@
                 "regex",
                 "regular expression"
             ],
-            "support": {
-                "issues": "https://github.com/composer/pcre/issues",
-                "source": "https://github.com/composer/pcre/tree/1.0.1"
-            },
             "funding": [
                 {
                     "url": "https://packagist.com",
@@ -10069,11 +10026,6 @@
                 "spdx",
                 "validator"
             ],
-            "support": {
-                "irc": "irc://irc.freenode.org/composer",
-                "issues": "https://github.com/composer/spdx-licenses/issues",
-                "source": "https://github.com/composer/spdx-licenses/tree/1.5.6"
-            },
             "funding": [
                 {
                     "url": "https://packagist.com",
@@ -10135,11 +10087,6 @@
                 "Xdebug",
                 "performance"
             ],
-            "support": {
-                "irc": "irc://irc.freenode.org/composer",
-                "issues": "https://github.com/composer/xdebug-handler/issues",
-                "source": "https://github.com/composer/xdebug-handler/tree/3.0.3"
-            },
             "funding": [
                 {
                     "url": "https://packagist.com",
@@ -10225,10 +10172,6 @@
                 "stylecheck",
                 "tests"
             ],
-            "support": {
-                "issues": "https://github.com/dealerdirect/phpcodesniffer-composer-installer/issues",
-                "source": "https://github.com/dealerdirect/phpcodesniffer-composer-installer"
-            },
             "time": "2022-02-04T12:51:07+00:00"
         },
         {
@@ -10281,10 +10224,6 @@
                 "constructor",
                 "instantiate"
             ],
-            "support": {
-                "issues": "https://github.com/doctrine/instantiator/issues",
-                "source": "https://github.com/doctrine/instantiator/tree/1.4.1"
-            },
             "funding": [
                 {
                     "url": "https://www.doctrine-project.org/sponsorship.html",
@@ -10340,10 +10279,6 @@
                 "phpcs",
                 "standards"
             ],
-            "support": {
-                "issues": "https://www.drupal.org/project/issues/coder",
-                "source": "https://www.drupal.org/project/coder"
-            },
             "time": "2022-04-02T17:56:30+00:00"
         },
         {
@@ -10391,9 +10326,6 @@
                 "GPL-2.0-or-later"
             ],
             "description": "require-dev dependencies from drupal/drupal; use in addition to drupal/core-recommended to run tests from drupal/core.",
-            "support": {
-                "source": "https://github.com/drupal/core-dev/tree/9.3.13"
-            },
             "time": "2021-11-30T05:41:29+00:00"
         },
         {
@@ -10449,10 +10381,6 @@
                 "test",
                 "web"
             ],
-            "support": {
-                "issues": "https://github.com/jhedstrom/DrupalDriver/issues",
-                "source": "https://github.com/jhedstrom/DrupalDriver/tree/v2.2.0"
-            },
             "funding": [
                 {
                     "url": "https://github.com/jhedstrom",
@@ -10541,10 +10469,6 @@
                 "test",
                 "web"
             ],
-            "support": {
-                "issues": "https://github.com/jhedstrom/drupalextension/issues",
-                "source": "https://github.com/jhedstrom/drupalextension/tree/v4.2.1"
-            },
             "funding": [
                 {
                     "url": "https://github.com/jhedstrom",
@@ -10621,11 +10545,6 @@
                 "rdfa",
                 "sparql"
             ],
-            "support": {
-                "forum": "http://groups.google.com/group/easyrdf/",
-                "issues": "http://github.com/easyrdf/easyrdf/issues",
-                "source": "https://github.com/easyrdf/easyrdf/tree/1.1.1"
-            },
             "time": "2020-12-02T08:47:31+00:00"
         },
         {
@@ -10681,10 +10600,6 @@
             "keywords": [
                 "scraper"
             ],
-            "support": {
-                "issues": "https://github.com/FriendsOfPHP/Goutte/issues",
-                "source": "https://github.com/FriendsOfPHP/Goutte/tree/v3.3.1"
-            },
             "time": "2020-11-01T09:30:18+00:00"
         },
         {
@@ -10744,9 +10659,6 @@
                 "browser",
                 "testing"
             ],
-            "support": {
-                "source": "https://github.com/FriendsOfBehat/MinkBrowserKitDriver/tree/v1.6.1"
-            },
             "time": "2021-12-13T10:41:57+00:00"
         },
         {
@@ -10809,9 +10721,6 @@
                 "test",
                 "web"
             ],
-            "support": {
-                "source": "https://github.com/FriendsOfBehat/MinkExtension/tree/v2.6.1"
-            },
             "time": "2021-12-24T13:19:26+00:00"
         },
         {
@@ -10871,10 +10780,6 @@
                 "webdriver",
                 "webtest"
             ],
-            "support": {
-                "issues": "https://github.com/instaclick/php-webdriver/issues",
-                "source": "https://github.com/instaclick/php-webdriver/tree/1.4.14"
-            },
             "time": "2022-04-19T02:06:59+00:00"
         },
         {
@@ -10941,10 +10846,6 @@
                 "json",
                 "schema"
             ],
-            "support": {
-                "issues": "https://github.com/justinrainbow/json-schema/issues",
-                "source": "https://github.com/justinrainbow/json-schema/tree/5.2.12"
-            },
             "time": "2022-04-13T08:02:27+00:00"
         },
         {
@@ -10991,11 +10892,6 @@
             ],
             "description": "Virtual file system to mock the real file system in unit tests.",
             "homepage": "http://vfs.bovigo.org/",
-            "support": {
-                "issues": "https://github.com/bovigo/vfsStream/issues",
-                "source": "https://github.com/bovigo/vfsStream/tree/master",
-                "wiki": "https://github.com/bovigo/vfsStream/wiki"
-            },
             "time": "2021-09-25T08:05:01+00:00"
         },
         {
@@ -11045,10 +10941,6 @@
                 "object",
                 "object graph"
             ],
-            "support": {
-                "issues": "https://github.com/myclabs/DeepCopy/issues",
-                "source": "https://github.com/myclabs/DeepCopy/tree/1.11.0"
-            },
             "funding": [
                 {
                     "url": "https://tidelift.com/funding/github/packagist/myclabs/deep-copy",
@@ -11111,10 +11003,6 @@
                 }
             ],
             "description": "Component for reading phar.io manifest information from a PHP Archive (PHAR)",
-            "support": {
-                "issues": "https://github.com/phar-io/manifest/issues",
-                "source": "https://github.com/phar-io/manifest/tree/2.0.3"
-            },
             "time": "2021-07-20T11:28:43+00:00"
         },
         {
@@ -11162,10 +11050,6 @@
                 }
             ],
             "description": "Library for handling version information and constraints",
-            "support": {
-                "issues": "https://github.com/phar-io/version/issues",
-                "source": "https://github.com/phar-io/version/tree/3.2.1"
-            },
             "time": "2022-02-21T01:04:05+00:00"
         },
         {
@@ -11215,10 +11099,6 @@
                 "reflection",
                 "static analysis"
             ],
-            "support": {
-                "issues": "https://github.com/phpDocumentor/ReflectionCommon/issues",
-                "source": "https://github.com/phpDocumentor/ReflectionCommon/tree/2.x"
-            },
             "time": "2020-06-27T09:03:43+00:00"
         },
         {
@@ -11272,10 +11152,6 @@
                 }
             ],
             "description": "With this component, a library can provide support for annotations via DocBlocks or otherwise retrieve information that is embedded in a DocBlock.",
-            "support": {
-                "issues": "https://github.com/phpDocumentor/ReflectionDocBlock/issues",
-                "source": "https://github.com/phpDocumentor/ReflectionDocBlock/tree/5.3.0"
-            },
             "time": "2021-10-19T17:43:47+00:00"
         },
         {
@@ -11322,10 +11198,6 @@
                 }
             ],
             "description": "A PSR-5 based resolver of Class names, Types and Structural Element Names",
-            "support": {
-                "issues": "https://github.com/phpDocumentor/TypeResolver/issues",
-                "source": "https://github.com/phpDocumentor/TypeResolver/tree/1.6.1"
-            },
             "time": "2022-03-15T21:29:03+00:00"
         },
         {
@@ -11389,10 +11261,6 @@
                 "spy",
                 "stub"
             ],
-            "support": {
-                "issues": "https://github.com/phpspec/prophecy/issues",
-                "source": "https://github.com/phpspec/prophecy/tree/v1.15.0"
-            },
             "time": "2021-12-08T12:19:24+00:00"
         },
         {
@@ -11433,10 +11301,6 @@
                 "MIT"
             ],
             "description": "PHPDoc parser with support for nullable, intersection and generic types",
-            "support": {
-                "issues": "https://github.com/phpstan/phpdoc-parser/issues",
-                "source": "https://github.com/phpstan/phpdoc-parser/tree/1.5.1"
-            },
             "time": "2022-05-05T11:32:40+00:00"
         },
         {
@@ -11504,10 +11368,6 @@
                 "testing",
                 "xunit"
             ],
-            "support": {
-                "issues": "https://github.com/sebastianbergmann/php-code-coverage/issues",
-                "source": "https://github.com/sebastianbergmann/php-code-coverage/tree/9.2.15"
-            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -11564,10 +11424,6 @@
                 "filesystem",
                 "iterator"
             ],
-            "support": {
-                "issues": "https://github.com/sebastianbergmann/php-file-iterator/issues",
-                "source": "https://github.com/sebastianbergmann/php-file-iterator/tree/3.0.6"
-            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -11627,10 +11483,6 @@
             "keywords": [
                 "process"
             ],
-            "support": {
-                "issues": "https://github.com/sebastianbergmann/php-invoker/issues",
-                "source": "https://github.com/sebastianbergmann/php-invoker/tree/3.1.1"
-            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -11686,10 +11538,6 @@
             "keywords": [
                 "template"
             ],
-            "support": {
-                "issues": "https://github.com/sebastianbergmann/php-text-template/issues",
-                "source": "https://github.com/sebastianbergmann/php-text-template/tree/2.0.4"
-            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -11745,10 +11593,6 @@
             "keywords": [
                 "timer"
             ],
-            "support": {
-                "issues": "https://github.com/sebastianbergmann/php-timer/issues",
-                "source": "https://github.com/sebastianbergmann/php-timer/tree/5.0.3"
-            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -11844,10 +11688,6 @@
                 "testing",
                 "xunit"
             ],
-            "support": {
-                "issues": "https://github.com/sebastianbergmann/phpunit/issues",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/9.5.20"
-            },
             "funding": [
                 {
                     "url": "https://phpunit.de/sponsors.html",
@@ -11920,10 +11760,6 @@
                 "promise",
                 "promises"
             ],
-            "support": {
-                "issues": "https://github.com/reactphp/promise/issues",
-                "source": "https://github.com/reactphp/promise/tree/v2.9.0"
-            },
             "funding": [
                 {
                     "url": "https://github.com/WyriHaximus",
@@ -11980,10 +11816,6 @@
             ],
             "description": "Library for parsing CLI options",
             "homepage": "https://github.com/sebastianbergmann/cli-parser",
-            "support": {
-                "issues": "https://github.com/sebastianbergmann/cli-parser/issues",
-                "source": "https://github.com/sebastianbergmann/cli-parser/tree/1.0.1"
-            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -12036,10 +11868,6 @@
             ],
             "description": "Collection of value objects that represent the PHP code units",
             "homepage": "https://github.com/sebastianbergmann/code-unit",
-            "support": {
-                "issues": "https://github.com/sebastianbergmann/code-unit/issues",
-                "source": "https://github.com/sebastianbergmann/code-unit/tree/1.0.8"
-            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -12091,10 +11919,6 @@
             ],
             "description": "Looks up which function or method a line of code belongs to",
             "homepage": "https://github.com/sebastianbergmann/code-unit-reverse-lookup/",
-            "support": {
-                "issues": "https://github.com/sebastianbergmann/code-unit-reverse-lookup/issues",
-                "source": "https://github.com/sebastianbergmann/code-unit-reverse-lookup/tree/2.0.3"
-            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -12165,10 +11989,6 @@
                 "compare",
                 "equality"
             ],
-            "support": {
-                "issues": "https://github.com/sebastianbergmann/comparator/issues",
-                "source": "https://github.com/sebastianbergmann/comparator/tree/4.0.6"
-            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -12222,10 +12042,6 @@
             ],
             "description": "Library for calculating the complexity of PHP code units",
             "homepage": "https://github.com/sebastianbergmann/complexity",
-            "support": {
-                "issues": "https://github.com/sebastianbergmann/complexity/issues",
-                "source": "https://github.com/sebastianbergmann/complexity/tree/2.0.2"
-            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -12288,10 +12104,6 @@
                 "unidiff",
                 "unified diff"
             ],
-            "support": {
-                "issues": "https://github.com/sebastianbergmann/diff/issues",
-                "source": "https://github.com/sebastianbergmann/diff/tree/4.0.4"
-            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -12351,10 +12163,6 @@
                 "environment",
                 "hhvm"
             ],
-            "support": {
-                "issues": "https://github.com/sebastianbergmann/environment/issues",
-                "source": "https://github.com/sebastianbergmann/environment/tree/5.1.4"
-            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -12428,10 +12236,6 @@
                 "export",
                 "exporter"
             ],
-            "support": {
-                "issues": "https://github.com/sebastianbergmann/exporter/issues",
-                "source": "https://github.com/sebastianbergmann/exporter/tree/4.0.4"
-            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -12492,10 +12296,6 @@
             "keywords": [
                 "global state"
             ],
-            "support": {
-                "issues": "https://github.com/sebastianbergmann/global-state/issues",
-                "source": "https://github.com/sebastianbergmann/global-state/tree/5.0.5"
-            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -12549,10 +12349,6 @@
             ],
             "description": "Library for counting the lines of code in PHP source code",
             "homepage": "https://github.com/sebastianbergmann/lines-of-code",
-            "support": {
-                "issues": "https://github.com/sebastianbergmann/lines-of-code/issues",
-                "source": "https://github.com/sebastianbergmann/lines-of-code/tree/1.0.3"
-            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -12606,10 +12402,6 @@
             ],
             "description": "Traverses array structures and object graphs to enumerate all referenced objects",
             "homepage": "https://github.com/sebastianbergmann/object-enumerator/",
-            "support": {
-                "issues": "https://github.com/sebastianbergmann/object-enumerator/issues",
-                "source": "https://github.com/sebastianbergmann/object-enumerator/tree/4.0.4"
-            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -12661,10 +12453,6 @@
             ],
             "description": "Allows reflection of object attributes, including inherited and non-public ones",
             "homepage": "https://github.com/sebastianbergmann/object-reflector/",
-            "support": {
-                "issues": "https://github.com/sebastianbergmann/object-reflector/issues",
-                "source": "https://github.com/sebastianbergmann/object-reflector/tree/2.0.4"
-            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -12724,10 +12512,6 @@
             ],
             "description": "Provides functionality to recursively process PHP variables",
             "homepage": "http://www.github.com/sebastianbergmann/recursion-context",
-            "support": {
-                "issues": "https://github.com/sebastianbergmann/recursion-context/issues",
-                "source": "https://github.com/sebastianbergmann/recursion-context/tree/4.0.4"
-            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -12779,10 +12563,6 @@
             ],
             "description": "Provides a list of PHP built-in functions that operate on resources",
             "homepage": "https://www.github.com/sebastianbergmann/resource-operations",
-            "support": {
-                "issues": "https://github.com/sebastianbergmann/resource-operations/issues",
-                "source": "https://github.com/sebastianbergmann/resource-operations/tree/3.0.3"
-            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -12835,10 +12615,6 @@
             ],
             "description": "Collection of value objects that represent the types of the PHP type system",
             "homepage": "https://github.com/sebastianbergmann/type",
-            "support": {
-                "issues": "https://github.com/sebastianbergmann/type/issues",
-                "source": "https://github.com/sebastianbergmann/type/tree/3.0.0"
-            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -12888,10 +12664,6 @@
             ],
             "description": "Library that helps with managing the version number of Git-hosted PHP projects",
             "homepage": "https://github.com/sebastianbergmann/version",
-            "support": {
-                "issues": "https://github.com/sebastianbergmann/version/issues",
-                "source": "https://github.com/sebastianbergmann/version/tree/3.0.2"
-            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -12948,10 +12720,6 @@
                 "parser",
                 "validator"
             ],
-            "support": {
-                "issues": "https://github.com/Seldaek/jsonlint/issues",
-                "source": "https://github.com/Seldaek/jsonlint/tree/1.9.0"
-            },
             "funding": [
                 {
                     "url": "https://github.com/Seldaek",
@@ -13006,10 +12774,6 @@
             "keywords": [
                 "phar"
             ],
-            "support": {
-                "issues": "https://github.com/Seldaek/phar-utils/issues",
-                "source": "https://github.com/Seldaek/phar-utils/tree/1.2.0"
-            },
             "time": "2021-12-10T11:20:11+00:00"
         },
         {
@@ -13058,11 +12822,6 @@
                 }
             ],
             "description": "A PHPCS sniff to detect problems with variables.",
-            "support": {
-                "issues": "https://github.com/sirbrillig/phpcs-variable-analysis/issues",
-                "source": "https://github.com/sirbrillig/phpcs-variable-analysis",
-                "wiki": "https://github.com/sirbrillig/phpcs-variable-analysis/wiki"
-            },
             "time": "2022-02-21T17:01:13+00:00"
         },
         {
@@ -13110,10 +12869,6 @@
                 "MIT"
             ],
             "description": "Slevomat Coding Standard for PHP_CodeSniffer complements Consistence Coding Standard by providing sniffs with additional checks.",
-            "support": {
-                "issues": "https://github.com/slevomat/coding-standard/issues",
-                "source": "https://github.com/slevomat/coding-standard/tree/7.2.0"
-            },
             "funding": [
                 {
                     "url": "https://github.com/kukulich",
@@ -13175,11 +12930,6 @@
                 "phpcs",
                 "standards"
             ],
-            "support": {
-                "issues": "https://github.com/squizlabs/PHP_CodeSniffer/issues",
-                "source": "https://github.com/squizlabs/PHP_CodeSniffer",
-                "wiki": "https://github.com/squizlabs/PHP_CodeSniffer/wiki"
-            },
             "time": "2021-12-12T21:44:58+00:00"
         },
         {
@@ -13235,9 +12985,6 @@
             ],
             "description": "Simulates the behavior of a web browser, allowing you to make requests, click on links and submit forms programmatically",
             "homepage": "https://symfony.com",
-            "support": {
-                "source": "https://github.com/symfony/browser-kit/tree/v4.4.37"
-            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -13313,9 +13060,6 @@
             ],
             "description": "Helps you find, load, combine, autofill and validate configuration values of any kind",
             "homepage": "https://symfony.com",
-            "support": {
-                "source": "https://github.com/symfony/config/tree/v4.4.41"
-            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -13379,9 +13123,6 @@
             ],
             "description": "Converts CSS selectors to XPath expressions",
             "homepage": "https://symfony.com",
-            "support": {
-                "source": "https://github.com/symfony/css-selector/tree/v4.4.37"
-            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -13453,9 +13194,6 @@
             ],
             "description": "Eases DOM navigation for HTML and XML documents",
             "homepage": "https://symfony.com",
-            "support": {
-                "source": "https://github.com/symfony/dom-crawler/tree/v4.4.39"
-            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -13531,9 +13269,6 @@
                 "redlock",
                 "semaphore"
             ],
-            "support": {
-                "source": "https://github.com/symfony/lock/tree/v4.4.40"
-            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -13614,9 +13349,6 @@
             ],
             "description": "Provides utilities for PHPUnit, especially user deprecation notices management",
             "homepage": "https://symfony.com",
-            "support": {
-                "source": "https://github.com/symfony/phpunit-bridge/tree/v5.4.8"
-            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -13693,9 +13425,6 @@
                 "portable",
                 "shim"
             ],
-            "support": {
-                "source": "https://github.com/symfony/polyfill-php81/tree/v1.25.0"
-            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -13750,10 +13479,6 @@
                 }
             ],
             "description": "A small library for converting tokenized PHP source code into XML and potentially other formats",
-            "support": {
-                "issues": "https://github.com/theseer/tokenizer/issues",
-                "source": "https://github.com/theseer/tokenizer/tree/1.2.1"
-            },
             "funding": [
                 {
                     "url": "https://github.com/theseer",
@@ -13775,5 +13500,5 @@
     "platform-overrides": {
         "php": "7.4"
     },
-    "plugin-api-version": "2.2.0"
+    "plugin-api-version": "1.1.0"
 }
