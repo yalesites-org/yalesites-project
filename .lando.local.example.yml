@@ -11,7 +11,7 @@
 name: yalesites-platform
 config:
   # 32 alphanumeric Pantheon site UUID.
-  id: e9a915af-7a56-4ac8-bb19-1dfbbd17a06c
+  id: cb91b104-1d1e-42b7-a3a5-d0f6715e459c
   # Pantheon site name.
   site: yalesites-platform
 tooling:
