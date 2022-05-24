@@ -71,6 +71,7 @@ module:
   views_ui: 0
   workflows: 0
   yale_cas: 0
+  yaml_content: 0
   ys_admin: 0
   ys_alert: 0
   ys_layouts: 0
