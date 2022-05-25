@@ -1,0 +1,15 @@
+- entity: "node"
+  type: "news"
+  title: "An externally linked article with content elsewhere1"
+  status: 1
+  field_teaser_title:
+    value: 'No local content article'
+  field_teaser_media:
+    - entity: 'media'
+      bundle: 'image'
+      field_media_image:
+        - '#process':
+            callback: 'file'
+            args:
+              - 'image'
+              - filename: '2019_01_20_13-24-18_DP_0619_Franklin.jpg'
