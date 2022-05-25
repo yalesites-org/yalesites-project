@@ -1,0 +1,83 @@
+- entity: "node"
+  type: "page"
+  title: "FAQs1"
+  status: 1
+  field_content:
+    - entity: 'paragraph'
+      type: 'text'
+      status: 1
+      field_text:
+        - format: 'basic_html'
+          value: "Sed viverra tellus in hac habitasse platea dictumst. Tortor consequat id porta nibh venenatis cras sed. Viverra vitae congue eu consequat ac felis donec et odio. Blandit turpis cursus in hac habitasse platea dictumst quisque sagittis. Gravida cum sociis natoque penatibus et magnis dis parturient montes. Commodo viverra maecenas accumsan lacus. Laoreet id donec ultrices tincidunt arcu non. Mi sit amet mauris commodo quis imperdiet massa tincidunt nunc. Accumsan sit amet nulla facilisi morbi tempus iaculis."
+    - entity: 'paragraph'
+      type: 'accordion'
+      status: 1
+      field_heading:
+        - format: 'heading_html'
+          value: "Habitasse platea dictumst"
+      field_accordion_item:
+        - entity: 'paragraph'
+          type: 'accordion_item'
+          status: 1
+          field_heading:
+            - format: 'heading_html'
+              value: 'Nibh tellus molestie nunc non blandit'
+          field_content:
+            - entity: 'paragraph'
+              type: 'text'
+              status: 1
+              field_text:
+                - format: 'basic_html'
+                  value: 'Sed viverra tellus in hac habitasse platea dictumst. Tortor consequat id porta nibh venenatis cras sed. Viverra vitae congue eu consequat ac felis donec et odio. Blandit turpis cursus in hac habitasse platea dictumst quisque sagittis. Gravida cum sociis natoque penatibus et magnis dis parturient montes. Commodo viverra maecenas accumsan lacus. Laoreet id donec ultrices tincidunt arcu non. Mi sit amet mauris commodo quis imperdiet massa tincidunt nunc.'
+        - entity: 'paragraph'
+          type: 'accordion_item'
+          status: 1
+          field_heading:
+            - format: 'heading_html'
+              value: 'Gravida cum sociis natoque penatibus et magnis'
+          field_content:
+            - entity: 'paragraph'
+              type: 'text'
+              status: 1
+              field_text:
+                - format: 'basic_html'
+                  value: 'Sed viverra tellus in hac habitasse platea dictumst. Tortor consequat id porta nibh venenatis cras sed. Viverra vitae congue eu consequat ac felis donec et odio. Blandit turpis cursus in hac habitasse platea dictumst quisque sagittis. Gravida cum sociis natoque penatibus et magnis dis parturient montes. Commodo viverra maecenas accumsan lacus. Laoreet id donec ultrices tincidunt arcu non. Mi sit amet mauris commodo quis imperdiet massa tincidunt nunc.'
+        - entity: 'paragraph'
+          type: 'accordion_item'
+          status: 1
+          field_heading:
+            - format: 'heading_html'
+              value: 'Blandit turpis cursus in hac habitasse'
+          field_content:
+            - entity: 'paragraph'
+              type: 'text'
+              status: 1
+              field_text:
+                - format: 'basic_html'
+                  value: 'Sed viverra tellus in hac habitasse platea dictumst. Tortor consequat id porta nibh venenatis cras sed. Viverra vitae congue eu consequat ac felis donec et odio. Blandit turpis cursus in hac habitasse platea dictumst quisque sagittis. Gravida cum sociis natoque penatibus et magnis dis parturient montes. Commodo viverra maecenas accumsan lacus. Laoreet id donec ultrices tincidunt arcu non. Mi sit amet mauris commodo quis imperdiet massa tincidunt nunc.'
+        - entity: 'paragraph'
+          type: 'accordion_item'
+          status: 1
+          field_heading:
+            - format: 'heading_html'
+              value: 'Mi sit amet mauris commodo'
+          field_content:
+            - entity: 'paragraph'
+              type: 'text'
+              status: 1
+              field_text:
+                - format: 'basic_html'
+                  value: 'Sed viverra tellus in hac habitasse platea dictumst. Tortor consequat id porta nibh venenatis cras sed. Viverra vitae congue eu consequat ac felis donec et odio. Blandit turpis cursus in hac habitasse platea dictumst quisque sagittis. Gravida cum sociis natoque penatibus et magnis dis parturient montes. Commodo viverra maecenas accumsan lacus. Laoreet id donec ultrices tincidunt arcu non. Mi sit amet mauris commodo quis imperdiet massa tincidunt nunc.'
+        - entity: 'paragraph'
+          type: 'accordion_item'
+          status: 1
+          field_heading:
+            - format: 'heading_html'
+              value: 'Platea dictumst quisque sagittis'
+          field_content:
+            - entity: 'paragraph'
+              type: 'text'
+              status: 1
+              field_text:
+                - format: 'basic_html'
+                  value: 'Sed viverra tellus in hac habitasse platea dictumst. Tortor consequat id porta nibh venenatis cras sed. Viverra vitae congue eu consequat ac felis donec et odio. Blandit turpis cursus in hac habitasse platea dictumst quisque sagittis. Gravida cum sociis natoque penatibus et magnis dis parturient montes. Commodo viverra maecenas accumsan lacus. Laoreet id donec ultrices tincidunt arcu non. Mi sit amet mauris commodo quis imperdiet massa tincidunt nunc.'
