@@ -1,0 +1,53 @@
+- entity: "node"
+  type: "page"
+  title: "Top goal for the site1"
+  status: 1
+  field_teaser_title:
+    value: Sample homepage
+  field_content:
+    - entity: 'paragraph'
+      type: 'pull_quote'
+      status: 1
+      field_text:
+        value: "The homepage is the ideal place to tell your story. Paint a picture for the user and spark their interest."
+      field_attribution:
+        value: The Dean of Themes
+    - entity: 'paragraph'
+      type: 'text_with_image'
+      status: 1
+      field_heading:
+        value: "Short heading to introduce this item"
+      field_image:
+        - entity: 'media'
+          bundle: 'image'
+          field_media_image:
+            - '#process':
+                callback: 'file'
+                args:
+                  - 'image'
+                  - filename: '2013_10_28_14-51-06_DSC_9836.jpg'
+      field_link:
+        value:
+          uri: "http://google.com"
+          title: "Short link"
+      field_subheading:
+        value: "Optional subheading for extra context"
+      field_text:
+        - format: "basic_html"
+          value: "The feature width, equal focus text with image component is great for introducing linked content and/or drawing attention to free-standing pieces of content. It is meant to be short form content that is quick and to the point."
+    - entity: 'paragraph'
+      type: 'callout'
+      status: 1
+      field_callout:
+        - entity: 'paragraph'
+          type: 'callout_item'
+          status: 1
+          field_heading:
+            value: "Callouts help you accomplish goals"
+          field_link:
+            value:
+              uri: "http://google.com"
+              title: "Direct your user"
+          field_text:
+            - format: "basic_html"
+              value: "They're handy for directing attention to actions that aren't the page's main goal but are important to the user."
