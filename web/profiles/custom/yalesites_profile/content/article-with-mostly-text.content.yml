@@ -1,0 +1,27 @@
+- entity: "node"
+  type: "news"
+  title: "Article with mostly text1"
+  status: 1
+  field_author:
+    value: "Viverra vitae"
+  field_content:
+    - entity: 'paragraph'
+      type: 'image'
+      status: 1
+      field_image:
+        - entity: 'media'
+          bundle: 'image'
+          field_media_image:
+            - '#process':
+                callback: 'file'
+                args:
+                  - 'image'
+                  - filename: '2016_10_10_14_48_DSC_9740.jpg'
+    - entity: 'paragraph'
+      type: 'text'
+      status: 1
+      field_text:
+        - format: basic_html
+          value: |
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Mauris augue neque gravida in fermentum et sollicitudin ac orci. Eget nulla facilisi etiam dignissim diam. Suspendisse sed nisi lacus sed viverra tellus. At lectus urna duis convallis convallis. Nec ultrices dui sapien eget mi proin sed libero enim. Nisl pretium fusce id velit ut tortor pretium. Pellentesque elit ullamcorper dignissim cras tincidunt lobortis feugiat vivamus. Nascetur ridiculus mus mauris vitae ultricies leo integer malesuada nunc. Hendrerit gravida rutrum quisque non. Malesuada nunc vel risus commodo viverra maecenas accumsan. Aliquam eleifend mi in nulla posuere sollicitudin aliquam. Convallis a cras semper auctor. Placerat duis ultricies lacus sed turpis tincidunt. Donec ac odio tempor orci dapibus ultrices. Nulla facilisi cras fermentum odio eu feugiat. Tortor vitae purus faucibus ornare suspendisse sed nisi lacus.</p>
+            <p>Sed viverra tellus in hac habitasse platea dictumst. Tortor consequat id porta nibh venenatis cras sed. Viverra vitae congue eu consequat ac felis donec et odio. Blandit turpis cursus in hac habitasse platea dictumst quisque sagittis. Gravida cum sociis natoque penatibus et magnis dis parturient montes. Commodo viverra maecenas accumsan lacus. Laoreet id donec ultrices tincidunt arcu non. Mi sit amet mauris commodo quis imperdiet massa tincidunt nunc. Accumsan sit amet nulla facilisi morbi tempus iaculis. Nibh tellus molestie nunc non blandit massa enim nec. Suspendisse interdum consectetur libero id faucibus nisl. In cursus turpis massa tincidunt. Justo donec enim diam vulputate ut pharetra sit amet aliquam. Ullamcorper eget nulla facilisi etiam. Gravida arcu ac tortor dignissim convallis aenean et tortor. Gravida dictum fusce ut placerat.</p>
