@@ -17,11 +17,17 @@ lando start
 
 # Install packages and pull down latest database and files.
 lando composer install
-lando pull --database=dev --files=dev --code=none
+#lando pull --database=dev --files=dev --code=none
+
+# Install site from config.
+lando drush si --existing-config --db-url=mysql://pantheon:pantheon@database:3306/pantheon -y
 
 # Ensure everything is up to date.
 lando drush cim -y
 lando drush cr
+
+# Import demo content.
+lando drush yaml-content-import-profile yalesites_profile
 
 # Configure Composer to use source packaged versions.
 lando composer config --global 'preferred-install.yalesites-org/*' source
