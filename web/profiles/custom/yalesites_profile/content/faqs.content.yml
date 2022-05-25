@@ -1,6 +1,6 @@
 - entity: "node"
   type: "page"
-  title: "FAQs1"
+  title: "FAQs"
   status: 1
   field_content:
     - entity: 'paragraph'
