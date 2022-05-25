@@ -1,0 +1,16 @@
+- entity: "node"
+  type: "page"
+  title: "News1"
+  status: 1
+  field_content:
+    - entity: 'paragraph'
+      type: 'text'
+      status: 1
+      field_text:
+        - format: 'basic_html'
+          value: |
+            <p>This will be a page with news articles listed or if views aren't ready it will be a category with articles as the subpages.</p>
+            <p>&nbsp;</p>
+            <p><a data-entity-substitution="canonical" data-entity-type="node" data-entity-uuid="97a702b9-efa2-4814-b038-566725e84cba" href="/node/7">Longform article&nbsp;</a></p>
+            <p><a data-entity-substitution="canonical" data-entity-type="node" data-entity-uuid="bcc0ec42-e622-4017-9657-4484e1cc2e64" href="/node/6">Quick article</a></p>
+            <p>&nbsp;</p>
