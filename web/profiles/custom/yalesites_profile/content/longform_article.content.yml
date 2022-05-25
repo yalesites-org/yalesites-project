@@ -1,6 +1,6 @@
 - entity: "node"
   type: "news"
-  title: "Longform article"
+  title: "Longform article1"
   status: 1
   field_author:
     value: "Viverra vitae"
