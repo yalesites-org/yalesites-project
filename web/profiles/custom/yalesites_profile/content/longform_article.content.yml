@@ -1,0 +1,74 @@
+- entity: "node"
+  type: "news"
+  title: "Longform article1"
+  status: 1
+  field_author:
+    value: "Viverra vitae"
+  field_content:
+    - entity: 'paragraph'
+      type: 'image'
+      status: 1
+      field_image:
+        - entity: 'media'
+          bundle: 'image'
+          field_media_image:
+            - '#process':
+                callback: 'file'
+                args:
+                  - 'image'
+                  - filename: '2002_03_25_13_05_16_AD0194.jpg'
+    - entity: 'paragraph'
+      type: 'text'
+      status: 1
+      field_text:
+        - format: basic_html
+          value: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Mauris augue neque gravida in fermentum et sollicitudin ac orci. Eget nulla facilisi etiam dignissim diam. Suspendisse sed nisi lacus sed viverra tellus. At lectus urna duis convallis convallis. Nec ultrices dui sapien eget mi proin sed libero enim."
+    - entity: 'paragraph'
+      type: 'pop_out_image'
+      status: 1
+      field_image:
+        - entity: 'media'
+          bundle: 'image'
+          field_media_image:
+            - '#process':
+                callback: 'file'
+                args:
+                  - 'image'
+                  - filename: '2014_02_03_11-24-40_DSC_8938.jpg'
+      field_text:
+        - format: 'basic_html'
+          value: |
+            <p>Nisl pretium fusce id velit ut tortor pretium. Pellentesque elit ullamcorper dignissim cras tincidunt lobortis feugiat vivamus. Nascetur ridiculus mus mauris vitae ultricies leo integer malesuada nunc. Hendrerit gravida rutrum quisque non. Malesuada nunc vel risus commodo viverra maecenas accumsan. Aliquam eleifend mi in nulla posuere sollicitudin aliquam. Convallis a cras semper auctor. Placerat duis ultricies lacus sed turpis tincidunt. Donec ac odio tempor orci dapibus ultrices. Nulla facilisi cras fermentum odio eu feugiat. Tortor vitae purus faucibus ornare suspendisse sed nisi lacus.</p>
+            <p>Sed viverra tellus in hac habitasse platea dictumst. Tortor consequat id porta nibh venenatis cras sed. Viverra vitae congue eu consequat ac felis donec et odio. Blandit turpis cursus in hac habitasse platea dictumst quisque sagittis. Gravida cum sociis natoque penatibus et magnis dis parturient montes. Commodo viverra maecenas accumsan lacus.&nbsp;</p>
+    - entity: 'paragraph'
+      type: 'pull_quote'
+      status: 1
+      field_text:
+        - format: restricted_html
+          value: "Malesuada nunc vel risus commodo viverra maecenas accumsan. Aliquam eleifend mi in nulla posuere sollicitudin aliquam."
+      field_attribution:
+          value: "This person"
+    - entity: 'paragraph'
+      type: 'text'
+      status: 1
+      field_text:
+        - format: 'basic_html'
+          value: "Sed viverra tellus in hac habitasse platea dictumst. Tortor consequat id porta nibh venenatis cras sed. Viverra vitae congue eu consequat ac felis donec et odio. Blandit turpis cursus in hac habitasse platea dictumst quisque sagittis. Gravida cum sociis natoque penatibus et magnis dis parturient montes."
+    - entity: 'paragraph'
+      type: 'image'
+      status: 1
+      field_image:
+        - entity: 'media'
+          bundle: 'image'
+          field_media_image:
+            - '#process':
+                callback: 'file'
+                args:
+                  - 'image'
+                  - filename: '2018_10_15_10-25-00_Biking_DP_0035.jpg'
+    - entity: 'paragraph'
+      type: 'text'
+      status: 1
+      field_text:
+        - format: 'basic_html'
+          value: "Rhoncus aenean vel elit scelerisque mauris pellentesque pulvinar. Condimentum vitae sapien pellentesque habitant. Nisi est sit amet facilisis magna etiam tempor orci eu. Montes nascetur ridiculus mus mauris vitae ultricies leo. Nunc scelerisque viverra mauris in aliquam sem fringilla ut morbi. In nulla posuere sollicitudin aliquam ultrices. In ornare quam viverra orci sagittis eu volutpat odio facilisis. Arcu cursus vitae congue mauris rhoncus aenean vel elit. Odio eu feugiat pretium nibh ipsum consequat nisl vel. Convallis aenean et tortor at risus viverra adipiscing at. A pellentesque sit amet porttitor. Ut morbi tincidunt augue interdum velit euismod. Augue ut lectus arcu bibendum at. Fames ac turpis egestas maecenas pharetra convallis."
