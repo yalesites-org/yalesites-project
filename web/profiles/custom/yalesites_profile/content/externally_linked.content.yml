@@ -1,6 +1,6 @@
 - entity: "node"
   type: "news"
-  title: "An externally linked article with content elsewhere1"
+  title: "An externally linked article with content elsewhere"
   status: 1
   field_teaser_title:
     value: 'No local content article'

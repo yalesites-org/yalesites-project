@@ -1,6 +1,6 @@
 - entity: "node"
   type: "page"
-  title: "Top goal for the site1"
+  title: "Top goal for the site"
   status: 1
   field_teaser_title:
     value: Sample homepage
