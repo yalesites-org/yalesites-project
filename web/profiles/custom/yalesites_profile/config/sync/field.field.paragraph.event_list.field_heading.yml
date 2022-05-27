@@ -1,0 +1,26 @@
+uuid: 0c0843a9-6368-4a7b-8f85-64a2803e7921
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_heading
+    - paragraphs.paragraphs_type.event_list
+  module:
+    - allowed_formats
+    - text
+third_party_settings:
+  allowed_formats:
+    allowed_formats:
+      - heading_html
+id: paragraph.event_list.field_heading
+field_name: field_heading
+entity_type: paragraph
+bundle: event_list
+label: Heading
+description: ''
+required: true
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: text
