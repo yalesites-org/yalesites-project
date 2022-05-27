@@ -1,0 +1,83 @@
+uuid: b5cbd83a-8f31-417e-b6f7-7855be05dd84
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_content
+    - node.type.event
+    - paragraphs.paragraphs_type.accordion
+    - paragraphs.paragraphs_type.callout
+    - paragraphs.paragraphs_type.divider
+    - paragraphs.paragraphs_type.embed
+    - paragraphs.paragraphs_type.image
+    - paragraphs.paragraphs_type.pop_out_image
+    - paragraphs.paragraphs_type.pull_quote
+    - paragraphs.paragraphs_type.text
+    - paragraphs.paragraphs_type.text_with_image
+  module:
+    - entity_reference_revisions
+id: node.event.field_content
+field_name: field_content
+entity_type: node
+bundle: event
+label: Content
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:paragraph'
+  handler_settings:
+    target_bundles:
+      accordion: accordion
+      callout: callout
+      divider: divider
+      embed: embed
+      image: image
+      pop_out_image: pop_out_image
+      pull_quote: pull_quote
+      text: text
+      text_with_image: text_with_image
+    negate: 0
+    target_bundles_drag_drop:
+      accordion:
+        weight: 14
+        enabled: true
+      accordion_item:
+        weight: 15
+        enabled: false
+      callout:
+        weight: 16
+        enabled: true
+      callout_item:
+        weight: 17
+        enabled: false
+      cta_banner:
+        weight: 18
+        enabled: false
+      divider:
+        weight: 19
+        enabled: true
+      embed:
+        weight: 20
+        enabled: true
+      image:
+        weight: 21
+        enabled: true
+      pop_out_image:
+        weight: 22
+        enabled: true
+      pull_quote:
+        weight: 23
+        enabled: true
+      section:
+        weight: 24
+        enabled: false
+      text:
+        weight: 25
+        enabled: true
+      text_with_image:
+        weight: 26
+        enabled: true
+field_type: entity_reference_revisions
