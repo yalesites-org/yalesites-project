@@ -5,13 +5,20 @@ dependencies:
   config:
     - field.storage.node.field_content
     - node.type.page
-    - paragraphs.paragraphs_type.accordion_item
-    - paragraphs.paragraphs_type.callout_item
-    - paragraphs.paragraphs_type.cta_banner
+    - paragraphs.paragraphs_type.accordion
+    - paragraphs.paragraphs_type.callout
+    - paragraphs.paragraphs_type.divider
+    - paragraphs.paragraphs_type.embed
     - paragraphs.paragraphs_type.event_cards
     - paragraphs.paragraphs_type.event_list
+    - paragraphs.paragraphs_type.image
     - paragraphs.paragraphs_type.news_cards
     - paragraphs.paragraphs_type.news_list
+    - paragraphs.paragraphs_type.pop_out_image
+    - paragraphs.paragraphs_type.pull_quote
+    - paragraphs.paragraphs_type.section
+    - paragraphs.paragraphs_type.text
+    - paragraphs.paragraphs_type.text_with_image
   module:
     - entity_reference_revisions
 id: node.page.field_content
@@ -28,64 +35,71 @@ settings:
   handler: 'default:paragraph'
   handler_settings:
     target_bundles:
-      accordion_item: accordion_item
-      cta_banner: cta_banner
-      callout_item: callout_item
+      section: section
+      accordion: accordion
+      text: text
+      text_with_image: text_with_image
+      image: image
+      pull_quote: pull_quote
+      pop_out_image: pop_out_image
+      callout: callout
+      divider: divider
+      embed: embed
       event_cards: event_cards
-      news_cards: news_cards
       event_list: event_list
+      news_cards: news_cards
       news_list: news_list
-    negate: 1
+    negate: 0
     target_bundles_drag_drop:
       accordion:
-        weight: 10
-        enabled: false
+        weight: -34
+        enabled: true
       accordion_item:
-        weight: 11
-        enabled: true
+        weight: -21
+        enabled: false
       callout:
-        weight: 12
-        enabled: false
+        weight: -28
+        enabled: true
       callout_item:
-        weight: 13
-        enabled: true
+        weight: -19
+        enabled: false
       cta_banner:
-        weight: 12
-        enabled: true
+        weight: -20
+        enabled: false
       divider:
-        weight: 14
-        enabled: false
+        weight: -27
+        enabled: true
       embed:
-        weight: 11
-        enabled: false
+        weight: -26
+        enabled: true
       event_cards:
-        weight: 16
+        weight: -25
         enabled: true
       event_list:
-        weight: 24
+        weight: -24
         enabled: true
       image:
-        weight: 12
-        enabled: false
+        weight: -31
+        enabled: true
       news_cards:
-        weight: 18
+        weight: -23
         enabled: true
       news_list:
-        weight: 29
+        weight: -22
         enabled: true
       pop_out_image:
-        weight: 15
-        enabled: false
+        weight: -29
+        enabled: true
       pull_quote:
-        weight: 16
-        enabled: false
+        weight: -30
+        enabled: true
       section:
-        weight: 28
-        enabled: false
+        weight: -35
+        enabled: true
       text:
-        weight: 17
-        enabled: false
+        weight: -33
+        enabled: true
       text_with_image:
-        weight: 18
-        enabled: false
+        weight: -32
+        enabled: true
 field_type: entity_reference_revisions

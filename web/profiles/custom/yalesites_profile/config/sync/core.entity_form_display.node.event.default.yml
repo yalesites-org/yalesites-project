@@ -17,10 +17,10 @@ dependencies:
   module:
     - address
     - field_group
+    - layout_paragraphs
     - link
     - media_library
     - metatag
-    - paragraphs
     - path
     - smart_date
     - smart_date_recur
@@ -107,16 +107,14 @@ content:
     settings: {  }
     third_party_settings: {  }
   field_content:
-    type: entity_reference_paragraphs
+    type: layout_paragraphs
     weight: 7
     region: content
     settings:
-      title: Paragraph
-      title_plural: Paragraphs
-      edit_mode: open
-      add_mode: dropdown
-      form_display_mode: default
-      default_paragraph_type: ''
+      preview_view_mode: preview
+      nesting_depth: 0
+      require_layouts: 0
+      empty_message: ''
     third_party_settings: {  }
   field_event_cta:
     type: link_default
