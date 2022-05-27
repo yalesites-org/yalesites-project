@@ -1,0 +1,25 @@
+uuid: edb07638-040d-4517-814b-3462575e3677
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.paragraph.news_cards.field_heading
+    - paragraphs.paragraphs_type.news_cards
+  module:
+    - text
+id: paragraph.news_cards.default
+targetEntityType: paragraph
+bundle: news_cards
+mode: default
+content:
+  field_heading:
+    type: text_textfield
+    weight: 0
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+hidden:
+  created: true
+  status: true

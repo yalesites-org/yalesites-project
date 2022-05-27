@@ -10,6 +10,8 @@ dependencies:
     - paragraphs.paragraphs_type.cta_banner
     - paragraphs.paragraphs_type.event_cards
     - paragraphs.paragraphs_type.event_list
+    - paragraphs.paragraphs_type.news_cards
+    - paragraphs.paragraphs_type.news_list
   module:
     - entity_reference_revisions
 id: node.page.field_content
@@ -30,7 +32,9 @@ settings:
       cta_banner: cta_banner
       callout_item: callout_item
       event_cards: event_cards
+      news_cards: news_cards
       event_list: event_list
+      news_list: news_list
     negate: 1
     target_bundles_drag_drop:
       accordion:
@@ -63,6 +67,12 @@ settings:
       image:
         weight: 12
         enabled: false
+      news_cards:
+        weight: 18
+        enabled: true
+      news_list:
+        weight: 29
+        enabled: true
       pop_out_image:
         weight: 15
         enabled: false
