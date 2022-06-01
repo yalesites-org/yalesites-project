@@ -25,7 +25,7 @@
     "drupal/smart_date": "^3.5",
     "drush/drush": "^10",
     "pantheon-systems/drupal-integrations": "^9",
-    "yalesites-org/yalesites_profile": "self.version"
+    "yalesites-org/yalesites_profile": "*"
   },
   "require-dev": {
     "dealerdirect/phpcodesniffer-composer-installer": "^0.7.2",
