@@ -1,0 +1,25 @@
+uuid: 574d9ced-d3cb-445a-8bbb-c847c8321bb8
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.paragraph.event_list.field_heading
+    - paragraphs.paragraphs_type.event_list
+  module:
+    - text
+id: paragraph.event_list.default
+targetEntityType: paragraph
+bundle: event_list
+mode: default
+content:
+  field_heading:
+    type: text_textfield
+    weight: 0
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+hidden:
+  created: true
+  status: true

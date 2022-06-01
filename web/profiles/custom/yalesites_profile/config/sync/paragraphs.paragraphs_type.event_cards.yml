@@ -1,0 +1,10 @@
+uuid: c571e83e-974e-4d5f-a5c0-93b035899ccb
+langcode: en
+status: true
+dependencies: {  }
+id: event_cards
+label: 'Event Cards'
+icon_uuid: null
+icon_default: null
+description: ''
+behavior_plugins: {  }
