@@ -1,4 +1,4 @@
-uuid: 831b95dc-6d1c-41a2-b7e1-294ee1003bc1
+uuid: 9dbab596-67bf-4201-afa8-0f8ea18c6653
 langcode: en
 status: true
 dependencies:
@@ -7,18 +7,13 @@ dependencies:
     - node.type.event
   module:
     - smart_date
-    - smart_date_recur
-third_party_settings:
-  smart_date_recur:
-    allow_recurring: true
-    month_limit: 12
 id: node.event.field_event_date
 field_name: field_event_date
 entity_type: node
 bundle: event
 label: Date
 description: ''
-required: true
+required: false
 translatable: false
 default_value:
   -

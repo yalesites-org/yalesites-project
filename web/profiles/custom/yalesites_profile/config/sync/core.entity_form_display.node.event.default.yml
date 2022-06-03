@@ -21,7 +21,6 @@ dependencies:
     - metatag
     - path
     - smart_date
-    - smart_date_recur
     - text
 third_party_settings:
   field_group:
@@ -78,8 +77,8 @@ third_party_settings:
     group_logistics:
       children:
         - field_event_format
-        - field_event_date
         - field_event_cta
+        - field_event_date
       label: Logistics
       region: content
       parent_name: group_wrapper
@@ -115,17 +114,18 @@ content:
     third_party_settings: {  }
   field_event_cta:
     type: link_default
-    weight: 28
+    weight: 27
     region: content
     settings:
       placeholder_url: ''
       placeholder_title: ''
     third_party_settings: {  }
   field_event_date:
-    type: smartdate_default
-    weight: 27
+    type: smartdate_inline
+    weight: 28
     region: content
     settings:
+      hide_date: 0
       modal: false
       default_duration: 60
       default_duration_increments: |-
@@ -135,17 +135,7 @@ content:
         120|2 hours
         custom
       show_extra: false
-      hide_date: false
-    third_party_settings:
-      smart_date_recur:
-        modal: false
-        allowed_recur_freq_values:
-          MINUTELY: '0'
-          HOURLY: '0'
-          DAILY: DAILY
-          WEEKLY: WEEKLY
-          MONTHLY: MONTHLY
-          YEARLY: '0'
+    third_party_settings: {  }
   field_event_format:
     type: options_buttons
     weight: 26

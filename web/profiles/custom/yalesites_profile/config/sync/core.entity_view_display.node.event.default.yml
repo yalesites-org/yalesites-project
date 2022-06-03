@@ -58,7 +58,7 @@ content:
       add_classes: false
       time_wrapper: true
     third_party_settings: {  }
-    weight: 6
+    weight: 11
     region: content
   field_event_format:
     type: list_default
