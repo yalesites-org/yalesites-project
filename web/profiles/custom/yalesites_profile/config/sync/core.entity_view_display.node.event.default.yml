@@ -7,7 +7,6 @@ dependencies:
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_format
-    - field.field.node.event.field_event_location
     - field.field.node.event.field_metatags
     - field.field.node.event.field_subtitle
     - field.field.node.event.field_teaser_media
@@ -15,7 +14,6 @@ dependencies:
     - field.field.node.event.field_teaser_title
     - node.type.event
   module:
-    - address
     - entity_reference_revisions
     - link
     - metatag
@@ -68,13 +66,6 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 9
-    region: content
-  field_event_location:
-    type: address_default
-    label: above
-    settings: {  }
-    third_party_settings: {  }
-    weight: 7
     region: content
   field_metatags:
     type: metatag_empty_formatter

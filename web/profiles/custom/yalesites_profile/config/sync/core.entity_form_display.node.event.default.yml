@@ -7,7 +7,6 @@ dependencies:
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_format
-    - field.field.node.event.field_event_location
     - field.field.node.event.field_metatags
     - field.field.node.event.field_subtitle
     - field.field.node.event.field_teaser_media
@@ -15,7 +14,6 @@ dependencies:
     - field.field.node.event.field_teaser_title
     - node.type.event
   module:
-    - address
     - field_group
     - layout_paragraphs
     - link
@@ -79,10 +77,9 @@ third_party_settings:
         required_fields: true
     group_logistics:
       children:
-        - field_event_date
-        - field_event_location
-        - field_event_cta
         - field_event_format
+        - field_event_date
+        - field_event_cta
       label: Logistics
       region: content
       parent_name: group_wrapper
@@ -118,7 +115,7 @@ content:
     third_party_settings: {  }
   field_event_cta:
     type: link_default
-    weight: 25
+    weight: 28
     region: content
     settings:
       placeholder_url: ''
@@ -126,7 +123,7 @@ content:
     third_party_settings: {  }
   field_event_date:
     type: smartdate_default
-    weight: 23
+    weight: 27
     region: content
     settings:
       modal: false
@@ -152,12 +149,6 @@ content:
   field_event_format:
     type: options_buttons
     weight: 26
-    region: content
-    settings: {  }
-    third_party_settings: {  }
-  field_event_location:
-    type: address_default
-    weight: 24
     region: content
     settings: {  }
     third_party_settings: {  }

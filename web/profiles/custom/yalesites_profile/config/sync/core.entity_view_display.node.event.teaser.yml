@@ -8,7 +8,6 @@ dependencies:
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_format
-    - field.field.node.event.field_event_location
     - field.field.node.event.field_metatags
     - field.field.node.event.field_subtitle
     - field.field.node.event.field_teaser_media
@@ -32,7 +31,6 @@ hidden:
   field_event_cta: true
   field_event_date: true
   field_event_format: true
-  field_event_location: true
   field_metatags: true
   field_subtitle: true
   field_teaser_media: true
