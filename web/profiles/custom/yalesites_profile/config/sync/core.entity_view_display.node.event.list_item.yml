@@ -9,7 +9,6 @@ dependencies:
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_format
     - field.field.node.event.field_metatags
-    - field.field.node.event.field_subtitle
     - field.field.node.event.field_teaser_media
     - field.field.node.event.field_teaser_text
     - field.field.node.event.field_teaser_title
@@ -60,13 +59,6 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 10
-    region: content
-  field_subtitle:
-    type: text_default
-    label: above
-    settings: {  }
-    third_party_settings: {  }
-    weight: 1
     region: content
   field_teaser_media:
     type: entity_reference_label
