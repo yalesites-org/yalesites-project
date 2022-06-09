@@ -11,7 +11,7 @@ third_party_settings:
     parent: 'main:'
 name: Page
 type: page
-description: ''
+description: 'A multipurpose and flexible content type allowing free-form content entry. used to build a variety of different page layouts, from simple to elaborate.'
 help: ''
 new_revision: true
 preview_mode: 1
