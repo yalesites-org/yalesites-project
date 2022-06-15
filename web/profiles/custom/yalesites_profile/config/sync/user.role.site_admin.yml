@@ -4,12 +4,16 @@ status: true
 dependencies:
   config:
     - media.type.image
+    - node.type.event
     - node.type.news
     - node.type.page
   module:
+    - editoria11y
+    - file
     - media
     - node
     - paragraphs
+    - path
     - search
     - system
     - taxonomy
@@ -20,30 +24,43 @@ weight: 3
 is_admin: null
 permissions:
   - 'access content overview'
+  - 'access files overview'
+  - 'access media overview'
   - 'access site in maintenance mode'
   - 'access taxonomy overview'
   - 'access toolbar'
   - 'access user profiles'
-  - 'administer taxonomy'
   - 'administer users'
+  - 'create event content'
   - 'create image media'
   - 'create media'
   - 'create news content'
   - 'create page content'
+  - 'create url aliases'
+  - 'delete all revisions'
+  - 'delete any event content'
   - 'delete any image media'
   - 'delete any media'
   - 'delete any news content'
   - 'delete any page content'
+  - 'delete event revisions'
   - 'delete media'
+  - 'delete news revisions'
+  - 'delete own event content'
   - 'delete own image media'
   - 'delete own news content'
   - 'delete own page content'
+  - 'delete page revisions'
+  - 'edit any event content'
   - 'edit any image media'
   - 'edit any news content'
   - 'edit any page content'
+  - 'edit own event content'
   - 'edit own image media'
   - 'edit own news content'
   - 'edit own page content'
+  - 'revert all revisions'
+  - 'revert event revisions'
   - 'revert news revisions'
   - 'revert page revisions'
   - 'search content'
@@ -52,6 +69,8 @@ permissions:
   - 'use advanced search'
   - 'view all media revisions'
   - 'view all revisions'
+  - 'view editoria11y checker'
+  - 'view event revisions'
   - 'view news revisions'
   - 'view own unpublished content'
   - 'view own unpublished media'
