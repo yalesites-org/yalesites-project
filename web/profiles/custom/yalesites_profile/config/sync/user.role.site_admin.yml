@@ -15,6 +15,7 @@ dependencies:
     - node
     - paragraphs
     - path
+    - publishcontent
     - search
     - system
     - taxonomy
@@ -58,11 +59,15 @@ permissions:
   - 'edit own image media'
   - 'edit own news content'
   - 'edit own page content'
+  - 'publish any content'
+  - 'publish editable content'
   - 'revert all revisions'
   - 'revert event revisions'
   - 'revert news revisions'
   - 'revert page revisions'
   - 'search content'
+  - 'unpublish any content'
+  - 'unpublish editable content'
   - 'update any media'
   - 'update media'
   - 'use advanced search'

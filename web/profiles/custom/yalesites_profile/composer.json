@@ -44,6 +44,7 @@
         "drupal/paragraphs_ee": "^2.0",
         "drupal/paragraphs_features": "^1.15",
         "drupal/pathauto": "^1.8",
+        "drupal/publishcontent": "^1.5",
         "drupal/redirect": "^1.7",
         "drupal/twig_tweak": "^3.1",
         "drupal/xmlsitemap": "^1.2",

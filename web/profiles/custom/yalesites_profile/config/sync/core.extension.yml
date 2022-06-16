@@ -18,7 +18,6 @@ module:
   config_filter: 0
   config_ignore: 0
   config_split: 0
-  content_moderation: 0
   contextual: 0
   crop: 0
   ctools: 0
@@ -60,6 +59,7 @@ module:
   paragraphs_features: 0
   path: 0
   path_alias: 0
+  publishcontent: 0
   redirect: 0
   responsive_image: 0
   search: 0
@@ -73,7 +73,6 @@ module:
   twig_tweak: 0
   user: 0
   views_ui: 0
-  workflows: 0
   yale_cas: 0
   ys_admin: 0
   ys_alert: 0
