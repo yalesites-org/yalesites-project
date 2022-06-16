@@ -3,6 +3,7 @@ _core:
 module:
   address: 0
   admin_toolbar: 0
+  admin_toolbar_tools: 0
   allowed_formats: 0
   block: 0
   breakpoint: 0
@@ -78,6 +79,7 @@ module:
   ys_alert: 0
   ys_layouts: 0
   ys_mail: 0
+  menu_admin_per_menu: 1
   pathauto: 1
   xmlsitemap: 1
   externalauth: 10
