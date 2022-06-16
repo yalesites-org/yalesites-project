@@ -21,9 +21,9 @@ third_party_settings:
   field_group:
     group_content:
       children:
-        - field_content
+        - title
         - field_author
-        - field_metatags
+        - field_content
       label: Content
       region: content
       parent_name: group_wrapper
@@ -66,7 +66,7 @@ third_party_settings:
       label: Wrapper
       region: content
       parent_name: ''
-      weight: 1
+      weight: 0
       format_type: tabs
       format_settings:
         classes: ''
@@ -81,13 +81,13 @@ mode: default
 content:
   created:
     type: datetime_timestamp
-    weight: 5
+    weight: 3
     region: content
     settings: {  }
     third_party_settings: {  }
   field_author:
     type: string_textfield
-    weight: 27
+    weight: 1
     region: content
     settings:
       size: 60
@@ -95,7 +95,7 @@ content:
     third_party_settings: {  }
   field_content:
     type: entity_reference_paragraphs
-    weight: 26
+    weight: 2
     region: content
     settings:
       title: Paragraph
@@ -107,7 +107,7 @@ content:
     third_party_settings: {  }
   field_metatags:
     type: metatag_firehose
-    weight: 28
+    weight: 1
     region: content
     settings:
       sidebar: true
@@ -138,27 +138,27 @@ content:
     third_party_settings: {  }
   path:
     type: path
-    weight: 8
+    weight: 6
     region: content
     settings: {  }
     third_party_settings: {  }
   promote:
     type: boolean_checkbox
-    weight: 6
+    weight: 4
     region: content
     settings:
       display_label: true
     third_party_settings: {  }
   status:
     type: boolean_checkbox
-    weight: 10
+    weight: 8
     region: content
     settings:
       display_label: true
     third_party_settings: {  }
   sticky:
     type: boolean_checkbox
-    weight: 7
+    weight: 5
     region: content
     settings:
       display_label: true
@@ -173,7 +173,7 @@ content:
     third_party_settings: {  }
   uid:
     type: entity_reference_autocomplete
-    weight: 4
+    weight: 2
     region: content
     settings:
       match_operator: CONTAINS
@@ -182,7 +182,7 @@ content:
       placeholder: ''
     third_party_settings: {  }
   url_redirects:
-    weight: 9
+    weight: 7
     region: content
     settings: {  }
     third_party_settings: {  }
