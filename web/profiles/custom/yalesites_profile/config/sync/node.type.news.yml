@@ -10,7 +10,7 @@ third_party_settings:
     parent: ''
 name: News
 type: news
-description: ''
+description: 'Create a news article, blog post, or announcement, to share new and noteworthy information. Can be displayed in a news feed.'
 help: ''
 new_revision: true
 preview_mode: 1
