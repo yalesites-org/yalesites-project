@@ -18,7 +18,6 @@ dependencies:
     - metatag
     - options
     - smart_date
-    - text
     - user
 id: node.event.default
 targetEntityType: node
@@ -32,7 +31,7 @@ content:
       view_mode: default
       link: ''
     third_party_settings: {  }
-    weight: 2
+    weight: 1
     region: content
   field_event_cta:
     type: link_separate
@@ -44,7 +43,7 @@ content:
       rel: ''
       target: ''
     third_party_settings: {  }
-    weight: 8
+    weight: 2
     region: content
   field_event_date:
     type: smartdate_plain
@@ -53,48 +52,28 @@ content:
       timezone_override: ''
       separator: '-'
     third_party_settings: {  }
-    weight: 11
+    weight: 5
     region: content
   field_event_format:
     type: list_default
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 9
+    weight: 3
     region: content
   field_metatags:
     type: metatag_empty_formatter
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 10
-    region: content
-  field_teaser_media:
-    type: entity_reference_label
-    label: hidden
-    settings:
-      link: true
-    third_party_settings: {  }
-    weight: 5
-    region: content
-  field_teaser_text:
-    type: text_default
-    label: hidden
-    settings: {  }
-    third_party_settings: {  }
     weight: 4
-    region: content
-  field_teaser_title:
-    type: string
-    label: hidden
-    settings:
-      link_to_entity: false
-    third_party_settings: {  }
-    weight: 3
     region: content
   links:
     settings: {  }
     third_party_settings: {  }
     weight: 0
     region: content
-hidden: {  }
+hidden:
+  field_teaser_media: true
+  field_teaser_text: true
+  field_teaser_title: true
