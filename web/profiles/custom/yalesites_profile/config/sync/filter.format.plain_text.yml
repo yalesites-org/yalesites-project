@@ -1,7 +1,9 @@
 uuid: c3ecf5a9-485c-44dc-aa8d-0e6ae905eb39
 langcode: en
 status: true
-dependencies: {  }
+dependencies:
+  module:
+    - improve_line_breaks_filter
 _core:
   default_config_hash: NIKBt6kw_uPhNI0qtR2DnRf7mSOgAQdx7Q94SKMjXbQ
 name: 'Plain text'
@@ -14,16 +16,10 @@ filters:
     status: true
     weight: -10
     settings: {  }
-  filter_url:
-    id: filter_url
-    provider: filter
-    status: true
-    weight: 0
+  improve_line_breaks_filter:
+    id: improve_line_breaks_filter
+    provider: improve_line_breaks_filter
+    status: false
+    weight: 50
     settings:
-      filter_url_length: 72
-  filter_autop:
-    id: filter_autop
-    provider: filter
-    status: true
-    weight: 0
-    settings: {  }
+      remove_empty_paragraphs: '0'
