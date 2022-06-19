@@ -39,6 +39,7 @@ third_party_settings:
         width_breakpoint: 640
     group_content:
       children:
+        - title
         - field_content
         - field_metatags
       label: Content
@@ -127,7 +128,7 @@ content:
           dialog_style: tiles
   field_content:
     type: layout_paragraphs
-    weight: 13
+    weight: 1
     region: content
     settings:
       preview_view_mode: preview
@@ -137,7 +138,7 @@ content:
     third_party_settings: {  }
   field_metatags:
     type: metatag_firehose
-    weight: 14
+    weight: 2
     region: content
     settings:
       sidebar: true

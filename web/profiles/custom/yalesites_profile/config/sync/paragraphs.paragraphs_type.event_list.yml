@@ -1,0 +1,10 @@
+uuid: 221df993-1923-4e7e-bcdd-8680aacaf702
+langcode: en
+status: true
+dependencies: {  }
+id: event_list
+label: 'Event List'
+icon_uuid: null
+icon_default: null
+description: ''
+behavior_plugins: {  }

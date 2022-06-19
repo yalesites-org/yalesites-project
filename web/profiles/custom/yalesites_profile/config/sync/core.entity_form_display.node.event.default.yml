@@ -1,0 +1,213 @@
+uuid: ad0ddbf1-9c1e-4328-a6e3-d2162193263e
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.node.event.field_content
+    - field.field.node.event.field_event_cta
+    - field.field.node.event.field_event_date
+    - field.field.node.event.field_event_format
+    - field.field.node.event.field_metatags
+    - field.field.node.event.field_subtitle
+    - field.field.node.event.field_teaser_media
+    - field.field.node.event.field_teaser_text
+    - field.field.node.event.field_teaser_title
+    - node.type.event
+  module:
+    - field_group
+    - layout_paragraphs
+    - link
+    - media_library
+    - metatag
+    - path
+    - smart_date
+    - text
+third_party_settings:
+  field_group:
+    group_wrapper:
+      children:
+        - group_content
+        - group_teaser
+        - group_logistics
+      label: Wrapper
+      region: content
+      parent_name: ''
+      weight: 0
+      format_type: tabs
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        direction: horizontal
+        width_breakpoint: 640
+    group_content:
+      children:
+        - title
+        - field_subtitle
+        - field_content
+      label: Content
+      region: content
+      parent_name: group_wrapper
+      weight: 20
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: open
+        description: ''
+        required_fields: true
+    group_teaser:
+      children:
+        - field_teaser_title
+        - field_teaser_text
+        - field_teaser_media
+      label: Teaser
+      region: content
+      parent_name: group_wrapper
+      weight: 21
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: closed
+        description: ''
+        required_fields: true
+    group_logistics:
+      children:
+        - field_event_format
+        - field_event_cta
+        - field_event_date
+      label: Logistics
+      region: content
+      parent_name: group_wrapper
+      weight: 22
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: closed
+        description: ''
+        required_fields: true
+id: node.event.default
+targetEntityType: node
+bundle: event
+mode: default
+content:
+  created:
+    type: datetime_timestamp
+    weight: 3
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_content:
+    type: layout_paragraphs
+    weight: 7
+    region: content
+    settings:
+      preview_view_mode: preview
+      nesting_depth: 0
+      require_layouts: 0
+      empty_message: ''
+    third_party_settings: {  }
+  field_event_cta:
+    type: link_default
+    weight: 27
+    region: content
+    settings:
+      placeholder_url: ''
+      placeholder_title: ''
+    third_party_settings: {  }
+  field_event_date:
+    type: smartdate_inline
+    weight: 28
+    region: content
+    settings:
+      hide_date: 0
+      modal: false
+      default_duration: 60
+      default_duration_increments: |-
+        30
+        60|1 hour
+        90
+        120|2 hours
+        custom
+      show_extra: false
+    third_party_settings: {  }
+  field_event_format:
+    type: options_buttons
+    weight: 26
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_metatags:
+    type: metatag_firehose
+    weight: 2
+    region: content
+    settings:
+      sidebar: true
+      use_details: true
+    third_party_settings: {  }
+  field_subtitle:
+    type: text_textfield
+    weight: 2
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  field_teaser_media:
+    type: media_library_widget
+    weight: 6
+    region: content
+    settings:
+      media_types: {  }
+    third_party_settings: {  }
+  field_teaser_text:
+    type: text_textarea
+    weight: 5
+    region: content
+    settings:
+      rows: 5
+      placeholder: ''
+    third_party_settings: {  }
+  field_teaser_title:
+    type: string_textfield
+    weight: 4
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  path:
+    type: path
+    weight: 4
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  status:
+    type: boolean_checkbox
+    weight: 6
+    region: content
+    settings:
+      display_label: true
+    third_party_settings: {  }
+  title:
+    type: string_textfield
+    weight: 1
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  url_redirects:
+    weight: 5
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+hidden:
+  promote: true
+  sticky: true
+  uid: true

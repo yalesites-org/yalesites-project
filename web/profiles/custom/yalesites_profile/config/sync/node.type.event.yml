@@ -1,0 +1,17 @@
+uuid: c19e042c-ed72-4eac-a5c7-aec52bb5ec69
+langcode: en
+status: true
+dependencies:
+  module:
+    - menu_ui
+third_party_settings:
+  menu_ui:
+    available_menus: {  }
+    parent: ''
+name: Event
+type: event
+description: 'Display the details of an individual event, such as time, date, and location. Can be displayed on a calendar of events.'
+help: ''
+new_revision: true
+preview_mode: 1
+display_submitted: false
