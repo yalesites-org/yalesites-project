@@ -24,13 +24,13 @@ cd ../../
 
 # Run linting
 npm install
-npm run test
+# npm run test
 
-# Run unit tests
-composer -n unit-test
+# # Run unit tests
+# composer -n unit-test
 
-# Lint php code for syntax errors
-composer -n lint
+# # Lint php code for syntax errors
+# composer -n lint
 
-# Check coding standards
-composer -n code-sniff
+# # Check coding standards
+# composer -n code-sniff
