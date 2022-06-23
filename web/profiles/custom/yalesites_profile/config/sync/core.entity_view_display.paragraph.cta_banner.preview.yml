@@ -4,6 +4,7 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.paragraph.preview
+    - field.field.paragraph.cta_banner.field_heading
     - field.field.paragraph.cta_banner.field_image
     - field.field.paragraph.cta_banner.field_link
     - field.field.paragraph.cta_banner.field_text
@@ -47,4 +48,5 @@ content:
     third_party_settings: {  }
     weight: 1
     region: content
-hidden: {  }
+hidden:
+  field_heading: true
