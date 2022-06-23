@@ -13,6 +13,10 @@ set -eo pipefail
 composer self-update --2
 composer install --no-ansi --no-interaction --optimize-autoloader --no-progress
 
+# Create .npmrc
+echo @yalesites-org:registry=https://npm.pkg.github.com >> .npmrc
+echo //npm.pkg.github.com/:_authToken="$GITHUB_TOKEN" >> .npmrc
+
 # Install Drupal packages so eslint will run
 cd web/core
 yarn install
