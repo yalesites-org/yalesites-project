@@ -13,7 +13,7 @@ dependencies:
     - field.field.node.event.field_teaser_title
     - node.type.event
   module:
-    - entity_reference_revisions
+    - layout_paragraphs
     - link
     - metatag
     - options
@@ -25,11 +25,15 @@ bundle: event
 mode: default
 content:
   field_content:
-    type: entity_reference_revisions_entity_view
+    type: layout_paragraphs_builder
     label: hidden
     settings:
       view_mode: default
       link: ''
+      preview_view_mode: default
+      nesting_depth: 0
+      require_layouts: 0
+      empty_message: ''
     third_party_settings: {  }
     weight: 1
     region: content
