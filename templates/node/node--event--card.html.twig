@@ -1,0 +1,27 @@
+{{ attach_library('atomic/reference-card') }}
+
+{% set date__formatted %}
+  {% include "@atoms/date-time/date-time.twig" with {
+    date_time__start: content.field_event_date.0.start_time['#markup'],
+  } %}
+{% endset %}
+
+{% if content.field_event_format %}
+  {% set reference_card__overline %}
+    {% include "@molecules/cards/reference-card/event/_event-format.twig" with {
+      format: content.field_event_format,
+    } %}
+  {% endset %}
+{% endif %}
+
+{% embed "@molecules/cards/reference-card/reference-card.twig" with {
+  reference_card__heading: content.field_teaser_title,
+  reference_card__subheading: date__formatted,
+  reference_card__url: url,
+  reference_card__snippet: content.field_teaser_text,
+  reference_card__image: 'true',
+} %}
+  {% block reference_card__image %}
+    {{ content.field_teaser_media }}
+  {% endblock %}
+{% endembed %}
