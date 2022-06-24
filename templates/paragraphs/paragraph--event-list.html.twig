@@ -1,0 +1,9 @@
+{% embed "@organisms/card-collection/card-collection.twig" with {
+  card_collection__heading: content.field_heading,
+  card_collection__featured: 'false',
+  card_collection__type: 'list',
+} %}
+  {% block card_collection__cards %}
+    {{ drupal_view('event_list', 'full') }}
+  {% endblock %}
+{% endembed %}
