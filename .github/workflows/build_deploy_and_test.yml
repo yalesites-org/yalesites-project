@@ -1,5 +1,8 @@
 name: Build, deploy and test
-on: push
+on:
+  pull_request:
+    branches-ignore:
+      - master
 defaults:
   run:
     shell: bash
