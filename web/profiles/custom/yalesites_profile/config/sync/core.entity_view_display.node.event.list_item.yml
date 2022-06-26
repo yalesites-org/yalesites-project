@@ -53,7 +53,7 @@ content:
     type: entity_reference_entity_view
     label: hidden
     settings:
-      view_mode: banner_16_5
+      view_mode: card_list_3_2
       link: false
     third_party_settings: {  }
     weight: 3

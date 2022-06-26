@@ -1,0 +1,10 @@
+uuid: d5df4616-877c-43c9-9bc8-317919fa4130
+langcode: en
+status: true
+dependencies:
+  module:
+    - media
+id: media.card_list_3_2
+label: 'Card - List (3:2)'
+targetEntityType: media
+cache: true

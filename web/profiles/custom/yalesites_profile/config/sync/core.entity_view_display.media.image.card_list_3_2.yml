@@ -1,0 +1,30 @@
+uuid: bbe02e5b-7f14-448c-afc2-f88bf058a3c4
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.media.card_list_3_2
+    - field.field.media.image.field_media_image
+    - media.type.image
+    - responsive_image.styles.card_list_3_2
+  module:
+    - responsive_image
+id: media.image.card_list_3_2
+targetEntityType: media
+bundle: image
+mode: card_list_3_2
+content:
+  field_media_image:
+    type: responsive_image
+    label: hidden
+    settings:
+      responsive_image_style: card_list_3_2
+      image_link: ''
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  created: true
+  name: true
+  thumbnail: true
+  uid: true
