@@ -7,11 +7,11 @@
 {% endset %}
 
 {% if content.field_event_format %}
-  {% set reference_card__overline %}
+  {% set reference_card__overline -%}
     {% include "@molecules/cards/reference-card/event/_event-format.twig" with {
       format: content.field_event_format,
     } %}
-  {% endset %}
+  {%- endset %}
 {% endif %}
 
 {% embed "@molecules/cards/reference-card/reference-card.twig" with {
