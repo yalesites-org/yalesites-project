@@ -54,7 +54,7 @@ jobs:
         run: |
           if [ "$CI_BRANCH" != "refs/heads/master" ]; then
             export PR_NUMBER="$PR_NUMBER"
-            export CI_BRANCH="$GITHUB_REF_NAME"
+            export CI_BRANCH="$GITHUB_HEAD_REF"
 
             export CI_PULL_REQUEST=`curl -u "${GITHUB_OWNER}:${GITHUB_TOKEN}" \
               -H "Accept: application/vnd.github.groot-preview+json" \
