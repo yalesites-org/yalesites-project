@@ -1,0 +1,11 @@
+<?php
+/**
+ * Implements hook_theme().
+ */
+function ys_demo_content_theme() {
+  return [
+    'admin_action_links' => [
+      'render element' => 'children',
+    ],
+  ];
+}

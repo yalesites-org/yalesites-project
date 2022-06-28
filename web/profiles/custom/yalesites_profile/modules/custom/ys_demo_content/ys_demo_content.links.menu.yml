@@ -1,0 +1,5 @@
+ys_demo_content.settings:
+  title: 'YaleSites Demo Content'
+  description: 'YaleSites Demo Content settings, generation, and removal'
+  route_name: ys_demo_content.settings
+  parent: system.admin_config_content

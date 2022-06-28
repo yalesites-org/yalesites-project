@@ -1,0 +1,20 @@
+ys_demo_content.settings:
+  path: '/admin/config/content/ys_demo_content'
+  defaults:
+    _form: 'Drupal\ys_demo_content\Form\DemoContentPlusSettings'
+    _title: 'Demo Content Settings'
+  requirements:
+    _permission: 'administer ys_demo_content'
+ys_demo_content.generate_demo_content:
+  path: '/admin/config/content/ys_demo_content/generate-demo-content'
+  defaults:
+    _controller: '\Drupal\ys_demo_content\DemoContent::ManuallyGenerateDemoContent'
+  requirements:
+    _permission: 'administer ys_demo_content'
+ys_demo_content.remove_demo_content_confirm:
+  path: '/admin/config/content/ys_demo_content/remove-demo-content'
+  defaults:
+    _form: '\Drupal\ys_demo_content\Form\ConfirmRemoveDemoContent'
+    _title: 'Remove Demo Content?'
+  requirements:
+    _permission: 'administer ys_demo_content'

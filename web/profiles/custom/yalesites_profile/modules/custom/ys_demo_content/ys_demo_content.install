@@ -1,0 +1,26 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the module.
+ */
+
+use Drupal\ys_demo_content\DemoContent;
+
+/**
+ * Implements hook_install().
+ */
+function ys_demo_content_install() {
+  if (!\Drupal::service('config.installer')->isSyncing()) {
+    \Drupal::classResolver()->getInstanceFromDefinition(DemoContent::class)->importContent();
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function ys_demo_content_uninstall() {
+  if (!\Drupal::service('config.installer')->isSyncing()) {
+    \Drupal::classResolver()->getInstanceFromDefinition(DemoContent::class)->deleteImportedContent();
+  }
+}

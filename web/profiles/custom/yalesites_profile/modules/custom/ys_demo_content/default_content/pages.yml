@@ -1,0 +1,59 @@
+pages:
+  page_1:
+    title: Fusce molestie magna vel interdum
+    slug: fusce-molestie-magna-vel-interdum
+    paragraphs:
+      text:
+        field_text:
+          value: Medium, aroma frappuccino irish in robusta half and half seasonal. Steamed as trifecta, kopi-luwak roast frappuccino arabica whipped ut strong. Java, aftertaste, to go iced, extra ristretto so viennese sweet. Filter strong turkish french press espresso eu arabica.
+          format: basic_html
+      callout_item:
+        field_heading:
+          vaue: Kopi-luwak roast arabica
+          format: basic_html
+        field_text:
+          value: Cupcake ipsum dolor sit amet. Oat cake cupcake muffin dragée tart pie sweet roll. Tootsie roll dragée sweet sugar plum cotton candy sesame snaps pie halvah jelly-o. Chocolate bar muffin candy canes fruitcake gummies.
+          format: basic_html
+        field_link:
+          uri: https://www.example.com
+          title: Fusce molestie magna vel interdum
+  page_2:
+    title: Cupcake ipsum
+    slug: cupcake-ipsum
+    paragraphs:
+      text:
+        field_text:
+          value: Well, here goes nothing. Ahh, interesting, interesting. You see what you said there? You said here goes nothing. But what we intend to do is turn something into nothing and back again. So what you should have said was “here goes something, here comes nothing”.
+          format: basic_html
+      callout_item:
+        field_heading:
+          vaue: Here goes something, here comes nothing
+          format: basic_html
+        field_text:
+          value: Going forward, our corporate standpoint will deliver value to deliverables. You need to virtually grow your step-changes to increase your milestone velocity. Our business virtualises enterprises to proactively and ethically revolutionize our next-generation cloud. Our business transforms ballpark figures to reliably and conservatively align our innovative prince2 practitioner.
+          format: basic_html
+        field_link:
+          uri: https://www.google.com
+          title: Citizens of distant epochs
+  image_example:
+    title: Cupcake ipsum
+    slug: cupcake-ipsum
+    paragraphs:
+      image:
+        field_image:
+          src: https://s3-us-west-1.amazonaws.com/bucket_name/image.jpg
+          alt: Kopi-luwak roast arabica
+      text:
+        field_text:
+          value: Well, here goes nothing. Ahh, interesting, interesting. You see what you said there? You said here goes nothing. But what we intend to do is turn something into nothing and back again. So what you should have said was “here goes something, here comes nothing”.
+          format: basic_html
+      callout_item:
+        field_heading:
+          vaue: Here goes something, here comes nothing
+          format: basic_html
+        field_text:
+          value: Going forward, our corporate standpoint will deliver value to deliverables. You need to virtually grow your step-changes to increase your milestone velocity. Our business virtualises enterprises to proactively and ethically revolutionize our next-generation cloud. Our business transforms ballpark figures to reliably and conservatively align our innovative prince2 practitioner.
+          format: basic_html
+        field_link:
+          uri: https://www.google.com
+          title: Citizens of distant epochs
