@@ -22,6 +22,7 @@ display:
     display_plugin: default
     position: 0
     display_options:
+      title: Full
       fields:
         title:
           id: title
@@ -207,6 +208,24 @@ display:
       header: {  }
       footer: {  }
       display_extenders: {  }
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url.query_args
+        - 'user.node_grants:view'
+        - user.permissions
+      tags: {  }
+  full:
+    id: full
+    display_title: Full
+    display_plugin: block
+    position: 1
+    display_options:
+      display_description: ''
+      display_extenders: {  }
+      block_description: Full
     cache_metadata:
       max-age: -1
       contexts:
