@@ -1,0 +1,19 @@
+{{ attach_library('atomic/reference-card') }}
+
+{% set date__formatted %}
+  {% include "@atoms/date-time/date-time.twig" with {
+    date_time__start: date_formatted,
+    date_time__format: 'date',
+  } %}
+{% endset %}
+
+{% embed "@molecules/cards/reference-card/reference-card.twig" with {
+  reference_card__overline: date__formatted,
+  reference_card__heading: content.field_teaser_title,
+  reference_card__url: url,
+  reference_card__snippet: content.field_teaser_text,
+} %}
+  {% block reference_card__image %}
+    {{ content.field_teaser_media }}
+  {% endblock %}
+{% endembed %}
