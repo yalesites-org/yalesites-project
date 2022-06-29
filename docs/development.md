@@ -17,7 +17,7 @@ All configuration changes must be tracked in the profile repository. This includ
 ```bash
 # Export configuration to update local YAML files.
 lando drush cex -y
-# Navigate to the profile and review changes.
+# Review changes.
 git status
 # If all looks well, then add and commit the set of configs.
 git add config/sync
@@ -51,7 +51,7 @@ lando composer require drupal/PROJECT --no-update
 # Return the project repo root.
 cd ../../../..
 # Add the module to the project repository.
-lando composer require drupal/yalesites_profile
+lando composer update @yalesites-org/yalesites_profile
 # Do not check in changes to the top level composer.json file.
 # Never check in the project's composer.lock file.
 ```
