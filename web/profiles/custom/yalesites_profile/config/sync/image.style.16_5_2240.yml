@@ -16,11 +16,11 @@ effects:
     data:
       crop_type: banner_16_5
       automatic_crop_provider: null
-  5ed6910a-0431-4e02-9e04-582972281791:
-    uuid: 5ed6910a-0431-4e02-9e04-582972281791
-    id: image_scale
+  922fa242-4f12-43fb-81b6-7e6ed1600c56:
+    uuid: 922fa242-4f12-43fb-81b6-7e6ed1600c56
+    id: image_scale_and_crop
     weight: 2
     data:
       width: 2240
-      height: null
-      upscale: false
+      height: 700
+      anchor: center-center
