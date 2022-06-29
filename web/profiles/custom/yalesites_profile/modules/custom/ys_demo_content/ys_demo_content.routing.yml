@@ -1,7 +1,7 @@
 ys_demo_content.settings:
   path: '/admin/config/content/ys_demo_content'
   defaults:
-    _form: 'Drupal\ys_demo_content\Form\DemoContentPlusSettings'
+    _form: 'Drupal\ys_demo_content\Form\YaleSitesDemoContentSettings'
     _title: 'Demo Content Settings'
   requirements:
     _permission: 'administer ys_demo_content'

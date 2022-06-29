@@ -20,7 +20,11 @@ function ys_demo_content_install() {
  * Implements hook_uninstall().
  */
 function ys_demo_content_uninstall() {
-  if (!\Drupal::service('config.installer')->isSyncing()) {
-    \Drupal::classResolver()->getInstanceFromDefinition(DemoContent::class)->deleteImportedContent();
+  $moduleConfig = \Drupal::config('ys_demo_content.settings');
+  $deleteDemoOnUninstall = $moduleConfig->get("ys_demo_content.delete_content_uninstall");
+  if($deleteDemoOnUninstall) {
+    if (!\Drupal::service('config.installer')->isSyncing()) {
+      \Drupal::classResolver()->getInstanceFromDefinition(DemoContent::class)->deleteImportedContent();
+    }
   }
 }

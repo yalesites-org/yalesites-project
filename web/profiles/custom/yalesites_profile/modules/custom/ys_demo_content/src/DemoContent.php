@@ -93,61 +93,124 @@ class DemoContent implements ContainerInjectionInterface {
    * @return $this
    */
   protected function importPages() {
-    if (($handle = fopen($this->moduleHandler->getModule('ys_demo_content')->getPath() . '/default_content/pages.csv', "r")) !== FALSE) {
-      $headers = fgetcsv($handle);
-      $uuids = [];
-      while (($data = fgetcsv($handle)) !== FALSE) {
-        $data = array_combine($headers, $data);
+    
+    $importData = $this->get_yml_data();
+    $uuids = [];
+    foreach ($importData as $key => $data) {
 
-        // Prepare content.
-        $values = [
-          'type' => 'page',
-          'title' => $data['title'],
-        ];
-        // Fields mapping starts.
-        // Set Body Field.
-        // if (!empty($data['body'])) {
-        //   $values['body'] = [['value' => $data['body'], 'format' => 'basic_html']];
-        // }
+      // Page Title
+      $values = [
+        'type' => 'page',
+        'title' => $data['title'],
+      ];
+
+      // Slug
+      if (!empty($data['slug'])) {
+        $values['path'] = [['alias' => '/' . $data['slug']]];
+      }
+      
+      // Main Paragraphs
+
+      if (!empty($data['field_content'])) {
         
-        $paragraph = Paragraph::create([
+        $paragraph1 = Paragraph::create([
           'type' => 'text',
           'field_text' => [
-            'value' => $data['body'],
+            'value' => 'paragraph1',
             'format' => 'basic_html'
           ],
         ]);
-        $paragraph->save();
+        $paragraph1->save();
 
-        $values['field_content'] = [
-          'target_id' => $paragraph->id(),
-          'target_revision_id' => $paragraph->getRevisionId()
-        ];
+        $paragraph2 = Paragraph::create([
+          'type' => 'text',
+          'field_text' => [
+            'value' => 'paragraph2',
+            'format' => 'basic_html'
+          ],
+        ]);
+        $paragraph2->save();
+          
+        $values['field_content'] = array(
+          array(
+            'target_id' => $paragraph1->id(),
+            'target_revision_id' => $paragraph1->getRevisionId(),
+          ),
+          array(
+            'target_id' => $paragraph2->id(),
+            'target_revision_id' => $paragraph2->getRevisionId(),
+          ),
+        );
 
-        // Set node alias if exists.
-        if (!empty($data['slug'])) {
-          $values['path'] = [['alias' => '/' . $data['slug']]];
-        }
-        // Set article author.
-        if (!empty($data['author'])) {
-          $values['uid'] = $this->getUser($data['author']);
-        }
-
-        // Create Node.
-        $node = $this->entityTypeManager->getStorage('node')->create($values);
-        $node->save();
-        $uuids[$node->uuid()] = 'node';
       }
-      $this->storeCreatedContentUuids($uuids);
-      fclose($handle);
+
+      $node = $this->entityTypeManager->getStorage('node')->create($values);
+      $node->save();
+      $uuids[$node->uuid()] = 'node';
     }
+    $this->storeCreatedContentUuids($uuids);
+
+
+
+
+    // if (($handle = fopen($this->moduleHandler->getModule('ys_demo_content')->getPath() . '/default_content/pages.csv', "r")) !== FALSE) {
+    //   $headers = fgetcsv($handle);
+    //   $uuids = [];
+    //   while (($data = fgetcsv($handle)) !== FALSE) {
+    //     $data = array_combine($headers, $data);
+
+    //     // Prepare content.
+    //     $values = [
+    //       'type' => 'page',
+    //       'title' => $data['title'],
+    //     ];
+    //     // Fields mapping starts.
+    //     // Set Body Field.
+    //     // if (!empty($data['body'])) {
+    //     //   $values['body'] = [['value' => $data['body'], 'format' => 'basic_html']];
+    //     // }
+        
+    //     $paragraph = Paragraph::create([
+    //       'type' => 'text',
+    //       'field_text' => [
+    //         'value' => $data['body'],
+    //         'format' => 'basic_html'
+    //       ],
+    //     ]);
+    //     $paragraph->save();
+
+    //     $values['field_content'] = [
+    //       'target_id' => $paragraph->id(),
+    //       'target_revision_id' => $paragraph->getRevisionId()
+    //     ];
+
+    //     // Set node alias if exists.
+    //     if (!empty($data['slug'])) {
+    //       $values['path'] = [['alias' => '/' . $data['slug']]];
+    //     }
+    //     // Set article author.
+    //     if (!empty($data['author'])) {
+    //       $values['uid'] = $this->getUser($data['author']);
+    //     }
+
+    //     // Create Node.
+    //     $node = $this->entityTypeManager->getStorage('node')->create($values);
+    //     $node->save();
+    //     $uuids[$node->uuid()] = 'node';
+    //   }
+    //   $this->storeCreatedContentUuids($uuids);
+    //   fclose($handle);
+    // }
     return $this;
   }
 
   public function get_yml_data() {
     $ymlFile = $this->moduleHandler->getModule('ys_demo_content')->getPath() . '/default_content/pages.yml';
     $ymlData = \Symfony\Component\Yaml\Yaml::parse(file_get_contents($ymlFile));
-    //dpm($ymlData['pages']);
+    return $ymlData['pages'];
+    // echo "<pre>";
+    // print_r($ymlData['pages']);
+    // echo "</pre>";
   }
 
   /**
