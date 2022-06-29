@@ -3,6 +3,6 @@
   {{ title_suffix }}
   {% include "@molecules/pull-quote/pull-quote.twig" with {
     pull_quote__quote: content.field_text,
-    pull_quote__attribution: content.field_attribution,
+    pull_quote__attribution: content.field_attribution.0,
   } %}
 </div>
