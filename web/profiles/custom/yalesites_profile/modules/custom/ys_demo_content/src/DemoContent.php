@@ -12,6 +12,9 @@ use Drupal\Component\Utility\Html;
 use Drupal\paragraphs\Entity\Paragraph;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Url;
+use Drupal\Core\StreamWrapper\PublicStream;
+use Drupal\Core\File\FileSystemInterface;
+use Drupal\media\Entity\Media;
 
 /**
  * Defines a helper class for importing default content.
@@ -61,11 +64,12 @@ class DemoContent implements ContainerInjectionInterface {
    * @param \Drupal\Core\State\StateInterface $state
    *   State service.
    */
-  public function __construct(AliasManagerInterface $aliasManager, EntityTypeManagerInterface $entityTypeManager, ModuleHandlerInterface $moduleHandler, StateInterface $state) {
+  public function __construct(AliasManagerInterface $aliasManager, EntityTypeManagerInterface $entityTypeManager, ModuleHandlerInterface $moduleHandler, StateInterface $state, FileSystemInterface $fileSystem) {
     $this->aliasManager = $aliasManager;
     $this->entityTypeManager = $entityTypeManager;
     $this->moduleHandler = $moduleHandler;
     $this->state = $state;
+    $this->fileSystem = $fileSystem;
   }
 
   /**
@@ -76,7 +80,8 @@ class DemoContent implements ContainerInjectionInterface {
       $container->get('path_alias.manager'),
       $container->get('entity_type.manager'),
       $container->get('module_handler'),
-      $container->get('state')
+      $container->get('state'),
+      $container->get('file_system')
     );
   }
 
@@ -112,97 +117,53 @@ class DemoContent implements ContainerInjectionInterface {
       // Main Paragraphs
 
       if (!empty($data['field_content'])) {
-        
-        $paragraph1 = Paragraph::create([
-          'type' => 'text',
-          'field_text' => [
-            'value' => 'paragraph1',
-            'format' => 'basic_html'
-          ],
-        ]);
-        $paragraph1->save();
+        foreach($data['field_content'] as $key => $paragraph) {
+            
+          /** Programatically create paragraphs via:
+           *  https://stackoverflow.com/questions/48321746/how-to-update-or-create-paragraph-fields-programatically-in-drupal8/48399547#48399547
+           */
 
-        $paragraph2 = Paragraph::create([
-          'type' => 'text',
-          'field_text' => [
-            'value' => 'paragraph2',
-            'format' => 'basic_html'
-          ],
-        ]);
-        $paragraph2->save();
-          
-        $values['field_content'] = array(
-          array(
-            'target_id' => $paragraph1->id(),
-            'target_revision_id' => $paragraph1->getRevisionId(),
-          ),
-          array(
-            'target_id' => $paragraph2->id(),
-            'target_revision_id' => $paragraph2->getRevisionId(),
-          ),
-        );
+          $$key = Paragraph::create($paragraph);
+          $$key->save();
+          $values['field_content'][] = [
+            'target_id' => $$key->id(),
+            'target_revision_id' => $$key->getRevisionId(),
+          ];
 
+        }
       }
 
-      $node = $this->entityTypeManager->getStorage('node')->create($values);
-      $node->save();
-      $uuids[$node->uuid()] = 'node';
+      // Testing Media
+      $url = 'http://drupal.org/files/issues/druplicon_2.png';
+      $image = file_get_contents($url);
+      $path = 'public://' . date('Y-m', time());
+      $fileName = pathinfo($url, PATHINFO_FILENAME) . '.' . pathinfo($url, PATHINFO_EXTENSION);
+
+      // Create directory and save file
+      $this->fileSystem->prepareDirectory($path, FileSystemInterface::CREATE_DIRECTORY);
+      $file = file_save_data($image, $path . '/' . $fileName, FileSystemInterface::EXISTS_REPLACE);
+
+      // Create media entity
+      $media = Media::create([
+        'bundle' => 'image',
+        'uid' => \Drupal::currentUser()->id(),
+        'field_media_image' => [
+          'target_id' => $file->id(),
+          'alt' => t('Placeholder image'),
+        ],
+      ]);
+      $media->setName($fileName)->setPublished(TRUE)->save();
+
+      // $node = $this->entityTypeManager->getStorage('node')->create($values);
+      // $node->save();
+      // $uuids[$node->uuid()] = 'node';
     }
-    $this->storeCreatedContentUuids($uuids);
+    
+    //$this->storeCreatedContentUuids($uuids);
 
-
-
-
-    // if (($handle = fopen($this->moduleHandler->getModule('ys_demo_content')->getPath() . '/default_content/pages.csv', "r")) !== FALSE) {
-    //   $headers = fgetcsv($handle);
-    //   $uuids = [];
-    //   while (($data = fgetcsv($handle)) !== FALSE) {
-    //     $data = array_combine($headers, $data);
-
-    //     // Prepare content.
-    //     $values = [
-    //       'type' => 'page',
-    //       'title' => $data['title'],
-    //     ];
-    //     // Fields mapping starts.
-    //     // Set Body Field.
-    //     // if (!empty($data['body'])) {
-    //     //   $values['body'] = [['value' => $data['body'], 'format' => 'basic_html']];
-    //     // }
-        
-    //     $paragraph = Paragraph::create([
-    //       'type' => 'text',
-    //       'field_text' => [
-    //         'value' => $data['body'],
-    //         'format' => 'basic_html'
-    //       ],
-    //     ]);
-    //     $paragraph->save();
-
-    //     $values['field_content'] = [
-    //       'target_id' => $paragraph->id(),
-    //       'target_revision_id' => $paragraph->getRevisionId()
-    //     ];
-
-    //     // Set node alias if exists.
-    //     if (!empty($data['slug'])) {
-    //       $values['path'] = [['alias' => '/' . $data['slug']]];
-    //     }
-    //     // Set article author.
-    //     if (!empty($data['author'])) {
-    //       $values['uid'] = $this->getUser($data['author']);
-    //     }
-
-    //     // Create Node.
-    //     $node = $this->entityTypeManager->getStorage('node')->create($values);
-    //     $node->save();
-    //     $uuids[$node->uuid()] = 'node';
-    //   }
-    //   $this->storeCreatedContentUuids($uuids);
-    //   fclose($handle);
-    // }
     return $this;
   }
+
 
   public function get_yml_data() {
     $ymlFile = $this->moduleHandler->getModule('ys_demo_content')->getPath() . '/default_content/pages.yml';
@@ -269,8 +230,8 @@ class DemoContent implements ContainerInjectionInterface {
    * @return int
    *   File ID.
    */
-  protected function createFileEntity($path) {
-    $uri = $this->fileUnmanagedCopy($path);
+  protected function createFileEntity($uri) {
+    //$uri = $this->fileUnmanagedCopy($path);
     $file = $this->entityTypeManager->getStorage('file')->create([
       'uri' => $uri,
       'status' => 1,

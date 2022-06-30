@@ -1,19 +1,31 @@
 pages:
   page_1:
-    title: Fusce molestie magna vel interdum
-    slug: fusce-molestie-magna-vel-interdum
+    title: Sample Content Site
+    slug: sample-content-site
     field_content:
-      text:
+      paragraph1:
+        type: pull_quote
+        field_attribution:
+          value: The Dean of Themes
         field_text:
-          value: Medium, aroma frappuccino irish in robusta half and half seasonal. Steamed as trifecta, kopi-luwak roast frappuccino arabica whipped ut strong. Java, aftertaste, to go iced, extra ristretto so viennese sweet. Filter strong turkish french press espresso eu arabica.
+          value: '"The homepage is the ideal place to tell your story. Paint a picture for the user and spark their interest."'
           format: basic_html
-      callout_item:
+      paragraph2:
+        type: text_with_image
         field_heading:
+          value: Kopi-luwak roast arabica
+          format: basic_html
+        field_image:
+          src: https://www.fourkitchens.com/wp-content/uploads/2020/03/what-we-do-banner-2000x1429.jpg
+          alt: Citizens of distant epochs
+        field_link:
+          uri: https://www.example.com
+          title: Fusce molestie magna vel interdum
+        field_subheading:
           value: Kopi-luwak roast arabica
           format: basic_html
         field_text:
           value: Cupcake ipsum dolor sit amet. Oat cake cupcake muffin dragée tart pie sweet roll. Tootsie roll dragée sweet sugar plum cotton candy sesame snaps pie halvah jelly-o. Chocolate bar muffin candy canes fruitcake gummies.
           format: basic_html
-        field_link:
-          uri: https://www.example.com
-          title: Fusce molestie magna vel interdum
+        
+        
