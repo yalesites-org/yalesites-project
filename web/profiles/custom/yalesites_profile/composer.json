@@ -22,6 +22,8 @@
         "drupal/config_ignore": "^2.3",
         "drupal/config_split": "^1.7",
         "drupal/ctools": "^3.7",
+        "drupal/devel": "^4.1",
+        "drupal/devel_kint_extras": "^1.0",
         "drupal/easy_breadcrumb": "^2.0",
         "drupal/editoria11y": "^1.0",
         "drupal/emulsify_twig": "^2.0",

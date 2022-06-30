@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.paragraph.cta_banner.field_heading
     - field.field.paragraph.cta_banner.field_image
     - field.field.paragraph.cta_banner.field_link
     - field.field.paragraph.cta_banner.field_text
@@ -15,6 +16,13 @@ targetEntityType: paragraph
 bundle: cta_banner
 mode: default
 content:
+  field_heading:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 3
+    region: content
   field_image:
     type: entity_reference_entity_view
     label: hidden
