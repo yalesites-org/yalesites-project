@@ -7,15 +7,17 @@
 {% endset %}
 
 {% if content.field_event_format %}
-  {% set reference_card__overline %}
+  {% set reference_card__overline -%}
     {% include "@molecules/cards/reference-card/event/_event-format.twig" with {
       format: content.field_event_format,
     } %}
-  {% endset %}
+  {%- endset %}
 {% endif %}
 
+{% set heading = content.field_teaser_title.0 ? content.field_teaser_title : label %}
+
 {% embed "@molecules/cards/reference-card/reference-card.twig" with {
-  reference_card__heading: content.field_teaser_title,
+  reference_card__heading: heading,
   reference_card__subheading: date__formatted,
   reference_card__url: url,
   reference_card__snippet: content.field_teaser_text,
