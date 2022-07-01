@@ -12,8 +12,6 @@ dependencies:
     - field.field.node.news.field_teaser_title
     - node.type.news
   module:
-    - entity_reference_revisions
-    - metatag
     - text
     - user
 id: node.news.list_item
@@ -21,45 +19,21 @@ targetEntityType: node
 bundle: news
 mode: list_item
 content:
-  field_author:
-    type: string
-    label: hidden
-    settings:
-      link_to_entity: false
-    third_party_settings: {  }
-    weight: 105
-    region: content
-  field_content:
-    type: entity_reference_revisions_entity_view
-    label: hidden
-    settings:
-      view_mode: default
-      link: ''
-    third_party_settings: {  }
-    weight: 106
-    region: content
-  field_metatags:
-    type: metatag_empty_formatter
-    label: hidden
-    settings: {  }
-    third_party_settings: {  }
-    weight: 103
-    region: content
   field_teaser_media:
     type: entity_reference_entity_view
     label: hidden
     settings:
-      view_mode: default
+      view_mode: card_list_3_2
       link: false
     third_party_settings: {  }
-    weight: 104
+    weight: 2
     region: content
   field_teaser_text:
     type: text_default
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 102
+    weight: 1
     region: content
   field_teaser_title:
     type: string
@@ -67,11 +41,10 @@ content:
     settings:
       link_to_entity: false
     third_party_settings: {  }
-    weight: 101
+    weight: 0
     region: content
-  links:
-    settings: {  }
-    third_party_settings: {  }
-    weight: 100
-    region: content
-hidden: {  }
+hidden:
+  field_author: true
+  field_content: true
+  field_metatags: true
+  links: true
