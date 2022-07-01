@@ -27,3 +27,29 @@ function atomic_preprocess_menu(&$variables, $hook) {
     }
   }
 }
+
+/**
+ * Implements hook_theme_suggestions_alter() for containers.
+ */
+function atomic_theme_suggestions_container_alter(array &$suggestions, array &$variables) {
+  $type = '';
+  $name = '';
+
+  if (isset($variables['element']['#type'])) {
+    // Get the element type.
+    $type = $variables['element']['#type'];
+
+    if (isset($variables['element']['#name'])) {
+      // Get the element name.
+      $name = $variables['element']['#name'];
+
+      // If both type and name are defined, create a suggestion with both.
+      array_unshift($suggestions, 'container__' . $type . '__' . $name);
+    }
+
+    // If type is defined, but not a generic "container" create a suggestion for the type.
+    if ($type !== 'container') {
+      array_unshift($suggestions, 'container__' . $type);
+    }
+  }
+}
