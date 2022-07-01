@@ -13,6 +13,7 @@ dependencies:
   module:
     - field_group
     - layout_paragraphs
+    - media_library
     - metatag
     - paragraphs
     - paragraphs_ee
@@ -139,14 +140,11 @@ content:
       use_details: true
     third_party_settings: {  }
   field_teaser_media:
-    type: entity_reference_autocomplete
+    type: media_library_widget
     weight: 11
     region: content
     settings:
-      match_operator: CONTAINS
-      match_limit: 10
-      size: 60
-      placeholder: ''
+      media_types: { }
     third_party_settings: {  }
   field_teaser_text:
     type: text_textarea
