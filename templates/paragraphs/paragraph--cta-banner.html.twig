@@ -1,8 +1,6 @@
 <div{{ attributes }}>
-  {{ title_prefix }}
-  {{ title_suffix }}
   {% embed "@molecules/banner/cta/cta-banner.twig" with {
-    banner__heading: paragraph.parentEntity.title.value,
+    banner__heading: content.field_heading,
     banner__snippet: content.field_text,
     banner__link__content: content.field_link.0['#title'],
     banner__link__url: content.field_link.0['#url_title'],
@@ -10,5 +8,5 @@
     {% block banner__image %}
       {{ content.field_image }}
     {% endblock %}
-{% endembed %}
+  {% endembed %}
 </div>
