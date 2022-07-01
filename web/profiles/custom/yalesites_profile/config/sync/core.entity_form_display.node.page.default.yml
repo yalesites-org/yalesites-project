@@ -144,7 +144,7 @@ content:
     weight: 11
     region: content
     settings:
-      media_types: { }
+      media_types: {  }
     third_party_settings: {  }
   field_teaser_text:
     type: text_textarea
