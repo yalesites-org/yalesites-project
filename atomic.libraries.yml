@@ -7,6 +7,8 @@ global:
   js:
     node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/menu/menu-toggle/menu-toggle.js: {}
     node_modules/@yalesites-org/component-library-twig/dist/js/00-tokens/layout/layout.js: {}
+  dependencies:
+    - core/drupal
 
 accordion:
   js:
