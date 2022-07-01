@@ -1,0 +1,45 @@
+uuid: 926f7043-85a4-4c10-9431-4392ef704517
+langcode: en
+status: true
+dependencies:
+  config:
+    - image.style.3_2_1120
+    - image.style.3_2_1280
+    - image.style.3_2_1440
+    - image.style.3_2_1600
+    - image.style.3_2_1760
+    - image.style.3_2_1920
+    - image.style.3_2_2080
+    - image.style.3_2_2240
+    - image.style.3_2_2400
+    - image.style.3_2_320
+    - image.style.3_2_480
+    - image.style.3_2_640
+    - image.style.3_2_800
+    - image.style.3_2_960
+id: card_secondary_3_2
+label: 'Card - Secondary (3:2)'
+image_style_mappings:
+  -
+    image_mapping_type: sizes
+    image_mapping:
+      sizes: '(min-width: 2528px) 576px, (min-width: 992px) 22vw, 96vw'
+      sizes_image_styles:
+        - '3_2_1120'
+        - '3_2_1280'
+        - '3_2_1440'
+        - '3_2_1600'
+        - '3_2_1760'
+        - '3_2_1920'
+        - '3_2_2080'
+        - '3_2_2240'
+        - '3_2_2400'
+        - '3_2_320'
+        - '3_2_480'
+        - '3_2_640'
+        - '3_2_800'
+        - '3_2_960'
+    breakpoint_id: responsive_image.viewport_sizing
+    multiplier: 1x
+breakpoint_group: responsive_image
+fallback_image_style: '3_2_320'

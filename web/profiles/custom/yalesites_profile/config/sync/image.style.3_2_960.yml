@@ -1,0 +1,26 @@
+uuid: a02f8e9c-ebb1-46de-b84c-892418b46c52
+langcode: en
+status: true
+dependencies:
+  config:
+    - crop.type.card_3_2
+  module:
+    - crop
+name: '3_2_960'
+label: '3:2 (960)'
+effects:
+  3f4f5992-77eb-4e60-a199-d66baeba8fa0:
+    uuid: 3f4f5992-77eb-4e60-a199-d66baeba8fa0
+    id: crop_crop
+    weight: 1
+    data:
+      crop_type: card_3_2
+      automatic_crop_provider: null
+  1e66653a-54a5-4460-a067-73775ab636b9:
+    uuid: 1e66653a-54a5-4460-a067-73775ab636b9
+    id: image_scale_and_crop
+    weight: 2
+    data:
+      width: 960
+      height: 640
+      anchor: center-center
