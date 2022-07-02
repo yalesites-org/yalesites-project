@@ -1,0 +1,46 @@
+# Migration configuration for beer content.
+id: ys_pages
+label: YS Pages
+migration_group: ys_demo_content
+source:
+  plugin: url
+  data_fetcher_plugin: file
+  data_parser_plugin: json
+  urls:
+    - profiles/custom/yalesites_profile/modules/custom/ys_demo_migration/content/pages.json
+  item_selector: /data/pages
+  fields:
+    - 
+      name: src_unique_id
+      label: 'Unique ID'
+      selector: unique_id
+    - 
+      name: src_name
+      label: 'Name'
+      selector: name
+    -
+      name: paragraph_ref
+      label: 'Paragraph Ref'
+      selector: paragraph_ref
+  ids:
+    src_unique_id:
+      type: integer
+process:
+  title: src_name
+  pseudo_lookup_paragraph:
+    plugin: migration_lookup
+    source: paragraph_ref
+  field_content:
+    plugin: sub_process
+    source:
+      - '@pseudo_lookup_paragraph'
+    process:
+      target_id: '7'
+      target_revision_id: '8'
+destination:
+  plugin: entity:node
+  default_bundle: page
+migration_dependencies:
+  required:
+    - ys_paragraphs
+  optional: []

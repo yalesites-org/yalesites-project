@@ -1,0 +1,32 @@
+id: ys_paragraphs
+label: 'UD configuration dependee paragraph migration for JSON source example'
+migration_group: ys_demo_content
+source:
+  plugin: url
+  data_fetcher_plugin: file
+  data_parser_plugin: json
+
+  urls:
+    - profiles/custom/yalesites_profile/modules/custom/ys_demo_migration/content/pages.json
+
+  # XPath-like selector. The slash (/) at the beginning is optional.
+  item_selector: /data/paragraph_data
+  fields:
+    - name: paragraph_id
+      label: 'Paragraph ID'
+      selector: paragraph_id
+    - name: text_data
+      label: 'Text data'
+      selector: details/text
+    - name: text_format
+      label: 'Text format'
+      selector: details/format
+  ids:
+    paragraph_id:
+      type: string
+process:
+  field_text/value: text_data
+  field_text/format: text_format
+destination:
+  plugin: 'entity_reference_revisions:paragraph'
+  default_bundle: text

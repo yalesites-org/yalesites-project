@@ -22,6 +22,8 @@
     "drupal/address": "^1.10",
     "drupal/core-composer-scaffold": "^9.2",
     "drupal/core-recommended": "^9.2",
+    "drupal/migrate_plus": "^6.0",
+    "drupal/migrate_tools": "^6.0",
     "drupal/smart_date": "^3.5",
     "drush/drush": "^10",
     "pantheon-systems/drupal-integrations": "^9",

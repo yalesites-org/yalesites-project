@@ -1,0 +1,56 @@
+{
+  "data": {
+    "pages": [
+      {
+        "unique_id": 1,
+        "name": "From JSON 1",
+        "paragraph_ref": "P01"
+      },
+      {
+        "unique_id": 2,
+        "name": "From JSON 2",
+        "paragraph_ref": "P02"
+      },
+      {
+        "unique_id": 3,
+        "name": "From JSON 3",
+        "paragraph_ref": "P03"
+      },
+      {
+        "unique_id": 4,
+        "name": "From JSON 4",
+        "paragraph_ref": "P04"
+      }
+    ],
+    "paragraph_data": [
+      {
+        "paragraph_id": "P01",
+        "details": {
+          "text": "White mazagran",
+          "format": "basic_html"
+        }
+      },
+      {
+        "paragraph_id": "P02",
+        "details": {
+          "text": "Virtually grow your step-changes",
+          "format": "basic_html"
+        }
+      },
+      {
+        "paragraph_id": "P03",
+        "details": {
+          "text": "Fusce molestie magna vel interdum",
+          "format": "basic_html"
+        }
+      },
+      {
+        "paragraph_id": "P04",
+        "details": {
+          "text": "Kopi-luwak roast arabica",
+          "format": "basic_html"
+        }
+      }
+    ]
+  }
+}

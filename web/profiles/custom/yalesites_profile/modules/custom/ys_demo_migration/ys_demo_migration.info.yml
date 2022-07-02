@@ -1,0 +1,12 @@
+type: module
+name: Yalesites Demo Content Migration
+description: 'Example paragraphs migration introduction. Learn more at <a href="https://understanddrupal.com/migrations" title="Drupal Migrations">https://understanddrupal.com/migrations</a>.'
+package: YaleSites
+core: 8.x
+core_version_requirement: ^8 || ^9
+dependencies:
+  - drupal:migrate
+  - entity_reference_revisions:entity_reference_revisions
+  - paragraphs:paragraphs
+  - migrate_tools
+  - migrate_plus
