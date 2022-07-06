@@ -32,10 +32,7 @@ process:
 
   field_text/value: text_data
   field_text/format: text_format
-  temp_bundle_type:
-    plugin: get
-    source: paragraph_type
-  type: '@temp_bundle_type'
+  type: paragraph_type
 destination:
   plugin: entity_reference_revisions:paragraph
 
