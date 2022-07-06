@@ -1,6 +1,6 @@
 type: module
 name: Yalesites Demo Content Migration
-description: 'Example paragraphs migration introduction. Learn more at <a href="https://understanddrupal.com/migrations" title="Drupal Migrations">https://understanddrupal.com/migrations</a>.'
+description: 'Inserts demo content via a migration including paragraphs.'
 package: YaleSites
 core: 8.x
 core_version_requirement: ^8 || ^9

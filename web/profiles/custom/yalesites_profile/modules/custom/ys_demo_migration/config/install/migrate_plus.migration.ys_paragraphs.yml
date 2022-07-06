@@ -1,32 +1,36 @@
 id: ys_paragraphs
-label: 'UD configuration dependee paragraph migration for JSON source example'
-migration_group: ys_demo_content
+label: YS Paragraphs
+description: Migration of text to Drupal Paragraph Text
+source_type: 'custom embedded data'
+
 source:
-  plugin: url
-  data_fetcher_plugin: file
-  data_parser_plugin: json
-
-  urls:
-    - profiles/custom/yalesites_profile/modules/custom/ys_demo_migration/content/pages.json
-
-  # XPath-like selector. The slash (/) at the beginning is optional.
-  item_selector: /data/paragraph_data
-  fields:
-    - name: paragraph_id
-      label: 'Paragraph ID'
-      selector: paragraph_id
-    - name: text_data
-      label: 'Text data'
-      selector: details/text
-    - name: text_format
-      label: 'Text format'
-      selector: details/format
+  plugin: embedded_data
+  data_rows:
+    - id: 'A10'
+      title: 'Factory Lollipop, speeding up Kernel Tests on Drupal'
+      body: 'Like many open-source projects, Drupal comes with automated tests that help prevent breaking changes while promoting code quality. But there is still some massive lack inside Drupal automated testing capabilities. but there is still some massive lack inside Drupal automated testing capabilities.'
+    - id: 'B20'
+      title: 'Bamboo Twig, Beyond Twig in Drupal 8'
+      body: 'The idea behind Bamboo Twig comes from a need to enhance layout management through code in Drupal 8. These best practices and codes are often needed and allow easy template fragmentation while.'
+    - id: 'C30'
+      title: 'Template Whisperer — Content-first templating in Drupal 8'
+      body: 'We recently released update 2.0 of Template Whisperer, so it is more than time to talk about it. This module radically changed our development process in our Drupal 8 projects.'
+    - id: 'Z99'
+      title: 'Trends on video games industry are toxic'
+      body: 'Here an opinion and thoughts about our modern video industry'
   ids:
-    paragraph_id:
+    id:
       type: string
-process:
-  field_text/value: text_data
-  field_text/format: text_format
+
 destination:
-  plugin: 'entity_reference_revisions:paragraph'
+  plugin: entity_reference_revisions:paragraph
   default_bundle: text
+
+process:
+
+  field_text/value: body
+  field_text/format:
+    plugin: default_value
+    default_value: "basic_html"
+
+migration_dependencies: {}

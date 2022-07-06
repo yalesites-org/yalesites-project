@@ -1,46 +1,81 @@
-# Migration configuration for beer content.
+
 id: ys_pages
 label: YS Pages
-migration_group: ys_demo_content
+description: Migration of pages to Drupal
+source_type: 'custom embedded data'
+
 source:
-  plugin: url
-  data_fetcher_plugin: file
-  data_parser_plugin: json
-  urls:
-    - profiles/custom/yalesites_profile/modules/custom/ys_demo_migration/content/pages.json
-  item_selector: /data/pages
-  fields:
-    - 
-      name: src_unique_id
-      label: 'Unique ID'
-      selector: unique_id
-    - 
-      name: src_name
-      label: 'Name'
-      selector: name
-    -
-      name: paragraph_ref
-      label: 'Paragraph Ref'
-      selector: paragraph_ref
+  plugin: embedded_data
+  data_rows:
+    - id: 'A10'
+      title: 'Factory Lollipop, speeding up Kernel Tests on Drupal'
+    - id: 'B20'
+      title: 'Bamboo Twig, Beyond Twig in Drupal 8'
+    - id: 'C30'
+      title: 'Template Whisperer — Content-first templating in Drupal 8'
+    - id: 'Z99'
+      title: 'Trends on video games industry are toxic'
   ids:
-    src_unique_id:
-      type: integer
-process:
-  title: src_name
-  pseudo_lookup_paragraph:
-    plugin: migration_lookup
-    source: paragraph_ref
-  field_content:
-    plugin: sub_process
-    source:
-      - '@pseudo_lookup_paragraph'
-    process:
-      target_id: '7'
-      target_revision_id: '8'
+    id:
+      type: string
+
+dependencies:
+  enforced:
+    module:
+      - ys_demo_migration
+
 destination:
   plugin: entity:node
   default_bundle: page
+
+process:
+  uid:
+    plugin: default_value
+    default_value: 1
+
+  status:
+    plugin: default_value
+    default_value: true
+
+  title: title
+
+  # Paragraphs.
+  paragraph_text:
+    -
+      plugin: migration_lookup
+      migration: ys_paragraphs
+      source: id
+    -
+      plugin: null_as_array
+
+  # paragraph_gallery:
+  #   -
+  #     plugin: migration_lookup
+  #     migration: articles_paragraphs_gallery
+  #     source: id
+  #   -
+  #     plugin: null_as_array
+
+  field_content:
+      plugin: sub_process
+      source:
+        - '@paragraph_text'
+        # - '@paragraph_gallery'
+      process:
+        target_id:
+           -
+             plugin: skip_on_empty
+             method: process
+             message: 'Cannot import empty paragraph'
+             source: '0'
+        target_revision_id:
+           -
+             plugin: skip_on_empty
+             method: process
+             message: 'Cannot import empty paragraph'
+             source: '1'
+
 migration_dependencies:
   required:
     - ys_paragraphs
-  optional: []
+    # - articles_paragraphs_gallery
