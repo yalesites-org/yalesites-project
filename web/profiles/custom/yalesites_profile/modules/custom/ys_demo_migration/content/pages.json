@@ -4,22 +4,32 @@
       {
         "unique_id": 1,
         "name": "From JSON 1",
-        "paragraph_ref": "P01"
+        "paragraph_refs": [
+          "P01",
+          "P05"
+        ]
+        
       },
       {
         "unique_id": 2,
         "name": "From JSON 2",
-        "paragraph_ref": "P02"
+        "paragraph_refs": [
+          "P02"
+        ]
       },
       {
         "unique_id": 3,
         "name": "From JSON 3",
-        "paragraph_ref": "P03"
+        "paragraph_refs": [
+          "P03"
+        ]
       },
       {
         "unique_id": 4,
         "name": "From JSON 4",
-        "paragraph_ref": "P04"
+        "paragraph_refs": [
+          "P04"
+        ]
       }
     ],
     "paragraph_data": [
@@ -53,6 +63,14 @@
         "details": {
           "text": "Kopi-luwak roast arabica",
           "format": "basic_html"
+        }
+      },
+      {
+        "paragraph_id": "P05",
+        "paragraph_type": "pull_quote",
+        "details": {
+          "text": "Kopi-luwak roast arabica",
+          "field_attribution": "A Pull Quote Attribuition"
         }
       }
     ]
