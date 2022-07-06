@@ -25,6 +25,7 @@
     "paragraph_data": [
       {
         "paragraph_id": "P01",
+        "paragraph_type": "text",
         "details": {
           "text": "White mazagran",
           "format": "basic_html"
@@ -32,6 +33,7 @@
       },
       {
         "paragraph_id": "P02",
+        "paragraph_type": "text",
         "details": {
           "text": "Virtually grow your step-changes",
           "format": "basic_html"
@@ -39,6 +41,7 @@
       },
       {
         "paragraph_id": "P03",
+        "paragraph_type": "text",
         "details": {
           "text": "Fusce molestie magna vel interdum",
           "format": "basic_html"
@@ -46,6 +49,7 @@
       },
       {
         "paragraph_id": "P04",
+        "paragraph_type": "text",
         "details": {
           "text": "Kopi-luwak roast arabica",
           "format": "basic_html"
