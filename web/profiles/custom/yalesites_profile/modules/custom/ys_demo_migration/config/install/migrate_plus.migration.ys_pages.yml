@@ -17,9 +17,9 @@ source:
       label: 'Unique ID'
       selector: unique_id
     - 
-      name: src_name
-      label: 'Name'
-      selector: name
+      name: src_title
+      label: 'Title'
+      selector: title
     -
       name: paragraph_refs
       label: 'Paragraph Ref'
@@ -43,7 +43,7 @@ process:
     plugin: default_value
     default_value: true
 
-  title: src_name
+  title: src_title
 
   # Paragraphs.
   # paragraph_text:
