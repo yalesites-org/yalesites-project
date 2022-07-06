@@ -1,0 +1,12 @@
+{
+  "data": {
+    "images": [
+      {
+        "image_id": 1,
+        "image_url": "https://loremflickr.com/cache/resized/8621_15792622318_30e3819c93_n_320_240_nofilter.jpg",
+        "page_ref": 1,
+        "alt_text": "A pretty kitten playing"
+      }
+    ]
+  }
+}

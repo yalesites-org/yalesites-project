@@ -1,7 +1,7 @@
 id: ys_paragraphs
 label: YS Paragraphs
 description: Migration of text to Drupal Paragraph Text
-source_type: 'custom embedded data'
+source_type: 'JSON file from URL'
 
 source:
   plugin: url
@@ -26,6 +26,9 @@ source:
     - name: field_attribution
       label: 'Attribution data'
       selector: paragraph_fields/field_attribution/value
+    - name: field_images
+      label: 'Field Image Reference'
+      selector: paragraph_fields/field_images
 
   ids:
     paragraph_id:
@@ -36,6 +39,17 @@ process:
   field_text/value: field_text_value
   field_text/format: field_text_format
   field_attribution/value: field_attribution
+  field_image:
+    plugin: sub_process
+    source: field_images
+    process:
+      target_id:
+        plugin: migration_lookup
+        migration: ys_images_media
+        source:
+          - image_id
+          - page_ref
+        no_stub: true
   type: paragraph_type
 
 destination:

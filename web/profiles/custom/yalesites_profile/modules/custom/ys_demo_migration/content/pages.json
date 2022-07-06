@@ -6,7 +6,8 @@
         "title": "From JSON 1",
         "paragraph_refs": [
           "P01",
-          "P05"
+          "P05",
+          "P06"
         ]
         
       },
@@ -84,7 +85,22 @@
             "value": "Inside Pull Quote",
             "format": "basic_html"
           }
-          
+        }
+      },
+      {
+        "paragraph_id": "P06",
+        "paragraph_type": "image",
+        "paragraph_fields": {
+          "field_images": [
+            {
+              "image_id": 1,
+              "page_ref": 1
+            }
+          ],
+          "field_text": {
+            "value": "Inside Image Paragraph",
+            "format": "basic_html"
+          }
         }
       }
     ]

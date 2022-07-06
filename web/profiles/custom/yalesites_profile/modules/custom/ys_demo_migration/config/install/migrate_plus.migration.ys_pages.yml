@@ -2,7 +2,7 @@
 id: ys_pages
 label: YS Pages
 description: Migration of pages to Drupal
-source_type: 'custom embedded data'
+source_type: 'JSON file from URL'
 
 source:
   plugin: url

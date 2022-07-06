@@ -1,0 +1,71 @@
+id: ys_images_files
+label: Demo Content Image File Entities
+description: Migrate images from an URL to Drupal Files
+source_type: 'JSON file from URL'
+
+source:
+  plugin: url
+  data_fetcher_plugin: file
+  data_parser_plugin: json
+  urls:
+    - profiles/custom/yalesites_profile/modules/custom/ys_demo_migration/content/images.json
+  item_selector: /data/images
+  fields:
+    - name: image_id
+      label: 'Image ID'
+      selector: image_id
+    - name: image_url
+      label: 'Image URL'
+      selector: image_url
+    - name: page_ref
+      label: 'Page reference ID'
+      selector: page_ref
+
+  ids:
+    image_id:
+      type: int
+    page_ref:
+      type: int
+  constants:
+    drupal_file_dest: 'public://demo-content/'
+
+destination:
+  plugin: 'entity:file'
+
+dependencies:
+  enforced:
+    module:
+      - ys_demo_migration
+
+process:
+  destination_filename:
+    -
+      plugin: callback
+      callable: basename
+      source: image_url
+    -
+      plugin: skip_on_empty
+      method: row
+      message: 'Cannot import empty filename.'
+
+  destination_full_path:
+    -
+      plugin: concat
+      source:
+        - 'constants/drupal_file_dest'
+        - '@destination_filename'
+    -
+      plugin: urlencode
+
+  uri:
+    -
+      plugin: file_copy
+      source:
+        - 'image_url'
+        - '@destination_full_path'
+
+  uid:
+    plugin: default_value
+    default_value: 1
+
+migration_dependencies: {}
