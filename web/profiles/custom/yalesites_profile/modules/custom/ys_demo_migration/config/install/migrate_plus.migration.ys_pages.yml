@@ -84,4 +84,4 @@ destination:
 migration_dependencies:
   required:
     - ys_paragraphs
-    # - articles_paragraphs_gallery
+    - ys_images_media

@@ -15,14 +15,16 @@
         "unique_id": 2,
         "title": "From JSON 2",
         "paragraph_refs": [
-          "P02"
+          "P02",
+          "P06"
         ]
       },
       {
         "unique_id": 3,
         "title": "From JSON 3",
         "paragraph_refs": [
-          "P03"
+          "P03",
+          "P07"
         ]
       },
       {
@@ -99,6 +101,22 @@
           ],
           "field_text": {
             "value": "Inside Image Paragraph",
+            "format": "basic_html"
+          }
+        }
+      },
+      {
+        "paragraph_id": "P07",
+        "paragraph_type": "image",
+        "paragraph_fields": {
+          "field_images": [
+            {
+              "image_id": 1,
+              "page_ref": 1
+            }
+          ],
+          "field_text": {
+            "value": "Inside A different image paragraph but same image referenced",
             "format": "basic_html"
           }
         }
