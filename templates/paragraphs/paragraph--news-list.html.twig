@@ -1,5 +1,5 @@
 <div{{ attributes }}>
   {{ title_prefix }}
   {{ title_suffix }}
-  {{ drupal_view('news_list', 'full') }}
+  {{ drupal_view('news_list', 'full', content.field_heading.0['#text']) }}
 </div>
