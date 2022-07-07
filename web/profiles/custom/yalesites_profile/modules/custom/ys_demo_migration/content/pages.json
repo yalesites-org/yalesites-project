@@ -3,7 +3,7 @@
     "pages": [
       {
         "unique_id": 1,
-        "title": "From JSON 1",
+        "title": "Sample Content Site",
         "paragraph_refs": [
           "P01",
           "P05",
@@ -38,20 +38,41 @@
     "paragraphs": [
       {
         "paragraph_id": "P01",
-        "paragraph_type": "text",
+        "paragraph_type": "pull_quote",
         "paragraph_fields": {
+          "field_attribution": {
+            "value": "The Deans of Themes"
+          },
           "field_text": {
-            "value": "White mazagran",
+            "value": "\"The homepage is the ideal place to tell your story. Paint a picture for the user and spark their interest.\"",
             "format": "basic_html"
           }
         }
       },
       {
         "paragraph_id": "P02",
-        "paragraph_type": "text",
+        "paragraph_type": "text_with_image",
         "paragraph_fields": {
+          "field_heading": {
+            "value": "Short heading to introduce this item",
+            "format": "basic_html"
+          },
+          "field_images": [
+            {
+              "image_id": 1,
+              "page_ref": 1
+            }
+          ],
+          "field_link": {
+            "url": "http://www.example.com",
+            "title": "Short link"
+          },
+          "field_subheading": {
+            "value": "Optional subheading for extra content",
+            "format": "basic_html"
+          },
           "field_text": {
-            "value": "Second one",
+            "value": "The feature width, equal focus text with image component is great for introducing linked content and/or drawing attention to free-standing pieces of content. It is meant to be short form content that is quick and to the point.",
             "format": "basic_html"
           }
         }

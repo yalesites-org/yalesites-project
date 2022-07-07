@@ -45,24 +45,6 @@ process:
 
   title: src_title
 
-  # Paragraphs.
-  # paragraph_text:
-  #   -
-  #     plugin: migration_lookup
-  #     allow_multiple: true
-  #     migration: ys_paragraphs
-  #     source: paragraph_ref
-  #   -
-  #     plugin: null_as_array
-
-  # paragraph_gallery:
-  #   -
-  #     plugin: migration_lookup
-  #     migration: articles_paragraphs_gallery
-  #     source: id
-  #   -
-  #     plugin: null_as_array
-
   field_content:
       -
         plugin: multiple_values
