@@ -1,6 +1,6 @@
-id: ys_paragraphs
-label: YS Paragraphs
-description: Migration of text to Drupal Paragraph Text
+id: ys_paragraph_subitems
+label: YS Paragraph Subitems
+description: Migration of paragraph subitems
 source_type: 'JSON file from URL'
 
 source:
@@ -8,8 +8,8 @@ source:
   data_fetcher_plugin: file
   data_parser_plugin: json
   urls:
-    - profiles/custom/yalesites_profile/modules/custom/ys_demo_migration/content/paragraphs.json
-  item_selector: /data/paragraphs
+    - profiles/custom/yalesites_profile/modules/custom/ys_demo_migration/content/paragraph_subitems.json
+  item_selector: /data/paragraph_subitems
   fields:
     - name: paragraph_id
       label: 'Paragraph ID'
@@ -61,10 +61,6 @@ source:
       label: 'Caption format'
       selector: paragraph_fields/field_caption/format
 
-    - name: field_callout_refs
-      label: 'Callout items'
-      selector: paragraph_fields/field_callout_refs
-
   ids:
     paragraph_id:
       type: string
@@ -99,25 +95,6 @@ process:
   
   field_caption/value: field_caption_value
   field_caption/format: field_caption_format
-
-  field_callout:
-      -
-        plugin: skip_on_empty
-        source: field_callout_refs
-        method: process
-        message: 'Field field_callout_refs is empty'
-      -
-        plugin: multiple_values
-        source: field_callout_refs
-      -
-        plugin: migration_lookup
-        migration: ys_paragraph_subitems
-        no_stub: false
-      -
-        plugin: sub_process
-        process:
-          target_id: '0'
-          target_revision_id: '1'
 
   type: paragraph_type
 

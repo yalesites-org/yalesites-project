@@ -23,9 +23,9 @@ source:
 
   ids:
     image_id:
-      type: int
+      type: integer
     page_ref:
-      type: int
+      type: integer
   constants:
     drupal_file_dest: 'public://demo-content/'
 

@@ -1,0 +1,24 @@
+{
+  "data": {
+    "paragraph_subitems": [
+      {
+        "paragraph_id": "PS01",
+        "paragraph_type": "callout_item",
+        "paragraph_fields": {
+          "field_heading": {
+            "value": "Heading in a callout item",
+            "format": "basic_html"
+          },
+          "field_text": {
+            "value": "Text in a callout item",
+            "format": "basic_html"
+          },
+          "field_link": {
+            "url": "https://www.example.com",
+            "title": "Title of link in callout item"
+          }
+        }
+      }
+    ]
+  }
+}

@@ -3,144 +3,28 @@
     "pages": [
       {
         "unique_id": 1,
-        "title": "Sample Content Site",
+        "title": "Top goal for the site",
         "paragraph_refs": [
           "P01",
-          "P05",
-          "P06"
+          "P02",
+          "P11"
         ]
         
       },
       {
         "unique_id": 2,
-        "title": "From JSON 2",
-        "paragraph_refs": [
-          "P02",
-          "P06"
-        ]
-      },
-      {
-        "unique_id": 3,
-        "title": "From JSON 3",
+        "title": "Standard page one",
         "paragraph_refs": [
           "P03",
-          "P07"
+          "P04",
+          "P05",
+          "P04",
+          "P06",
+          "P07",
+          "P08",
+          "P09",
+          "P10"
         ]
-      },
-      {
-        "unique_id": 4,
-        "title": "From JSON 4",
-        "paragraph_refs": [
-          "P04"
-        ]
-      }
-    ],
-    "paragraphs": [
-      {
-        "paragraph_id": "P01",
-        "paragraph_type": "pull_quote",
-        "paragraph_fields": {
-          "field_attribution": {
-            "value": "The Deans of Themes"
-          },
-          "field_text": {
-            "value": "\"The homepage is the ideal place to tell your story. Paint a picture for the user and spark their interest.\"",
-            "format": "basic_html"
-          }
-        }
-      },
-      {
-        "paragraph_id": "P02",
-        "paragraph_type": "text_with_image",
-        "paragraph_fields": {
-          "field_heading": {
-            "value": "Short heading to introduce this item",
-            "format": "basic_html"
-          },
-          "field_images": [
-            {
-              "image_id": 1,
-              "page_ref": 1
-            }
-          ],
-          "field_link": {
-            "url": "http://www.example.com",
-            "title": "Short link"
-          },
-          "field_subheading": {
-            "value": "Optional subheading for extra content",
-            "format": "basic_html"
-          },
-          "field_text": {
-            "value": "The feature width, equal focus text with image component is great for introducing linked content and/or drawing attention to free-standing pieces of content. It is meant to be short form content that is quick and to the point.",
-            "format": "basic_html"
-          }
-        }
-      },
-      {
-        "paragraph_id": "P03",
-        "paragraph_type": "text",
-        "paragraph_fields": {
-          "field_text": {
-            "value": "Third one",
-            "format": "basic_html"
-          }
-        }
-      },
-      {
-        "paragraph_id": "P04",
-        "paragraph_type": "text",
-        "paragraph_fields": {
-          "field_text": {
-            "value": "Fourth one",
-            "format": "basic_html"
-          }
-        }
-      },
-      {
-        "paragraph_id": "P05",
-        "paragraph_type": "pull_quote",
-        "paragraph_fields": {
-          "field_attribution": {
-            "value": "A Pull Quote Attribuition"
-          },
-          "field_text": {
-            "value": "Inside Pull Quote",
-            "format": "basic_html"
-          }
-        }
-      },
-      {
-        "paragraph_id": "P06",
-        "paragraph_type": "image",
-        "paragraph_fields": {
-          "field_images": [
-            {
-              "image_id": 1,
-              "page_ref": 1
-            }
-          ],
-          "field_text": {
-            "value": "Inside Image Paragraph",
-            "format": "basic_html"
-          }
-        }
-      },
-      {
-        "paragraph_id": "P07",
-        "paragraph_type": "image",
-        "paragraph_fields": {
-          "field_images": [
-            {
-              "image_id": 1,
-              "page_ref": 1
-            }
-          ],
-          "field_text": {
-            "value": "Inside A different image paragraph but same image referenced",
-            "format": "basic_html"
-          }
-        }
       }
     ]
   }
