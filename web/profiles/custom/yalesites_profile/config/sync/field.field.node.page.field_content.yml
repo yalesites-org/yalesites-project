@@ -7,7 +7,6 @@ dependencies:
     - node.type.page
     - paragraphs.paragraphs_type.accordion
     - paragraphs.paragraphs_type.callout
-    - paragraphs.paragraphs_type.cta_banner
     - paragraphs.paragraphs_type.divider
     - paragraphs.paragraphs_type.embed
     - paragraphs.paragraphs_type.event_cards
@@ -50,7 +49,6 @@ settings:
       event_list: event_list
       news_cards: news_cards
       news_list: news_list
-      cta_banner: cta_banner
     negate: 0
     target_bundles_drag_drop:
       accordion:
@@ -67,7 +65,7 @@ settings:
         enabled: false
       cta_banner:
         weight: -20
-        enabled: true
+        enabled: false
       divider:
         weight: -27
         enabled: true
