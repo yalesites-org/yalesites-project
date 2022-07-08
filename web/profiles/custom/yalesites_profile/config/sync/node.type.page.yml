@@ -8,6 +8,7 @@ third_party_settings:
   menu_ui:
     available_menus:
       - main
+      - utility-navigation
     parent: 'main:'
 name: Page
 type: page
