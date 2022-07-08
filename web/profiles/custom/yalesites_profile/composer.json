@@ -3,10 +3,6 @@
     "type": "drupal-custom-profile",
     "repositories": [
         {
-            "type": "vcs",
-            "url": "https://github.com/yalesites-org/yale_cas.git"
-        },
-        {
             "type": "composer",
             "url": "https://packages.drupal.org/8"
         }
@@ -51,7 +47,7 @@
         "drupal/twig_tweak": "^3.1",
         "drupal/xmlsitemap": "^1.2",
         "yalesites-org/atomic": "^1.0",
-        "yalesites-org/yale_cas": "dev-main"
+        "yalesites-org/yale_cas": "^1.0"
     },
   "minimum-stability": "dev",
   "prefer-stable": true,
