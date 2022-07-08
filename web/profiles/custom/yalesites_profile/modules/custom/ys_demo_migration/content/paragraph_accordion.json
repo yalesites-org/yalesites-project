@@ -1,0 +1,19 @@
+{
+  "data": {
+    "paragraph_accordion": [
+      {
+        "paragraph_id": "Accordion01",
+        "paragraph_type": "accordion_item",
+        "paragraph_fields": {
+          "field_heading": {
+            "value": "Habitasse platea dictumst",
+            "format": "heading_html"
+          },
+          "field_accordion_item": [
+            "AccordionItem01"
+          ]
+        }
+      }
+    ]
+  }
+}

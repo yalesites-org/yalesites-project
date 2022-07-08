@@ -12,7 +12,7 @@
         
       },
       {
-        "unique_id": 2,
+        "unique_id": 3,
         "title": "Standard page one",
         "paragraph_refs": [
           "P03",
@@ -24,6 +24,14 @@
           "P08",
           "P09",
           "P10"
+        ]
+      },
+      {
+        "unique_id": 5,
+        "title": "FAQs",
+        "paragraph_refs": [
+          "P12",
+          "P13"
         ]
       }
     ]

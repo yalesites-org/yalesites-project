@@ -61,6 +61,10 @@ source:
       label: 'Caption format'
       selector: paragraph_fields/field_caption/format
 
+    - name: field_accordion_item_refs
+      label: 'Accordion items'
+      selector: paragraph_fields/field_accordion_item_refs
+
   ids:
     paragraph_id:
       type: string
@@ -96,9 +100,30 @@ process:
   field_caption/value: field_caption_value
   field_caption/format: field_caption_format
 
+  field_accordion_item:
+      -
+        plugin: skip_on_empty
+        source: field_accordion_item_refs
+        method: process
+        message: 'Field field_accordion_item_refs is empty'
+      -
+        plugin: multiple_values
+        source: field_accordion_item_refs
+      -
+        plugin: migration_lookup
+        migration: ys_paragraph_accordion_items
+        no_stub: false
+      -
+        plugin: sub_process
+        process:
+          target_id: '0'
+          target_revision_id: '1'
+
   type: paragraph_type
 
 destination:
   plugin: entity_reference_revisions:paragraph
 
-migration_dependencies: {}
+migration_dependencies:
+  required:
+    - ys_paragraph_accordion_items

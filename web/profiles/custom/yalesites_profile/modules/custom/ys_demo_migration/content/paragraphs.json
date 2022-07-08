@@ -143,7 +143,30 @@
         "paragraph_type": "callout",
         "paragraph_fields": {
           "field_callout_refs": [
-            "PS01"
+            "Callout01"
+          ]
+        }
+      },
+      {
+        "paragraph_id": "P12",
+        "paragraph_type": "text",
+        "paragraph_fields": {
+          "field_text": {
+            "value": "Sed viverra tellus in hac habitasse platea dictumst. Tortor consequat id porta nibh venenatis cras sed. Viverra vitae congue eu consequat ac felis donec et odio. Blandit turpis cursus in hac habitasse platea dictumst quisque sagittis. Gravida cum sociis natoque penatibus et magnis dis parturient montes. Commodo viverra maecenas accumsan lacus. Laoreet id donec ultrices tincidunt arcu non. Mi sit amet mauris commodo quis imperdiet massa tincidunt nunc. Accumsan sit amet nulla facilisi morbi tempus iaculis. ",
+            "format": "basic_html"
+          }
+        }
+      },
+      {
+        "paragraph_id": "P13",
+        "paragraph_type": "accordion",
+        "paragraph_fields": {
+          "field_heading": {
+            "value": "Habitasse platea dictumst",
+            "format": "heading_html"
+          },
+          "field_accordion_refs": [
+            "Accordion01"
           ]
         }
       }

@@ -1,8 +1,8 @@
 {
   "data": {
-    "paragraph_subitems": [
+    "paragraph_callout": [
       {
-        "paragraph_id": "PS01",
+        "paragraph_id": "Callout01",
         "paragraph_type": "callout_item",
         "paragraph_fields": {
           "field_heading": {
