@@ -13,7 +13,7 @@ field_name: field_banner
 entity_type: node
 bundle: page
 label: Banner
-description: 'Display a banner at the top of the page.'
+description: ''
 required: false
 translatable: false
 default_value: {  }
@@ -46,29 +46,11 @@ settings:
       embed:
         weight: 18
         enabled: false
-      event_cards:
-        weight: 25
-        enabled: false
-      event_list:
-        weight: 26
-        enabled: false
-      image:
-        weight: 27
-        enabled: false
-      news_cards:
-        weight: 28
-        enabled: false
-      news_list:
-        weight: 29
-        enabled: false
       pop_out_image:
         weight: 19
         enabled: false
       pull_quote:
         weight: 20
-        enabled: false
-      section:
-        weight: 32
         enabled: false
       text:
         weight: 21
