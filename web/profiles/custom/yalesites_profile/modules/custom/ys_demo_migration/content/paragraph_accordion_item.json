@@ -2,16 +2,13 @@
   "data": {
     "paragraph_accordion_item": [
       {
-        "paragraph_id": "AccordionItem01",
-        "paragraph_type": "field_content",
+        "paragraph_id": "AccordionFieldContent01",
+        "paragraph_type": "text",
         "paragraph_fields": {
-          "field_heading": {
-            "value": "Nibh tellus molestie nunc non blandit",
-            "format": "heading_html"
-          },
-          "field_content": [
-            "AccordionFieldContent01"
-          ]
+          "field_text": {
+            "value": "text inside accordion",
+            "format": "basic_html"
+          }
         }
       }
     ]

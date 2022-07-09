@@ -6,11 +6,11 @@
         "paragraph_type": "accordion_item",
         "paragraph_fields": {
           "field_heading": {
-            "value": "Habitasse platea dictumst",
+            "value": "Accordion heading",
             "format": "heading_html"
           },
           "field_accordion_item": [
-            "AccordionItem01"
+            "AccordionFieldContent01"
           ]
         }
       }

@@ -8,8 +8,8 @@ source:
   data_fetcher_plugin: file
   data_parser_plugin: json
   urls:
-    - profiles/custom/yalesites_profile/modules/custom/ys_demo_migration/content/paragraph_accordion_field_content.json
-  item_selector: /data/paragraph_accordion_field_content
+    - profiles/custom/yalesites_profile/modules/custom/ys_demo_migration/content/paragraph_accordion_item.json
+  item_selector: /data/paragraph_accordion_item
   fields:
     - name: paragraph_id
       label: 'Paragraph ID'
@@ -18,10 +18,10 @@ source:
       label: 'Paragraph type'
       selector: paragraph_type
 
-    - name: field_text_value
+    - name: accordion_field_text_value
       label: 'Text value'
       selector: paragraph_fields/field_text/value
-    - name: field_text_format
+    - name: accordion_field_text_format
       label: 'Text format'
       selector: paragraph_fields/field_text/format
 
@@ -31,8 +31,8 @@ source:
 
 process:
 
-  field_text/value: field_text_value
-  field_text/format: field_text_format
+  field_text/value: accordion_field_text_value
+  field_text/format: accordion_field_text_format
 
   type: paragraph_type
 

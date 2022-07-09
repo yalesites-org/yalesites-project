@@ -162,7 +162,7 @@
         "paragraph_type": "accordion",
         "paragraph_fields": {
           "field_heading": {
-            "value": "Habitasse platea dictumst",
+            "value": "Outside Accordion Heading",
             "format": "heading_html"
           },
           "field_accordion_refs": [

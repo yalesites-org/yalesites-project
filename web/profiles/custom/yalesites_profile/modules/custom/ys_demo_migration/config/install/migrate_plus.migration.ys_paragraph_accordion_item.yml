@@ -18,16 +18,16 @@ source:
       label: 'Paragraph type'
       selector: paragraph_type
 
-    - name: field_heading_value
+    - name: field_accordion_item_heading_value
       label: 'Heading value'
       selector: paragraph_fields/field_heading/value
-    - name: field_heading_format
+    - name: field_accordion_item_heading_format
       label: 'Heading format'
       selector: paragraph_fields/field_heading/format
 
-    - name: field_content
+    - name: accordion_field_content
       label: 'Accordion item content'
-      selector: paragraph_fields/field_content
+      selector: paragraph_fields/accordion_field_content
 
   ids:
     paragraph_id:
@@ -35,18 +35,18 @@ source:
 
 process:
 
-  field_heading/value: field_heading_value
-  field_heading/format: field_heading_format
+  field_heading/value: field_accordion_item_heading_value
+  field_heading/format: field_accordion_item_heading_format
 
   field_content:
       -
         plugin: skip_on_empty
-        source: field_content
+        source: accordion_field_content
         method: process
-        message: 'Field field_content is empty'
+        message: 'Field accordion_field_content is empty'
       -
         plugin: multiple_values
-        source: field_content
+        source: accordion_field_content
       -
         plugin: migration_lookup
         migration: ys_paragraph_accordion_field_content
