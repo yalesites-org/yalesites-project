@@ -1,6 +1,6 @@
 id: ys_paragraph_accordion_item
-label: YS Paragraph Accordion Items
-description: Migration of accordion items
+label: YS Paragraphs accordion text
+description: Migration of accordion text to Drupal Paragraph Text
 source_type: 'JSON file from URL'
 
 source:
@@ -10,6 +10,7 @@ source:
   urls:
     - profiles/custom/yalesites_profile/modules/custom/ys_demo_migration/content/paragraph_accordion_item.json
   item_selector: /data/paragraph_accordion_item
+  
   fields:
     - name: paragraph_id
       label: 'Paragraph ID'
@@ -18,16 +19,17 @@ source:
       label: 'Paragraph type'
       selector: paragraph_type
 
-    - name: field_accordion_item_heading_value
+    - name: field_heading_value
       label: 'Heading value'
       selector: paragraph_fields/field_heading/value
-    - name: field_accordion_item_heading_format
+    - name: field_heading_format
       label: 'Heading format'
       selector: paragraph_fields/field_heading/format
 
-    - name: accordion_field_content
-      label: 'Accordion item content'
-      selector: paragraph_fields/accordion_field_content
+    - name: field_content
+      label: 'Accordion content'
+      selector: paragraph_fields/field_content
+
 
   ids:
     paragraph_id:
@@ -35,21 +37,21 @@ source:
 
 process:
 
-  field_heading/value: field_accordion_item_heading_value
-  field_heading/format: field_accordion_item_heading_format
+  field_heading/value: field_heading_value
+  field_heading/format: field_heading_format
 
   field_content:
       -
         plugin: skip_on_empty
-        source: accordion_field_content
+        source: field_content
         method: process
-        message: 'Field accordion_field_content is empty'
+        message: 'Field field_content is empty'
       -
         plugin: multiple_values
-        source: accordion_field_content
+        source: field_content
       -
         plugin: migration_lookup
-        migration: ys_paragraph_accordion_field_content
+        migration: ys_paragraph_accordion_text
         no_stub: false
       -
         plugin: sub_process
@@ -64,4 +66,4 @@ destination:
 
 migration_dependencies:
   required:
-    - ys_paragraph_accordion_field_content
+    - ys_paragraph_accordion_text

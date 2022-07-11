@@ -162,7 +162,7 @@
         "paragraph_type": "accordion",
         "paragraph_fields": {
           "field_heading": {
-            "value": "Outside Accordion Heading",
+            "value": "Outside accordion - Ghen",
             "format": "heading_html"
           },
           "field_accordion_refs": [

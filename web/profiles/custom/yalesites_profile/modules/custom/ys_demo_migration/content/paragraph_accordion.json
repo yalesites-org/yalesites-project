@@ -3,14 +3,14 @@
     "paragraph_accordion": [
       {
         "paragraph_id": "Accordion01",
-        "paragraph_type": "accordion_item",
+        "paragraph_type": "accordion",
         "paragraph_fields": {
           "field_heading": {
-            "value": "Accordion heading",
+            "value": "Heading in an accordion item - Atrus",
             "format": "heading_html"
           },
           "field_accordion_item": [
-            "AccordionFieldContent01"
+            "AccordionItem01"
           ]
         }
       }

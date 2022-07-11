@@ -2,13 +2,16 @@
   "data": {
     "paragraph_accordion_item": [
       {
-        "paragraph_id": "AccordionFieldContent01",
-        "paragraph_type": "text",
+        "paragraph_id": "AccordionItem01",
+        "paragraph_type": "accordion_item",
         "paragraph_fields": {
-          "field_text": {
-            "value": "text inside accordion",
-            "format": "basic_html"
-          }
+          "field_heading": {
+            "value": "Heading in an accordion item level 2 - Yeesha",
+            "format": "heading_html"
+          },
+          "field_content": [
+            "AccordionItemText01"
+          ]
         }
       }
     ]

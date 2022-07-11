@@ -18,15 +18,15 @@ source:
       label: 'Paragraph type'
       selector: paragraph_type
 
-    - name: field_accordion_heading_value
+    - name: field_heading_value
       label: 'Heading value'
       selector: paragraph_fields/field_heading/value
-    - name: field_accordion_heading_format
+    - name: field_heading_format
       label: 'Heading format'
       selector: paragraph_fields/field_heading/format
 
     - name: field_accordion_item
-      label: 'Accordion item'
+      label: 'Accordion content'
       selector: paragraph_fields/field_accordion_item
 
   ids:
@@ -35,8 +35,8 @@ source:
 
 process:
 
-  field_heading/value: field_accordion_heading_value
-  field_heading/format: field_accordion_heading_format
+  field_heading/value: field_heading_value
+  field_heading/format: field_heading_format
 
   field_accordion_item:
       -
@@ -49,7 +49,7 @@ process:
         source: field_accordion_item
       -
         plugin: migration_lookup
-        migration: ys_paragraph_accordion_field_content
+        migration: ys_paragraph_accordion_item
         no_stub: false
       -
         plugin: sub_process

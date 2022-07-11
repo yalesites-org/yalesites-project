@@ -1,0 +1,16 @@
+{
+  "data": {
+    "paragraph_accordion_text": [
+      {
+        "paragraph_id": "AccordionItemText01",
+        "paragraph_type": "text",
+        "paragraph_fields": {
+          "field_text": {
+            "value": "Actual text inside acordion item - What lies beyond...",
+            "format": "basic_html"
+          }
+        }
+      }
+    ]
+  }
+}
