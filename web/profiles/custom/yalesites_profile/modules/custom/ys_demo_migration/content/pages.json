@@ -5,6 +5,7 @@
         "unique_id": 1,
         "title": "Top goal for the site",
         "paragraph_refs": [
+          "P14",
           "P01",
           "P02",
           "P11"
@@ -15,6 +16,7 @@
         "unique_id": 3,
         "title": "Standard page one",
         "paragraph_refs": [
+          "P15",
           "P03",
           "P04",
           "P05",

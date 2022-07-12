@@ -10,7 +10,10 @@
             "format": "heading_html"
           },
           "field_accordion_item": [
-            "AccordionItem01"
+            "AccordionItem01",
+            "AccordionItem02",
+            "AccordionItem03",
+            "AccordionItem04"
           ]
         }
       }

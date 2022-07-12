@@ -45,9 +45,6 @@ process:
         method: process
         message: 'Field field_accordion_item is empty'
       -
-        plugin: multiple_values
-        source: field_accordion_item
-      -
         plugin: migration_lookup
         migration: ys_paragraph_accordion_item
         no_stub: false

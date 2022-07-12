@@ -111,9 +111,6 @@ process:
         method: process
         message: 'Field field_callout_refs is empty'
       -
-        plugin: multiple_values
-        source: field_callout_refs
-      -
         plugin: migration_lookup
         migration: ys_paragraph_callout
         no_stub: true
