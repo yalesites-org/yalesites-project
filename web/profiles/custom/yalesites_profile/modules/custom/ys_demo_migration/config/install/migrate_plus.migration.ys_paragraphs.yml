@@ -116,7 +116,7 @@ process:
       -
         plugin: migration_lookup
         migration: ys_paragraph_callout
-        no_stub: false
+        no_stub: true
       -
         plugin: sub_process
         process:
