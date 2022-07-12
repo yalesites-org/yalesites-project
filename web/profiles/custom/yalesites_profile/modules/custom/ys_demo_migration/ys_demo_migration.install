@@ -1,0 +1,57 @@
+<?php
+
+use \Drupal\migrate\MigrateExecutable;
+use \Drupal\migrate\MigrateMessage;
+
+/**
+ * @file
+ * Install, update and uninstall functions for the module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function ys_demo_migration_install() {
+  if (!\Drupal::service('config.installer')->isSyncing()) {
+    $migrations = [
+      "ys_images_files",
+      "ys_images_media",
+      "ys_paragraph_callout",
+      "ys_paragraph_accordion_text",
+      "ys_paragraph_accordion_item",
+      "ys_paragraph_accordion",
+      "ys_paragraphs",
+      "ys_pages"
+    ];
+    
+    foreach($migrations as $migrationToImport) {
+      $migration = \Drupal::service('plugin.manager.migration')->createInstance($migrationToImport);
+      $executable = new MigrateExecutable($migration, new MigrateMessage());
+      $executable->import();
+    }
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function ys_demo_migration_uninstall() {
+  if (!\Drupal::service('config.installer')->isSyncing()) {
+    
+    // Delete old configs
+    $configs = [
+      "migrate_plus.migration.ys_images_files",
+      "migrate_plus.migration.ys_images_media",
+      "migrate_plus.migration.ys_pages",
+      "migrate_plus.migration.ys_paragraph_accordion_item",
+      "migrate_plus.migration.ys_paragraph_accordion_text",
+      "migrate_plus.migration.ys_paragraph_accordion",
+      "migrate_plus.migration.ys_paragraph_callout",
+      "migrate_plus.migration.ys_paragraphs",
+    ];
+    foreach($configs as $config) {
+      \Drupal::configFactory()->getEditable($config)->delete();
+    }
+    
+  }
+}
