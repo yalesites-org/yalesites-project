@@ -96,9 +96,7 @@ process:
       target_id:
         plugin: migration_lookup
         migration: ys_images_media
-        source:
-          - image_id
-          - page_ref
+        source: image_id
         no_stub: true
   
   field_caption/value: field_caption_value

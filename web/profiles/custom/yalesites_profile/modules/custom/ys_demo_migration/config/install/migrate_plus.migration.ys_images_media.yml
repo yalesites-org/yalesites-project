@@ -17,17 +17,12 @@ source:
     - name: image_url
       label: 'Image URL'
       selector: image_url
-    - name: page_ref
-      label: 'Page reference ID'
-      selector: page_ref
     - name: alt_text
       label: 'Alternate text'
       selector: alt_text
 
   ids:
     image_id:
-      type: integer
-    page_ref:
       type: integer
 
 destination:
@@ -55,17 +50,13 @@ process:
   field_media_image/target_id:
     plugin: migration_lookup
     migration: ys_images_files
-    source:
-      - image_id
-      - page_ref
+    source: image_id
 
   thumbnail/target_id:
     plugin: migration_lookup
     migration: ys_images_files
-    source:
-      - image_id
-      - page_ref
-    
+    source: image_id
+
   field_media_image/alt: alt_text
 
   uid:

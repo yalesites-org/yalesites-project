@@ -17,14 +17,9 @@ source:
     - name: image_url
       label: 'Image URL'
       selector: image_url
-    - name: page_ref
-      label: 'Page reference ID'
-      selector: page_ref
 
   ids:
     image_id:
-      type: integer
-    page_ref:
       type: integer
   constants:
     drupal_file_dest: 'public://demo-content/'
@@ -59,11 +54,17 @@ process:
 
   uri:
     -
+      plugin: skip_on_empty
+      method: process
+      source: image_url
+    -
       plugin: file_copy
       source:
-        - 'image_url'
+        - image_url
         - '@destination_full_path'
-
+      file_exists: rename
+      move: false
+      
   uid:
     plugin: default_value
     default_value: 1

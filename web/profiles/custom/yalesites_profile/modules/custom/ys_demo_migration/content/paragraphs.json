@@ -24,8 +24,7 @@
           },
           "field_images": [
             {
-              "image_id": 1,
-              "page_ref": 1
+              "image_id": 1
             }
           ],
           "field_link": {
@@ -66,8 +65,7 @@
           },
           "field_images": [
             {
-              "image_id": 4,
-              "page_ref": 1
+              "image_id": 4
             }
           ],
           "field_text": {
@@ -82,8 +80,7 @@
         "paragraph_fields": {
           "field_images": [
             {
-              "image_id": 5,
-              "page_ref": 1
+              "image_id": 5
             }
           ]
         }
@@ -112,8 +109,7 @@
           },
           "field_images": [
             {
-              "image_id": 6,
-              "page_ref": 1
+              "image_id": 6
             }
           ]
         }
@@ -176,8 +172,7 @@
           },
           "field_images": [
             {
-              "image_id": 2,
-              "page_ref": 1
+              "image_id": 2
             }
           ],
           "field_text": {
@@ -200,8 +195,7 @@
           },
           "field_images": [
             {
-              "image_id": 3,
-              "page_ref": 1
+              "image_id": 3
             }
           ]
         }
