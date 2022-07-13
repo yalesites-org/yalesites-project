@@ -1,9 +1,9 @@
 {% if content.field_banner|render %}
   {{ content.field_banner }}
-{% else %}
-  {% include "@molecules/page-title/page-title.twig" with {
-    page_title__heading: label,
-  } %}
 {% endif %}
+
+{% include "@molecules/page-title/page-title.twig" with {
+  page_title__heading: label,
+} %}
 
 {{ content|without('field_banner') }}
