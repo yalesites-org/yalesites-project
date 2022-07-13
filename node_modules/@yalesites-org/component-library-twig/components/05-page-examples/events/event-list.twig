@@ -1,0 +1,20 @@
+{% extends "@page-layouts/full-width.twig" %}
+  {% block page__header %}
+    {% include "@organisms/site-header/site-header.twig" %}
+    {% include "@organisms/menu/breadcrumbs/breadcrumbs.twig" with {
+      breadcrumbs__items: [
+        {title: 'Home', url: '#'},
+        {title: 'Events', url: '#'},
+        {title: page_title__heading, url: '#', is_active: true},
+      ],
+    } %}
+  {% endblock %}
+  {% block page__content %}
+    {% include "@molecules/page-title/page-title.twig" %}
+    {% include "@molecules/text/text-field.twig" with {
+      text_field__content: '<p>This documentary examines the status of women during the transformation of Afghanistan from a totalitarian Taliban theocracy to a democratic country. It tells a story of Suraya Parlika, an Afghan woman who dared to enter public politics, which is eminently a territory of men. It also contains “black chronicle” of crimes from different provinces of Afghanistan, which was perpetrated by men against not only activists but also against women in their family, wives and daughters. Often just because they were determined to acquire a basic education.</p>',
+    } %}
+    {% include "@page-examples/events/_event-collection--example.twig" with {
+      variation: 'list',
+    } %}
+  {% endblock %}

@@ -1,0 +1,15 @@
+@use '~@yalesites-org/tokens/build/scss/tokens';
+@use 'sass:map';
+
+$themes: map.get(tokens.$tokens, 'component-themes');
+
+@each $theme, $value in $themes {
+  [data-component-theme='#{$theme}'] {
+    --color-background: var(--component-themes-#{$theme}-background);
+    --color-text: var(--component-themes-#{$theme}-text);
+    --color-heading: var(--component-themes-#{$theme}-heading);
+
+    background-color: var(--color-background);
+    color: var(--color-text);
+  }
+}
