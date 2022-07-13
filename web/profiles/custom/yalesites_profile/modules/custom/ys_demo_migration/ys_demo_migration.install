@@ -1,12 +1,12 @@
 <?php
 
-use \Drupal\migrate\MigrateExecutable;
-use \Drupal\migrate\MigrateMessage;
-
 /**
  * @file
  * Install, update and uninstall functions for the module.
  */
+
+use Drupal\migrate\MigrateExecutable;
+use Drupal\migrate\MigrateMessage;
 
 /**
  * Implements hook_install().
@@ -21,10 +21,10 @@ function ys_demo_migration_install() {
       "ys_paragraph_accordion_item",
       "ys_paragraph_accordion",
       "ys_paragraphs",
-      "ys_pages"
+      "ys_pages",
     ];
-    
-    foreach($migrations as $migrationToImport) {
+
+    foreach ($migrations as $migrationToImport) {
       $migration = \Drupal::service('plugin.manager.migration')->createInstance($migrationToImport);
       $executable = new MigrateExecutable($migration, new MigrateMessage());
       $executable->import();
@@ -37,8 +37,8 @@ function ys_demo_migration_install() {
  */
 function ys_demo_migration_uninstall() {
   if (!\Drupal::service('config.installer')->isSyncing()) {
-    
-    // Delete old configs
+
+    // Delete old configs.
     $configs = [
       "migrate_plus.migration.ys_images_files",
       "migrate_plus.migration.ys_images_media",
@@ -49,9 +49,9 @@ function ys_demo_migration_uninstall() {
       "migrate_plus.migration.ys_paragraph_callout",
       "migrate_plus.migration.ys_paragraphs",
     ];
-    foreach($configs as $config) {
+    foreach ($configs as $config) {
       \Drupal::configFactory()->getEditable($config)->delete();
     }
-    
+
   }
 }
