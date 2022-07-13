@@ -199,6 +199,67 @@
             }
           ]
         }
+      },
+      {
+        "paragraph_id": "P16",
+        "paragraph_type": "image",
+        "paragraph_fields": {
+          "field_images": [
+            {
+              "image_id": 7
+            }
+          ]
+        }
+      },
+      {
+        "paragraph_id": "P17",
+        "paragraph_type": "image",
+        "paragraph_fields": {
+          "field_images": [
+            {
+              "image_id": 8
+            }
+          ]
+        }
+      },
+      {
+        "paragraph_id": "P18",
+        "paragraph_type": "pop_out_image",
+        "paragraph_fields": {
+          "field_text": {
+            "value": "<p>Nisl pretium fusce id velit ut tortor pretium. Pellentesque elit ullamcorper dignissim cras tincidunt lobortis feugiat vivamus. Nascetur ridiculus mus mauris vitae ultricies leo integer malesuada nunc. Hendrerit gravida rutrum quisque non. Malesuada nunc vel risus commodo viverra maecenas accumsan. Aliquam eleifend mi in nulla posuere sollicitudin aliquam. Convallis a cras semper auctor. Placerat duis ultricies lacus sed turpis tincidunt. Donec ac odio tempor orci dapibus ultrices. Nulla facilisi cras fermentum odio eu feugiat. Tortor vitae purus faucibus ornare suspendisse sed nisi lacus.</p><p>Sed viverra tellus in hac habitasse platea dictumst. Tortor consequat id porta nibh venenatis cras sed. Viverra vitae congue eu consequat ac felis donec et odio. Blandit turpis cursus in hac habitasse platea dictumst quisque sagittis. Gravida cum sociis natoque penatibus et magnis dis parturient montes. Commodo viverra maecenas accumsan lacus. </p>",
+            "format": "basic_html"
+          },
+          "field_images": [
+            {
+              "image_id": 9
+            }
+          ]
+        }
+      },
+      {
+        "paragraph_id": "P19",
+        "paragraph_type": "pull_quote",
+        "paragraph_fields": {
+          "field_attribution": {
+            "value": "This person"
+          },
+          "field_text": {
+            "value": "Malesuada nunc vel risus commodo viverra maecenas accumsan. Aliquam eleifend mi in nulla posuere sollicitudin aliquam.",
+            "format": "basic_html"
+          }
+        }
+      },
+      {
+        "paragraph_id": "P20",
+        "paragraph_type": "image",
+        "paragraph_fields": {
+          "field_images": [
+            {
+              "image_id": 10
+            }
+          ]
+        }
       }
     ]
   }

@@ -30,7 +30,28 @@
         "image_id": 6,
         "image_url": "https://yalesites-assets.yalespace.org/images/2021_03_03_09-43-15_049A2410.jpg",
         "alt_text": "Olde English Bulldog sitting in a crown-shaped dog bed in a cathedral-like room"
+      },
+      {
+        "image_id": 7,
+        "image_url": "https://yalesites-assets.yalespace.org/images/2016_10_10_14_48_DSC_9740.jpg",
+        "alt_text": "Yale building reflected in a still pool of water"
+      },
+      {
+        "image_id": 8,
+        "image_url": "https://yalesites-assets.yalespace.org/images/2002_03_25_13_05_16_AD0194.jpg",
+        "alt_text": "Looking down on a spiral staircase with students walking up"
+      },
+      {
+        "image_id": 9,
+        "image_url": "https://yalesites-assets.yalespace.org/images/2014_02_03_11-24-40_DSC_8938.jpg",
+        "alt_text": "Red, yellow, and white sculpture against a wintery background"
+      },
+      {
+        "image_id": 10,
+        "image_url": "https://yalesites-assets.yalespace.org/images/2018_10_15_10-25-00_Biking_DP_0035.jpg",
+        "alt_text": "Pathway on Yale campus amongst bushes, fall trees, and a bike path"
       }
+      
       
     ]
   }

@@ -22,6 +22,7 @@ function ys_demo_migration_install() {
       "ys_paragraph_accordion",
       "ys_paragraphs",
       "ys_pages",
+      "ys_news"
     ];
 
     foreach ($migrations as $migrationToImport) {
@@ -43,6 +44,7 @@ function ys_demo_migration_uninstall() {
       "migrate_plus.migration.ys_images_files",
       "migrate_plus.migration.ys_images_media",
       "migrate_plus.migration.ys_pages",
+      "migrate_plus.migration.ys_news",
       "migrate_plus.migration.ys_paragraph_accordion_item",
       "migrate_plus.migration.ys_paragraph_accordion_text",
       "migrate_plus.migration.ys_paragraph_accordion",
