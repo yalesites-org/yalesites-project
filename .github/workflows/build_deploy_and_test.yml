@@ -8,7 +8,6 @@ defaults:
     shell: bash
 env:
   TZ: "/usr/share/zoneinfo/America/Los_Angeles"
-  NOTIFY: 'scripts/github/add-commit-comment {project} {sha} "Created multidev environment [{site}#{env}]({dashboard-url})." {site-url}'
   TERM: dumb
   ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
   ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
@@ -16,14 +15,15 @@ env:
   GITHUB_TOKEN: ${{ github.token }}
   TERMINUS_TOKEN: ${{ secrets.TERMINUS_TOKEN }}
   TEST_SITE_NAME: ${{ secrets.TERMINUS_SITE }}
-  CI_BRANCH: ${{ github.ref }}
+  CI_BRANCH: $GITHUB_REF_NAME
   COMMIT_SHA: ${{ github.sha }}
   CI_BUILD_NUMBER: ${{ github.run_number }}
   DEFAULT_SITE: ${{ secrets.TERMINUS_SITE }}
   SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
   GITHUB_OWNER: ${{ github.repository_owner }}
   CI_PROJECT_NAME: ${{ github.repository }}
-
+  PR_NUMBER: ${{ github.event.number }}
+  CI_PULL_REQUEST: ${{ github.event.pull_request._links.html.href }}
 
 jobs:
   configure_env_vars:
@@ -61,6 +61,7 @@ jobs:
                 "https://api.github.com/repos/${CI_PROJECT_NAME}/commits/${COMMIT_SHA}/pulls" | \
                 jq '.[0].number'`
             fi
+
             if [ -z "$CI_PULL_REQUEST" ]; then
               export CI_PULL_REQUEST=`curl -u "${GITHUB_OWNER}:${GITHUB_TOKEN}" \
                 -H "Accept: application/vnd.github.groot-preview+json" \
@@ -68,6 +69,7 @@ jobs:
                 jq '.[0].html_url'`
             fi
           fi
+
           export CI_PROJECT_REPONAME=${GITHUB_REPOSITORY#*/}
           export CI_PROJECT_USERNAME=${GITHUB_REPOSITORY_OWNER}
           /build-tools-ci/scripts/set-environment
@@ -78,7 +80,6 @@ jobs:
           echo "export ARTIFACTS_DIR_URL='${GITHUB_WORKFLOW_URL}/#artifacts'" >> $BASH_ENV
 
   static_tests:
-
     container:
       image: quay.io/pantheon-public/build-tools-ci:8.x-php7.4
       options: --user root
