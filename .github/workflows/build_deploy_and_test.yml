@@ -26,31 +26,16 @@ env:
 
 
 jobs:
-  set_checkout_ref:
-    runs-on: ubuntu-latest
-    outputs:
-      checkout_ref: ${{ steps.set_checkout_ref.outputs.checkout_ref }}
-    steps:
-      - name: Set checkout reference
-        id: set_checkout_ref
-        run: |
-          if [ ${{ github.event_name }} == 'push' ]; then
-            echo "::set-output name=checkout_ref::${{ github.ref }}"
-          elif [[ ${{ github.event_name }} == 'pull_request' ]]; then
-            echo "::set-output name=checkout_ref::${{ github.event.pull_request.head.ref }}"
-          fi
-
   configure_env_vars:
     container:
       image: quay.io/pantheon-public/build-tools-ci:8.x-php7.4
       options: --user root
     runs-on: ubuntu-latest
-    needs: set_checkout_ref
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          ref: ${{needs.set_checkout_ref.outputs.checkout_ref}}
+          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Set bash_env env var
         run: echo BASH_ENV=${RUNNER_TEMP}/bash_env.txt >> $GITHUB_ENV
@@ -89,12 +74,11 @@ jobs:
       image: quay.io/pantheon-public/build-tools-ci:8.x-php7.4
       options: --user root
     runs-on: ubuntu-latest
-    needs: set_checkout_ref
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          ref: ${{needs.set_checkout_ref.outputs.checkout_ref}}
+          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Cache composer cache
         uses: actions/cache@v2
@@ -125,12 +109,12 @@ jobs:
       image: quay.io/pantheon-public/build-tools-ci:8.x-php7.4
       options: --user root
     runs-on: ubuntu-latest
-    needs: [set_checkout_ref, configure_env_vars, static_tests]
+    needs: [configure_env_vars, static_tests]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          ref: ${{needs.set_checkout_ref.outputs.checkout_ref}}
+          ref: ${{ github.head_ref || github.ref_name }}
           fetch-depth: 0
 
       - name: Set bash_env env var
