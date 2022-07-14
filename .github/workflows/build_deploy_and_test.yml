@@ -15,7 +15,7 @@ env:
   GITHUB_TOKEN: ${{ github.token }}
   TERMINUS_TOKEN: ${{ secrets.TERMINUS_TOKEN }}
   TEST_SITE_NAME: ${{ secrets.TERMINUS_SITE }}
-  CI_BRANCH: $GITHUB_REF_NAME
+  CI_BRANCH: ${{ github.head_ref || github.ref_name }}
   COMMIT_SHA: ${{ github.sha }}
   CI_BUILD_NUMBER: ${{ github.run_number }}
   DEFAULT_SITE: ${{ secrets.TERMINUS_SITE }}
