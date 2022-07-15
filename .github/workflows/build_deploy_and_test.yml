@@ -59,14 +59,14 @@ jobs:
               export PR_NUMBER=`curl -u "${GITHUB_OWNER}:${GITHUB_TOKEN}" \
                 -H "Accept: application/vnd.github.groot-preview+json" \
                 "https://api.github.com/repos/${CI_PROJECT_NAME}/commits/${COMMIT_SHA}/pulls" | \
-                jq '.[0].number'`
+                jq '.[0].number | select(.!=null)'`
             fi
 
             if [ -z "$CI_PULL_REQUEST" ]; then
               export CI_PULL_REQUEST=`curl -u "${GITHUB_OWNER}:${GITHUB_TOKEN}" \
                 -H "Accept: application/vnd.github.groot-preview+json" \
                 "https://api.github.com/repos/${CI_PROJECT_NAME}/commits/${COMMIT_SHA}/pulls" | \
-                jq '.[0].html_url'`
+                jq '.[0].html_url | select(.!=null)'`
             fi
           fi
 
