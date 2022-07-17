@@ -1,6 +1,6 @@
 id: ys_images_files
-label: Demo Content Image File Entities
-description: Migrate images from an URL to Drupal Files
+label: Starterkit Images
+description: Create images from external files.
 source_type: 'JSON file from URL'
 
 source:
@@ -8,7 +8,7 @@ source:
   data_fetcher_plugin: file
   data_parser_plugin: json
   urls:
-    - profiles/custom/yalesites_profile/modules/custom/ys_demo_migration/content/images.json
+    - profiles/custom/yalesites_profile/modules/custom/ys_starterkit/content/images.json
   item_selector: /data/images
   fields:
     - name: image_id
@@ -17,20 +17,11 @@ source:
     - name: image_url
       label: 'Image URL'
       selector: image_url
-
   ids:
     image_id:
       type: integer
   constants:
-    drupal_file_dest: 'public://demo-content/'
-
-destination:
-  plugin: 'entity:file'
-
-dependencies:
-  enforced:
-    module:
-      - ys_demo_migration
+    drupal_file_dest: 'public://starterkit/'
 
 process:
   destination_filename:
@@ -42,7 +33,6 @@ process:
       plugin: skip_on_empty
       method: row
       message: 'Cannot import empty filename.'
-
   destination_full_path:
     -
       plugin: concat
@@ -51,7 +41,6 @@ process:
         - '@destination_filename'
     -
       plugin: urlencode
-
   uri:
     -
       plugin: skip_on_empty
@@ -64,9 +53,16 @@ process:
         - '@destination_full_path'
       file_exists: rename
       move: false
-      
   uid:
     plugin: default_value
     default_value: 1
+
+destination:
+  plugin: 'entity:file'
+
+dependencies:
+  enforced:
+    module:
+      - ys_starterkit
 
 migration_dependencies: {}

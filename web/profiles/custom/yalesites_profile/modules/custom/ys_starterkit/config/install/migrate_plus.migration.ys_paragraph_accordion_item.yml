@@ -1,6 +1,6 @@
-id: ys_paragraph_accordion
-label: YS Paragraph Accordion
-description: Migration of accordion
+id: ys_paragraph_accordion_item
+label: Starterkit Paragraphs accordion text
+description: Migration of accordion text to Drupal Paragraph Text
 source_type: 'JSON file from URL'
 
 source:
@@ -8,8 +8,8 @@ source:
   data_fetcher_plugin: file
   data_parser_plugin: json
   urls:
-    - profiles/custom/yalesites_profile/modules/custom/ys_demo_migration/content/paragraph_accordion.json
-  item_selector: /data/paragraph_accordion
+    - profiles/custom/yalesites_profile/modules/custom/ys_starterkit/content/paragraph_accordion_item.json
+  item_selector: /data/paragraph_accordion_item
   fields:
     - name: paragraph_id
       label: 'Paragraph ID'
@@ -25,28 +25,29 @@ source:
       label: 'Heading format'
       selector: paragraph_fields/field_heading/format
 
-    - name: field_accordion_item
+    - name: field_content
       label: 'Accordion content'
-      selector: paragraph_fields/field_accordion_item
-
+      selector: paragraph_fields/field_content
   ids:
     paragraph_id:
       type: string
 
 process:
-
+  type: paragraph_type
   field_heading/value: field_heading_value
   field_heading/format: field_heading_format
-
-  field_accordion_item:
+  field_content:
       -
         plugin: skip_on_empty
-        source: field_accordion_item
+        source: field_content
         method: process
-        message: 'Field field_accordion_item is empty'
+        message: 'Field field_content is empty'
+      -
+        plugin: multiple_values
+        source: field_content
       -
         plugin: migration_lookup
-        migration: ys_paragraph_accordion_item
+        migration: ys_paragraph_accordion_text
         no_stub: false
       -
         plugin: sub_process
@@ -54,11 +55,9 @@ process:
           target_id: '0'
           target_revision_id: '1'
 
-  type: paragraph_type
-
 destination:
   plugin: entity_reference_revisions:paragraph
 
 migration_dependencies:
   required:
-    - ys_paragraph_accordion_item
+    - ys_paragraph_accordion_text

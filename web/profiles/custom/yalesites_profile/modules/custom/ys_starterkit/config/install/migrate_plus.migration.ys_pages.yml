@@ -1,7 +1,6 @@
-
 id: ys_pages
-label: YS Pages
-description: Migration of pages to Drupal
+label: Starterkit Pages
+description: Create page content.
 source_type: 'JSON file from URL'
 
 source:
@@ -9,14 +8,14 @@ source:
   data_fetcher_plugin: file
   data_parser_plugin: json
   urls:
-    - profiles/custom/yalesites_profile/modules/custom/ys_demo_migration/content/pages.json
+    - profiles/custom/yalesites_profile/modules/custom/ys_starterkit/content/pages.json
   item_selector: /data/pages
   fields:
-    - 
+    -
       name: src_unique_id
       label: 'Unique ID'
       selector: unique_id
-    - 
+    -
       name: src_title
       label: 'Title'
       selector: title
@@ -24,27 +23,18 @@ source:
       name: paragraph_refs
       label: 'Paragraph Ref'
       selector: paragraph_refs
-
   ids:
     src_unique_id:
       type: string
-
-dependencies:
-  enforced:
-    module:
-      - ys_demo_migration
 
 process:
   uid:
     plugin: default_value
     default_value: 1
-
   status:
     plugin: default_value
     default_value: true
-
   title: src_title
-
   field_content:
       -
         plugin: multiple_values
@@ -62,6 +52,11 @@ process:
 destination:
   plugin: entity:node
   default_bundle: page
+
+dependencies:
+  enforced:
+    module:
+      - ys_starterkit
 
 migration_dependencies:
   required:

@@ -1,7 +1,6 @@
-
 id: ys_news
-label: YS News
-description: Migration of news articles to Drupal
+label: Starterkit News
+description: Create news content.
 source_type: 'JSON file from URL'
 
 source:
@@ -9,18 +8,18 @@ source:
   data_fetcher_plugin: file
   data_parser_plugin: json
   urls:
-    - profiles/custom/yalesites_profile/modules/custom/ys_demo_migration/content/news.json
+    - profiles/custom/yalesites_profile/modules/custom/ys_starterkit/content/news.json
   item_selector: /data/news
   fields:
-    - 
+    -
       name: src_unique_id
       label: 'Unique ID'
       selector: unique_id
-    - 
+    -
       name: src_title
       label: 'Title'
       selector: title
-    - 
+    -
       name: src_author
       label: 'Author'
       selector: field_author
@@ -28,29 +27,19 @@ source:
       name: paragraph_refs
       label: 'Paragraph Ref'
       selector: paragraph_refs
-
   ids:
     src_unique_id:
       type: string
-
-dependencies:
-  enforced:
-    module:
-      - ys_demo_migration
 
 process:
   uid:
     plugin: default_value
     default_value: 1
-
   status:
     plugin: default_value
     default_value: true
-
   title: src_title
-
   field_author: src_author
-
   field_content:
       -
         plugin: multiple_values
@@ -68,6 +57,11 @@ process:
 destination:
   plugin: entity:node
   default_bundle: news
+
+dependencies:
+  enforced:
+    module:
+      - ys_starterkit
 
 migration_dependencies:
   required:

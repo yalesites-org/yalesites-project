@@ -1,6 +1,6 @@
 id: ys_images_media
-label: Demo Content Image Media Entities
-description: Migrate images from an URL to Drupal Media Entities
+label: Starterkit Media
+description: Create media entities from image files.
 source_type: 'JSON file from URL'
 
 source:
@@ -8,7 +8,7 @@ source:
   data_fetcher_plugin: file
   data_parser_plugin: json
   urls:
-    - profiles/custom/yalesites_profile/modules/custom/ys_demo_migration/content/images.json
+    - profiles/custom/yalesites_profile/modules/custom/ys_starterkit/content/images.json
   item_selector: /data/images
   fields:
     - name: image_id
@@ -20,19 +20,9 @@ source:
     - name: alt_text
       label: 'Alternate text'
       selector: alt_text
-
   ids:
     image_id:
       type: integer
-
-destination:
-  plugin: 'entity:media'
-  default_bundle: image
-
-dependencies:
-  enforced:
-    module:
-      - ys_demo_migration
 
 process:
   pseudo_destination_filename:
@@ -44,24 +34,28 @@ process:
       plugin: skip_on_empty
       method: row
       message: 'Cannot import empty filename.'
-
   name: '@pseudo_destination_filename'
-
   field_media_image/target_id:
     plugin: migration_lookup
     migration: ys_images_files
     source: image_id
-
   thumbnail/target_id:
     plugin: migration_lookup
     migration: ys_images_files
     source: image_id
-
   field_media_image/alt: alt_text
-
   uid:
     plugin: default_value
     default_value: 1
+
+destination:
+  plugin: 'entity:media'
+  default_bundle: image
+
+dependencies:
+  enforced:
+    module:
+      - ys_starterkit
 
 migration_dependencies:
   required:

@@ -1,6 +1,6 @@
 type: module
-name: Yalesites Demo Content Migration
-description: 'Inserts demo content via a migration including paragraphs.'
+name: Yalesites Demo Content
+description: 'Creates demo content for new sites.'
 package: YaleSites
 core_version_requirement: ^8 || ^9
 version: 1.0.0

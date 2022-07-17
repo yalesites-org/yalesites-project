@@ -1,5 +1,5 @@
 id: ys_paragraph_accordion_text
-label: YS Paragraphs accordion text
+label: Starterkit Paragraphs accordion text
 description: Migration of accordion text to Drupal Paragraph Text
 source_type: 'JSON file from URL'
 
@@ -8,7 +8,7 @@ source:
   data_fetcher_plugin: file
   data_parser_plugin: json
   urls:
-    - profiles/custom/yalesites_profile/modules/custom/ys_demo_migration/content/paragraph_accordion_text.json
+    - profiles/custom/yalesites_profile/modules/custom/ys_starterkit/content/paragraph_accordion_text.json
   item_selector: /data/paragraph_accordion_text
   fields:
     - name: paragraph_id
@@ -17,24 +17,21 @@ source:
     - name: paragraph_type
       label: 'Paragraph type'
       selector: paragraph_type
-    
+
     - name: field_text_value
       label: 'Text value'
       selector: paragraph_fields/field_text/value
     - name: field_text_format
       label: 'Text format'
       selector: paragraph_fields/field_text/format
-
   ids:
     paragraph_id:
       type: string
 
 process:
-
+  type: paragraph_type
   field_text/value: field_text_value
   field_text/format: field_text_format
-
-  type: paragraph_type
 
 destination:
   plugin: entity_reference_revisions:paragraph

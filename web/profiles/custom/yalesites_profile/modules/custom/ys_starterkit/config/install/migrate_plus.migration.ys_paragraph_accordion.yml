@@ -1,6 +1,6 @@
-id: ys_paragraph_accordion_item
-label: YS Paragraphs accordion text
-description: Migration of accordion text to Drupal Paragraph Text
+id: ys_paragraph_accordion
+label: Starterkit Paragraph Accordion
+description: Migration of accordion
 source_type: 'JSON file from URL'
 
 source:
@@ -8,9 +8,8 @@ source:
   data_fetcher_plugin: file
   data_parser_plugin: json
   urls:
-    - profiles/custom/yalesites_profile/modules/custom/ys_demo_migration/content/paragraph_accordion_item.json
-  item_selector: /data/paragraph_accordion_item
-  
+    - profiles/custom/yalesites_profile/modules/custom/ys_starterkit/content/paragraph_accordion.json
+  item_selector: /data/paragraph_accordion
   fields:
     - name: paragraph_id
       label: 'Paragraph ID'
@@ -18,40 +17,32 @@ source:
     - name: paragraph_type
       label: 'Paragraph type'
       selector: paragraph_type
-
     - name: field_heading_value
       label: 'Heading value'
       selector: paragraph_fields/field_heading/value
     - name: field_heading_format
       label: 'Heading format'
       selector: paragraph_fields/field_heading/format
-
-    - name: field_content
+    - name: field_accordion_item
       label: 'Accordion content'
-      selector: paragraph_fields/field_content
-
-
+      selector: paragraph_fields/field_accordion_item
   ids:
     paragraph_id:
       type: string
 
 process:
-
+  type: paragraph_type
   field_heading/value: field_heading_value
   field_heading/format: field_heading_format
-
-  field_content:
+  field_accordion_item:
       -
         plugin: skip_on_empty
-        source: field_content
+        source: field_accordion_item
         method: process
-        message: 'Field field_content is empty'
-      -
-        plugin: multiple_values
-        source: field_content
+        message: 'Field field_accordion_item is empty'
       -
         plugin: migration_lookup
-        migration: ys_paragraph_accordion_text
+        migration: ys_paragraph_accordion_item
         no_stub: false
       -
         plugin: sub_process
@@ -59,11 +50,9 @@ process:
           target_id: '0'
           target_revision_id: '1'
 
-  type: paragraph_type
-
 destination:
   plugin: entity_reference_revisions:paragraph
 
 migration_dependencies:
   required:
-    - ys_paragraph_accordion_text
+    - ys_paragraph_accordion_item

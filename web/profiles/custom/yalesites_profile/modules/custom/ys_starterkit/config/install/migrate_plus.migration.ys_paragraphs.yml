@@ -1,5 +1,5 @@
 id: ys_paragraphs
-label: YS Paragraphs
+label: Starterkit Paragraphs
 description: Migration of text to Drupal Paragraph Text
 source_type: 'JSON file from URL'
 
@@ -8,7 +8,7 @@ source:
   data_fetcher_plugin: file
   data_parser_plugin: json
   urls:
-    - profiles/custom/yalesites_profile/modules/custom/ys_demo_migration/content/paragraphs.json
+    - profiles/custom/yalesites_profile/modules/custom/ys_starterkit/content/paragraphs.json
   item_selector: /data/paragraphs
   fields:
     - name: paragraph_id
@@ -17,78 +17,63 @@ source:
     - name: paragraph_type
       label: 'Paragraph type'
       selector: paragraph_type
-    
     - name: field_text_value
       label: 'Text value'
       selector: paragraph_fields/field_text/value
     - name: field_text_format
       label: 'Text format'
       selector: paragraph_fields/field_text/format
-
     - name: field_heading_value
       label: 'Heading value'
       selector: paragraph_fields/field_heading/value
     - name: field_heading_format
       label: 'Heading format'
       selector: paragraph_fields/field_heading/format
-
     - name: field_subheading_value
       label: 'Subheading value'
       selector: paragraph_fields/field_subheading/value
     - name: field_subheading_format
       label: 'Subheading format'
       selector: paragraph_fields/field_subheading/format
-
     - name: field_link_url
       label: 'Link URL'
       selector: paragraph_fields/field_link/url
     - name: field_link_title
       label: 'Link title'
       selector: paragraph_fields/field_link/title
-    
     - name: field_attribution
       label: 'Attribution data'
       selector: paragraph_fields/field_attribution/value
-    
     - name: field_images
       label: 'Field Image Reference'
       selector: paragraph_fields/field_images
-
     - name: field_caption_value
       label: 'Caption value'
       selector: paragraph_fields/field_caption/value
     - name: field_caption_format
       label: 'Caption format'
       selector: paragraph_fields/field_caption/format
-
     - name: field_callout_refs
       label: 'Callout items'
       selector: paragraph_fields/field_callout_refs
-    
     - name: field_accordion_refs
       label: 'Accordion references'
       selector: paragraph_fields/field_accordion_refs
-
   ids:
     paragraph_id:
       type: string
 
 process:
-
+  type: paragraph_type
   field_text/value: field_text_value
   field_text/format: field_text_format
-
   field_heading/value: field_heading_value
   field_heading/format: field_heading_format
-
   field_subheading/value: field_subheading_value
   field_subheading/format: field_subheading_format
-
   field_link/uri: field_link_url
   field_link/title: field_link_title
-
   field_attribution/value: field_attribution
-  
   field_image:
     plugin: sub_process
     source: field_images
@@ -98,10 +83,8 @@ process:
         migration: ys_images_media
         source: image_id
         no_stub: true
-  
   field_caption/value: field_caption_value
   field_caption/format: field_caption_format
-  
   field_callout:
       -
         plugin: skip_on_empty
@@ -117,7 +100,6 @@ process:
         process:
           target_id: '0'
           target_revision_id: '1'
-    
   field_accordion_item:
       -
         plugin: skip_on_empty
@@ -136,8 +118,6 @@ process:
         process:
           target_id: '0'
           target_revision_id: '1'
-
-  type: paragraph_type
 
 destination:
   plugin: entity_reference_revisions:paragraph
