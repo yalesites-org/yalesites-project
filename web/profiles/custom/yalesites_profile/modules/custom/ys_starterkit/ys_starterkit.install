@@ -11,7 +11,7 @@ use Drupal\migrate\MigrateMessage;
 /**
  * Implements hook_install().
  */
-function ys_demo_migration_install() {
+function ys_starterkit_install() {
   if (!\Drupal::service('config.installer')->isSyncing()) {
     $migrations = [
       "ys_images_files",
@@ -36,7 +36,7 @@ function ys_demo_migration_install() {
 /**
  * Implements hook_uninstall().
  */
-function ys_demo_migration_uninstall() {
+function ys_starterkit_uninstall() {
   if (!\Drupal::service('config.installer')->isSyncing()) {
 
     // Delete old configs.
