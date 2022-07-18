@@ -1,6 +1,6 @@
 type: module
-name: Yalesites Demo Content
-description: 'Creates demo content for new sites.'
+name: YaleSites Starter Kit
+description: 'Creates out of the box content and settings.'
 package: YaleSites
 core_version_requirement: ^8 || ^9
 version: 1.0.0
