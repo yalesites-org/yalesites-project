@@ -1,0 +1,71 @@
+uuid: 45514e7f-d178-4060-9bb7-4f6f6ab2d217
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: mL3qXXC9BOzDNX__eA-o2Hj2zrH7WfTtL3RjaGVCWfE
+id: ys_paragraph_accordion_item
+class: null
+field_plugin_method: null
+cck_plugin_method: null
+migration_tags: null
+migration_group: null
+label: 'Starterkit Paragraphs accordion text'
+source:
+  plugin: url
+  data_fetcher_plugin: file
+  data_parser_plugin: json
+  urls:
+    - profiles/custom/yalesites_profile/modules/custom/ys_starterkit/content/paragraph_accordion_item.json
+  item_selector: /data/paragraph_accordion_item
+  fields:
+    -
+      name: paragraph_id
+      label: 'Paragraph ID'
+      selector: paragraph_id
+    -
+      name: paragraph_type
+      label: 'Paragraph type'
+      selector: paragraph_type
+    -
+      name: field_heading_value
+      label: 'Heading value'
+      selector: paragraph_fields/field_heading/value
+    -
+      name: field_heading_format
+      label: 'Heading format'
+      selector: paragraph_fields/field_heading/format
+    -
+      name: field_content
+      label: 'Accordion content'
+      selector: paragraph_fields/field_content
+  ids:
+    paragraph_id:
+      type: string
+process:
+  type: paragraph_type
+  field_heading/value: field_heading_value
+  field_heading/format: field_heading_format
+  field_content:
+    -
+      plugin: skip_on_empty
+      source: field_content
+      method: process
+      message: 'Field field_content is empty'
+    -
+      plugin: multiple_values
+      source: field_content
+    -
+      plugin: migration_lookup
+      migration: ys_paragraph_accordion_text
+      no_stub: false
+    -
+      plugin: sub_process
+      process:
+        target_id: '0'
+        target_revision_id: '1'
+destination:
+  plugin: 'entity_reference_revisions:paragraph'
+migration_dependencies:
+  required:
+    - ys_paragraph_accordion_text

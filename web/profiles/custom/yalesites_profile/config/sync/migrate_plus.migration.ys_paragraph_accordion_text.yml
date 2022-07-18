@@ -1,0 +1,47 @@
+uuid: cbd266e5-7113-42ae-bcb9-83e593da67b4
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: xUReR947XtNzH5jHEVeveAXQgZQaaLv1JD9m5TPDO6o
+id: ys_paragraph_accordion_text
+class: null
+field_plugin_method: null
+cck_plugin_method: null
+migration_tags: null
+migration_group: null
+label: 'Starterkit Paragraphs accordion text'
+source:
+  plugin: url
+  data_fetcher_plugin: file
+  data_parser_plugin: json
+  urls:
+    - profiles/custom/yalesites_profile/modules/custom/ys_starterkit/content/paragraph_accordion_text.json
+  item_selector: /data/paragraph_accordion_text
+  fields:
+    -
+      name: paragraph_id
+      label: 'Paragraph ID'
+      selector: paragraph_id
+    -
+      name: paragraph_type
+      label: 'Paragraph type'
+      selector: paragraph_type
+    -
+      name: field_text_value
+      label: 'Text value'
+      selector: paragraph_fields/field_text/value
+    -
+      name: field_text_format
+      label: 'Text format'
+      selector: paragraph_fields/field_text/format
+  ids:
+    paragraph_id:
+      type: string
+process:
+  type: paragraph_type
+  field_text/value: field_text_value
+  field_text/format: field_text_format
+destination:
+  plugin: 'entity_reference_revisions:paragraph'
+migration_dependencies: {  }

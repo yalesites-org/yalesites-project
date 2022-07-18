@@ -1,0 +1,68 @@
+uuid: 39d4e56f-4151-4461-b4d0-113dc14475fe
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - ys_starterkit
+_core:
+  default_config_hash: u5joD1ZmKcZtHd53QMIQmz1XTif7RFWayvlnYbSBM0Q
+id: ys_images_media
+class: null
+field_plugin_method: null
+cck_plugin_method: null
+migration_tags: null
+migration_group: null
+label: 'Starterkit Media'
+source:
+  plugin: url
+  data_fetcher_plugin: file
+  data_parser_plugin: json
+  urls:
+    - profiles/custom/yalesites_profile/modules/custom/ys_starterkit/content/images.json
+  item_selector: /data/images
+  fields:
+    -
+      name: image_id
+      label: 'Image ID'
+      selector: image_id
+    -
+      name: image_url
+      label: 'Image URL'
+      selector: image_url
+    -
+      name: alt_text
+      label: 'Alternate text'
+      selector: alt_text
+  ids:
+    image_id:
+      type: integer
+process:
+  pseudo_destination_filename:
+    -
+      plugin: callback
+      callable: basename
+      source: image_url
+    -
+      plugin: skip_on_empty
+      method: row
+      message: 'Cannot import empty filename.'
+  name: '@pseudo_destination_filename'
+  field_media_image/target_id:
+    plugin: migration_lookup
+    migration: ys_images_files
+    source: image_id
+  thumbnail/target_id:
+    plugin: migration_lookup
+    migration: ys_images_files
+    source: image_id
+  field_media_image/alt: alt_text
+  uid:
+    plugin: default_value
+    default_value: 1
+destination:
+  plugin: 'entity:media'
+  default_bundle: image
+migration_dependencies:
+  required:
+    - ys_images_files
