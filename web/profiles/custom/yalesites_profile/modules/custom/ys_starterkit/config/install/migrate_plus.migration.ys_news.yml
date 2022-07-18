@@ -1,0 +1,71 @@
+id: ys_news
+label: Starterkit News
+description: Create news content.
+migration_tags: null
+migration_group: ys_starterkit
+source_type: 'JSON file from URL'
+
+source:
+  plugin: url
+  data_fetcher_plugin: file
+  data_parser_plugin: json
+  urls:
+    - profiles/custom/yalesites_profile/modules/custom/ys_starterkit/content/news.json
+  item_selector: /data/news
+  fields:
+    -
+      name: src_unique_id
+      label: 'Unique ID'
+      selector: unique_id
+    -
+      name: src_title
+      label: 'Title'
+      selector: title
+    -
+      name: src_author
+      label: 'Author'
+      selector: field_author
+    -
+      name: paragraph_refs
+      label: 'Paragraph Ref'
+      selector: paragraph_refs
+  ids:
+    src_unique_id:
+      type: string
+
+process:
+  uid:
+    plugin: default_value
+    default_value: 1
+  status:
+    plugin: default_value
+    default_value: true
+  title: src_title
+  field_author: src_author
+  field_content:
+      -
+        plugin: multiple_values
+        source: paragraph_refs
+      -
+        plugin: migration_lookup
+        migration: ys_paragraphs
+        no_stub: true
+      -
+        plugin: sub_process
+        process:
+          target_id: '0'
+          target_revision_id: '1'
+
+destination:
+  plugin: entity:node
+  default_bundle: news
+
+dependencies:
+  enforced:
+    module:
+      - ys_starterkit
+
+migration_dependencies:
+  required:
+    - ys_paragraphs
+    - ys_images_media

@@ -27,13 +27,13 @@ field_name: field_content
 entity_type: node
 bundle: page
 label: Content
-description: ""
+description: ''
 required: false
 translatable: false
-default_value: {}
-default_value_callback: ""
+default_value: {  }
+default_value_callback: ''
 settings:
-  handler: "default:paragraph"
+  handler: 'default:paragraph'
   handler_settings:
     target_bundles:
       section: section

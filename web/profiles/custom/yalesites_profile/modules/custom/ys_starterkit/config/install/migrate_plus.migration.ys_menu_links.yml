@@ -1,0 +1,94 @@
+id: ys_menu_links
+label: Starterkit Menu Links
+description: Create main menu links.
+migration_tags: null
+migration_group: ys_starterkit
+source_type: 'JSON file from URL'
+
+source:
+  plugin: url
+  data_fetcher_plugin: file
+  data_parser_plugin: json
+  urls:
+    - profiles/custom/yalesites_profile/modules/custom/ys_starterkit/content/menu_links.json
+  item_selector: data
+  fields:
+    -
+      name: src_unique_id
+      label: 'Unique ID'
+      selector: unique_id
+    -
+      name: page_migration_id
+      label: 'Reference to migrated page'
+      selector: page_migration_id
+    -
+      name: name
+      label: 'Name'
+      selector: name
+    -
+      name: parent_ref
+      label: 'Parent menu link reference'
+      selector: parent_ref
+  constants:
+    path: 'entity:node/'
+  ids:
+    src_unique_id:
+      type: string
+
+process:
+  menu_name:
+    plugin: default_value
+    default_value: 'main'
+  nid:
+    -
+      plugin: skip_on_empty
+      method: process
+      source: page_migration_id
+    -
+      plugin: migration_lookup
+      migration: ys_pages
+  parent_link_id:
+    -
+      plugin: migration_lookup
+      migration: ys_menu_links
+      source: parent_ref
+    -
+      plugin: default_value
+      default_value: 0
+  title:
+    plugin: get
+    source: name
+    language: 'en'
+  'link/uri':
+    plugin: concat
+    source:
+      - constants/path
+      - '@nid'
+  parent:
+    plugin: menu_link_parent
+    source:
+       - parent_link_id
+       - 'main'
+  external:
+    plugin: default_value
+    default_value: 0
+  expanded:
+    plugin: default_value
+    default_value: 0
+  enabled:
+    plugin: default_value
+    default_value: 1
+
+destination:
+  plugin: entity:menu_link_content
+  bundle: menu_link_content
+  no_stub: true
+
+dependencies:
+  enforced:
+    module:
+      - ys_starterkit
+
+migration_dependencies:
+  required:
+    - ys_pages

@@ -1,0 +1,58 @@
+{
+  "data": {
+    "images": [
+      {
+        "image_id": 1,
+        "image_url": "https://yalesites-assets.yalespace.org/images/2013_10_28_14-51-06_DSC_9836.jpg",
+        "alt_text": "Aerial View of Yale University"
+      },
+      {
+        "image_id": 2,
+        "image_url": "https://yalesites-assets.yalespace.org/images/2020_10_15_09-04-37_049a9308.jpg",
+        "alt_text": "Aerial View of Yale University"
+      },
+      {
+        "image_id": 3,
+        "image_url": "https://yalesites-assets.yalespace.org/images/2018_02_22_12-17-40_BeineckeBooks_DP_8517.jpg",
+        "alt_text": "Towering shelves of books in a library"
+      },
+      {
+        "image_id": 4,
+        "image_url": "https://yalesites-assets.yalespace.org/images/2019_01_14_13-40-17_DP_9969-Stacks.jpg",
+        "alt_text": "Two wooden chairs in an aisle between shelves of books in a library"
+      },
+      {
+        "image_id": 5,
+        "image_url": "https://yalesites-assets.yalespace.org/images/2018_04_18_16-32-44_Stacks1_DP_1752.jpg",
+        "alt_text": "Dark aisle between shelves of books in a library looking towards an arched window"
+      },
+      {
+        "image_id": 6,
+        "image_url": "https://yalesites-assets.yalespace.org/images/2021_03_03_09-43-15_049A2410.jpg",
+        "alt_text": "Olde English Bulldog sitting in a crown-shaped dog bed in a cathedral-like room"
+      },
+      {
+        "image_id": 7,
+        "image_url": "https://yalesites-assets.yalespace.org/images/2016_10_10_14_48_DSC_9740.jpg",
+        "alt_text": "Yale building reflected in a still pool of water"
+      },
+      {
+        "image_id": 8,
+        "image_url": "https://yalesites-assets.yalespace.org/images/2002_03_25_13_05_16_AD0194.jpg",
+        "alt_text": "Looking down on a spiral staircase with students walking up"
+      },
+      {
+        "image_id": 9,
+        "image_url": "https://yalesites-assets.yalespace.org/images/2014_02_03_11-24-40_DSC_8938.jpg",
+        "alt_text": "Red, yellow, and white sculpture against a wintery background"
+      },
+      {
+        "image_id": 10,
+        "image_url": "https://yalesites-assets.yalespace.org/images/2018_10_15_10-25-00_Biking_DP_0035.jpg",
+        "alt_text": "Pathway on Yale campus amongst bushes, fall trees, and a bike path"
+      }
+      
+      
+    ]
+  }
+}
