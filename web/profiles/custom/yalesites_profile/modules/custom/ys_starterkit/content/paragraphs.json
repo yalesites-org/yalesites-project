@@ -260,6 +260,16 @@
             }
           ]
         }
+      },
+      {
+        "paragraph_id": "P21",
+        "paragraph_type": "text",
+        "paragraph_fields": {
+          "field_text": {
+            "value": "This will be a page with news articles listed or if views aren't ready it will be a category with articles as the subpages.",
+            "format": "basic_html"
+          }
+        }
       }
     ]
   }

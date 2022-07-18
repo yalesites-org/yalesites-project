@@ -10,7 +10,7 @@
           "P02",
           "P11"
         ]
-        
+
       },
       {
         "unique_id": 3,
@@ -34,6 +34,13 @@
         "paragraph_refs": [
           "P12",
           "P13"
+        ]
+      },
+      {
+        "unique_id": 8,
+        "title": "News",
+        "paragraph_refs": [
+          "P21"
         ]
       }
     ]

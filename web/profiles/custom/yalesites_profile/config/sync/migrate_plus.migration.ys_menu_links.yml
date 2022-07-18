@@ -1,0 +1,84 @@
+uuid: 63dbb578-58f4-4dd9-b0a1-9edd3dbaa79f
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - ys_starterkit
+id: ys_menu_links
+class: null
+field_plugin_method: null
+cck_plugin_method: null
+migration_tags: null
+migration_group: ys_starterkit
+label: 'Starterkit Menu Links'
+source:
+  plugin: url
+  data_fetcher_plugin: file
+  data_parser_plugin: json
+  urls:
+    - profiles/custom/yalesites_profile/modules/custom/ys_starterkit/content/menu_links.json
+  item_selector: data
+  fields:
+    -
+      name: src_unique_id
+      label: 'Unique ID'
+      selector: unique_id
+    -
+      name: page_migration_id
+      label: 'Reference to migrated page'
+      selector: page_migration_id
+    -
+      name: name
+      label: Name
+      selector: name
+    -
+      name: parent_id
+      label: 'Parent menu link id'
+      selector: parent
+  constants:
+    path: 'entity:node/'
+  ids:
+    src_unique_id:
+      type: string
+process:
+  menu_name:
+    plugin: default_value
+    default_value: main
+  nid:
+    -
+      plugin: skip_on_empty
+      method: process
+      source: page_migration_id
+    -
+      plugin: migration_lookup
+      migration: ys_pages
+  title:
+    plugin: get
+    source: name
+    language: en
+  link/uri:
+    plugin: concat
+    source:
+      - constants/path
+      - '@nid'
+  parent:
+    plugin: menu_link_parent
+    source:
+      - main
+  external:
+    plugin: default_value
+    default_value: 0
+  expanded:
+    plugin: default_value
+    default_value: 0
+  enabled:
+    plugin: default_value
+    default_value: 1
+destination:
+  plugin: 'entity:menu_link_content'
+  bundle: menu_link_content
+  no_stub: true
+migration_dependencies:
+  required:
+    - ys_pages
