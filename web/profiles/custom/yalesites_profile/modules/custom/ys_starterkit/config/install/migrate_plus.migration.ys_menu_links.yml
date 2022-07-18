@@ -26,9 +26,9 @@ source:
       label: 'Name'
       selector: name
     -
-      name: parent_id
-      label: 'Parent menu link id'
-      selector: parent
+      name: parent_ref
+      label: 'Parent menu link reference'
+      selector: parent_ref
   constants:
     path: 'entity:node/'
   ids:
@@ -39,9 +39,6 @@ process:
   menu_name:
     plugin: default_value
     default_value: 'main'
-  # nid:
-  #   plugin: get
-  #   source: page_migration_id
   nid:
     -
       plugin: skip_on_empty
@@ -50,8 +47,14 @@ process:
     -
       plugin: migration_lookup
       migration: ys_pages
-      # source: src_unique_id
-      # no_stub: true
+  parent_link_id:
+    -
+      plugin: migration_lookup
+      migration: ys_menu_links
+      source: parent_ref
+    -
+      plugin: default_value
+      default_value: 0
   title:
     plugin: get
     source: name
@@ -64,7 +67,7 @@ process:
   parent:
     plugin: menu_link_parent
     source:
-       #- parent_id
+       - parent_link_id
        - 'main'
   external:
     plugin: default_value
