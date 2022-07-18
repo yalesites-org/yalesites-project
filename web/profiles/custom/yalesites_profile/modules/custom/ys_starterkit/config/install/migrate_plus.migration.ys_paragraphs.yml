@@ -1,6 +1,8 @@
 id: ys_paragraphs
 label: Starterkit Paragraphs
 description: Migration of text to Drupal Paragraph Text
+migration_tags: null
+migration_group: ys_starterkit
 source_type: 'JSON file from URL'
 
 source:

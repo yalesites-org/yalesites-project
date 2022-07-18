@@ -2,14 +2,12 @@ uuid: 480d8712-44b1-448e-be82-211269ef4a1c
 langcode: en
 status: true
 dependencies: {  }
-_core:
-  default_config_hash: UBI68ee864AJkY93k8V8txy4dS8OeNlodtClnvNc9KU
 id: ys_paragraphs
 class: null
 field_plugin_method: null
 cck_plugin_method: null
 migration_tags: null
-migration_group: null
+migration_group: ys_starterkit
 label: 'Starterkit Paragraphs'
 source:
   plugin: url

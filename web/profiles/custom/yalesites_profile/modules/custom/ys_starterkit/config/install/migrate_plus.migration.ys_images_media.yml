@@ -1,6 +1,8 @@
 id: ys_images_media
 label: Starterkit Media
 description: Create media entities from image files.
+migration_tags: null
+migration_group: ys_starterkit
 source_type: 'JSON file from URL'
 
 source:

@@ -1,0 +1,10 @@
+uuid: 23a30b2a-0437-41ec-9396-7a4e81f3fd8a
+langcode: en
+status: true
+dependencies: {  }
+id: ys_starterkit
+label: 'YaleSites Starter Kit'
+description: 'Sample content for new sites.'
+source_type: ''
+module: null
+shared_configuration: null

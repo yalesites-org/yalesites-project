@@ -2,14 +2,12 @@ uuid: d92134e7-523b-493f-8d8d-bb51d736d0f7
 langcode: en
 status: true
 dependencies: {  }
-_core:
-  default_config_hash: PlukuxJTvf169wupgbZTXmM56yXXuluEzz38p9XuNys
 id: ys_paragraph_accordion
 class: null
 field_plugin_method: null
 cck_plugin_method: null
 migration_tags: null
-migration_group: null
+migration_group: ys_starterkit
 label: 'Starterkit Paragraph Accordion'
 source:
   plugin: url

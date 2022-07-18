@@ -1,6 +1,8 @@
 id: ys_pages
 label: Starterkit Pages
 description: Create page content.
+migration_tags: null
+migration_group: ys_starterkit
 source_type: 'JSON file from URL'
 
 source:

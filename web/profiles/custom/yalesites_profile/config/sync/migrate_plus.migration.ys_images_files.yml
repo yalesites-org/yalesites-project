@@ -5,14 +5,12 @@ dependencies:
   enforced:
     module:
       - ys_starterkit
-_core:
-  default_config_hash: uLbxG_BRx5O7-OVa16Y6fKGVMhZpF7YVnKIi7O3Rwp4
 id: ys_images_files
 class: null
 field_plugin_method: null
 cck_plugin_method: null
 migration_tags: null
-migration_group: null
+migration_group: ys_starterkit
 label: 'Starterkit Images'
 source:
   plugin: url

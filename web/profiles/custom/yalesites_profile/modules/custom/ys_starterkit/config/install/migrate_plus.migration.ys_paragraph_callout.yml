@@ -1,6 +1,8 @@
 id: ys_paragraph_callout
 label: Starterkit Paragraph Callout
 description: Migration of callout
+migration_tags: null
+migration_group: ys_starterkit
 source_type: 'JSON file from URL'
 
 source:
