@@ -7,10 +7,6 @@
       "type": "path",
       "url": "web/profiles/custom/yalesites_profile"
     },
-    "cas": {
-      "type": "vcs",
-      "url": "https://github.com/yalesites-org/yale_cas.git"
-    },
     "drupal": {
       "type": "composer",
       "url": "https://packages.drupal.org/8"
@@ -19,10 +15,8 @@
   "require": {
     "composer/installers": "^1.9",
     "cweagans/composer-patches": "^1.7",
-    "drupal/address": "^1.10",
     "drupal/core-composer-scaffold": "^9.2",
     "drupal/core-recommended": "^9.2",
-    "drupal/smart_date": "^3.5",
     "drush/drush": "^10",
     "pantheon-systems/drupal-integrations": "^9",
     "yalesites-org/yalesites_profile": "*"

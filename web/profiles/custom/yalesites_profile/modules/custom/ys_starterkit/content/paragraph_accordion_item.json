@@ -1,0 +1,58 @@
+{
+  "data": {
+    "paragraph_accordion_item": [
+      {
+        "paragraph_id": "AccordionItem01",
+        "paragraph_type": "accordion_item",
+        "paragraph_fields": {
+          "field_heading": {
+            "value": "Nibh tellus molestie nunc blandit",
+            "format": "heading_html"
+          },
+          "field_content": [
+            "AccordionItemText01"
+          ]
+        }
+      },
+      {
+        "paragraph_id": "AccordionItem02",
+        "paragraph_type": "accordion_item",
+        "paragraph_fields": {
+          "field_heading": {
+            "value": "Gravida cum sociis natoque penatibus et magnis",
+            "format": "heading_html"
+          },
+          "field_content": [
+            "AccordionItemText01"
+          ]
+        }
+      },
+      {
+        "paragraph_id": "AccordionItem03",
+        "paragraph_type": "accordion_item",
+        "paragraph_fields": {
+          "field_heading": {
+            "value": "Mi sit amet mauris commodo",
+            "format": "heading_html"
+          },
+          "field_content": [
+            "AccordionItemText01"
+          ]
+        }
+      },
+      {
+        "paragraph_id": "AccordionItem04",
+        "paragraph_type": "accordion_item",
+        "paragraph_fields": {
+          "field_heading": {
+            "value": "Platea dictumst quisque sagittis",
+            "format": "heading_html"
+          },
+          "field_content": [
+            "AccordionItemText01"
+          ]
+        }
+      }
+    ]
+  }
+}

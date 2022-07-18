@@ -11,4 +11,5 @@ The YaleSites platform empowers the Yale community to create digital experiences
 
 - [Review contribution guidelines](/docs/CONTRIBUTING.md)
 - [Setup a local development environment](/docs/setup.md)
+- [Getting started as a developer](/docs/development.md)
 - [Learn about the project architecture](/docs/upstream.md)

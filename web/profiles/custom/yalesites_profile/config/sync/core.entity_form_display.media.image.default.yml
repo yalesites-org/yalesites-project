@@ -29,6 +29,7 @@ content:
       crop_preview_image_style: crop_thumbnail
       crop_list:
         - banner_16_5
+        - card_3_2
       crop_types_required: {  }
       warn_multiple_usages: true
       show_crop_area: false

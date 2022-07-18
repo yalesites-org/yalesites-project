@@ -22,6 +22,7 @@ display:
     display_plugin: default
     position: 0
     display_options:
+      title: Full
       fields:
         title:
           id: title
@@ -124,7 +125,41 @@ display:
             field_identifier: ''
           exposed: false
           granularity: second
-      arguments: {  }
+      arguments:
+        'null':
+          id: 'null'
+          table: views
+          field: 'null'
+          relationship: none
+          group_type: group
+          admin_label: 'View Heading'
+          plugin_id: 'null'
+          default_action: ignore
+          exception:
+            value: all
+            title_enable: false
+            title: All
+          title_enable: true
+          title: '{{ arguments.null }}'
+          default_argument_type: fixed
+          default_argument_options:
+            argument: ''
+          default_argument_skip_url: false
+          summary_options:
+            base_path: ''
+            count: true
+            override: false
+            items_per_page: 25
+          summary:
+            sort_order: asc
+            number_of_records: 0
+            format: default_summary
+          specify_validation: false
+          validate:
+            type: none
+            fail: 'not found'
+          validate_options: {  }
+          must_not_be: false
       filters:
         status:
           id: status
@@ -181,15 +216,15 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
-        field_event_date_value:
-          id: field_event_date_value
+        field_event_date_end_value:
+          id: field_event_date_end_value
           table: node__field_event_date
-          field: field_event_date_value
+          field: field_event_date_end_value
           relationship: none
           group_type: group
           admin_label: ''
           plugin_id: date
-          operator: '>'
+          operator: '>='
           value:
             min: ''
             max: ''
@@ -255,6 +290,26 @@ display:
       contexts:
         - 'languages:language_content'
         - 'languages:language_interface'
+        - url
+        - url.query_args
+        - 'user.node_grants:view'
+        - user.permissions
+      tags: {  }
+  full:
+    id: full
+    display_title: Full
+    display_plugin: block
+    position: 1
+    display_options:
+      display_description: ''
+      display_extenders: {  }
+      block_description: Full
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url
         - url.query_args
         - 'user.node_grants:view'
         - user.permissions

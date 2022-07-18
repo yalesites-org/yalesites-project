@@ -1,0 +1,10 @@
+uuid: 13845320-2532-4655-bbab-32a4b0781445
+langcode: en
+status: true
+dependencies:
+  module:
+    - media
+id: media.card_secondary_3_2
+label: 'Card - Secondary (3:2)'
+targetEntityType: media
+cache: true

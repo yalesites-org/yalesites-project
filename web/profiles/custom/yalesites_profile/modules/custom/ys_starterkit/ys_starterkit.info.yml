@@ -1,0 +1,12 @@
+type: module
+name: YaleSites Starter Kit
+description: 'Creates out of the box content and settings.'
+package: YaleSites
+core_version_requirement: ^8 || ^9
+version: 1.0.0
+dependencies:
+  - drupal:migrate
+  - entity_reference_revisions:entity_reference_revisions
+  - paragraphs:paragraphs
+  - migrate_tools
+  - migrate_plus

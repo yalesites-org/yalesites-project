@@ -1,0 +1,24 @@
+{
+  "data": {
+    "paragraph_callout": [
+      {
+        "paragraph_id": "Callout01",
+        "paragraph_type": "callout_item",
+        "paragraph_fields": {
+          "field_heading": {
+            "value": "Callouts help you accomplish goals",
+            "format": "basic_html"
+          },
+          "field_text": {
+            "value": "They're handy for directing attention to actions that aren't the page's main goal but are important to the user.",
+            "format": "basic_html"
+          },
+          "field_link": {
+            "url": "https://www.example.com",
+            "title": "Direct your user"
+          }
+        }
+      }
+    ]
+  }
+}

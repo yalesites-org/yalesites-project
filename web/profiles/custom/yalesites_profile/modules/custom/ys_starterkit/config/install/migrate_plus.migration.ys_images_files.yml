@@ -1,0 +1,70 @@
+id: ys_images_files
+label: Starterkit Images
+description: Create images from external files.
+migration_tags: null
+migration_group: ys_starterkit
+source_type: 'JSON file from URL'
+
+source:
+  plugin: url
+  data_fetcher_plugin: file
+  data_parser_plugin: json
+  urls:
+    - profiles/custom/yalesites_profile/modules/custom/ys_starterkit/content/images.json
+  item_selector: /data/images
+  fields:
+    - name: image_id
+      label: 'Image ID'
+      selector: image_id
+    - name: image_url
+      label: 'Image URL'
+      selector: image_url
+  ids:
+    image_id:
+      type: integer
+  constants:
+    drupal_file_dest: 'public://starterkit/'
+
+process:
+  destination_filename:
+    -
+      plugin: callback
+      callable: basename
+      source: image_url
+    -
+      plugin: skip_on_empty
+      method: row
+      message: 'Cannot import empty filename.'
+  destination_full_path:
+    -
+      plugin: concat
+      source:
+        - 'constants/drupal_file_dest'
+        - '@destination_filename'
+    -
+      plugin: urlencode
+  uri:
+    -
+      plugin: skip_on_empty
+      method: process
+      source: image_url
+    -
+      plugin: file_copy
+      source:
+        - image_url
+        - '@destination_full_path'
+      file_exists: rename
+      move: false
+  uid:
+    plugin: default_value
+    default_value: 1
+
+destination:
+  plugin: 'entity:file'
+
+dependencies:
+  enforced:
+    module:
+      - ys_starterkit
+
+migration_dependencies: {}
