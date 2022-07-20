@@ -1,0 +1,14 @@
+<?php
+
+/**
+ * Implements hook_theme().
+ */
+function ys_core_theme($existing, $type, $theme, $path): array {
+  return [
+    'social_links_block' => [
+      'variables' => [
+        'social_links' => [],
+      ],
+    ],
+  ];
+}

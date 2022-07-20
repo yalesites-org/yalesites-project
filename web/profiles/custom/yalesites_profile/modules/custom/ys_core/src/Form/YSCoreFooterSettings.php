@@ -1,39 +1,34 @@
 <?php
 
-/**
- * Contains form class for ys_core settings.
- * 
- * @file
- */
-
 namespace Drupal\ys_core\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Cache\CacheBackendInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Class YSCoreFooterSettings.
+ * Settings form for footer settings.
  *
  * @package Drupal\ys_core\Form
  */
-
 class YSCoreFooterSettings extends ConfigFormBase {
 
-    /**
-     * {@inheritdoc}
-     */
-
+  /**
+   * {@inheritdoc}
+   */
   public function getFormId() {
     return 'ys_core_settings_form';
   }
 
   /**
-   * @param array $form form array
-   * @param Drupal\Core\Form\FormStateInterface $form_state form state
-   * @return array form array to render
-   * Settings configuration form
+   * Settings configuration form.
+   *
+   * @param array $form
+   *   Form array.
+   * @param Drupal\Core\Form\FormStateInterface $form_state
+   *   Form state.
+   *
+   * @return array
+   *   Form array to render.
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
@@ -44,21 +39,52 @@ class YSCoreFooterSettings extends ConfigFormBase {
 
     $form['social_facebook_link'] = [
       '#type' => 'url',
-      '#title' => $this->t('Social Facebook Link'),
+      '#title' => $this->t('Facebook URL'),
       '#default_value' => $config->get('ys_core.social_facebook_link'),
+    ];
+
+    $form['social_instagram_link'] = [
+      '#type' => 'url',
+      '#title' => $this->t('Instagram URL'),
+      '#default_value' => $config->get('ys_core.social_instagram_link'),
+    ];
+
+    $form['social_twitter_link'] = [
+      '#type' => 'url',
+      '#title' => $this->t('Twitter URL'),
+      '#default_value' => $config->get('ys_core.social_twitter_link'),
+    ];
+
+    $form['social_youtube_link'] = [
+      '#type' => 'url',
+      '#title' => $this->t('YouTube URL'),
+      '#default_value' => $config->get('ys_core.social_youtube_link'),
+    ];
+
+    $form['social_weibo_link'] = [
+      '#type' => 'url',
+      '#title' => $this->t('Weibo URL'),
+      '#default_value' => $config->get('ys_core.social_weibo_link'),
     ];
 
     return $form;
   }
 
   /**
-   * @param array $form form array
-   * @param Drupal\Core\Form\FormStateInterface $form_state form state
-   * Submit form action
+   * Submit form action.
+   *
+   * @param array $form
+   *   Form array.
+   * @param Drupal\Core\Form\FormStateInterface $form_state
+   *   Form state.
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $config = $this->config('ys_core.settings');
     $config->set('ys_core.social_facebook_link', $form_state->getValue('social_facebook_link'));
+    $config->set('ys_core.social_instagram_link', $form_state->getValue('social_instagram_link'));
+    $config->set('ys_core.social_twitter_link', $form_state->getValue('social_twitter_link'));
+    $config->set('ys_core.social_youtube_link', $form_state->getValue('social_youtube_link'));
+    $config->set('ys_core.social_weibo_link', $form_state->getValue('social_weibo_link'));
     $config->save();
     return parent::submitForm($form, $form_state);
   }
@@ -66,7 +92,6 @@ class YSCoreFooterSettings extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-
   protected function getEditableConfigNames() {
     return [
       'ys_core.settings',
