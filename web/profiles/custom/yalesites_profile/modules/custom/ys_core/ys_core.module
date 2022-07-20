@@ -12,7 +12,7 @@
  */
 function ys_core_theme($existing, $type, $theme, $path): array {
   return [
-    'social_links_block' => [
+    'ys_social_links' => [
       'variables' => [
         'social_links' => [],
       ],

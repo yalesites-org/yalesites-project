@@ -16,7 +16,7 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
  *   category = @Translation("YaleSites Core"),
  * )
  */
-class SocialLinksBlock extends BlockBase implements ContainerFactoryPluginInterface {
+class YaleSitesSocialLinksBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**
    * Configuration Factory.
@@ -58,7 +58,7 @@ class SocialLinksBlock extends BlockBase implements ContainerFactoryPluginInterf
     $socialWeibo = $config->get("ys_core.social_weibo_link");
 
     return [
-      '#theme' => 'social_links_block',
+      '#theme' => 'ys_social_links',
       '#social_links' => [
         'facebook' => $socialFacebook,
         'instagram' => $socialInstagram,
