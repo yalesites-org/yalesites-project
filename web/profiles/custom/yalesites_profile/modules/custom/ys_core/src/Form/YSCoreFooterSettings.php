@@ -37,31 +37,37 @@ class YSCoreFooterSettings extends ConfigFormBase {
     // Default settings.
     $config = $this->config('ys_core.settings');
 
-    $form['social_facebook_link'] = [
+    $form['social_links'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Social Links'),
+      '#open' => TRUE,
+    ];
+
+    $form['social_links']['social_facebook_link'] = [
       '#type' => 'url',
       '#title' => $this->t('Facebook URL'),
       '#default_value' => $config->get('ys_core.social_facebook_link'),
     ];
 
-    $form['social_instagram_link'] = [
+    $form['social_links']['social_instagram_link'] = [
       '#type' => 'url',
       '#title' => $this->t('Instagram URL'),
       '#default_value' => $config->get('ys_core.social_instagram_link'),
     ];
 
-    $form['social_twitter_link'] = [
+    $form['social_links']['social_twitter_link'] = [
       '#type' => 'url',
       '#title' => $this->t('Twitter URL'),
       '#default_value' => $config->get('ys_core.social_twitter_link'),
     ];
 
-    $form['social_youtube_link'] = [
+    $form['social_links']['social_youtube_link'] = [
       '#type' => 'url',
       '#title' => $this->t('YouTube URL'),
       '#default_value' => $config->get('ys_core.social_youtube_link'),
     ];
 
-    $form['social_weibo_link'] = [
+    $form['social_links']['social_weibo_link'] = [
       '#type' => 'url',
       '#title' => $this->t('Weibo URL'),
       '#default_value' => $config->get('ys_core.social_weibo_link'),

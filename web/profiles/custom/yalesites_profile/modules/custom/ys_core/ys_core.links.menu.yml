@@ -1,5 +1,5 @@
 ys_core.footer_settings:
-  title: 'Footer Settings'
-  description: 'YaleSites Footer Settings'
+  title: 'Footer'
+  description: 'Footer Settings'
   route_name: ys_core.footer_settings
   parent: ys_admin.admin_yale
