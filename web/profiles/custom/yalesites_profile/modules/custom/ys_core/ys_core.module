@@ -1,6 +1,13 @@
 <?php
 
 /**
+ * @file
+ * Contains ys_core.module functions.
+ */
+
+/**
+ * Add template file for social links.
+ *
  * Implements hook_theme().
  */
 function ys_core_theme($existing, $type, $theme, $path): array {

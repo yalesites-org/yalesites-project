@@ -26,12 +26,7 @@ class SocialLinksBlock extends BlockBase implements ContainerFactoryPluginInterf
   protected $configFactory;
 
   /**
-   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
-   * @param array $configuration
-   * @param string $plugin_id
-   * @param mixed $plugin_definition
-   *
-   * @return static
+   * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     return new static(
@@ -43,10 +38,7 @@ class SocialLinksBlock extends BlockBase implements ContainerFactoryPluginInterf
   }
 
   /**
-   * @param array $configuration
-   * @param string $plugin_id
-   * @param mixed $plugin_definition
-   * @param Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   * {@inheritdoc}
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, ConfigFactoryInterface $configFactory) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
