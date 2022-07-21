@@ -8,7 +8,7 @@ set -eo pipefail
 composer config --global 'preferred-install.yalesites-org/*' source
 
 # Check if branch exists in atomic theme.
-ATOMIC_BRANCH=$(git ls-remote --heads git@github.com:yalesites-org/atomic.git "$BRANCH" | wc -l)
+ATOMIC_BRANCH=$(git ls-remote --heads https://github.com/yalesites-org/atomic.git "$BRANCH" | wc -l)
 
 if [ "$ATOMIC_BRANCH" -eq 1 ]; then
   # Build atomic theme
@@ -22,7 +22,7 @@ if [ "$ATOMIC_BRANCH" -eq 1 ]; then
 fi
 
 # Check if branch exists in component library.
-COMPONENT_LIBRARY_BRANCH=$(git ls-remote --heads git@github.com:yalesites-org/component-library-twig.git "$BRANCH" | wc -l)
+COMPONENT_LIBRARY_BRANCH=$(git ls-remote --heads https://github.com/yalesites-org/component-library-twig.git "$BRANCH" | wc -l)
 
 if [ "$COMPONENT_LIBRARY_BRANCH" -eq 1 ]; then
   # Build component library
