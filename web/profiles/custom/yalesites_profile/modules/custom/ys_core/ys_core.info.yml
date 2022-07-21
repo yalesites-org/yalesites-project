@@ -1,0 +1,5 @@
+name: YaleSites core
+type: module
+description: YaleSites Core Configuation
+core_version_requirement: ^8 || ^9
+package: YaleSites
