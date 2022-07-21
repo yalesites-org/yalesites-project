@@ -132,6 +132,8 @@ jobs:
           ref: ${{ github.head_ref || github.ref_name }}
           fetch-depth: 0
       - name: create .npmrc
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           echo @yalesites-org:registry=https://npm.pkg.github.com >> .npmrc
           echo //npm.pkg.github.com/:_authToken="$GITHUB_TOKEN" >> .npmrc
