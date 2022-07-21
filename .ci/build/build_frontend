@@ -17,7 +17,6 @@ if [ "$ATOMIC_BRANCH" -eq 1 ]; then
   composer require yalesites-org/atomic:dev-"$BRANCH" --no-update
   cd "$GITHUB_WORKSPACE"
   rm -rf web/themes/contrib/atomic
-  rm composer.lock
   composer update
 fi
 
