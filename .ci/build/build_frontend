@@ -1,0 +1,39 @@
+#!/bin/bash
+
+set -eo pipefail
+
+# This script builds out frontend assets for the atomic theme and
+# component library if the pull request branch exists in those repos.
+
+composer config --global 'preferred-install.yalesites-org/*' source
+
+# Check if branch exists in atomic theme.
+ATOMIC_BRANCH=$(git ls-remote --heads git@github.com:yalesites-org/atomic.git "$BRANCH" | wc -l)
+
+if [ "$ATOMIC_BRANCH" -eq 1 ]; then
+  # Build atomic theme
+  cd "$GITHUB_WORKSPACE"/web/profiles/custom/yalesites_profile
+
+  composer require yalesites-org/atomic:dev-"$BRANCH" --no-update
+  cd "$GITHUB_WORKSPACE"
+  rm -rf web/themes/contrib/atomic
+  rm composer.lock
+  composer update
+fi
+
+# Check if branch exists in component library.
+COMPONENT_LIBRARY_BRANCH=$(git ls-remote --heads git@github.com:yalesites-org/component-library-twig.git "$BRANCH" | wc -l)
+
+if [ "$COMPONENT_LIBRARY_BRANCH" -eq 1 ]; then
+  # Build component library
+  cd "$GITHUB_WORKSPACE"/web/themes/contrib/atomic
+  npm install
+  # Remove component library from atomic so we can add the branch version later.
+  rm -rf node_modules/@yalesites-org/component-library-twig
+  cd /tmp
+  git clone --single-branch --branch "$BRANCH" https://github.com/yalesites-org/component-library-twig
+  cd component-library-twig
+  npm install
+  npm run build
+  mv /tmp/component-library-twig "$GITHUB_WORKSPACE"/web/themes/contrib/atomic/node_modules/@yalesites-org
+fi
