@@ -140,6 +140,8 @@ jobs:
           BRANCH: ${{ github.head_ref || github.ref_name }}
         run: |
           ./.ci/build/build_frontend
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
 
   deploy_to_pantheon:
     container:
