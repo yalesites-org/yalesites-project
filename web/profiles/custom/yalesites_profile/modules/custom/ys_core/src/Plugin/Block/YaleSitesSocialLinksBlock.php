@@ -8,7 +8,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 
 /**
- * Provides a 'Hello' Block.
+ * Adds a social links block with links from YS Core footer settings.
  *
  * @Block(
  *   id = "social_links_block",
@@ -59,13 +59,11 @@ class YaleSitesSocialLinksBlock extends BlockBase implements ContainerFactoryPlu
 
     return [
       '#theme' => 'ys_social_links',
-      '#social_links' => [
-        'facebook' => $socialFacebook,
-        'instagram' => $socialInstagram,
-        'twitter' => $socialTwitter,
-        'youtube' => $socialYouTube,
-        'weibo' => $socialWeibo,
-      ],
+      '#facebook' => $socialFacebook,
+      '#instagram' => $socialInstagram,
+      '#twitter' => $socialTwitter,
+      '#youtube' => $socialYouTube,
+      '#weibo' => $socialWeibo,
     ];
   }
 

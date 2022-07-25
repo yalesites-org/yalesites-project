@@ -1,7 +1,7 @@
 ys_core.footer_settings:
   path: '/admin/yalesites/footer'
   defaults:
-    _form: 'Drupal\ys_core\Form\YSCoreFooterSettings'
+    _form: 'Drupal\ys_core\Form\YSCoreFooterSettingsForm'
     _title: 'Footer Settings'
   requirements:
-    _permission: 'administer ys_core_footer_settings'
+    _permission: 'access administration pages'

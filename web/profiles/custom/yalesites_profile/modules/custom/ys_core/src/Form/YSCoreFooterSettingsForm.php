@@ -10,13 +10,13 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @package Drupal\ys_core\Form
  */
-class YSCoreFooterSettings extends ConfigFormBase {
+class YSCoreFooterSettingsForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'ys_core_settings_form';
+    return 'ys_core_footer_settings_form';
   }
 
   /**
