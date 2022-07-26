@@ -1,4 +1,4 @@
-uuid: 3d0dfc63-a8ad-4d22-b47d-70c9c45fe272
+uuid: 5cde02bd-9862-4934-be00-89ef171ef8a2
 langcode: en
 status: true
 dependencies:
@@ -6,15 +6,15 @@ dependencies:
     - system
   theme:
     - atomic
-id: main_page_content
+id: breadcrumbs_2
 theme: atomic
 region: content
-weight: 0
+weight: -1
 provider: null
-plugin: system_main_block
+plugin: system_breadcrumb_block
 settings:
-  id: system_main_block
-  label: 'Main page content'
+  id: system_breadcrumb_block
+  label: Breadcrumbs
   label_display: '0'
   provider: system
 visibility: {  }
