@@ -1,0 +1,70 @@
+<?php
+
+namespace Drupal\ys_core\Plugin\Block;
+
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Block\BlockBase;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+
+/**
+ * Adds a social links block with links from YS Core footer settings.
+ *
+ * @Block(
+ *   id = "social_links_block",
+ *   admin_label = @Translation("Social Links Block"),
+ *   category = @Translation("YaleSites Core"),
+ * )
+ */
+class YaleSitesSocialLinksBlock extends BlockBase implements ContainerFactoryPluginInterface {
+
+  /**
+   * Configuration Factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('config.factory')
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, ConfigFactoryInterface $configFactory) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->configFactory = $configFactory;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function build() {
+
+    $config = $this->configFactory->get('ys_core.settings');
+    $socialFacebook = $config->get("ys_core.social_facebook_link");
+    $socialInstagram = $config->get("ys_core.social_instagram_link");
+    $socialTwitter = $config->get("ys_core.social_twitter_link");
+    $socialYouTube = $config->get("ys_core.social_youtube_link");
+    $socialWeibo = $config->get("ys_core.social_weibo_link");
+
+    return [
+      '#theme' => 'ys_social_links',
+      '#facebook' => $socialFacebook,
+      '#instagram' => $socialInstagram,
+      '#twitter' => $socialTwitter,
+      '#youtube' => $socialYouTube,
+      '#weibo' => $socialWeibo,
+    ];
+  }
+
+}
