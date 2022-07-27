@@ -1,0 +1,4 @@
+services:
+  ys_core.social_links_manager:
+    class: Drupal\ys_core\SocialLinksManager
+    arguments: ['@config.factory']
