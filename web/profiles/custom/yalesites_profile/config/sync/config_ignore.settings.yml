@@ -4,4 +4,4 @@ ignored_config_entities:
   - system.site.name
   - system.site.mail
   - 'system.site.page.*'
-  - ys_core.settings
+  - 'ys_core.*'

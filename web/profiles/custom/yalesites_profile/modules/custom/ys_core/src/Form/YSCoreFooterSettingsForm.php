@@ -2,8 +2,11 @@
 
 namespace Drupal\ys_core\Form;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\ys_core\SocialLinksManager;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Settings form for footer settings.
@@ -20,11 +23,18 @@ class YSCoreFooterSettingsForm extends ConfigFormBase {
   }
 
   /**
+   * Social Links Manager.
+   *
+   * @var \Drupal\ys_core\SocialLinksManager
+   */
+  protected $socialLinks;
+
+  /**
    * Settings configuration form.
    *
    * @param array $form
    *   Form array.
-   * @param Drupal\Core\Form\FormStateInterface $form_state
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   Form state.
    *
    * @return array
@@ -32,47 +42,20 @@ class YSCoreFooterSettingsForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
-    // Form constructor.
     $form = parent::buildForm($form, $form_state);
-    // Default settings.
-    $config = $this->config('ys_core.settings');
-
+    $config = $this->config('ys_core.social_links');
     $form['social_links'] = [
       '#type' => 'details',
       '#title' => $this->t('Social Links'),
       '#open' => TRUE,
     ];
-
-    $form['social_links']['social_facebook_link'] = [
-      '#type' => 'url',
-      '#title' => $this->t('Facebook URL'),
-      '#default_value' => $config->get('ys_core.social_facebook_link'),
-    ];
-
-    $form['social_links']['social_instagram_link'] = [
-      '#type' => 'url',
-      '#title' => $this->t('Instagram URL'),
-      '#default_value' => $config->get('ys_core.social_instagram_link'),
-    ];
-
-    $form['social_links']['social_twitter_link'] = [
-      '#type' => 'url',
-      '#title' => $this->t('Twitter URL'),
-      '#default_value' => $config->get('ys_core.social_twitter_link'),
-    ];
-
-    $form['social_links']['social_youtube_link'] = [
-      '#type' => 'url',
-      '#title' => $this->t('YouTube URL'),
-      '#default_value' => $config->get('ys_core.social_youtube_link'),
-    ];
-
-    $form['social_links']['social_weibo_link'] = [
-      '#type' => 'url',
-      '#title' => $this->t('Weibo URL'),
-      '#default_value' => $config->get('ys_core.social_weibo_link'),
-    ];
-
+    foreach($this->socialLinks::SITES as $id => $name) {
+      $form['social_links'][$id] = [
+        '#type' => 'url',
+        '#title' => $this->t("$name URL"),
+        '#default_value' => $config->get($id),
+      ];
+    }
     return $form;
   }
 
@@ -81,16 +64,14 @@ class YSCoreFooterSettingsForm extends ConfigFormBase {
    *
    * @param array $form
    *   Form array.
-   * @param Drupal\Core\Form\FormStateInterface $form_state
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   Form state.
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $config = $this->config('ys_core.settings');
-    $config->set('ys_core.social_facebook_link', $form_state->getValue('social_facebook_link'));
-    $config->set('ys_core.social_instagram_link', $form_state->getValue('social_instagram_link'));
-    $config->set('ys_core.social_twitter_link', $form_state->getValue('social_twitter_link'));
-    $config->set('ys_core.social_youtube_link', $form_state->getValue('social_youtube_link'));
-    $config->set('ys_core.social_weibo_link', $form_state->getValue('social_weibo_link'));
+    $config = $this->config('ys_core.social_links');
+    foreach($this->socialLinks::SITES as $id => $name) {
+      $config->set($id, $form_state->getValue($id));
+    }
     $config->save();
     return parent::submitForm($form, $form_state);
   }
@@ -100,8 +81,26 @@ class YSCoreFooterSettingsForm extends ConfigFormBase {
    */
   protected function getEditableConfigNames() {
     return [
-      'ys_core.settings',
+      'ys_core.social_links',
     ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('config.factory'),
+      $container->get('ys_core.social_links_manager')
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(ConfigFactoryInterface $config_factory, SocialLinksManager $social_links_manager) {
+    parent::__construct($config_factory);
+    $this->socialLinks = $social_links_manager;
   }
 
 }
