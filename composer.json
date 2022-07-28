@@ -10,6 +10,30 @@
     "drupal": {
       "type": "composer",
       "url": "https://packages.drupal.org/8"
+    },
+    "ckeditor-plugin/link": {
+      "type": "package",
+      "package": {
+        "name": "ckeditor-plugin/link",
+        "version": "4.19.3",
+        "type": "drupal-library",
+        "dist": {
+          "url": "https://github.com/yalesites-org/ckeditor-advanced-link-plugin/archive/refs/heads/main.zip",
+          "type": "zip"
+        }
+      }
+    },
+    "ckeditor-plugin/fakeobjects": {
+      "type": "package",
+      "package": {
+        "name": "ckeditor-plugin/fakeobjects",
+        "version": "4.19.1",
+        "type": "drupal-library",
+        "dist": {
+          "url": "https://download.ckeditor.com/fakeobjects/releases/fakeobjects_4.19.1.zip",
+          "type": "zip"
+        }
+      }
     }
   },
   "require": {
@@ -55,6 +79,9 @@
         "[project-root]/.gitattributes": false
       }
     },
+    "installer-types": [
+      "ckeditor-plugin"
+    ],
     "installer-paths": {
       "web/core": [
         "type:drupal-core"
@@ -85,6 +112,9 @@
       ],
       "web/private/scripts/quicksilver/{$name}/": [
         "type:quicksilver-script"
+      ],
+      "web/libraries/ckeditor/plugins/{$name}": [
+        "type:ckeditor-plugin"
       ]
     },
     "composer-exit-on-patch-failure": true,
