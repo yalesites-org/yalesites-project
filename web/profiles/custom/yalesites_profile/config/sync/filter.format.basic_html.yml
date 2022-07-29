@@ -16,7 +16,7 @@ filters:
     status: true
     weight: -10
     settings:
-      allowed_html: '<em> <strong> <cite> <blockquote cite> <code> <ul type> <ol type start> <li> <dl> <dt> <dd> <h2 id> <h3 id> <h4 id> <h5 id> <h6 id> <p> <br> <span> <table> <caption> <tbody> <thead> <tfoot> <th> <td> <tr> <sup> <sub> <a href hreflang data-entity-substitution data-entity-type data-entity-uuid title target !href>'
+      allowed_html: '<em> <strong> <cite> <blockquote cite> <code> <ul type> <ol type start> <li> <dl> <dt> <dd> <h2 id> <h3 id> <h4 id> <h5 id> <h6 id> <p> <br> <span> <table> <caption> <tbody> <thead> <tfoot> <th> <td> <tr> <sup> <sub> <a href hreflang data-entity-substitution data-entity-type data-entity-uuid title target>'
       filter_html_help: false
       filter_html_nofollow: false
   filter_align:
@@ -51,17 +51,17 @@ filters:
     weight: 50
     settings:
       remove_empty_paragraphs: '1'
-  filter_autop:
-    id: filter_autop
-    provider: filter
-    status: true
-    weight: 0
-    settings: {  }
   filter_htmlcorrector:
     id: filter_htmlcorrector
     provider: filter
     status: true
     weight: 10
+    settings: {  }
+  filter_autop:
+    id: filter_autop
+    provider: filter
+    status: true
+    weight: 0
     settings: {  }
   linkit:
     id: linkit
