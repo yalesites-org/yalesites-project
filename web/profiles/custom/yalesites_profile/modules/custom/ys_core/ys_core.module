@@ -14,11 +14,7 @@ function ys_core_theme($existing, $type, $theme, $path): array {
   return [
     'ys_social_links' => [
       'variables' => [
-        'facebook' => NULL,
-        'instagram' => NULL,
-        'twitter' => NULL,
-        'youtube' => NULL,
-        'weibo' => NULL,
+        'icons' => []
       ],
     ],
   ];

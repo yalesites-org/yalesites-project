@@ -1,15 +1,17 @@
-{% if facebook %}
-  <a href="{{ facebook }}">Facebook</a>
-{% endif %}
-{% if instagram %}
-  <a href="{{ instagram }}">Instagram</a>
-{% endif %}
-{% if twitter %}
-  <a href="{{ twitter }}">Twitter</a>
-{% endif %}
-{% if youtube %}
-  <a href="{{ youtube }}">YouTube</a>
-{% endif %}
-{% if weibo %}
-  <a href="{{ weibo }}">Weibo</a>
-{% endif %}
+{#
+ # Available Variables:
+ # - icons (array)
+ #   - url: url the icon links to
+ #   - name: Visually hidden text (for screen readers)
+ #   - icon: the actual image
+ #}
+
+<ul>
+  {% for icon in icons %}
+    <li>
+      <a href="{{ icon.url }}">
+        {{ icon.name }}
+      </a>
+    </li>
+  {% endfor %}
+</ul>
