@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_core\Form;
 
+use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -21,6 +22,13 @@ class YSCoreFooterSettingsForm extends ConfigFormBase {
   public function getFormId() {
     return 'ys_core_footer_settings_form';
   }
+
+  /**
+   * THe Drupal backend cache renderer service.
+   *
+   * @var \Drupal\Core\Path\CacheBackendInterface
+   */
+  protected $cacheRender;
 
   /**
    * Social Links Manager.
@@ -73,6 +81,7 @@ class YSCoreFooterSettingsForm extends ConfigFormBase {
       $config->set($id, $form_state->getValue($id));
     }
     $config->save();
+    $this->cacheRender->invalidateAll();
     return parent::submitForm($form, $form_state);
   }
 
@@ -91,15 +100,24 @@ class YSCoreFooterSettingsForm extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory'),
+      $container->get('cache.render'),
       $container->get('ys_core.social_links_manager')
     );
   }
 
   /**
-   * {@inheritdoc}
+   * Constructs the object.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The factory for configuration objects.
+   * @param \Drupal\Core\Path\CacheBackendInterface $cache_render
+   *   The Cache backend interface.
+   * @param \Drupal\ys_core\SocialLinksManager $social_links_manager
+   *   The Yale social media links management service.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, SocialLinksManager $social_links_manager) {
+  public function __construct(ConfigFactoryInterface $config_factory, CacheBackendInterface $cache_render, SocialLinksManager $social_links_manager) {
     parent::__construct($config_factory);
+    $this->cacheRender = $cache_render;
     $this->socialLinks = $social_links_manager;
   }
 

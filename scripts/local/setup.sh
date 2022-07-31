@@ -16,7 +16,7 @@ fi
 lando start
 
 # Install packages and pull down latest database and files.
-lando composer install
+lando composer update
 lando pull --database=dev --files=dev --code=none
 
 # Ensure everything is up to date.
