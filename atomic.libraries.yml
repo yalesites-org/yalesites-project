@@ -25,3 +25,7 @@ primary-nav:
 reference-card:
   js:
     node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/cards/reference-card/reference-card.js: {}
+
+breadcrumbs:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/03-organisms/menu/breadcrumbs/breadcrumbs.js: {}
