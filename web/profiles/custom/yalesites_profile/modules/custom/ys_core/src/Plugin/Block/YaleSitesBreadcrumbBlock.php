@@ -86,4 +86,13 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
     ];
   }
 
+  /**
+   * Turns off block cache.
+   *
+   *   Returns 0 to disable block cache.
+   */
+  public function getCacheMaxAge() {
+    return 0;
+  }
+
 }
