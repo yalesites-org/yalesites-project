@@ -13,7 +13,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @Block(
  *   id = "ys_breadcrumb_block",
- *   admin_label = @Translation("Breadcrumbs"),
+ *   admin_label = @Translation("YaleSites Breadcrumbs"),
  *   category = @Translation("YaleSites Core"),
  * )
  */
