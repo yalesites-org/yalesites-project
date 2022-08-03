@@ -1,0 +1,10 @@
+uuid: 4d56edb9-a16d-4803-ab7f-8f0e233770f5
+langcode: en
+status: true
+dependencies: {  }
+id: quick_links
+label: 'Quick Links'
+icon_uuid: null
+icon_default: null
+description: 'Section to organize sets of links into a visual collection so that my users can identify important resources and find the ones important to them. This paragraph includes a heading, text, an image, and links.'
+behavior_plugins: {  }

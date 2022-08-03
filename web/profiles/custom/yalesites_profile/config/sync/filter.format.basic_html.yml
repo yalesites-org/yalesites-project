@@ -51,17 +51,17 @@ filters:
     weight: 50
     settings:
       remove_empty_paragraphs: '1'
-  filter_autop:
-    id: filter_autop
-    provider: filter
-    status: true
-    weight: 0
-    settings: {  }
   filter_htmlcorrector:
     id: filter_htmlcorrector
     provider: filter
     status: true
     weight: 10
+    settings: {  }
+  filter_autop:
+    id: filter_autop
+    provider: filter
+    status: true
+    weight: 0
     settings: {  }
   linkit:
     id: linkit

@@ -17,6 +17,7 @@ dependencies:
     - paragraphs.paragraphs_type.news_list
     - paragraphs.paragraphs_type.pop_out_image
     - paragraphs.paragraphs_type.pull_quote
+    - paragraphs.paragraphs_type.quick_links
     - paragraphs.paragraphs_type.section
     - paragraphs.paragraphs_type.text
     - paragraphs.paragraphs_type.text_with_image
@@ -51,6 +52,7 @@ settings:
       news_cards: news_cards
       news_list: news_list
       cta_banner: cta_banner
+      quick_links: quick_links
     negate: 0
     target_bundles_drag_drop:
       accordion:
@@ -94,6 +96,9 @@ settings:
         enabled: true
       pull_quote:
         weight: -30
+        enabled: true
+      quick_links:
+        weight: 33
         enabled: true
       section:
         weight: -35
