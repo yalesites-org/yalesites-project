@@ -17,5 +17,10 @@ function ys_core_theme($existing, $type, $theme, $path): array {
         'icons' => []
       ],
     ],
+    'ys_breadcrumb_block' => [
+      'variables' => [
+        'items' => []
+      ],
+    ],
   ];
 }
