@@ -1,0 +1,18 @@
+{#
+ # Available Variables:
+ # - items (array)
+ #   - title: Link title
+ #   - url: Link url
+ #}
+
+<ul>
+  {% for item in items %}
+    <li>
+      {% if item.url %}
+          <a href="{{ item.url }}">{{ item.title }}</a>
+        {% else %}
+          {{ item.title }}
+        {% endif %}
+    </li>
+  {% endfor %}
+</ul>
