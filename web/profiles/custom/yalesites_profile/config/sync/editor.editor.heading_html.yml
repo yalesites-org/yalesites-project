@@ -17,14 +17,7 @@ settings:
           items:
             - Bold
             - Italic
-  plugins:
-    drupallink:
-      linkit_enabled: false
-      linkit_profile: ''
-    language:
-      language_list: un
-    stylescombo:
-      styles: ''
+  plugins: {  }
 image_upload:
   status: false
   scheme: public
