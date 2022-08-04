@@ -7,6 +7,7 @@ use Drupal\Core\Breadcrumb\BreadcrumbBuilderInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Cache\Cache;
 
 /**
  * Provides a block to display the breadcrumbs.
@@ -83,10 +84,36 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
     return [
       '#theme' => 'ys_breadcrumb_block',
       '#items' => $links,
-      '#cache' => [
-        'contexts' => ['route'],
-      ],
     ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheTags() {
+    // When a node changes, the block will rebuild.
+    // Via: https://drupal.stackexchange.com/a/199541
+    if ($node = $this->routeMatch->getParameter('node')) {
+      // If there is node add its cachetag in addition to main menu changes.
+      return Cache::mergeTags(parent::getCacheTags(), [
+        'node:' . $node->id(),
+        'config:system.menu.main',
+      ]);
+    }
+    else {
+      // Add cachetag for main menu changes.
+      return Cache::mergeTags(parent::getCacheTags(), [
+        'config:system.menu.main',
+      ]);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheContexts() {
+    // Every new route this block will rebuild.
+    return Cache::mergeContexts(parent::getCacheContexts(), ['route']);
   }
 
 }
