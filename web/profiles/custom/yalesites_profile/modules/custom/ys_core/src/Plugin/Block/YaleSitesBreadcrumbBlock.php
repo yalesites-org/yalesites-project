@@ -83,16 +83,10 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
     return [
       '#theme' => 'ys_breadcrumb_block',
       '#items' => $links,
+      '#cache' => [
+        'contexts' => ['route'],
+      ],
     ];
-  }
-
-  /**
-   * Turns off block cache.
-   *
-   *   Returns 0 to disable block cache.
-   */
-  public function getCacheMaxAge() {
-    return 0;
   }
 
 }
