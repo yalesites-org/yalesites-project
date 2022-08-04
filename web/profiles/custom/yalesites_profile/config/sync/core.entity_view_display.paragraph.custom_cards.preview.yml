@@ -1,0 +1,34 @@
+uuid: 59439a83-67b9-4e71-a439-2903d3d72790
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.paragraph.preview
+    - field.field.paragraph.custom_cards.field_cards
+    - field.field.paragraph.custom_cards.field_heading
+    - paragraphs.paragraphs_type.custom_cards
+  module:
+    - entity_reference_revisions
+    - text
+id: paragraph.custom_cards.preview
+targetEntityType: paragraph
+bundle: custom_cards
+mode: preview
+content:
+  field_cards:
+    type: entity_reference_revisions_entity_view
+    label: hidden
+    settings:
+      view_mode: preview
+      link: ''
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_heading:
+    type: text_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden: {  }
