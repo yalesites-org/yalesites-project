@@ -91,21 +91,10 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
    * {@inheritdoc}
    */
   public function getCacheTags() {
-    // When a node changes, the block will rebuild.
-    // Via: https://drupal.stackexchange.com/a/199541
-    if ($node = $this->routeMatch->getParameter('node')) {
-      // If there is node add its cachetag in addition to main menu changes.
-      return Cache::mergeTags(parent::getCacheTags(), [
-        'node:' . $node->id(),
-        'config:system.menu.main',
-      ]);
-    }
-    else {
-      // Add cachetag for main menu changes.
-      return Cache::mergeTags(parent::getCacheTags(), [
-        'config:system.menu.main',
-      ]);
-    }
+    // Add cachetag for main menu changes.
+    return Cache::mergeTags(parent::getCacheTags(), [
+      'config:system.menu.main',
+    ]);
   }
 
   /**
