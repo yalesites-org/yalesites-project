@@ -34,7 +34,7 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
   protected $routeMatch;
 
   /**
-   * Constructs a new SystemBreadcrumbBlock object.
+   * Constructs a new YaleSitesBreadcrumbBlock object.
    *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.
