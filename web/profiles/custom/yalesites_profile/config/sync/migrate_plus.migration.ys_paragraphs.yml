@@ -128,11 +128,8 @@ process:
       method: process
       message: 'Field field_accordion_refs is empty'
     -
-      plugin: multiple_values
-      source: field_accordion_refs
-    -
       plugin: migration_lookup
-      migration: ys_paragraph_accordion
+      migration: ys_paragraph_accordion_item
       no_stub: false
     -
       plugin: sub_process
@@ -144,4 +141,4 @@ destination:
 migration_dependencies:
   required:
     - ys_paragraph_callout
-    - ys_paragraph_accordion
+    - ys_paragraph_accordion_item
