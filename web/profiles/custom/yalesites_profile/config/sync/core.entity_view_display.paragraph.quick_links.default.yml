@@ -24,10 +24,11 @@ content:
     weight: 0
     region: content
   field_image:
-    type: entity_reference_label
+    type: entity_reference_entity_view
     label: hidden
     settings:
-      link: true
+      view_mode: full
+      link: false
     third_party_settings: {  }
     weight: 2
     region: content
