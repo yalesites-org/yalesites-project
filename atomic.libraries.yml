@@ -29,3 +29,7 @@ reference-card:
 breadcrumbs:
   js:
     node_modules/@yalesites-org/component-library-twig/dist/js/03-organisms/menu/breadcrumbs/breadcrumbs.js: {}
+
+tabs:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/tabs/tabs.js: {}
