@@ -11,6 +11,7 @@ composer config --global 'preferred-install.yalesites-org/*' source
 ATOMIC_BRANCH=$(git ls-remote --heads https://github.com/yalesites-org/atomic.git "$BRANCH" | wc -l)
 
 if [ "$ATOMIC_BRANCH" -eq 1 ]; then
+  echo "Matching branch $BRANCH found in atomic theme"
   # Build atomic theme
   cd "$GITHUB_WORKSPACE"/web/profiles/custom/yalesites_profile
 
@@ -24,6 +25,7 @@ fi
 COMPONENT_LIBRARY_BRANCH=$(git ls-remote --heads https://github.com/yalesites-org/component-library-twig.git "$BRANCH" | wc -l)
 
 if [ "$COMPONENT_LIBRARY_BRANCH" -eq 1 ]; then
+  echo "Matching branch $BRANCH found in component library"
   # Build component library
   cd "$GITHUB_WORKSPACE"/web/themes/contrib/atomic
   npm install
