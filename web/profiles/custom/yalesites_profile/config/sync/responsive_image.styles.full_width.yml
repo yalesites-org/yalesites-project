@@ -18,7 +18,7 @@ dependencies:
     - image.style.max_width_800
     - image.style.max_width_960
 id: full_width
-label: 'Full Width'
+label: 'Image - Max Width'
 image_style_mappings:
   -
     image_mapping_type: sizes
