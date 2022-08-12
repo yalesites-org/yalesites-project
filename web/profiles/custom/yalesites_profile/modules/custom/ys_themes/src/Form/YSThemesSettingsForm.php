@@ -59,6 +59,74 @@ class YSThemesSettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('action_color'),
     ];
 
+    $form['global_settings']['pull_quote_color'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('Pull Quote Accent Color'),
+      '#options' => [
+        'gray-200' => $this->t('Light Gray'),
+        'gray-500' => $this->t('Gray'),
+        'blue' => $this->t('Blue'),
+        'accent' => $this->t('Accent'),
+      ],
+      '#default_value' => $config->get('pull_quote_color'),
+    ];
+
+    $form['global_settings']['line_color'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('Line Color'),
+      '#options' => [
+        'gray-500' => $this->t('Gray'),
+        'blue' => $this->t('Blue'),
+        'accent' => $this->t('Accent'),
+      ],
+      '#default_value' => $config->get('pull_quote_color'),
+    ];
+
+    $form['global_settings']['line_thickness'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('Line Thickness'),
+      '#options' => [
+        'thin' => $this->t('Thin'),
+        'thick' => $this->t('Thick'),
+      ],
+      '#default_value' => $config->get('line_thickness'),
+    ];
+
+    $form['global_settings']['nav_position'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('Navigation Position'),
+      '#options' => [
+        'right' => $this->t('Right'),
+        'center' => $this->t('Center'),
+        'left' => $this->t('Left'),
+      ],
+      '#default_value' => $config->get('nav_position'),
+    ];
+
+    $form['global_settings']['header_theme'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('Header Theme'),
+      '#options' => [
+        'white' => $this->t('White'),
+        'gray-100' => $this->t('Light Gray'),
+        'blue' => $this->t('Blue'),
+      ],
+      '#default_value' => $config->get('header_theme'),
+    ];
+
+    $form['global_settings']['footer_theme'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('Footer Theme'),
+      '#options' => [
+        'white' => $this->t('White'),
+        'gray-100' => $this->t('Light Gray'),
+        'gray-700' => $this->t('Gray'),
+        'gray-800' => $this->t('Dark Gray'),
+        'blue' => $this->t('Blue'),
+      ],
+      '#default_value' => $config->get('footer_theme'),
+    ];
+
     return $form;
   }
 
@@ -73,6 +141,12 @@ class YSThemesSettingsForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $config = $this->config('ys_themes.theme_settings');
     $config->set('action_color', $form_state->getValue('action_color'));
+    $config->set('pull_quote_color', $form_state->getValue('pull_quote_color'));
+    $config->set('line_color', $form_state->getValue('line_color'));
+    $config->set('line_thickness', $form_state->getValue('line_thickness'));
+    $config->set('nav_position', $form_state->getValue('nav_position'));
+    $config->set('header_theme', $form_state->getValue('header_theme'));
+    $config->set('footer_theme', $form_state->getValue('footer_theme'));
     $config->save();
     $this->cacheRender->invalidateAll();
     return parent::submitForm($form, $form_state);
