@@ -9,11 +9,11 @@
 <ul>
   {% for item in items %}
     <li>
-      {% if not item.is_active %}
-          <a href="{{ item.url }}">{{ item.title }}</a>
-        {% else %}
-          {{ item.title }}
-        {% endif %}
+      {% if item.is_active %}
+        {{ item.title }}
+      {% else %}
+        <a href="{{ item.url }}">{{ item.title }}</a>
+      {% endif %}
     </li>
   {% endfor %}
 </ul>
