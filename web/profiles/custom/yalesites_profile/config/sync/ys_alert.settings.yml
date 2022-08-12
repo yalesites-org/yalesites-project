@@ -1,6 +1,6 @@
-id: 1648762055
-headline: 'Headline example'
-message: 'Message example'
+id: 1660263375
+headline: 'Optional banner for displaying an announcement or notice'
+message: 'Additional text goes here'
 status: 1
 type: announcement
 link_title: ''
