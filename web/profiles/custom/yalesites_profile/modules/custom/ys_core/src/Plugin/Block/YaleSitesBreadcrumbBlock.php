@@ -78,6 +78,7 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
       array_push($links, [
         'title' => $breadcrumb->getText(),
         'url' => $breadcrumb->getUrl()->toString(),
+        'is_active' => empty($breadcrumb->getUrl()->toString()),
       ]);
     }
 
