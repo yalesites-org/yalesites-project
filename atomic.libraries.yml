@@ -5,26 +5,26 @@ global:
       node_modules/@yalesites-org/component-library-twig/dist/style.css: {}
       components/_settings/_config.css: {}
   js:
-    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/menu/menu-toggle/menu-toggle.js: {}
-    node_modules/@yalesites-org/component-library-twig/dist/js/00-tokens/layout/layout.js: {}
+    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/menu/menu-toggle/yds-menu-toggle.js: {}
+    node_modules/@yalesites-org/component-library-twig/dist/js/00-tokens/layout/yds-layout.js: {}
   dependencies:
     - core/drupal
 
 accordion:
   js:
-    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/accordion/accordion.js: {}
+    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/accordion/yds-accordion.js: {}
 
 alert:
   js:
-    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/alert/alert.js: {}
+    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/alert/yds-alert.js: {}
 
 primary-nav:
   js:
-    node_modules/@yalesites-org/component-library-twig/dist/js/03-organisms/menu/primary-nav/primary-nav.js: {}
+    node_modules/@yalesites-org/component-library-twig/dist/js/03-organisms/menu/primary-nav/yds-primary-nav.js: {}
 
 reference-card:
   js:
-    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/cards/reference-card/reference-card.js: {}
+    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/cards/reference-card/yds-reference-card.js: {}
 
 breadcrumbs:
   js:
@@ -32,4 +32,4 @@ breadcrumbs:
 
 tabs:
   js:
-    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/tabs/tabs.js: {}
+    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/tabs/yds-tabs.js: {}
