@@ -1,0 +1,7 @@
+action_color: 'blue'
+pull_quote_color: 'gray-500'
+line_color: 'gray-500'
+line_thickness: 'thin'
+nav_position: 'right'
+header_theme: 'white'
+footer_theme: 'grey-700'
