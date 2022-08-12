@@ -3,7 +3,7 @@
 <div{{ attributes }}>
   {{ title_prefix }}
   {{ title_suffix }}
-  {% embed "@molecules/accordion/accordion.twig" with {
+  {% embed "@molecules/accordion/yds-accordion.twig" with {
     accordion__heading: content.field_heading.0,
   } %}
     {% block accordion__items %}

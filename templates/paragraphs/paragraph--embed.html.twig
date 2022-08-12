@@ -1,7 +1,7 @@
 <div{{ attributes }}>
   {{ title_prefix }}
   {{ title_suffix }}
-  {% include "@molecules/embed/embed.twig" with {
+  {% include "@molecules/embed/yds-embed.twig" with {
     embed__src: content.field_link.0['#url_title'],
     embed__title: content.field_title_attr.0['#text'],
   } %}
