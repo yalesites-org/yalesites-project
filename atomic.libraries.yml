@@ -28,7 +28,7 @@ reference-card:
 
 breadcrumbs:
   js:
-    node_modules/@yalesites-org/component-library-twig/dist/js/03-organisms/menu/breadcrumbs/breadcrumbs.js: {}
+    node_modules/@yalesites-org/component-library-twig/dist/js/03-organisms/menu/breadcrumbs/yds-breadcrumbs.js: {}
 
 tabs:
   js:
