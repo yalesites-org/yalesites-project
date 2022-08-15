@@ -1,4 +1,4 @@
-uuid: 3e8949b7-f03c-4d65-afb6-bda9b7ef8a16
+uuid: 7bb715ae-a9c0-450c-9865-ddf6dba40950
 langcode: en
 status: true
 dependencies:
@@ -17,7 +17,7 @@ dependencies:
     - image.style.max_width_640
     - image.style.max_width_800
     - image.style.max_width_960
-id: full_width
+id: image_max_width
 label: 'Image - Max Width'
 image_style_mappings:
   -
