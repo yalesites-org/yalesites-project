@@ -72,7 +72,13 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
    */
   public function build() {
     $breadcrumbs = $this->breadcrumbManager->build($this->routeMatch)->getLinks();
-    $links = [];
+    $links = [
+      [
+        'title' => $this->t('Home'),
+        'url' => '/',
+        'is_active' => FALSE,
+      ],
+    ];
 
     foreach ($breadcrumbs as $breadcrumb) {
       array_push($links, [
