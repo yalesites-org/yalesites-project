@@ -8,6 +8,7 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Cache\Cache;
+use Drupal\Core\Routing\UrlGeneratorInterface;
 
 /**
  * Provides a block to display the breadcrumbs.
@@ -35,6 +36,13 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
   protected $routeMatch;
 
   /**
+   * UrlGenerator.
+   *
+   * @var \Drupal\Core\Routing\UrlGenerator
+   */
+  protected $urlGenerator;
+
+  /**
    * Constructs a new YaleSitesBreadcrumbBlock object.
    *
    * @param array $configuration
@@ -47,11 +55,14 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
    *   The breadcrumb manager.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The current route match.
+   * @param \Drupal\Core\Routing\UrlGeneratorInterface $url_generator
+   *   The URL Generator class.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, BreadcrumbBuilderInterface $breadcrumb_manager, RouteMatchInterface $route_match) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, BreadcrumbBuilderInterface $breadcrumb_manager, RouteMatchInterface $route_match, UrlGeneratorInterface $url_generator) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->breadcrumbManager = $breadcrumb_manager;
     $this->routeMatch = $route_match;
+    $this->urlGenerator = $url_generator;
   }
 
   /**
@@ -63,7 +74,8 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
       $plugin_id,
       $plugin_definition,
       $container->get('breadcrumb'),
-      $container->get('current_route_match')
+      $container->get('current_route_match'),
+      $container->get('url_generator')
     );
   }
 
@@ -75,7 +87,7 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
     $links = [
       [
         'title' => $this->t('Home'),
-        'url' => '/',
+        'url' => $this->urlGenerator->generateFromRoute('<front>', []),
         'is_active' => FALSE,
       ],
     ];
