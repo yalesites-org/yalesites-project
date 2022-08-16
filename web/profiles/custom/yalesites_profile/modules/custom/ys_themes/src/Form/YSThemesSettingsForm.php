@@ -7,6 +7,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\ys_themes\Service\ThemeSettingsManager;
 
 /**
  * Settings form for YaleSites themes settings.
@@ -30,6 +31,13 @@ class YSThemesSettingsForm extends ConfigFormBase {
   protected $cacheRender;
 
   /**
+   * Themes Settings Manager.
+   *
+   * @var \Drupal\ys_themes\Service\ThemeSettingsManager
+   */
+  protected $themeSettingsManager;
+
+  /**
    * Settings configuration form.
    *
    * @param array $form
@@ -42,90 +50,26 @@ class YSThemesSettingsForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
+    $allSettings = $this->themeSettingsManager->getOptions();
+
     $form = parent::buildForm($form, $form_state);
-    $config = $this->config('ys_themes.theme_settings');
 
     $form['global_settings'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Global Settings'),
     ];
 
-    $form['global_settings']['action_color'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Action Color'),
-      '#options' => [
-        'blue' => $this->t('Blue'),
-      ],
-      '#default_value' => $config->get('action_color'),
-    ];
-
-    $form['global_settings']['pull_quote_color'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Pull Quote Accent Color'),
-      '#options' => [
-        'gray-200' => $this->t('Light Gray'),
-        'gray-500' => $this->t('Gray'),
-        'blue' => $this->t('Blue'),
-        'accent' => $this->t('Accent'),
-      ],
-      '#default_value' => $config->get('pull_quote_color'),
-    ];
-
-    $form['global_settings']['line_color'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Line Color'),
-      '#options' => [
-        'gray-500' => $this->t('Gray'),
-        'blue' => $this->t('Blue'),
-        'accent' => $this->t('Accent'),
-      ],
-      '#default_value' => $config->get('pull_quote_color'),
-    ];
-
-    $form['global_settings']['line_thickness'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Line Thickness'),
-      '#options' => [
-        'thin' => $this->t('Thin'),
-        'thick' => $this->t('Thick'),
-      ],
-      '#default_value' => $config->get('line_thickness'),
-    ];
-
-    $form['global_settings']['nav_position'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Navigation Position'),
-      '#options' => [
-        'right' => $this->t('Right'),
-        'center' => $this->t('Center'),
-        'left' => $this->t('Left'),
-      ],
-      '#default_value' => $config->get('nav_position'),
-    ];
-
-    $form['global_settings']['header_theme'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Header Theme'),
-      '#options' => [
-        'white' => $this->t('White'),
-        'gray-100' => $this->t('Light Gray'),
-        'blue' => $this->t('Blue'),
-      ],
-      '#default_value' => $config->get('header_theme'),
-    ];
-
-    $form['global_settings']['footer_theme'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Footer Theme'),
-      '#options' => [
-        'white' => $this->t('White'),
-        'gray-100' => $this->t('Light Gray'),
-        'gray-700' => $this->t('Gray'),
-        'gray-800' => $this->t('Dark Gray'),
-        'blue' => $this->t('Blue'),
-      ],
-      '#default_value' => $config->get('footer_theme'),
-    ];
+    foreach ($allSettings as $settingName => $settingDetail) {
+      $form['global_settings'][$settingName] = [
+        '#type' => 'radios',
+        '#title' => $this->t(
+          '@setting_name',
+          ['@setting_name' => $settingDetail['name']]
+        ),
+        '#options' => $settingDetail['values'],
+        '#default_value' => $this->themeSettingsManager->getSetting($settingName) ?: $settingDetail['default'],
+      ];
+    }
 
     return $form;
   }
@@ -139,15 +83,11 @@ class YSThemesSettingsForm extends ConfigFormBase {
    *   Form state.
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $config = $this->config('ys_themes.theme_settings');
-    $config->set('action_color', $form_state->getValue('action_color'));
-    $config->set('pull_quote_color', $form_state->getValue('pull_quote_color'));
-    $config->set('line_color', $form_state->getValue('line_color'));
-    $config->set('line_thickness', $form_state->getValue('line_thickness'));
-    $config->set('nav_position', $form_state->getValue('nav_position'));
-    $config->set('header_theme', $form_state->getValue('header_theme'));
-    $config->set('footer_theme', $form_state->getValue('footer_theme'));
-    $config->save();
+    $allSettings = $this->themeSettingsManager->getOptions();
+    foreach ($allSettings as $settingName => $settingDetail) {
+      $this->themeSettingsManager->setSetting($settingName, $form_state->getValue($settingName));
+    }
+
     $this->cacheRender->invalidateAll();
     return parent::submitForm($form, $form_state);
   }
@@ -168,6 +108,7 @@ class YSThemesSettingsForm extends ConfigFormBase {
     return new static(
       $container->get('config.factory'),
       $container->get('cache.render'),
+      $container->get('ys_themes.theme_settings_manager'),
     );
   }
 
@@ -178,10 +119,13 @@ class YSThemesSettingsForm extends ConfigFormBase {
    *   The factory for configuration objects.
    * @param \Drupal\Core\Path\CacheBackendInterface $cache_render
    *   The Cache backend interface.
+   * @param \Drupal\ys_themes\Service\ThemeSettingsManager $theme_settings_manager
+   *   The Theme Settings Manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, CacheBackendInterface $cache_render) {
+  public function __construct(ConfigFactoryInterface $config_factory, CacheBackendInterface $cache_render, ThemeSettingsManager $theme_settings_manager) {
     parent::__construct($config_factory);
     $this->cacheRender = $cache_render;
+    $this->themeSettingsManager = $theme_settings_manager;
   }
 
 }
