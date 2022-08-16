@@ -6,8 +6,8 @@ use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ys_themes\Service\ThemeSettingsManager;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Settings form for YaleSites themes settings.

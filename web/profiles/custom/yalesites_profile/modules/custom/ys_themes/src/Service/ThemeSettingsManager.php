@@ -114,7 +114,7 @@ class ThemeSettingsManager {
    */
   public function getOptions($setting_name = NULL) {
     if ($setting_name) {
-      return self::THEME_SETTINGS[$setting_name];
+      return self::THEME_SETTINGS[$setting_name]['values'];
     }
     else {
       return self::THEME_SETTINGS;
