@@ -1,0 +1,5 @@
+ys_themes.theme_settings:
+  title: 'Theme Settings'
+  description: 'Theme Settings'
+  route_name: ys_themes.theme_settings
+  parent: ys_admin.admin_yale
