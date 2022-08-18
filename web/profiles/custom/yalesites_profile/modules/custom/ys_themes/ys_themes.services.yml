@@ -1,0 +1,9 @@
+services:
+  ys_themes.theme_settings_manager:
+    class: Drupal\ys_themes\Service\ThemeSettingsManager
+    arguments: ['@config.factory']
+  ys_themes.themes_twig_extension:
+    class: Drupal\ys_themes\YSThemesTwigExtension
+    arguments: ['@ys_themes.theme_settings_manager']
+    tags:
+      - { name: twig.extension }
