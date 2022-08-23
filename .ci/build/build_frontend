@@ -5,7 +5,6 @@ set -eo pipefail
 # This script builds out frontend assets for the atomic theme and
 # component library if the pull request branch exists in those repos.
 set -x
-composer config --global 'preferred-install.yalesites-org/*' source
 
 # Check if branch exists in atomic theme.
 ATOMIC_BRANCH=$(git ls-remote --heads https://github.com/yalesites-org/atomic.git "$BRANCH" | wc -l)
@@ -15,10 +14,10 @@ if [ "$ATOMIC_BRANCH" -eq 1 ]; then
   # Build atomic theme
   cd "$GITHUB_WORKSPACE"/web/profiles/custom/yalesites_profile
 
-  composer require yalesites-org/atomic:dev-"$BRANCH" --no-update
+  composer require --prefer-dist --no-update yalesites-org/atomic:dev-"$BRANCH"
   cd "$GITHUB_WORKSPACE"
   rm -rf web/themes/contrib/atomic
-  composer update
+  composer update --prefer-dist
 fi
 
 # Check if branch exists in component library.
