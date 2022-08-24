@@ -28,11 +28,13 @@ if [ "$COMPONENT_LIBRARY_BRANCH" -eq 1 ]; then
   # Build component library
   cd "$GITHUB_WORKSPACE"/web/themes/contrib/atomic
   npm ci --omit=dev --ignore-scripts
+
   # Remove component library from atomic so we can add the branch version later.
   rm -rf node_modules/@yalesites-org/component-library-twig
   cd /tmp
   git clone --single-branch --branch "$BRANCH" https://github.com/yalesites-org/component-library-twig
   cd component-library-twig
+  rm -rf .git
   npm ci --omit=dev --ignore-scripts
   npm run build
   mv /tmp/component-library-twig "$GITHUB_WORKSPACE"/web/themes/contrib/atomic/node_modules/@yalesites-org
