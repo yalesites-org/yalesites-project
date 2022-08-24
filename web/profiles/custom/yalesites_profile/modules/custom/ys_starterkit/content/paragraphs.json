@@ -175,7 +175,7 @@
         "paragraph_type": "cta_banner",
         "paragraph_fields": {
           "field_heading": {
-            "value": "Top goal for the site",
+            "value": "Title of promotional feature",
             "format": "heading_html"
           },
           "field_images": [
@@ -184,7 +184,7 @@
             }
           ],
           "field_text": {
-            "value": "Use this space to promote your site's primary goal. Keep the text concise.",
+            "value": "Use this space to communicate your site's purpose or to showcase content that support your goals. Keep text concise.",
             "format": "basic_html"
           },
           "field_link": {
