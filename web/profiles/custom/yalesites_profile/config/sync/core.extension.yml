@@ -87,6 +87,7 @@ module:
   ys_layouts: 0
   ys_mail: 0
   ys_starterkit: 0
+  ys_themes: 0
   menu_admin_per_menu: 1
   pathauto: 1
   xmlsitemap: 1
