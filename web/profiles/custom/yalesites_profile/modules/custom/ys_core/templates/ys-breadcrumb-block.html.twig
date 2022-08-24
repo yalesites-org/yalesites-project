@@ -3,16 +3,17 @@
  # - items (array)
  #   - title: Link title
  #   - url: Link url
+ #   - is_active: (bool) is current page
  #}
 
 <ul>
   {% for item in items %}
     <li>
-      {% if item.url %}
-          <a href="{{ item.url }}">{{ item.title }}</a>
-        {% else %}
-          {{ item.title }}
-        {% endif %}
+      {% if item.is_active %}
+        {{ item.title }}
+      {% else %}
+        <a href="{{ item.url }}">{{ item.title }}</a>
+      {% endif %}
     </li>
   {% endfor %}
 </ul>

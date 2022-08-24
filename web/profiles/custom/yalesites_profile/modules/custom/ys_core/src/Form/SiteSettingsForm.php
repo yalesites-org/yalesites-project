@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\ys_admin\Form;
+namespace Drupal\ys_core\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -11,9 +11,11 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Configure example settings for this site.
+ * Form for managing sitewide settings.
+ *
+ * @package Drupal\ys_core\Form
  */
-class Settings extends ConfigFormBase {
+class SiteSettingsForm extends ConfigFormBase {
 
   /**
    * The path alias manager.

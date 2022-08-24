@@ -1,5 +1,21 @@
-ys_core.footer_settings:
-  title: 'Footer'
-  description: 'Footer Settings'
-  route_name: ys_core.footer_settings
-  parent: ys_admin.admin_yale
+# Creates new section in the admin menu for YaleSites settings.
+ys_core.admin_yalesites:
+  description: 'Administer YaleSites settings.'
+  parent: system.admin
+  route_name: ys_core.admin_yalesites
+  title: YaleSites
+  weight: -8
+# Sitewide settings form.
+ys_core.admin_site_settings:
+  description: 'Change site name, email address, and other sitewide settings.'
+  parent: ys_core.admin_yalesites
+  route_name: ys_core.admin_site_settings
+  title: 'Site Settings'
+  weight: 0
+# Footer settings form.
+ys_core.admin_footer_settings:
+  description: 'Footer settings.'
+  parent: ys_core.admin_yalesites
+  route_name: ys_core.admin_footer_settings
+  title: 'Footer Settings'
+  weight: 20

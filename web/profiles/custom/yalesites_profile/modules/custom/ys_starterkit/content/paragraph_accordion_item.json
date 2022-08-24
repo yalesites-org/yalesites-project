@@ -2,7 +2,7 @@
   "data": {
     "paragraph_accordion_item": [
       {
-        "paragraph_id": "AccordionItem01",
+        "paragraph_id": "Accordion01",
         "paragraph_type": "accordion_item",
         "paragraph_fields": {
           "field_heading": {
@@ -15,7 +15,7 @@
         }
       },
       {
-        "paragraph_id": "AccordionItem02",
+        "paragraph_id": "Accordion02",
         "paragraph_type": "accordion_item",
         "paragraph_fields": {
           "field_heading": {
@@ -28,7 +28,20 @@
         }
       },
       {
-        "paragraph_id": "AccordionItem03",
+        "paragraph_id": "Accordion03",
+        "paragraph_type": "accordion_item",
+        "paragraph_fields": {
+          "field_heading": {
+            "value": "Blandit turpis cursus in hac habitasse",
+            "format": "heading_html"
+          },
+          "field_content": [
+            "AccordionItemText01"
+          ]
+        }
+      },
+      {
+        "paragraph_id": "Accordion04",
         "paragraph_type": "accordion_item",
         "paragraph_fields": {
           "field_heading": {
@@ -41,7 +54,7 @@
         }
       },
       {
-        "paragraph_id": "AccordionItem04",
+        "paragraph_id": "Accordion05",
         "paragraph_type": "accordion_item",
         "paragraph_fields": {
           "field_heading": {

@@ -81,12 +81,12 @@ module:
   user: 0
   views_ui: 0
   yale_cas: 0
-  ys_admin: 0
   ys_alert: 0
   ys_core: 0
   ys_layouts: 0
   ys_mail: 0
   ys_starterkit: 0
+  ys_themes: 0
   menu_admin_per_menu: 1
   pathauto: 1
   xmlsitemap: 1
