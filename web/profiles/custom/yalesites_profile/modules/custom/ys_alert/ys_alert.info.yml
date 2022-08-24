@@ -6,4 +6,4 @@ package: YaleSites
 configure: ys_alert.settings
 dependencies:
   - drupal:block
-  - ys_admin
+  - ys_core

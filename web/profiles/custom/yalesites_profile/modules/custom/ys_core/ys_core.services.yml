@@ -1,4 +1,5 @@
 services:
+  # Service for organizing and renndering social media links.
   ys_core.social_links_manager:
     class: Drupal\ys_core\SocialLinksManager
     arguments: ['@config.factory']

@@ -62,6 +62,4 @@ process:
   field_link/title: field_link_title
 destination:
   plugin: 'entity_reference_revisions:paragraph'
-migration_dependencies:
-  required:
-    - ys_paragraph_accordion_items
+migration_dependencies: {  }

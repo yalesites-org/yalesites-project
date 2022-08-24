@@ -1,6 +1,6 @@
 id: ys_paragraph_accordion_item
-label: Starterkit Paragraphs accordion text
-description: Migration of accordion text to Drupal Paragraph Text
+label: Starterkit Paragraph Accordion
+description: Migration of accordion
 migration_tags: null
 migration_group: ys_starterkit
 source_type: 'JSON file from URL'
@@ -19,14 +19,12 @@ source:
     - name: paragraph_type
       label: 'Paragraph type'
       selector: paragraph_type
-
     - name: field_heading_value
       label: 'Heading value'
       selector: paragraph_fields/field_heading/value
     - name: field_heading_format
       label: 'Heading format'
       selector: paragraph_fields/field_heading/format
-
     - name: field_content
       label: 'Accordion content'
       selector: paragraph_fields/field_content
@@ -44,9 +42,6 @@ process:
         source: field_content
         method: process
         message: 'Field field_content is empty'
-      -
-        plugin: multiple_values
-        source: field_content
       -
         plugin: migration_lookup
         migration: ys_paragraph_accordion_text

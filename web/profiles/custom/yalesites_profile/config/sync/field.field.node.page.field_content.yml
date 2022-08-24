@@ -19,6 +19,7 @@ dependencies:
     - paragraphs.paragraphs_type.pull_quote
     - paragraphs.paragraphs_type.quick_links
     - paragraphs.paragraphs_type.section
+    - paragraphs.paragraphs_type.tabs
     - paragraphs.paragraphs_type.text
     - paragraphs.paragraphs_type.text_with_image
   module:
@@ -53,6 +54,7 @@ settings:
       news_list: news_list
       cta_banner: cta_banner
       quick_links: quick_links
+      tabs: tabs
     negate: 0
     target_bundles_drag_drop:
       accordion:
@@ -102,6 +104,12 @@ settings:
         enabled: true
       section:
         weight: -35
+        enabled: true
+      tab:
+        weight: 35
+        enabled: false
+      tabs:
+        weight: 36
         enabled: true
       text:
         weight: -33

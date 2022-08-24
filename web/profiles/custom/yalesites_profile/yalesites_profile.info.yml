@@ -61,8 +61,8 @@ install:
   - user
   - views_ui
   - workflows
-  - ys_admin
   - ys_alert
+  - ys_core
   - ys_layouts
   - ys_mail
 

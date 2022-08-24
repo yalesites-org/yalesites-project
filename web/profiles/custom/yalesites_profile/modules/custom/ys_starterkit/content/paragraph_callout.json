@@ -6,16 +6,16 @@
         "paragraph_type": "callout_item",
         "paragraph_fields": {
           "field_heading": {
-            "value": "Callouts help you accomplish goals",
+            "value": "This is a text callout",
             "format": "basic_html"
           },
           "field_text": {
-            "value": "They're handy for directing attention to actions that aren't the page's main goal but are important to the user.",
+            "value": "Use callouts for actions you want users to take or to direct them to related, useful information.",
             "format": "basic_html"
           },
           "field_link": {
             "url": "https://www.example.com",
-            "title": "Direct your user"
+            "title": "Action text"
           }
         }
       }
