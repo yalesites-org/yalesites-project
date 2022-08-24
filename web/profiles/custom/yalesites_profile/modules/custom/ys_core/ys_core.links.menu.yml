@@ -18,4 +18,4 @@ ys_core.admin_footer_settings:
   parent: ys_core.admin_yalesites
   route_name: ys_core.admin_footer_settings
   title: 'Footer Settings'
-  weight: 10
+  weight: 20

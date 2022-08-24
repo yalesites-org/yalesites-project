@@ -6,15 +6,15 @@ use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\ys_themes\Service\ThemeSettingsManager;
+use Drupal\ys_themes\ThemeSettingsManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Settings form for YaleSites themes settings.
+ * YaleSites themes settings form.
  *
  * @package Drupal\ys_themes\Form
  */
-class YSThemesSettingsForm extends ConfigFormBase {
+class ThemesSettingsForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}
@@ -119,7 +119,7 @@ class YSThemesSettingsForm extends ConfigFormBase {
    *   The factory for configuration objects.
    * @param \Drupal\Core\Path\CacheBackendInterface $cache_render
    *   The Cache backend interface.
-   * @param \Drupal\ys_themes\Service\ThemeSettingsManager $theme_settings_manager
+   * @param \Drupal\ys_themes\ThemeSettingsManager $theme_settings_manager
    *   The Theme Settings Manager.
    */
   public function __construct(ConfigFactoryInterface $config_factory, CacheBackendInterface $cache_render, ThemeSettingsManager $theme_settings_manager) {

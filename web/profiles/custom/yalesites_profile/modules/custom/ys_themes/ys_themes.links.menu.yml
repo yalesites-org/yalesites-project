@@ -1,5 +1,7 @@
+# Form to admin theme settings.
 ys_themes.theme_settings:
-  title: 'Theme Settings'
-  description: 'Theme Settings'
+  description: 'Set sitewide theme settings.'
+  parent: ys_core.admin_yalesites
   route_name: ys_themes.theme_settings
-  parent: ys_admin.admin_yale
+  title: 'Theme Settings'
+  weight: 10

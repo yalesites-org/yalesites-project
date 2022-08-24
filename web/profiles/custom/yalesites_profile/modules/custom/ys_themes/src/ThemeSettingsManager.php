@@ -1,8 +1,9 @@
 <?php
 
-namespace Drupal\ys_themes\Service;
+namespace Drupal\ys_themes;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Service for managing YaleSites theme settings.

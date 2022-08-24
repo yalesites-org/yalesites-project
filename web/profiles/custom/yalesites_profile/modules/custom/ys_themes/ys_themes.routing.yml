@@ -1,7 +1,8 @@
+# Form to admin theme settings.
 ys_themes.theme_settings:
   path: '/admin/yalesites/themes'
   defaults:
-    _form: 'Drupal\ys_themes\Form\YSThemesSettingsForm'
+    _form: 'Drupal\ys_themes\Form\ThemesSettingsForm'
     _title: 'Theme Settings'
   requirements:
     _permission: 'access administration pages'

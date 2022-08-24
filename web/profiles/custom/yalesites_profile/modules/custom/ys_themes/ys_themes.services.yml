@@ -1,9 +1,11 @@
 services:
+  # Service for managing YaleSites theme settings.
   ys_themes.theme_settings_manager:
-    class: Drupal\ys_themes\Service\ThemeSettingsManager
+    class: Drupal\ys_themes\ThemeSettingsManager
     arguments: ['@config.factory']
+  # Twig functions for passing theme settings to templates.
   ys_themes.themes_twig_extension:
-    class: Drupal\ys_themes\YSThemesTwigExtension
+    class: Drupal\ys_themes\ThemesTwigExtension
     arguments: ['@ys_themes.theme_settings_manager']
     tags:
       - { name: twig.extension }
