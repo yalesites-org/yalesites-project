@@ -10,11 +10,11 @@ use Drupal\ys_core\SocialLinksManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Settings form for footer settings.
+ * Form for managing footer-related settings.
  *
  * @package Drupal\ys_core\Form
  */
-class YSCoreFooterSettingsForm extends ConfigFormBase {
+class FooterSettingsForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}
