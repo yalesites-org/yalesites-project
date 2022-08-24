@@ -30,7 +30,7 @@ if [ "$COMPONENT_LIBRARY_BRANCH" -eq 1 ]; then
   npm ci --omit=dev --ignore-scripts
   # Remove component library from atomic so we can add the branch version later.
   rm -rf node_modules/@yalesites-org/component-library-twig
-  npm ci --omit=dev --ignore-scripts
+  cd /tmp
   git clone --single-branch --branch "$BRANCH" https://github.com/yalesites-org/component-library-twig
   cd component-library-twig
   npm ci --omit=dev --ignore-scripts
