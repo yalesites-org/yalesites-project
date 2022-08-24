@@ -27,10 +27,10 @@ if [ "$COMPONENT_LIBRARY_BRANCH" -eq 1 ]; then
   echo "Matching branch $BRANCH found in component library"
   # Build component library
   cd "$GITHUB_WORKSPACE"/web/themes/contrib/atomic
-  npm ci
+  npm ci --omit=dev --ignore-scripts
   # Remove component library from atomic so we can add the branch version later.
   rm -rf node_modules/@yalesites-org/component-library-twig
-  cd /tmp
+  npm ci --omit=dev --ignore-scripts
   git clone --single-branch --branch "$BRANCH" https://github.com/yalesites-org/component-library-twig
   cd component-library-twig
   npm ci
