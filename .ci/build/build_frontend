@@ -5,8 +5,8 @@ set -eo pipefail
 # This script builds out frontend assets for the atomic theme and
 # component library if the pull request branch exists in those repos.
 
-# Check if branch exists in atomic theme.
-ATOMIC_BRANCH=$(git ls-remote --heads https://github.com/yalesites-org/atomic.git "$BRANCH" | wc -l)
+# Define path to atomic theme for reuse.
+ATOMIC_PATH="web/themes/contrib/atomic"
 
 if [ "$ATOMIC_BRANCH" -eq 1 ]; then
   echo "Matching branch $BRANCH found in atomic theme"
@@ -25,7 +25,7 @@ COMPONENT_LIBRARY_BRANCH=$(git ls-remote --heads https://github.com/yalesites-or
 if [ "$COMPONENT_LIBRARY_BRANCH" -eq 1 ]; then
   echo "Matching branch $BRANCH found in component library"
   # Build component library
-  cd "$GITHUB_WORKSPACE"/web/themes/contrib/atomic
+  cd "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"
   npm ci --omit=dev --ignore-scripts
 
   # Remove component library from atomic so we can add the branch version later.
@@ -36,5 +36,5 @@ if [ "$COMPONENT_LIBRARY_BRANCH" -eq 1 ]; then
   rm -rf .git
   npm ci --omit=dev --ignore-scripts
   npm run build
-  mv /tmp/component-library-twig "$GITHUB_WORKSPACE"/web/themes/contrib/atomic/node_modules/@yalesites-org
+  mv /tmp/component-library-twig "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/@yalesites-org
 fi
