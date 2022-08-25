@@ -2,5 +2,5 @@ ys_alert.settings:
   title: 'Alert settings'
   description: 'Set a single alert available across the site.'
   route_name: ys_alert.settings
-  parent: ys_admin.admin_yale
+  parent: ys_core.admin_yalesites
   weight: 0
