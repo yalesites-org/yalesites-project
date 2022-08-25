@@ -13,6 +13,8 @@ if [ "$ATOMIC_BRANCH" -eq 1 ]; then
   # Build atomic theme
   cd "$GITHUB_WORKSPACE"/web/profiles/custom/yalesites_profile
 
+# Require the branch version if it exists
+if [ -n "$(git ls-remote --heads https://github.com/yalesites-org/atomic.git "$BRANCH")" ]; then
   composer require --prefer-dist --no-update yalesites-org/atomic:dev-"$BRANCH"
   cd "$GITHUB_WORKSPACE"
   rm -rf web/themes/contrib/atomic
@@ -20,10 +22,7 @@ if [ "$ATOMIC_BRANCH" -eq 1 ]; then
 fi
 
 # Check if branch exists in component library.
-COMPONENT_LIBRARY_BRANCH=$(git ls-remote --heads https://github.com/yalesites-org/component-library-twig.git "$BRANCH" | wc -l)
-
-if [ "$COMPONENT_LIBRARY_BRANCH" -eq 1 ]; then
-  echo "Matching branch $BRANCH found in component library"
+if [ -n "$(git ls-remote --heads https://github.com/yalesites-org/component-library-twig.git "$BRANCH")" ]; then
   # Build component library
   cd "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"
   npm ci --omit=dev --ignore-scripts
@@ -31,8 +30,7 @@ if [ "$COMPONENT_LIBRARY_BRANCH" -eq 1 ]; then
   # Remove component library from atomic so we can add the branch version later.
   rm -rf node_modules/@yalesites-org/component-library-twig
   cd /tmp
-  git clone --single-branch --branch "$BRANCH" https://github.com/yalesites-org/component-library-twig
-  cd component-library-twig
+  git clone --single-branch --branch "$BRANCH" https://github.com/yalesites-org/component-library-twig && cd component-library-twig
   rm -rf .git
   npm ci --omit=dev --ignore-scripts
   npm run build
