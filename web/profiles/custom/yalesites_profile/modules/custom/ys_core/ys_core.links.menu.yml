@@ -11,7 +11,7 @@ ys_core.admin_site_settings:
   parent: ys_core.admin_yalesites
   route_name: ys_core.admin_site_settings
   title: 'Site Settings'
-  weight: 0
+  weight: 10
 # Footer settings form.
 ys_core.admin_footer_settings:
   description: 'Footer settings.'
