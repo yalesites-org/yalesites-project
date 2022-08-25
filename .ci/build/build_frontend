@@ -8,18 +8,18 @@ set -eo pipefail
 # Define path to atomic theme for reuse.
 ATOMIC_PATH="web/themes/contrib/atomic"
 
-if [ "$ATOMIC_BRANCH" -eq 1 ]; then
-  echo "Matching branch $BRANCH found in atomic theme"
-  # Build atomic theme
-  cd "$GITHUB_WORKSPACE"/web/profiles/custom/yalesites_profile
+# Build atomic theme. We must do this from the profile by updating composer.json,
+# removing the existing atomic directory, and running composer update.
+cd "$GITHUB_WORKSPACE"/web/profiles/custom/yalesites_profile
 
-# Require the branch version if it exists
+# Require the branch version if it exists.
 if [ -n "$(git ls-remote --heads https://github.com/yalesites-org/atomic.git "$BRANCH")" ]; then
   composer require --prefer-dist --no-update yalesites-org/atomic:dev-"$BRANCH"
-  cd "$GITHUB_WORKSPACE"
-  rm -rf web/themes/contrib/atomic
-  composer update --prefer-dist
 fi
+
+cd "$GITHUB_WORKSPACE"
+rm -rf "${GITHUB_WORKSPACE:?}"/"$ATOMIC_PATH"
+composer update --prefer-dist
 
 # Check if branch exists in component library.
 if [ -n "$(git ls-remote --heads https://github.com/yalesites-org/component-library-twig.git "$BRANCH")" ]; then
