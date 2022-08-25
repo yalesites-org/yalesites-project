@@ -29,10 +29,24 @@ if [ -n "$(git ls-remote --heads https://github.com/yalesites-org/component-libr
 
   # Remove component library from atomic so we can add the branch version later.
   rm -rf node_modules/@yalesites-org/component-library-twig
+
+  # Clone and build the component library from branch.
   cd /tmp
   git clone --single-branch --branch "$BRANCH" https://github.com/yalesites-org/component-library-twig && cd component-library-twig
   rm -rf .git
   npm ci --omit=dev --ignore-scripts
   npm run build
   mv /tmp/component-library-twig "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/@yalesites-org
+
+  # Clean up atomic's node_modules and remove gitignores so the changes can be staged.
+  for dir in "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/*; do
+    if [ "$dir" != "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/@yalesites-org ]; then
+      rm -rf "$dir"
+    fi
+  done
+
+  rm "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/.gitignore
+  rm "$GITHUB_WORKSPACE"/.gitignore
+
+  git add "$ATOMIC_PATH"
 fi
