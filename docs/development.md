@@ -1,5 +1,16 @@
 # Getting started as a developer
 
+## PR Workflow
+
+When you're working on a new ticket, you'll want to start with the latest `develop` branch, and rebuild that before you do your new work. Assuming you're followed the setup steps (specifically having run the `npm run setup` script) here's the recommended workflow for regular development:
+
+- `git checkout develop`
+- `git pull`
+- `git checkout -b YALB-XXX-ticket-description`
+- `npm run rebuild`
+
+After running those commands, you should have a clean environment to make your changes.
+
 ## Updating Drupal configuration
 
 Drupal's configuration management system organizes information about the structure and settings of the application into a consistent collection of structured data. Active configurations are typically stored in the site's database while staged configurations are stored in a series of YAML files. DevOps and version control tools will track changes to the YAML files to deploy configuration changes across different websites and environments. Changes made in a local development environment can be tested and released to the production website predictably.

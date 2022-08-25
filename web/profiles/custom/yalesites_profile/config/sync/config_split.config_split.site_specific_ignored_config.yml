@@ -1,0 +1,17 @@
+uuid: 818fba60-67dc-4398-9d5f-989b8300c731
+langcode: en
+status: true
+dependencies: {  }
+id: site_specific_ignored_config
+label: 'Site Specific Ignored Config'
+description: 'Ignores site specific config such as YS Core settings.'
+weight: -10
+folder: ''
+module: {  }
+theme: {  }
+blacklist: {  }
+graylist:
+  - 'ys_core.*'
+  - 'ys_themes.*'
+graylist_dependents: true
+graylist_skip_equal: true

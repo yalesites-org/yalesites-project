@@ -1,0 +1,10 @@
+uuid: 5b43d191-184a-4040-ad6c-6afc0e44950a
+langcode: en
+status: true
+dependencies:
+  module:
+    - media
+id: media.image_content_width
+label: 'Image - Content Width'
+targetEntityType: media
+cache: true

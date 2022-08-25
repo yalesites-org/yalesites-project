@@ -8,7 +8,7 @@ field_plugin_method: null
 cck_plugin_method: null
 migration_tags: null
 migration_group: ys_starterkit
-label: 'Starterkit Paragraphs accordion text'
+label: 'Starterkit Paragraph Accordion'
 source:
   plugin: url
   data_fetcher_plugin: file
@@ -50,9 +50,6 @@ process:
       source: field_content
       method: process
       message: 'Field field_content is empty'
-    -
-      plugin: multiple_values
-      source: field_content
     -
       plugin: migration_lookup
       migration: ys_paragraph_accordion_text

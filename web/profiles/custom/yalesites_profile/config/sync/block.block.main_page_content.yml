@@ -9,7 +9,7 @@ dependencies:
 id: main_page_content
 theme: atomic
 region: content
-weight: 2
+weight: 0
 provider: null
 plugin: system_main_block
 settings:

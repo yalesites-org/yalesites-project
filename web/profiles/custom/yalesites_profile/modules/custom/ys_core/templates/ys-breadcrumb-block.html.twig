@@ -1,0 +1,19 @@
+{#
+ # Available Variables:
+ # - items (array)
+ #   - title: Link title
+ #   - url: Link url
+ #   - is_active: (bool) is current page
+ #}
+
+<ul>
+  {% for item in items %}
+    <li>
+      {% if item.is_active %}
+        {{ item.title }}
+      {% else %}
+        <a href="{{ item.url }}">{{ item.title }}</a>
+      {% endif %}
+    </li>
+  {% endfor %}
+</ul>

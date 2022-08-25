@@ -1,0 +1,17 @@
+{#
+ # Available Variables:
+ # - icons (array)
+ #   - url: url the icon links to
+ #   - name: Visually hidden text (for screen readers)
+ #   - icon: the actual image
+ #}
+
+<ul>
+  {% for icon in icons %}
+    <li>
+      <a href="{{ icon.url }}">
+        {{ icon.name }}
+      </a>
+    </li>
+  {% endfor %}
+</ul>

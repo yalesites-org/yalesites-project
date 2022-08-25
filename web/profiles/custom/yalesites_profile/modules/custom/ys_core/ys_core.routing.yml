@@ -1,0 +1,24 @@
+# Creates new section in the admin menu for YaleSites settings.
+ys_core.admin_yalesites:
+  path: '/admin/yalesites'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'YaleSites'
+  requirements:
+    _permission: 'access administration pages'
+# Sitewide settings form.
+ys_core.admin_site_settings:
+  path: '/admin/yalesites/settings'
+  defaults:
+    _form: '\Drupal\ys_core\Form\SiteSettingsForm'
+    _title: 'Site Settings'
+  requirements:
+    _permission: 'access administration pages'
+# Footer settings form.
+ys_core.admin_footer_settings:
+  path: '/admin/yalesites/footer'
+  defaults:
+    _form: 'Drupal\ys_core\Form\FooterSettingsForm'
+    _title: 'Footer Settings'
+  requirements:
+    _permission: 'access administration pages'
