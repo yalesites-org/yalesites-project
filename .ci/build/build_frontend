@@ -4,7 +4,6 @@ set -eo pipefail
 
 # This script builds out frontend assets for the atomic theme and
 # component library if the pull request branch exists in those repos.
-set -x
 
 # Check if branch exists in atomic theme.
 ATOMIC_BRANCH=$(git ls-remote --heads https://github.com/yalesites-org/atomic.git "$BRANCH" | wc -l)
