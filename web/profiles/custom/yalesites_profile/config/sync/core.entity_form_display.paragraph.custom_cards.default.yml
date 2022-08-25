@@ -8,8 +8,6 @@ dependencies:
     - paragraphs.paragraphs_type.custom_cards
   module:
     - paragraphs
-    - paragraphs_ee
-    - paragraphs_features
     - text
 id: paragraph.custom_cards.default
 targetEntityType: paragraph
@@ -17,34 +15,17 @@ bundle: custom_cards
 mode: default
 content:
   field_cards:
-    type: paragraphs
+    type: entity_reference_paragraphs
     weight: 1
     region: content
     settings:
       title: Card
       title_plural: Cards
-      edit_mode: closed
-      closed_mode: preview
-      autocollapse: none
-      closed_mode_threshold: 2
-      add_mode: button
+      edit_mode: open
+      add_mode: dropdown
       form_display_mode: default
       default_paragraph_type: custom_card
-      features:
-        add_above: add_above
-        collapse_edit_all: collapse_edit_all
-        duplicate: duplicate
-    third_party_settings:
-      paragraphs_features:
-        add_in_between: false
-        add_in_between_link_count: 3
-        delete_confirmation: true
-        split_text: false
-        show_drag_and_drop: true
-      paragraphs_ee:
-        paragraphs_ee:
-          dialog_off_canvas: false
-          dialog_style: tiles
+    third_party_settings: {  }
   field_heading:
     type: text_textfield
     weight: 0
