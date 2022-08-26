@@ -8,6 +8,7 @@ dependencies:
     - paragraphs.paragraphs_type.accordion
     - paragraphs.paragraphs_type.callout
     - paragraphs.paragraphs_type.cta_banner
+    - paragraphs.paragraphs_type.custom_cards
     - paragraphs.paragraphs_type.divider
     - paragraphs.paragraphs_type.embed
     - paragraphs.paragraphs_type.event_cards
@@ -52,6 +53,7 @@ settings:
       news_cards: news_cards
       news_list: news_list
       cta_banner: cta_banner
+      custom_cards: custom_cards
       tabs: tabs
     negate: 0
     target_bundles_drag_drop:
@@ -69,6 +71,12 @@ settings:
         enabled: false
       cta_banner:
         weight: -20
+        enabled: true
+      custom_card:
+        weight: 27
+        enabled: false
+      custom_cards:
+        weight: 28
         enabled: true
       divider:
         weight: -27
