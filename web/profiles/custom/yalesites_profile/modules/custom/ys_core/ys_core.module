@@ -24,3 +24,9 @@ function ys_core_theme($existing, $type, $theme, $path): array {
     ],
   ];
 }
+
+function ys_core_form_alter(&$form, $form_state, $form_id) {
+  if ($form['sticky']) {
+    $form['sticky']['widget']['value']['#title'] = t('Pin to the beginning of list');
+  }
+}
