@@ -46,8 +46,13 @@ if [ -n "$(git ls-remote --heads https://github.com/yalesites-org/component-libr
     fi
   done
 
-  rm "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/.gitignore
-  rm "$GITHUB_WORKSPACE"/.gitignore
+  cd "$GITHUB_WORKSPACE"
 
-  git add "$ATOMIC_PATH"
+  # Remove atomic and root gitignore so we can commit theme changes.
+  rm "$ATOMIC_PATH"/.gitignore
+  rm .gitignore
+
+  # Stage theme changes and restore root gitignore to clean up staging area.
+  git add "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"
+  git checkout "$GITHUB_WORKSPACE"/.gitignore
 fi
