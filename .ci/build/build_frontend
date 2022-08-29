@@ -35,6 +35,7 @@ if [ -n "$(git ls-remote --heads https://github.com/yalesites-org/component-libr
   git clone --single-branch --branch "$BRANCH" https://github.com/yalesites-org/component-library-twig && cd component-library-twig
   rm -rf .git
   npm ci --omit=dev --ignore-scripts
+  npm install webpack-cli
   npm run build
   mv /tmp/component-library-twig "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/@yalesites-org
 
