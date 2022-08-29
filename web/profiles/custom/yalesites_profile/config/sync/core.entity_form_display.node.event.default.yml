@@ -42,7 +42,6 @@ third_party_settings:
     group_content:
       children:
         - title
-        - field_subtitle
         - field_content
       label: Content
       region: content
@@ -97,7 +96,7 @@ mode: default
 content:
   created:
     type: datetime_timestamp
-    weight: 3
+    weight: 2
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -143,7 +142,7 @@ content:
     third_party_settings: {  }
   field_metatags:
     type: metatag_firehose
-    weight: 2
+    weight: 1
     region: content
     settings:
       sidebar: true
@@ -174,11 +173,18 @@ content:
     third_party_settings: {  }
   path:
     type: path
-    weight: 4
+    weight: 3
     region: content
     settings: {  }
     third_party_settings: {  }
   status:
+    type: boolean_checkbox
+    weight: 5
+    region: content
+    settings:
+      display_label: true
+    third_party_settings: {  }
+  sticky:
     type: boolean_checkbox
     weight: 6
     region: content
@@ -194,11 +200,10 @@ content:
       placeholder: ''
     third_party_settings: {  }
   url_redirects:
-    weight: 5
+    weight: 4
     region: content
     settings: {  }
     third_party_settings: {  }
 hidden:
   promote: true
-  sticky: true
   uid: true

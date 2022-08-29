@@ -7,6 +7,7 @@ dependencies:
     - node.type.event
   module:
     - node
+    - smart_date
     - user
 id: event_cards
 label: 'Event Cards'
@@ -95,6 +96,21 @@ display:
         options: {  }
       empty: {  }
       sorts:
+        sticky:
+          id: sticky
+          table: node_field_data
+          field: sticky
+          relationship: none
+          group_type: group
+          admin_label: ''
+          entity_type: node
+          entity_field: sticky
+          plugin_id: standard
+          order: DESC
+          expose:
+            label: ''
+            field_identifier: ''
+          exposed: false
         field_event_date_value:
           id: field_event_date_value
           table: node__field_event_date
