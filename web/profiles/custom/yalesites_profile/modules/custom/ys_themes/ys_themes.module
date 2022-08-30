@@ -1,0 +1,59 @@
+<?php
+
+use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Field\FieldFilteredMarkup;
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\Core\Field\FieldDefinitionInterface;
+
+/**
+ * Provides key-value options for YaleSites style settings.
+ *
+ * @param \Drupal\field\Entity\FieldStorageConfig $definition
+ *   The field definition.
+ * @param \Drupal\Core\Entity\ContentEntityInterface|null $entity
+ *   The entity being created, if applicable.
+ * @param bool $cacheable
+ *   Boolean indicating if the results are cache-able.
+ *
+ * @return array
+ *   An array of possible key and value options.
+ *
+ * @see options_allowed_values()
+ */
+function ys_themes_allowed_values_function(FieldStorageConfig $definition, ContentEntityInterface $entity = NULL, $cacheable) {
+  $options = [];
+
+
+
+  if ($entity->bundle() === 'callout' && $definition->getName() === 'field_style_color') {
+    $options['blue-yale'] = FieldFilteredMarkup::create('Blue');
+    $options['gray-700'] = FieldFilteredMarkup::create('Gray');
+    $options['beige'] = FieldFilteredMarkup::create('Beige');
+  }
+  return $options;
+}
+
+/**
+ * Sets the default value for the alignment field.
+ *
+ * @param \Drupal\Core\Entity\ContentEntityInterface $entity
+ *   The entity being created.
+ * @param \Drupal\Core\Field\FieldDefinitionInterface $definition
+ *   The field definition.
+ *
+ * @return array
+ *   An array of default value keys with each entry keyed with the “value” key.
+ *
+ * @see \Drupal\Core\Field\FieldConfigBase::getDefaultValue()
+ */
+function ys_themes_default_value_function(ContentEntityInterface $entity, FieldDefinitionInterface $definition) {
+  $default = 'blue-yale';
+  // // Article nodes should default to center alignment.
+  // if ($entity->bundle() == 'article') {
+  //   $default = 'center';
+  // }
+
+  return [
+    ['value' => $default],
+  ];
+}

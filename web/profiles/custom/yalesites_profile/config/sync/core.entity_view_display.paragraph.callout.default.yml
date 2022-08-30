@@ -4,9 +4,11 @@ status: true
 dependencies:
   config:
     - field.field.paragraph.callout.field_callout
+    - field.field.paragraph.callout.field_style_color
     - paragraphs.paragraphs_type.callout
   module:
     - entity_reference_revisions
+    - options
 id: paragraph.callout.default
 targetEntityType: paragraph
 bundle: callout
@@ -20,5 +22,12 @@ content:
       link: ''
     third_party_settings: {  }
     weight: 0
+    region: content
+  field_style_color:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
     region: content
 hidden: {  }
