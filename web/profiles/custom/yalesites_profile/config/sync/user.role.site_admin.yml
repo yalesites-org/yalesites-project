@@ -13,6 +13,7 @@ dependencies:
     - media
     - menu_admin_per_menu
     - node
+    - override_node_options
     - paragraphs
     - path
     - publishcontent
@@ -59,6 +60,8 @@ permissions:
   - 'edit own image media'
   - 'edit own news content'
   - 'edit own page content'
+  - 'override all sticky option'
+  - 'override news authored on option'
   - 'publish any content'
   - 'publish editable content'
   - 'revert all revisions'
