@@ -19,16 +19,16 @@ class ThemeSettingsManager {
     'action_color' => [
       'name' => 'Action Color',
       'values' => [
-        'blue' => 'Blue',
+        'blue-yale' => 'Blue',
       ],
-      'default' => 'blue',
+      'default' => 'blue-yale',
     ],
     'pull_quote_color' => [
       'name' => 'Pull Quote Color',
       'values' => [
         'gray-200' => 'Light Gray',
         'gray-500' => 'Gray',
-        'blue' => 'Blue',
+        'blue-yale' => 'Blue',
         'accent' => 'Accent',
       ],
       'default' => 'gray-500',
@@ -37,7 +37,7 @@ class ThemeSettingsManager {
       'name' => 'Line Color',
       'values' => [
         'gray-500' => 'Gray',
-        'blue' => 'Blue',
+        'blue-yale' => 'Blue',
         'accent' => 'Accent',
       ],
       'default' => 'gray-500',
@@ -64,7 +64,7 @@ class ThemeSettingsManager {
       'values' => [
         'white' => 'White',
         'gray-100' => 'Light Gray',
-        'blue' => 'Blue',
+        'blue-yale' => 'Blue',
       ],
       'default' => 'white',
     ],
@@ -75,7 +75,7 @@ class ThemeSettingsManager {
         'gray-100' => 'Light Gray',
         'gray-700' => 'Gray',
         'gray-800' => 'Dark Gray',
-        'blue' => 'Blue',
+        'blue-yale' => 'Blue',
       ],
       'default' => 'gray-700',
     ],
