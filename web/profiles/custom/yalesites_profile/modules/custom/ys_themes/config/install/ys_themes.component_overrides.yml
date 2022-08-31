@@ -51,3 +51,27 @@ quick_links:
       promotional: 'Promotional'
       subtle: 'Subtle'
     default: 'promotional'
+news_list:
+  field_style_variation:
+    values:
+      'true': 'Featured'
+      'false': 'Secondary'
+    default: 'true'
+news_cards:
+  field_style_variation:
+    values:
+      'true': 'Featured'
+      'false': 'Secondary'
+    default: 'true'
+event_list:
+  field_style_variation:
+    values:
+      'true': 'Featured'
+      'false': 'Secondary'
+    default: 'true'
+event_cards:
+  field_style_variation:
+    values:
+      'true': 'Featured'
+      'false': 'Secondary'
+    default: 'true'

@@ -5,33 +5,8 @@ use Drupal\Core\Field\FieldFilteredMarkup;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\Core\Field\FieldDefinitionInterface;
 
-// CONST ALLOWED_VALUES = [
-//     'callout' => [
-//       'field_style_color' => [
-//         'blue-yale' => 'Blue',
-//         'gray-700' => 'Gray',
-//         'beige' => 'Beige',
-//       ],
-//     ],
-//     'cta_banner' => [
-//       'field_style_color' => [
-//         'gray-800' => 'Dark Gray',
-//         'gray-700' => 'Gray',
-//         'gray-200' => 'Light Gray (gray-200)',
-//         'gray-100' => 'Light Gray (gray-100)',
-//         'white' => 'White',
-//         'blue-yale' => 'Blue',
-//       ],
-//       'field_style_position' => [
-//         'bottom' => 'Bottom',
-//         'left' => 'Left',
-//         'right' => 'Right',
-//       ],
-//     ],
-//   ];
-
 /**
- * Provides key-value options for YaleSites style settings.
+ * Provides custom key-value options for paragraph-specific styling via config
  *
  * @param \Drupal\field\Entity\FieldStorageConfig $definition
  *   The field definition.
@@ -63,7 +38,7 @@ function ys_themes_allowed_values_function(FieldStorageConfig $definition, Conte
 }
 
 /**
- * Sets the default value for the alignment field.
+ * Sets the default value for paragraph-specific styling via config
  *
  * @param \Drupal\Core\Entity\ContentEntityInterface $entity
  *   The entity being created.
@@ -84,13 +59,6 @@ function ys_themes_default_value_function(ContentEntityInterface $entity, FieldD
       }
     }
   }
-
-
-  //$default = 'blue-yale';
-  // // Article nodes should default to center alignment.
-  // if ($entity->bundle() == 'article') {
-  //   $default = 'center';
-  // }
 
   return [
     ['value' => $default],

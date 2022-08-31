@@ -1,16 +1,16 @@
-uuid: a03f62f4-e6ff-49d0-8c85-d4803fa624e5
+uuid: 5513437f-376a-4399-aa2c-040aec27b934
 langcode: en
 status: true
 dependencies:
   config:
     - field.storage.paragraph.field_style_variation
-    - paragraphs.paragraphs_type.quick_links
+    - paragraphs.paragraphs_type.news_list
   module:
     - options
-id: paragraph.quick_links.field_style_variation
+id: paragraph.news_list.field_style_variation
 field_name: field_style_variation
 entity_type: paragraph
-bundle: quick_links
+bundle: news_list
 label: Style
 description: ''
 required: false

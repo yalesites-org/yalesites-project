@@ -4,8 +4,10 @@ status: true
 dependencies:
   config:
     - field.field.paragraph.news_cards.field_heading
+    - field.field.paragraph.news_cards.field_style_variation
     - paragraphs.paragraphs_type.news_cards
   module:
+    - options
     - text
 id: paragraph.news_cards.default
 targetEntityType: paragraph
@@ -18,5 +20,12 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 0
+    region: content
+  field_style_variation:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
     region: content
 hidden: {  }

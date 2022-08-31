@@ -4,8 +4,10 @@ status: true
 dependencies:
   config:
     - field.field.paragraph.event_list.field_heading
+    - field.field.paragraph.event_list.field_style_variation
     - paragraphs.paragraphs_type.event_list
   module:
+    - options
     - text
 id: paragraph.event_list.default
 targetEntityType: paragraph
@@ -18,5 +20,12 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 0
+    region: content
+  field_style_variation:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
     region: content
 hidden: {  }
