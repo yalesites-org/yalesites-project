@@ -6,10 +6,12 @@ dependencies:
     - field.field.paragraph.quick_links.field_heading
     - field.field.paragraph.quick_links.field_image
     - field.field.paragraph.quick_links.field_links
+    - field.field.paragraph.quick_links.field_style_variation
     - field.field.paragraph.quick_links.field_text
     - paragraphs.paragraphs_type.quick_links
   module:
     - link
+    - options
     - text
 id: paragraph.quick_links.default
 targetEntityType: paragraph
@@ -43,6 +45,13 @@ content:
       target: ''
     third_party_settings: {  }
     weight: 3
+    region: content
+  field_style_variation:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 4
     region: content
   field_text:
     type: text_default

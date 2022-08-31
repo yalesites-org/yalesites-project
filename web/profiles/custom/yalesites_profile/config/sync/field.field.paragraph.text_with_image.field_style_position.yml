@@ -1,20 +1,20 @@
-uuid: 9c13e12c-ea57-4ab7-948b-c4a183b13d99
+uuid: bf3ef17d-aefb-4467-bfec-6f742c7b5d5b
 langcode: en
 status: true
 dependencies:
   config:
     - field.storage.paragraph.field_style_position
-    - paragraphs.paragraphs_type.cta_banner
+    - paragraphs.paragraphs_type.text_with_image
   module:
     - options
-id: paragraph.cta_banner.field_style_position
+id: paragraph.text_with_image.field_style_position
 field_name: field_style_position
 entity_type: paragraph
-bundle: cta_banner
-label: Layout
+bundle: text_with_image
+label: 'Image Position'
 description: ''
 required: false
-translatable: false
+translatable: true
 default_value: {  }
 default_value_callback: ys_themes_default_value_function
 settings: {  }

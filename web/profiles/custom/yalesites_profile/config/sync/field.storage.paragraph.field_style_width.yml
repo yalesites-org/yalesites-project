@@ -1,12 +1,12 @@
-uuid: 4f14ff40-b09a-4baf-9953-7b181de80c57
+uuid: 1df4e6ae-6a5b-442b-a5da-7fe816e0c679
 langcode: en
 status: true
 dependencies:
   module:
     - options
     - paragraphs
-id: paragraph.field_style_position
-field_name: field_style_position
+id: paragraph.field_style_width
+field_name: field_style_width
 entity_type: paragraph
 type: list_string
 settings:

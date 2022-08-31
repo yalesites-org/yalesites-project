@@ -6,11 +6,15 @@ dependencies:
     - field.field.paragraph.text_with_image.field_heading
     - field.field.paragraph.text_with_image.field_image
     - field.field.paragraph.text_with_image.field_link
+    - field.field.paragraph.text_with_image.field_style_position
+    - field.field.paragraph.text_with_image.field_style_variation
+    - field.field.paragraph.text_with_image.field_style_width
     - field.field.paragraph.text_with_image.field_subheading
     - field.field.paragraph.text_with_image.field_text
     - paragraphs.paragraphs_type.text_with_image
   module:
     - link
+    - options
     - text
 id: paragraph.text_with_image.default
 targetEntityType: paragraph
@@ -44,6 +48,27 @@ content:
       target: ''
     third_party_settings: {  }
     weight: 4
+    region: content
+  field_style_position:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 5
+    region: content
+  field_style_variation:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 7
+    region: content
+  field_style_width:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 6
     region: content
   field_subheading:
     type: text_default
