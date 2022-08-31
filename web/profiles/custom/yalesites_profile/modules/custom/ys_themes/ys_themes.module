@@ -5,6 +5,31 @@ use Drupal\Core\Field\FieldFilteredMarkup;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\Core\Field\FieldDefinitionInterface;
 
+CONST ALLOWED_VALUES = [
+    'callout' => [
+      'field_style_color' => [
+        'blue-yale' => 'Blue',
+        'gray-700' => 'Gray',
+        'beige' => 'Beige',
+      ],
+    ],
+    'cta_banner' => [
+      'field_style_color' => [
+        'gray-800' => 'Dark Gray',
+        'gray-700' => 'Gray',
+        'gray-200' => 'Light Gray (gray-200)',
+        'gray-100' => 'Light Gray (gray-100)',
+        'white' => 'White',
+        'blue-yale' => 'Blue',
+      ],
+      'field_style_position' => [
+        'bottom' => 'Bottom',
+        'left' => 'Left',
+        'right' => 'Right',
+      ],
+    ],
+  ];
+
 /**
  * Provides key-value options for YaleSites style settings.
  *
@@ -23,13 +48,16 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 function ys_themes_allowed_values_function(FieldStorageConfig $definition, ContentEntityInterface $entity = NULL, $cacheable) {
   $options = [];
 
-
-
-  if ($entity->bundle() === 'callout' && $definition->getName() === 'field_style_color') {
-    $options['blue-yale'] = FieldFilteredMarkup::create('Blue');
-    $options['gray-700'] = FieldFilteredMarkup::create('Gray');
-    $options['beige'] = FieldFilteredMarkup::create('Beige');
+  foreach (ALLOWED_VALUES as $paragraph => $fields) {
+    foreach ($fields as $fieldName => $fieldData) {
+      if ($entity->bundle() === $paragraph && $definition->getName() === $fieldName) {
+        foreach ($fieldData as $machineSetting => $humanName) {
+          $options[$machineSetting] = FieldFilteredMarkup::create(t($humanName));
+        }
+      }
+    }
   }
+
   return $options;
 }
 
@@ -47,6 +75,13 @@ function ys_themes_allowed_values_function(FieldStorageConfig $definition, Conte
  * @see \Drupal\Core\Field\FieldConfigBase::getDefaultValue()
  */
 function ys_themes_default_value_function(ContentEntityInterface $entity, FieldDefinitionInterface $definition) {
+  foreach (ALLOWED_VALUES as $paragraph => $fields) {
+    if ($entity->bundle() === $paragraph && $definition->getName() === $fieldName) {
+
+    }
+  }
+
+
   $default = 'blue-yale';
   // // Article nodes should default to center alignment.
   // if ($entity->bundle() == 'article') {

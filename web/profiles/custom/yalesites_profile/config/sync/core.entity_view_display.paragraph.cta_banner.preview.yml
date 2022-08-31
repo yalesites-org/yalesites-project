@@ -7,6 +7,8 @@ dependencies:
     - field.field.paragraph.cta_banner.field_heading
     - field.field.paragraph.cta_banner.field_image
     - field.field.paragraph.cta_banner.field_link
+    - field.field.paragraph.cta_banner.field_style_color
+    - field.field.paragraph.cta_banner.field_style_position
     - field.field.paragraph.cta_banner.field_text
     - image.style.16_5_320
     - paragraphs.paragraphs_type.cta_banner
@@ -50,3 +52,5 @@ content:
     region: content
 hidden:
   field_heading: true
+  field_style_color: true
+  field_style_position: true

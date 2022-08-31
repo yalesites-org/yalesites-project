@@ -1,17 +1,17 @@
-uuid: 95e55576-a020-45f4-841a-c7aacf5506a9
+uuid: 4f14ff40-b09a-4baf-9953-7b181de80c57
 langcode: en
 status: true
 dependencies:
   module:
     - options
     - paragraphs
-id: paragraph.field_style_color
-field_name: field_style_color
+id: paragraph.field_style_position
+field_name: field_style_position
 entity_type: paragraph
 type: list_string
 settings:
   allowed_values: {  }
-  allowed_values_function: ys_themes_allowed_values_function
+  allowed_values_function: 'ys_themes_allowed_values_function'
 module: options
 locked: false
 cardinality: 1
