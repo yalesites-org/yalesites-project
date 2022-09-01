@@ -2,7 +2,7 @@
   {% set author = 'By ' ~ content.field_author|render %}
 {% endif %}
 
-{% include "@molecules/page-title/page-title.twig" with {
+{% include "@molecules/page-title/yds-page-title.twig" with {
   page_title__heading: label,
   page_title__meta: author ~ date,
 } %}

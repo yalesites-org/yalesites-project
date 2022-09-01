@@ -1,7 +1,7 @@
 {{ attach_library('atomic/reference-card') }}
 
 {% set date__formatted %}
-  {% include "@atoms/date-time/date-time.twig" with {
+  {% include "@atoms/date-time/yds-date-time.twig" with {
     date_time__start: content.field_event_date.0.start_time['#markup'],
   } %}
 {% endset %}
@@ -16,7 +16,7 @@
 
 {% set heading = content.field_teaser_title.0 ? content.field_teaser_title : label %}
 
-{% embed "@molecules/cards/reference-card/reference-card.twig" with {
+{% embed "@molecules/cards/reference-card/yds-reference-card.twig" with {
   reference_card__heading: heading,
   reference_card__subheading: date__formatted,
   reference_card__url: url,
