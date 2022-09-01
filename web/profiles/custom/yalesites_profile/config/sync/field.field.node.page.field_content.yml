@@ -8,6 +8,7 @@ dependencies:
     - paragraphs.paragraphs_type.accordion
     - paragraphs.paragraphs_type.callout
     - paragraphs.paragraphs_type.cta_banner
+    - paragraphs.paragraphs_type.custom_cards
     - paragraphs.paragraphs_type.divider
     - paragraphs.paragraphs_type.embed
     - paragraphs.paragraphs_type.event_cards
@@ -17,6 +18,7 @@ dependencies:
     - paragraphs.paragraphs_type.news_list
     - paragraphs.paragraphs_type.pop_out_image
     - paragraphs.paragraphs_type.pull_quote
+    - paragraphs.paragraphs_type.quick_links
     - paragraphs.paragraphs_type.section
     - paragraphs.paragraphs_type.tabs
     - paragraphs.paragraphs_type.text
@@ -52,6 +54,8 @@ settings:
       news_cards: news_cards
       news_list: news_list
       cta_banner: cta_banner
+      quick_links: quick_links
+      custom_cards: custom_cards
       tabs: tabs
     negate: 0
     target_bundles_drag_drop:
@@ -69,6 +73,12 @@ settings:
         enabled: false
       cta_banner:
         weight: -20
+        enabled: true
+      custom_card:
+        weight: 27
+        enabled: false
+      custom_cards:
+        weight: 28
         enabled: true
       divider:
         weight: -27
@@ -96,6 +106,9 @@ settings:
         enabled: true
       pull_quote:
         weight: -30
+        enabled: true
+      quick_links:
+        weight: 33
         enabled: true
       section:
         weight: -35

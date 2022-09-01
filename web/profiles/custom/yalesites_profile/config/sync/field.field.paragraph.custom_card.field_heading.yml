@@ -1,0 +1,26 @@
+uuid: aa46f47b-e413-4b92-8aab-8552fc8e8310
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_heading
+    - paragraphs.paragraphs_type.custom_card
+  module:
+    - allowed_formats
+    - text
+third_party_settings:
+  allowed_formats:
+    allowed_formats:
+      - heading_html
+id: paragraph.custom_card.field_heading
+field_name: field_heading
+entity_type: paragraph
+bundle: custom_card
+label: Heading
+description: ''
+required: true
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: text
