@@ -1,5 +1,6 @@
 {% embed "@organisms/site-footer/yds-site-footer.twig" with {
   site_footer__border_thickness: '8',
+  site_footer__theme: getThemeSetting('footer_theme'),
 } %}
   {% block site_footer__text %}{% endblock %}
   {% block site_footer__columns %}{% endblock %}
