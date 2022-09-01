@@ -24,7 +24,7 @@ content:
     weight: 1
     region: content
   field_style_variation:
-    type: list_default
+    type: list_key
     label: above
     settings: {  }
     third_party_settings: {  }

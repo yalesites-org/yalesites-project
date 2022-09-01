@@ -50,21 +50,21 @@ content:
     weight: 4
     region: content
   field_style_position:
-    type: list_default
+    type: list_key
     label: above
     settings: {  }
     third_party_settings: {  }
     weight: 5
     region: content
   field_style_variation:
-    type: list_default
+    type: list_key
     label: above
     settings: {  }
     third_party_settings: {  }
     weight: 7
     region: content
   field_style_width:
-    type: list_default
+    type: list_key
     label: above
     settings: {  }
     third_party_settings: {  }
