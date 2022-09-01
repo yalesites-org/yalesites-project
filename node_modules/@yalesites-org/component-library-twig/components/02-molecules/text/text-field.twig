@@ -1,0 +1,19 @@
+{#
+ # Available Variables:
+ # - text_field__content
+ #}
+
+{% set text_field__base_class = 'text-field' %}
+
+{% set text_field__attributes = {
+  'data-component-width': 'content',
+  class: bem(text_field__base_class),
+} %}
+
+<div {{ add_attributes(text_field__attributes) }}>
+  <div {{ bem('inner', [], text_field__base_class) }}>
+    {% include "@atoms/typography/text/text.twig" with {
+      text__content: text_field__content,
+    } %}
+  </div>
+</div>
