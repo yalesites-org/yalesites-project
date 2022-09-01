@@ -14,7 +14,7 @@
 {% if rows -%}
   {% embed "@organisms/card-collection/yds-card-collection.twig" with {
     card_collection__heading: view.args.0,
-    card_collection__featured: 'false',
+    card_collection__featured: view.args.1,
     card_collection__type: 'list',
   } %}
     {% block card_collection__cards %}
