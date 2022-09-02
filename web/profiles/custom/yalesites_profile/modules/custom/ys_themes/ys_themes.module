@@ -1,0 +1,25 @@
+<?php
+
+/**
+ * @file
+ * Contains ys_themes.module functions.
+ */
+
+/**
+ * Preprocess paragraphs to determine child paragraph heading levels.
+ *
+ * Implements hook_preprocess_paragraph().
+ */
+function ys_themes_preprocess_paragraph(&$variables) {
+  $fieldHeading = 'field_heading';
+  $paragraphTypes = [
+    'accordion_item',
+  ];
+
+  if (in_array($variables['paragraph']->getType(), $paragraphTypes)) {
+    $parentParagraph = $variables['paragraph']->getParentEntity();
+    if ($parentParagraph->hasField($fieldHeading)) {
+      $variables['has_outer_heading'] = $parentParagraph->get($fieldHeading)->getValue() ? 3 : 2;
+    }
+  }
+}
