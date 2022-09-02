@@ -24,10 +24,11 @@ content:
     weight: 1
     region: content
   field_image:
-    type: entity_reference_label
+    type: entity_reference_entity_view
     label: hidden
     settings:
-      link: true
+      view_mode: card_secondary_3_2
+      link: false
     third_party_settings: {  }
     weight: 0
     region: content
