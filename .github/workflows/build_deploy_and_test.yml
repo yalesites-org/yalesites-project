@@ -106,13 +106,9 @@ jobs:
       # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
       - name: setup-environment-vars
         run: /build-tools-ci/scripts/set-environment
-
       - name: run static tests
         run: |
           ./.ci/test/static/run
-
-  # If needed, frontend assets compilation or similar steps
-  # could be added here.
 
   deploy_to_pantheon:
     container:
@@ -182,6 +178,17 @@ jobs:
       # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
       - name: setup-environment-vars
         run: /build-tools-ci/scripts/set-environment
+
+      - name: build frontend components
+        env:
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+          YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
+        run: |
+          ./.ci/build/build_frontend
+
+      - name: Setup tmate session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
 
       # Deploy to Pantheon
       - name: deploy to Pantheon
