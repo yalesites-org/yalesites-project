@@ -1,0 +1,58 @@
+#!/bin/bash
+
+set -eo pipefail
+
+# This script builds out frontend assets for the atomic theme and
+# component library if the pull request branch exists in those repos.
+
+# Define path to atomic theme for reuse.
+ATOMIC_PATH="web/themes/contrib/atomic"
+
+# Build atomic theme. We must do this from the profile by updating composer.json,
+# removing the existing atomic directory, and running composer update.
+cd "$GITHUB_WORKSPACE"/web/profiles/custom/yalesites_profile
+
+# Require the branch version if it exists.
+if [ -n "$(git ls-remote --heads https://github.com/yalesites-org/atomic.git "$BRANCH")" ]; then
+  composer require --prefer-dist --no-update yalesites-org/atomic:dev-"$BRANCH"
+fi
+
+cd "$GITHUB_WORKSPACE"
+rm -rf "${GITHUB_WORKSPACE:?}"/"$ATOMIC_PATH"
+composer update --prefer-dist
+
+# Check if branch exists in component library.
+if [ -n "$(git ls-remote --heads https://github.com/yalesites-org/component-library-twig.git "$BRANCH")" ]; then
+  # Build component library
+  cd "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"
+  npm ci --omit=dev --ignore-scripts
+
+  # Remove component library from atomic so we can add the branch version later.
+  rm -rf node_modules/@yalesites-org/component-library-twig
+
+  # Clone and build the component library from branch.
+  cd /tmp
+  git clone --single-branch --branch "$BRANCH" https://github.com/yalesites-org/component-library-twig && cd component-library-twig
+  rm -rf .git
+  npm ci --omit=dev --ignore-scripts
+  npm install webpack-cli
+  npm run build
+  mv /tmp/component-library-twig "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/@yalesites-org
+
+  # Clean up atomic's node_modules and remove gitignores so the changes can be staged.
+  for dir in "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/*; do
+    if [ "$dir" != "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/@yalesites-org ]; then
+      rm -rf "$dir"
+    fi
+  done
+
+  cd "$GITHUB_WORKSPACE"
+
+  # Remove atomic and root gitignore so we can commit theme changes.
+  rm "$ATOMIC_PATH"/.gitignore
+  rm .gitignore
+
+  # Stage theme changes and restore root gitignore to clean up staging area.
+  git add "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"
+  git checkout "$GITHUB_WORKSPACE"/.gitignore
+fi

@@ -1,5 +1,0 @@
-services:
-  yale_cas.route_subscriber:
-    class: Drupal\yale_cas\Routing\RouteSubscriber
-    tags:
-      - { name: event_subscriber }
