@@ -4,10 +4,8 @@ status: true
 dependencies:
   config:
     - field.field.paragraph.event_cards.field_heading
-    - field.field.paragraph.event_cards.field_style_variation
     - paragraphs.paragraphs_type.event_cards
   module:
-    - options
     - text
 id: paragraph.event_cards.default
 targetEntityType: paragraph
@@ -20,12 +18,5 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 0
-    region: content
-  field_style_variation:
-    type: list_key
-    label: above
-    settings: {  }
-    third_party_settings: {  }
-    weight: 1
     region: content
 hidden: {  }

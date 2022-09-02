@@ -4,58 +4,9 @@ status: true
 dependencies:
   config:
     - field.field.paragraph.event_list.field_heading
-    - field.field.paragraph.event_list.field_style_variation
     - paragraphs.paragraphs_type.event_list
   module:
-    - field_group
     - text
-third_party_settings:
-  field_group:
-    group_event_list_tabs:
-      children:
-        - group_content
-        - group_styles
-      label: 'Event list Tabs'
-      region: content
-      parent_name: ''
-      weight: 0
-      format_type: tabs
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        direction: horizontal
-        width_breakpoint: 640
-    group_content:
-      children:
-        - field_heading
-      label: Content
-      region: content
-      parent_name: group_event_list_tabs
-      weight: 5
-      format_type: tab
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        formatter: closed
-        description: ''
-        required_fields: true
-    group_styles:
-      children:
-        - field_style_variation
-      label: Styles
-      region: content
-      parent_name: group_event_list_tabs
-      weight: 6
-      format_type: tab
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        formatter: closed
-        description: ''
-        required_fields: true
 id: paragraph.event_list.default
 targetEntityType: paragraph
 bundle: event_list
@@ -68,12 +19,6 @@ content:
     settings:
       size: 60
       placeholder: ''
-    third_party_settings: {  }
-  field_style_variation:
-    type: options_select
-    weight: 2
-    region: content
-    settings: {  }
     third_party_settings: {  }
 hidden:
   created: true
