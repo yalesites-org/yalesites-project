@@ -19,7 +19,7 @@ function ys_themes_preprocess_paragraph(&$variables) {
   if (in_array($variables['paragraph']->getType(), $paragraphTypes)) {
     $parentParagraph = $variables['paragraph']->getParentEntity();
     if ($parentParagraph->hasField($fieldHeading)) {
-      $variables['has_outer_heading'] = $parentParagraph->get($fieldHeading)->getValue() ? 3 : 2;
+      $variables['has_outer_heading'] = $parentParagraph->get($fieldHeading)->getValue() ? true : false;
     }
   }
 }
