@@ -1,0 +1,11 @@
+{% set custom_card__image = content.field_image.0 ? 'true' : 'false' %}
+
+{% embed "@molecules/cards/custom-card/yds-custom-card.twig" with {
+  custom_card__heading: content.field_heading.0['#text'],
+  custom_card__snippet: content.field_text.0['#text'],
+  custom_card__url: content.field_link.0['#url_title'],
+} %}
+  {% block custom_card__image %}
+    {{ content.field_image }}
+  {% endblock %}
+{% endembed %}

@@ -1,0 +1,11 @@
+<div{{ attributes }}>
+  {{ title_prefix }}
+  {{ title_suffix }}
+  {% embed "@organisms/custom-card-collection/yds-custom-card-collection.twig" with {
+    custom_card_collection__heading: content.field_heading.0['#text'],
+  } %}
+    {% block custom_card_collection__cards %}
+      {{ content.field_cards }}
+    {% endblock %}
+  {% endembed %}
+</div>
