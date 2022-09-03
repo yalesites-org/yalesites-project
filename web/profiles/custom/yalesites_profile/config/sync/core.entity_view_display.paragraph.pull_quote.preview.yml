@@ -5,6 +5,7 @@ dependencies:
   config:
     - core.entity_view_mode.paragraph.preview
     - field.field.paragraph.pull_quote.field_attribution
+    - field.field.paragraph.pull_quote.field_style_variation
     - field.field.paragraph.pull_quote.field_text
     - paragraphs.paragraphs_type.pull_quote
   module:
@@ -29,4 +30,5 @@ content:
     third_party_settings: {  }
     weight: 0
     region: content
-hidden: {  }
+hidden:
+  field_style_variation: true

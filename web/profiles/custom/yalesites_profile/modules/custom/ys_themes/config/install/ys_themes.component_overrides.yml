@@ -1,0 +1,77 @@
+callout:
+  field_style_color:
+    values:
+      blue-yale: 'Blue'
+      gray-700: 'Gray'
+      beige: 'Beige'
+    default: 'blue-yale'
+cta_banner:
+  field_style_color:
+    values:
+      gray-800: 'Dark Gray'
+      gray-700: 'Gray'
+      gray-200: 'Light Gray (gray-200)'
+      gray-100: 'Light Gray (gray-100)'
+      white: 'White'
+      blue-yale: 'Blue'
+    default: 'gray-800'
+  field_style_position:
+    values:
+      bottom: 'Bottom'
+      left:  'Left'
+      right: 'Right'
+    default: 'bottom'
+pull_quote:
+  field_style_variation:
+    values:
+      bar-left: 'Bar Left'
+      bar-right: 'Bar Right'
+      quote-left: 'Quote Left'
+    default: 'bar-left'
+text_with_image:
+  field_style_position:
+    values:
+      image-left: 'Image Left'
+      image-right: 'Image Right'
+    default: 'image-left'
+  field_style_width:
+    values:
+      feature: 'Feature'
+      highlight: 'Highlight'
+    default: 'feature'
+  field_style_variation:
+    values:
+      equal: 'Equal'
+      image: 'Image'
+      content: 'Content'
+    default: 'equal'
+quick_links:
+  field_style_variation:
+    values:
+      promotional: 'Promotional'
+      subtle: 'Subtle'
+    default: 'promotional'
+news_list:
+  field_style_variation:
+    values:
+      'true': 'Featured'
+      'false': 'Secondary'
+    default: 'true'
+news_cards:
+  field_style_variation:
+    values:
+      'true': 'Featured'
+      'false': 'Secondary'
+    default: 'true'
+event_list:
+  field_style_variation:
+    values:
+      'true': 'Featured'
+      'false': 'Secondary'
+    default: 'true'
+event_cards:
+  field_style_variation:
+    values:
+      'true': 'Featured'
+      'false': 'Secondary'
+    default: 'true'
