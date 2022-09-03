@@ -5,6 +5,7 @@ dependencies:
   config:
     - core.entity_view_mode.paragraph.preview
     - field.field.paragraph.callout.field_callout
+    - field.field.paragraph.callout.field_style_color
     - paragraphs.paragraphs_type.callout
   module:
     - entity_reference_revisions
@@ -22,4 +23,5 @@ content:
     third_party_settings: {  }
     weight: 0
     region: content
-hidden: {  }
+hidden:
+  field_style_color: true

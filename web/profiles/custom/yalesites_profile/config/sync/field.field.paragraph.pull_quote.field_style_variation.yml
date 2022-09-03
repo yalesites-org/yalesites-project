@@ -1,0 +1,21 @@
+uuid: 6cb280c9-2de5-488f-b229-18c16cb513ee
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_style_variation
+    - paragraphs.paragraphs_type.pull_quote
+  module:
+    - options
+id: paragraph.pull_quote.field_style_variation
+field_name: field_style_variation
+entity_type: paragraph
+bundle: pull_quote
+label: Style
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ys_themes_default_value_function
+settings: {  }
+field_type: list_string
