@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * The ys_themes module.
+ */
+
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Field\FieldFilteredMarkup;
 use Drupal\field\Entity\FieldStorageConfig;
@@ -63,4 +68,50 @@ function ys_themes_default_value_function(ContentEntityInterface $entity, FieldD
   return [
     ['value' => $default],
   ];
+}
+
+/**
+ * Implements hook_page_attachments_alter().
+ */
+function ys_themes_page_attachments_alter(array &$page) {
+  // Add CSS custom variables to the page to pass global overrides to the theme.
+  $page['#attached']['html_head'][] = [
+    [
+      '#tag' => 'style',
+      '#value' => ys_themes_build_css_variables(),
+    ],
+    'yalesites_theme_settings',
+  ];
+}
+
+/**
+ * Build a string of CSS variables to override theme settings.
+ *
+ * @todo: Refactor the backend management once frontend conventions are set.
+ * We will look for ways to introduce error handling and unit testing.
+ *
+ * @return string
+ *   CSS code.
+ */
+function ys_themes_build_css_variables() : string {
+  $settings = \Drupal::service('ys_themes.theme_settings_manager');
+  $css = [];
+  $css[] = ':root {';
+
+  $actionColor = $settings->getSetting('action_color');
+  $css[] = "--color-theme-button-primary: var(--color-{$actionColor});";
+
+  $pullQuoteColor = $settings->getSetting('pull_quote_color');
+  $css[] = "--color-theme-pull-quote-accent: var(--color-{$pullQuoteColor});";
+
+  $lineColor = $settings->getSetting('line_color');
+  $css[] = "--color-divider: var(--color-{$lineColor});";
+
+  $lineThickness = $settings->getSetting('line_thickness');
+  if ($lineThickness == 'thin') {
+    // Will punt this work to frontend.
+  }
+
+  $css[] = '}';
+  return implode(PHP_EOL, $css);
 }
