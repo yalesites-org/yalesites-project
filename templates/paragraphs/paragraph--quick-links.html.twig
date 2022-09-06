@@ -1,5 +1,3 @@
-{{ kint() }}
-
 <div{{ attributes }}>
   {{ title_prefix }}
   {{ title_suffix }}
@@ -8,7 +6,11 @@
     quick_links__heading: content.field_heading.0['#text'],
     quick_links__description: content.field_text.0['#text'],
     quick_links__image: content.field_image.0,
+    quick_links__links: content.field_links.0,
   } %}
+    {% block quick_links__links %}
+      {{ content.field_links }}
+    {% endblock %}
     {% block quick_links__image %}
       {{ content.field_image }}
     {% endblock %}
