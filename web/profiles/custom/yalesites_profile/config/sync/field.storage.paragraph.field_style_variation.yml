@@ -1,0 +1,21 @@
+uuid: 3a2ba444-341f-4f53-a9f7-dc91b0b8c340
+langcode: en
+status: true
+dependencies:
+  module:
+    - options
+    - paragraphs
+id: paragraph.field_style_variation
+field_name: field_style_variation
+entity_type: paragraph
+type: list_string
+settings:
+  allowed_values: {  }
+  allowed_values_function: ys_themes_allowed_values_function
+module: options
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

@@ -6,10 +6,13 @@ dependencies:
     - field.field.paragraph.cta_banner.field_heading
     - field.field.paragraph.cta_banner.field_image
     - field.field.paragraph.cta_banner.field_link
+    - field.field.paragraph.cta_banner.field_style_color
+    - field.field.paragraph.cta_banner.field_style_position
     - field.field.paragraph.cta_banner.field_text
     - paragraphs.paragraphs_type.cta_banner
   module:
     - link
+    - options
     - text
 id: paragraph.cta_banner.default
 targetEntityType: paragraph
@@ -43,6 +46,20 @@ content:
       target: ''
     third_party_settings: {  }
     weight: 2
+    region: content
+  field_style_color:
+    type: list_key
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 4
+    region: content
+  field_style_position:
+    type: list_key
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 5
     region: content
   field_text:
     type: text_default
