@@ -1,0 +1,21 @@
+uuid: 1e84ae56-30c5-4338-92d1-87aac6afae7e
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_style_color
+    - paragraphs.paragraphs_type.cta_banner
+  module:
+    - options
+id: paragraph.cta_banner.field_style_color
+field_name: field_style_color
+entity_type: paragraph
+bundle: cta_banner
+label: 'Background Color'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ys_themes_default_value_function
+settings: {  }
+field_type: list_string

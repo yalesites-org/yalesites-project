@@ -4,9 +4,11 @@ status: true
 dependencies:
   config:
     - field.field.paragraph.pull_quote.field_attribution
+    - field.field.paragraph.pull_quote.field_style_variation
     - field.field.paragraph.pull_quote.field_text
     - paragraphs.paragraphs_type.pull_quote
   module:
+    - options
     - text
 id: paragraph.pull_quote.default
 targetEntityType: paragraph
@@ -20,6 +22,13 @@ content:
       link_to_entity: false
     third_party_settings: {  }
     weight: 1
+    region: content
+  field_style_variation:
+    type: list_key
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 2
     region: content
   field_text:
     type: text_default

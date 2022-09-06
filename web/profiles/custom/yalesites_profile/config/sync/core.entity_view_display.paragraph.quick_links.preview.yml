@@ -7,6 +7,7 @@ dependencies:
     - field.field.paragraph.quick_links.field_heading
     - field.field.paragraph.quick_links.field_image
     - field.field.paragraph.quick_links.field_links
+    - field.field.paragraph.quick_links.field_style_variation
     - field.field.paragraph.quick_links.field_text
     - image.style.media_library
     - paragraphs.paragraphs_type.quick_links
@@ -57,4 +58,5 @@ content:
     third_party_settings: {  }
     weight: 1
     region: content
-hidden: {  }
+hidden:
+  field_style_variation: true
