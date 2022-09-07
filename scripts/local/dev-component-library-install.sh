@@ -3,10 +3,11 @@
 GREEN='\033[1;32m'
 ENDCOLOR='\033[0m'
 
-read -p "Which branch? " BRANCH
+read -p "Which branch from the component-library-twig repo do you need? " BRANCH
 
 echo -e "${GREEN}Move into atomic and checkout develop"
 cd web/themes/contrib/atomic
+nvm use
 git checkout develop
 echo -e "${GREEN}npm ci${ENDCOLOR}"
 npm ci
@@ -26,6 +27,6 @@ echo -e "${GREEN}Move into theme and create empty component-library-twig directo
 cd ..
 mkdir node_modules/@yalesites-org/component-library-twig
 echo -e "${GREEN}Copy built dist folder${ENDCOLOR}"
-cp -rp component-library-twig/dist node_modules/@yalesites-org/component-library-twig/.
+cp -r component-library-twig/dist node_modules/@yalesites-org/component-library-twig/.
 echo -e "${GREEN}Copy built components folder${ENDCOLOR}"
 cp -r component-library-twig/components node_modules/@yalesites-org/component-library-twig/.
