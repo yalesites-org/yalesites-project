@@ -15,6 +15,7 @@
     "build-theme": "./scripts/local/build-theme.sh",
     "setup": "./scripts/local/setup.sh",
     "local:theme-setup": "./scripts/local/dev-component-library-install.sh",
+    "local:cl-update": "./scripts/local/dev-component-library-update.sh",
     "prettier": "composer prettier",
     "lint:styles": "composer lint:styles",
     "lint:js": "composer lint:js",
