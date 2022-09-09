@@ -1,0 +1,22 @@
+uuid: 0c920237-c4b6-4f4c-921e-d5876c08b0ae
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+id: events
+label: Events
+type: 'canonical_entities:node'
+pattern: '[yale:news_landing_page_path]/[node:field_event_date:value-custom:Y-m-d]-[node:title]'
+selection_criteria:
+  b493d2cc-e2b6-4d94-b858-f548d2bac7a4:
+    id: 'entity_bundle:node'
+    negate: false
+    uuid: b493d2cc-e2b6-4d94-b858-f548d2bac7a4
+    context_mapping:
+      node: node
+    bundles:
+      event: event
+selection_logic: and
+weight: -5
+relationships: {  }
