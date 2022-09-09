@@ -12,6 +12,6 @@ theme: {  }
 blacklist: {  }
 graylist:
   - 'ys_core.*'
-  - 'ys_themes.*'
+  - 'ys_themes.theme_settings'
 graylist_dependents: true
 graylist_skip_equal: true
