@@ -7,12 +7,12 @@ dependencies:
 id: events
 label: Events
 type: 'canonical_entities:node'
-pattern: '[yale:news_landing_page_path]/[node:field_event_date:value-custom:Y-m-d]-[node:title]'
+pattern: '[yale:event_landing_page_path]/[node:field_event_date:value-custom:Y-m-d]-[node:title]'
 selection_criteria:
-  b493d2cc-e2b6-4d94-b858-f548d2bac7a4:
+  8ce66998-9056-4157-8d0f-2e7061015616:
     id: 'entity_bundle:node'
     negate: false
-    uuid: b493d2cc-e2b6-4d94-b858-f548d2bac7a4
+    uuid: 8ce66998-9056-4157-8d0f-2e7061015616
     context_mapping:
       node: node
     bundles:
