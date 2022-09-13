@@ -13,7 +13,7 @@ entity_type: paragraph
 bundle: pull_quote
 label: Style
 description: ''
-required: false
+required: true
 translatable: false
 default_value: {  }
 default_value_callback: ys_themes_default_value_function
