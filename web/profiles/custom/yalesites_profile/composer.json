@@ -49,6 +49,7 @@
         "drupal/pathauto": "^1.8",
         "drupal/publishcontent": "^1.5",
         "drupal/redirect": "^1.7",
+        "drupal/search_api": "^1.25",
         "drupal/smart_date": "^3.5",
         "drupal/twig_tweak": "^3.1",
         "drupal/xmlsitemap": "^1.2",

@@ -1,0 +1,44 @@
+uuid: 922a9408-aa28-4a0d-92c1-6d7973fa666e
+langcode: en
+status: true
+dependencies:
+  config:
+    - search_api.server.database_server
+  module:
+    - node
+    - search_api
+id: node_index
+name: 'Node Index'
+description: ''
+read_only: false
+field_settings:
+  title:
+    label: Title
+    datasource_id: 'entity:node'
+    property_path: title
+    type: string
+    dependencies:
+      module:
+        - node
+datasource_settings:
+  'entity:node':
+    bundles:
+      default: true
+      selected: {  }
+    languages:
+      default: true
+      selected: {  }
+processor_settings:
+  add_url: {  }
+  aggregated_field: {  }
+  entity_type: {  }
+  language_with_fallback: {  }
+  rendered_item: {  }
+tracker_settings:
+  default:
+    indexing_order: fifo
+options:
+  cron_limit: 50
+  index_directly: false
+  track_changes_in_references: true
+server: database_server
