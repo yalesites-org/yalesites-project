@@ -119,7 +119,10 @@ function ys_themes_build_css_variables() : string {
   $css[] = ':root {';
 
   $actionColor = $settings->getSetting('action_color');
-  $css[] = "--color-theme-button-primary: var(--color-{$actionColor});";
+  $css[] = "--color-theme-action: var(--color-{$actionColor});";
+
+  $accentColor = $settings->getSetting('accent_color');
+  $css[] = "--color-theme-accent: var(--color-{$accentColor});";
 
   $pullQuoteColor = $settings->getSetting('pull_quote_color');
   $css[] = "--color-theme-pull-quote-accent: var(--color-{$pullQuoteColor});";
