@@ -125,12 +125,10 @@ function ys_themes_build_css_variables() : string {
   $css[] = "--color-theme-pull-quote-accent: var(--color-{$pullQuoteColor});";
 
   $lineColor = $settings->getSetting('line_color');
-  $css[] = "--color-divider: var(--color-{$lineColor});";
+  $css[] = "--color-theme-divider: var(--color-{$lineColor});";
 
   $lineThickness = $settings->getSetting('line_thickness');
-  if ($lineThickness == 'thin') {
-    // Will punt this work to frontend.
-  }
+  $css[] = "--thickness-theme-divider: var(--thickness-divider-{$lineThickness});";
 
   $css[] = '}';
   return implode(PHP_EOL, $css);
