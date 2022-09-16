@@ -162,6 +162,8 @@ class SiteSettingsForm extends ConfigFormBase {
     $this->validatePath($form_state, 'site_page_front');
     $this->validateStartWithSlash($form_state, 'site_page_news');
     $this->validateStartWithSlash($form_state, 'site_page_events');
+    $this->validateIsNotRootPath($form_state, 'site_page_news');
+    $this->validateIsNotRootPath($form_state, 'site_page_events');
     if ($form_state->getValue('site_page_news') !== self::DEFAULT_NEWS_PATH) {
       $this->validatePath($form_state, 'site_page_news');
     }
@@ -224,6 +226,28 @@ class SiteSettingsForm extends ConfigFormBase {
         $fieldId,
         $this->t(
           "The path '%path' has to start with a slash.",
+         ['%path' => $form_state->getValue($fieldId)]
+        )
+      );
+    }
+  }
+
+  /**
+   * Check that a submitted value is not the root path.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state passed by reference.
+   * @param string $fieldId
+   *   The id of a field on the connfig form.
+   *
+   * @return void
+   */
+  protected function validateIsNotRootPath(&$form_state, $fieldId) {
+    if (($value = $form_state->getValue($fieldId)) && $value == '/') {
+      $form_state->setErrorByName(
+        $fieldId,
+        $this->t(
+          "The path '%path' can not be the site root.",
          ['%path' => $form_state->getValue($fieldId)]
         )
       );
