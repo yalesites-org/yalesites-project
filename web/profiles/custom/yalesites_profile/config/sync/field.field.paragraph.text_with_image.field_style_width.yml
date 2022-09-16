@@ -1,0 +1,21 @@
+uuid: 2de0721a-8430-4b9f-a74a-303c813b9904
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_style_width
+    - paragraphs.paragraphs_type.text_with_image
+  module:
+    - options
+id: paragraph.text_with_image.field_style_width
+field_name: field_style_width
+entity_type: paragraph
+bundle: text_with_image
+label: Width
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ys_themes_default_value_function
+settings: {  }
+field_type: list_string

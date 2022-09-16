@@ -1,0 +1,159 @@
+<?php
+
+/**
+ * @file
+ * Contains ys_themes.module functions.
+ */
+
+use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Field\FieldFilteredMarkup;
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\Core\Field\FieldDefinitionInterface;
+
+/**
+ * Preprocess paragraphs to determine child paragraph heading levels.
+ *
+ * Implements hook_preprocess_paragraph().
+ */
+function ys_themes_preprocess_paragraph(&$variables) {
+
+  $fieldHeading = 'field_heading';
+  $paragraphTypes = [
+    'accordion_item',
+  ];
+
+  if (in_array($variables['paragraph']->getType(), $paragraphTypes)) {
+    $parentParagraph = $variables['paragraph']->getParentEntity();
+    if ($parentParagraph->hasField($fieldHeading)) {
+      $variables['has_outer_heading'] = $parentParagraph->get($fieldHeading)->getValue() ? TRUE : FALSE;
+    }
+  }
+}
+
+/**
+ * Preprocess field to add style variation twig variable to child fields.
+ *
+ * Implements hook_preprocess_field().
+ */
+function ys_themes_preprocess_field(&$variables) {
+
+  /* Key value pair of paragraph machine name and twig variable name. */
+  $paragraphTypes = [
+    'quick_links' => 'quick_links__variation',
+  ];
+
+  if ($variables['field_name'] == 'field_links') {
+    $parentParagraph = $variables['element']['#items']->getEntity();
+    foreach ($paragraphTypes as $paragraph => $twigVariable) {
+      if ($parentParagraph->getType() == $paragraph) {
+        $variables[$twigVariable] = $parentParagraph->get('field_style_variation')->getValue() ? $parentParagraph->get('field_style_variation')->getString() : NULL;
+      }
+    }
+  }
+}
+
+/**
+ * Provides custom key-value options for paragraph-specific styling via config.
+ *
+ * @param \Drupal\field\Entity\FieldStorageConfig $definition
+ *   The field definition.
+ * @param \Drupal\Core\Entity\ContentEntityInterface|null $entity
+ *   The entity being created, if applicable.
+ * @param bool $cacheable
+ *   Boolean indicating if the results are cache-able.
+ *
+ * @return array
+ *   An array of possible key and value options.
+ *
+ * @see options_allowed_values()
+ */
+function ys_themes_allowed_values_function(FieldStorageConfig $definition, ContentEntityInterface $entity = NULL, $cacheable) {
+  $options = [];
+  $config = \Drupal::config('ys_themes.component_overrides');
+
+  foreach ($config->get() as $paragraph => $fields) {
+    foreach ($fields as $fieldName => $fieldData) {
+      if ($entity->bundle() === $paragraph && $definition->getName() === $fieldName) {
+        foreach ($fieldData['values'] as $machineSetting => $humanName) {
+          $options[$machineSetting] = FieldFilteredMarkup::create(t($humanName));
+        }
+      }
+    }
+  }
+
+  return $options;
+}
+
+/**
+ * Sets the default value for paragraph-specific styling via config.
+ *
+ * @param \Drupal\Core\Entity\ContentEntityInterface $entity
+ *   The entity being created.
+ * @param \Drupal\Core\Field\FieldDefinitionInterface $definition
+ *   The field definition.
+ *
+ * @return array
+ *   An array of default value keys with each entry keyed with the “value” key.
+ *
+ * @see \Drupal\Core\Field\FieldConfigBase::getDefaultValue()
+ */
+function ys_themes_default_value_function(ContentEntityInterface $entity, FieldDefinitionInterface $definition) {
+  $config = \Drupal::config('ys_themes.component_overrides');
+  foreach ($config->get() as $paragraph => $fields) {
+    foreach ($fields as $fieldName => $fieldData) {
+      if ($entity->bundle() === $paragraph && $definition->getName() === $fieldName) {
+        $default = $fieldData['default'];
+      }
+    }
+  }
+
+  return [
+    ['value' => $default],
+  ];
+}
+
+/**
+ * Implements hook_page_attachments_alter().
+ */
+function ys_themes_page_attachments_alter(array &$page) {
+  // Add CSS custom variables to the page to pass global overrides to the theme.
+  $page['#attached']['html_head'][] = [
+    [
+      '#tag' => 'style',
+      '#value' => ys_themes_build_css_variables(),
+    ],
+    'yalesites_theme_settings',
+  ];
+}
+
+/**
+ * Build a string of CSS variables to override theme settings.
+ *
+ * @todo: Refactor the backend management once frontend conventions are set.
+ * We will look for ways to introduce error handling and unit testing.
+ *
+ * @return string
+ *   CSS code.
+ */
+function ys_themes_build_css_variables() : string {
+  $settings = \Drupal::service('ys_themes.theme_settings_manager');
+  $css = [];
+  $css[] = ':root {';
+
+  $actionColor = $settings->getSetting('action_color');
+  $css[] = "--color-theme-button-primary: var(--color-{$actionColor});";
+
+  $pullQuoteColor = $settings->getSetting('pull_quote_color');
+  $css[] = "--color-theme-pull-quote-accent: var(--color-{$pullQuoteColor});";
+
+  $lineColor = $settings->getSetting('line_color');
+  $css[] = "--color-divider: var(--color-{$lineColor});";
+
+  $lineThickness = $settings->getSetting('line_thickness');
+  if ($lineThickness == 'thin') {
+    // Will punt this work to frontend.
+  }
+
+  $css[] = '}';
+  return implode(PHP_EOL, $css);
+}

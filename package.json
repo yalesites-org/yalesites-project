@@ -14,7 +14,7 @@
     "theme": "./scripts/local/theme.sh",
     "build-theme": "./scripts/local/build-theme.sh",
     "setup": "./scripts/local/setup.sh",
-    "local:theme-setup": "rm -rf web/themes/contrib/atomic && git clone git@github.com:yalesites-org/atomic.git web/themes/custom/atomic",
+    "local:theme-setup": "./scripts/local/dev-component-library-install.sh",
     "prettier": "composer prettier",
     "lint:styles": "composer lint:styles",
     "lint:js": "composer lint:js",
