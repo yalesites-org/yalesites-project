@@ -21,6 +21,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class SiteSettingsForm extends ConfigFormBase {
 
+  const DEFAULT_NEWS_PATH = '/news';
+  const DEFAULT_EVENTS_PATH = '/events';
+
   /**
    * The path alias manager.
    *
@@ -119,7 +122,7 @@ class SiteSettingsForm extends ConfigFormBase {
 
     $form['site_page_news'] = [
       '#type' => 'textfield',
-      '#description' => $this->t("Specify a relative URL to display as the news landing page."),
+      '#description' => $this->t("Specify a relative URL to display as the news landing page. This can be set to an existing page URL or use the default value '/news'."),
       '#title' => $this->t('News landing page'),
       '#default_value' => $yaleConfig->get('page')['news'],
       '#required' => FALSE,
@@ -127,7 +130,7 @@ class SiteSettingsForm extends ConfigFormBase {
 
     $form['site_page_events'] = [
       '#type' => 'textfield',
-      '#description' => $this->t("Specify a relative URL to display as the events calenndar page."),
+      '#description' => $this->t("Specify a relative URL to display as the events calenndar page. This can be set to an existing page URL or use the default value '/events'."),
       '#title' => $this->t('Events calendar page'),
       '#default_value' => $yaleConfig->get('page')['events'],
       '#required' => FALSE,
@@ -156,9 +159,15 @@ class SiteSettingsForm extends ConfigFormBase {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     // Validate front, news, and event page paths.
     $this->validateStartWithSlash($form_state, 'site_page_front');
+    $this->validatePath($form_state, 'site_page_front');
     $this->validateStartWithSlash($form_state, 'site_page_news');
     $this->validateStartWithSlash($form_state, 'site_page_events');
-    $this->validatePath($form_state, 'site_page_front');
+    if ($form_state->getValue('site_page_news') !== self::DEFAULT_NEWS_PATH) {
+      $this->validatePath($form_state, 'site_page_news');
+    }
+    if ($form_state->getValue('site_page_events') !== self::DEFAULT_EVENTS_PATH) {
+      $this->validatePath($form_state, 'site_page_events');
+    }
 
     // Get the normal paths of error pages.
     if (!$form_state->isValueEmpty('site_page_403')) {
