@@ -3,7 +3,7 @@
 } %}
   {% block page_title__meta %}
     {% include "@molecules/meta/event-meta/yds-event-meta.twig" with {
-      event_meta__date_start: content.field_event_date.0.start_titme['#markup'],
+      event_meta__date_start: content.field_event_date.0.start_time['#markup'],
       event_meta__date_end: content.field_event_date.0.end_time['#markup'],
       event_meta__format: content.field_event_format,
       event_meta__address: nothing_yet,
