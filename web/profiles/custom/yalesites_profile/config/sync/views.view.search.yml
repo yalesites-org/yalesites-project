@@ -12,7 +12,7 @@ dependencies:
 id: search
 label: Search
 module: views
-description: ''
+description: 'Site search results page.'
 tag: ''
 base_table: search_api_index_node_index
 base_field: search_api_id
