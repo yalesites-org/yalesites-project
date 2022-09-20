@@ -49,10 +49,11 @@
     "drupal/pathauto": "^1.8",
     "drupal/publishcontent": "^1.5",
     "drupal/redirect": "^1.7",
+    "drupal/search_api": "^1.25",
     "drupal/smart_date": "^3.5",
     "drupal/twig_tweak": "^3.1",
     "drupal/xmlsitemap": "^1.2",
-    "yalesites-org/atomic": "^1.4",
+    "yalesites-org/atomic": "^1.0",
     "yalesites-org/yale_cas": "^1.0"
   },
   "minimum-stability": "dev",
