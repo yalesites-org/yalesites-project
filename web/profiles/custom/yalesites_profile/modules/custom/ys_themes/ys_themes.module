@@ -141,18 +141,19 @@ function ys_themes_build_css_variables() : string {
   $css[] = ':root {';
 
   $actionColor = $settings->getSetting('action_color');
-  $css[] = "--color-theme-button-primary: var(--color-{$actionColor});";
+  $css[] = "--color-theme-action: var(--color-{$actionColor});";
+
+  $accentColor = $settings->getSetting('accent_color');
+  $css[] = "--color-theme-accent: var(--color-{$accentColor});";
 
   $pullQuoteColor = $settings->getSetting('pull_quote_color');
   $css[] = "--color-theme-pull-quote-accent: var(--color-{$pullQuoteColor});";
 
   $lineColor = $settings->getSetting('line_color');
-  $css[] = "--color-divider: var(--color-{$lineColor});";
+  $css[] = "--color-theme-divider: var(--color-{$lineColor});";
 
   $lineThickness = $settings->getSetting('line_thickness');
-  if ($lineThickness == 'thin') {
-    // Will punt this work to frontend.
-  }
+  $css[] = "--thickness-theme-divider: var(--thickness-divider-{$lineThickness});";
 
   $css[] = '}';
   return implode(PHP_EOL, $css);
