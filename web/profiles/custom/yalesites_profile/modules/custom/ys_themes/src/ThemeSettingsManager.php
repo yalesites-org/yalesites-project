@@ -142,6 +142,13 @@ class ThemeSettingsManager {
   }
 
   /**
+   * Gets all theme settings from config.
+   */
+  public function getAllSettings() {
+    return($this->yaleThemeSettings->get(''));
+  }
+
+  /**
    * Sets theme setting to config.
    *
    * @param string $setting_name
