@@ -1,0 +1,30 @@
+@use '../../../00-tokens/tokens';
+
+.event-meta__inner {
+  > * {
+    border-bottom: var(--border-thickness-1) solid var(--color-divider);
+    padding-block: var(--size-spacing-6);
+  }
+}
+
+.event-meta__date {
+  @include tokens.body-xl;
+}
+
+.event-meta__details {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--size-spacing-6);
+
+  @media (min-width: tokens.$break-mobile) {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.event-meta__ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-spacing-6);
+}
