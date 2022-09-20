@@ -1,0 +1,25 @@
+uuid: 05b3040b-9b5e-44d6-9cd8-09006ee4dfef
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_heading
+    - paragraphs.paragraphs_type.video
+  module:
+    - allowed_formats
+    - text
+third_party_settings:
+  allowed_formats:
+    allowed_formats: {  }
+id: paragraph.video.field_heading
+field_name: field_heading
+entity_type: paragraph
+bundle: video
+label: Heading
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: text
