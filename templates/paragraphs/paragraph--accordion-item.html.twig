@@ -1,4 +1,5 @@
-{% include "@molecules/accordion/_accordion-item.twig" with {
+{% include "@molecules/accordion/_yds-accordion-item.twig" with {
   accordion__item__heading: content.field_heading,
   accordion__item__content: content.field_content,
+  accordion__item__heading__level: has_outer_heading ? 3 : 2
 } %}

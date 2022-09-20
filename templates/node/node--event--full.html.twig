@@ -1,9 +1,9 @@
-{% embed "@molecules/page-title/page-title.twig" with {
+{% embed "@molecules/page-title/yds-page-title.twig" with {
   page_title__heading: label,
 } %}
   {% block page_title__meta %}
-    {% include "@molecules/meta/event-meta/event-meta.twig" with {
-      event_meta__date_start: content.field_event_date.0.start_titme['#markup'],
+    {% include "@molecules/meta/event-meta/yds-event-meta.twig" with {
+      event_meta__date_start: content.field_event_date.0.start_time['#markup'],
       event_meta__date_end: content.field_event_date.0.end_time['#markup'],
       event_meta__format: content.field_event_format,
       event_meta__address: nothing_yet,
