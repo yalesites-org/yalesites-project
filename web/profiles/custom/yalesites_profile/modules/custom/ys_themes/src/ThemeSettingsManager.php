@@ -20,8 +20,16 @@ class ThemeSettingsManager {
       'name' => 'Action Color',
       'values' => [
         'blue-yale' => 'Blue',
+        'basic-black' => 'Black',
       ],
       'default' => 'blue-yale',
+    ],
+    'accent_color' => [
+      'name' => 'Accent Color',
+      'values' => [
+        'blue-light' => 'Light Blue',
+      ],
+      'default' => 'blue-light',
     ],
     'pull_quote_color' => [
       'name' => 'Pull Quote Color',

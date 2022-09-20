@@ -1,4 +1,8 @@
 #!/bin/bash
+# This script will clone the component libary into the atomic theme, and then
+# build it and copy the dist and components directories into the node_modules
+# folder so that any work-in-progress in the component library can be used
+# during development in Drupal.
 
 GREEN='\033[1;32m'
 ENDCOLOR='\033[0m'
