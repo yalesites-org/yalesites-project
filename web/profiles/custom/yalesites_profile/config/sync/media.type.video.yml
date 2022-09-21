@@ -1,15 +1,10 @@
-uuid: 60531d07-3191-43eb-aba1-3fdd2078b6f9
+uuid: e79c60cd-c637-42e8-be34-b6a22669531c
 langcode: en
 status: true
-dependencies:
-  module:
-    - crop
-third_party_settings:
-  crop:
-    image_field: null
+dependencies: {  }
 id: video
 label: Video
-description: ''
+description: 'Used for embedding a video from YouTube or Vimeo.'
 source: 'oembed:video'
 queue_thumbnail_downloads: false
 new_revision: false

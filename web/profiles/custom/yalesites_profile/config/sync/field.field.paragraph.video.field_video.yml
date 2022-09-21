@@ -1,4 +1,4 @@
-uuid: 2bb70b35-cb00-4ed0-b6c4-114cb766bee5
+uuid: f681edf1-a874-4559-9042-202472060800
 langcode: en
 status: true
 dependencies:
@@ -10,7 +10,7 @@ id: paragraph.video.field_video
 field_name: field_video
 entity_type: paragraph
 bundle: video
-label: video
+label: Video
 description: ''
 required: true
 translatable: false

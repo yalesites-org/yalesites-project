@@ -10,7 +10,8 @@ dependencies:
     - text
 third_party_settings:
   allowed_formats:
-    allowed_formats: {  }
+    allowed_formats:
+      - heading_html
 id: paragraph.video.field_heading
 field_name: field_heading
 entity_type: paragraph
