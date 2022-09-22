@@ -176,10 +176,10 @@ display:
             title_enable: false
             title: All
           title_enable: true
-          title: 'Search for: {{ arguments.search_api_fulltext }}'
+          title: 'Search for {{ arguments.search_api_fulltext }}'
           default_argument_type: query_parameter
           default_argument_options:
-            query_param: terms
+            query_param: keywords
             fallback: ''
             multiple: and
           default_argument_skip_url: true
@@ -296,11 +296,7 @@ display:
     position: 1
     display_options:
       exposed_block: true
-      display_extenders:
-        metatag_display_extender:
-          metatags:
-            title: 'Search for: {{ arguments.search_api_fulltext }} | [site:name]'
-          tokenize: true
+      display_extenders: {  }
       path: search
     cache_metadata:
       max-age: -1

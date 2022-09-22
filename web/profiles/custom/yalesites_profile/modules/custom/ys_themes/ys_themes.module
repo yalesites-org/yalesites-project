@@ -181,3 +181,16 @@ function ys_themes_theme_suggestions_form_element_label_alter(array &$suggestion
     $suggestions[] = $hook . '__search_form';
   }
 }
+
+/**
+ * Implements hook_metatags_alter().
+ *
+ * If there is a search term, change the title to reflect what was searched for.
+ */
+function ys_themes_metatags_alter(array &$metatags, array &$context) {
+  if (\Drupal::service('path.current')->getPath() == "/search") {
+    if (isset($_GET['keywords']) && $_GET['keywords'] != '') {
+      $metatags['title'] = t("Search for {$_GET['keywords']} | [site:name]");
+    }
+  }
+}
