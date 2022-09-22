@@ -166,7 +166,7 @@ function ys_themes_build_css_variables() : string {
  */
 function ys_themes_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == "views_exposed_form" && $form['#id'] == "views-exposed-form-search-page-1") {
-    $form['terms']['#attributes'] = ['placeholder' => [t("Search this site")]];
+    $form['keywords']['#attributes'] = ['placeholder' => [t("Search this site")]];
     $form['actions']['submit']['#attributes']['class'][] = "visually-hidden";
   }
 }
