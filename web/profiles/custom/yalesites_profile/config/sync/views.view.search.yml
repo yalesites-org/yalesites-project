@@ -296,7 +296,10 @@ display:
     position: 1
     display_options:
       exposed_block: true
-      display_extenders: {  }
+      display_extenders:
+        metatag_display_extender:
+          metatags: {  }
+          tokenize: true
       path: search
     cache_metadata:
       max-age: -1

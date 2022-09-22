@@ -130,7 +130,7 @@ class SiteSettingsForm extends ConfigFormBase {
 
     $form['site_page_events'] = [
       '#type' => 'textfield',
-      '#description' => $this->t("Specify a relative URL to display as the events calenndar page. This can be set to an existing page URL or use the default value '/events'."),
+      '#description' => $this->t("Specify a relative URL to display as the events calendar page. This can be set to an existing page URL or use the default value '/events'."),
       '#title' => $this->t('Events calendar page'),
       '#default_value' => $yaleConfig->get('page')['events'],
       '#required' => FALSE,
@@ -148,6 +148,13 @@ class SiteSettingsForm extends ConfigFormBase {
       '#description' => $this->t('This page is displayed when no other content matches the requested document. Leave blank to display a generic "page not found" page.'),
       '#title' => $this->t('404 page'),
       '#default_value' => $siteConfig->get('page')['404'],
+    ];
+
+    $form['enable_search_form'] = [
+      '#type' => 'checkbox',
+      '#description' => $this->t('Enable the search form located in the utility navigation area.'),
+      '#title' => $this->t('Enable search form'),
+      '#default_value' => $yaleConfig->get('search')['enable_search_form'],
     ];
 
     return parent::buildForm($form, $form_state);
@@ -205,6 +212,7 @@ class SiteSettingsForm extends ConfigFormBase {
     $this->configFactory->getEditable('ys_core.site')
       ->set('page.news', $form_state->getValue('site_page_news'))
       ->set('page.events', $form_state->getValue('site_page_events'))
+      ->set('search.enable_search_form', $form_state->getValue('enable_search_form'))
       ->save();
 
     parent::submitForm($form, $form_state);
