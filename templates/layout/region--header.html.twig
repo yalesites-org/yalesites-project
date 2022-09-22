@@ -6,7 +6,14 @@
   site_header__nav_position: getThemeSetting('nav_position'),
 } %}
   {% block site_header__utility_nav %}
-    {{ elements.utility_navigation }}
+    {% embed "@organisms/menu/utility-nav/yds-utility-nav.twig" %}
+      {% block utility_nav__menu %}
+        {{ elements.utility_navigation }}
+      {% endblock %}
+      {% block site_header__search %}
+        {{ drupal_block('views_exposed_filter_block:search-page_1', {label_display: false}, false) }}
+      {% endblock %}
+    {% endembed %}
   {% endblock %}
   {% block site_header__primary_nav %}
     {{ elements.main_navigation }}
