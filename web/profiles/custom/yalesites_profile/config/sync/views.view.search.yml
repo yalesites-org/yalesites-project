@@ -161,7 +161,43 @@ display:
             label: ''
             field_identifier: ''
           exposed: false
-      arguments: {  }
+      arguments:
+        search_api_fulltext:
+          id: search_api_fulltext
+          table: search_api_index_node_index
+          field: search_api_fulltext
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: search_api_fulltext
+          default_action: default
+          exception:
+            value: all
+            title_enable: false
+            title: All
+          title_enable: true
+          title: 'Search for: {{ raw_arguments.search_api_fulltext }}'
+          default_argument_type: query_parameter
+          default_argument_options:
+            query_param: terms
+            fallback: ''
+            multiple: and
+          default_argument_skip_url: true
+          summary_options: {  }
+          summary:
+            sort_order: asc
+            number_of_records: 0
+            format: default_summary
+          specify_validation: true
+          validate:
+            type: none
+            fail: empty
+          validate_options: {  }
+          break_phrase: false
+          not: false
+          parse_mode: terms
+          conjunction: AND
+          fields: {  }
       filters:
         search_api_fulltext:
           id: search_api_fulltext
@@ -249,6 +285,7 @@ display:
     display_plugin: page
     position: 1
     display_options:
+      exposed_block: true
       display_extenders: {  }
       path: search
     cache_metadata:
