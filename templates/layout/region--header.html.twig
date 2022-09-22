@@ -6,7 +6,9 @@
   site_header__nav_position: getThemeSetting('nav_position'),
 } %}
   {% block site_header__utility_nav %}
-    {% embed "@organisms/menu/utility-nav/yds-utility-nav.twig" %}
+    {% embed "@organisms/menu/utility-nav/yds-utility-nav.twig" with {
+      utility_nav__search,
+    } %}
       {% block utility_nav__menu %}
         {{ elements.utility_navigation }}
       {% endblock %}
