@@ -23,6 +23,7 @@ dependencies:
     - paragraphs.paragraphs_type.tabs
     - paragraphs.paragraphs_type.text
     - paragraphs.paragraphs_type.text_with_image
+    - paragraphs.paragraphs_type.video
   module:
     - entity_reference_revisions
 id: node.page.field_content
@@ -54,9 +55,10 @@ settings:
       news_cards: news_cards
       news_list: news_list
       cta_banner: cta_banner
-      quick_links: quick_links
       custom_cards: custom_cards
+      quick_links: quick_links
       tabs: tabs
+      video: video
     negate: 0
     target_bundles_drag_drop:
       accordion:
@@ -124,5 +126,8 @@ settings:
         enabled: true
       text_with_image:
         weight: -32
+        enabled: true
+      video:
+        weight: 46
         enabled: true
 field_type: entity_reference_revisions
