@@ -1,0 +1,10 @@
+uuid: 10ec3d46-c6b2-4f96-8982-246ec5acf5a7
+langcode: en
+status: true
+dependencies: {  }
+id: media_grid_item
+label: 'Image Grid Item'
+icon_uuid: null
+icon_default: null
+description: ''
+behavior_plugins: {  }
