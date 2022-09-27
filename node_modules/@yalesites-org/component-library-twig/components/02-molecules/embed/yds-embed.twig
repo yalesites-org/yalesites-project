@@ -1,0 +1,19 @@
+{#
+ # Available Variables:
+ # - embed__src
+ # - embed__title
+ #}
+
+{% set embed__base_class = 'embed' %}
+
+{% set embed__attributes = {
+  'data-component-width': 'max',
+  'class': bem(embed__base_class),
+} %}
+
+<div {{ add_attributes(embed__attributes) }}>
+  <div {{ bem('inner', [], embed__base_class) }}>
+    <iframe {{ bem('iframe', [], embed__base_class) }} title="{{ embed__title }}" src="{{ embed__src }}" height="100%" width="100%" loading="lazy">
+    </iframe>
+  </div>
+</div>
