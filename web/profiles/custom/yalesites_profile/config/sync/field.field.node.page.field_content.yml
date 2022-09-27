@@ -14,6 +14,7 @@ dependencies:
     - paragraphs.paragraphs_type.event_cards
     - paragraphs.paragraphs_type.event_list
     - paragraphs.paragraphs_type.image
+    - paragraphs.paragraphs_type.media_grid
     - paragraphs.paragraphs_type.news_cards
     - paragraphs.paragraphs_type.news_list
     - paragraphs.paragraphs_type.pop_out_image
@@ -58,6 +59,7 @@ settings:
       custom_cards: custom_cards
       quick_links: quick_links
       tabs: tabs
+      media_grid: media_grid
       video: video
     negate: 0
     target_bundles_drag_drop:
@@ -97,6 +99,12 @@ settings:
       image:
         weight: -31
         enabled: true
+      media_grid:
+        weight: 38
+        enabled: true
+      media_grid_item:
+        weight: 39
+        enabled: false
       news_cards:
         weight: -23
         enabled: true
