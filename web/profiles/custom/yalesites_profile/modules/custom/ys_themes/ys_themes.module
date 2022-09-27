@@ -189,8 +189,9 @@ function ys_themes_theme_suggestions_form_element_label_alter(array &$suggestion
  */
 function ys_themes_metatags_alter(array &$metatags, array &$context) {
   if (\Drupal::service('path.current')->getPath() == "/search") {
-    if (isset($_GET['keywords']) && $_GET['keywords'] != '') {
-      $metatags['title'] = t("Search for {$_GET['keywords']} | [site:name]");
+    $keywords = \Drupal::request()->query->get('keywords');
+    if ($keywords) {
+      $metatags['title'] = t("Search for {$keywords} | [site:name]");
     }
   }
 }
