@@ -8,6 +8,7 @@ dependencies:
   module:
     - node
     - search_api
+    - search_api_exclude
 id: node_index
 name: 'Node Index'
 description: ''
@@ -96,6 +97,7 @@ processor_settings:
       - field_teaser_text
       - rendered_item
   language_with_fallback: {  }
+  node_exclude: {  }
   rendered_item: {  }
   stemmer:
     weights:

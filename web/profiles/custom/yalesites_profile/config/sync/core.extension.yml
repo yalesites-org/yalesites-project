@@ -72,6 +72,7 @@ module:
   responsive_image: 0
   search_api: 0
   search_api_db: 0
+  search_api_exclude: 0
   smart_date: 0
   smart_date_recur: 0
   system: 0
