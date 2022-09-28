@@ -11,6 +11,7 @@ dependencies:
     - allowed_formats
     - maxlength
     - media_library
+    - media_library_edit
     - text
 id: paragraph.video.default
 targetEntityType: paragraph
@@ -52,7 +53,9 @@ content:
     region: content
     settings:
       media_types: {  }
-    third_party_settings: {  }
+    third_party_settings:
+      media_library_edit:
+        show_edit: '1'
 hidden:
   created: true
   status: true
