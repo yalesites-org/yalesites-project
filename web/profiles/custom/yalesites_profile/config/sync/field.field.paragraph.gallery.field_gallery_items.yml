@@ -1,121 +1,109 @@
-uuid: c08e81c8-164b-4a1c-a8c5-4099b6197c46
+uuid: 60eb2650-0bef-4942-a06a-5a1893c6f9d0
 langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.node.field_content
-    - node.type.news
-    - paragraphs.paragraphs_type.divider
+    - field.storage.paragraph.field_gallery_items
     - paragraphs.paragraphs_type.gallery
-    - paragraphs.paragraphs_type.image
-    - paragraphs.paragraphs_type.media_grid
-    - paragraphs.paragraphs_type.pop_out_image
-    - paragraphs.paragraphs_type.pull_quote
-    - paragraphs.paragraphs_type.text
+    - paragraphs.paragraphs_type.gallery_item
   module:
     - entity_reference_revisions
-id: node.news.field_content
-field_name: field_content
-entity_type: node
-bundle: news
-label: Content
+id: paragraph.gallery.field_gallery_items
+field_name: field_gallery_items
+entity_type: paragraph
+bundle: gallery
+label: Images
 description: ''
-required: false
-translatable: true
+required: true
+translatable: false
 default_value: {  }
 default_value_callback: ''
 settings:
   handler: 'default:paragraph'
   handler_settings:
     target_bundles:
-      image: image
-      divider: divider
-      pop_out_image: pop_out_image
-      pull_quote: pull_quote
-      text: text
-      media_grid: media_grid
-      gallery: gallery
+      gallery_item: gallery_item
     negate: 0
     target_bundles_drag_drop:
       accordion:
-        weight: 10
+        weight: 28
         enabled: false
       accordion_item:
-        weight: 11
+        weight: 29
         enabled: false
       callout:
-        weight: 12
-        enabled: false
-      callout_item:
-        weight: 13
-        enabled: false
-      cta_banner:
         weight: 30
         enabled: false
-      custom_card:
+      callout_item:
         weight: 31
         enabled: false
-      custom_cards:
+      cta_banner:
         weight: 32
         enabled: false
-      divider:
-        weight: 14
-        enabled: true
-      embed:
-        weight: 18
+      custom_card:
+        weight: 33
         enabled: false
-      event_cards:
+      custom_cards:
+        weight: 34
+        enabled: false
+      divider:
         weight: 35
         enabled: false
-      event_list:
+      embed:
         weight: 36
+        enabled: false
+      event_cards:
+        weight: 37
+        enabled: false
+      event_list:
+        weight: 38
         enabled: false
       gallery:
         weight: 39
-        enabled: true
+        enabled: false
       gallery_item:
         weight: 40
-        enabled: false
+        enabled: true
       image:
-        weight: 12
-        enabled: true
-      media_grid:
-        weight: 38
-        enabled: true
-      media_grid_item:
-        weight: 39
-        enabled: false
-      news_cards:
-        weight: 40
-        enabled: false
-      news_list:
         weight: 41
         enabled: false
-      pop_out_image:
-        weight: 15
-        enabled: true
-      pull_quote:
-        weight: 16
-        enabled: true
-      quick_links:
+      media_grid:
+        weight: 42
+        enabled: false
+      media_grid_item:
+        weight: 43
+        enabled: false
+      news_cards:
         weight: 44
         enabled: false
-      section:
+      news_list:
         weight: 45
         enabled: false
-      tab:
+      pop_out_image:
         weight: 46
         enabled: false
-      tabs:
+      pull_quote:
         weight: 47
         enabled: false
+      quick_links:
+        weight: 48
+        enabled: false
+      section:
+        weight: 49
+        enabled: false
+      tab:
+        weight: 50
+        enabled: false
+      tabs:
+        weight: 51
+        enabled: false
       text:
-        weight: 17
-        enabled: true
+        weight: 52
+        enabled: false
       text_with_image:
-        weight: 18
+        weight: 53
         enabled: false
       video:
-        weight: 50
+        weight: 54
         enabled: false
 field_type: entity_reference_revisions

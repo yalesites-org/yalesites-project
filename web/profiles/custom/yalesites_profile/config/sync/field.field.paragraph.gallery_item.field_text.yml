@@ -1,0 +1,26 @@
+uuid: 88d6000c-2a0c-417f-a46d-3840b994a35f
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_text
+    - paragraphs.paragraphs_type.gallery_item
+  module:
+    - allowed_formats
+    - text
+third_party_settings:
+  allowed_formats:
+    allowed_formats:
+      - basic_html
+id: paragraph.gallery_item.field_text
+field_name: field_text
+entity_type: paragraph
+bundle: gallery_item
+label: Caption
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: text_long

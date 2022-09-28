@@ -13,6 +13,7 @@ dependencies:
     - paragraphs.paragraphs_type.embed
     - paragraphs.paragraphs_type.event_cards
     - paragraphs.paragraphs_type.event_list
+    - paragraphs.paragraphs_type.gallery
     - paragraphs.paragraphs_type.image
     - paragraphs.paragraphs_type.media_grid
     - paragraphs.paragraphs_type.news_cards
@@ -60,6 +61,7 @@ settings:
       quick_links: quick_links
       tabs: tabs
       media_grid: media_grid
+      gallery: gallery
       video: video
     negate: 0
     target_bundles_drag_drop:
@@ -96,6 +98,12 @@ settings:
       event_list:
         weight: -24
         enabled: true
+      gallery:
+        weight: 39
+        enabled: true
+      gallery_item:
+        weight: 40
+        enabled: false
       image:
         weight: -31
         enabled: true
