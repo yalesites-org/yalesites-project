@@ -93,11 +93,13 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
     ];
 
     foreach ($breadcrumbs as $breadcrumb) {
-      array_push($links, [
-        'title' => $breadcrumb->getText(),
-        'url' => $breadcrumb->getUrl()->toString(),
-        'is_active' => empty($breadcrumb->getUrl()->toString()),
-      ]);
+      if ($breadcrumb->getText() !== '') {
+        array_push($links, [
+          'title' => $breadcrumb->getText(),
+          'url' => $breadcrumb->getUrl()->toString(),
+          'is_active' => empty($breadcrumb->getUrl()->toString()),
+        ]);
+      }
     }
 
     return [
