@@ -5,34 +5,6 @@
  * Install, update and uninstall functions for the module.
  */
 
-use Drupal\migrate\MigrateExecutable;
-use Drupal\migrate\MigrateMessage;
-
-/**
- * Implements hook_install().
- */
-function ys_starterkit_install() {
-  if (!\Drupal::service('config.installer')->isSyncing()) {
-    $migrations = [
-      "ys_images_files",
-      "ys_images_media",
-      "ys_paragraph_callout",
-      "ys_paragraph_accordion_text",
-      "ys_paragraph_accordion_item",
-      "ys_paragraph_accordion",
-      "ys_paragraphs",
-      "ys_pages",
-      "ys_news"
-    ];
-
-    foreach ($migrations as $migrationToImport) {
-      $migration = \Drupal::service('plugin.manager.migration')->createInstance($migrationToImport);
-      $executable = new MigrateExecutable($migration, new MigrateMessage());
-      $executable->import();
-    }
-  }
-}
-
 /**
  * Implements hook_uninstall().
  */
