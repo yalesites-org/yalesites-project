@@ -1,0 +1,23 @@
+{#
+/**
+ * @file
+ * Theme override for a local task link.
+ *
+ * Available variables:
+ * - attributes: HTML attributes for the wrapper element.
+ * - is_active: Whether the task item is an active tab.
+ * - link: A rendered link element.
+ *
+ * Note: This template renders the content for each task item in
+ * menu-local-tasks.html.twig.
+ *
+ * @see template_preprocess_menu_local_task()
+ */
+#}
+
+
+{% if is_active %}
+  {% set link_attributes = 'true' %}
+{% endif %}
+
+<li{{ attributes.addClass('tabs__item') }}>{{ link(link['#title'], link['#url'], { 'class': 'tabs__link', 'aria-selected': link_attributes }) }}</li>
