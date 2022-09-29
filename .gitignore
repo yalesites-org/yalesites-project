@@ -1,3 +1,9 @@
+/web/themes/contrib/
+# :::::::::::::::::::::: cut ::::::::::::::::::::::
+
+# Put ignore patterns for build artifacts above the cut line
+# so they are ignored in the source repo and committed
+# to Pantheon.
 # This file contains .gitignore rules that are often used with Drupal projects.
 # Because .gitignore is specific to your site and its deployment processes, you
 # may need to uncomment, add, or remove rules.
@@ -58,7 +64,6 @@
 /drush/Commands/contrib/
 /web/core/
 /web/modules/contrib/
-/web/themes/contrib/
 /web/profiles/contrib/
 /web/libraries/
 /web/private/scripts/quicksilver
@@ -110,3 +115,8 @@
 
 # Database references
 reference
+
+# Ignore contrib themes except atomic.
+# `terminus build:gitignore:cut` allows these lines to work in CI.
+/web/themes/contrib/*
+!/web/themes/contrib/atomic/
