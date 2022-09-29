@@ -1,7 +1,12 @@
 uuid: 219e9f46-5fec-478a-9f02-26248eedb605
 langcode: en
 status: true
-dependencies: {  }
+dependencies:
+  module:
+    - crop
+third_party_settings:
+  crop:
+    image_field: _none
 id: document
 label: Document
 description: 'Used for local files such as Word documents and PDFs.'
@@ -10,4 +15,5 @@ queue_thumbnail_downloads: false
 new_revision: false
 source_configuration:
   source_field: field_media_file
-field_map: {  }
+field_map:
+  name: name
