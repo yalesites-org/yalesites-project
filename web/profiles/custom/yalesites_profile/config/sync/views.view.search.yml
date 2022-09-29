@@ -299,7 +299,7 @@ display:
       display_extenders:
         metatag_display_extender:
           metatags:
-            title: 'Search for {{ arguments.search_api_fulltext }} | [site:name]'
+            title: '[view:title] | [site:name]'
           tokenize: true
       path: search
     cache_metadata:
