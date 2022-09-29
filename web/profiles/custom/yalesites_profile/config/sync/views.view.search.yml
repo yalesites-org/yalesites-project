@@ -298,7 +298,8 @@ display:
       exposed_block: true
       display_extenders:
         metatag_display_extender:
-          metatags: {  }
+          metatags:
+            title: '[view:title] | [site:name]'
           tokenize: true
       path: search
     cache_metadata:

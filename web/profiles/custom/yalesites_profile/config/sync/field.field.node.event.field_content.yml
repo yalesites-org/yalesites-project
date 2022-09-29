@@ -9,6 +9,7 @@ dependencies:
     - paragraphs.paragraphs_type.callout
     - paragraphs.paragraphs_type.divider
     - paragraphs.paragraphs_type.embed
+    - paragraphs.paragraphs_type.gallery
     - paragraphs.paragraphs_type.image
     - paragraphs.paragraphs_type.media_grid
     - paragraphs.paragraphs_type.pop_out_image
@@ -41,6 +42,7 @@ settings:
       text: text
       text_with_image: text_with_image
       media_grid: media_grid
+      gallery: gallery
     negate: 0
     target_bundles_drag_drop:
       accordion:
@@ -75,6 +77,12 @@ settings:
         enabled: false
       event_list:
         weight: 36
+        enabled: false
+      gallery:
+        weight: 39
+        enabled: true
+      gallery_item:
+        weight: 40
         enabled: false
       image:
         weight: 21
