@@ -83,7 +83,7 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
    * {@inheritdoc}
    */
   public function build() {
-    $breadcrumbs = $this->breadcrumbManager->build($this->routeMatch)->getLinks();
+    $breadcrumbs = $this->removeEmptyLinks($this->getBreadcrumbs());
     $links = [
       [
         'title' => $this->t('Home'),
@@ -93,19 +93,42 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
     ];
 
     foreach ($breadcrumbs as $breadcrumb) {
-      if ($breadcrumb->getText() !== '') {
-        array_push($links, [
-          'title' => $breadcrumb->getText(),
-          'url' => $breadcrumb->getUrl()->toString(),
-          'is_active' => empty($breadcrumb->getUrl()->toString()),
-        ]);
-      }
+      array_push($links, [
+        'title' => $breadcrumb->getText(),
+        'url' => $breadcrumb->getUrl()->toString(),
+        'is_active' => empty($breadcrumb->getUrl()->toString()),
+      ]);
     }
 
     return [
       '#theme' => 'ys_breadcrumb_block',
       '#items' => $links,
     ];
+  }
+
+  /**
+   * Get a list of breadcrumb links using the Drupal BreadcrumbBuilder.
+   *
+   * @return \Drupal\Core\Link[]
+   *   An array of Drupal links.
+   */
+  protected function getBreadcrumbs(): array {
+    return $this->breadcrumbManager->build($this->routeMatch)->getLinks();
+  }
+
+  /**
+   * Remove empty links from a list of links.
+   *
+   * @param \Drupal\Core\Link[] $links
+   *   An array of Drupal links.
+   *
+   * @return \Drupal\Core\Link[]
+   *   An array of Drupal links with empty ones removed.
+   */
+  protected function removeEmptyLinks(array $links): array {
+    return array_filter($links, function ($link) {
+      return $link->getText() !== '';
+    });
   }
 
   /**
