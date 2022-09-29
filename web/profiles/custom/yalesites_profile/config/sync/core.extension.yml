@@ -55,6 +55,7 @@ module:
   menu_link_content: 0
   menu_ui: 0
   metatag: 0
+  metatag_views: 0
   migrate: 0
   migrate_plus: 0
   migrate_tools: 0

@@ -9,7 +9,7 @@ _core:
 id: atomic_local_tasks
 theme: atomic
 region: content
-weight: -3
+weight: -4
 provider: null
 plugin: local_tasks_block
 settings:
