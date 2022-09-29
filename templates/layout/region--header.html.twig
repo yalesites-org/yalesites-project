@@ -1,4 +1,5 @@
 {{ elements.alert_block }}
+
 {% embed "@organisms/site-header/yds-site-header.twig" with {
   site_name: site_name,
   site_header__border_thickness: '8',
@@ -6,6 +7,7 @@
   site_header__nav_position: getThemeSetting('nav_position'),
 } %}
   {% block site_header__utility_nav %}
+    {# utility_nav__search is passed to this component from ys_core.module #}
     {% embed "@organisms/menu/utility-nav/yds-utility-nav.twig" %}
       {% block utility_nav__menu %}
         {{ elements.utility_navigation }}
