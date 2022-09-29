@@ -49,6 +49,7 @@
     "drupal/paragraphs_features": "^1.15",
     "drupal/pathauto": "^1.8",
     "drupal/publishcontent": "^1.5",
+    "drupal/quick_node_clone": "^1.15",
     "drupal/redirect": "^1.7",
     "drupal/search_api": "^1.25",
     "drupal/search_api_exclude": "^2.0",

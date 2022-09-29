@@ -17,6 +17,7 @@ dependencies:
     - paragraphs
     - path
     - publishcontent
+    - quick_node_clone
     - system
     - taxonomy
     - toolbar
@@ -35,6 +36,9 @@ permissions:
   - 'administer main menu items'
   - 'administer users'
   - 'administer utility-navigation menu items'
+  - 'clone event content'
+  - 'clone news content'
+  - 'clone page content'
   - 'create event content'
   - 'create image media'
   - 'create media'
