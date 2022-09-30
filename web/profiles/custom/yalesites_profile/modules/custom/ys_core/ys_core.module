@@ -43,7 +43,7 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
  */
 function ys_core_preprocess_region(&$variables) {
   $config = \Drupal::config('ys_core.site');
-  if ($variables['elements']['#region'] == 'header') {
+  if ($variables['elements']['#region'] == 'header' && $config->get('search')) {
     $variables['utility_nav__search'] = $config->get('search')['enable_search_form'];
   }
 }
