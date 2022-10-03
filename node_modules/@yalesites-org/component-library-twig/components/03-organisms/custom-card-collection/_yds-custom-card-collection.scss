@@ -1,0 +1,59 @@
+// @TODO: See if we can combine this `custom-card-collection` with the `card-collection`
+// @LINK: https://yaleits.atlassian.net/browse/YALB-674
+
+@use '../../00-tokens/tokens';
+@use '../../01-atoms/atoms';
+
+.custom-card-collection {
+  margin-block: var(--spacing-page-section);
+}
+
+.custom-card-collection__heading {
+  @include tokens.h2-yale-new;
+
+  margin-bottom: var(--spacing-page-section);
+}
+
+.custom-card-collection__cards {
+  --custom-card-collection-spacing: var(--spacing-component-gutter);
+
+  [data-collection-featured='false'] & {
+    --custom-card-collection-spacing: var(--spacing-component-gutter-secondary);
+  }
+
+  display: flex;
+  flex-flow: column wrap;
+  gap: var(--custom-card-collection-spacing);
+  justify-content: center;
+
+  [data-collection-featured='true'] & > * {
+    @media (min-width: tokens.$break-m) {
+      flex: 0 1 calc(50% - calc(var(--custom-card-collection-spacing) / 2));
+    }
+    @media (min-width: tokens.$break-l) {
+      flex: 0 1
+        calc(33.33% - calc(var(--custom-card-collection-spacing) * 2 / 3));
+    }
+  }
+
+  [data-collection-featured='false'] & > * {
+    @media (min-width: tokens.$break-m) {
+      flex: 0 1
+        calc(33.33% - calc(var(--custom-card-collection-spacing) * 2 / 3));
+    }
+    @media (min-width: tokens.$break-l) {
+      flex: 0 1 calc(25% - calc(var(--custom-card-collection-spacing) * 3 / 4));
+    }
+  }
+
+  @include atoms.list-reset;
+  @media (min-width: tokens.$break-m) {
+    flex-direction: row;
+
+    > *:first-child:last-child {
+      [data-collection-featured] & {
+        flex-grow: 1;
+      }
+    }
+  }
+}
