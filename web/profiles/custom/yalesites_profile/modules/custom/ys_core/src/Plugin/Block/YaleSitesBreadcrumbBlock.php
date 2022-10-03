@@ -84,13 +84,23 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
    */
   public function build() {
     $breadcrumbs = $this->removeEmptyLinks($this->getBreadcrumbs());
-    $links = [
-      [
-        'title' => $this->t('Home'),
-        'url' => $this->urlGenerator->generateFromRoute('<front>', []),
-        'is_active' => FALSE,
-      ],
-    ];
+    kint($breadcrumbs);
+    $links = [];
+    if (isset($breadcrumbs[1])) {
+      //kint($breadcrumbs[1]->getUrl()->toString());
+      if ($breadcrumbs[1]->getUrl()->toString() == '/first/news' || $breadcrumbs[1]->getUrl()->toString() == '/first/events') {
+        // do nothing...
+      }
+      else {
+        $links = [
+          [
+            'title' => $this->t('Home'),
+            'url' => $this->urlGenerator->generateFromRoute('<front>', []),
+            'is_active' => FALSE,
+          ],
+        ];
+      }
+    }
 
     foreach ($breadcrumbs as $breadcrumb) {
       array_push($links, [
@@ -100,6 +110,15 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
       ]);
     }
 
+    if (isset($breadcrumbs[1])) {
+      if ($breadcrumbs[1]->getUrl()->toString() == '/news' || $breadcrumbs[1]->getUrl()->toString() == '/events') {
+        array_push($links, [
+          'title' => 'at the end',
+          'url' => '/test',
+          'is_active' => TRUE,
+        ]);
+      }
+    }
     return [
       '#theme' => 'ys_breadcrumb_block',
       '#items' => $links,
