@@ -184,10 +184,15 @@ jobs:
       - name: setup-environment-vars
         run: /build-tools-ci/scripts/set-environment
 
-      - name: Setup tmate session
+      - name: build frontend components
         env:
           BRANCH: ${{ github.head_ref || github.ref_name }}
           YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
+        run: |
+          ./.ci/build/build_frontend
+
+      - name: Setup tmate session
+        if: ${{ failure() }}
         uses: mxschmitt/action-tmate@v3
 
       # Deploy to Pantheon
