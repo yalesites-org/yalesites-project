@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -eo pipefail
+
+find web/modules/custom web/themes web/profiles/custom \( -name '*.php' -o -name '*.module' -o -name '*.install' -o -name '*.inc' \) -exec php -l '{}' \;

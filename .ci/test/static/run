@@ -16,7 +16,11 @@ composer install --no-ansi --no-interaction --optimize-autoloader --no-progress
 composer -n unit-test
 
 # Lint php code for syntax errors
-composer -n lint
+composer -n lint:php
 
 # Check coding standards
 composer -n code-sniff
+
+# Lint styles and JS
+composer -n lint:styles
+composer -n lint:js
