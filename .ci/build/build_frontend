@@ -37,6 +37,9 @@ if [ -n "$(git ls-remote --heads https://github.com/yalesites-org/component-libr
   npm ci --omit=dev --ignore-scripts
   npm install webpack-cli
   npm run build
+  rm -rf node_modules
+
+  # Copy built component library into atomic theme.
   mv /tmp/component-library-twig "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/@yalesites-org
 
   # Clean up atomic's node_modules and remove gitignores so the changes can be staged.
@@ -46,13 +49,19 @@ if [ -n "$(git ls-remote --heads https://github.com/yalesites-org/component-libr
     fi
   done
 
+  # Copy atomic theme to tmp for safe keeping.
+  cp -pr "$GITHUB_WORKSPACE"/"$ATOMIC_PATH" /tmp
+
+  # Remove atomic as a composer dependency. so Integred Composer doesn't fail.
+  cd "$GITHUB_WORKSPACE"/web/profiles/custom/yalesites_profile
+  composer remove yalesites-org/atomic
+
+  # Copy atomic back into the themes directory and remove its gitignore so node_modules can be committed.
+  cp -pr /tmp/atomic "$GITHUB_WORKSPACE"/web/themes/contrib
+  rm "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/.gitignore
+
   cd "$GITHUB_WORKSPACE"
 
-  # Remove atomic and root gitignore so we can commit theme changes.
-  rm "$ATOMIC_PATH"/.gitignore
-  rm .gitignore
-
-  # Stage theme changes and restore root gitignore to clean up staging area.
-  git add "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"
-  git checkout "$GITHUB_WORKSPACE"/.gitignore
+  # Cut the gitignore file so themes can be committed.
+  terminus build:gitignore:cut
 fi
