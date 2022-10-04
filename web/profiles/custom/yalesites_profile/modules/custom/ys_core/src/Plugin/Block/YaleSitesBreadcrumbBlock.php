@@ -5,10 +5,15 @@ namespace Drupal\ys_core\Plugin\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Breadcrumb\BreadcrumbBuilderInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Routing\UrlGeneratorInterface;
+use Drupal\node\NodeInterface;
+use Drupal\Core\Url;
+use Drupal\Core\Path\PathValidator;
+use Drupal\Core\Menu\MenuLinkManager;
 
 /**
  * Provides a block to display the breadcrumbs.
@@ -20,6 +25,27 @@ use Drupal\Core\Routing\UrlGeneratorInterface;
  * )
  */
 class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPluginInterface {
+
+  /**
+   * List of special configs and content types - used for news/events.
+   *
+   * Usage: 'config.name.in.ys_core.site' => 'content_type_machine_name'.
+   *
+   * Do not add 'home' breadcrumb to news/events.
+   *
+   * Add the title of the node to news/events to end of breadcrumb.
+   */
+  const SPECIAL_CONTENT_TYPES = [
+    'page.news' => 'news',
+    'page.events' => 'event',
+  ];
+
+  /**
+   * Configuration Factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $yaleSettings;
 
   /**
    * The breadcrumb manager.
@@ -43,6 +69,13 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
   protected $urlGenerator;
 
   /**
+   * PathValidator.
+   *
+   * @var \Drupal\Core\Path\PathValidator
+   */
+  protected $pathValidator;
+
+  /**
    * Constructs a new YaleSitesBreadcrumbBlock object.
    *
    * @param array $configuration
@@ -57,12 +90,18 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
    *   The current route match.
    * @param \Drupal\Core\Routing\UrlGeneratorInterface $url_generator
    *   The URL Generator class.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   Drupal configuration.
+   * @param \Drupal\Core\Path\PathValidator $path_validator
+   *   Validates paths.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, BreadcrumbBuilderInterface $breadcrumb_manager, RouteMatchInterface $route_match, UrlGeneratorInterface $url_generator) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, BreadcrumbBuilderInterface $breadcrumb_manager, RouteMatchInterface $route_match, UrlGeneratorInterface $url_generator, ConfigFactoryInterface $config_factory, PathValidator $path_validator) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->breadcrumbManager = $breadcrumb_manager;
     $this->routeMatch = $route_match;
     $this->urlGenerator = $url_generator;
+    $this->yaleSettings = $config_factory->get('ys_core.site');
+    $this->pathValidator = $path_validator;
   }
 
   /**
@@ -75,7 +114,9 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
       $plugin_definition,
       $container->get('breadcrumb'),
       $container->get('current_route_match'),
-      $container->get('url_generator')
+      $container->get('url_generator'),
+      $container->get('config.factory'),
+      $container->get('path.validator'),
     );
   }
 
@@ -84,22 +125,26 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
    */
   public function build() {
     $breadcrumbs = $this->removeEmptyLinks($this->getBreadcrumbs());
-    kint($breadcrumbs);
+    $isNewsEvent = FALSE;
+    $contentType = $this->routeMatch->getParameter('node') ? $this->routeMatch->getParameter('node')->bundle() : NULL;
+
+    // Tests if we are on the content type and that the top level link is valid.
+    foreach (self::SPECIAL_CONTENT_TYPES as $config => $type) {
+      if ($contentType == $type && $this->validateTopLevelLink($this->yaleSettings->get($config))) {
+        $isNewsEvent = TRUE;
+      }
+    }
+
     $links = [];
-    if (isset($breadcrumbs[1])) {
-      //kint($breadcrumbs[1]->getUrl()->toString());
-      if ($breadcrumbs[1]->getUrl()->toString() == '/first/news' || $breadcrumbs[1]->getUrl()->toString() == '/first/events') {
-        // do nothing...
-      }
-      else {
-        $links = [
-          [
-            'title' => $this->t('Home'),
-            'url' => $this->urlGenerator->generateFromRoute('<front>', []),
-            'is_active' => FALSE,
-          ],
-        ];
-      }
+    // Only add the home link to pages that are not news/events.
+    if (!in_array($contentType, self::SPECIAL_CONTENT_TYPES)) {
+      $links = [
+        [
+          'title' => $this->t('Home'),
+          'url' => $this->urlGenerator->generateFromRoute('<front>', []),
+          'is_active' => FALSE,
+        ],
+      ];
     }
 
     foreach ($breadcrumbs as $breadcrumb) {
@@ -110,15 +155,18 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
       ]);
     }
 
-    if (isset($breadcrumbs[1])) {
-      if ($breadcrumbs[1]->getUrl()->toString() == '/news' || $breadcrumbs[1]->getUrl()->toString() == '/events') {
+    // Adds the news or event title to the end of the breadcrumbs.
+    if ($isNewsEvent && $this->routeMatch->getRouteName() == 'entity.node.canonical') {
+      $entity = $this->routeMatch->getParameter('node');
+      if ($entity instanceof NodeInterface) {
         array_push($links, [
-          'title' => 'at the end',
-          'url' => '/test',
+          'title' => $entity->getTitle(),
+          'url' => $entity->toLink()->getUrl()->toString(),
           'is_active' => TRUE,
         ]);
       }
     }
+
     return [
       '#theme' => 'ys_breadcrumb_block',
       '#items' => $links,
@@ -148,6 +196,42 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
     return array_filter($links, function ($link) {
       return $link->getText() !== '';
     });
+  }
+
+  /**
+   * Gets the top level url and title of the news or events page.
+   *
+   * Checks to see if the page exists, is published, and is in a menu.
+   *
+   * @param string $topLevelUrl
+   *   Top level path specified in config.
+   */
+  protected function validateTopLevelLink($topLevelUrl) {
+    // Is this a valid path?
+    if ($this->pathValidator->getUrlIfValid($topLevelUrl)) {
+
+      // Gets the Drupal path and gets the node ID from that path.
+      $path = \Drupal::service('path_alias.manager')->getPathByAlias($topLevelUrl);
+      $params = Url::fromUri("internal:" . $path)->getRouteParameters();
+
+      // Is this a valid node?
+      if (isset($params['node'])) {
+
+        // Is the node published?
+        $nodePublished = \Drupal::entityTypeManager()->getStorage('node')->load($params['node'])->isPublished();
+
+        // Is the node in the menu AND is it enabled?
+        $menu_link_manager = \Drupal::service('plugin.manager.menu.link');
+        $menuItem = $menu_link_manager->loadLinksByRoute('entity.node.canonical', ['node' => $params['node']]);
+        $menuItemData = array_pop($menuItem);
+        $topLevelInMenu = empty($menuItemData) ? FALSE : $menuItemData->isEnabled();
+
+        if ($nodePublished && $topLevelInMenu) {
+          return $topLevelUrl;
+        }
+      }
+    }
+    return FALSE;
   }
 
   /**
