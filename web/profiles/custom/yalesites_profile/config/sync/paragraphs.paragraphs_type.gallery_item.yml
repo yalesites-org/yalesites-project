@@ -1,0 +1,10 @@
+uuid: d995cf60-834c-4bc8-8083-18246cc090ee
+langcode: en
+status: true
+dependencies: {  }
+id: gallery_item
+label: 'Gallery Item'
+icon_uuid: null
+icon_default: null
+description: ''
+behavior_plugins: {  }

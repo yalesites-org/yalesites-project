@@ -1,0 +1,24 @@
+uuid: cccf566f-09f2-4b6f-8002-a355a6a5a734
+langcode: en
+status: true
+dependencies:
+  module:
+    - system
+  theme:
+    - atomic
+id: pagetitle
+theme: atomic
+region: content
+weight: -1
+provider: null
+plugin: page_title_block
+settings:
+  id: page_title_block
+  label: 'Page title'
+  label_display: '0'
+  provider: core
+visibility:
+  request_path:
+    id: request_path
+    negate: false
+    pages: /search

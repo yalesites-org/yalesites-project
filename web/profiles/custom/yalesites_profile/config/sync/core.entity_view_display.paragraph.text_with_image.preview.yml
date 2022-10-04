@@ -69,3 +69,4 @@ hidden:
   field_style_position: true
   field_style_variation: true
   field_style_width: true
+  search_api_excerpt: true

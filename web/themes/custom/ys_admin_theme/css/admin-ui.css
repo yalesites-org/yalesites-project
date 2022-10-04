@@ -1,5 +1,10 @@
-.js .paragraph-type-title {
-  overflow: visible;
+.lpb-enable {
+  z-index: 1;
+}
+
+.media-library-edit__link {
+  overflow: hidden;
+  color: transparent !important;
 }
 
 /*# sourceMappingURL=admin-ui.css.map */

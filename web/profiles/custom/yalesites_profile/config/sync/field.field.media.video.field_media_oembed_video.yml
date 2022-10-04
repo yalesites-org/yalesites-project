@@ -1,0 +1,19 @@
+uuid: e14d68a1-8b3c-48e6-b72c-09a11fd78b52
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.media.field_media_oembed_video
+    - media.type.video
+id: media.video.field_media_oembed_video
+field_name: field_media_oembed_video
+entity_type: media
+bundle: video
+label: URL
+description: ''
+required: true
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string
