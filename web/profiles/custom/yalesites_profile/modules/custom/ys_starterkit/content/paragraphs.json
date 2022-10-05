@@ -205,7 +205,11 @@
             {
               "image_id": 3
             }
-          ]
+          ],
+          "field_link": {
+            "url": "http://www.example.com",
+            "title": "Action text"
+          }
         }
       },
       {
