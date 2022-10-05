@@ -84,6 +84,8 @@ jobs:
       image: quay.io/pantheon-public/build-tools-ci:8.x-php7.4
       options: --user root
     runs-on: ubuntu-latest
+    env:
+          YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
