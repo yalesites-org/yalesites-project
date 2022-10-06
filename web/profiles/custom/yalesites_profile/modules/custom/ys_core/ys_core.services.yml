@@ -3,3 +3,6 @@ services:
   ys_core.social_links_manager:
     class: Drupal\ys_core\SocialLinksManager
     arguments: ['@config.factory']
+  ys_core.yalesites_breadcrumbs_manager:
+    class: Drupal\ys_core\YaleSitesBreadcrumbsManager
+    arguments: ['@breadcrumb', '@current_route_match', '@config.factory', '@path.validator']
