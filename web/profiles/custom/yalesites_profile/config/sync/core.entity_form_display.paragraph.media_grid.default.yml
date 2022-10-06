@@ -7,6 +7,8 @@ dependencies:
     - field.field.paragraph.media_grid.field_media_grid_items
     - paragraphs.paragraphs_type.media_grid
   module:
+    - allowed_formats
+    - maxlength
     - paragraphs
     - text
 id: paragraph.media_grid.default
@@ -21,7 +23,13 @@ content:
     settings:
       size: 60
       placeholder: ''
-    third_party_settings: {  }
+    third_party_settings:
+      maxlength:
+        maxlength_js: 50
+        maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
+      allowed_formats:
+        hide_help: '0'
+        hide_guidelines: '0'
   field_media_grid_items:
     type: paragraphs
     weight: 1
