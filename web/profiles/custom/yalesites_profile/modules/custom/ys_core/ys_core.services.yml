@@ -5,4 +5,4 @@ services:
     arguments: ['@config.factory']
   ys_core.yalesites_breadcrumbs_manager:
     class: Drupal\ys_core\YaleSitesBreadcrumbsManager
-    arguments: ['@breadcrumb', '@current_route_match', '@config.factory', '@path.validator']
+    arguments: ['@breadcrumb', '@current_route_match', '@config.factory', '@path.validator', '@path_alias.manager', '@entity_type.manager', '@plugin.manager.menu.link']

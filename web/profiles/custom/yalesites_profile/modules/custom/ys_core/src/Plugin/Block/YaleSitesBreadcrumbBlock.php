@@ -3,18 +3,11 @@
 namespace Drupal\ys_core\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
-use Drupal\Core\Breadcrumb\BreadcrumbBuilderInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Cache\Cache;
-use Drupal\Core\Routing\UrlGeneratorInterface;
-use Drupal\node\NodeInterface;
-use Drupal\Core\Url;
-use Drupal\Core\Path\PathValidator;
-use Drupal\Core\Menu\MenuLinkManager;
 use Drupal\ys_core\YaleSitesBreadcrumbsManager;
+use Drupal\Core\Routing\UrlGeneratorInterface;
 
 /**
  * Provides a block to display the breadcrumbs.
@@ -28,20 +21,6 @@ use Drupal\ys_core\YaleSitesBreadcrumbsManager;
 class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**
-   * List of special configs and content types - used for news/events.
-   *
-   * Usage: 'config.name.in.ys_core.site' => 'content_type_machine_name'.
-   *
-   * Do not add 'home' breadcrumb to news/events.
-   *
-   * Add the title of the node to news/events to end of breadcrumb.
-   */
-  const SPECIAL_CONTENT_TYPES = [
-    'page.news' => 'news',
-    'page.events' => 'event',
-  ];
-
-  /**
    * YaleSites Breadcrumbs Manager.
    *
    * @var \Drupal\ys_core\YaleSitesBreadcrumbsManager
@@ -49,39 +28,11 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
   protected $yaleSitesBreadcrumbsManager;
 
   /**
-   * Configuration Factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $yaleSettings;
-
-  /**
-   * The breadcrumb manager.
-   *
-   * @var \Drupal\Core\Breadcrumb\BreadcrumbBuilderInterface
-   */
-  protected $breadcrumbManager;
-
-  /**
-   * The current route match.
-   *
-   * @var \Drupal\Core\Routing\RouteMatchInterface
-   */
-  protected $routeMatch;
-
-  /**
    * UrlGenerator.
    *
    * @var \Drupal\Core\Routing\UrlGenerator
    */
   protected $urlGenerator;
-
-  /**
-   * PathValidator.
-   *
-   * @var \Drupal\Core\Path\PathValidator
-   */
-  protected $pathValidator;
 
   /**
    * Constructs a new YaleSitesBreadcrumbBlock object.
@@ -92,25 +43,15 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
    *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Breadcrumb\BreadcrumbBuilderInterface $breadcrumb_manager
-   *   The breadcrumb manager.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
-   *   The current route match.
+   * @param \Drupal\ys_core\YaleSitesBreadcrumbsManager $yaleSitesBreadcrumbsManager
+   *   The YaleSites custom breadcrumb manager.
    * @param \Drupal\Core\Routing\UrlGeneratorInterface $url_generator
    *   The URL Generator class.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   Drupal configuration.
-   * @param \Drupal\Core\Path\PathValidator $path_validator
-   *   Validates paths.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, BreadcrumbBuilderInterface $breadcrumb_manager, RouteMatchInterface $route_match, UrlGeneratorInterface $url_generator, ConfigFactoryInterface $config_factory, PathValidator $path_validator, YaleSitesBreadcrumbsManager $yaleSitesBreadcrumbsManager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, YaleSitesBreadcrumbsManager $yaleSitesBreadcrumbsManager, UrlGeneratorInterface $url_generator) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->breadcrumbManager = $breadcrumb_manager;
-    $this->routeMatch = $route_match;
-    $this->urlGenerator = $url_generator;
-    $this->yaleSettings = $config_factory->get('ys_core.site');
-    $this->pathValidator = $path_validator;
     $this->yaleSitesBreadcrumbsManager = $yaleSitesBreadcrumbsManager;
+    $this->urlGenerator = $url_generator;
   }
 
   /**
@@ -121,12 +62,8 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('breadcrumb'),
-      $container->get('current_route_match'),
-      $container->get('url_generator'),
-      $container->get('config.factory'),
-      $container->get('path.validator'),
       $container->get('ys_core.yalesites_breadcrumbs_manager'),
+      $container->get('url_generator'),
     );
   }
 
@@ -148,6 +85,7 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
       ];
     }
 
+    // Process all breadcrumbs.
     foreach ($breadcrumbs as $breadcrumb) {
       array_push($links, [
         'title' => $breadcrumb->getText(),
@@ -158,7 +96,7 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
 
     // Adds the news or event title to the end of the breadcrumbs.
     if ($this->yaleSitesBreadcrumbsManager->isNewsEvent()) {
-      if ($currentEntity = $this->yalesSitesBreadcrumbsManager->currentEntity()) {
+      if ($currentEntity = $this->yaleSitesBreadcrumbsManager->currentEntity()) {
         array_push($links, [
           'title' => $currentEntity->getTitle(),
           'url' => $currentEntity->toLink()->getUrl()->toString(),

@@ -2,15 +2,18 @@
 
 namespace Drupal\ys_core;
 
-use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Breadcrumb\BreadcrumbBuilderInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Menu\MenuLinkManager;
+use Drupal\Core\Path\PathValidator;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Path\PathValidator;
 use Drupal\node\NodeInterface;
+use Drupal\path_alias\AliasManager;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Service for managing custom breadcrumbs for YaleSites.
@@ -38,6 +41,11 @@ class YaleSitesBreadcrumbsManager extends ControllerBase implements ContainerInj
    */
   protected $routeMatch;
 
+  /**
+   * The calculated content type machine name.
+   *
+   * @var string
+   */
   protected $contentType;
 
   /**
@@ -46,6 +54,27 @@ class YaleSitesBreadcrumbsManager extends ControllerBase implements ContainerInj
    * @var \Drupal\Core\Path\PathValidator
    */
   protected $pathValidator;
+
+  /**
+   * AliasManager.
+   *
+   * @var \Drupal\path_alias\AliasManager
+   */
+  protected $aliasManager;
+
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * The menu link manager.
+   *
+   * @var \Drupal\Core\Menu\MenuLinkManager
+   */
+  protected $menuLinkManager;
 
   /**
    * List of special configs and content types - used for news/events.
@@ -66,13 +95,28 @@ class YaleSitesBreadcrumbsManager extends ControllerBase implements ContainerInj
    *
    * @param \Drupal\Core\Breadcrumb\BreadcrumbBuilderInterface $breadcrumb_manager
    *   The breadcrumb manager.
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The current route.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   Drupal configuration.
+   * @param \Drupal\Core\Path\PathValidator $path_validator
+   *   Validates Drupal paths.
+   * @param \Drupal\path_alias\AliasManager $alias_manager
+   *   The path alias manager.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param \Drupal\Core\Menu\MenuLinkManager $menu_link_manager
+   *   The menu link manager.
    */
-  public function __construct(BreadcrumbBuilderInterface $breadcrumb_manager, RouteMatchInterface $route_match, ConfigFactoryInterface $config_factory, PathValidator $path_validator) {
+  public function __construct(BreadcrumbBuilderInterface $breadcrumb_manager, RouteMatchInterface $route_match, ConfigFactoryInterface $config_factory, PathValidator $path_validator, AliasManager $alias_manager, EntityTypeManagerInterface $entity_type_manager, MenuLinkManager $menu_link_manager) {
     $this->breadcrumbManager = $breadcrumb_manager;
     $this->routeMatch = $route_match;
     $this->contentType = $this->routeMatch->getParameter('node') ? $this->routeMatch->getParameter('node')->bundle() : NULL;
     $this->yaleSettings = $config_factory->get('ys_core.site');
     $this->pathValidator = $path_validator;
+    $this->aliasManager = $alias_manager;
+    $this->entityTypeManager = $entity_type_manager;
+    $this->menuLinkManager = $menu_link_manager;
   }
 
   /**
@@ -84,6 +128,9 @@ class YaleSitesBreadcrumbsManager extends ControllerBase implements ContainerInj
       $container->get('current_route_match'),
       $container->get('config.factory'),
       $container->get('path.validator'),
+      $container->get('path_alias.manager'),
+      $container->get('entity_type.manager'),
+      $container->get('plugin.manager.menu.link'),
     );
   }
 
@@ -112,11 +159,19 @@ class YaleSitesBreadcrumbsManager extends ControllerBase implements ContainerInj
     });
   }
 
+  /**
+   * Tests if the current content type is one of the special content types.
+   *
+   * For now, this tests news and events.
+   *
+   * Also validates the top link for the news/events.
+   *
+   * @return bool
+   *   True if the top level is one in the list and is valid.
+   */
   public function isNewsEvent() {
     $isNewsEvent = FALSE;
 
-
-    // Tests if we are on the content type and that the top level link is valid.
     foreach (self::SPECIAL_CONTENT_TYPES as $config => $type) {
       if ($this->contentType == $type && $this->validateTopLevelLink($this->yaleSettings->get($config))) {
         $isNewsEvent = TRUE;
@@ -125,6 +180,12 @@ class YaleSitesBreadcrumbsManager extends ControllerBase implements ContainerInj
     return $isNewsEvent;
   }
 
+  /**
+   * Tests if the current content type is one of the special content types.
+   *
+   * @return bool
+   *   True if the current page is one of the special content types.
+   */
   public function currentPageNewsEvent() {
     return in_array($this->contentType, self::SPECIAL_CONTENT_TYPES);
   }
@@ -142,18 +203,17 @@ class YaleSitesBreadcrumbsManager extends ControllerBase implements ContainerInj
     if ($this->pathValidator->getUrlIfValid($topLevelUrl)) {
 
       // Gets the Drupal path and gets the node ID from that path.
-      $path = \Drupal::service('path_alias.manager')->getPathByAlias($topLevelUrl);
+      $path = $this->aliasManager->getPathByAlias($topLevelUrl);
       $params = Url::fromUri("internal:" . $path)->getRouteParameters();
 
       // Is this a valid node?
       if (isset($params['node'])) {
 
         // Is the node published?
-        $nodePublished = \Drupal::entityTypeManager()->getStorage('node')->load($params['node'])->isPublished();
+        $nodePublished = $this->entityTypeManager->getStorage('node')->load($params['node'])->isPublished();
 
         // Is the node in the menu AND is it enabled?
-        $menu_link_manager = \Drupal::service('plugin.manager.menu.link');
-        $menuItem = $menu_link_manager->loadLinksByRoute('entity.node.canonical', ['node' => $params['node']]);
+        $menuItem = $this->menuLinkManager->loadLinksByRoute('entity.node.canonical', ['node' => $params['node']]);
         $menuItemData = array_pop($menuItem);
         $topLevelInMenu = empty($menuItemData) ? FALSE : $menuItemData->isEnabled();
 
@@ -165,6 +225,12 @@ class YaleSitesBreadcrumbsManager extends ControllerBase implements ContainerInj
     return FALSE;
   }
 
+  /**
+   * Tests if the current current page is a node. If so, return the node info.
+   *
+   * @return Drupal\node\NodeInterface
+   *   Returns node information or false.
+   */
   public function currentEntity() {
     if ($this->routeMatch->getRouteName() == 'entity.node.canonical') {
       $entity = $this->routeMatch->getParameter('node');

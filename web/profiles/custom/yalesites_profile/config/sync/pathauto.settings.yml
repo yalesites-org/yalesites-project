@@ -51,6 +51,5 @@ safe_tokens:
   - login-url
   - url
   - url-brief
-  - event_landing_page_path
   - 'yale:event_landing_page_path'
   - 'yale:news_landing_page_path'
