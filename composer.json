@@ -95,6 +95,9 @@
     "patches": {
       "drupal/layout_paragraphs": {
         "save close tweaks": "https://git.drupalcode.org/project/layout_paragraphs/-/merge_requests/80.patch"
+      },
+      "drupal/paragraphs": {
+        "hide remove button": "https://www.drupal.org/files/issues/2020-05-13/hide_field_required_paragraphs_remove_button_1.patch"
       }
     }
   },
