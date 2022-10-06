@@ -21,6 +21,16 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class YaleSitesBreadcrumbsManager extends ControllerBase implements ContainerInjectionInterface {
 
   /**
+   * List of special configs and content types - used for news/events.
+   *
+   * Usage: 'config.name.in.ys_core.site' => 'content_type_machine_name'.
+   */
+  const SPECIAL_CONTENT_TYPES = [
+    'page.news' => 'news',
+    'page.events' => 'event',
+  ];
+
+  /**
    * Configuration Factory.
    *
    * @var \Drupal\Core\Config\ConfigFactoryInterface
@@ -75,20 +85,6 @@ class YaleSitesBreadcrumbsManager extends ControllerBase implements ContainerInj
    * @var \Drupal\Core\Menu\MenuLinkManager
    */
   protected $menuLinkManager;
-
-  /**
-   * List of special configs and content types - used for news/events.
-   *
-   * Usage: 'config.name.in.ys_core.site' => 'content_type_machine_name'.
-   *
-   * Do not add 'home' breadcrumb to news/events.
-   *
-   * Add the title of the node to news/events to end of breadcrumb.
-   */
-  const SPECIAL_CONTENT_TYPES = [
-    'page.news' => 'news',
-    'page.events' => 'event',
-  ];
 
   /**
    * Constructs a new YaleSitesBreadcrumbBlock object.

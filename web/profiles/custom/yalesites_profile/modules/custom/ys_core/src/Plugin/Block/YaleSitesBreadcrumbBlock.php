@@ -72,8 +72,8 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
    */
   public function build() {
     $breadcrumbs = $this->yaleSitesBreadcrumbsManager->getCustomBreadcrumbs();
-
     $links = [];
+
     // Only add the home link to pages that are not news/events.
     if (!$this->yaleSitesBreadcrumbsManager->currentPageNewsEvent()) {
       $links = [
