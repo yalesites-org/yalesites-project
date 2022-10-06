@@ -5,7 +5,7 @@ ys_core.admin_yalesites:
     _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
     _title: 'YaleSites'
   requirements:
-    _permission: 'access administration pages'
+    _permission: 'yalesites manage settings'
 # Sitewide settings form.
 ys_core.admin_site_settings:
   path: '/admin/yalesites/settings'
@@ -13,7 +13,7 @@ ys_core.admin_site_settings:
     _form: '\Drupal\ys_core\Form\SiteSettingsForm'
     _title: 'Site Settings'
   requirements:
-    _permission: 'access administration pages'
+    _permission: 'yalesites manage settings'
 # Footer settings form.
 ys_core.admin_footer_settings:
   path: '/admin/yalesites/footer'
@@ -21,4 +21,4 @@ ys_core.admin_footer_settings:
     _form: 'Drupal\ys_core\Form\FooterSettingsForm'
     _title: 'Footer Settings'
   requirements:
-    _permission: 'access administration pages'
+    _permission: 'yalesites manage settings'
