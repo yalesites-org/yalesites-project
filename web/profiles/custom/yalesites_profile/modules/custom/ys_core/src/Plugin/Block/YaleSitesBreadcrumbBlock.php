@@ -3,11 +3,12 @@
 namespace Drupal\ys_core\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Cache\Cache;
-use Drupal\ys_core\YaleSitesBreadcrumbsManager;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Routing\UrlGeneratorInterface;
+use Drupal\ys_core\YaleSitesBreadcrumbsManager;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a block to display the breadcrumbs.
@@ -35,6 +36,13 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
   protected $urlGenerator;
 
   /**
+   * The current route match.
+   *
+   * @var \Drupal\Core\Routing\RouteMatchInterface
+   */
+  protected $routeMatch;
+
+  /**
    * Constructs a new YaleSitesBreadcrumbBlock object.
    *
    * @param array $configuration
@@ -48,10 +56,11 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
    * @param \Drupal\Core\Routing\UrlGeneratorInterface $url_generator
    *   The URL Generator class.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, YaleSitesBreadcrumbsManager $yaleSitesBreadcrumbsManager, UrlGeneratorInterface $url_generator) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, YaleSitesBreadcrumbsManager $yaleSitesBreadcrumbsManager, UrlGeneratorInterface $url_generator, RouteMatchInterface $route_match) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->yaleSitesBreadcrumbsManager = $yaleSitesBreadcrumbsManager;
     $this->urlGenerator = $url_generator;
+    $this->routeMatch = $route_match;
   }
 
   /**
@@ -64,6 +73,7 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
       $plugin_definition,
       $container->get('ys_core.yalesites_breadcrumbs_manager'),
       $container->get('url_generator'),
+      $container->get('current_route_match'),
     );
   }
 
@@ -71,19 +81,8 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
    * {@inheritdoc}
    */
   public function build() {
-    $breadcrumbs = $this->yaleSitesBreadcrumbsManager->getCustomBreadcrumbs();
+    $breadcrumbs = $this->yaleSitesBreadcrumbsManager->build($this->routeMatch);
     $links = [];
-
-    // Only add the home link to pages that are not news/events.
-    if (!$this->yaleSitesBreadcrumbsManager->currentPageNewsEvent()) {
-      $links = [
-        [
-          'title' => $this->t('Home'),
-          'url' => $this->urlGenerator->generateFromRoute('<front>', []),
-          'is_active' => FALSE,
-        ],
-      ];
-    }
 
     // Process all breadcrumbs.
     foreach ($breadcrumbs as $breadcrumb) {
@@ -95,14 +94,13 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
     }
 
     // Adds the news or event title to the end of the breadcrumbs.
-    if ($this->yaleSitesBreadcrumbsManager->isNewsEvent()) {
-      if ($currentEntity = $this->yaleSitesBreadcrumbsManager->currentEntity()) {
-        array_push($links, [
-          'title' => $currentEntity->getTitle(),
-          'url' => $currentEntity->toLink()->getUrl()->toString(),
-          'is_active' => TRUE,
-        ]);
-      }
+    if ($this->yaleSitesBreadcrumbsManager->hasLandingPage($this->routeMatch)) {
+      $entity = $this->routeMatch->getParameter('node');
+      array_push($links, [
+        'title' => $entity->getTitle(),
+        'url' => $entity->toLink()->getUrl()->toString(),
+        'is_active' => TRUE,
+      ]);
     }
 
     return [
