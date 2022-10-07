@@ -6,6 +6,8 @@ dependencies:
     - field.field.paragraph.news_list.field_heading
     - paragraphs.paragraphs_type.news_list
   module:
+    - allowed_formats
+    - maxlength
     - text
 id: paragraph.news_list.default
 targetEntityType: paragraph
@@ -19,7 +21,13 @@ content:
     settings:
       size: 60
       placeholder: ''
-    third_party_settings: {  }
+    third_party_settings:
+      maxlength:
+        maxlength_js: 125
+        maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
+      allowed_formats:
+        hide_help: '0'
+        hide_guidelines: '0'
 hidden:
   created: true
   status: true
