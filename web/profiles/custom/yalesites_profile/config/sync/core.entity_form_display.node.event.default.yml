@@ -14,8 +14,9 @@ dependencies:
     - node.type.event
   module:
     - field_group
+    - hide_revision_field
     - layout_paragraphs
-    - link
+    - linkit
     - media_library
     - metatag
     - path
@@ -111,12 +112,14 @@ content:
       empty_message: ''
     third_party_settings: {  }
   field_event_cta:
-    type: link_default
+    type: linkit
     weight: 27
     region: content
     settings:
       placeholder_url: ''
       placeholder_title: ''
+      linkit_profile: default
+      linkit_auto_link_text: false
     third_party_settings: {  }
   field_event_date:
     type: smartdate_inline
