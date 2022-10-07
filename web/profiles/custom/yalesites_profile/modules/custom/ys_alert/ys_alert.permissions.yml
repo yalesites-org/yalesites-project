@@ -1,0 +1,4 @@
+# Permission to manage YaleSites alerts.
+yalesites manage alerts:
+  title: 'Manage YaleSite Alerts'
+  description: 'Set and change YaleSites alerts.'

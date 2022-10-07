@@ -21,6 +21,8 @@ dependencies:
     - system
     - taxonomy
     - toolbar
+    - ys_alert
+    - ys_core
 id: site_admin
 label: 'Site administrator'
 weight: 3
@@ -85,3 +87,5 @@ permissions:
   - 'view page revisions'
   - 'view the administration theme'
   - 'view unpublished paragraphs'
+  - 'yalesites manage alerts'
+  - 'yalesites manage settings'
