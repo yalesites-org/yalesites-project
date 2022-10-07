@@ -7,6 +7,8 @@ dependencies:
     - field.field.paragraph.custom_cards.field_heading
     - paragraphs.paragraphs_type.custom_cards
   module:
+    - allowed_formats
+    - maxlength
     - paragraphs
     - text
 id: paragraph.custom_cards.default
@@ -33,7 +35,13 @@ content:
     settings:
       size: 60
       placeholder: ''
-    third_party_settings: {  }
+    third_party_settings:
+      maxlength:
+        maxlength_js: 50
+        maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
+      allowed_formats:
+        hide_help: '0'
+        hide_guidelines: '0'
 hidden:
   created: true
   status: true
