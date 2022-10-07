@@ -55,6 +55,8 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
    *   The YaleSites custom breadcrumb manager.
    * @param \Drupal\Core\Routing\UrlGeneratorInterface $url_generator
    *   The URL Generator class.
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The URL Generator class.
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, YaleSitesBreadcrumbsManager $yaleSitesBreadcrumbsManager, UrlGeneratorInterface $url_generator, RouteMatchInterface $route_match) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
