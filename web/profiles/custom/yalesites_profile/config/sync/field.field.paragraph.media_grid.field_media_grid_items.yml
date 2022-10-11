@@ -1,0 +1,103 @@
+uuid: 51de7829-bed4-49e5-90fc-3a480cf014b4
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_media_grid_items
+    - paragraphs.paragraphs_type.media_grid
+    - paragraphs.paragraphs_type.media_grid_item
+  module:
+    - entity_reference_revisions
+id: paragraph.media_grid.field_media_grid_items
+field_name: field_media_grid_items
+entity_type: paragraph
+bundle: media_grid
+label: Images
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:paragraph'
+  handler_settings:
+    target_bundles:
+      media_grid_item: media_grid_item
+    negate: 0
+    target_bundles_drag_drop:
+      accordion:
+        weight: 26
+        enabled: false
+      accordion_item:
+        weight: 27
+        enabled: false
+      callout:
+        weight: 28
+        enabled: false
+      callout_item:
+        weight: 29
+        enabled: false
+      cta_banner:
+        weight: 30
+        enabled: false
+      custom_card:
+        weight: 31
+        enabled: false
+      custom_cards:
+        weight: 32
+        enabled: false
+      divider:
+        weight: 33
+        enabled: false
+      embed:
+        weight: 34
+        enabled: false
+      event_cards:
+        weight: 35
+        enabled: false
+      event_list:
+        weight: 36
+        enabled: false
+      image:
+        weight: 37
+        enabled: false
+      media_grid:
+        weight: 38
+        enabled: false
+      media_grid_item:
+        weight: 39
+        enabled: true
+      news_cards:
+        weight: 40
+        enabled: false
+      news_list:
+        weight: 41
+        enabled: false
+      pop_out_image:
+        weight: 42
+        enabled: false
+      pull_quote:
+        weight: 43
+        enabled: false
+      quick_links:
+        weight: 44
+        enabled: false
+      section:
+        weight: 45
+        enabled: false
+      tab:
+        weight: 46
+        enabled: false
+      tabs:
+        weight: 47
+        enabled: false
+      text:
+        weight: 48
+        enabled: false
+      text_with_image:
+        weight: 49
+        enabled: false
+      video:
+        weight: 50
+        enabled: false
+field_type: entity_reference_revisions

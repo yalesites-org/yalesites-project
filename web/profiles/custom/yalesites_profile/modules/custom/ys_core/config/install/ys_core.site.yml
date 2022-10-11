@@ -1,0 +1,5 @@
+page:
+  news: /news
+  events: /events
+search:
+  enable_search_form: 1

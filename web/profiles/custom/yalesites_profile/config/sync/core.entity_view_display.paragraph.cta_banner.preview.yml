@@ -54,3 +54,4 @@ hidden:
   field_heading: true
   field_style_color: true
   field_style_position: true
+  search_api_excerpt: true

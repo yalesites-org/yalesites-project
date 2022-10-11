@@ -127,6 +127,11 @@ jobs:
           ref: ${{ github.head_ref || github.ref_name }}
           fetch-depth: 0
 
+      # Workaround for https://github.com/actions/runner/issues/2033
+      - name: Set git safe.directory
+        run: |
+           git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
       - name: Set bash_env env var
         run: echo BASH_ENV=${RUNNER_TEMP}/bash_env.txt >> $GITHUB_ENV
 

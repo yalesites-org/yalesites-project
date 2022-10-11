@@ -6,6 +6,8 @@ dependencies:
     - field.field.paragraph.event_list.field_heading
     - paragraphs.paragraphs_type.event_list
   module:
+    - allowed_formats
+    - maxlength
     - text
 id: paragraph.event_list.default
 targetEntityType: paragraph
@@ -19,7 +21,13 @@ content:
     settings:
       size: 60
       placeholder: ''
-    third_party_settings: {  }
+    third_party_settings:
+      maxlength:
+        maxlength_js: 50
+        maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
+      allowed_formats:
+        hide_help: '0'
+        hide_guidelines: '0'
 hidden:
   created: true
   status: true

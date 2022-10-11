@@ -4,10 +4,13 @@ status: true
 dependencies:
   module:
     - menu_ui
+    - search_api_exclude
 third_party_settings:
   menu_ui:
     available_menus: {  }
     parent: ''
+  search_api_exclude:
+    enabled: 1
 name: News
 type: news
 description: 'Create a news article, blog post, or announcement, to share new and noteworthy information. Can be displayed in a news feed.'

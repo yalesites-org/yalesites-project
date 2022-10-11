@@ -13,7 +13,7 @@ entity_type: paragraph
 bundle: text_with_image
 label: 'Image Position'
 description: ''
-required: false
+required: true
 translatable: true
 default_value: {  }
 default_value_callback: ys_themes_default_value_function

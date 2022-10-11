@@ -24,8 +24,30 @@ function ys_themes_preprocess_paragraph(&$variables) {
 
   if (in_array($variables['paragraph']->getType(), $paragraphTypes)) {
     $parentParagraph = $variables['paragraph']->getParentEntity();
-    if ($parentParagraph->hasField($fieldHeading)) {
-      $variables['has_outer_heading'] = $parentParagraph->get($fieldHeading)->getValue() ? true : false;
+    if ($parentParagraph && $parentParagraph->hasField($fieldHeading)) {
+      $variables['has_outer_heading'] = $parentParagraph->get($fieldHeading)->getValue() ? TRUE : FALSE;
+    }
+  }
+}
+
+/**
+ * Preprocess field to add style variation twig variable to child fields.
+ *
+ * Implements hook_preprocess_field().
+ */
+function ys_themes_preprocess_field(&$variables) {
+
+  /* Key value pair of paragraph machine name and twig variable name. */
+  $paragraphTypes = [
+    'quick_links' => 'quick_links__variation',
+  ];
+
+  if ($variables['field_name'] == 'field_links') {
+    $parentParagraph = $variables['element']['#items']->getEntity();
+    foreach ($paragraphTypes as $paragraph => $twigVariable) {
+      if ($parentParagraph->getType() == $paragraph) {
+        $variables[$twigVariable] = $parentParagraph->get('field_style_variation')->getValue() ? $parentParagraph->get('field_style_variation')->getString() : NULL;
+      }
     }
   }
 }
@@ -119,19 +141,43 @@ function ys_themes_build_css_variables() : string {
   $css[] = ':root {';
 
   $actionColor = $settings->getSetting('action_color');
-  $css[] = "--color-theme-button-primary: var(--color-{$actionColor});";
+  $css[] = "--color-theme-action: var(--color-{$actionColor});";
+
+  $accentColor = $settings->getSetting('accent_color');
+  $css[] = "--color-theme-accent: var(--color-{$accentColor});";
 
   $pullQuoteColor = $settings->getSetting('pull_quote_color');
   $css[] = "--color-theme-pull-quote-accent: var(--color-{$pullQuoteColor});";
 
   $lineColor = $settings->getSetting('line_color');
-  $css[] = "--color-divider: var(--color-{$lineColor});";
+  $css[] = "--color-theme-divider: var(--color-{$lineColor});";
 
   $lineThickness = $settings->getSetting('line_thickness');
-  if ($lineThickness == 'thin') {
-    // Will punt this work to frontend.
-  }
+  $css[] = "--thickness-theme-divider: var(--thickness-divider-{$lineThickness});";
 
   $css[] = '}';
   return implode(PHP_EOL, $css);
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * Adds a placeholder to the search form and visually hides the submit button.
+ */
+function ys_themes_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == "views_exposed_form" && $form['#id'] == "views-exposed-form-search-page-1") {
+    $form['keywords']['#attributes'] = ['placeholder' => [t("Search this site")]];
+    $form['actions']['submit']['#attributes']['class'][] = "visually-hidden";
+  }
+}
+
+/**
+ * Implements hook_theme_suggestions_form_element_label_alter().
+ *
+ * Add a template to visually hide the search form label and add custom icon.
+ */
+function ys_themes_theme_suggestions_form_element_label_alter(array &$suggestions, array $variables, $hook) {
+  if (isset($variables['element']['#id']) && strpos($variables['element']['#id'], "edit-keywords") === 0) {
+    $suggestions[] = $hook . '__search_form';
+  }
 }

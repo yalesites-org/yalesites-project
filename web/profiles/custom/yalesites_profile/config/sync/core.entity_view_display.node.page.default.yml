@@ -47,3 +47,4 @@ hidden:
   field_teaser_text: true
   field_teaser_title: true
   links: true
+  search_api_excerpt: true

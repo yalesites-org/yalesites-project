@@ -6,7 +6,9 @@ dependencies:
     - field.storage.node.field_content
     - node.type.news
     - paragraphs.paragraphs_type.divider
+    - paragraphs.paragraphs_type.gallery
     - paragraphs.paragraphs_type.image
+    - paragraphs.paragraphs_type.media_grid
     - paragraphs.paragraphs_type.pop_out_image
     - paragraphs.paragraphs_type.pull_quote
     - paragraphs.paragraphs_type.text
@@ -31,6 +33,8 @@ settings:
       pop_out_image: pop_out_image
       pull_quote: pull_quote
       text: text
+      media_grid: media_grid
+      gallery: gallery
     negate: 0
     target_bundles_drag_drop:
       accordion:
@@ -45,25 +49,73 @@ settings:
       callout_item:
         weight: 13
         enabled: false
+      cta_banner:
+        weight: 30
+        enabled: false
+      custom_card:
+        weight: 31
+        enabled: false
+      custom_cards:
+        weight: 32
+        enabled: false
       divider:
         weight: 14
         enabled: true
       embed:
         weight: 18
         enabled: false
+      event_cards:
+        weight: 35
+        enabled: false
+      event_list:
+        weight: 36
+        enabled: false
+      gallery:
+        weight: 39
+        enabled: true
+      gallery_item:
+        weight: 40
+        enabled: false
       image:
         weight: 12
         enabled: true
+      media_grid:
+        weight: 38
+        enabled: true
+      media_grid_item:
+        weight: 39
+        enabled: false
+      news_cards:
+        weight: 40
+        enabled: false
+      news_list:
+        weight: 41
+        enabled: false
       pop_out_image:
         weight: 15
         enabled: true
       pull_quote:
         weight: 16
         enabled: true
+      quick_links:
+        weight: 44
+        enabled: false
+      section:
+        weight: 45
+        enabled: false
+      tab:
+        weight: 46
+        enabled: false
+      tabs:
+        weight: 47
+        enabled: false
       text:
         weight: 17
         enabled: true
       text_with_image:
         weight: 18
+        enabled: false
+      video:
+        weight: 50
         enabled: false
 field_type: entity_reference_revisions

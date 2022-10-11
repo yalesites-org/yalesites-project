@@ -25,6 +25,7 @@ class ThemesTwigExtension extends AbstractExtension {
   public function getFunctions() {
     return [
       new TwigFunction('getThemeSetting', [$this, 'getThemeSetting']),
+      new TwigFunction('getAllThemeSettings', [$this, 'getAllThemeSettings']),
     ];
   }
 
@@ -36,6 +37,13 @@ class ThemesTwigExtension extends AbstractExtension {
    */
   public function getThemeSetting($setting_name) {
     return $this->themeSettingsManager->getSetting($setting_name);
+  }
+
+  /**
+   * Function that returns all theme settings.
+   */
+  public function getAllThemeSettings() {
+    return $this->themeSettingsManager->getAllSettings();
   }
 
   /**

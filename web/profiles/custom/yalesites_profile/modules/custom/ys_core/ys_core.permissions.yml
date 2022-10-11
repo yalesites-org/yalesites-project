@@ -1,0 +1,4 @@
+# Permission to manage YaleSites settings forms.
+yalesites manage settings:
+  title: 'Manage YaleSite Settings'
+  description: 'Access the settings forms in the YaleSites section of the admin menu.'

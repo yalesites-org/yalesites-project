@@ -17,10 +17,12 @@ dependencies:
     - paragraphs
     - path
     - publishcontent
-    - search
+    - quick_node_clone
     - system
     - taxonomy
     - toolbar
+    - ys_alert
+    - ys_core
 id: platform_admin
 label: 'Platform administrator'
 weight: 2
@@ -37,6 +39,9 @@ permissions:
   - 'administer main menu items'
   - 'administer users'
   - 'administer utility-navigation menu items'
+  - 'clone event content'
+  - 'clone news content'
+  - 'clone page content'
   - 'create event content'
   - 'create image media'
   - 'create media'
@@ -72,12 +77,10 @@ permissions:
   - 'revert event revisions'
   - 'revert news revisions'
   - 'revert page revisions'
-  - 'search content'
   - 'unpublish any content'
   - 'unpublish editable content'
   - 'update any media'
   - 'update media'
-  - 'use advanced search'
   - 'view all media revisions'
   - 'view all revisions'
   - 'view editoria11y checker'
@@ -88,3 +91,5 @@ permissions:
   - 'view page revisions'
   - 'view the administration theme'
   - 'view unpublished paragraphs'
+  - 'yalesites manage alerts'
+  - 'yalesites manage settings'

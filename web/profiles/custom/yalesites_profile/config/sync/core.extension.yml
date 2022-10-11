@@ -51,10 +51,12 @@ module:
   maxlength: 0
   media: 0
   media_library: 0
+  media_library_edit: 0
   menu_breadcrumb: 0
   menu_link_content: 0
   menu_ui: 0
   metatag: 0
+  metatag_views: 0
   migrate: 0
   migrate_plus: 0
   migrate_tools: 0
@@ -68,9 +70,12 @@ module:
   path: 0
   path_alias: 0
   publishcontent: 0
+  quick_node_clone: 0
   redirect: 0
   responsive_image: 0
-  search: 0
+  search_api: 0
+  search_api_db: 0
+  search_api_exclude: 0
   smart_date: 0
   smart_date_recur: 0
   system: 0
@@ -88,6 +93,7 @@ module:
   ys_mail: 0
   ys_starterkit: 0
   ys_themes: 0
+  hide_revision_field: 1
   menu_admin_per_menu: 1
   pathauto: 1
   xmlsitemap: 1
