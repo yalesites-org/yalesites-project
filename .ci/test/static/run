@@ -12,6 +12,8 @@ set -eo pipefail
 # Run composer install to get the vendor directory
 composer install --no-ansi --no-interaction --optimize-autoloader --no-progress
 
+npm install
+
 # Run unit tests
 composer -n unit-test
 
