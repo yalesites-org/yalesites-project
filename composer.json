@@ -125,8 +125,8 @@
     "prepare-for-pantheon": "DrupalProject\\composer\\ScriptHandler::prepareForPantheon",
     "unit-test": "echo 'No unit test step defined.'",
     "code-sniff": [
-        ".\/vendor\/bin\/phpcs --standard=Drupal --extensions=php,module,inc,install,test,profile,theme,info,txt,md --colors --ignore=node_modules,bower_components,vendor .\/web\/modules\/custom .\/web\/themes\/custom .\/web\/profiles\/custom",
-        ".\/vendor\/bin\/phpcs --standard=DrupalPractice --extensions=php,module,inc,install,test,profile,theme,info,txt,md --colors --ignore=node_modules,bower_components,vendor .\/web\/modules\/custom .\/web\/themes\/custom .\/web\/profiles\/custom"
+        ".\/vendor\/bin\/phpcs --standard=Drupal --extensions=php,module,inc,install,test,profile,theme,info,txt --colors --ignore=node_modules,bower_components,vendor .\/web\/modules\/custom .\/web\/themes\/custom .\/web\/profiles\/custom",
+        ".\/vendor\/bin\/phpcs --standard=DrupalPractice --extensions=php,module,inc,install,test,profile,theme,info,txt --colors --ignore=node_modules,bower_components,vendor .\/web\/modules\/custom .\/web\/themes\/custom .\/web\/profiles\/custom"
     ],
     "lint:js": "npm run lint:js",
     "lint:php": ".\/.ci/test/static/lint_php",

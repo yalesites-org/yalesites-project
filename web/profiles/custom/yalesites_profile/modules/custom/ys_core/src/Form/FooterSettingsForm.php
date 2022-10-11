@@ -57,10 +57,10 @@ class FooterSettingsForm extends ConfigFormBase {
       '#title' => $this->t('Social Links'),
       '#open' => TRUE,
     ];
-    foreach($this->socialLinks::SITES as $id => $name) {
+    foreach ($this->socialLinks::SITES as $id => $name) {
       $form['social_links'][$id] = [
         '#type' => 'url',
-        '#title' => $this->t("$name URL"),
+        '#title' => $this->t('@name URL', $name),
         '#default_value' => $config->get($id),
       ];
     }
@@ -77,7 +77,7 @@ class FooterSettingsForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $config = $this->config('ys_core.social_links');
-    foreach($this->socialLinks::SITES as $id => $name) {
+    foreach ($this->socialLinks::SITES as $id => $name) {
       $config->set($id, $form_state->getValue($id));
     }
     $config->save();
