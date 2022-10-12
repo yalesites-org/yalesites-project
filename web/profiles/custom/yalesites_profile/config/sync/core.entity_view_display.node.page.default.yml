@@ -34,7 +34,7 @@ content:
     settings:
       view_mode: default
       link: ''
-      preview_view_mode: preview
+      preview_view_mode: default
       nesting_depth: 0
       require_layouts: 0
       empty_message: ''
