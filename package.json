@@ -17,7 +17,7 @@
     "local:theme-setup": "./scripts/local/dev-component-library-install.sh",
     "prettier": "prettier '{.github,docs,web/profiles/custom,web/modules/custom,web/themes/contrib/atomic,web/themes/custom}/**/*.{json,md,js,html,scss,html}' --ignore-unknown --list-different",
     "lint:styles": "stylelint --color {web/modules/custom,web/themes/contrib/atomic,web/themes/custom,web/profiles/custom}/**/*.scss",
-    "lint:js": "eslint --color --no-error-on-unmatched-pattern --format stylish {web/modules/custom,web/themes/contrib/atomic,web/themes/custom,web/profiles/custom}/**/*.js",
+    "lint:js": "eslint --color --no-error-on-unmatched-pattern --format stylish {web/modules/custom,web/themes/custom,web/profiles/custom}/**/*.js",
     "local:cl-update": "./scripts/local/dev-component-library-update.sh",
     "lint:php": "composer lint:php",
     "lint": "./scripts/local/lint.sh",
