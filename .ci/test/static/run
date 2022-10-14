@@ -10,27 +10,19 @@ set -eo pipefail
 #
 
 # Run composer install to get the vendor directory
-composer self-update --2
 composer install --no-ansi --no-interaction --optimize-autoloader --no-progress
 
-# Create .npmrc
-echo @yalesites-org:registry=https://npm.pkg.github.com >> .npmrc
-echo //npm.pkg.github.com/:_authToken="$GITHUB_TOKEN" >> .npmrc
-
-# Install Drupal packages so eslint will run
-cd web/core
-yarn install
-cd ../../
-
-# Run linting
 npm install
-# npm run test
 
-# # Run unit tests
-# composer -n unit-test
+# Run unit tests
+composer -n unit-test
 
-# # Lint php code for syntax errors
-# composer -n lint
+# Lint php code for syntax errors
+composer -n lint:php
 
-# # Check coding standards
-# composer -n code-sniff
+# Check coding standards
+composer -n code-sniff
+
+# Lint styles and JS
+composer -n lint:styles
+composer -n lint:js

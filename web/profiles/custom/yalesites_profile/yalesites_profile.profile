@@ -1,7 +1,8 @@
 <?php
+
 /**
  * @file
  * Enables modules and site configuration for a standard site installation.
+ *
+ * Any custom code in this file should look like hook implementations.
  */
-
-// Add any custom code here like hook implementations.

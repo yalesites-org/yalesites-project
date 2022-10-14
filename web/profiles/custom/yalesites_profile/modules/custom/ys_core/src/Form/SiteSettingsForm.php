@@ -222,13 +222,11 @@ class SiteSettingsForm extends ConfigFormBase {
    * Check that a submitted value starts with a slash.
    *
    * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state passed by reference.
+   *   The form state of the parent form.
    * @param string $fieldId
    *   The id of a field on the connfig form.
-   *
-   * @return void
    */
-  protected function validateStartWithSlash(&$form_state, $fieldId) {
+  protected function validateStartWithSlash(FormStateInterface &$form_state, string $fieldId) {
     if (($value = $form_state->getValue($fieldId)) && $value[0] !== '/') {
       $form_state->setErrorByName(
         $fieldId,
@@ -247,10 +245,8 @@ class SiteSettingsForm extends ConfigFormBase {
    *   The form state passed by reference.
    * @param string $fieldId
    *   The id of a field on the connfig form.
-   *
-   * @return void
    */
-  protected function validateIsNotRootPath(&$form_state, $fieldId) {
+  protected function validateIsNotRootPath(FormStateInterface &$form_state, string $fieldId) {
     if (($value = $form_state->getValue($fieldId)) && $value == '/') {
       $form_state->setErrorByName(
         $fieldId,
@@ -269,10 +265,8 @@ class SiteSettingsForm extends ConfigFormBase {
    *   The form state passed by reference.
    * @param string $fieldId
    *   The id of a field on the connfig form.
-   *
-   * @return void
    */
-  protected function validatePath(&$form_state, $fieldId) {
+  protected function validatePath(FormStateInterface &$form_state, string $fieldId) {
     if (!$this->pathValidator->isValid($form_state->getValue($fieldId))) {
       $form_state->setErrorByName(
         $fieldId,
@@ -291,10 +285,8 @@ class SiteSettingsForm extends ConfigFormBase {
    *   The form state passed by reference.
    * @param string $fieldId
    *   The id of a field on the connfig form.
-   *
-   * @return void
    */
-  protected function validateEmail(&$form_state, $fieldId) {
+  protected function validateEmail(FormStateInterface &$form_state, string $fieldId) {
     if (($value = $form_state->getValue($fieldId))) {
       if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
         $form_state->setErrorByName(
@@ -312,4 +304,5 @@ class SiteSettingsForm extends ConfigFormBase {
       }
     }
   }
+
 }

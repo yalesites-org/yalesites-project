@@ -39,6 +39,7 @@ function ys_core_tokens($type, array $tokens, array $data, array $options, Bubbl
           $config = \Drupal::config('ys_core.site');
           $replacements[$original] = $config->get('page.news');
           break;
+
         case 'event_landing_page_path':
           $config = \Drupal::config('ys_core.site');
           $replacements[$original] = $config->get('page.events');
