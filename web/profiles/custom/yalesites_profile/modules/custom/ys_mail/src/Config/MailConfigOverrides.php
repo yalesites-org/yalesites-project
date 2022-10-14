@@ -5,6 +5,8 @@ namespace Drupal\ys_mail\Config;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Config\ConfigFactoryOverrideInterface;
 use Drupal\Core\Config\StorageInterface;
+use Drupal\Core\File\FileSystemInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Configuration overrides for ys_mail.
@@ -32,6 +34,32 @@ class MailConfigOverrides implements ConfigFactoryOverrideInterface {
   const SECRETS_PATH = 'private://secrets.json';
 
   /**
+   * The file system interface.
+   *
+   * @var \Drupal\Core\File\FileSystemInterface
+   */
+  protected $fileSystem;
+
+  /**
+   * Constructs a new MailConfigOverrides object.
+   *
+   * @param \Drupal\Core\File\FileSystemInterface $file_system
+   *   The file system service.
+   */
+  public function __construct(FileSystemInterface $file_system) {
+    $this->fileSystem = $file_system;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('file_system'),
+    );
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function loadOverrides($names) {
@@ -55,7 +83,7 @@ class MailConfigOverrides implements ConfigFactoryOverrideInterface {
    */
   protected function getSecret(string $key): string {
     // Get the path to the file created by the Terminus Secrets plugin.
-    $path = \Drupal::service('file_system')->realpath(self::SECRETS_PATH);
+    $path = $this->fileSystem->realpath(self::SECRETS_PATH);
 
     // Exit early if the file does not exit.
     if (!file_exists($path)) {
