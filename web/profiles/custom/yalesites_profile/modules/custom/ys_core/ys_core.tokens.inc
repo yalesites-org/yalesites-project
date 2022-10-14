@@ -35,6 +35,11 @@ function ys_core_token_info() {
  * Implements hook_tokens().
  */
 function ys_core_tokens($type, array $tokens, array $data, array $options, BubbleableMetadata $bubbleable_metadata) {
+
+  /* Note: If node data is needed, add a check (!empty($data['node'])
+   * inside a specific case statement below.
+   */
+
   $replacements = [];
   if ($type == 'yale') {
     foreach ($tokens as $name => $original) {

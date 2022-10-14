@@ -16,6 +16,10 @@ elements: |-
   location:
     '#type': textfield
     '#title': Location
+  contact_number:
+    '#type': tel
+    '#title': 'Contact Number'
+    '#required': true
   page_you_are_having_trouble_with:
     '#type': entity_autocomplete
     '#title': 'Page You Are Having Trouble With'
@@ -29,10 +33,6 @@ elements: |-
         event: event
         news: news
         page: page
-  contact_number:
-    '#type': tel
-    '#title': 'Contact Number'
-    '#required': true
 css: ''
 javascript: ''
 settings:
