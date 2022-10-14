@@ -12,7 +12,7 @@ class SocialLinksManager {
   /**
    * List of supported social sites.
    *
-   * @todo: This would make a great enum once PHP 8.1 is supported.
+   * @todo This would make a great enum once PHP 8.1 is supported.
    */
   const SITES = [
     'facebook' => 'Facebook',
@@ -30,12 +30,12 @@ class SocialLinksManager {
   protected $yaleSettings;
 
   /**
-   *
+   * Builds an array of renderable links.
    */
   public function buildRenderableLinks() {
     $links = [];
     foreach (self::SITES as $id => $name) {
-      if($this->isSocialLinkSet($id)) {
+      if ($this->isSocialLinkSet($id)) {
         $links[] = [
           'url' => $this->getSocialLinkUrl($id),
           'name' => $name,
@@ -59,7 +59,7 @@ class SocialLinksManager {
    * @param string $id
    *   The id of a social network (as managed in $this->sites)
    *
-   * @return boolean
+   * @return bool
    *   TRUE if the configuration has a value, otherwise FALSE.
    */
   protected function isSocialLinkSet(string $id) {
@@ -72,8 +72,8 @@ class SocialLinksManager {
    * @param string $id
    *   The id of a social network (as managed in $this->sites)
    *
-   * @return ?string
-   *    The URL for a given social network or NULL.
+   * @return string
+   *   The URL for a given social network or NULL.
    */
   public function getSocialLinkUrl(string $id) {
     return $this->yaleSettings->get($id);

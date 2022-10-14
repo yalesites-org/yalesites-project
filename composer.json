@@ -17,6 +17,7 @@
     "cweagans/composer-patches": "^1.7",
     "drupal/core-composer-scaffold": "^9.2",
     "drupal/core-recommended": "^9.2",
+    "drupal/redirect_after_login": "^2.7",
     "drush/drush": "^10",
     "pantheon-systems/drupal-integrations": "^9",
     "yalesites-org/yalesites_profile": "*"
@@ -124,17 +125,14 @@
     ],
     "prepare-for-pantheon": "DrupalProject\\composer\\ScriptHandler::prepareForPantheon",
     "unit-test": "echo 'No unit test step defined.'",
-    "lint:styles": "stylelint --color {web/modules/custom,web/themes/custom,web/profiles/custom}/**/*.scss",
-    "lint:js": "eslint --color --format stylish {web/modules/custom,web/themes/custom,web/profiles/custom}/**/*.js",
-    "lint:php": [
-      "./vendor/bin/phpcs --standard=Drupal --extensions=php,inc,module,install,theme --colors ./web/modules/custom",
-      "./vendor/bin/phpcs --standard=Drupal --extensions=php,inc,module,install,theme --colors ./web/themes/custom",
-      "./vendor/bin/phpcs --standard=Drupal --extensions=php,inc,module,install,theme --colors ./web/profiles/custom",
-      "./vendor/bin/phpcs --standard=DrupalPractice --extensions=php,inc,module,install,theme --colors ./web/modules/custom",
-      "./vendor/bin/phpcs --standard=DrupalPractice --extensions=php,inc,module,install,theme --colors ./web/themes/custom",
-      "./vendor/bin/phpcs --standard=DrupalPractice --extensions=php,inc,module,install,theme --colors ./web/profiles/custom"
+    "code-sniff": [
+        ".\/vendor\/bin\/phpcs --standard=Drupal --extensions=php,module,inc,install,test,profile,theme,info,txt --colors --ignore=node_modules,bower_components,vendor .\/web\/modules\/custom .\/web\/themes\/custom .\/web\/profiles\/custom",
+        ".\/vendor\/bin\/phpcs --standard=DrupalPractice --extensions=php,module,inc,install,test,profile,theme,info,txt --colors --ignore=node_modules,bower_components,vendor .\/web\/modules\/custom .\/web\/themes\/custom .\/web\/profiles\/custom"
     ],
-    "prettier": "prettier --l *.{json,README.md,js} '{.github,docs,web/profiles/custom,web/modules/custom,web/themes/custom}/**/*.{json,md,js,html,scss,html}'",
+    "lint:js": "npm run lint:js",
+    "lint:php": ".\/.ci/test/static/lint_php",
+    "lint:styles": "npm run lint:styles",
+    "prettier": "npm run prettier",
     "post-install-cmd": [
       "DrupalProject\\composer\\ScriptHandler::createRequiredFiles"
     ],
