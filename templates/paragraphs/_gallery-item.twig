@@ -1,0 +1,22 @@
+{% if item_variation == 'thumbnail' %}
+  {% for item in content.field_gallery_items['#items'] %}
+    {% embed "@organisms/galleries/media-grid/_yds-media-grid-item.twig" with {
+      media_grid__variation: 'interactive',
+    } %}
+      {% block media_grid_item__media %}
+        {{ drupal_entity('media', item.entity.field_media.0.entity.mid.value) }}
+      {% endblock %}
+    {% endembed %}
+  {% endfor %}
+{% elseif item_variation == 'modal' %}
+  {% embed "@organisms/galleries/media-grid/_yds-media-grid-modal-item.twig" with {
+    media_grid__items: content.field_gallery_items['#items'],
+  } %}
+    {% block media_grid__modal__media %}
+      {{ drupal_entity('paragraph', item.entity.id.0.value, 'gallery_modal_media') }}
+    {% endblock %}
+    {% block media_grid__modal__content %}
+      {{ drupal_entity('paragraph', item.entity.id.0.value, 'gallery_modal_content') }}
+    {% endblock %}
+  {% endembed %}
+{% endif %}
