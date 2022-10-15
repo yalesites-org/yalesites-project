@@ -4,7 +4,7 @@
       media_grid__variation: 'interactive',
     } %}
       {% block media_grid_item__media %}
-        {{ drupal_entity('media', item.entity.field_media.0.entity.mid.value) }}
+        {{ drupal_entity('media', item.entity.field_media.0.entity.mid.value, 'card_secondary_3_2') }}
       {% endblock %}
     {% endembed %}
   {% endfor %}
