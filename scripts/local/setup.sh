@@ -16,12 +16,9 @@ fi
 lando start
 
 # Install packages and pull down latest database and files.
-lando composer update
-lando pull --database=dev --files=dev --code=none
-
-# Ensure everything is up to date.
-lando drush cim -y
-lando drush cr
+nvm use
+npm install
+npm run build-with-assets
 
 # Configure Composer to use source packaged versions.
 lando composer config --global 'preferred-install.yalesites-org/*' source
