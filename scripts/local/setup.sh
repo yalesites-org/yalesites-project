@@ -16,7 +16,6 @@ fi
 lando start
 
 # Install packages and pull down latest database and files.
-nvm use
 npm install
 npm run build-with-assets
 

@@ -1,5 +1,5 @@
 #!/bin/bash
 
-npm run get-db
-npm run get-files
+npm run db:import
+npm run files:get
 npm run build

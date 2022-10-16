@@ -1,3 +1,3 @@
 #!/bin/bash
 
-terminus backup:create yalesites-platform.dev --element=db
+lando terminus backup:create yalesites-platform.dev --element=db

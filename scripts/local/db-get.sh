@@ -1,7 +1,7 @@
 #!/bin/bash
 
-if [ -f ./reference/db.sql.gz ];
-  then mv reference/db.sql.gz reference/db-prev.sql.gz;
+if [ -f ./reference/backup.sql.gz ];
+  then mv reference/backup.sql.gz reference/backup-prev.sql.gz;
 fi
 
-terminus backup:get yalesites-platform.dev --element=db --to=reference/db.sql.gz
+lando terminus backup:get yalesites-platform.dev --element=db --to=reference/backup.sql.gz
