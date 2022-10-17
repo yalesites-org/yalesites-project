@@ -1,11 +1,11 @@
 <div{{ attributes }}>
   {{ title_prefix }}
   {{ title_suffix }}
-  {% embed "@molecules/pop-out-image/yds-pop-out-image.twig" with {
-    pop_out_image__content: content.field_text.0,
-    pop_out_image__caption: content.field_caption.0['#text'],
+  {% embed "@molecules/wrapped-image/yds-wrapped-image.twig" with {
+    wrapped_image__content: content.field_text.0,
+    wrapped_image__caption: content.field_caption.0['#text'],
   } %}
-    {% block pop_out_image__image %}
+    {% block wrapped_image__image %}
       {{ content.field_image }}
     {% endblock %}
   {% endembed %}
