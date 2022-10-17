@@ -9,7 +9,7 @@ dependencies:
     - paragraphs.paragraphs_type.gallery
     - paragraphs.paragraphs_type.image
     - paragraphs.paragraphs_type.media_grid
-    - paragraphs.paragraphs_type.pop_out_image
+    - paragraphs.paragraphs_type.wrapped_image
     - paragraphs.paragraphs_type.pull_quote
     - paragraphs.paragraphs_type.text
   module:
@@ -30,7 +30,7 @@ settings:
     target_bundles:
       image: image
       divider: divider
-      pop_out_image: pop_out_image
+      wrapped_image: wrapped_image
       pull_quote: pull_quote
       text: text
       media_grid: media_grid
@@ -91,7 +91,7 @@ settings:
       news_list:
         weight: 41
         enabled: false
-      pop_out_image:
+      wrapped_image:
         weight: 15
         enabled: true
       pull_quote:

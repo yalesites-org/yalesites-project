@@ -4,7 +4,7 @@ status: true
 dependencies:
   config:
     - field.storage.paragraph.field_caption
-    - paragraphs.paragraphs_type.pop_out_image
+    - paragraphs.paragraphs_type.wrapped_image
   module:
     - allowed_formats
     - text
@@ -12,10 +12,10 @@ third_party_settings:
   allowed_formats:
     allowed_formats:
       - restricted_html
-id: paragraph.pop_out_image.field_caption
+id: paragraph.wrapped_image.field_caption
 field_name: field_caption
 entity_type: paragraph
-bundle: pop_out_image
+bundle: wrapped_image
 label: Caption
 description: ''
 required: false
