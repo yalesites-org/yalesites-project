@@ -430,7 +430,7 @@ display:
       access:
         type: perm
         options:
-          perm: 'publish any node type page'
+          perm: 'yalesites manage settings'
       cache:
         type: tag
         options: {  }

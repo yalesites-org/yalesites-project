@@ -21,9 +21,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class SiteSettingsForm extends ConfigFormBase {
 
-  const DEFAULT_NEWS_PATH = '/news';
-  const DEFAULT_EVENTS_PATH = '/events';
-
   /**
    * The path alias manager.
    *
@@ -167,30 +164,30 @@ class SiteSettingsForm extends ConfigFormBase {
     // Validate front, news, and event page paths.
     $this->validateStartWithSlash($form_state, 'site_page_front');
     $this->validatePath($form_state, 'site_page_front');
-    $this->validateStartWithSlash($form_state, 'site_page_news');
-    $this->validateStartWithSlash($form_state, 'site_page_events');
-    $this->validateIsNotRootPath($form_state, 'site_page_news');
-    $this->validateIsNotRootPath($form_state, 'site_page_events');
-    if ($form_state->getValue('site_page_news') !== self::DEFAULT_NEWS_PATH) {
+
+    if (!$form_state->isValueEmpty('site_page_news')) {
+      $this->validateStartWithSlash($form_state, 'site_page_news');
+      $this->validateIsNotRootPath($form_state, 'site_page_news');
       $this->validatePath($form_state, 'site_page_news');
     }
-    if ($form_state->getValue('site_page_events') !== self::DEFAULT_EVENTS_PATH) {
+
+    if (!$form_state->isValueEmpty('site_page_events')) {
+      $this->validateStartWithSlash($form_state, 'site_page_events');
+      $this->validateIsNotRootPath($form_state, 'site_page_events');
       $this->validatePath($form_state, 'site_page_events');
     }
 
     // Get the normal paths of error pages.
     if (!$form_state->isValueEmpty('site_page_403')) {
       $form_state->setValueForElement($form['site_page_403'], $this->aliasManager->getPathByAlias($form_state->getValue('site_page_403')));
+      $this->validateStartWithSlash($form_state, 'site_page_403');
+      $this->validatePath($form_state, 'site_page_403');
     }
     if (!$form_state->isValueEmpty('site_page_404')) {
       $form_state->setValueForElement($form['site_page_404'], $this->aliasManager->getPathByAlias($form_state->getValue('site_page_404')));
+      $this->validateStartWithSlash($form_state, 'site_page_404');
+      $this->validatePath($form_state, 'site_page_404');
     }
-
-    // Validate error page paths.
-    $this->validateStartWithSlash($form_state, 'site_page_404');
-    $this->validateStartWithSlash($form_state, 'site_page_403');
-    $this->validatePath($form_state, 'site_page_404');
-    $this->validatePath($form_state, 'site_page_403');
 
     // Email validations.
     $this->validateEmail($form_state, 'site_mail');
