@@ -113,7 +113,7 @@ jobs:
         run: |
           contrib_check=$(jq -r '.require | with_entries(select(.key | test("(drupal\/(?!core).*$)"))) | keys | join(", ")' ./composer.json)
           if [ -n "$contrib_check" ]; then
-            echo "::error::contrib_check $contrib_check found in /composer.json and should be moved to /web/profiles/custom/yalesites_profile/composer.json" && exit 1
+            echo "::error::$contrib_check found in /composer.json and should be moved to /web/profiles/custom/yalesites_profile/composer.json" && exit 1
           fi
 
       - name: run static tests
