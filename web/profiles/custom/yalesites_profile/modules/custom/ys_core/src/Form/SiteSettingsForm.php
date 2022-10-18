@@ -21,9 +21,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class SiteSettingsForm extends ConfigFormBase {
 
-  const DEFAULT_NEWS_PATH = '/news';
-  const DEFAULT_EVENTS_PATH = '/events';
-
   /**
    * The path alias manager.
    *
@@ -167,30 +164,30 @@ class SiteSettingsForm extends ConfigFormBase {
     // Validate front, news, and event page paths.
     $this->validateStartWithSlash($form_state, 'site_page_front');
     $this->validatePath($form_state, 'site_page_front');
-    $this->validateStartWithSlash($form_state, 'site_page_news');
-    $this->validateStartWithSlash($form_state, 'site_page_events');
-    $this->validateIsNotRootPath($form_state, 'site_page_news');
-    $this->validateIsNotRootPath($form_state, 'site_page_events');
-    if ($form_state->getValue('site_page_news') !== self::DEFAULT_NEWS_PATH) {
+
+    if (!$form_state->isValueEmpty('site_page_news')) {
+      $this->validateStartWithSlash($form_state, 'site_page_news');
+      $this->validateIsNotRootPath($form_state, 'site_page_news');
       $this->validatePath($form_state, 'site_page_news');
     }
-    if ($form_state->getValue('site_page_events') !== self::DEFAULT_EVENTS_PATH) {
+
+    if (!$form_state->isValueEmpty('site_page_events')) {
+      $this->validateStartWithSlash($form_state, 'site_page_events');
+      $this->validateIsNotRootPath($form_state, 'site_page_events');
       $this->validatePath($form_state, 'site_page_events');
     }
 
     // Get the normal paths of error pages.
     if (!$form_state->isValueEmpty('site_page_403')) {
       $form_state->setValueForElement($form['site_page_403'], $this->aliasManager->getPathByAlias($form_state->getValue('site_page_403')));
+      $this->validateStartWithSlash($form_state, 'site_page_403');
+      $this->validatePath($form_state, 'site_page_403');
     }
     if (!$form_state->isValueEmpty('site_page_404')) {
       $form_state->setValueForElement($form['site_page_404'], $this->aliasManager->getPathByAlias($form_state->getValue('site_page_404')));
+      $this->validateStartWithSlash($form_state, 'site_page_404');
+      $this->validatePath($form_state, 'site_page_404');
     }
-
-    // Validate error page paths.
-    $this->validateStartWithSlash($form_state, 'site_page_404');
-    $this->validateStartWithSlash($form_state, 'site_page_403');
-    $this->validatePath($form_state, 'site_page_404');
-    $this->validatePath($form_state, 'site_page_403');
 
     // Email validations.
     $this->validateEmail($form_state, 'site_mail');
@@ -222,13 +219,11 @@ class SiteSettingsForm extends ConfigFormBase {
    * Check that a submitted value starts with a slash.
    *
    * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state passed by reference.
+   *   The form state of the parent form.
    * @param string $fieldId
    *   The id of a field on the connfig form.
-   *
-   * @return void
    */
-  protected function validateStartWithSlash(&$form_state, $fieldId) {
+  protected function validateStartWithSlash(FormStateInterface &$form_state, string $fieldId) {
     if (($value = $form_state->getValue($fieldId)) && $value[0] !== '/') {
       $form_state->setErrorByName(
         $fieldId,
@@ -247,10 +242,8 @@ class SiteSettingsForm extends ConfigFormBase {
    *   The form state passed by reference.
    * @param string $fieldId
    *   The id of a field on the connfig form.
-   *
-   * @return void
    */
-  protected function validateIsNotRootPath(&$form_state, $fieldId) {
+  protected function validateIsNotRootPath(FormStateInterface &$form_state, string $fieldId) {
     if (($value = $form_state->getValue($fieldId)) && $value == '/') {
       $form_state->setErrorByName(
         $fieldId,
@@ -269,10 +262,8 @@ class SiteSettingsForm extends ConfigFormBase {
    *   The form state passed by reference.
    * @param string $fieldId
    *   The id of a field on the connfig form.
-   *
-   * @return void
    */
-  protected function validatePath(&$form_state, $fieldId) {
+  protected function validatePath(FormStateInterface &$form_state, string $fieldId) {
     if (!$this->pathValidator->isValid($form_state->getValue($fieldId))) {
       $form_state->setErrorByName(
         $fieldId,
@@ -291,10 +282,8 @@ class SiteSettingsForm extends ConfigFormBase {
    *   The form state passed by reference.
    * @param string $fieldId
    *   The id of a field on the connfig form.
-   *
-   * @return void
    */
-  protected function validateEmail(&$form_state, $fieldId) {
+  protected function validateEmail(FormStateInterface &$form_state, string $fieldId) {
     if (($value = $form_state->getValue($fieldId))) {
       if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
         $form_state->setErrorByName(
@@ -312,4 +301,5 @@ class SiteSettingsForm extends ConfigFormBase {
       }
     }
   }
+
 }

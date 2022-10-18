@@ -1,0 +1,24 @@
+# Adds an action link to the manage page interface
+ys_core.link_add_page:
+  route_name: node.add
+  route_parameters:
+    node_type: 'page'
+  title: 'Add page'
+  appears_on:
+    - view.manage_pages.page_1
+# Adds an action link to the manage news interface
+ys_core.link_add_news:
+  route_name: node.add
+  route_parameters:
+    node_type: 'news'
+  title: 'Add news'
+  appears_on:
+    - view.manage_news.page_1
+# Adds an action link to the manage events interface
+ys_core.link_add_events:
+  route_name: node.add
+  route_parameters:
+    node_type: 'event'
+  title: 'Add events'
+  appears_on:
+    - view.manage_events.page_1
