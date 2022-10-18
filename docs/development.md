@@ -7,7 +7,7 @@ When you're working on a new ticket, you'll want to start with the latest `devel
 - `git checkout develop`
 - `git pull`
 - `git checkout -b YALB-XXX-ticket-description`
-- `npm run rebuild`
+- `npm run build`
 
 After running those commands, you should have a clean environment to make your changes.
 
