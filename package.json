@@ -21,14 +21,13 @@
     "local:review-with-atomic-and-cl-branch": "./scripts/local/local-review-with-atomic-and-cl-branch.sh",
     "local:review-with-atomic-branch": "./scripts/local/local-review-with-atomic-branch.sh",
     "local:review-with-cl-branch": "./scripts/local/local-review-with-cl-branch.sh",
-    "local:cl-dev": "chokidar 'web/themes/contrib/atomic/component-library-twig/components' -c 'npm run local:review-with-cl-branch'",
+    "local:cl-dev": "./scripts/local/local-cl-dev.sh",
     "prettier": "prettier '{.github,docs,web/profiles/custom,web/modules/custom,web/themes/contrib/atomic,web/themes/custom}/**/*.{json,md,js,html,scss,html}' --ignore-unknown --list-different",
     "setup": "./scripts/local/setup.sh",
     "test": "./scripts/local/test.sh"
   },
   "devDependencies": {
     "@yalesites-org/eslint-config-and-other-formatting": "^1.5.0",
-    "chokidar-cli": "^3.0.0",
     "eslint-config-drupal": "^5.0.2",
     "eslint-plugin-jsx-a11y": "^6.5.1",
     "eslint-plugin-react": "^7.29.4",
