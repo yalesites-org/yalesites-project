@@ -2,7 +2,7 @@
   "name": "yalesites-upstream",
   "license": "MIT",
   "scripts": {
-    "assets-pull": "./scripts/local/assets-pull.sh",
+    "assets:pull": "./scripts/local/assets-pull.sh",
     "build": "./scripts/local/build.sh",
     "build-with-assets": "./scripts/local/build-with-assets.sh",
     "confex": "./scripts/local/confex.sh",
