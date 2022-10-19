@@ -1,3 +1,27 @@
 _core:
   default_config_hash: jdY7AU0tU-QsjmiOw3W8vwpYMb-By--_MSFgbqKUTYM
-definitions: {  }
+definitions:
+  'admin_toolbar_tools__extra_links:media_page':
+    weight: 1
+    parent: 'admin_toolbar_tools.extra_links:media_library'
+    enabled: false
+    menu_name: admin
+    expanded: false
+  'admin_toolbar_tools__extra_links:view__files':
+    parent: 'admin_toolbar_tools.extra_links:media_library'
+    enabled: false
+    menu_name: admin
+    weight: 2
+    expanded: false
+  'admin_toolbar_tools__extra_links:media_library':
+    weight: 4
+    parent: system.admin_content
+    menu_name: admin
+    expanded: false
+    enabled: true
+  'admin_toolbar_tools__extra_links:add_media':
+    parent: 'admin_toolbar_tools.extra_links:media_library'
+    menu_name: admin
+    weight: 0
+    expanded: false
+    enabled: true
