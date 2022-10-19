@@ -6,7 +6,7 @@
 # library updates.
 
 # Note: Changes to the component library are still tracked ONLY in the component
-# librarn's repository, so in order for the changes to be seen on a remotely
+# library's repository, so in order for the changes to be seen on a remotely
 # built environment (multidev, or any live site) the changes will have to go
 # through the regular component library release process, and be included in an
 # official release of Atomic.
