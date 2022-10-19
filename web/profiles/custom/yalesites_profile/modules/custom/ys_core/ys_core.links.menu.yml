@@ -19,3 +19,9 @@ ys_core.admin_footer_settings:
   route_name: ys_core.admin_footer_settings
   title: 'Footer Settings'
   weight: 20
+# Dashboard
+ys_core.admin_dashboard:
+  description: 'Dashboard settings'
+  parent: ys_core.admin_yalesites
+  route_name: ys_core.admin_dashboard
+  title: 'Dashboard'
