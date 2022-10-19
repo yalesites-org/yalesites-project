@@ -15,13 +15,13 @@ GREEN='\033[1;32m'
 ENDCOLOR='\033[0m'
 
 echo -e "${GREEN}Move into component library and create a global link${ENDCOLOR}"
-cd web/themes/contrib/atomic/component-library-twig
+cd web/themes/contrib/atomic/component-library-twig || exit
 # Run npm install, only if node_modules doesn't exist
-[ ! -d "node_modules" ] npm install
+[ ! -d "node_modules" ] && npm install
 npm link
 echo -e "${GREEN}Move into Atomic and use the newly created global link${ENDCOLOR}"
 cd ..
 npm link @yalesites-org/component-library-twig
 echo -e "${GREEN}Run the develop script in the component library${ENDCOLOR}"
-cd component-library-twig
+cd component-library-twig || exit
 npm run develop
