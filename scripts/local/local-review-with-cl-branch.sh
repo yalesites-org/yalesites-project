@@ -7,14 +7,10 @@
 GREEN='\033[1;32m'
 ENDCOLOR='\033[0m'
 
-read -p "Which branch from the component-library-twig repo do you need? " BRANCH
+read -p "Which branch of the component-library-twig repo do you need? " BRANCH
 
 echo -e "${GREEN}Move into atomic and checkout develop"
 cd web/themes/contrib/atomic
-nvm use
-git checkout develop
-echo -e "${GREEN}npm ci${ENDCOLOR}"
-npm ci
 echo -e "${GREEN}Delete installed component library${ENDCOLOR}"
 rm -rf node_modules/@yalesites-org/component-library-twig/
 echo -e "${GREEN}Clone component library${ENDCOLOR}"
