@@ -22,13 +22,8 @@ function ys_core_theme($existing, $type, $theme, $path): array {
         'items' => [],
       ],
     ],
-    'ys_dashboard_theme_hook' => [
-      'render element' => 'children',
-      'variables' => [
-        'variable1' => 'Yet another default text.',
-        'variable2' => 0,
-        'variable3' => [0, 0, 0],
-      ],
+    'ys_dashboard' => [
+      'variables' => [],
     ],
   ];
 }

@@ -22,7 +22,7 @@ ys_core.admin_footer_settings:
     _title: 'Footer Settings'
   requirements:
     _permission: 'yalesites manage settings'
-# Dashboard
+# Editorial dashboard.
 ys_core.admin_dashboard:
   path: '/admin/yalesites/dashboard'
   defaults:
