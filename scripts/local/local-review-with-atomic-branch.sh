@@ -6,7 +6,7 @@ ENDCOLOR='\033[0m'
 
 read -p "Which branch of the atomic repo do you need? " BRANCH
 
-echo -e "${GREEN}Checking out the $BRANCH branch of Atomic"
+echo -e "${GREEN}Checking out the $BRANCH branch of Atomic${ENDCOLOR}"
 cd web/themes/contrib/atomic
 git checkout develop
 git pull
