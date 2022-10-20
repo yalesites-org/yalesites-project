@@ -24,10 +24,6 @@ function ys_core_token_info() {
     'name' => t('Events landing page'),
     'description' => t('The path alias for the events landing page.'),
   ];
-  $info['tokens']['yale']['user_agent'] = [
-    'name' => t('User agent'),
-    'description' => t('The user agent of the browser.'),
-  ];
   return $info;
 }
 
@@ -52,10 +48,6 @@ function ys_core_tokens($type, array $tokens, array $data, array $options, Bubbl
         case 'event_landing_page_path':
           $config = \Drupal::config('ys_core.site');
           $replacements[$original] = $config->get('page.events');
-          break;
-
-        case 'user_agent':
-          $replacements[$original] = $_SERVER['HTTP_USER_AGENT'];
           break;
       }
     }

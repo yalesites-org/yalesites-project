@@ -22,6 +22,11 @@ function ys_core_theme($existing, $type, $theme, $path): array {
         'items' => [],
       ],
     ],
+    'ys_support_form' => [
+      'variables' => [
+        'link' => NULL,
+      ],
+    ],
   ];
 }
 
