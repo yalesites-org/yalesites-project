@@ -1,0 +1,58 @@
+@use '../00-tokens/tokens';
+@use '../01-atoms/atoms';
+
+@mixin base {
+  @include atoms.list-reset;
+
+  display: flex;
+  flex-flow: row wrap;
+  gap: var(--grid-gutter);
+  justify-content: center;
+
+  > * {
+    flex-basis: 100%;
+  }
+}
+
+@mixin primary {
+  --grid-gutter: var(--spacing-component-gutter);
+
+  @include base;
+
+  > * {
+    @media (min-width: tokens.$break-m) {
+      flex: 0 1 calc(50% - calc(var(--grid-gutter) / 2));
+    }
+
+    @media (min-width: tokens.$break-l) {
+      flex: 0 1 calc(33.33% - calc(var(--grid-gutter) * 2 / 3));
+    }
+  }
+}
+
+@mixin secondary($media-only: false) {
+  --grid-gutter: var(--spacing-component-gutter-secondary);
+
+  @include base;
+
+  > * {
+    // Media-only grids are always two-up
+    @if $media-only == true {
+      flex: 0 1 calc(50% - calc(var(--grid-gutter) / 2));
+    } @else {
+      // Grids with content (like the news cards) start one-up, and go to two-up
+      // at this breakpoint.
+      @media (min-width: tokens.$break-s) {
+        flex: 0 1 calc(50% - calc(var(--grid-gutter) / 2));
+      }
+    }
+
+    @media (min-width: tokens.$break-m) {
+      flex: 0 1 calc(33.33% - calc(var(--grid-gutter) * 2 / 3));
+    }
+
+    @media (min-width: tokens.$break-l) {
+      flex: 0 1 calc(25% - calc(var(--grid-gutter) * 3 / 4));
+    }
+  }
+}
