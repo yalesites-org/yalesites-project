@@ -17,7 +17,7 @@ mode: preview
 content:
   field_accordion_item:
     type: entity_reference_revisions_entity_view
-    label: above
+    label: hidden
     settings:
       view_mode: preview
       link: ''

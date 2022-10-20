@@ -5,7 +5,7 @@
   $label-color: var(--colorGinText),
   $border-color: var(--color-gray-800),
   $border-radius: var(--radius-4),
-  $component-padding: 3em 1rem 1rem
+  $component-padding: 2.5rem 1rem 1rem
 ) {
   box-shadow: 0 0 0 1px #{$border-color};
   border-radius: #{$border-radius};
@@ -82,6 +82,24 @@
   gap: 1rem;
 }
 
+// Force then entire paragraph type title to show.
 .js .paragraph-type-title {
   overflow: visible;
+}
+
+// Visually rim general content to save vertical space
+.admin-preview__content {
+  position: relative;
+  max-height: 6rem;
+  overflow: hidden;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 4rem;
+    background: linear-gradient(to top, white, transparent);
+  }
 }

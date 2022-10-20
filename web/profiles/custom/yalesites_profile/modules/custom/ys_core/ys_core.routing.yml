@@ -22,3 +22,11 @@ ys_core.admin_footer_settings:
     _title: 'Footer Settings'
   requirements:
     _permission: 'yalesites manage settings'
+# Editorial dashboard.
+ys_core.admin_dashboard:
+  path: '/admin/yalesites/dashboard'
+  defaults:
+    _controller: '\Drupal\ys_core\Controller\DashboardController::content'
+    _title: 'Dashboard'
+  requirements:
+    _permission: 'yalesites manage settings'

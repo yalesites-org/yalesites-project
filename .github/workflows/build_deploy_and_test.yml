@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref || github.ref_name }}
 
@@ -41,7 +41,7 @@ jobs:
         run: echo BASH_ENV=${RUNNER_TEMP}/bash_env.txt >> $GITHUB_ENV
 
       - name: Cache bash_env.txt
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-bash-env
         with:
@@ -84,14 +84,16 @@ jobs:
       image: quay.io/pantheon-public/build-tools-ci:8.x-php7.4
       options: --user root
     runs-on: ubuntu-latest
+    env:
+          YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Cache composer cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-composer-cache
         with:
@@ -106,6 +108,14 @@ jobs:
       # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
       - name: setup-environment-vars
         run: /build-tools-ci/scripts/set-environment
+
+      - name: Check for contrib dependencies in root composer.json
+        run: |
+          contrib_check=$(jq -r '.require | with_entries(select(.key | test("(drupal\/(?!core).*$)"))) | keys | join(", ")' ./composer.json)
+          if [ -n "$contrib_check" ]; then
+            echo "::error::$contrib_check found in /composer.json and should be moved to /web/profiles/custom/yalesites_profile/composer.json" && exit 1
+          fi
+
       - name: run static tests
         run: |
           ./.ci/test/static/run
@@ -118,16 +128,21 @@ jobs:
     needs: [configure_env_vars, static_tests]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref || github.ref_name }}
           fetch-depth: 0
+
+      # Workaround for https://github.com/actions/runner/issues/2033
+      - name: Set git safe.directory
+        run: |
+           git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Set bash_env env var
         run: echo BASH_ENV=${RUNNER_TEMP}/bash_env.txt >> $GITHUB_ENV
 
       - name: Cache bash_env.txt
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-bash-env
         with:
@@ -139,7 +154,7 @@ jobs:
             ${{ runner.os }}-
 
       - name: Cache composer cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-composer-cache
         with:
@@ -151,7 +166,7 @@ jobs:
             ${{ runner.os }}-
 
       - name: Cache vendor folder
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-vendor
         with:
@@ -159,7 +174,7 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/composer.lock') }}
 
       - name: Cache web folder
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-web
         with:
@@ -167,7 +182,7 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.run_number }}
 
       - name: Cache drush folder
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-drush
         with:

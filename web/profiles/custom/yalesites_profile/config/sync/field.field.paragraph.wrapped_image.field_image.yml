@@ -5,11 +5,11 @@ dependencies:
   config:
     - field.storage.paragraph.field_image
     - media.type.image
-    - paragraphs.paragraphs_type.pop_out_image
-id: paragraph.pop_out_image.field_image
+    - paragraphs.paragraphs_type.wrapped_image
+id: paragraph.wrapped_image.field_image
 field_name: field_image
 entity_type: paragraph
-bundle: pop_out_image
+bundle: wrapped_image
 label: Image
 description: ''
 required: true

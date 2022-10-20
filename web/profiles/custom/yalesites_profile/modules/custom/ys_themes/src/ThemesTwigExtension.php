@@ -2,10 +2,8 @@
 
 namespace Drupal\ys_themes;
 
-use Drupal\ys_themes\ThemeSettingsManager;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
-
 
 /**
  * Twig functions to retrieve YaleSites theme settings.

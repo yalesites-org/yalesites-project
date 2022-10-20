@@ -79,7 +79,7 @@ settings:
       news_list:
         weight: 45
         enabled: false
-      pop_out_image:
+      wrapped_image:
         weight: 46
         enabled: false
       pull_quote:

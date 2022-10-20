@@ -48,11 +48,7 @@
   ]
 %}
 
-{% block paragraph %}
-  <div{{ attributes.addClass(classes) }}>
-    {% block content %}
-      <span class="paragraph-type-label">{{ paragraph.bundle|clean_class }}</span>
-      {{ content }}
-    {% endblock %}
-  </div>
-{% endblock paragraph %}
+<div{{ attributes.addClass(classes) }}>
+  <span class="paragraph-type-label">{{ paragraph.bundle|clean_class }}</span>
+  {{ content }}
+</div>

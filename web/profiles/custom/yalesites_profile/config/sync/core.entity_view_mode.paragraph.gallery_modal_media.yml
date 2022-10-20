@@ -1,0 +1,10 @@
+uuid: 4c6e49b0-72fa-4b69-b406-eea94831fa44
+langcode: en
+status: true
+dependencies:
+  module:
+    - paragraphs
+id: paragraph.gallery_modal_media
+label: 'Gallery - Modal Media'
+targetEntityType: paragraph
+cache: true

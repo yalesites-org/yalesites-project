@@ -8,13 +8,10 @@ set -eo pipefail
 # Otherwise a multidev environment is used.
 #
 
-# Cut gitignore at the cut mark.
-terminus build:gitignore:cut
-
 # Authenticate with Terminus
 terminus -n auth:login --machine-token="$TERMINUS_TOKEN"
 
-if [[ $CI_BRANCH != $DEFAULT_BRANCH ]]
+if [[ "$CI_BRANCH" != "$DEFAULT_BRANCH" ]]
 then
   # Create a new multidev environment (or push to an existing one)
   terminus -n build:env:create "$TERMINUS_SITE.dev" "$TERMINUS_ENV" --pr-id="$PR_NUMBER" --yes
@@ -38,10 +35,10 @@ fi
 terminus -n drush "$TERMINUS_SITE.$TERMINUS_ENV" -- cr
 
 # Clear the environment cache
-terminus -n env:clear-cache $TERMINUS_SITE.$TERMINUS_ENV
+terminus -n env:clear-cache "$TERMINUS_SITE.$TERMINUS_ENV"
 
 # Ensure secrets are set
 terminus -n secrets:set "$TERMINUS_SITE.$TERMINUS_ENV" token "${GH_TOKEN:-$GITHUB_TOKEN}" --file='.build-secrets/tokens.json' --clear --skip-if-empty
 # Delete old multidev environments associated
 # with a PR that has been merged or closed.
-terminus -n build:env:delete:pr $TERMINUS_SITE --yes
+terminus -n build:env:delete:pr "$TERMINUS_SITE" --yes
