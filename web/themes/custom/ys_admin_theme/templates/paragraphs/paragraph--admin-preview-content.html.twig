@@ -49,6 +49,7 @@
 %}
 
 <div{{ attributes.addClass(classes) }}>
-  <span class="paragraph-type-label">{{ paragraph.bundle|clean_class }}</span>
-  {{ content }}
+  <div class='admin-preview__content'>
+    {{ content }}
+  </div>
 </div>
