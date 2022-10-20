@@ -76,7 +76,7 @@ class YaleSitesSupportFormBlock extends BlockBase implements ContainerFactoryPlu
     $currentUserRoles = implode(", ", $this->account->getRoles());
     return [
       '#theme' => 'ys_support_form',
-      '#link' => "https://yale.service-now.com/it?id=incident_form&prefill_u_business_service=e9688dcd6fbb31007ee2abcf9f3ee40c&prefill_u_category=b74b15c16ffb31007ee2abcf9f3ee4b3&prefill_short_description=Yalesites%20Service%20Request:%20{$siteURL}&prefill_description=Please%20enter%20your%20support%20request%20below%20this%20line:%0d%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%0dDiagnostic%20info%20(do%20not%20edit%20this%20section)%0dSite Name:%20{$siteName}%0dUser Name:%20{$currentUserName}%0dUser Roles:%20{$currentUserRoles}%0dUser-agent:%20{$userAgent}%0d%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D",
+      '#link' => "https://yale.service-now.com/it?id=incident_form&prefill_u_business_service=e9688dcd6fbb31007ee2abcf9f3ee40c&prefill_u_category=b74b15c16ffb31007ee2abcf9f3ee4b3&prefill_short_description=Yalesites%20Service%20Request:%20{$siteURL}&prefill_description=Please%20enter%20your%20support%20request%20here:%0d%0d%0d%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%0dDiagnostic%20info%20(do%20not%20edit%20this%20section)%0dSite Name:%20{$siteName}%0dUser Name:%20{$currentUserName}%0dUser Roles:%20{$currentUserRoles}%0dUser-agent:%20{$userAgent}%0d%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D",
     ];
   }
 
