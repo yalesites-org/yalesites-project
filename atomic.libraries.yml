@@ -37,3 +37,7 @@ breadcrumbs:
 tabs:
   js:
     node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/tabs/yds-tabs.js: {}
+
+gallery:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/03-organisms/galleries/media-grid/yds-media-grid-interactive.js: {}
