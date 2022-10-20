@@ -1,32 +1,24 @@
-uuid: 4b62886c-05a7-406b-a77b-c6f7d4f090b6
+uuid: 3b994f2f-8c65-46fc-b3c9-5257b9662054
 langcode: en
 status: true
 dependencies:
   config:
+    - core.entity_view_mode.paragraph.gallery_modal_content
     - field.field.paragraph.gallery_item.field_heading
     - field.field.paragraph.gallery_item.field_media
     - field.field.paragraph.gallery_item.field_text
     - paragraphs.paragraphs_type.gallery_item
   module:
     - text
-id: paragraph.gallery_item.default
+id: paragraph.gallery_item.gallery_modal_content
 targetEntityType: paragraph
 bundle: gallery_item
-mode: default
+mode: gallery_modal_content
 content:
   field_heading:
     type: text_default
     label: hidden
     settings: {  }
-    third_party_settings: {  }
-    weight: 1
-    region: content
-  field_media:
-    type: entity_reference_entity_view
-    label: hidden
-    settings:
-      view_mode: card_secondary_3_2
-      link: false
     third_party_settings: {  }
     weight: 0
     region: content
@@ -35,7 +27,8 @@ content:
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 2
+    weight: 1
     region: content
 hidden:
+  field_media: true
   search_api_excerpt: true
