@@ -4,6 +4,7 @@
   "scripts": {
     "assets:pull": "./scripts/local/assets-pull.sh",
     "build": "./scripts/local/build.sh",
+    "build-with-install": "./scripts/local/build-with-install.sh",
     "build-with-assets": "./scripts/local/build-with-assets.sh",
     "confex": "./scripts/local/confex.sh",
     "confim": "./scripts/local/confim.sh",
