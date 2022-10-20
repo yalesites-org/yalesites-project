@@ -28,6 +28,8 @@ These are the most common npm scripts you may find yourself using:
 - `local:review-with-cl-branch` Will ask which branch of the component library you want to review. Useful when you need to review a CL PR that doesn't have associated Atomic changes.
 - `local:review-with-atomic-and-cl-branch` Runs each of the scripts above, in order, so that you can review changes that span both the Atomic and CL repos.
 
+_Note: For the last three `local:` scripts, you'll still need to run the `build` script to import config etc. for Drupal. They just get the Atomic and Component Library setup._
+
 ### Database
 
 - `db:get` Download the latest backup from Pantheon's dev instance.
