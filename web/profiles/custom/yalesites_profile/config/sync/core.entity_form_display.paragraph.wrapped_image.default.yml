@@ -3,19 +3,19 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.field.paragraph.pop_out_image.field_caption
-    - field.field.paragraph.pop_out_image.field_image
-    - field.field.paragraph.pop_out_image.field_text
-    - paragraphs.paragraphs_type.pop_out_image
+    - field.field.paragraph.wrapped_image.field_caption
+    - field.field.paragraph.wrapped_image.field_image
+    - field.field.paragraph.wrapped_image.field_text
+    - paragraphs.paragraphs_type.wrapped_image
   module:
     - allowed_formats
     - maxlength
     - media_library
     - media_library_edit
     - text
-id: paragraph.pop_out_image.default
+id: paragraph.wrapped_image.default
 targetEntityType: paragraph
-bundle: pop_out_image
+bundle: wrapped_image
 mode: default
 content:
   field_caption:

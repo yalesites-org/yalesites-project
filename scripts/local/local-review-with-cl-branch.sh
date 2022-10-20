@@ -7,7 +7,7 @@
 GREEN='\033[1;32m'
 ENDCOLOR='\033[0m'
 
-read -pr "Which branch of the component-library-twig repo do you need? " BRANCH
+read -p "Which branch of the component-library-twig repo do you need? " BRANCH
 
 echo -e "${GREEN}Move into atomic and checkout develop"
 cd web/themes/contrib/atomic || exit
