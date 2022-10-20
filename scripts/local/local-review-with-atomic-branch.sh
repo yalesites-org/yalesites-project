@@ -4,7 +4,7 @@
 GREEN='\033[1;32m'
 ENDCOLOR='\033[0m'
 
-read -pr "Which branch of the atomic repo do you need? " BRANCH
+read -p "Which branch of the atomic repo do you need? " BRANCH
 
 echo -e "${GREEN}Checking out the $BRANCH branch of Atomic${ENDCOLOR}"
 cd web/themes/contrib/atomic || exit
