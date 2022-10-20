@@ -52,6 +52,7 @@
     "drupal/publishcontent": "^1.5",
     "drupal/quick_node_clone": "^1.15",
     "drupal/redirect": "^1.7",
+    "drupal/redirect_after_login": "^2.7",
     "drupal/search_api": "^1.25",
     "drupal/search_api_exclude": "^2.0",
     "drupal/smart_date": "^3.5",
