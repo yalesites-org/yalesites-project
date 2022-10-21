@@ -245,7 +245,7 @@
 .paragraph--view-mode--preview {
   box-shadow: 0 0 0 1px var(--color-gray-600);
   border-radius: var(--radius-4);
-  padding: 3em 1rem 1rem;
+  padding: 2.5rem 1rem 1rem;
   position: relative;
 }
 .paragraph--view-mode--preview > .paragraph-type-label {
@@ -269,7 +269,7 @@
 .paragraph--view-mode--preview[class*=-item] {
   box-shadow: 0 0 0 1px var(--color-gray-500);
   border-radius: var(--radius-0);
-  padding: 3em 1rem 1rem;
+  padding: 2.5rem 1rem 1rem;
 }
 .paragraph--view-mode--preview[class*=-item] > .paragraph-type-label {
   border-top-right-radius: var(--radius-0);
@@ -280,7 +280,7 @@
 .paragraph--view-mode--preview.paragraph--type--section {
   box-shadow: 0 0 0 1px var(--color-gray-800);
   border-radius: var(--radius-10);
-  padding: 3em 1rem 1rem;
+  padding: 2.5rem 1rem 1rem;
 }
 .paragraph--view-mode--preview.paragraph--type--section > .paragraph-type-label {
   border-top-right-radius: var(--radius-10);
@@ -297,7 +297,7 @@
 .paragraph--view-mode--preview .yds-two-column__secondary {
   box-shadow: 0 0 0 1px var(--color-gray-800);
   border-radius: var(--radius-0);
-  padding: 3em 1rem 1rem;
+  padding: 2.5rem 1rem 1rem;
   display: grid;
   gap: 1rem;
 }
@@ -310,6 +310,21 @@
 
 .js .paragraph-type-title {
   overflow: visible;
+}
+
+.admin-preview__content {
+  position: relative;
+  max-height: 6rem;
+  overflow: hidden;
+}
+.admin-preview__content::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4rem;
+  background: linear-gradient(to top, white, transparent);
 }
 
 /*# sourceMappingURL=paragraphs.css.map */

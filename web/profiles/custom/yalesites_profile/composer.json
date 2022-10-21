@@ -52,11 +52,11 @@
     "drupal/publishcontent": "^1.5",
     "drupal/quick_node_clone": "^1.15",
     "drupal/redirect": "^1.7",
-    "drupal/redirect_after_login": "^2.7",
     "drupal/search_api": "^1.25",
     "drupal/search_api_exclude": "^2.0",
     "drupal/smart_date": "^3.5",
     "drupal/twig_tweak": "^3.1",
+    "drupal/webform": "^6.1",
     "drupal/xmlsitemap": "^1.2",
     "yalesites-org/atomic": "^1.0",
     "yalesites-org/yale_cas": "^1.0"

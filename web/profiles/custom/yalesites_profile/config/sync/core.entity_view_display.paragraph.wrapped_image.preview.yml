@@ -4,17 +4,17 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.paragraph.preview
-    - field.field.paragraph.pop_out_image.field_caption
-    - field.field.paragraph.pop_out_image.field_image
-    - field.field.paragraph.pop_out_image.field_text
+    - field.field.paragraph.wrapped_image.field_caption
+    - field.field.paragraph.wrapped_image.field_image
+    - field.field.paragraph.wrapped_image.field_text
     - image.style.media_library
-    - paragraphs.paragraphs_type.pop_out_image
+    - paragraphs.paragraphs_type.wrapped_image
   module:
     - media
     - text
-id: paragraph.pop_out_image.preview
+id: paragraph.wrapped_image.preview
 targetEntityType: paragraph
-bundle: pop_out_image
+bundle: wrapped_image
 mode: preview
 content:
   field_caption:

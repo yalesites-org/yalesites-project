@@ -6,11 +6,11 @@ ENDCOLOR='\033[0m'
 
 read -p "Which branch of the atomic repo do you need? " BRANCH
 
-echo -e "${GREEN}Checking out the $BRANCH branch of Atomic"
-cd web/themes/contrib/atomic
+echo -e "${GREEN}Checking out the $BRANCH branch of Atomic${ENDCOLOR}"
+cd web/themes/contrib/atomic || exit
 git checkout develop
 git pull
-git checkout $BRANCH
+git checkout "$BRANCH"
 git pull
 echo -e "${GREEN}npm ci${ENDCOLOR}"
 npm ci

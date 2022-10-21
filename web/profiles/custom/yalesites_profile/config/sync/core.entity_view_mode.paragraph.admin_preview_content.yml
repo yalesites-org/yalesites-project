@@ -1,0 +1,10 @@
+uuid: ec314984-7fe7-4e7a-a075-dcc3ac0bc961
+langcode: en
+status: true
+dependencies:
+  module:
+    - paragraphs
+id: paragraph.admin_preview_content
+label: 'Admin Preview - Content'
+targetEntityType: paragraph
+cache: true

@@ -5,6 +5,14 @@
  * Contains ys_core.module functions.
  */
 
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
+
+/**
+ * @file
+ * Contains ys_core.module functions.
+ */
+
 /**
  * Add template file for social links.
  *
@@ -15,6 +23,11 @@ function ys_core_theme($existing, $type, $theme, $path): array {
     'ys_breadcrumb_block' => [
       'variables' => [
         'items' => [],
+      ],
+    ],
+    'ys_support_form' => [
+      'variables' => [
+        'link' => NULL,
       ],
     ],
     'ys_dashboard' => [
@@ -52,4 +65,19 @@ function ys_core_preprocess_region(&$variables) {
   if ($variables['elements']['#region'] == 'header' && $config->get('search')) {
     $variables['utility_nav__search'] = $config->get('search')['enable_search_form'];
   }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function ys_core_form_user_login_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $form['#submit'][] = 'ys_core_user_login_form_submit';
+}
+
+/**
+ * Custom submit handler for the login form.
+ */
+function ys_core_user_login_form_submit($form, FormStateInterface $form_state) {
+  $url = Url::fromRoute('<front>');
+  $form_state->setRedirectUrl($url);
 }

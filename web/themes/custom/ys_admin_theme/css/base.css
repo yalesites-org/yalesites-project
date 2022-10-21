@@ -1,0 +1,13 @@
+.js-lpb-component-list h1,
+.js-lpb-component-list h2,
+.js-lpb-component-list h3,
+.js-lpb-component-list h4,
+.js-lpb-component-list h5,
+.js-lpb-component-list h6 {
+  margin-top: 0;
+}
+.js-lpb-component-list p {
+  margin-top: 0;
+}
+
+/*# sourceMappingURL=base.css.map */

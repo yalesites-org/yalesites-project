@@ -1,0 +1,5 @@
+{% set heading__level = heading__level|default('2') %}
+
+{% for item in items %}
+  <h{{ heading__level }}>{{ item.content }}</h{{ heading__level }}>
+{% endfor %}

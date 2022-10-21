@@ -18,7 +18,7 @@ dependencies:
     - paragraphs.paragraphs_type.media_grid
     - paragraphs.paragraphs_type.news_cards
     - paragraphs.paragraphs_type.news_list
-    - paragraphs.paragraphs_type.pop_out_image
+    - paragraphs.paragraphs_type.wrapped_image
     - paragraphs.paragraphs_type.pull_quote
     - paragraphs.paragraphs_type.quick_links
     - paragraphs.paragraphs_type.section
@@ -48,7 +48,7 @@ settings:
       text_with_image: text_with_image
       image: image
       pull_quote: pull_quote
-      pop_out_image: pop_out_image
+      wrapped_image: wrapped_image
       callout: callout
       divider: divider
       embed: embed
@@ -119,9 +119,6 @@ settings:
       news_list:
         weight: -22
         enabled: true
-      pop_out_image:
-        weight: -29
-        enabled: true
       pull_quote:
         weight: -30
         enabled: true
@@ -145,5 +142,8 @@ settings:
         enabled: true
       video:
         weight: 46
+        enabled: true
+      wrapped_image:
+        weight: -29
         enabled: true
 field_type: entity_reference_revisions

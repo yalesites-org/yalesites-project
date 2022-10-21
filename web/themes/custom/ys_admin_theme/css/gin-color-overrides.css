@@ -237,9 +237,12 @@
   --link-styles-underline-bg-color: var(--link-color-base);
 }
 
+/* stylelint-disable */
 :root [data-gin-accent] {
   --colorGinPrimaryRGB: 39, 107, 190;
   --colorGinText: var(--color-gray-800);
 }
+
+/* stylelint-enable */
 
 /*# sourceMappingURL=gin-color-overrides.css.map */
