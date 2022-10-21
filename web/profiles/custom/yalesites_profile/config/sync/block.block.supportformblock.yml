@@ -1,0 +1,25 @@
+uuid: 50be5ab7-af92-4084-bd30-2305ea2ce08d
+langcode: en
+status: true
+dependencies:
+  module:
+    - system
+    - ys_core
+  theme:
+    - ys_admin_theme
+id: supportformblock
+theme: ys_admin_theme
+region: content
+weight: 0
+provider: null
+plugin: support_form_block
+settings:
+  id: support_form_block
+  label: 'Support Request'
+  label_display: visible
+  provider: ys_core
+visibility:
+  request_path:
+    id: request_path
+    negate: false
+    pages: /admin/yalesites/dashboard
