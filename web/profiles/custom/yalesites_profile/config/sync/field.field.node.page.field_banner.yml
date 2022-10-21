@@ -61,9 +61,6 @@ settings:
       news_list:
         weight: 29
         enabled: false
-      wrapped_image:
-        weight: 19
-        enabled: false
       pull_quote:
         weight: 20
         enabled: false
@@ -75,5 +72,8 @@ settings:
         enabled: false
       text_with_image:
         weight: 22
+        enabled: false
+      wrapped_image:
+        weight: 19
         enabled: false
 field_type: entity_reference_revisions
