@@ -20,11 +20,6 @@ use Drupal\Core\Url;
  */
 function ys_core_theme($existing, $type, $theme, $path): array {
   return [
-    'ys_social_links' => [
-      'variables' => [
-        'icons' => [],
-      ],
-    ],
     'ys_breadcrumb_block' => [
       'variables' => [
         'items' => [],
@@ -37,6 +32,14 @@ function ys_core_theme($existing, $type, $theme, $path): array {
     ],
     'ys_dashboard' => [
       'variables' => [],
+    ],
+    'ys_dashboard_resources' => [
+      'variables' => [],
+    ],
+    'ys_social_links' => [
+      'variables' => [
+        'icons' => [],
+      ],
     ],
   ];
 }
