@@ -41,13 +41,15 @@ function ys_core_tokens($type, array $tokens, array $data, array $options, Bubbl
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'news_landing_page_path':
+          // Landing page path is a site setting; fallback to '\news'.
           $config = \Drupal::config('ys_core.site');
-          $replacements[$original] = $config->get('page.news');
+          $replacements[$original] = $config->get('page.news') ?: '\news';
           break;
 
         case 'event_landing_page_path':
+          // Landing page path is a site setting; fallback to '\event'.
           $config = \Drupal::config('ys_core.site');
-          $replacements[$original] = $config->get('page.events');
+          $replacements[$original] = $config->get('page.events') ?: '\events';
           break;
       }
     }

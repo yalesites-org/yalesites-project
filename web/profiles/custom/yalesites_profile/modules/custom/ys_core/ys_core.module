@@ -27,6 +27,9 @@ function ys_core_theme($existing, $type, $theme, $path): array {
         'link' => NULL,
       ],
     ],
+    'ys_dashboard' => [
+      'variables' => [],
+    ],
   ];
 }
 

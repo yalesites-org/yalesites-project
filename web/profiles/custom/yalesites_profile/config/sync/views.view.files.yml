@@ -752,15 +752,20 @@ display:
           admin_label: 'File usage'
           required: false
       display_description: ''
-      display_extenders: {  }
+      display_extenders:
+        metatag_display_extender:
+          metatags: {  }
+          tokenize: false
       path: admin/content/files
       menu:
-        type: tab
+        type: none
         title: Files
         description: ''
         weight: 0
+        expanded: false
         menu_name: admin
-        context: ''
+        parent: ''
+        context: '0'
     cache_metadata:
       max-age: -1
       contexts:

@@ -17,16 +17,16 @@ mode: preview
 content:
   field_content:
     type: entity_reference_revisions_entity_view
-    label: above
+    label: hidden
     settings:
-      view_mode: preview
+      view_mode: admin_preview_content
       link: ''
     third_party_settings: {  }
     weight: 1
     region: content
   field_heading:
     type: text_default
-    label: inline
+    label: hidden
     settings: {  }
     third_party_settings: {  }
     weight: 0

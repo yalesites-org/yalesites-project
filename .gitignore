@@ -109,6 +109,7 @@
 
 # Ignore packages installed by Node.
 /node_modules
+package-lock.json
 
 # Local files
 .DS_Store
