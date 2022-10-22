@@ -30,7 +30,7 @@ class YaleSitesSupportFormBlock extends BlockBase implements ContainerFactoryPlu
   /**
    * Symfony request - to get base URL.
    *
-   * @var \Symfony\Component\HttpFoundation\RequestStack
+   * @var \Symfony\Component\HttpFoundation\Request
    */
   protected $request;
 
