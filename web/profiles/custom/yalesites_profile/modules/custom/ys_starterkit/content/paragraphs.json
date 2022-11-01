@@ -10,7 +10,7 @@
           },
           "field_text": {
             "value": "\"The homepage is the ideal place to tell your story. Paint a picture for the user and spark their interest.\"",
-            "format": "basic_html"
+            "format": "restricted_html"
           }
         }
       },
@@ -20,7 +20,7 @@
         "paragraph_fields": {
           "field_heading": {
             "value": "Short heading to introduce this item",
-            "format": "basic_html"
+            "format": "heading_html"
           },
           "field_images": [
             {
@@ -33,7 +33,7 @@
           },
           "field_subheading": {
             "value": "Optional subheading for extra content",
-            "format": "basic_html"
+            "format": "heading_html"
           },
           "field_text": {
             "value": "The feature width, equal focus text with image component is great for introducing linked content and/or drawing attention to free-standing pieces of content. It is meant to be short form content that is quick and to the point.",
@@ -61,7 +61,7 @@
         "paragraph_fields": {
           "field_heading": {
             "value": "Id consectetur purus ut faucibus nulla aliquet porttitor lacus",
-            "format": "basic_html"
+            "format": "heading_html"
           },
           "field_images": [
             {
@@ -120,7 +120,7 @@
         "paragraph_fields": {
           "field_text": {
             "value": "Nec ultrices dui sapien eget mi proin sed libero enim. Nisl pretium fusce id velit ut tortor pretium.",
-            "format": "basic_html"
+            "format": "restricted_html"
           }
         }
       },
@@ -258,7 +258,7 @@
           },
           "field_text": {
             "value": "Malesuada nunc vel risus commodo viverra maecenas accumsan. Aliquam eleifend mi in nulla posuere sollicitudin aliquam.",
-            "format": "basic_html"
+            "format": "restricted_html"
           }
         }
       },
