@@ -60,7 +60,7 @@ class FooterSettingsForm extends ConfigFormBase {
     foreach ($this->socialLinks::SITES as $id => $name) {
       $form['social_links'][$id] = [
         '#type' => 'url',
-        '#title' => $this->t('@name URL', $name),
+        '#title' => $this->t('@name URL', ['@name' => $name]),
         '#default_value' => $config->get($id),
       ];
     }
