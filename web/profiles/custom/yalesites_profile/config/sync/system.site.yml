@@ -2,7 +2,7 @@ _core:
   default_config_hash: l58O_yEXSo-SeJi19LXdzTU1tNJG3lmnIhCitRkM1tk
 langcode: en
 uuid: 3be7d457-cc13-4e03-bde2-d004a9e0f46e
-name: 'Your Site Title'
+name: 'Test Config Change'
 mail: noreply@yale.edu
 slogan: ''
 page:
