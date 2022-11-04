@@ -198,54 +198,7 @@ display:
           parse_mode: terms
           conjunction: AND
           fields: {  }
-      filters:
-        search_api_fulltext:
-          id: search_api_fulltext
-          table: search_api_index_node_index
-          field: search_api_fulltext
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: search_api_fulltext
-          operator: or
-          value: ''
-          group: 1
-          exposed: true
-          expose:
-            operator_id: search_api_fulltext_op
-            label: Search
-            description: ''
-            use_operator: false
-            operator: search_api_fulltext_op
-            operator_limit_selection: false
-            operator_list: {  }
-            identifier: keywords
-            required: true
-            remember: true
-            multiple: false
-            remember_roles:
-              authenticated: authenticated
-              anonymous: '0'
-              platform_admin: '0'
-              site_admin: '0'
-            expose_fields: false
-            placeholder: ''
-            searched_fields_id: search_api_fulltext_searched_fields
-          is_grouped: false
-          group_info:
-            label: ''
-            description: ''
-            identifier: ''
-            optional: true
-            widget: select
-            multiple: false
-            remember: false
-            default_group: All
-            default_group_multiple: {  }
-            group_items: {  }
-          parse_mode: terms
-          min_length: null
-          fields: {  }
+      filters: {  }
       style:
         type: default
       row:
@@ -274,7 +227,7 @@ display:
           admin_label: ''
           plugin_id: result
           empty: false
-          content: 'Displaying @start - @end of @total'
+          content: '@total search results'
       footer: {  }
       display_extenders: {  }
     cache_metadata:
@@ -295,7 +248,7 @@ display:
     display_plugin: page
     position: 1
     display_options:
-      exposed_block: true
+      exposed_block: false
       display_extenders:
         metatag_display_extender:
           metatags:
