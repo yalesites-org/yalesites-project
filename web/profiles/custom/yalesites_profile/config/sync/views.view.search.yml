@@ -176,7 +176,7 @@ display:
             title_enable: false
             title: All
           title_enable: true
-          title: 'Search for {{ arguments.search_api_fulltext }}'
+          title: 'Search results: <em>{{ arguments.search_api_fulltext }}</em>'
           default_argument_type: query_parameter
           default_argument_options:
             query_param: keywords
@@ -218,16 +218,18 @@ display:
           query_tags: {  }
       relationships: {  }
       header:
-        result:
-          id: result
+        result_plural:
+          id: result_plural
           table: views
-          field: result
+          field: result_plural
           relationship: none
           group_type: group
           admin_label: ''
-          plugin_id: result
+          plugin_id: result_plural
           empty: false
-          content: '@total search results'
+          content: '@total search result'
+          content_plural: '@total search results'
+          plural_count_token: '@total'
       footer: {  }
       display_extenders: {  }
     cache_metadata:
