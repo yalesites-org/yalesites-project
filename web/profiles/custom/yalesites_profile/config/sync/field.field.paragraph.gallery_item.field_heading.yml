@@ -16,7 +16,7 @@ id: paragraph.gallery_item.field_heading
 field_name: field_heading
 entity_type: paragraph
 bundle: gallery_item
-label: Heading
+label: 'Gallery Item Heading'
 description: ''
 required: false
 translatable: true

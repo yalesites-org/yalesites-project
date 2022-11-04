@@ -11,7 +11,10 @@ dependencies:
     - field.field.node.news.field_teaser_title
     - node.type.news
   module:
+    - allowed_formats
     - field_group
+    - hide_revision_field
+    - maxlength
     - media_library
     - metatag
     - paragraphs
@@ -127,7 +130,14 @@ content:
     settings:
       rows: 5
       placeholder: ''
-    third_party_settings: {  }
+    third_party_settings:
+      allowed_formats:
+        hide_help: '1'
+        hide_guidelines: '1'
+      maxlength:
+        maxlength_js: null
+        maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
+        maxlength_js_enforce: false
   field_teaser_title:
     type: string_textfield
     weight: 9

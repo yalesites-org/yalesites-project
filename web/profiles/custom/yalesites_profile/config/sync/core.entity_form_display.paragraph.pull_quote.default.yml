@@ -92,7 +92,7 @@ content:
     third_party_settings:
       allowed_formats:
         hide_help: '1'
-        hide_guidelines: '0'
+        hide_guidelines: '1'
       maxlength:
         maxlength_js: 425
         maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
