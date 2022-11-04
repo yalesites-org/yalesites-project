@@ -1,6 +1,6 @@
-uuid: 6394e59a-de2b-4ad8-8591-e40e523b7b83
+uuid: 7662db97-2e35-4f64-80c9-5180aee715db
 langcode: en
-status: true
+status: false
 dependencies:
   module:
     - ys_core
@@ -9,7 +9,7 @@ dependencies:
 id: yalesitesbreadcrumbs
 theme: atomic
 region: content
-weight: -2
+weight: -4
 provider: null
 plugin: ys_breadcrumb_block
 settings:
