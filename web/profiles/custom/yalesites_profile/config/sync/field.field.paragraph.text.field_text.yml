@@ -16,7 +16,7 @@ id: paragraph.text.field_text
 field_name: field_text
 entity_type: paragraph
 bundle: text
-label: Text
+label: Content
 description: ''
 required: true
 translatable: false

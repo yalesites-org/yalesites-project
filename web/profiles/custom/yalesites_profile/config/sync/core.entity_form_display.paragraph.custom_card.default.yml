@@ -9,9 +9,8 @@ dependencies:
     - field.field.paragraph.custom_card.field_text
     - paragraphs.paragraphs_type.custom_card
   module:
-    - link
-    - linkit
     - allowed_formats
+    - linkit
     - maxlength
     - media_library
     - media_library_edit
@@ -29,12 +28,12 @@ content:
       size: 60
       placeholder: ''
     third_party_settings:
+      allowed_formats:
+        hide_help: '1'
+        hide_guidelines: '1'
       maxlength:
         maxlength_js: 80
         maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
-      allowed_formats:
-        hide_help: '0'
-        hide_guidelines: '0'
   field_image:
     type: media_library_widget
     weight: 0
@@ -53,7 +52,10 @@ content:
       placeholder_title: ''
       linkit_profile: default
       linkit_auto_link_text: false
-    third_party_settings: {  }
+    third_party_settings:
+      maxlength:
+        maxlength_js: null
+        maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
   field_text:
     type: text_textarea
     weight: 2
@@ -62,13 +64,13 @@ content:
       rows: 5
       placeholder: ''
     third_party_settings:
+      allowed_formats:
+        hide_help: '1'
+        hide_guidelines: '1'
       maxlength:
         maxlength_js: 175
         maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
         maxlength_js_enforce: true
-      allowed_formats:
-        hide_help: '0'
-        hide_guidelines: '0'
 hidden:
   created: true
   status: true

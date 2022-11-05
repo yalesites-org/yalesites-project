@@ -16,7 +16,7 @@ id: paragraph.tab.field_heading
 field_name: field_heading
 entity_type: paragraph
 bundle: tab
-label: Heading
+label: 'Tab Heading'
 description: ''
 required: true
 translatable: true
