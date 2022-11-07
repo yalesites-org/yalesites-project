@@ -12,7 +12,7 @@ read -p "Which branch of the component-library-twig repo do you need? " BRANCH
 echo -e "${GREEN}Move into atomic and checkout develop"
 cd web/themes/contrib/atomic || exit
 echo -e "${GREEN}Delete installed component library${ENDCOLOR}"
-rm -rf node_modules/@yalesites-org/component-library-twig/
+rm -rf node_modules/@yalesites-org/component-library-twig
 echo -e "${GREEN}Clone component library${ENDCOLOR}"
 [ ! -d "component-library-twig" ] && git clone git@github.com:yalesites-org/component-library-twig.git
 echo -e "${GREEN}Move into component library${ENDCOLOR}"
