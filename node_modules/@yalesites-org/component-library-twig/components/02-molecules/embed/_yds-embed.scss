@@ -1,0 +1,9 @@
+@use '../../00-tokens/tokens';
+
+.embed__iframe {
+  @include tokens.spacing-page-section;
+
+  display: block;
+  height: 70vh;
+  border: var(--border-thickness-2) solid;
+}

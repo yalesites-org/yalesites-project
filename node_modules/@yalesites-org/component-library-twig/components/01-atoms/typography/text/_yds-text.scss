@@ -1,0 +1,9 @@
+p {
+  margin-block: 0 1em;
+}
+
+.text {
+  p:last-child {
+    margin-bottom: 0;
+  }
+}
