@@ -41,9 +41,9 @@ text_with_image:
     default: feature
   field_style_variation:
     values:
-      equal: Equal
-      image: Image
-      content: Content
+      equal: Focused
+      image: Focused
+      content: Focused
     default: equal
 quick_links:
   field_style_variation:
