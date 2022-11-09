@@ -8,7 +8,7 @@ _core:
   default_config_hash: ABoKnlk20KHqZRw_2Qr4EvaFvH4lnQ2nuhunHeE1JIU
 id: atomic_local_actions
 theme: atomic
-region: content
+region: system
 weight: -3
 provider: null
 plugin: local_actions_block
