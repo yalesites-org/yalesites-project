@@ -14,16 +14,23 @@
 GREEN='\033[1;32m'
 ENDCOLOR='\033[0m'
 
-echo -e "${GREEN}Move into component library and create a global link${ENDCOLOR}"
+echo -e "${GREEN}Move into tokens repo and create a global link${ENDCOLOR}"
 cd web/themes/contrib/atomic
-[ ! -d "component-library-twig" ] && git clone git@github.com:yalesites-org/component-library-twig.git
-cd component-library-twig || exit
+[ ! -d "_node_modules/tokens" ] && git clone git@github.com:yalesites-org/tokens.git _node_modules/tokens
+cd _node_modules/tokens || exit
 npm link
-echo -e "${GREEN}Move into Atomic and use the newly created global link${ENDCOLOR}"
-cd ..
+cd ../..
+echo -e "${GREEN}Move into component library, use the tokens link, and create a global link${ENDCOLOR}"
+[ ! -d "_node_modules/component-library-twig" ] && git clone git@github.com:yalesites-org/component-library-twig.git _node_modules/component-library-twig
+cd _node_modules/component-library-twig || exit
+npm link
+echo -e "${GREEN}Move into Atomic and use the component-library global link${ENDCOLOR}"
+cd ../..
 npm link @yalesites-org/component-library-twig
-echo -e "${GREEN}Run the develop script in the component library${ENDCOLOR}"
-cd component-library-twig || exit
+echo -e "${GREEN}Move into the component-library and use the tokens global link${ENDCOLOR}"
+cd _node_modules/component-library-twig || exit
 # Run npm ci. This is required to patch our version of Twig.js.
 npm ci
+npm link @yalesites-org/tokens
+echo -e "${GREEN}Run the develop script in the component library${ENDCOLOR}"
 npm run develop
