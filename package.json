@@ -23,6 +23,7 @@
     "local:review-with-atomic-branch": "./scripts/local/local-review-with-atomic-branch.sh",
     "local:review-with-cl-branch": "./scripts/local/local-review-with-cl-branch.sh",
     "local:cl-dev": "./scripts/local/local-cl-dev.sh",
+    "local:theme-link": "./scripts/local/local-theme-link.sh",
     "prettier": "prettier '{.github,docs,web/profiles/custom,web/modules/custom,web/themes/contrib/atomic,web/themes/custom}/**/*.{json,md,js,html,scss,html}' --ignore-unknown --list-different",
     "setup": "./scripts/local/setup.sh",
     "test": "./scripts/local/test.sh"
