@@ -1,12 +1,8 @@
-<div{{ attributes }}>
-  {{ title_prefix }}
-  {{ title_suffix }}
-  {% embed "@molecules/wrapped-image/yds-wrapped-image.twig" with {
-    wrapped_image__content: content.field_text.0,
-    wrapped_image__caption: content.field_caption.0['#text'],
-  } %}
-    {% block wrapped_image__image %}
-      {{ content.field_image }}
-    {% endblock %}
-  {% endembed %}
-</div>
+{% embed "@molecules/wrapped-image/yds-wrapped-image.twig" with {
+  wrapped_image__content: content.field_text.0,
+  wrapped_image__caption: content.field_caption.0['#text'],
+} %}
+  {% block wrapped_image__image %}
+    {{ content.field_image }}
+  {% endblock %}
+{% endembed %}
