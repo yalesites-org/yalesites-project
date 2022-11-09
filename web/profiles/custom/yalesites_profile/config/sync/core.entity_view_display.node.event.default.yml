@@ -50,11 +50,15 @@ content:
     weight: 2
     region: content
   field_event_date:
-    type: smartdate_plain
+    type: smartdate_default
     label: hidden
     settings:
       timezone_override: ''
-      separator: '-'
+      format_type: medium
+      format: html_datetime
+      force_chronological: false
+      add_classes: false
+      time_wrapper: true
     third_party_settings: {  }
     weight: 5
     region: content
