@@ -1,0 +1,9 @@
+/* Responsive Video using CSS only */
+.video-embed {
+  aspect-ratio: 16 / 9;
+
+  iframe {
+    height: 100%;
+    width: 100%;
+  }
+}
