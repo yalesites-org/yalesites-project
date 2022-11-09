@@ -8,7 +8,7 @@ _core:
   default_config_hash: T0wbI6qVdThbbIqXDZFg_1VZ3_ittXBdEoUH7d7ux_E
 id: atomic_local_tasks
 theme: atomic
-region: content
+region: system
 weight: -4
 provider: null
 plugin: local_tasks_block
