@@ -44,4 +44,5 @@ _Notes:_
 
 - `confex` Exports your local drupal config.
 - `confim` Imports the current config files to your database.
-- `local:cl-dev` Enables a frontend developer to works across all three repositories (`yalesites-project`, `atomic`, and `component-library-twig`) in an environment configured to support both Storybook development, and have the changes reflected in the Drupal instance.
+- `local:theme-link` Run this script once to establish `npm link`s to all three repositories. 
+- `local:cl-dev` Enables a frontend developer to work across all three repositories (`yalesites-project`, `atomic`, and `component-library-twig`) in an environment configured to support both Storybook development, and have the changes reflected in the Drupal instance.
