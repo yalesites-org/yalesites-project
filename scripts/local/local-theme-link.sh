@@ -20,7 +20,7 @@ cd web/themes/contrib/atomic
 cd _yale-packages/tokens || exit
 npm link
 cd ../..
-echo -e "${GREEN}Move into component library, use the tokens link, and create a global link${ENDCOLOR}"
+echo -e "${GREEN}Move into component library and create a global link${ENDCOLOR}"
 [ ! -d "_yale-packages/component-library-twig" ] && git clone git@github.com:yalesites-org/component-library-twig.git _yale-packages/component-library-twig
 cd _yale-packages/component-library-twig || exit
 npm link
@@ -32,4 +32,3 @@ cd _yale-packages/component-library-twig || exit
 # Run npm ci. This is required to patch our version of Twig.js.
 npm ci
 npm link @yalesites-org/tokens
-echo -e "${GREEN}Run the develop script in the component library${ENDCOLOR}"
