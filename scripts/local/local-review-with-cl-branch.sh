@@ -14,9 +14,9 @@ cd web/themes/contrib/atomic || exit
 echo -e "${GREEN}Delete installed component library${ENDCOLOR}"
 rm -rf node_modules/@yalesites-org/component-library-twig
 echo -e "${GREEN}Clone component library${ENDCOLOR}"
-[ ! -d "_node_modules/component-library-twig" ] && git clone git@github.com:yalesites-org/component-library-twig.git _node_modules/component-library-twig
+[ ! -d "_yale-packages/component-library-twig" ] && git clone git@github.com:yalesites-org/component-library-twig.git _yale-packages/component-library-twig
 echo -e "${GREEN}Move into component library${ENDCOLOR}"
-cd _node_modules/component-library-twig || exit
+cd _yale-packages/component-library-twig || exit
 echo -e "${GREEN}Checkout the specified branch${ENDCOLOR}"
 git checkout "$BRANCH"
 git pull
