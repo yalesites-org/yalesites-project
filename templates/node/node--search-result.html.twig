@@ -77,14 +77,6 @@
   {% endif %}
   {{ title_suffix }}
 
-  breadcrumbs go here
-
-  {% set items = getBreadcrumbsFromNid(node.id) %}
-
-  {% include '@organisms/menu/breadcrumbs/yds-breadcrumbs.twig' with {
-    show_breadcrumbs: 'always'
-  } %}
-
   <div{{ content_attributes }}>
     {{ content }}
   </div>
