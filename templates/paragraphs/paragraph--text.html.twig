@@ -1,7 +1,3 @@
-<div{{ attributes }}>
-  {{ title_prefix }}
-  {{ title_suffix }}
-  {% include "@molecules/text/yds-text-field.twig" with {
-    text_field__content: content.field_text,
-  } %}
-</div>
+{% include "@molecules/text/yds-text-field.twig" with {
+  text_field__content: content.field_text,
+} %}

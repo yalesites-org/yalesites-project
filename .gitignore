@@ -1,7 +1,5 @@
 .DS_Store
 node_modules
+_yale-packages
 
 /vendor/
-
-component-library-twig
-tokens
