@@ -8,7 +8,6 @@ dependencies:
     - paragraphs.paragraphs_type.embed
   module:
     - link
-    - text
 id: paragraph.embed.default
 targetEntityType: paragraph
 bundle: embed
@@ -26,12 +25,6 @@ content:
     third_party_settings: {  }
     weight: 0
     region: content
-  field_title_attr:
-    type: text_default
-    label: hidden
-    settings: {  }
-    third_party_settings: {  }
-    weight: 1
-    region: content
 hidden:
+  field_title_attr: true
   search_api_excerpt: true

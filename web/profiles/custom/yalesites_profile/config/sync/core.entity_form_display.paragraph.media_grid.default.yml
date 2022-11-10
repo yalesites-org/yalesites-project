@@ -24,12 +24,12 @@ content:
       size: 60
       placeholder: ''
     third_party_settings:
+      allowed_formats:
+        hide_help: '1'
+        hide_guidelines: '1'
       maxlength:
         maxlength_js: 50
         maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
-      allowed_formats:
-        hide_help: '0'
-        hide_guidelines: '0'
   field_media_grid_items:
     type: paragraphs
     weight: 1

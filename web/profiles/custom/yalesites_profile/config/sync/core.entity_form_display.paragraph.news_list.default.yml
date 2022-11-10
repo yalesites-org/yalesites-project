@@ -22,12 +22,12 @@ content:
       size: 60
       placeholder: ''
     third_party_settings:
+      allowed_formats:
+        hide_help: '1'
+        hide_guidelines: '1'
       maxlength:
         maxlength_js: 125
         maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
-      allowed_formats:
-        hide_help: '0'
-        hide_guidelines: '0'
 hidden:
   created: true
   status: true

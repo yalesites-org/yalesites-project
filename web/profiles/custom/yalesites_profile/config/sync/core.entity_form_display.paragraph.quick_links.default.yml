@@ -13,7 +13,6 @@ dependencies:
     - allowed_formats
     - field_group
     - linkit
-    - link
     - maxlength
     - media_library
     - media_library_edit
@@ -81,12 +80,12 @@ content:
       size: 60
       placeholder: ''
     third_party_settings:
+      allowed_formats:
+        hide_help: '1'
+        hide_guidelines: '1'
       maxlength:
         maxlength_js: 50
         maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
-      allowed_formats:
-        hide_help: '0'
-        hide_guidelines: '0'
   field_image:
     type: media_library_widget
     weight: 3
@@ -123,13 +122,13 @@ content:
       rows: 5
       placeholder: ''
     third_party_settings:
+      allowed_formats:
+        hide_help: '1'
+        hide_guidelines: '1'
       maxlength:
         maxlength_js: 100
         maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
         maxlength_js_enforce: true
-      allowed_formats:
-        hide_help: '0'
-        hide_guidelines: '0'
 hidden:
   created: true
   status: true

@@ -16,7 +16,7 @@ id: paragraph.wrapped_image.field_text
 field_name: field_text
 entity_type: paragraph
 bundle: wrapped_image
-label: Text
+label: Content
 description: ''
 required: false
 translatable: true

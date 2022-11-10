@@ -16,7 +16,7 @@ id: paragraph.custom_card.field_heading
 field_name: field_heading
 entity_type: paragraph
 bundle: custom_card
-label: Heading
+label: 'Custom Card Heading'
 description: ''
 required: true
 translatable: true
