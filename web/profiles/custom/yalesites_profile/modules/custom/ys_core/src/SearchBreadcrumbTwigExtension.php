@@ -4,11 +4,17 @@ namespace Drupal\ys_core;
 
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
-use Drupal\menu_link_content\Entity\MenuLinkContent;
 use Drupal\Core\Routing\RouteMatch;
 
 /**
  * Twig functions to retrieve breadcrumbs for a specific node.
+ *
+ * @todo This extension is not complete and more work needs to be done here.
+ * Main issue is that the core breadcrumb service seems to ignore the passed
+ * route parameter so getting breadcrumbs for a specific node does not work.
+ * Instead, it only works with the current route. More details and a possible
+ * fix here: https://drupal.stackexchange.com/questions/191548/how-do-i-build-breadcrumbs-for-a-certain-node
+ * and here: https://www.drupal.org/project/menu_breadcrumb/issues/3026188
  */
 class SearchBreadcrumbTwigExtension extends AbstractExtension {
 
@@ -44,9 +50,6 @@ class SearchBreadcrumbTwigExtension extends AbstractExtension {
         $routeMatch = new RouteMatch($routeName, $route, $routeParameters, $routeParameters);
 
         $breadcrumbs = \Drupal::service('breadcrumb')->build($routeMatch)->getLinks();
-
-        kint($nid);
-        kint($breadcrumbs);
 
         // // Process all breadcrumbs.
         // foreach ($breadcrumbs['#links'] as $breadcrumb) {
