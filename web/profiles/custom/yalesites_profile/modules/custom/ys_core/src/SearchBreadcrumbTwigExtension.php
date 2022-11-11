@@ -51,15 +51,6 @@ class SearchBreadcrumbTwigExtension extends AbstractExtension {
 
         $breadcrumbs = \Drupal::service('breadcrumb')->build($routeMatch)->getLinks();
 
-        // // Process all breadcrumbs.
-        // foreach ($breadcrumbs['#links'] as $breadcrumb) {
-        //   array_push($links, [
-        //     'title' => $breadcrumb->getText(),
-        //     'url' => $breadcrumb->getUrl()->toString(),
-        //     'is_active' => empty($breadcrumb->getUrl()->toString()),
-        //   ]);
-        // }
-        // return $links;
       }
     }
   }
