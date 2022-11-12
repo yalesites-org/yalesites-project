@@ -14,7 +14,7 @@ use Drupal\Core\TypedData\DataDefinition;
  *   id = "embed",
  *   label = @Translation("Embed"),
  *   description = @Translation("Fill me in..."),
- *   default_widget = "embed",
+ *   default_widget = "embed_default",
  *   default_formatter = "embed"
  * )
  */
@@ -25,13 +25,10 @@ class Embed extends FieldItemBase {
    */
   public static function defaultFieldSettings() {
     return [
-      'title' => NULL,
       'class' => NULL,
-      'description' => NULL,
       'height' => NULL,
       'width' => NULL,
       'scrolling' => NULL,
-      'allowfullscreen' => NULL,
     ] + parent::defaultFieldSettings();
   }
 
@@ -39,11 +36,12 @@ class Embed extends FieldItemBase {
    * {@inheritdoc}
    */
   public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
-    // url as 'string' for token support. Validation of url will occur later
-    $properties['url'] = DataDefinition::create('string')
-      ->setLabel(t('URL'));
+    $properties['embed_code'] = DataDefinition::create('string')
+      ->setLabel(t('Embed Code'));
     $properties['title'] = DataDefinition::create('string')
       ->setLabel(t('Title text'));
+      $properties['description'] = DataDefinition::create('string')
+      ->setLabel(t('Description text'));
     $properties['width'] = DataDefinition::create('string')
       ->setLabel(t('Width'));
     $properties['height'] = DataDefinition::create('string')
@@ -61,16 +59,32 @@ class Embed extends FieldItemBase {
   public static function schema(FieldStorageDefinitionInterface $field_definition) {
     return [
       'columns' => [
-        'url' => [
-          'description' => 'The source URL for the embedded element.',
+        'embed_code' => [
+          'description' => 'The source embed code for the embedded element.',
           'type' => 'varchar',
           'length' => 2048,
           'not null' => FALSE,
           'sortable' => TRUE,
           'default' => '',
         ],
+        'provider' => [
+          'description' => 'The provider id matching the user input',
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => FALSE,
+          'sortable' => TRUE,
+          'default' => '',
+        ],
         'title' => [
           'description' => 'The title attribute for the rendered element.',
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => FALSE,
+          'sortable' => TRUE,
+          'default' => '',
+        ],
+        'description' => [
+          'description' => 'The a longform description of the content.',
           'type' => 'varchar',
           'length' => 255,
           'not null' => FALSE,
@@ -107,7 +121,7 @@ class Embed extends FieldItemBase {
         ],
       ],
       'indexes' => [
-        'url' => ['url'],
+        'embed_code' => ['embed_code'],
       ],
     ];
   }
@@ -143,15 +157,15 @@ class Embed extends FieldItemBase {
    * {@inheritdoc}
    */
   public function isEmpty() {
-    $value = $this->get('url')->getValue();
-    return $value === NULL || $value === '';
+    $code = $this->get('embed_code')->getValue();
+    return $code === NULL || $code === '';
   }
 
   /**
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
-    return 'url';
+    return 'embed_code';
   }
 
 }
