@@ -10,7 +10,7 @@ _core:
   default_config_hash: aeqlWs7HwctZeZC7ADcbxfqehJzBRfZKmuZz3DsH3_4
 id: atomic_messages
 theme: atomic
-region: content
+region: system
 weight: -5
 provider: null
 plugin: system_messages_block

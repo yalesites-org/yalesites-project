@@ -16,8 +16,8 @@ id: paragraph.accordion_item.field_heading
 field_name: field_heading
 entity_type: paragraph
 bundle: accordion_item
-label: Heading
-description: ''
+label: 'Accordion Item Heading'
+description: 'This field is the clickable header for your Accordion Item'
 required: true
 translatable: true
 default_value: {  }

@@ -16,7 +16,7 @@ id: paragraph.callout_item.field_text
 field_name: field_text
 entity_type: paragraph
 bundle: callout_item
-label: Text
+label: 'Callout Content'
 description: ''
 required: false
 translatable: true

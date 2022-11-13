@@ -78,3 +78,16 @@ cd web/themes/contrib/atomic
 ```
 
 Frontend tasks may often require changes to the site's fields, content types, or displays. If this is the case, then developers can follow the above process for updating site configuration. These config settings are tracked in the yalesites_profile. An automated process has not yet been defined for deploying config changes and theme changes into the same multidev environment.
+
+## Working with Starterkit content
+
+The ys_starterkit module defines content used to showcase how paragraphs and Drupal entities can be used together for site building. The content is also a useful tool for developers who want example pages for testing their work.
+
+```bash
+# Import content for the first time or update content.
+lando drush migrate-import --group ys_starterkit
+# Delete entities created from the migration.
+lando drush migrate-rollback --group ys_starterkit
+# Update partial configuration if altering the migration configuration.
+lando drush cim --partial --source=/app/web/profiles/custom/yalesites_profile/modules/custom/ys_starterkit/config/install -y
+```
