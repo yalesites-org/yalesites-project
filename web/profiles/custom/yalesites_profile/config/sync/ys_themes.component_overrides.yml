@@ -3,7 +3,6 @@ callout:
     values:
       blue-yale: Blue
       gray-700: Gray
-      beige: Beige
     default: blue-yale
 cta_banner:
   field_style_color:
@@ -41,7 +40,7 @@ text_with_image:
     default: feature
   field_style_variation:
     values:
-      equal: Equal
+      equal: 'Equal Focus'
       image: Image
       content: Content
     default: equal
