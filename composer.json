@@ -15,7 +15,6 @@
   "require": {
     "composer/installers": "^1.9",
     "cweagans/composer-patches": "^1.7",
-    "drupal/console": "~1.0",
     "drupal/core-composer-scaffold": "^9.2",
     "drupal/core-recommended": "^9.2",
     "drush/drush": "^10",
@@ -25,6 +24,7 @@
   "require-dev": {
     "dealerdirect/phpcodesniffer-composer-installer": "^0.7.2",
     "drupal/coder": "^8.3",
+    "drupal/console": "~1.0",
     "drupal/core-dev": "^9.2",
     "drupal/drupal-driver": "^2.1",
     "drupal/drupal-extension": "^4.1",
