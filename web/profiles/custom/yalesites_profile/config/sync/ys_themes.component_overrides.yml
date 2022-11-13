@@ -3,7 +3,6 @@ callout:
     values:
       blue-yale: Blue
       gray-700: Gray
-      beige: Beige
     default: blue-yale
 cta_banner:
   field_style_color:
@@ -41,9 +40,9 @@ text_with_image:
     default: feature
   field_style_variation:
     values:
-      equal: Equal Focused
-      image: Image Focused
-      content: Content Focused
+      equal: 'Equal Focus'
+      image: 'Image Focus'
+      content: 'Content Focus'
     default: equal
 quick_links:
   field_style_variation:
@@ -75,3 +74,14 @@ event_cards:
       'true': Featured
       'false': Secondary
     default: 'true'
+wrapped_image:
+  field_style_position:
+    values:
+      left: 'Image Left'
+      right: 'Image Right'
+    default: left
+  field_style_variation:
+    values:
+      floated: Floated
+      offset: Offset
+    default: offset
