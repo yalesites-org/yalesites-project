@@ -32,5 +32,3 @@ cd _yale-packages/component-library-twig || exit
 # Run npm ci. This is required to patch our version of Twig.js.
 npm ci
 npm link @yalesites-org/tokens
-echo -e "${GREEN}Run the develop script in the component library${ENDCOLOR}"
-npm run develop
