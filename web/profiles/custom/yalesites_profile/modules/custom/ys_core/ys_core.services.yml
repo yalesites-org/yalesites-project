@@ -6,8 +6,3 @@ services:
   ys_core.yalesites_breadcrumbs_manager:
     class: Drupal\ys_core\YaleSitesBreadcrumbsManager
     arguments: ['@breadcrumb']
-  # Twig function for getting specific node breadcrumbs.
-  ys_core.search_breadcrumb_twig_extension:
-    class: Drupal\ys_core\SearchBreadcrumbTwigExtension
-    tags:
-      - { name: twig.extension }
