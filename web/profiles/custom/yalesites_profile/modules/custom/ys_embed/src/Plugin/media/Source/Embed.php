@@ -5,7 +5,6 @@ namespace Drupal\ys_embed\Plugin\media\Source;
 use Drupal\media\MediaSourceBase;
 use Drupal\media\MediaSourceFieldConstraintsInterface;
 use Drupal\media\MediaInterface;
-use Drupal\media\MediaTypeInterface;
 
 /**
  * Provides a media source plugin for Qualtrics forms.
@@ -25,10 +24,10 @@ class Embed extends MediaSourceBase implements MediaSourceFieldConstraintsInterf
    */
   public function getMetadataAttributes() {
     return [
+      'embed_code' => $this->t('embed_code'),
+      'title' => $this->t('Title'),
       'width' => $this->t('Width'),
       'height' => $this->t('Height'),
-      'url' => $this->t('URL'),
-      'title' => $this->t('Title'),
       'thumbnail_uri' => $this->t('Thumbnail local URI'),
     ];
   }
@@ -49,7 +48,7 @@ class Embed extends MediaSourceBase implements MediaSourceFieldConstraintsInterf
    */
   public function getSourceFieldConstraints() {
     return [
-      'qualtrics' => [],
+      'embed' => [],
     ];
   }
 

@@ -52,6 +52,14 @@ class EmbedDebugWidget extends WidgetBase {
       '#element_validate' => ['text'],
     ];
 
+    $form['settings']['provider'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Provider'),
+      '#default_value' => $items[$delta]->provider ?? NULL,
+      '#size' => 80,
+      '#maxlength' => 1024,
+    ];
+
     $element['description'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Description'),

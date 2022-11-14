@@ -20,15 +20,6 @@ class EmbedDefaultWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function settingsSummary() {
-    return [
-      $this->t('No settings.')
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
 
     $element['embed_code'] = [
@@ -52,14 +43,6 @@ class EmbedDefaultWidget extends WidgetBase {
       '#type' => 'container',
       '#prefix' => '<div id="edit-settings">',
       '#suffix' => '</div>',
-    ];
-
-    $form['settings']['provider'] = [
-      '#type' => 'hidden',
-      '#title' => $this->t('Provider'),
-      '#default_value' => $items[$delta]->provider ?? NULL,
-      '#size' => 80,
-      '#maxlength' => 1024,
     ];
 
     $form['settings']['title'] = [

@@ -3,17 +3,24 @@
 namespace Drupal\ys_embed\Plugin\Field\FieldType;
 
 use Drupal\Core\Field\FieldItemBase;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\TypedData\DataDefinition;
 
 /**
  * Plugin implementation of the 'embed' field type.
  *
+ * This field type is useful for storing embed codes and related metadata. The
+ * field defines an overloaded database table so that future embed types have a
+ * space for storing a variety of values. Not all services will require all of
+ * the field values, as many may only need a URL.
+ *
+ * @todo Add field settings and form to limit field to specific providers.
+ *
  * @FieldType(
  *   id = "embed",
  *   label = @Translation("Embed"),
- *   description = @Translation("Fill me in..."),
+ *   description = @Translation("Embed codes and metadata."),
  *   default_widget = "embed_default",
  *   default_formatter = "embed"
  * )
@@ -23,33 +30,18 @@ class Embed extends FieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public static function defaultFieldSettings() {
-    return [
-      'class' => NULL,
-      'height' => NULL,
-      'width' => NULL,
-      'scrolling' => NULL,
-    ] + parent::defaultFieldSettings();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
+    // Field stores raw embed code from user input.
     $properties['embed_code'] = DataDefinition::create('string')
-      ->setLabel(t('Embed Code'));
+      ->setLabel(new TranslatableMarkup('Embed Code'))
+      ->setRequired(TRUE);
+    $properties['provider'] = DataDefinition::create('string')
+      ->setLabel(new TranslatableMarkup('Provider ID'))
+      ->setComputed(TRUE);
     $properties['title'] = DataDefinition::create('string')
-      ->setLabel(t('Title text'));
-      $properties['description'] = DataDefinition::create('string')
-      ->setLabel(t('Description text'));
-    $properties['width'] = DataDefinition::create('string')
-      ->setLabel(t('Width'));
-    $properties['height'] = DataDefinition::create('string')
-      ->setLabel(t('Height'));
-    $properties['class'] = DataDefinition::create('string')
-      ->setLabel(t('CSS class'));
-    $properties['scrolling'] = DataDefinition::create('string')
-      ->setLabel(t('Scrolling'));
+      ->setLabel(new TranslatableMarkup('Title'));
+    $properties['params'] = DataDefinition::create('any')
+      ->setLabel(new TranslatableMarkup('Parameters'));
     return $properties;
   }
 
@@ -60,97 +52,41 @@ class Embed extends FieldItemBase {
     return [
       'columns' => [
         'embed_code' => [
-          'description' => 'The source embed code for the embedded element.',
-          'type' => 'varchar',
-          'length' => 2048,
-          'not null' => FALSE,
-          'sortable' => TRUE,
           'default' => '',
+          'description' => 'The source embed code for the embedded element.',
+          'not null' => FALSE,
+          'size' => 'big',
+          'type' => 'text',
         ],
         'provider' => [
+          'default' => '',
           'description' => 'The provider id matching the user input',
-          'type' => 'varchar',
           'length' => 255,
           'not null' => FALSE,
           'sortable' => TRUE,
-          'default' => '',
+          'type' => 'varchar',
         ],
         'title' => [
+          'default' => '',
           'description' => 'The title attribute for the rendered element.',
-          'type' => 'varchar',
           'length' => 255,
           'not null' => FALSE,
           'sortable' => TRUE,
+          'type' => 'varchar',
+        ],
+        'params' => [
           'default' => '',
-        ],
-        'description' => [
-          'description' => 'The a longform description of the content.',
-          'type' => 'varchar',
-          'length' => 255,
+          'description' => 'Additional metadata and settings.',
           'not null' => FALSE,
-          'sortable' => TRUE,
-          'default' => '',
-        ],
-        'class' => [
-          'description' => 'Add a CSS class attribute. Multiple classes should be separated by spaces.',
-          'type' => 'varchar',
-          'length' => '255',
-          'not null' => FALSE,
-          'default' => '',
-        ],
-        'width' => [
-          'description' => 'The rendered element width.',
-          'type' => 'varchar',
-          'length' => 7,
-          'not null' => FALSE,
-          'default' => '600',
-        ],
-        'height' => [
-          'description' => 'The rendered element height.',
-          'type' => 'varchar',
-          'length' => 7,
-          'not null' => FALSE,
-          'default' => '800',
-        ],
-        'scrolling' => [
-          'description' => 'Scrollbars help users reach all framed content.',
-          'type' => 'varchar',
-          'length' => 4,
-          'not null' => TRUE,
-          'default' => 'auto',
+          'serialize' => TRUE,
+          'size' => 'big',
+          'type' => 'text',
         ],
       ],
       'indexes' => [
         'embed_code' => ['embed_code'],
       ],
     ];
-  }
-
-  /**
-   * Global field settings for iframe field.
-   *
-   * In contenttype-field-settings "Manage fields" -> "Edit"
-   * admin/structure/types/manage/CONTENTTYPE/fields/node.CONTENTTYPE.FIELDNAME.
-   */
-  public function fieldSettingsForm(array $form, FormStateInterface $form_state) {
-    $element = [];
-    $settings = $this->getSettings() + self::defaultFieldSettings();
-    $element['class'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('CSS Class'),
-      '#default_value' => $settings['class'],
-    ];
-    $element['scrolling'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Scrolling'),
-      '#default_value' => $settings['scrolling'],
-      '#options' => [
-        'auto' => $this->t('Automatic'),
-        'no' => $this->t('Disabled'),
-        'yes' => $this->t('Enabled'),
-      ],
-    ];
-    return $element;
   }
 
   /**
