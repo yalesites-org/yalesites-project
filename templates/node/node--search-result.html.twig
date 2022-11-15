@@ -1,15 +1,5 @@
-<article{{ attributes }}>
-
-  {{ title_prefix }}
-  {% if label and not page %}
-    <h2{{ title_attributes }}>
-      <a href="{{ url }}" rel="bookmark">{{ label }}</a>
-    </h2>
-  {% endif %}
-  {{ title_suffix }}
-
-  <div{{ content_attributes }}>
-    {{ content }}
-  </div>
-
-</article>
+{% include "@molecules/search-result/yds-search-result.twig" with {
+  search_result__title: label,
+  search_result__highlighted: content.search_api_excerpt,
+  search_result__teaser: content.field_teaser_text
+} %}
