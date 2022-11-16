@@ -1,14 +1,9 @@
-{#
- # Remove wrapping div from all containers by default.
- # For the default template, see `web/core/themes/stabel9/templates/views/views-view-unformatted.html.twig`.
- #}
+<div {{ add_attributes(search_result__attributes) }} data-component-width="max">
+  <div {{ bem('inner', [], 'search-results') }}>
+    {{ drupal_block('ys_search_form_block') }}
 
-{% if title %}
-  <h3>{{ title }}</h3>
-{% endif %}
-
-{{ drupal_block('ys_search_form_block') }}
-
-{% for row in rows %}
-  {{- row.content -}}
-{% endfor %}
+    {% for row in rows %}
+      {{- row.content -}}
+    {% endfor %}
+  </div>
+</div>
