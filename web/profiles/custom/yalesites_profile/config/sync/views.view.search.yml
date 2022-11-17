@@ -124,7 +124,7 @@ display:
           expose_sort_order: true
           sort_asc_label: Asc
           sort_desc_label: Desc
-          text_input_required: 'Enter some search terms and then click Search.'
+          text_input_required: 'Enter some search terms and then click submit.'
           text_input_required_format: basic_html
       access:
         type: perm
@@ -227,8 +227,8 @@ display:
           admin_label: ''
           plugin_id: result_plural
           empty: false
-          content: '@total search result'
-          content_plural: '@total search results'
+          content: '<div class="search-results--summary">@total search result</div>'
+          content_plural: '<div class="search-results--summary">@total search results</div>'
           plural_count_token: '@total'
       footer: {  }
       display_extenders: {  }
