@@ -1,0 +1,21 @@
+uuid: 19671ef4-4ba7-419c-94e8-bfbe35ecea96
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_style_position
+    - paragraphs.paragraphs_type.wrapped_image
+  module:
+    - options
+id: paragraph.wrapped_image.field_style_position
+field_name: field_style_position
+entity_type: paragraph
+bundle: wrapped_image
+label: Position
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_string
