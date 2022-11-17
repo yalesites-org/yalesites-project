@@ -1,7 +1,5 @@
-<div {{ add_attributes(search_result__attributes) }} data-component-width="max">
+<div {{ add_attributes(search_result__attributes) }}>
   <div {{ bem('inner', [], 'search-results') }}>
-    {{ drupal_block('ys_search_form_block') }}
-
     {% for row in rows %}
       {{- row.content -}}
     {% endfor %}

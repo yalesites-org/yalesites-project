@@ -1,0 +1,7 @@
+{{ title_prefix }}
+{% if title %}
+  {% include '@molecules/page-title/yds-page-title.twig' with {
+    page_title__heading: title
+  }%}
+{% endif %}
+{{ title_suffix }}
