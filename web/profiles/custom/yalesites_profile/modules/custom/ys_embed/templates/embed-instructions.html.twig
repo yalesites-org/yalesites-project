@@ -1,0 +1,7 @@
+<p>Add an embed code from one of the allow sources.</p>
+
+{% for source in sources %}
+    <h2>{{ source.name }}</h2>
+    <p>{{ source.instructions }}</p>
+    Example: <code>{{ source.example }}</code>
+{% endfor %}

@@ -24,7 +24,7 @@ class Embed extends MediaSourceBase implements MediaSourceFieldConstraintsInterf
    */
   public function getMetadataAttributes() {
     return [
-      'embed_code' => $this->t('embed_code'),
+      'embed_code' => $this->t('Embed Code'),
       'title' => $this->t('Title'),
       'width' => $this->t('Width'),
       'height' => $this->t('Height'),

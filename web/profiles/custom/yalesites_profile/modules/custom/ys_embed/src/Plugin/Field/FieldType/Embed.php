@@ -12,8 +12,8 @@ use Drupal\Core\TypedData\DataDefinition;
  *
  * This field type is useful for storing embed codes and related metadata. The
  * field defines an overloaded database table so that future embed types have a
- * space for storing a variety of values. Not all services will require all of
- * the field values, as many may only need a URL.
+ * space for storing a variety of values. Some embed sources only require a URL
+ * while others require a series of parameters.
  *
  * @todo Add field settings and form to limit field to specific providers.
  *
@@ -32,14 +32,17 @@ class Embed extends FieldItemBase {
    */
   public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
     // Field stores raw embed code from user input.
-    $properties['embed_code'] = DataDefinition::create('string')
-      ->setLabel(new TranslatableMarkup('Embed Code'))
+    $properties['input'] = DataDefinition::create('string')
+      ->setLabel(new TranslatableMarkup('Embed Code or URL input'))
       ->setRequired(TRUE);
-    $properties['provider'] = DataDefinition::create('string')
-      ->setLabel(new TranslatableMarkup('Provider ID'))
+    // Provider reffers to the matching EmbedSource plugin.
+    $properties['embed_source'] = DataDefinition::create('string')
+      ->setLabel(new TranslatableMarkup('Source ID'))
       ->setComputed(TRUE);
+    // Title setting used on iframes and other elements
     $properties['title'] = DataDefinition::create('string')
       ->setLabel(new TranslatableMarkup('Title'));
+    // Params is a space to store any related metadata
     $properties['params'] = DataDefinition::create('any')
       ->setLabel(new TranslatableMarkup('Parameters'));
     return $properties;
@@ -51,16 +54,16 @@ class Embed extends FieldItemBase {
   public static function schema(FieldStorageDefinitionInterface $field_definition) {
     return [
       'columns' => [
-        'embed_code' => [
+        'input' => [
           'default' => '',
-          'description' => 'The source embed code for the embedded element.',
+          'description' => 'The embed code or URL for the embedded element.',
           'not null' => FALSE,
           'size' => 'big',
           'type' => 'text',
         ],
-        'provider' => [
+        'embed_source' => [
           'default' => '',
-          'description' => 'The provider id matching the user input',
+          'description' => 'The embed_source id matching the user input',
           'length' => 255,
           'not null' => FALSE,
           'sortable' => TRUE,
@@ -81,10 +84,11 @@ class Embed extends FieldItemBase {
           'serialize' => TRUE,
           'size' => 'big',
           'type' => 'text',
+          //'type' => 'blob',
         ],
       ],
       'indexes' => [
-        'embed_code' => ['embed_code'],
+        'input' => ['input'],
       ],
     ];
   }
@@ -93,7 +97,7 @@ class Embed extends FieldItemBase {
    * {@inheritdoc}
    */
   public function isEmpty() {
-    $code = $this->get('embed_code')->getValue();
+    $code = $this->get('input')->getValue();
     return $code === NULL || $code === '';
   }
 
@@ -101,7 +105,7 @@ class Embed extends FieldItemBase {
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
-    return 'embed_code';
+    return 'input';
   }
 
 }
