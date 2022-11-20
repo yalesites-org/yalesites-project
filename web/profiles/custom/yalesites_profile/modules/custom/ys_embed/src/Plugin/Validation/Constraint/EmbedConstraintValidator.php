@@ -4,9 +4,9 @@ namespace Drupal\ys_embed\Plugin\Validation\Constraint;
 
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\ys_embed\Plugin\EmbedSourceManager;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Constraint validator to ensure embedded code matches a valid provider.

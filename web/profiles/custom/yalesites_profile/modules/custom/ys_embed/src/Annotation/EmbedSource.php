@@ -46,11 +46,4 @@ class EmbedSource extends Plugin {
    */
   public $active;
 
-  /**
-   * TRUE if the embed code requires a title attribute for accessibility.
-   *
-   * @var bool
-   */
-  public $require_title;
-
 }

@@ -15,8 +15,6 @@ use Drupal\Core\TypedData\DataDefinition;
  * space for storing a variety of values. Some embed sources only require a URL
  * while others require a series of parameters.
  *
- * @todo Add field settings and form to limit field to specific providers.
- *
  * @FieldType(
  *   id = "embed",
  *   label = @Translation("Embed"),
@@ -84,7 +82,7 @@ class Embed extends FieldItemBase {
           'serialize' => TRUE,
           'size' => 'big',
           'type' => 'text',
-          //'type' => 'blob',
+          'type' => 'blob',
         ],
       ],
       'indexes' => [

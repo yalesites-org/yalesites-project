@@ -52,9 +52,15 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
   /**
    * {@inheritdoc}
    */
-  public function requireTitle(): bool {
-    $definition = $this->getPluginDefinition();
-    return (bool) $definition['require_title'];
+  public static function getInstructions(): string {
+    return static::$instructions;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getExample(): string {
+    return static::$example;
   }
 
 }

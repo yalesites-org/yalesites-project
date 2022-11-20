@@ -6,14 +6,13 @@ use Drupal\ys_embed\Plugin\EmbedSourceBase;
 use Drupal\ys_embed\Plugin\EmbedSourceInterface;
 
 /**
- * Class Qualtrics.
+ * Qualtrics survey embed source.
  *
  * @EmbedSource(
  *   id = "qualtrics",
  *   label = @Translation("Qualtrics"),
- *   description = @Translation("Qualtrics embed provider plugin."),
+ *   description = @Translation("Qualtrics survey embed source."),
  *   active = TRUE,
- *   require_title = TRUE,
  * )
  */
 class Qualtrics extends EmbedSourceBase implements EmbedSourceInterface {

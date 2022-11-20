@@ -139,13 +139,17 @@ class EmbedSourceManager extends DefaultPluginManager {
     return $this->loadPluginById($id);
   }
 
+  /**
+   * Load all EmbedSource plugins.
+   *
+   * @return array
+   *   An array of instances of all EmbedSource plugins.
+   */
   public function loadAll() {
     foreach ($this->getSources() as $plugin_id => $source) {
       $this->loadPluginById($plugin_id);
     }
     return $this->instance;
   }
-
-  // There is a 'hasDefinition' method to check if a particular one exists.
 
 }

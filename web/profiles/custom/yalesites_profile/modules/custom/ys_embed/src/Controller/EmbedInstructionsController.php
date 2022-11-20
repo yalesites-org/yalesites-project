@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_embed\Controller;
 
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Controller\ControllerBase;
@@ -75,7 +76,14 @@ class EmbedInstructionsController extends ControllerBase {
     foreach ($this->embedManager->getSources() as $id => $source) {
       $sources[$id]['name'] = $source['label'];
       $sources[$id]['instructions'] = $source['class']::getInstructions();
-      $sources[$id]['example'] = $source['class']::getExample();
+      $sources[$id]['example'] = [
+        '#open' => FALSE,
+        '#type' => 'details',
+        '#title' => t('Example'),
+      ];
+      $sources[$id]['example']['code'] = [
+        '#markup' => Html::escape($source['class']::getExample()),
+      ];
     }
     $content = [
       '#theme' => 'embed_instructions',

@@ -6,14 +6,13 @@ use Drupal\ys_embed\Plugin\EmbedSourceBase;
 use Drupal\ys_embed\Plugin\EmbedSourceInterface;
 
 /**
- * Class Broken.
+ * Fallback plugin for media items with a broken EmbedSource.
  *
  * @EmbedSource(
  *   id = "broken",
  *   label = @Translation("Broken/Missing"),
- *   description = @Translation("Broken/missing embed provider plugin."),
+ *   description = @Translation("Fallback plugin for media items with a broken EmbedSource."),
  *   active = FALSE,
- *   require_title = FALSE,
  * )
  */
 class Broken extends EmbedSourceBase implements EmbedSourceInterface {

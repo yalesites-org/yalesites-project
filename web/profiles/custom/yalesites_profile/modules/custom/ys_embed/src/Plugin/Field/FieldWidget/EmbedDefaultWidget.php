@@ -23,7 +23,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class EmbedDefaultWidget extends WidgetBase implements ContainerFactoryPluginInterface {
 
   /**
-   * Drupal\ys_embed\Plugin\EmbedSourceManager definition.
+   * The embed source plugin manager service.
    *
    * @var \Drupal\ys_embed\Plugin\EmbedSourceManager
    */
@@ -56,8 +56,16 @@ class EmbedDefaultWidget extends WidgetBase implements ContainerFactoryPluginInt
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
 
-    // An instance of the plugin is available on load for existing content.
-    $plugin = $this->embedManager->loadPluginByCode($items[$delta]->input);
+    // Title is used within iframes for accessibility. Also for media library.
+    $element['title'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Title'),
+      '#default_value' => $items[$delta]->title,
+      '#description' => 'Describe the embedded content. Used in accessibility markup.',
+      '#size' => 80,
+      '#maxlength' => 1024,
+      '#required' => TRUE,
+    ];
 
     // Input field is used to capture the raw user input for the embed code.
     $element['input'] = [
@@ -66,12 +74,6 @@ class EmbedDefaultWidget extends WidgetBase implements ContainerFactoryPluginInt
       '#default_value' => $items[$delta]->input ?? NULL,
       '#size' => 80,
       '#required' => !empty($element['#required']),
-      // '#ajax' => [
-      //   'callback' => [$this, 'refreshSettingsForm'],
-      //   'disable-refocus' => FALSE,
-      //   'event' => 'input',
-      //   'wrapper' => 'edit-settings',
-      // ],
     ];
 
     // Help text opens a model window with instructions and embed code examples.
@@ -86,25 +88,6 @@ class EmbedDefaultWidget extends WidgetBase implements ContainerFactoryPluginInt
       ],
     ];
 
-    // Field settings can be added to the settings container.
-    $form['settings'] = [
-      '#type' => 'container',
-      '#prefix' => '<div id="edit-settings">',
-      '#suffix' => '</div>',
-    ];
-
-    // Title field is hidden by default and shown via AJAX callback.
-    $form['settings']['title'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Title'),
-      '#default_value' => $items[$delta]->title,
-      '#description' => 'The title attribute for the embedded content, used for accessibility markup.',
-      '#size' => 80,
-      '#maxlength' => 1024,
-      '#required' => !empty($element['#required']),
-      // '#access' => $plugin->requireTitle(),
-    ];
-
     // Attach the library for pop-up dialogs/modals.
     $form['#attached']['library'][] = 'core/drupal.dialog.ajax';
 
@@ -112,35 +95,14 @@ class EmbedDefaultWidget extends WidgetBase implements ContainerFactoryPluginInt
   }
 
   /**
-   * AJAX callback for updating the settings portion of the widget form.
-   *
-   * @param array $form
-   *   The form structure where field elements are attached to.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state.
-   *
-   * @return array
-   *   The form elements to be refreshed via AJAX callback.
-   */
-  // public function refreshSettingsForm(array &$form, FormStateInterface $form_state) {
-  //   // Find the EmbedPlugin that matches this input string or exit early.
-  //   $input = $form_state->getTriggeringElement()['#value'];
-  //   // Show the title field if it is required in the plugin annotation.
-  //   $plugin = $this->embedManager->loadPluginByCode($input);
-  //   $form['settings']['title']['#access'] = $plugin->requireTitle();
-  //   $form['settings']['title']['#value'] = $form_state->getUserInput()['title'];
-  //   return $form['settings'];
-  // }
-
-  /**
    * {@inheritdoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
     foreach ($values as &$value) {
-      // Store the field values in the database.
       $source = $this->embedManager->loadPluginByCode($value['input']);
+      // Store the id of the EmbedSource plugin in the database.
       $value['embed_source'] = $source->getPluginId();
-      $value['title'] = $form_state->getValue('title');
+      // Store all named regex groups in a serialized database field.
       $value['params'] = $source->getParams($value['input']);
     }
     return $values;

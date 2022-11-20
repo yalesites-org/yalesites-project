@@ -6,14 +6,13 @@ use Drupal\ys_embed\Plugin\EmbedSourceBase;
 use Drupal\ys_embed\Plugin\EmbedSourceInterface;
 
 /**
- * Class Twitter.
+ * Twitter post embed source.
  *
  * @EmbedSource(
  *   id = "twitter",
  *   label = @Translation("Twitter Tweet"),
- *   description = @Translation("Twitter Tweet embed provider plugin."),
+ *   description = @Translation("Twitter post embed source."),
  *   active = TRUE,
- *   require_title = FALSE,
  * )
  */
 class Twitter extends EmbedSourceBase implements EmbedSourceInterface {

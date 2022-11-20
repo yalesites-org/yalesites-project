@@ -6,14 +6,13 @@ use Drupal\ys_embed\Plugin\EmbedSourceBase;
 use Drupal\ys_embed\Plugin\EmbedSourceInterface;
 
 /**
- * Class Instagram.
+ * Instagram post embed source.
  *
  * @EmbedSource(
  *   id = "instagram",
  *   label = @Translation("Instagram"),
- *   description = @Translation("Instagram embed provider plugin."),
+ *   description = @Translation("Instagram post embed source."),
  *   active = TRUE,
- *   require_title = FALSE,
  * )
  */
 class Instagram extends EmbedSourceBase implements EmbedSourceInterface {

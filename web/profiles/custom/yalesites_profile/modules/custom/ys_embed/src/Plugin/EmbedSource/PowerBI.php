@@ -6,14 +6,13 @@ use Drupal\ys_embed\Plugin\EmbedSourceBase;
 use Drupal\ys_embed\Plugin\EmbedSourceInterface;
 
 /**
- * Class PowerBI.
+ * Microsoft PowerBI embed source.
  *
  * @EmbedSource(
  *   id = "powerbi",
  *   label = @Translation("Microsoft PowerBI"),
- *   description = @Translation("Microsoft PowerBI embed provider plugin."),
+ *   description = @Translation("Microsoft PowerBI embed source."),
  *   active = TRUE,
- *   require_title = TRUE,
  * )
  */
 class PowerBI extends EmbedSourceBase implements EmbedSourceInterface {

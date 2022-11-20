@@ -32,14 +32,19 @@ interface EmbedSourceInterface extends PluginInspectionInterface {
   public function getParams(string $input): array;
 
   /**
-   * Check if the embed provider allows a title attribute to be set.
+   * Get user instructions for finding an embed code.
    *
-   * This is defined in the @EmbedSource plugin annotation as a boolean. This
-   * method exists so individual providers can dynamically show/hide the title.
-   *
-   * @return bool
-   *   TRUE if the embed provider allows the title attribute to be set.
+   * @return string
+   *   Instructions for finding an embed code.
    */
-  public function requireTitle(): bool;
+  public static function getInstructions(): string;
+
+  /**
+   * Get an example embed code.
+   *
+   * @return string
+   *   An example embed code.
+   */
+  public static function getExample(): string;
 
 }
