@@ -26,6 +26,11 @@ class Instagram extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
+  protected static $template = '<blockquote {{ embed_code|raw }}</blockquote> <script async src="//www.instagram.com/embed.js"></script>';
+
+  /**
+   * {@inheritdoc}
+   */
   protected static $instructions = 'Find the embed code for an Instagram post by clicking the (...) more options icon on a post and clicking "Embed".';
 
   /**

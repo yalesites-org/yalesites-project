@@ -20,7 +20,7 @@ use Drupal\Core\TypedData\DataDefinition;
  *   label = @Translation("Embed"),
  *   description = @Translation("Embed codes and metadata."),
  *   default_widget = "embed_default",
- *   default_formatter = "embed"
+ *   default_formatter = "embed_formatter"
  * )
  */
 class Embed extends FieldItemBase {

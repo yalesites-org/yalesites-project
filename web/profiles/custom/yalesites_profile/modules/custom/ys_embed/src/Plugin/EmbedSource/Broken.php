@@ -31,6 +31,11 @@ class Broken extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
+  protected static $template = "Broken/Missing";
+
+  /**
+   * {@inheritdoc}
+   */
   protected static $example = 'Broken/Missing';
 
   /**

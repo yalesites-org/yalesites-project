@@ -26,6 +26,11 @@ class Twitter extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
+  protected static $template = "{{ blockquote|raw }}\r\n<script async src=\"https://platform.twitter.com/widgets.js\" charset=\"utf-8\"></script>\r\n";
+
+  /**
+   * {@inheritdoc}
+   */
   protected static $instructions = 'On the Twitter website, click the triangular (...) icon on the upper-right corner of a tweet and select the \'Embed Tweet\' item from the contextual menu. The embed code will appear in an input-box on this interface.';
 
   /**

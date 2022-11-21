@@ -26,6 +26,11 @@ class PowerBI extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
+  protected static $template = '<iframe class="iframe" title="{{ title }}" src="https://app.powerbi.com/view{{ form_params }}" height="100%" width="100%" loading="lazy"></iframe>';
+
+  /**
+   * {@inheritdoc}
+   */
   protected static $instructions = 'Open a report in the Power BI service. On the File menu, select Embed report > Website or portal. In the Secure embed code dialog, select the value under "Here\'s a link you can use to embed this content."';
 
   /**

@@ -31,6 +31,13 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
   protected static $pattern;
 
   /**
+   * The name of the Drupal template for this code.
+   *
+   * @var string
+   */
+  protected static $template;
+
+  /**
    * Instructions for finding the embed code in on third party website.
    *
    * @var string
@@ -108,6 +115,20 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
    */
   public static function getExample(): string {
     return static::$example;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function build(array $params): array {
+    // @todo Consider moving this to templates.
+    // @todo Complete title as a param.
+    $params['title'] = 'Add me here';
+    return [
+      '#type' => 'inline_template',
+      '#template' => static::$template,
+      '#context' => $params,
+    ];
   }
 
 }

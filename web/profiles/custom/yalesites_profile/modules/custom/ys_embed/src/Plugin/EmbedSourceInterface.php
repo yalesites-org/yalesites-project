@@ -55,4 +55,15 @@ interface EmbedSourceInterface extends PluginInspectionInterface {
    */
   public static function getExample(): string;
 
+  /**
+   * Get a render array for an embed code.
+   *
+   * @param array $params
+   *   An array of parameters required to build the embed code.
+   *
+   * @return array
+   *   The renderable array for an embed code.
+   */
+  public function build(array $params): array;
+
 }
