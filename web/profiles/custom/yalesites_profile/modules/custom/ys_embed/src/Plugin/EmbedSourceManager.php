@@ -12,7 +12,7 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 class EmbedSourceManager extends DefaultPluginManager {
 
   /**
-   * The id for the broken source embed plugin
+   * The id for the broken source embed plugin.
    *
    * @var string
    */
@@ -53,7 +53,7 @@ class EmbedSourceManager extends DefaultPluginManager {
    *   An array of plugin definitions keyed by plugin ID.
    */
   public function getSources(): array {
-    return array_filter($this->getDefinitions(), function($def) {
+    return array_filter($this->getDefinitions(), function ($def) {
       return $def['active'] == TRUE;
     });
   }
@@ -87,13 +87,22 @@ class EmbedSourceManager extends DefaultPluginManager {
    * @param string $input
    *   A raw embed code added by a content author.
    *
-   * @return boolean
+   * @return bool
    *   TRUE if the given string matches at least one of the embed sources.
    */
   public function isValid(string $input): bool {
     return !empty($this->findEmbedSource($input));
   }
 
+  /**
+   * Check if a string matches one of the EmbedSource plugin IDs.
+   *
+   * @param string $plugin_id
+   *   The ID of a EmbedSource plugin.
+   *
+   * @return bool
+   *   TRUE if the given string matches at one of the EmbedSource IDs.
+   */
   public function isValidSourceId(string $plugin_id): bool {
     return array_key_exists($plugin_id, $this->getDefinitions());
   }
@@ -112,7 +121,7 @@ class EmbedSourceManager extends DefaultPluginManager {
    */
   public function loadPluginById($plugin_id) {
     if (!$this->isValidSourceId($plugin_id)) {
-      return $this->instance[STATIC::BROKEN_ID];
+      return $this->instance[static::BROKEN_ID];
     }
     if (!empty($this->instance[$plugin_id])) {
       return $this->instance[$plugin_id];
@@ -135,7 +144,7 @@ class EmbedSourceManager extends DefaultPluginManager {
    */
   public function loadPluginByCode($input) {
     $source = $this->findEmbedSource($input);
-    $id = !empty($source) ? $source['id'] : STATIC::BROKEN_ID;
+    $id = !empty($source) ? $source['id'] : static::BROKEN_ID;
     return $this->loadPluginById($id);
   }
 

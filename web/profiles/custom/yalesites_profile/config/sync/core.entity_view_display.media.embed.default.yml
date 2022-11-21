@@ -1,4 +1,4 @@
-uuid: 2c90141b-c74e-4012-92a2-d30214a8e756
+uuid: c7d70cc1-321c-46e3-ba2f-4a971554515b
 langcode: en
 status: true
 dependencies:
@@ -13,8 +13,8 @@ bundle: embed
 mode: default
 content:
   field_media_embed:
-    type: embed
-    label: visually_hidden
+    type: embed_formatter
+    label: hidden
     settings: {  }
     third_party_settings: {  }
     weight: 0

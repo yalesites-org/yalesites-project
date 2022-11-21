@@ -14,7 +14,7 @@ function ys_embed_theme($existing, $type, $theme, $path) {
   return [
     'embed_instructions' => [
       'variables' => [
-        'sources' => []
+        'sources' => [],
       ],
     ],
   ];

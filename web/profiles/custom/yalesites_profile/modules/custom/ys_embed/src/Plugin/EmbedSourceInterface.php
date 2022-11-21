@@ -23,7 +23,7 @@ interface EmbedSourceInterface extends PluginInspectionInterface {
    * @param string $input
    *   A raw embed code added by a content author.
    *
-   * @return boolean
+   * @return bool
    *   TRUE if the input text matches the EmbedSource pattern.
    */
   public static function isValid(string $input): bool;

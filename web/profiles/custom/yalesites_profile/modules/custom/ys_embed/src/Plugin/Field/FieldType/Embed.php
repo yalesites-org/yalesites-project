@@ -36,10 +36,10 @@ class Embed extends FieldItemBase {
     // Provider reffers to the matching EmbedSource plugin.
     $properties['embed_source'] = DataDefinition::create('string')
       ->setLabel(new TranslatableMarkup('Source ID'));
-    // Title setting used on iframes and other elements
+    // Title setting used on iframes and other elements.
     $properties['title'] = DataDefinition::create('string')
       ->setLabel(new TranslatableMarkup('Title'));
-    // Params is a space to store any related metadata
+    // Params is a space to store any related metadata.
     $properties['params'] = DataDefinition::create('any')
       ->setLabel(new TranslatableMarkup('Parameters'));
     return $properties;

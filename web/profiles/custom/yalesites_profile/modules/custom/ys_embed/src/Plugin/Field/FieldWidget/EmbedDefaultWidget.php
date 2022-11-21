@@ -61,7 +61,7 @@ class EmbedDefaultWidget extends WidgetBase implements ContainerFactoryPluginInt
       '#type' => 'textfield',
       '#title' => $this->t('Title'),
       '#default_value' => $items[$delta]->title,
-      '#description' => 'Describe the embedded content. Used in accessibility markup.',
+      '#description' => $this->t('Describe the embedded content. Used in accessibility markup.'),
       '#size' => 80,
       '#maxlength' => 1024,
       '#required' => !empty($element['#required']),

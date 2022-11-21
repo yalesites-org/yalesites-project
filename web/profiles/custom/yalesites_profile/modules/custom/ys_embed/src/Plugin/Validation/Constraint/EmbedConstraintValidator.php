@@ -21,10 +21,7 @@ class EmbedConstraintValidator extends ConstraintValidator implements ContainerI
   protected $embedManager;
 
   /**
-   * Constructs a EmbedConstraintValidator object.
-   *
-   * @param \Drupal\ys_embed\Plugin\EmbedSourceManager $embed_manager
-   *   Embed povider manager.
+   * {@inheritDoc}
    */
   public function __construct(EmbedSourceManager $embed_manager) {
     $this->embedManager = $embed_manager;
@@ -66,10 +63,10 @@ class EmbedConstraintValidator extends ConstraintValidator implements ContainerI
   /**
    * Check if the embed code matches a supported video media provider.
    *
-   * @param string $source
+   * @param string $input
    *   The user provided embed code.
    *
-   * @return boolean
+   * @return bool
    *   TRUE if the embed code matches one of the remote video providers.
    */
   protected function isVideo(string $input): bool {

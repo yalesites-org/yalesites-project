@@ -5,7 +5,6 @@ namespace Drupal\ys_embed\Plugin;
 use Drupal\Component\Plugin\PluginBase;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\ys_embed\Plugin\EmbedSourceInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

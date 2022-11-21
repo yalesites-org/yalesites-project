@@ -24,14 +24,12 @@ class EmbedMediaLibraryAddForm extends AddFormBase {
    * {@inheritdoc}
    */
   protected function buildInputElement(array $form, FormStateInterface $form_state) {
-    $media_type = $this->getMediaType($form_state);
-
     $form['container'] = [
       '#type' => 'container',
     ];
 
-     // Input field is used to capture the raw user input for the embed code.
-     $form['container']['input'] = [
+    // Input field is used to capture the raw user input for the embed code.
+    $form['container']['input'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Embed Code or URL'),
       '#size' => 80,

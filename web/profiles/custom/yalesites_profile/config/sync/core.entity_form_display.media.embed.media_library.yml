@@ -6,22 +6,22 @@ dependencies:
     - core.entity_form_mode.media.media_library
     - field.field.media.embed.field_media_embed
     - media.type.embed
+  module:
+    - ys_embed
 id: media.embed.media_library
 targetEntityType: media
 bundle: embed
 mode: media_library
 content:
-  name:
-    type: string_textfield
+  field_media_embed:
+    type: embed_default
     weight: 0
     region: content
-    settings:
-      size: 60
-      placeholder: ''
+    settings: {  }
     third_party_settings: {  }
 hidden:
   created: true
-  field_media_embed: true
+  name: true
   path: true
   revision_log_message: true
   status: true

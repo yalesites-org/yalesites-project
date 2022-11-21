@@ -89,7 +89,7 @@ class Embed extends MediaSourceBase implements MediaSourceFieldConstraintsInterf
   /**
    * Find the default media library thumbnail for an EmbedSource plugin.
    *
-   * @param MediaInterface $media
+   * @param \Drupal\media\MediaInterface $media
    *   A media entity created with this media source.
    *
    * @return string
@@ -108,7 +108,7 @@ class Embed extends MediaSourceBase implements MediaSourceFieldConstraintsInterf
    * a 'title' property. This method returns the value of this property. The
    * title may be used to automatically set the media 'name' value.
    *
-   * @param MediaInterface $media
+   * @param \Drupal\media\MediaInterface $media
    *   A media entity created with this media source.
    *
    * @return string
@@ -125,7 +125,7 @@ class Embed extends MediaSourceBase implements MediaSourceFieldConstraintsInterf
       return NULL;
     }
 
-    /** @var $field_item \Drupal\ys_embed\Plugin\Field\FieldType\Embed */
+    /** @var \Drupal\ys_embed\Plugin\Field\FieldType\Embed $field_item */
     $field_item = $items->first();
     return $field_item->get('title')->getValue();
   }

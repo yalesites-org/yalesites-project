@@ -20,7 +20,7 @@ class EmbedInstructionsController extends ControllerBase {
    *
    * @var \Drupal\ys_embed\Plugin\EmbedSourceManager
    */
- protected $embedManager;
+  protected $embedManager;
 
   /**
    * The Drupal renderer service.
@@ -30,10 +30,7 @@ class EmbedInstructionsController extends ControllerBase {
   protected $renderer;
 
   /**
-   * The EmbedInstructionsController constructor.
-   *
-   * @param \Drupal\Core\Render\RendererInterface $renderer
-   *   The renderer.
+   * {@inheritDoc}
    */
   public function __construct(EmbedSourceManager $embed_manager, RendererInterface $renderer) {
     $this->embedManager = $embed_manager;
@@ -83,7 +80,7 @@ class EmbedInstructionsController extends ControllerBase {
       $sources[$id]['example'] = [
         '#open' => FALSE,
         '#type' => 'details',
-        '#title' => t('Example'),
+        '#title' => 'Example',
       ];
       $sources[$id]['example']['code'] = [
         '#markup' => Html::escape($source['class']::getExample()),

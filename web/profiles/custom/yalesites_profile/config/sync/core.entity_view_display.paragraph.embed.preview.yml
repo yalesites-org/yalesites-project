@@ -5,12 +5,25 @@ dependencies:
   config:
     - core.entity_view_mode.paragraph.preview
     - field.field.paragraph.embed.field_media
+    - image.style.media_library
     - paragraphs.paragraphs_type.embed
+  module:
+    - media
 id: paragraph.embed.preview
 targetEntityType: paragraph
 bundle: embed
 mode: preview
-content: {  }
+content:
+  field_media:
+    type: media_thumbnail
+    label: hidden
+    settings:
+      image_link: ''
+      image_style: media_library
+      image_loading:
+        attribute: lazy
+    third_party_settings: {  }
+    weight: 0
+    region: content
 hidden:
-  field_media: true
   search_api_excerpt: true

@@ -19,7 +19,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   field_types = {"embed"}
  * )
  */
-
 class EmbedDefaultFormatter extends FormatterBase implements ContainerFactoryPluginInterface {
 
   /**
@@ -37,7 +36,7 @@ class EmbedDefaultFormatter extends FormatterBase implements ContainerFactoryPlu
   protected $embedManager;
 
   /**
-   * Constructs a new instance of the plugin.
+   * {@inheritDoc}
    */
   public function __construct(
     string $plugin_id,
@@ -72,6 +71,9 @@ class EmbedDefaultFormatter extends FormatterBase implements ContainerFactoryPlu
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
     foreach ($items as $delta => $item) {
