@@ -4,14 +4,14 @@ namespace Drupal\ys_embed\Controller;
 
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\OpenModalDialogCommand;
+use Drupal\Core\Ajax\OpenDialogCommand;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\ys_embed\Plugin\EmbedSourceManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Controller for embed sources instruction modal dialog.
+ * Controller for embed sources instruction dialog.
  */
 class EmbedInstructionsController extends ControllerBase {
 
@@ -51,15 +51,19 @@ class EmbedInstructionsController extends ControllerBase {
   }
 
   /**
-   * Callback for opening the modal form.
+   * Callback for opening the dialog form.
    */
-  public function openModal() {
+  public function openDialog() {
     $response = new AjaxResponse();
     $response->addCommand(
-      new OpenModalDialogCommand(
+      new OpenDialogCommand(
+        '#ajax-embed-instructions',
         'Adding Embeded Media',
         $this->content(),
-        ['width' => '800']
+        [
+          'width' => '75%',
+          'autoResize' => TRUE,
+        ],
       )
     );
     return $response;

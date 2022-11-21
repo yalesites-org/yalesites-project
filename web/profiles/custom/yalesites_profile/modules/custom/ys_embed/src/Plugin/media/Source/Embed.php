@@ -21,6 +21,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   description = @Translation("Used to embed external content"),
  *   allowed_field_types = {"embed"},
  *   default_thumbnail_filename = "generic.png",
+ *   forms = {
+ *     "media_library_add" = "\Drupal\ys_embed\Form\EmbedMediaLibraryAddForm",
+ *   }
  * )
  */
 class Embed extends MediaSourceBase implements MediaSourceFieldConstraintsInterface {

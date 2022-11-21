@@ -9,15 +9,15 @@ use Drupal\media\MediaTypeInterface;
 use Drupal\media_library\Form\AddFormBase;
 
 /**
- * Creates a form to create Qualtrics media entities from within Media Library.
+ * Creates a form to create embed media entities from within Media Library.
  */
-class QualtricsMediaLibraryAddForm extends AddFormBase {
+class EmbedMediaLibraryAddForm extends AddFormBase {
 
   /**
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'media_entity_qualtrics_media_library_add';
+    return 'media_entity_embed_media_library_add';
   }
 
   /**
@@ -30,15 +30,29 @@ class QualtricsMediaLibraryAddForm extends AddFormBase {
       '#type' => 'container',
     ];
 
-    $form['container']['url'] = [
-      '#type' => 'url',
-      '#title' => $this->getSourceFieldDefinition($media_type)->getLabel(),
-      '#description' => $this->getSourceFieldDefinition($media_type)->getDescription(),
-      '#required' => TRUE,
+     // Input field is used to capture the raw user input for the embed code.
+     $form['container']['input'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Embed Code or URL'),
+      '#size' => 80,
+      '#rows' => 2,
+      '#required' => !empty($element['#required']),
+    ];
+
+    // Help text opens a model window with instructions and embed code examples.
+    $form['container']['input']['#description'] = [
+      '#type' => 'link',
+      '#title' => $this->t('Learn about supported formats and options'),
+      '#url' => Url::fromRoute('ys_embed.instructions'),
       '#attributes' => [
-        'placeholder' => 'https://',
+        'class' => [
+          'use-ajax',
+        ],
       ],
     ];
+
+    // Attach the library for pop-up dialogs/modals.
+    $form['#attached']['library'][] = 'core/drupal.dialog.ajax';
 
     $form['container']['submit'] = [
       '#type' => 'submit',
@@ -74,7 +88,7 @@ class QualtricsMediaLibraryAddForm extends AddFormBase {
    *   The form state.
    */
   public function addButtonSubmit(array $form, FormStateInterface $form_state) {
-    $this->processInputValues([$form_state->getValue('url')], $form, $form_state);
+    $this->processInputValues([$form_state->getValue('input')], $form, $form_state);
   }
 
   /**

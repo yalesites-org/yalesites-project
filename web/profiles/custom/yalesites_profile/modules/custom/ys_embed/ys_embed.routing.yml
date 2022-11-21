@@ -1,9 +1,9 @@
-# Controller for embed provider instructions modal dialog.
+# Controller for embed provider instructions dialog.
 ys_embed.instructions:
   path: '/admin/yalesites/embed-instructions'
   defaults:
     _title: 'Adding Embeded Media'
-    _controller: '\Drupal\ys_embed\Controller\EmbedInstructionsController::openModal'
+    _controller: '\Drupal\ys_embed\Controller\EmbedInstructionsController::openDialog'
   requirements:
     _permission: 'create embed media'
   options:

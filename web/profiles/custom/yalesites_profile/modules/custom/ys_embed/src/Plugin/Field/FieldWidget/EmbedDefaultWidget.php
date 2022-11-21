@@ -73,6 +73,7 @@ class EmbedDefaultWidget extends WidgetBase implements ContainerFactoryPluginInt
       '#title' => $this->t('Embed Code or URL'),
       '#default_value' => $items[$delta]->input ?? NULL,
       '#size' => 80,
+      '#rows' => 2,
       '#required' => !empty($element['#required']),
     ];
 
