@@ -12,7 +12,7 @@ use Drupal\Core\File\FileSystemInterface;
  * Implements hook_install().
  */
 function ys_embed_install() {
-  $source = \Drupal::service('extension.list.module')->getPath('media') . '/images/icons';
+  $source = \Drupal::service('extension.list.module')->getPath('ys_embed') . '/images/icons';
   $destination = \Drupal::config('media.settings')->get('icon_base_uri');
   /** @var \Drupal\Core\File\FileSystemInterface $file_system */
   $file_system = \Drupal::service('file_system');

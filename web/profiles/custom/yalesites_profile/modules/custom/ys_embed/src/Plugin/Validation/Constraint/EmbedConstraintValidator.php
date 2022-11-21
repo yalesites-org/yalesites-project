@@ -14,6 +14,13 @@ use Symfony\Component\Validator\ConstraintValidator;
 class EmbedConstraintValidator extends ConstraintValidator implements ContainerInjectionInterface {
 
   /**
+   * The embed source plugin manager service.
+   *
+   * @var \Drupal\ys_embed\Plugin\EmbedSourceManager
+   */
+  protected $embedManager;
+
+  /**
    * Constructs a EmbedConstraintValidator object.
    *
    * @param \Drupal\ys_embed\Plugin\EmbedSourceManager $embed_manager

@@ -64,12 +64,12 @@ class EmbedDefaultWidget extends WidgetBase implements ContainerFactoryPluginInt
       '#description' => 'Describe the embedded content. Used in accessibility markup.',
       '#size' => 80,
       '#maxlength' => 1024,
-      '#required' => TRUE,
+      '#required' => !empty($element['#required']),
     ];
 
     // Input field is used to capture the raw user input for the embed code.
     $element['input'] = [
-      '#type' => 'textfield',
+      '#type' => 'textarea',
       '#title' => $this->t('Embed Code or URL'),
       '#default_value' => $items[$delta]->input ?? NULL,
       '#size' => 80,

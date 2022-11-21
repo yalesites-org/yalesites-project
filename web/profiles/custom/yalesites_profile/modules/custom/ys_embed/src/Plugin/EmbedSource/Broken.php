@@ -12,6 +12,7 @@ use Drupal\ys_embed\Plugin\EmbedSourceInterface;
  *   id = "broken",
  *   label = @Translation("Broken/Missing"),
  *   description = @Translation("Fallback plugin for media items with a broken EmbedSource."),
+ *   thumbnail = "no-thumbnail.png",
  *   active = FALSE,
  * )
  */

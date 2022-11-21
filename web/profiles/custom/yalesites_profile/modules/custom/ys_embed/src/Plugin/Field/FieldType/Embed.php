@@ -35,8 +35,7 @@ class Embed extends FieldItemBase {
       ->setRequired(TRUE);
     // Provider reffers to the matching EmbedSource plugin.
     $properties['embed_source'] = DataDefinition::create('string')
-      ->setLabel(new TranslatableMarkup('Source ID'))
-      ->setComputed(TRUE);
+      ->setLabel(new TranslatableMarkup('Source ID'));
     // Title setting used on iframes and other elements
     $properties['title'] = DataDefinition::create('string')
       ->setLabel(new TranslatableMarkup('Title'));

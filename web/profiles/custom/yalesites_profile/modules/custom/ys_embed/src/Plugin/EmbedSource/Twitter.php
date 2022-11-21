@@ -12,6 +12,7 @@ use Drupal\ys_embed\Plugin\EmbedSourceInterface;
  *   id = "twitter",
  *   label = @Translation("Twitter Tweet"),
  *   description = @Translation("Twitter post embed source."),
+ *   thumbnail = "twitter.png",
  *   active = TRUE,
  * )
  */
@@ -20,7 +21,7 @@ class Twitter extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $pattern = '/^(?<blockquote><blockquote.*<\/blockquote>).*src=\"https:\/\/platform\.twitter\.com\/widgets\.js\"/';
+  protected static $pattern = '/^(?<blockquote><blockquote.*<\/blockquote>).*src=\"https:\/\/platform\.twitter\.com\/widgets\.js\"/s';
 
   /**
    * {@inheritdoc}

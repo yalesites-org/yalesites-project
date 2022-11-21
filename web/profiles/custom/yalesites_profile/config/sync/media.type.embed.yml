@@ -1,0 +1,19 @@
+uuid: d815fdb8-fab5-4251-8b1f-4f4ff0605b0e
+langcode: en
+status: true
+dependencies:
+  module:
+    - crop
+    - ys_embed
+third_party_settings:
+  crop:
+    image_field: null
+id: embed
+label: Embed
+description: 'Used for embedding external content.'
+source: embed
+queue_thumbnail_downloads: false
+new_revision: false
+source_configuration:
+  source_field: field_media_embed
+field_map: {  }

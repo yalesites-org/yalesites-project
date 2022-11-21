@@ -12,6 +12,7 @@ use Drupal\ys_embed\Plugin\EmbedSourceInterface;
  *   id = "instagram",
  *   label = @Translation("Instagram"),
  *   description = @Translation("Instagram post embed source."),
+ *   thumbnail = "instagram.png",
  *   active = TRUE,
  * )
  */

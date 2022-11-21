@@ -10,6 +10,14 @@ use Drupal\Component\Plugin\PluginInspectionInterface;
 interface EmbedSourceInterface extends PluginInspectionInterface {
 
   /**
+   * Returns the URI of the default thumbnail.
+   *
+   * @return string
+   *   The default thumbnail URI.
+   */
+  public function getDefaultThumbnailUri(): string;
+
+  /**
    * Check if a string matches the EmbedSource plugin patterns.
    *
    * @param string $input

@@ -1,0 +1,28 @@
+uuid: ce5aed9a-31fd-4f8c-90f5-f6de327d85f1
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_form_mode.media.media_library
+    - field.field.media.embed.field_media_embed
+    - media.type.embed
+id: media.embed.media_library
+targetEntityType: media
+bundle: embed
+mode: media_library
+content:
+  name:
+    type: string_textfield
+    weight: 0
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+hidden:
+  created: true
+  field_media_embed: true
+  path: true
+  revision_log_message: true
+  status: true
+  uid: true

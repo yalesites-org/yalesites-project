@@ -12,6 +12,7 @@ use Drupal\ys_embed\Plugin\EmbedSourceInterface;
  *   id = "qualtrics",
  *   label = @Translation("Qualtrics"),
  *   description = @Translation("Qualtrics survey embed source."),
+ *   thumbnail = "qualtrics.png",
  *   active = TRUE,
  * )
  */

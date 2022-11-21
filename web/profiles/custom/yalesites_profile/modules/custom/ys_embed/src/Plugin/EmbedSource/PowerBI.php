@@ -12,6 +12,7 @@ use Drupal\ys_embed\Plugin\EmbedSourceInterface;
  *   id = "powerbi",
  *   label = @Translation("Microsoft PowerBI"),
  *   description = @Translation("Microsoft PowerBI embed source."),
+ *   thumbnail = "powerbi.png",
  *   active = TRUE,
  * )
  */

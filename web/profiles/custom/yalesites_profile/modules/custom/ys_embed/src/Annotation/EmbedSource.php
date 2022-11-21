@@ -40,6 +40,13 @@ class EmbedSource extends Plugin {
   public $description;
 
   /**
+   * Specifies a default media library thumbnail.
+   *
+   * @var string
+   */
+  public $thumbnail_uri;
+
+  /**
    * Whether to include the plugin in the active list of plugins.
    *
    * @var bool
