@@ -13,7 +13,9 @@ use Drupal\Core\File\FileSystemInterface;
  */
 function ys_embed_install() {
   $source = \Drupal::service('extension.list.module')->getPath('ys_embed') . '/images/icons';
-  $destination = \Drupal::config('media.settings')->get('icon_base_uri');
+  // @todo Debug why the destination can not be loaded dynamically on install.
+  // $destination = \Drupal::config('media.settings')->get('icon_base_uri');
+  $destination = "public://media-icons/generic";
   /** @var \Drupal\Core\File\FileSystemInterface $file_system */
   $file_system = \Drupal::service('file_system');
   $file_system->prepareDirectory($destination, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
