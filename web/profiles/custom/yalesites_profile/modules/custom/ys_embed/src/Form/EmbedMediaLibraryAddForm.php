@@ -9,7 +9,7 @@ use Drupal\media\MediaTypeInterface;
 use Drupal\media_library\Form\AddFormBase;
 
 /**
- * Creates a form to create embed media entities from within Media Library.
+ * A form to create embed media entities from within Media Library.
  */
 class EmbedMediaLibraryAddForm extends AddFormBase {
 
@@ -86,7 +86,11 @@ class EmbedMediaLibraryAddForm extends AddFormBase {
    *   The form state.
    */
   public function addButtonSubmit(array $form, FormStateInterface $form_state) {
-    $this->processInputValues([$form_state->getValue('input')], $form, $form_state);
+    $this->processInputValues(
+      [$form_state->getValue('input')],
+      $form,
+      $form_state
+    );
   }
 
   /**

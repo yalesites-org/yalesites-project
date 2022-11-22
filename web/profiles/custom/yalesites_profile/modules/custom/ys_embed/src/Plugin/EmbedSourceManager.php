@@ -8,6 +8,10 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 
 /**
  * Provides the EmbedSource plugin manager.
+ *
+ * The manager is a tool for validating an instantiating a EmbedSource plugins.
+ * It includes methods for identifying if an 'input' string (embed code or URL)
+ * matches a known providers. This is modeled after the core oEmbed meda source.
  */
 class EmbedSourceManager extends DefaultPluginManager {
 
@@ -36,8 +40,18 @@ class EmbedSourceManager extends DefaultPluginManager {
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler to invoke the alter hook with.
    */
-  public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler) {
-    parent::__construct('Plugin/EmbedSource', $namespaces, $module_handler, 'Drupal\ys_embed\Plugin\EmbedSourceInterface', 'Drupal\ys_embed\Annotation\EmbedSource');
+  public function __construct(
+    \Traversable $namespaces,
+    CacheBackendInterface $cache_backend,
+    ModuleHandlerInterface $module_handler
+  ) {
+    parent::__construct(
+      'Plugin/EmbedSource',
+      $namespaces,
+      $module_handler,
+      'Drupal\ys_embed\Plugin\EmbedSourceInterface',
+      'Drupal\ys_embed\Annotation\EmbedSource'
+    );
     $this->alterInfo('ys_embed_embed_source_info');
     $this->setCacheBackend($cache_backend, 'ys_embed_embed_source_plugins');
   }

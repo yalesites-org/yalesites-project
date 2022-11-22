@@ -30,7 +30,12 @@ class EmbedInstructionsController extends ControllerBase {
   protected $renderer;
 
   /**
-   * {@inheritDoc}
+   * Constructs the controller object.
+   *
+   * @param \Drupal\ys_embed\Plugin\EmbedSourceManager $embed_manager
+   *   The embed source plugin manager service.
+   * @param \Drupal\Core\Render\RendererInterface $renderer
+   *   The Drupal renderer service.
    */
   public function __construct(EmbedSourceManager $embed_manager, RendererInterface $renderer) {
     $this->embedManager = $embed_manager;
@@ -67,7 +72,7 @@ class EmbedInstructionsController extends ControllerBase {
   }
 
   /**
-   * Get the contents of the embed insutrctions page.
+   * Get the contents of the embed instructions page.
    *
    * @return \Drupal\Component\Render\MarkupInterface
    *   The rendered HTML.

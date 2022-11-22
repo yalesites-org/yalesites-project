@@ -30,17 +30,48 @@ class EmbedDefaultWidget extends WidgetBase implements ContainerFactoryPluginInt
   protected $embedManager;
 
   /**
-   * {@inheritDoc}
+   * Constructs a EmbedDefaultWidget object.
+   *
+   * @param string $plugin_id
+   *   The plugin_id for the widget.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
+   *   The definition of the field to which the widget is associated.
+   * @param array $settings
+   *   The widget settings.
+   * @param array $third_party_settings
+   *   Any third party settings.
+   * @param \Drupal\ys_embed\Plugin\EmbedSourceManager $embed_manager
+   *   The EmbedSource management service.
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, array $third_party_settings, EmbedSourceManager $embed_manager) {
-    parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $third_party_settings);
+  public function __construct(
+    $plugin_id,
+    $plugin_definition,
+    FieldDefinitionInterface $field_definition,
+    array $settings,
+    array $third_party_settings,
+    EmbedSourceManager $embed_manager
+  ) {
+    parent::__construct(
+      $plugin_id,
+      $plugin_definition,
+      $field_definition,
+      $settings,
+      $third_party_settings
+    );
     $this->embedManager = $embed_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(
+    ContainerInterface $container,
+    array $configuration,
+    $plugin_id,
+    $plugin_definition
+  ) {
     return new static(
       $plugin_id,
       $plugin_definition,

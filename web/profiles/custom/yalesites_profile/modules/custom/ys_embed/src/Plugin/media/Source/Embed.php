@@ -36,17 +36,56 @@ class Embed extends MediaSourceBase implements MediaSourceFieldConstraintsInterf
   protected $embedManager;
 
   /**
-   * {@inheritDoc}
+   * Constructs a new Embed media source instance.
+   *
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin_id for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager service.
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+   *   The entity field manager service.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config factory service.
+   * @param \Drupal\Core\Field\FieldTypePluginManagerInterface $field_type_manager
+   *   The field type plugin manager service.
+   * @param \Drupal\ys_embed\Plugin\EmbedSourceManager $embed_manager
+   *   The EmbedSource management service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, ConfigFactoryInterface $config_factory, FieldTypePluginManagerInterface $field_type_manager, EmbedSourceManager $embed_manager) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $entity_type_manager, $entity_field_manager, $field_type_manager, $config_factory);
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    EntityTypeManagerInterface $entity_type_manager,
+    EntityFieldManagerInterface $entity_field_manager,
+    ConfigFactoryInterface $config_factory,
+    FieldTypePluginManagerInterface $field_type_manager,
+    EmbedSourceManager $embed_manager
+  ) {
+    parent::__construct(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $entity_type_manager,
+      $entity_field_manager,
+      $field_type_manager,
+      $config_factory
+    );
     $this->embedManager = $embed_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(
+    ContainerInterface $container,
+    array $configuration,
+    $plugin_id,
+    $plugin_definition
+  ) {
     return new static(
       $configuration,
       $plugin_id,

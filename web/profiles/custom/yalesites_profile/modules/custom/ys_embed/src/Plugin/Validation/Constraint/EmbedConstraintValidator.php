@@ -21,7 +21,10 @@ class EmbedConstraintValidator extends ConstraintValidator implements ContainerI
   protected $embedManager;
 
   /**
-   * {@inheritDoc}
+   * Creates a EmbedConstraintValidator instance.
+   *
+   * @param \Drupal\ys_embed\Plugin\EmbedSourceManager $embed_manager
+   *   The EmbedSource management service.
    */
   public function __construct(EmbedSourceManager $embed_manager) {
     $this->embedManager = $embed_manager;

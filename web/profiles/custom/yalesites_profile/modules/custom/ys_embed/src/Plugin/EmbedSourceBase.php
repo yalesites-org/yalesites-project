@@ -9,6 +9,14 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Base class for EmbedSource plugins.
+ *
+ * This plugin is used as a media source for embeded content. It is useful for
+ * social media and streaming meadia providers as well as content shared in
+ * an iframe. The plugin stores the 'input' (raw embed code added by the user),
+ * validates the code, and renders the code through a inline Drupal template.
+ *
+ * New plugins are discovered through annotations. Several are included in this
+ * modules in the ys_embed\Plugin\EmbedSource namespace.
  */
 abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterface, ContainerFactoryPluginInterface {
 
@@ -62,7 +70,12 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, ConfigFactoryInterface $config_factory) {
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    ConfigFactoryInterface $config_factory
+  ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->config = $config_factory->get('media.settings');
   }
@@ -70,7 +83,12 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(
+    ContainerInterface $container,
+    array $configuration,
+    $plugin_id,
+    $plugin_definition
+  ) {
     return new static(
       $configuration,
       $plugin_id,
@@ -120,9 +138,6 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
    * {@inheritdoc}
    */
   public function build(array $params): array {
-    // @todo Consider moving this to templates.
-    // @todo Complete title as a param.
-    $params['title'] = 'Add me here';
     return [
       '#type' => 'inline_template',
       '#template' => static::$template,

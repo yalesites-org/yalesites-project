@@ -36,7 +36,26 @@ class EmbedDefaultFormatter extends FormatterBase implements ContainerFactoryPlu
   protected $embedManager;
 
   /**
-   * {@inheritDoc}
+   * Constructs an embed formatter object.
+   *
+   * @param string $plugin_id
+   *   The plugin_id for the formatter.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
+   *   The definition of the field to which the formatter is associated.
+   * @param array $settings
+   *   The formatter settings.
+   * @param string $label
+   *   The formatter label display setting.
+   * @param string $view_mode
+   *   The view mode.
+   * @param array $third_party_settings
+   *   Any third party settings.
+   * @param \Drupal\ys_embed\Plugin\EmbedSourceManager $embed_manager
+   *   The embed source plugin manager service.
+   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger
+   *   The logger channel factory.
    */
   public function __construct(
     string $plugin_id,
@@ -49,7 +68,15 @@ class EmbedDefaultFormatter extends FormatterBase implements ContainerFactoryPlu
     EmbedSourceManager $embed_manager,
     LoggerChannelFactoryInterface $logger
   ) {
-    parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
+    parent::__construct(
+      $plugin_id,
+      $plugin_definition,
+      $field_definition,
+      $settings,
+      $label,
+      $view_mode,
+      $third_party_settings
+    );
     $this->embedManager = $embed_manager;
     $this->logger = $logger->get('ys_embed');
   }
@@ -57,7 +84,12 @@ class EmbedDefaultFormatter extends FormatterBase implements ContainerFactoryPlu
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(
+    ContainerInterface $container,
+    array $configuration,
+    $plugin_id,
+    $plugin_definition
+  ) {
     return new static(
       $plugin_id,
       $plugin_definition,
@@ -80,7 +112,10 @@ class EmbedDefaultFormatter extends FormatterBase implements ContainerFactoryPlu
       if (is_string($item->embed_source) && is_array($item->params)) {
         // Each EmbedSource defines its own template for rendering.
         $plugin = $this->embedManager->loadPluginById($item->embed_source);
-        $elements[$delta] = $plugin->build($item->params);
+        // Get params from media object. Add title to the list of params.
+        $params = $item->params;
+        $params['title'] = $item->title;
+        $elements[$delta] = $plugin->build($params);
       }
       elseif (is_string($item->provider)) {
         $this->logger->error(sprintf(

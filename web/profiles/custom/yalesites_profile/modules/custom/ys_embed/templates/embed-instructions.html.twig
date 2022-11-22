@@ -1,7 +1,13 @@
-<p>Add an embed code from one of the allow sources.</p>
+{#
+ # Available Variables:
+ # - source.name (string)
+ # - source.instructions (string)
+ # - source.example (string) rendered HTML for Drupal collapsible container
+ #}
+ <p>Add an embed code from one of the allowed sources.</p>
 
 {% for source in sources %}
-    <h2>{{ source.name }}</h2>
-    <p>{{ source.instructions }}</p>
-    {{ source.example }}
+  <h2>{{ source.name }}</h2>
+  <p>{{ source.instructions }}</p>
+  {{ source.example }}
 {% endfor %}
