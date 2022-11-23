@@ -1,0 +1,21 @@
+uuid: 92ae5cf0-541b-43ab-a29b-2267289004e7
+langcode: en
+status: true
+dependencies:
+  module:
+    - crop
+third_party_settings:
+  crop:
+    image_field: _none
+id: background_video
+label: 'Background Video'
+description: 'Used for uploading a video file to Drupal.'
+source: video_file
+queue_thumbnail_downloads: false
+new_revision: false
+source_configuration:
+  source_field: field_media_video_file
+field_map:
+  name: name
+  mimetype: field_media_video_file
+  filesize: field_media_video_file

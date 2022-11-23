@@ -687,7 +687,7 @@ display:
         type: normal
         title: 'Manage Pages'
         description: ''
-        weight: 1
+        weight: 4
         expanded: false
         menu_name: admin
         parent: system.admin_content

@@ -736,7 +736,7 @@ display:
         type: normal
         title: 'Manage News'
         description: ''
-        weight: 2
+        weight: 5
         expanded: false
         menu_name: admin
         parent: system.admin_content
