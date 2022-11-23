@@ -4,6 +4,7 @@ status: true
 dependencies:
   module:
     - menu_ui
+    - node_revision_delete
     - search_api_exclude
 third_party_settings:
   menu_ui:
@@ -11,6 +12,10 @@ third_party_settings:
     parent: ''
   search_api_exclude:
     enabled: 1
+  node_revision_delete:
+    minimum_revisions_to_keep: 1
+    minimum_age_to_delete: 12
+    when_to_delete: 0
 name: Event
 type: event
 description: 'Display the details of an individual event, such as time, date, and location. Can be displayed on a calendar of events.'

@@ -4,6 +4,7 @@ status: true
 dependencies:
   module:
     - menu_ui
+    - node_revision_delete
     - search_api_exclude
 third_party_settings:
   menu_ui:
@@ -13,6 +14,10 @@ third_party_settings:
     parent: 'main:'
   search_api_exclude:
     enabled: 1
+  node_revision_delete:
+    minimum_revisions_to_keep: 1
+    minimum_age_to_delete: 12
+    when_to_delete: 0
 name: Page
 type: page
 description: 'A multipurpose and flexible content type allowing free-form content entry. Used to build a variety of different page layouts, from simple to elaborate.'
