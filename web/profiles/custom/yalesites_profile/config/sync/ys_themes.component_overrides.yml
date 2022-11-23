@@ -75,7 +75,7 @@ event_cards:
       'false': Secondary
     default: 'true'
 wrapped_image:
-  field_style_position:
+   field_style_position:
     values:
       left: 'Image Left'
       right: 'Image Right'
@@ -85,3 +85,14 @@ wrapped_image:
       floated: Floated
       offset: Offset
     default: offset
+grand_hero:
+  field_style_position:
+    values:
+      full: Full
+      contained: Contained
+    default: full
+  field_style_variation:
+    values:
+      full: Full
+      reduced: Reduced
+    default: full
