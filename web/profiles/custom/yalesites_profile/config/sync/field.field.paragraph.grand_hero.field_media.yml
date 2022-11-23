@@ -1,0 +1,31 @@
+uuid: 950d3665-f8a9-466b-a0a3-eea1ff0041e4
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_media
+    - media.type.background_video
+    - media.type.image
+    - paragraphs.paragraphs_type.grando_hero
+id: paragraph.grando_hero.field_media
+field_name: field_media
+entity_type: paragraph
+bundle: grando_hero
+label: Media
+description: ''
+required: true
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:media'
+  handler_settings:
+    target_bundles:
+      background_video: background_video
+      image: image
+    sort:
+      field: _none
+      direction: ASC
+    auto_create: true
+    auto_create_bundle: background_video
+field_type: entity_reference

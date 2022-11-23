@@ -6,6 +6,7 @@ dependencies:
     - field.storage.node.field_banner
     - node.type.page
     - paragraphs.paragraphs_type.cta_banner
+    - paragraphs.paragraphs_type.grand_hero
   module:
     - entity_reference_revisions
 id: node.page.field_banner
@@ -23,6 +24,7 @@ settings:
   handler_settings:
     target_bundles:
       cta_banner: cta_banner
+      grand_hero: grand_hero
     negate: 0
     target_bundles_drag_drop:
       accordion:
@@ -40,6 +42,12 @@ settings:
       cta_banner:
         weight: 16
         enabled: true
+      custom_card:
+        weight: 34
+        enabled: false
+      custom_cards:
+        weight: 35
+        enabled: false
       divider:
         weight: 17
         enabled: false
@@ -52,8 +60,23 @@ settings:
       event_list:
         weight: 26
         enabled: false
+      gallery:
+        weight: 40
+        enabled: false
+      gallery_item:
+        weight: 41
+        enabled: false
+      grand_hero:
+        weight: 42
+        enabled: true
       image:
         weight: 27
+        enabled: false
+      media_grid:
+        weight: 44
+        enabled: false
+      media_grid_item:
+        weight: 45
         enabled: false
       news_cards:
         weight: 28
@@ -64,14 +87,26 @@ settings:
       pull_quote:
         weight: 20
         enabled: false
+      quick_links:
+        weight: 49
+        enabled: false
       section:
         weight: 32
+        enabled: false
+      tab:
+        weight: 51
+        enabled: false
+      tabs:
+        weight: 52
         enabled: false
       text:
         weight: 21
         enabled: false
       text_with_image:
         weight: 22
+        enabled: false
+      video:
+        weight: 55
         enabled: false
       wrapped_image:
         weight: 19

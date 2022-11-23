@@ -1,0 +1,21 @@
+uuid: 9cab2a88-608b-45ca-b9b4-9332a069d120
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_style_variation
+    - paragraphs.paragraphs_type.grand_hero
+  module:
+    - options
+id: paragraph.grand_hero.field_style_variation
+field_name: field_style_variation
+entity_type: paragraph
+bundle: grand_hero
+label: 'Media Size'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_string
