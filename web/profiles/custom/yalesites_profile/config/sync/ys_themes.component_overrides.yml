@@ -75,7 +75,7 @@ event_cards:
       'false': Secondary
     default: 'true'
 wrapped_image:
-   field_style_position:
+  field_style_position:
     values:
       left: 'Image Left'
       right: 'Image Right'
