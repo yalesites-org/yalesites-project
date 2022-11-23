@@ -2,11 +2,11 @@ _core:
   default_config_hash: jdY7AU0tU-QsjmiOw3W8vwpYMb-By--_MSFgbqKUTYM
 definitions:
   'admin_toolbar_tools__extra_links:media_page':
-    weight: 7
-    parent: system.admin_content
-    enabled: true
     menu_name: admin
+    parent: system.admin_content
+    weight: 7
     expanded: false
+    enabled: true
   'admin_toolbar_tools__extra_links:view__files':
     menu_name: admin
     parent: 'admin_toolbar_tools.extra_links:media_library'
@@ -14,44 +14,44 @@ definitions:
     expanded: false
     enabled: false
   'admin_toolbar_tools__extra_links:media_library':
+    menu_name: admin
+    parent: 'admin_toolbar_tools.extra_links:media_page'
     weight: 1
-    parent: 'admin_toolbar_tools.extra_links:media_page'
-    menu_name: admin
-    enabled: true
     expanded: false
+    enabled: true
   'admin_toolbar_tools__extra_links:add_media':
-    parent: 'admin_toolbar_tools.extra_links:media_page'
     menu_name: admin
-    enabled: true
-    expanded: false
+    parent: 'admin_toolbar_tools.extra_links:media_page'
     weight: 0
+    expanded: false
+    enabled: true
   ys_core__admin_dashboard:
-    weight: 2
     menu_name: admin
     parent: system.admin_content
+    weight: 2
     expanded: false
     enabled: true
   'admin_toolbar_tools__extra_links:node__add':
-    weight: 3
     menu_name: admin
     parent: system.admin_content
+    weight: 3
     expanded: false
     enabled: true
   'admin_toolbar_tools__extra_links:node__add__event':
-    weight: 2
     menu_name: admin
     parent: 'admin_toolbar_tools.extra_links:node.add'
+    weight: 2
     expanded: false
     enabled: true
   'admin_toolbar_tools__extra_links:node__add__news':
-    weight: 3
     menu_name: admin
     parent: 'admin_toolbar_tools.extra_links:node.add'
+    weight: 3
     expanded: false
     enabled: true
   'admin_toolbar_tools__extra_links:node__add__page':
-    weight: 4
     menu_name: admin
     parent: 'admin_toolbar_tools.extra_links:node.add'
+    weight: 4
     expanded: false
     enabled: true

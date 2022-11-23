@@ -7,7 +7,7 @@ dependencies:
     - paragraphs.paragraphs_type.grand_hero
   module:
     - options
-id: paragraph.grand_herofield_style_position
+id: paragraph.grand_hero.field_style_position
 field_name: field_style_position
 entity_type: paragraph
 bundle: grand_hero
