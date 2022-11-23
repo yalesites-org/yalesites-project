@@ -6,11 +6,11 @@ dependencies:
     - field.storage.paragraph.field_media
     - media.type.background_video
     - media.type.image
-    - paragraphs.paragraphs_type.grando_hero
-id: paragraph.grando_hero.field_media
+    - paragraphs.paragraphs_type.grand_hero
+id: paragraph.grand_hero.field_media
 field_name: field_media
 entity_type: paragraph
-bundle: grando_hero
+bundle: grand_hero
 label: Media
 description: ''
 required: true

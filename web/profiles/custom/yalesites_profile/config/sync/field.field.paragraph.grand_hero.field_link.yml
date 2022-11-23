@@ -4,13 +4,13 @@ status: true
 dependencies:
   config:
     - field.storage.paragraph.field_link
-    - paragraphs.paragraphs_type.grando_hero
+    - paragraphs.paragraphs_type.grand_hero
   module:
     - link
-id: paragraph.grando_hero.field_link
+id: paragraph.grand_hero.field_link
 field_name: field_link
 entity_type: paragraph
-bundle: grando_hero
+bundle: grand_hero
 label: Link
 description: ''
 required: false
