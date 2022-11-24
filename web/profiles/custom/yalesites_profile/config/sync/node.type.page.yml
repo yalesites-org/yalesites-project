@@ -21,7 +21,7 @@ third_party_settings:
 name: Page
 type: page
 description: 'A multipurpose and flexible content type allowing free-form content entry. Used to build a variety of different page layouts, from simple to elaborate.'
-help: ''
+help: "The Page content type is your go-to multipurpose content type that allows free-form content entry. Any static web page that would be linked from your main navigation (but does not need to) would be considered a Page content type. \_"
 new_revision: true
 preview_mode: 0
 display_submitted: false
