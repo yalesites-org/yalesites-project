@@ -14,12 +14,20 @@ dependencies:
     - field.field.node.event.field_teaser_title
     - node.type.event
   module:
+    - text
     - user
 id: node.event.search_result
 targetEntityType: node
 bundle: event
 mode: search_result
 content:
+  field_teaser_text:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
   search_api_excerpt:
     settings: {  }
     third_party_settings: {  }
@@ -32,6 +40,5 @@ hidden:
   field_event_format: true
   field_metatags: true
   field_teaser_media: true
-  field_teaser_text: true
   field_teaser_title: true
   links: true

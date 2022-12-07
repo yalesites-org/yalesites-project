@@ -82,6 +82,9 @@
       },
       "drupal/linkit": {
         "add linkit widget to link fields": "https://www.drupal.org/files/issues/2022-07-22/2712951-293.patch"
+      },
+      "drupal/core": {
+        "plural results summary https://www.drupal.org/project/drupal/issues/2888320": "https://www.drupal.org/files/issues/2021-12-15/2888320-78.patch"
       }
     }
   }

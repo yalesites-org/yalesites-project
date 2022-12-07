@@ -124,7 +124,7 @@ display:
           expose_sort_order: true
           sort_asc_label: Asc
           sort_desc_label: Desc
-          text_input_required: 'Enter some search terms and then click Search.'
+          text_input_required: 'Enter some search terms and then click submit.'
           text_input_required_format: basic_html
       access:
         type: perm
@@ -176,7 +176,7 @@ display:
             title_enable: false
             title: All
           title_enable: true
-          title: 'Search for {{ arguments.search_api_fulltext }}'
+          title: 'Search results: <em>{{ arguments.search_api_fulltext }}</em>'
           default_argument_type: query_parameter
           default_argument_options:
             query_param: keywords
@@ -198,54 +198,7 @@ display:
           parse_mode: terms
           conjunction: AND
           fields: {  }
-      filters:
-        search_api_fulltext:
-          id: search_api_fulltext
-          table: search_api_index_node_index
-          field: search_api_fulltext
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: search_api_fulltext
-          operator: or
-          value: ''
-          group: 1
-          exposed: true
-          expose:
-            operator_id: search_api_fulltext_op
-            label: Search
-            description: ''
-            use_operator: false
-            operator: search_api_fulltext_op
-            operator_limit_selection: false
-            operator_list: {  }
-            identifier: keywords
-            required: true
-            remember: true
-            multiple: false
-            remember_roles:
-              authenticated: authenticated
-              anonymous: '0'
-              platform_admin: '0'
-              site_admin: '0'
-            expose_fields: false
-            placeholder: ''
-            searched_fields_id: search_api_fulltext_searched_fields
-          is_grouped: false
-          group_info:
-            label: ''
-            description: ''
-            identifier: ''
-            optional: true
-            widget: select
-            multiple: false
-            remember: false
-            default_group: All
-            default_group_multiple: {  }
-            group_items: {  }
-          parse_mode: terms
-          min_length: null
-          fields: {  }
+      filters: {  }
       style:
         type: default
       row:
@@ -265,16 +218,18 @@ display:
           query_tags: {  }
       relationships: {  }
       header:
-        result:
-          id: result
+        result_plural:
+          id: result_plural
           table: views
-          field: result
+          field: result_plural
           relationship: none
           group_type: group
           admin_label: ''
-          plugin_id: result
+          plugin_id: result_plural
           empty: false
-          content: 'Displaying @start - @end of @total'
+          content: '<div class="search-results--summary">@total search result</div>'
+          content_plural: '<div class="search-results--summary">@total search results</div>'
+          plural_count_token: '@total'
       footer: {  }
       display_extenders: {  }
     cache_metadata:
@@ -295,7 +250,7 @@ display:
     display_plugin: page
     position: 1
     display_options:
-      exposed_block: true
+      exposed_block: false
       display_extenders:
         metatag_display_extender:
           metatags:
