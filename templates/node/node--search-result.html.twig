@@ -1,0 +1,6 @@
+{% include "@molecules/search-result/yds-search-result.twig" with {
+  search_result__title: label,
+  search_result__url: url,
+  search_result__highlighted: content.search_api_excerpt,
+  search_result__teaser: content.field_teaser_text
+} %}
