@@ -1,0 +1,5 @@
+name: YaleSites Embed
+type: module
+description: Support for adding embedded content to the media library.
+core_version_requirement: ^8 || ^9
+package: YaleSites

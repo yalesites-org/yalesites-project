@@ -1,0 +1,35 @@
+uuid: 57a99e92-0420-423f-910b-bc88afc263cc
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.media.background_video.field_media_video_file
+    - media.type.background_video
+  module:
+    - file
+id: media.background_video.default
+targetEntityType: media
+bundle: background_video
+mode: default
+content:
+  field_media_video_file:
+    type: file_generic
+    weight: 1
+    region: content
+    settings:
+      progress_indicator: throbber
+    third_party_settings: {  }
+  name:
+    type: string_textfield
+    weight: 0
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+hidden:
+  created: true
+  path: true
+  revision_log_message: true
+  status: true
+  uid: true

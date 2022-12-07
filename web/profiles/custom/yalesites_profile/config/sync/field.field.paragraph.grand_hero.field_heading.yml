@@ -1,25 +1,25 @@
-uuid: d06edd27-8e39-4ad4-a7af-f1bc79277bee
+uuid: b1264ec1-e0a6-4fb1-97c1-2b5847d2cb96
 langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.paragraph.field_title_attr
-    - paragraphs.paragraphs_type.embed
+    - field.storage.paragraph.field_heading
+    - paragraphs.paragraphs_type.grand_hero
   module:
     - allowed_formats
     - text
 third_party_settings:
   allowed_formats:
     allowed_formats:
-      - plain_text
-id: paragraph.embed.field_title_attr
-field_name: field_title_attr
+      - heading_html
+id: paragraph.grand_hero.field_heading
+field_name: field_heading
 entity_type: paragraph
-bundle: embed
-label: Title
+bundle: grand_hero
+label: Heading
 description: ''
 required: true
-translatable: false
+translatable: true
 default_value: {  }
 default_value_callback: ''
 settings: {  }

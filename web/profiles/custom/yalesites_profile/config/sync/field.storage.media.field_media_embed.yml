@@ -1,0 +1,19 @@
+uuid: 112c8c28-1373-4cd3-86d7-73e400b7ec00
+langcode: en
+status: true
+dependencies:
+  module:
+    - media
+    - ys_embed
+id: media.field_media_embed
+field_name: field_media_embed
+entity_type: media
+type: embed
+settings: {  }
+module: ys_embed
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

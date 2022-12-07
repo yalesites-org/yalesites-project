@@ -818,7 +818,7 @@ display:
         type: normal
         title: 'Manage Events'
         description: ''
-        weight: 3
+        weight: 6
         expanded: false
         menu_name: admin
         parent: system.admin_content

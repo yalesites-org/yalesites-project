@@ -1,0 +1,27 @@
+uuid: b6621422-cb55-4ca4-923e-17e6d1cf3961
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.media.background_video.field_media_video_file
+    - media.type.background_video
+  module:
+    - file
+id: media.background_video.default
+targetEntityType: media
+bundle: background_video
+mode: default
+content:
+  field_media_video_file:
+    type: file_url_plain
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  created: true
+  name: true
+  search_api_excerpt: true
+  thumbnail: true
+  uid: true

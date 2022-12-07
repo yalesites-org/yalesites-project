@@ -1,0 +1,21 @@
+uuid: bef35276-1143-49e4-9e6e-24456026a0bd
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_style_position
+    - paragraphs.paragraphs_type.grand_hero
+  module:
+    - options
+id: paragraph.grand_hero.field_style_position
+field_name: field_style_position
+entity_type: paragraph
+bundle: grand_hero
+label: 'Overlay Position'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_string

@@ -1,23 +1,23 @@
-uuid: 788ab34d-cb03-411b-9de8-0147862ec652
+uuid: a886b2ce-8689-4710-8262-15c40a6c83ce
 langcode: en
 status: true
 dependencies:
   config:
     - field.storage.paragraph.field_link
-    - paragraphs.paragraphs_type.embed
+    - paragraphs.paragraphs_type.grand_hero
   module:
     - link
-id: paragraph.embed.field_link
+id: paragraph.grand_hero.field_link
 field_name: field_link
 entity_type: paragraph
-bundle: embed
-label: URL
+bundle: grand_hero
+label: Link
 description: ''
-required: true
+required: false
 translatable: true
 default_value: {  }
 default_value_callback: ''
 settings:
-  title: 0
+  title: 2
   link_type: 17
 field_type: link

@@ -1,0 +1,21 @@
+<?php
+
+/**
+ * @file
+ * YaleSites Embed module.
+ *
+ * This modules functionality for managing embeddable content.
+ */
+
+/**
+ * Implements hook_theme().
+ */
+function ys_embed_theme($existing, $type, $theme, $path) {
+  return [
+    'embed_instructions' => [
+      'variables' => [
+        'sources' => [],
+      ],
+    ],
+  ];
+}

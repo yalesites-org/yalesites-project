@@ -1,0 +1,28 @@
+uuid: 223f71de-0a53-4ac4-adc7-b0a8785d1142
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_form_mode.media.media_library
+    - field.field.media.background_video.field_media_video_file
+    - media.type.background_video
+id: media.background_video.media_library
+targetEntityType: media
+bundle: background_video
+mode: media_library
+content:
+  name:
+    type: string_textfield
+    weight: 0
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+hidden:
+  created: true
+  field_media_video_file: true
+  path: true
+  revision_log_message: true
+  status: true
+  uid: true

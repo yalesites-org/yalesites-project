@@ -4,35 +4,26 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.paragraph.preview
-    - field.field.paragraph.embed.field_link
-    - field.field.paragraph.embed.field_title_attr
+    - field.field.paragraph.embed.field_media
+    - image.style.media_library
     - paragraphs.paragraphs_type.embed
   module:
-    - link
-    - text
+    - media
 id: paragraph.embed.preview
 targetEntityType: paragraph
 bundle: embed
 mode: preview
 content:
-  field_link:
-    type: link_separate
-    label: inline
+  field_media:
+    type: media_thumbnail
+    label: hidden
     settings:
-      trim_length: 80
-      url_only: false
-      url_plain: false
-      rel: ''
-      target: ''
+      image_link: ''
+      image_style: media_library
+      image_loading:
+        attribute: lazy
     third_party_settings: {  }
     weight: 0
-    region: content
-  field_title_attr:
-    type: text_default
-    label: inline
-    settings: {  }
-    third_party_settings: {  }
-    weight: 1
     region: content
 hidden:
   search_api_excerpt: true

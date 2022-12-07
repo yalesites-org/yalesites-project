@@ -1,0 +1,28 @@
+uuid: ce5aed9a-31fd-4f8c-90f5-f6de327d85f1
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_form_mode.media.media_library
+    - field.field.media.embed.field_media_embed
+    - media.type.embed
+  module:
+    - ys_embed
+id: media.embed.media_library
+targetEntityType: media
+bundle: embed
+mode: media_library
+content:
+  field_media_embed:
+    type: embed_default
+    weight: 0
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+hidden:
+  created: true
+  name: true
+  path: true
+  revision_log_message: true
+  status: true
+  uid: true

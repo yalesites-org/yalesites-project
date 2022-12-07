@@ -1,0 +1,20 @@
+uuid: 61189169-4b66-429d-80e1-ed6f2e9b33a5
+langcode: en
+status: true
+dependencies:
+  module:
+    - help
+  theme:
+    - ys_admin_theme
+id: help
+theme: ys_admin_theme
+region: help
+weight: 0
+provider: null
+plugin: help_block
+settings:
+  id: help_block
+  label: Help
+  label_display: '0'
+  provider: help
+visibility: {  }

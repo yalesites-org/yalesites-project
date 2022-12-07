@@ -1,0 +1,5 @@
+services:
+  # Service for managing embed source plugins.
+  plugin.manager.embed_source:
+    class: Drupal\ys_embed\Plugin\EmbedSourceManager
+    parent: default_plugin_manager

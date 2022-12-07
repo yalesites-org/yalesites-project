@@ -3,10 +3,10 @@ _core:
 definitions:
   'admin_toolbar_tools__extra_links:media_page':
     menu_name: admin
-    parent: 'admin_toolbar_tools.extra_links:media_library'
-    weight: 1
+    parent: system.admin_content
+    weight: 7
     expanded: false
-    enabled: false
+    enabled: true
   'admin_toolbar_tools__extra_links:view__files':
     menu_name: admin
     parent: 'admin_toolbar_tools.extra_links:media_library'
@@ -15,13 +15,43 @@ definitions:
     enabled: false
   'admin_toolbar_tools__extra_links:media_library':
     menu_name: admin
-    parent: system.admin_content
-    weight: 4
+    parent: 'admin_toolbar_tools.extra_links:media_page'
+    weight: 1
     expanded: false
     enabled: true
   'admin_toolbar_tools__extra_links:add_media':
     menu_name: admin
-    parent: 'admin_toolbar_tools.extra_links:media_library'
+    parent: 'admin_toolbar_tools.extra_links:media_page'
     weight: 0
+    expanded: false
+    enabled: true
+  ys_core__admin_dashboard:
+    menu_name: admin
+    parent: system.admin_content
+    weight: 2
+    expanded: false
+    enabled: true
+  'admin_toolbar_tools__extra_links:node__add':
+    menu_name: admin
+    parent: system.admin_content
+    weight: 3
+    expanded: false
+    enabled: true
+  'admin_toolbar_tools__extra_links:node__add__event':
+    menu_name: admin
+    parent: 'admin_toolbar_tools.extra_links:node.add'
+    weight: 2
+    expanded: false
+    enabled: true
+  'admin_toolbar_tools__extra_links:node__add__news':
+    menu_name: admin
+    parent: 'admin_toolbar_tools.extra_links:node.add'
+    weight: 3
+    expanded: false
+    enabled: true
+  'admin_toolbar_tools__extra_links:node__add__page':
+    menu_name: admin
+    parent: 'admin_toolbar_tools.extra_links:node.add'
+    weight: 4
     expanded: false
     enabled: true

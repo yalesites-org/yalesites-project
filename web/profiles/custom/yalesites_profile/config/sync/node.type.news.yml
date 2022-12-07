@@ -4,6 +4,7 @@ status: true
 dependencies:
   module:
     - menu_ui
+    - node_revision_delete
     - search_api_exclude
 third_party_settings:
   menu_ui:
@@ -11,10 +12,14 @@ third_party_settings:
     parent: ''
   search_api_exclude:
     enabled: 1
+  node_revision_delete:
+    minimum_revisions_to_keep: 1
+    minimum_age_to_delete: 12
+    when_to_delete: 0
 name: News
 type: news
 description: 'Create a news article, blog post, or announcement, to share new and noteworthy information. Can be displayed in a news feed.'
-help: ''
+help: "The News content type allows you to create a page for your news article, blog posts, or announcements pages, to share new and noteworthy information to your community. News content pages can be dynamically listed in your other web pages using the News Cards or News List components. \_"
 new_revision: true
 preview_mode: 0
 display_submitted: false
