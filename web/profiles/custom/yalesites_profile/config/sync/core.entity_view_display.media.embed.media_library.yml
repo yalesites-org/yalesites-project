@@ -1,21 +1,21 @@
-uuid: 5153aed4-3663-4e21-8b96-541061614640
+uuid: 329a653e-cea9-4eee-a738-29acab10bda7
 langcode: en
 status: true
 dependencies:
   config:
-    - core.entity_view_mode.paragraph.preview
-    - field.field.paragraph.embed.field_media
+    - core.entity_view_mode.media.media_library
+    - field.field.media.embed.field_media_embed
     - image.style.media_library
-    - paragraphs.paragraphs_type.embed
+    - media.type.embed
   module:
-    - media
-id: paragraph.embed.preview
-targetEntityType: paragraph
+    - image
+id: media.embed.media_library
+targetEntityType: media
 bundle: embed
-mode: preview
+mode: media_library
 content:
-  field_media:
-    type: media_thumbnail
+  thumbnail:
+    type: image
     label: hidden
     settings:
       image_link: ''
@@ -26,4 +26,8 @@ content:
     weight: 0
     region: content
 hidden:
+  created: true
+  field_media_embed: true
+  name: true
   search_api_excerpt: true
+  uid: true

@@ -1,0 +1,27 @@
+uuid: c7d70cc1-321c-46e3-ba2f-4a971554515b
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.media.embed.field_media_embed
+    - media.type.embed
+  module:
+    - ys_embed
+id: media.embed.default
+targetEntityType: media
+bundle: embed
+mode: default
+content:
+  field_media_embed:
+    type: embed_formatter
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  created: true
+  name: true
+  search_api_excerpt: true
+  thumbnail: true
+  uid: true
