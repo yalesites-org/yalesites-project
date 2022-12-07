@@ -1,0 +1,55 @@
+@use '../../01-atoms/atoms';
+@use '../../00-tokens/tokens';
+
+.search-results--summary {
+  font-style: italic;
+  color: var(--color-gray-600);
+  margin-bottom: var(--spacing-page-inner);
+}
+
+.search-form--page {
+  display: flex;
+  gap: var(--size-spacing-5);
+}
+
+.search-result {
+  @include atoms.clickable-component-heading-link;
+
+  padding: var(--size-spacing-5) 0;
+  border-bottom: 1px solid var(--color-gray-300);
+
+  @media (min-width: tokens.$break-mobile-max) {
+    max-width: var(--size-component-layout-width-content);
+  }
+
+  &:hover {
+    // @TODO: Temporary styles until we create a token
+    // This shadow is hard coded because it has to be adjusted to make it
+    // appear as though it's a shadow on only the border-bottom element.
+    // There isn't currently anything else that looks like this. If there ever
+    // Is, perhaps it should be captured as a token in a new drop-shadow set.
+    // @LINK: https://yaleits.atlassian.net/browse/YALB-844.
+    box-shadow: 0 8px 6px -6px hsl(0deg 0% 0% / 16%);
+  }
+}
+
+.search-result__heading {
+  @include tokens.h4-yale-new;
+
+  color: var(--color-gray-800);
+}
+
+.search-result__highlighted,
+.search-result__teaser {
+  margin: var(--size-spacing-3) 0;
+}
+
+.search-result__highlighted {
+  strong {
+    color: var(--color-gray-800);
+  }
+}
+
+.search-result__teaser {
+  color: var(--color-gray-600);
+}
