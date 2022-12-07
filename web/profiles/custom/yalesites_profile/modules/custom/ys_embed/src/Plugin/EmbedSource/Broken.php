@@ -21,7 +21,7 @@ class Broken extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $pattern;
+  protected static $pattern = '/^$/';
 
   /**
    * {@inheritdoc}
