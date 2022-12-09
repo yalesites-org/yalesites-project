@@ -147,6 +147,16 @@ class SiteSettingsForm extends ConfigFormBase {
       '#default_value' => $siteConfig->get('page')['404'],
     ];
 
+    $form['primary_menu_type'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Primary Menu Type'),
+      '#default_value' => $yaleConfig->get('menu')['primary_menu_type'],
+      '#options' => [
+        'mega' => 'Mega Menu',
+        'basic' => 'Basic Menu',
+      ]
+    ];
+
     $form['enable_search_form'] = [
       '#type' => 'checkbox',
       '#description' => $this->t('Enable the search form located in the utility navigation area.'),
@@ -209,6 +219,7 @@ class SiteSettingsForm extends ConfigFormBase {
     $this->configFactory->getEditable('ys_core.site')
       ->set('page.news', $form_state->getValue('site_page_news'))
       ->set('page.events', $form_state->getValue('site_page_events'))
+      ->set('menu.primary_menu_type', $form_state->getValue('primary_menu_type'))
       ->set('search.enable_search_form', $form_state->getValue('enable_search_form'))
       ->save();
 
