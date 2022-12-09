@@ -1,7 +1,5 @@
 page:
   news: ''
   events: ''
-menu:
-  primary_menu_type: 'mega'
 search:
   enable_search_form: 1
