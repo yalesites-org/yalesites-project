@@ -142,7 +142,7 @@ settings:
   draft_loaded_message: ''
   draft_pending_single_message: ''
   draft_pending_multiple_message: ''
-  confirmation_type: url_message
+  confirmation_type: inline
   confirmation_url: '<front>'
   confirmation_title: ''
   confirmation_message: 'Your message has been sent.'
@@ -226,14 +226,14 @@ handlers:
     id: email
     handler_id: email_confirmation
     label: 'Email confirmation'
-    notes: ''
+    notes: 'The person submitting the webform receives this email as a confirmation that their submission went through.'
     status: true
     conditions: {  }
     weight: 1
     settings:
       states:
         - completed
-      to_mail: '[current-user:mail]'
+      to_mail: '[webform_submission:values:email:raw]'
       to_options: {  }
       bcc_mail: ''
       bcc_options: {  }
@@ -263,23 +263,23 @@ handlers:
     id: email
     handler_id: email_notification
     label: 'Email notification'
-    notes: ''
+    notes: 'The site admin receives this email notification that a new submission was made on the form.'
     status: true
     conditions: {  }
     weight: 2
     settings:
       states:
         - completed
-      to_mail: _default
+      to_mail: '[site:mail]'
       to_options: {  }
       bcc_mail: ''
       bcc_options: {  }
       cc_mail: ''
       cc_options: {  }
-      from_mail: '[webform_submission:values:email:raw]'
+      from_mail: '[site:mail]'
       from_options: {  }
-      from_name: '[webform_submission:values:name:raw]'
-      reply_to: ''
+      from_name: '[site:name]'
+      reply_to: '[webform_submission:values:email:raw]'
       return_path: ''
       sender_mail: ''
       sender_name: ''
