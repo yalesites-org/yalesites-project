@@ -4,8 +4,10 @@ status: true
 dependencies:
   config:
     - field.field.paragraph.webform.field_form
+    - field.field.paragraph.webform.field_heading
     - paragraphs.paragraphs_type.webform
   module:
+    - text
     - webform
 id: paragraph.webform.default
 targetEntityType: paragraph
@@ -17,6 +19,13 @@ content:
     label: hidden
     settings:
       source_entity: true
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_heading:
+    type: text_default
+    label: hidden
+    settings: {  }
     third_party_settings: {  }
     weight: 0
     region: content

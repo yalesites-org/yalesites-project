@@ -5,8 +5,10 @@ dependencies:
   config:
     - core.entity_view_mode.paragraph.preview
     - field.field.paragraph.webform.field_form
+    - field.field.paragraph.webform.field_heading
     - paragraphs.paragraphs_type.webform
   module:
+    - text
     - webform
 id: paragraph.webform.preview
 targetEntityType: paragraph
@@ -20,6 +22,13 @@ content:
       label: 'Preview [webform:title] webform'
       dialog: ''
       attributes: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_heading:
+    type: text_default
+    label: hidden
+    settings: {  }
     third_party_settings: {  }
     weight: 0
     region: content
