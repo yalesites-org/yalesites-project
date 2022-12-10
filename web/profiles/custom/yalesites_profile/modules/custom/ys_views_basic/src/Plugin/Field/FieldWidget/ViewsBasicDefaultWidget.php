@@ -113,7 +113,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     $element['params'] = [
       '#type' => 'textarea',
       '#title' => t('Params'),
-      '#default_value' => isset($items[$delta]->params) ? $items[$delta]->params : NULL,
+      '#default_value' => $items[$delta]->params ?? NULL,
       '#empty_value' => '',
       '#placeholder' => t('Params'),
       '#attributes' => [
