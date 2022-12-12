@@ -45,10 +45,29 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       ->getStorage('node_type')
       ->loadMultiple();
     foreach ($types as $machine_name => $object) {
-      $contentTypes[$machine_name] = $object->get('name');
+      $contentTypes[$machine_name] = $object->label();
     }
 
     return $contentTypes;
+  }
+
+  /**
+   * Returns an array of view mode machine names and the human readable name.
+   */
+  public function viewModeList() {
+    $viewModes = [];
+
+    $view_modes = $this->entityTypeManager()
+      ->getStorage('entity_view_mode')
+      ->loadMultiple();
+    foreach ($view_modes as $machine_name => $object) {
+      $pattern = "/^node./";
+      if (preg_match($pattern, $machine_name) && $object->status()) {
+        $viewModes[$machine_name] = $object->label();
+      }
+    }
+
+    return $viewModes;
   }
 
 }

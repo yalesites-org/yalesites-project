@@ -107,6 +107,20 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         'class'     => [
           'views-basic--user-value',
         ],
+        'data-views_basic_param' => 'contentType',
+      ],
+    ];
+
+    $form['view_modes'] = [
+      '#type' => 'select',
+      '#options' => $this->viewsBasicManager->viewModeList(),
+      '#title' => t('View Modes'),
+      '#tree' => TRUE,
+      '#attributes' => [
+        'class'     => [
+          'views-basic--user-value',
+        ],
+        'data-views_basic_param' => 'viewMode',
       ],
     ];
 
