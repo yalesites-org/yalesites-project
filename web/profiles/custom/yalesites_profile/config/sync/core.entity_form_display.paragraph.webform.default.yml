@@ -1,0 +1,43 @@
+uuid: a9202f1e-4f1c-4bf7-b5b1-a8299418a57c
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.paragraph.webform.field_form
+    - field.field.paragraph.webform.field_heading
+    - paragraphs.paragraphs_type.webform
+  module:
+    - allowed_formats
+    - maxlength
+    - text
+    - webform
+id: paragraph.webform.default
+targetEntityType: paragraph
+bundle: webform
+mode: default
+content:
+  field_form:
+    type: webform_entity_reference_select
+    weight: 1
+    region: content
+    settings:
+      default_data: false
+      webforms: {  }
+    third_party_settings: {  }
+  field_heading:
+    type: text_textfield
+    weight: 0
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings:
+      allowed_formats:
+        hide_help: '1'
+        hide_guidelines: '1'
+      maxlength:
+        maxlength_js: 80
+        maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
+hidden:
+  created: true
+  status: true

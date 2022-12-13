@@ -18,7 +18,6 @@ dependencies:
     - paragraphs.paragraphs_type.media_grid
     - paragraphs.paragraphs_type.news_cards
     - paragraphs.paragraphs_type.news_list
-    - paragraphs.paragraphs_type.wrapped_image
     - paragraphs.paragraphs_type.pull_quote
     - paragraphs.paragraphs_type.quick_links
     - paragraphs.paragraphs_type.section
@@ -26,6 +25,8 @@ dependencies:
     - paragraphs.paragraphs_type.text
     - paragraphs.paragraphs_type.text_with_image
     - paragraphs.paragraphs_type.video
+    - paragraphs.paragraphs_type.webform
+    - paragraphs.paragraphs_type.wrapped_image
   module:
     - entity_reference_revisions
 id: node.page.field_content
@@ -63,6 +64,7 @@ settings:
       media_grid: media_grid
       gallery: gallery
       video: video
+      webform: webform
     negate: 0
     target_bundles_drag_drop:
       accordion:
@@ -104,6 +106,9 @@ settings:
       gallery_item:
         weight: 40
         enabled: false
+      grand_hero:
+        weight: 43
+        enabled: false
       image:
         weight: -31
         enabled: true
@@ -142,6 +147,9 @@ settings:
         enabled: true
       video:
         weight: 46
+        enabled: true
+      webform:
+        weight: 57
         enabled: true
       wrapped_image:
         weight: -29
