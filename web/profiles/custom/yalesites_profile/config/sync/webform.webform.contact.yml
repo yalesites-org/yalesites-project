@@ -39,7 +39,7 @@ elements: |-
   actions:
     '#type': webform_actions
     '#title': 'Submit button(s)'
-    '#submit__label': 'Send message'
+    '#submit__label': Submit
 css: ''
 javascript: ''
 settings:
