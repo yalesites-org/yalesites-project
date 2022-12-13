@@ -26,8 +26,8 @@ class ViewsBasicDefaultFormatter extends FormatterBase {
     $elements = [];
     foreach ($items as $delta => $item) {
       $elements[$delta] = [
-        '#type' => 'markup',
-        '#markup' => $item->params,
+        '#theme' => 'views_basic_formatter_default',
+        '#params' => json_decode($item->params, TRUE),
       ];
     }
 
