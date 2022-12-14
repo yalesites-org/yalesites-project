@@ -67,6 +67,14 @@ class ThemeSettingsManager {
       ],
       'default' => 'right',
     ],
+    'nav_type' => [
+      'name' => 'Navigation Type',
+      'values' => [
+        'mega' => 'Mega Menu',
+        'basic' => 'Basic Menu',
+      ],
+      'default' => 'mega',
+    ],
     'header_theme' => [
       'name' => 'Header Theme',
       'values' => [
