@@ -26,6 +26,7 @@ dependencies:
     - paragraphs.paragraphs_type.text
     - paragraphs.paragraphs_type.text_with_image
     - paragraphs.paragraphs_type.video
+    - paragraphs.paragraphs_type.webform
     - paragraphs.paragraphs_type.wrapped_image
   module:
     - entity_reference_revisions
@@ -65,6 +66,7 @@ settings:
       media_grid: media_grid
       gallery: gallery
       video: video
+      webform: webform
     negate: 0
     target_bundles_drag_drop:
       accordion:
@@ -110,7 +112,11 @@ settings:
         weight: 40
         enabled: false
       grand_hero:
+<<<<<<< HEAD
         weight: 44
+=======
+        weight: 43
+>>>>>>> develop
         enabled: false
       image:
         weight: -31
@@ -150,6 +156,9 @@ settings:
         enabled: true
       video:
         weight: 46
+        enabled: true
+      webform:
+        weight: 57
         enabled: true
       wrapped_image:
         weight: -29
