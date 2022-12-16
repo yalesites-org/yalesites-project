@@ -31,7 +31,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
   protected $viewsBasicManager;
 
   /**
-   * Constructs a EmbedDefaultWidget object.
+   * Constructs a ViewsBasicDefaultWidget object.
    *
    * @param string $plugin_id
    *   The plugin_id for the widget.
@@ -44,7 +44,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
    * @param array $third_party_settings
    *   Any third party settings.
    * @param \Drupal\ys_views_basic\ViewsBasicManager $views_basic_manager
-   *   The EmbedSource management service.
+   *   The ViewsBasic management service.
    */
   public function __construct(
     $plugin_id,
@@ -98,30 +98,20 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     FormStateInterface $formState
   ) {
 
-    $form['content_types'] = [
+    $form['entity_types'] = [
       '#type' => 'select',
-      '#options' => $this->viewsBasicManager->contentTypeList(),
-      '#title' => t('Content Type'),
+      '#options' => $this->viewsBasicManager->entityTypeList(),
+      '#title' => t('Type'),
       '#tree' => TRUE,
-      '#attributes' => [
-        'class'     => [
-          'views-basic--user-value',
-        ],
-        'data-views_basic_param' => 'contentType',
-      ],
+      '#default_value' => $this->viewsBasicManager->getDefaultParamValue('types', $items[$delta]->params),
     ];
 
-    $form['view_modes'] = [
+    $form['view_mode'] = [
       '#type' => 'select',
       '#options' => $this->viewsBasicManager->viewModeList(),
-      '#title' => t('View Modes'),
+      '#title' => t('View Mode'),
       '#tree' => TRUE,
-      '#attributes' => [
-        'class'     => [
-          'views-basic--user-value',
-        ],
-        'data-views_basic_param' => 'viewMode',
-      ],
+      '#default_value' => $this->viewsBasicManager->getDefaultParamValue('view_mode', $items[$delta]->params),
     ];
 
     $element['params'] = [
@@ -137,9 +127,25 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
     ];
 
-    $form['#attached']['library'][] = 'ys_views_basic/ys_views_basic';
-
     return $element;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    foreach ($values as &$value) {
+      $paramData = [
+        "view_mode" => $form['view_mode']['#value'],
+        "filters" => [
+          "types" => [
+            $form['entity_types']['#value'],
+          ],
+        ],
+      ];
+      $value['params'] = json_encode($paramData);
+    }
+    return $values;
   }
 
 }
