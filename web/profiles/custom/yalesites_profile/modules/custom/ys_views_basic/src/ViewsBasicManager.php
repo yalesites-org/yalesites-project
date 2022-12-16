@@ -19,8 +19,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * @var array
    */
   const ALLOWED_ENTITIES = [
-    'node_type',
-    'media_type',
+    'node' => 'node_type',
+    'media' => 'media_type',
   ];
 
   /**
@@ -85,9 +85,11 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       ->getStorage('entity_view_mode')
       ->loadMultiple();
     foreach ($view_modes as $machine_name => $object) {
-      $pattern = "/^node./";
-      if (preg_match($pattern, $machine_name) && $object->status()) {
-        $viewModes[$machine_name] = $object->label();
+      foreach (self::ALLOWED_ENTITIES as $key => $type) {
+        $pattern = "/^{$key}/";
+        if (preg_match($pattern, $machine_name) && $object->status()) {
+          $viewModes[$machine_name] = $object->label();
+        }
       }
     }
 
@@ -98,10 +100,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * Returns an entity label given an entity type and machine name.
    */
   public function getEntityLabel($type) {
-    $nodeInfo = explode(".", $type);
+    $entityInfo = explode(".", $type);
     $bundleLabel = $this->entityTypeManager
-      ->getStorage($nodeInfo[0])
-      ->load($nodeInfo[1])
+      ->getStorage($entityInfo[0])
+      ->load($entityInfo[1])
       ->label();
     return $bundleLabel;
   }
@@ -111,7 +113,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    */
   public function getViewModeLabel($type) {
     $viewModeInfo = explode(".", $type);
-    return $this->entityDisplayRepository->getViewModes($viewModeInfo[0])[$viewModeInfo[1]]['label'];
+    return $this->entityDisplayRepository
+      ->getViewModes($viewModeInfo[0])[$viewModeInfo[1]]['label'];
   }
 
   /**
