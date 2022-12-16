@@ -16,11 +16,14 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   /**
    * Allowed entity types for users to select.
    *
+   * @todo This seems fragile and would better be inside a config page for
+   * admins to select.
+   *
    * @var array
    */
   const ALLOWED_ENTITIES = [
     'node' => 'node_type',
-    'media' => 'media_type',
+    // 'media' => 'media_type',
   ];
 
   /**
@@ -40,7 +43,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   /**
    * Constructs a new ViewsBasicManager object.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityDisplayRepository $entity_display_repository) {
+  public function __construct(
+    EntityTypeManagerInterface $entity_type_manager,
+    EntityDisplayRepository $entity_display_repository
+    ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityDisplayRepository = $entity_display_repository;
   }
@@ -123,7 +129,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   public function getDefaultParamValue($type, $params) {
     $paramsDecoded = json_decode($params, TRUE);
     switch ($type) {
-      // @todo Change this to better support multiple entity types.
+      /* @todo Currently, this only selects the first entity type which is
+       * okay since there is only a simple dropdown for now. We should change
+       * this to better support multiple entity types.
+       */
       case 'types':
         $defaultParam = $paramsDecoded['filters']['types'][0];
         break;

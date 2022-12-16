@@ -1,0 +1,14 @@
+.views-basic--params {
+  display: none;
+}
+
+.views-basic--user-selection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.views-basic--group-user-selection .fieldset__wrapper {
+  display: flex;
+  gap: 1rem;
+}

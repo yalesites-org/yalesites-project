@@ -105,12 +105,15 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
       ];
       $paramsDecoded = json_decode($item->params, TRUE);
 
+      // Gets the entity labels.
       foreach ($paramsDecoded['filters']['types'] as $type) {
         $entityLabel = $this->viewsBasicManager->getEntityLabel($type);
         array_push($paramsForRender['types'], $entityLabel);
       }
 
-      $viewModeLabel = $this->viewsBasicManager->getViewModeLabel($paramsDecoded['view_mode']);
+      // Gets the view mode label.
+      $viewModeLabel = $this->viewsBasicManager
+        ->getViewModeLabel($paramsDecoded['view_mode']);
       $paramsForRender['view_mode'] = $viewModeLabel;
 
       $elements[$delta] = [

@@ -85,10 +85,6 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
   /**
    * Define the form for the field type.
-   *
-   * Inside this method we can define the form used to edit the field type.
-   *
-   * Here there is a list of allowed element types: https://goo.gl/XVd4tA
    */
   public function formElement(
     FieldItemListInterface $items,
@@ -98,23 +94,53 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     FormStateInterface $formState
   ) {
 
-    $form['entity_types'] = [
+    $element['group_params'] = [
+      '#type' => 'fieldgroup',
+      '#attributes' => [
+        'class' => [
+          'views-basic--params',
+        ],
+      ],
+    ];
+
+    $form['group_user_selection'] = [
+      '#type' => 'fieldgroup',
+      '#attributes' => [
+        'class' => [
+          'views-basic--group-user-selection',
+        ],
+      ],
+    ];
+
+    $form['group_user_selection']['entity_types'] = [
       '#type' => 'select',
       '#options' => $this->viewsBasicManager->entityTypeList(),
-      '#title' => t('Type'),
+      '#title' => t('Display'),
       '#tree' => TRUE,
-      '#default_value' => $this->viewsBasicManager->getDefaultParamValue('types', $items[$delta]->params),
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('types', $items[$delta]->params) : NULL,
+      '#wrapper_attributes' => [
+        'class' => [
+          'views-basic--user-selection',
+          'views-basic--entity-types',
+        ],
+      ],
     ];
 
-    $form['view_mode'] = [
+    $form['group_user_selection']['view_mode'] = [
       '#type' => 'select',
       '#options' => $this->viewsBasicManager->viewModeList(),
-      '#title' => t('View Mode'),
+      '#title' => t('as'),
       '#tree' => TRUE,
-      '#default_value' => $this->viewsBasicManager->getDefaultParamValue('view_mode', $items[$delta]->params),
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('view_mode', $items[$delta]->params) : NULL,
+      '#wrapper_attributes' => [
+        'class' => [
+          'views-basic--user-selection',
+          'views-basic--view-mode',
+        ],
+      ],
     ];
 
-    $element['params'] = [
+    $element['group_params']['params'] = [
       '#type' => 'textarea',
       '#title' => t('Params'),
       '#default_value' => $items[$delta]->params ?? NULL,
@@ -127,19 +153,21 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
     ];
 
+    $form['#attached']['library'][] = 'ys_views_basic/ys_views_basic';
+
     return $element;
   }
 
   /**
-   * {@inheritdoc}
+   * Get data from user selection and encode to JSON and save into params field.
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
     foreach ($values as &$value) {
       $paramData = [
-        "view_mode" => $form['view_mode']['#value'],
+        "view_mode" => $form['group_user_selection']['view_mode']['#value'],
         "filters" => [
           "types" => [
-            $form['entity_types']['#value'],
+            $form['group_user_selection']['entity_types']['#value'],
           ],
         ],
       ];
