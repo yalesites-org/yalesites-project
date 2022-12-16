@@ -115,7 +115,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     $form['group_user_selection']['entity_types'] = [
       '#type' => 'select',
       '#options' => $this->viewsBasicManager->entityTypeList(),
-      '#title' => t('Display'),
+      '#title' => $this->t('Display'),
       '#tree' => TRUE,
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('types', $items[$delta]->params) : NULL,
       '#wrapper_attributes' => [
@@ -129,7 +129,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     $form['group_user_selection']['view_mode'] = [
       '#type' => 'select',
       '#options' => $this->viewsBasicManager->viewModeList(),
-      '#title' => t('as'),
+      '#title' => $this->t('as'),
       '#tree' => TRUE,
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('view_mode', $items[$delta]->params) : NULL,
       '#wrapper_attributes' => [
@@ -142,10 +142,9 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     $element['group_params']['params'] = [
       '#type' => 'textarea',
-      '#title' => t('Params'),
+      '#title' => $this->t('Params'),
       '#default_value' => $items[$delta]->params ?? NULL,
       '#empty_value' => '',
-      '#placeholder' => t('Params'),
       '#attributes' => [
         'class'     => [
           'views-basic--params',
