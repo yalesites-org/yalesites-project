@@ -1,0 +1,8 @@
+uuid: 47fd9557-3e7c-4921-926f-29850dbee78e
+langcode: en
+status: true
+dependencies: {  }
+id: form_submission
+label: 'Form Submission'
+threshold: !!float 1
+challenge: recaptcha/reCAPTCHA

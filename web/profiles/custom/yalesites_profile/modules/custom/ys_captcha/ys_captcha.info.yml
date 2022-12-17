@@ -1,0 +1,7 @@
+name: YaleSites captcha
+type: module
+description: Settings for YaleSites Captcha
+core_version_requirement: ^8 || ^9
+package: YaleSites
+dependencies:
+  - ys_secrets

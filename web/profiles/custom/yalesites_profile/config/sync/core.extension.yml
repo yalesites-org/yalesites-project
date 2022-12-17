@@ -7,6 +7,7 @@ module:
   allowed_formats: 0
   block: 0
   breakpoint: 0
+  captcha: 0
   cas: 0
   cas_attributes: 0
   chosen_lib: 0
@@ -71,6 +72,8 @@ module:
   path_alias: 0
   publishcontent: 0
   quick_node_clone: 0
+  recaptcha: 0
+  recaptcha_v3: 0
   redirect: 0
   responsive_image: 0
   search_api: 0
@@ -90,6 +93,7 @@ module:
   webform_ui: 0
   yale_cas: 0
   ys_alert: 0
+  ys_captcha: 0
   ys_secrets: 0
   hide_revision_field: 1
   menu_admin_per_menu: 1
