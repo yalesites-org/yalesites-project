@@ -1,6 +1,6 @@
 name: YaleSites Views Basic
 type: module
-description: Views Basic is a stripped down version of views that content editors can use to insert simpler views into a paragraph
+description: Views Basic is a stripped down version of views that content editors can use to insert simpler views
 core_version_requirement: ^8 || ^9
 package: YaleSites
 dependencies:
