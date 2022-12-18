@@ -21,6 +21,7 @@ dependencies:
     - system
     - taxonomy
     - toolbar
+    - webform
     - ys_alert
     - ys_core
 id: site_admin
@@ -35,6 +36,7 @@ permissions:
   - 'access taxonomy overview'
   - 'access toolbar'
   - 'access user profiles'
+  - 'access webform overview'
   - 'administer main menu items'
   - 'administer users'
   - 'administer utility-navigation menu items'
@@ -52,6 +54,7 @@ permissions:
   - 'delete any media'
   - 'delete any news content'
   - 'delete any page content'
+  - 'delete any webform submission'
   - 'delete media'
   - 'delete own event content'
   - 'delete own image media'
@@ -61,10 +64,12 @@ permissions:
   - 'edit any image media'
   - 'edit any news content'
   - 'edit any page content'
+  - 'edit any webform submission'
   - 'edit own event content'
   - 'edit own image media'
   - 'edit own news content'
   - 'edit own page content'
+  - 'edit own webform submission'
   - 'override all sticky option'
   - 'override news authored on option'
   - 'publish any content'
@@ -79,11 +84,13 @@ permissions:
   - 'update media'
   - 'view all media revisions'
   - 'view all revisions'
+  - 'view any webform submission'
   - 'view editoria11y checker'
   - 'view event revisions'
   - 'view news revisions'
   - 'view own unpublished content'
   - 'view own unpublished media'
+  - 'view own webform submission'
   - 'view page revisions'
   - 'view the administration theme'
   - 'view unpublished paragraphs'

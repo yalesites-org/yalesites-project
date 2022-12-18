@@ -17,3 +17,9 @@ the api key is set.
 ```bash
 lando drush config-get mailchimp_transactional.settings mailchimp_transactional_api_key --include-overridden
 ```
+
+If this file is missing, then pull the latest files into the local environment.
+
+```bash
+lando pull --database=none --files=dev --code=none
+```
