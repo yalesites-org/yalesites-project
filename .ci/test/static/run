@@ -25,4 +25,4 @@ composer -n code-sniff
 
 # Lint styles and JS
 npm run lint:styles
-npm run lint:js
+# npm run lint:js
