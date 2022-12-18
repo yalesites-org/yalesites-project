@@ -90,6 +90,7 @@ module:
   webform_ui: 0
   yale_cas: 0
   ys_alert: 0
+  ys_secrets: 0
   hide_revision_field: 1
   menu_admin_per_menu: 1
   pathauto: 1
