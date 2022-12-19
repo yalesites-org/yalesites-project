@@ -4,5 +4,5 @@ status: true
 dependencies: {  }
 id: form_submission
 label: 'Form Submission'
-threshold: !!float 1
+threshold: 0.9
 challenge: recaptcha/reCAPTCHA
