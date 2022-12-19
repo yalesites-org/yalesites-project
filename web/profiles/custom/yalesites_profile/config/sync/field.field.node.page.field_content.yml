@@ -112,11 +112,7 @@ settings:
         weight: 40
         enabled: false
       grand_hero:
-<<<<<<< HEAD
-        weight: 44
-=======
         weight: 43
->>>>>>> develop
         enabled: false
       image:
         weight: -31
