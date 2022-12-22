@@ -170,7 +170,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
           ],
         ],
       ];
-      $value['params'] = serialize($paramData);
+      $value['params'] = json_encode($paramData);
     }
     return $values;
   }

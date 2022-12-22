@@ -45,7 +45,6 @@ class ViewsBasicParams extends FieldItemBase {
       'not null' => FALSE,
       'serialize' => TRUE,
       'size' => 'big',
-      'type' => 'text',
       'type' => 'blob',
     ];
 

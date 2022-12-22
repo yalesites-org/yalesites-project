@@ -103,7 +103,7 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
         'types' => [],
         'view_mode' => '',
       ];
-      $paramsDecoded = unserialize($item->params);
+      $paramsDecoded = json_decode($item->params, TRUE);
 
       // Gets the entity labels.
       foreach ($paramsDecoded['filters']['types'] as $type) {
