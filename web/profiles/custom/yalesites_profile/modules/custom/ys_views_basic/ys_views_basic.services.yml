@@ -1,5 +1,5 @@
 services:
   # Service for managing views basic plugins.
-  plugin.manager.views_basic:
+  ys_views_basic.views_basic_manager:
     class: Drupal\ys_views_basic\ViewsBasicManager
     arguments: ['@entity_type.manager', '@entity_display.repository']

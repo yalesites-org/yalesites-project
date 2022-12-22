@@ -127,7 +127,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * Returns a default value for a parameter to auto-select one in the list.
    */
   public function getDefaultParamValue($type, $params) {
-    $paramsDecoded = json_decode($params, TRUE);
+    $paramsDecoded = unserialize($params);
     switch ($type) {
       /* @todo Currently, this only selects the first entity type which is
        * okay since there is only a simple dropdown for now. We should change

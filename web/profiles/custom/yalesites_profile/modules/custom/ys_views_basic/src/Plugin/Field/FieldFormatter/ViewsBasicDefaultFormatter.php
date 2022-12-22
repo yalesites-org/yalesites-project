@@ -88,7 +88,7 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
       $configuration['label'],
       $configuration['view_mode'],
       $configuration['third_party_settings'],
-      $container->get('plugin.manager.views_basic'),
+      $container->get('ys_views_basic.views_basic_manager'),
     );
   }
 
@@ -103,7 +103,7 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
         'types' => [],
         'view_mode' => '',
       ];
-      $paramsDecoded = json_decode($item->params, TRUE);
+      $paramsDecoded = unserialize($item->params);
 
       // Gets the entity labels.
       foreach ($paramsDecoded['filters']['types'] as $type) {

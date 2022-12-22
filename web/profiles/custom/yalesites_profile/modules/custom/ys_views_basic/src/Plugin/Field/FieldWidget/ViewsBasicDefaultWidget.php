@@ -79,7 +79,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       $configuration['field_definition'],
       $configuration['settings'],
       $configuration['third_party_settings'],
-      $container->get('plugin.manager.views_basic')
+      $container->get('ys_views_basic.views_basic_manager')
     );
   }
 
@@ -158,7 +158,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
   }
 
   /**
-   * Get data from user selection and encode to JSON and save into params field.
+   * Get data from user selection and save into params field.
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
     foreach ($values as &$value) {
@@ -170,7 +170,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
           ],
         ],
       ];
-      $value['params'] = json_encode($paramData);
+      $value['params'] = serialize($paramData);
     }
     return $values;
   }
