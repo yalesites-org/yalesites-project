@@ -1,0 +1,20 @@
+<?php
+
+/**
+ * @file
+ * Contains ys_views_basic.module functions.
+ */
+
+/**
+ * Implements hook_theme().
+ */
+function ys_views_basic_theme($existing, $type, $theme, $path): array {
+  return [
+    // The default formatter will only be used for preview on the back-end.
+    'views_basic_formatter_default' => [
+      'variables' => [
+        'params' => [],
+      ],
+    ],
+  ];
+}

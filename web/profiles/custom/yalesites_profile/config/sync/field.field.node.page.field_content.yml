@@ -6,6 +6,7 @@ dependencies:
     - field.storage.node.field_content
     - node.type.page
     - paragraphs.paragraphs_type.accordion
+    - paragraphs.paragraphs_type.basic_view
     - paragraphs.paragraphs_type.callout
     - paragraphs.paragraphs_type.cta_banner
     - paragraphs.paragraphs_type.custom_cards
@@ -59,6 +60,7 @@ settings:
       news_list: news_list
       cta_banner: cta_banner
       custom_cards: custom_cards
+      basic_view: basic_view
       quick_links: quick_links
       tabs: tabs
       media_grid: media_grid
@@ -73,6 +75,9 @@ settings:
       accordion_item:
         weight: -21
         enabled: false
+      basic_view:
+        weight: 32
+        enabled: true
       callout:
         weight: -28
         enabled: true

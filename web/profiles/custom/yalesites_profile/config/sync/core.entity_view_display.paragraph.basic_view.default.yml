@@ -1,0 +1,23 @@
+uuid: a9af0f46-06bc-422d-8250-1d88f9b1a753
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.paragraph.basic_view.field_vb_params
+    - paragraphs.paragraphs_type.basic_view
+  module:
+    - ys_views_basic
+id: paragraph.basic_view.default
+targetEntityType: paragraph
+bundle: basic_view
+mode: default
+content:
+  field_vb_params:
+    type: views_basic_default_formatter
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  search_api_excerpt: true
