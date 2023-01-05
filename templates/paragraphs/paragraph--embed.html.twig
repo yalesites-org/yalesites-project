@@ -1,1 +1,6 @@
-{{ content }}
+{% embed "@molecules/embed/yds-embed.twig" %}
+  {% block embed__block %}
+    {{ content }}
+  {% endblock %}
+{% endembed %}
+
