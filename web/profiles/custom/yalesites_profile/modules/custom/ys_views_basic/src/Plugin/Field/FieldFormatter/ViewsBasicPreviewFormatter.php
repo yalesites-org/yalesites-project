@@ -8,20 +8,19 @@ use Drupal\ys_views_basic\ViewsBasicManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
-use Drupal\views\Views;
 
 /**
- * Plugin implementation of the 'views_basic_default' formatter.
+ * Plugin implementation of the 'views_basic_preview' formatter.
  *
  * @FieldFormatter(
- *   id = "views_basic_default_formatter",
- *   label = @Translation("Views Basic View"),
+ *   id = "views_basic_preview_formatter",
+ *   label = @Translation("Views Basic Settings Overview"),
  *   field_types = {
  *     "views_basic_params"
  *   }
  * )
  */
-class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFactoryPluginInterface {
+class ViewsBasicPreviewFormatter extends FormatterBase implements ContainerFactoryPluginInterface {
 
   /**
    * The views basic manager service.
@@ -100,26 +99,26 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
 
     $elements = [];
     foreach ($items as $delta => $item) {
-      $view = Views::getView('views_basic_scaffold');
-      $view->setDisplay('block_1');
+      $paramsForRender = [
+        'types' => [],
+        'view_mode' => '',
+      ];
+      $paramsDecoded = json_decode($item->params, TRUE);
 
-      // Overrides filter to show different content type.
-      $filters = $view->display_handler->getOption('filters');
-      unset($filters['type']['value']);
-      $filters['type']['value']['news'] = 'news';
-      $view->display_handler->overrideOption('filters', $filters);
+      // Gets the entity labels.
+      foreach ($paramsDecoded['filters']['types'] as $type) {
+        $entityLabel = $this->viewsBasicManager->getEntityLabel($type);
+        array_push($paramsForRender['types'], $entityLabel);
+      }
 
-      // Change view mode.
-      $view->build();
-      $view->rowPlugin->options['view_mode'] = 'list_item';
-
-      $view->execute();
-      $rendered = $view->render();
-      $output = \Drupal::service('renderer')->render($rendered);
+      // Gets the view mode label.
+      $viewModeLabel = $this->viewsBasicManager
+        ->getViewModeLabel($paramsDecoded['view_mode']);
+      $paramsForRender['view_mode'] = $viewModeLabel;
 
       $elements[$delta] = [
-        '#theme' => 'views_basic_formatter_default',
-        '#view' => $output,
+        '#theme' => 'views_basic_formatter_preview',
+        '#params' => $paramsForRender,
       ];
     }
 

@@ -13,6 +13,11 @@ function ys_views_basic_theme($existing, $type, $theme, $path): array {
     // The default formatter will only be used for preview on the back-end.
     'views_basic_formatter_default' => [
       'variables' => [
+        'view' => [],
+      ],
+    ],
+    'views_basic_formatter_preview' => [
+      'variables' => [
         'params' => [],
       ],
     ],

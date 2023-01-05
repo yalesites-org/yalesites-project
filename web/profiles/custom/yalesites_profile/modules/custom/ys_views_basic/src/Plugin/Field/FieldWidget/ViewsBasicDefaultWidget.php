@@ -9,6 +9,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\ys_views_basic\ViewsBasicManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Ajax\AjaxResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Drupal\Core\Ajax\ReplaceCommand;
 
 /**
  * Plugin implementation of the 'views_basic_default' widget.
@@ -124,11 +127,21 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
           'views-basic--entity-types',
         ],
       ],
+      '#ajax' => [
+        'callback' => [$this, 'updateViewModes'],
+        'disable-refocus' => FALSE,
+        'event' => 'change',
+        'wrapper' => 'edit-output',
+        'progress' => [
+          'type' => 'throbber',
+          'message' => $this->t('Verifying entry...'),
+        ],
+      ],
     ];
 
     $form['group_user_selection']['view_mode'] = [
       '#type' => 'select',
-      '#options' => $this->viewsBasicManager->viewModeList(),
+      '#options' => $this->viewsBasicManager->viewModeList('event'),
       '#title' => $this->t('as'),
       '#tree' => TRUE,
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('view_mode', $items[$delta]->params) : NULL,
@@ -138,6 +151,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
           'views-basic--view-mode',
         ],
       ],
+      '#prefix' => '<div id="edit-output">',
+      '#suffix' => '</div>',
     ];
 
     $element['group_params']['params'] = [
@@ -173,6 +188,20 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       $value['params'] = json_encode($paramData);
     }
     return $values;
+  }
+
+  /**
+   * Ajax callback to return only view modes for the specified content type.
+   */
+  public function updateViewModes(array &$form, FormStateInterface $form_state) {
+    if ($selectedValue = $form_state->getValue(
+      ['group_user_selection', 'entity_types']
+      )) {
+      $selectedText = $form['group_user_selection']['entity_types']['#options'][$selectedValue];
+      $form['group_user_selection']['view_mode']['#options'] = $this->viewsBasicManager->viewModeList($selectedValue);
+    }
+
+    return $form['group_user_selection']['view_mode'];
   }
 
 }

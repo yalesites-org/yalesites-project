@@ -21,9 +21,26 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *
    * @var array
    */
+  // const ALLOWED_ENTITIES = [
+  //   'node' => 'node_type',
+  //   // 'media' => 'media_type',
+  // ];
+
   const ALLOWED_ENTITIES = [
-    'node' => 'node_type',
-    // 'media' => 'media_type',
+    'event' => [
+      'label' => 'Events',
+      'view_modes' => [
+        'card' => 'Event Cards',
+        'list_item' => 'Event List Items',
+      ],
+    ],
+    'news' => [
+      'label' => 'News articles',
+      'view_modes' => [
+        'card' => 'News Cards',
+        'list_item' => 'News List Items',
+      ],
+    ],
   ];
 
   /**
@@ -67,16 +84,20 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   public function entityTypeList() {
     $entityTypes = [];
 
-    foreach (self::ALLOWED_ENTITIES as $type) {
-      $types = $this->entityTypeManager()
-        ->getStorage($type)
-        ->loadMultiple();
-      foreach ($types as $machine_name => $object) {
-        $nodeType = $object->getEntityTypeId();
-        $value = "$nodeType.$machine_name";
-        $entityTypes[$value] = $object->label();
-      }
+    foreach (self::ALLOWED_ENTITIES as $machine_name => $type) {
+      $entityTypes[$machine_name] = $type['label'];
     }
+
+    // foreach (self::ALLOWED_ENTITIES as $type) {
+    //   $types = $this->entityTypeManager()
+    //     ->getStorage($type)
+    //     ->loadMultiple();
+    //   foreach ($types as $machine_name => $object) {
+    //     $nodeType = $object->getEntityTypeId();
+    //     $value = "$nodeType.$machine_name";
+    //     $entityTypes[$value] = $object->label();
+    //   }
+    // }
 
     return $entityTypes;
   }
@@ -84,20 +105,20 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   /**
    * Returns an array of view mode machine names and the human readable name.
    */
-  public function viewModeList() {
+  public function viewModeList($content_type) {
     $viewModes = [];
-
-    $view_modes = $this->entityTypeManager()
-      ->getStorage('entity_view_mode')
-      ->loadMultiple();
-    foreach ($view_modes as $machine_name => $object) {
-      foreach (self::ALLOWED_ENTITIES as $key => $type) {
-        $pattern = "/^{$key}/";
-        if (preg_match($pattern, $machine_name) && $object->status()) {
-          $viewModes[$machine_name] = $object->label();
-        }
-      }
-    }
+    $viewModes = self::ALLOWED_ENTITIES[$content_type]['view_modes'];
+    // $view_modes = $this->entityTypeManager()
+    //   ->getStorage('entity_view_mode')
+    //   ->loadMultiple();
+    // foreach ($view_modes as $machine_name => $object) {
+    //   foreach (self::ALLOWED_ENTITIES as $key => $type) {
+    //     $pattern = "/^{$key}/";
+    //     if (preg_match($pattern, $machine_name) && $object->status()) {
+    //       $viewModes[$machine_name] = $object->label();
+    //     }
+    //   }
+    // }
 
     return $viewModes;
   }
