@@ -138,10 +138,12 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         ],
       ],
     ];
+    $entity_list = $this->viewsBasicManager->entityTypeList();
+    $content_type = ($items[$delta]->params) ? json_decode($items[$delta]->params, TRUE)['filters']['types'][0] : array_key_first($entity_list);
 
     $form['group_user_selection']['view_mode'] = [
       '#type' => 'select',
-      '#options' => $this->viewsBasicManager->viewModeList('event'),
+      '#options' => $this->viewsBasicManager->viewModeList($content_type),
       '#title' => $this->t('as'),
       '#tree' => TRUE,
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('view_mode', $items[$delta]->params) : NULL,
@@ -151,6 +153,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
           'views-basic--view-mode',
         ],
       ],
+      '#validated' => 'true',
       '#prefix' => '<div id="edit-output">',
       '#suffix' => '</div>',
     ];
@@ -197,7 +200,9 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     if ($selectedValue = $form_state->getValue(
       ['group_user_selection', 'entity_types']
       )) {
-      $selectedText = $form['group_user_selection']['entity_types']['#options'][$selectedValue];
+      //$selectedText = $form['group_user_selection']['entity_types']['#options'][$selectedValue];
+      //$form['group_user_selection']['view_mode']['#options'] = ['card' => 'TEST', 'list_item' => 'Second'];
+      //$form['group_user_selection']['view_mode']['#options'] = NULL;
       $form['group_user_selection']['view_mode']['#options'] = $this->viewsBasicManager->viewModeList($selectedValue);
     }
 

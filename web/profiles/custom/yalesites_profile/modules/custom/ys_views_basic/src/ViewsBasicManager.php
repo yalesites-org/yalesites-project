@@ -27,11 +27,20 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   // ];
 
   const ALLOWED_ENTITIES = [
+    'page' => [
+      'label' => 'Pages',
+      'view_modes' => [
+        // 'card' => 'Event Cards',
+        // 'list_item' => 'Event List Items',
+        'teaser' => 'Teasers',
+      ],
+    ],
     'event' => [
       'label' => 'Events',
       'view_modes' => [
         'card' => 'Event Cards',
         'list_item' => 'Event List Items',
+        //'teaser' => 'Teasers',
       ],
     ],
     'news' => [
@@ -39,6 +48,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'view_modes' => [
         'card' => 'News Cards',
         'list_item' => 'News List Items',
+        //'teaser' => 'Teasers',
       ],
     ],
   ];
@@ -82,8 +92,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * Returns an array of entity type machine names and the human readable name.
    */
   public function entityTypeList() {
-    $entityTypes = [];
-
     foreach (self::ALLOWED_ENTITIES as $machine_name => $type) {
       $entityTypes[$machine_name] = $type['label'];
     }
@@ -106,7 +114,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * Returns an array of view mode machine names and the human readable name.
    */
   public function viewModeList($content_type) {
-    $viewModes = [];
     $viewModes = self::ALLOWED_ENTITIES[$content_type]['view_modes'];
     // $view_modes = $this->entityTypeManager()
     //   ->getStorage('entity_view_mode')
