@@ -41,3 +41,7 @@ tabs:
 gallery:
   js:
     node_modules/@yalesites-org/component-library-twig/dist/js/03-organisms/galleries/media-grid/yds-media-grid-interactive.js: {}
+
+background-video:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/01-atoms/videos/video-background/yds-video-background.js: {}
