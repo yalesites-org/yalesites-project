@@ -1,3 +1,5 @@
 {{ attach_library('atomic/primary-nav') }}
 
-{% include "@organisms/menu/primary-nav/yds-primary-nav.twig" %}
+{% include "@organisms/menu/primary-nav/yds-primary-nav.twig"  with {
+  menu__variation: getThemeSetting('nav_type'),
+}%}
