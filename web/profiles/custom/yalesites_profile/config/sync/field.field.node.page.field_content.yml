@@ -15,6 +15,7 @@ dependencies:
     - paragraphs.paragraphs_type.event_cards
     - paragraphs.paragraphs_type.event_list
     - paragraphs.paragraphs_type.gallery
+    - paragraphs.paragraphs_type.grand_hero
     - paragraphs.paragraphs_type.image
     - paragraphs.paragraphs_type.media_grid
     - paragraphs.paragraphs_type.news_cards
@@ -65,6 +66,7 @@ settings:
       tabs: tabs
       media_grid: media_grid
       gallery: gallery
+      grand_hero: grand_hero
       video: video
       webform: webform
     negate: 0
@@ -113,7 +115,7 @@ settings:
         enabled: false
       grand_hero:
         weight: 43
-        enabled: false
+        enabled: true
       image:
         weight: -31
         enabled: true
