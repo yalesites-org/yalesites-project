@@ -12,6 +12,11 @@ if [[ ! -f ".lando.local.yml" ]]; then
   cp .lando.local.example.yml .lando.local.yml
 fi
 
+if [[ -z "$YALESITES_BUILD_TOKEN" ]]; then
+  echo "The YALESITES_BUILD_TOKEN variable must be set before setup can continue."
+  exit 1
+fi
+
 # Start lando and create containers.
 lando start
 
