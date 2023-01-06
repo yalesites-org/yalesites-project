@@ -100,22 +100,40 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
 
     $elements = [];
     foreach ($items as $delta => $item) {
+
+      // Prevents views recursion.
+      static $running;
+      if ($running) {
+        return $elements;
+      }
+      $running = TRUE;
+
+      // Set up the view and initial decoded parameters.
       $view = Views::getView('views_basic_scaffold');
       $view->setDisplay('block_1');
+      $paramsDecoded = json_decode($item->getValue()['params'], TRUE);
 
-      // Overrides filter to show different content type.
+      // Overrides filters.
       $filters = $view->display_handler->getOption('filters');
       unset($filters['type']['value']);
-      $filters['type']['value']['news'] = 'news';
+
+      foreach ($paramsDecoded['filters']['types'] as $filter) {
+        $filters['type']['value'][$filter] = $filter;
+      }
+
       $view->display_handler->overrideOption('filters', $filters);
 
       // Change view mode.
       $view->build();
-      $view->rowPlugin->options['view_mode'] = 'list_item';
+      $view->rowPlugin->options['view_mode'] = $paramsDecoded['view_mode'];
 
+      // Execute and render the view.
       $view->execute();
       $rendered = $view->render();
       $output = \Drupal::service('renderer')->render($rendered);
+
+      // End current view run.
+      $running = FALSE;
 
       $elements[$delta] = [
         '#theme' => 'views_basic_formatter_default',
