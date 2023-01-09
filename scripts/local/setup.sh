@@ -21,9 +21,9 @@ fi
 # Start lando and create containers.
 lando start
 
-# Install packages and pull down latest database and files.
+# Install packages and install Drupal using yalesites_profile.
 npm install
-npm run build-with-assets
+npm run build-with-install
 
 # Configure Composer to use source packaged versions.
 lando composer config --global 'preferred-install.yalesites-org/*' source
