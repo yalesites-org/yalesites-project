@@ -115,13 +115,17 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
 
       // Overrides filters.
       $filters = $view->display_handler->getOption('filters');
-      unset($filters['type']['value']);
 
-      foreach ($paramsDecoded['filters']['types'] as $filter) {
-        $filters['type']['value'][$filter] = $filter;
-      }
+      //$filters['views_basic_filter_type']['value'] = 'news';
+      //$view->display_handler->overrideOption('filters', $filters);
+      kint($filters);
+      //unset($filters['type']['value']);
 
-      $view->display_handler->overrideOption('filters', $filters);
+      // foreach ($paramsDecoded['filters']['types'] as $filter) {
+      //   $filters['type']['value'][$filter] = $filter;
+      // }
+
+      // $view->display_handler->overrideOption('filters', $filters);
 
       // Change view mode.
       $view->build();

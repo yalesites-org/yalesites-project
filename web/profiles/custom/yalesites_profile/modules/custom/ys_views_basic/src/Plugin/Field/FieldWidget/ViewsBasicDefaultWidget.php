@@ -134,7 +134,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         'wrapper' => 'edit-output',
         'progress' => [
           'type' => 'throbber',
-          'message' => $this->t('Verifying entry...'),
+          'message' => $this->t('Updating view modes...'),
         ],
       ],
     ];

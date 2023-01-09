@@ -1,6 +1,7 @@
 uuid: 060d95c1-5971-4a63-80a9-abad100ecb8b
 langcode: en
 status: true
+dependencies: {  }
 id: grand_hero
 label: 'Grand Hero'
 icon_uuid: 2a73d584-60ff-4599-9586-2b025c22efab
