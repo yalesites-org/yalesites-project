@@ -57,6 +57,8 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
    *   Any third party settings.
    * @param \Drupal\ys_views_basic\Plugin\ViewsBasicManager $viewsBasicManager
    *   The views basic manager service.
+   * @param \Drupal\Core\Render\Renderer $renderer_service
+   *   Drupal Core renderer service.
    */
   public function __construct(
     string $plugin_id,
