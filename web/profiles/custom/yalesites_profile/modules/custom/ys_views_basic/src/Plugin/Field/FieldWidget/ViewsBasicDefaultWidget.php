@@ -138,6 +138,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         ],
       ],
     ];
+
     $entity_list = $this->viewsBasicManager->entityTypeList();
     $content_type = ($items[$delta]->params) ? json_decode($items[$delta]->params, TRUE)['filters']['types'][0] : array_key_first($entity_list);
 
@@ -200,9 +201,6 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     if ($selectedValue = $form_state->getValue(
       ['group_user_selection', 'entity_types']
       )) {
-      //$selectedText = $form['group_user_selection']['entity_types']['#options'][$selectedValue];
-      //$form['group_user_selection']['view_mode']['#options'] = ['card' => 'TEST', 'list_item' => 'Second'];
-      //$form['group_user_selection']['view_mode']['#options'] = NULL;
       $form['group_user_selection']['view_mode']['#options'] = $this->viewsBasicManager->viewModeList($selectedValue);
     }
 

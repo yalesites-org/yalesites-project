@@ -32,7 +32,7 @@ function ys_views_basic_views_data_alter(array &$data) {
     'title' => t('Views Basic Filter'),
     'filter' => array(
       'help' => t('Creates a dynamic filter from Views Basic fields.'),
-      'id' => 'views_basic_filter_type',
+      'id' => 'views_basic_filter',
     ),
   );
 }

@@ -113,11 +113,6 @@ class ViewsBasicPreviewFormatter extends FormatterBase implements ContainerFacto
         $paramsForRender['view_mode'] = $viewModeLabel;
       }
 
-      // Gets the view mode label.
-      // $viewModeLabel = $this->viewsBasicManager
-      //   ->getViewModeLabel($paramsDecoded['view_mode']);
-      // $paramsForRender['view_mode'] = $viewModeLabel;
-
       $elements[$delta] = [
         '#theme' => 'views_basic_formatter_preview',
         '#params' => $paramsForRender,

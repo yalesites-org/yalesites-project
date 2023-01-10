@@ -1,19 +1,20 @@
-uuid: a9af0f46-06bc-422d-8250-1d88f9b1a753
+uuid: 5b08fad6-697c-4224-8a86-8d3f4a055915
 langcode: en
 status: true
 dependencies:
   config:
+    - core.entity_view_mode.paragraph.preview
     - field.field.paragraph.basic_view.field_vb_params
     - paragraphs.paragraphs_type.basic_view
   module:
     - ys_views_basic
-id: paragraph.basic_view.default
+id: paragraph.basic_view.preview
 targetEntityType: paragraph
 bundle: basic_view
-mode: default
+mode: preview
 content:
   field_vb_params:
-    type: views_basic_default_formatter
+    type: views_basic_preview_formatter
     label: hidden
     settings: {  }
     third_party_settings: {  }

@@ -97,15 +97,15 @@ display:
       sorts: {  }
       arguments: {  }
       filters:
-        example_filter_plugin:
-          id: example_filter_plugin
+        views_basic_filter:
+          id: views_basic_filter
           table: node_field_data
-          field: example_filter_plugin
+          field: views_basic_filter
           relationship: none
           group_type: group
           admin_label: ''
           entity_type: node
-          plugin_id: example_filter_plugin
+          plugin_id: views_basic_filter
           operator: '='
           value: ''
           group: 1
