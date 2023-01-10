@@ -9,6 +9,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\views\Views;
+use Drupal\Core\Render\Renderer;
 
 /**
  * Plugin implementation of the 'views_basic_default' formatter.
@@ -29,6 +30,13 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
    * @var \Drupal\ys_views_basic\ViewsBasicManager
    */
   protected $viewsBasicManager;
+
+  /**
+   * The renderer service.
+   *
+   * @var \Drupal\Core\Render\Renderer
+   */
+  protected $rendererService;
 
   /**
    * Constructs an views basic default formatter object.
@@ -58,7 +66,8 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
     string $label,
     string $view_mode,
     array $third_party_settings,
-    ViewsBasicManager $viewsBasicManager
+    ViewsBasicManager $viewsBasicManager,
+    Renderer $renderer_service
   ) {
     parent::__construct(
       $plugin_id,
@@ -67,7 +76,8 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
       $settings,
       $label,
       $view_mode,
-      $third_party_settings
+      $third_party_settings,
+      $this->rendererService = $renderer_service,
     );
     $this->viewsBasicManager = $viewsBasicManager;
   }
@@ -90,6 +100,7 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
       $configuration['view_mode'],
       $configuration['third_party_settings'],
       $container->get('ys_views_basic.views_basic_manager'),
+      $container->get('renderer'),
     );
   }
 
@@ -125,7 +136,7 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
       // Execute and render the view.
       $view->execute();
       $rendered = $view->render();
-      $output = \Drupal::service('renderer')->render($rendered);
+      $output = $this->rendererService->render($rendered);
 
       // End current view run.
       $running = FALSE;
