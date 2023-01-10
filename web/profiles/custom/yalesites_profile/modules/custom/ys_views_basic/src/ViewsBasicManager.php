@@ -15,6 +15,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
   /**
    * Allowed entity types for users to select.
+   *
    * Format:
    * 'content_type_machine_name' => [
    *   'label' => 'Human readable label',

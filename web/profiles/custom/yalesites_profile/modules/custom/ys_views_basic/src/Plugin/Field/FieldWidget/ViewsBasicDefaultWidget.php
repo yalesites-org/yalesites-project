@@ -9,9 +9,6 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\ys_views_basic\ViewsBasicManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Ajax\AjaxResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Drupal\Core\Ajax\ReplaceCommand;
 
 /**
  * Plugin implementation of the 'views_basic_default' widget.
