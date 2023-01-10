@@ -1,0 +1,9 @@
+{% embed "@organisms/component-wrapper/yds-component-wrapper.twig" with {
+  component_width: 'max',
+  component_label: content.field_heading,
+} %}
+  {% block component_wrapper_inner %}
+  {{kint(content)}}
+    {{content.field_form}}
+  {% endblock %}
+{% endembed %}
