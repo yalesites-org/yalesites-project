@@ -34,5 +34,8 @@ lando ssh -c "rm -rf web/themes/contrib/atomic"
 # Use Composer to download the new version of the Yale projects.
 lando composer update atomic
 
+# Setup npm linked packages for theme dependencies
+npm run local:theme-link
+
 # Create a login link.
 lando drush uli
