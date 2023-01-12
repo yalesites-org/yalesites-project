@@ -16,7 +16,7 @@ id: paragraph.accordion.field_heading
 field_name: field_heading
 entity_type: paragraph
 bundle: accordion
-label: 'Accordion Component Heading'
+label: 'Accordion Component Title'
 description: ''
 required: false
 translatable: true

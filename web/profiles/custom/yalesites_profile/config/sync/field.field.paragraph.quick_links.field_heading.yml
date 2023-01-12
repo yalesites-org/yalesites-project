@@ -16,7 +16,7 @@ id: paragraph.quick_links.field_heading
 field_name: field_heading
 entity_type: paragraph
 bundle: quick_links
-label: 'Quick Link Heading'
+label: 'Quick Links Component Title'
 description: ''
 required: true
 translatable: true
