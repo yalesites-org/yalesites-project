@@ -158,3 +158,27 @@ function ys_themes_build_css_variables() : string {
   $css[] = '}';
   return implode(PHP_EOL, $css);
 }
+
+/**
+ * Implements hook_page_preprocess_menu__main().
+ */
+function ys_themes_preprocess_menu__main(&$variables) {
+  // If submenu, add the top level link as the first link in the submenu.
+  $keys = array_keys($variables['items']);
+  foreach ($keys as $menuItem) {
+    if (!empty($variables['items'][$menuItem]['below'])) {
+      // Clone top level menu item.
+      $clonedMenuItem = $variables['items'][$menuItem];
+
+      // If a node, use the node title instead of link title.
+      $routeParams = $clonedMenuItem['original_link']->getRouteParameters();
+      if (!empty($routeParams['node'])) {
+        $node = \Drupal::entityTypeManager()->getStorage('node')->load($routeParams['node']);
+        $clonedMenuItem['title'] = $node->getTitle();
+      }
+
+      // Add cloned item to the beginning of the menu.
+      array_unshift($variables['items'][$menuItem]['below'], $clonedMenuItem);
+    }
+  }
+}
