@@ -75,25 +75,6 @@ The YaleSites platform organizes work across a series of custom modules, themes,
 
 By default, composer dependencies are downloaded in a dist packaged version of the project with git metadata removed. When working on a Yale-managed package, the originally downloaded composer dependency must be replaced with the source packaged version. This allows any changes to be tracked in version control.
 
-### Installation profile
-
-The [YaleSites installation profile](https://github.com/yalesites-org/yalesites_profile) combines a suite of modules, themes, pre-defined configurations, and custom code into a single installable package. The majority of development on YaleSite's platform will take place within this profile.
-
-```bash
-# Step 1: Configure Composer to use source packaged versions.
-lando composer config --global 'preferred-install.yalesites-org/*' source
-
-# Step 2: Manually remove the originally downloaded dist packaged version.
-rm -rf web/profiles/contrib/yalesites_profile
-
-# Step 3: Use Composer to download the new version of the profile.
-lando composer update yalesites_profile
-
-# Step 4: Verify that the profile is tracking a remote repository.
-git -C web/profiles/contrib/yalesites_profile ls-remote --get-url
-# Returns: https://github.com/yalesites-org/yalesites_profile.git
-```
-
 ### Atomic theme
 
 The [YaleSites Atomic theme](https://github.com/yalesites-org/atomic) is a flexible Drupal theme based on the YaleSites design system. The theme is included in the YaleSite installation profile and is the default theme for all new web properties.
@@ -111,4 +92,7 @@ lando composer update atomic
 # Step 4: Verify that the theme is tracking a remote repository.
 git -C web/themes/contrib/atomic ls-remote --get-url
 # Returns: https://github.com/yalesites-org/atomic.git
+
+# Step 5: Setup npm linked packages for theme dependencies
+npm run local:theme-link
 ```
