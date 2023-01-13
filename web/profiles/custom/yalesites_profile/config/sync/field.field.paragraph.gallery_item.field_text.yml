@@ -11,7 +11,7 @@ dependencies:
 third_party_settings:
   allowed_formats:
     allowed_formats:
-      - basic_html
+      - restricted_html
 id: paragraph.gallery_item.field_text
 field_name: field_text
 entity_type: paragraph

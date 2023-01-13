@@ -16,7 +16,7 @@ id: paragraph.video.field_heading
 field_name: field_heading
 entity_type: paragraph
 bundle: video
-label: 'Video Heading'
+label: 'Video Component Title'
 description: ''
 required: false
 translatable: true
