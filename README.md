@@ -23,7 +23,7 @@ These are the most common npm scripts you may find yourself using:
 ### PR Reviews
 
 - `build` Builds your current project branch _on top of your existing db_. Useful when you just need to check a config update, but don't want to lose your local content etc.
-- `build-with-assets` Builds your current project branch _on a clean import of your latest reference db_. Useful when you want to see exactly what the current branch will do to the dev Pantheon instance.
+- `build-with-assets` Builds your current project branch _on a clean import of your Pantheon reference db_. Useful when you want to see exactly what the current branch will do to the dev Pantheon instance.
 - `build-with-install` Builds your current project branch _with a clean site install (empty database)_. Useful when your branch includes a breaking change and the existing database would produce errors.
 - `local:review-with-atomic-branch` Will ask which branch of Atomic you want to review. Useful when you need to review an atomic PR that doesn't have associated component library changes.
 - `local:review-with-cl-branch` Will ask which branch of the component library you want to review. Useful when you need to review a CL PR that doesn't have associated Atomic changes.
@@ -33,12 +33,6 @@ _Notes:_
 
 - _For the last three `local:` scripts, you'll still need to run one of the the `build` scripts to import config etc. for Drupal. They just get the Atomic and Component Library setup._
 - _During the initial build phase, we're introducing a lot of breaking changes, and instead of writing update hooks, we're just doing fresh site installs. Once the platform is live, we'll need to stop doing that, and we should get rid of the `build-with-install` script, as we'll no longer support that workflow._
-
-### Database
-
-- `db:get` Download the latest backup from Pantheon's dev instance.
-- `db:import` Imports the last db you fetched.
-- `db:local-export` Will export the current state of your local db. Handy if you want to switch to another ticket, like a PR review, and want to be able to get your content back.
 
 ### Active Development
 

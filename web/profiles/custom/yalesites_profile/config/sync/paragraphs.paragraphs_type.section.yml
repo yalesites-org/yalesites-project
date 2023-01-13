@@ -2,13 +2,15 @@ uuid: d9f0fc75-8e68-4fc2-868c-7f662de15bd3
 langcode: en
 status: true
 dependencies:
+  content:
+    - 'file:file:ae522ea5-1e4e-498c-8e41-8144fa789ebc'
   module:
     - layout_paragraphs
 id: section
 label: Section
 icon_uuid: ae522ea5-1e4e-498c-8e41-8144fa789ebc
 icon_default: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3QgeD0iMC42MjUiIHk9IjAuNjI1IiB3aWR0aD0iOC43NSIgaGVpZ2h0PSIyMi43NSIgcng9IjEuMzc1IiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjEuMjUiLz4KPHJlY3QgeD0iMTQuNjI1IiB5PSIwLjYyNSIgd2lkdGg9IjguNzUiIGhlaWdodD0iMTIuNzUiIHJ4PSIxLjM3NSIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLXdpZHRoPSIxLjI1Ii8+Cjwvc3ZnPgo='
-description: ''
+description: "Section allows you to format your page layout to have a responsive two column page layout."
 behavior_plugins:
   layout_paragraphs:
     enabled: true

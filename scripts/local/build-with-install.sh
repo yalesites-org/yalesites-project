@@ -1,6 +1,6 @@
 #!/bin/bash
 
 lando drush si yalesites_profile -y
-npm run files:get
+lando drush cr
+lando drush migrate:import --group=ys_starterkit
 npm run build
-lando drush uli
