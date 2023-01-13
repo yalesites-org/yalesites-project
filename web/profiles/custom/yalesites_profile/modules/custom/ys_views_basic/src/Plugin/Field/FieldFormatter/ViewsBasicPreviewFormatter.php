@@ -8,21 +8,19 @@ use Drupal\ys_views_basic\ViewsBasicManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
-use Drupal\views\Views;
-use Drupal\Core\Render\Renderer;
 
 /**
- * Plugin implementation of the 'views_basic_default' formatter.
+ * Plugin implementation of the 'views_basic_preview' formatter.
  *
  * @FieldFormatter(
- *   id = "views_basic_default_formatter",
- *   label = @Translation("Views Basic View"),
+ *   id = "views_basic_preview_formatter",
+ *   label = @Translation("Views Basic Settings Overview"),
  *   field_types = {
  *     "views_basic_params"
  *   }
  * )
  */
-class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFactoryPluginInterface {
+class ViewsBasicPreviewFormatter extends FormatterBase implements ContainerFactoryPluginInterface {
 
   /**
    * The views basic manager service.
@@ -30,13 +28,6 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
    * @var \Drupal\ys_views_basic\ViewsBasicManager
    */
   protected $viewsBasicManager;
-
-  /**
-   * The renderer service.
-   *
-   * @var \Drupal\Core\Render\Renderer
-   */
-  protected $rendererService;
 
   /**
    * Constructs an views basic default formatter object.
@@ -57,8 +48,6 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
    *   Any third party settings.
    * @param \Drupal\ys_views_basic\Plugin\ViewsBasicManager $viewsBasicManager
    *   The views basic manager service.
-   * @param \Drupal\Core\Render\Renderer $renderer_service
-   *   Drupal Core renderer service.
    */
   public function __construct(
     string $plugin_id,
@@ -68,8 +57,7 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
     string $label,
     string $view_mode,
     array $third_party_settings,
-    ViewsBasicManager $viewsBasicManager,
-    Renderer $renderer_service
+    ViewsBasicManager $viewsBasicManager
   ) {
     parent::__construct(
       $plugin_id,
@@ -78,8 +66,7 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
       $settings,
       $label,
       $view_mode,
-      $third_party_settings,
-      $this->rendererService = $renderer_service,
+      $third_party_settings
     );
     $this->viewsBasicManager = $viewsBasicManager;
   }
@@ -102,7 +89,6 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
       $configuration['view_mode'],
       $configuration['third_party_settings'],
       $container->get('ys_views_basic.views_basic_manager'),
-      $container->get('renderer'),
     );
   }
 
@@ -113,39 +99,23 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
 
     $elements = [];
     foreach ($items as $delta => $item) {
+      $paramsForRender = [
+        'types' => [],
+        'view_mode' => '',
+      ];
+      $paramsDecoded = json_decode($item->params, TRUE);
 
-      // Prevents views recursion.
-      static $running;
-      if ($running) {
-        return $elements;
+      // Gets the entity labels and view modes.
+      foreach ($paramsDecoded['filters']['types'] as $type) {
+        $entityLabel = $this->viewsBasicManager->getEntityLabel($type);
+        array_push($paramsForRender['types'], $entityLabel);
+        $viewModeLabel = $this->viewsBasicManager->getViewModeLabel($type, $paramsDecoded['view_mode']);
+        $paramsForRender['view_mode'] = $viewModeLabel;
       }
-      $running = TRUE;
-
-      // Set up the view and initial decoded parameters.
-      $view = Views::getView('views_basic_scaffold');
-      $view->setDisplay('block_1');
-      $paramsDecoded = json_decode($item->getValue()['params'], TRUE);
-
-      // Overrides filters using our custom views filter - ViewsBasicFilter.
-      $filters = $view->display_handler->getOption('filters');
-      $filters['views_basic_filter']['value'] = $paramsDecoded;
-      $view->display_handler->overrideOption('filters', $filters);
-
-      // Change view mode.
-      $view->build();
-      $view->rowPlugin->options['view_mode'] = $paramsDecoded['view_mode'];
-
-      // Execute and render the view.
-      $view->execute();
-      $rendered = $view->render();
-      $output = $this->rendererService->render($rendered);
-
-      // End current view run.
-      $running = FALSE;
 
       $elements[$delta] = [
-        '#theme' => 'views_basic_formatter_default',
-        '#view' => $output,
+        '#theme' => 'views_basic_formatter_preview',
+        '#params' => $paramsForRender,
       ];
     }
 
