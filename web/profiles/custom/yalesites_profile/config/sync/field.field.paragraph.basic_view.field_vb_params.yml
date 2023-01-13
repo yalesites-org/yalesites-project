@@ -1,0 +1,25 @@
+uuid: 16444233-d853-4ef0-a672-2dd8c7287f7d
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_vb_params
+    - paragraphs.paragraphs_type.basic_view
+  module:
+    - ys_views_basic
+id: paragraph.basic_view.field_vb_params
+field_name: field_vb_params
+entity_type: paragraph
+bundle: basic_view
+label: 'View Parameters'
+description: ''
+required: false
+translatable: false
+default_value:
+  -
+    group_params:
+      params: ''
+    params: '{"view_mode":"node.card","filters":{"types":["node_type.event"]}}'
+default_value_callback: ''
+settings: {  }
+field_type: views_basic_params

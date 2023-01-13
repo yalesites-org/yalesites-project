@@ -6,6 +6,7 @@ dependencies:
     - field.storage.node.field_content
     - node.type.page
     - paragraphs.paragraphs_type.accordion
+    - paragraphs.paragraphs_type.basic_view
     - paragraphs.paragraphs_type.callout
     - paragraphs.paragraphs_type.cta_banner
     - paragraphs.paragraphs_type.custom_cards
@@ -14,6 +15,7 @@ dependencies:
     - paragraphs.paragraphs_type.event_cards
     - paragraphs.paragraphs_type.event_list
     - paragraphs.paragraphs_type.gallery
+    - paragraphs.paragraphs_type.grand_hero
     - paragraphs.paragraphs_type.image
     - paragraphs.paragraphs_type.media_grid
     - paragraphs.paragraphs_type.news_cards
@@ -59,10 +61,12 @@ settings:
       news_list: news_list
       cta_banner: cta_banner
       custom_cards: custom_cards
+      basic_view: basic_view
       quick_links: quick_links
       tabs: tabs
       media_grid: media_grid
       gallery: gallery
+      grand_hero: grand_hero
       video: video
       webform: webform
     negate: 0
@@ -73,6 +77,9 @@ settings:
       accordion_item:
         weight: -21
         enabled: false
+      basic_view:
+        weight: 32
+        enabled: true
       callout:
         weight: -28
         enabled: true
@@ -108,7 +115,7 @@ settings:
         enabled: false
       grand_hero:
         weight: 43
-        enabled: false
+        enabled: true
       image:
         weight: -31
         enabled: true

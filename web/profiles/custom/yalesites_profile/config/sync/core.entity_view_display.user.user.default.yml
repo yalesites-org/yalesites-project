@@ -11,27 +11,9 @@ id: user.user.default
 targetEntityType: user
 bundle: user
 mode: default
-content:
-  field_first_name:
-    type: string
-    label: above
-    settings:
-      link_to_entity: false
-    third_party_settings: {  }
-    weight: 7
-    region: content
-  field_last_name:
-    type: string
-    label: above
-    settings:
-      link_to_entity: false
-    third_party_settings: {  }
-    weight: 8
-    region: content
-  member_for:
-    settings: {  }
-    third_party_settings: {  }
-    weight: 5
-    region: content
+content: {  }
 hidden:
+  field_first_name: true
+  field_last_name: true
+  member_for: true
   search_api_excerpt: true
