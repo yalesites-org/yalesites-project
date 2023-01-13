@@ -6,16 +6,18 @@ dependencies:
     - field.field.node.news.field_author
     - field.field.node.news.field_content
     - field.field.node.news.field_metatags
+    - field.field.node.news.field_publish_date
     - field.field.node.news.field_teaser_media
     - field.field.node.news.field_teaser_text
     - field.field.node.news.field_teaser_title
     - node.type.news
   module:
     - allowed_formats
+    - datetime
     - field_group
     - hide_revision_field
-    - maxlength
     - layout_paragraphs
+    - maxlength
     - media_library
     - metatag
     - path
@@ -77,17 +79,27 @@ third_party_settings:
         id: ''
         direction: horizontal
         width_breakpoint: 640
+    group_publish_information:
+      children:
+        - field_publish_date
+      label: 'Publish Information'
+      region: content
+      parent_name: ''
+      weight: 7
+      format_type: details_sidebar
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        open: false
+        description: ''
+        required_fields: true
+        weight: 0
 id: node.news.default
 targetEntityType: node
 bundle: news
 mode: default
 content:
-  created:
-    type: datetime_timestamp
-    weight: 3
-    region: content
-    settings: {  }
-    third_party_settings: {  }
   field_author:
     type: string_textfield
     weight: 1
@@ -113,6 +125,12 @@ content:
     settings:
       sidebar: true
       use_details: true
+    third_party_settings: {  }
+  field_publish_date:
+    type: datetime_default
+    weight: 9
+    region: content
+    settings: {  }
     third_party_settings: {  }
   field_teaser_media:
     type: media_library_widget
@@ -146,13 +164,13 @@ content:
     third_party_settings: {  }
   path:
     type: path
-    weight: 5
+    weight: 3
     region: content
     settings: {  }
     third_party_settings: {  }
   revision_log:
     type: hide_revision_field_log_widget
-    weight: 80
+    weight: 6
     region: content
     settings:
       rows: 5
@@ -164,14 +182,14 @@ content:
     third_party_settings: {  }
   status:
     type: boolean_checkbox
-    weight: 7
+    weight: 5
     region: content
     settings:
       display_label: true
     third_party_settings: {  }
   sticky:
     type: boolean_checkbox
-    weight: 4
+    weight: 2
     region: content
     settings:
       display_label: true
@@ -184,20 +202,12 @@ content:
       size: 60
       placeholder: ''
     third_party_settings: {  }
-  uid:
-    type: entity_reference_autocomplete
-    weight: 2
-    region: content
-    settings:
-      match_operator: CONTAINS
-      match_limit: 10
-      size: 60
-      placeholder: ''
-    third_party_settings: {  }
   url_redirects:
-    weight: 6
+    weight: 4
     region: content
     settings: {  }
     third_party_settings: {  }
 hidden:
+  created: true
   promote: true
+  uid: true
