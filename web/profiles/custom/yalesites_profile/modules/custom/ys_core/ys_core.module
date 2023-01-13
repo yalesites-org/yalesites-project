@@ -87,7 +87,7 @@ function ys_core_form_layout_paragraphs_component_form_alter(&$form, FormStateIn
       '#prefix' => '<p>',
       '#markup' => $instructions,
       '#suffix' => '</p>',
-      '#weight' => -100,
+      '#weight' => -300,
     ];
   }
 }
