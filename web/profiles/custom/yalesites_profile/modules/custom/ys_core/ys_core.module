@@ -78,6 +78,21 @@ function ys_core_form_user_login_form_alter(&$form, FormStateInterface $form_sta
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function ys_core_form_layout_paragraphs_component_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Add instructions to the top of paragraph forms.
+  if (!empty($form['#paragraph']) && !empty($instructions = $form['#paragraph']->getParagraphType()->getDescription())) {
+    $form['instructions'] = [
+      '#prefix' => '<p>',
+      '#markup' => $instructions,
+      '#suffix' => '</p>',
+      '#weight' => -300,
+    ];
+  }
+}
+
+/**
  * Custom submit handler for the login form.
  */
 function ys_core_user_login_form_submit($form, FormStateInterface $form_state) {
