@@ -20,10 +20,13 @@ class ViewsBasicFilter extends FilterPluginBase {
     // Ensure the main table for this handler is in the query.
     $this->ensureMyTable();
 
+    /** @var \Drupal\views\Plugin\views\query\Sql $query */
+    $query = $this->query;
+
     // Parse content type filters.
     // @todo Add taxonomy term as a filter. Code here: https://gist.github.com/marcb4k/fd4716eb133aa846f90a9e42c80def8c.
     foreach ($this->value['filters']['types'] as $content_type) {
-      $this->query->addWhere($this->options['group'], 'type', $content_type);
+      $query->addWhere($this->options['group'], 'type', $content_type);
     }
   }
 
