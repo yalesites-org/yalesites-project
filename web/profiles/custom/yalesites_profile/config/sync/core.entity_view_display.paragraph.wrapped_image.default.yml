@@ -34,14 +34,14 @@ content:
     weight: 0
     region: content
   field_style_position:
-    type: list_default
+    type: list_key
     label: above
     settings: {  }
     third_party_settings: {  }
     weight: 3
     region: content
   field_style_variation:
-    type: list_default
+    type: list_key
     label: above
     settings: {  }
     third_party_settings: {  }
