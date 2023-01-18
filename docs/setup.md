@@ -21,6 +21,10 @@ This project supports development with Lando using the Pantheon recipe. This pro
 3. [Setup local certificate authority](https://docs.devwithlando.io/config/security.html)
 4. Increase Docker resources: Locate the 'Resources' section in your Docker preferences. For most architectures, this project requires at least 3GB of memory and 3 CPUs. Additional CPUs and memory may be helpful but should stay under the halfway mark of your total available resources. Also disable the _'Start Docker when you log in'_ setting under the 'General' tab.
 
+### GitHub
+While the project can be checked out and run locally without it, one must setup an SSH key on their development machine if they wish to push code on any of the yalesites repositories.
+Luckily, [GitHub has an intuitive guide on how to setup an SSH key on your machine and register it with your GitHub Account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
+
 ### Additional tools
 
 - [Composer](https://getcomposer.org/download/): PHP package manager. Version 2.x.
