@@ -1,12 +1,12 @@
 services:
   # Override the API keys with values stored in secrets.json.
-  # ys_captcha.config_overrides_v2:
-  #   class: Drupal\ys_captcha\Config\CaptchaV2ConfigOverrides
-  #   arguments: ['@ys_secrets.manager']
-  #   tags:
-  #     - { name: config.factory.override, priority: 5 }
-  # ys_captcha.config_overrides_v3:
-  #   class: Drupal\ys_captcha\Config\CaptchaV3ConfigOverrides
-  #   arguments: ['@ys_secrets.manager']
-  #   tags:
-  #     - { name: config.factory.override, priority: 5 }
+  ys_captcha.config_overrides_v2:
+    class: Drupal\ys_captcha\Config\CaptchaV2ConfigOverrides
+    arguments: ['@ys_secrets.manager']
+    tags:
+      - { name: config.factory.override, priority: 5 }
+  ys_captcha.config_overrides_v3:
+    class: Drupal\ys_captcha\Config\CaptchaV3ConfigOverrides
+    arguments: ['@ys_secrets.manager']
+    tags:
+      - { name: config.factory.override, priority: 5 }
