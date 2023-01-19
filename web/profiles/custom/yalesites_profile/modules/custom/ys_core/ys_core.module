@@ -78,9 +78,55 @@ function ys_core_form_user_login_form_alter(&$form, FormStateInterface $form_sta
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function ys_core_form_layout_paragraphs_component_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Add instructions to the top of paragraph forms.
+  if (!empty($form['#paragraph']) && !empty($instructions = $form['#paragraph']->getParagraphType()->getDescription())) {
+    $form['instructions'] = [
+      '#prefix' => '<p>',
+      '#markup' => $instructions,
+      '#suffix' => '</p>',
+      '#weight' => -300,
+    ];
+  }
+}
+
+/**
  * Custom submit handler for the login form.
  */
 function ys_core_user_login_form_submit($form, FormStateInterface $form_state) {
   $url = Url::fromRoute('<front>');
   $form_state->setRedirectUrl($url);
+}
+
+/**
+ * Implements hook_page_preprocess_menu__main().
+ */
+function ys_core_preprocess_menu__main(&$variables) {
+  // If submenu, add the top level link as the first link in the submenu.
+  foreach ($variables['items'] as &$menuItem) {
+    // Skip menu items that do not have subitems.
+    if (empty($menuItem['below'])) {
+      continue;
+    }
+
+    // Clone top level menu item.
+    $clonedMenuItem = $menuItem;
+
+    // We don't want any other subitems, just the top level.
+    $clonedMenuItem['below'] = NULL;
+
+    // If a node, use the node title instead of link title.
+    $routeParams = $clonedMenuItem['original_link']->getRouteParameters();
+    if (!empty($routeParams['node'])) {
+      /** @var \Drupal\node\Entity\Node $node */
+      $node = \Drupal::entityTypeManager()->getStorage('node')->load($routeParams['node']);
+      $clonedMenuItem['title'] = $node->getTitle();
+    }
+
+    // Add cloned item to the beginning of the menu.
+    array_unshift($menuItem['below'], $clonedMenuItem);
+
+  }
 }

@@ -18,8 +18,8 @@ translatable: false
 default_value:
   -
     group_params:
-      params: ''
-    params: '{"view_mode":"node.card","filters":{"types":["node_type.event"]}}'
+      params: '{"view_mode":"node.card","filters":{"types":["news"]}}'
+    params: '{"view_mode":"card","filters":{"types":["news"]}}'
 default_value_callback: ''
 settings: {  }
 field_type: views_basic_params

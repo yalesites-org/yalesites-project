@@ -124,11 +124,24 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
           'views-basic--entity-types',
         ],
       ],
+      '#ajax' => [
+        'callback' => [$this, 'updateViewModes'],
+        'disable-refocus' => FALSE,
+        'event' => 'change',
+        'wrapper' => 'edit-output',
+        'progress' => [
+          'type' => 'throbber',
+          'message' => $this->t('Updating view modes...'),
+        ],
+      ],
     ];
+
+    $entity_list = $this->viewsBasicManager->entityTypeList();
+    $content_type = ($items[$delta]->params) ? json_decode($items[$delta]->params, TRUE)['filters']['types'][0] : array_key_first($entity_list);
 
     $form['group_user_selection']['view_mode'] = [
       '#type' => 'select',
-      '#options' => $this->viewsBasicManager->viewModeList(),
+      '#options' => $this->viewsBasicManager->viewModeList($content_type),
       '#title' => $this->t('as'),
       '#tree' => TRUE,
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('view_mode', $items[$delta]->params) : NULL,
@@ -138,6 +151,9 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
           'views-basic--view-mode',
         ],
       ],
+      '#validated' => 'true',
+      '#prefix' => '<div id="edit-output">',
+      '#suffix' => '</div>',
     ];
 
     $element['group_params']['params'] = [
@@ -173,6 +189,19 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       $value['params'] = json_encode($paramData);
     }
     return $values;
+  }
+
+  /**
+   * Ajax callback to return only view modes for the specified content type.
+   */
+  public function updateViewModes(array &$form, FormStateInterface $form_state) {
+    if ($selectedValue = $form_state->getValue(
+      ['group_user_selection', 'entity_types']
+      )) {
+      $form['group_user_selection']['view_mode']['#options'] = $this->viewsBasicManager->viewModeList($selectedValue);
+    }
+
+    return $form['group_user_selection']['view_mode'];
   }
 
 }

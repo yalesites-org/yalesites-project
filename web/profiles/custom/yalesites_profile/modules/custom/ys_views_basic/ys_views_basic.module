@@ -13,8 +13,26 @@ function ys_views_basic_theme($existing, $type, $theme, $path): array {
     // The default formatter will only be used for preview on the back-end.
     'views_basic_formatter_default' => [
       'variables' => [
+        'view' => [],
+      ],
+    ],
+    'views_basic_formatter_preview' => [
+      'variables' => [
         'params' => [],
       ],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_views_data().
+ */
+function ys_views_basic_views_data_alter(array &$data) {
+  $data['node_field_data']['views_basic_filter'] = [
+    'title' => t('Views Basic Filter'),
+    'filter' => [
+      'help' => t('Creates a dynamic filter from Views Basic fields.'),
+      'id' => 'views_basic_filter',
     ],
   ];
 }
