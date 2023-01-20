@@ -1,1 +1,8 @@
-Display {{ params.types|join(', ') }} as {{ params.view_mode }}
+<div>
+  Display {{ params.types|join(', ') }} as {{ params.view_mode }}
+</div>
+<div>
+  {% if params.tags %}
+    Filtered by tag "{{ params.tags|join(', ') }}"
+  {% endif %}
+</div>

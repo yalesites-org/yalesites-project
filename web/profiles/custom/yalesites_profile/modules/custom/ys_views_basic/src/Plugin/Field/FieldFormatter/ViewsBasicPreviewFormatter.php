@@ -102,6 +102,7 @@ class ViewsBasicPreviewFormatter extends FormatterBase implements ContainerFacto
       $paramsForRender = [
         'types' => [],
         'view_mode' => '',
+        'tags' => [],
       ];
       $paramsDecoded = json_decode($item->params, TRUE);
 
@@ -111,6 +112,14 @@ class ViewsBasicPreviewFormatter extends FormatterBase implements ContainerFacto
         array_push($paramsForRender['types'], $entityLabel);
         $viewModeLabel = $this->viewsBasicManager->getViewModeLabel($type, $paramsDecoded['view_mode']);
         $paramsForRender['view_mode'] = $viewModeLabel;
+      }
+
+      // Gets the tag labels.
+      if (!empty($paramsDecoded['filters']['tags'][0])) {
+        foreach ($paramsDecoded['filters']['tags'] as $tag) {
+          $tagLabel = $this->viewsBasicManager->getTagLabel($tag);
+          array_push($paramsForRender['tags'], $tagLabel);
+        }
       }
 
       $elements[$delta] = [

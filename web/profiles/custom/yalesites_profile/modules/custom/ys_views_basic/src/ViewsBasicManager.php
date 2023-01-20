@@ -109,6 +109,26 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   }
 
   /**
+   * Returns an array of taxonomy tags.
+   */
+  public function tagsList() {
+    $vid = 'tags';
+    /** @var Drupal\Core\Entity\EntityTypeManagerInterface $vocab */
+    $vocab = $this->entityTypeManager()->getStorage('taxonomy_term');
+    $terms = $vocab->loadTree($vid);
+
+    if (empty($terms)) {
+      return NULL;
+    }
+
+    foreach ($terms as $term) {
+      $tagsList[$term->tid] = $term->name;
+    }
+
+    return $tagsList;
+  }
+
+  /**
    * Returns an entity label given an entity type and machine name.
    */
   public function getEntityLabel($type) {
@@ -123,10 +143,19 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   }
 
   /**
+   * Returns a tag label given a term ID.
+   */
+  public function getTagLabel($tag) {
+    $term = $this->entityTypeManager()->getStorage('taxonomy_term')->load($tag);
+    return $term->name->value;
+  }
+
+  /**
    * Returns a default value for a parameter to auto-select one in the list.
    */
   public function getDefaultParamValue($type, $params) {
     $paramsDecoded = json_decode($params, TRUE);
+
     switch ($type) {
       /* @todo Currently, this only selects the first entity type which is
        * okay since there is only a simple dropdown for now. We should change
@@ -134,6 +163,11 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
        */
       case 'types':
         $defaultParam = $paramsDecoded['filters']['types'][0];
+        break;
+
+      case 'tags':
+        $tid = (int) $paramsDecoded['filters']['tags'][0];
+        $defaultParam = $this->entityTypeManager()->getStorage('taxonomy_term')->load($tid);
         break;
 
       default:

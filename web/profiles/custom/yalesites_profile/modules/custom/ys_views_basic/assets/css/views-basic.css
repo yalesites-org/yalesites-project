@@ -11,7 +11,7 @@
   gap: 1rem;
 }
 
-.views-basic--group-user-selection .fieldset__wrapper {
+.views-basic--group-user-selection .grouped-items {
   display: flex;
   gap: 1rem;
 }
