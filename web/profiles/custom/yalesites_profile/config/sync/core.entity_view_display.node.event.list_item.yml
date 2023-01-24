@@ -9,6 +9,7 @@ dependencies:
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_format
     - field.field.node.event.field_metatags
+    - field.field.node.event.field_tags
     - field.field.node.event.field_teaser_media
     - field.field.node.event.field_teaser_text
     - field.field.node.event.field_teaser_title
@@ -76,5 +77,6 @@ content:
 hidden:
   field_event_cta: true
   field_metatags: true
+  field_tags: true
   links: true
   search_api_excerpt: true

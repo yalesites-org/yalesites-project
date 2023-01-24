@@ -6,6 +6,7 @@ dependencies:
     - field.field.node.page.field_banner
     - field.field.node.page.field_content
     - field.field.node.page.field_metatags
+    - field.field.node.page.field_tags
     - field.field.node.page.field_teaser_media
     - field.field.node.page.field_teaser_text
     - field.field.node.page.field_teaser_title
@@ -39,6 +40,7 @@ content:
     region: content
 hidden:
   field_metatags: true
+  field_tags: true
   field_teaser_media: true
   field_teaser_text: true
   field_teaser_title: true
