@@ -40,19 +40,39 @@ class AlertManager implements ContainerInjectionInterface {
    * @return array
    *   An array of alert type definitions.
    */
-  public function getAlertTypes() {
-    return (array) $this->alertConfig->get('alert_types');
+  public function getAlertTypes(): array {
+    $config = (array) $this->alertConfig->get('alert_types');
+    return !empty($config) ? $config : [];
   }
 
-  public function getTypeOptions() {
+  /**
+   * Get array of options for alert-types form.
+   *
+   * This is used by the AlertSettings form to display a list of alert types.
+   * Options are keyed by alert id and have the value of alert label.
+   *
+   * @return array
+   *   An array of alert types to display as form options.
+   */
+  public function getTypeOptions(): array {
     $types = $this->getAlertTypes();
-    return array_combine(
+    $options = array_combine(
       array_column($types, 'id'),
       array_column($types, 'label')
     );
+    return !empty($options) ? $options : [];
   }
 
-  public function getTypeById($id) {
+  /**
+   * Get the alert type definition from its id.
+   *
+   * @param string $id
+   *   The id for a given alert type defined in the config file.
+   *
+   * @return array
+   *   The alert definition matching the given id.
+   */
+  public function getTypeById($id): array {
     return current(
       array_filter(
         $this->getAlertTypes(),
@@ -63,7 +83,16 @@ class AlertManager implements ContainerInjectionInterface {
     );
   }
 
-  public function getTypeDescription($id) {
+  /**
+   * Get the alert type description from its id.
+   *
+   * @param string $id
+   *   The id for a given alert type defined in the config file.
+   *
+   * @return string
+   *   The description for a given alert or an empty string.
+   */
+  public function getTypeDescription(string $id): string {
     $type = $this->getTypeById($id);
     return !empty($type['description']) ? $type['description'] : '';
   }
