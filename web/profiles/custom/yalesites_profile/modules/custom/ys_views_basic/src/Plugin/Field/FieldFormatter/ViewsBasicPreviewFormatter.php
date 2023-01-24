@@ -103,6 +103,7 @@ class ViewsBasicPreviewFormatter extends FormatterBase implements ContainerFacto
         'types' => [],
         'view_mode' => '',
         'tags' => [],
+        'limit' => '',
       ];
       $paramsDecoded = json_decode($item->params, TRUE);
 
@@ -121,6 +122,9 @@ class ViewsBasicPreviewFormatter extends FormatterBase implements ContainerFacto
           array_push($paramsForRender['tags'], $tagLabel);
         }
       }
+
+      // Gets the limit.
+      $paramsForRender['limit'] = $paramsDecoded['limit'];
 
       $elements[$delta] = [
         '#theme' => 'views_basic_formatter_preview',

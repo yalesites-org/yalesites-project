@@ -29,9 +29,11 @@ class ViewsBasicFilter extends FilterPluginBase {
     }
 
     // Parse tag filters.
-    $tag_table = $query->addTable('node__field_tags');
-    foreach ($this->value['filters']['tags'] as $tid) {
-      $query->addWhere(0, "$tag_table.field_tags_target_id", $tid);
+    if (($this->value['filters']['tags'][0])) {
+      $tag_table = $query->addTable('node__field_tags');
+      foreach ($this->value['filters']['tags'] as $tid) {
+        $query->addWhere(0, "$tag_table.field_tags_target_id", $tid);
+      }
     }
   }
 

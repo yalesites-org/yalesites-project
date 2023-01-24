@@ -166,8 +166,20 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         break;
 
       case 'tags':
+        if (!isset($paramsDecoded['filters']['tags'])) {
+          $defaultParam = NULL;
+          break;
+        }
         $tid = (int) $paramsDecoded['filters']['tags'][0];
         $defaultParam = $this->entityTypeManager()->getStorage('taxonomy_term')->load($tid);
+        break;
+
+      case 'limit':
+        if (empty($paramsDecoded['limit'])) {
+          $defaultParam = 1;
+          break;
+        }
+        $defaultParam = $paramsDecoded['limit'];
         break;
 
       default:

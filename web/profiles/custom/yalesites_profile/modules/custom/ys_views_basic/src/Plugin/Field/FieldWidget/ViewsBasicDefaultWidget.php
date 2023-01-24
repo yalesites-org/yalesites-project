@@ -179,6 +179,30 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
     ];
 
+    $form['group_user_selection']['markup_pre_limit'] = [
+      '#type' => 'markup',
+      '#markup' => '<div class="grouped-items">',
+    ];
+
+    $form['group_user_selection']['limit'] = [
+      '#title' => $this->t('Limit to'),
+      '#suffix' => $this->t('item(s)'),
+      '#type' => 'number',
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('limit', $items[$delta]->params) : 1,
+      '#min' => 1,
+      '#wrapper_attributes' => [
+        'class' => [
+          'views-basic--user-selection',
+        ],
+      ],
+      '#required' => TRUE,
+    ];
+
+    $form['group_user_selection']['markup_post_limit'] = [
+      '#type' => 'markup',
+      '#markup' => '</div>',
+    ];
+
     $element['group_params']['params'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Params'),
@@ -211,6 +235,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
             $form_state->getValue(['group_user_selection', 'tags']),
           ],
         ],
+        "limit" => $form_state->getValue(['group_user_selection', 'limit']),
       ];
       $value['params'] = json_encode($paramData);
     }

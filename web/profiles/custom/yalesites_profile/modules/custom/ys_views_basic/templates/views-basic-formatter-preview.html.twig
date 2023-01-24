@@ -6,3 +6,13 @@
     Filtered by tag "{{ params.tags|join(', ') }}"
   {% endif %}
 </div>
+<div>
+  {% if params.limit %}
+    Limited to
+    {% trans %}
+      {{ params.limit }} item
+      {% plural params.limit %}
+      {{ params.limit }} items
+    {% endtrans %}
+  {% endif %}
+</div>

@@ -131,6 +131,9 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
       $filters['views_basic_filter']['value'] = $paramsDecoded;
       $view->display_handler->overrideOption('filters', $filters);
 
+      // Sets items per page.
+      $view->setItemsPerPage($paramsDecoded['limit']);
+
       // Change view mode.
       $view->build();
       $view->rowPlugin->options['view_mode'] = $paramsDecoded['view_mode'];
