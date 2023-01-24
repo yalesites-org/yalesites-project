@@ -1,0 +1,5 @@
+services:
+  # Service for interacting with YaleSites alerts and their configuration.
+  ys_alert.manager:
+    class: Drupal\ys_alert\AlertManager
+    arguments: ['@config.factory']

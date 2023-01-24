@@ -2,18 +2,40 @@
 
 namespace Drupal\ys_alert\Form;
 
+use Drupal\Core\Cache\Cache;
+use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Cache\CacheBackendInterface;
-use Drupal\Core\Cache\Cache;
 use Drupal\Core\Plugin\CachedDiscoveryClearerInterface;
+use Drupal\ys_alert\AlertManager;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Configure example settings for this site.
+ * Defines the manage alerts interface.
  */
 class AlertSettings extends ConfigFormBase {
+
+  /**
+   * A cache backend interface instance.
+   *
+   * @var \Drupal\Core\Cache\CacheBackendInterface
+   */
+  protected $cacheRender;
+
+  /**
+   * A plugin cache clear instance.
+   *
+   * @var \Drupal\Core\Plugin\CachedDiscoveryClearerInterface
+   */
+  protected $pluginCacheClearer;
+
+  /**
+   * The YaleSites alerts management service.
+   *
+   * @var \Drupal\ys_alert\AlertManager
+   */
+  protected $alertManager;
 
   /**
    * Constructs a SiteInformationForm object.
@@ -24,11 +46,19 @@ class AlertSettings extends ConfigFormBase {
    *   The Cache BE interface.
    * @param \Drupal\Core\Routing\CachedDiscoveryClearerInterface $plugin_cache_clearer
    *   The Cache Disovery interface.
+   * @param \Drupal\ys_alert\AlertManager $alert_manager
+   *   The YaleSites Alert Manager service.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, CacheBackendInterface $cacheRender, CachedDiscoveryClearerInterface $plugin_cache_clearer) {
+  public function __construct(
+    ConfigFactoryInterface $config_factory,
+    CacheBackendInterface $cacheRender,
+    CachedDiscoveryClearerInterface $plugin_cache_clearer,
+    AlertManager $alert_manager
+    ) {
     parent::__construct($config_factory);
     $this->cacheRender = $cacheRender;
     $this->pluginCacheClearer = $plugin_cache_clearer;
+    $this->alertManager = $alert_manager;
   }
 
   /**
@@ -38,7 +68,8 @@ class AlertSettings extends ConfigFormBase {
     return new static(
       $container->get('config.factory'),
       $container->get('cache.render'),
-      $container->get('plugin.cache_clearer')
+      $container->get('plugin.cache_clearer'),
+      $container->get('ys_alert.manager')
     );
   }
 
@@ -62,6 +93,9 @@ class AlertSettings extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('ys_alert.settings');
 
+    // Attach JS for adding a modal confirmation message.
+    $form['#attached']['library'][] = 'ys_alert/confirm_type_modal';
+
     $form['id'] = [
       '#type' => 'hidden',
       '#value' => $config->get('id'),
@@ -76,16 +110,26 @@ class AlertSettings extends ConfigFormBase {
     ];
 
     $form['type'] = [
-      '#type' => 'select',
-      '#options' => [
-        'announcement' => $this->t('Announcement'),
-        'emergency' => $this->t('Emergency'),
-        'marketing' => $this->t('Marketing'),
-      ],
-      '#title' => $this->t('Alert type'),
-      '#description' => $this->t('Pick the desired alert type.'),
+      '#type' => 'radios',
+      '#options' => $this->alertManager->getTypeOptions(),
+      '#title' => $this->t('Alert Type'),
       '#default_value' => $config->get('type'),
       '#required' => TRUE,
+      '#ajax' => [
+        'callback' => '::updateAlertDescriptionCallback',
+        'wrapper' => 'alert-description',
+        'progress' => [
+          'type' => 'none'
+        ]
+      ],
+    ];
+
+    // The description is rebuilt with a callback when type field changes.
+    $type = $form_state->getValue('type') ?? $config->get('type');
+    $form['type_description'] = [
+      '#prefix' => '<div id="alert-description">',
+      '#suffix' => '</div>',
+      '#markup' => $this->alertManager->getTypeDescription($type),
     ];
 
     $form['headline'] = [
@@ -156,6 +200,21 @@ class AlertSettings extends ConfigFormBase {
     $this->cacheRender->invalidateAll();
     $this->pluginCacheClearer->clearCachedDefinitions();
     parent::submitForm($form, $form_state);
+  }
+
+  /**
+   * Rebuild part of the form to display the matching type description.
+   *
+   * @param array $form
+   *   An associative array containing the structure of the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   *
+   * @return array
+   *   The portion of the render structure that will be updated.
+   */
+  public function updateAlertDescriptionCallback(array $form, FormStateInterface $form_state) {
+    return $form['type_description'];
   }
 
 }
