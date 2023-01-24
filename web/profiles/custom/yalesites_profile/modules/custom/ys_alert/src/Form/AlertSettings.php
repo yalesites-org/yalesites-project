@@ -119,8 +119,8 @@ class AlertSettings extends ConfigFormBase {
         'callback' => '::updateAlertDescriptionCallback',
         'wrapper' => 'alert-description',
         'progress' => [
-          'type' => 'none'
-        ]
+          'type' => 'none',
+        ],
       ],
     ];
 
