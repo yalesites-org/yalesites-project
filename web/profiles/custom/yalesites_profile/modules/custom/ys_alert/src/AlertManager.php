@@ -72,8 +72,8 @@ class AlertManager implements ContainerInjectionInterface {
    * @return array
    *   The alert definition matching the given id.
    */
-  public function getTypeById($id): array {
-    return current(
+  public function getTypeById(string $id): array {
+    $type = current(
       array_filter(
         $this->getAlertTypes(),
         function ($type) use ($id) {
@@ -81,6 +81,7 @@ class AlertManager implements ContainerInjectionInterface {
         }
       )
     );
+    return !empty($type) ? $type : [];
   }
 
   /**
@@ -95,6 +96,34 @@ class AlertManager implements ContainerInjectionInterface {
   public function getTypeDescription(string $id): string {
     $type = $this->getTypeById($id);
     return !empty($type['description']) ? $type['description'] : '';
+  }
+
+  /**
+   * Get alert data.
+   *
+   * @return array
+   *   An array of all alert data set in the admin form.
+   */
+  public function getAlert(): array {
+    return [
+      'id' => $this->alertConfig->get('alert.id'),
+      'status' => $this->alertConfig->get('alert.status'),
+      'type' => $this->alertConfig->get('alert.type'),
+      'headline' => $this->alertConfig->get('alert.headline'),
+      'message' => $this->alertConfig->get('alert.message'),
+      'link_title' => $this->alertConfig->get('alert.link_title'),
+      'link_url' => $this->alertConfig->get('alert.link_url'),
+    ];
+  }
+
+  /**
+   * Check if the alert should be displayed (has an active status).
+   *
+   * @return bool
+   *   True if the alert should be displayed.
+   */
+  public function showAlert(): bool {
+    return (bool) $this->alertConfig->get('alert.status');
   }
 
 }
