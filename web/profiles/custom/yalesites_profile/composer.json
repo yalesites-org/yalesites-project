@@ -89,6 +89,9 @@
       },
       "drupal/core": {
         "plural results summary https://www.drupal.org/project/drupal/issues/2888320": "https://www.drupal.org/files/issues/2021-12-15/2888320-78.patch"
+      },
+      "drupal/hide_revision_field": {
+        "fix deprecated function unserialize https://www.drupal.org/project/hide_revision_field/issues/3260101": "https://www.drupal.org/files/issues/2022-01-24/3260101-2.patch"
       }
     }
   }

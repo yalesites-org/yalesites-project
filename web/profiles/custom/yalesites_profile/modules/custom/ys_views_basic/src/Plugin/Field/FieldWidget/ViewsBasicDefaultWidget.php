@@ -112,6 +112,11 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
     ];
 
+    $form['group_user_selection']['markup_pre_entity_types'] = [
+      '#type' => 'markup',
+      '#markup' => '<div class="grouped-items">',
+    ];
+
     $form['group_user_selection']['entity_types'] = [
       '#type' => 'select',
       '#options' => $this->viewsBasicManager->entityTypeList(),
@@ -156,6 +161,24 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#suffix' => '</div>',
     ];
 
+    $form['group_user_selection']['markup_post_entity_types'] = [
+      '#type' => 'markup',
+      '#markup' => '</div>',
+    ];
+
+    // @todo add validation for only one term.
+    // More info: https://www.drupal.org/project/drupal/issues/2951134
+    $form['group_user_selection']['tags'] = [
+      '#title' => $this->t('Filtered by tag'),
+      '#description' => $this->t('At this time, only one term is supported. If multiple terms are added, only the last one will be used.'),
+      '#type' => 'entity_autocomplete',
+      '#target_type' => 'taxonomy_term',
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('tags', $items[$delta]->params) : NULL,
+      '#selection_settings' => [
+        'target_bundles' => ['tags'],
+      ],
+    ];
+
     $element['group_params']['params'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Params'),
@@ -183,6 +206,9 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         "filters" => [
           "types" => [
             $form['group_user_selection']['entity_types']['#value'],
+          ],
+          "tags" => [
+            $form_state->getValue(['group_user_selection', 'tags']),
           ],
         ],
       ];
