@@ -72,10 +72,10 @@ display:
           separator: ', '
           field_api_classes: false
       pager:
-        type: none
+        type: some
         options:
           offset: 0
-          items_per_page: null
+          items_per_page: 0
       exposed_form:
         type: basic
         options:
@@ -168,7 +168,10 @@ display:
     display_plugin: block
     position: 1
     display_options:
-      display_extenders: {  }
+      display_extenders:
+        metatag_display_extender:
+          metatags: {  }
+          tokenize: false
     cache_metadata:
       max-age: -1
       contexts:
