@@ -98,14 +98,14 @@ class AlertSettings extends ConfigFormBase {
 
     $form['id'] = [
       '#type' => 'hidden',
-      '#value' => $config->get('id'),
+      '#value' => $config->get('alert.id'),
     ];
 
     $form['status'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Enabled?'),
       '#description' => $this->t('Check this field if you want the alert to be visible across the site.'),
-      '#default_value' => $config->get('status'),
+      '#default_value' => $config->get('alert.status'),
       '#required' => FALSE,
     ];
 
@@ -113,7 +113,7 @@ class AlertSettings extends ConfigFormBase {
       '#type' => 'radios',
       '#options' => $this->alertManager->getTypeOptions(),
       '#title' => $this->t('Alert Type'),
-      '#default_value' => $config->get('type'),
+      '#default_value' => $config->get('alert.type'),
       '#required' => TRUE,
       '#ajax' => [
         'callback' => '::updateAlertDescriptionCallback',
@@ -125,7 +125,7 @@ class AlertSettings extends ConfigFormBase {
     ];
 
     // The description is rebuilt with a callback when type field changes.
-    $type = $form_state->getValue('type') ?? $config->get('type');
+    $type = $form_state->getValue('type') ?? $config->get('alert.type') ?? '';
     $form['type_description'] = [
       '#prefix' => '<div id="alert-description">',
       '#suffix' => '</div>',
@@ -135,14 +135,14 @@ class AlertSettings extends ConfigFormBase {
     $form['headline'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Headline'),
-      '#default_value' => $config->get('headline'),
+      '#default_value' => $config->get('alert.headline'),
       '#required' => TRUE,
     ];
 
     $form['message'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Message'),
-      '#default_value' => $config->get('message'),
+      '#default_value' => $config->get('alert.message'),
       '#required' => TRUE,
     ];
 
@@ -155,7 +155,7 @@ class AlertSettings extends ConfigFormBase {
     $form['link_wrapper']['link_title'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Link Title'),
-      '#default_value' => $config->get('link_title'),
+      '#default_value' => $config->get('alert.link_title'),
       '#states' => [
         // Make link title required if URL is set.
         'required' => [
@@ -169,7 +169,7 @@ class AlertSettings extends ConfigFormBase {
       '#title' => $this->t('URL'),
       '#description' => $this->t('Type the URL or autocomplete for internal paths.'),
       '#autocomplete_route_name' => 'linkit.autocomplete',
-      '#default_value' => $config->get('link_url'),
+      '#default_value' => $config->get('alert.link_url'),
       '#autocomplete_route_parameters' => [
         'linkit_profile_id' => 'default',
       ],
@@ -185,13 +185,13 @@ class AlertSettings extends ConfigFormBase {
     // Retrieve the configuration.
     $this->configFactory->getEditable('ys_alert.settings')
       // Set the submitted configuration setting.
-      ->set('id', time())
-      ->set('headline', $form_state->getValue('headline'))
-      ->set('message', $form_state->getValue('message'))
-      ->set('status', $form_state->getValue('status'))
-      ->set('type', $form_state->getValue('type'))
-      ->set('link_title', $form_state->getValue('link_title'))
-      ->set('link_url', $form_state->getValue('link_url'))
+      ->set('alert.id', time())
+      ->set('alert.headline', $form_state->getValue('headline'))
+      ->set('alert.message', $form_state->getValue('message'))
+      ->set('alert.status', $form_state->getValue('status'))
+      ->set('alert.type', $form_state->getValue('type'))
+      ->set('alert.link_title', $form_state->getValue('link_title'))
+      ->set('alert.link_url', $form_state->getValue('link_url'))
       ->save();
 
     if ($this->cacheRender->get('config')) {
