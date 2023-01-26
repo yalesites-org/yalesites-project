@@ -5,12 +5,12 @@ namespace Drupal\ys_alert\Plugin\Block;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Session\AccountInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\ys_alert\AlertManager;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Provides a block with a simple text.
+ * Provides a block to render an active alert.
  *
  * @Block(
  *   id = "alert_block",
@@ -20,11 +20,11 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 class AlertBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The config factory.
+   * The YaleSites alerts management service.
    *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   * @var \Drupal\ys_alert\AlertManager
    */
-  protected $configFactory;
+  protected $alertManager;
 
   /**
    * Constructs a SyndicateBlock object.
@@ -35,23 +35,33 @@ class AlertBlock extends BlockBase implements ContainerFactoryPluginInterface {
    *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
-   *   The config factory.
+   * @param \Drupal\ys_alert\AlertManager $alert_manager
+   *   The YaleSites Alert Manager service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, ConfigFactoryInterface $configFactory) {
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    AlertManager $alert_manager
+    ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->configFactory = $configFactory;
+    $this->alertManager = $alert_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(
+    ContainerInterface $container,
+    array $configuration,
+    $plugin_id,
+    $plugin_definition
+    ) {
     return new static(
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('config.factory'),
+      $container->get('ys_alert.manager'),
     );
   }
 
@@ -59,16 +69,16 @@ class AlertBlock extends BlockBase implements ContainerFactoryPluginInterface {
    * {@inheritdoc}
    */
   public function build() {
-    $config = $this->configFactory->get('ys_alert.settings');
+    $alert = $this->alertManager->getAlert();
     return [
       '#theme' => 'ys_alert',
-      '#id' => $config->get('id'),
-      '#status' => $config->get('status'),
-      '#type' => $config->get('type'),
-      '#headline' => $config->get('headline'),
-      '#message' => $config->get('message'),
-      '#link_title' => $config->get('link_title'),
-      '#link_url' => $config->get('link_url'),
+      '#id' => $alert['id'],
+      '#status' => $alert['status'],
+      '#type' => $alert['type'],
+      '#headline' => $alert['headline'],
+      '#message' => $alert['message'],
+      '#link_title' => $alert['link_title'],
+      '#link_url' => $alert['link_url'],
     ];
   }
 
@@ -76,7 +86,7 @@ class AlertBlock extends BlockBase implements ContainerFactoryPluginInterface {
    * {@inheritdoc}
    */
   protected function blockAccess(AccountInterface $account) {
-    if (!$this->configFactory->get('ys_alert.settings')->get('status')) {
+    if (!$this->alertManager->showAlert()) {
       return AccessResult::forbidden();
     }
     return AccessResult::allowedIfHasPermission($account, 'access content');

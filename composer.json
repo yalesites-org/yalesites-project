@@ -29,6 +29,7 @@
     "drupal/drupal-driver": "^2.1",
     "drupal/drupal-extension": "^4.1",
     "mikey179/vfsstream": "^1.6",
+    "phpspec/prophecy-phpunit": "^2",
     "phpunit/phpunit": "^9.5",
     "squizlabs/php_codesniffer": "^3.6"
   },

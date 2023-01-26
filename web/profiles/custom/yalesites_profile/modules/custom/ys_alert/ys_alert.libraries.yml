@@ -1,0 +1,6 @@
+confirm_type_modal:
+  js:
+    js/confirm_type_modal.js : {}
+  dependencies:
+    - core/drupal.ajax
+    - core/drupal.dialog
