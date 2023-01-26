@@ -112,12 +112,16 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
     ];
 
-    $form['group_user_selection']['markup_pre_entity_types'] = [
-      '#type' => 'markup',
-      '#markup' => '<div class="grouped-items">',
+    $form['group_user_selection']['entity_and_view_mode'] = [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => [
+          'grouped-items',
+        ],
+      ],
     ];
 
-    $form['group_user_selection']['entity_types'] = [
+    $form['group_user_selection']['entity_and_view_mode']['entity_types'] = [
       '#type' => 'select',
       '#options' => $this->viewsBasicManager->entityTypeList(),
       '#title' => $this->t('Display'),
@@ -144,7 +148,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     $entity_list = $this->viewsBasicManager->entityTypeList();
     $content_type = ($items[$delta]->params) ? json_decode($items[$delta]->params, TRUE)['filters']['types'][0] : array_key_first($entity_list);
 
-    $form['group_user_selection']['view_mode'] = [
+    $form['group_user_selection']['entity_and_view_mode']['view_mode'] = [
       '#type' => 'select',
       '#options' => $this->viewsBasicManager->viewModeList($content_type),
       '#title' => $this->t('as'),
@@ -161,11 +165,6 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#suffix' => '</div>',
     ];
 
-    $form['group_user_selection']['markup_post_entity_types'] = [
-      '#type' => 'markup',
-      '#markup' => '</div>',
-    ];
-
     // @todo add validation for only one term.
     // More info: https://www.drupal.org/project/drupal/issues/2951134
     $form['group_user_selection']['tags'] = [
@@ -179,24 +178,13 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
     ];
 
-    $form['group_user_selection']['markup_pre_limit'] = [
-      '#type' => 'markup',
-      '#markup' => '<div class="grouped-items">',
-    ];
-
     $form['group_user_selection']['limit'] = [
-      '#title' => $this->t('Limit to'),
+      '#title' => $this->t('Items to display'),
       '#description' => $this->t('Enter 0 to show all items.'),
-      '#suffix' => $this->t('item(s)'),
       '#type' => 'number',
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('limit', $items[$delta]->params) : 0,
       '#min' => 0,
       '#required' => TRUE,
-    ];
-
-    $form['group_user_selection']['markup_post_limit'] = [
-      '#type' => 'markup',
-      '#markup' => '</div>',
     ];
 
     $element['group_params']['params'] = [
@@ -222,10 +210,10 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
     foreach ($values as &$value) {
       $paramData = [
-        "view_mode" => $form['group_user_selection']['view_mode']['#value'],
+        "view_mode" => $form['group_user_selection']['entity_and_view_mode']['view_mode']['#value'],
         "filters" => [
           "types" => [
-            $form['group_user_selection']['entity_types']['#value'],
+            $form['group_user_selection']['entity_and_view_mode']['entity_types']['#value'],
           ],
           "tags" => [
             $form_state->getValue(['group_user_selection', 'tags']),
@@ -243,12 +231,12 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
    */
   public function updateViewModes(array &$form, FormStateInterface $form_state) {
     if ($selectedValue = $form_state->getValue(
-      ['group_user_selection', 'entity_types']
+      ['group_user_selection', 'entity_and_view_mode', 'entity_types']
       )) {
-      $form['group_user_selection']['view_mode']['#options'] = $this->viewsBasicManager->viewModeList($selectedValue);
+      $form['group_user_selection']['entity_and_view_mode']['view_mode']['#options'] = $this->viewsBasicManager->viewModeList($selectedValue);
     }
 
-    return $form['group_user_selection']['view_mode'];
+    return $form['group_user_selection']['entity_and_view_mode']['view_mode'];
   }
 
 }
