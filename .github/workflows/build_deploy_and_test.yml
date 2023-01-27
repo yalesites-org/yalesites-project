@@ -28,7 +28,7 @@ env:
 jobs:
   configure_env_vars:
     container:
-      image: quay.io/pantheon-public/build-tools-ci:8.x-php7.4
+      image: quay.io/pantheon-public/build-tools-ci:8.x-php8.1
       options: --user root
     runs-on: ubuntu-latest
     steps:
@@ -81,7 +81,7 @@ jobs:
 
   static_tests:
     container:
-      image: quay.io/pantheon-public/build-tools-ci:8.x-php7.4
+      image: quay.io/pantheon-public/build-tools-ci:8.x-php8.1
       options: --user root
     runs-on: ubuntu-latest
     env:
@@ -122,7 +122,7 @@ jobs:
 
   deploy_to_pantheon:
     container:
-      image: quay.io/pantheon-public/build-tools-ci:8.x-php7.4
+      image: quay.io/pantheon-public/build-tools-ci:8.x-php8.1
       options: --user root
     runs-on: ubuntu-latest
     needs: [configure_env_vars, static_tests]
