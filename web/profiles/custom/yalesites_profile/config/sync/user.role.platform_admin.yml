@@ -3,7 +3,11 @@ langcode: en
 status: true
 dependencies:
   config:
+    - media.type.background_video
+    - media.type.document
+    - media.type.embed
     - media.type.image
+    - media.type.video
     - node.type.event
     - node.type.news
     - node.type.page
@@ -44,32 +48,52 @@ permissions:
   - 'clone event content'
   - 'clone news content'
   - 'clone page content'
+  - 'create background_video media'
+  - 'create document media'
+  - 'create embed media'
   - 'create event content'
   - 'create image media'
   - 'create media'
   - 'create news content'
   - 'create page content'
   - 'create url aliases'
+  - 'create video media'
+  - 'delete any background_video media'
+  - 'delete any document media'
+  - 'delete any embed media'
   - 'delete any event content'
   - 'delete any image media'
   - 'delete any media'
   - 'delete any news content'
   - 'delete any page content'
+  - 'delete any video media'
   - 'delete any webform submission'
   - 'delete media'
+  - 'delete own background_video media'
+  - 'delete own document media'
+  - 'delete own embed media'
   - 'delete own event content'
   - 'delete own image media'
   - 'delete own news content'
   - 'delete own page content'
+  - 'delete own video media'
+  - 'edit any background_video media'
+  - 'edit any document media'
+  - 'edit any embed media'
   - 'edit any event content'
   - 'edit any image media'
   - 'edit any news content'
   - 'edit any page content'
+  - 'edit any video media'
   - 'edit any webform submission'
+  - 'edit own background_video media'
+  - 'edit own document media'
+  - 'edit own embed media'
   - 'edit own event content'
   - 'edit own image media'
   - 'edit own news content'
   - 'edit own page content'
+  - 'edit own video media'
   - 'edit own webform submission'
   - 'override all authored by option'
   - 'override all authored on option'
