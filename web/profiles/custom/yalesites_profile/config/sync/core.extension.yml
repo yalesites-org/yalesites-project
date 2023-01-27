@@ -110,7 +110,6 @@ module:
   ys_starterkit: 10
   ys_themes: 10
   paragraphs: 11
-  paragraphs_ee: 15
   yalesites_profile: 1000
 theme:
   stable9: 0

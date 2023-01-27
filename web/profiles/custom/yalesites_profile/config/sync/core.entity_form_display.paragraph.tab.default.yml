@@ -10,7 +10,6 @@ dependencies:
     - allowed_formats
     - maxlength
     - paragraphs
-    - paragraphs_ee
     - paragraphs_features
     - text
 id: paragraph.tab.default
@@ -43,10 +42,6 @@ content:
         delete_confirmation: false
         split_text: false
         show_drag_and_drop: true
-      paragraphs_ee:
-        paragraphs_ee:
-          dialog_off_canvas: false
-          dialog_style: tiles
   field_heading:
     type: text_textfield
     weight: 0
