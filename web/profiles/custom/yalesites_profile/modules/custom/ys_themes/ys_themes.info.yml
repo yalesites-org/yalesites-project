@@ -1,5 +1,5 @@
 name: YaleSites Themes
 type: module
 description: Customize the look and feel of a YaleSites website to reflect the uniqueness of content and brand.
-core_version_requirement: ^8 || ^9
+core_version_requirement: '^9 || ^10'
 package: YaleSites

@@ -1,7 +1,7 @@
 name: YaleSites alert
 type: module
 description: General alerts module for YaleSites
-core_version_requirement: ^8 || ^9
+core_version_requirement: '^9 || ^10'
 package: YaleSites
 configure: ys_alert.settings
 dependencies:
