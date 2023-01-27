@@ -1,0 +1,38 @@
+.ys-alert-settings .form-radios {
+  display: flex;
+}
+
+.ys-alert-settings .form-radios .form-item {
+  margin-left: 0;
+  position: relative;
+}
+
+.ys-alert-settings .form-radios .form-item:not(:last-child) {
+  margin-left: 0;
+  margin-right: 12px;
+}
+
+.ys-alert-settings .form-radios .form-item > input {
+  position: absolute;
+  left: -9999px;
+}
+
+.ys-alert-settings .form-radios .form-item > label {
+  background-size: contain;
+  background-repeat: no-repeat;
+  display: inline-block;
+  width: 132px;
+  padding-top: 100px;
+}
+
+.ys-alert-settings .form-radios .form-item > label[for=edit-type-announcement] {
+  background-image: url('../images/announcement.svg');
+}
+
+.ys-alert-settings .form-radios .form-item > label[for=edit-type-marketing] {
+  background-image: url('../images/marketing.svg');
+}
+
+.ys-alert-settings .form-radios .form-type--radio > label[for=edit-type-emergency] {
+  background-image: url('../images/emergency.svg');
+}

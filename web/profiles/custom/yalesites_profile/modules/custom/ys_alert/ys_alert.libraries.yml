@@ -1,6 +1,9 @@
 confirm_type_modal:
   js:
     js/confirm_type_modal.js : {}
+  css:
+    theme:
+      css/ys_alert.css: {}
   dependencies:
     - core/drupal.ajax
     - core/drupal.dialog
