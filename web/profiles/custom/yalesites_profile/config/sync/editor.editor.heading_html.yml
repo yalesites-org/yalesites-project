@@ -1,22 +1,18 @@
-uuid: ec73fe23-e68a-4f93-b70b-f82652bb3cda
+uuid: 0ceaf686-3a4d-453b-989a-52345a4f25d6
 langcode: en
 status: true
 dependencies:
   config:
     - filter.format.heading_html
   module:
-    - ckeditor
+    - ckeditor5
 format: heading_html
-editor: ckeditor
+editor: ckeditor5
 settings:
   toolbar:
-    rows:
-      -
-        -
-          name: Formatting
-          items:
-            - Bold
-            - Italic
+    items:
+      - bold
+      - italic
   plugins: {  }
 image_upload:
   status: false

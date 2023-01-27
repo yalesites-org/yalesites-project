@@ -1,31 +1,21 @@
-uuid: 27ce044b-3654-4043-8f37-b79dddba0d15
+uuid: f07e750c-3222-427d-a467-df7c6d83a66c
 langcode: en
 status: true
 dependencies:
   config:
     - filter.format.restricted_html
   module:
-    - ckeditor
+    - ckeditor5
 format: restricted_html
-editor: ckeditor
+editor: ckeditor5
 settings:
   toolbar:
-    rows:
-      -
-        -
-          name: Formatting
-          items:
-            - Bold
-            - Italic
-        -
-          name: Links
-          items:
-            - DrupalLink
-            - DrupalUnlink
-  plugins:
-    drupallink:
-      linkit_enabled: true
-      linkit_profile: default
+    items:
+      - bold
+      - italic
+      - '|'
+      - link
+  plugins: {  }
 image_upload:
   status: false
   scheme: public

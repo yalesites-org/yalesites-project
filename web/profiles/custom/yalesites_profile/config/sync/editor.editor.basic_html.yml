@@ -1,55 +1,69 @@
-uuid: 23681889-3337-49e5-af58-b61087d99a4f
+uuid: a3f0a12a-9497-440b-996f-1a1d4a22b383
 langcode: en
 status: true
 dependencies:
   config:
     - filter.format.basic_html
   module:
-    - ckeditor
+    - ckeditor5
 format: basic_html
-editor: ckeditor
+editor: ckeditor5
 settings:
   toolbar:
-    rows:
-      -
-        -
-          name: Formatting
-          items:
-            - Bold
-            - Italic
-            - JustifyLeft
-            - JustifyCenter
-            - JustifyRight
-            - Format
-            - '-'
-            - Paste
-            - PasteText
-        -
-          name: Links
-          items:
-            - DrupalLink
-            - DrupalUnlink
-        -
-          name: Lists
-          items:
-            - BulletedList
-            - NumberedList
-            - Outdent
-            - Indent
-        -
-          name: Media
-          items:
-            - Table
-        -
-          name: Tools
-          items:
-            - Source
-            - Maximize
-            - '-'
+    items:
+      - bold
+      - italic
+      - alignment
+      - heading
+      - '|'
+      - link
+      - '|'
+      - bulletedList
+      - numberedList
+      - outdent
+      - indent
+      - '|'
+      - insertTable
+      - '|'
+      - sourceEditing
+      - '|'
+      - blockQuote
+      - code
+      - superscript
+      - subscript
   plugins:
-    drupallink:
-      linkit_enabled: true
-      linkit_profile: default
+    ckeditor5_heading:
+      enabled_headings:
+        - heading2
+        - heading3
+        - heading4
+        - heading5
+        - heading6
+    ckeditor5_sourceEditing:
+      allowed_tags:
+        - '<cite>'
+        - '<dl>'
+        - '<dt>'
+        - '<dd>'
+        - '<span>'
+        - '<blockquote cite>'
+        - '<ul type>'
+        - '<ol type>'
+        - '<h2 id>'
+        - '<h3 id>'
+        - '<h4 id>'
+        - '<h5 id>'
+        - '<h6 id>'
+        - '<a hreflang data-entity-substitution data-entity-type data-entity-uuid title>'
+    ckeditor5_list:
+      reversed: false
+      startIndex: true
+    ckeditor5_alignment:
+      enabled_alignments:
+        - left
+        - center
+        - right
+        - justify
 image_upload:
   status: false
   scheme: public
