@@ -57,7 +57,7 @@ third_party_settings:
       children:
         - field_style_color
         - field_style_position
-      label: Styles
+      label: 'Design Options'
       region: content
       parent_name: group_cta_banner_tabs
       weight: 3

@@ -56,7 +56,7 @@ third_party_settings:
       children:
         - field_style_position
         - field_style_variation
-      label: Styles
+      label: 'Design Options'
       region: content
       parent_name: group_tabs
       weight: 21
