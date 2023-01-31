@@ -15,6 +15,7 @@
   {% embed "@organisms/card-collection/yds-card-collection.twig" with {
     card_collection__heading: view.args.0,
     card_collection__featured: 'false',
+    card_collection__width: 'max',
   } %}
     {% block card_collection__cards %}
       {{ rows }}
