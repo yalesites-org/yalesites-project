@@ -1,0 +1,22 @@
+{% extends "@page-layouts/yds-full-width.twig" %}
+  {% block page__content %}
+    {% include "@molecules/page-title//yds-page-title.twig" with {
+      page_title__heading: 'How to Use Global Settings',
+    } %}
+    {% include "@molecules/text/yds-text-field.twig" with {
+      text_field__content: config_page__intro,
+    } %}
+    {% include "@atoms/typography/headings/yds-heading.twig" with {
+      heading__level: '2',
+      heading: 'Divider',
+    } %}
+    {% include "@atoms/divider/yds-divider.twig" %}
+    {% include "@atoms/typography/headings/yds-heading.twig" with {
+      heading__level: '2',
+      heading: 'Action Color',
+    } %}
+    {% include "@atoms/controls/cta/yds-cta.twig" with {
+      cta__content: 'Test CTA',
+    } %}
+    {% include "@molecules/tabs/yds-tabs.twig" %}
+  {% endblock %}

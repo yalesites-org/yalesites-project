@@ -1,0 +1,7 @@
+<div data-component-width={{ component_width|default('max') }}>
+  <div {{ bem('inner', [], 'component-wrapper') }}>
+    {% block compontent_wrapper__component %}
+      {% include "@page-layouts/placeholder/yds-placeholder.twig" %}
+    {% endblock %}
+  </div>
+</div>
