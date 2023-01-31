@@ -192,6 +192,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         }
         break;
 
+      case 'limit':
+        $defaultParam = (empty($paramsDecoded['limit'])) ? 0 : (int) $paramsDecoded['limit'];
+        break;
+
       default:
         $defaultParam = $paramsDecoded[$type];
         break;

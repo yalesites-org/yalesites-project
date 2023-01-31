@@ -5,13 +5,9 @@
   display: none;
 }
 
+.views-basic--group-user-selection .grouped-items,
 .views-basic--user-selection {
-  display: flex;
   align-items: center;
-  gap: 1rem;
-}
-
-.views-basic--group-user-selection .grouped-items {
   display: flex;
   gap: 1rem;
 }
