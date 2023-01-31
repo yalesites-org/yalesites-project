@@ -3,7 +3,7 @@ langcode: en
 status: true
 dependencies: {  }
 id: event_list
-label: 'Event List'
+label: 'Calendar List'
 icon_uuid: null
 icon_default: null
 description: ''

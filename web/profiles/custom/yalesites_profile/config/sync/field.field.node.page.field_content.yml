@@ -11,13 +11,11 @@ dependencies:
     - paragraphs.paragraphs_type.custom_cards
     - paragraphs.paragraphs_type.divider
     - paragraphs.paragraphs_type.embed
-    - paragraphs.paragraphs_type.event_cards
     - paragraphs.paragraphs_type.event_list
     - paragraphs.paragraphs_type.gallery
     - paragraphs.paragraphs_type.grand_hero
     - paragraphs.paragraphs_type.image
     - paragraphs.paragraphs_type.media_grid
-    - paragraphs.paragraphs_type.news_cards
     - paragraphs.paragraphs_type.news_list
     - paragraphs.paragraphs_type.pull_quote
     - paragraphs.paragraphs_type.quick_links
@@ -54,9 +52,7 @@ settings:
       callout: callout
       divider: divider
       embed: embed
-      event_cards: event_cards
       event_list: event_list
-      news_cards: news_cards
       news_list: news_list
       cta_banner: cta_banner
       custom_cards: custom_cards
