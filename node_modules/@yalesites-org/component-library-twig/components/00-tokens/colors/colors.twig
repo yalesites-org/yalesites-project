@@ -1,0 +1,20 @@
+{% set colors__base_class = "cl-colors" %}
+
+{% for color, colorset in _context.colors %}
+  <div {{ bem(colors__base_class) }}>
+    <h2>{{ color }}</h2>
+    <ul {{ bem('list', [], colors__base_class) }} data-theme="">
+      {% if colorset is iterable %}
+        {% for nested_color, nested_value in colorset %}
+          <li {{ bem("item", [], colors__base_class) }} style="background: var(--color-{{color}}-{{ nested_color }});">
+            <span {{ bem("title", [], colors__base_class) }}>--color-{{ color }}-{{ nested_color }}</span>
+          </li>
+        {% endfor %}
+      {% else %}
+        <li {{ bem("item", [], colors__base_class) }} style="background: var(--color-{{color}});">
+          <span {{ bem("title", [], colors__base_class) }}>--color-{{ color }}</span>
+        </li>
+      {% endif %}
+    </ul>
+  </div>
+{% endfor %}
