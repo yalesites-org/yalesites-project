@@ -1,0 +1,9 @@
+@use '../../00-tokens/tokens';
+
+.component-wrapper {
+  @include tokens.spacing-page-section;
+}
+
+.component-wrapper__heading {
+  margin-bottom: var(--spacing-page-section);
+}
