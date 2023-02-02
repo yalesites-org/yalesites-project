@@ -6,7 +6,6 @@ dependencies:
     - field.storage.node.field_content
     - node.type.page
     - paragraphs.paragraphs_type.accordion
-    - paragraphs.paragraphs_type.basic_view
     - paragraphs.paragraphs_type.callout
     - paragraphs.paragraphs_type.cta_banner
     - paragraphs.paragraphs_type.custom_cards
@@ -57,7 +56,6 @@ settings:
       news_list: news_list
       cta_banner: cta_banner
       custom_cards: custom_cards
-      basic_view: basic_view
       quick_links: quick_links
       tabs: tabs
       media_grid: media_grid
@@ -75,7 +73,7 @@ settings:
         enabled: false
       basic_view:
         weight: 32
-        enabled: true
+        enabled: false
       callout:
         weight: -28
         enabled: true
@@ -96,9 +94,6 @@ settings:
         enabled: true
       embed:
         weight: -26
-        enabled: true
-      event_cards:
-        weight: -25
         enabled: true
       event_list:
         weight: -24
@@ -121,9 +116,6 @@ settings:
       media_grid_item:
         weight: 39
         enabled: false
-      news_cards:
-        weight: -23
-        enabled: true
       news_list:
         weight: -22
         enabled: true
