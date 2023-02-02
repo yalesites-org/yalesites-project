@@ -74,6 +74,7 @@ module:
   path_alias: 0
   publishcontent: 0
   quick_node_clone: 0
+  r4032login: 0
   recaptcha: 0
   recaptcha_v3: 0
   redirect: 0
