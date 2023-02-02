@@ -4,7 +4,6 @@ status: true
 dependencies:
   config:
     - field.field.paragraph.text.field_text
-    - field.field.paragraph.text.field_text_left_align
     - paragraphs.paragraphs_type.text
   module:
     - allowed_formats
@@ -30,13 +29,6 @@ content:
         maxlength_js: null
         maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
         maxlength_js_enforce: false
-  field_text_left_align:
-    type: boolean_checkbox
-    weight: 2
-    region: content
-    settings:
-      display_label: true
-    third_party_settings: {  }
 hidden:
   created: true
   status: true
