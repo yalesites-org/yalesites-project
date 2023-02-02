@@ -1,1 +1,20 @@
-Display {{ params.types|join(', ') }} as {{ params.view_mode }}
+<div>
+  Display {{ params.types|join(', ') }} as {{ params.view_mode }}
+</div>
+<div>
+  {% if params.tags %}
+    Filtered by tag "{{ params.tags|join(', ') }}"
+  {% endif %}
+</div>
+<div>
+  {% if params.limit %}
+    Limited to
+    {% trans %}
+      {{ params.limit }} item
+      {% plural params.limit %}
+      {{ params.limit }} items
+    {% endtrans %}
+  {% else %}
+    Showing all items
+  {% endif %}
+</div>

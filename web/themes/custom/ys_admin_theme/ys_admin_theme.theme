@@ -4,3 +4,38 @@
  * @file
  * Functions to support the YaleSites admin theme.
  */
+
+use Drupal\node\Entity\Node;
+
+/**
+ * Implements hook_preprocess_HOOK() for page title templates.
+ */
+function ys_admin_theme_preprocess_page_title(&$variables) {
+  if (\Drupal::routeMatch()->getRouteName() == 'entity.node.edit_form') {
+    ys_admin_theme_set_title_on_node_edit_page($variables);
+  }
+}
+
+/**
+ * Set the page title on node edit forms.
+ *
+ * Override page title defined in gin/includes/page.theme. The name of the node
+ * bundle is prefixed to the title to improve the authoring experience.
+ *
+ * @param array $variables
+ *   The variables array.
+ *
+ * @todo Move <em> to a styled class in admin theme CSS.
+ */
+function ys_admin_theme_set_title_on_node_edit_page(array &$variables) {
+  $node = \Drupal::routeMatch()->getParameter('node');
+  if ($node instanceof Node) {
+    $bundle_label = \Drupal::entityTypeManager()
+      ->getStorage('node_type')
+      ->load($node->bundle())
+      ->label();
+    $variables['title'] = [
+      '#markup' => "<em>" . $bundle_label . ":</em> " . $node->getTitle(),
+    ];
+  }
+}

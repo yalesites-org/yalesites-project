@@ -6,6 +6,7 @@ dependencies:
     - field.field.node.page.field_banner
     - field.field.node.page.field_content
     - field.field.node.page.field_metatags
+    - field.field.node.page.field_tags
     - field.field.node.page.field_teaser_media
     - field.field.node.page.field_teaser_text
     - field.field.node.page.field_teaser_title
@@ -41,6 +42,7 @@ third_party_settings:
     group_content:
       children:
         - title
+        - field_tags
         - field_content
         - field_metatags
       label: Content
@@ -106,15 +108,15 @@ content:
         add_in_between: false
         add_in_between_link_count: 3
         delete_confirmation: false
-        split_text: false
         show_drag_and_drop: true
+        split_text: false
       paragraphs_ee:
         paragraphs_ee:
           dialog_off_canvas: false
           dialog_style: tiles
   field_content:
     type: layout_paragraphs
-    weight: 1
+    weight: 2
     region: content
     settings:
       preview_view_mode: preview
@@ -124,11 +126,21 @@ content:
     third_party_settings: {  }
   field_metatags:
     type: metatag_firehose
-    weight: 2
+    weight: 3
     region: content
     settings:
       sidebar: true
       use_details: true
+    third_party_settings: {  }
+  field_tags:
+    type: entity_reference_autocomplete_tags
+    weight: 1
+    region: content
+    settings:
+      match_operator: CONTAINS
+      match_limit: 10
+      size: 60
+      placeholder: ''
     third_party_settings: {  }
   field_teaser_media:
     type: media_library_widget

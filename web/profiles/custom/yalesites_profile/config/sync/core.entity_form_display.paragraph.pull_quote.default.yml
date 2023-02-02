@@ -48,7 +48,7 @@ third_party_settings:
     group_styles:
       children:
         - field_style_variation
-      label: Styles
+      label: 'Design Options'
       region: content
       parent_name: group_pull_quote_tabs
       weight: 7

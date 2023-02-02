@@ -1,0 +1,29 @@
+uuid: 1ff1f237-3c4e-437d-8570-c884f627bc93
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_tags
+    - node.type.news
+    - taxonomy.vocabulary.tags
+id: node.news.field_tags
+field_name: field_tags
+entity_type: node
+bundle: news
+label: Tags
+description: 'Separate tags with commas. Tags will autocomplete if one exists.'
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:taxonomy_term'
+  handler_settings:
+    target_bundles:
+      tags: tags
+    sort:
+      field: name
+      direction: asc
+    auto_create: true
+    auto_create_bundle: ''
+field_type: entity_reference

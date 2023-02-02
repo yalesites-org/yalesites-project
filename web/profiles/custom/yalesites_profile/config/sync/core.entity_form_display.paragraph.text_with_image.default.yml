@@ -61,7 +61,7 @@ third_party_settings:
         - field_style_position
         - field_style_width
         - field_style_variation
-      label: Styles
+      label: 'Design Options'
       region: content
       parent_name: group_text_with_image_tabs
       weight: 12

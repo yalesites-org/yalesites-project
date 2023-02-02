@@ -44,7 +44,7 @@ third_party_settings:
     group_styles:
       children:
         - field_style_color
-      label: Styles
+      label: 'Design Options'
       region: content
       parent_name: group_callout_tabs
       weight: 6

@@ -1,7 +1,21 @@
-id: 1660263375
-headline: 'Optional banner for displaying an announcement or notice'
-message: 'Additional text goes here'
-status: 1
-type: announcement
-link_title: ''
-link_url: ''
+alert_types:
+  -
+    id: announcement
+    label: Announcement
+    description: 'Announcement alerts are for sharing information relevant to the current site users'' actions and goals they are seeking to accomplish. This includes planned outages, closures, important deadlines, and COVID-19 info and regulations.'
+  -
+    id: marketing
+    label: Marketing
+    description: 'Marketing alerts are more accurately classified as informational announcements and are meant to share information related to the site that may be of interest to the user. These may include event promotion, survey inquiry, fundraiser donation, and other elevated calls to action that are temporary and timely.'
+  -
+    id: emergency
+    label: Emergency
+    description: 'Emergency alerts are for sharing information vital to the average user''s current situation. This includes lockdown/safety information, severe weather that requires people to take shelter, or other events with possible detrimental effects on ones safety. Only use this type of alert in the case of an extreme emergency.'
+alert:
+  id: 1660263375
+  headline: 'Optional banner for displaying an announcement or notice'
+  message: 'Additional text goes here'
+  status: 1
+  type: announcement
+  link_title: ''
+  link_url: ''

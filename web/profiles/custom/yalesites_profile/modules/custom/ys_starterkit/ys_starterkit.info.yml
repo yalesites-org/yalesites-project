@@ -2,7 +2,7 @@ type: module
 name: YaleSites Starter Kit
 description: 'Creates out of the box content and settings.'
 package: YaleSites
-core_version_requirement: ^8 || ^9
+core_version_requirement: '^9 || ^10'
 version: 1.0.0
 dependencies:
   - drupal:migrate

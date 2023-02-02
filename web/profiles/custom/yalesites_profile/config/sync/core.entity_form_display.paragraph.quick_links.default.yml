@@ -55,7 +55,7 @@ third_party_settings:
     group_styles:
       children:
         - field_style_variation
-      label: Styles
+      label: 'Design Options'
       region: content
       parent_name: group_quick_links_tabs
       weight: 9

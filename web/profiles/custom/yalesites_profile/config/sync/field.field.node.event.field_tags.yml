@@ -1,0 +1,29 @@
+uuid: 803d94f3-8a36-4115-ad0c-070b3af5845a
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_tags
+    - node.type.event
+    - taxonomy.vocabulary.tags
+id: node.event.field_tags
+field_name: field_tags
+entity_type: node
+bundle: event
+label: Tags
+description: 'Separate tags with commas. Tags will autocomplete if one exists.'
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:taxonomy_term'
+  handler_settings:
+    target_bundles:
+      tags: tags
+    sort:
+      field: name
+      direction: asc
+    auto_create: true
+    auto_create_bundle: ''
+field_type: entity_reference

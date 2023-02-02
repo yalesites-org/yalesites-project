@@ -24,9 +24,16 @@ class ViewsBasicFilter extends FilterPluginBase {
     $query = $this->query;
 
     // Parse content type filters.
-    // @todo Add taxonomy term as a filter. Code here: https://gist.github.com/marcb4k/fd4716eb133aa846f90a9e42c80def8c.
     foreach ($this->value['filters']['types'] as $content_type) {
       $query->addWhere($this->options['group'], 'type', $content_type);
+    }
+
+    // Parse tag filters.
+    if (!empty($this->value['filters']['tags'][0])) {
+      $tag_table = $query->addTable('node__field_tags');
+      foreach ($this->value['filters']['tags'] as $tid) {
+        $query->addWhere(0, "$tag_table.field_tags_target_id", $tid);
+      }
     }
   }
 

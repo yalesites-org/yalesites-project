@@ -7,6 +7,7 @@ dependencies:
     - field.field.node.news.field_content
     - field.field.node.news.field_metatags
     - field.field.node.news.field_publish_date
+    - field.field.node.news.field_tags
     - field.field.node.news.field_teaser_media
     - field.field.node.news.field_teaser_text
     - field.field.node.news.field_teaser_title
@@ -27,6 +28,7 @@ third_party_settings:
     group_content:
       children:
         - title
+        - field_tags
         - field_author
         - field_content
       label: Content
@@ -102,7 +104,7 @@ mode: default
 content:
   field_author:
     type: string_textfield
-    weight: 1
+    weight: 2
     region: content
     settings:
       size: 60
@@ -110,7 +112,7 @@ content:
     third_party_settings: {  }
   field_content:
     type: layout_paragraphs
-    weight: 2
+    weight: 3
     region: content
     settings:
       preview_view_mode: default
@@ -131,6 +133,16 @@ content:
     weight: 9
     region: content
     settings: {  }
+    third_party_settings: {  }
+  field_tags:
+    type: entity_reference_autocomplete_tags
+    weight: 1
+    region: content
+    settings:
+      match_operator: CONTAINS
+      match_limit: 10
+      size: 60
+      placeholder: ''
     third_party_settings: {  }
   field_teaser_media:
     type: media_library_widget
