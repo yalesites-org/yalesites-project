@@ -8,6 +8,7 @@
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\ys_core\NodeAccessHelpBlockOverride;
+use Drupal\Core\Block\BlockPluginInterface;
 
 /**
  * @file
@@ -149,7 +150,7 @@ function ys_core_local_tasks_alter(&$local_tasks) {
 /**
  * Implements hook_block_view_alter().
  */
-function ys_core_block_view_alter(array &$build, \Drupal\Core\Block\BlockPluginInterface $block) {
+function ys_core_block_view_alter(array &$build, BlockPluginInterface $block) {
   // Override help text on nodeaccess form.
   if ($block->getBaseId() === 'help_block' && \Drupal::routeMatch()->getRouteName() === 'entity.node.grants') {
     $build['#pre_render'][] = [NodeAccessHelpBlockOverride::class, 'preRender'];
