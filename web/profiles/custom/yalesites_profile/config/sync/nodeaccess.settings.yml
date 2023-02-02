@@ -72,12 +72,12 @@ page:
 role_alias:
   anonymous:
     allow: '1'
-    alias: 'Anonymous user'
+    alias: Everyone
     weight: '0'
     name: 'Anonymous user'
   authenticated:
     allow: '1'
-    alias: 'Authenticated user'
+    alias: 'CAS login required'
     weight: '0'
     name: 'Authenticated user'
   platform_admin:
