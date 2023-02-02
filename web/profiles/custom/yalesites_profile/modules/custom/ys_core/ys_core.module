@@ -142,7 +142,7 @@ function ys_core_preprocess_menu__main(&$variables) {
  */
 function ys_core_local_tasks_alter(&$local_tasks) {
   // Change default title from "Grants" as that can be confusing to editors.
-  if ($local_tasks['entity.node.grantform']) {
+  if (isset($local_tasks['entity.node.grantform'])) {
     $local_tasks['entity.node.grantform']['title'] = t('Visibility');
   }
 }
