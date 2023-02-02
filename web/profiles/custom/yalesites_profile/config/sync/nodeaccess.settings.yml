@@ -1,0 +1,101 @@
+_core:
+  default_config_hash: Zno4MMkbreZeJZgnY0DXCPksXkuYye3MyIFlVuh-xLc
+grants:
+  view: 1
+  edit: 0
+  delete: 0
+priority: 0
+preserve: 1
+event:
+  anonymous:
+    grant_view: '1'
+    grant_update: 0
+    grant_delete: 0
+  authenticated:
+    grant_view: '1'
+    grant_update: 0
+    grant_delete: 0
+  platform_admin:
+    grant_view: 0
+    grant_update: 0
+    grant_delete: 0
+  site_admin:
+    grant_view: 0
+    grant_update: 0
+    grant_delete: 0
+  author:
+    grant_view: 0
+    grant_update: 0
+    grant_delete: 0
+news:
+  anonymous:
+    grant_view: '1'
+    grant_update: 0
+    grant_delete: 0
+  authenticated:
+    grant_view: '1'
+    grant_update: 0
+    grant_delete: 0
+  platform_admin:
+    grant_view: 0
+    grant_update: 0
+    grant_delete: 0
+  site_admin:
+    grant_view: 0
+    grant_update: 0
+    grant_delete: 0
+  author:
+    grant_view: 0
+    grant_update: 0
+    grant_delete: 0
+page:
+  anonymous:
+    grant_view: '1'
+    grant_update: 0
+    grant_delete: 0
+  authenticated:
+    grant_view: '1'
+    grant_update: 0
+    grant_delete: 0
+  platform_admin:
+    grant_view: 0
+    grant_update: 0
+    grant_delete: 0
+  site_admin:
+    grant_view: 0
+    grant_update: 0
+    grant_delete: 0
+  author:
+    grant_view: 0
+    grant_update: 0
+    grant_delete: 0
+role_alias:
+  anonymous:
+    allow: '1'
+    alias: 'Anonymous user'
+    weight: '0'
+    name: 'Anonymous user'
+  authenticated:
+    allow: '1'
+    alias: 'Authenticated user'
+    weight: '0'
+    name: 'Authenticated user'
+  platform_admin:
+    alias: 'Platform administrator'
+    weight: '0'
+    name: 'Platform administrator'
+    allow: 0
+  site_admin:
+    alias: 'Site administrator'
+    weight: '0'
+    name: 'Site administrator'
+    allow: 0
+role_map:
+  anonymous: 1
+  authenticated: 2
+  platform_admin: 3
+  site_admin: 4
+allowed_types:
+  event: 1
+  news: 1
+  page: 1

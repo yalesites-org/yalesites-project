@@ -17,6 +17,7 @@ dependencies:
     - media
     - menu_admin_per_menu
     - node
+    - nodeaccess
     - override_node_options
     - paragraphs
     - path
@@ -42,6 +43,7 @@ permissions:
   - 'access user profiles'
   - 'access webform overview'
   - 'administer main menu items'
+  - 'administer nodeaccess'
   - 'administer users'
   - 'administer utility-navigation menu items'
   - 'clone event content'
@@ -94,6 +96,7 @@ permissions:
   - 'edit own page content'
   - 'edit own video media'
   - 'edit own webform submission'
+  - 'grant node permissions'
   - 'override all sticky option'
   - 'override news authored on option'
   - 'publish any content'

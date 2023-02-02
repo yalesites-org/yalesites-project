@@ -7,6 +7,7 @@
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\ys_core\NodeAccessHelpBlockOverride;
 
 /**
  * @file
@@ -55,6 +56,10 @@ function ys_core_theme($existing, $type, $theme, $path): array {
 function ys_core_form_alter(&$form, $form_state, $form_id) {
   if (isset($form['sticky'])) {
     $form['sticky']['widget']['value']['#title'] = t('Pin to the beginning of list');
+  }
+  // Override the submit button for the nodeaccess form submit for clarity.
+  if ($form_id == 'nodeaccess_grants_form') {
+    $form['submit']['#value'] = t('Save Visibility');
   }
 }
 
@@ -128,5 +133,25 @@ function ys_core_preprocess_menu__main(&$variables) {
     // Add cloned item to the beginning of the menu.
     array_unshift($menuItem['below'], $clonedMenuItem);
 
+  }
+}
+
+/**
+ * Implements hook_local_tasks_alter().
+ */
+function ys_core_local_tasks_alter(&$local_tasks) {
+  // Change default title from "Grants" as that can be confusing to editors.
+  if ($local_tasks['entity.node.grantform']) {
+    $local_tasks['entity.node.grantform']['title'] = t('Visibility');
+  }
+}
+
+/**
+ * Implements hook_block_view_alter().
+ */
+function ys_core_block_view_alter(array &$build, \Drupal\Core\Block\BlockPluginInterface $block) {
+  // Override help text on nodeaccess form.
+  if ($block->getBaseId() === 'help_block' && \Drupal::routeMatch()->getRouteName() === 'entity.node.grants') {
+    $build['#pre_render'][] = [NodeAccessHelpBlockOverride::class, 'preRender'];
   }
 }

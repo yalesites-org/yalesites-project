@@ -17,6 +17,7 @@ dependencies:
     - media
     - menu_admin_per_menu
     - node
+    - nodeaccess
     - override_node_options
     - paragraphs
     - path
@@ -95,6 +96,7 @@ permissions:
   - 'edit own page content'
   - 'edit own video media'
   - 'edit own webform submission'
+  - 'grant node permissions'
   - 'override all authored by option'
   - 'override all authored on option'
   - 'override all promote to front page option'
