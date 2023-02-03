@@ -1,0 +1,25 @@
+uuid: d5b0e784-68fc-4bdb-9fe4-6f8eb044a087
+langcode: en
+status: true
+dependencies:
+  module:
+    - block_in_page_403
+    - ys_node_access
+  theme:
+    - atomic
+id: yalesitescasloginblock
+theme: atomic
+region: content
+weight: -4
+provider: null
+plugin: ys_node_access_cas_login_block
+settings:
+  id: ys_node_access_cas_login_block
+  label: 'YaleSites CAS Login Block'
+  label_display: '0'
+  provider: ys_node_access
+visibility:
+  page_403:
+    id: page_403
+    page_403: 1
+    negate: false

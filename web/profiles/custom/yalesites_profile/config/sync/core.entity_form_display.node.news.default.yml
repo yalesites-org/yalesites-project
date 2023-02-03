@@ -5,6 +5,7 @@ dependencies:
   config:
     - field.field.node.news.field_author
     - field.field.node.news.field_content
+    - field.field.node.news.field_login_required
     - field.field.node.news.field_metatags
     - field.field.node.news.field_publish_date
     - field.field.node.news.field_tags
@@ -84,6 +85,7 @@ third_party_settings:
     group_publish_information:
       children:
         - field_publish_date
+        - field_login_required
       label: 'Publish Information'
       region: content
       parent_name: ''
@@ -119,6 +121,13 @@ content:
       nesting_depth: 0
       require_layouts: 0
       empty_message: ''
+    third_party_settings: {  }
+  field_login_required:
+    type: boolean_checkbox
+    weight: 10
+    region: content
+    settings:
+      display_label: true
     third_party_settings: {  }
   field_metatags:
     type: metatag_firehose

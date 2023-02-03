@@ -1,0 +1,92 @@
+<?php
+
+/**
+ * @file
+ * Contains ys_node_access.module functions.
+ */
+
+use Drupal\Core\Session\AccountInterface;
+
+define('YS_NODE_ACCESS_REALM', 'ys_node_access');
+define('YS_NODE_ACCESS_GRANT_ID_PUBLIC', 0);
+define('YS_NODE_ACCESS_GRANT_ID_PRIVATE', 1);
+
+/**
+ * Add template file for CAS login block.
+ *
+ * Implements hook_theme().
+ */
+function ys_node_access_theme($existing, $type, $theme, $path): array {
+  return [
+    'ys_cas_login_block' => [
+      'variables' => [
+        'destination_url' => NULL,
+      ],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_node_grants().
+ */
+function ys_node_access_node_grants($account, $op) {
+
+  // Only set grants for viewing a node.
+  if ($op == 'view') {
+    if (in_array(AccountInterface::AUTHENTICATED_ROLE, $account->getRoles())) {
+      // Set grants for authenticated users.
+      $grants[YS_NODE_ACCESS_REALM] = [
+        YS_NODE_ACCESS_GRANT_ID_PUBLIC,
+        YS_NODE_ACCESS_GRANT_ID_PRIVATE,
+      ];
+    }
+    else {
+      // Set grants for anonymous users.
+      $grants[YS_NODE_ACCESS_REALM] = [
+        YS_NODE_ACCESS_GRANT_ID_PUBLIC,
+      ];
+    }
+
+    return $grants;
+  }
+}
+
+/**
+ * Implements hook_node_access_records().
+ */
+function ys_node_access_node_access_records($node) {
+
+  // Saving a node, check login required field to set the appropriate grants.
+  if ($node->hasField('field_login_required')) {
+    if ($node->get('field_login_required')->getValue()[0]['value'] == 1) {
+      $private = TRUE;
+    }
+    else {
+      $private = FALSE;
+    }
+  }
+
+  // Update the node_access table for this node with the correct grants.
+  if ($private) {
+    $grants[] = [
+      'realm' => YS_NODE_ACCESS_REALM,
+      'gid' => YS_NODE_ACCESS_GRANT_ID_PRIVATE,
+      'grant_view' => 1,
+      'grant_update' => 0,
+      'grant_delete' => 0,
+      'priority' => 0,
+    ];
+  }
+  else {
+    $grants[] = [
+      'realm' => YS_NODE_ACCESS_REALM,
+      'gid' => YS_NODE_ACCESS_GRANT_ID_PUBLIC,
+      'grant_view' => 1,
+      'grant_update' => 0,
+      'grant_delete' => 0,
+      'priority' => 0,
+    ];
+  }
+
+  return $grants;
+}

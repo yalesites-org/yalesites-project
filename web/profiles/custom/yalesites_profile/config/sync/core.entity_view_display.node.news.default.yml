@@ -5,6 +5,7 @@ dependencies:
   config:
     - field.field.node.news.field_author
     - field.field.node.news.field_content
+    - field.field.node.news.field_login_required
     - field.field.node.news.field_metatags
     - field.field.node.news.field_publish_date
     - field.field.node.news.field_tags
@@ -38,6 +39,7 @@ content:
     weight: 1
     region: content
 hidden:
+  field_login_required: true
   field_metatags: true
   field_publish_date: true
   field_tags: true

@@ -6,6 +6,7 @@ module:
   admin_toolbar_tools: 0
   allowed_formats: 0
   block: 0
+  block_in_page_403: 0
   breakpoint: 0
   captcha: 0
   cas: 0
@@ -97,6 +98,7 @@ module:
   yale_cas: 0
   ys_alert: 0
   ys_captcha: 0
+  ys_node_access: 0
   ys_secrets: 0
   ys_views_basic: 0
   hide_revision_field: 1
