@@ -5,6 +5,7 @@ dependencies:
   config:
     - field.field.node.page.field_banner
     - field.field.node.page.field_content
+    - field.field.node.page.field_content_title
     - field.field.node.page.field_metatags
     - field.field.node.page.field_tags
     - field.field.node.page.field_teaser_media
@@ -16,6 +17,7 @@ dependencies:
     - field_group
     - hide_revision_field
     - layout_paragraphs
+    - markup
     - maxlength
     - media_library
     - metatag
@@ -41,6 +43,7 @@ third_party_settings:
         width_breakpoint: 640
     group_content:
       children:
+        - field_content_title
         - title
         - field_tags
         - field_content
@@ -55,7 +58,7 @@ third_party_settings:
         show_empty_fields: false
         id: ''
         formatter: open
-        description: ''
+        description: 'Test description here'
         required_fields: true
     group_teaser:
       children:
@@ -66,18 +69,19 @@ third_party_settings:
       region: content
       parent_name: group_wrapper
       weight: 15
-      format_type: tab
+      format_type: details_sidebar
       format_settings:
         classes: ''
         show_empty_fields: false
         id: ''
-        formatter: closed
+        open: true
         description: ''
         required_fields: true
+        weight: -10
     group_hero:
       children:
         - field_banner
-      label: Banner
+      label: 'Intro Banner'
       region: content
       parent_name: group_wrapper
       weight: 16
@@ -116,7 +120,7 @@ content:
           dialog_style: tiles
   field_content:
     type: layout_paragraphs
-    weight: 2
+    weight: 84
     region: content
     settings:
       preview_view_mode: preview
@@ -124,9 +128,15 @@ content:
       require_layouts: 0
       empty_message: ''
     third_party_settings: {  }
+  field_content_title:
+    type: markup
+    weight: 81
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_metatags:
     type: metatag_firehose
-    weight: 3
+    weight: 85
     region: content
     settings:
       sidebar: true
@@ -134,7 +144,7 @@ content:
     third_party_settings: {  }
   field_tags:
     type: entity_reference_autocomplete_tags
-    weight: 1
+    weight: 83
     region: content
     settings:
       match_operator: CONTAINS
@@ -199,7 +209,7 @@ content:
     third_party_settings: {  }
   title:
     type: string_textfield
-    weight: 0
+    weight: 82
     region: content
     settings:
       size: 60

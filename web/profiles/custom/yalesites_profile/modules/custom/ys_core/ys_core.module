@@ -56,6 +56,20 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
   if (isset($form['sticky'])) {
     $form['sticky']['widget']['value']['#title'] = t('Pin to the beginning of list');
   }
+
+  // Form ID's of forms to add Javascript interaction.
+  $nodeForms = [
+    'node_page_form',
+    'node_page_edit_form',
+    'node_event_form',
+    'node_event_edit_form',
+    'node_news_form',
+    'node_news_edit_form',
+  ];
+
+  if (in_array($form_id, $nodeForms)) {
+    $form['#attached']['library'][] = 'ys_core/node_edit_form';
+  }
 }
 
 /**

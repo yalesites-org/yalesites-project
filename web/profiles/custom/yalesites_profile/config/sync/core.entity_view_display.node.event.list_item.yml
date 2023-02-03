@@ -5,6 +5,7 @@ dependencies:
   config:
     - core.entity_view_mode.node.list_item
     - field.field.node.event.field_content
+    - field.field.node.event.field_content_title
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_format
@@ -75,6 +76,7 @@ content:
     weight: 1
     region: content
 hidden:
+  field_content_title: true
   field_event_cta: true
   field_metatags: true
   field_tags: true
