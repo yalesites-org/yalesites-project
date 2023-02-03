@@ -1,0 +1,17 @@
+{#
+ # Available Props:
+ # - placeholder__type: component (default) or element
+ #}
+
+{% set placeholder__base_class = 'placeholder' %}
+
+{% set placeholder__attributes = {
+  class: bem(placeholder__base_class),
+  'data-placeholder-type': placeholder__type|default('component'),
+} %}
+
+<section {{ add_attributes(placeholder__attributes) }}>
+  <div {{ bem('content', placeholder__modifiers, placeholder__base_class) }}>
+    {{ placeholder|default('Placeholder') }}
+  </div>
+</section>
