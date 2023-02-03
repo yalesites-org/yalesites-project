@@ -69,6 +69,7 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
 
   if (in_array($form_id, $nodeForms)) {
     $form['#attached']['library'][] = 'ys_core/node_edit_form';
+    unset($form['field_content']['widget']['#title']);
   }
 }
 
