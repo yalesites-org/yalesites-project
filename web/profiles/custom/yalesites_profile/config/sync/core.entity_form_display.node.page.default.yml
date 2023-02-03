@@ -58,7 +58,7 @@ third_party_settings:
         show_empty_fields: false
         id: ''
         formatter: open
-        description: 'Test description here'
+        description: ''
         required_fields: true
     group_teaser:
       children:

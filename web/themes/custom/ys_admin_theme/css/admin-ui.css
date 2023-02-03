@@ -7,8 +7,11 @@
   color: transparent !important;
 }
 
-.field--name-field-content fieldset {
+.field--name-field-content .fieldset {
   border: 0;
+}
+.field--name-field-content .fieldset__wrapper {
+  margin: 0;
 }
 
 .field--name-field-content-title {
