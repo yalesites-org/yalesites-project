@@ -6,6 +6,7 @@
  */
 
 use Drupal\Core\Session\AccountInterface;
+use Drupal\ys_node_access\NodeAccessManager;
 
 define('YS_NODE_ACCESS_REALM', 'ys_node_access');
 define('YS_NODE_ACCESS_GRANT_ID_PUBLIC', 0);
@@ -30,20 +31,21 @@ function ys_node_access_theme($existing, $type, $theme, $path): array {
  * Implements hook_node_grants().
  */
 function ys_node_access_node_grants($account, $op) {
+  $nodeAccessManager = new NodeAccessManager();
 
   // Only set grants for viewing a node.
   if ($op == 'view') {
     if (in_array(AccountInterface::AUTHENTICATED_ROLE, $account->getRoles())) {
       // Set grants for authenticated users.
-      $grants[YS_NODE_ACCESS_REALM] = [
-        YS_NODE_ACCESS_GRANT_ID_PUBLIC,
-        YS_NODE_ACCESS_GRANT_ID_PRIVATE,
+      $grants[$nodeAccessManager::YS_NODE_ACCESS_REALM] = [
+        $nodeAccessManager::YS_NODE_ACCESS_GRANT_ID_PUBLIC,
+        $nodeAccessManager::YS_NODE_ACCESS_GRANT_ID_PRIVATE,
       ];
     }
     else {
       // Set grants for anonymous users.
-      $grants[YS_NODE_ACCESS_REALM] = [
-        YS_NODE_ACCESS_GRANT_ID_PUBLIC,
+      $grants[$nodeAccessManager::YS_NODE_ACCESS_REALM] = [
+        $nodeAccessManager::YS_NODE_ACCESS_GRANT_ID_PUBLIC,
       ];
     }
 
@@ -56,6 +58,7 @@ function ys_node_access_node_grants($account, $op) {
  */
 function ys_node_access_node_access_records($node) {
 
+  $nodeAccessManager = new NodeAccessManager();
   // Saving a node, check login required field to set the appropriate grants.
   if ($node->hasField('field_login_required')) {
     if ($node->get('field_login_required')->getValue()[0]['value'] == 1) {
@@ -69,8 +72,8 @@ function ys_node_access_node_access_records($node) {
   // Update the node_access table for this node with the correct grants.
   if ($private) {
     $grants[] = [
-      'realm' => YS_NODE_ACCESS_REALM,
-      'gid' => YS_NODE_ACCESS_GRANT_ID_PRIVATE,
+      'realm' => $nodeAccessManager::YS_NODE_ACCESS_REALM,
+      'gid' => $nodeAccessManager::YS_NODE_ACCESS_GRANT_ID_PRIVATE,
       'grant_view' => 1,
       'grant_update' => 0,
       'grant_delete' => 0,
@@ -79,8 +82,8 @@ function ys_node_access_node_access_records($node) {
   }
   else {
     $grants[] = [
-      'realm' => YS_NODE_ACCESS_REALM,
-      'gid' => YS_NODE_ACCESS_GRANT_ID_PUBLIC,
+      'realm' => $nodeAccessManager::YS_NODE_ACCESS_REALM,
+      'gid' => $nodeAccessManager::YS_NODE_ACCESS_GRANT_ID_PUBLIC,
       'grant_view' => 1,
       'grant_update' => 0,
       'grant_delete' => 0,
