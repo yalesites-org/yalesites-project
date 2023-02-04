@@ -12,6 +12,7 @@ dependencies:
     - node.type.news
     - node.type.page
   module:
+    - editoria11y
     - file
     - media
     - menu_admin_per_menu
@@ -93,6 +94,7 @@ permissions:
   - 'edit own page content'
   - 'edit own video media'
   - 'edit own webform submission'
+  - 'mark as hidden in editoria11y'
   - 'override all sticky option'
   - 'override news authored on option'
   - 'publish any content'
@@ -108,6 +110,7 @@ permissions:
   - 'view all media revisions'
   - 'view all revisions'
   - 'view any webform submission'
+  - 'view editoria11y checker'
   - 'view event revisions'
   - 'view news revisions'
   - 'view own unpublished content'

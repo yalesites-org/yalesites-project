@@ -27,6 +27,7 @@ module:
   devel_kint_extras: 0
   dynamic_page_cache: 0
   editor: 0
+  editoria11y: 0
   emulsify_twig: 0
   entity_reference_revisions: 0
   field: 0
