@@ -8,10 +8,6 @@
 use Drupal\Core\Session\AccountInterface;
 use Drupal\ys_node_access\NodeAccessManager;
 
-define('YS_NODE_ACCESS_REALM', 'ys_node_access');
-define('YS_NODE_ACCESS_GRANT_ID_PUBLIC', 0);
-define('YS_NODE_ACCESS_GRANT_ID_PRIVATE', 1);
-
 /**
  * Add template file for CAS login block.
  *
