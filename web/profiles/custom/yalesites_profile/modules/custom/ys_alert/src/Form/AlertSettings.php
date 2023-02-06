@@ -217,4 +217,5 @@ class AlertSettings extends ConfigFormBase {
   public function updateAlertDescriptionWrapperCallback(array $form, FormStateInterface $form_state) {
     return $form['type_description_wrapper'];
   }
+
 }
