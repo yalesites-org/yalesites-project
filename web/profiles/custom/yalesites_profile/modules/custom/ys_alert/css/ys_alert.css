@@ -1,3 +1,4 @@
+/* Form custom styles */
 .ys-alert-settings .form-radios {
   display: flex;
 }
@@ -21,8 +22,11 @@
   background-size: contain;
   background-repeat: no-repeat;
   display: inline-block;
-  width: 132px;
-  padding-top: 100px;
+  width: 127px;
+  height: 0px;
+  padding-top: 92px;
+  border: 2px solid transparent;
+  border-radius: 13px;
 }
 
 .ys-alert-settings .form-radios .form-item > label[for=edit-type-announcement] {
@@ -35,4 +39,45 @@
 
 .ys-alert-settings .form-radios .form-type--radio > label[for=edit-type-emergency] {
   background-image: url('../images/emergency.svg');
+}
+
+.ys-alert-settings .form-boolean--type-radio:checked:not(:disabled) + label {
+  border-color: #5B81FF;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+/* Module custom styles */
+.confirm-dialog.ui-dialog .ui-dialog-titlebar {
+  background-color: #D52020;
+  display: flex;
+}
+
+.confirm-dialog .ui-dialog-titlebar::before {
+  content: "";
+  background-image: url('../images/emergency-icon.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  width: 28px;
+  height: 24px;
+  display: inline-block;
+}
+
+.confirm-dialog .ui-dialog-title {
+  margin-left: 19px;
+  padding-top: 3px;
+}
+
+.confirm-dialog.ui-dialog .ui-dialog-titlebar-close {
+  top: 12px;
+}
+
+.confirm-dialog.ui-dialog .ui-widget-content.ui-dialog-content {
+  padding-top: 30px;
+  padding-bottom: 30px;
+}
+
+.confirm-dialog.ui-dialog .ui-widget-content.ui-dialog-buttonpane {
+  display: flex;
+  justify-content: flex-end;
+  border-top: none;
 }
