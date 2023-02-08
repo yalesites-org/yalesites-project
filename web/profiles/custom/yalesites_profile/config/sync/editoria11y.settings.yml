@@ -1,11 +1,15 @@
 _core:
-  default_config_hash: NGxFi-xycxrzrGVZtCUl7MACi0jVRk130tNabvIN6ng
+  default_config_hash: kIV1woSIwQ7BBcHoAOpa8a26XrvI2jcZbfTjDbLysno
 content_root: ''
 no_load: ''
-ignore_containers: ''
+ignore_elements: ''
 embedded_content_warning: ''
-allow_overflow: ''
 assertiveness: smart
 download_links: ''
 ignore_link_strings: ''
 hidden_handlers: ''
+ignore_all_if_absent: ''
+ed11y_theme: lightTheme
+shadow_components: ''
+disable_sync: false
+preserve_params: 'search,keys,page,language,language_content_entity'

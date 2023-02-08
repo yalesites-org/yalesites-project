@@ -94,6 +94,7 @@ permissions:
   - 'edit own page content'
   - 'edit own video media'
   - 'edit own webform submission'
+  - 'mark as hidden in editoria11y'
   - 'override all sticky option'
   - 'override news authored on option'
   - 'publish any content'
