@@ -49,6 +49,7 @@ module:
   linkit: 0
   mailchimp_transactional: 0
   mailsystem: 0
+  markup: 0
   maxlength: 0
   media: 0
   media_library: 0

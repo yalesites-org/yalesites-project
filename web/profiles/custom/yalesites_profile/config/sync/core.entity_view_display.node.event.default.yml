@@ -4,6 +4,7 @@ status: true
 dependencies:
   config:
     - field.field.node.event.field_content
+    - field.field.node.event.field_content_title
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_format
@@ -66,6 +67,7 @@ content:
     weight: 2
     region: content
 hidden:
+  field_content_title: true
   field_metatags: true
   field_tags: true
   field_teaser_media: true

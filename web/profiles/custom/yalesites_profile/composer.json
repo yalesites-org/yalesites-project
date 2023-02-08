@@ -37,6 +37,7 @@
     "drupal/linkit": "^6.0@beta",
     "drupal/mailchimp_transactional": "^1.0",
     "drupal/mailsystem": "^4.3",
+    "drupal/markup": "^1.0@beta",
     "drupal/maxlength": "^2.0@RC",
     "drupal/media_library_edit": "^3.0",
     "drupal/menu_admin_per_menu": "^1.4",
