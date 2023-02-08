@@ -1,0 +1,25 @@
+uuid: b75bd46a-00c4-4eb2-80a5-b705cb3be9e4
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_content_title
+    - node.type.event
+  module:
+    - markup
+id: node.event.field_content_title
+field_name: field_content_title
+entity_type: node
+bundle: event
+label: 'Content Title'
+description: ''
+required: false
+translatable: true
+default_value:
+  - {  }
+default_value_callback: ''
+settings:
+  markup:
+    value: "<h2>Page Content</h2>\r\n"
+    format: basic_html
+field_type: markup

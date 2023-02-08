@@ -7,6 +7,7 @@ dependencies:
     - field.field.node.news.field_author
     - field.field.node.news.field_content
     - field.field.node.news.field_login_required
+    - field.field.node.news.field_content_title
     - field.field.node.news.field_metatags
     - field.field.node.news.field_publish_date
     - field.field.node.news.field_tags
@@ -30,6 +31,7 @@ hidden:
   field_author: true
   field_content: true
   field_login_required: true
+  field_content_title: true
   field_metatags: true
   field_publish_date: true
   field_tags: true

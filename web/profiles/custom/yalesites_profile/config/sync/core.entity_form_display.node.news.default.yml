@@ -6,6 +6,7 @@ dependencies:
     - field.field.node.news.field_author
     - field.field.node.news.field_content
     - field.field.node.news.field_login_required
+    - field.field.node.news.field_content_title
     - field.field.node.news.field_metatags
     - field.field.node.news.field_publish_date
     - field.field.node.news.field_tags
@@ -19,6 +20,7 @@ dependencies:
     - field_group
     - hide_revision_field
     - layout_paragraphs
+    - markup
     - maxlength
     - media_library
     - metatag
@@ -28,6 +30,7 @@ third_party_settings:
   field_group:
     group_content:
       children:
+        - field_content_title
         - title
         - field_tags
         - field_author
@@ -56,17 +59,15 @@ third_party_settings:
       region: content
       parent_name: group_wrapper
       weight: 4
-      format_type: tab
+      format_type: details_sidebar
       format_settings:
         classes: ''
         show_empty_fields: false
         id: ''
-        formatter: closed
+        open: true
         description: ''
         required_fields: true
-        direction: vertical
-        width_breakpoint: 640
-        effect: none
+        weight: -10
     group_wrapper:
       children:
         - group_content
@@ -106,7 +107,7 @@ mode: default
 content:
   field_author:
     type: string_textfield
-    weight: 2
+    weight: 15
     region: content
     settings:
       size: 60
@@ -114,10 +115,10 @@ content:
     third_party_settings: {  }
   field_content:
     type: layout_paragraphs
-    weight: 3
+    weight: 16
     region: content
     settings:
-      preview_view_mode: default
+      preview_view_mode: preview
       nesting_depth: 0
       require_layouts: 0
       empty_message: ''
@@ -128,6 +129,11 @@ content:
     region: content
     settings:
       display_label: true
+  field_content_title:
+    type: markup
+    weight: 12
+    region: content
+    settings: {  }
     third_party_settings: {  }
   field_metatags:
     type: metatag_firehose
@@ -145,7 +151,7 @@ content:
     third_party_settings: {  }
   field_tags:
     type: entity_reference_autocomplete_tags
-    weight: 1
+    weight: 14
     region: content
     settings:
       match_operator: CONTAINS
@@ -217,7 +223,7 @@ content:
     third_party_settings: {  }
   title:
     type: string_textfield
-    weight: 0
+    weight: 13
     region: content
     settings:
       size: 60
