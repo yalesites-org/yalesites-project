@@ -1,6 +1,6 @@
 services:
   ys_node_access.access_denied:
     class: Drupal\ys_node_access\EventSubscriber\NodeAccessEventSubscriber
-    arguments: ['@current_user']
+    arguments: ['@current_user', '@path_alias.manager', '@entity_type.manager']
     tags:
       - {name: event_subscriber}

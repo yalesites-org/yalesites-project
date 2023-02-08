@@ -7,6 +7,8 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Drupal\path_alias\AliasManager;
+use Drupal\Core\Entity\EntityTypeManager;
 
 /**
  * Overrides the 403 response to perform a CAS redirect for specific pages.
@@ -21,13 +23,33 @@ class NodeAccessEventSubscriber extends HttpExceptionSubscriberBase {
   protected $currentUser;
 
   /**
+   * The path alias manager.
+   *
+   * @var \Drupal\path_alias\AliasManager
+   */
+  protected $pathAlias;
+
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManager
+   */
+  protected $entityTypeManager;
+
+  /**
    * The construct for this class.
    *
    * @param Drupal\Core\Session\AccountInterface $current_user
    *   The current user service.
+   * @param Drupal\path_alias\AliasManager $path_alias
+   *   The path alias manager.
+   * @param Drupal\Core\Entity\EntityTypeManager $entity_type_manager
+   *   The entity type manager.
    */
-  public function __construct(AccountInterface $current_user) {
+  public function __construct(AccountInterface $current_user, AliasManager $path_alias, EntityTypeManager $entity_type_manager) {
     $this->currentUser = $current_user;
+    $this->pathAlias = $path_alias;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -49,14 +71,14 @@ class NodeAccessEventSubscriber extends HttpExceptionSubscriberBase {
       $path = $event->getRequest()->getPathInfo();
 
       // Convert path alias into node object.
-      $internalPath = \Drupal::service('path_alias.manager')->getPathByAlias($path);
+      $internalPath = $this->pathAlias->getPathByAlias($path);
       $params = Url::fromUri("internal:" . $internalPath)->getRouteParameters();
       $entityType = key($params);
 
       // Make sure this is a node.
       if ($entityType == 'node') {
         /** @var \Drupal\node\Entity $node */
-        $node = \Drupal::entityTypeManager()->getStorage($entityType)->load($params[$entityType]);
+        $node = $this->entityTypeManager->getStorage($entityType)->load($params[$entityType]);
 
         /* Check to see if node is set to require login only.
          * If so, redirect to CAS login.
