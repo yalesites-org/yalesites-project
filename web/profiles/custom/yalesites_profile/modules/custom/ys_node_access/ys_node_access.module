@@ -9,21 +9,6 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\ys_node_access\NodeAccessManager;
 
 /**
- * Add template file for CAS login block.
- *
- * Implements hook_theme().
- */
-function ys_node_access_theme($existing, $type, $theme, $path): array {
-  return [
-    'ys_cas_login_block' => [
-      'variables' => [
-        'destination_url' => NULL,
-      ],
-    ],
-  ];
-}
-
-/**
  * Implements hook_node_grants().
  */
 function ys_node_access_node_grants($account, $op) {
