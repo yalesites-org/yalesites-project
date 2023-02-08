@@ -151,6 +151,7 @@ content:
     region: content
     settings:
       display_label: true
+    third_party_settings: {  }
   field_content_title:
     type: markup
     weight: 81
