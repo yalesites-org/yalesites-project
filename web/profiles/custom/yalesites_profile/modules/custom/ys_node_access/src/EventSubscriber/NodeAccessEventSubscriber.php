@@ -67,24 +67,18 @@ class NodeAccessEventSubscriber extends HttpExceptionSubscriberBase {
    */
   public function on403(ExceptionEvent $event) {
     if ($this->currentUser->isAnonymous()) {
+
       // Get path alias.
       $path = $event->getRequest()->getPathInfo();
 
-      // Convert path alias into node object.
-      $internalPath = $this->pathAlias->getPathByAlias($path);
-      $params = Url::fromUri("internal:" . $internalPath)->getRouteParameters();
-      $entityType = key($params);
-
       // Make sure this is a node.
-      if ($entityType == 'node') {
-        /** @var \Drupal\node\Entity $node */
-        $node = $this->entityTypeManager->getStorage($entityType)->load($params[$entityType]);
+      if ($node = $event->getRequest()->attributes->get('node')) {
 
         /* Check to see if node is set to require login only.
          * If so, redirect to CAS login.
          */
         if ($node->hasField('field_login_required')) {
-          if ($node->get('field_login_required')->getValue()[0]['value']) {
+          if (!$node->field_login_required->isEmpty()) {
             $casRedirectUrl = Url::fromRoute('cas.login', ['destination' => $path])->toString();
             $returnResponse = new RedirectResponse($casRedirectUrl);
             $event->setResponse($returnResponse);
