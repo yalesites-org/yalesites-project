@@ -8,7 +8,6 @@ use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Drupal\path_alias\AliasManager;
-use Drupal\Core\Entity\EntityTypeManager;
 
 /**
  * Overrides the 403 response to perform a CAS redirect for specific pages.
@@ -43,13 +42,10 @@ class NodeAccessEventSubscriber extends HttpExceptionSubscriberBase {
    *   The current user service.
    * @param Drupal\path_alias\AliasManager $path_alias
    *   The path alias manager.
-   * @param Drupal\Core\Entity\EntityTypeManager $entity_type_manager
-   *   The entity type manager.
    */
-  public function __construct(AccountInterface $current_user, AliasManager $path_alias, EntityTypeManager $entity_type_manager) {
+  public function __construct(AccountInterface $current_user, AliasManager $path_alias) {
     $this->currentUser = $current_user;
     $this->pathAlias = $path_alias;
-    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
