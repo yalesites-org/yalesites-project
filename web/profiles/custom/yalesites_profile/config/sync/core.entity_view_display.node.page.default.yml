@@ -5,6 +5,7 @@ dependencies:
   config:
     - field.field.node.page.field_banner
     - field.field.node.page.field_content
+    - field.field.node.page.field_login_required
     - field.field.node.page.field_content_title
     - field.field.node.page.field_metatags
     - field.field.node.page.field_tags
@@ -40,6 +41,7 @@ content:
     weight: 1
     region: content
 hidden:
+  field_login_required: true
   field_content_title: true
   field_metatags: true
   field_tags: true

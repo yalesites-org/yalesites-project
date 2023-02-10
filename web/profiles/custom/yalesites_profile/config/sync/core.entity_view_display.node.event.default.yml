@@ -8,6 +8,7 @@ dependencies:
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_format
+    - field.field.node.event.field_login_required
     - field.field.node.event.field_metatags
     - field.field.node.event.field_tags
     - field.field.node.event.field_teaser_media
@@ -67,6 +68,7 @@ content:
     weight: 2
     region: content
 hidden:
+  field_login_required: true
   field_content_title: true
   field_metatags: true
   field_tags: true

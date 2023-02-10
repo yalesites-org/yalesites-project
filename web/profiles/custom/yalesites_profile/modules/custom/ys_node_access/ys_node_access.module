@@ -1,0 +1,76 @@
+<?php
+
+/**
+ * @file
+ * Contains ys_node_access.module functions.
+ */
+
+use Drupal\Core\Session\AccountInterface;
+use Drupal\ys_node_access\NodeAccessManager;
+
+/**
+ * Implements hook_node_grants().
+ */
+function ys_node_access_node_grants($account, $op) {
+  $nodeAccessManager = new NodeAccessManager();
+
+  // Only set grants for viewing a node.
+  if ($op == 'view') {
+    if (in_array(AccountInterface::AUTHENTICATED_ROLE, $account->getRoles())) {
+      // Set grants for authenticated users.
+      $grants[$nodeAccessManager::YS_NODE_ACCESS_REALM] = [
+        $nodeAccessManager::YS_NODE_ACCESS_GRANT_ID_PUBLIC,
+        $nodeAccessManager::YS_NODE_ACCESS_GRANT_ID_PRIVATE,
+      ];
+    }
+    else {
+      // Set grants for anonymous users.
+      $grants[$nodeAccessManager::YS_NODE_ACCESS_REALM] = [
+        $nodeAccessManager::YS_NODE_ACCESS_GRANT_ID_PUBLIC,
+      ];
+    }
+
+    return $grants;
+  }
+}
+
+/**
+ * Implements hook_node_access_records().
+ */
+function ys_node_access_node_access_records($node) {
+
+  $nodeAccessManager = new NodeAccessManager();
+  // Saving a node, check login required field to set the appropriate grants.
+  if ($node->hasField('field_login_required')) {
+    if ($node->get('field_login_required')->getValue()[0]['value'] == 1) {
+      $private = TRUE;
+    }
+    else {
+      $private = FALSE;
+    }
+  }
+
+  // Update the node_access table for this node with the correct grants.
+  if ($private) {
+    $grants[] = [
+      'realm' => $nodeAccessManager::YS_NODE_ACCESS_REALM,
+      'gid' => $nodeAccessManager::YS_NODE_ACCESS_GRANT_ID_PRIVATE,
+      'grant_view' => 1,
+      'grant_update' => 0,
+      'grant_delete' => 0,
+      'priority' => 0,
+    ];
+  }
+  else {
+    $grants[] = [
+      'realm' => $nodeAccessManager::YS_NODE_ACCESS_REALM,
+      'gid' => $nodeAccessManager::YS_NODE_ACCESS_GRANT_ID_PUBLIC,
+      'grant_view' => 1,
+      'grant_update' => 0,
+      'grant_delete' => 0,
+      'priority' => 0,
+    ];
+  }
+
+  return $grants;
+}
