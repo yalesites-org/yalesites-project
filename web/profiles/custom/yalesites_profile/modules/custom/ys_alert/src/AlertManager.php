@@ -99,6 +99,20 @@ class AlertManager implements ContainerInjectionInterface {
   }
 
   /**
+   * Get the alert type label from its id.
+   *
+   * @param string $id
+   *   The id for a given alert type defined in the config file.
+   *
+   * @return string
+   *   The label for a given alert or an empty string.
+   */
+  public function getTypeLabel(string $id): string {
+    $type = $this->getTypeById($id);
+    return !empty($type['label']) ? $type['label'] : '';
+  }
+
+  /**
    * Get alert data.
    *
    * @return array
