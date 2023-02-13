@@ -68,12 +68,15 @@
 
   &--left {
     left: 0;
+    z-index: -1;
 
     [data-scroll-indicator='left'] &,
     [data-scroll-indicator='both'] & {
       opacity: 1;
+      z-index: 0;
     }
 
+    [data-scroll-indicator='none'],
     [data-scroll-indicator='right'] & {
       @include tokens.animate-hidden;
     }
@@ -82,12 +85,15 @@
   &--right {
     right: 0;
     transform: rotate(-180deg);
+    z-index: -1;
 
     [data-scroll-indicator='right'] &,
     [data-scroll-indicator='both'] & {
       opacity: 1;
+      z-index: 0;
     }
 
+    [data-scroll-indicator='none'] &,
     [data-scroll-indicator='left'] & {
       @include tokens.animate-hidden;
     }

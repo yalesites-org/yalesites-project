@@ -138,13 +138,21 @@ $link-themes: map.deep-get(sass-tokens.$tokens, color, link, theme);
   }
 }
 
-.text-field a {
-  @include link;
-}
-
 .link {
   &[data-link-style='underline'] {
     @include link;
+  }
+
+  &[data-link-style='underline-with-icon'] {
+    @include link;
+
+    --color-text-shadow: var(--color-basic-white);
+
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    width: fit-content;
+    background-size: calc(100% - var(--size-spacing-3)) var(--thickness);
   }
 
   &[data-link-style='no-underline'] {

@@ -1,12 +1,6 @@
 {# @TODO: Look into refactoring this to use the list component, if possible. #}
 {# @LINK: https://yaleits.atlassian.net/browse/YALB-658 #}
 {#
- # Available Props:
- # - tabs__component: boolean. The Drupal editorial "tabs" are not a true
- #    tablist, so, while they share the visual styles, they should not share all
- #    of the a11y/semantic markup. This allows us to "turn off" those featuers
- #    that should not be there in that case.
- #
  # Available Variables:
  # - tabs__id: unique ID used to differentiate multiple tab sets on a page.
  # - tabs: Array of tabs with the following properties.
@@ -16,7 +10,6 @@
 
 {% set tabs__base_class = 'tabs' %}
 {% set tabs__id = tabs__id|default(random()) %}
-{% set tablist = tabs__component == 'false' ? '' : 'role="tablist"' %}
 
 {% set icon_left %}
   {% include "@atoms/images/icons/_yds-icon.twig" with {
@@ -53,7 +46,7 @@
         'tabindex': '-1',
       },
     } %}
-    <ul {{ bem('nav', [], tabs__base_class) }} {{ tablist }}>
+    <ul {{ bem('nav', [], tabs__base_class) }} role="tablist">
       {% block tab__label %}
         {% for key, tab in tabs %}
           {% include "@molecules/tabs/_yds-tab-label.twig" %}

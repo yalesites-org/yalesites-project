@@ -1,8 +1,10 @@
 import imageTwig from './image/yds-image.twig';
 import iconsTwig from './icons/yds-icons.twig';
+import faIconsTwig from './fa-icons/yds-fa-icons.twig';
 
 import imageData from './image/image.yml';
 import figureData from './image/figure.yml';
+import faIconData from './fa-icons/fa-icons.yml';
 
 import './image/cl-image.scss';
 import './icons/cl-icons.scss';
@@ -49,3 +51,5 @@ export const Images = () => `
 export const Figures = () => imageTwig(figureData);
 
 export const Icons = () => iconsTwig({ icons });
+
+export const FAIcons = () => faIconsTwig(faIconData);

@@ -1,6 +1,8 @@
 import ctaTwig from './cta/yds-cta.twig';
 import linkTwig from './text-link/yds-text-link.twig';
 
+import './text-link/yds-text-link';
+
 /**
  * Storybook Definition.
  */
@@ -107,7 +109,7 @@ export const Cta = () => `
 
 export const textLink = () => `
   ${linkTwig({
-    link__url: '#',
+    link__url: 'http://localhost:6006',
     link__content: 'This is a default link',
     link__attributes: {
       target: '_blank',
@@ -117,10 +119,42 @@ export const textLink = () => `
     link__url: '#',
     link__content: 'This is a "no-underline" link',
     link__style: 'no-underline',
+    link__type: 'normal',
   })}<br />
+  ${linkTwig({
+    link__url: '#',
+    link__content: 'This is an "external" link',
+    link__style: 'underline-with-icon',
+    link__type: 'external',
+  })}
+  ${linkTwig({
+    link__url: '#',
+    link__content: 'This is a "new target" link',
+    link__style: 'underline-with-icon',
+    link__type: 'target-blank',
+  })}
+  ${linkTwig({
+    link__url: '#',
+    link__content: 'This is a "download" link',
+    link__style: 'underline-with-icon',
+    link__type: 'download',
+  })}
+  ${linkTwig({
+    link__url: '#',
+    link__content: 'This is a link with chevron',
+    link__style: 'underline-with-icon',
+    link__type: 'with-chevron',
+  })}
   ${linkTwig({
     link__url: '#',
     link__content: 'This is a long link without animated underlines',
     link__style: 'no-underline-animation',
+  })}<br/>
+  ${linkTwig({
+    link__url: '#',
+    link__pre_text: 'person@example.com',
+    link__content: '(copy)',
+    link__type: 'email',
+    link__extra_class: ['copy-trigger'],
   })}
 `;

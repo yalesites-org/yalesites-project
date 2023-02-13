@@ -3,6 +3,7 @@ import argTypes from '../../04-page-layouts/cl-page-args';
 
 // Twig files.
 import newsArticleTwig from './news-article.twig';
+import newsGridTwig from './news-grid.twig';
 
 // Data files.
 import utilityNavData from '../../03-organisms/menu/utility-nav/utility-nav.yml';
@@ -68,3 +69,5 @@ export const NewsArticle = ({
     image__src__wrapped: imageData.responsive_images['3x2'].image__src,
     ...socialLinksData,
   });
+
+export const newsGridCustom = () => newsGridTwig();

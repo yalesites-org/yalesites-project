@@ -6,7 +6,7 @@ import pullQuoteData from './pull-quote.yml';
  * Storybook Definition.
  */
 export default {
-  title: 'Molecules/Pull Quote',
+  title: 'Molecules/Quote',
   argTypes: {
     quote: {
       name: 'Quote',
@@ -49,7 +49,7 @@ export const pullQuote = ({ style, accentColor, quote, attribution }) => `
   })}
   <div style="--color-pull-quote-accent: var(--color-${accentColor})">
     <h2>Playground</h2>
-    <p>Use the StoryBook controls to see the pull-quote below implement the available variations and colors.</p>
+    <p>Use the StoryBook controls to see the quote below implement the available variations and colors.</p>
     ${pullQuoteTwig({
       pull_quote__quote: quote,
       pull_quote__attribution: attribution,
