@@ -141,14 +141,13 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
       // Execute and render the view.
       $view->execute();
       $rendered = $view->render();
-      $output = $this->rendererService->render($rendered);
 
       // End current view run.
       $running = FALSE;
 
       $elements[$delta] = [
         '#theme' => 'views_basic_formatter_default',
-        '#view' => $output,
+        '#view' => $rendered,
       ];
     }
 

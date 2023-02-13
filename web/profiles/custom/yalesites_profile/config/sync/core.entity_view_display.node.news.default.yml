@@ -40,8 +40,8 @@ content:
     weight: 1
     region: content
 hidden:
-  field_login_required: true
   field_content_title: true
+  field_login_required: true
   field_metatags: true
   field_publish_date: true
   field_tags: true

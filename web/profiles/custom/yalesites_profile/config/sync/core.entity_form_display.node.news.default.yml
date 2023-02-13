@@ -123,18 +123,18 @@ content:
       require_layouts: 0
       empty_message: ''
     third_party_settings: {  }
+  field_content_title:
+    type: markup
+    weight: 12
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_login_required:
     type: boolean_checkbox
     weight: 10
     region: content
     settings:
       display_label: true
-    third_party_settings: {  }
-  field_content_title:
-    type: markup
-    weight: 12
-    region: content
-    settings: {  }
     third_party_settings: {  }
   field_metatags:
     type: metatag_firehose

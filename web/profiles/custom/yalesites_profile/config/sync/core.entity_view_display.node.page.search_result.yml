@@ -37,8 +37,8 @@ content:
 hidden:
   field_banner: true
   field_content: true
-  field_login_required: true
   field_content_title: true
+  field_login_required: true
   field_metatags: true
   field_tags: true
   field_teaser_media: true
