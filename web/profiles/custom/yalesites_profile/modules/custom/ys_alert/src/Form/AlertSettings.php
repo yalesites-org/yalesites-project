@@ -116,8 +116,8 @@ class AlertSettings extends ConfigFormBase {
       '#default_value' => $config->get('alert.type'),
       '#required' => TRUE,
       '#ajax' => [
-        'callback' => '::updateAlertDescriptionCallback',
-        'wrapper' => 'alert-description',
+        'callback' => '::updateAlertDescriptionWrapperCallback',
+        'wrapper' => 'alert-description-wrapper',
         'progress' => [
           'type' => 'none',
         ],
@@ -126,10 +126,11 @@ class AlertSettings extends ConfigFormBase {
 
     // The description is rebuilt with a callback when type field changes.
     $type = $form_state->getValue('type') ?? $config->get('alert.type') ?? '';
-    $form['type_description'] = [
-      '#prefix' => '<div id="alert-description">',
+
+    $form['type_description_wrapper'] = [
+      '#prefix' => '<div id="alert-description-wrapper" role="dialog" aria-live="polite" aria-labelledby="alert-label" aria-describedby="alert-description">',
       '#suffix' => '</div>',
-      '#markup' => $this->alertManager->getTypeDescription($type),
+      '#markup' => '<h1 id="alert-label">' . $this->alertManager->getTypeLabel($type) . '</h1> <div id="alert-description">' . $this->alertManager->getTypeDescription($type) . '</div',
     ];
 
     $form['headline'] = [
@@ -213,8 +214,8 @@ class AlertSettings extends ConfigFormBase {
    * @return array
    *   The portion of the render structure that will be updated.
    */
-  public function updateAlertDescriptionCallback(array $form, FormStateInterface $form_state) {
-    return $form['type_description'];
+  public function updateAlertDescriptionWrapperCallback(array $form, FormStateInterface $form_state) {
+    return $form['type_description_wrapper'];
   }
 
 }

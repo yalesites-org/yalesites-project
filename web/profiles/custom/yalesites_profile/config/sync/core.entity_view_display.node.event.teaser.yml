@@ -5,9 +5,11 @@ dependencies:
   config:
     - core.entity_view_mode.node.teaser
     - field.field.node.event.field_content
+    - field.field.node.event.field_content_title
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_format
+    - field.field.node.event.field_login_required
     - field.field.node.event.field_metatags
     - field.field.node.event.field_tags
     - field.field.node.event.field_teaser_media
@@ -28,9 +30,11 @@ content:
     region: content
 hidden:
   field_content: true
+  field_content_title: true
   field_event_cta: true
   field_event_date: true
   field_event_format: true
+  field_login_required: true
   field_metatags: true
   field_tags: true
   field_teaser_media: true

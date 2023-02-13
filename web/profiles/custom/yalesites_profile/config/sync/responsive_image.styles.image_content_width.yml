@@ -16,6 +16,7 @@ dependencies:
     - image.style.max_width_480
     - image.style.max_width_640
     - image.style.max_width_800
+    - image.style.max_width_896
     - image.style.max_width_960
 id: image_content_width
 label: 'Image - Content Width'
@@ -23,8 +24,9 @@ image_style_mappings:
   -
     image_mapping_type: sizes
     image_mapping:
-      sizes: '(min-width: 790px) 790px, 100vw'
+      sizes: '(min-width: 896px) 896px, 100vw'
       sizes_image_styles:
+        - max_width_896
         - max_width_1120
         - max_width_1280
         - max_width_1440

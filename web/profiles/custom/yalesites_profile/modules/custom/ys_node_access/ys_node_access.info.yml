@@ -1,0 +1,5 @@
+name: YaleSites Node Access
+type: module
+description: Manages node access to specific nodes based on field value
+core_version_requirement: '^9 || ^10'
+package: YaleSites
