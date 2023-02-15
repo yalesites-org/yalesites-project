@@ -23,6 +23,9 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *     'view_mode_machine_name1' => 'Human readable label 1',
    *     'view_mode_machine_name2' => 'Human readable label 2',
    *   ],
+   *   'sort_by' => [
+   *     'field_machine_name:ASC' => 'Human readable sort label',
+   *   ]
    * ],
    *
    * @todo This seems fragile and would better be inside a config page for
@@ -60,8 +63,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'teaser' => 'Teasers',
       ],
       'sort_by' => [
-        'title:ASC' => 'Name - A-Z',
-        'title:DESC' => 'Name - Z-A',
+        'title:ASC' => 'Title - A-Z',
+        'title:DESC' => 'Title - Z-A',
       ],
     ],
   ];
@@ -144,25 +147,14 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   }
 
   /**
-   * Returns an entity label given an entity type and machine name.
-   *
-   * @param string $type
-   *   A machine name of an entity type.
-   *
-   * @return string
-   *   The human readable label of an entity type.
-   */
-  public function getEntityLabel($type) {
-    return self::ALLOWED_ENTITIES[$type]['label'];
-  }
-
-  /**
-   * Returns a view mode label given an view mode type stored in the params.
+   * Returns a label given a content type and optional sub parameter.
    *
    * @param string $content_type
    *   Machine name of an entity type.
+   * @param string $label_type
+   *   Type of label to get: entity, view_mode, or sort_by.
    * @param string $sub_param
-   *   Machine name of a view mode.
+   *   Sub parameter name: view_mode or sort_by.
    *
    * @return string
    *   Human readable view mode label.
@@ -174,6 +166,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     if ($sub_param) {
       return self::ALLOWED_ENTITIES[$content_type][$label_type][$sub_param];
     }
+    return '';
   }
 
   /**
