@@ -104,15 +104,18 @@ class ViewsBasicPreviewFormatter extends FormatterBase implements ContainerFacto
         'view_mode' => '',
         'tags' => [],
         'limit' => '',
+        'sort_by' => '',
       ];
       $paramsDecoded = json_decode($item->params, TRUE);
 
       // Gets the entity labels and view modes.
       foreach ($paramsDecoded['filters']['types'] as $type) {
-        $entityLabel = $this->viewsBasicManager->getEntityLabel($type);
+        $entityLabel = $this->viewsBasicManager->getLabel($type, 'entity');
         array_push($paramsForRender['types'], $entityLabel);
-        $viewModeLabel = $this->viewsBasicManager->getViewModeLabel($type, $paramsDecoded['view_mode']);
+        $viewModeLabel = $this->viewsBasicManager->getLabel($type, 'view_modes', $paramsDecoded['view_mode']);
+        $sortByLabel = $this->viewsBasicManager->getLabel($type, 'sort_by', $paramsDecoded['sort_by']);
         $paramsForRender['view_mode'] = $viewModeLabel;
+        $paramsForRender['sort_by'] = $sortByLabel;
       }
 
       // Gets the tag labels.
