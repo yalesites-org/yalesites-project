@@ -5,7 +5,7 @@ namespace Drupal\ys_node_access\EventSubscriber;
 use Drupal\Core\EventSubscriber\HttpExceptionSubscriberBase;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
-use Symfony\Component\HttpFoundation\RedirectResponse;
+use Drupal\Core\Routing\TrustedRedirectResponse;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 
 /**
@@ -54,7 +54,8 @@ class NodeAccessEventSubscriber extends HttpExceptionSubscriberBase {
         if ($node->hasField('field_login_required')) {
           if (!$node->field_login_required->isEmpty()) {
             $casRedirectUrl = Url::fromRoute('cas.login', ['destination' => $node->toUrl()->toString()])->toString();
-            $returnResponse = new RedirectResponse($casRedirectUrl);
+            $returnResponse = new TrustedRedirectResponse($casRedirectUrl);
+            $returnResponse->getCacheableMetadata()->setCacheMaxAge(0);
             $event->setResponse($returnResponse);
           }
         }
