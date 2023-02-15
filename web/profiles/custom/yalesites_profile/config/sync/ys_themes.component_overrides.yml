@@ -47,7 +47,7 @@ text_with_image:
 quick_links:
   field_style_variation:
     values:
-      promotional: 'Full-width'
+      promotional: Full-width
       subtle: Narrow
     default: promotional
 news_list:
