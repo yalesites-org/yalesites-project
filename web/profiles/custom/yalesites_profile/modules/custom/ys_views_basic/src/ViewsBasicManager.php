@@ -160,13 +160,16 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   Human readable view mode label.
    */
   public function getLabel($content_type, $label_type, $sub_param = NULL) {
-    if ($label_type == 'entity') {
-      return self::ALLOWED_ENTITIES[$content_type]['label'];
+    $label = '';
+    switch ($label_type) {
+      case 'entity':
+        $label = self::ALLOWED_ENTITIES[$content_type]['label'];
+        break;
+
+      default:
+        $label = ($sub_param) ? self::ALLOWED_ENTITIES[$content_type][$label_type][$sub_param] : '';
     }
-    if ($sub_param) {
-      return self::ALLOWED_ENTITIES[$content_type][$label_type][$sub_param];
-    }
-    return '';
+    return $label;
   }
 
   /**
