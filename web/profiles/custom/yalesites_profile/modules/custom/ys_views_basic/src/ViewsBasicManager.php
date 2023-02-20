@@ -23,6 +23,9 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *     'view_mode_machine_name1' => 'Human readable label 1',
    *     'view_mode_machine_name2' => 'Human readable label 2',
    *   ],
+   *   'sort_by' => [
+   *     'field_machine_name:ASC' => 'Human readable sort label',
+   *   ]
    * ],
    *
    * @todo This seems fragile and would better be inside a config page for
@@ -33,23 +36,35 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
   const ALLOWED_ENTITIES = [
     'news' => [
-      'label' => 'News articles',
+      'label' => 'Posts',
       'view_modes' => [
-        'card' => 'News cards',
-        'list_item' => 'News list items',
+        'card' => 'News Card Grid',
+        'list_item' => 'News List',
+      ],
+      'sort_by' => [
+        'field_publish_date:DESC' => 'Publish Date - newer first',
+        'field_publish_date:ASC' => 'Publish Date - older first',
       ],
     ],
     'event' => [
       'label' => 'Events',
       'view_modes' => [
-        'card' => 'Event cards',
-        'list_item' => 'Event list items',
+        'card' => 'Event Card Grid',
+        'list_item' => 'Event List',
+      ],
+      'sort_by' => [
+        'field_event_date:DESC' => 'Event Date - newer first',
+        'field_event_date:ASC' => 'Event Date - older first',
       ],
     ],
     'page' => [
       'label' => 'Pages',
       'view_modes' => [
         'teaser' => 'Teasers',
+      ],
+      'sort_by' => [
+        'title:ASC' => 'Title - A-Z',
+        'title:DESC' => 'Title - Z-A',
       ],
     ],
   ];
@@ -118,31 +133,43 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   }
 
   /**
-   * Returns an entity label given an entity type and machine name.
+   * Returns an array of sort by machine names and the human readable name.
    *
-   * @param string $type
-   *   A machine name of an entity type.
+   * @param string $content_type
+   *   The entity machine name.
    *
-   * @return string
-   *   The human readable label of an entity type.
+   * @return array
+   *   An array of human readable sorts, with machine name as the key.
    */
-  public function getEntityLabel($type) {
-    return self::ALLOWED_ENTITIES[$type]['label'];
+  public function sortByList($content_type) {
+    $sortByList = self::ALLOWED_ENTITIES[$content_type]['sort_by'];
+    return $sortByList;
   }
 
   /**
-   * Returns a view mode label given an view mode type stored in the params.
+   * Returns a label given a content type and optional sub parameter.
    *
-   * @param string $type
+   * @param string $content_type
    *   Machine name of an entity type.
-   * @param string $view_mode
-   *   Machine name of a view mode.
+   * @param string $label_type
+   *   Type of label to get: entity, view_mode, or sort_by.
+   * @param string $sub_param
+   *   Sub parameter name: view_mode or sort_by.
    *
    * @return string
    *   Human readable view mode label.
    */
-  public function getViewModeLabel($type, $view_mode) {
-    return self::ALLOWED_ENTITIES[$type]['view_modes'][$view_mode];
+  public function getLabel($content_type, $label_type, $sub_param = NULL) {
+    $label = '';
+    switch ($label_type) {
+      case 'entity':
+        $label = self::ALLOWED_ENTITIES[$content_type]['label'];
+        break;
+
+      default:
+        $label = ($sub_param) ? self::ALLOWED_ENTITIES[$content_type][$label_type][$sub_param] : '';
+    }
+    return $label;
   }
 
   /**
