@@ -22,7 +22,7 @@ class ViewsBasicSort extends SortPluginBase {
     /** @var \Drupal\views\Plugin\views\query\Sql $query */
     $query = $this->query;
 
-    $sortBy = $this->options['value']['sort_by'];
+    $sortBy = $this->view->args[1];
 
     // Split out the field and the sort direction.
     $sortQueryOptions = explode(":", $sortBy);
