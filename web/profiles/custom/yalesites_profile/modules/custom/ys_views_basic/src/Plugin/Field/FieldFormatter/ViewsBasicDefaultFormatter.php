@@ -126,35 +126,37 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
       $view->setDisplay('block_1');
       $paramsDecoded = json_decode($item->getValue()['params'], TRUE);
 
-      // Overrides filters using our custom views filter - ViewsBasicFilter.
-      // $filters = $view->display_handler->getOption('filters');
-      // $filters['views_basic_filter']['value'] = $paramsDecoded;
-      // $view->display_handler->overrideOption('filters', $filters);
-
-      // Overrides sorts using out custom views sorts plugin - ViewsBasicSort.
-      // $sorts = $view->display_handler->getOption('sorts');
-      // $sorts['views_basic_sort']['value'] = $paramsDecoded;
-      // $view->display_handler->overrideOption('sorts', $sorts);
-
       // Sets items per page.
       //$view->setItemsPerPage($paramsDecoded['limit']);
+
+      /*
+       * Sets the arguments that will get passed to contextual filters as well
+       * as to the custom sort plugin (ViewsBasicSort), and the custom style
+       * plugin (ViewsBasicDynamicStyle).
+       *
+       * This is coded this way to work with Ajax pagers specifically as
+       * without arguments, the subsequent Ajax calls to load more data do not
+       * know what sorting, filters, or view modes to use.
+       *
+       * The order of these arguments is required as follows:
+       * 1) Content type machine name (can combine content types with + or ,)
+       * 2) Taxonomy term ID (can combine with + or ,)
+       * 3) Sort field and direction (in format field_name:ASC)
+       * 4) View mode machine name (i.e. teaser)
+       */
+
+      kint($paramsDecoded);
 
       $view->setArguments(
         [
           'type' => 'news',
+          'tags' => 'all',
           'sort' => $paramsDecoded['sort_by'],
+          'view' => $paramsDecoded['view_mode'],
         ]
       );
 
-      // Change view mode.
-      $view->build();
-      $view->rowPlugin->options['view_mode'] = $paramsDecoded['view_mode'];
-
       //$paragraphId = $item->getParent()->getParent()->get('id')->getValue();
-
-      //kint($view->storage->get('tag'));
-
-      //kint($view->args);
 
       // Execute and render the view.
       $view->execute();
