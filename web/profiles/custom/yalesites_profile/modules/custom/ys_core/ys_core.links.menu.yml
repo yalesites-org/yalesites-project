@@ -10,8 +10,8 @@ ys_core.admin_yalesites:
   description: 'Administer YaleSites settings.'
   parent: system.admin
   route_name: ys_core.admin_yalesites
-  title: YaleSites
-  weight: -8
+  title: Settings
+  weight: -7
 # Sitewide settings form.
 ys_core.admin_site_settings:
   description: 'Change site name, email address, and other sitewide settings.'

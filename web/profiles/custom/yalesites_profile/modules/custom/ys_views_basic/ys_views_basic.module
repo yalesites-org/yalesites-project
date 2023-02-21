@@ -35,4 +35,11 @@ function ys_views_basic_views_data_alter(array &$data) {
       'id' => 'views_basic_filter',
     ],
   ];
+  $data['node_field_data']['views_basic_sort'] = [
+    'title' => t('Views Basic Sort'),
+    'sort' => [
+      'help' => t('Creates a dynamic sort from Views Basic fields.'),
+      'id' => 'views_basic_sort',
+    ],
+  ];
 }
