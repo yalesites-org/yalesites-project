@@ -126,28 +126,28 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
       $view->setDisplay('block_1');
       $paramsDecoded = json_decode($item->getValue()['params'], TRUE);
 
-      kint($view->pager);
-      // Sets items per page.
-
-      //$view->setItemsPerPage($paramsDecoded['limit']);
-
       /*
        * Sets the arguments that will get passed to contextual filters as well
-       * as to the custom sort plugin (ViewsBasicSort), and the custom style
-       * plugin (ViewsBasicDynamicStyle).
+       * as to the custom sort plugin (ViewsBasicSort), custom style
+       * plugin (ViewsBasicDynamicStyle), and custom pager
+       * (ViewsBasicFullPager).
        *
        * This is coded this way to work with Ajax pagers specifically as
        * without arguments, the subsequent Ajax calls to load more data do not
-       * know what sorting, filters, or view modes to use.
+       * know what sorting, filters, view modes, or number if items in the pager
+       * to use.
        *
-       * The order of these arguments is required as follows:
+       * The order of these arguments is required as follows (and is
+       * automatically taken care of from paragraph params data):
        * 1) Content type machine name (can combine content types with + or ,)
        * 2) Taxonomy term ID (can combine with + or ,)
        * 3) Sort field and direction (in format field_name:ASC)
        * 4) View mode machine name (i.e. teaser)
+       * 5) Items per page (set to 0 for all items)
        */
 
       $filterType = implode('+', $paramsDecoded['filters']['types']);
+
       if (isset($paramsDecoded['filters']['tags'])) {
         $filterTags = implode('+', $paramsDecoded['filters']['tags']);
       }
@@ -159,16 +159,19 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
         [
           'type' => $filterType,
           'tags' => $filterTags,
-          'params' => $paramsDecoded['sort_by'],
+          'sort' => $paramsDecoded['sort_by'],
           'view' => $paramsDecoded['view_mode'],
+          'items' => $paramsDecoded['limit'],
         ]
       );
 
-      //$paragraphId = $item->getParent()->getParent()->get('id')->getValue();
-
-      // Execute and render the view.
       $view->execute();
-      //unset($view->pager);
+
+      // Unset the pager. Needs to be done after view->execute();
+      if (!$paramsDecoded['pager']) {
+        unset($view->pager);
+      }
+
       $rendered = $view->preview();
 
       // End current view run.

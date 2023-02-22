@@ -105,6 +105,7 @@ class ViewsBasicPreviewFormatter extends FormatterBase implements ContainerFacto
         'tags' => [],
         'limit' => '',
         'sort_by' => '',
+        'pager' => '',
       ];
       $paramsDecoded = json_decode($item->params, TRUE);
 
@@ -128,6 +129,9 @@ class ViewsBasicPreviewFormatter extends FormatterBase implements ContainerFacto
 
       // Gets the limit.
       $paramsForRender['limit'] = $paramsDecoded['limit'];
+
+      // Gets the pager.
+      $paramsForRender['pager'] = $paramsDecoded['pager'];
 
       $elements[$delta] = [
         '#theme' => 'views_basic_formatter_preview',

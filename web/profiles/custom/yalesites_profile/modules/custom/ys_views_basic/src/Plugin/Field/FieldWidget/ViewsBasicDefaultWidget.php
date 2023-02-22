@@ -199,6 +199,12 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#required' => TRUE,
     ];
 
+    $form['group_user_selection']['pager'] = [
+      '#title' => $this->t('Enable Pager'),
+      '#type' => 'checkbox',
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('pager', $items[$delta]->params) : 0,
+    ];
+
     $element['group_params']['params'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Params'),
@@ -236,6 +242,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         ],
         "limit" => (int) $form_state->getValue(['group_user_selection', 'limit']),
         "sort_by" => $form_state->getValue(['group_user_selection', 'sort_by']),
+        "pager" => $form_state->getValue(['group_user_selection', 'pager']),
       ];
       $value['params'] = json_encode($paramData);
     }
