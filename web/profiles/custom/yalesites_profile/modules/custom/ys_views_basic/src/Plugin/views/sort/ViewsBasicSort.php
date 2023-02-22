@@ -22,19 +22,22 @@ class ViewsBasicSort extends SortPluginBase {
     /** @var \Drupal\views\Plugin\views\query\Sql $query */
     $query = $this->query;
 
-    $sortBy = $this->view->args[2];
-
     // Split out the field and the sort direction.
-    $sortQueryOptions = explode(":", $sortBy);
-    if (str_starts_with($sortQueryOptions[0], 'field')) {
-      $lookupTable = $query->addTable('node__' . $sortQueryOptions[0]);
-      $field = "$lookupTable.$sortQueryOptions[0]_value";
-    }
-    else {
-      $field = $sortQueryOptions[0];
-    }
+    if (isset($this->view->args[2])) {
+      $sortBy = $this->view->args[2];
+      if (str_contains($sortBy, ':')) {
+        $sortQueryOptions = explode(":", $sortBy);
+        if (str_starts_with($sortQueryOptions[0], 'field')) {
+          $lookupTable = $query->addTable('node__' . $sortQueryOptions[0]);
+          $field = "$lookupTable.$sortQueryOptions[0]_value";
+        }
+        else {
+          $field = $sortQueryOptions[0];
+        }
 
-    $query->addOrderBy(NULL, "{$field}", $sortQueryOptions[1], 'views_basic_sort');
+        $query->addOrderBy(NULL, "{$field}", $sortQueryOptions[1], 'views_basic_sort');
+      }
+    }
   }
 
 }

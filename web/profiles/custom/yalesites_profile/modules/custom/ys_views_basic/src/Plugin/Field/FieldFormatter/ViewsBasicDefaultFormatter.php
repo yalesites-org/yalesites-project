@@ -126,7 +126,9 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
       $view->setDisplay('block_1');
       $paramsDecoded = json_decode($item->getValue()['params'], TRUE);
 
+      kint($view->pager);
       // Sets items per page.
+
       //$view->setItemsPerPage($paramsDecoded['limit']);
 
       /*
@@ -145,13 +147,19 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
        * 4) View mode machine name (i.e. teaser)
        */
 
-      kint($paramsDecoded);
+      $filterType = implode('+', $paramsDecoded['filters']['types']);
+      if (isset($paramsDecoded['filters']['tags'])) {
+        $filterTags = implode('+', $paramsDecoded['filters']['tags']);
+      }
+      else {
+        $filterTags = 'all';
+      }
 
       $view->setArguments(
         [
-          'type' => 'news',
-          'tags' => 'all',
-          'sort' => $paramsDecoded['sort_by'],
+          'type' => $filterType,
+          'tags' => $filterTags,
+          'params' => $paramsDecoded['sort_by'],
           'view' => $paramsDecoded['view_mode'],
         ]
       );
@@ -160,6 +168,7 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
 
       // Execute and render the view.
       $view->execute();
+      //unset($view->pager);
       $rendered = $view->preview();
 
       // End current view run.

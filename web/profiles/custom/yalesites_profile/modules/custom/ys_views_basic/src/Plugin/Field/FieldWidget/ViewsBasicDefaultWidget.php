@@ -220,6 +220,9 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
    * Get data from user selection and save into params field.
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    $tags = ($form_state->getValue(['group_user_selection', 'tags']))
+      ? $form_state->getValue(['group_user_selection', 'tags'])
+      : NULL;
     foreach ($values as &$value) {
       $paramData = [
         "view_mode" => $form['group_user_selection']['entity_and_view_mode']['view_mode']['#value'],
@@ -228,7 +231,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
             $form['group_user_selection']['entity_and_view_mode']['entity_types']['#value'],
           ],
           "tags" => [
-            $form_state->getValue(['group_user_selection', 'tags']),
+            $tags,
           ],
         ],
         "limit" => (int) $form_state->getValue(['group_user_selection', 'limit']),

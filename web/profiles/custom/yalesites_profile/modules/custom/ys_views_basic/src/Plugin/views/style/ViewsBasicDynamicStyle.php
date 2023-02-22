@@ -40,8 +40,15 @@ class ViewsBasicDynamicStyle extends StylePluginBase {
     if (!empty($this->view->rowPlugin)) {
 
       // Gets passed view mode from ViewsBasicDefaultFormatter and sets per row.
-      if ($view_mode = $this->view->args[3]) {
-        $this->view->rowPlugin->options['view_mode'] = $view_mode;
+      if (isset($this->view->args[3])) {
+        $viewMode = $this->view->args[3];
+        $validViewModes = \Drupal::service('entity_display.repository')->getViewModeOptions('node');
+        if (array_key_exists($viewMode, $validViewModes)) {
+          $this->view->rowPlugin->options['view_mode'] = $viewMode;
+        }
+        else {
+          $this->view->rowPlugin->options['view_mode'] = 'teaser';
+        }
       }
 
       $this->view->rowPlugin->preRender($result);
