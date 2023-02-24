@@ -5,8 +5,8 @@ dependencies:
   config:
     - field.field.node.page.field_banner
     - field.field.node.page.field_content
-    - field.field.node.page.field_login_required
     - field.field.node.page.field_content_title
+    - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
     - field.field.node.page.field_tags
     - field.field.node.page.field_teaser_media
@@ -16,7 +16,6 @@ dependencies:
   module:
     - allowed_formats
     - field_group
-    - hide_revision_field
     - layout_paragraphs
     - markup
     - maxlength
@@ -29,7 +28,6 @@ third_party_settings:
     group_wrapper:
       children:
         - group_content
-        - group_teaser
         - group_hero
       label: Wrapper
       region: content
@@ -68,14 +66,14 @@ third_party_settings:
         - field_teaser_media
       label: Teaser
       region: content
-      parent_name: group_wrapper
-      weight: 15
+      parent_name: ''
+      weight: 1
       format_type: details_sidebar
       format_settings:
         classes: ''
         show_empty_fields: false
         id: ''
-        open: true
+        open: false
         description: ''
         required_fields: true
         weight: -10
@@ -208,25 +206,13 @@ content:
     third_party_settings: {  }
   path:
     type: path
-    weight: 1
+    weight: 2
     region: content
     settings: {  }
     third_party_settings: {  }
-  revision_log:
-    type: hide_revision_field_log_widget
-    weight: 4
-    region: content
-    settings:
-      rows: 5
-      placeholder: ''
-      show: true
-      default: ''
-      permission_based: false
-      allow_user_settings: true
-    third_party_settings: {  }
   status:
     type: boolean_checkbox
-    weight: 3
+    weight: 4
     region: content
     settings:
       display_label: true
@@ -240,12 +226,13 @@ content:
       placeholder: ''
     third_party_settings: {  }
   url_redirects:
-    weight: 2
+    weight: 3
     region: content
     settings: {  }
     third_party_settings: {  }
 hidden:
   created: true
   promote: true
+  revision_log: true
   sticky: true
   uid: true

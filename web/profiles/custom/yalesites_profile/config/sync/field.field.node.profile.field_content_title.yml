@@ -1,0 +1,25 @@
+uuid: 4c995c26-77c9-4046-8585-68d4eab272c5
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_content_title
+    - node.type.profile
+  module:
+    - markup
+id: node.profile.field_content_title
+field_name: field_content_title
+entity_type: node
+bundle: profile
+label: 'Content Title'
+description: ''
+required: false
+translatable: true
+default_value:
+  - {  }
+default_value_callback: ''
+settings:
+  markup:
+    value: "<p>Page Content</p>\r\n"
+    format: basic_html
+field_type: markup

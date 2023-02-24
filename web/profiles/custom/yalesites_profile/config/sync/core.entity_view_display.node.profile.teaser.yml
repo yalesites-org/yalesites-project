@@ -1,0 +1,41 @@
+uuid: c06cfb79-669c-4ab4-9171-b69679e1ad9e
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.node.teaser
+    - field.field.node.profile.field_content
+    - field.field.node.profile.field_content_title
+    - field.field.node.profile.field_email
+    - field.field.node.profile.field_image
+    - field.field.node.profile.field_link
+    - field.field.node.profile.field_metatags
+    - field.field.node.profile.field_netid
+    - field.field.node.profile.field_phone
+    - field.field.node.profile.field_position
+    - field.field.node.profile.field_tags
+    - node.type.profile
+  module:
+    - user
+id: node.profile.teaser
+targetEntityType: node
+bundle: profile
+mode: teaser
+content:
+  links:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 100
+    region: content
+hidden:
+  field_content: true
+  field_content_title: true
+  field_email: true
+  field_image: true
+  field_link: true
+  field_metatags: true
+  field_netid: true
+  field_phone: true
+  field_position: true
+  field_tags: true
+  search_api_excerpt: true
