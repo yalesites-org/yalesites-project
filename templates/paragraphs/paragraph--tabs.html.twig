@@ -1,1 +1,18 @@
-{{ content }}
+{% set parentNode = paragraph.parentEntity.type.value.0['target_id'] %}
+
+{% if parentNode == 'news' or parentNode == 'event' %}
+  {% set component_wrapper__width = "content" %}
+  {% set component_wrapper__alignment = "center" %}
+{% else %}
+  {% set component_wrapper__width = "max" %}
+  {% set component_wrapper__alignment = "left" %}
+{% endif %}
+
+{% embed "@organisms/component-wrapper/yds-component-wrapper.twig" with {
+  component_wrapper__width: component_wrapper__width,
+  component_wrapper__alignment: component_wrapper__alignment,
+  }%}
+  {% block component_wrapper_inner %}
+    {{ content }}
+  {% endblock %}
+{% endembed %}
