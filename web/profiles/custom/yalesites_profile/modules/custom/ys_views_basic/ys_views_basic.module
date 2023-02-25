@@ -21,6 +21,12 @@ function ys_views_basic_theme($existing, $type, $theme, $path): array {
         'params' => [],
       ],
     ],
+    'views_basic_rows' => [
+      'variables' => [
+        'card_collection_type' => NULL,
+        'rows' => [],
+      ],
+    ],
   ];
 }
 

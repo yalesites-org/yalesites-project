@@ -55,4 +55,24 @@ class ViewsBasicDynamicStyle extends StylePluginBase {
     }
   }
 
+    /**
+   * {@inheritdoc}
+   */
+  public function render() {
+    $rows = [];
+
+    foreach ($this->view->result as $row_index => $row) {
+      $rows[] = $this->view->rowPlugin->render($row);
+    }
+
+    // Map the view mode in Drupal to the type attribute for the componennt.
+    $type = $this->view->rowPlugin->options['view_mode'] == 'list_item' ? 'list' : 'grid';
+
+    return [
+      '#theme' => 'views_basic_rows',
+      '#rows' => $rows,
+      '#card_collection_type' => $type,
+    ];
+  }
+
 }
