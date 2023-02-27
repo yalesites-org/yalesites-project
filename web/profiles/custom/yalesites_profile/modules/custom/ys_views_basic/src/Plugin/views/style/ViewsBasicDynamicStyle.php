@@ -94,7 +94,7 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
     }
   }
 
-    /**
+  /**
    * {@inheritdoc}
    */
   public function render() {
@@ -104,7 +104,7 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
       $rows[] = $this->view->rowPlugin->render($row);
     }
 
-    // Map the view mode in Drupal to the type attribute for the componennt.
+    // Map the view mode in Drupal to the type attribute for the component.
     $type = $this->view->rowPlugin->options['view_mode'] == 'list_item' ? 'list' : 'grid';
 
     return [
