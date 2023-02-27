@@ -100,7 +100,7 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
   public function render() {
     $rows = [];
 
-    foreach ($this->view->result as $row_index => $row) {
+    foreach ($this->view->result as $row) {
       $rows[] = $this->view->rowPlugin->render($row);
     }
 
