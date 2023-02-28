@@ -1,13 +1,15 @@
 /*
 * @todo Possibly move these styles into admin theme.
 */
-.views-basic--params {
-  display: none;
+
+.views-basic--group-user-selection .grouped-items {
+  align-items: flex-start;
+  display: flex;
+  gap: 5rem;
 }
 
-.views-basic--group-user-selection .grouped-items,
 .views-basic--user-selection {
-  align-items: center;
+  align-items: flex-start;
   display: flex;
   gap: 1rem;
 }
