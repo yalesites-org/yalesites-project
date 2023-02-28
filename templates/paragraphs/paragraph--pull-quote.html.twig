@@ -1,17 +1,7 @@
-{% set parentNode = paragraph.parentEntity.type.value.0['target_id'] %}
-
-{% if parentNode == 'news' or parentNode == 'event' %}
-  {% set pull_quote__width = "content" %}
-  {% set pull_quote__alignment = "center" %}
-{% else %}
-  {% set pull_quote__width = "max" %}
-  {% set pull_quote__alignment = "left" %}
-{% endif %}
-
 {% include "@molecules/pull-quote/yds-pull-quote.twig" with {
   pull_quote__quote: content.field_text,
   pull_quote__attribution: content.field_attribution.0,
   pull_quote__style: content.field_style_variation.0['#markup'],
-  pull_quote__alignment: pull_quote__alignment,
-  pull_quote__width: pull_quote__width,
+  pull_quote__alignment: pull_quote__alignment|default('center'),
+  pull_quote__width: pull_quote__width|default('content'),
 } %}
