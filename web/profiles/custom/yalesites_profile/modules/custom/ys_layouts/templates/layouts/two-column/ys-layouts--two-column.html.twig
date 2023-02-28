@@ -8,7 +8,7 @@
 {% set has_secondary = content.secondary|render is not empty or content.secondary['#attributes'] %}
 
 {% if content %}
-  <div {{ attributes.addClass('yds-two-column').setAttribute('data-component-width', 'content').setAttribute('data-embedded-components', '') }}>
+  <div {{ attributes.addClass('yds-two-column').setAttribute('data-component-width', 'site').setAttribute('data-embedded-components', '') }}>
     <div class='yds-two-column__inner'>
       {% if has_primary %}
         <div {{ region_attributes.primary.addClass('yds-two-column__primary') }}>
