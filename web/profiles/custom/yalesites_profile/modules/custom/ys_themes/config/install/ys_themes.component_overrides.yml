@@ -35,9 +35,9 @@ text_with_image:
     default: image-left
   field_style_width:
     values:
-      feature: Feature
+      site: Site
       highlight: Highlight
-    default: feature
+    default: site
   field_style_variation:
     values:
       equal: 'Equal Focus'
