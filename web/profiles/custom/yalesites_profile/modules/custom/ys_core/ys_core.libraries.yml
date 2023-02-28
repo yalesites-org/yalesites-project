@@ -1,0 +1,3 @@
+node_edit_form:
+  js:
+    js/node-edit-form.js : {}

@@ -11,7 +11,7 @@ dependencies:
 id: views_basic_scaffold
 label: 'Views Basic Scaffold'
 module: views
-description: ''
+description: 'View that is overridden by Views Basic custom module code'
 tag: ''
 base_table: node_field_data
 base_field: nid
@@ -94,7 +94,21 @@ display:
         type: tag
         options: {  }
       empty: {  }
-      sorts: {  }
+      sorts:
+        views_basic_sort:
+          id: views_basic_sort
+          table: node_field_data
+          field: views_basic_sort
+          relationship: none
+          group_type: group
+          admin_label: ''
+          entity_type: node
+          plugin_id: views_basic_sort
+          order: ASC
+          expose:
+            label: ''
+            field_identifier: ''
+          exposed: false
       arguments: {  }
       filters:
         views_basic_filter:

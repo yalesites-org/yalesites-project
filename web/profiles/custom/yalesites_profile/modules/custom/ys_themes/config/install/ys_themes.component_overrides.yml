@@ -35,8 +35,8 @@ text_with_image:
     default: image-left
   field_style_width:
     values:
-      site: Site
-      highlight: Highlight
+      site: Large
+      highlight: Medium
     default: site
   field_style_variation:
     values:
@@ -47,8 +47,8 @@ text_with_image:
 quick_links:
   field_style_variation:
     values:
-      promotional: Promotional
-      subtle: Subtle
+      promotional: 'Full-width'
+      subtle: Narrow
     default: promotional
 news_list:
   field_style_variation:
@@ -88,11 +88,11 @@ wrapped_image:
 grand_hero:
   field_style_position:
     values:
-      full: Full
-      contained: Contained
+      full: Tall
+      contained: Short
     default: full
   field_style_variation:
     values:
       full: Full
-      reduced: Reduced
+      reduced: 'Floating Box'
     default: full

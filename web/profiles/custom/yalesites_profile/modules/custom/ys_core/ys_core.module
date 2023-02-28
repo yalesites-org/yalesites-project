@@ -56,6 +56,21 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
   if (isset($form['sticky'])) {
     $form['sticky']['widget']['value']['#title'] = t('Pin to the beginning of list');
   }
+
+  // Form ID's of forms to add Javascript interaction.
+  $nodeForms = [
+    'node_page_form',
+    'node_page_edit_form',
+    'node_event_form',
+    'node_event_edit_form',
+    'node_news_form',
+    'node_news_edit_form',
+  ];
+
+  if (in_array($form_id, $nodeForms)) {
+    $form['#attached']['library'][] = 'ys_core/node_edit_form';
+    unset($form['field_content']['widget']['#title']);
+  }
 }
 
 /**
@@ -128,5 +143,16 @@ function ys_core_preprocess_menu__main(&$variables) {
     // Add cloned item to the beginning of the menu.
     array_unshift($menuItem['below'], $clonedMenuItem);
 
+  }
+}
+
+/**
+ * Implements hook_toolbar_alter().
+ */
+function ys_core_toolbar_alter(&$items) {
+  // Alter the label of the "Local Tasks" link created by the Gin Toolbar.
+  if (!empty($items['admin_toolbar_local_tasks']['tab']['#title'])) {
+    // Change to "Manage This Page" as "Local Tasks" is not easy to understand.
+    $items['admin_toolbar_local_tasks']['tab']['#title'] = 'Manage This Page';
   }
 }

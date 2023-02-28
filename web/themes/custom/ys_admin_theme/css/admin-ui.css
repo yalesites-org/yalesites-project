@@ -7,4 +7,19 @@
   color: transparent !important;
 }
 
+.field--name-field-content .fieldset {
+  border: 0;
+}
+.field--name-field-content .fieldset__wrapper {
+  margin: 0;
+}
+
+.field--name-field-content-title {
+  border-bottom: 1px solid var(--gin-border-color);
+}
+
+.toolbar-horizontal .local-tasks-toolbar-tab .toolbar-menu {
+  float: none;
+}
+
 /*# sourceMappingURL=admin-ui.css.map */

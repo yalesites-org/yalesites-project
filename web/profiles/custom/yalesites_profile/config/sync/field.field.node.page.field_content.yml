@@ -98,8 +98,8 @@ settings:
         weight: -26
         enabled: true
       event_cards:
-        weight: -25
-        enabled: true
+        weight: 41
+        enabled: false
       event_list:
         weight: -24
         enabled: true
@@ -122,8 +122,8 @@ settings:
         weight: 39
         enabled: false
       news_cards:
-        weight: -23
-        enabled: true
+        weight: 49
+        enabled: false
       news_list:
         weight: -22
         enabled: true

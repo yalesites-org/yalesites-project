@@ -95,6 +95,7 @@ permissions:
   - 'edit own page content'
   - 'edit own video media'
   - 'edit own webform submission'
+  - 'mark as hidden in editoria11y'
   - 'override all authored by option'
   - 'override all authored on option'
   - 'override all promote to front page option'

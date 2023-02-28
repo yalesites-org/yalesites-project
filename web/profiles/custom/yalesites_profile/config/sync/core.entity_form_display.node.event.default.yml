@@ -4,9 +4,11 @@ status: true
 dependencies:
   config:
     - field.field.node.event.field_content
+    - field.field.node.event.field_content_title
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_format
+    - field.field.node.event.field_login_required
     - field.field.node.event.field_metatags
     - field.field.node.event.field_tags
     - field.field.node.event.field_teaser_media
@@ -19,6 +21,7 @@ dependencies:
     - hide_revision_field
     - layout_paragraphs
     - linkit
+    - markup
     - maxlength
     - media_library
     - metatag
@@ -45,6 +48,7 @@ third_party_settings:
         width_breakpoint: 640
     group_content:
       children:
+        - field_content_title
         - title
         - field_tags
         - field_content
@@ -69,14 +73,15 @@ third_party_settings:
       region: content
       parent_name: group_wrapper
       weight: 21
-      format_type: tab
+      format_type: details_sidebar
       format_settings:
         classes: ''
         show_empty_fields: false
         id: ''
-        formatter: closed
+        open: true
         description: ''
         required_fields: true
+        weight: -10
     group_logistics:
       children:
         - field_event_format
@@ -94,6 +99,22 @@ third_party_settings:
         formatter: closed
         description: ''
         required_fields: true
+    group_publish_information:
+      children:
+        - field_login_required
+      label: 'Publish Information'
+      region: content
+      parent_name: ''
+      weight: 9
+      format_type: details_sidebar
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        open: false
+        description: ''
+        required_fields: true
+        weight: 0
 id: node.event.default
 targetEntityType: node
 bundle: event
@@ -107,13 +128,19 @@ content:
     third_party_settings: {  }
   field_content:
     type: layout_paragraphs
-    weight: 3
+    weight: 84
     region: content
     settings:
       preview_view_mode: preview
       nesting_depth: 0
       require_layouts: 0
       empty_message: ''
+    third_party_settings: {  }
+  field_content_title:
+    type: markup
+    weight: 81
+    region: content
+    settings: {  }
     third_party_settings: {  }
   field_event_cta:
     type: linkit
@@ -147,6 +174,13 @@ content:
     region: content
     settings: {  }
     third_party_settings: {  }
+  field_login_required:
+    type: boolean_checkbox
+    weight: 8
+    region: content
+    settings:
+      display_label: true
+    third_party_settings: {  }
   field_metatags:
     type: metatag_firehose
     weight: 1
@@ -157,7 +191,7 @@ content:
     third_party_settings: {  }
   field_tags:
     type: entity_reference_autocomplete_tags
-    weight: 2
+    weight: 83
     region: content
     settings:
       match_operator: CONTAINS
@@ -203,7 +237,7 @@ content:
     third_party_settings: {  }
   revision_log:
     type: hide_revision_field_log_widget
-    weight: 80
+    weight: 7
     region: content
     settings:
       rows: 5
@@ -229,7 +263,7 @@ content:
     third_party_settings: {  }
   title:
     type: string_textfield
-    weight: 1
+    weight: 82
     region: content
     settings:
       size: 60

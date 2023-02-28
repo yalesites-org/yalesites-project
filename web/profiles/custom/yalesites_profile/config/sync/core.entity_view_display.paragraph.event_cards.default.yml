@@ -1,0 +1,23 @@
+uuid: b154201e-8b7b-48f7-bc6c-8dbf51a8be58
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.paragraph.event_cards.field_heading
+    - paragraphs.paragraphs_type.event_cards
+  module:
+    - text
+id: paragraph.event_cards.default
+targetEntityType: paragraph
+bundle: event_cards
+mode: default
+content:
+  field_heading:
+    type: text_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  search_api_excerpt: true

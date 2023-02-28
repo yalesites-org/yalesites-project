@@ -131,6 +131,11 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
       $filters['views_basic_filter']['value'] = $paramsDecoded;
       $view->display_handler->overrideOption('filters', $filters);
 
+      // Overrides sorts using out custom views sorts plugin - ViewsBasicSort.
+      $sorts = $view->display_handler->getOption('sorts');
+      $sorts['views_basic_sort']['value'] = $paramsDecoded;
+      $view->display_handler->overrideOption('sorts', $sorts);
+
       // Sets items per page.
       $view->setItemsPerPage($paramsDecoded['limit']);
 
@@ -141,14 +146,13 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
       // Execute and render the view.
       $view->execute();
       $rendered = $view->render();
-      $output = $this->rendererService->render($rendered);
 
       // End current view run.
       $running = FALSE;
 
       $elements[$delta] = [
         '#theme' => 'views_basic_formatter_default',
-        '#view' => $output,
+        '#view' => $rendered,
       ];
     }
 

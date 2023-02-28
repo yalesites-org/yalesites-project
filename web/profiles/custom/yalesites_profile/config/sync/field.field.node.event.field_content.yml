@@ -12,10 +12,12 @@ dependencies:
     - paragraphs.paragraphs_type.gallery
     - paragraphs.paragraphs_type.image
     - paragraphs.paragraphs_type.media_grid
-    - paragraphs.paragraphs_type.wrapped_image
     - paragraphs.paragraphs_type.pull_quote
+    - paragraphs.paragraphs_type.quick_links
     - paragraphs.paragraphs_type.text
     - paragraphs.paragraphs_type.text_with_image
+    - paragraphs.paragraphs_type.video
+    - paragraphs.paragraphs_type.wrapped_image
   module:
     - entity_reference_revisions
 id: node.event.field_content
@@ -43,6 +45,8 @@ settings:
       text_with_image: text_with_image
       media_grid: media_grid
       gallery: gallery
+      quick_links: quick_links
+      video: video
     negate: 0
     target_bundles_drag_drop:
       accordion:
@@ -50,6 +54,9 @@ settings:
         enabled: true
       accordion_item:
         weight: 15
+        enabled: false
+      basic_view:
+        weight: 33
         enabled: false
       callout:
         weight: 16
@@ -84,6 +91,9 @@ settings:
       gallery_item:
         weight: 40
         enabled: false
+      grand_hero:
+        weight: 45
+        enabled: false
       image:
         weight: 21
         enabled: true
@@ -104,7 +114,7 @@ settings:
         enabled: true
       quick_links:
         weight: 44
-        enabled: false
+        enabled: true
       section:
         weight: 24
         enabled: false
@@ -122,6 +132,9 @@ settings:
         enabled: true
       video:
         weight: 50
+        enabled: true
+      webform:
+        weight: 59
         enabled: false
       wrapped_image:
         weight: 22

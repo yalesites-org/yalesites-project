@@ -9,6 +9,8 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\ys_views_basic\ViewsBasicManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\ReplaceCommand;
 
 /**
  * Plugin implementation of the 'views_basic_default' widget.
@@ -94,6 +96,9 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     FormStateInterface $formState
   ) {
 
+    $entity_list = $this->viewsBasicManager->entityTypeList();
+    $content_type = ($items[$delta]->params) ? json_decode($items[$delta]->params, TRUE)['filters']['types'][0] : array_key_first($entity_list);
+
     $element['group_params'] = [
       '#type' => 'fieldgroup',
       '#attributes' => [
@@ -137,16 +142,12 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         'callback' => [$this, 'updateViewModes'],
         'disable-refocus' => FALSE,
         'event' => 'change',
-        'wrapper' => 'edit-output',
         'progress' => [
           'type' => 'throbber',
           'message' => $this->t('Updating view modes...'),
         ],
       ],
     ];
-
-    $entity_list = $this->viewsBasicManager->entityTypeList();
-    $content_type = ($items[$delta]->params) ? json_decode($items[$delta]->params, TRUE)['filters']['types'][0] : array_key_first($entity_list);
 
     $form['group_user_selection']['entity_and_view_mode']['view_mode'] = [
       '#type' => 'select',
@@ -161,7 +162,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         ],
       ],
       '#validated' => 'true',
-      '#prefix' => '<div id="edit-output">',
+      '#prefix' => '<div id="edit-view-mode">',
       '#suffix' => '</div>',
     ];
 
@@ -176,6 +177,17 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#selection_settings' => [
         'target_bundles' => ['tags'],
       ],
+    ];
+
+    $form['group_user_selection']['sort_by'] = [
+      '#type' => 'select',
+      '#options' => $this->viewsBasicManager->sortByList($content_type),
+      '#title' => $this->t('Sorting by'),
+      '#tree' => TRUE,
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('sort_by', $items[$delta]->params) : NULL,
+      '#validated' => 'true',
+      '#prefix' => '<div id="edit-sort-by">',
+      '#suffix' => '</div>',
     ];
 
     $form['group_user_selection']['limit'] = [
@@ -220,6 +232,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
           ],
         ],
         "limit" => (int) $form_state->getValue(['group_user_selection', 'limit']),
+        "sort_by" => $form_state->getValue(['group_user_selection', 'sort_by']),
       ];
       $value['params'] = json_encode($paramData);
     }
@@ -234,9 +247,13 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ['group_user_selection', 'entity_and_view_mode', 'entity_types']
       )) {
       $form['group_user_selection']['entity_and_view_mode']['view_mode']['#options'] = $this->viewsBasicManager->viewModeList($selectedValue);
+      $form['group_user_selection']['sort_by']['#options'] = $this->viewsBasicManager->sortByList($selectedValue);
     }
 
-    return $form['group_user_selection']['entity_and_view_mode']['view_mode'];
+    $response = new AjaxResponse();
+    $response->addCommand(new ReplaceCommand('#edit-view-mode', $form['group_user_selection']['entity_and_view_mode']['view_mode']));
+    $response->addCommand(new ReplaceCommand('#edit-sort-by', $form['group_user_selection']['sort_by']));
+    return $response;
   }
 
 }
