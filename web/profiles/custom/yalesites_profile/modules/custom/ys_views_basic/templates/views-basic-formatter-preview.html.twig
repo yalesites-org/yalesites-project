@@ -1,27 +1,40 @@
 <div>
-  Display {{ params.types|join(', ') }} as {{ params.view_mode }}
+  I want to show {{ params.types|join(', ') }} as {{ params.view_mode }}
 </div>
 {% if params.tags %}
   <div>
     Filtered by tag "{{ params.tags|join(', ') }}"
   </div>
 {% endif %}
+{% if params.sort_by %}
+  <div>
+    Sorted by {{ params.sort_by }}
+  </div>
+{% endif %}
 <div>
-  {% if params.limit and not params.pager %}
+  {% if params.display == 'all' %}
+    Showing all items
+  {% endif %}
+
+  {% if params.display == 'limit' %}
     Limited to
     {% trans %}
       {{ params.limit }} item
       {% plural params.limit %}
       {{ params.limit }} items
     {% endtrans %}
-  {% elseif params.limit and params.pager %}
-    Paged, showing {{ params.limit }} per page
-  {% else %}
-    Showing all items
+  {% endif %}
+
+  {% if params.display == 'pager' %}
+    Showing all items, paged to
+    {% trans %}
+      {{ params.limit }} item per page
+      {% plural params.limit %}
+      {{ params.limit }} items per page
+    {% endtrans %}
   {% endif %}
 </div>
-{% if params.sort_by %}
-  <div>
-    Sorted by {{ params.sort_by }}
-  </div>
-{% endif %}
+
+<div>
+Total results with these settings: {{ params.count }}
+</div>

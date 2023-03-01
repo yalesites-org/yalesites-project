@@ -178,12 +178,17 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ? $this->viewsBasicManager->viewModeList($entityValue)
       : $this->viewsBasicManager->viewModeList($content_type);
 
+    /* @todo switch view_mode to radios. The problem with radios right now is
+     * setting the default value after an Ajax call. Tried a lot of different
+     * methods and eventually settled on keeping this as a select list for now
+     * as the default item for a new select list is the first item.
+     */
     $form['group_user_selection']['entity_and_view_mode']['view_mode'] = [
-      '#type' => 'radios',
+      '#type' => 'select',
       '#options' => $viewModeOptions,
       '#title' => $this->t('As'),
       '#tree' => TRUE,
-      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('view_mode', $items[$delta]->params) : NULL,
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('view_mode', $items[$delta]->params) : key($viewModeOptions),
       '#wrapper_attributes' => [
         'class' => [
           'views-basic--user-selection',
@@ -250,25 +255,18 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ['group_user_selection', 'options', 'display']
     );
 
-    if ($numItemsValue) {
-      switch ($numItemsValue) {
-        case 'limit':
-          $limitTitle = $this->t('Items');
-          break;
+    $limitTitle = $this->t('Items');
 
-        case 'pager':
-          $limitTitle = $this->t('Items per Page');
-          break;
+    if ($numItemsValue) {
+      if ($numItemsValue == 'pager') {
+        $limitTitle = $this->t('Items per Page');
       }
-    }
-    else {
-      $limitTitle = $this->t('Items');
     }
 
     $form['group_user_selection']['options']['limit'] = [
       '#title' => $limitTitle,
       '#type' => 'number',
-      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('limit', $items[$delta]->params) : 0,
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('limit', $items[$delta]->params) : 10,
       '#min' => 1,
       '#required' => TRUE,
       '#states' => [
@@ -290,13 +288,6 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#attributes' => [
         'class'     => [
           'views-basic--params',
-        ],
-      ],
-      '#states' => [
-        'visible' => [
-          '*' => [
-            'value' => '',
-          ],
         ],
       ],
     ];
