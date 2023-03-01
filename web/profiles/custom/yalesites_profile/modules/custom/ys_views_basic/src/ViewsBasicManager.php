@@ -147,7 +147,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       $filterTags = 'all';
     }
 
-    if ($type == 'count' && $paramsDecoded['display'] != 'all') {
+    if ($type == 'count' && $paramsDecoded['display'] != 'limit') {
       $itemsLimit = 0;
     }
     else {
