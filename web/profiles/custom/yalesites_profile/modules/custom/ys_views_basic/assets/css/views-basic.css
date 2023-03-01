@@ -17,3 +17,7 @@
   display: flex;
   gap: 1rem;
 }
+
+.views-basic--parameter-preview {
+  margin-top: 1rem;
+}
