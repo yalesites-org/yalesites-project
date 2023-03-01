@@ -1,0 +1,16 @@
+{% set basic__view__base_class = 'basic-view' %}
+
+{% set basic_view__attributes = {
+  'data-component-width': 'max',
+  class: bem(basic__view__base_class),
+} %}
+
+<div {{ add_attributes(basic_view__attributes) }}>
+  {% include "@atoms/typography/headings/yds-heading.twig" with {
+    heading__level: '2',
+    heading__blockname: basic__view__base_class,
+    heading: content.field_heading,
+  } %}
+</div>
+
+{{ content.field_vb_params }}
