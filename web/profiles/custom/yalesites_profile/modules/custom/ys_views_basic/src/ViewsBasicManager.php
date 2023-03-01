@@ -105,6 +105,21 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     );
   }
 
+  /**
+   * Retrieves an overridden Views Basic Scaffold view.
+   *
+   * Views Basic Scaffold view is overridden with the data from the paragraph
+   * parameters.
+   *
+   * @param string $type
+   *   Can be either 'rendered' or 'count'.
+   * @param string $params
+   *   JSON of the parameter settings from the paragraph.
+   *
+   * @return array|int
+   *   An array of a rendered view or a count of the number of results based
+   *   on the parameters specified.
+   */
   public function getView($type, $params) {
     // Prevents views recursion.
     static $running;
@@ -129,8 +144,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
      * know what sorting, filters, view modes, or number if items in the pager
      * to use.
      *
-     * The order of these arguments is required as follows (and is
-     * automatically taken care of from paragraph params data):
+     * The order of these arguments is required as follows:
      * 1) Content type machine name (can combine content types with + or ,)
      * 2) Taxonomy term ID (can combine with + or ,)
      * 3) Sort field and direction (in format field_name:ASC)
@@ -147,7 +161,9 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       $filterTags = 'all';
     }
 
-    if ($type == 'count' && $paramsDecoded['display'] != 'limit') {
+    if (
+      ($type == 'count' && $paramsDecoded['display'] != 'limit') ||
+      ($type == 'rendered' && $paramsDecoded['display'] == 'all')) {
       $itemsLimit = 0;
     }
     else {
@@ -163,6 +179,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'items' => $itemsLimit,
       ]
     );
+
+    /*
+     * End setting dynamic arguments.
+     */
 
     $view->execute();
 

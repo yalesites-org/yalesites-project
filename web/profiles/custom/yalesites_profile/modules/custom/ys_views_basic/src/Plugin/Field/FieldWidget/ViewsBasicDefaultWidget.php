@@ -11,6 +11,7 @@ use Drupal\ys_views_basic\ViewsBasicManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\Core\Ajax\InvokeCommand;
 
 /**
  * Plugin implementation of the 'views_basic_default' widget.
@@ -178,21 +179,20 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ? $this->viewsBasicManager->viewModeList($entityValue)
       : $this->viewsBasicManager->viewModeList($content_type);
 
-    /* @todo switch view_mode to radios. The problem with radios right now is
-     * setting the default value after an Ajax call. Tried a lot of different
-     * methods and eventually settled on keeping this as a select list for now
-     * as the default item for a new select list is the first item.
-     */
     $form['group_user_selection']['entity_and_view_mode']['view_mode'] = [
-      '#type' => 'select',
+      '#type' => 'radios',
       '#options' => $viewModeOptions,
       '#title' => $this->t('As'),
       '#tree' => TRUE,
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('view_mode', $items[$delta]->params) : key($viewModeOptions),
+      '#attributes' => [
+        'class' => [
+          'views-basic--view-mode',
+        ],
+      ],
       '#wrapper_attributes' => [
         'class' => [
           'views-basic--user-selection',
-          'views-basic--view-mode',
         ],
       ],
       '#validated' => 'true',
@@ -203,7 +203,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     // @todo add validation for only one term.
     // More info: https://www.drupal.org/project/drupal/issues/2951134
     $form['group_user_selection']['filter_and_sort']['tags'] = [
-      '#title' => $this->t('Filtered by tag'),
+      '#title' => $this->t('Tagged as'),
       '#description' => $this->t('At this time, only one term is supported. If multiple terms are added, only the last one will be used.'),
       '#type' => 'entity_autocomplete',
       '#target_type' => 'taxonomy_term',
@@ -340,6 +340,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
   public function updateOtherSettings(array &$form, FormStateInterface $form_state) {
     $response = new AjaxResponse();
     $response->addCommand(new ReplaceCommand('#edit-view-mode', $form['group_user_selection']['entity_and_view_mode']['view_mode']));
+    $selector = '.views-basic--view-mode[name="group_user_selection[entity_and_view_mode][view_mode]"]:first';
+    $response->addCommand(new InvokeCommand($selector, 'prop', [['checked' => TRUE]]));
     $response->addCommand(new ReplaceCommand('#edit-sort-by', $form['group_user_selection']['filter_and_sort']['sort_by']));
     return $response;
   }
