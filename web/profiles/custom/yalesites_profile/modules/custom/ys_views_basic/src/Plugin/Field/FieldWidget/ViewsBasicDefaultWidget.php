@@ -199,6 +199,12 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#required' => TRUE,
     ];
 
+    $form['group_user_selection']['pager'] = [
+      '#title' => $this->t('Enable Pager'),
+      '#type' => 'checkbox',
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('pager', $items[$delta]->params) : 0,
+    ];
+
     $element['group_params']['params'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Params'),
@@ -220,6 +226,9 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
    * Get data from user selection and save into params field.
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    $tags = ($form_state->getValue(['group_user_selection', 'tags']))
+      ? $form_state->getValue(['group_user_selection', 'tags'])
+      : NULL;
     foreach ($values as &$value) {
       $paramData = [
         "view_mode" => $form['group_user_selection']['entity_and_view_mode']['view_mode']['#value'],
@@ -228,11 +237,12 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
             $form['group_user_selection']['entity_and_view_mode']['entity_types']['#value'],
           ],
           "tags" => [
-            $form_state->getValue(['group_user_selection', 'tags']),
+            $tags,
           ],
         ],
         "limit" => (int) $form_state->getValue(['group_user_selection', 'limit']),
         "sort_by" => $form_state->getValue(['group_user_selection', 'sort_by']),
+        "pager" => $form_state->getValue(['group_user_selection', 'pager']),
       ];
       $value['params'] = json_encode($paramData);
     }

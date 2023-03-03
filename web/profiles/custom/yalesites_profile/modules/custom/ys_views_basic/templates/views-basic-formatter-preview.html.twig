@@ -1,25 +1,27 @@
 <div>
   Display {{ params.types|join(', ') }} as {{ params.view_mode }}
 </div>
-<div>
-  {% if params.tags %}
+{% if params.tags %}
+  <div>
     Filtered by tag "{{ params.tags|join(', ') }}"
-  {% endif %}
-</div>
+  </div>
+{% endif %}
 <div>
-  {% if params.limit %}
+  {% if params.limit and not params.pager %}
     Limited to
     {% trans %}
       {{ params.limit }} item
       {% plural params.limit %}
       {{ params.limit }} items
     {% endtrans %}
+  {% elseif params.limit and params.pager %}
+    Paged, showing {{ params.limit }} per page
   {% else %}
     Showing all items
   {% endif %}
 </div>
-<div>
-  {% if params.sort_by %}
+{% if params.sort_by %}
+  <div>
     Sorted by {{ params.sort_by }}
-  {% endif %}
-</div>
+  </div>
+{% endif %}
