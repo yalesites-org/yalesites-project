@@ -73,10 +73,18 @@ function ys_themes_allowed_values_function(FieldStorageConfig $definition, Conte
 
   foreach ($config->get() as $paragraph => $fields) {
     foreach ($fields as $fieldName => $fieldData) {
-      if ($entity->bundle() === $paragraph && $definition->getName() === $fieldName) {
-        foreach ($fieldData['values'] as $machineSetting => $humanName) {
-          $options[$machineSetting] = FieldFilteredMarkup::create($humanName);
+      if ($entity) {
+        if ($entity->bundle() === $paragraph && $definition->getName() === $fieldName) {
+          foreach ($fieldData['values'] as $machineSetting => $humanName) {
+            $options[$machineSetting] = FieldFilteredMarkup::create($humanName);
+          }
         }
+      }
+      /* This case allows the layout builder manage default layout work as in
+       * that mode, there is no entity.
+       */
+      else {
+        $options[''] = '';
       }
     }
   }

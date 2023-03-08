@@ -5,18 +5,32 @@ dependencies:
   config:
     - field.field.node.page.field_banner
     - field.field.node.page.field_content
-    - field.field.node.page.field_login_required
     - field.field.node.page.field_content_title
+    - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
     - field.field.node.page.field_tags
     - field.field.node.page.field_teaser_media
     - field.field.node.page.field_teaser_text
     - field.field.node.page.field_teaser_title
+    - field.field.node.page.layout_builder__layout
     - node.type.page
   module:
     - entity_reference_revisions
+    - layout_builder
+    - layout_discovery
     - layout_paragraphs
     - user
+third_party_settings:
+  layout_builder:
+    enabled: true
+    allow_custom: true
+    sections:
+      -
+        layout_id: layout_onecol
+        layout_settings:
+          label: ''
+        components: {  }
+        third_party_settings: {  }
 id: node.page.default
 targetEntityType: node
 bundle: page
@@ -48,5 +62,6 @@ hidden:
   field_teaser_media: true
   field_teaser_text: true
   field_teaser_title: true
+  layout_builder__layout: true
   links: true
   search_api_excerpt: true

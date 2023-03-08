@@ -1,0 +1,29 @@
+uuid: b299b9fd-8b29-4589-a990-a302ab7bd391
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.cta_banner
+    - field.storage.block_content.field_image
+    - media.type.image
+id: block_content.cta_banner.field_image
+field_name: field_image
+entity_type: block_content
+bundle: cta_banner
+label: Image
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:media'
+  handler_settings:
+    target_bundles:
+      image: image
+    sort:
+      field: _none
+      direction: ASC
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference

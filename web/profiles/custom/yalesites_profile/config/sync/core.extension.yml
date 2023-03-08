@@ -6,6 +6,7 @@ module:
   admin_toolbar_tools: 0
   allowed_formats: 0
   block: 0
+  block_content: 0
   breakpoint: 0
   captcha: 0
   cas: 0
@@ -42,6 +43,8 @@ module:
   image_widget_crop: 0
   improve_line_breaks_filter: 0
   inline_entity_form: 0
+  layout_builder: 0
+  layout_builder_iframe_modal: 0
   layout_discovery: 0
   layout_paragraphs: 0
   libraries: 0
