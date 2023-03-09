@@ -66,7 +66,7 @@
     "drupal/upgrade_status": "^3.18",
     "drupal/webform": "^6.2@beta",
     "drupal/xmlsitemap": "^1.2",
-    "yalesites-org/atomic": "1.8.8",
+    "yalesites-org/atomic": "dev-layout-builder-discovery",
     "yalesites-org/yale_cas": "^1.0"
   },
   "minimum-stability": "dev",

@@ -1,7 +1,0 @@
-uuid: 7932db7c-b8c4-4daa-bb4c-bbf8d9285a47
-langcode: en
-status: true
-dependencies: {  }
-id: image_based
-label: 'Image Based'
-weight: null

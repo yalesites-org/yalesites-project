@@ -1,0 +1,25 @@
+uuid: 99e40020-ac5d-44b8-a5bf-a166eb591e5c
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.text
+    - field.field.block_content.text.field_text
+  module:
+    - text
+id: block_content.text.default
+targetEntityType: block_content
+bundle: text
+mode: default
+content:
+  field_text:
+    type: text_textarea
+    weight: 0
+    region: content
+    settings:
+      rows: 5
+      placeholder: ''
+    third_party_settings: {  }
+hidden:
+  info: true
+  revision_log: true
