@@ -1,0 +1,12 @@
+<div{{ add_attributes() }}>
+
+  {{ title_prefix }}
+  {{ title_suffix }}
+
+  {% include "@molecules/pull-quote/yds-pull-quote.twig" with {
+    pull_quote__quote: content.field_text,
+    pull_quote__attribution: content.field_attribution.0,
+    pull_quote__style: content.field_style_variation.0['#markup'],
+  } %}
+
+</div>
