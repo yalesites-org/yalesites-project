@@ -1,0 +1,7 @@
+uuid: 69759230-b48a-4d7c-bef3-8d1607ef4855
+langcode: en
+status: true
+dependencies: {  }
+id: text_based
+label: Text-based
+weight: -10

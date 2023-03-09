@@ -36,6 +36,7 @@ module:
   field_ui: 0
   file: 0
   filter: 0
+  gin_lb: 0
   gin_toolbar: 0
   help: 0
   honeypot: 0
@@ -44,8 +45,7 @@ module:
   improve_line_breaks_filter: 0
   inline_entity_form: 0
   layout_builder: 0
-  layout_builder_iframe_modal: 0
-  layout_builder_restrictions: 0
+  layout_builder_browser: 0
   layout_discovery: 0
   layout_paragraphs: 0
   libraries: 0
@@ -85,6 +85,7 @@ module:
   search_api: 0
   search_api_db: 0
   search_api_exclude: 0
+  section_library: 0
   smart_date: 0
   smart_date_recur: 0
   system: 0
@@ -99,6 +100,7 @@ module:
   views_ui: 0
   webform: 0
   webform_ui: 0
+  wingsuit_lb: 0
   yale_cas: 0
   ys_alert: 0
   ys_captcha: 0
