@@ -1,0 +1,7 @@
+uuid: 62f513a9-746c-429e-a2b5-3ec827d6121e
+langcode: en
+status: true
+dependencies: {  }
+id: yale_components
+label: 'Yale Components'
+weight: null
