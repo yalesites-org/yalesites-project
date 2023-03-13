@@ -103,6 +103,7 @@ class ViewsBasicPreviewFormatter extends FormatterBase implements ContainerFacto
         'types' => [],
         'view_mode' => '',
         'tags' => [],
+        'display' => [],
         'limit' => '',
         'sort_by' => '',
         'pager' => '',
@@ -127,11 +128,14 @@ class ViewsBasicPreviewFormatter extends FormatterBase implements ContainerFacto
         }
       }
 
+      // Gets the display.
+      $paramsForRender['display'] = $paramsDecoded['display'];
+
       // Gets the limit.
       $paramsForRender['limit'] = $paramsDecoded['limit'];
 
-      // Gets the pager.
-      $paramsForRender['pager'] = $paramsDecoded['pager'];
+      // Gets the number of results for the view.
+      $paramsForRender['count'] = $this->viewsBasicManager->getView('count', $item->params);
 
       $elements[$delta] = [
         '#theme' => 'views_basic_formatter_preview',

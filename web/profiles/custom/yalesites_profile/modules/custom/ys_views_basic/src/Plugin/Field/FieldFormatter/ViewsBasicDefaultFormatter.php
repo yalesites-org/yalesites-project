@@ -8,7 +8,6 @@ use Drupal\ys_views_basic\ViewsBasicManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
-use Drupal\views\Views;
 use Drupal\Core\Render\Renderer;
 
 /**
@@ -114,72 +113,11 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
     $elements = [];
     foreach ($items as $delta => $item) {
 
-      // Prevents views recursion.
-      static $running;
-      if ($running) {
-        return $elements;
-      }
-      $running = TRUE;
-
-      // Set up the view and initial decoded parameters.
-      $view = Views::getView('views_basic_scaffold');
-      $view->setDisplay('block_1');
-      $paramsDecoded = json_decode($item->getValue()['params'], TRUE);
-
-      /*
-       * Sets the arguments that will get passed to contextual filters as well
-       * as to the custom sort plugin (ViewsBasicSort), custom style
-       * plugin (ViewsBasicDynamicStyle), and custom pager
-       * (ViewsBasicFullPager).
-       *
-       * This is coded this way to work with Ajax pagers specifically as
-       * without arguments, the subsequent Ajax calls to load more data do not
-       * know what sorting, filters, view modes, or number if items in the pager
-       * to use.
-       *
-       * The order of these arguments is required as follows (and is
-       * automatically taken care of from paragraph params data):
-       * 1) Content type machine name (can combine content types with + or ,)
-       * 2) Taxonomy term ID (can combine with + or ,)
-       * 3) Sort field and direction (in format field_name:ASC)
-       * 4) View mode machine name (i.e. teaser)
-       * 5) Items per page (set to 0 for all items)
-       */
-
-      $filterType = implode('+', $paramsDecoded['filters']['types']);
-
-      if (isset($paramsDecoded['filters']['tags'])) {
-        $filterTags = implode('+', $paramsDecoded['filters']['tags']);
-      }
-      else {
-        $filterTags = 'all';
-      }
-
-      $view->setArguments(
-        [
-          'type' => $filterType,
-          'tags' => $filterTags,
-          'sort' => $paramsDecoded['sort_by'],
-          'view' => $paramsDecoded['view_mode'],
-          'items' => $paramsDecoded['limit'],
-        ]
-      );
-
-      $view->execute();
-
-      // Unset the pager. Needs to be done after view->execute();
-      if (!$paramsDecoded['pager']) {
-        unset($view->pager);
-      }
-
-      $rendered = $view->preview();
-
-      // End current view run.
-      $running = FALSE;
+      $view = $this->viewsBasicManager->getView('rendered', $item->getValue()['params']);
 
       $elements[$delta] = [
         '#theme' => 'views_basic_formatter_default',
-        '#view' => $rendered,
+        '#view' => $view,
       ];
     }
 
