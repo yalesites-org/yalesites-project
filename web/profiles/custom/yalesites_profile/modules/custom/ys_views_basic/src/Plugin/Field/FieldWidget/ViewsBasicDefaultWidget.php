@@ -353,11 +353,11 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     $displayValue = $form_state->getValue(
       ['group_user_selection', 'options', 'display']
     );
+    $response = new AjaxResponse();
     if ($displayValue != 'all') {
-      $response = new AjaxResponse();
       $response->addCommand(new ReplaceCommand('#edit-limit', $form['group_user_selection']['options']['limit']));
-      return $response;
     }
+    return $response;
   }
 
 }
