@@ -6,14 +6,14 @@ workflows:
     after:
       - type: webphp
         description: Import configuration from .yml files
-        script: scripts/quicksilver/confim.php
+        script: private/scripts/confim.php
   deploy:
     after:
       - type: webphp
         description: Import configuration from .yml files
-        script: scripts/quicksilver/confim.php
+        script: private/scripts/confim.php
   sync_code:
     after:
       - type: webphp
         description: Import configuration from .yml files
-        script: scripts/quicksilver/confim.php
+        script: private/scripts/confim.php
