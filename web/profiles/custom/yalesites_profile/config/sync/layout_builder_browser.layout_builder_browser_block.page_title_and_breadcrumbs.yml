@@ -1,0 +1,11 @@
+uuid: bbe648dd-0a94-47b0-bc8b-cb04e81db1ac
+langcode: en
+status: true
+dependencies: {  }
+id: page_title_and_breadcrumbs
+block_id: ys_title_breadcrumb_block
+category: text_based
+label: 'Page Title and Breadcrumbs'
+image_path: ''
+image_alt: ''
+weight: -100
