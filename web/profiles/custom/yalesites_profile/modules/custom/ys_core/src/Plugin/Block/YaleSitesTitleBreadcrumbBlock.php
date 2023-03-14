@@ -100,6 +100,9 @@ class YaleSitesTitleBreadcrumbBlock extends BlockBase implements ContainerFactor
 
     $breadcrumbs_placeholder = [];
     if (str_ends_with($route->getPath(), 'layout')) {
+
+      $page_title = $request->attributes->get('node')->getTitle();
+
       $breadcrumbs_placeholder = [
         [
           'title' => 'Home',
