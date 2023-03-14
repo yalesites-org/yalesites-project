@@ -18,4 +18,8 @@
   border-bottom: 1px solid var(--gin-border-color);
 }
 
+.toolbar-horizontal .local-tasks-toolbar-tab .toolbar-menu {
+  float: none;
+}
+
 /*# sourceMappingURL=admin-ui.css.map */

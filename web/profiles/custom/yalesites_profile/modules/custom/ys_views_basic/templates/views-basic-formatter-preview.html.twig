@@ -1,25 +1,43 @@
-<div>
-  Display {{ params.types|join(', ') }} as {{ params.view_mode }}
-</div>
-<div>
+{{ attach_library('ys_views_basic/ys_views_basic') }}
+<div class="views-basic--parameter-preview">
+  <div>
+    I want to show {{ params.types|join(', ') }} as {{ params.view_mode }}
+  </div>
   {% if params.tags %}
-    Filtered by tag "{{ params.tags|join(', ') }}"
+    <div>
+      Filtered by tag "{{ params.tags|join(', ') }}"
+    </div>
   {% endif %}
-</div>
-<div>
-  {% if params.limit %}
-    Limited to
-    {% trans %}
-      {{ params.limit }} item
-      {% plural params.limit %}
-      {{ params.limit }} items
-    {% endtrans %}
-  {% else %}
-    Showing all items
-  {% endif %}
-</div>
-<div>
   {% if params.sort_by %}
-    Sorted by {{ params.sort_by }}
+    <div>
+      Sorted by {{ params.sort_by }}
+    </div>
   {% endif %}
+  <div>
+    {% if params.display == 'all' %}
+      Showing all items
+    {% endif %}
+
+    {% if params.display == 'limit' %}
+      Limited to
+      {% trans %}
+        {{ params.limit }} item
+        {% plural params.limit %}
+        {{ params.limit }} items
+      {% endtrans %}
+    {% endif %}
+
+    {% if params.display == 'pager' %}
+      Showing all items, paged to
+      {% trans %}
+        {{ params.limit }} item per page
+        {% plural params.limit %}
+        {{ params.limit }} items per page
+      {% endtrans %}
+    {% endif %}
+  </div>
+
+  <div>
+    Total results with these settings: {{ params.count }}
+  </div>
 </div>

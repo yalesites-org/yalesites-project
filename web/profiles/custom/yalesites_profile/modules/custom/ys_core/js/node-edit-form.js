@@ -6,13 +6,18 @@
         const teaserTitle = context.getElementById(
           "edit-field-teaser-title-0-value"
         );
+
+        function titleKeyUp() {
+          teaserTitle.placeholder = nodeTitle.value;
+        }
+
         // Set teaser placeholder initially on page load.
         teaserTitle.placeholder = nodeTitle.value;
 
         // Automatically set teaser placeholder on change of node title.
-        nodeTitle.addEventListener("keyup", function titleKeyUp() {
-          teaserTitle.placeholder = nodeTitle.value;
-        });
+        ["blur", "keyup"].forEach((evt) =>
+          nodeTitle.addEventListener(evt, titleKeyUp)
+        );
       });
     },
   };

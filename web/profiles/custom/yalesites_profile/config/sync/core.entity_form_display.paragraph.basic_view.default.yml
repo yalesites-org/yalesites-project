@@ -3,18 +3,37 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.paragraph.basic_view.field_heading
     - field.field.paragraph.basic_view.field_vb_params
     - paragraphs.paragraphs_type.basic_view
   module:
+    - allowed_formats
+    - maxlength
+    - text
     - ys_views_basic
 id: paragraph.basic_view.default
 targetEntityType: paragraph
 bundle: basic_view
 mode: default
 content:
+  field_heading:
+    type: text_textfield
+    weight: 0
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings:
+      allowed_formats:
+        hide_help: '1'
+        hide_guidelines: '1'
+      maxlength:
+        maxlength_js: null
+        maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
+        maxlength_js_enforce: false
   field_vb_params:
     type: views_basic_default_widget
-    weight: 0
+    weight: 1
     region: content
     settings: {  }
     third_party_settings: {  }

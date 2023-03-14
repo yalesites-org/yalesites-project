@@ -1,0 +1,9 @@
+{% embed "@organisms/card-collection/yds-card-collection.twig" with {
+    card_collection__featured: 'false',
+    card_collection__width: 'max',
+    card_collection__type: card_collection_type,
+  } %}
+  {% block card_collection__cards %}
+    {{ rows }}
+  {% endblock %}
+{% endembed %}

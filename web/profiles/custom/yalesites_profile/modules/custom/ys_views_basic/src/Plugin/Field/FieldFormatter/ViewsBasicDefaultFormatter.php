@@ -8,7 +8,6 @@ use Drupal\ys_views_basic\ViewsBasicManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
-use Drupal\views\Views;
 use Drupal\Core\Render\Renderer;
 
 /**
@@ -114,45 +113,11 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
     $elements = [];
     foreach ($items as $delta => $item) {
 
-      // Prevents views recursion.
-      static $running;
-      if ($running) {
-        return $elements;
-      }
-      $running = TRUE;
-
-      // Set up the view and initial decoded parameters.
-      $view = Views::getView('views_basic_scaffold');
-      $view->setDisplay('block_1');
-      $paramsDecoded = json_decode($item->getValue()['params'], TRUE);
-
-      // Overrides filters using our custom views filter - ViewsBasicFilter.
-      $filters = $view->display_handler->getOption('filters');
-      $filters['views_basic_filter']['value'] = $paramsDecoded;
-      $view->display_handler->overrideOption('filters', $filters);
-
-      // Overrides sorts using out custom views sorts plugin - ViewsBasicSort.
-      $sorts = $view->display_handler->getOption('sorts');
-      $sorts['views_basic_sort']['value'] = $paramsDecoded;
-      $view->display_handler->overrideOption('sorts', $sorts);
-
-      // Sets items per page.
-      $view->setItemsPerPage($paramsDecoded['limit']);
-
-      // Change view mode.
-      $view->build();
-      $view->rowPlugin->options['view_mode'] = $paramsDecoded['view_mode'];
-
-      // Execute and render the view.
-      $view->execute();
-      $rendered = $view->render();
-
-      // End current view run.
-      $running = FALSE;
+      $view = $this->viewsBasicManager->getView('rendered', $item->getValue()['params']);
 
       $elements[$delta] = [
         '#theme' => 'views_basic_formatter_default',
-        '#view' => $rendered,
+        '#view' => $view,
       ];
     }
 
