@@ -89,9 +89,6 @@
       "drupal/paragraphs": {
         "hide remove button": "https://www.drupal.org/files/issues/2020-05-13/hide_field_required_paragraphs_remove_button_1.patch"
       },
-      "drupal/linkit": {
-        "add linkit widget to link fields": "https://www.drupal.org/files/issues/2023-03-05/2712951_316.6.x.diff"
-      },
       "drupal/core": {
         "plural results summary https://www.drupal.org/project/drupal/issues/2888320": "https://www.drupal.org/files/issues/2021-12-15/2888320-78.patch"
       },

@@ -7,6 +7,7 @@ use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityDisplayRepository;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\views\Views;
 
 /**
  * Service for managing the Views Basic plugins.
@@ -102,6 +103,108 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       $container->get('entity_type.manager'),
       $container->get('entity_display.repository')
     );
+  }
+
+  /**
+   * Retrieves an overridden Views Basic Scaffold view.
+   *
+   * Views Basic Scaffold view is overridden with the data from the paragraph
+   * parameters.
+   *
+   * @param string $type
+   *   Can be either 'rendered' or 'count'.
+   * @param string $params
+   *   JSON of the parameter settings from the paragraph.
+   *
+   * @return array|int
+   *   An array of a rendered view or a count of the number of results based
+   *   on the parameters specified.
+   */
+  public function getView($type, $params) {
+    // Prevents views recursion.
+    static $running;
+    if ($running) {
+      return NULL;
+    }
+    $running = TRUE;
+
+    // Set up the view and initial decoded parameters.
+    $view = Views::getView('views_basic_scaffold');
+    $view->setDisplay('block_1');
+    $paramsDecoded = json_decode($params, TRUE);
+
+    /*
+     * Sets the arguments that will get passed to contextual filters as well
+     * as to the custom sort plugin (ViewsBasicSort), custom style
+     * plugin (ViewsBasicDynamicStyle), and custom pager
+     * (ViewsBasicFullPager).
+     *
+     * This is coded this way to work with Ajax pagers specifically as
+     * without arguments, the subsequent Ajax calls to load more data do not
+     * know what sorting, filters, view modes, or number if items in the pager
+     * to use.
+     *
+     * The order of these arguments is required as follows:
+     * 1) Content type machine name (can combine content types with + or ,)
+     * 2) Taxonomy term ID (can combine with + or ,)
+     * 3) Sort field and direction (in format field_name:ASC)
+     * 4) View mode machine name (i.e. teaser)
+     * 5) Items per page (set to 0 for all items)
+     */
+
+    $filterType = implode('+', $paramsDecoded['filters']['types']);
+
+    if (isset($paramsDecoded['filters']['tags'])) {
+      $filterTags = implode('+', $paramsDecoded['filters']['tags']);
+    }
+    else {
+      $filterTags = 'all';
+    }
+
+    if (
+      ($type == 'count' && $paramsDecoded['display'] != 'limit') ||
+      ($type == 'rendered' && $paramsDecoded['display'] == 'all')) {
+      $itemsLimit = 0;
+    }
+    else {
+      $itemsLimit = $paramsDecoded['limit'];
+    }
+
+    $view->setArguments(
+      [
+        'type' => $filterType,
+        'tags' => $filterTags,
+        'sort' => $paramsDecoded['sort_by'],
+        'view' => $paramsDecoded['view_mode'],
+        'items' => $itemsLimit,
+      ]
+    );
+
+    /*
+     * End setting dynamic arguments.
+     */
+
+    $view->execute();
+
+    // Unset the pager. Needs to be done after view->execute();
+    if ($paramsDecoded['display'] != "pager") {
+      unset($view->pager);
+    }
+
+    switch ($type) {
+      case "rendered":
+        $view = $view->preview();
+        break;
+
+      case "count":
+        $view = count($view->result);
+        break;
+    }
+
+    // End current view run.
+    $running = FALSE;
+
+    return $view;
   }
 
   /**
@@ -220,7 +323,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         break;
 
       case 'limit':
-        $defaultParam = (empty($paramsDecoded['limit'])) ? 0 : (int) $paramsDecoded['limit'];
+        $defaultParam = (empty($paramsDecoded['limit'])) ? 10 : (int) $paramsDecoded['limit'];
         break;
 
       default:
