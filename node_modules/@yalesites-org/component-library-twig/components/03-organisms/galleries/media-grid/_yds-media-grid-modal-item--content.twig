@@ -1,0 +1,31 @@
+{#
+ # Available Variables:
+ # - modal_item__heading
+ # - modal_item__content
+ #}
+
+{% set modal_item__heading = modal_item__heading|default(item.media_grid__modal__heading) %}
+{% set modal_item__content = modal_item__content|default(item.media_grid__modal__text) %}
+{% set media_grid__modal__base_class = 'media-grid-modal' %}
+
+  {% if modal_item__heading or modal_item__content %}
+    {% set media_grid__item__content %}
+      {# Content Heading #}
+      {% if modal_item__heading %}
+        {% include "@atoms/typography/headings/yds-heading.twig" with {
+          heading__level: '2',
+          heading: modal_item__heading,
+          heading__blockname: media_grid__modal__base_class,
+        } %}
+      {% endif %}
+      {# Content Text #}
+      {% if modal_item__content %}
+        <div {{ bem('text', [], media_grid__modal__base_class) }}>
+          {{ modal_item__content }}
+        </div>
+      {% endif %}
+    {% endset %}
+    {% include "@molecules/text/yds-text-field.twig" with {
+      text_field__content: media_grid__item__content,
+    } %}
+  {% endif %}
