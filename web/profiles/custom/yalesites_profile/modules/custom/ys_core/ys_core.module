@@ -44,6 +44,12 @@ function ys_core_theme($existing, $type, $theme, $path): array {
     'ys_search_form' => [
       'variables' => [],
     ],
+    'ys_title_breadcrumb' => [
+      'variables' => [
+        'page_title' => NULL,
+        'breadcrumbs_placeholder' => [],
+      ],
+    ],
   ];
 }
 
