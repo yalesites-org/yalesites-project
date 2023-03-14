@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   config:
+    - core.entity_view_display.node.page.default
     - media.type.background_video
     - media.type.document
     - media.type.embed
@@ -12,8 +13,11 @@ dependencies:
     - node.type.news
     - node.type.page
   module:
+    - block
+    - contextual
     - editoria11y
     - file
+    - layout_builder
     - media
     - menu_admin_per_menu
     - node
@@ -121,3 +125,7 @@ permissions:
   - 'view unpublished paragraphs'
   - 'yalesites manage alerts'
   - 'yalesites manage settings'
+  - 'access contextual links'
+  - 'configure editable page node layout overrides'
+  - 'create and edit custom blocks'
+  - 'administer blocks'
