@@ -7,6 +7,7 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Controller\TitleResolver;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Adds a title and breadcrumb block.
@@ -34,6 +35,13 @@ class YaleSitesTitleBreadcrumbBlock extends BlockBase implements ContainerFactor
   protected $titleResolver;
 
   /**
+   * The request stack.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  protected $requestStack;
+
+  /**
    * Constructs a new YaleSitesBreadcrumbBlock object.
    *
    * @param array $configuration
@@ -46,11 +54,14 @@ class YaleSitesTitleBreadcrumbBlock extends BlockBase implements ContainerFactor
    *   The route match.
    * @param \Drupal\Core\Controller\TitleResolver $title_resolver
    *   The title resolver.
+   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+   *   The request stack.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $route_match, TitleResolver $title_resolver) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $route_match, TitleResolver $title_resolver, RequestStack $request_stack) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->routeMatch = $route_match;
     $this->titleResolver = $title_resolver;
+    $this->requestStack = $request_stack;
   }
 
   /**
@@ -63,6 +74,7 @@ class YaleSitesTitleBreadcrumbBlock extends BlockBase implements ContainerFactor
       $plugin_definition,
       $container->get('current_route_match'),
       $container->get('title_resolver'),
+      $container->get('request_stack'),
     );
   }
 
@@ -72,7 +84,7 @@ class YaleSitesTitleBreadcrumbBlock extends BlockBase implements ContainerFactor
   public function build() {
 
     $route = $this->routeMatch->getRouteObject();
-    $request = \Drupal::request();
+    $request = $this->requestStack->getCurrentRequest();
 
     // Get the page title.
     if ($route) {
