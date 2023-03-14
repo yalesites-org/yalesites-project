@@ -12,3 +12,8 @@ workflows:
       - type: webphp
         description: Import configuration from .yml files
         script: scripts/quicksilver/confim.php
+  sync_code:
+    after:
+      - type: webphp
+        description: Import configuration from .yml files
+        script: scripts/quicksilver/confim.php
