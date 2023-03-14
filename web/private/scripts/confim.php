@@ -2,11 +2,11 @@
 
 // Update databases
 echo "Running database updates...\n";
-passthru('drush updatedb --yes');
+passthru('drush updatedb -y');
 echo "Database updates complete.\n";
 
-//Clear all cache
-echo "Rebuilding cache.\n";
+// Clear all cache
+echo "Rebuilding cache...\n";
 passthru('drush cr');
 echo "Rebuilding cache complete.\n";
 
@@ -15,7 +15,7 @@ echo "Importing configuration from yml files...\n";
 passthru('drush config-import -y');
 echo "Import of configuration complete.\n";
 
-//Clear all cache
-echo "Rebuilding cache.\n";
+// Clear all cache
+echo "Rebuilding cache...\n";
 passthru('drush cr');
 echo "Rebuilding cache complete.\n";
