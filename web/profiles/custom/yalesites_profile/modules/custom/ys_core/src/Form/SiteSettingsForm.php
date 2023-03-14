@@ -84,7 +84,7 @@ class SiteSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   protected function getEditableConfigNames() {
-    return ['system.site', 'ys_core.site'];
+    return ['system.site', 'ys_core.site', 'layout_builder_browser.settings'];
   }
 
   /**
@@ -93,6 +93,7 @@ class SiteSettingsForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $siteConfig = $this->config('system.site');
     $yaleConfig = $this->config('ys_core.site');
+    $layoutBuilderBrowserConfig = $this->config('layout_builder_browser.settings');
 
     $form['site_name'] = [
       '#type' => 'textfield',
@@ -154,6 +155,13 @@ class SiteSettingsForm extends ConfigFormBase {
       '#default_value' => $yaleConfig->get('search')['enable_search_form'],
     ];
 
+    $form['use_modal'] = [
+      '#type' => 'checkbox',
+      '#description' => $this->t('If checked, the layout builder browser will be rendered in a modal instead of using the off-canvas method.'),
+      '#title' => $this->t('Show layout builder browser in modal'),
+      '#default_value' => $layoutBuilderBrowserConfig->get('use_modal'),
+    ];
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -210,6 +218,9 @@ class SiteSettingsForm extends ConfigFormBase {
       ->set('page.news', $form_state->getValue('site_page_news'))
       ->set('page.events', $form_state->getValue('site_page_events'))
       ->set('search.enable_search_form', $form_state->getValue('enable_search_form'))
+      ->save();
+    $this->configFactory->getEditable('layout_builder_browser.settings')
+      ->set('use_modal', $form_state->getValue('use_modal'))
       ->save();
 
     parent::submitForm($form, $form_state);
