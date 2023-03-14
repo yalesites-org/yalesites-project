@@ -72,6 +72,12 @@ class YaleSitesTitleBreadcrumbBlock extends BlockBase implements ContainerFactor
   public function build() {
 
     $route = $this->routeMatch->getRouteObject();
+    $request = \Drupal::request();
+
+    // Get the page title.
+    if ($route) {
+      $page_title = $this->titleResolver->getTitle($request, $route);
+    };
 
     /*
      * For layout builder, during the block edit process, we want to show how
@@ -98,10 +104,6 @@ class YaleSitesTitleBreadcrumbBlock extends BlockBase implements ContainerFactor
         ],
       ];
     }
-    $request = \Drupal::request();
-    if ($route) {
-      $page_title = $this->titleResolver->getTitle($request, $route);
-    };
 
     return [
       '#theme' => 'ys_title_breadcrumb',
