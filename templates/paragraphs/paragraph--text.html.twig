@@ -1,4 +1,15 @@
+{% set parentNode = paragraph.parentEntity.type.value.0['target_id'] %}
+
+{% if parentNode == 'news' or parentNode == 'event' %}
+  {% set text_field__width = "content" %}
+  {% set text_field__alignment = "center" %}
+{% else %}
+  {% set text_field__width = "site" %}
+  {% set text_field__alignment = "left" %}
+{% endif %}
+
 {% include "@molecules/text/yds-text-field.twig" with {
   text_field__content: content.field_text,
   text_field__width: text_field__width,
+  text_field__alignment: text_field__alignment,
 } %}
