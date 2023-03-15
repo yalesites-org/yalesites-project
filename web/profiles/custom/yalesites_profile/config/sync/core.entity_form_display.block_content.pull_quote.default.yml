@@ -5,11 +5,13 @@ dependencies:
   config:
     - block_content.type.pull_quote
     - field.field.block_content.pull_quote.field_attribution
+    - field.field.block_content.pull_quote.field_instructions
     - field.field.block_content.pull_quote.field_style_variation
     - field.field.block_content.pull_quote.field_text
   module:
     - allowed_formats
     - field_group
+    - markup
     - maxlength
     - text
 third_party_settings:
@@ -21,7 +23,7 @@ third_party_settings:
       label: 'Pull Quote Tabs'
       region: content
       parent_name: ''
-      weight: 0
+      weight: 1
       format_type: tabs
       format_settings:
         classes: ''
@@ -77,6 +79,12 @@ content:
         maxlength_js: 60
         maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
         maxlength_js_enforce: false
+  field_instructions:
+    type: markup
+    weight: 0
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_style_variation:
     type: options_select
     weight: 5

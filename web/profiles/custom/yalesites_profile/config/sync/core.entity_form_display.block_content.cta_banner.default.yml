@@ -6,6 +6,7 @@ dependencies:
     - block_content.type.cta_banner
     - field.field.block_content.cta_banner.field_heading
     - field.field.block_content.cta_banner.field_image
+    - field.field.block_content.cta_banner.field_instructions
     - field.field.block_content.cta_banner.field_link
     - field.field.block_content.cta_banner.field_style_color
     - field.field.block_content.cta_banner.field_style_position
@@ -14,6 +15,7 @@ dependencies:
     - allowed_formats
     - field_group
     - linkit
+    - markup
     - maxlength
     - media_library
     - text
@@ -26,7 +28,7 @@ third_party_settings:
       label: 'CTA Banner Tabs'
       region: content
       parent_name: ''
-      weight: 0
+      weight: 1
       format_type: tabs
       format_settings:
         classes: ''
@@ -43,7 +45,7 @@ third_party_settings:
       label: Content
       region: content
       parent_name: group_cta_banner_tabs
-      weight: 7
+      weight: 12
       format_type: tab
       format_settings:
         classes: ''
@@ -59,7 +61,7 @@ third_party_settings:
       label: 'Design Options'
       region: content
       parent_name: group_cta_banner_tabs
-      weight: 8
+      weight: 13
       format_type: tab
       format_settings:
         classes: ''
@@ -94,6 +96,12 @@ content:
     region: content
     settings:
       media_types: {  }
+    third_party_settings: {  }
+  field_instructions:
+    type: markup
+    weight: 0
+    region: content
+    settings: {  }
     third_party_settings: {  }
   field_link:
     type: linkit

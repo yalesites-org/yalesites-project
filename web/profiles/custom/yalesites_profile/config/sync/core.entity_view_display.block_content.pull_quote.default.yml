@@ -5,9 +5,11 @@ dependencies:
   config:
     - block_content.type.pull_quote
     - field.field.block_content.pull_quote.field_attribution
+    - field.field.block_content.pull_quote.field_instructions
     - field.field.block_content.pull_quote.field_style_variation
     - field.field.block_content.pull_quote.field_text
   module:
+    - markup
     - options
     - text
 id: block_content.pull_quote.default
@@ -22,6 +24,13 @@ content:
       link_to_entity: false
     third_party_settings: {  }
     weight: 1
+    region: content
+  field_instructions:
+    type: markup
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 3
     region: content
   field_style_variation:
     type: list_key

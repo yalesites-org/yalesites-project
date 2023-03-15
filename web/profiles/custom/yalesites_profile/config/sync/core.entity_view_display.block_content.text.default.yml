@@ -4,14 +4,23 @@ status: true
 dependencies:
   config:
     - block_content.type.text
+    - field.field.block_content.text.field_instructions
     - field.field.block_content.text.field_text
   module:
+    - markup
     - text
 id: block_content.text.default
 targetEntityType: block_content
 bundle: text
 mode: default
 content:
+  field_instructions:
+    type: markup
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
   field_text:
     type: text_default
     label: hidden
