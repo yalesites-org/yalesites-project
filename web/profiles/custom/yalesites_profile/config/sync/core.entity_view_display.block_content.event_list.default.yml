@@ -1,0 +1,32 @@
+uuid: 30e0bcca-e32c-49ba-b4c3-7219f8407710
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.event_list
+    - field.field.block_content.event_list.field_heading
+    - field.field.block_content.event_list.field_instructions
+  module:
+    - markup
+    - text
+id: block_content.event_list.default
+targetEntityType: block_content
+bundle: event_list
+mode: default
+content:
+  field_heading:
+    type: text_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_instructions:
+    type: markup
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
+hidden:
+  search_api_excerpt: true

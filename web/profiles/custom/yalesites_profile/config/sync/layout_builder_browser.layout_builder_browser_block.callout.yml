@@ -1,0 +1,11 @@
+uuid: 6413ce48-0246-46d0-b05c-769a6644cf51
+langcode: en
+status: true
+dependencies: {  }
+id: callout
+block_id: 'inline_block:callout'
+category: text_based
+label: Callout
+image_path: ''
+image_alt: ''
+weight: 1

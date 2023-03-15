@@ -1,0 +1,92 @@
+uuid: e0c1becc-f703-485e-8ce0-2eb6149e87f5
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.callout
+    - field.field.block_content.callout.field_callout
+    - field.field.block_content.callout.field_instructions
+    - field.field.block_content.callout.field_style_color
+  module:
+    - field_group
+    - markup
+    - paragraphs
+third_party_settings:
+  field_group:
+    group_callout_tabs:
+      children:
+        - group_content
+        - group_design_options
+      label: 'Callout Tabs'
+      region: content
+      parent_name: ''
+      weight: 1
+      format_type: tabs
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        direction: horizontal
+        width_breakpoint: 640
+    group_content:
+      children:
+        - field_callout
+      label: Content
+      region: content
+      parent_name: group_callout_tabs
+      weight: 6
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: closed
+        description: ''
+        required_fields: true
+    group_design_options:
+      children:
+        - field_style_color
+      label: 'Design Options'
+      region: content
+      parent_name: group_callout_tabs
+      weight: 7
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: closed
+        description: ''
+        required_fields: true
+id: block_content.callout.default
+targetEntityType: block_content
+bundle: callout
+mode: default
+content:
+  field_callout:
+    type: entity_reference_paragraphs
+    weight: 3
+    region: content
+    settings:
+      title: Paragraph
+      title_plural: Paragraphs
+      edit_mode: open
+      add_mode: dropdown
+      form_display_mode: default
+      default_paragraph_type: callout_item
+    third_party_settings: {  }
+  field_instructions:
+    type: markup
+    weight: 0
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_style_color:
+    type: options_select
+    weight: 2
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+hidden:
+  info: true
+  revision_log: true

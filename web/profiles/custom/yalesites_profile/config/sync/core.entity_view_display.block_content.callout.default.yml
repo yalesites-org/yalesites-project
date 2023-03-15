@@ -1,0 +1,36 @@
+uuid: b539b8f0-df14-406e-a7ab-9a17b679350c
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.callout
+    - field.field.block_content.callout.field_callout
+    - field.field.block_content.callout.field_instructions
+    - field.field.block_content.callout.field_style_color
+  module:
+    - entity_reference_revisions
+    - options
+id: block_content.callout.default
+targetEntityType: block_content
+bundle: callout
+mode: default
+content:
+  field_callout:
+    type: entity_reference_revisions_entity_view
+    label: hidden
+    settings:
+      view_mode: default
+      link: ''
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_style_color:
+    type: list_key
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
+hidden:
+  field_instructions: true
+  search_api_excerpt: true

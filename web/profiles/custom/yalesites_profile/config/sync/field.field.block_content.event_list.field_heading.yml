@@ -1,0 +1,26 @@
+uuid: ace1cead-4a26-4b88-bca1-19d3f72799fb
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.event_list
+    - field.storage.block_content.field_heading
+  module:
+    - allowed_formats
+    - text
+third_party_settings:
+  allowed_formats:
+    allowed_formats:
+      - heading_html
+id: block_content.event_list.field_heading
+field_name: field_heading
+entity_type: block_content
+bundle: event_list
+label: Heading
+description: ''
+required: true
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: text
