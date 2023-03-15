@@ -35,7 +35,8 @@ lando ssh -c "rm -rf web/themes/contrib/atomic"
 lando composer update atomic
 
 # Setup npm linked packages for theme dependencies
-npm run local:theme-link
+# See https://yaleits.atlassian.net/browse/YALB-971git
+# npm run local:theme-link
 
 # Create a login link.
 lando drush uli
