@@ -1,0 +1,11 @@
+uuid: 5e8899d8-6e70-41f3-8b7c-07246f3a8366
+langcode: en
+status: true
+dependencies: {  }
+id: gallery
+block_id: 'inline_block:gallery'
+category: media_based
+label: Gallery
+image_path: ''
+image_alt: ''
+weight: null

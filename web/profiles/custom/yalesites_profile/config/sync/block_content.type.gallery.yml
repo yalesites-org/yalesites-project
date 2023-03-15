@@ -1,0 +1,8 @@
+uuid: bc46f951-6177-4831-a68f-94682374def6
+langcode: en
+status: true
+dependencies: {  }
+id: gallery
+label: Gallery
+revision: 0
+description: 'Gallery allows you to display numerous images in an interactive grid layout. Users can click the images and flip through the multiple images.'

@@ -1,0 +1,23 @@
+uuid: 3c24bfa4-c0ed-40ed-8295-3a7e98f0c4f1
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.divider
+    - field.field.block_content.divider.field_instructions
+  module:
+    - markup
+id: block_content.divider.default
+targetEntityType: block_content
+bundle: divider
+mode: default
+content:
+  field_instructions:
+    type: markup
+    weight: 0
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+hidden:
+  info: true
+  revision_log: true
