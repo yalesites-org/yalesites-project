@@ -1,0 +1,25 @@
+uuid: 0fc948b6-0e08-47aa-b0a6-6148a3c83181
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.image
+    - field.storage.block_content.field_instructions
+  module:
+    - markup
+id: block_content.image.field_instructions
+field_name: field_instructions
+entity_type: block_content
+bundle: image
+label: Instructions
+description: ''
+required: false
+translatable: true
+default_value:
+  - {  }
+default_value_callback: ''
+settings:
+  markup:
+    value: "<p>Image allows you to upload an image to your page. The Image component supports varying aspect ratios.</p>\r\n"
+    format: basic_html
+field_type: markup
