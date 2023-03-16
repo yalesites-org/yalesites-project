@@ -16,23 +16,24 @@ function atomic_preprocess_region(&$variables) {
  * Implements hook_preprocess_menu().
  */
 function atomic_preprocess_menu(&$variables, $hook) {
+  $current_path = \Drupal::request()->getRequestUri();
   $items = $variables['items'];
   foreach ($items as $key => $item) {
-    if ($item['in_active_trail']) {
+    if ($item['url']->toString() == $current_path) {
       // Set top level.
       $variables['items'][$key]['is_active'] = TRUE;
-      if ($item['below']) {
-        foreach ($item['below'] as $secondaryKey => $secondaryItem) {
-          if ($secondaryItem['in_active_trail']) {
-            // Set secondary level.
-            $variables['items'][$key]['below'][$secondaryKey]['is_active'] = TRUE;
-            if ($secondaryItem['below']) {
-              foreach ($secondaryItem['below'] as $tertiaryKey => $tertiaryItem) {
-                if ($tertiaryItem['in_active_trail']) {
-                  // Set tertiary level.
-                  $variables['items'][$key]['below'][$secondaryKey]['below'][$tertiaryKey]['is_active'] = TRUE;
-                }
-              }
+    }
+    if ($item['below']) {
+      foreach ($item['below'] as $secondaryKey => $secondaryItem) {
+        if ($secondaryItem['url']->toString() == $current_path) {
+          // Set secondary level.
+          $variables['items'][$key]['below'][$secondaryKey]['is_active'] = TRUE;
+        }
+        if ($secondaryItem['below']) {
+          foreach ($secondaryItem['below'] as $tertiaryKey => $tertiaryItem) {
+            if ($tertiaryItem['url']->toString() == $current_path) {
+              // Set tertiary level.
+              $variables['items'][$key]['below'][$secondaryKey]['below'][$tertiaryKey]['is_active'] = TRUE;
             }
           }
         }
