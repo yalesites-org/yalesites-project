@@ -8,4 +8,4 @@ category: media_based
 label: 'Action Banner'
 image_path: themes/contrib/atomic/templates/block/layout-builder/preview-icons/banner-icon.svg
 image_alt: ''
-weight: -100
+weight: -4

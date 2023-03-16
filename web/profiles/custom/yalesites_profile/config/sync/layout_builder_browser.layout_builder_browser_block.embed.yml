@@ -1,0 +1,11 @@
+uuid: 90dc9eb2-0aa6-4d71-8aab-d2516507db64
+langcode: en
+status: true
+dependencies: {  }
+id: embed
+block_id: 'inline_block:embed'
+category: media_based
+label: Embed
+image_path: ''
+image_alt: ''
+weight: -2
