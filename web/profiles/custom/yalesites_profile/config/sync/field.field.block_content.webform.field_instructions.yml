@@ -1,0 +1,25 @@
+uuid: 258716e1-cd92-4a96-b0f2-84fd1d290711
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.webform
+    - field.storage.block_content.field_instructions
+  module:
+    - markup
+id: block_content.webform.field_instructions
+field_name: field_instructions
+entity_type: block_content
+bundle: webform
+label: Instructions
+description: ''
+required: false
+translatable: true
+default_value:
+  - {  }
+default_value_callback: ''
+settings:
+  markup:
+    value: "<p>Webform is a component that enables you to insert pre-built form components into your website. For a custom form or survey experience, you can use the embed component to add a Qualtrics form instead.</p>\r\n"
+    format: basic_html
+field_type: markup
