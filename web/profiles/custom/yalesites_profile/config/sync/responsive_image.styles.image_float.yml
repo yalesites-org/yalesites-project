@@ -24,7 +24,7 @@ image_style_mappings:
   -
     image_mapping_type: sizes
     image_mapping:
-      sizes: '(min-width: 992px) 448px, (min-width: 838px) 896px, 100vw'
+      sizes: '(min-width: 992px) 640px, (min-width: 838px) 896px, 100vw'
       sizes_image_styles:
         - max_width_1120
         - max_width_1280
