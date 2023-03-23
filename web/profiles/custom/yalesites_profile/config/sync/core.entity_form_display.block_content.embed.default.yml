@@ -1,0 +1,35 @@
+uuid: 3df1fdf1-1bf6-43ce-9b60-a9abe550e676
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.embed
+    - field.field.block_content.embed.field_instructions
+    - field.field.block_content.embed.field_media
+  module:
+    - markup
+    - media_library
+    - media_library_edit
+id: block_content.embed.default
+targetEntityType: block_content
+bundle: embed
+mode: default
+content:
+  field_instructions:
+    type: markup
+    weight: 0
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_media:
+    type: media_library_widget
+    weight: 1
+    region: content
+    settings:
+      media_types: {  }
+    third_party_settings:
+      media_library_edit:
+        show_edit: '1'
+hidden:
+  info: true
+  revision_log: true

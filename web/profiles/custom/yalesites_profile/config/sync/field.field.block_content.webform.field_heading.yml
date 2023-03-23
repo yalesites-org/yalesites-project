@@ -1,0 +1,26 @@
+uuid: f6f3ef41-6a8b-49e7-ac56-2b373018bd99
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.webform
+    - field.storage.block_content.field_heading
+  module:
+    - allowed_formats
+    - text
+third_party_settings:
+  allowed_formats:
+    allowed_formats:
+      - heading_html
+id: block_content.webform.field_heading
+field_name: field_heading
+entity_type: block_content
+bundle: webform
+label: 'Webform Component Title'
+description: ''
+required: true
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: text

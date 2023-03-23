@@ -1,0 +1,25 @@
+uuid: 7fea85a1-b677-4eda-8468-0cf165d3c2b5
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.embed
+    - field.storage.block_content.field_instructions
+  module:
+    - markup
+id: block_content.embed.field_instructions
+field_name: field_instructions
+entity_type: block_content
+bundle: embed
+label: Instructions
+description: ''
+required: false
+translatable: true
+default_value:
+  - {  }
+default_value_callback: ''
+settings:
+  markup:
+    value: "<p>Embed allows you to integrate external supported websites into your content.</p>\r\n"
+    format: basic_html
+field_type: markup
