@@ -85,42 +85,45 @@ class YaleSitesTitleBreadcrumbBlock extends BlockBase implements ContainerFactor
 
     $route = $this->routeMatch->getRouteObject();
     $request = $this->requestStack->getCurrentRequest();
+    $page_title = '';
+    $breadcrumbs_placeholder = [];
 
     // Get the page title.
     if ($route) {
       $page_title = $this->titleResolver->getTitle($request, $route);
-    };
 
-    /*
-     * For layout builder, during the block edit process, we want to show how
-     * the breadcrumbs will look, but we are on a layout route, so getting
-     * breadcrumbs is tricky. Instead we will show an example of how it may
-     * look if the node is in the menu.
-     */
+      /*
+       * For layout builder, during the block edit process, we want to show how
+       * the breadcrumbs will look, but we are on a layout route, so getting
+       * breadcrumbs is tricky. Instead we will show an example of how it may
+       * look if the node is in the menu.
+       */
 
-    $breadcrumbs_placeholder = [];
-    if (str_ends_with($route->getPath(), 'layout')) {
+      if (str_ends_with($route->getPath(), 'layout')) {
 
-      if ($request->attributes->get('node')) {
-        $page_title = $request->attributes->get('node')->getTitle();
+        if ($request->attributes->get('node')) {
+          // If we're on the layout page, don't show "Edit Layout for...".
+          $page_title = $request->attributes->get('node')->getTitle();
+        }
+
+        $breadcrumbs_placeholder = [
+          [
+            'title' => 'Home',
+          ],
+          [
+            'title' => 'Example Breadcrumbs',
+          ],
+          [
+            'title' => 'Only Shown',
+          ],
+          [
+            'title' => 'If In Menu',
+            'is_active' => TRUE,
+          ],
+        ];
       }
 
-      $breadcrumbs_placeholder = [
-        [
-          'title' => 'Home',
-        ],
-        [
-          'title' => 'Example Breadcrumbs',
-        ],
-        [
-          'title' => 'Only Shown',
-        ],
-        [
-          'title' => 'If In Menu',
-          'is_active' => TRUE,
-        ],
-      ];
-    }
+    };
 
     return [
       '#theme' => 'ys_title_breadcrumb',
