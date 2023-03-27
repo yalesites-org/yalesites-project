@@ -65,4 +65,6 @@ if [ -n "$(git ls-remote --heads https://github.com/yalesites-org/component-libr
 
   # Cut the gitignore file so themes can be committed.
   terminus build:gitignore:cut
+  
+  composer update
 fi
