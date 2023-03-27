@@ -4,5 +4,5 @@ status: true
 dependencies: {  }
 id: callout
 label: Callout
-revision: 0
+revision: 1
 description: 'Callout allows you to highlight and feature specific information or actions that relate to other content on the page. The callout component is a great way to add a large call-to-action to your page while also visually breaking up some of your content.'

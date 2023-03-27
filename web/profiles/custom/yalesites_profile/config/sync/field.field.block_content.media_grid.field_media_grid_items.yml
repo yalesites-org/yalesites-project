@@ -1,0 +1,118 @@
+uuid: d990b525-8d08-4aa3-884c-9c1a149e2b3f
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.media_grid
+    - field.storage.block_content.field_media_grid_items
+    - paragraphs.paragraphs_type.media_grid_item
+  module:
+    - entity_reference_revisions
+id: block_content.media_grid.field_media_grid_items
+field_name: field_media_grid_items
+entity_type: block_content
+bundle: media_grid
+label: Media
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:paragraph'
+  handler_settings:
+    target_bundles:
+      media_grid_item: media_grid_item
+    negate: 0
+    target_bundles_drag_drop:
+      accordion:
+        weight: 31
+        enabled: false
+      accordion_item:
+        weight: 32
+        enabled: false
+      basic_view:
+        weight: 33
+        enabled: false
+      callout:
+        weight: 34
+        enabled: false
+      callout_item:
+        weight: 35
+        enabled: false
+      cta_banner:
+        weight: 36
+        enabled: false
+      custom_card:
+        weight: 37
+        enabled: false
+      custom_cards:
+        weight: 38
+        enabled: false
+      divider:
+        weight: 39
+        enabled: false
+      embed:
+        weight: 40
+        enabled: false
+      event_cards:
+        weight: 41
+        enabled: false
+      event_list:
+        weight: 42
+        enabled: false
+      gallery:
+        weight: 43
+        enabled: false
+      gallery_item:
+        weight: 44
+        enabled: false
+      grand_hero:
+        weight: 45
+        enabled: false
+      image:
+        weight: 46
+        enabled: false
+      media_grid:
+        weight: 47
+        enabled: false
+      media_grid_item:
+        weight: 48
+        enabled: true
+      news_cards:
+        weight: 49
+        enabled: false
+      news_list:
+        weight: 50
+        enabled: false
+      pull_quote:
+        weight: 51
+        enabled: false
+      quick_links:
+        weight: 52
+        enabled: false
+      section:
+        weight: 53
+        enabled: false
+      tab:
+        weight: 54
+        enabled: false
+      tabs:
+        weight: 55
+        enabled: false
+      text:
+        weight: 56
+        enabled: false
+      text_with_image:
+        weight: 57
+        enabled: false
+      video:
+        weight: 58
+        enabled: false
+      webform:
+        weight: 59
+        enabled: false
+      wrapped_image:
+        weight: 60
+        enabled: false
+field_type: entity_reference_revisions

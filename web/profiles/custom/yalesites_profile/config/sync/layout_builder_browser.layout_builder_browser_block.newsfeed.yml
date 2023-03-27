@@ -1,0 +1,11 @@
+uuid: bc85f3cc-f743-4792-a11b-829dfd11b067
+langcode: en
+status: true
+dependencies: {  }
+id: newsfeed
+block_id: 'inline_block:news_list'
+category: lists
+label: Newsfeed
+image_path: ''
+image_alt: ''
+weight: -7

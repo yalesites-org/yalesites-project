@@ -4,12 +4,11 @@ status: true
 dependencies:
   config:
     - block_content.type.pull_quote
-    - field.field.block_content.pull_quote.field_attribution
+    - field.field.block_content.pull_quote.field_caption
     - field.field.block_content.pull_quote.field_instructions
     - field.field.block_content.pull_quote.field_style_variation
     - field.field.block_content.pull_quote.field_text
   module:
-    - markup
     - options
     - text
 id: block_content.pull_quote.default
@@ -17,24 +16,16 @@ targetEntityType: block_content
 bundle: pull_quote
 mode: default
 content:
-  field_attribution:
-    type: string
+  field_caption:
+    type: text_default
     label: hidden
-    settings:
-      link_to_entity: false
+    settings: {  }
     third_party_settings: {  }
     weight: 1
     region: content
-  field_instructions:
-    type: markup
-    label: above
-    settings: {  }
-    third_party_settings: {  }
-    weight: 3
-    region: content
   field_style_variation:
     type: list_key
-    label: above
+    label: hidden
     settings: {  }
     third_party_settings: {  }
     weight: 2
@@ -47,4 +38,5 @@ content:
     weight: 0
     region: content
 hidden:
+  field_instructions: true
   search_api_excerpt: true

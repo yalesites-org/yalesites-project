@@ -1,0 +1,26 @@
+uuid: 05531554-2d6c-429b-ad31-f3743ca2c116
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.wrapped_image
+    - field.storage.block_content.field_caption
+  module:
+    - allowed_formats
+    - text
+third_party_settings:
+  allowed_formats:
+    allowed_formats:
+      - heading_html
+id: block_content.wrapped_image.field_caption
+field_name: field_caption
+entity_type: block_content
+bundle: wrapped_image
+label: Caption
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: text_long

@@ -1,0 +1,8 @@
+uuid: b83180e2-9167-4c23-b4aa-5522a47bbeec
+langcode: en
+status: true
+dependencies: {  }
+id: grand_hero
+label: 'Grand Hero'
+revision: 1
+description: 'The grand hero component is ideal for a main message at the top of a home or landing page. It can feature a large image or a short muted background video that will run on a loop.'

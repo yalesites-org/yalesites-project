@@ -1,0 +1,26 @@
+uuid: 930e8aa7-6679-4a88-90bf-972ca89519ba
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.pull_quote
+    - field.storage.block_content.field_caption
+  module:
+    - allowed_formats
+    - text
+third_party_settings:
+  allowed_formats:
+    allowed_formats:
+      - heading_html
+id: block_content.pull_quote.field_caption
+field_name: field_caption
+entity_type: block_content
+bundle: pull_quote
+label: Attribution
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: text_long

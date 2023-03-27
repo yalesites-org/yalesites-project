@@ -8,4 +8,4 @@ category: text_based
 label: Quote
 image_path: themes/contrib/atomic/templates/block/layout-builder/preview-icons/avatar-icon.svg
 image_alt: ''
-weight: 0
+weight: -4

@@ -4,5 +4,5 @@ status: true
 dependencies: {  }
 id: event_list
 label: 'Calendar List'
-revision: 0
+revision: 1
 description: 'Calendar pulls in your Events content types and dynamically references them on your webpage. You can select a List View or a Card View of your Events.'

@@ -1,0 +1,11 @@
+uuid: 77a259db-9cdc-4a34-be69-14a43136fa41
+langcode: en
+status: true
+dependencies: {  }
+id: quick_links
+block_id: 'inline_block:quick_links'
+category: lists
+label: 'Quick Links'
+image_path: ''
+image_alt: ''
+weight: -6

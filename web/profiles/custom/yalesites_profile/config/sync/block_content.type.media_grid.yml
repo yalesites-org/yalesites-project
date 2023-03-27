@@ -1,0 +1,8 @@
+uuid: 6c5574cf-d0a5-4c4f-b7b8-4f36009af91f
+langcode: en
+status: true
+dependencies: {  }
+id: media_grid
+label: 'Media Grid'
+revision: 1
+description: 'Media Grid allows you to display numerous images in a grid layout. The Media Grid component will display at full width when there are four or more images added.'

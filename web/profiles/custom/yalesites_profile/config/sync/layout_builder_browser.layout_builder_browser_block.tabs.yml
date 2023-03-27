@@ -1,0 +1,11 @@
+uuid: 8997f9c6-55b7-4bf1-a2b8-645701ff6074
+langcode: en
+status: true
+dependencies: {  }
+id: tabs
+block_id: 'inline_block:tabs'
+category: lists
+label: Tabs
+image_path: ''
+image_alt: ''
+weight: -100

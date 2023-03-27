@@ -1,0 +1,27 @@
+uuid: 77334cee-5940-4438-89c3-1985b8af0973
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.tabs
+    - field.field.block_content.tabs.field_instructions
+    - field.field.block_content.tabs.field_tabs
+  module:
+    - entity_reference_revisions
+id: block_content.tabs.default
+targetEntityType: block_content
+bundle: tabs
+mode: default
+content:
+  field_tabs:
+    type: entity_reference_revisions_entity_view
+    label: hidden
+    settings:
+      view_mode: default
+      link: ''
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  field_instructions: true
+  search_api_excerpt: true

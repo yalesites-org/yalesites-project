@@ -8,4 +8,4 @@ category: text_based
 label: Text
 image_path: themes/contrib/atomic/templates/block/layout-builder/preview-icons/rich_text-icon.svg
 image_alt: ''
-weight: -1
+weight: -5

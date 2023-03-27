@@ -1,0 +1,26 @@
+uuid: 32640df1-555c-4fa5-a17f-e948641b4601
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.news_list
+    - field.storage.block_content.field_heading
+  module:
+    - allowed_formats
+    - text
+third_party_settings:
+  allowed_formats:
+    allowed_formats:
+      - heading_html
+id: block_content.news_list.field_heading
+field_name: field_heading
+entity_type: block_content
+bundle: news_list
+label: Heading
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: text

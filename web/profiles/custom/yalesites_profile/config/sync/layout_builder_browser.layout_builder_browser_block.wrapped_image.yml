@@ -1,0 +1,11 @@
+uuid: 28687866-63d8-4964-b0d7-4fe6f1675e79
+langcode: en
+status: true
+dependencies: {  }
+id: wrapped_image
+block_id: 'inline_block:wrapped_image'
+category: other
+label: 'Wrapped Image'
+image_path: ''
+image_alt: ''
+weight: -100

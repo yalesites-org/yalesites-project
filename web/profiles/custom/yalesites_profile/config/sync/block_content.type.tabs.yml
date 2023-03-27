@@ -1,0 +1,8 @@
+uuid: fb961e81-32a1-4285-8f4e-48d5fde979cc
+langcode: en
+status: true
+dependencies: {  }
+id: tabs
+label: Tabs
+revision: 1
+description: 'Tabs allow you to create segmented content chunks on the same page. Tabs can be used for content that is related but not sequential or dependent information.'

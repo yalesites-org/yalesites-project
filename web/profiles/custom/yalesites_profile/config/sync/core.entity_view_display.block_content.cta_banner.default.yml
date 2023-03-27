@@ -5,15 +5,14 @@ dependencies:
   config:
     - block_content.type.cta_banner
     - field.field.block_content.cta_banner.field_heading
-    - field.field.block_content.cta_banner.field_image
     - field.field.block_content.cta_banner.field_instructions
     - field.field.block_content.cta_banner.field_link
+    - field.field.block_content.cta_banner.field_media
     - field.field.block_content.cta_banner.field_style_color
     - field.field.block_content.cta_banner.field_style_position
     - field.field.block_content.cta_banner.field_text
   module:
     - link
-    - markup
     - options
     - text
 id: block_content.cta_banner.default
@@ -26,23 +25,7 @@ content:
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 3
-    region: content
-  field_image:
-    type: entity_reference_entity_view
-    label: hidden
-    settings:
-      view_mode: banner_16_5
-      link: false
-    third_party_settings: {  }
-    weight: 0
-    region: content
-  field_instructions:
-    type: markup
-    label: above
-    settings: {  }
-    third_party_settings: {  }
-    weight: 6
+    weight: 1
     region: content
   field_link:
     type: link_separate
@@ -54,18 +37,27 @@ content:
       rel: ''
       target: ''
     third_party_settings: {  }
-    weight: 2
+    weight: 3
+    region: content
+  field_media:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: banner_16_5
+      link: false
+    third_party_settings: {  }
+    weight: 0
     region: content
   field_style_color:
     type: list_key
-    label: above
+    label: hidden
     settings: {  }
     third_party_settings: {  }
     weight: 4
     region: content
   field_style_position:
     type: list_key
-    label: above
+    label: hidden
     settings: {  }
     third_party_settings: {  }
     weight: 5
@@ -75,7 +67,8 @@ content:
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 1
+    weight: 2
     region: content
 hidden:
+  field_instructions: true
   search_api_excerpt: true

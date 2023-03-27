@@ -4,5 +4,5 @@ status: true
 dependencies: {  }
 id: cta_banner
 label: 'Action Banner'
-revision: 0
+revision: 1
 description: 'Action Banner allows you to highlight major stories, resources, people, events, and any other significant topics through a large image banner. The Action Banner includes a heading, body text, and a call-to-action.'

@@ -11,6 +11,7 @@ dependencies:
     - field_group
     - markup
     - paragraphs
+    - paragraphs_features
 third_party_settings:
   field_group:
     group_callout_tabs:
@@ -64,17 +65,29 @@ bundle: callout
 mode: default
 content:
   field_callout:
-    type: entity_reference_paragraphs
+    type: paragraphs
     weight: 3
     region: content
     settings:
-      title: Paragraph
-      title_plural: Paragraphs
+      title: callout
+      title_plural: callouts
       edit_mode: open
-      add_mode: dropdown
+      closed_mode: summary
+      autocollapse: none
+      closed_mode_threshold: 0
+      add_mode: button
       form_display_mode: default
       default_paragraph_type: callout_item
-    third_party_settings: {  }
+      features:
+        add_above: add_above
+        collapse_edit_all: collapse_edit_all
+        duplicate: duplicate
+    third_party_settings:
+      paragraphs_features:
+        add_in_between: false
+        add_in_between_link_count: 3
+        delete_confirmation: true
+        show_drag_and_drop: true
   field_instructions:
     type: markup
     weight: 0

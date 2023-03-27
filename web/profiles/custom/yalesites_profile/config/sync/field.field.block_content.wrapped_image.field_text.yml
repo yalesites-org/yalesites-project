@@ -1,0 +1,26 @@
+uuid: ebaeb1a3-0d9d-4093-970a-1376b176e06c
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.wrapped_image
+    - field.storage.block_content.field_text
+  module:
+    - allowed_formats
+    - text
+third_party_settings:
+  allowed_formats:
+    allowed_formats:
+      - basic_html
+id: block_content.wrapped_image.field_text
+field_name: field_text
+entity_type: block_content
+bundle: wrapped_image
+label: Content
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: text_long

@@ -1,0 +1,25 @@
+uuid: 8d910a4d-f8ef-4563-85a0-103cb33f78aa
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.content_spotlight
+    - field.storage.block_content.field_instructions
+  module:
+    - markup
+id: block_content.content_spotlight.field_instructions
+field_name: field_instructions
+entity_type: block_content
+bundle: content_spotlight
+label: Instructions
+description: ''
+required: false
+translatable: true
+default_value:
+  - {  }
+default_value_callback: ''
+settings:
+  markup:
+    value: "<p>Content spotlight allows you to display an image adjacent to text. This component has optional content, varying sizes, and different orientations.</p>\r\n"
+    format: basic_html
+field_type: markup
