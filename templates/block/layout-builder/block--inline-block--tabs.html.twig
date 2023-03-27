@@ -1,0 +1,14 @@
+{% embed "@organisms/component-wrapper/yds-component-wrapper.twig" with {
+  component_wrapper__width: component_wrapper__width|default('max'),
+  component_wrapper__alignment: component_wrapper__alignment|default('center'),
+  }%}
+
+  {% block component_wrapper_inner %}
+    {{ content }}
+    {% block prefix_suffix %}
+		  {{ title_prefix }}
+		  {{ title_suffix }}
+	  {% endblock %}
+  {% endblock %}
+
+{% endembed %}

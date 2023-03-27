@@ -1,18 +1,18 @@
-<div{{ add_attributes() }}>
+{% embed "@molecules/banner/action/yds-action-banner.twig" with {
+  banner__heading: content.field_heading,
+  banner__snippet: content.field_text,
+  banner__link__content: content.field_link.0['#title'],
+  banner__link__url: content.field_link.0['#url_title'],
+  banner__content__background: content.field_style_color.0['#markup'],
+  banner__content__layout: content.field_style_position.0['#markup'],
+} %}
 
-  {{ title_prefix }}
-  {{ title_suffix }}
+  {% block prefix_suffix %}
+    {{ title_prefix }}
+    {{ title_suffix }}
+  {% endblock %}
 
-  {% embed "@molecules/banner/action/yds-action-banner.twig" with {
-    banner__heading: content.field_heading,
-    banner__snippet: content.field_text,
-    banner__link__content: content.field_link.0['#title'],
-    banner__link__url: content.field_link.0['#url_title'],
-    banner__content__background: content.field_style_color.0['#markup'],
-    banner__content__layout: content.field_style_position.0['#markup'],
-  } %}
-    {% block banner__image %}
-      {{ content.field_image }}
-    {% endblock %}
-  {% endembed %}
-</div>
+  {% block banner__image %}
+    {{ content.field_media }}
+  {% endblock %}
+{% endembed %}

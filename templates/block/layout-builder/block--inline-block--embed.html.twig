@@ -1,5 +1,12 @@
 {% embed "@molecules/embed/yds-embed.twig" %}
+
   {% block embed__block %}
     {{ content }}
   {% endblock %}
+
+  {% block prefix_suffix %}
+		{{ title_prefix }}
+		{{ title_suffix }}
+	{% endblock %}
+
 {% endembed %}

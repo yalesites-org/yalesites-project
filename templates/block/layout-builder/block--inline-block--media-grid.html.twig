@@ -1,0 +1,15 @@
+{% embed "@organisms/galleries/media-grid/yds-media-grid.twig" with {
+  media_grid__heading: content.field_heading,
+  media_grid__width: 'max',
+} %}
+
+  {% block media_grid__items %}
+    {{ content.field_media_grid_items }}
+  {% endblock %}
+
+  {% block prefix_suffix %}
+		{{ title_prefix }}
+		{{ title_suffix }}
+	{% endblock %}
+
+{% endembed %}
