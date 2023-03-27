@@ -27,7 +27,7 @@ pull_quote:
       bar-right: 'Bar Right'
       quote-left: 'Quote Left'
     default: bar-left
-text_with_image:
+content_spotlight:
   field_style_position:
     values:
       image-left: 'Image Left'
