@@ -52,9 +52,10 @@ if [ -n "$(git ls-remote --heads https://github.com/yalesites-org/component-libr
   # Copy atomic theme to tmp for safe keeping.
   cp -pr "$GITHUB_WORKSPACE"/"$ATOMIC_PATH" /tmp
 
-  # Remove atomic as a composer dependency. so Integred Composer doesn't fail.
+  # Remove atomic as a composer dependency, so Integrated Composer doesn't fail.
   cd "$GITHUB_WORKSPACE"/web/profiles/custom/yalesites_profile
   composer remove yalesites-org/atomic
+  rm -rf "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"
 
   # Copy atomic back into the themes directory and remove its gitignore so node_modules can be committed.
   cp -pr /tmp/atomic "$GITHUB_WORKSPACE"/web/themes/contrib
