@@ -193,6 +193,11 @@ jobs:
       # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
       - name: setup-environment-vars
         run: /build-tools-ci/scripts/set-environment
+        
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16.13'
 
       - name: build frontend components
         env:
