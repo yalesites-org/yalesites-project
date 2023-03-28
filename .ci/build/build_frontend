@@ -5,6 +5,9 @@ set -eo pipefail
 # This script builds out frontend assets for the atomic theme and
 # component library if the pull request branch exists in those repos.
 
+# Define path to atomic theme for reuse.
+ATOMIC_PATH="web/themes/contrib/atomic"
+
 # Exclude generated composer.lock.
 echo /composer.lock >> .git/info/exclude
 
