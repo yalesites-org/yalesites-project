@@ -42,7 +42,11 @@ rm -rf node_modules
 rm -rf "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/@yalesites-org/component-library-twig
 mv /tmp/component-library-twig "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/@yalesites-org
 
-# Remove atomic and component library gitignore files so node_modules can be committed.
+# Remove atomic from composer so Integrated Composer doesn't fail,
+cd "$GITHUB_WORKSPACE"/web/profiles/custom/yalesites_profile
+composer remove yalesites-org/atomic
+
+# Remove atomic and component library gitignores to commit node_modules.
 rm "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/.gitignore
 rm "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/@yalesites-org/component-library-twig/.gitignore
 
