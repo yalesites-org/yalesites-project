@@ -24,58 +24,9 @@ cd "$GITHUB_WORKSPACE"
 rm -rf "${GITHUB_WORKSPACE:?}"/"$ATOMIC_PATH"
 composer update --prefer-dist
 
-<<<<<<< HEAD
-# Check if branch exists in component library.
-if [ -n "$(git ls-remote --heads https://github.com/yalesites-org/component-library-twig.git "$BRANCH")" ]; then
-  # Build component library
-  cd "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"
-  npm ci --omit=dev --ignore-scripts
-
-  # Remove component library from atomic so we can add the branch version later.
-  rm -rf node_modules/@yalesites-org/component-library-twig
-
-  # Clone and build the component library from branch.
-  cd /tmp
-  git clone --single-branch --branch "$BRANCH" https://github.com/yalesites-org/component-library-twig && cd component-library-twig
-  rm -rf .git
-  npm ci --omit=dev --ignore-scripts
-  npm install webpack-cli
-  npm run build
-  rm -rf node_modules
-
-  # Copy built component library into atomic theme.
-  mv /tmp/component-library-twig "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/@yalesites-org
-
-  # Clean up atomic's node_modules and remove gitignores so the changes can be staged.
-  for dir in "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/*; do
-    if [ "$dir" != "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/@yalesites-org ]; then
-      rm -rf "$dir"
-    fi
-  done
-
-  # Copy atomic theme to tmp for safe keeping.
-  cp -pr "$GITHUB_WORKSPACE"/"$ATOMIC_PATH" /tmp
-
-  # Remove atomic as a composer dependency, so Integrated Composer doesn't fail.
-  cd "$GITHUB_WORKSPACE"/web/profiles/custom/yalesites_profile
-  composer remove yalesites-org/atomic
-  rm -rf "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"
-
-  # Copy atomic back into the themes directory and remove its gitignore so node_modules can be committed.
-  cp -pr /tmp/atomic "$GITHUB_WORKSPACE"/web/themes/contrib
-  rm "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/.gitignore
-
-  cd "$GITHUB_WORKSPACE"
-
-  # Cut the gitignore file so themes can be committed.
-  terminus build:gitignore:cut
-  
-  composer update
-=======
 # Set branch to latest release if current branch is not in component library.
 if [ -z "$(git ls-remote --heads https://github.com/yalesites-org/component-library-twig.git "$BRANCH")" ]; then
   BRANCH=$(curl -s https://api.github.com/repos/yalesites-org/component-library-twig/releases/latest | jq -r '.tag_name')
->>>>>>> develop
 fi
 
 # Clone and build the component library.
