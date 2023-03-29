@@ -39,7 +39,9 @@ npm run build
 rm -rf node_modules
 
 # Copy built component library into atomic theme.
+# Sometimes the directory doesn't exist so we just recreate it.
 rm -rf "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/@yalesites-org/component-library-twig
+mkdir -p "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/@yalesites-org
 mv /tmp/component-library-twig "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/@yalesites-org
 
 # Remove atomic from composer so Integrated Composer doesn't fail,
