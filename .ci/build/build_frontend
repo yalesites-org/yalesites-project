@@ -8,11 +8,14 @@ set -eo pipefail
 # Define path to atomic theme for reuse.
 ATOMIC_PATH="web/themes/contrib/atomic"
 
+# Exclude generated composer.lock.
+echo /composer.lock >> .git/info/exclude
+
 # Build atomic theme. We must do this from the profile by updating composer.json,
 # removing the existing atomic directory, and running composer update.
 cd "$GITHUB_WORKSPACE"/web/profiles/custom/yalesites_profile
 
-# Require the branch version if it exists.
+# Require the branch version of atomic if it exists.
 if [ -n "$(git ls-remote --heads https://github.com/yalesites-org/atomic.git "$BRANCH")" ]; then
   composer require --prefer-dist --no-update yalesites-org/atomic:dev-"$BRANCH"
 fi
@@ -21,6 +24,7 @@ cd "$GITHUB_WORKSPACE"
 rm -rf "${GITHUB_WORKSPACE:?}"/"$ATOMIC_PATH"
 composer update --prefer-dist
 
+<<<<<<< HEAD
 # Check if branch exists in component library.
 if [ -n "$(git ls-remote --heads https://github.com/yalesites-org/component-library-twig.git "$BRANCH")" ]; then
   # Build component library
@@ -67,4 +71,37 @@ if [ -n "$(git ls-remote --heads https://github.com/yalesites-org/component-libr
   terminus build:gitignore:cut
   
   composer update
+=======
+# Set branch to latest release if current branch is not in component library.
+if [ -z "$(git ls-remote --heads https://github.com/yalesites-org/component-library-twig.git "$BRANCH")" ]; then
+  BRANCH=$(curl -s https://api.github.com/repos/yalesites-org/component-library-twig/releases/latest | jq -r '.tag_name')
+>>>>>>> develop
 fi
+
+# Clone and build the component library.
+cd /tmp
+git clone --single-branch --branch "$BRANCH" https://github.com/yalesites-org/component-library-twig && cd component-library-twig
+rm -rf .git
+npm ci --omit=dev --ignore-scripts
+npm install webpack-cli
+npm run build
+rm -rf node_modules
+
+# Copy built component library into atomic theme.
+# Sometimes the directory doesn't exist so we just recreate it.
+rm -rf "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/@yalesites-org/component-library-twig
+mkdir -p "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/@yalesites-org
+mv /tmp/component-library-twig "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/@yalesites-org
+
+# Remove atomic from composer so Integrated Composer doesn't fail,
+cd "$GITHUB_WORKSPACE"/web/profiles/custom/yalesites_profile
+composer remove yalesites-org/atomic
+
+# Remove atomic and component library gitignores to commit node_modules.
+rm "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/.gitignore
+rm "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/@yalesites-org/component-library-twig/.gitignore
+
+cd "$GITHUB_WORKSPACE"
+
+# Cut the gitignore file so themes can be committed.
+terminus build:gitignore:cut
