@@ -1,7 +1,5 @@
 {{ attach_library('atomic/accordion') }}
 
-{% set parentNode = paragraph.parentEntity.type.value.0['target_id'] %}
-
 {% if parentNode == 'news' or parentNode == 'event' %}
   {% set accordion__width = "content" %}
   {% set accordion__alignment = "center" %}
