@@ -18,8 +18,8 @@ translatable: false
 default_value:
   -
     group_params:
-      params: ''
-    params: '{"view_mode":"card","filters":{"types":[null],"tags":[null]},"sort_by":null,"display":null,"limit":0}'
+      params: '{"view_mode":"card","filters":{"types":[null],"tags":[null]},"sort_by":null,"display":null,"limit":0}'
+    params: '{"view_mode":"card","filters":{"types":["news"],"tags":[null]},"sort_by":null,"display":null,"limit":0}'
 default_value_callback: ''
 settings: {  }
 field_type: views_basic_params
