@@ -127,6 +127,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
           'views-basic--group-user-selection',
         ],
       ],
+      '#weight' => 10,
     ];
 
     $form['group_user_selection']['entity_and_view_mode'] = [
