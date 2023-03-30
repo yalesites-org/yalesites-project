@@ -98,7 +98,11 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
   ) {
 
     $entity_list = $this->viewsBasicManager->entityTypeList();
-    $entityValue = ($items[$delta]->params) ? json_decode($items[$delta]->params, TRUE)['filters']['types'][0] : array_key_first($entity_list);
+    $entityValue = array_key_first($entity_list);
+    $decodedParams = json_decode($items[$delta]->params, TRUE);
+    if (!empty($decodedParams['filters']['types'][0])) {
+      $entityValue = $decodedParams['filters']['types'][0];
+    }
 
     // Gets the value of the selected entity for Ajax callbacks.
     // Via: https://www.drupal.org/project/drupal/issues/2758631
