@@ -144,3 +144,13 @@ function ys_themes_build_css_variables() : string {
   $css[] = '}';
   return implode(PHP_EOL, $css);
 }
+
+/**
+ * Implements hook_preprocess_block().
+ */
+function ys_themes_preprocess_block(&$variables) {
+  if ($variables['plugin_id'] == 'inline_block:accordion') {
+    $node = \Drupal::routeMatch()->getParameter('node');
+    $variables['parentNode'] = $node->getType();
+  }
+}
