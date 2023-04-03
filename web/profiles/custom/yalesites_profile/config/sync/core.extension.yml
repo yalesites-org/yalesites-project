@@ -107,6 +107,7 @@ module:
   ys_captcha: 0
   ys_node_access: 0
   ys_secrets: 0
+  ys_toolbar: 0
   ys_views_basic: 0
   hide_revision_field: 1
   menu_admin_per_menu: 1

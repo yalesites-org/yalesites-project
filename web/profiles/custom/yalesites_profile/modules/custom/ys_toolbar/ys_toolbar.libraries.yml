@@ -1,0 +1,5 @@
+ys_toolbar:
+  version: VERSION
+  css:
+    component:
+      css/ys_toolbar.module.css: { media: screen }

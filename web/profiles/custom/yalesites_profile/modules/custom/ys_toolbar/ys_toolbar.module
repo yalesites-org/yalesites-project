@@ -1,0 +1,28 @@
+<?php
+
+/**
+ * @file
+ * Contains ys_toolbar.module functions.
+ */
+
+/**
+ * Implements hook_toolbar_alter().
+ */
+function ys_toolbar_toolbar_alter(&$items) {
+  // Alter the label of the "Local Tasks" link created by the Gin Toolbar.
+  //if (!empty($items['admin_toolbar_local_tasks']['tab']['#title'])) {
+    // Change to "Manage This Page" as "Local Tasks" is not easy to understand.
+    //$items['admin_toolbar_local_tasks']['tab']['#title'] = 'Manage This Page';
+  //}
+
+  // Remove the contextual toggle. This control is confusing to our authors
+  // and is not important for our editorial workflow.
+  unset($items['contextual']);
+}
+
+/**
+ * Implements hook_toolbar().
+ */
+function ys_toolbar_toolbar() {
+  return \Drupal::service('ys_toolbar.items')->addItems();
+}

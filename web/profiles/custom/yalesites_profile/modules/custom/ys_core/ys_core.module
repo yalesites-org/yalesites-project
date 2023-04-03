@@ -151,14 +151,3 @@ function ys_core_preprocess_menu__main(&$variables) {
 
   }
 }
-
-/**
- * Implements hook_toolbar_alter().
- */
-function ys_core_toolbar_alter(&$items) {
-  // Alter the label of the "Local Tasks" link created by the Gin Toolbar.
-  if (!empty($items['admin_toolbar_local_tasks']['tab']['#title'])) {
-    // Change to "Manage This Page" as "Local Tasks" is not easy to understand.
-    $items['admin_toolbar_local_tasks']['tab']['#title'] = 'Manage This Page';
-  }
-}
