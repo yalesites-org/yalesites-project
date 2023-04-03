@@ -116,17 +116,45 @@ class ToolbarItemsService {
       'Layout'
     );
 
+    // Add a publish button to the toolbar when viewing an unpublished node.
+    if ($this->showPublishButton()) {
+      $this->toolbarItems['toolbar_publish_link'] = $this->buildButton(
+        'entity.node.publish',
+        'Publish'
+      );
+    }
+
     return $this->toolbarItems;
   }
 
   /**
-   * Check if the current route is a node
+   * Check if the current route is a node.
    *
    * @return bool
    *   True if the current route is a node.
    */
   public function isCurrentRouteNode(): bool {
     return $this->currentNode instanceof NodeInterface;
+  }
+
+  /**
+   * Check if the current route is a canonical node route.
+   *
+   * @return bool
+   *   True if the current route is a canonical node route.
+   */
+  protected function isViewRoute(): bool {
+    return self::NODE_VIEW_ROUTE == $this->routeMatch->getRouteName();
+  }
+
+  /**
+   * Check if the current route is a node-edit route.
+   *
+   * @return bool
+   *   True if the current route is a node-edit route.
+   */
+  protected function isEditRoute(): bool {
+    return self::NODE_EDIT_ROUTE == $this->routeMatch->getRouteName();
   }
 
   /**
@@ -137,8 +165,18 @@ class ToolbarItemsService {
    */
   protected function showEditButton(): bool {
     // Show the edit button on all node routes except the edit form.
-    return $this->isCurrentRouteNode() &&
-      self::NODE_EDIT_ROUTE !== $this->routeMatch->getRouteName();
+    return $this->isCurrentRouteNode() && !$this->isEditRoute();
+  }
+
+  /**
+   * Chech if the dedicated 'publish' button should appear on the current route.
+   *
+   * @return bool
+   *   True if the publish button should appear on the toolbar.
+   */
+  protected function showPublishButton(): bool {
+    // Show the edit button on all node routes except the edit form.
+    return !$this->currentNode->isPublished() && $this->isViewRoute();
   }
 
   /**
