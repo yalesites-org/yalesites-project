@@ -125,7 +125,7 @@ class ToolbarItemsService {
    * @return bool
    *   True if the current route is a node.
    */
-  protected function isCurrentRouteNode(): bool {
+  public function isCurrentRouteNode(): bool {
     return $this->currentNode instanceof NodeInterface;
   }
 
