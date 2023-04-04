@@ -6,7 +6,6 @@ dependencies:
     - field.storage.node.field_content
     - node.type.page
     - paragraphs.paragraphs_type.basic_view
-    - paragraphs.paragraphs_type.gallery
     - paragraphs.paragraphs_type.grand_hero
     - paragraphs.paragraphs_type.image
     - paragraphs.paragraphs_type.media_grid
@@ -47,7 +46,6 @@ settings:
       quick_links: quick_links
       tabs: tabs
       media_grid: media_grid
-      gallery: gallery
       grand_hero: grand_hero
       video: video
       webform: webform

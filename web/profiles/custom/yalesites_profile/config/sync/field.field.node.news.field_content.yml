@@ -6,7 +6,6 @@ dependencies:
     - field.storage.node.field_content
     - node.type.news
     - paragraphs.paragraphs_type.callout_item
-    - paragraphs.paragraphs_type.gallery
     - paragraphs.paragraphs_type.image
     - paragraphs.paragraphs_type.media_grid
     - paragraphs.paragraphs_type.pull_quote
@@ -38,7 +37,6 @@ settings:
       text: text
       text_with_image: text_with_image
       media_grid: media_grid
-      gallery: gallery
       quick_links: quick_links
       video: video
     negate: 0
