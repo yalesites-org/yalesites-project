@@ -154,48 +154,6 @@
         }
       },
       {
-        "paragraph_id": "P14",
-        "paragraph_type": "cta_banner",
-        "paragraph_fields": {
-          "field_heading": {
-            "value": "Title of promotional feature",
-            "format": "heading_html"
-          },
-          "field_images": [
-            {
-              "image_id": 2
-            }
-          ],
-          "field_text": {
-            "value": "Use this space to communicate your site's purpose or to showcase content that support your goals. Keep text concise.",
-            "format": "basic_html"
-          },
-          "field_link": {
-            "url": "http://www.example.com",
-            "title": "Action text"
-          }
-        }
-      },
-      {
-        "paragraph_id": "P15",
-        "paragraph_type": "cta_banner",
-        "paragraph_fields": {
-          "field_heading": {
-            "value": "Standard page one",
-            "format": "heading_html"
-          },
-          "field_images": [
-            {
-              "image_id": 3
-            }
-          ],
-          "field_link": {
-            "url": "http://www.example.com",
-            "title": "Action text"
-          }
-        }
-      },
-      {
         "paragraph_id": "P16",
         "paragraph_type": "image",
         "paragraph_fields": {
