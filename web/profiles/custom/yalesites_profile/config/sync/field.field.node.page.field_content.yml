@@ -6,7 +6,6 @@ dependencies:
     - field.storage.node.field_content
     - node.type.page
     - paragraphs.paragraphs_type.basic_view
-    - paragraphs.paragraphs_type.section
     - paragraphs.paragraphs_type.tabs
     - paragraphs.paragraphs_type.text
     - paragraphs.paragraphs_type.text_with_image
@@ -29,7 +28,6 @@ settings:
   handler: 'default:paragraph'
   handler_settings:
     target_bundles:
-      section: section
       text: text
       text_with_image: text_with_image
       wrapped_image: wrapped_image
