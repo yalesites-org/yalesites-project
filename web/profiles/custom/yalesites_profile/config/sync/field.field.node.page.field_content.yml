@@ -6,7 +6,6 @@ dependencies:
     - field.storage.node.field_content
     - node.type.page
     - paragraphs.paragraphs_type.basic_view
-    - paragraphs.paragraphs_type.media_grid
     - paragraphs.paragraphs_type.news_list
     - paragraphs.paragraphs_type.pull_quote
     - paragraphs.paragraphs_type.quick_links
@@ -42,7 +41,6 @@ settings:
       basic_view: basic_view
       quick_links: quick_links
       tabs: tabs
-      media_grid: media_grid
       video: video
       webform: webform
     negate: 0

@@ -71,17 +71,6 @@
         }
       },
       {
-        "paragraph_id": "P06",
-        "paragraph_type": "image",
-        "paragraph_fields": {
-          "field_images": [
-            {
-              "image_id": 5
-            }
-          ]
-        }
-      },
-      {
         "paragraph_id": "P07",
         "paragraph_type": "text",
         "paragraph_fields": {
@@ -141,28 +130,6 @@
         }
       },
       {
-        "paragraph_id": "P16",
-        "paragraph_type": "image",
-        "paragraph_fields": {
-          "field_images": [
-            {
-              "image_id": 7
-            }
-          ]
-        }
-      },
-      {
-        "paragraph_id": "P17",
-        "paragraph_type": "image",
-        "paragraph_fields": {
-          "field_images": [
-            {
-              "image_id": 8
-            }
-          ]
-        }
-      },
-      {
         "paragraph_id": "P18",
         "paragraph_type": "wrapped_image",
         "paragraph_fields": {
@@ -188,17 +155,6 @@
             "value": "Malesuada nunc vel risus commodo viverra maecenas accumsan. Aliquam eleifend mi in nulla posuere sollicitudin aliquam.",
             "format": "restricted_html"
           }
-        }
-      },
-      {
-        "paragraph_id": "P20",
-        "paragraph_type": "image",
-        "paragraph_fields": {
-          "field_images": [
-            {
-              "image_id": 10
-            }
-          ]
         }
       },
       {
