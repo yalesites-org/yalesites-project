@@ -5,7 +5,6 @@ dependencies:
   config:
     - field.storage.node.field_content
     - node.type.event
-    - paragraphs.paragraphs_type.pull_quote
     - paragraphs.paragraphs_type.text
     - paragraphs.paragraphs_type.text_with_image
     - paragraphs.paragraphs_type.video
@@ -27,7 +26,6 @@ settings:
   handler_settings:
     target_bundles:
       wrapped_image: wrapped_image
-      pull_quote: pull_quote
       text: text
       text_with_image: text_with_image
       video: video

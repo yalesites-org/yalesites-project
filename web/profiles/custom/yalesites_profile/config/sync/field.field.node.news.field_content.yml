@@ -6,7 +6,6 @@ dependencies:
     - field.storage.node.field_content
     - node.type.news
     - paragraphs.paragraphs_type.callout_item
-    - paragraphs.paragraphs_type.pull_quote
     - paragraphs.paragraphs_type.text
     - paragraphs.paragraphs_type.text_with_image
     - paragraphs.paragraphs_type.video
@@ -29,7 +28,6 @@ settings:
     target_bundles:
       callout_item: callout_item
       wrapped_image: wrapped_image
-      pull_quote: pull_quote
       text: text
       text_with_image: text_with_image
       video: video
