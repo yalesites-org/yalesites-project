@@ -5,7 +5,6 @@ dependencies:
   config:
     - field.storage.node.field_content
     - node.type.event
-    - paragraphs.paragraphs_type.embed
     - paragraphs.paragraphs_type.gallery
     - paragraphs.paragraphs_type.image
     - paragraphs.paragraphs_type.media_grid
@@ -31,7 +30,6 @@ settings:
   handler: 'default:paragraph'
   handler_settings:
     target_bundles:
-      embed: embed
       image: image
       wrapped_image: wrapped_image
       pull_quote: pull_quote

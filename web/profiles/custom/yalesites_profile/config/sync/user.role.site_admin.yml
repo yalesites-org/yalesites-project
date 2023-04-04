@@ -3,7 +3,6 @@ langcode: en
 status: true
 dependencies:
   config:
-    - core.entity_view_display.node.page.default
     - media.type.background_video
     - media.type.document
     - media.type.embed
@@ -53,7 +52,6 @@ permissions:
   - 'clone event content'
   - 'clone news content'
   - 'clone page content'
-  - 'configure editable page node layout overrides'
   - 'create and edit custom blocks'
   - 'create background_video media'
   - 'create document media'
