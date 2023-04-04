@@ -6,7 +6,6 @@ dependencies:
     - field.storage.node.field_content
     - node.type.page
     - paragraphs.paragraphs_type.basic_view
-    - paragraphs.paragraphs_type.tabs
     - paragraphs.paragraphs_type.text
     - paragraphs.paragraphs_type.text_with_image
     - paragraphs.paragraphs_type.video
@@ -32,7 +31,6 @@ settings:
       text_with_image: text_with_image
       wrapped_image: wrapped_image
       basic_view: basic_view
-      tabs: tabs
       video: video
       webform: webform
     negate: 0
