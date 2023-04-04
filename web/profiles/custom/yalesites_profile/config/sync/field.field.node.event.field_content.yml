@@ -6,7 +6,6 @@ dependencies:
     - field.storage.node.field_content
     - node.type.event
     - paragraphs.paragraphs_type.text
-    - paragraphs.paragraphs_type.wrapped_image
   module:
     - entity_reference_revisions
 id: node.event.field_content
@@ -23,7 +22,6 @@ settings:
   handler: 'default:paragraph'
   handler_settings:
     target_bundles:
-      wrapped_image: wrapped_image
       text: text
     negate: 0
     target_bundles_drag_drop:

@@ -5,10 +5,7 @@ dependencies:
   config:
     - field.storage.node.field_content
     - node.type.page
-    - paragraphs.paragraphs_type.basic_view
     - paragraphs.paragraphs_type.text
-    - paragraphs.paragraphs_type.webform
-    - paragraphs.paragraphs_type.wrapped_image
   module:
     - entity_reference_revisions
 id: node.page.field_content
@@ -26,9 +23,6 @@ settings:
   handler_settings:
     target_bundles:
       text: text
-      wrapped_image: wrapped_image
-      basic_view: basic_view
-      webform: webform
     negate: 0
     target_bundles_drag_drop:
       accordion:
