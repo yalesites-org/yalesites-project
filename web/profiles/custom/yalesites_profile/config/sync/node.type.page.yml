@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   module:
+    - entity_redirect
     - menu_ui
     - node_revision_delete
     - search_api_exclude
@@ -18,6 +19,28 @@ third_party_settings:
     minimum_revisions_to_keep: 1
     minimum_age_to_delete: 12
     when_to_delete: 0
+  entity_redirect:
+    redirect:
+      anonymous:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+      add:
+        active: true
+        destination: layout_builder
+        url: ''
+        external: ''
+      edit:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+      delete:
+        active: false
+        destination: default
+        url: ''
+        external: ''
 name: Page
 type: page
 description: 'A multipurpose and flexible content type allowing free-form content entry. Used to build a variety of different page layouts, from simple to elaborate.'

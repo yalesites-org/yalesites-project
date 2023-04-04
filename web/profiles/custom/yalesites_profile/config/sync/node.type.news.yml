@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   module:
+    - entity_redirect
     - menu_ui
     - node_revision_delete
     - search_api_exclude
@@ -16,6 +17,28 @@ third_party_settings:
     minimum_revisions_to_keep: 1
     minimum_age_to_delete: 12
     when_to_delete: 0
+  entity_redirect:
+    redirect:
+      anonymous:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+      add:
+        active: true
+        destination: layout_builder
+        url: ''
+        external: ''
+      edit:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+      delete:
+        active: false
+        destination: default
+        url: ''
+        external: ''
 name: News
 type: news
 description: 'Create a news article, blog post, or announcement, to share new and noteworthy information. Can be displayed in a news feed.'

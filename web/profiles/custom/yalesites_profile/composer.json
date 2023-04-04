@@ -24,6 +24,7 @@
     "drupal/easy_breadcrumb": "^2.0",
     "drupal/editoria11y": "^2.0",
     "drupal/emulsify_twig": "^4.0",
+    "drupal/entity_redirect": "^2.2",
     "drupal/fast_404": "^2.0@alpha",
     "drupal/field_group": "^3.2",
     "drupal/gin": "^3.0@beta",
