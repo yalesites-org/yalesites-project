@@ -6,7 +6,6 @@ dependencies:
     - field.storage.node.field_content
     - node.type.event
     - paragraphs.paragraphs_type.pull_quote
-    - paragraphs.paragraphs_type.quick_links
     - paragraphs.paragraphs_type.text
     - paragraphs.paragraphs_type.text_with_image
     - paragraphs.paragraphs_type.video
@@ -31,7 +30,6 @@ settings:
       pull_quote: pull_quote
       text: text
       text_with_image: text_with_image
-      quick_links: quick_links
       video: video
     negate: 0
     target_bundles_drag_drop:

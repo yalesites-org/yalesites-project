@@ -7,7 +7,6 @@ dependencies:
     - node.type.page
     - paragraphs.paragraphs_type.basic_view
     - paragraphs.paragraphs_type.pull_quote
-    - paragraphs.paragraphs_type.quick_links
     - paragraphs.paragraphs_type.section
     - paragraphs.paragraphs_type.tabs
     - paragraphs.paragraphs_type.text
@@ -37,7 +36,6 @@ settings:
       pull_quote: pull_quote
       wrapped_image: wrapped_image
       basic_view: basic_view
-      quick_links: quick_links
       tabs: tabs
       video: video
       webform: webform
