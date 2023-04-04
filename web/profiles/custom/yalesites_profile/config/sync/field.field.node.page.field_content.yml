@@ -6,7 +6,6 @@ dependencies:
     - field.storage.node.field_content
     - node.type.page
     - paragraphs.paragraphs_type.basic_view
-    - paragraphs.paragraphs_type.image
     - paragraphs.paragraphs_type.media_grid
     - paragraphs.paragraphs_type.news_list
     - paragraphs.paragraphs_type.pull_quote
@@ -37,7 +36,6 @@ settings:
       section: section
       text: text
       text_with_image: text_with_image
-      image: image
       pull_quote: pull_quote
       wrapped_image: wrapped_image
       news_list: news_list

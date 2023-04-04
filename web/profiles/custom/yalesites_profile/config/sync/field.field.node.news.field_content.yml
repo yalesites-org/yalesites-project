@@ -6,7 +6,6 @@ dependencies:
     - field.storage.node.field_content
     - node.type.news
     - paragraphs.paragraphs_type.callout_item
-    - paragraphs.paragraphs_type.image
     - paragraphs.paragraphs_type.media_grid
     - paragraphs.paragraphs_type.pull_quote
     - paragraphs.paragraphs_type.quick_links
@@ -30,7 +29,6 @@ settings:
   handler: 'default:paragraph'
   handler_settings:
     target_bundles:
-      image: image
       callout_item: callout_item
       wrapped_image: wrapped_image
       pull_quote: pull_quote
