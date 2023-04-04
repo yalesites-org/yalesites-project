@@ -154,23 +154,6 @@
         }
       },
       {
-        "paragraph_id": "P13",
-        "paragraph_type": "accordion",
-        "paragraph_fields": {
-          "field_heading": {
-            "value": "Habitasse platea dictumst",
-            "format": "heading_html"
-          },
-          "field_accordion_refs": [
-            "Accordion01",
-            "Accordion02",
-            "Accordion03",
-            "Accordion04",
-            "Accordion05"
-          ]
-        }
-      },
-      {
         "paragraph_id": "P14",
         "paragraph_type": "cta_banner",
         "paragraph_fields": {

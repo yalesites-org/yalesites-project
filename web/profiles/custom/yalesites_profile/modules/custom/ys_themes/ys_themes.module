@@ -151,6 +151,8 @@ function ys_themes_build_css_variables() : string {
 function ys_themes_preprocess_block(&$variables) {
   if ($variables['plugin_id'] == 'inline_block:accordion') {
     $node = \Drupal::routeMatch()->getParameter('node');
-    $variables['parentNode'] = $node->getType();
+    if ($node) {
+      $variables['parentNode'] = $node->getType();
+    }
   }
 }

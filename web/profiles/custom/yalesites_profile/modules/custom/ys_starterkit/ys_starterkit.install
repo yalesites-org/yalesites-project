@@ -17,9 +17,6 @@ function ys_starterkit_uninstall() {
       "migrate_plus.migration.ys_images_media",
       "migrate_plus.migration.ys_pages",
       "migrate_plus.migration.ys_news",
-      "migrate_plus.migration.ys_paragraph_accordion_item",
-      "migrate_plus.migration.ys_paragraph_accordion_text",
-      "migrate_plus.migration.ys_paragraph_accordion",
       "migrate_plus.migration.ys_paragraph_callout",
       "migrate_plus.migration.ys_paragraphs",
     ];

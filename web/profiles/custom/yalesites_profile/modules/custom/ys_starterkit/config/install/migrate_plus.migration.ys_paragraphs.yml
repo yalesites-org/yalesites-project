@@ -58,9 +58,6 @@ source:
     - name: field_callout_refs
       label: 'Callout items'
       selector: paragraph_fields/field_callout_refs
-    - name: field_accordion_refs
-      label: 'Accordion references'
-      selector: paragraph_fields/field_accordion_refs
   ids:
     paragraph_id:
       type: string
@@ -102,21 +99,6 @@ process:
         process:
           target_id: '0'
           target_revision_id: '1'
-  field_accordion_item:
-      -
-        plugin: skip_on_empty
-        source: field_accordion_refs
-        method: process
-        message: 'Field field_accordion_refs is empty'
-      -
-        plugin: migration_lookup
-        migration: ys_paragraph_accordion_item
-        no_stub: false
-      -
-        plugin: sub_process
-        process:
-          target_id: '0'
-          target_revision_id: '1'
 
 destination:
   plugin: entity_reference_revisions:paragraph
@@ -124,4 +106,3 @@ destination:
 migration_dependencies:
   required:
     - ys_paragraph_callout
-    - ys_paragraph_accordion_item

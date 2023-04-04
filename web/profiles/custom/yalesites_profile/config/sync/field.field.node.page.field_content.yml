@@ -5,7 +5,6 @@ dependencies:
   config:
     - field.storage.node.field_content
     - node.type.page
-    - paragraphs.paragraphs_type.accordion
     - paragraphs.paragraphs_type.basic_view
     - paragraphs.paragraphs_type.callout
     - paragraphs.paragraphs_type.cta_banner
@@ -44,7 +43,6 @@ settings:
   handler_settings:
     target_bundles:
       section: section
-      accordion: accordion
       text: text
       text_with_image: text_with_image
       image: image

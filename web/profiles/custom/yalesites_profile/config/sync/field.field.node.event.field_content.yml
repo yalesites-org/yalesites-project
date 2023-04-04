@@ -5,7 +5,6 @@ dependencies:
   config:
     - field.storage.node.field_content
     - node.type.event
-    - paragraphs.paragraphs_type.accordion
     - paragraphs.paragraphs_type.callout
     - paragraphs.paragraphs_type.divider
     - paragraphs.paragraphs_type.embed
@@ -34,7 +33,6 @@ settings:
   handler: 'default:paragraph'
   handler_settings:
     target_bundles:
-      accordion: accordion
       callout: callout
       divider: divider
       embed: embed

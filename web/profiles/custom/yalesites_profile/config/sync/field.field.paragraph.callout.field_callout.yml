@@ -25,11 +25,11 @@ settings:
       callout_item: callout_item
     negate: 0
     target_bundles_drag_drop:
-      accordion:
-        weight: 28
-        enabled: false
       accordion_item:
         weight: 29
+        enabled: false
+      basic_view:
+        weight: 31
         enabled: false
       callout:
         weight: 5
@@ -63,6 +63,9 @@ settings:
         enabled: false
       gallery_item:
         weight: 40
+        enabled: false
+      grand_hero:
+        weight: 43
         enabled: false
       image:
         weight: 41
@@ -102,6 +105,9 @@ settings:
         enabled: false
       video:
         weight: 53
+        enabled: false
+      webform:
+        weight: 57
         enabled: false
       wrapped_image:
         weight: 54
