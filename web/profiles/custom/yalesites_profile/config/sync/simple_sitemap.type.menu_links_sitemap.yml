@@ -1,0 +1,11 @@
+uuid: d0fcdb76-edbb-434a-82b5-d07309c9b8f4
+langcode: en
+status: true
+dependencies: {  }
+id: menu_links_sitemap
+label: 'Main menu links'
+description: ''
+sitemap_generator: default
+url_generators:
+  custom: custom
+  entity_menu_link_content: entity_menu_link_content
