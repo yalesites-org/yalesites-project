@@ -7,8 +7,6 @@ dependencies:
     - node.type.news
     - paragraphs.paragraphs_type.callout_item
     - paragraphs.paragraphs_type.text
-    - paragraphs.paragraphs_type.text_with_image
-    - paragraphs.paragraphs_type.video
     - paragraphs.paragraphs_type.wrapped_image
   module:
     - entity_reference_revisions
@@ -29,8 +27,6 @@ settings:
       callout_item: callout_item
       wrapped_image: wrapped_image
       text: text
-      text_with_image: text_with_image
-      video: video
     negate: 0
     target_bundles_drag_drop:
       accordion:
