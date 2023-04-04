@@ -4,9 +4,7 @@ status: true
 dependencies:
   config:
     - field.field.node.news.field_author
-    - field.field.node.news.field_content
     - field.field.node.news.field_login_required
-    - field.field.node.news.field_content_title
     - field.field.node.news.field_metatags
     - field.field.node.news.field_publish_date
     - field.field.node.news.field_tags
@@ -15,7 +13,6 @@ dependencies:
     - field.field.node.news.field_teaser_title
     - node.type.news
   module:
-    - entity_reference_revisions
     - user
 id: node.news.default
 targetEntityType: node
@@ -30,17 +27,7 @@ content:
     third_party_settings: {  }
     weight: 0
     region: content
-  field_content:
-    type: entity_reference_revisions_entity_view
-    label: hidden
-    settings:
-      view_mode: default
-      link: ''
-    third_party_settings: {  }
-    weight: 1
-    region: content
 hidden:
-  field_content_title: true
   field_login_required: true
   field_metatags: true
   field_publish_date: true

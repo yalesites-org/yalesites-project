@@ -5,9 +5,7 @@ dependencies:
   config:
     - core.entity_view_mode.node.teaser
     - field.field.node.news.field_author
-    - field.field.node.news.field_content
     - field.field.node.news.field_login_required
-    - field.field.node.news.field_content_title
     - field.field.node.news.field_metatags
     - field.field.node.news.field_publish_date
     - field.field.node.news.field_tags
@@ -29,8 +27,6 @@ content:
     region: content
 hidden:
   field_author: true
-  field_content: true
-  field_content_title: true
   field_login_required: true
   field_metatags: true
   field_publish_date: true

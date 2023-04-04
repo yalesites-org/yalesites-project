@@ -4,9 +4,7 @@ status: true
 dependencies:
   config:
     - field.field.node.news.field_author
-    - field.field.node.news.field_content
     - field.field.node.news.field_login_required
-    - field.field.node.news.field_content_title
     - field.field.node.news.field_metatags
     - field.field.node.news.field_publish_date
     - field.field.node.news.field_tags
@@ -19,8 +17,6 @@ dependencies:
     - datetime
     - field_group
     - hide_revision_field
-    - layout_paragraphs
-    - markup
     - maxlength
     - media_library
     - metatag
@@ -34,7 +30,8 @@ third_party_settings:
         - title
         - field_tags
         - field_author
-        - field_content
+        - field_publish_date
+        - field_login_required
       label: Content
       region: content
       parent_name: group_wrapper
@@ -58,7 +55,7 @@ third_party_settings:
       label: Teaser
       region: content
       parent_name: group_wrapper
-      weight: 4
+      weight: 5
       format_type: details_sidebar
       format_settings:
         classes: ''
@@ -83,23 +80,6 @@ third_party_settings:
         id: ''
         direction: horizontal
         width_breakpoint: 640
-    group_publish_information:
-      children:
-        - field_publish_date
-        - field_login_required
-      label: 'Publish Information'
-      region: content
-      parent_name: ''
-      weight: 7
-      format_type: details_sidebar
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        open: false
-        description: ''
-        required_fields: true
-        weight: 0
 id: node.news.default
 targetEntityType: node
 bundle: news
@@ -113,25 +93,9 @@ content:
       size: 60
       placeholder: ''
     third_party_settings: {  }
-  field_content:
-    type: layout_paragraphs
-    weight: 16
-    region: content
-    settings:
-      preview_view_mode: preview
-      nesting_depth: 0
-      require_layouts: 0
-      empty_message: ''
-    third_party_settings: {  }
-  field_content_title:
-    type: markup
-    weight: 12
-    region: content
-    settings: {  }
-    third_party_settings: {  }
   field_login_required:
     type: boolean_checkbox
-    weight: 10
+    weight: 17
     region: content
     settings:
       display_label: true
@@ -146,7 +110,7 @@ content:
     third_party_settings: {  }
   field_publish_date:
     type: datetime_default
-    weight: 9
+    weight: 16
     region: content
     settings: {  }
     third_party_settings: {  }

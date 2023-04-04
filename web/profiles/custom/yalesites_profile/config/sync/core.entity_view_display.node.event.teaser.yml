@@ -4,8 +4,6 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.node.teaser
-    - field.field.node.event.field_content
-    - field.field.node.event.field_content_title
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_format
@@ -29,8 +27,6 @@ content:
     weight: 100
     region: content
 hidden:
-  field_content: true
-  field_content_title: true
   field_event_cta: true
   field_event_date: true
   field_event_format: true

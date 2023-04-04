@@ -3,8 +3,6 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.field.node.event.field_content
-    - field.field.node.event.field_content_title
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_format
@@ -19,9 +17,7 @@ dependencies:
     - allowed_formats
     - field_group
     - hide_revision_field
-    - layout_paragraphs
     - linkit
-    - markup
     - maxlength
     - media_library
     - metatag
@@ -48,10 +44,9 @@ third_party_settings:
         width_breakpoint: 640
     group_content:
       children:
-        - field_content_title
         - title
         - field_tags
-        - field_content
+        - field_login_required
       label: Content
       region: content
       parent_name: group_wrapper
@@ -73,14 +68,15 @@ third_party_settings:
       region: content
       parent_name: group_wrapper
       weight: 21
-      format_type: details_sidebar
+      format_type: tab
       format_settings:
         classes: ''
         show_empty_fields: false
         id: ''
-        open: true
+        formatter: closed
         description: ''
         required_fields: true
+        open: true
         weight: -10
     group_logistics:
       children:
@@ -99,22 +95,6 @@ third_party_settings:
         formatter: closed
         description: ''
         required_fields: true
-    group_publish_information:
-      children:
-        - field_login_required
-      label: 'Publish Information'
-      region: content
-      parent_name: ''
-      weight: 9
-      format_type: details_sidebar
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        open: false
-        description: ''
-        required_fields: true
-        weight: 0
 id: node.event.default
 targetEntityType: node
 bundle: event
@@ -123,22 +103,6 @@ content:
   created:
     type: datetime_timestamp
     weight: 2
-    region: content
-    settings: {  }
-    third_party_settings: {  }
-  field_content:
-    type: layout_paragraphs
-    weight: 84
-    region: content
-    settings:
-      preview_view_mode: preview
-      nesting_depth: 0
-      require_layouts: 0
-      empty_message: ''
-    third_party_settings: {  }
-  field_content_title:
-    type: markup
-    weight: 81
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -176,7 +140,7 @@ content:
     third_party_settings: {  }
   field_login_required:
     type: boolean_checkbox
-    weight: 8
+    weight: 84
     region: content
     settings:
       display_label: true

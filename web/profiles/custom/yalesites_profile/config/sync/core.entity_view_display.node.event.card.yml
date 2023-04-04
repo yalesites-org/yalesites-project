@@ -4,8 +4,6 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.node.card
-    - field.field.node.event.field_content
-    - field.field.node.event.field_content_title
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_format
@@ -17,7 +15,6 @@ dependencies:
     - field.field.node.event.field_teaser_title
     - node.type.event
   module:
-    - entity_reference_revisions
     - options
     - smart_date
     - text
@@ -27,15 +24,6 @@ targetEntityType: node
 bundle: event
 mode: card
 content:
-  field_content:
-    type: entity_reference_revisions_entity_view
-    label: hidden
-    settings:
-      view_mode: default
-      link: ''
-    third_party_settings: {  }
-    weight: 0
-    region: content
   field_event_date:
     type: smartdate_plain
     label: hidden
@@ -77,7 +65,6 @@ content:
     weight: 1
     region: content
 hidden:
-  field_content_title: true
   field_event_cta: true
   field_login_required: true
   field_metatags: true

@@ -3,9 +3,6 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.field.node.page.field_banner
-    - field.field.node.page.field_content
-    - field.field.node.page.field_content_title
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
     - field.field.node.page.field_tags
@@ -18,8 +15,6 @@ dependencies:
     - allowed_formats
     - field_group
     - hide_revision_field
-    - layout_paragraphs
-    - markup
     - maxlength
     - media_library
     - metatag
@@ -30,8 +25,8 @@ third_party_settings:
     group_wrapper:
       children:
         - group_content
+        - field_login_required
         - group_teaser
-        - group_hero
       label: Wrapper
       region: content
       parent_name: ''
@@ -45,10 +40,8 @@ third_party_settings:
         width_breakpoint: 640
     group_content:
       children:
-        - field_content_title
         - title
         - field_tags
-        - field_content
         - field_metatags
       label: Content
       region: content
@@ -70,22 +63,6 @@ third_party_settings:
       label: Teaser
       region: content
       parent_name: group_wrapper
-      weight: 15
-      format_type: details_sidebar
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        open: true
-        description: ''
-        required_fields: true
-        weight: -10
-    group_hero:
-      children:
-        - field_banner
-      label: 'Intro Banner'
-      region: content
-      parent_name: group_wrapper
       weight: 16
       format_type: tab
       format_settings:
@@ -95,66 +72,16 @@ third_party_settings:
         formatter: closed
         description: ''
         required_fields: true
-    group_publish_information:
-      children:
-        - field_login_required
-      label: 'Publish Information'
-      region: content
-      parent_name: ''
-      weight: 5
-      format_type: details_sidebar
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        open: false
-        description: ''
-        required_fields: true
-        weight: 0
+        open: true
+        weight: -10
 id: node.page.default
 targetEntityType: node
 bundle: page
 mode: default
 content:
-  field_banner:
-    type: layout_paragraphs
-    weight: 26
-    region: content
-    settings:
-      preview_view_mode: default
-      nesting_depth: 0
-      require_layouts: 0
-      empty_message: ''
-    third_party_settings:
-      paragraphs_features:
-        add_in_between: false
-        add_in_between_link_count: 3
-        delete_confirmation: false
-        show_drag_and_drop: true
-        split_text: false
-      paragraphs_ee:
-        paragraphs_ee:
-          dialog_off_canvas: false
-          dialog_style: tiles
-  field_content:
-    type: layout_paragraphs
-    weight: 84
-    region: content
-    settings:
-      preview_view_mode: preview
-      nesting_depth: 0
-      require_layouts: 0
-      empty_message: ''
-    third_party_settings: {  }
-  field_content_title:
-    type: markup
-    weight: 81
-    region: content
-    settings: {  }
-    third_party_settings: {  }
   field_login_required:
     type: boolean_checkbox
-    weight: 10
+    weight: 15
     region: content
     settings:
       display_label: true
@@ -209,13 +136,13 @@ content:
     third_party_settings: {  }
   path:
     type: path
-    weight: 1
+    weight: 2
     region: content
     settings: {  }
     third_party_settings: {  }
   revision_log:
     type: hide_revision_field_log_widget
-    weight: 4
+    weight: 5
     region: content
     settings:
       rows: 5
@@ -227,7 +154,7 @@ content:
     third_party_settings: {  }
   status:
     type: boolean_checkbox
-    weight: 3
+    weight: 4
     region: content
     settings:
       display_label: true
@@ -241,7 +168,7 @@ content:
       placeholder: ''
     third_party_settings: {  }
   url_redirects:
-    weight: 2
+    weight: 3
     region: content
     settings: {  }
     third_party_settings: {  }
