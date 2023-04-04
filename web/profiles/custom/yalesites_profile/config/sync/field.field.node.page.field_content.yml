@@ -6,7 +6,6 @@ dependencies:
     - field.storage.node.field_content
     - node.type.page
     - paragraphs.paragraphs_type.basic_view
-    - paragraphs.paragraphs_type.news_list
     - paragraphs.paragraphs_type.pull_quote
     - paragraphs.paragraphs_type.quick_links
     - paragraphs.paragraphs_type.section
@@ -37,7 +36,6 @@ settings:
       text_with_image: text_with_image
       pull_quote: pull_quote
       wrapped_image: wrapped_image
-      news_list: news_list
       basic_view: basic_view
       quick_links: quick_links
       tabs: tabs
