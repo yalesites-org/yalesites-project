@@ -5,7 +5,6 @@ dependencies:
   config:
     - field.storage.node.field_banner
     - node.type.page
-    - paragraphs.paragraphs_type.cta_banner
     - paragraphs.paragraphs_type.grand_hero
   module:
     - entity_reference_revisions
@@ -23,7 +22,6 @@ settings:
   handler: 'default:paragraph'
   handler_settings:
     target_bundles:
-      cta_banner: cta_banner
       grand_hero: grand_hero
     negate: 0
     target_bundles_drag_drop:
