@@ -6,7 +6,6 @@ dependencies:
     - field.storage.node.field_content
     - node.type.news
     - paragraphs.paragraphs_type.callout_item
-    - paragraphs.paragraphs_type.divider
     - paragraphs.paragraphs_type.embed
     - paragraphs.paragraphs_type.gallery
     - paragraphs.paragraphs_type.image
@@ -35,7 +34,6 @@ settings:
     target_bundles:
       image: image
       callout_item: callout_item
-      divider: divider
       wrapped_image: wrapped_image
       pull_quote: pull_quote
       text: text

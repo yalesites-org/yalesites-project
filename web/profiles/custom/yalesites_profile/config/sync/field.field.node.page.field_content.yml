@@ -6,7 +6,6 @@ dependencies:
     - field.storage.node.field_content
     - node.type.page
     - paragraphs.paragraphs_type.basic_view
-    - paragraphs.paragraphs_type.divider
     - paragraphs.paragraphs_type.embed
     - paragraphs.paragraphs_type.gallery
     - paragraphs.paragraphs_type.grand_hero
@@ -44,7 +43,6 @@ settings:
       image: image
       pull_quote: pull_quote
       wrapped_image: wrapped_image
-      divider: divider
       embed: embed
       news_list: news_list
       basic_view: basic_view
