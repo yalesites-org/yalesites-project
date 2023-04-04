@@ -5,7 +5,6 @@ dependencies:
   config:
     - field.storage.node.field_banner
     - node.type.page
-    - paragraphs.paragraphs_type.grand_hero
   module:
     - entity_reference_revisions
 id: node.page.field_banner
@@ -21,8 +20,7 @@ default_value_callback: ''
 settings:
   handler: 'default:paragraph'
   handler_settings:
-    target_bundles:
-      grand_hero: grand_hero
+    target_bundles: {  }
     negate: 0
     target_bundles_drag_drop:
       accordion:
