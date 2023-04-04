@@ -135,15 +135,6 @@
         }
       },
       {
-        "paragraph_id": "P11",
-        "paragraph_type": "callout",
-        "paragraph_fields": {
-          "field_callout_refs": [
-            "Callout01"
-          ]
-        }
-      },
-      {
         "paragraph_id": "P12",
         "paragraph_type": "text",
         "paragraph_fields": {

@@ -6,11 +6,9 @@ dependencies:
     - field.storage.node.field_content
     - node.type.page
     - paragraphs.paragraphs_type.basic_view
-    - paragraphs.paragraphs_type.callout
     - paragraphs.paragraphs_type.custom_cards
     - paragraphs.paragraphs_type.divider
     - paragraphs.paragraphs_type.embed
-    - paragraphs.paragraphs_type.event_list
     - paragraphs.paragraphs_type.gallery
     - paragraphs.paragraphs_type.grand_hero
     - paragraphs.paragraphs_type.image
@@ -47,10 +45,8 @@ settings:
       image: image
       pull_quote: pull_quote
       wrapped_image: wrapped_image
-      callout: callout
       divider: divider
       embed: embed
-      event_list: event_list
       news_list: news_list
       custom_cards: custom_cards
       basic_view: basic_view

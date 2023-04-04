@@ -55,9 +55,6 @@ source:
     - name: field_caption_format
       label: 'Caption format'
       selector: paragraph_fields/field_caption/format
-    - name: field_callout_refs
-      label: 'Callout items'
-      selector: paragraph_fields/field_callout_refs
   ids:
     paragraph_id:
       type: string
@@ -84,25 +81,7 @@ process:
         no_stub: true
   field_caption/value: field_caption_value
   field_caption/format: field_caption_format
-  field_callout:
-      -
-        plugin: skip_on_empty
-        source: field_callout_refs
-        method: process
-        message: 'Field field_callout_refs is empty'
-      -
-        plugin: migration_lookup
-        migration: ys_paragraph_callout
-        no_stub: true
-      -
-        plugin: sub_process
-        process:
-          target_id: '0'
-          target_revision_id: '1'
 
 destination:
   plugin: entity_reference_revisions:paragraph
 
-migration_dependencies:
-  required:
-    - ys_paragraph_callout
