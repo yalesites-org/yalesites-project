@@ -1,7 +1,6 @@
 global:
   css:
     theme:
-      css/base.css: {}
       css/admin-ui.css: {}
 
 tokens:
