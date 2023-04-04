@@ -3,38 +3,19 @@
     "pages": [
       {
         "unique_id": 1,
-        "title": "Top goal for the site",
-        "paragraph_refs": [
-          "P01",
-          "P02"
-        ]
-
+        "title": "Top goal for the site"
       },
       {
         "unique_id": 3,
-        "title": "Standard page one",
-        "paragraph_refs": [
-          "P03",
-          "P05",
-          "P07",
-          "P08",
-          "P09",
-          "P10"
-        ]
+        "title": "Standard page one"
       },
       {
         "unique_id": 5,
-        "title": "FAQs",
-        "paragraph_refs": [
-          "P12"
-        ]
+        "title": "FAQs"
       },
       {
         "unique_id": 8,
-        "title": "News",
-        "paragraph_refs": [
-          "P21"
-        ]
+        "title": "News"
       }
     ]
   }

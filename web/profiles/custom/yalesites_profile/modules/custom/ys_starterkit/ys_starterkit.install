@@ -17,7 +17,6 @@ function ys_starterkit_uninstall() {
       "migrate_plus.migration.ys_images_media",
       "migrate_plus.migration.ys_pages",
       "migrate_plus.migration.ys_news",
-      "migrate_plus.migration.ys_paragraphs",
     ];
     foreach ($configs as $config) {
       \Drupal::configFactory()->getEditable($config)->delete();
