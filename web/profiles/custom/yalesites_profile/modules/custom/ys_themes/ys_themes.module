@@ -11,27 +11,7 @@ use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\Core\Field\FieldDefinitionInterface;
 
 /**
- * Preprocess paragraphs to determine child paragraph heading levels.
- *
- * Implements hook_preprocess_paragraph().
- */
-function ys_themes_preprocess_paragraph(&$variables) {
-
-  $fieldHeading = 'field_heading';
-  $paragraphTypes = [
-    'accordion_item',
-  ];
-
-  if (in_array($variables['paragraph']->getType(), $paragraphTypes)) {
-    $parentParagraph = $variables['paragraph']->getParentEntity();
-    if ($parentParagraph && $parentParagraph->hasField($fieldHeading)) {
-      $variables['has_outer_heading'] = $parentParagraph->get($fieldHeading)->getValue() ? TRUE : FALSE;
-    }
-  }
-}
-
-/**
- * Provides custom key-value options for paragraph-specific styling via config.
+ * Provides custom key-value options for component-specific styling via config.
  *
  * @param \Drupal\field\Entity\FieldStorageConfig $definition
  *   The field definition.
@@ -49,10 +29,10 @@ function ys_themes_allowed_values_function(FieldStorageConfig $definition, Conte
   $options = [];
   $config = \Drupal::config('ys_themes.component_overrides');
 
-  foreach ($config->get() as $paragraph => $fields) {
+  foreach ($config->get() as $component => $fields) {
     foreach ($fields as $fieldName => $fieldData) {
       if ($entity) {
-        if ($entity->bundle() === $paragraph && $definition->getName() === $fieldName) {
+        if ($entity->bundle() === $component && $definition->getName() === $fieldName) {
           foreach ($fieldData['values'] as $machineSetting => $humanName) {
             $options[$machineSetting] = FieldFilteredMarkup::create($humanName);
           }
@@ -71,7 +51,7 @@ function ys_themes_allowed_values_function(FieldStorageConfig $definition, Conte
 }
 
 /**
- * Sets the default value for paragraph-specific styling via config.
+ * Sets the default value for component-specific styling via config.
  *
  * @param \Drupal\Core\Entity\ContentEntityInterface $entity
  *   The entity being created.
@@ -86,9 +66,9 @@ function ys_themes_allowed_values_function(FieldStorageConfig $definition, Conte
 function ys_themes_default_value_function(ContentEntityInterface $entity, FieldDefinitionInterface $definition) {
   $config = \Drupal::config('ys_themes.component_overrides');
   $default = NULL;
-  foreach ($config->get() as $paragraph => $fields) {
+  foreach ($config->get() as $component => $fields) {
     foreach ($fields as $fieldName => $fieldData) {
-      if ($entity->bundle() === $paragraph && $definition->getName() === $fieldName) {
+      if ($entity->bundle() === $component && $definition->getName() === $fieldName) {
         $default = $fieldData['default'];
       }
     }

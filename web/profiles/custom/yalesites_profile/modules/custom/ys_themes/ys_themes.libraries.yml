@@ -1,5 +1,0 @@
-layout-paragraphs:
-  version: 1.x
-  css:
-    theme:
-      css/layout-paragraphs.css: {}

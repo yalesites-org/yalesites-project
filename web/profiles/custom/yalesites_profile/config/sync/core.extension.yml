@@ -44,7 +44,6 @@ module:
   image: 0
   image_widget_crop: 0
   improve_line_breaks_filter: 0
-  inline_entity_form: 0
   layout_builder: 0
   layout_builder_browser: 0
   layout_discovery: 0
@@ -115,7 +114,6 @@ module:
   views: 10
   ys_core: 10
   ys_embed: 10
-  ys_layouts: 10
   ys_mail: 10
   ys_starterkit: 10
   ys_themes: 10

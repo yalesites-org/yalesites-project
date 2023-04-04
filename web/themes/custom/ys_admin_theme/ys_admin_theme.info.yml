@@ -8,7 +8,6 @@ libraries:
   - claro/global-styling
   - gin/gin
   - ys_admin_theme/tokens
-  - ys_admin_theme/paragraphs
   - ys_admin_theme/global
 
 # Regions
