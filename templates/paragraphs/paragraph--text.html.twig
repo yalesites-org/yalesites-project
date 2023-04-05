@@ -8,8 +8,14 @@
   {% set text_field__alignment = "left" %}
 {% endif %}
 
+{# To avoid having a margin-bottom in Accordion's items #}
+{% if parentNode == 'accordion_item' %}
+  {% set text_field__base_class = 'inner-text-field' %}
+{% endif %}
+
 {% include "@molecules/text/yds-text-field.twig" with {
   text_field__content: content.field_text,
   text_field__width: text_field__width,
   text_field__alignment: text_field__alignment,
+  text_field__base_class: text_field__base_class,
 } %}
