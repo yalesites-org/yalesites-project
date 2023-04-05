@@ -88,6 +88,9 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           known_hosts: unnecessary
 
+      - name: Authenticate to Terminus
+        run: terminus -n auth:login --machine-token="$TERMINUS_TOKEN"
+
       - name: Create backup
         run: terminus backup:create $RELEASE_SOURCE_SITE.dev --keep-for=1
 
