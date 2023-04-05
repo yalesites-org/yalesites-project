@@ -1,6 +1,6 @@
 {% embed "@organisms/component-wrapper/yds-component-wrapper.twig" with {
-  component_wrapper__width: component_wrapper__width|default('max'),
-  component_wrapper__alignment: component_wrapper__alignment|default('center'),
+  component_wrapper__width: component_wrapper__width|default('site'),
+  component_wrapper__alignment: component_wrapper__alignment|default('left'),
   }%}
   {% block component_wrapper_inner %}
     {{ content }}
