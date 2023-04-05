@@ -3,33 +3,41 @@
  # For the default template, see `web/core/themes/stabel9/templates/views/views-view.html.twig`.
  #}
 
-{{ title_prefix }}
-{{ title }}
-{{ title_suffix }}
+{%
+  set classes = [
+    dom_id ? 'js-view-dom-id-' ~ dom_id,
+  ]
+%}
+<div{{ attributes.addClass(classes) }}>
 
-{% if header %}
-  <header>
-    {{ header }}
-  </header>
-{% endif %}
+  {{ title_prefix }}
+  {{ title }}
+  {{ title_suffix }}
 
-{{ exposed }}
-{{ attachment_before }}
+  {% if header %}
+    <header>
+      {{ header }}
+    </header>
+  {% endif %}
 
-{% if rows -%}
-  {{ rows }}
-{% elseif empty -%}
-  {{ empty }}
-{% endif %}
-{{ pager }}
+  {{ exposed }}
+  {{ attachment_before }}
 
-{{ attachment_after }}
-{{ more }}
+  {% if rows -%}
+    {{ rows }}
+  {% elseif empty -%}
+    {{ empty }}
+  {% endif %}
+  {{ pager }}
 
-{% if footer %}
-  <footer>
-    {{ footer }}
-  </footer>
-{% endif %}
+  {{ attachment_after }}
+  {{ more }}
 
-{{ feed_icons }}
+  {% if footer %}
+    <footer>
+      {{ footer }}
+    </footer>
+  {% endif %}
+
+  {{ feed_icons }}
+</div>
