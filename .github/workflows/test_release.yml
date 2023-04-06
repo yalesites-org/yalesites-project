@@ -135,15 +135,14 @@ jobs:
 
       - name: Restore DB and files
         run: |
-          terminus import:db "$TERMINUS_SITE.pr-$PR_NUMBER" "${{ env.db_path }}"
-          terminus import:files "$TERMINUS_SITE.pr-$PR_NUMBER" "${{ env.files_path }}"
+          terminus import:db -y "$TERMINUS_SITE.pr-$PR_NUMBER" "${{ env.db_path }}"
+          terminus import:files -y "$TERMINUS_SITE.pr-$PR_NUMBER" "${{ env.files_path }}"
 
       - name: Build frontend components
         env:
           BRANCH: ${{ github.head_ref || github.ref_name }}
           YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
-        run: |
-          ./.ci/build/build_frontend
+        run: ./.ci/build/build_frontend
 
       - name: Deploy to Pantheon
         env:
