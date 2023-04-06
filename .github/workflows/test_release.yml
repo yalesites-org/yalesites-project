@@ -120,6 +120,9 @@ jobs:
       - name: Authenticate to Terminus
         run: terminus -n auth:login --machine-token="$TERMINUS_TOKEN"
 
+      - name: Create multidev
+        run: terminus multidev:create "$TERMINUS_SITE".dev pr-"$PR_NUMBER"
+
       - name: Create backup
         run: terminus backup:create $RELEASE_SOURCE_SITE.dev --keep-for=1
 
@@ -146,6 +149,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: ./.ci/deploy/pantheon/dev-multidev
+
+      - name: Run cron and clear caches
+        run: |
+          terminus drush "$TERMINUS_SITE.pr-$PR_NUMBER" -- cron -v
+          terminus drush "$TERMINUS_SITE.pr-$PR_NUMBER" -- cr
+          terminus env:cc "$TERMINUS_SITE.pr-$PR_NUMBER"
 
       - name: Setup tmate session
         if: ${{ failure() }}
