@@ -1,0 +1,5 @@
+name: YaleSites toolbar
+type: module
+description: YaleSites Toolbar Settings
+core_version_requirement: '^9 || ^10'
+package: YaleSites
