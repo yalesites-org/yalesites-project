@@ -121,7 +121,7 @@ jobs:
         run: terminus -n auth:login --machine-token="$TERMINUS_TOKEN"
 
       - name: Create multidev
-        run: terminus multidev:create "$TERMINUS_SITE".dev pr-"$PR_NUMBER"
+        run: terminus -n multidev:create "$TERMINUS_SITE".dev pr-"$PR_NUMBER"
 
       - name: Create backup
         run: terminus backup:create $RELEASE_SOURCE_SITE.dev --keep-for=1
