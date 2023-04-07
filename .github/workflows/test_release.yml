@@ -1,0 +1,180 @@
+name: Test release
+on:
+  pull_request:
+    branches:
+      - master
+env:
+  TZ: "/usr/share/zoneinfo/America/Los_Angeles"
+  TERM: dumb
+  ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+  ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+  ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+  GITHUB_TOKEN: ${{ github.token }}
+  TERMINUS_TOKEN: ${{ secrets.TERMINUS_TOKEN }}
+  RELEASE_SOURCE_SITE: ${{ secrets.RELEASE_SOURCE_SITE }}
+  TERMINUS_SITE: ${{ secrets.TERMINUS_SITE }}
+  CI_BRANCH: ${{ github.head_ref || github.ref_name }}
+  COMMIT_SHA: ${{ github.sha }}
+  CI_BUILD_NUMBER: ${{ github.run_number }}
+  DEFAULT_SITE: ${{ secrets.TERMINUS_SITE }}
+  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+  GITHUB_OWNER: ${{ github.repository_owner }}
+  CI_PROJECT_NAME: ${{ github.repository }}
+  PR_NUMBER: ${{ github.event.number }}
+  CI_PULL_REQUEST: ${{ github.event.pull_request._links.html.href }}
+  TERMINUS_HIDE_GIT_MODE_WARNING: 1
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  configure_env_vars:
+    name: Configure environment variables
+    container:
+      image: quay.io/pantheon-public/build-tools-ci:8.x-php8.1
+      options: --user root
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+
+      - name: Set bash_env env var
+        run: echo BASH_ENV=${RUNNER_TEMP}/bash_env.txt >> $GITHUB_ENV
+
+      - name: Cache bash_env.txt
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-bash-env
+        with:
+          path: ${{ env.BASH_ENV }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.run_number }}
+
+      # Set TERMINUS_ENV and related environment variables.
+      # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
+      - name: setup-environment-vars
+        run: |
+          if [ "$CI_BRANCH" != "master" ]; then
+            # Test vars not set means trigger = push.
+            if [ -z "$PR_NUMBER" ]; then
+              # Var not set means trigger = push.
+              export PR_NUMBER=`curl -u "${GITHUB_OWNER}:${GITHUB_TOKEN}" \
+                -H "Accept: application/vnd.github.groot-preview+json" \
+                "https://api.github.com/repos/${CI_PROJECT_NAME}/commits/${COMMIT_SHA}/pulls" | \
+                jq '.[0].number | select(.!=null)'`
+            fi
+
+            if [ -z "$CI_PULL_REQUEST" ]; then
+              export CI_PULL_REQUEST=`curl -u "${GITHUB_OWNER}:${GITHUB_TOKEN}" \
+                -H "Accept: application/vnd.github.groot-preview+json" \
+                "https://api.github.com/repos/${CI_PROJECT_NAME}/commits/${COMMIT_SHA}/pulls" | \
+                jq '.[0].html_url | select(.!=null)'`
+            fi
+          fi
+
+          export CI_PROJECT_REPONAME=${GITHUB_REPOSITORY#*/}
+          export CI_PROJECT_USERNAME=${GITHUB_REPOSITORY_OWNER}
+          /build-tools-ci/scripts/set-environment
+          GITHUB_WORKFLOW_URL=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+          echo "export CI_BUILD_URL='${GITHUB_WORKFLOW_URL}'" >> $BASH_ENV
+          echo "export CI_NODE_INDEX=0" >> $BASH_ENV
+          echo "export CI_REPOSITORY_URL='https://github.com/${GITHUB_REPOSITORY}'" >> $BASH_ENV
+          echo "export ARTIFACTS_DIR_URL='${GITHUB_WORKFLOW_URL}/#artifacts'" >> $BASH_ENV
+
+  setup-environment:
+    name: Set up environment
+    needs: configure_env_vars
+    runs-on: ubuntu-latest
+    container:
+      image: quay.io/pantheon-public/build-tools-ci:8.x-php8.1
+      options: --user root
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          fetch-depth: 0
+
+      - name: Set bash_env env var
+        run: echo BASH_ENV=${RUNNER_TEMP}/bash_env.txt >> $GITHUB_ENV
+
+      - name: Cache bash_env.txt
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-bash-env
+        with:
+          path: ${{ env.BASH_ENV }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.run_number }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: unnecessary
+
+      - name: Authenticate to Terminus
+        run: terminus -n auth:login --machine-token="$TERMINUS_TOKEN"
+
+      - name: Create multidev
+        run: terminus -n multidev:create "$TERMINUS_SITE".dev pr-"$PR_NUMBER"
+
+      - name: Create backup
+        run: terminus backup:create $RELEASE_SOURCE_SITE.dev --keep-for=1
+
+      - name: Get backup
+        run: |
+          files_path=$(terminus backup:get $RELEASE_SOURCE_SITE.dev --element=files)
+          db_path=$(terminus backup:get $RELEASE_SOURCE_SITE.dev --element=database)
+          echo "files_path=$files_path" >> $GITHUB_ENV
+          echo "db_path=$db_path" >> $GITHUB_ENV
+
+      - name: Restore DB and files
+        run: |
+          terminus import:db -y "$TERMINUS_SITE.pr-$PR_NUMBER" "${{ env.db_path }}"
+          terminus import:files -y "$TERMINUS_SITE.pr-$PR_NUMBER" "${{ env.files_path }}"
+
+      - name: Build frontend components
+        env:
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+          YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
+        run: ./.ci/build/build_frontend
+
+      - name: Deploy to Pantheon
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: ./.ci/deploy/pantheon/dev-multidev
+
+      - name: Run cron and clear caches
+        run: |
+          terminus drush "$TERMINUS_SITE.pr-$PR_NUMBER" -- cron -v
+          terminus drush "$TERMINUS_SITE.pr-$PR_NUMBER" -- cr
+          terminus env:cc "$TERMINUS_SITE.pr-$PR_NUMBER"
+
+      - name: Setup tmate session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
+
+  percy-check:
+    name: Create Percy snapshots
+    needs: setup-environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run percy
+        # uses: actions/setup-node@v3
+        # with:
+        #   node-version: '14'
+        run: |
+          SITE_URL=$(terminus site:view "$TERMINUS_SITE.pr-$PR_NUMBER" --print)
+          npm install --save-dev @percy/cli
+          npx percy snapshot "$SITE_URL"menu-links-only/sitemap.xml
+        env:
+          PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
+
+      - name: Setup tmate session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
