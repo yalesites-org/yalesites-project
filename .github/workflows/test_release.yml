@@ -1,11 +1,8 @@
-name: Build, deploy and test
+name: Test release
 on:
   pull_request:
-    branches-ignore:
+    branches:
       - master
-defaults:
-  run:
-    shell: bash
 env:
   TZ: "/usr/share/zoneinfo/America/Los_Angeles"
   TERM: dumb
@@ -14,7 +11,8 @@ env:
   ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
   GITHUB_TOKEN: ${{ github.token }}
   TERMINUS_TOKEN: ${{ secrets.TERMINUS_TOKEN }}
-  TEST_SITE_NAME: ${{ secrets.TERMINUS_SITE }}
+  RELEASE_SOURCE_SITE: ${{ secrets.RELEASE_SOURCE_SITE }}
+  TERMINUS_SITE: ${{ secrets.TERMINUS_SITE }}
   CI_BRANCH: ${{ github.head_ref || github.ref_name }}
   COMMIT_SHA: ${{ github.sha }}
   CI_BUILD_NUMBER: ${{ github.run_number }}
@@ -24,9 +22,14 @@ env:
   CI_PROJECT_NAME: ${{ github.repository }}
   PR_NUMBER: ${{ github.event.number }}
   CI_PULL_REQUEST: ${{ github.event.pull_request._links.html.href }}
+  TERMINUS_HIDE_GIT_MODE_WARNING: 1
+defaults:
+  run:
+    shell: bash
 
 jobs:
   configure_env_vars:
+    name: Configure environment variables
     container:
       image: quay.io/pantheon-public/build-tools-ci:8.x-php8.1
       options: --user root
@@ -79,64 +82,19 @@ jobs:
           echo "export CI_REPOSITORY_URL='https://github.com/${GITHUB_REPOSITORY}'" >> $BASH_ENV
           echo "export ARTIFACTS_DIR_URL='${GITHUB_WORKFLOW_URL}/#artifacts'" >> $BASH_ENV
 
-  static_tests:
+  setup-environment:
+    name: Set up environment
+    needs: configure_env_vars
+    runs-on: ubuntu-latest
     container:
       image: quay.io/pantheon-public/build-tools-ci:8.x-php8.1
       options: --user root
-    runs-on: ubuntu-latest
-    env:
-          YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.head_ref || github.ref_name }}
-
-      - name: Cache composer cache
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-composer-cache
-        with:
-          path: ~/.composer/cache
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-
-      # Set TERMINUS_ENV and related environment variables.
-      # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
-      - name: setup-environment-vars
-        run: /build-tools-ci/scripts/set-environment
-
-      - name: Check for contrib dependencies in root composer.json
-        run: |
-          contrib_check=$(jq -r '.require | with_entries(select(.key | test("(drupal\/(?!core).*$)"))) | keys | join(", ")' ./composer.json)
-          if [ -n "$contrib_check" ]; then
-            echo "::error::$contrib_check found in /composer.json and should be moved to /web/profiles/custom/yalesites_profile/composer.json" && exit 1
-          fi
-
-      - name: run static tests
-        run: |
-          ./.ci/test/static/run
-
-  deploy_to_pantheon:
-    container:
-      image: quay.io/pantheon-public/build-tools-ci:8.x-php8.1
-      options: --user root
-    runs-on: ubuntu-latest
-    needs: [configure_env_vars, static_tests]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref || github.ref_name }}
           fetch-depth: 0
-
-      # Workaround for https://github.com/actions/runner/issues/2033
-      - name: Set git safe.directory
-        run: |
-           git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Set bash_env env var
         run: echo BASH_ENV=${RUNNER_TEMP}/bash_env.txt >> $GITHUB_ENV
@@ -153,71 +111,70 @@ jobs:
             ${{ runner.os }}-build-
             ${{ runner.os }}-
 
-      - name: Cache composer cache
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-composer-cache
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
         with:
-          path: ~/.composer/cache
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: unnecessary
 
-      - name: Cache vendor folder
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-vendor
-        with:
-          path: ./vendor
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/composer.lock') }}
+      - name: Authenticate to Terminus
+        run: terminus -n auth:login --machine-token="$TERMINUS_TOKEN"
 
-      - name: Cache web folder
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-web
-        with:
-          path: ./web
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.run_number }}
+      - name: Create multidev
+        run: terminus -n multidev:create "$TERMINUS_SITE".dev pr-"$PR_NUMBER"
 
-      - name: Cache drush folder
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-drush
-        with:
-          path: ./drush
-          key: ${{ runner.os }}-build-${{ env.cache-name }}
+      - name: Create backup
+        run: terminus backup:create $RELEASE_SOURCE_SITE.dev --keep-for=1
 
-      # Set TERMINUS_ENV and related environment variables.
-      # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
-      - name: setup-environment-vars
-        run: /build-tools-ci/scripts/set-environment
-        
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16.13'
+      - name: Get backup
+        run: |
+          files_path=$(terminus backup:get $RELEASE_SOURCE_SITE.dev --element=files)
+          db_path=$(terminus backup:get $RELEASE_SOURCE_SITE.dev --element=database)
+          echo "files_path=$files_path" >> $GITHUB_ENV
+          echo "db_path=$db_path" >> $GITHUB_ENV
 
-      - name: build frontend components
+      - name: Restore DB and files
+        run: |
+          terminus import:db -y "$TERMINUS_SITE.pr-$PR_NUMBER" "${{ env.db_path }}"
+          terminus import:files -y "$TERMINUS_SITE.pr-$PR_NUMBER" "${{ env.files_path }}"
+
+      - name: Build frontend components
         env:
           BRANCH: ${{ github.head_ref || github.ref_name }}
           YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
+        run: ./.ci/build/build_frontend
+
+      - name: Deploy to Pantheon
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: ./.ci/deploy/pantheon/dev-multidev
+
+      - name: Run cron and clear caches
         run: |
-          ./.ci/build/build_frontend
+          terminus drush "$TERMINUS_SITE.pr-$PR_NUMBER" -- cron -v
+          terminus drush "$TERMINUS_SITE.pr-$PR_NUMBER" -- cr
+          terminus env:cc "$TERMINUS_SITE.pr-$PR_NUMBER"
 
       - name: Setup tmate session
         if: ${{ failure() }}
         uses: mxschmitt/action-tmate@v3
 
-      # Deploy to Pantheon
-      - name: deploy to Pantheon
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+  percy-check:
+    name: Create Percy snapshots
+    needs: setup-environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run percy
+        # uses: actions/setup-node@v3
+        # with:
+        #   node-version: '14'
         run: |
-          echo "$SSH_PRIVATE_KEY" > ../private.key
-          chmod 600 ../private.key
-          eval `ssh-agent -s`
-          ssh-add ../private.key
-          source $BASH_ENV
-          ./.ci/deploy/pantheon/dev-multidev
+          SITE_URL=$(terminus site:view "$TERMINUS_SITE.pr-$PR_NUMBER" --print)
+          npm install --save-dev @percy/cli
+          npx percy snapshot "$SITE_URL"menu-links-only/sitemap.xml
+        env:
+          PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
+
+      - name: Setup tmate session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3

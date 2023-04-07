@@ -42,7 +42,6 @@ text_with_image:
     values:
       equal: 'Equal Focus'
       image: 'Image Focus'
-      content: 'Content Focus'
     default: equal
 quick_links:
   field_style_variation:
