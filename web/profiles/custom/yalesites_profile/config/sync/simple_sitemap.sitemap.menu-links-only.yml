@@ -1,0 +1,11 @@
+uuid: dc54cb61-c0e2-44b1-bf14-42076d1e2146
+langcode: en
+status: true
+dependencies:
+  config:
+    - simple_sitemap.type.menu_links_sitemap
+id: menu-links-only
+label: 'Menu links'
+description: ''
+type: menu_links_sitemap
+weight: 0

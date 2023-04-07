@@ -81,6 +81,7 @@ module:
   search_api: 0
   search_api_db: 0
   search_api_exclude: 0
+  simple_sitemap: 0
   smart_date: 0
   smart_date_recur: 0
   system: 0
@@ -104,7 +105,6 @@ module:
   hide_revision_field: 1
   menu_admin_per_menu: 1
   pathauto: 1
-  xmlsitemap: 1
   externalauth: 10
   views: 10
   ys_core: 10
