@@ -65,7 +65,7 @@ class ToolbarItemsService {
    *
    * @param \Drupal\Core\Access\AccessManagerInterface $access_manager
    *   The access manager.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
    *   The route match.
    * @param \Drupal\Core\Session\AccountInterface $account
    *   The current user.
@@ -195,17 +195,15 @@ class ToolbarItemsService {
   }
 
   /**
-   * Build an item for the toolbar
+   * Build an item for the toolbar.
    *
    * @param string $route
    *   The route for the toolbar item destination.
-   *
    * @param string $label
    *   The text label for the toolbar item.
    *
    * @return array
    *   A rennder array for a toolbar item.
-   *
    */
   protected function buildButton(string $route, string $label): array {
     return [
