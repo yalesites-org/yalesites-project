@@ -1,0 +1,30 @@
+<div{{ attributes }}>
+
+  {#
+    @todo - This adds a drag icon when in layout builder mode only. This is a
+    temporary workaround until we can solve the issue where attributes are being
+    removed from the bem and add_attributes functions in emulsify_twig. When
+    these attributes are removed by those functions, layout builder drag and
+    drop and edit button functionalty break.
+  #}
+
+  {% if attributes.hasClass('js-layout-builder-block') %}
+    <img
+      src="/themes/contrib/atomic/templates/block/layout-builder/preview-icons/drag-icon.svg"
+      alt="Drag and drop icon"
+      title="Drag and drop this block"
+      style="width: 1.5rem; margin: 0 auto;"
+    >
+  {% endif %}
+
+  {# End workaround #}
+
+  {{ title_prefix }}
+  {% if label %}
+    <h2{{ title_attributes }}>{{ label }}</h2>
+  {% endif %}
+  {{ title_suffix }}
+  {% block content %}
+    Inside template!
+  {% endblock %}
+</div>
