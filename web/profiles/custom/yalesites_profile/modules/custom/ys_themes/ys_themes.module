@@ -137,3 +137,19 @@ function ys_themes_preprocess_block(&$variables) {
     }
   }
 }
+
+/**
+ * Implements hook_form_alter().
+ */
+function ys_themes_form_alter(&$form, $form_state, $form_id) {
+  /*
+    Turn off the title and hide the inline block "display title" field.
+    Rename the field title and description to inform the editor how it is used.
+  */
+  if ($form_id == 'layout_builder_update_block' || $form_id == 'layout_builder_add_block') {
+    $form['settings']['label']['#title'] = t('Administrative label');
+    $form['settings']['label']['#description'] = t('Used when not showing content preview');
+    $form['settings']['label_display']['#default_value'] = FALSE;
+    $form['settings']['label_display']['#access'] = FALSE;
+  }
+}
