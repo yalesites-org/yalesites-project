@@ -4,8 +4,8 @@ status: true
 dependencies: {  }
 id: custom_cards
 block_id: 'inline_block:custom_cards'
-category: lists
+category: all_blocks
 label: 'Custom Cards'
 image_path: ''
 image_alt: ''
-weight: -9
+weight: 7

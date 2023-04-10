@@ -4,7 +4,7 @@ status: true
 dependencies: {  }
 id: page_title_and_breadcrumbs
 block_id: ys_title_breadcrumb_block
-category: text_based
+category: all_blocks
 label: 'Page Title and Breadcrumbs'
 image_path: ''
 image_alt: ''

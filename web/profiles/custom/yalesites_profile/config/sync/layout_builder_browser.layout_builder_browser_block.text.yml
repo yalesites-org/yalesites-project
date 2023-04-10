@@ -4,8 +4,8 @@ status: true
 dependencies: {  }
 id: text
 block_id: 'inline_block:text'
-category: text_based
+category: all_blocks
 label: Text
 image_path: themes/contrib/atomic/templates/block/layout-builder/preview-icons/rich_text-icon.svg
 image_alt: ''
-weight: -5
+weight: -10

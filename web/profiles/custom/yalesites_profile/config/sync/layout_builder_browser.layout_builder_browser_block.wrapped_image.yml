@@ -4,8 +4,8 @@ status: true
 dependencies: {  }
 id: wrapped_image
 block_id: 'inline_block:wrapped_image'
-category: other
+category: all_blocks
 label: 'Wrapped Image'
 image_path: ''
 image_alt: ''
-weight: -100
+weight: -9

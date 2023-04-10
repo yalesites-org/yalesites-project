@@ -4,8 +4,8 @@ status: true
 dependencies: {  }
 id: view
 block_id: 'inline_block:view'
-category: lists
+category: all_blocks
 label: View
 image_path: ''
 image_alt: ''
-weight: -100
+weight: 6

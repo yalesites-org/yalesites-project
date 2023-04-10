@@ -4,8 +4,8 @@ status: true
 dependencies: {  }
 id: embed
 block_id: 'inline_block:embed'
-category: media_based
+category: all_blocks
 label: Embed
 image_path: ''
 image_alt: ''
-weight: -3
+weight: 4

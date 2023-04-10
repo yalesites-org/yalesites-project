@@ -4,8 +4,8 @@ status: true
 dependencies: {  }
 id: content_spotlight
 block_id: 'inline_block:content_spotlight'
-category: other
+category: all_blocks
 label: 'Content Spotlight'
 image_path: ''
 image_alt: ''
-weight: -99
+weight: -7

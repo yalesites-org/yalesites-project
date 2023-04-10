@@ -4,8 +4,8 @@ status: true
 dependencies: {  }
 id: tabs
 block_id: 'inline_block:tabs'
-category: lists
+category: all_blocks
 label: Tabs
 image_path: ''
 image_alt: ''
-weight: -100
+weight: 5

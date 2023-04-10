@@ -4,8 +4,8 @@ status: true
 dependencies: {  }
 id: quick_links
 block_id: 'inline_block:quick_links'
-category: lists
+category: all_blocks
 label: 'Quick Links'
 image_path: ''
 image_alt: ''
-weight: -6
+weight: 10

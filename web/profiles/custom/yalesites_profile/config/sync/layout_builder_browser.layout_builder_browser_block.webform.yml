@@ -4,8 +4,8 @@ status: true
 dependencies: {  }
 id: webform
 block_id: 'inline_block:webform'
-category: other
+category: all_blocks
 label: Webform
 image_path: ''
 image_alt: ''
-weight: -97
+weight: 11

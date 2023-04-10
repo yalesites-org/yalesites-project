@@ -4,8 +4,8 @@ status: true
 dependencies: {  }
 id: newsfeed
 block_id: 'inline_block:news_list'
-category: lists
+category: all_blocks
 label: Newsfeed
 image_path: ''
 image_alt: ''
-weight: -7
+weight: 9

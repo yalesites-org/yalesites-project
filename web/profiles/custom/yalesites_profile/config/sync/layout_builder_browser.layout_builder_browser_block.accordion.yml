@@ -4,8 +4,8 @@ status: true
 dependencies: {  }
 id: accordion
 block_id: 'inline_block:accordion'
-category: text_based
+category: all_blocks
 label: Accordion
 image_path: ''
 image_alt: ''
-weight: -2
+weight: -3

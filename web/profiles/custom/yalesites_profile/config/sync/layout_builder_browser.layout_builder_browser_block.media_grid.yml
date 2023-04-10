@@ -4,8 +4,8 @@ status: true
 dependencies: {  }
 id: media_grid
 block_id: 'inline_block:media_grid'
-category: media_based
+category: all_blocks
 label: 'Media Grid'
 image_path: ''
 image_alt: ''
-weight: -100
+weight: 2

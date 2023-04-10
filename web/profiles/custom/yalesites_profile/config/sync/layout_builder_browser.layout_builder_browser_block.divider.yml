@@ -4,8 +4,8 @@ status: true
 dependencies: {  }
 id: divider
 block_id: 'inline_block:divider'
-category: other
+category: all_blocks
 label: Divider
 image_path: ''
 image_alt: ''
-weight: -98
+weight: -8
