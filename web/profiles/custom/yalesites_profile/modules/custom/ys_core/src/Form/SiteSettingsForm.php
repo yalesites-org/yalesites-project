@@ -84,7 +84,7 @@ class SiteSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   protected function getEditableConfigNames() {
-    return ['system.site', 'ys_core.site', 'layout_builder_browser.settings'];
+    return ['system.site', 'ys_core.site'];
   }
 
   /**
@@ -93,7 +93,6 @@ class SiteSettingsForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $siteConfig = $this->config('system.site');
     $yaleConfig = $this->config('ys_core.site');
-    $layoutBuilderBrowserConfig = $this->config('layout_builder_browser.settings');
 
     $form['site_name'] = [
       '#type' => 'textfield',
