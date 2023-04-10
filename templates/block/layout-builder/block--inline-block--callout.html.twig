@@ -1,7 +1,6 @@
-<div{{ add_attributes() }}>
+{% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
 
-  {{ title_prefix }}
-  {{ title_suffix }}
+{% block content %}
 
   {% embed "@molecules/callout/yds-callout.twig" with {
       callout__background_color: content.field_style_color.0['#markup'],
@@ -11,4 +10,4 @@
     {% endblock %}
   {% endembed %}
 
-</div>
+{% endblock %}

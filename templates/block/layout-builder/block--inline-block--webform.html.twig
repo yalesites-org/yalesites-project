@@ -1,15 +1,16 @@
-{% embed "@organisms/component-wrapper/yds-component-wrapper.twig" with {
-  component_width: 'max',
-  component_wrapper__label: content.field_heading,
-} %}
+{% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
 
-  {% block component_wrapper_inner %}
-    {{content.field_form}}
-  {% endblock %}
+{% block content %}
 
-  {% block prefix_suffix %}
-		{{ title_prefix }}
-		{{ title_suffix }}
-	{% endblock %}
+  {% embed "@organisms/component-wrapper/yds-component-wrapper.twig" with {
+    component_width: 'max',
+    component_wrapper__label: content.field_heading,
+  } %}
 
-{% endembed %}
+    {% block component_wrapper_inner %}
+      {{content.field_form}}
+    {% endblock %}
+
+  {% endembed %}
+
+{% endblock %}

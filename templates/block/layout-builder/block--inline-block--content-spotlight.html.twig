@@ -1,21 +1,22 @@
-{% embed "@molecules/text-with-image/yds-text-with-image.twig" with {
-  text_with_image__heading: content.field_heading,
-  text_with_image__subheading: content.field_subheading,
-  text_with_image__text: content.field_text,
-  text_with_image__link__content: content.field_link.0['#title'],
-  text_with_image__link__url: content.field_link.0['#url_title'],
-  text_with_image__focus: content.field_style_variation.0['#markup'],
-  text_with_image__position: content.field_style_position.0['#markup'],
-  text_with_image__width: content.field_style_width.0['#markup'],
-} %}
+{% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
 
-  {% block prefix_suffix %}
-		{{ title_prefix }}
-		{{ title_suffix }}
-	{% endblock %}
+{% block content %}
 
-  {% block text_with_image__image %}
-    {{ content.field_media }}
-  {% endblock %}
+  {% embed "@molecules/text-with-image/yds-text-with-image.twig" with {
+    text_with_image__heading: content.field_heading,
+    text_with_image__subheading: content.field_subheading,
+    text_with_image__text: content.field_text,
+    text_with_image__link__content: content.field_link.0['#title'],
+    text_with_image__link__url: content.field_link.0['#url_title'],
+    text_with_image__focus: content.field_style_variation.0['#markup'],
+    text_with_image__position: content.field_style_position.0['#markup'],
+    text_with_image__width: content.field_style_width.0['#markup'],
+  } %}
 
-{% endembed %}
+    {% block text_with_image__image %}
+      {{ content.field_media }}
+    {% endblock %}
+
+  {% endembed %}
+
+{% endblock %}

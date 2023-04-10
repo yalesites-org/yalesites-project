@@ -1,15 +1,14 @@
-{% set view__base_class = 'ys-view' %}
+{% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
 
-{% set view__attibutes = {
-  'data-component-width': 'site',
-  class: bem(view__base_class, view__modifiers),
-} %}
+{% block content %}
 
-{% set view__attibutes = view__attibutes|merge(attributes) %}
+  {% set view__base_class = 'ys-view' %}
 
-<div {{ add_attributes(view__attibutes) }}>
-		{{ title_prefix }}
-		{{ title_suffix }}
+  {% set view__attibutes = {
+    'data-component-width': 'site',
+    class: bem(view__base_class, view__modifiers),
+  } %}
+
   <div {{ bem('inner', [], view__base_class) }}>
     {% if content.field_heading  %}
       {% include "@atoms/typography/headings/yds-heading.twig" with {
@@ -22,4 +21,5 @@
       {{ content.field_view_params }}
     {% endif %}
   </div>
-</div>
+
+{% endblock %}

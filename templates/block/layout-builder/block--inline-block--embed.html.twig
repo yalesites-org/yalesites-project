@@ -1,12 +1,13 @@
-{% embed "@molecules/embed/yds-embed.twig" %}
+{% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
 
-  {% block embed__block %}
-    {{ content }}
-  {% endblock %}
+{% block content %}
 
-  {% block prefix_suffix %}
-		{{ title_prefix }}
-		{{ title_suffix }}
-	{% endblock %}
+  {% embed "@molecules/embed/yds-embed.twig" %}
 
-{% endembed %}
+    {% block embed__block %}
+      {{ content }}
+    {% endblock %}
+
+  {% endembed %}
+
+{% endblock %}

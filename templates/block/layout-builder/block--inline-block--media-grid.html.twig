@@ -1,15 +1,16 @@
-{% embed "@organisms/galleries/media-grid/yds-media-grid.twig" with {
-  media_grid__heading: content.field_heading,
-  media_grid__width: 'max',
-} %}
+{% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
 
-  {% block media_grid__items %}
-    {{ content.field_media_grid_items }}
-  {% endblock %}
+{% block content %}
 
-  {% block prefix_suffix %}
-		{{ title_prefix }}
-		{{ title_suffix }}
-	{% endblock %}
+  {% embed "@organisms/galleries/media-grid/yds-media-grid.twig" with {
+    media_grid__heading: content.field_heading,
+    media_grid__width: 'max',
+  } %}
 
-{% endembed %}
+    {% block media_grid__items %}
+      {{ content.field_media_grid_items }}
+    {% endblock %}
+
+  {% endembed %}
+
+{% endblock %}

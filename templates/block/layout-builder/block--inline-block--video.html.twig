@@ -1,17 +1,18 @@
-{% embed "@molecules/video/yds-video.twig" with {
-  video__heading: content.field_heading,
-  video__text: content.field_text,
-  video__width: video__width|default('content'),
-  video__alignment: video__alignment|default('center'),
-} %}
+{% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
 
-  {% block video__video %}
-    {{ content.field_media }}
-  {% endblock %}
+{% block content %}
 
-  {% block prefix_suffix %}
-		{{ title_prefix }}
-		{{ title_suffix }}
-	{% endblock %}
+  {% embed "@molecules/video/yds-video.twig" with {
+    video__heading: content.field_heading,
+    video__text: content.field_text,
+    video__width: video__width|default('content'),
+    video__alignment: video__alignment|default('center'),
+  } %}
 
-{% endembed %}
+    {% block video__video %}
+      {{ content.field_media }}
+    {% endblock %}
+
+  {% endembed %}
+
+{% endblock %}

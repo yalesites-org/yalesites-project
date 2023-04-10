@@ -1,7 +1,6 @@
-<div{{ add_attributes() }}>
+{% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
 
-  {{ title_prefix }}
-  {{ title_suffix }}
+{% block content %}
 
   {{ attach_library('atomic/gallery') }}
 
@@ -10,15 +9,19 @@
     media_grid__variation: 'interactive',
     media_grid__width: 'max',
   } %}
+
     {% block media_grid__items %}
       {% include "@atomic/paragraphs/_gallery-item.twig" with {
         item_variation: 'thumbnail',
       } %}
     {% endblock %}
+
     {% block media_grid__modal %}
       {% include "@atomic/paragraphs/_gallery-item.twig" with {
         item_variation: 'modal',
       } %}
     {% endblock %}
+
   {% endembed %}
-</div>
+
+{% endblock %}

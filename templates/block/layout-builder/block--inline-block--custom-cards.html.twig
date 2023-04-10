@@ -1,15 +1,16 @@
-{% embed "@organisms/custom-card-collection/yds-custom-card-collection.twig" with {
-  custom_card_collection__heading: content.field_heading.0['#text'],
-  custom_card_collection__width: 'max',
-} %}
+{% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
 
-  {% block custom_card_collection__cards %}
-    {{ content.field_cards }}
-  {% endblock %}
+{% block content %}
 
-  {% block prefix_suffix %}
-		{{ title_prefix }}
-		{{ title_suffix }}
-	{% endblock %}
+  {% embed "@organisms/custom-card-collection/yds-custom-card-collection.twig" with {
+    custom_card_collection__heading: content.field_heading.0['#text'],
+    custom_card_collection__width: 'max',
+  } %}
 
-{% endembed %}
+    {% block custom_card_collection__cards %}
+      {{ content.field_cards }}
+    {% endblock %}
+
+  {% endembed %}
+
+{% endblock %}
