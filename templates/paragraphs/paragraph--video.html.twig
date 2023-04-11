@@ -1,8 +1,18 @@
+{% set parentNode = paragraph.parentEntity.type.value.0['target_id'] %}
+
+{% if parentNode == 'news' or parentNode == 'event' %}
+  {% set video__width = "content" %}
+  {% set video__alignment = "center" %}
+{% else %}
+  {% set video__width = "site" %}
+  {% set video__alignment = "left" %}
+{% endif %}
+
 {% embed "@molecules/video/yds-video.twig" with {
   video__heading: content.field_heading,
   video__text: content.field_text,
-  video__width: video__width|default('content'),
-  video__alignment: video__alignment|default('center'),
+  video__width: video__width|default('site'),
+  video__alignment: video__alignment|default('left'),
 } %}
   {% block video__video %}
     {{ content.field_video }}
