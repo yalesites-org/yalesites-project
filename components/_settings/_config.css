@@ -24,3 +24,7 @@
   **********/
   /* --width-divider: var(--width-theme-divider, var(--layout-width-100)); */
 }
+
+.toolbar-horizontal .local-tasks-toolbar-tab .toolbar-menu {
+  float: none;
+}
