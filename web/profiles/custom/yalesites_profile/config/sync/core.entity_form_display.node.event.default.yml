@@ -12,6 +12,7 @@ dependencies:
     - field.field.node.event.field_teaser_media
     - field.field.node.event.field_teaser_text
     - field.field.node.event.field_teaser_title
+    - field.field.node.event.layout_builder__layout
     - node.type.event
   module:
     - allowed_formats
@@ -211,6 +212,11 @@ content:
       permission_based: false
       allow_user_settings: true
     third_party_settings: {  }
+  simple_sitemap:
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   status:
     type: boolean_checkbox
     weight: 5
@@ -239,5 +245,6 @@ content:
     settings: {  }
     third_party_settings: {  }
 hidden:
+  layout_builder__layout: true
   promote: true
   uid: true

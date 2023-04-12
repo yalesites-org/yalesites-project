@@ -12,6 +12,7 @@ dependencies:
     - field.field.node.news.field_teaser_media
     - field.field.node.news.field_teaser_text
     - field.field.node.news.field_teaser_title
+    - field.field.node.news.layout_builder__layout
     - node.type.news
   module:
     - text
@@ -41,4 +42,5 @@ hidden:
   field_tags: true
   field_teaser_media: true
   field_teaser_title: true
+  layout_builder__layout: true
   links: true
