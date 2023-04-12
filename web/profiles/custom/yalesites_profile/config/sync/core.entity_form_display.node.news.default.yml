@@ -17,7 +17,6 @@ dependencies:
     - allowed_formats
     - datetime
     - field_group
-    - hide_revision_field
     - maxlength
     - media_library
     - metatag
@@ -25,29 +24,6 @@ dependencies:
     - text
 third_party_settings:
   field_group:
-    group_content:
-      children:
-        - field_content_title
-        - title
-        - field_tags
-        - field_author
-        - field_publish_date
-        - field_login_required
-      label: Content
-      region: content
-      parent_name: group_wrapper
-      weight: 3
-      format_type: tab
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        formatter: closed
-        description: ''
-        required_fields: true
-        direction: vertical
-        width_breakpoint: 640
-        effect: none
     group_teaser:
       children:
         - field_teaser_title
@@ -55,32 +31,32 @@ third_party_settings:
         - field_teaser_media
       label: Teaser
       region: content
-      parent_name: group_wrapper
-      weight: 5
+      parent_name: ''
+      weight: 4
+      format_type: fieldset
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        description: ''
+        required_fields: true
+    group_publishing_settings:
+      children:
+        - field_login_required
+        - sticky
+      label: 'Publishing Settings'
+      region: content
+      parent_name: ''
+      weight: 8
       format_type: details_sidebar
       format_settings:
         classes: ''
         show_empty_fields: false
         id: ''
-        open: true
+        open: false
         description: ''
         required_fields: true
-        weight: -10
-    group_wrapper:
-      children:
-        - group_content
-        - group_teaser
-      label: Wrapper
-      region: content
-      parent_name: ''
-      weight: 0
-      format_type: tabs
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        direction: horizontal
-        width_breakpoint: 640
+        weight: 0
 id: node.news.default
 targetEntityType: node
 bundle: news
@@ -88,7 +64,7 @@ mode: default
 content:
   field_author:
     type: string_textfield
-    weight: 15
+    weight: 1
     region: content
     settings:
       size: 60
@@ -96,14 +72,14 @@ content:
     third_party_settings: {  }
   field_login_required:
     type: boolean_checkbox
-    weight: 17
+    weight: 12
     region: content
     settings:
       display_label: true
     third_party_settings: {  }
   field_metatags:
     type: metatag_firehose
-    weight: 1
+    weight: 7
     region: content
     settings:
       sidebar: true
@@ -111,13 +87,13 @@ content:
     third_party_settings: {  }
   field_publish_date:
     type: datetime_default
-    weight: 16
+    weight: 2
     region: content
     settings: {  }
     third_party_settings: {  }
   field_tags:
     type: entity_reference_autocomplete_tags
-    weight: 14
+    weight: 3
     region: content
     settings:
       match_operator: CONTAINS
@@ -157,21 +133,9 @@ content:
     third_party_settings: {  }
   path:
     type: path
-    weight: 3
+    weight: 5
     region: content
     settings: {  }
-    third_party_settings: {  }
-  revision_log:
-    type: hide_revision_field_log_widget
-    weight: 6
-    region: content
-    settings:
-      rows: 5
-      placeholder: ''
-      show: true
-      default: ''
-      permission_based: false
-      allow_user_settings: true
     third_party_settings: {  }
   simple_sitemap:
     weight: 10
@@ -180,28 +144,28 @@ content:
     third_party_settings: {  }
   status:
     type: boolean_checkbox
-    weight: 5
+    weight: 9
     region: content
     settings:
       display_label: true
     third_party_settings: {  }
   sticky:
     type: boolean_checkbox
-    weight: 2
+    weight: 13
     region: content
     settings:
       display_label: true
     third_party_settings: {  }
   title:
     type: string_textfield
-    weight: 13
+    weight: 0
     region: content
     settings:
       size: 60
       placeholder: ''
     third_party_settings: {  }
   url_redirects:
-    weight: 4
+    weight: 6
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -209,4 +173,5 @@ hidden:
   created: true
   layout_builder__layout: true
   promote: true
+  revision_log: true
   uid: true

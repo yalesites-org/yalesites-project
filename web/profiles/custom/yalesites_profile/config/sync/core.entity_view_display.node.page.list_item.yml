@@ -1,0 +1,58 @@
+uuid: 05c7e499-1a9d-480a-bd60-74847a9085e7
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.node.list_item
+    - field.field.node.page.field_login_required
+    - field.field.node.page.field_metatags
+    - field.field.node.page.field_tags
+    - field.field.node.page.field_teaser_media
+    - field.field.node.page.field_teaser_text
+    - field.field.node.page.field_teaser_title
+    - field.field.node.page.layout_builder__layout
+    - node.type.page
+  module:
+    - layout_builder
+    - text
+    - user
+third_party_settings:
+  layout_builder:
+    enabled: false
+    allow_custom: false
+id: node.page.list_item
+targetEntityType: node
+bundle: page
+mode: list_item
+content:
+  field_teaser_media:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: card_list_3_2
+      link: false
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  field_teaser_text:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_teaser_title:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  field_login_required: true
+  field_metatags: true
+  field_tags: true
+  layout_builder__layout: true
+  links: true
+  search_api_excerpt: true

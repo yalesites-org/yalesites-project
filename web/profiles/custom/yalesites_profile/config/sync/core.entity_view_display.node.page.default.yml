@@ -13,7 +13,6 @@ dependencies:
     - node.type.page
   module:
     - layout_builder
-    - layout_builder_restrictions
     - layout_discovery
     - user
     - ys_core
@@ -39,31 +38,6 @@ third_party_settings:
             weight: 0
             additional: {  }
         third_party_settings: {  }
-  layout_builder_restrictions:
-    allowed_block_categories: {  }
-    entity_view_mode_restriction:
-      allowed_layouts: {  }
-      denylisted_blocks: {  }
-      allowlisted_blocks: {  }
-      restricted_categories: {  }
-    entity_view_mode_restriction_per_role:
-      layout_restriction: all
-      allowed_layouts:
-        layout_onecol:
-          platform_admin: '0'
-          site_admin: '0'
-        layout_twocol_section:
-          platform_admin: '0'
-          site_admin: '0'
-        layout_threecol_section:
-          platform_admin: '0'
-          site_admin: '0'
-        layout_fourcol_section:
-          platform_admin: '0'
-          site_admin: '0'
-      __blocks:
-        platform_admin: {  }
-      override_defaults: true
 id: node.page.default
 targetEntityType: node
 bundle: page
