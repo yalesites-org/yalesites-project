@@ -5,4 +5,4 @@ dependencies: {  }
 id: pull_quote
 label: Quote
 revision: 0
-description: 'Quotes allow you to highlight text from, or in reference to, a larger body of work. For instance, you can highlight from a blog, a news post, or a personal phrase on a profile.'
+description: 'Quotes allow you to highlight text from, or in reference to, a larger body of work. For instance, you can highlight from a blog, a post, or a personal phrase on a profile.'

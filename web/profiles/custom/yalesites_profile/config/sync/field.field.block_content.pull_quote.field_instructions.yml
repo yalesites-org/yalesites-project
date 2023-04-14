@@ -20,6 +20,6 @@ default_value:
 default_value_callback: ''
 settings:
   markup:
-    value: "<p>Quotes allow you to highlight text from, or in reference to, a larger body of work. For instance, you can highlight from a blog, a news post, or a personal phrase on a profile.</p>\r\n"
+    value: "<p>Quotes allow you to highlight text from, or in reference to, a larger body of work. For instance, you can highlight from a blog, a post, or a personal phrase on a profile.</p>\r\n"
     format: basic_html
 field_type: markup

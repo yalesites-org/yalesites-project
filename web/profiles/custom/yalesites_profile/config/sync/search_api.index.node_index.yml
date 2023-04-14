@@ -39,7 +39,7 @@ field_settings:
       view_mode:
         'entity:node':
           event: default
-          news: default
+          post: default
           page: default
   status:
     label: null

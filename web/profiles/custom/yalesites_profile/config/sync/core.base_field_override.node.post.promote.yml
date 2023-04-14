@@ -1,20 +1,20 @@
-uuid: 1f8291f1-af43-4cc4-90ff-c7d4ebf3dbb4
+uuid: 65817b85-68c7-4f28-8893-4ae789b6110e
 langcode: en
 status: true
 dependencies:
   config:
-    - node.type.news
-id: node.news.status
-field_name: status
+    - node.type.post
+id: node.post.promote
+field_name: promote
 entity_type: node
-bundle: news
-label: Published
+bundle: post
+label: 'Promoted to front page'
 description: ''
 required: false
 translatable: true
 default_value:
   -
-    value: 1
+    value: 0
 default_value_callback: ''
 settings:
   on_label: 'On'

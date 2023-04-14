@@ -4,11 +4,11 @@ status: true
 dependencies:
   config:
     - field.storage.node.field_author
-    - node.type.news
-id: node.news.field_author
+    - node.type.post
+id: node.post.field_author
 field_name: field_author
 entity_type: node
-bundle: news
+bundle: post
 label: Author
 description: ''
 required: false

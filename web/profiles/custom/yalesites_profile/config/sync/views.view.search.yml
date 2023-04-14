@@ -207,7 +207,7 @@ display:
           view_modes:
             'entity:node':
               event: search_result
-              news: search_result
+              post: search_result
               page: search_result
       query:
         type: search_api_query

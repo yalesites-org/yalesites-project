@@ -117,11 +117,11 @@ class SiteSettingsForm extends ConfigFormBase {
       '#required' => TRUE,
     ];
 
-    $form['site_page_news'] = [
+    $form['site_page_post'] = [
       '#type' => 'textfield',
-      '#description' => $this->t("Specify a relative URL to display as the news landing page. This can be set to an existing page URL or use the default value '/news'."),
-      '#title' => $this->t('News landing page'),
-      '#default_value' => $yaleConfig->get('page')['news'],
+      '#description' => $this->t("Specify a relative URL to display as the post landing page. This can be set to an existing page URL or use the default value '/post'."),
+      '#title' => $this->t('Post landing page'),
+      '#default_value' => $yaleConfig->get('page')['post'],
       '#required' => FALSE,
     ];
 
@@ -161,14 +161,14 @@ class SiteSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    // Validate front, news, and event page paths.
+    // Validate front, post, and event page paths.
     $this->validateStartWithSlash($form_state, 'site_page_front');
     $this->validatePath($form_state, 'site_page_front');
 
-    if (!$form_state->isValueEmpty('site_page_news')) {
-      $this->validateStartWithSlash($form_state, 'site_page_news');
-      $this->validateIsNotRootPath($form_state, 'site_page_news');
-      $this->validatePath($form_state, 'site_page_news');
+    if (!$form_state->isValueEmpty('site_page_post')) {
+      $this->validateStartWithSlash($form_state, 'site_page_post');
+      $this->validateIsNotRootPath($form_state, 'site_page_post');
+      $this->validatePath($form_state, 'site_page_post');
     }
 
     if (!$form_state->isValueEmpty('site_page_events')) {
@@ -207,7 +207,7 @@ class SiteSettingsForm extends ConfigFormBase {
       ->set('page.404', $form_state->getValue('site_page_404'))
       ->save();
     $this->configFactory->getEditable('ys_core.site')
-      ->set('page.news', $form_state->getValue('site_page_news'))
+      ->set('page.post', $form_state->getValue('site_page_post'))
       ->set('page.events', $form_state->getValue('site_page_events'))
       ->set('search.enable_search_form', $form_state->getValue('enable_search_form'))
       ->save();

@@ -49,13 +49,13 @@ quick_links:
       promotional: Full-width
       subtle: Narrow
     default: promotional
-news_list:
+post_list:
   field_style_variation:
     values:
       'true': Featured
       'false': Secondary
     default: 'true'
-news_cards:
+post_cards:
   field_style_variation:
     values:
       'true': Featured

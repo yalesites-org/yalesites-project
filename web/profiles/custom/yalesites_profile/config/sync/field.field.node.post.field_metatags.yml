@@ -4,13 +4,13 @@ status: true
 dependencies:
   config:
     - field.storage.node.field_metatags
-    - node.type.news
+    - node.type.post
   module:
     - metatag
-id: node.news.field_metatags
+id: node.post.field_metatags
 field_name: field_metatags
 entity_type: node
-bundle: news
+bundle: post
 label: Metadata
 description: ''
 required: false

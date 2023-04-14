@@ -13,9 +13,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class YaleSitesBreadcrumbsManager extends ControllerBase implements ContainerInjectionInterface {
 
   /**
-   * List of special configs and content types - used for news/events.
+   * List of special configs and content types - used for posts/events.
    */
-  const LANDING_PAGE_TYPES = ['news', 'event'];
+  const LANDING_PAGE_TYPES = ['post', 'event'];
 
   /**
    * The breadcrumb manager.
@@ -71,7 +71,7 @@ class YaleSitesBreadcrumbsManager extends ControllerBase implements ContainerInj
   /**
    * Tests if the current content type is one of the landing page types.
    *
-   * For now, this tests news and events.
+   * For now, this tests posts and events.
    *
    * @return bool
    *   True if the route is one of the landing page types.
