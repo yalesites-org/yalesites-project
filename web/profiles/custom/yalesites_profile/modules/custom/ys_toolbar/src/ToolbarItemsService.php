@@ -8,6 +8,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Drupal\node\NodeInterface;
+use Drupal\Component\Serialization\Json;
 
 /**
  * Tools for customizing the Drupal toolbar to engance the authoring experience.
@@ -124,6 +125,11 @@ class ToolbarItemsService {
       );
     }
 
+    $this->toolbarItems['toolbar_theme_settings_link'] = $this->buildOffCanvasButton(
+        'ys_themes.levers',
+        'Theme Settings'
+      );
+
     return $this->toolbarItems;
   }
 
@@ -224,6 +230,56 @@ class ToolbarItemsService {
           'class' => [
             'toolbar-icon',
             'toolbar-icon-edit',
+          ],
+        ],
+        '#cache' => [
+          'contexts' => [
+            'url.path',
+          ],
+        ],
+      ],
+    ];
+  }
+
+  /**
+   * Build an item for the toolbar.
+   *
+   * @param string $route
+   *   The route for the toolbar item destination.
+   * @param string $label
+   *   The text label for the toolbar item.
+   *
+   * @return array
+   *   A rennder array for a toolbar item.
+   */
+  protected function buildOffCanvasButton(string $route, string $label): array {
+    return [
+      '#type' => 'toolbar_item',
+      'tab' => [
+        '#type' => 'link',
+        '#title' => $label,
+        '#url' => Url::fromRoute(
+          $route,
+          \Drupal::service('redirect.destination')->getAsArray(),
+        ),
+        '#access' => $this->accessManager->checkNamedRoute(
+          $route,
+          $this->getNodeRouteParams(),
+          $this->account
+        ),
+        '#attributes' => [
+          'class' => [
+            'use-ajax',
+            'toolbar-icon',
+            'toolbar-icon-edit',
+          ],
+          'data-dialog-type' => 'dialog',
+          'data-dialog-renderer' => 'off_canvas',
+          'data-dialog-options' => Json::encode(['width' => 400]),
+        ],
+        '#attached' => [
+          'library' => [
+            'core/drupal.dialog.ajax',
           ],
         ],
         '#cache' => [

@@ -6,3 +6,10 @@ ys_themes.theme_settings:
     _title: 'Theme Settings'
   requirements:
     _permission: 'yalesites manage settings'
+ys_themes.levers:
+  path: '/admin/yalesites/levers'
+  defaults:
+    _form: 'Drupal\ys_themes\Form\LeversSettingsForm'
+    _title: 'Levers Settings'
+  requirements:
+    _permission: 'yalesites manage settings'
