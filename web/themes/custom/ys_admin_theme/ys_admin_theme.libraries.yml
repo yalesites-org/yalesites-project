@@ -1,7 +1,6 @@
 global:
   css:
     theme:
-      css/base.css: {}
       css/admin-ui.css: {}
 
 tokens:
@@ -9,8 +8,3 @@ tokens:
     theme:
       node_modules/@yalesites-org/tokens/build/tokens.css: {}
       css/gin-color-overrides.css: {}
-
-paragraphs:
-  css:
-    theme:
-      css/paragraphs.css: {}

@@ -1,0 +1,23 @@
+uuid: 7888f202-84cf-4131-af06-246e05fad373
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.quick_links
+    - field.storage.block_content.field_links
+  module:
+    - link
+id: block_content.quick_links.field_links
+field_name: field_links
+entity_type: block_content
+bundle: quick_links
+label: Links
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  title: 2
+  link_type: 17
+field_type: link

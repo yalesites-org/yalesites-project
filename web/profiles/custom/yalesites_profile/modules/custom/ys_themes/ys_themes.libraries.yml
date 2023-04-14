@@ -1,5 +1,4 @@
-layout-paragraphs:
-  version: 1.x
+ys_themes:
   css:
     theme:
-      css/layout-paragraphs.css: {}
+      css/ys-themes.css : {}

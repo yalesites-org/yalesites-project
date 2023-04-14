@@ -1,0 +1,21 @@
+uuid: 80551790-ac45-46e0-b99d-19b4f07b7743
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.callout
+    - field.storage.block_content.field_style_color
+  module:
+    - options
+id: block_content.callout.field_style_color
+field_name: field_style_color
+entity_type: block_content
+bundle: callout
+label: 'Background Color'
+description: ''
+required: true
+translatable: true
+default_value: {  }
+default_value_callback: ys_themes_default_value_function
+settings: {  }
+field_type: list_string

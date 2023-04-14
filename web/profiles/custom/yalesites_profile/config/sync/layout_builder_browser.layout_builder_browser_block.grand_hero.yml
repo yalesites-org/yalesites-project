@@ -1,0 +1,11 @@
+uuid: 0045c6a9-a050-44bf-997c-85e64b3ad015
+langcode: en
+status: true
+dependencies: {  }
+id: grand_hero
+block_id: 'inline_block:grand_hero'
+category: all_blocks
+label: 'Grand Hero'
+image_path: ''
+image_alt: ''
+weight: -1

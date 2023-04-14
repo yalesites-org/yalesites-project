@@ -1,0 +1,21 @@
+uuid: a644ba6f-5e28-47e6-8333-c152c9a05e58
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.wrapped_image
+    - field.storage.block_content.field_style_position
+  module:
+    - options
+id: block_content.wrapped_image.field_style_position
+field_name: field_style_position
+entity_type: block_content
+bundle: wrapped_image
+label: Position
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_string

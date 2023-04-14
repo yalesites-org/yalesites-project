@@ -1,0 +1,8 @@
+uuid: 11db61f8-cd78-4450-8616-855f7564fd38
+langcode: en
+status: true
+dependencies: {  }
+id: image
+label: Image
+revision: 1
+description: 'Image allows you to upload an image to your page. The Image component supports varying aspect ratios.'

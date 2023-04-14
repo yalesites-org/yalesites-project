@@ -1,0 +1,8 @@
+uuid: 4f451205-7cb6-4a08-add9-3652d018848b
+langcode: en
+status: true
+dependencies: {  }
+id: quick_links
+label: 'Quick Links'
+revision: 1
+description: 'Quick Links allow you to create a grouped visual call-to-action for multiple external and internal links. '

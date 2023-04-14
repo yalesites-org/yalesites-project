@@ -1,0 +1,11 @@
+uuid: b318596a-45ad-4410-874e-f35077d6173a
+langcode: en
+status: true
+dependencies: {  }
+id: action_banner
+block_id: 'inline_block:cta_banner'
+category: all_blocks
+label: 'Action Banner'
+image_path: themes/contrib/atomic/templates/block/layout-builder/preview-icons/banner-icon.svg
+image_alt: ''
+weight: -2

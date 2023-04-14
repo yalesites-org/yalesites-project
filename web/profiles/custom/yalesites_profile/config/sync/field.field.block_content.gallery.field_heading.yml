@@ -1,0 +1,26 @@
+uuid: b21f28f4-ca2c-4699-82d0-347308d63865
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.gallery
+    - field.storage.block_content.field_heading
+  module:
+    - allowed_formats
+    - text
+third_party_settings:
+  allowed_formats:
+    allowed_formats:
+      - heading_html
+id: block_content.gallery.field_heading
+field_name: field_heading
+entity_type: block_content
+bundle: gallery
+label: 'Gallery Component Title'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: text

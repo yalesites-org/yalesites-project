@@ -1,0 +1,19 @@
+uuid: 06a400dc-8a21-4ba8-b41d-d24a42d664ad
+langcode: en
+status: true
+dependencies:
+  module:
+    - block_content
+    - markup
+id: block_content.field_instructions
+field_name: field_instructions
+entity_type: block_content
+type: markup
+settings: {  }
+module: markup
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

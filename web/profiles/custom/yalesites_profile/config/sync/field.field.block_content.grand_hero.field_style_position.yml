@@ -1,0 +1,21 @@
+uuid: 727af79c-fa17-41dd-a5a5-161fdadc5775
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.grand_hero
+    - field.storage.block_content.field_style_position
+  module:
+    - options
+id: block_content.grand_hero.field_style_position
+field_name: field_style_position
+entity_type: block_content
+bundle: grand_hero
+label: 'Overlay Position'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_string

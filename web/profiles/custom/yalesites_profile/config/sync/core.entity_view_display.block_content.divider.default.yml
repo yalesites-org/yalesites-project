@@ -1,0 +1,15 @@
+uuid: 0962157e-cf5d-4075-a93c-5c769b27e90b
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.divider
+    - field.field.block_content.divider.field_instructions
+id: block_content.divider.default
+targetEntityType: block_content
+bundle: divider
+mode: default
+content: {  }
+hidden:
+  field_instructions: true
+  search_api_excerpt: true

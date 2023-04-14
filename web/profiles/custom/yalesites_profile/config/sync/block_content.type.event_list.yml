@@ -1,0 +1,8 @@
+uuid: 22f03d31-b273-44dc-ba0c-50b88d99b012
+langcode: en
+status: true
+dependencies: {  }
+id: event_list
+label: 'Calendar List'
+revision: 1
+description: 'Calendar pulls in your Events content types and dynamically references them on your webpage. You can select a List View or a Card View of your Events.'

@@ -1,0 +1,8 @@
+uuid: 717ea86a-69e3-4fa4-9051-b8f6d6687c62
+langcode: en
+status: true
+dependencies: {  }
+id: embed
+label: Embed
+revision: 1
+description: "Embed allows you to integrate external supported websites into your content. \_"

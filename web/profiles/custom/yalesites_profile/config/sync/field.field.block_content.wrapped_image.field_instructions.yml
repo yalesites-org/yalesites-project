@@ -1,0 +1,25 @@
+uuid: c844dcfc-38d6-4e44-853b-797704197792
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.wrapped_image
+    - field.storage.block_content.field_instructions
+  module:
+    - markup
+id: block_content.wrapped_image.field_instructions
+field_name: field_instructions
+entity_type: block_content
+bundle: wrapped_image
+label: Instructions
+description: ''
+required: false
+translatable: true
+default_value:
+  - {  }
+default_value_callback: ''
+settings:
+  markup:
+    value: "<p>Wrapped Image allows you to add an image that accompanies a larger body of text. Options for wrapped image allows you to add captions and opt in for different orientations.</p>\r\n"
+    format: basic_html
+field_type: markup

@@ -4,8 +4,6 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.node.search_result
-    - field.field.node.event.field_content
-    - field.field.node.event.field_content_title
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_format
@@ -15,6 +13,7 @@ dependencies:
     - field.field.node.event.field_teaser_media
     - field.field.node.event.field_teaser_text
     - field.field.node.event.field_teaser_title
+    - field.field.node.event.layout_builder__layout
     - node.type.event
   module:
     - text
@@ -37,8 +36,6 @@ content:
     weight: 0
     region: content
 hidden:
-  field_content: true
-  field_content_title: true
   field_event_cta: true
   field_event_date: true
   field_event_format: true
@@ -47,4 +44,5 @@ hidden:
   field_tags: true
   field_teaser_media: true
   field_teaser_title: true
+  layout_builder__layout: true
   links: true

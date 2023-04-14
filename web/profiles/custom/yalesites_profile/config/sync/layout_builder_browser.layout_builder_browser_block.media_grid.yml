@@ -1,0 +1,11 @@
+uuid: 3fd650d7-70cc-4c90-8728-313a3b6383a3
+langcode: en
+status: true
+dependencies: {  }
+id: media_grid
+block_id: 'inline_block:media_grid'
+category: all_blocks
+label: 'Media Grid'
+image_path: ''
+image_alt: ''
+weight: 2

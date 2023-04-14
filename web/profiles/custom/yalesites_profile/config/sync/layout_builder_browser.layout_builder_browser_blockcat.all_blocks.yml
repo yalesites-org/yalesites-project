@@ -1,0 +1,7 @@
+uuid: e4356346-d78d-4df4-9c62-6376c0d44128
+langcode: en
+status: true
+dependencies: {  }
+id: all_blocks
+label: 'All Blocks'
+weight: -10

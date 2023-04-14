@@ -1,0 +1,29 @@
+uuid: f3a3dfd6-20bb-480b-967c-b40704169aba
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.content_spotlight
+    - field.storage.block_content.field_media
+    - media.type.image
+id: block_content.content_spotlight.field_media
+field_name: field_media
+entity_type: block_content
+bundle: content_spotlight
+label: Image
+description: ''
+required: true
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:media'
+  handler_settings:
+    target_bundles:
+      image: image
+    sort:
+      field: _none
+      direction: ASC
+    auto_create: true
+    auto_create_bundle: ''
+field_type: entity_reference

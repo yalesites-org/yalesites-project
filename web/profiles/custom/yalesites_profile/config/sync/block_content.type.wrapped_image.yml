@@ -1,0 +1,8 @@
+uuid: e5af593d-65a6-47a3-9935-87116f880b41
+langcode: en
+status: true
+dependencies: {  }
+id: wrapped_image
+label: 'Wrapped Image'
+revision: 1
+description: 'Wrapped Image allows you to add an image that accompanies a larger body of text. Options for wrapped image allows you to add captions and opt in for different orientations.'

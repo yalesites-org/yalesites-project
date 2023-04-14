@@ -1,0 +1,21 @@
+uuid: 29ab14a8-355e-418d-9b27-f78ff68b235a
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.content_spotlight
+    - field.storage.block_content.field_style_variation
+  module:
+    - options
+id: block_content.content_spotlight.field_style_variation
+field_name: field_style_variation
+entity_type: block_content
+bundle: content_spotlight
+label: Focus
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_string

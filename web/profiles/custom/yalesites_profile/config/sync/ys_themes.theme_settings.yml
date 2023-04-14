@@ -1,8 +1,9 @@
 action_color: blue-yale
 pull_quote_color: gray-500
 line_color: gray-500
-line_thickness: thick
+line_thickness: thin
 nav_position: right
 nav_type: mega
 header_theme: white
 footer_theme: gray-700
+accent_color: blue-light

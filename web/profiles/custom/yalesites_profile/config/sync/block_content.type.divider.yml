@@ -1,0 +1,8 @@
+uuid: c42faf6c-7dea-483f-81dd-56ea50a45ba1
+langcode: en
+status: true
+dependencies: {  }
+id: divider
+label: Divider
+revision: 1
+description: 'Divider allows you to add a visual divider line to your page.'

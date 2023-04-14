@@ -1,0 +1,11 @@
+uuid: dc46417f-006c-47c2-96e8-31d0fc40e6d2
+langcode: en
+status: true
+dependencies: {  }
+id: content_spotlight
+block_id: 'inline_block:content_spotlight'
+category: all_blocks
+label: 'Content Spotlight'
+image_path: ''
+image_alt: ''
+weight: -7

@@ -27,7 +27,7 @@ pull_quote:
       bar-right: 'Bar Right'
       quote-left: 'Quote Left'
     default: bar-left
-text_with_image:
+content_spotlight:
   field_style_position:
     values:
       image-left: 'Image Left'
@@ -87,11 +87,11 @@ wrapped_image:
 grand_hero:
   field_style_position:
     values:
-      full: Tall
-      contained: Short
+      full: Full
+      reduced: 'Floating Box'
     default: full
   field_style_variation:
     values:
-      full: Full
-      reduced: 'Floating Box'
+      full: Tall
+      contained: Short
     default: full

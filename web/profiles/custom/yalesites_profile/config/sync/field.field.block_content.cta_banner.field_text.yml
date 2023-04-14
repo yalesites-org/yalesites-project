@@ -1,0 +1,26 @@
+uuid: aa496dc9-4d82-459a-9bd6-f41c8b25db50
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.cta_banner
+    - field.storage.block_content.field_text
+  module:
+    - allowed_formats
+    - text
+third_party_settings:
+  allowed_formats:
+    allowed_formats:
+      - basic_html
+id: block_content.cta_banner.field_text
+field_name: field_text
+entity_type: block_content
+bundle: cta_banner
+label: 'CTA Banner Content'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: text_long

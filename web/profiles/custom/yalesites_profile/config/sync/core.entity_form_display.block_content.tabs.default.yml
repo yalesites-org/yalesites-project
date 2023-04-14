@@ -1,0 +1,50 @@
+uuid: 6125bfea-3a3a-46d9-9c1d-a5e927cb8407
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.tabs
+    - field.field.block_content.tabs.field_instructions
+    - field.field.block_content.tabs.field_tabs
+  module:
+    - markup
+    - paragraphs
+    - paragraphs_features
+id: block_content.tabs.default
+targetEntityType: block_content
+bundle: tabs
+mode: default
+content:
+  field_instructions:
+    type: markup
+    weight: 0
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_tabs:
+    type: paragraphs
+    weight: 1
+    region: content
+    settings:
+      title: tab
+      title_plural: tabs
+      edit_mode: closed
+      closed_mode: summary
+      autocollapse: all
+      closed_mode_threshold: 0
+      add_mode: button
+      form_display_mode: default
+      default_paragraph_type: tab
+      features:
+        add_above: add_above
+        collapse_edit_all: collapse_edit_all
+        duplicate: duplicate
+    third_party_settings:
+      paragraphs_features:
+        add_in_between: false
+        add_in_between_link_count: 3
+        delete_confirmation: true
+        show_drag_and_drop: true
+hidden:
+  info: true
+  revision_log: true

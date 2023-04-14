@@ -25,10 +25,6 @@ source:
       name: src_author
       label: 'Author'
       selector: field_author
-    -
-      name: paragraph_refs
-      label: 'Paragraph Ref'
-      selector: paragraph_refs
   ids:
     src_unique_id:
       type: string
@@ -50,19 +46,6 @@ process:
     unpack_source: true
     source:
       - constants/date_format
-  field_content:
-      -
-        plugin: multiple_values
-        source: paragraph_refs
-      -
-        plugin: migration_lookup
-        migration: ys_paragraphs
-        no_stub: true
-      -
-        plugin: sub_process
-        process:
-          target_id: '0'
-          target_revision_id: '1'
 
 destination:
   plugin: entity:node
@@ -75,5 +58,4 @@ dependencies:
 
 migration_dependencies:
   required:
-    - ys_paragraphs
     - ys_images_media

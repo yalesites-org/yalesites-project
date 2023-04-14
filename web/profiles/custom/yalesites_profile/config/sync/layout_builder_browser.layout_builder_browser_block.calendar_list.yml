@@ -1,0 +1,11 @@
+uuid: b4b46971-7cb7-497a-a497-17e6557a6f7d
+langcode: en
+status: true
+dependencies: {  }
+id: calendar_list
+block_id: 'inline_block:event_list'
+category: all_blocks
+label: 'Calendar List'
+image_path: ''
+image_alt: ''
+weight: 8

@@ -1,0 +1,21 @@
+uuid: 4b22035c-7e9a-464d-91ce-b0bb6d18183a
+langcode: en
+status: true
+dependencies:
+  module:
+    - block_content
+    - options
+id: block_content.field_style_color
+field_name: field_style_color
+entity_type: block_content
+type: list_string
+settings:
+  allowed_values: {  }
+  allowed_values_function: ys_themes_allowed_values_function
+module: options
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

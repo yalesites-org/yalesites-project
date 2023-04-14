@@ -1,0 +1,8 @@
+uuid: d367d8b9-e740-4122-b741-80374ca7fbfc
+langcode: en
+status: true
+dependencies: {  }
+id: pull_quote
+label: Quote
+revision: 0
+description: 'Quotes allow you to highlight text from, or in reference to, a larger body of work. For instance, you can highlight from a blog, a news post, or a personal phrase on a profile.'

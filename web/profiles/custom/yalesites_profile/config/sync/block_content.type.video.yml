@@ -1,0 +1,8 @@
+uuid: b15a0bbb-ff59-49f8-b97b-4d75f95f0a71
+langcode: en
+status: true
+dependencies: {  }
+id: video
+label: Video
+revision: 1
+description: 'Video allows you to upload a video to your website. The Video component supports YouTube and Vimeo videos.'
