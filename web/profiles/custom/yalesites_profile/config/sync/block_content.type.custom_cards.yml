@@ -1,0 +1,8 @@
+uuid: b409ab0b-fd12-42de-9512-c1a7b355cf9c
+langcode: en
+status: true
+dependencies: {  }
+id: custom_cards
+label: 'Custom Cards'
+revision: 1
+description: 'Custom Cards allow you to create a group of related pieces of information. This container resembles a playing card in shape and size.'

@@ -1,0 +1,25 @@
+uuid: f356524f-1e86-4532-a624-0cda5e816ca0
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.news_list
+    - field.field.block_content.news_list.field_heading
+    - field.field.block_content.news_list.field_instructions
+  module:
+    - text
+id: block_content.news_list.default
+targetEntityType: block_content
+bundle: news_list
+mode: default
+content:
+  field_heading:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  field_instructions: true
+  search_api_excerpt: true

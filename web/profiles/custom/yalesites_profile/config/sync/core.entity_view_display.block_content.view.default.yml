@@ -1,0 +1,34 @@
+uuid: 5360fde3-8a85-4bf5-9eb1-fd08bc5ed065
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.view
+    - field.field.block_content.view.field_heading
+    - field.field.block_content.view.field_instructions
+    - field.field.block_content.view.field_view_params
+  module:
+    - text
+    - ys_views_basic
+id: block_content.view.default
+targetEntityType: block_content
+bundle: view
+mode: default
+content:
+  field_heading:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_view_params:
+    type: views_basic_default_formatter
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
+hidden:
+  field_instructions: true
+  search_api_excerpt: true

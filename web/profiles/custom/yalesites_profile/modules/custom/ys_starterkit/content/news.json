@@ -4,27 +4,12 @@
       {
         "unique_id": 1,
         "title": "Article with mostly text",
-        "field_author": "Viverra vitae",
-        "paragraph_refs": [
-          "P16",
-          "P03",
-          "P07"
-        ]
-        
+        "field_author": "Viverra vitae"
       },
       {
         "unique_id": 2,
         "title": "Longform article",
-        "field_author": "Viverra vitae",
-        "paragraph_refs": [
-          "P17",
-          "P03",
-          "P18",
-          "P19",
-          "P07",
-          "P20",
-          "P10"
-        ]
+        "field_author": "Viverra vitae"
       }
     ]
   }

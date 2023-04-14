@@ -1,8 +1,8 @@
 _core:
   default_config_hash: yrqqG88pLjv5VOMc9Mp665VJUyK4lMCZwg8376pI0SQ
-ui_localtask: false
+ui_localtask: true
 ui_checkbox: true
-create_revision: false
-create_log_entry: false
+create_revision: true
+create_log_entry: true
 publish_text_value: Publish
 unpublish_text_value: Unpublish

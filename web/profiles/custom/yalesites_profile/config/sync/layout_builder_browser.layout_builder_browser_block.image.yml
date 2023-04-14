@@ -1,0 +1,11 @@
+uuid: b9a69545-ac9f-4024-8f0f-22c31b01eb62
+langcode: en
+status: true
+dependencies: {  }
+id: image
+block_id: 'inline_block:image'
+category: all_blocks
+label: Image
+image_path: ''
+image_alt: ''
+weight: 0

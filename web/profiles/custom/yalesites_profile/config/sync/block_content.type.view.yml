@@ -1,0 +1,8 @@
+uuid: acbc201f-10c2-4c81-8fa5-323c96d11119
+langcode: en
+status: true
+dependencies: {  }
+id: view
+label: View
+revision: 1
+description: 'View is a reference component that can pull from your content types to create a dynamic view on your webpage.'

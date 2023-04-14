@@ -1,0 +1,8 @@
+uuid: 045c7b01-536a-4ecb-a54e-6c328ce91888
+langcode: en
+status: true
+dependencies: {  }
+id: content_spotlight
+label: 'Content Spotlight'
+revision: 1
+description: 'Content spotlight allows you to display an image adjacent to text. This component has optional content, varying sizes, and different orientations.'

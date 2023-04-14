@@ -1,0 +1,11 @@
+{% if not breadcrumbs_placeholder %}
+  {{ drupal_entity('block', 'yalesitesbreadcrumbs', check_access=false) }}
+{% else %}
+  {% include '@organisms/menu/breadcrumbs/yds-breadcrumbs.twig' with {
+    breadcrumbs__items: breadcrumbs_placeholder
+  } %}
+{% endif %}
+
+{% include "@molecules/page-title/yds-page-title.twig" with {
+  page_title__heading: page_title,
+} %}

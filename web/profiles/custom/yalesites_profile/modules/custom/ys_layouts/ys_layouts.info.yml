@@ -1,7 +1,0 @@
-name: YaleSites Layouts
-type: module
-description: Layouts shared across YaleSites
-core_version_requirement: '^9 || ^10'
-package: YaleSites
-dependencies:
-  - drupal:layout_discovery

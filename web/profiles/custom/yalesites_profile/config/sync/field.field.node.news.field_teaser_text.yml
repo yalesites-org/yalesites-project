@@ -11,7 +11,7 @@ dependencies:
 third_party_settings:
   allowed_formats:
     allowed_formats:
-      - basic_html
+      - heading_html
 id: node.news.field_teaser_text
 field_name: field_teaser_text
 entity_type: node

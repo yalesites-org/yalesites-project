@@ -1,0 +1,19 @@
+uuid: 7cd74dda-7efc-4550-a728-9b9ffe5276d5
+langcode: en
+status: true
+dependencies:
+  module:
+    - block_content
+    - ys_views_basic
+id: block_content.field_view_params
+field_name: field_view_params
+entity_type: block_content
+type: views_basic_params
+settings: {  }
+module: ys_views_basic
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

@@ -1,0 +1,8 @@
+uuid: cf05d669-4abf-42fe-8ed5-6136b2bdbcb3
+langcode: en
+status: true
+dependencies: {  }
+id: news_list
+label: Newsfeed
+revision: 1
+description: 'Newsfeed pulls in your News content types and dynamically references them on your webpage.'

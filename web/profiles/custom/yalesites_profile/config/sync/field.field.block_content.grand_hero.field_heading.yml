@@ -1,0 +1,26 @@
+uuid: 5dbbb3cd-c602-491f-9dbe-e4c6eab187c5
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.grand_hero
+    - field.storage.block_content.field_heading
+  module:
+    - allowed_formats
+    - text
+third_party_settings:
+  allowed_formats:
+    allowed_formats:
+      - heading_html
+id: block_content.grand_hero.field_heading
+field_name: field_heading
+entity_type: block_content
+bundle: grand_hero
+label: Heading
+description: ''
+required: true
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: text

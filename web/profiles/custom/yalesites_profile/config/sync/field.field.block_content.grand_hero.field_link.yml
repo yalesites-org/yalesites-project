@@ -1,0 +1,23 @@
+uuid: dee11311-7242-47d3-bfd3-96519195e76d
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.grand_hero
+    - field.storage.block_content.field_link
+  module:
+    - link
+id: block_content.grand_hero.field_link
+field_name: field_link
+entity_type: block_content
+bundle: grand_hero
+label: Link
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  title: 2
+  link_type: 17
+field_type: link

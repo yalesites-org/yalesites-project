@@ -1,0 +1,11 @@
+uuid: b01b3f0f-c387-4244-ad3d-3599510d40c3
+langcode: en
+status: true
+dependencies: {  }
+id: webform
+block_id: 'inline_block:webform'
+category: all_blocks
+label: Webform
+image_path: ''
+image_alt: ''
+weight: 11

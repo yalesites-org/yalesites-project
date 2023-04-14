@@ -1,0 +1,11 @@
+uuid: f0d1588c-7ecb-4ef5-9fc9-55df4447b4f1
+langcode: en
+status: true
+dependencies: {  }
+id: custom_cards
+block_id: 'inline_block:custom_cards'
+category: all_blocks
+label: 'Custom Cards'
+image_path: ''
+image_alt: ''
+weight: 7

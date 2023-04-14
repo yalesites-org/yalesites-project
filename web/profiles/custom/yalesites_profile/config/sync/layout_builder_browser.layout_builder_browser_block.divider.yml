@@ -1,0 +1,11 @@
+uuid: b948bd59-2a29-42b9-a267-6f22af2bf786
+langcode: en
+status: true
+dependencies: {  }
+id: divider
+block_id: 'inline_block:divider'
+category: all_blocks
+label: Divider
+image_path: ''
+image_alt: ''
+weight: -8

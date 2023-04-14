@@ -1,0 +1,21 @@
+uuid: 400d7547-a75c-4564-a0c4-b10f62bfaaa0
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.content_spotlight
+    - field.storage.block_content.field_style_width
+  module:
+    - options
+id: block_content.content_spotlight.field_style_width
+field_name: field_style_width
+entity_type: block_content
+bundle: content_spotlight
+label: 'Image Size'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_string

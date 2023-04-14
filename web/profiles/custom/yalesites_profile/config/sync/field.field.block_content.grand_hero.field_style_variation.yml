@@ -1,0 +1,21 @@
+uuid: 5f3cad75-66a2-4b98-b9fa-6d16d78da29a
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.grand_hero
+    - field.storage.block_content.field_style_variation
+  module:
+    - options
+id: block_content.grand_hero.field_style_variation
+field_name: field_style_variation
+entity_type: block_content
+bundle: grand_hero
+label: 'Media Size'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_string

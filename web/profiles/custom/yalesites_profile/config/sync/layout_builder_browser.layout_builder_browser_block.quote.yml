@@ -1,0 +1,11 @@
+uuid: 7e49ea53-67f0-4978-9a84-2ee2325290b9
+langcode: en
+status: true
+dependencies: {  }
+id: quote
+block_id: 'inline_block:pull_quote'
+category: all_blocks
+label: Quote
+image_path: themes/contrib/atomic/templates/block/layout-builder/preview-icons/avatar-icon.svg
+image_alt: ''
+weight: -5

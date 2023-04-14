@@ -1,0 +1,74 @@
+uuid: fdd59920-77fd-48b1-8511-60b0544d9430
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.grand_hero
+    - field.field.block_content.grand_hero.field_heading
+    - field.field.block_content.grand_hero.field_instructions
+    - field.field.block_content.grand_hero.field_link
+    - field.field.block_content.grand_hero.field_media
+    - field.field.block_content.grand_hero.field_style_position
+    - field.field.block_content.grand_hero.field_style_variation
+    - field.field.block_content.grand_hero.field_text
+  module:
+    - link
+    - options
+    - text
+id: block_content.grand_hero.default
+targetEntityType: block_content
+bundle: grand_hero
+mode: default
+content:
+  field_heading:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_link:
+    type: link_separate
+    label: hidden
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 3
+    region: content
+  field_media:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: default
+      link: true
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_style_position:
+    type: list_key
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 5
+    region: content
+  field_style_variation:
+    type: list_key
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 4
+    region: content
+  field_text:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 2
+    region: content
+hidden:
+  field_instructions: true
+  search_api_excerpt: true

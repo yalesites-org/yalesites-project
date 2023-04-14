@@ -28,10 +28,6 @@ source:
       name: src_title
       label: Title
       selector: title
-    -
-      name: paragraph_refs
-      label: 'Paragraph Ref'
-      selector: paragraph_refs
   ids:
     src_unique_id:
       type: string
@@ -43,23 +39,9 @@ process:
     plugin: default_value
     default_value: true
   title: src_title
-  field_content:
-    -
-      plugin: multiple_values
-      source: paragraph_refs
-    -
-      plugin: migration_lookup
-      migration: ys_paragraphs
-      no_stub: true
-    -
-      plugin: sub_process
-      process:
-        target_id: '0'
-        target_revision_id: '1'
 destination:
   plugin: 'entity:node'
   default_bundle: page
 migration_dependencies:
   required:
-    - ys_paragraphs
     - ys_images_media

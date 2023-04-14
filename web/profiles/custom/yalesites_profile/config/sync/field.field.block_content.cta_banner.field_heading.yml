@@ -1,0 +1,26 @@
+uuid: 24a699e3-59fb-4d85-81e1-ca15a1dc6ed9
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.cta_banner
+    - field.storage.block_content.field_heading
+  module:
+    - allowed_formats
+    - text
+third_party_settings:
+  allowed_formats:
+    allowed_formats:
+      - heading_html
+id: block_content.cta_banner.field_heading
+field_name: field_heading
+entity_type: block_content
+bundle: cta_banner
+label: 'CTA Banner Heading'
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: text

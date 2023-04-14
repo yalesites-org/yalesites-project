@@ -1,0 +1,25 @@
+uuid: dc26dae6-3d0d-4a70-9be1-77be57cec530
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.video
+    - field.storage.block_content.field_instructions
+  module:
+    - markup
+id: block_content.video.field_instructions
+field_name: field_instructions
+entity_type: block_content
+bundle: video
+label: Instructions
+description: ''
+required: false
+translatable: true
+default_value:
+  - {  }
+default_value_callback: ''
+settings:
+  markup:
+    value: "<p>Video allows you to upload a video to your website. The Video component supports YouTube and Vimeo videos.</p>\r\n"
+    format: basic_html
+field_type: markup

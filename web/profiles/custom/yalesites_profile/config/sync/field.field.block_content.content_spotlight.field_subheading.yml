@@ -1,0 +1,26 @@
+uuid: b917cbd1-cf22-44a4-bf71-94720c3f4f29
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.content_spotlight
+    - field.storage.block_content.field_subheading
+  module:
+    - allowed_formats
+    - text
+third_party_settings:
+  allowed_formats:
+    allowed_formats:
+      - heading_html
+id: block_content.content_spotlight.field_subheading
+field_name: field_subheading
+entity_type: block_content
+bundle: content_spotlight
+label: Subheading
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: text

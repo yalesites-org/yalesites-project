@@ -1,0 +1,11 @@
+uuid: 61c74325-14db-4225-aee6-5049576d99a2
+langcode: en
+status: true
+dependencies: {  }
+id: view
+block_id: 'inline_block:view'
+category: all_blocks
+label: View
+image_path: ''
+image_alt: ''
+weight: 6

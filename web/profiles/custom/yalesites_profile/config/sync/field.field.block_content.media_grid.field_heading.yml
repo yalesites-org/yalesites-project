@@ -1,0 +1,26 @@
+uuid: 2f93c29c-70a5-4155-a088-e917fbd69091
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.media_grid
+    - field.storage.block_content.field_heading
+  module:
+    - allowed_formats
+    - text
+third_party_settings:
+  allowed_formats:
+    allowed_formats:
+      - heading_html
+id: block_content.media_grid.field_heading
+field_name: field_heading
+entity_type: block_content
+bundle: media_grid
+label: 'Image Grid Component Title'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: text

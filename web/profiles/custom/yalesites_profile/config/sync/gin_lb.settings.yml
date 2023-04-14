@@ -1,0 +1,5 @@
+_core:
+  default_config_hash: 4DJ-ODpqIpFYPDmqzRIVHczK321I99zFqNgPzKwVibs
+toastify_loading: cdn
+enable_preview_regions: false
+safe_behavior: stay

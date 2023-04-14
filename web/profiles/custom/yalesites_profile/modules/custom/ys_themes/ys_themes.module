@@ -11,49 +11,7 @@ use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\Core\Field\FieldDefinitionInterface;
 
 /**
- * Preprocess paragraphs to determine child paragraph heading levels.
- *
- * Implements hook_preprocess_paragraph().
- */
-function ys_themes_preprocess_paragraph(&$variables) {
-
-  $fieldHeading = 'field_heading';
-  $paragraphTypes = [
-    'accordion_item',
-  ];
-
-  if (in_array($variables['paragraph']->getType(), $paragraphTypes)) {
-    $parentParagraph = $variables['paragraph']->getParentEntity();
-    if ($parentParagraph && $parentParagraph->hasField($fieldHeading)) {
-      $variables['has_outer_heading'] = $parentParagraph->get($fieldHeading)->getValue() ? TRUE : FALSE;
-    }
-  }
-}
-
-/**
- * Preprocess field to add style variation twig variable to child fields.
- *
- * Implements hook_preprocess_field().
- */
-function ys_themes_preprocess_field(&$variables) {
-
-  /* Key value pair of paragraph machine name and twig variable name. */
-  $paragraphTypes = [
-    'quick_links' => 'quick_links__variation',
-  ];
-
-  if ($variables['field_name'] == 'field_links') {
-    $parentParagraph = $variables['element']['#items']->getEntity();
-    foreach ($paragraphTypes as $paragraph => $twigVariable) {
-      if ($parentParagraph->getType() == $paragraph) {
-        $variables[$twigVariable] = $parentParagraph->get('field_style_variation')->getValue() ? $parentParagraph->get('field_style_variation')->getString() : NULL;
-      }
-    }
-  }
-}
-
-/**
- * Provides custom key-value options for paragraph-specific styling via config.
+ * Provides custom key-value options for component-specific styling via config.
  *
  * @param \Drupal\field\Entity\FieldStorageConfig $definition
  *   The field definition.
@@ -71,12 +29,20 @@ function ys_themes_allowed_values_function(FieldStorageConfig $definition, Conte
   $options = [];
   $config = \Drupal::config('ys_themes.component_overrides');
 
-  foreach ($config->get() as $paragraph => $fields) {
+  foreach ($config->get() as $component => $fields) {
     foreach ($fields as $fieldName => $fieldData) {
-      if ($entity->bundle() === $paragraph && $definition->getName() === $fieldName) {
-        foreach ($fieldData['values'] as $machineSetting => $humanName) {
-          $options[$machineSetting] = FieldFilteredMarkup::create($humanName);
+      if ($entity) {
+        if ($entity->bundle() === $component && $definition->getName() === $fieldName) {
+          foreach ($fieldData['values'] as $machineSetting => $humanName) {
+            $options[$machineSetting] = FieldFilteredMarkup::create($humanName);
+          }
         }
+      }
+      /* This case allows the layout builder manage default layout work as in
+       * that mode, there is no entity.
+       */
+      else {
+        $options[''] = '';
       }
     }
   }
@@ -85,7 +51,7 @@ function ys_themes_allowed_values_function(FieldStorageConfig $definition, Conte
 }
 
 /**
- * Sets the default value for paragraph-specific styling via config.
+ * Sets the default value for component-specific styling via config.
  *
  * @param \Drupal\Core\Entity\ContentEntityInterface $entity
  *   The entity being created.
@@ -99,9 +65,10 @@ function ys_themes_allowed_values_function(FieldStorageConfig $definition, Conte
  */
 function ys_themes_default_value_function(ContentEntityInterface $entity, FieldDefinitionInterface $definition) {
   $config = \Drupal::config('ys_themes.component_overrides');
-  foreach ($config->get() as $paragraph => $fields) {
+  $default = NULL;
+  foreach ($config->get() as $component => $fields) {
     foreach ($fields as $fieldName => $fieldData) {
-      if ($entity->bundle() === $paragraph && $definition->getName() === $fieldName) {
+      if ($entity->bundle() === $component && $definition->getName() === $fieldName) {
         $default = $fieldData['default'];
       }
     }
@@ -157,4 +124,32 @@ function ys_themes_build_css_variables() : string {
 
   $css[] = '}';
   return implode(PHP_EOL, $css);
+}
+
+/**
+ * Implements hook_preprocess_block().
+ */
+function ys_themes_preprocess_block(&$variables) {
+  if ($variables['plugin_id'] == 'inline_block:accordion') {
+    $node = \Drupal::routeMatch()->getParameter('node');
+    if ($node) {
+      $variables['parentNode'] = $node->getType();
+    }
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function ys_themes_form_alter(&$form, $form_state, $form_id) {
+  /*
+  Turn off the title and hide the inline block "display title" field.
+  Rename the field title and description to inform the editor how it is used.
+   */
+  if ($form_id == 'layout_builder_update_block' || $form_id == 'layout_builder_add_block') {
+    $form['settings']['label']['#title'] = t('Administrative label');
+    $form['settings']['label']['#description'] = t('Used when not showing content preview');
+    $form['settings']['label_display']['#default_value'] = FALSE;
+    $form['settings']['label_display']['#access'] = FALSE;
+  }
 }
