@@ -1,0 +1,7 @@
+{% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
+
+{% block content %}
+
+  {{ drupal_view('event_list', 'full', content.field_heading.0['#text']) }}
+
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
+
+{% block content %}
+
+  {% embed "@molecules/embed/yds-embed.twig" %}
+
+    {% block embed__block %}
+      {{ content }}
+    {% endblock %}
+
+  {% endembed %}
+
+{% endblock %}

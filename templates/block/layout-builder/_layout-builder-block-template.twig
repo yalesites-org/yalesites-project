@@ -1,0 +1,17 @@
+<div{{ attributes }}>
+
+  {% if attributes.hasClass('js-layout-builder-block') %}
+    {{ attach_library('ys_themes/ys_themes') }}
+    <div class="ys-layout-builder--drag-drop">
+    </div>
+  {% endif %}
+
+  {{ title_prefix }}
+  {% if label %}
+    <h2{{ title_attributes }}>{{ label }}</h2>
+  {% endif %}
+  {{ title_suffix }}
+  {% block content %}
+    {# To be replaced with component #}
+  {% endblock %}
+</div>

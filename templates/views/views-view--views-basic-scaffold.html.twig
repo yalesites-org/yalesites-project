@@ -1,0 +1,37 @@
+{# @todo refactor how views basic is rendered. #}
+{% set type = view.rowPlugin.options['view_mode'] == 'list_item' ? 'list' : 'grid' %}
+
+{% set dom_id_class = dom_id ? 'js-view-dom-id-' ~ dom_id %}
+
+<div class={{ dom_id_class }}>
+  {{ title_prefix }}
+  {{ title }}
+  {{ title_suffix }}
+
+  {% if header %}
+    <header>
+      {{ header }}
+    </header>
+  {% endif %}
+
+  {{ exposed }}
+  {{ attachment_before }}
+
+  {% if rows -%}
+    {{ rows }}
+  {% elseif empty -%}
+    {{ empty }}
+  {% endif %}
+  {{ pager }}
+
+  {{ attachment_after }}
+  {{ more }}
+
+  {% if footer %}
+    <footer>
+      {{ footer }}
+    </footer>
+  {% endif %}
+
+  {{ feed_icons }}
+</div>
