@@ -4,10 +4,18 @@
 
   {{ attach_library('atomic/gallery') }}
 
+  {% set parentNode = paragraph.parentEntity.type.value.0['target_id'] %}
+
+  {% if parentNode == 'news' or parentNode == 'event' %}
+    {% set media_grid__width = "content" %}
+  {% else %}
+    {% set media_grid__width = "site" %}
+  {% endif %}
+
   {% embed "@organisms/galleries/media-grid/yds-media-grid.twig" with {
     media_grid__heading: content.field_heading,
     media_grid__variation: 'interactive',
-    media_grid__width: 'max',
+    media_grid__width: media_grid__width,
   } %}
 
     {% block media_grid__items %}
