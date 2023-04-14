@@ -1,3 +1,4 @@
-node_edit_form:
-  js:
-    js/node-edit-form.js : {}
+node_layout_form:
+  css:
+    theme:
+      css/multifield-form.css: { }

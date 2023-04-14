@@ -24,24 +24,24 @@ content:
     weight: 2
     region: content
     settings:
-      title: Paragraph
-      title_plural: Paragraphs
-      edit_mode: open
+      title: card
+      title_plural: cards
+      edit_mode: closed
       closed_mode: summary
-      autocollapse: none
+      autocollapse: all
       closed_mode_threshold: 0
       add_mode: dropdown
       form_display_mode: default
       default_paragraph_type: custom_card
       features:
-        add_above: '0'
+        add_above: add_above
         collapse_edit_all: collapse_edit_all
         duplicate: duplicate
     third_party_settings:
       paragraphs_features:
         add_in_between: false
         add_in_between_link_count: 3
-        delete_confirmation: false
+        delete_confirmation: true
         show_drag_and_drop: true
   field_heading:
     type: text_textfield

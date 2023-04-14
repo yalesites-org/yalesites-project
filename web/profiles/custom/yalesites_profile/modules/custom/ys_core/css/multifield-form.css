@@ -1,0 +1,21 @@
+.field-multiple-table h4 {
+  display: inline;
+  line-height: 50px;
+}
+
+.field-multiple-table .paragraphs-icon-button {
+  margin: 0 !important;
+}
+
+.field-multiple-table tr.draggable td:nth-of-type(2) {
+  padding-left: 15px;
+}
+
+.js .field--widget-paragraphs .tabledrag-handle .handle {
+  width: 22px;
+  margin-left: 8px;
+}
+
+.js .field--widget-paragraphs .draggable .tabledrag-handle::after {
+  display: none !important;
+}

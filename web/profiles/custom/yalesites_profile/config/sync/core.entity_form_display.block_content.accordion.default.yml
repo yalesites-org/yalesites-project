@@ -26,9 +26,9 @@ content:
     settings:
       title: accordion
       title_plural: accordions
-      edit_mode: open
+      edit_mode: closed
       closed_mode: summary
-      autocollapse: none
+      autocollapse: all
       closed_mode_threshold: 0
       add_mode: button
       form_display_mode: default
