@@ -1,0 +1,16 @@
+{% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
+
+{% block content %}
+
+  {% embed "@organisms/component-wrapper/yds-component-wrapper.twig" with {
+    component_width: 'site',
+    component_wrapper__label: content.field_heading,
+  } %}
+
+    {% block component_wrapper_inner %}
+      {{content.field_form}}
+    {% endblock %}
+
+  {% endembed %}
+
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
+
+{% block content %}
+
+  {% set view__base_class = 'ys-view' %}
+
+  {% set view__attibutes = {
+    'data-component-width': 'site',
+    class: bem(view__base_class, view__modifiers),
+  } %}
+
+  <div {{ bem('inner', [], view__base_class) }}>
+    {% if content.field_heading  %}
+      {% include "@atoms/typography/headings/yds-heading.twig" with {
+        heading__level: '2',
+        heading__blockname: view__base_class,
+        heading: content.field_heading ,
+      } %}
+    {% endif %}
+    {% if content.field_view_params  %}
+      {{ content.field_view_params }}
+    {% endif %}
+  </div>
+
+{% endblock %}

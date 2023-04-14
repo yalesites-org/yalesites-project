@@ -1,0 +1,13 @@
+{% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
+
+{% block content %}
+
+  {% embed "@molecules/callout/yds-callout.twig" with {
+      callout__background_color: content.field_style_color.0['#markup'],
+  } %}
+    {% block callout__items %}
+      {{ content.field_callout }}
+    {% endblock %}
+  {% endembed %}
+
+{% endblock %}
