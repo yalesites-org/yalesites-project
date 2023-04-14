@@ -1,13 +1,13 @@
-uuid: 1bd2e746-6e70-44b8-90f0-9578bc410aa6
+uuid: b2b6bfa4-6e49-4dc6-92f9-51f0b9081b01
 langcode: en
 status: true
 dependencies:
   config:
     - block_content.type.image
-    - field.storage.block_content.field_image
+    - field.storage.block_content.field_media
     - media.type.image
-id: block_content.image.field_image
-field_name: field_image
+id: block_content.image.field_media
+field_name: field_media
 entity_type: block_content
 bundle: image
 label: Image
