@@ -1,0 +1,18 @@
+{% set quick_links__base_class = 'quick-links' %}
+
+<li {{ bem('list-item', [], quick_links__base_class) }}>
+  {% if quick_links__variation == 'subtle' %}
+    {% include "@atoms/controls/text-link/yds-text-link.twig" with {
+      link__content: quick_links__link__content|default(link.quick_links__link__content),
+      link__url: quick_links__link__url|default(link.quick_links__link__url),
+      link__blockname: quick_links__base_class,
+    } %}
+  {% else %}
+    {% include "@atoms/controls/cta/yds-cta.twig" with {
+      cta__content: quick_links__link__content|default(link.quick_links__link__content),
+      cta__href: quick_links__link__url|default(link.quick_links__link__url),
+      cta__blockname: quick_links__base_class,
+      cta__style: 'outline',
+    } %}
+  {% endif %}
+</li>
