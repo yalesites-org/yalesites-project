@@ -10,7 +10,7 @@ dependencies:
     - node
     - user
 id: manage_posts
-label: 'Manage Posts'
+label: 'Manage Postss'
 module: views
 description: 'Interface used by authors to manage post content.'
 tag: ''
@@ -23,7 +23,7 @@ display:
     display_plugin: default
     position: 0
     display_options:
-      title: 'Manage Post'
+      title: 'Manage Posts'
       fields:
         node_bulk_form:
           id: node_bulk_form
@@ -734,7 +734,7 @@ display:
       path: admin/content/manage-posts
       menu:
         type: normal
-        title: 'Manage Post'
+        title: 'Manage Posts'
         description: ''
         weight: 5
         expanded: false
