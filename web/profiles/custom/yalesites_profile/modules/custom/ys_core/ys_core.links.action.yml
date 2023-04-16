@@ -6,14 +6,14 @@ ys_core.link_add_page:
   title: 'Add page'
   appears_on:
     - view.manage_pages.page_1
-# Adds an action link to the manage news interface
-ys_core.link_add_news:
+# Adds an action link to the manage posts interface
+ys_core.link_add_posts:
   route_name: node.add
   route_parameters:
-    node_type: 'news'
-  title: 'Add news'
+    node_type: 'post'
+  title: 'Add post'
   appears_on:
-    - view.manage_news.page_1
+    - view.manage_posts.page_1
 # Adds an action link to the manage events interface
 ys_core.link_add_events:
   route_name: node.add

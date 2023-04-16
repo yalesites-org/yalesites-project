@@ -1,36 +1,42 @@
-id: ys_news
-label: Starterkit News
-description: Create news content.
+uuid: 04681e16-4ad0-4003-ad86-faff4e99879e
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - ys_starterkit
+id: ys_posts
+class: null
+field_plugin_method: null
+cck_plugin_method: null
 migration_tags: null
 migration_group: ys_starterkit
-source_type: 'JSON file from URL'
-
+label: 'Starterkit Posts'
 source:
   plugin: url
   data_fetcher_plugin: file
   data_parser_plugin: json
   urls:
-    - profiles/custom/yalesites_profile/modules/custom/ys_starterkit/content/news.json
-  item_selector: /data/news
+    - profiles/custom/yalesites_profile/modules/custom/ys_starterkit/content/posts.json
+  item_selector: /data/posts
   fields:
     -
-      name: src_unique_id
+      name: src_post
       label: 'Unique ID'
       selector: unique_id
     -
       name: src_title
-      label: 'Title'
+      label: Title
       selector: title
     -
       name: src_author
-      label: 'Author'
+      label: Author
       selector: field_author
   ids:
-    src_unique_id:
+    src_post:
       type: string
   constants:
-    date_format: 'Y-m-d'
-
+    date_format: Y-m-d
 process:
   uid:
     plugin: default_value
@@ -46,16 +52,9 @@ process:
     unpack_source: true
     source:
       - constants/date_format
-
 destination:
-  plugin: entity:node
-  default_bundle: news
-
-dependencies:
-  enforced:
-    module:
-      - ys_starterkit
-
+  plugin: 'entity:node'
+  default_bundle: post
 migration_dependencies:
   required:
     - ys_images_media

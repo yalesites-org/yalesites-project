@@ -95,7 +95,7 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
       ]);
     }
 
-    // Adds the news or event title to the end of the breadcrumbs.
+    // Adds the post or event title to the end of the breadcrumbs.
     if ($this->yaleSitesBreadcrumbsManager->hasLandingPage($this->routeMatch)) {
       $entity = $this->routeMatch->getParameter('node');
       array_push($links, [

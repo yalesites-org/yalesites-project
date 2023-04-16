@@ -3,14 +3,14 @@ langcode: en
 status: true
 dependencies:
   config:
-    - block_content.type.news_list
+    - block_content.type.post_list
     - field.storage.block_content.field_instructions
   module:
     - markup
-id: block_content.news_list.field_instructions
+id: block_content.post_list.field_instructions
 field_name: field_instructions
 entity_type: block_content
-bundle: news_list
+bundle: post_list
 label: Instructions
 description: ''
 required: false
@@ -20,6 +20,6 @@ default_value:
 default_value_callback: ''
 settings:
   markup:
-    value: "<p>Newsfeed pulls in your News content types and dynamically references them on your webpage.</p>\r\n"
+    value: "<p>Post feed pulls in your post content and dynamically references them on your webpage.</p>\r\n"
     format: basic_html
 field_type: markup

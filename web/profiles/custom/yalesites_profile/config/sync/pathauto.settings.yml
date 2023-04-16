@@ -52,4 +52,4 @@ safe_tokens:
   - url
   - url-brief
   - 'yale:event_landing_page_path'
-  - 'yale:news_landing_page_path'
+  - 'yale:post_landing_page_path'

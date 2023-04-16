@@ -2,7 +2,7 @@ entity_type_groups:
   node:
     event:
       basic: basic
-    news:
+    post:
       basic: basic
     page:
       basic: basic

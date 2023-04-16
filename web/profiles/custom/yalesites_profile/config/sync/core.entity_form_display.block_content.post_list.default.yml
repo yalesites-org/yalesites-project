@@ -3,17 +3,17 @@ langcode: en
 status: true
 dependencies:
   config:
-    - block_content.type.news_list
-    - field.field.block_content.news_list.field_heading
-    - field.field.block_content.news_list.field_instructions
+    - block_content.type.post_list
+    - field.field.block_content.post_list.field_heading
+    - field.field.block_content.post_list.field_instructions
   module:
     - allowed_formats
     - markup
     - maxlength
     - text
-id: block_content.news_list.default
+id: block_content.post_list.default
 targetEntityType: block_content
-bundle: news_list
+bundle: post_list
 mode: default
 content:
   field_heading:
