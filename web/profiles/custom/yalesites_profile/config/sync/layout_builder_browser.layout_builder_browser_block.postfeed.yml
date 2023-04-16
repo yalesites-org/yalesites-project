@@ -5,7 +5,7 @@ dependencies: {  }
 id: postfeed
 block_id: 'inline_block:post_list'
 category: all_blocks
-label: Post feed
+label: 'Post feed'
 image_path: ''
 image_alt: ''
 weight: 9
