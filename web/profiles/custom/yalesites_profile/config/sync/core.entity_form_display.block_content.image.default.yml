@@ -4,8 +4,8 @@ status: true
 dependencies:
   config:
     - block_content.type.image
-    - field.field.block_content.image.field_image
     - field.field.block_content.image.field_instructions
+    - field.field.block_content.image.field_media
     - field.field.block_content.image.field_text
   module:
     - allowed_formats
@@ -19,24 +19,24 @@ targetEntityType: block_content
 bundle: image
 mode: default
 content:
-  field_image:
-    type: media_library_widget
-    weight: 1
-    region: content
-    settings:
-      media_types: {  }
-    third_party_settings:
-      media_library_edit:
-        show_edit: '1'
   field_instructions:
     type: markup
     weight: 0
     region: content
     settings: {  }
     third_party_settings: {  }
+  field_media:
+    type: media_library_widget
+    weight: 2
+    region: content
+    settings:
+      media_types: {  }
+    third_party_settings:
+      media_library_edit:
+        show_edit: '1'
   field_text:
     type: text_textarea
-    weight: 2
+    weight: 3
     region: content
     settings:
       rows: 2
