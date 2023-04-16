@@ -1,6 +1,6 @@
 {% set parentNode = paragraph.parentEntity.type.value.0['target_id'] %}
 
-{% if parentNode == 'news' or parentNode == 'event' %}
+{% if parentNode == 'post' or parentNode == 'event' %}
   {% set pull_quote__width = "content" %}
   {% set pull_quote__alignment = "center" %}
 {% else %}

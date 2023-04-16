@@ -1,6 +1,6 @@
 {% set parentNode = paragraph.parentEntity.type.value.0['target_id'] %}
 
-{% if parentNode == 'news' or parentNode == 'event' and content.field_style_variation.0['#markup'] == 'subtle' %}
+{% if parentNode == 'post' or parentNode == 'event' and content.field_style_variation.0['#markup'] == 'subtle' %}
   {% set quick_links__width = "content" %}
   {% set quick_links__alignment = "center" %}
 {% else %}

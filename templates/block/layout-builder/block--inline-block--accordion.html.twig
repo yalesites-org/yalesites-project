@@ -4,7 +4,7 @@
 
   {{ attach_library('atomic/accordion') }}
 
-  {% if parentNode == 'news' or parentNode == 'event' %}
+  {% if parentNode == 'post' or parentNode == 'event' %}
     {% set accordion__width = "content" %}
     {% set accordion__alignment = "center" %}
   {% else %}
