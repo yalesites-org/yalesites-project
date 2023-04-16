@@ -4,7 +4,7 @@
 
   {% set parentNode = paragraph.parentEntity.type.value.0['target_id'] %}
 
-  {% if parentNode == 'news' or parentNode == 'event' %}
+  {% if parentNode == 'post' or parentNode == 'event' %}
     {% set wrapped_image__width = "content" %}
   {% else %}
     {% set wrapped_image__width = "site" %}

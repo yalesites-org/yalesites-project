@@ -1,6 +1,6 @@
 {% set parentNode = paragraph.parentEntity.type.value.0['target_id'] %}
 
-{% if parentNode == 'news' or parentNode == 'event' %}
+{% if parentNode == 'post' or parentNode == 'event' %}
   {% set media_grid__width = "content" %}
 {% else %}
   {% set media_grid__width = "site" %}
