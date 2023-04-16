@@ -1,0 +1,6 @@
+name: 'YaleSites Layouts'
+type: module
+description: 'Register Yale layouts.'
+package: Core
+core_version_requirement: '^9 || ^10'
+version: VERSION

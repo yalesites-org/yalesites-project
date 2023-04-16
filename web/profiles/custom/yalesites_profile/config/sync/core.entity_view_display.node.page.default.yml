@@ -13,18 +13,34 @@ dependencies:
     - node.type.page
   module:
     - layout_builder
+    - layout_builder_restrictions
     - layout_discovery
     - user
     - ys_core
+    - ys_layouts
 third_party_settings:
   layout_builder:
     enabled: true
     allow_custom: true
     sections:
       -
+        layout_id: ys_layout_banner
+        layout_settings:
+          label: 'Banner Section'
+          context_mapping: {  }
+        components: {  }
+        third_party_settings:
+          layout_builder_lock:
+            lock:
+              5: 5
+              6: 6
+              7: 7
+              8: 8
+      -
         layout_id: layout_onecol
         layout_settings:
-          label: ''
+          label: 'Title Section'
+          context_mapping: {  }
         components:
           ecaf4d90-3e31-40fb-ae2c-29380ea3c4df:
             uuid: ecaf4d90-3e31-40fb-ae2c-29380ea3c4df
@@ -37,7 +53,47 @@ third_party_settings:
               context_mapping: {  }
             weight: 0
             additional: {  }
-        third_party_settings: {  }
+        third_party_settings:
+          layout_builder_lock:
+            lock:
+              1: 1
+              2: 2
+              3: 3
+              4: 4
+              5: 5
+              6: 6
+              7: 7
+              8: 8
+      -
+        layout_id: layout_onecol
+        layout_settings:
+          label: 'Content Section'
+          context_mapping: {  }
+        components: {  }
+        third_party_settings:
+          layout_builder_lock:
+            lock:
+              6: 6
+              7: 7
+  layout_builder_restrictions:
+    allowed_block_categories: {  }
+    entity_view_mode_restriction:
+      allowed_layouts:
+        - layout_onecol
+        - ys_layout_banner
+      denylisted_blocks: {  }
+      allowlisted_blocks: {  }
+      restricted_categories: {  }
+    entity_view_mode_restriction_by_region:
+      allowed_layouts:
+        - layout_onecol
+        - ys_layout_banner
+      allowlisted_blocks:
+        ys_layout_banner:
+          all_regions:
+            'Inline blocks':
+              - 'inline_block:cta_banner'
+              - 'inline_block:grand_hero'
 id: node.page.default
 targetEntityType: node
 bundle: page

@@ -3,15 +3,17 @@ langcode: en
 status: true
 dependencies:
   config:
+    - core.entity_view_display.node.event.default
     - core.entity_view_display.node.page.default
+    - core.entity_view_display.node.post.default
     - media.type.background_video
     - media.type.document
     - media.type.embed
     - media.type.image
     - media.type.video
     - node.type.event
-    - node.type.post
     - node.type.page
+    - node.type.post
   module:
     - block
     - contextual
@@ -54,7 +56,9 @@ permissions:
   - 'clone event content'
   - 'clone page content'
   - 'clone post content'
+  - 'configure editable event node layout overrides'
   - 'configure editable page node layout overrides'
+  - 'configure editable post node layout overrides'
   - 'create and edit custom blocks'
   - 'create background_video media'
   - 'create document media'
