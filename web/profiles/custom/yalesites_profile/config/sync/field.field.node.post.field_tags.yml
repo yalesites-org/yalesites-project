@@ -4,12 +4,12 @@ status: true
 dependencies:
   config:
     - field.storage.node.field_tags
-    - node.type.news
+    - node.type.post
     - taxonomy.vocabulary.tags
-id: node.news.field_tags
+id: node.post.field_tags
 field_name: field_tags
 entity_type: node
-bundle: news
+bundle: post
 label: Tags
 description: 'Separate tags with commas. Tags will autocomplete if one exists.'
 required: false

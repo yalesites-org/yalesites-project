@@ -13,64 +13,12 @@ dependencies:
     - field.field.block_content.cta_banner.field_text
   module:
     - allowed_formats
-    - field_group
     - linkit
     - markup
     - maxlength
     - media_library
     - media_library_edit
     - text
-third_party_settings:
-  field_group:
-    group_cta_banner_tabs:
-      children:
-        - group_content
-        - group_design_options
-      label: 'CTA Banner Tabs'
-      region: content
-      parent_name: ''
-      weight: 1
-      format_type: tabs
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        direction: horizontal
-        width_breakpoint: 640
-    group_content:
-      children:
-        - field_media
-        - field_heading
-        - field_text
-        - field_link
-      label: Content
-      region: content
-      parent_name: group_cta_banner_tabs
-      weight: 12
-      format_type: tab
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        formatter: closed
-        description: ''
-        required_fields: true
-    group_design_options:
-      children:
-        - field_style_color
-        - field_style_position
-      label: 'Design Options'
-      region: content
-      parent_name: group_cta_banner_tabs
-      weight: 13
-      format_type: tab
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        formatter: closed
-        description: ''
-        required_fields: true
 id: block_content.cta_banner.default
 targetEntityType: block_content
 bundle: cta_banner
@@ -118,13 +66,13 @@ content:
         show_edit: '1'
   field_style_color:
     type: options_select
-    weight: 9
+    weight: 14
     region: content
     settings: {  }
     third_party_settings: {  }
   field_style_position:
     type: options_select
-    weight: 10
+    weight: 15
     region: content
     settings: {  }
     third_party_settings: {  }

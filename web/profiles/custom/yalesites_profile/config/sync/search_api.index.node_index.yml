@@ -39,8 +39,8 @@ field_settings:
       view_mode:
         'entity:node':
           event: default
-          news: default
           page: default
+          post: default
   status:
     label: null
     datasource_id: 'entity:node'

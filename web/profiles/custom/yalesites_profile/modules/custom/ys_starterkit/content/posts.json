@@ -1,6 +1,6 @@
 {
   "data": {
-    "news": [
+    "posts": [
       {
         "unique_id": 1,
         "title": "Article with mostly text",

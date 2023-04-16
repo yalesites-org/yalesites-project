@@ -73,10 +73,10 @@ settings:
       media_grid_item:
         weight: 43
         enabled: false
-      news_cards:
+      post_cards:
         weight: 30
         enabled: false
-      news_list:
+      post_list:
         weight: 31
         enabled: false
       pull_quote:

@@ -5,11 +5,11 @@ dependencies:
   config:
     - field.storage.node.field_teaser_media
     - media.type.image
-    - node.type.news
-id: node.news.field_teaser_media
+    - node.type.post
+id: node.post.field_teaser_media
 field_name: field_teaser_media
 entity_type: node
-bundle: news
+bundle: post
 label: 'Teaser Media'
 description: ''
 required: false
