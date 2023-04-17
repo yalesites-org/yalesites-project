@@ -57,6 +57,11 @@ class ThemesSettingsForm extends ConfigFormBase {
     $form['global_settings'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Global Settings'),
+      '#attributes' => [
+        'class' => [
+          'ys-themes--global-settings',
+        ],
+      ],
     ];
 
     foreach ($allSettings as $settingName => $settingDetail) {
@@ -70,6 +75,9 @@ class ThemesSettingsForm extends ConfigFormBase {
         '#default_value' => $this->themeSettingsManager->getSetting($settingName) ?: $settingDetail['default'],
       ];
     }
+
+    $form['#attached']['drupalSettings']['ysThemes'] = $allSettings;
+    $form['#attached']['library'][] = 'ys_themes/levers';
 
     return $form;
   }

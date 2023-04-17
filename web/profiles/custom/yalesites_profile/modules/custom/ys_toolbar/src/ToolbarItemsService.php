@@ -126,7 +126,7 @@ class ToolbarItemsService {
     }
 
     $this->toolbarItems['toolbar_theme_settings_link'] = $this->buildOffCanvasButton(
-        'ys_themes.levers',
+        'ys_themes.theme_settings',
         'Theme Settings'
       );
 

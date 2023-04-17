@@ -2,3 +2,9 @@ ys_themes:
   css:
     theme:
       css/ys-themes.css : {}
+levers:
+  css:
+    theme:
+      css/levers.css : {}
+  js:
+    js/levers.js: {}
