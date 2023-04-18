@@ -13,6 +13,15 @@ class ThemeSettingsManager {
   /**
    * Theme setting values and default value.
    *
+   * The prop_type is used for the JavaScript form to dynamically change the
+   * elements on the page. 'root' is a CSS root variable, 'element' is a
+   * data attribute on a specific element.
+   *
+   * The selector is the CSS selector of the attribute that is used in the DOM.
+   * For root CSS variables, this would be something like --color-theme-action
+   * For data attributes on an element, this would be something like
+   * header[data-component-theme]
+   *
    * @var array
    */
   const THEME_SETTINGS = [
@@ -22,6 +31,8 @@ class ThemeSettingsManager {
         'blue-yale' => 'Blue',
         'basic-black' => 'Black',
       ],
+      'prop_type' => 'root',
+      'selector' => '--color-theme-action',
       'default' => 'blue-yale',
     ],
     'accent_color' => [
@@ -29,6 +40,8 @@ class ThemeSettingsManager {
       'values' => [
         'blue-light' => 'Light Blue',
       ],
+      'prop_type' => 'root',
+      'selector' => '--color-theme-accent',
       'default' => 'blue-light',
     ],
     'pull_quote_color' => [
@@ -39,6 +52,8 @@ class ThemeSettingsManager {
         'blue-yale' => 'Blue',
         'accent' => 'Accent',
       ],
+      'prop_type' => 'root',
+      'selector' => '--color-theme-pull-quote-accent',
       'default' => 'gray-500',
     ],
     'line_color' => [
@@ -48,6 +63,8 @@ class ThemeSettingsManager {
         'blue-yale' => 'Blue',
         'accent' => 'Accent',
       ],
+      'prop_type' => 'root',
+      'selector' => '--color-theme-divider',
       'default' => 'gray-500',
     ],
     'line_thickness' => [
@@ -56,6 +73,8 @@ class ThemeSettingsManager {
         'thin' => 'Thin',
         'thick' => 'Thick',
       ],
+      'prop_type' => 'root',
+      'selector' => '--thickness-theme-divider',
       'default' => 'thick',
     ],
     'nav_position' => [
@@ -65,6 +84,8 @@ class ThemeSettingsManager {
         'center' => 'Center',
         'left' => 'Left',
       ],
+      'prop_type' => 'element',
+      'selector' => '[data-site-header-nav-position]',
       'default' => 'right',
     ],
     'nav_type' => [
@@ -73,6 +94,8 @@ class ThemeSettingsManager {
         'mega' => 'Mega Menu',
         'basic' => 'Basic Menu',
       ],
+      'prop_type' => 'element',
+      'selector' => '[data-menu-variation]',
       'default' => 'mega',
     ],
     'header_theme' => [
@@ -82,6 +105,8 @@ class ThemeSettingsManager {
         'gray-100' => 'Light Gray',
         'blue-yale' => 'Blue',
       ],
+      'prop_type' => 'element',
+      'selector' => 'header[data-component-theme]',
       'default' => 'white',
     ],
     'footer_theme' => [
@@ -93,6 +118,8 @@ class ThemeSettingsManager {
         'gray-800' => 'Dark Gray',
         'blue-yale' => 'Blue',
       ],
+      'prop_type' => 'element',
+      'selector' => 'footer[data-component-theme]',
       'default' => 'gray-700',
     ],
   ];

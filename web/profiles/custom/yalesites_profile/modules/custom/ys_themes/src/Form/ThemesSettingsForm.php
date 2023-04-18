@@ -73,10 +73,16 @@ class ThemesSettingsForm extends ConfigFormBase {
         ),
         '#options' => $settingDetail['values'],
         '#default_value' => $this->themeSettingsManager->getSetting($settingName) ?: $settingDetail['default'],
+        '#attributes' => [
+          'class' => [
+            'ys-themes--setting',
+          ],
+          'data-prop-type' => $settingDetail['prop_type'],
+          'data-selector' => $settingDetail['selector'],
+        ],
       ];
     }
 
-    $form['#attached']['drupalSettings']['ysThemes'] = $allSettings;
     $form['#attached']['library'][] = 'ys_themes/levers';
 
     return $form;
