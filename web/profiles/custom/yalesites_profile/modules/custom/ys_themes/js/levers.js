@@ -2,7 +2,6 @@
   Drupal.behaviors.ysLevers = {
     attach: function (context, settings) { // eslint-disable-line
       once("ysLevers", ".layout-container", context).forEach((element) => {
-
         // Update root CSS variables
         function updateRoot(selector, value) {
           const prefix = selector.match(/--([a-z]*[0-9]*)/g);
@@ -12,16 +11,16 @@
           );
         }
 
+        // Update data attributes
         function updateElement(selector, value) {
           const elements = document.querySelectorAll(selector);
-          console.log(selector);
+          // These convert from element[data-attribute-name] to attributeName
+          const dataAttribute = selector.match(/\[(.*?)\]/);
+          const convertedAttributeName = dataAttribute[1]
+            .replace("data-", "")
+            .replace(/-([a-z]?)/g, (m, g) => g.toUpperCase());
           for (let i = 0; i < elements.length; i++) {
-            console.log(elements[i]);
-            // const convertedAttributeName = selector
-            //   .replace("data-", "")
-            //   .replace(/-([a-z]?)/g, (m, g) => g.toUpperCase());
-
-              //elements[i].dataset[convertedAttributeName] = value;
+            elements[i].dataset[convertedAttributeName] = value;
           }
         }
 
@@ -41,49 +40,9 @@
               }
             });
           }
-
-          // formItems.addEventListener("click", () => {
-
-          // });
-
-          //for (let i = 0; i < ysThemeSettings.length; i++) {
-            //console.log(ysThemeSettings[i]);
-
-
-
-            // const quoteStyle = context.querySelectorAll(
-            //   "input[name='pull_quote_color']"
-            // );
-          //}
-          // const quoteStyle = context.querySelectorAll(
-          //   "input[name='pull_quote_color']"
-          // );
-
-          // const actionStyle = context.querySelectorAll(
-          //   "input[name='action_color']"
-          // );
-
-          // for (let i = 0; i < quoteStyle.length; i++) {
-          //   quoteStyle[i].addEventListener("click", (event) => {
-          //     const quoteSelection = quoteStyle[i].value;
-          //     document.documentElement.style.setProperty(
-          //       "--color-theme-pull-quote-accent",
-          //       `var(--color-${quoteSelection})`
-          //     );
-          //   });
-          // }
-
-          // for (let i = 0; i < actionStyle.length; i++) {
-          //   actionStyle[i].addEventListener("click", (event) => {
-          //     const actionSelection = actionStyle[i].value;
-          //     document.documentElement.style.setProperty(
-          //       "--color-theme-action",
-          //       `var(--color-${actionSelection})`
-          //     );
-          //   });
-          // }
         }
 
+        // Wait for the drawer items to become available before init.
         setTimeout(() => {
           initStyleDrawer();
         }, 0);

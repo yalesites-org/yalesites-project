@@ -242,7 +242,7 @@ class ToolbarItemsService {
   }
 
   /**
-   * Build an item for the toolbar.
+   * Build an off canvas item for the toolbar.
    *
    * @param string $route
    *   The route for the toolbar item destination.

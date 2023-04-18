@@ -20,7 +20,8 @@ class ThemeSettingsManager {
    * The selector is the CSS selector of the attribute that is used in the DOM.
    * For root CSS variables, this would be something like --color-theme-action
    * For data attributes on an element, this would be something like
-   * header[data-component-theme]
+   * header[data-component-theme] for a specific element or to match all
+   * elements with the same data attribute, use [data-component-theme]
    *
    * @var array
    */
