@@ -2,8 +2,6 @@
 
 {% block content %}
 
-{% set parentNode = paragraph.parentEntity.type.value.0['target_id'] %}
-
   {% if parentNode == 'post' or parentNode == 'event' %}
     {% set text_field__width = "content" %}
     {% set text_field__alignment = "center" %}
