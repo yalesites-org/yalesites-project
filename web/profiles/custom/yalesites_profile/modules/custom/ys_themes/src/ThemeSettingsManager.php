@@ -64,7 +64,7 @@ class ThemeSettingsManager {
         'center' => 'Center',
         'left' => 'Left',
       ],
-      'default' => 'right',
+      'default' => 'left',
     ],
     'nav_type' => [
       'name' => 'Navigation Type',

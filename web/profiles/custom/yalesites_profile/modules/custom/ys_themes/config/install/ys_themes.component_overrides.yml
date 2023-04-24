@@ -1,16 +1,16 @@
 callout:
   field_style_color:
     values:
-      one: 'One'
-      two: 'Two'
-      three: 'Three'
+      one: One
+      two: Two
+      three: Three
     default: one
 cta_banner:
   field_style_color:
     values:
-      one: 'One'
-      two: 'Two'
-      three: 'Three'
+      one: One
+      two: Two
+      three: Three
     default: one
   field_style_position:
     values:
