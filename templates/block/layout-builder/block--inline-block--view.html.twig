@@ -6,20 +6,20 @@
 
   {% set view__attibutes = {
     'data-component-width': 'site',
+    'data-embedded-components': 'true',
     class: bem(view__base_class, view__modifiers),
   } %}
 
-  <div {{ bem('inner', [], view__base_class) }}>
-    {% if content.field_heading  %}
-      {% include "@atoms/typography/headings/yds-heading.twig" with {
-        heading__level: '2',
-        heading__blockname: view__base_class,
-        heading: content.field_heading ,
-      } %}
-    {% endif %}
-    {% if content.field_view_params  %}
-      {{ content.field_view_params }}
-    {% endif %}
+  <div {{ add_attributes(view__attibutes) }}>
+    {% embed "@organisms/component-wrapper/yds-component-wrapper.twig" with {
+      component_wrapper__width: component_wrapper__width|default('site'),
+      component_wrapper__label: content.field_heading,
+      }%}
+      {% if content.field_view_params  %}
+        {% block component_wrapper_inner %}
+          {{ content.field_view_params }}
+        {% endblock %}
+      {% endif %}
+    {% endembed %}
   </div>
-
 {% endblock %}
