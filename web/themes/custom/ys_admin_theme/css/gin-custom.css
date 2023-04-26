@@ -1,0 +1,59 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap");
+:root {
+  --gin-font: "DM Mono", monospace;
+  --gin-font-size-h1: 1.75rem;
+  --gin-font-size-h2: 1.5rem;
+  --gin-font-size-h3: 1.25rem;
+  --gin-border-m: 0.313rem;
+}
+:root h1, :root h2 {
+  font-weight: 600;
+}
+
+.gin--edit-form .page-wrapper__node-edit-form .layout-region-node-secondary .entity-meta__title {
+  font-size: var(--gin-font-size-h3);
+  font-weight: 500;
+}
+
+.gin--edit-form .page-wrapper__node-edit-form .layout-region-node-secondary .entity-meta [open] {
+  border-left: 3px solid var(--gin-color-primary);
+}
+
+.claro-details__wrapper--accordion-item {
+  background-color: white;
+}
+
+[dir=ltr] [open] > .claro-details__summary--accordion-item:not(:focus):not(:active)::after {
+  content: none;
+}
+
+.button, .button:not(:focus), .form-actions .button, .action-link--icon-trash.action-link {
+  border-radius: 2.5rem !important;
+}
+
+.button.form-submit {
+  background-color: var(--gin-color-primary-light);
+}
+
+.toolbar-menu-administration > .toolbar-menu > .menu-item:hover > .toolbar-icon::before,
+.toolbar-menu-administration > .toolbar-menu > .menu-item:hover > .toolbar-box > a.toolbar-icon::before,
+.toolbar-menu-administration > .toolbar-menu > .menu-item > .toolbar-icon:focus::before,
+.toolbar-menu-administration > .toolbar-menu > .menu-item.menu-item--active-trail > .toolbar-icon::before,
+.toolbar-menu-administration > .toolbar-menu > .menu-item.menu-item--active-trail:hover > .toolbar-icon::before,
+.toolbar-menu-administration > .toolbar-menu > .menu-item.menu-item--active-trail > .toolbar-box > a.toolbar-icon::before {
+  z-index: 1;
+}
+
+.toolbar-menu-administration > .toolbar-menu > .menu-item.menu-item--active-trail > .toolbar-icon::after,
+.toolbar-menu-administration > .toolbar-menu > .menu-item.menu-item--active-trail > .toolbar-box > a.toolbar-icon::after,
+.toolbar-menu-administration > .toolbar-menu > .menu-item > .toolbar-icon.is-active::after {
+  background-color: var(--gin-color-primary-light) !important;
+}
+
+.is-horizontal .tabs__link:hover, .is-horizontal .tabs__link:focus,
+.horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button a:hover,
+.horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button a:focus {
+  background: var(--gin-color-primary-light);
+}
+
+/*# sourceMappingURL=gin-custom.css.map */

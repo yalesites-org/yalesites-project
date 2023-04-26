@@ -8,3 +8,4 @@ tokens:
     theme:
       node_modules/@yalesites-org/tokens/build/tokens.css: {}
       css/gin-color-overrides.css: {}
+      css/gin-custom.css: {}

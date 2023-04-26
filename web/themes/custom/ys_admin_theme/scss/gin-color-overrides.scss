@@ -3,8 +3,12 @@
 /* stylelint-disable */
 :root {
   [data-gin-accent] {
-    --colorGinPrimaryRGB: 39, 107, 190;
-    --colorGinText: var(--color-gray-800);
+    --gin-color-primary-rgb: 55, 108, 116;
+    --gin-color-primary-active: #376C74;
+    --gin-color-primary-hover: #376C74;
+    --gin-color-primary-light: #D9F1F3;
+    --gin-bg-layer: #FBFBF6;
+    --colorGinText: #1F1F1F;
   }
 }
 /* stylelint-enable */
