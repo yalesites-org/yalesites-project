@@ -1,6 +1,12 @@
+{% if parentNode == 'post' or parentNode == 'event' %}
+  {% set card_collection__width = "content" %}
+{% else %}
+  {% set card_collection__width = "site" %}
+{% endif %}
+
 {% embed "@organisms/card-collection/yds-card-collection.twig" with {
     card_collection__featured: 'true',
-    card_collection__width: card_collection,
+    card_collection__width: card_collection__width,
     card_collection__type: card_collection_type,
   } %}
   {% block card_collection__cards %}
