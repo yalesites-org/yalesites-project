@@ -4,11 +4,19 @@
 
   {% set view__base_class = 'ys-view' %}
 
-  {% set view__attibutes = {
-    'data-component-width': 'site',
-    'data-embedded-components': 'true',
-    class: bem(view__base_class, view__modifiers),
-  } %}
+  {% if parentNode == 'post' or parentNode == 'event' %}
+    {% set view__attibutes = {
+      'data-component-width': 'content',
+      'data-embedded-components': 'true',
+      class: bem(view__base_class, view__modifiers),
+    } %}
+    {% else %}
+      {% set view__attibutes = {
+        'data-component-width': 'site',
+        'data-embedded-components': 'true',
+        class: bem(view__base_class, view__modifiers),
+      } %}
+  {% endif %}
 
   <div {{ add_attributes(view__attibutes) }}>
     {% embed "@organisms/component-wrapper/yds-component-wrapper.twig" with {
