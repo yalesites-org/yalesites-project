@@ -207,7 +207,6 @@ jobs:
           ./.ci/build/build_frontend
 
       - name: Setup tmate session
-        if: ${{ failure() }}
         uses: mxschmitt/action-tmate@v3
 
       # Deploy to Pantheon
