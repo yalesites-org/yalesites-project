@@ -27,8 +27,6 @@ composer update --prefer-dist
 # Set branch to latest release if current branch is not in component library.
 if [ -z "$(git ls-remote --heads https://github.com/yalesites-org/component-library-twig.git "$BRANCH")" ]; then
   BRANCH=$(curl -s https://api.github.com/repos/yalesites-org/component-library-twig/releases/latest | jq -r '.tag_name')
-else
-  BRANCH="develop"
 fi
 
 # Clone and build the component library.
