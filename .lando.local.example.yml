@@ -24,7 +24,7 @@ tooling:
       XDEBUG_MODE: "off"
   xdebug-off:
     # Set environment variable to off, re-enable page caching, remove the xdebug ini and kill the process, clear the cache, and display message to user
-    cmd: export XDEBUG_MODE=off && drush config-set system.performance cache.page.enabled 1 --yes && rm -f /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && pkill -o -USR2 php-fpm && drush cr && echo "Xdebug disabled; turn back on with `lando xdebug-on`"
+    cmd: export XDEBUG_MODE=off && drush config-set system.performance cache.page.enabled 1 --yes && rm -f /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && pkill -o -USR2 php-fpm && drush cr && echo "Xdebug disabled; turn back on with lando xdebug-on"
     description: Disable xdebug for nginx.
     service: appserver
     user: root
@@ -33,7 +33,7 @@ tooling:
   # The above query string tells PHP to start the debugging session.  From there you should be able to use the debuging environment of your choice.
   xdebug-on:
     # Set environment variable to debug, disable caching, remove any existing xdebug.ini so it can be remade, enable xdebug, restart php, clear cache, and display message to user
-    cmd: export XDEBUG_MODE=debug && drush config-set system.performance cache.page.enabled 0 --yes && rm -f /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && docker-php-ext-enable xdebug && pkill -o -USR2 php-fpm && drush cr && echo "Xdebug enabled; disable with `lando xdebug-off`"
+    cmd: export XDEBUG_MODE=debug && drush config-set system.performance cache.page.enabled 0 --yes && rm -f /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && docker-php-ext-enable xdebug && pkill -o -USR2 php-fpm && drush cr && echo "Xdebug enabled; disable with lando xdebug-off"
     description: Enable xdebug for nginx.
     service: appserver
     user: root
