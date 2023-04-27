@@ -2,6 +2,14 @@
 
 {% block content %}
 
+  {% if parentNode == 'post' or parentNode == 'event' %}
+    {% set text_field__width = "content" %}
+    {% set text_field__alignment = "center" %}
+  {% else %}
+    {% set text_field__width = "site" %}
+    {% set text_field__alignment = "left" %}
+  {% endif %}
+
   {% embed "@molecules/text/yds-text-field.twig" with {
     text_field__content: content.field_text,
     text_field__width: text_field__width,

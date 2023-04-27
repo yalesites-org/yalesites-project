@@ -1,9 +1,6 @@
 {% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
 
 {% block content %}
-
-  {% set parentNode = paragraph.parentEntity.type.value.0['target_id'] %}
-
   {% if parentNode == 'post' or parentNode == 'event' %}
     {% set media_grid__width = "content" %}
   {% else %}

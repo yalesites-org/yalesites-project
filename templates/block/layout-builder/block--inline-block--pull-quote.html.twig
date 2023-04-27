@@ -1,6 +1,13 @@
 {% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
 
 {% block content %}
+    {% if parentNode == 'post' or parentNode == 'event' %}
+      {% set pull_quote__width = "content" %}
+      {% set pull_quote__alignment = "center" %}
+    {% else %}
+      {% set pull_quote__width = "site" %}
+      {% set pull_quote__alignment = "left" %}
+  {% endif %}
 
   {% include "@molecules/pull-quote/yds-pull-quote.twig" with {
     pull_quote__quote: content.field_text,
