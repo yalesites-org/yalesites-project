@@ -1,19 +1,17 @@
 callout:
   field_style_color:
     values:
-      blue-yale: Blue
-      gray-700: Gray
-    default: blue-yale
+      one: One
+      two: Two
+      three: Three
+    default: one
 cta_banner:
   field_style_color:
     values:
-      gray-800: 'Dark Gray'
-      gray-700: Gray
-      gray-200: 'Light Gray (gray-200)'
-      gray-100: 'Light Gray (gray-100)'
-      white: White
-      blue-yale: Blue
-    default: gray-800
+      one: One
+      two: Two
+      three: Three
+    default: one
   field_style_position:
     values:
       bottom: Bottom
@@ -49,13 +47,13 @@ quick_links:
       promotional: Full-width
       subtle: Narrow
     default: promotional
-news_list:
+post_list:
   field_style_variation:
     values:
       'true': Featured
       'false': Secondary
     default: 'true'
-news_cards:
+post_cards:
   field_style_variation:
     values:
       'true': Featured

@@ -1,0 +1,5 @@
+ys_layout_banner:
+  version: VERSION
+  css:
+    theme:
+      layouts/banner/banner.css: {}

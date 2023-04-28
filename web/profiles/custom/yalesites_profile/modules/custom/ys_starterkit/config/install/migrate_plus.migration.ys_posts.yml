@@ -1,0 +1,61 @@
+id: ys_posts
+label: Starterkit Post
+description: Create post content.
+migration_tags: null
+migration_group: ys_starterkit
+source_type: 'JSON file from URL'
+
+source:
+  plugin: url
+  data_fetcher_plugin: file
+  data_parser_plugin: json
+  urls:
+    - profiles/custom/yalesites_profile/modules/custom/ys_starterkit/content/posts.json
+  item_selector: /data/posts
+  fields:
+    -
+      name: src_unique_id
+      label: 'Unique ID'
+      selector: unique_id
+    -
+      name: src_title
+      label: 'Title'
+      selector: title
+    -
+      name: src_author
+      label: 'Author'
+      selector: field_author
+  ids:
+    src_unique_id:
+      type: string
+  constants:
+    date_format: 'Y-m-d'
+
+process:
+  uid:
+    plugin: default_value
+    default_value: 1
+  status:
+    plugin: default_value
+    default_value: true
+  title: src_title
+  field_author: src_author
+  field_publish_date:
+    plugin: callback
+    callable: date
+    unpack_source: true
+    source:
+      - constants/date_format
+
+destination:
+  plugin: entity:node
+  default_bundle: post
+
+dependencies:
+  enforced:
+    module:
+      - ys_starterkit
+
+migration_dependencies:
+  required:
+    - ys_images_media

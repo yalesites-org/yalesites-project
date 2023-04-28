@@ -36,11 +36,11 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    */
 
   const ALLOWED_ENTITIES = [
-    'news' => [
+    'post' => [
       'label' => 'Posts',
       'view_modes' => [
-        'card' => 'News Card Grid',
-        'list_item' => 'News List',
+        'card' => 'Post Card Grid',
+        'list_item' => 'Post List',
       ],
       'sort_by' => [
         'field_publish_date:DESC' => 'Publish Date - newer first',

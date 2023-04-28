@@ -16,9 +16,9 @@ function ys_core_token_info() {
     'name' => t('Yale Tokens'),
     'description' => t('Custom tokens for YaleSites.'),
   ];
-  $info['tokens']['yale']['news_landing_page_path'] = [
-    'name' => t('News landing page'),
-    'description' => t('The path alias for the news landing page.'),
+  $info['tokens']['yale']['post_landing_page_path'] = [
+    'name' => t('Posts landing page'),
+    'description' => t('The path alias for the posts landing page.'),
   ];
   $info['tokens']['yale']['event_landing_page_path'] = [
     'name' => t('Events landing page'),
@@ -40,10 +40,10 @@ function ys_core_tokens($type, array $tokens, array $data, array $options, Bubbl
   if ($type == 'yale') {
     foreach ($tokens as $name => $original) {
       switch ($name) {
-        case 'news_landing_page_path':
-          // Landing page path is a site setting; fallback to '/news'.
+        case 'post_landing_page_path':
+          // Landing page path is a site setting; fallback to '/posts'.
           $config = \Drupal::config('ys_core.site');
-          $replacements[$original] = $config->get('page.news') ?: '/news';
+          $replacements[$original] = $config->get('page.posts') ?: '/posts';
           break;
 
         case 'event_landing_page_path':

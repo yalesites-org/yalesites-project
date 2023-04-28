@@ -3,15 +3,17 @@ langcode: en
 status: true
 dependencies:
   config:
+    - core.entity_view_display.node.event.default
     - core.entity_view_display.node.page.default
+    - core.entity_view_display.node.post.default
     - media.type.background_video
     - media.type.document
     - media.type.embed
     - media.type.image
     - media.type.video
     - node.type.event
-    - node.type.news
     - node.type.page
+    - node.type.post
   module:
     - block
     - contextual
@@ -52,9 +54,11 @@ permissions:
   - 'administer users'
   - 'administer utility-navigation menu items'
   - 'clone event content'
-  - 'clone news content'
   - 'clone page content'
+  - 'clone post content'
+  - 'configure editable event node layout overrides'
   - 'configure editable page node layout overrides'
+  - 'configure editable post node layout overrides'
   - 'create and edit custom blocks'
   - 'create background_video media'
   - 'create document media'
@@ -62,8 +66,8 @@ permissions:
   - 'create event content'
   - 'create image media'
   - 'create media'
-  - 'create news content'
   - 'create page content'
+  - 'create post content'
   - 'create url aliases'
   - 'create video media'
   - 'delete any background_video media'
@@ -72,8 +76,8 @@ permissions:
   - 'delete any event content'
   - 'delete any image media'
   - 'delete any media'
-  - 'delete any news content'
   - 'delete any page content'
+  - 'delete any post content'
   - 'delete any video media'
   - 'delete any webform submission'
   - 'delete media'
@@ -82,16 +86,16 @@ permissions:
   - 'delete own embed media'
   - 'delete own event content'
   - 'delete own image media'
-  - 'delete own news content'
   - 'delete own page content'
+  - 'delete own post content'
   - 'delete own video media'
   - 'edit any background_video media'
   - 'edit any document media'
   - 'edit any embed media'
   - 'edit any event content'
   - 'edit any image media'
-  - 'edit any news content'
   - 'edit any page content'
+  - 'edit any post content'
   - 'edit any video media'
   - 'edit any webform submission'
   - 'edit own background_video media'
@@ -99,8 +103,8 @@ permissions:
   - 'edit own embed media'
   - 'edit own event content'
   - 'edit own image media'
-  - 'edit own news content'
   - 'edit own page content'
+  - 'edit own post content'
   - 'edit own video media'
   - 'edit own webform submission'
   - 'mark as hidden in editoria11y'
@@ -113,8 +117,8 @@ permissions:
   - 'publish editable content'
   - 'revert all revisions'
   - 'revert event revisions'
-  - 'revert news revisions'
   - 'revert page revisions'
+  - 'revert post revisions'
   - 'unpublish any content'
   - 'unpublish editable content'
   - 'update any media'
@@ -124,11 +128,11 @@ permissions:
   - 'view any webform submission'
   - 'view editoria11y checker'
   - 'view event revisions'
-  - 'view news revisions'
   - 'view own unpublished content'
   - 'view own unpublished media'
   - 'view own webform submission'
   - 'view page revisions'
+  - 'view post revisions'
   - 'view the administration theme'
   - 'view unpublished paragraphs'
   - 'yalesites manage alerts'

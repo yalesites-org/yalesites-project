@@ -6,6 +6,7 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\views\Plugin\views\style\StylePluginBase;
 use Drupal\Core\Entity\EntityDisplayRepository;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
  * Unformatted style plugin to render rows with dynamic view mode.
@@ -23,6 +24,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  */
 class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactoryPluginInterface {
+
+  /**
+   * The current route match.
+   *
+   * @var \Drupal\Core\Routing\RouteMatchInterface
+   */
+  protected $routeMatch;
 
   /**
    * The entity display repository to fetch display modes.
@@ -54,10 +62,13 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
    *   The plugin implementation definition.
    * @param \Drupal\Core\Entity\EntityDisplayRepository $entity_display
    *   The entity display repository.
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The URL Generator class.
    */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, EntityDisplayRepository $entity_display) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, EntityDisplayRepository $entity_display, RouteMatchInterface $route_match) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->entityDisplay = $entity_display;
+    $this->routeMatch = $route_match;
   }
 
   /**
@@ -68,7 +79,8 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('entity_display.repository')
+      $container->get('entity_display.repository'),
+      $container->get('current_route_match'),
     );
   }
 
@@ -107,10 +119,17 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
     // Map the view mode in Drupal to the type attribute for the component.
     $type = $this->view->rowPlugin->options['view_mode'] == 'list_item' ? 'list' : 'grid';
 
+    // Get node type to pass to template to determine width.
+    $entity = $this->routeMatch->getParameter('node');
+    if ($entity) {
+      $parentNode = $entity->getType();
+    }
+
     return [
       '#theme' => 'views_basic_rows',
       '#rows' => $rows,
       '#card_collection_type' => $type,
+      '#parentNode' => $parentNode,
     ];
   }
 

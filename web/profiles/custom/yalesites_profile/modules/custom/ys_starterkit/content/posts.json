@@ -1,0 +1,16 @@
+{
+  "data": {
+    "posts": [
+      {
+        "unique_id": 1,
+        "title": "Article with mostly text",
+        "field_author": "Viverra vitae"
+      },
+      {
+        "unique_id": 2,
+        "title": "Longform article",
+        "field_author": "Viverra vitae"
+      }
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+uuid: 1cff5f17-e299-4653-9140-35f39ffc41aa
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_teaser_media
+    - media.type.image
+    - node.type.post
+id: node.post.field_teaser_media
+field_name: field_teaser_media
+entity_type: node
+bundle: post
+label: 'Teaser Media'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:media'
+  handler_settings:
+    target_bundles:
+      image: image
+    sort:
+      field: _none
+      direction: ASC
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference

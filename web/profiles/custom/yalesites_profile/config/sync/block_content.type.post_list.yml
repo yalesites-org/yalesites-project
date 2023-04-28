@@ -1,0 +1,8 @@
+uuid: cf05d669-4abf-42fe-8ed5-6136b2bdbcb3
+langcode: en
+status: true
+dependencies: {  }
+id: post_list
+label: 'Post Feed'
+revision: 1
+description: 'Post feed pulls in your post content and dynamically references them on your webpage.'

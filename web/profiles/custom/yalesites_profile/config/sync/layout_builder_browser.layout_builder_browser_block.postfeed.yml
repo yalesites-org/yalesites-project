@@ -1,0 +1,11 @@
+uuid: bc85f3cc-f743-4792-a11b-829dfd11b067
+langcode: en
+status: true
+dependencies: {  }
+id: postfeed
+block_id: 'inline_block:post_list'
+category: all_blocks
+label: 'Post feed'
+image_path: ''
+image_alt: ''
+weight: 9

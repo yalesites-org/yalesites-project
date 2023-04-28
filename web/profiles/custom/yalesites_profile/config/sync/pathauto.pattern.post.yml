@@ -1,0 +1,22 @@
+uuid: f1bf29f5-f7d7-47d7-9129-3b52b3846e5b
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+id: post
+label: Post
+type: 'canonical_entities:node'
+pattern: '[yale:post_landing_page_path]/[node:created:custom:Y-m-d]-[node:title]'
+selection_criteria:
+  8a744808-8c9b-41fd-bb78-ada30c5622e8:
+    id: 'entity_bundle:node'
+    negate: false
+    uuid: 8a744808-8c9b-41fd-bb78-ada30c5622e8
+    context_mapping:
+      node: node
+    bundles:
+      post: post
+selection_logic: and
+weight: -5
+relationships: {  }

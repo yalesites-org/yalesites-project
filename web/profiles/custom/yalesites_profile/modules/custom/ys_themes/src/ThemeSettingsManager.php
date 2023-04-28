@@ -48,14 +48,13 @@ class ThemeSettingsManager {
     'pull_quote_color' => [
       'name' => 'Pull Quote Color',
       'values' => [
-        'gray-200' => 'Light Gray',
-        'gray-500' => 'Gray',
-        'blue-yale' => 'Blue',
-        'accent' => 'Accent',
+        'one' => 'One',
+        'two' => 'Two',
+        'three' => 'Three',
       ],
       'prop_type' => 'root',
       'selector' => '--color-theme-pull-quote-accent',
-      'default' => 'gray-500',
+      'default' => 'one',
     ],
     'line_color' => [
       'name' => 'Line Color',
@@ -87,7 +86,7 @@ class ThemeSettingsManager {
       ],
       'prop_type' => 'element',
       'selector' => '[data-site-header-nav-position]',
-      'default' => 'right',
+      'default' => 'left',
     ],
     'nav_type' => [
       'name' => 'Navigation Type',
@@ -102,26 +101,26 @@ class ThemeSettingsManager {
     'header_theme' => [
       'name' => 'Header Theme',
       'values' => [
-        'white' => 'White',
-        'gray-100' => 'Light Gray',
-        'blue-yale' => 'Blue',
+        'one' => 'One',
+        'two' => 'Two',
+        'three' => 'Three',
       ],
       'prop_type' => 'element',
       'selector' => 'header[data-component-theme]',
-      'default' => 'white',
+      'default' => 'one',
     ],
     'footer_theme' => [
       'name' => 'Footer Theme',
       'values' => [
-        'white' => 'White',
-        'gray-100' => 'Light Gray',
-        'gray-700' => 'Gray',
-        'gray-800' => 'Dark Gray',
-        'blue-yale' => 'Blue',
+        'one' => 'One',
+        'two' => 'Two',
+        'three' => 'Three',
+        'four' => 'Four',
+        'five' => 'Five',
       ],
       'prop_type' => 'element',
       'selector' => 'footer[data-component-theme]',
-      'default' => 'gray-700',
+      'default' => 'one',
     ],
   ];
 
