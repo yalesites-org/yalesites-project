@@ -92,6 +92,8 @@ dap.configurations.twig = {
   - `XDEBUG_SESSION_START=1`
 - You should see the debugger stop at your breakpoints
 
+- For twig specific debugging, you'll need to use devel's `devel_breakpoint()` function.  This will breakpoint in that method.  Stepping should finally get you to where the templates are loading that you can dive into.
+
 ### VSCode
 
 #### Prerequisites
@@ -128,7 +130,6 @@ dap.configurations.twig = {
 
 ## Notes and Caveats
 
-- For twig specific debugging, you'll need to use devel's `devel_breakpoint()` function.  This will breakpoint in that method.  Stepping should finally get you to where the templates are loading that you can dive into.
 - Many things are singletons in drupal, so you may need to clear the cache to get the debugger to stop at your breakpoints.
 
 ## Resources
@@ -137,6 +138,11 @@ The following were used to figure out how to implement this solution:
 
 - [Xdebug documentation](https://xdebug.org/docs/remote)
 - [Lando documentation](https://docs.lando.dev/guides/lando-phpstorm.html)
+
+## Known Issues
+
+- Debugging twig files are not as straightforward as debugging the PHP files.  If you find a more reliable way to do this, please submit a pull request.
+- Clearing cache is still an issue and probably should be done before each debugging request.  Again, if you find a way around this, please submit a pull request.
 
 ## Contributions
 
