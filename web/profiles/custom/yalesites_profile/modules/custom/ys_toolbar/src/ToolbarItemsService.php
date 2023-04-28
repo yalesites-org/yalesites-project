@@ -9,6 +9,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Drupal\node\NodeInterface;
 use Drupal\Component\Serialization\Json;
+use Drupal\Core\Routing\RedirectDestination;
 
 /**
  * Tools for customizing the Drupal toolbar to engance the authoring experience.
@@ -55,6 +56,13 @@ class ToolbarItemsService {
   private $routeMatch;
 
   /**
+   * Redirect destination service.
+   *
+   * @var \Drupal\Core\Routing\RedirectDestination
+   */
+  private $redirectDestination;
+
+  /**
    * Toolbar menu items.
    *
    * @var array
@@ -68,6 +76,8 @@ class ToolbarItemsService {
    *   The access manager.
    * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
    *   The route match.
+   * @param \Drupal\Core\Routing\RedirectDestination $redirect_destination
+   *   The route match.
    * @param \Drupal\Core\Session\AccountInterface $account
    *   The current user.
    * @param \Drupal\Core\Menu\LocalTaskManagerInterface $local_task_manager
@@ -76,11 +86,13 @@ class ToolbarItemsService {
   public function __construct(
     AccessManagerInterface $access_manager,
     RouteMatchInterface $routeMatch,
+    RedirectDestination $redirect_destination,
     AccountInterface $account,
     LocalTaskManagerInterface $local_task_manager
   ) {
     $this->accessManager = $access_manager;
     $this->routeMatch = $routeMatch;
+    $this->redirectDestination = $redirect_destination;
     $this->account = $account;
     $this->localTaskManager = $local_task_manager;
     $this->currentNode = $this->routeMatch->getParameter('node');
@@ -260,7 +272,7 @@ class ToolbarItemsService {
         '#title' => $label,
         '#url' => Url::fromRoute(
           $route,
-          \Drupal::service('redirect.destination')->getAsArray(),
+          $this->redirectDestination->getAsArray(),
         ),
         '#access' => $this->accessManager->checkNamedRoute(
           $route,

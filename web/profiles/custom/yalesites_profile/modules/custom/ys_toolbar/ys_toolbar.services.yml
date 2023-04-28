@@ -1,4 +1,4 @@
 services:
     ys_toolbar.items:
         class: Drupal\ys_toolbar\ToolbarItemsService
-        arguments: ['@access_manager', '@current_route_match', '@current_user', '@plugin.manager.menu.local_task']
+        arguments: ['@access_manager', '@current_route_match', '@redirect.destination', '@current_user', '@plugin.manager.menu.local_task']
