@@ -26,34 +26,17 @@ class ThemeSettingsManager {
    * @var array
    */
   const THEME_SETTINGS = [
-    'action_color' => [
-      'name' => 'Action Color',
+    'global_theme' => [
+      'name' => 'Global Theme',
       'values' => [
-        'blue-yale' => 'Blue',
-        'basic-black' => 'Black',
+        'one' => 'Old Blues',
+        'two' => 'New Haven Green',
+        'three' => 'Shoreline Summer',
+        'four' => 'Elm City Nights',
+        'five' => 'Quiet Corner',
       ],
-      'prop_type' => 'root',
-      'selector' => '--color-theme-action',
-      'default' => 'blue-yale',
-    ],
-    'accent_color' => [
-      'name' => 'Accent Color',
-      'values' => [
-        'blue-light' => 'Light Blue',
-      ],
-      'prop_type' => 'root',
-      'selector' => '--color-theme-accent',
-      'default' => 'blue-light',
-    ],
-    'pull_quote_color' => [
-      'name' => 'Pull Quote Color',
-      'values' => [
-        'one' => 'One',
-        'two' => 'Two',
-        'three' => 'Three',
-      ],
-      'prop_type' => 'root',
-      'selector' => '--color-theme-pull-quote-accent',
+      'prop_type' => 'element',
+      'selector' => '[data-global-theme]',
       'default' => 'one',
     ],
     'line_color' => [
@@ -119,7 +102,7 @@ class ThemeSettingsManager {
         'five' => 'Five',
       ],
       'prop_type' => 'element',
-      'selector' => 'footer[data-component-theme]',
+      'selector' => 'footer[data-footer-theme]',
       'default' => 'one',
     ],
   ];
