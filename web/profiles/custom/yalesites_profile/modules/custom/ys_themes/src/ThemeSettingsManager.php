@@ -106,7 +106,7 @@ class ThemeSettingsManager {
         'three' => 'Three',
       ],
       'prop_type' => 'element',
-      'selector' => 'header[data-component-theme]',
+      'selector' => 'header[data-header-theme]',
       'default' => 'one',
     ],
     'footer_theme' => [
