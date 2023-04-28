@@ -19,7 +19,6 @@ lando xdebug-on
 The above command will do the following:
 
 - Set the environment variable XDEBUG_MODE within the appserver to debug
-- Disables page caching so that the debugger can run on each request
 - Removes any previous docker-php-ext-xdebug.ini files that may still exist
 - Enables the xdebug extension
 - Kills php-fpm so that the new configuration can be loaded
@@ -35,7 +34,6 @@ lando xdebug-off
 The above command will do the following:
 
 - Set the environment variable XDEBUG_MODE within the appserver to `off`
-- Enables page caching again as that is the default
 - Removes any previous docker-php-ext-xdebug.ini files that may still exist, disabling the extension
 - Kills php-fpm so that the new configuration can be loaded
 - Clears the cache one more time (just in case)
