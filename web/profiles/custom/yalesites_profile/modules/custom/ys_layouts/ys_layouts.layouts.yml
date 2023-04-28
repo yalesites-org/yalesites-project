@@ -2,7 +2,7 @@ ys_layout_banner:
   label: 'Banner'
   path: layouts/banner
   template: layout--banner
-  library: ys_layout_onecol/banner
+  library: ys_layouts/ys_layout_banner
   category: 'Columns: 1'
   default_region: content
   icon_map:
