@@ -84,9 +84,9 @@ class ThemeSettingsManager {
     'header_theme' => [
       'name' => 'Header Theme',
       'values' => [
-        'one' => 'One',
-        'two' => 'Two',
-        'three' => 'Three',
+        'one' => 'Base',
+        'two' => 'Action',
+        'three' => 'Highlight',
       ],
       'prop_type' => 'element',
       'selector' => 'header[data-header-theme]',
@@ -95,11 +95,11 @@ class ThemeSettingsManager {
     'footer_theme' => [
       'name' => 'Footer Theme',
       'values' => [
-        'one' => 'One',
-        'two' => 'Two',
-        'three' => 'Three',
-        'four' => 'Four',
-        'five' => 'Five',
+        'one' => 'Base',
+        'two' => 'Action',
+        'three' => 'Highlight',
+        'four' => 'Subtle',
+        'five' => 'Deep',
       ],
       'prop_type' => 'element',
       'selector' => 'footer[data-footer-theme]',
