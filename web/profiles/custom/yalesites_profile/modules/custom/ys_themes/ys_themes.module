@@ -163,4 +163,11 @@ function ys_themes_form_alter(&$form, $form_state, $form_id) {
     $form['settings']['label_display']['#default_value'] = FALSE;
     $form['settings']['label_display']['#access'] = FALSE;
   }
+
+  // Allow front-end theming of the layout builder discard changes form.
+  if ($form_id == 'layout_builder_discard_changes') {
+    $form['#attributes']['class'][] = 'layout--centered';
+    $form['#attached']['library'][] = 'ys_themes/ys_themes';
+  }
+
 }
