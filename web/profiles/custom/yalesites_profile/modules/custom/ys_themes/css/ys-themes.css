@@ -33,8 +33,15 @@
 
 /* buttons */
 /* emulate gin theme buttons */
-.main-content > .layout--centered .button {
+
+.main-content .cas-login-link {
+  margin-bottom: var(--size-spacing-8);
+}
+
+.main-content > .layout--centered .button,
+.main-content > .layout--centered .cas-login-link {
   transition: color, background-color var(--animation-speed-default) ease-in-out 0ms;
+  display: inline-flex;
   flex: 0 1;
   border-radius: 6px;
   background-color: var(--color-admin-button-primary);
@@ -43,11 +50,12 @@
   padding: var(--size-spacing-3) var(--size-spacing-6);
   text-decoration: none;
   text-align: center;
-  min-height: var(--size-click-target-minimum);
+  min-height: 2rem;
   cursor: pointer;
 }
 
-.main-content > .layout--centered .button:hover {
+.main-content > .layout--centered .button:hover,
+.main-content > .layout--centered .cas-login-link:hover {
   background-color: var(--color-admin-button-primary-hover);
   color: var(--color-admin-button-light-text);
 }
