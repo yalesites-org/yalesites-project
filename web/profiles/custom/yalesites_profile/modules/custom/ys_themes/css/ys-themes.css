@@ -16,10 +16,20 @@
 .main-content > .layout--centered .form-actions {
   display: flex;
   align-items: stretch;
-  gap: 2rem;
+  gap: 1rem;
   margin: var(--size-spacing-6) 0;
 }
 
+
+/* add admin css variables */
+.layout--centered {
+  --color-admin-button-primary: rgb(50, 117, 224);
+  --color-admin-button-primary-hover: rgb(43, 99, 190);
+  --color-admin-button-light-text: white;
+  --color-admin-button-dark-text: black;
+  --color-admin-button-secondary: rgb(233, 227, 66);
+  --color-admin-button-secondary-hover: rgb(221, 216, 86);
+}
 
 /* buttons */
 /* emulate gin theme buttons */
@@ -27,8 +37,8 @@
   transition: color, background-color var(--animation-speed-default) ease-in-out 0ms;
   flex: 0 1;
   border-radius: 6px;
-  background-color: var(--gin-color-primary);
-  color: var(--gin-color-button-text);
+  background-color: var(--color-admin-button-primary);
+  color: var(--color-admin-button-light-text);
   font-weight: 700;
   padding: var(--size-spacing-3) var(--size-spacing-6);
   text-decoration: none;
@@ -38,17 +48,17 @@
 }
 
 .main-content > .layout--centered .button:hover {
-  background-color: var(--gin-color-primary-hover);
-  color: var(--gin-color-button-text);
+  background-color: var(--color-admin-button-primary-hover);
+  color: var(--color-admin-button-light-text);
 }
 
 /* edit button */
 .main-content > .layout--centered .button[data-drupal-selector="edit-cancel"] {
-  background-color: var(--gin-color-warning);
-  color: var(--gin-color-title);
+  background-color: var(--color-admin-button-secondary);
+  color: var(--color-admin-button-dark-text);
 }
 
 .main-content > .layout--centered .button[data-drupal-selector="edit-cancel"]:hover {
-  background-color: var(--gin-color-warning-light);
-  color: var(--gin-color-title);
+  background-color: var(--color-admin-button-secondary-hover);
+  color: var(--color-admin-button-dark-text);
 }
