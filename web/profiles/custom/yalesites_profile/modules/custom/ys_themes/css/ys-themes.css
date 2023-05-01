@@ -22,14 +22,14 @@
 
 
 /* buttons */
+/* emulate gin theme buttons */
 .main-content > .layout--centered .button {
   transition: color, background-color var(--animation-speed-default) ease-in-out 0ms;
   flex: 0 1;
-  border: var(--border-thickness-4) solid var(--color-basic-black);
-  border-radius: var(--radius-4);
-  background-color:var(--color-basic-black);
-  color: var(--color-basic-white);
-  font-weight: var(--font-weights-mallory-medium);
+  border-radius: 6px;
+  background-color: var(--gin-color-primary);
+  color: var(--gin-color-button-text);
+  font-weight: 700;
   padding: var(--size-spacing-3) var(--size-spacing-6);
   text-decoration: none;
   text-align: center;
@@ -38,7 +38,17 @@
 }
 
 .main-content > .layout--centered .button:hover {
-  border: var(--border-thickness-4) solid var(--color-basic-black);
-  background-color: transparent;
-  color: var(--color-basic-black);
+  background-color: var(--gin-color-primary-hover);
+  color: var(--gin-color-button-text);
+}
+
+/* edit button */
+.main-content > .layout--centered .button[data-drupal-selector="edit-cancel"] {
+  background-color: var(--gin-color-warning);
+  color: var(--gin-color-title);
+}
+
+.main-content > .layout--centered .button[data-drupal-selector="edit-cancel"]:hover {
+  background-color: var(--gin-color-warning-light);
+  color: var(--gin-color-title);
 }
