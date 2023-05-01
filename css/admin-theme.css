@@ -148,18 +148,12 @@ table .draggable-table.tabledrag-disabled tr:hover {
   box-shadow: none !important;
 }
 
-.meta-sidebar__trigger:hover,
-.meta-sidebar__trigger:focus,
-.meta-sidebar__close:hover,
-.meta-sidebar__close:focus {
-}
-
 .gin-secondary-toolbar__layout-container *:focus {
   box-shadow: 0 0 0 3px #d4d4d4 !important;
 }
 
 .meta-sidebar__trigger, .meta-sidebar__close {
-  background-color: var(--gin-color-primary-light)
+  background-color: var(--gin-color-primary-light);
 }
 
 .meta-sidebar__trigger::before, .meta-sidebar__close::before {
