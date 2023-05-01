@@ -1,5 +1,3 @@
-@use "../node_modules/@yalesites-org/tokens/build/css/tokens";
-
 /* stylelint-disable */
 :root {
   [data-gin-accent] {
@@ -7,6 +5,7 @@
     --gin-color-primary-active: #376C74;
     --gin-color-primary-hover: #376C74;
     --gin-color-primary-light: #D9F1F3;
+    --gin-border-color-layer: #D4D4D4;
     --gin-bg-layer: #FBFBF6;
     --colorGinText: #1F1F1F;
   }
