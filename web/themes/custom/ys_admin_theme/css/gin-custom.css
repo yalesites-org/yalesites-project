@@ -6,7 +6,8 @@
   --gin-font-size-h3: 1.25rem;
   --gin-border-m: 0.313rem;
 }
-:root h1, :root h2 {
+:root h1,
+:root h2 {
   font-weight: 600;
 }
 
@@ -27,7 +28,10 @@
   content: none;
 }
 
-.button, .button:not(:focus), .form-actions .button, .action-link--icon-trash.action-link {
+.button,
+.button:not(:focus),
+.form-actions .button,
+.action-link--icon-trash.action-link {
   border-radius: 2.5rem !important;
 }
 
@@ -50,7 +54,8 @@
   background-color: var(--gin-color-primary-light) !important;
 }
 
-.is-horizontal .tabs__link:hover, .is-horizontal .tabs__link:focus,
+.is-horizontal .tabs__link:hover,
+.is-horizontal .tabs__link:focus,
 .horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button a:hover,
 .horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button a:focus {
   background: var(--gin-color-primary-light);
@@ -78,13 +83,52 @@ html.js.no-touchevents .dropbutton--extrasmall {
   background-color: transparent !important;
 }
 
-.admin-item .admin-item__link:hover, .admin-item .admin-item__link:focus {
+.admin-item .admin-item__link:hover,
+.admin-item .admin-item__link:focus {
   background: rgba(var(--gin-color-primary-rgb), 0.15) !important;
 }
 
-.gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab .toolbar-tray a:hover, .gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab .toolbar-tray a:active,
-table tr:hover, table .draggable-table.tabledrag-disabled tr:hover {
+.gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab .toolbar-tray a:hover,
+.gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab .toolbar-tray a:active,
+table tr:hover,
+table .draggable-table.tabledrag-disabled tr:hover {
   background-color: var(--gin-color-primary-light) !important;
+}
+
+.gin-secondary-toolbar.layout-container {
+  background-color: var(--gin-bg-layer);
+}
+
+body:not(.toolbar-tray-open) .layout-container {
+  padding-left: var(--gin-spacing-m);
+  padding-right: var(--gin-spacing-m);
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+@media screen and (min-width: 38em) {
+  body:not(.toolbar-tray-open) .layout-container {
+    padding-right: 3em;
+    padding-left: 3em;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+@media (min-width: 48em) {
+  body:not(.toolbar-tray-open) .layout-container {
+    padding-left: var(--gin-spacing-xl);
+    padding-right: var(--gin-spacing-xl);
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+@media (min-width: 61em) {
+  body:not(.toolbar-tray-open) .layout-container {
+    padding-left: min(5vw, var(--gin-spacing-xxl));
+    padding-right: min(5vw, var(--gin-spacing-xxl));
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
 }
 
 /*# sourceMappingURL=gin-custom.css.map */
