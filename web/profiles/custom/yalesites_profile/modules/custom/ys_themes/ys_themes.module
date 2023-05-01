@@ -154,7 +154,13 @@ function ys_themes_form_alter(&$form, $form_state, $form_id) {
   }
 
   // Allow front-end theming of the layout builder discard changes form.
-  if ($form_id == 'layout_builder_discard_changes') {
+  $formsToStyle = [
+    'layout_builder_revert_overrides',
+    'layout_builder_discard_changes',
+    'user_login_form',
+  ];
+
+  if (in_array($form_id, $formsToStyle)) {
     $form['#attributes']['class'][] = 'layout--centered';
     $form['#attached']['library'][] = 'ys_themes/ys_themes';
   }
