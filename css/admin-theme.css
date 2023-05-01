@@ -1,0 +1,167 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap");
+
+:root [data-gin-accent] {
+  --gin-color-primary-rgb: 55, 108, 116;
+  --gin-color-primary-active: #376c74;
+  --gin-color-primary-hover: #376c74;
+  --gin-color-primary-light: #d9f1f3;
+  --gin-border-color-layer: #d4d4d4;
+  --gin-bg-layer: #fbfbf6;
+  --colorGinText: #1f1f1f;
+}
+
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap");
+:root {
+  --gin-font: "DM Mono", monospace;
+  --gin-font-size-h1: 1.75rem;
+  --gin-font-size-h2: 1.5rem;
+  --gin-font-size-h3: 1.25rem;
+  --gin-border-m: 0.313rem;
+}
+:root h1,
+:root h2 {
+  font-weight: 600;
+}
+
+.gin-secondary-toolbar--frontend {
+  background-color: var(--gin-bg-layer);
+}
+
+.toolbar-menu-administration
+  > .toolbar-menu
+  > .menu-item:hover
+  > .toolbar-icon::before,
+.toolbar-menu-administration
+  > .toolbar-menu
+  > .menu-item:hover
+  > .toolbar-box
+  > a.toolbar-icon::before,
+.toolbar-menu-administration
+  > .toolbar-menu
+  > .menu-item
+  > .toolbar-icon:focus::before,
+.toolbar-menu-administration
+  > .toolbar-menu
+  > .menu-item.menu-item--active-trail
+  > .toolbar-icon::before,
+.toolbar-menu-administration
+  > .toolbar-menu
+  > .menu-item.menu-item--active-trail:hover
+  > .toolbar-icon::before,
+.toolbar-menu-administration
+  > .toolbar-menu
+  > .menu-item.menu-item--active-trail
+  > .toolbar-box
+  > a.toolbar-icon::before {
+  z-index: 1;
+}
+
+.toolbar-menu-administration
+  > .toolbar-menu
+  > .menu-item.menu-item--active-trail
+  > .toolbar-icon::after,
+.toolbar-menu-administration
+  > .toolbar-menu
+  > .menu-item.menu-item--active-trail
+  > .toolbar-box
+  > a.toolbar-icon::after,
+.toolbar-menu-administration
+  > .toolbar-menu
+  > .menu-item
+  > .toolbar-icon.is-active::after {
+  background-color: var(--gin-color-primary-light) !important;
+}
+
+.is-horizontal .tabs__link:hover,
+.is-horizontal .tabs__link:focus,
+.horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button a:hover,
+.horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button a:focus {
+  background: var(--gin-color-primary-light);
+}
+
+.form-element {
+  border-radius: 0.625rem !important;
+}
+
+.block-system > .views-form [data-drupal-selector*="edit-header"],
+.view-content .views-form [data-drupal-selector*="edit-header"] {
+  background-color: transparent !important;
+}
+
+.admin-item .admin-item__link:hover,
+.admin-item .admin-item__link:focus {
+  background: rgba(var(--gin-color-primary-rgb), 0.15) !important;
+}
+
+.gin-secondary-toolbar
+  .toolbar-secondary
+  .toolbar-bar
+  .toolbar-tab
+  .toolbar-tray
+  a:hover,
+.gin-secondary-toolbar
+  .toolbar-secondary
+  .toolbar-bar
+  .toolbar-tab
+  .toolbar-tray
+  a:active,
+table tr:hover,
+table .draggable-table.tabledrag-disabled tr:hover {
+  background-color: var(--gin-color-primary-light) !important;
+}
+
+#block-atomic-local-tasks ul:not(.contextual-links) {
+  list-style: none;
+  display: flex;
+}
+
+/* Layout styles */
+.glb-button,
+.inline-block-create-button,
+.layout-builder__link--add,
+.inline-block-create-button:not(:focus),
+.layout-builder__link--add:not(:focus),
+.form-actionsÂ .glb-button,
+.form-actionsÂ .inline-block-create-button,
+.form-actionsÂ .layout-builder__link--add,
+.glb-action-link--icon-trash.glb-action-link,
+.meta-sidebar__trigger.is-active,
+.meta-sidebar__close.is-active {
+  background-color: var(--gin-color-primary-light) !important;
+}
+
+.glb-button,
+.inline-block-create-button,
+.layout-builder__link--add,
+.glb-button:not(:focus),
+.inline-block-create-button:not(:focus),
+.layout-builder__link--add:not(:focus),
+.form-actionsÂ .glb-button,
+.form-actionsÂ .inline-block-create-button,
+.form-actionsÂ .layout-builder__link--add,
+.glb-action-link--icon-trash.glb-action-link {
+  border-radius: 2.5rem !important;
+}
+
+.glb-button:not(:focus) {
+  filter: none !important;
+  box-shadow: none !important;
+}
+
+.meta-sidebar__trigger:hover,
+.meta-sidebar__trigger:focus,
+.meta-sidebar__close:hover,
+.meta-sidebar__close:focus {
+}
+
+.gin-secondary-toolbar__layout-container *:focus {
+  box-shadow: 0 0 0 3px #d4d4d4 !important;
+}
+
+.meta-sidebar__trigger, .meta-sidebar__close {
+  background-color: var(--gin-color-primary-light)
+}
+
+.meta-sidebar__trigger::before, .meta-sidebar__close::before {
+  background-color: var(--gin-color-primary);
+}
