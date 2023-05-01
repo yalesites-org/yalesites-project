@@ -5,3 +5,40 @@
   height: 100%;
   z-index: 100;
 }
+
+/* center layout */
+.main-content > .layout--centered {
+  width: 100%;
+  max-width: 1344px;
+  margin: 2rem auto;
+}
+
+.main-content > .layout--centered .form-actions {
+  display: flex;
+  align-items: stretch;
+  gap: 2rem;
+  margin: var(--size-spacing-6) 0;
+}
+
+
+/* buttons */
+.main-content > .layout--centered .button {
+  transition: color, background-color var(--animation-speed-default) ease-in-out 0ms;
+  flex: 0 1;
+  border: var(--border-thickness-4) solid var(--color-basic-black);
+  border-radius: var(--radius-4);
+  background-color:var(--color-basic-black);
+  color: var(--color-basic-white);
+  font-weight: var(--font-weights-mallory-medium);
+  padding: var(--size-spacing-3) var(--size-spacing-6);
+  text-decoration: none;
+  text-align: center;
+  min-height: var(--size-click-target-minimum);
+  cursor: pointer;
+}
+
+.main-content > .layout--centered .button:hover {
+  border: var(--border-thickness-4) solid var(--color-basic-black);
+  background-color: transparent;
+  color: var(--color-basic-black);
+}
