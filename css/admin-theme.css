@@ -1,23 +1,52 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap");
 
-:root [data-gin-accent] {
-  --gin-color-primary-rgb: 55, 108, 116;
-  --gin-color-primary-active: #376c74;
-  --gin-color-primary-hover: #376c74;
-  --gin-color-primary-light: #d9f1f3;
-  --gin-border-color-layer: #d4d4d4;
-  --gin-bg-layer: #fbfbf6;
-  --colorGinText: #1f1f1f;
-}
-
-@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap");
 :root {
+  --peacock-green: #376c74;
+  --mediterranean-blue: #187e9b;
+  --robin-egg: #d9f1f3;
+  --wool: #fbfbf6;
+  --light-gray: #d4d4d4;
+  --darkest-gray: #1f1f1f;
   --gin-font: "DM Mono", monospace;
   --gin-font-size-h1: 1.75rem;
   --gin-font-size-h2: 1.5rem;
   --gin-font-size-h3: 1.25rem;
   --gin-border-m: 0.313rem;
 }
+
+:root [data-gin-accent=light_blue] {
+  --gin-color-primary-rgb: 55, 108, 116;
+  --gin-color-primary-active: var(--peacock-green);
+  --gin-color-secondary: var(--mediterranean-blue);
+  --gin-color-primary-hover: var(--peacock-green);
+  --gin-color-primary-light: var(--robin-egg);
+  --gin-border-color-layer: var(--light-gray);
+  --gin-bg-layer: var(--wool);
+  --gin-dark-gray: var(--darkest-gray);
+  --colorGinText: var(--darkest-gray);
+  --gin-border-color-table-header: var(--darkest-gray);
+}
+
+.gin--dark-mode [data-gin-accent=light_blue] {
+  --gin-color-primary-rgb: 55, 108, 116 !important;
+  --gin-color-primary-active: var(--peacock-green) !important;
+  --gin-color-secondary: var(--mediterranean-blue) !important;
+  --gin-color-primary-hover: var(--peacock-green) !important;
+  --gin-color-primary-light: var(--robin-egg) !important;
+  --gin-border-color-layer: var(--light-gray) !important;
+  --gin-bg-layer: var(--darkest-gray) !important;
+  --gin-border-color-table-header: var(--darkest-gray) !important;
+  --gin-bg-input: #fff !important;
+  --gin-border-color-form-element: var(--light-gray) !important;
+  --gin-bg-app: #353535;
+  --gin-color-text-light: var(--light-gray);
+  --gin-color-primary-light-active: var(--robin-egg);
+  --gin-icon-color: var(--light-gray);
+  --gin-bg-layer2: #fff;
+  --gin-bg-layer3: #fff;
+  --gin-color-button-text: #fff;
+}
+
 :root h1,
 :root h2 {
   font-weight: 600;
@@ -152,10 +181,16 @@ table .draggable-table.tabledrag-disabled tr:hover {
   box-shadow: 0 0 0 3px #d4d4d4 !important;
 }
 
-.meta-sidebar__trigger, .meta-sidebar__close {
+.meta-sidebar__trigger,
+.meta-sidebar__close {
   background-color: var(--gin-color-primary-light);
 }
 
-.meta-sidebar__trigger::before, .meta-sidebar__close::before {
+.meta-sidebar__trigger::before,
+.meta-sidebar__close::before {
   background-color: var(--gin-color-primary);
+}
+
+.glb-button, .inline-block-create-button, .layout-builder__link--add {
+  font-family: var(--gin-font) !important;
 }
