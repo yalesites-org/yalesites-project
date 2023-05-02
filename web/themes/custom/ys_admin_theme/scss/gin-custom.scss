@@ -116,6 +116,10 @@ html.js.no-touchevents .dropbutton--extrasmall {
   border-radius: 2.5rem 0 0 2.5rem !important;
 }
 
+.dropbutton__toggle:focus {
+  box-shadow: none !important;
+}
+
 .no-touchevents .dropbutton--extrasmall .dropbutton__toggle {
   border-radius: 0 2.5rem 2.5rem 0;
 }
@@ -128,6 +132,17 @@ html.js.no-touchevents .dropbutton--extrasmall {
 .admin-item .admin-item__link:hover,
 .admin-item .admin-item__link:focus {
   background: rgba(var(--gin-color-primary-rgb), 0.15) !important;
+}
+
+tbody .views-field:not(.views-field-operations) a {
+  color: var(--gin-color-secondary) !important;
+  font-weight: 500;
+}
+
+.gin--dark-mode table tr,
+table .draggable-table.tabledrag-disabled tr,
+.gin--dark-mode table th {
+  color: var(--darkest-gray) !important;
 }
 
 .gin-secondary-toolbar
@@ -185,21 +200,12 @@ body:not(.toolbar-tray-open) .layout-container {
   }
 }
 
-tbody .views-field:not(.views-field-operations) a {
-  color: var(--gin-color-secondary) !important;
-  font-weight: 500;
-}
-
 .sortable-heading > a::after {
   content: none;
 }
 
 .tablesort {
   display: none;
-}
-
-.dropbutton__toggle:focus {
-  box-shadow: none !important;
 }
 
 // Dark Mode
@@ -250,12 +256,6 @@ tbody .views-field:not(.views-field-operations) a {
 .gin--dark-mode .button--primary:hover {
   background: var(--gin-color-primary-active) !important;
   color: #fff !important;
-}
-
-.gin--dark-mode table tr,
-table .draggable-table.tabledrag-disabled tr,
-.gin--dark-mode table th {
-  color: var(--darkest-gray) !important;
 }
 
 .gin--dark-mode table th,
