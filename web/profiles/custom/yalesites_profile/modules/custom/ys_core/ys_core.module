@@ -136,16 +136,29 @@ function ys_core_preprocess_menu__main(&$variables) {
  */
 function ys_core_preprocess_block(&$variables) {
   if ($variables['plugin_id'] == 'inline_block:image') {
-    if (isset($variables['content']['field_image_alt_text']['#items'])) {
-      $alt_text_override = $variables['content']['field_image_alt_text']['#items']->getString();
+    $altText = NULL;
+    $decorative = 0;
 
+    if (isset($variables['content']['field_override_alt_text']['#items'])) {
+      $altTextValues = $variables['content']['field_override_alt_text']['#items']->getValue();
+      $decorative = $altTextValues[0]['decorative'];
+      if ($decorative) {
+        $altText = ' ';
+      }
+      else {
+        $altText = $altTextValues[0]['value'] ?? $altTextValues[0]['value'];
+      }
+    }
+
+    if ($altText) {
       // Via: https://drupalsun.com/glassdimly/2017/07/29/drupal-8-get-uri-title-and-alt-media-entity-reference-item
       $mid = $variables['content']['field_media']['#items']->referencedEntities()[0]->id();
       $media = Media::load($mid);
       $img_entity_list = $media->get('field_media_image');
       /** @var \Drupal\image\Plugin\Field\FieldType\ImageItem $img_entity */
       $img_entity = $img_entity_list->first();
-      $img_entity->set('alt', $alt_text_override);
+      $img_entity->set('alt', $altText);
     }
+
   }
 }

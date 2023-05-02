@@ -2,3 +2,6 @@ node_layout_form:
   css:
     theme:
       css/multifield-form.css: { }
+alt_text_override:
+  js:
+    js/alt-text-override.js: {}
