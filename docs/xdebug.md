@@ -101,6 +101,7 @@ dap.configurations.twig = {
 
 #### Installation
 
+- Open VSCode by opening a terminal and typing `code .` from the root of your YaleSites project
 - Install the above extension
 - Create a `.vscode/launch.json` file with the following:
 
@@ -121,6 +122,9 @@ dap.configurations.twig = {
 }
 ```
 
+#### Usage
+
+- Open VSCode by opening a terminal and typing `code .` from the root of your YaleSites project
 - Visit the file you wish to debug, set breakpoints, start the debugger with your own keybindings, or with `F5`
 - Visit the local site in your browser, making sure to append the following to your query string:
   - `XDEBUG_SESSION_START=1`
@@ -129,6 +133,7 @@ dap.configurations.twig = {
 ## Notes and Caveats
 
 - Many things are singletons in drupal, so you may need to clear the cache to get the debugger to stop at your breakpoints.
+- If when visiting the debug window, you do not see such things as watch, callstack, and variables, you may need to open VSCode from the root of your YaleSites project through the terminal.
 
 ## Resources
 
