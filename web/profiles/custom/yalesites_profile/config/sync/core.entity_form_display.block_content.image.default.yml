@@ -6,6 +6,7 @@ dependencies:
     - block_content.type.image
     - field.field.block_content.image.field_instructions
     - field.field.block_content.image.field_media
+    - field.field.block_content.image.field_override_alt_text
     - field.field.block_content.image.field_text
   module:
     - allowed_formats
@@ -14,6 +15,7 @@ dependencies:
     - media_library
     - media_library_edit
     - text
+    - ys_core
 id: block_content.image.default
 targetEntityType: block_content
 bundle: image
@@ -27,16 +29,22 @@ content:
     third_party_settings: {  }
   field_media:
     type: media_library_widget
-    weight: 2
+    weight: 1
     region: content
     settings:
       media_types: {  }
     third_party_settings:
       media_library_edit:
         show_edit: '1'
+  field_override_alt_text:
+    type: alt_text_override_default_widget
+    weight: 3
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_text:
     type: text_textarea
-    weight: 3
+    weight: 2
     region: content
     settings:
       rows: 2

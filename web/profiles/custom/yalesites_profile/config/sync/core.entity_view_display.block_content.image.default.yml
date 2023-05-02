@@ -6,9 +6,11 @@ dependencies:
     - block_content.type.image
     - field.field.block_content.image.field_instructions
     - field.field.block_content.image.field_media
+    - field.field.block_content.image.field_override_alt_text
     - field.field.block_content.image.field_text
   module:
     - text
+    - ys_core
 id: block_content.image.default
 targetEntityType: block_content
 bundle: image
@@ -22,6 +24,13 @@ content:
       link: false
     third_party_settings: {  }
     weight: 1
+    region: content
+  field_override_alt_text:
+    type: alt_text_override_default_formatter
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 3
     region: content
   field_text:
     type: text_default

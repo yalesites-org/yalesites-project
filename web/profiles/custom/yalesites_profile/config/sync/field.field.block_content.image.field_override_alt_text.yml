@@ -1,0 +1,21 @@
+uuid: 4025cff4-4e99-44c6-b0aa-279d5563d583
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.image
+    - field.storage.block_content.field_override_alt_text
+  module:
+    - ys_core
+id: block_content.image.field_override_alt_text
+field_name: field_override_alt_text
+entity_type: block_content
+bundle: image
+label: 'Override Alt Text'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: alt_text_override
