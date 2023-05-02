@@ -274,11 +274,7 @@ class ToolbarItemsService {
           $route,
           $this->redirectDestination->getAsArray(),
         ),
-        '#access' => $this->accessManager->checkNamedRoute(
-          $route,
-          $this->getNodeRouteParams(),
-          $this->account
-        ),
+        '#access' => 'yalesites manage settings',
         '#attributes' => [
           'class' => [
             'use-ajax',
@@ -292,6 +288,7 @@ class ToolbarItemsService {
         '#attached' => [
           'library' => [
             'core/drupal.dialog.ajax',
+            'ys_toolbar/ys_toolbar',
           ],
         ],
         '#cache' => [

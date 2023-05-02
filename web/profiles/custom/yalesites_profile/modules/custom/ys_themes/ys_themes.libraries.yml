@@ -8,3 +8,6 @@ levers:
       css/levers.css : {}
   js:
     js/levers.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
