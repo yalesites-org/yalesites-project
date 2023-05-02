@@ -183,7 +183,8 @@ tbody .views-field:not(.views-field-operations) a {
   background-color: transparent !important;
 }
 
-.gin--dark-mode .button--primary, .gin--dark-mode .button--primary:not(:focus) {
+.gin--dark-mode .button--primary,
+.gin--dark-mode .button--primary:not(:focus) {
   background: var(--gin-color-primary-light) !important;
   color: var(--gin-color-primary-active) !important;
 }
@@ -194,7 +195,8 @@ tbody .views-field:not(.views-field-operations) a {
   color: #fff !important;
 }
 
-.gin--dark-mode table tr, table .draggable-table.tabledrag-disabled tr,
+.gin--dark-mode table tr,
+table .draggable-table.tabledrag-disabled tr,
 .gin--dark-mode table th {
   color: var(--darkest-gray) !important;
 }
@@ -213,7 +215,8 @@ tbody .views-field:not(.views-field-operations) a {
   border-color: var(--gin-color-primary-light) !important;
 }
 
-.gin--dark-mode .tabs__link.is-active:hover, .gin--dark-mode .tabs__link.is-active:focus,
+.gin--dark-mode .tabs__link.is-active:hover,
+.gin--dark-mode .tabs__link.is-active:focus,
 .gin--dark-mode .gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab .toolbar-tray a:hover,
 .gin--dark-mode .gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab .toolbar-tray a:focus {
   color: var(--gin-color-primary-active) !important;
