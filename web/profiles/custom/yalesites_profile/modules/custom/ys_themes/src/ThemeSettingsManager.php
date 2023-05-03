@@ -27,7 +27,7 @@ class ThemeSettingsManager {
    */
   const THEME_SETTINGS = [
     'global_theme' => [
-      'name' => 'Global Theme',
+      'name' => 'Color Palette',
       'values' => [
         'one' => 'Old Blues',
         'two' => 'New Haven Green',
@@ -38,27 +38,6 @@ class ThemeSettingsManager {
       'prop_type' => 'element',
       'selector' => '[data-global-theme]',
       'default' => 'one',
-    ],
-    'line_color' => [
-      'name' => 'Line Color',
-      'values' => [
-        'gray-500' => 'Gray',
-        'blue-yale' => 'Blue',
-        'accent' => 'Accent',
-      ],
-      'prop_type' => 'root',
-      'selector' => '--color-theme-divider',
-      'default' => 'gray-500',
-    ],
-    'line_thickness' => [
-      'name' => 'Line Thickness',
-      'values' => [
-        'thin' => 'Thin',
-        'thick' => 'Thick',
-      ],
-      'prop_type' => 'root',
-      'selector' => '--thickness-theme-divider',
-      'default' => 'thick',
     ],
     'nav_position' => [
       'name' => 'Navigation Position',

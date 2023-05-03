@@ -48,7 +48,6 @@ class ThemesSettingsForm extends ConfigFormBase {
 
     $form['global_settings'] = [
       '#type' => 'fieldset',
-      '#title' => $this->t('Global Settings'),
       '#attributes' => [
         'class' => [
           'ys-themes--global-settings',
