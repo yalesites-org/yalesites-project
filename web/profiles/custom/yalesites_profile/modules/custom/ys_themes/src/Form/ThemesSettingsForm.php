@@ -2,7 +2,6 @@
 
 namespace Drupal\ys_themes\Form;
 
-use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -22,13 +21,6 @@ class ThemesSettingsForm extends ConfigFormBase {
   public function getFormId() {
     return 'ys_themes_settings_form';
   }
-
-  /**
-   * THe Drupal backend cache renderer service.
-   *
-   * @var \Drupal\Core\Path\CacheBackendInterface
-   */
-  protected $cacheRender;
 
   /**
    * Themes Settings Manager.
@@ -56,7 +48,11 @@ class ThemesSettingsForm extends ConfigFormBase {
 
     $form['global_settings'] = [
       '#type' => 'fieldset',
-      '#title' => $this->t('Global Settings'),
+      '#attributes' => [
+        'class' => [
+          'ys-themes--global-settings',
+        ],
+      ],
     ];
 
     foreach ($allSettings as $settingName => $settingDetail) {
@@ -68,8 +64,17 @@ class ThemesSettingsForm extends ConfigFormBase {
         ),
         '#options' => $settingDetail['values'],
         '#default_value' => $this->themeSettingsManager->getSetting($settingName) ?: $settingDetail['default'],
+        '#attributes' => [
+          'class' => [
+            'ys-themes--setting',
+          ],
+          'data-prop-type' => $settingDetail['prop_type'],
+          'data-selector' => $settingDetail['selector'],
+        ],
       ];
     }
+
+    $form['#attached']['library'][] = 'ys_themes/levers';
 
     return $form;
   }
@@ -88,7 +93,6 @@ class ThemesSettingsForm extends ConfigFormBase {
       $this->themeSettingsManager->setSetting($settingName, $form_state->getValue($settingName));
     }
 
-    $this->cacheRender->invalidateAll();
     return parent::submitForm($form, $form_state);
   }
 
@@ -107,7 +111,6 @@ class ThemesSettingsForm extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory'),
-      $container->get('cache.render'),
       $container->get('ys_themes.theme_settings_manager'),
     );
   }
@@ -117,14 +120,11 @@ class ThemesSettingsForm extends ConfigFormBase {
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
-   * @param \Drupal\Core\Path\CacheBackendInterface $cache_render
-   *   The Cache backend interface.
    * @param \Drupal\ys_themes\ThemeSettingsManager $theme_settings_manager
    *   The Theme Settings Manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, CacheBackendInterface $cache_render, ThemeSettingsManager $theme_settings_manager) {
+  public function __construct(ConfigFactoryInterface $config_factory, ThemeSettingsManager $theme_settings_manager) {
     parent::__construct($config_factory);
-    $this->cacheRender = $cache_render;
     $this->themeSettingsManager = $theme_settings_manager;
   }
 
