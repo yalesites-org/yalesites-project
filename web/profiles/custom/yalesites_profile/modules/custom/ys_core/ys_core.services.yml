@@ -6,3 +6,5 @@ services:
   ys_core.yalesites_breadcrumbs_manager:
     class: Drupal\ys_core\YaleSitesBreadcrumbsManager
     arguments: ['@breadcrumb']
+  ys_core.alt_text_override_manager:
+    class: Drupal\ys_core\YaleSitesAltTextOverrideManager
