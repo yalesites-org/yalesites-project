@@ -139,6 +139,20 @@ function ys_themes_preprocess_block(&$variables) {
 }
 
 /**
+ * Implements hook_preprocess_page().
+ */
+function ys_themes_preprocess_page(&$variables) {
+  // Sets the global theme from lever settings.
+  $config = \Drupal::config('ys_themes.theme_settings');
+  $variables['site_global__theme'] = $config->get('global_theme');
+
+  // Add the cache tag, so that the theme setting information is rebuilt when
+  // the config is saved.
+  // Via: https://drupal.stackexchange.com/questions/266379/how-to-clear-cache-for-config-entity-after-making-changes
+  \Drupal::service('renderer')->addCacheableDependency($variables, $config);
+}
+
+/**
  * Implements hook_form_alter().
  */
 function ys_themes_form_alter(&$form, $form_state, $form_id) {
@@ -152,4 +166,17 @@ function ys_themes_form_alter(&$form, $form_state, $form_id) {
     $form['settings']['label_display']['#default_value'] = FALSE;
     $form['settings']['label_display']['#access'] = FALSE;
   }
+
+  // Allow front-end theming of the layout builder discard changes form.
+  $formsToStyle = [
+    'layout_builder_revert_overrides',
+    'layout_builder_discard_changes',
+    'user_login_form',
+  ];
+
+  if (in_array($form_id, $formsToStyle)) {
+    $form['#attributes']['class'][] = 'layout--centered';
+    $form['#attached']['library'][] = 'ys_themes/ys_themes';
+  }
+
 }

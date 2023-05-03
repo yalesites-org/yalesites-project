@@ -8,6 +8,8 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Drupal\node\NodeInterface;
+use Drupal\Component\Serialization\Json;
+use Drupal\Core\Routing\RedirectDestination;
 
 /**
  * Tools for customizing the Drupal toolbar to engance the authoring experience.
@@ -54,6 +56,13 @@ class ToolbarItemsService {
   private $routeMatch;
 
   /**
+   * Redirect destination service.
+   *
+   * @var \Drupal\Core\Routing\RedirectDestination
+   */
+  private $redirectDestination;
+
+  /**
    * Toolbar menu items.
    *
    * @var array
@@ -67,6 +76,8 @@ class ToolbarItemsService {
    *   The access manager.
    * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
    *   The route match.
+   * @param \Drupal\Core\Routing\RedirectDestination $redirect_destination
+   *   The route match.
    * @param \Drupal\Core\Session\AccountInterface $account
    *   The current user.
    * @param \Drupal\Core\Menu\LocalTaskManagerInterface $local_task_manager
@@ -75,11 +86,13 @@ class ToolbarItemsService {
   public function __construct(
     AccessManagerInterface $access_manager,
     RouteMatchInterface $routeMatch,
+    RedirectDestination $redirect_destination,
     AccountInterface $account,
     LocalTaskManagerInterface $local_task_manager
   ) {
     $this->accessManager = $access_manager;
     $this->routeMatch = $routeMatch;
+    $this->redirectDestination = $redirect_destination;
     $this->account = $account;
     $this->localTaskManager = $local_task_manager;
     $this->currentNode = $this->routeMatch->getParameter('node');
@@ -123,6 +136,11 @@ class ToolbarItemsService {
         'Publish'
       );
     }
+
+    $this->toolbarItems['toolbar_theme_settings_link'] = $this->buildOffCanvasButton(
+        'ys_themes.theme_settings',
+        'Theme Settings'
+      );
 
     return $this->toolbarItems;
   }
@@ -224,6 +242,53 @@ class ToolbarItemsService {
           'class' => [
             'toolbar-icon',
             'toolbar-icon-edit',
+          ],
+        ],
+        '#cache' => [
+          'contexts' => [
+            'url.path',
+          ],
+        ],
+      ],
+    ];
+  }
+
+  /**
+   * Build an off canvas item for the toolbar.
+   *
+   * @param string $route
+   *   The route for the toolbar item destination.
+   * @param string $label
+   *   The text label for the toolbar item.
+   *
+   * @return array
+   *   A rennder array for a toolbar item.
+   */
+  protected function buildOffCanvasButton(string $route, string $label): array {
+    return [
+      '#type' => 'toolbar_item',
+      'tab' => [
+        '#type' => 'link',
+        '#title' => $label,
+        '#url' => Url::fromRoute(
+          $route,
+          $this->redirectDestination->getAsArray(),
+        ),
+        '#access' => 'yalesites manage settings',
+        '#attributes' => [
+          'class' => [
+            'use-ajax',
+            'toolbar-icon',
+            'toolbar-icon-edit',
+          ],
+          'data-dialog-type' => 'dialog',
+          'data-dialog-renderer' => 'off_canvas',
+          'data-dialog-options' => Json::encode(['width' => 400]),
+        ],
+        '#attached' => [
+          'library' => [
+            'core/drupal.dialog.ajax',
+            'ys_toolbar/ys_toolbar',
           ],
         ],
         '#cache' => [
