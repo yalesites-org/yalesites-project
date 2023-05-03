@@ -46,8 +46,8 @@ To add a new color value to the design system:
 ```
 ---
 - **Step 2**: Add your new color value
-  - for example, say you wanted to add brown
-  - After the `blue` entry referenced above, you would add your entry for `brown`
+  - for example, say you want to add the color brown (`#725811`)
+  - After the `blue` or `basic` entry referenced above, you could add your entry for `brown`
 ```
     "brown": {
       "yale": {
@@ -59,14 +59,14 @@ To add a new color value to the design system:
 ---
 - **Step 3**: Compile your changes
   - Following the [readme instructions in the Tokens repository](https://github.com/yalesites-org/tokens#developing-on-the-tokens-within-the-component-library)
-  - In your terminal window, navigate to your tokens repository. This is mostly likely here: `yalesites-project/web/themes/contrib/atomic/_yale-packages/tokens`. If you haven't created a new branch do so now. e.g. `yalb-1234-add-brown-color`.
+  - In your terminal window, navigate to your tokens repository. This is mostly likely here: `yalesites-project/web/themes/contrib/atomic/_yale-packages/tokens`. If you haven't created a new branch in the tokens repository, create one now. e.g. `yalb-1234-add-brown-color`.
   - When you're ready to compile changes, run `npm run build`. Your changes should be compiled.
   ---
   
 - **Step 4**: Commit your changes and open a pull request
   - Commit your changes with a message which follows our commit message convention: `feat:(yalb-1234) add brown yale value`
   - Push the new branch up to the tokens repository and open a new Pull Request
-  - Once your change is reviewed it will be merged in and a new tokens release will be created using github actions.
+  - Once your change has been reviewed and approved, it can be merged in and a new tokens release will be created using github actions.
 
 ---
 - **Step 5**: Using your new color token - updating to the latest tokens release
@@ -106,18 +106,18 @@ Global themes are visualized here: https://yalesites-org.github.io/component-lib
 ```
   "six":
     label:
-      value: "New Red City"
+      value: "New Town Brown"
     colors:
       slot-one:
-        value: "{color.brown.yale.value}"
+        value: "{color.blue.yale.value}"
       slot-two:
-        value: "{color.blue.secondary.value}"
+        value: "{color.blue.medium.value}"
       slot-three:
-        value: "{color.blue.light.value}"
+        value: "{color.brown.yale.value}"
       slot-four:
-        value: "{color.gray.100.value}"
+        value: "{color.yellow.primary.value}"
       slot-five:
-        value: "{color.gray.800.value}" 
+        value: "{color.brown.yale.value}"
 ```
 
 - **Step 2**: Compile your changes
@@ -143,17 +143,17 @@ Global themes are visualized here: https://yalesites-org.github.io/component-lib
 ---
 
 ### Adding a new component theme
-The process is very similar to how one would go about adding a new global theme. In addition to component themes, we also have separate files for specific component themes. This standard component theme is used by the `component-library-twig/components/02-molecules/callout/yds-callout.twig`, `component-library-twig/components/02-molecules/banner/action/yds-action-banner.twig` and `component-library-twig/components/02-molecules/banner/grand-hero/yds-grand-hero.twig` components. Component themes live alongside global themes because they are used by more than one component.
+The process is very similar to how one would go about adding a new global theme. In addition to component themes, we also have separate files for specific component themes. Component themes live alongside global themes because they are used by more than one component.
 
 Component themes are visualized here: https://yalesites-org.github.io/component-library-twig/?path=/story/tokens-colors--component-theme-color-pairings
 
 **Component themes are used by the following components:**
-- Action Banner
-- Grand Hero Banner
-- Callouts
-- Pull Quotes
-- Quick Links
-- Tabs
+- Action Banner (`component-library-twig/components/02-molecules/banner/action/yds-action-banner.twig`)
+- Grand Hero Banner (`component-library-twig/components/02-molecules/banner/grand-hero/yds-grand-hero.twig`)
+- Callouts (`component-library-twig/components/02-molecules/callout/yds-callout.twig`)
+- Pull Quotes (`component-library-twig/components/02-molecules/pull-quote/yds-pull-quote.twig`)
+- Quick Links (`component-library-twig/components/02-molecules/quick-links/yds-quick-links.twig`)
+- Tabs (`component-library-twig/components/02-molecules/tabs/yds-tabs.twig`)
 
 The purpose in registering these component themes is to establish default values from which a global theme will be iterated over to apply color slots, changing color values depending on the active global theme.
 
@@ -167,7 +167,7 @@ There are specific component theme files for the following components:
 - `tokens/molecules/alert.yml` - uses component-specific `alert` themes
 
 **organisms**
-- `tokens/organisms/primary-nav.yml` - these are only applicable to typography, not color themes
+- `tokens/organisms/primary-nav.yml` - these themes are only applicable to typography, not color themes
 - `tokens/organisms/site-footer.yml` - uses component-specific `site-footer` themes which leverage `global-themes`
 - `tokens/organisms/site-header.yml` - uses component-specific `site-header` themes which leverage `global-themes`
 
@@ -242,7 +242,7 @@ The process of updating those specific component themes is the same as what foll
   ---
 
 ### Working with themes in CSS
-In each component that uses component themes and global themes, each theme should be iterated over so that each component can override its default CSS variables. Rather, each component can get a new color-slot mapping from each global-theme. 
+In each component that uses component themes and global themes, each theme should be iterated over so that each component can override its default CSS token variables. Rather, each component can get a new color-slot mapping from each global-theme. 
 
 #### Part one
 For example, in our `_yds-callout.scss` file (https://github.com/yalesites-org/component-library-twig/blob/develop/components/02-molecules/callout/_yds-callout.scss), at the top we include our tokens and the map function.
