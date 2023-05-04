@@ -342,14 +342,24 @@ Next, we assign component theme attributes to specific global-theme color-slot v
 
 Because every component theme assigns global theme color slots differently, some level of manual assignment is necessary. CSS variables should be created for any new component as name-spaced variables based on the component name. `--color-action` and `--color-action-secondary` come from the `component-library-twig/components/01-atoms/controls/cta/_yds-cta.scss` file. We re-assign them here.
 
-For callouts, action banners, and grand hero components: of the three component themes currently in place, we are using color slots 1, 4, and 5, as background-colors.
-
 ---
 #### Part five
 Commit your changes and open a PR.
 
 ---
-### Other component information
-- `component-library-twig/components/02-molecules/pull-quote/_yds-pull-quote.scss` uses global themes for `--color-pull-quote-accent` only.
-- `component-library-twig/components/01-atoms/controls/cta/_yds-cta.scss` uses its own themes `data-cta-theme` themes. For instances in which a CTA is pulled in to other components, the existing component-specific CSS variables are used. This way we can re-map these variables within the component which uses it.
-- `component-library-twig/components/02-molecules/banner/action/_yds-action-banner.scss` and `components/02-molecules/banner/grand-hero/_yds-grand-hero.scss` highlight great examples of re-mapping our `--color-link-base` and `--color-link-hover` variables to out theme color slots. 
+### Other color use information
+#### Components:
+- **Banners**:`component-library-twig/components/02-molecules/banner/action/_yds-action-banner.scss` and `components/02-molecules/banner/grand-hero/_yds-grand-hero.scss` highlight great examples of re-mapping our `--color-link-base` and `--color-link-hover` variables to out theme color slots.
+  - uses color slots `one`, `four`, and `five`.
+- **Callouts**:`component-library-twig/components/02-molecules/callout/_yds-callout.scss`. 
+  - Uses color slots `one`, `four`, and `five`.
+- **CTA**: `component-library-twig/components/01-atoms/controls/cta/_yds-cta.scss` uses its own themes `data-cta-theme` themes. For instances in which a CTA is pulled in to other components, the existing component-specific CSS variables are used. This way we can re-map these variables within the component which uses it.
+  - Uses color slots `one`, `two` and `five`.
+- **Quote**: `component-library-twig/components/02-molecules/pull-quote/_yds-pull-quote.scss` uses global themes for `--color-pull-quote-accent` only.
+  - Uses color slots `one`, `three`, and `five`.
+- **Site Header**: `component-library-twig/components/03-organisms/site-header/_yds-site-header.scss`
+  - Uses color slots `one`, `two`, and `three`.
+- **Site Footer**: `component-library-twig/components/03-organisms/site-footer/_yds-site-footer.scss`
+  - Uses color slots `one`, `three`, and `five`.
+- **Tabs**: 
+  - Uses color slots `one`, `two`, and `five`.
