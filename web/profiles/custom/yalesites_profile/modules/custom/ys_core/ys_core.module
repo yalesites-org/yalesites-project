@@ -132,7 +132,7 @@ function ys_core_preprocess_menu__main(&$variables) {
 }
 
 /**
- * Implements hook_preprocess_media().
+ * Implements hook_preprocess_block().
  */
 function ys_core_preprocess_block(&$variables) {
 
@@ -156,6 +156,9 @@ function ys_core_preprocess_block(&$variables) {
   }
 }
 
+/**
+ * Implements hook_preprocess_paragraph().
+ */
 function ys_core_preprocess_paragraph(&$variables) {
   /** @var \Drupal\paragraphs\Entity\Paragraph $paragraph */
   $paragraph = $variables['paragraph'];
@@ -166,7 +169,7 @@ function ys_core_preprocess_paragraph(&$variables) {
     'custom_card',
   ];
 
-  if(in_array($parentBundle, $paragraphsForAltText)) {
+  if (in_array($parentBundle, $paragraphsForAltText)) {
     if ($paragraph->hasField('field_override_alt_text') && $paragraph->hasField('field_image')) {
       $altTextValues = $paragraph->get('field_override_alt_text')->getValue();
       $mid = $paragraph->get('field_image')->getValue()[0]['target_id'];
@@ -176,7 +179,15 @@ function ys_core_preprocess_paragraph(&$variables) {
   }
 }
 
-function _ys_core_override_alt_text($altTextValues, $mid) {
+/**
+ * Function to override alt text.
+ *
+ * @param array $altTextValues
+ *   Array of decorative image flag and alt text value (if set)
+ * @param int $mid
+ *   Media ID.
+ */
+function _ys_core_override_alt_text(array $altTextValues, $mid) {
   $altText = NULL;
 
   if (!empty($altTextValues)) {
