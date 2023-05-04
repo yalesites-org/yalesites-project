@@ -72,7 +72,7 @@ To add a new color value to the design system:
 - **Step 5**: Using your new color token - updating to the latest tokens release
   - Once there is a new tokens release, the [component library](https://github.com/yalesites-org/component-library-twig) will need to update to the latest tokens release (`npm update @yalesites-org/tokens`), and then you can use the new color.
   - In the component library, after you've run the `npm update @yalesites-org/tokens` command, you can commit this change to the `package-lock.json` file. When you push the change to github and the pull request goes through the build process, the new color should be visible on the `colors` page: `/?path=/story/tokens-colors--colors`.
-  - **Note:** you may need to login to `netlify` to clear the branch preview's cache. Token changes tend to get cached on Netlify.
+  - **Note:** you may need to login to [Netlify](https://app.netlify.com/) to clear the branch preview's cache. Token changes tend to get cached on Netlify.
   - Next, you may want to incorporate your new color value into a new global theme. 
 
 ---
