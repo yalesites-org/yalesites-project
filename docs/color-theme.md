@@ -133,17 +133,22 @@ Global themes are visualized here: https://yalesites-org.github.io/component-lib
 
 ---
 - **Step 4**: Using your new global theme
-  - Once there is a new tokens release, the [component library](https://github.com/yalesites-org/component-library-twig) will need to update to the latest tokens release (`npm update @yalesites-org/tokens`), and then you can use the new color.
-  - Your new global theme should be ready to use. 
+  - Once there is a new tokens release, the [component library](https://github.com/yalesites-org/component-library-twig) will need to be updated to use the latest tokens release (`npm update @yalesites-org/tokens`), and then you can use the new color.
+  - Your new global theme should be ready to use.
 
 ---
 - **Step 5**: 
   - Unless you are adding a brand new `slot-NUMBER` value (e.g. `slot-six`) to the new global theme, the new theme will be included in every component context which iterates over the global theme token values.
   - If you have added a new `slot-NUMBER` then you'll need to add a new variable and map it accodingly to each component in which it is applicable.
+
+---
+**Step 6**:
+  - Review components that may use the new global theme and make sure colors have been mapped appropriately. 
+
 ---
 
 ### Adding a new component theme
-The process is very similar to how one would go about adding a new global theme. In addition to component themes, we also have separate files for specific component themes. Component themes live alongside global themes because they are used by more than one component.
+Adding a new component theme is similar to adding a new global theme. In addition to component themes, we also have separate files for specific component themes. Component themes live alongside global themes because they are used by more than one component.
 
 Component themes are visualized here: https://yalesites-org.github.io/component-library-twig/?path=/story/tokens-colors--component-theme-color-pairings
 
@@ -161,7 +166,7 @@ The purpose in registering these component themes is to establish default values
 There are specific component theme files for the following components:
 
 **atoms**
-- `tokens/atoms/links.yml` - uses `basic-themes`
+- `tokens/atoms/links.yml` - are used to define default link color value variables and those variables are overridden by global or component themes.  
 
 **molecules**
 - `tokens/molecules/alert.yml` - uses component-specific `alert` themes
@@ -171,10 +176,10 @@ There are specific component theme files for the following components:
 - `tokens/organisms/site-footer.yml` - uses component-specific `site-footer` themes which leverage `global-themes`
 - `tokens/organisms/site-header.yml` - uses component-specific `site-header` themes which leverage `global-themes`
 
-The process of updating those specific component themes is the same as what follows below. The primary reason specific component themes (specifically in atoms and molecules) exist is that there are component which do not utilize the global theme color palettes. The `site-footer` and `site-header` have 5 themes, which requires them to be organized separately from `component-themes`, which only have 3 themes defined. Both `site-footer` and `site-header` make use of the global theme color palettes in the same way in which our `component-themes` do. 
+The process of updating these, more specific, component themes is the same as what follows, below. The `site-footer` and `site-header` have 5 themes, which requires them to be organized separately from `component-themes`, which only have 3 themes defined. Both `site-footer` and `site-header` make use of the global theme color palettes in the same way in which our `component-themes` do.
 
 - **Step 1**: In the `tokens` repository ([github](https://github.com/yalesites-org/tokens)) 
-  - open the `tokens/tokens/base/color.yml` file
+  - Open the `tokens/tokens/base/color.yml` file
   - Locate the `component-themes` key which should look something like the following:
   ```
   component-themes:
@@ -202,15 +207,15 @@ The process of updating those specific component themes is the same as what foll
     slot-three:
       value: "{color.blue.light.value}"
     slot-four:
-      value: "{color.gray.100.value}"
+      value: "{color.brown.yale.value}"
     slot-five:
       value: "{color.gray.800.value}" 
 ```
 
 - **Step 2**: Compile your changes
-  - Following the [readme instructions in the Tokens repository](https://github.com/yalesites-org/tokens#developing-on-the-tokens-within-the-component-library)
-  - In your terminal window, navigate to your tokens repository. This is mostly likely here: `yalesites-project/web/themes/contrib/atomic/_yale-packages/tokens`. If you haven't created a new branch do so now. e.g. `yalb-add-component-theme-four`.
-  - When you're ready to compile changes, run `npm run build`. Your changes should be compiled.
+  - Follow the [readme instructions in the Tokens repository](https://github.com/yalesites-org/tokens#developing-on-the-tokens-within-the-component-library)
+  - In your terminal window, navigate to your tokens repository. This is mostly likely here: `yalesites-project/web/themes/contrib/atomic/_yale-packages/tokens`. If you haven't created a new branch do so now. e.g. `yalb-add-component-theme-four` or `yalb-ticketNUMXXX`.
+  - When you're ready to compile changes, run `npm run build`. Your changes should be compiled and you should see new files output to the `/build` directory.
   ---
   
 - **Step 3**: Commit your changes and open a pull request
@@ -228,7 +233,7 @@ The process of updating those specific component themes is the same as what foll
   - With your new component theme in place, you can assign your component theme variables. 
   - For example, if you were to add a new component theme called `four` and add it to the `atomic/_yale-packages/component-library-twig/components/02-molecules/callout/_yds-callout.scss` file, it might look something like this: 
   ```
-    &[data-component-theme='four'] {
+  &[data-component-theme='four'] {
     --color-callouts-background: var(--color-slot-five); // what global color slot should the background color map to?
     --color-text-shadow: var(--color-slot-one); // this should be set to the same slot as --color-cta-secondary
     --color-action: var(--color-basic-white); // if the background is dark, this is likely `white`
@@ -237,15 +242,15 @@ The process of updating those specific component themes is the same as what foll
     --color-heading: var(--color-basic-white); // if the background is dark, this is likely `white`
   }
   ```
-  - Because not every component makes use of a global-theme, and each component theme applies global-theme colors in different ways, this manual step is required to map component-specific variable to a `--color-slot` variable. 
+  - Because not every component makes use of a global-theme, and each component theme applies global-theme colors in different ways, this manual step is required to map component-specific variables to a `--color-slot` variable. 
 
   ---
 
 ### Working with themes in CSS
-In each component that uses component themes and global themes, each theme should be iterated over so that each component can override its default CSS token variables. Rather, each component can get a new color-slot mapping from each global-theme. 
+In each component that uses component themes and global themes, each theme should be iterated over so that each component can override its default values set in tokens. Rather, each component can get a new color-slot mapping from each global-theme. 
 
 #### Part one
-For example, in our `_yds-callout.scss` file (https://github.com/yalesites-org/component-library-twig/blob/develop/components/02-molecules/callout/_yds-callout.scss), at the top we include our tokens and the map function.
+For example, in our `_yds-callout.scss` file (https://github.com/yalesites-org/component-library-twig/blob/develop/components/02-molecules/callout/_yds-callout.scss), at the top we include our tokens and the map function. Then we set variables to out `component` and `global` theme objects.
 
 ```
 @use '~@yalesites-org/tokens/build/scss/tokens' as sass-tokens;
@@ -262,7 +267,7 @@ This sets us up to generate theme-based styles as programmatically as possible.
 #### Part two
 For the `.callouts` selector, we define default values based on each component themes. These defaults match component-theme option `one`. In case our themes don't use a global theme, we need color assignments so they render properly. These values directly map to their token-based values, as set in each component-theme.
 
-We can also set any component-specific variables (such as `--color-callouts-background` and `--color-text-shadow`), aside from mapping color-slots: 
+We can also set any component-specific token-variables (such as `--color-callouts-background` and `--color-text-shadow`), aside from mapping color-slots: 
 
 ```
   // Component themes defaults: iterate over each component theme to establish
@@ -304,7 +309,6 @@ Next, we set the component-theme slot values, based on the global theme:
 #### Part four
 Next, we assign component theme attributes to specific global-theme color-slot values: 
 
-
 ```
   // Component theme overrides: set specific component theme overrides
   /// define component name spaced variables and map them to global theme slots.
@@ -336,9 +340,16 @@ Next, we assign component theme attributes to specific global-theme color-slot v
   }
 ```
 
-Because every component theme assigns global theme color slots differently, some level of manual assignment is necessary. CSS variables should be created for any new component as name-spaced variables based on the component name.
+Because every component theme assigns global theme color slots differently, some level of manual assignment is necessary. CSS variables should be created for any new component as name-spaced variables based on the component name. `--color-action` and `--color-action-secondary` come from the `component-library-twig/components/01-atoms/controls/cta/_yds-cta.scss` file. We re-assign them here.
 
 For callouts, action banners, and grand hero components: of the three component themes currently in place, we are using color slots 1, 4, and 5, as background-colors.
 
 ---
+#### Part five
+Commit your changes and open a PR.
 
+---
+### Other component information
+- `component-library-twig/components/02-molecules/pull-quote/_yds-pull-quote.scss` uses global themes for `--color-pull-quote-accent` only.
+- `component-library-twig/components/01-atoms/controls/cta/_yds-cta.scss` uses its own themes `data-cta-theme` themes. For instances in which a CTA is pulled in to other components, the existing component-specific CSS variables are used. This way we can re-map these variables within the component which uses it.
+- `component-library-twig/components/02-molecules/banner/action/_yds-action-banner.scss` and `components/02-molecules/banner/grand-hero/_yds-grand-hero.scss` highlight great examples of re-mapping our `--color-link-base` and `--color-link-hover` variables to out theme color slots. 
