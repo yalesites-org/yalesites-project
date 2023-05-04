@@ -1,0 +1,21 @@
+uuid: 5192f799-f76a-4af9-a4fc-61da84317c7b
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.cta_banner
+    - field.storage.block_content.field_override_alt_text
+  module:
+    - ys_core
+id: block_content.cta_banner.field_override_alt_text
+field_name: field_override_alt_text
+entity_type: block_content
+bundle: cta_banner
+label: 'Override Alt Text'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: alt_text_override

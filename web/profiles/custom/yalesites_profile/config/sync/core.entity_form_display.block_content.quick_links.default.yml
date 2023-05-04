@@ -8,6 +8,7 @@ dependencies:
     - field.field.block_content.quick_links.field_instructions
     - field.field.block_content.quick_links.field_links
     - field.field.block_content.quick_links.field_media
+    - field.field.block_content.quick_links.field_override_alt_text
     - field.field.block_content.quick_links.field_text
   module:
     - allowed_formats
@@ -17,6 +18,7 @@ dependencies:
     - media_library
     - media_library_edit
     - text
+    - ys_core
 id: block_content.quick_links.default
 targetEntityType: block_content
 bundle: quick_links
@@ -62,6 +64,12 @@ content:
     third_party_settings:
       media_library_edit:
         show_edit: '1'
+  field_override_alt_text:
+    type: alt_text_override_default_widget
+    weight: 5
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_text:
     type: text_textarea
     weight: 2

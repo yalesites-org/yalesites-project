@@ -1,0 +1,21 @@
+uuid: 2b700b21-b4ae-4057-8285-c7c41c132c0d
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.content_spotlight
+    - field.storage.block_content.field_override_alt_text
+  module:
+    - ys_core
+id: block_content.content_spotlight.field_override_alt_text
+field_name: field_override_alt_text
+entity_type: block_content
+bundle: content_spotlight
+label: 'Override Alt Text'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: alt_text_override

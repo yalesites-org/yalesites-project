@@ -1,0 +1,21 @@
+uuid: bda54e37-eead-4e9d-a56d-ae8402d34fe1
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.grand_hero
+    - field.storage.block_content.field_override_alt_text
+  module:
+    - ys_core
+id: block_content.grand_hero.field_override_alt_text
+field_name: field_override_alt_text
+entity_type: block_content
+bundle: grand_hero
+label: 'Override Alt Text'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: alt_text_override

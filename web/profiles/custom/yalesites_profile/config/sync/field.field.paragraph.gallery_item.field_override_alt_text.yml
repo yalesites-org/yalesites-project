@@ -1,0 +1,21 @@
+uuid: e2151b05-5d6f-4789-bfba-0057961ed4d8
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_override_alt_text
+    - paragraphs.paragraphs_type.gallery_item
+  module:
+    - ys_core
+id: paragraph.gallery_item.field_override_alt_text
+field_name: field_override_alt_text
+entity_type: paragraph
+bundle: gallery_item
+label: 'Override Alt Text'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: alt_text_override

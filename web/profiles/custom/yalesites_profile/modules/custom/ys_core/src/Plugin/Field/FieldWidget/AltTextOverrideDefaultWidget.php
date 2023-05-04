@@ -62,11 +62,6 @@ class AltTextOverrideDefaultWidget extends WidgetBase {
           'ys-core--alt-override--alt-text',
         ],
       ],
-      '#states' => [
-        'visible' => [
-          ':input[name="settings[block_form][field_override_alt_text][0][alt_text_override][decorative]"]' => ['checked' => FALSE],
-        ],
-      ],
     ];
 
     $form['#attached']['library'][] = 'ys_core/alt_text_override';

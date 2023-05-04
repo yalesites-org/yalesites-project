@@ -136,58 +136,64 @@ function ys_core_preprocess_menu__main(&$variables) {
  */
 function ys_core_preprocess_block(&$variables) {
 
-  $altTextOverride = \Drupal::service('ys_core.alt_text_override_manager');
-
-  kint($altTextOverride->tester());
-
   // Override alt text.
   $blocksForAltText = [
     'inline_block:cta_banner',
     'inline_block:image',
     'inline_block:content_spotlight',
+    'inline_block:grand_hero',
+    'inline_block:quick_links',
+    'inline_block:wrapped_image'
   ];
 
   if (in_array($variables['plugin_id'], $blocksForAltText)) {
-    $altText = NULL;
-    $decorative = 0;
-    if (isset($variables['content']['field_override_alt_text'])) {
-      if (isset($variables['content']['field_override_alt_text']['#items'])) {
-        $altTextValues = $variables['content']['field_override_alt_text']['#items']->getValue();
-        $decorative = $altTextValues[0]['decorative'];
-        if ($decorative) {
-          $altText = ' ';
-        }
-        else {
-          $altText = $altTextValues[0]['value'] ?? $altTextValues[0]['value'];
-        }
-      }
+    $blockContent = $variables['content']['#block_content'];
+    if ($blockContent->hasField('field_override_alt_text') && $blockContent->hasField('field_media')) {
+      $altTextValues = $blockContent->get('field_override_alt_text')->getValue();
+      $mid = $blockContent->get('field_media')->getValue()[0]['target_id'];
+      _ys_core_override_alt_text($altTextValues, $mid);
+    }
+  }
+}
 
-      if ($altText) {
-        // Via: https://drupalsun.com/glassdimly/2017/07/29/drupal-8-get-uri-title-and-alt-media-entity-reference-item
-        $mid = $variables['content']['field_media']['#items']->referencedEntities()[0]->id();
-        $media = Media::load($mid);
-        $img_entity_list = $media->get('field_media_image');
-        /** @var \Drupal\image\Plugin\Field\FieldType\ImageItem $img_entity */
-        $img_entity = $img_entity_list->first();
-        $img_entity->set('alt', $altText);
-      }
+function ys_core_preprocess_paragraph(&$variables) {
+  /** @var \Drupal\paragraphs\Entity\Paragraph $paragraph */
+  $paragraph = $variables['paragraph'];
+
+  $parentBundle = $paragraph->bundle();
+
+  $paragraphsForAltText = [
+    'custom_card',
+  ];
+
+  if(in_array($parentBundle, $paragraphsForAltText)) {
+    if ($paragraph->hasField('field_override_alt_text') && $paragraph->hasField('field_image')) {
+      $altTextValues = $paragraph->get('field_override_alt_text')->getValue();
+      $mid = $paragraph->get('field_image')->getValue()[0]['target_id'];
+      _ys_core_override_alt_text($altTextValues, $mid);
     }
 
   }
 }
 
-// function ys_core_preprocess_paragraph(&$variables) {
-//   /** @var \Drupal\paragraphs\Entity\Paragraph $paragraph */
-//   $paragraph = $variables['paragraph'];
+function _ys_core_override_alt_text($altTextValues, $mid) {
+  $altText = NULL;
 
-//   $parentBundle = $paragraph->bundle();
-
-//   $paragraphsForAltText = [
-//     'custom_card',
-//   ];
-
-//   if(in_array($parentBundle, $paragraphsForAltText)) {
-
-//      $variables['sitename'] = \Drupal::config('system.site')->get('name');
-//   }
-// }
+  if (!empty($altTextValues)) {
+    $decorative = $altTextValues[0]['decorative'];
+    if ($decorative) {
+      $altText = ' ';
+    }
+    else {
+      $altText = $altTextValues[0]['value'] ?? $altTextValues[0]['value'];
+    }
+    if ($altText) {
+      // Via: https://drupalsun.com/glassdimly/2017/07/29/drupal-8-get-uri-title-and-alt-media-entity-reference-item
+      $media = Media::load($mid);
+      $img_entity_list = $media->get('field_media_image');
+      /** @var \Drupal\image\Plugin\Field\FieldType\ImageItem $img_entity */
+      $img_entity = $img_entity_list->first();
+      $img_entity->set('alt', $altText);
+    }
+  }
+}

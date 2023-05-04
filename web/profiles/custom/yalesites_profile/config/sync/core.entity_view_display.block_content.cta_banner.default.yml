@@ -8,6 +8,7 @@ dependencies:
     - field.field.block_content.cta_banner.field_instructions
     - field.field.block_content.cta_banner.field_link
     - field.field.block_content.cta_banner.field_media
+    - field.field.block_content.cta_banner.field_override_alt_text
     - field.field.block_content.cta_banner.field_style_color
     - field.field.block_content.cta_banner.field_style_position
     - field.field.block_content.cta_banner.field_text
@@ -15,6 +16,7 @@ dependencies:
     - link
     - options
     - text
+    - ys_core
 id: block_content.cta_banner.default
 targetEntityType: block_content
 bundle: cta_banner
@@ -47,6 +49,13 @@ content:
       link: false
     third_party_settings: {  }
     weight: 0
+    region: content
+  field_override_alt_text:
+    type: alt_text_override_default_formatter
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 6
     region: content
   field_style_color:
     type: list_key
