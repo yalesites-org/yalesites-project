@@ -4,8 +4,8 @@ status: true
 dependencies:
   config:
     - field.field.paragraph.custom_card.field_heading
-    - field.field.paragraph.custom_card.field_image
     - field.field.paragraph.custom_card.field_link
+    - field.field.paragraph.custom_card.field_media
     - field.field.paragraph.custom_card.field_override_alt_text
     - field.field.paragraph.custom_card.field_text
     - paragraphs.paragraphs_type.custom_card
@@ -25,15 +25,6 @@ content:
     third_party_settings: {  }
     weight: 1
     region: content
-  field_image:
-    type: entity_reference_entity_view
-    label: hidden
-    settings:
-      view_mode: card_secondary_3_2
-      link: false
-    third_party_settings: {  }
-    weight: 0
-    region: content
   field_link:
     type: link_separate
     label: hidden
@@ -45,6 +36,15 @@ content:
       target: ''
     third_party_settings: {  }
     weight: 3
+    region: content
+  field_media:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: card_secondary_3_2
+      link: false
+    third_party_settings: {  }
+    weight: 0
     region: content
   field_override_alt_text:
     type: alt_text_override_default_formatter

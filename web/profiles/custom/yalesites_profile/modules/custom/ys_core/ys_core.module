@@ -170,9 +170,9 @@ function ys_core_preprocess_paragraph(&$variables) {
   ];
 
   if (in_array($parentBundle, $paragraphsForAltText)) {
-    if ($paragraph->hasField('field_override_alt_text') && $paragraph->hasField('field_image')) {
+    if ($paragraph->hasField('field_override_alt_text') && $paragraph->hasField('field_media')) {
       $altTextValues = $paragraph->get('field_override_alt_text')->getValue();
-      $mid = $paragraph->get('field_image')->getValue()[0]['target_id'];
+      $mid = $paragraph->get('field_media')->getValue()[0]['target_id'];
       _ys_core_override_alt_text($altTextValues, $mid);
     }
 

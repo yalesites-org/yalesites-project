@@ -5,15 +5,13 @@ dependencies:
   config:
     - core.entity_view_mode.paragraph.preview
     - field.field.paragraph.custom_card.field_heading
-    - field.field.paragraph.custom_card.field_image
     - field.field.paragraph.custom_card.field_link
+    - field.field.paragraph.custom_card.field_media
     - field.field.paragraph.custom_card.field_override_alt_text
     - field.field.paragraph.custom_card.field_text
-    - image.style.media_library
     - paragraphs.paragraphs_type.custom_card
   module:
     - link
-    - media
     - text
 id: paragraph.custom_card.preview
 targetEntityType: paragraph
@@ -26,17 +24,6 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 1
-    region: content
-  field_image:
-    type: media_thumbnail
-    label: hidden
-    settings:
-      image_link: ''
-      image_style: media_library
-      image_loading:
-        attribute: lazy
-    third_party_settings: {  }
-    weight: 0
     region: content
   field_link:
     type: link
@@ -58,5 +45,6 @@ content:
     weight: 2
     region: content
 hidden:
+  field_media: true
   field_override_alt_text: true
   search_api_excerpt: true

@@ -4,8 +4,8 @@ status: true
 dependencies:
   config:
     - field.field.paragraph.custom_card.field_heading
-    - field.field.paragraph.custom_card.field_image
     - field.field.paragraph.custom_card.field_link
+    - field.field.paragraph.custom_card.field_media
     - field.field.paragraph.custom_card.field_override_alt_text
     - field.field.paragraph.custom_card.field_text
     - paragraphs.paragraphs_type.custom_card
@@ -36,15 +36,6 @@ content:
       maxlength:
         maxlength_js: 80
         maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
-  field_image:
-    type: media_library_widget
-    weight: 0
-    region: content
-    settings:
-      media_types: {  }
-    third_party_settings:
-      media_library_edit:
-        show_edit: '1'
   field_link:
     type: linkit
     weight: 3
@@ -58,6 +49,15 @@ content:
       maxlength:
         maxlength_js: null
         maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
+  field_media:
+    type: media_library_widget
+    weight: 0
+    region: content
+    settings:
+      media_types: {  }
+    third_party_settings:
+      media_library_edit:
+        show_edit: '1'
   field_override_alt_text:
     type: alt_text_override_default_widget
     weight: 4
