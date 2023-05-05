@@ -93,3 +93,16 @@ grand_hero:
       full: Tall
       contained: Short
     default: full
+divider:
+  field_style_position:
+    values:
+      left: Left
+      center: Center
+    default: left
+  field_style_width:
+    values:
+      '100%': 100
+      '75%': 75
+      '50%': 50
+      '25%': 25
+    default: 100%
