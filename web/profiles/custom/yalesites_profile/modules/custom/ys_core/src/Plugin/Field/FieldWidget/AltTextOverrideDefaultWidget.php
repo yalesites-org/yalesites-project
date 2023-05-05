@@ -45,7 +45,7 @@ class AltTextOverrideDefaultWidget extends WidgetBase {
 
     $element['alt_text_override']['decorative'] = [
       '#type' => 'checkbox',
-      '#title' => t('Decorative image'),
+      '#title' => $this->t('Decorative image'),
       '#default_value' => $decorative,
       '#attributes' => [
         'class' => [
@@ -55,7 +55,7 @@ class AltTextOverrideDefaultWidget extends WidgetBase {
     ];
     $element['alt_text_override']['value'] = [
       '#type' => 'textfield',
-      '#title' => t('Alt text'),
+      '#title' => $this->t('Alt text'),
       '#default_value' => $altText,
       '#attributes' => [
         'class' => [
