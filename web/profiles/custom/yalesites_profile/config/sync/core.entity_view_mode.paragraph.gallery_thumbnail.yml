@@ -1,0 +1,10 @@
+uuid: ff64a578-4287-441b-b2e9-10881fa8fe8c
+langcode: en
+status: true
+dependencies:
+  module:
+    - paragraphs
+id: paragraph.gallery_thumbnail
+label: 'Gallery - Thumbnail'
+targetEntityType: paragraph
+cache: true

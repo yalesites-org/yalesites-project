@@ -4,7 +4,10 @@ status: true
 dependencies:
   config:
     - field.field.paragraph.media_grid_item.field_media
+    - field.field.paragraph.media_grid_item.field_override_alt_text
     - paragraphs.paragraphs_type.media_grid_item
+  module:
+    - ys_core
 id: paragraph.media_grid_item.default
 targetEntityType: paragraph
 bundle: media_grid_item
@@ -18,6 +21,13 @@ content:
       link: false
     third_party_settings: {  }
     weight: 0
+    region: content
+  field_override_alt_text:
+    type: alt_text_override_default_formatter
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
     region: content
 hidden:
   search_api_excerpt: true

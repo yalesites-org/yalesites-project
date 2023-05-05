@@ -56,7 +56,7 @@
         waitForElm('.paragraphs-subform').then((elm) => {
           const subParagraphs = context.querySelectorAll('.paragraphs-subform');
           for (let i = 0; i < subParagraphs.length; i++) {
-            const selectedImage = subParagraphs[i].querySelector('.field--name-field-image img');
+            const selectedImage = subParagraphs[i].querySelector('.field--name-field-media img');
 
             if(selectedImage) {
               const altTextField = subParagraphs[i].querySelector('.ys-core--alt-override--alt-text');

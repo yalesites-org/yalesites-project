@@ -1,0 +1,21 @@
+uuid: a5fc385a-6f68-4e90-bb57-61bdb317e0d5
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_override_alt_text
+    - paragraphs.paragraphs_type.media_grid_item
+  module:
+    - ys_core
+id: paragraph.media_grid_item.field_override_alt_text
+field_name: field_override_alt_text
+entity_type: paragraph
+bundle: media_grid_item
+label: 'Override Alt Text'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: alt_text_override

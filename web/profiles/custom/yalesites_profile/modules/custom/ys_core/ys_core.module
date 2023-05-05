@@ -143,16 +143,12 @@ function ys_core_preprocess_block(&$variables) {
     'inline_block:content_spotlight',
     'inline_block:grand_hero',
     'inline_block:quick_links',
-    'inline_block:wrapped_image'
+    'inline_block:wrapped_image',
   ];
 
   if (in_array($variables['plugin_id'], $blocksForAltText)) {
     $blockContent = $variables['content']['#block_content'];
-    if ($blockContent->hasField('field_override_alt_text') && $blockContent->hasField('field_media')) {
-      $altTextValues = $blockContent->get('field_override_alt_text')->getValue();
-      $mid = $blockContent->get('field_media')->getValue()[0]['target_id'];
-      _ys_core_override_alt_text($altTextValues, $mid);
-    }
+    _ys_core_override_alt_text($blockContent);
   }
 }
 
@@ -162,49 +158,51 @@ function ys_core_preprocess_block(&$variables) {
 function ys_core_preprocess_paragraph(&$variables) {
   /** @var \Drupal\paragraphs\Entity\Paragraph $paragraph */
   $paragraph = $variables['paragraph'];
-
   $parentBundle = $paragraph->bundle();
 
+  // Override alt text.
   $paragraphsForAltText = [
     'custom_card',
+    'media_grid_item',
+    'gallery_item',
   ];
 
   if (in_array($parentBundle, $paragraphsForAltText)) {
-    if ($paragraph->hasField('field_override_alt_text') && $paragraph->hasField('field_media')) {
-      $altTextValues = $paragraph->get('field_override_alt_text')->getValue();
-      $mid = $paragraph->get('field_media')->getValue()[0]['target_id'];
-      _ys_core_override_alt_text($altTextValues, $mid);
-    }
-
+    _ys_core_override_alt_text($paragraph);
   }
 }
 
 /**
  * Function to override alt text.
  *
- * @param array $altTextValues
- *   Array of decorative image flag and alt text value (if set)
- * @param int $mid
- *   Media ID.
+ * @param object $entity
+ *   Entity is typically a block or paragraph entity.
  */
-function _ys_core_override_alt_text(array $altTextValues, $mid) {
-  $altText = NULL;
+function _ys_core_override_alt_text(object $entity) {
 
-  if (!empty($altTextValues)) {
-    $decorative = $altTextValues[0]['decorative'];
-    if ($decorative) {
-      $altText = ' ';
-    }
-    else {
-      $altText = $altTextValues[0]['value'] ?? $altTextValues[0]['value'];
-    }
-    if ($altText) {
-      // Via: https://drupalsun.com/glassdimly/2017/07/29/drupal-8-get-uri-title-and-alt-media-entity-reference-item
-      $media = Media::load($mid);
-      $img_entity_list = $media->get('field_media_image');
-      /** @var \Drupal\image\Plugin\Field\FieldType\ImageItem $img_entity */
-      $img_entity = $img_entity_list->first();
-      $img_entity->set('alt', $altText);
+  if ($entity->hasField('field_override_alt_text') && $entity->hasField('field_media')) {
+
+    $altTextValues = $entity->get('field_override_alt_text')->getValue();
+    $mid = $entity->get('field_media')->getValue()[0]['target_id'];
+    $altText = NULL;
+
+    if (!empty($altTextValues)) {
+      $decorative = $altTextValues[0]['decorative'];
+      if ($decorative) {
+        $altText = "";
+      }
+      else {
+        $altText = $altTextValues[0]['value'] ?? $altTextValues[0]['value'];
+      }
+
+      if ($altText || $altText == "") {
+        // Via: https://drupalsun.com/glassdimly/2017/07/29/drupal-8-get-uri-title-and-alt-media-entity-reference-item
+        $media = Media::load($mid);
+        $img_entity_list = $media->get('field_media_image');
+        /** @var \Drupal\image\Plugin\Field\FieldType\ImageItem $img_entity */
+        $img_entity = $img_entity_list->first();
+        $img_entity->set('alt', $altText);
+      }
     }
   }
 }
