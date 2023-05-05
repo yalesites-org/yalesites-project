@@ -1,0 +1,23 @@
+uuid: 89046ade-dfcb-4307-9396-9e7045e161d4
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.divider
+    - field.storage.block_content.field_style_position
+  module:
+    - options
+id: block_content.divider.field_style_position
+field_name: field_style_position
+entity_type: block_content
+bundle: divider
+label: 'Divider Position'
+description: ''
+required: true
+translatable: true
+default_value:
+  -
+    value: left
+default_value_callback: ''
+settings: {  }
+field_type: list_string
