@@ -29,8 +29,8 @@ class AltTextOverrideDefaultWidget extends WidgetBase {
     Array &$form,
     FormStateInterface $formState
   ) {
-    $altText = isset($items[$delta]->value) ? $items[$delta]->value : NULL;
-    $decorative = isset($items[$delta]->decorative) ? $items[$delta]->decorative : 0;
+    $altText = $items[$delta]->value ?? NULL;
+    $decorative = $items[$delta]->decorative ?? 0;
 
     $element['alt_text_override'] = [
       '#title' => 'Override image alt text',
@@ -51,7 +51,7 @@ class AltTextOverrideDefaultWidget extends WidgetBase {
         'class' => [
           'ys-core--alt-override--decorative',
         ],
-      ]
+      ],
     ];
     $element['alt_text_override']['value'] = [
       '#type' => 'textfield',

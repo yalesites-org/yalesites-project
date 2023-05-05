@@ -8,7 +8,6 @@
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\media\Entity\Media;
-use Drupal\file\Entity\File;
 
 /**
  * @file
