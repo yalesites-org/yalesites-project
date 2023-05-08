@@ -1,0 +1,89 @@
+@use '../../../00-tokens/tokens';
+
+// CSS-only select styling (from https://github.com/filamentgroup/select-css)
+
+.form-item__dropdown {
+  --color-dropdown-border: var(--color-gray-200);
+  --color-dropdown-border-hover: var(--color-blue-medium);
+  --color-dropdown-background: var(--color-gray-100);
+  --color-dropdown-icon: var(--color-gray-200);
+  --color-dropdown-icon-hover: var(--color-blue-medium);
+
+  border: var(--border-thickness-1) solid var(--color-dropdown-border);
+  display: block;
+  position: relative;
+
+  @media (prefers-color-scheme: dark) {
+    background-color: var(--color-dropdown-background);
+  }
+
+  &::after {
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 9px solid var(--color-dropdown-icon);
+    content: ' ';
+    position: absolute;
+    top: 42%;
+    right: 1em;
+    z-index: 2;
+
+    /* These hacks make the select behind the arrow clickable in some browsers */
+    pointer-events: none;
+    display: none;
+  }
+
+  &:hover,
+  &:focus {
+    border-color: var(--color-dropdown-border-hover);
+
+    &::after {
+      border-top-color: var(--color-dropdown-icon-hover);
+    }
+  }
+}
+
+.form-item__select {
+  --color-select-border: var(--color-gray-200);
+  --color-select-border-hover: var(--color-blue-medium);
+  --color-select-background: var(--color-gray-100);
+  --color-select-icon: var(--color-gray-200);
+  --color-select-icon-hover: var(--color-blue-medium);
+
+  border: var(--border-thickness-1) solid var(--color-select-border);
+  height: 41px; // set height required for discrepancy between .form-item__dropdown border and the select :focus border
+  font-size: 16px;
+  margin: 0;
+  outline: none;
+  padding: 0.6em 0.8em 0.5em;
+  width: 100%;
+
+  :focus {
+    outline: none;
+    color: var(--color-select-icon-hover);
+  }
+}
+
+@supports (-webkit-appearance: none) or (appearance: none) or
+  ((-moz-appearance: none) and (mask-type: alpha)) {
+  /* Show custom arrow */
+  .form-item__dropdown::after {
+    display: block;
+  }
+
+  /* Remove select styling */
+  .form-item__select {
+    padding-right: 2em; /* Match-01 */
+
+    /* inside @supports so that iOS <= 8 display the native arrow */
+    background: none; /* Match-04 */
+
+    /* inside @supports so that Android <= 4.3 display the native arrow */
+    border: 1px solid transparent; /* Match-05 */
+    appearance: none;
+
+    &:focus {
+      border-color: var(--color-select-border-hover);
+      border-radius: 0;
+    }
+  }
+}
