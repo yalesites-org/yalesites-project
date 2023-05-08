@@ -1,4 +1,3 @@
-/* stylelint-disable */
 @import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap");
 
 :root {
@@ -97,6 +96,7 @@
   background-color: var(--gin-color-primary-light) !important;
 }
 
+.is-horizontal .tabs__link.is-active,
 .is-horizontal .tabs__link:hover,
 .is-horizontal .tabs__link:focus,
 .horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button a:hover,
@@ -129,23 +129,6 @@ html.js.no-touchevents .dropbutton--extrasmall {
 .admin-item .admin-item__link:hover,
 .admin-item .admin-item__link:focus {
   background: rgba(var(--gin-color-primary-rgb), 0.15) !important;
-}
-
-.gin-secondary-toolbar
-  .toolbar-secondary
-  .toolbar-bar
-  .toolbar-tab
-  .toolbar-tray
-  a:hover,
-.gin-secondary-toolbar
-  .toolbar-secondary
-  .toolbar-bar
-  .toolbar-tab
-  .toolbar-tray
-  a:active,
-table tr:hover,
-table .draggable-table.tabledrag-disabled tr:hover {
-  background-color: var(--gin-color-primary-light) !important;
 }
 
 .gin-secondary-toolbar.layout-container {
@@ -203,6 +186,10 @@ tbody .views-field:not(.views-field-operations) a {
   box-shadow: none !important;
 }
 
+.path-admin .view-header p {
+  max-width: 1200px;
+}
+
 // Dark Mode
 .gin--dark-mode .gin-layer-wrapper,
 .gin--dark-mode .gin-layer-wrapper-shadow,
@@ -221,12 +208,16 @@ tbody .views-field:not(.views-field-operations) a {
 .gin--dark-mode .fieldset__label,
 .fieldset__label--group,
 .form-item__label {
-  color: var(--darkest-gray) !important;
   font-weight: var(--gin-font-weight-normal) !important;
+  --gin-color-title: var(--darkest-gray);
 }
 
-.gin--dark-mode .form-element {
-  color: var(--darkest-gray) !important;
+.gin--dark-mode .form-element--type-select {
+  --gin-bg-input:var(--darkest-gray);
+}
+
+.gin--dark-mode [data-drupal-selector="edit-enable-darkmode"] .form-radios .form-item__label {
+  --gin-color-title: var(--gin-color-text-light);
 }
 
 .gin--dark-mode .button,
@@ -265,31 +256,12 @@ table .draggable-table.tabledrag-disabled tr,
   background: var(--wool) !important;
 }
 
-.gin--dark-mode .tabs-wrapper--secondary .tabs__link.is-active {
-  color: var(--gin-color-primary-light) !important;
-}
-
 .gin--dark-mode .tabs-wrapper--secondary .tabs__link.is-active::before {
   border-color: var(--gin-color-primary-light) !important;
 }
 
-.gin--dark-mode .tabs__link.is-active:hover,
-.gin--dark-mode .tabs__link.is-active:focus,
-.gin--dark-mode
-  .gin-secondary-toolbar
-  .toolbar-secondary
-  .toolbar-bar
-  .toolbar-tab
-  .toolbar-tray
-  a:hover,
-.gin--dark-mode
-  .gin-secondary-toolbar
-  .toolbar-secondary
-  .toolbar-bar
-  .toolbar-tab
-  .toolbar-tray
-  a:focus {
-  color: var(--gin-color-primary-active) !important;
+.gin--dark-mode .tabs__link.is-active {
+  background: var(--gin-color-primary-light);
 }
 
 .gin--dark-mode
@@ -308,8 +280,8 @@ table .draggable-table.tabledrag-disabled tr,
   ):not(.field-content)
   > .form-type--checkbox
   label {
-  color: var(--gin-color-text) !important;
-}
+    --gin-color-text: var(--darkest-gray);
+  }
 
 .gin--dark-mode .media-library-widget-empty-text,
 .gin--dark-mode
@@ -341,4 +313,22 @@ table .draggable-table.tabledrag-disabled tr,
 .gin--dark-mode .meta-sidebar__close.is-active {
   background-color: var(--gin-color-primary-light) !important;
 }
-/* stylelint-enable */
+
+.gin--dark-mode .claro-details__summary, 
+.gin--dark-mode .claro-details__summary.claro-details__summary--package-listing, 
+.gin--dark-mode .claro-details__summary.claro-details__summary--system-status-report {
+  --gin-color-text: var(--darkest-gray);
+}
+
+.gin--dark-mode .form-item__description, 
+.gin--dark-mode .fieldset__description {
+  --gin-color-text-light: var(--darkest-gray);
+}
+
+.js .dropbutton-widget {
+  background-color: (var(--wool));
+}
+
+.gin--dark-mode .contextual .trigger::before {
+  background: var(--gin-color-primary-light);
+}
