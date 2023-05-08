@@ -14,7 +14,7 @@ function ys_toolbar_toolbar_alter(&$items) {
   // all nodes. Change to "Manage this Page" to make it easier to understand.
   if (\Drupal::service('ys_toolbar.items')->isCurrentRouteNode()) {
     if (!empty($items['admin_toolbar_local_tasks']['tab']['#title'])) {
-      $items['admin_toolbar_local_tasks']['tab']['#title'] = 'Manage This Page';
+      $items['admin_toolbar_local_tasks']['tab']['#title'] = 'Toolset';
     }
   }
 
