@@ -37,7 +37,7 @@ class CoreSettingsManager {
   }
 
   /**
-   * Gets theme setting from config.
+   * Gets core setting from config.
    *
    * @param string $setting_name
    *   Setting machine name.
