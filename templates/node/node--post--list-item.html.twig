@@ -16,6 +16,10 @@
   reference_card__snippet: content.field_teaser_text,
 } %}
   {% block reference_card__image %}
-    {{ content.field_teaser_media }}
+    {% if content.field_teaser_media[0] %}
+      {{ content.field_teaser_media }}
+    {% else %}
+      {{ drupal_entity('media', getCoreSetting('image_defaults.teaser'), 'card_list_3_2') }}
+    {% endif %}
   {% endblock %}
 {% endembed %}
