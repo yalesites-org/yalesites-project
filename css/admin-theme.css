@@ -47,8 +47,8 @@
   --gin-color-button-text: #fff;
 }
 
-:root h1,
-:root h2 {
+:root .path-admin h1,
+:root .path-admin h2 {
   font-weight: 600;
 }
 
@@ -136,7 +136,8 @@
   a:active,
 table tr:hover,
 table .draggable-table.tabledrag-disabled tr:hover {
-  background-color: var(--gin-color-primary-light) !important;
+  --gin-color-button-text: var(--gin-color-primary); 
+  --gin-color-primary: var(--gin-color-primary-light);
 }
 
 #block-atomic-local-tasks ul:not(.contextual-links) {
@@ -191,6 +192,17 @@ table .draggable-table.tabledrag-disabled tr:hover {
   background-color: var(--gin-color-primary);
 }
 
-.glb-button, .inline-block-create-button, .layout-builder__link--add {
-  font-family: var(--gin-font) !important;
+.glb-button, 
+.inline-block-create-button, 
+.layout-builder__link--add,
+.layout-builder__link {
+  font-family: var(--gin-font);
+}
+
+.layout-builder__link--configure {
+  --gin-border-color-form-element: var(--darkest-gray); 
+}
+.layout-builder__link--add-section-to-library,
+.layout-builder__link--remove {
+  --gin-border-color-form-element: var(--darkest-gray); 
 }
