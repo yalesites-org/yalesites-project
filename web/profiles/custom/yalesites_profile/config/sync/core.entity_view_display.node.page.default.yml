@@ -94,6 +94,22 @@ third_party_settings:
             'Inline blocks':
               - 'inline_block:cta_banner'
               - 'inline_block:grand_hero'
+      restricted_categories:
+        ys_layout_banner:
+          all_regions:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - 'Custom block types'
+            - Devel
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites alert'
+            - core
 id: node.page.default
 targetEntityType: node
 bundle: page

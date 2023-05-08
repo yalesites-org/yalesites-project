@@ -1,19 +1,17 @@
 callout:
   field_style_color:
     values:
-      blue-yale: Blue
-      gray-700: Gray
-    default: blue-yale
+      one: One
+      two: Two
+      three: Three
+    default: one
 cta_banner:
   field_style_color:
     values:
-      gray-800: 'Dark Gray'
-      gray-700: Gray
-      gray-200: 'Light Gray (gray-200)'
-      gray-100: 'Light Gray (gray-100)'
-      white: White
-      blue-yale: Blue
-    default: gray-800
+      one: One
+      two: Two
+      three: Three
+    default: one
   field_style_position:
     values:
       bottom: Bottom
@@ -95,3 +93,16 @@ grand_hero:
       full: Tall
       contained: Short
     default: full
+divider:
+  field_style_position:
+    values:
+      left: Left
+      center: Center
+    default: left
+  field_style_width:
+    values:
+      '100%': 100
+      '75%': 75
+      '50%': 50
+      '25%': 25
+    default: 100%

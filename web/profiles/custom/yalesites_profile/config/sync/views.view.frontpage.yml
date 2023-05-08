@@ -248,6 +248,7 @@ display:
           replica: false
           query_tags: {  }
       relationships: {  }
+      css_class: layout--centered
       header: {  }
       footer: {  }
       display_extenders: {  }
@@ -300,7 +301,10 @@ display:
     display_plugin: page
     position: 1
     display_options:
-      display_extenders: {  }
+      display_extenders:
+        metatag_display_extender:
+          metatags: {  }
+          tokenize: false
       path: node
     cache_metadata:
       max-age: -1

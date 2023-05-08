@@ -25,6 +25,7 @@ function ys_views_basic_theme($existing, $type, $theme, $path): array {
       'variables' => [
         'card_collection_type' => NULL,
         'rows' => [],
+        'parentNode' => NULL,
       ],
     ],
   ];

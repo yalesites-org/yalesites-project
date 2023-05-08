@@ -13,50 +13,31 @@ class ThemeSettingsManager {
   /**
    * Theme setting values and default value.
    *
+   * The prop_type is used for the JavaScript form to dynamically change the
+   * elements on the page. 'root' is a CSS root variable, 'element' is a
+   * data attribute on a specific element.
+   *
+   * The selector is the CSS selector of the attribute that is used in the DOM.
+   * For root CSS variables, this would be something like --color-theme-action
+   * For data attributes on an element, this would be something like
+   * header[data-component-theme] for a specific element or to match all
+   * elements with the same data attribute, use [data-component-theme]
+   *
    * @var array
    */
   const THEME_SETTINGS = [
-    'action_color' => [
-      'name' => 'Action Color',
+    'global_theme' => [
+      'name' => 'Color Palette',
       'values' => [
-        'blue-yale' => 'Blue',
-        'basic-black' => 'Black',
+        'one' => 'Old Blues',
+        'two' => 'New Haven Green',
+        'three' => 'Shoreline Summer',
+        'four' => 'Elm City Nights',
+        'five' => 'Quiet Corner',
       ],
-      'default' => 'blue-yale',
-    ],
-    'accent_color' => [
-      'name' => 'Accent Color',
-      'values' => [
-        'blue-light' => 'Light Blue',
-      ],
-      'default' => 'blue-light',
-    ],
-    'pull_quote_color' => [
-      'name' => 'Pull Quote Color',
-      'values' => [
-        'gray-200' => 'Light Gray',
-        'gray-500' => 'Gray',
-        'blue-yale' => 'Blue',
-        'accent' => 'Accent',
-      ],
-      'default' => 'gray-500',
-    ],
-    'line_color' => [
-      'name' => 'Line Color',
-      'values' => [
-        'gray-500' => 'Gray',
-        'blue-yale' => 'Blue',
-        'accent' => 'Accent',
-      ],
-      'default' => 'gray-500',
-    ],
-    'line_thickness' => [
-      'name' => 'Line Thickness',
-      'values' => [
-        'thin' => 'Thin',
-        'thick' => 'Thick',
-      ],
-      'default' => 'thick',
+      'prop_type' => 'element',
+      'selector' => '[data-global-theme]',
+      'default' => 'one',
     ],
     'nav_position' => [
       'name' => 'Navigation Position',
@@ -65,7 +46,9 @@ class ThemeSettingsManager {
         'center' => 'Center',
         'left' => 'Left',
       ],
-      'default' => 'right',
+      'prop_type' => 'element',
+      'selector' => '[data-site-header-nav-position]',
+      'default' => 'left',
     ],
     'nav_type' => [
       'name' => 'Navigation Type',
@@ -73,27 +56,33 @@ class ThemeSettingsManager {
         'mega' => 'Mega Menu',
         'basic' => 'Basic Menu',
       ],
+      'prop_type' => 'element',
+      'selector' => '[data-menu-variation]',
       'default' => 'mega',
     ],
     'header_theme' => [
       'name' => 'Header Theme',
       'values' => [
-        'white' => 'White',
-        'gray-100' => 'Light Gray',
-        'blue-yale' => 'Blue',
+        'one' => 'Base',
+        'two' => 'Action',
+        'three' => 'Highlight',
       ],
-      'default' => 'white',
+      'prop_type' => 'element',
+      'selector' => 'header[data-header-theme]',
+      'default' => 'one',
     ],
     'footer_theme' => [
       'name' => 'Footer Theme',
       'values' => [
-        'white' => 'White',
-        'gray-100' => 'Light Gray',
-        'gray-700' => 'Gray',
-        'gray-800' => 'Dark Gray',
-        'blue-yale' => 'Blue',
+        'one' => 'Base',
+        'two' => 'Action',
+        'three' => 'Highlight',
+        'four' => 'Subtle',
+        'five' => 'Deep',
       ],
-      'default' => 'gray-700',
+      'prop_type' => 'element',
+      'selector' => 'footer[data-footer-theme]',
+      'default' => 'one',
     ],
   ];
 

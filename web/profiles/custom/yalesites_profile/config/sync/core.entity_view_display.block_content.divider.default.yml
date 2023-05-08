@@ -5,11 +5,29 @@ dependencies:
   config:
     - block_content.type.divider
     - field.field.block_content.divider.field_instructions
+    - field.field.block_content.divider.field_style_position
+    - field.field.block_content.divider.field_style_width
+  module:
+    - options
 id: block_content.divider.default
 targetEntityType: block_content
 bundle: divider
 mode: default
-content: {  }
+content:
+  field_style_position:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_style_width:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
 hidden:
   field_instructions: true
   search_api_excerpt: true

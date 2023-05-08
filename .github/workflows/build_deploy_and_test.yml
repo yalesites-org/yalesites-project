@@ -173,13 +173,13 @@ jobs:
           path: ./vendor
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/composer.lock') }}
 
-      - name: Cache web folder
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-web
-        with:
-          path: ./web
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.run_number }}
+#       - name: Cache web folder
+#         uses: actions/cache@v3
+#         env:
+#           cache-name: cache-web
+#         with:
+#           path: ./web
+#           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.run_number }}
 
       - name: Cache drush folder
         uses: actions/cache@v3
