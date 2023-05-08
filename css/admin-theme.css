@@ -47,6 +47,7 @@
   --gin-color-button-text: #fff;
 }
 
+/* affect admin paths only */
 :root .path-admin h1,
 :root .path-admin h2 {
   font-weight: 600;
