@@ -3,3 +3,5 @@ page:
   events: ''
 search:
   enable_search_form: 1
+image_defaults:
+  teaser: ''

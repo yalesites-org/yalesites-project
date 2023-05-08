@@ -46,6 +46,7 @@
     "drupal/markup": "^1.0@beta",
     "drupal/maxlength": "^2.0@RC",
     "drupal/media_library_edit": "^3.0",
+    "drupal/media_library_form_element": "^2.0",
     "drupal/menu_admin_per_menu": "^1.4",
     "drupal/menu_breadcrumb": "^1.16",
     "drupal/metatag": "^1.19",
