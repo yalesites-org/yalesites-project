@@ -67,8 +67,12 @@
   --gin-color-text: var(--darkest-gray);
 }
 
-.gin--dark-mode .ui-dialog-titlebar {
+.gin--dark-mode .ui-widget-overlay {
   background: var(--gin-color-primary) !important;
+}
+
+.gin--dark-mode .ui-dialog-titlebar {
+  background: var(--gin-color-primary-active) !important;
 }
 
 .gin-secondary-toolbar--frontend {
@@ -187,7 +191,7 @@
 table tr:hover,
 table .draggable-table.tabledrag-disabled tr:hover {
   --gin-color-button-text: var(--gin-color-primary); 
-  color: var(--gin-color-primary-light);
+  color: var(--wool);
 }
 
 #block-atomic-local-tasks ul:not(.contextual-links) {
