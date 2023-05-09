@@ -262,6 +262,10 @@ table .draggable-table.tabledrag-disabled tr:hover {
   color: var(--darkest-gray) !important;
 }
 
+.gin--dark-mode [data-gin-accent="light_blue"] .layout-builder .layout-builder__link--add {
+  color: var(--wool) !important;
+}
+
 .glb-button:not(:focus) {
   filter: none !important;
   box-shadow: none !important;
