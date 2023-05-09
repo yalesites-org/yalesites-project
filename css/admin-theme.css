@@ -92,6 +92,10 @@
   background: var(--darkest-gray);
 }
 
+.gin--dark-mode [data-gin-accent="light_blue"] .ws-lb-link__label {
+  background: var(--wool) !important;
+}
+
 .gin--dark-mode .ui-dialog-titlebar {
   background: var(--gin-color-primary-active) !important;
 }
