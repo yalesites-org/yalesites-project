@@ -104,8 +104,16 @@
   color: var(--darkest-gray) !important;
 }
 
+.gin--dark-mode [data-gin-accent="light_blue"] .ui-dialog-titlebar .ui-dialog-title {
+  color: var(--wool) !important;
+}
+
 .gin--dark-mode .ui-dialog .ui-dialog-titlebar-close .ui-icon-closethick {
-  background: var(--darkest-gray) !important ;
+  background: var(--darkest-gray) !important;
+}
+
+.gin--dark-mode [data-gin-accent="light_blue"] .ui-dialog .ui-dialog-titlebar-close .ui-icon-closethick {
+  background: var(--wool) !important;
 }
 
 .gin-secondary-toolbar--frontend {
