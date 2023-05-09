@@ -236,14 +236,14 @@ tbody .views-field:not(.views-field-operations) a {
 
 .gin--dark-mode .button--primary,
 .gin--dark-mode .button--primary:not(:focus) {
-  background: var(--gin-color-primary-light) !important;
-  color: var(--gin-color-primary-active) !important;
+  background: var(--gin-color-primary-active) !important;
+  color: var(--gin-color-button-text) !important;
 }
 
 .gin--dark-mode .button--primary:focus,
 .gin--dark-mode .button--primary:hover {
-  background: var(--gin-color-primary-active) !important;
-  color: #fff !important;
+  background: var(--gin-color-primary-light) !important;
+  color: var(--gin-color-button-text-hover) !important;
 }
 
 .gin--dark-mode table tr,
