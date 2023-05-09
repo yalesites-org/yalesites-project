@@ -10,9 +10,13 @@
   [data-gin-accent] {
     --gin-color-button-text: var(--wool);
     --gin-color-button-text-hover: var(--wool);
+    --gin-color-titlebar: var(--gin-color-primary);
+    --gin-color-primary-modal: var(--gin-color-primary);
   }
 
   [data-gin-accent="light_blue"] {
+    --gin-color-titlebar: var(--mediterranean-blue);
+    --gin-color-primary-modal: var(--peacock-green);
     --gin-color-primary-rgb: 55, 108, 116;
     --gin-color-primary-active: var(--peacock-green);
     --gin-color-secondary: var(--mediterranean-blue);
@@ -29,9 +33,13 @@
 .gin--dark-mode [data-gin-accent] {
   --gin-color-button-text: var(--darkest-gray);
   --gin-color-button-text-hover: var(--darkest-gray);
+  --gin-color-titlebar: var(--gin-color-primary);
+  --gin-color-primary-modal: var(--gin-color-primary);
 }
 
 .gin--dark-mode [data-gin-accent="light_blue"] {
+  --gin-color-titlebar: var(--mediterranean-blue);
+  --gin-color-primary-modal: var(--peacock-green);
   --gin-color-primary-rgb: 55, 108, 116 !important;
   --gin-color-primary-active: var(--peacock-green) !important;
   --gin-color-secondary: var(--mediterranean-blue) !important;

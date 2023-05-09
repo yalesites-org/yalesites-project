@@ -21,6 +21,11 @@
   border-left: 3px solid var(--gin-color-primary);
 }
 
+/* Modal */
+.ui-widget-overlay {
+  background: var(--gin-color-primary) !important;
+}
+
 .claro-details__wrapper--accordion-item {
   background-color: white;
 }
