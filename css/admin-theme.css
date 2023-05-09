@@ -53,8 +53,42 @@
   font-weight: 600;
 }
 
+
+/* Modal */
+.ui-widget-overlay {
+  background: var(--gin-color-primary) !important;
+}
+
+.ui-dialog-titlebar {
+  background: var(--gin-color-primary-active) !important;
+}
+
+.gin--dark-mode .glb-form-element {
+  --gin-color-text: var(--darkest-gray);
+}
+
+.gin--dark-mode .ui-dialog-titlebar {
+  background: var(--gin-color-primary) !important;
+}
+
 .gin-secondary-toolbar--frontend {
   background-color: var(--gin-bg-layer);
+}
+
+.gin--dark-mode [data-gin-accent=light_blue] .ui-widget-overlay {
+  background: var(--peacock-green) !important;
+}
+
+.gin--dark-mode [data-gin-accent=light_blue] .ui-dialog-titlebar {
+  background: var(--mediterranean-blue) !important;
+}
+
+[data-gin-accent=light_blue] .ui-widget-overlay {
+  background: var(--peacock-green) !important;
+}
+
+[data-gin-accent=light_blue] .ui-dialog-titlebar {
+  background: var(--mediterranean-blue) !important;
 }
 
 .toolbar-menu-administration
@@ -102,6 +136,21 @@
   background-color: var(--gin-color-primary-light) !important;
 }
 
+
+.gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab:hover .trigger::before, 
+.gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab:focus .trigger::before {
+  background-color: var(--gin-color-primary) !important;
+}
+
+.gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab > .toolbar-icon-edit.toolbar-item:hover 
+.gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab > .toolbar-icon-edit.toolbar-item:focus {
+  background-color: var(--wool);
+}
+
+.gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab:hover .trigger {
+  color: var(--gin-color-primary) !important;
+}
+
 .is-horizontal .tabs__link:hover,
 .is-horizontal .tabs__link:focus,
 .horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button a:hover,
@@ -138,7 +187,7 @@
 table tr:hover,
 table .draggable-table.tabledrag-disabled tr:hover {
   --gin-color-button-text: var(--gin-color-primary); 
-  --gin-color-primary: var(--gin-color-primary-light);
+  color: var(--gin-color-primary-light);
 }
 
 #block-atomic-local-tasks ul:not(.contextual-links) {
