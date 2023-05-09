@@ -30,7 +30,6 @@ function ys_alert_theme($existing, $type, $theme, $path) {
  */
 function ys_alert_preprocess_page(&$variables) {
   $config = \Drupal::config('ys_alert.settings');
-  $variables['alert'] = $config->get('alert');
 
   // Add the cache tag, so that the theme setting information is rebuilt when
   // the config is saved.
