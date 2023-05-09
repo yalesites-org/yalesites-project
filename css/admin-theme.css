@@ -27,6 +27,10 @@
   --gin-border-color-table-header: var(--darkest-gray);
 }
 
+.gin--dark-mode [data-gin-accent] {
+  --gin-color-textLight: var(--wool);
+}
+
 .gin--dark-mode [data-gin-accent=light_blue] {
   --gin-color-primary-rgb: 55, 108, 116 !important;
   --gin-color-primary-active: var(--peacock-green) !important;
@@ -60,19 +64,44 @@
 }
 
 .ui-dialog-titlebar {
+  display: flex;
+  align-items: center;
   background: var(--gin-color-primary-active) !important;
+}
+
+.gin--dark-mode a.cke_path_item:hover, 
+.gin--dark-mode a.cke_path_item:focus, 
+.gin--dark-mode a.cke_path_item:active {
+  color: var(--darkest-gray) !important;
 }
 
 .gin--dark-mode .glb-form-element {
   --gin-color-text: var(--darkest-gray);
+  background-color: var(--wool) !important;
 }
 
 .gin--dark-mode .ui-widget-overlay {
   background: var(--gin-color-primary) !important;
+  filter: brightness(50%);
+}
+
+.gin--dark-mode .ws-lb-link {
+  border-color: var(--gin-color-primary);
+}
+.gin--dark-mode .ws-lb-link__label {
+  background: var(--darkest-gray);
 }
 
 .gin--dark-mode .ui-dialog-titlebar {
   background: var(--gin-color-primary-active) !important;
+}
+
+.gin--dark-mode .ui-dialog-titlebar .ui-dialog-title {
+  color: var(--darkest-gray) !important;
+}
+
+.gin--dark-mode .ui-dialog .ui-dialog-titlebar-close .ui-icon-closethick {
+  background: var(--darkest-gray) !important ;
 }
 
 .gin-secondary-toolbar--frontend {
@@ -94,6 +123,7 @@
 [data-gin-accent=light_blue] .ui-dialog-titlebar {
   background: var(--mediterranean-blue) !important;
 }
+
 
 .toolbar-menu-administration
   > .toolbar-menu
@@ -225,6 +255,11 @@ table .draggable-table.tabledrag-disabled tr:hover {
 .form-actionsÂ .layout-builder__link--add,
 .glb-action-link--icon-trash.glb-action-link {
   border-radius: 2.5rem !important;
+}
+
+.gin--dark-mode .layout-builder .layout-builder__link--add {
+  background-color: var(--gin-color-primary) !important;
+  color: var(--darkest-gray) !important;
 }
 
 .glb-button:not(:focus) {
