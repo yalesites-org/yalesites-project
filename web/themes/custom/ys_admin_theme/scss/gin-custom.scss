@@ -41,14 +41,12 @@
   content: none;
 }
 
-.path-admin {
-  .button,
-  .button:not(:focus),
-  .form-actions .button,
-  .action-link--icon-trash.action-link {
-    border-radius: 2.5rem !important;
-    box-shadow: none;
-  }
+.button,
+.button:not(:focus),
+.form-actions .button,
+.action-link--icon-trash.action-link {
+  border-radius: 2.5rem !important;
+  box-shadow: none !important;
 }
 
 .button.form-submit {
@@ -222,6 +220,13 @@ tbody .views-field:not(.views-field-operations) a {
 
 .gin--dark-mode [data-drupal-selector="edit-enable-darkmode"] .form-radios .form-item__label {
   --gin-color-title: var(--gin-color-text-light);
+}
+
+.gin--dark-mode .button,
+.gin--dark-mode .button:not(:focus),
+.gin--dark-mode .form-actions .button,
+.gin--dark-mode .action-link--icon-trash.action-link {
+  box-shadow: none !important;
 }
 
 .gin--dark-mode
