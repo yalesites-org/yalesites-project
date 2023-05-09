@@ -154,13 +154,13 @@ class SiteSettingsForm extends ConfigFormBase {
       '#default_value' => $yaleConfig->get('search')['enable_search_form'],
     ];
 
-    $form['teaser_image_default'] = [
+    $form['teaser_image_fallback'] = [
       '#type' => 'media_library',
       '#allowed_bundles' => ['image'],
-      '#title' => t('Default teaser image'),
-      '#required' => TRUE,
-      '#default_value' => $yaleConfig->get('image_defaults')['teaser'],
-      '#description' => t('Used for event and post card displays when no teaser image is selected.'),
+      '#title' => t('Fallback teaser image'),
+      '#required' => FALSE,
+      '#default_value' => $yaleConfig->get('image_fallback')['teaser'],
+      '#description' => t('This image will be used for event and post card displays when no teaser image is selected.'),
     ];
 
     return parent::buildForm($form, $form_state);
@@ -219,7 +219,7 @@ class SiteSettingsForm extends ConfigFormBase {
       ->set('page.posts', $form_state->getValue('site_page_posts'))
       ->set('page.events', $form_state->getValue('site_page_events'))
       ->set('search.enable_search_form', $form_state->getValue('enable_search_form'))
-      ->set('image_defaults.teaser', $form_state->getValue('teaser_image_default'))
+      ->set('image_fallback.teaser', $form_state->getValue('teaser_image_fallback'))
       ->save();
 
     parent::submitForm($form, $form_state);
