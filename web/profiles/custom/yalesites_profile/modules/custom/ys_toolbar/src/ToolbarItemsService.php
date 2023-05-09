@@ -118,7 +118,7 @@ class ToolbarItemsService {
     if ($this->showEditButton()) {
       $this->toolbarItems['toolbar_edit_link'] = $this->buildButton(
         'entity.node.edit_form',
-        'Edit'
+        'Setup'
       );
     }
 
@@ -126,7 +126,7 @@ class ToolbarItemsService {
     // ensure this link only appears on entities with layout overrides enabled.
     $this->toolbarItems['toolbar_layout_link'] = $this->buildButton(
       'layout_builder.overrides.node.view',
-      'Layout'
+      'Layout Builder'
     );
 
     // Add a publish button to the toolbar when viewing an unpublished node.
