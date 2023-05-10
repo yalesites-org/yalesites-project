@@ -8,21 +8,24 @@
     grand_hero__link__content: content.field_link.0['#title'],
     grand_hero__link__url: content.field_link.0['#url_title'],
     grand_hero__content__background: content.field_style_color.0['#markup'],
-    grand_hero__overlay_variation: content.field_style_position.0['#markup'],
-    grand_hero__size: content.field_style_variation.0['#markup'],
+    grand_hero__overlay_variation: content.field_style_variation.0['#markup'],
+    grand_hero__size: content.field_style_position.0['#markup'],
     grand_hero__width: 'site',
   } %}
 
+  {% block grand_hero__video %}
     {% if paragraph.field_media.entity.field_media_video_file.entity.uri.value is not empty %}
       {% set grand_hero__video = true %}
-        {% block grand_hero__video %}
-          {{ content.field_media }}
-        {% endblock %}
-      {% else %}
-      {% block grand_hero__image %}
-        {{ content.field_media }}
-      {% endblock %}
+      {{ content.field_media }}
     {% endif %}
+  {% endblock %}
+
+  {% block grand_hero__image %}
+    {% if paragraph.field_media.entity.field_media_video_file.entity.uri.value is empty %}
+      {{ content.field_media }}
+    {% endif %}
+  {% endblock %}
+
 
   {% endembed %}
 
