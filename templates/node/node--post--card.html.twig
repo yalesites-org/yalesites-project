@@ -19,7 +19,7 @@
 
     {% if content.field_teaser_media[0] %}
       {{ content.field_teaser_media }}
-    {% else %}
+    {% elseif getCoreSetting('image_fallback.teaser') %}
       {{ drupal_entity('media', getCoreSetting('image_fallback.teaser'), 'card_secondary_3_2') }}
     {% endif %}
 
