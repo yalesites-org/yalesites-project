@@ -147,6 +147,13 @@ class SiteSettingsForm extends ConfigFormBase {
       '#default_value' => $siteConfig->get('page')['404'],
     ];
 
+    $form['google_site_verification'] = [
+      '#type' => 'textfield',
+      '#description' => $this->t('Get a verification key from Google Search Console Tools using the "URL Prefix" tool, clicking on the the alternate methods tab, and selecting the HTML Tag option. Use the "content" attribute from the Google tag within this field. Example: <code>&#60;meta name="google-site-verification" content="USE-THIS-CODE" /></code>'),
+      '#title' => $this->t('Google Site Verification'),
+      '#default_value' => $yaleConfig->get('seo')['google_site_verification'],
+    ];
+
     $form['enable_search_form'] = [
       '#type' => 'checkbox',
       '#description' => $this->t('Enable the search form located in the utility navigation area.'),
@@ -210,6 +217,7 @@ class SiteSettingsForm extends ConfigFormBase {
       ->set('page.posts', $form_state->getValue('site_page_posts'))
       ->set('page.events', $form_state->getValue('site_page_events'))
       ->set('search.enable_search_form', $form_state->getValue('enable_search_form'))
+      ->set('seo.google_site_verification', $form_state->getValue('google_site_verification'))
       ->save();
 
     parent::submitForm($form, $form_state);
