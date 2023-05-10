@@ -3,6 +3,7 @@
 namespace Drupal\ys_core;
 
 use Twig\Extension\AbstractExtension;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Twig\TwigFunction;
 
 /**
@@ -11,11 +12,21 @@ use Twig\TwigFunction;
 class CoreTwigExtension extends AbstractExtension {
 
   /**
-   * Core Settings Manager.
+   * Configuration Factory.
    *
-   * @var \Drupal\ys_core\CoreSettingsManager
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
    */
-  protected $coreSettingsManager;
+  protected $yaleCoreSettings;
+
+  /**
+   * Constructs the object.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   The configuration interface.
+   */
+  public function __construct(ConfigFactoryInterface $configFactory) {
+    $this->yaleCoreSettings = $configFactory->getEditable('ys_core.site');
+  }
 
   /**
    * {@inheritdoc}
@@ -23,7 +34,6 @@ class CoreTwigExtension extends AbstractExtension {
   public function getFunctions() {
     return [
       new TwigFunction('getCoreSetting', [$this, 'getCoreSetting']),
-      new TwigFunction('getAllCoreSettings', [$this, 'getAllCoreSettings']),
     ];
   }
 
@@ -32,26 +42,12 @@ class CoreTwigExtension extends AbstractExtension {
    *
    * @param string $setting_name
    *   Setting machine name to pass in to retrieve setting from config.
+   *
+   * @return string
+   *   Setting value from ys_core.site.
    */
   public function getCoreSetting($setting_name) {
-    return $this->coreSettingsManager->getSetting($setting_name);
-  }
-
-  /**
-   * Function that returns all core settings.
-   */
-  public function getAllCoreSettings() {
-    return $this->coreSettingsManager->getAllSettings();
-  }
-
-  /**
-   * Constructs the object.
-   *
-   * @param \Drupal\ys_core\Service\CoreSettingsManager $core_settings_manager
-   *   The Core Settings Manager.
-   */
-  public function __construct(CoreSettingsManager $core_settings_manager) {
-    $this->coreSettingsManager = $core_settings_manager;
+    return($this->yaleCoreSettings->get($setting_name));
   }
 
 }

@@ -159,7 +159,7 @@ class SiteSettingsForm extends ConfigFormBase {
       '#allowed_bundles' => ['image'],
       '#title' => $this->t('Fallback teaser image'),
       '#required' => FALSE,
-      '#default_value' => $yaleConfig->get('image_fallback')['teaser'],
+      '#default_value' => ($yaleConfig->get('image_fallback')) ? $yaleConfig->get('image_fallback')['teaser'] : NULL,
       '#description' => $this->t('This image will be used for event and post card displays when no teaser image is selected.'),
     ];
 

@@ -6,12 +6,9 @@ services:
   ys_core.yalesites_breadcrumbs_manager:
     class: Drupal\ys_core\YaleSitesBreadcrumbsManager
     arguments: ['@breadcrumb']
-  ys_core.core_settings_manager:
-    class: Drupal\ys_core\CoreSettingsManager
-    arguments: ['@config.factory']
   # Twig functions for passing core settings to templates.
   ys_core.core_twig_extension:
     class: Drupal\ys_core\CoreTwigExtension
-    arguments: ['@ys_core.core_settings_manager']
+    arguments: ['@config.factory']
     tags:
       - { name: twig.extension }
