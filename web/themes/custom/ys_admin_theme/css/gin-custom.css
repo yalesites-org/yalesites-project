@@ -263,7 +263,7 @@ table .draggable-table.tabledrag-disabled tr,
 }
 
 .js .dropbutton-widget {
-  background-color: var(--wool);
+  background-color: transparent;
 }
 
 .gin--dark-mode .contextual .trigger::before {
