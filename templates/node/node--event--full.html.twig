@@ -1,12 +1,30 @@
 {{ drupal_entity('block', 'yalesitesbreadcrumbs', check_access=false) }}
 
+{#
+  Please make this backend.  ;)
+  Is it worth me making this a hook?
+#}
+{# 
+  The duration that is set when you select "all day" 
+
+  This is done because smart date is not exposing to node whether you selected
+  all day or not
+#}
+{% set all_day_duration = 1439 %}
+
+{#
+  Since each all day day adds an extra minute, we create a delta based on the
+  number of days selected
+#}
+{% set delta = (node.field_event_date.duration // all_day_duration) %}
+
 {% embed "@molecules/page-title/yds-page-title.twig" with {
   page_title__heading: label,
   page_title__width: 'content',
 } %}
   {% block page_title__meta %}
-    {% set event_meta__all_day = content.field_event_date.0.end['#text'].time['#markup'] == 'All day' ? true : false %}
     {% set cal_link = calendar_link('ics', 'title', date(), date(), event_meta__all_day, 'description', 'location') %}
+    {% set event_meta__all_day = (node.field_event_date.duration % all_day_duration) <= delta %}
     {% include "@molecules/meta/event-meta/yds-event-meta.twig" with {
       event_meta__date_start: node.field_event_date.value,
       event_meta__date_end: node.field_event_date.end_value,
