@@ -22,6 +22,8 @@
   --gin-dark-gray: var(--darkest-gray);
   --colorGinText: var(--darkest-gray);
   --gin-border-color-table-header: var(--darkest-gray);
+  --gin-bg-app: #fcfefe;
+  --gin-bg-app-rgb: rgb(252, 254, 254);
 }
 
 .gin--dark-mode [data-gin-accent] {
