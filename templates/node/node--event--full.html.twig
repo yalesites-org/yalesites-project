@@ -18,13 +18,17 @@
 #}
 {% set delta = (node.field_event_date.duration // all_day_duration) %}
 
+{# Convert integers to datetime objects for use in calendar link #}
+{% set start_datetime = date(node.field_event_date.value|date_modify('+0 hour')) %}
+{% set end_datetime = date(node.field_event_date.end_value|date_modify('+0 hour')) %}
+
 {% embed "@molecules/page-title/yds-page-title.twig" with {
   page_title__heading: label,
   page_title__width: 'content',
 } %}
   {% block page_title__meta %}
-    {% set cal_link = calendar_link('ics', 'title', date(), date(), event_meta__all_day, 'description', 'location') %}
     {% set event_meta__all_day = (node.field_event_date.duration % all_day_duration) <= delta %}
+    {% set cal_link = calendar_link('ics', 'title', start_datetime, end_datetime, event_meta__all_day, 'description', node.field_event_format.value) %}
     {% include "@molecules/meta/event-meta/yds-event-meta.twig" with {
       event_meta__date_start: node.field_event_date.value,
       event_meta__date_end: node.field_event_date.end_value,
