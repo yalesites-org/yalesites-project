@@ -8,12 +8,12 @@
     {% set event_meta__all_day = content.field_event_date.0.end['#text'].time['#markup'] == 'All day' ? true : false %}
     {% set cal_link = calendar_link('ics', 'title', date(), date(), event_meta__all_day, 'description', 'location') %}
     {% include "@molecules/meta/event-meta/yds-event-meta.twig" with {
-      event_meta__date_start: content.field_event_date.0.start['#text'].date['#markup'],
-      event_meta__date_end: content.field_event_date.0.end['#text'].date['#markup'],
-      event_meta__format: content.field_event_format,
+      event_meta__date_start: node.field_event_date.value,
+      event_meta__date_end: node.field_event_date.end_value,
+      event_meta__format: node.field_event_format.value,
       event_meta__address: nothing_yet,
-      event_meta__cta_primary__content: content.field_event_cta.0['#title'],
-      event_meta__cta_primary__href: content.field_event_cta.0['#url_title'],
+      event_meta__cta_primary__content: node.field_event_cta.title,
+      event_meta__cta_primary__href: node.field_event_cta.uri,
       event_meta__cta_secondary__content: 'Add to Calendar',
       event_meta__cta_secondary__href: cal_link,
     } %}
