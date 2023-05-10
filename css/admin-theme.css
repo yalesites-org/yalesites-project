@@ -12,6 +12,8 @@
   --gin-font-size-h2: 1.5rem;
   --gin-font-size-h3: 1.25rem;
   --gin-border-m: 0.313rem;
+  --gin-bg-app: #fcfefe;
+  --gin-bg-app-rgb: rgb(252, 254, 254);
 }
 
 :root [data-gin-accent=light_blue] {
@@ -25,6 +27,11 @@
   --gin-dark-gray: var(--darkest-gray);
   --colorGinText: var(--darkest-gray);
   --gin-border-color-table-header: var(--darkest-gray);
+}
+
+[data-gin-accent=light_blue] {
+  --gin-bg-app: #fcfefe;
+  --gin-bg-app-rgb: rgb(252, 254, 254);
 }
 
 .gin--dark-mode [data-gin-accent] {
@@ -69,6 +76,18 @@
   background: var(--gin-color-primary-active) !important;
 }
 
+[data-gin-accent="light_blue"] .ws-lb-link__label {
+  background: var(--wool) !important;
+}
+
+[data-gin-accent="light_blue"] .ui-dialog-titlebar .ui-dialog-title {
+  color: var(--wool) !important;
+}
+
+[data-gin-accent="light_blue"] .ui-dialog .ui-dialog-titlebar-close .ui-icon-closethick {
+  background: var(--wool) !important;
+}
+
 .gin--dark-mode a.cke_path_item:hover, 
 .gin--dark-mode a.cke_path_item:focus, 
 .gin--dark-mode a.cke_path_item:active {
@@ -92,10 +111,6 @@
   background: var(--darkest-gray);
 }
 
-.gin--dark-mode [data-gin-accent="light_blue"] .ws-lb-link__label {
-  background: var(--wool) !important;
-}
-
 .gin--dark-mode .ui-dialog-titlebar {
   background: var(--gin-color-primary-active) !important;
 }
@@ -104,20 +119,24 @@
   color: var(--darkest-gray) !important;
 }
 
-.gin--dark-mode [data-gin-accent="light_blue"] .ui-dialog-titlebar .ui-dialog-title {
-  color: var(--wool) !important;
-}
-
 .gin--dark-mode .ui-dialog .ui-dialog-titlebar-close .ui-icon-closethick {
   background: var(--darkest-gray) !important;
 }
 
-.gin--dark-mode [data-gin-accent="light_blue"] .ui-dialog .ui-dialog-titlebar-close .ui-icon-closethick {
+.gin-secondary-toolbar--frontend {
+  background-color: var(--gin-bg-layer);
+}
+
+.gin--dark-mode [data-gin-accent="light_blue"] .ws-lb-link__label {
   background: var(--wool) !important;
 }
 
-.gin-secondary-toolbar--frontend {
-  background-color: var(--gin-bg-layer);
+.gin--dark-mode [data-gin-accent="light_blue"] .ui-dialog-titlebar .ui-dialog-title {
+  color: var(--wool) !important;
+}
+
+.gin--dark-mode [data-gin-accent="light_blue"] .ui-dialog .ui-dialog-titlebar-close .ui-icon-closethick {
+  background: var(--wool) !important;
 }
 
 .gin--dark-mode [data-gin-accent=light_blue] .ui-widget-overlay {
@@ -242,6 +261,16 @@ table .draggable-table.tabledrag-disabled tr:hover {
 }
 
 /* Layout styles */
+
+/* override button font  */
+.glb-sidebar .form-actions,
+.glb-button,
+.layout-builder__link,
+.glb-form-wrapper,
+.glb-sidebar__content {
+  font-family: var(--gin-font) !important;
+}
+
 .glb-button,
 .inline-block-create-button,
 .layout-builder__link--add,
