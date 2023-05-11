@@ -3,15 +3,15 @@
 {% block content %}
 
   {% if parentNode == 'post' or parentNode == 'event' %}
-    {% set component__width = "content" %}
-    {% set component__alignment = "center" %}
+    {% set component_wrapper__width = "content" %}
+    {% set component_wrapper__alignment = "center" %}
   {% else %}
-    {% set component__width = "site" %}
-    {% set component__alignment = "left" %}
+    {% set component_wrapper__width = "site" %}
+    {% set component_wrapper__alignment = "left" %}
   {% endif %}
 
   {% embed "@organisms/component-wrapper/yds-component-wrapper.twig" with {
-    component_width: component_width,
+    component_wrapper__width: component_width,
     component_wrapper__label: content.field_heading,
   } %}
     {% block component_wrapper_inner %}
