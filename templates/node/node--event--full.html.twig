@@ -35,7 +35,7 @@
 {% set field_event_format = node.field_event_format|map((object, _key) => labels[object.value]) %} 
 
 {% set event_meta__all_day = (node.field_event_date.duration % all_day_duration) <= delta %}
-{% set cal_link = calendar_link('ics', 'title', start_datetime, end_datetime, event_meta__all_day, 'description', field_event_format) %}
+{% set cal_link = calendar_link('ics', node.title, start_datetime, end_datetime, event_meta__all_day, 'description', field_event_format) %}
 
 {% embed "@molecules/page-title/yds-page-title.twig" with {
   page_title__heading: label,
