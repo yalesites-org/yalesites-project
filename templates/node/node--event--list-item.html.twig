@@ -24,6 +24,12 @@
   reference_card__image: 'true',
 } %}
   {% block reference_card__image %}
-    {{ content.field_teaser_media }}
+
+    {% if content.field_teaser_media[0] %}
+      {{ content.field_teaser_media }}
+    {% elseif getCoreSetting('image_fallback.teaser') %}
+      {{ drupal_entity('media', getCoreSetting('image_fallback.teaser'), 'card_list_3_2') }}
+    {% endif %}
+
   {% endblock %}
 {% endembed %}
