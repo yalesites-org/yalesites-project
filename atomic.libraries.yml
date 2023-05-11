@@ -45,3 +45,10 @@ gallery:
 background-video:
   js:
     node_modules/@yalesites-org/component-library-twig/dist/js/01-atoms/videos/video-background/yds-video-background.js: {}
+
+fontawesome: 
+  css:
+    theme: 
+      node_modules/@yalesites-org/component-library-twig/fonts/fontawesome/css/fontawesome.css: {}
+      node_modules/@yalesites-org/component-library-twig/fonts/fontawesome/css/regular.css: {}
+      node_modules/@yalesites-org/component-library-twig/fonts/fontawesome/css/solid.css: {}

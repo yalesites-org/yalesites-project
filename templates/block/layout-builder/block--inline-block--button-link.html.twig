@@ -1,0 +1,27 @@
+{% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
+
+{% block content %}
+
+  {% embed "@organisms/component-wrapper/yds-component-wrapper.twig" with {
+    component_width: 'site',
+    component_wrapper__label: content.field_heading,
+  } %}
+    {% block component_wrapper_inner %}
+      {% include "@atoms/controls/cta/yds-cta.twig" with {
+        cta__element: 'a',
+        cta__content: content.field_button_link.0['#title'],
+        cta__href: content.field_button_link.0['#url_title'],
+        cta__component_theme: cta__component_theme|default('one'),
+      }%}
+      {% if content.field_button_link.1['#url_title'] is not empty %}
+        {% include "@atoms/controls/cta/yds-cta.twig" with {
+          cta__element: 'a',
+          cta__content: content.field_button_link.1['#title'],
+          cta__href: content.field_button_link.1['#url_title'],
+          cta__component_theme: cta__component_theme|default('one'),
+          cta__style: 'outline',
+        }%}
+      {% endif %}
+    {% endblock %}
+  {% endembed %}
+{% endblock %}
