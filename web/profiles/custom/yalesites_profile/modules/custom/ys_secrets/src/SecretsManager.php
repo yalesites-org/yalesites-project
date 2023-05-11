@@ -14,7 +14,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * are added to this file using the Terminus secrets plugin. This management
  * service is used to get values from this secrets file.
  */
-class SecretsManager {
+class SecretsManager implements ContainerInjectionInterface {
 
   /**
    * The relative path to the secrets file.
@@ -30,9 +30,21 @@ class SecretsManager {
 
   /**
    * Constructs a new SecretsManager object.
+   *
+   * @param \Drupal\Core\File\FileSystemInterface $file_system
+   *   The file system service.
    */
-  public function __construct() {
-    $this->fileSystem = \Drupal::service('@file_system');
+  public function __construct(FileSystemInterface $file_system) {
+    $this->fileSystem = $file_system;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('file_system'),
+    );
   }
 
   /**
