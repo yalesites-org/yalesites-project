@@ -22,17 +22,30 @@
 {% set start_datetime = date(node.field_event_date.value|date_modify('+0 hour')) %}
 {% set end_datetime = date(node.field_event_date.end_value|date_modify('+0 hour')) %}
 
+{# I could not find where the lables are defined, so I had to create my own for now #}
+{% set labels = {
+  'online': 'Online',
+  'inperson': 'In-person',
+  'In-person': 'In-person',
+  'Online': 'Online',
+}
+%}
+
+{# This sets the field event format to be what is expected from the component #}
+{% set field_event_format = node.field_event_format|map((object, _key) => labels[object.value]) %} 
+
+{% set event_meta__all_day = (node.field_event_date.duration % all_day_duration) <= delta %}
+{% set cal_link = calendar_link('ics', 'title', start_datetime, end_datetime, event_meta__all_day, 'description', field_event_format) %}
+
 {% embed "@molecules/page-title/yds-page-title.twig" with {
   page_title__heading: label,
   page_title__width: 'content',
 } %}
   {% block page_title__meta %}
-    {% set event_meta__all_day = (node.field_event_date.duration % all_day_duration) <= delta %}
-    {% set cal_link = calendar_link('ics', 'title', start_datetime, end_datetime, event_meta__all_day, 'description', node.field_event_format.value) %}
     {% include "@molecules/meta/event-meta/yds-event-meta.twig" with {
       event_meta__date_start: node.field_event_date.value,
       event_meta__date_end: node.field_event_date.end_value,
-      event_meta__format: node.field_event_format.value,
+      event_meta__format: field_event_format,
       event_meta__address: nothing_yet,
       event_meta__cta_primary__content: node.field_event_cta.title,
       event_meta__cta_primary__href: node.field_event_cta.uri,
