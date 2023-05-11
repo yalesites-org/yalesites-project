@@ -2,26 +2,36 @@
 
 {% block content %}
 
+  {% if parentNode == 'post' or parentNode == 'event' %}
+    {% set component__width = "content" %}
+    {% set component__alignment = "center" %}
+  {% else %}
+    {% set component__width = "site" %}
+    {% set component__alignment = "left" %}
+  {% endif %}
+
   {% embed "@organisms/component-wrapper/yds-component-wrapper.twig" with {
-    component_width: 'site',
+    component_width: component_width,
     component_wrapper__label: content.field_heading,
   } %}
     {% block component_wrapper_inner %}
-      {% include "@atoms/controls/cta/yds-cta.twig" with {
-        cta__element: 'a',
-        cta__content: content.field_button_link.0['#title'],
-        cta__href: content.field_button_link.0['#url_title'],
-        cta__component_theme: cta__component_theme|default('one'),
-      }%}
-      {% if content.field_button_link.1['#url_title'] is not empty %}
+      <div class="cta-group">
         {% include "@atoms/controls/cta/yds-cta.twig" with {
           cta__element: 'a',
-          cta__content: content.field_button_link.1['#title'],
-          cta__href: content.field_button_link.1['#url_title'],
+          cta__content: content.field_button_link.0['#title'],
+          cta__href: content.field_button_link.0['#url_title'],
           cta__component_theme: cta__component_theme|default('one'),
-          cta__style: 'outline',
         }%}
-      {% endif %}
+        {% if content.field_button_link.1['#url_title'] is not empty %}
+          {% include "@atoms/controls/cta/yds-cta.twig" with {
+            cta__element: 'a',
+            cta__content: content.field_button_link.1['#title'],
+            cta__href: content.field_button_link.1['#url_title'],
+            cta__component_theme: cta__component_theme|default('one'),
+            cta__style: 'outline',
+          }%}
+        {% endif %}
+      </div>
     {% endblock %}
   {% endembed %}
 {% endblock %}
