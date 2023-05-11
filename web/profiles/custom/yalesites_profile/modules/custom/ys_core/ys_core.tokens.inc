@@ -68,6 +68,7 @@ function ys_core_tokens($type, array $tokens, array $data, array $options, Bubbl
             $replacements[$original] = $teaserTitle ?: $nodeTitle;
           }
           break;
+
         case 'google_site_verification':
           // Get the google verification code from the site settings form.
           $config = \Drupal::config('ys_core.site');
