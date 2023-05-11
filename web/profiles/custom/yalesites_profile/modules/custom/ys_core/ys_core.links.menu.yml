@@ -1,45 +1,52 @@
 # Editorial dashboard added to 'Content' section of admin menu.
 ys_core.admin_dashboard:
-  description: 'Editorial dashboard'
+  description: "Editorial dashboard"
   parent: system.admin_content
   route_name: ys_core.admin_dashboard
-  title: 'Dashboard'
+  title: "Dashboard"
   weight: -20
 # Creates new section in the admin menu for YaleSites settings.
 ys_core.admin_yalesites:
-  description: 'Administer YaleSites settings.'
+  description: "Administer YaleSites settings."
   parent: system.admin
   route_name: ys_core.admin_yalesites
   title: Settings
   weight: -7
+# Redirects menu links
+ys_core.admin_redirects:
+  description: "Manages redirects for the site."
+  parent: ys_core.admin_yalesites
+  route_name: redirect.list
+  title: Redirects
+  weight: 30
 # Sitewide settings form.
 ys_core.admin_site_settings:
-  description: 'Change site name, email address, and other sitewide settings.'
+  description: "Change site name, email address, and other sitewide settings."
   parent: ys_core.admin_yalesites
   route_name: ys_core.admin_site_settings
-  title: 'Site Settings'
+  title: "Site Settings"
   weight: 10
 # Footer settings form.
 ys_core.admin_footer_settings:
-  description: 'Footer settings.'
+  description: "Footer settings."
   parent: ys_core.admin_yalesites
   route_name: ys_core.admin_footer_settings
-  title: 'Footer Settings'
+  title: "Footer Settings"
   weight: 20
 # main menu edit form.
 ys_core.menu_main_edit:
-  description: 'Manage main navigation'
+  description: "Manage main navigation"
   parent: system.admin_content
   route_name: entity.menu.edit_form
   title: Manage Main Menu
   route_parameters:
-    menu: 'main'
+    menu: "main"
   weight: 10
 ys_core.menu_utility_edit:
-  description: 'Manage utility navigation'
+  description: "Manage utility navigation"
   parent: system.admin_content
   route_name: entity.menu.edit_form
   title: Manage Utility Menu
   route_parameters:
-    menu: 'utility-navigation'
+    menu: "utility-navigation"
   weight: 15
