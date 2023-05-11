@@ -59,7 +59,7 @@ function ys_core_tokens($type, array $tokens, array $data, array $options, Bubbl
         case 'teaser_title_node_title':
           if (!empty($data['node'])) {
             $nodeTitle = $data['node']->getTitle();
-            $teaserTitle = ($data['node']->field_teaser_title->first()) ? $data['node']->field_teaser_title->first()->getString() : NULL;
+            $teaserTitle = ($data['node']->field_teaser_title) ? $data['node']->field_teaser_title->first()->getString() : NULL;
             $replacements[$original] = $teaserTitle ?: $nodeTitle;
           }
           break;
