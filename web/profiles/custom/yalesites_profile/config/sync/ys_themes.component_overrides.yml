@@ -91,7 +91,7 @@ grand_hero:
   field_style_variation:
     values:
       full: Tall
-      contained: Short
+      reduced: Short
     default: full
 divider:
   field_style_position:
