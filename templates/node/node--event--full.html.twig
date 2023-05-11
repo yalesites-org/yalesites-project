@@ -28,14 +28,22 @@
   'inperson': 'In-person',
   'In-person': 'In-person',
   'Online': 'Online',
+  'hybrid': 'Hybrid',
 }
 %}
 
 {# This sets the field event format to be what is expected from the component #}
 {% set field_event_format = node.field_event_format|map((object, _key) => labels[object.value]) %} 
 
+{#
+  The component is specifying the location as hybrid if multiple formats are
+  selected, so I decided to try to follow suit
+#}
+{% set isHybrid = field_event_format|length > 1 %}
+{% set calendar_location_text = isHybrid ? labels['hybrid'] : field_event_format|first %}
+
 {% set event_meta__all_day = (node.field_event_date.duration % all_day_duration) <= delta %}
-{% set cal_link = calendar_link('ics', node.title, start_datetime, end_datetime, event_meta__all_day, 'description', field_event_format) %}
+{% set cal_link = calendar_link('ics', node.title, start_datetime, end_datetime, event_meta__all_day, 'description', calendar_location_text) %}
 
 {% embed "@molecules/page-title/yds-page-title.twig" with {
   page_title__heading: label,
