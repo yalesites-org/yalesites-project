@@ -182,26 +182,17 @@ function ys_themes_form_alter(&$form, $form_state, $form_id) {
 }
 
 /**
- * Implements hook_theme_suggestions_form_element_label().
- */
-function ys_themes_theme_suggestions_form_element_label(array $variables) {
-  // Adds a template suggestion for global theme labels to add color previews.
-  $suggestions = [];
-  if (isset($variables['element']['#attributes']['data-global-theme'])) {
-    $suggestions[] = 'form_element_label__data_global_theme';
-  }
-
-  return $suggestions;
-}
-
-/**
  * Implements hook_preprocess_form_element().
  */
 function ys_themes_preprocess_form_element(array &$variables) {
   // Insert the global theme value into the attribute to pass to twig.
-  if ($variables['name'] == 'global_theme') {
-    $variables['label']['#attributes'] = [
-      'data-global-theme' => $variables['element']['#return_value'],
-    ];
+  if (isset($variables['element']['#formdazzle'])) {
+    if ($variables['element']['#formdazzle']['form_id'] == 'ys_themes_settings_form') {
+      if ($variables['name'] == 'global_theme') {
+        $variables['label']['#attributes'] = [
+          'data-global-theme' => $variables['element']['#return_value'],
+        ];
+      }
+    }
   }
 }
