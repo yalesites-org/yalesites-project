@@ -32,7 +32,7 @@ class SecretsManager {
    * Constructs a new SecretsManager object.
    */
   public function __construct() {
-    $this->fileSystem = \Drupal::service('@file_system');
+    $this->fileSystem = \Drupal::service('file_system');
   }
 
   /**
