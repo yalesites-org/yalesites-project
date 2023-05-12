@@ -1,0 +1,22 @@
+{%
+  set classes = [
+    title_display == 'after' ? 'option',
+    title_display == 'invisible' ? 'visually-hidden',
+    required ? 'js-form--required',
+    required ? 'form--required form-item__label--required',
+    'form-item__label',
+  ]
+%}
+
+{% set slot_colors = ["one", "two", "three", "four", "five"] %}
+
+{% if title is not empty or required -%}
+  <label{{ attributes.addClass(classes) }}>
+    {{ title }}
+    <span class="colors" style="height: 30px; display: flex;">
+      {% for color in slot_colors %}
+        <span class="color" style="background: var(--global-themes-{{ attributes['data-global-theme'] }}-colors-slot-{{ color }}); width: 25px; height: 25px;"></span>
+      {% endfor %}
+    </span>
+  </label>
+{%- endif %}
