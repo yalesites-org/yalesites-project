@@ -41,8 +41,10 @@ class SecretsManager implements ContainerInjectionInterface {
   /**
    * {@inheritdoc}
    */
-  public function __construct() {
-    $this->fileSystem = \Drupal::service('file_system');
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('file_system'),
+    );
   }
 
   /**
