@@ -60,6 +60,17 @@ class ThemeSettingsManager {
       'selector' => '[data-menu-variation]',
       'default' => 'mega',
     ],
+    'button_theme' => [
+      'name' => 'Button Theme',
+      'values' => [
+        'one' => 'One',
+        'two' => 'Two',
+        'three' => 'Three',
+      ],
+      'prop_type' => 'element',
+      'selector' => '[data-cta-theme]',
+      'default' => 'one',
+    ],
     'header_theme' => [
       'name' => 'Header Theme',
       'values' => [
