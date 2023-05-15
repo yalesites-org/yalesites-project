@@ -1,0 +1,33 @@
+uuid: 9bd04082-5494-4f5e-a5c3-e6ac176238d8
+langcode: en
+status: true
+dependencies:
+  module:
+    - entity_redirect
+third_party_settings:
+  entity_redirect:
+    redirect:
+      add:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      edit:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      delete:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      anonymous:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+id: button_link
+label: 'Button Link'
+revision: 1
+description: 'Button link allows you to add a button link to your content.'

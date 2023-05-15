@@ -1,0 +1,11 @@
+uuid: d54f55bd-51be-4145-bea0-fd7f05b3057e
+langcode: en
+status: true
+dependencies: {  }
+id: button_link
+block_id: 'inline_block:button_link'
+category: all_blocks
+label: 'Button Link'
+image_path: ''
+image_alt: ''
+weight: null
