@@ -121,7 +121,7 @@ class SiteSettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#description' => $this->t("Specify a relative URL to display as the post landing page. This can be set to an existing page URL or use the default value '/post'."),
       '#title' => $this->t('Post landing page'),
-      '#default_value' => $yaleConfig->get('page')['post'],
+      '#default_value' => $yaleConfig->get('page')['posts'],
       '#required' => FALSE,
     ];
 
@@ -159,6 +159,15 @@ class SiteSettingsForm extends ConfigFormBase {
       '#description' => $this->t('Enable the search form located in the utility navigation area.'),
       '#title' => $this->t('Enable search form'),
       '#default_value' => $yaleConfig->get('search')['enable_search_form'],
+    ];
+
+    $form['teaser_image_fallback'] = [
+      '#type' => 'media_library',
+      '#allowed_bundles' => ['image'],
+      '#title' => $this->t('Fallback teaser image'),
+      '#required' => FALSE,
+      '#default_value' => ($yaleConfig->get('image_fallback')) ? $yaleConfig->get('image_fallback')['teaser'] : NULL,
+      '#description' => $this->t('This image will be used for event and post card displays when no teaser image is selected.'),
     ];
 
     return parent::buildForm($form, $form_state);
@@ -218,6 +227,7 @@ class SiteSettingsForm extends ConfigFormBase {
       ->set('page.events', $form_state->getValue('site_page_events'))
       ->set('search.enable_search_form', $form_state->getValue('enable_search_form'))
       ->set('seo.google_site_verification', $form_state->getValue('google_site_verification'))
+      ->set('image_fallback.teaser', $form_state->getValue('teaser_image_fallback'))
       ->save();
 
     parent::submitForm($form, $form_state);

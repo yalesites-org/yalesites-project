@@ -1,0 +1,161 @@
+/* stylelint-disable */
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap");
+:root {
+  --gin-font: "DM Mono", monospace;
+  --gin-font-size-h1: 1.75rem;
+  --gin-font-size-h2: 1.5rem;
+  --gin-font-size-h3: 1.25rem;
+  --gin-border-m: 0.313rem;
+}
+:root h1,
+:root h2 {
+  font-weight: 600;
+}
+
+.gin--edit-form .page-wrapper__node-edit-form .layout-region-node-secondary .entity-meta__title {
+  font-size: var(--gin-font-size-h3);
+  font-weight: 500;
+}
+
+.gin--edit-form .page-wrapper__node-edit-form .layout-region-node-secondary .entity-meta [open] {
+  border-left: 3px solid var(--gin-color-primary);
+}
+
+/* Modal */
+.ui-widget-overlay {
+  background: var(--gin-color-primary) !important;
+}
+
+.claro-details__wrapper--accordion-item {
+  background-color: white;
+}
+
+[dir=ltr] [open] > .claro-details__summary--accordion-item:not(:focus):not(:active)::after {
+  content: none;
+}
+
+.button,
+.button:not(:focus),
+.form-actions .button,
+.action-link--icon-trash.action-link {
+  border-radius: 2.5rem !important;
+  box-shadow: none !important;
+}
+
+.button.form-submit {
+  background-color: var(--gin-color-primary-light);
+}
+
+.toolbar-menu-administration > .toolbar-menu > .menu-item:hover > .toolbar-icon::before,
+.toolbar-menu-administration > .toolbar-menu > .menu-item:hover > .toolbar-box > a.toolbar-icon::before,
+.toolbar-menu-administration > .toolbar-menu > .menu-item > .toolbar-icon:focus::before,
+.toolbar-menu-administration > .toolbar-menu > .menu-item.menu-item--active-trail > .toolbar-icon::before,
+.toolbar-menu-administration > .toolbar-menu > .menu-item.menu-item--active-trail:hover > .toolbar-icon::before,
+.toolbar-menu-administration > .toolbar-menu > .menu-item.menu-item--active-trail > .toolbar-box > a.toolbar-icon::before {
+  z-index: 1;
+}
+
+.toolbar-menu-administration > .toolbar-menu > .menu-item.menu-item--active-trail > .toolbar-icon::after,
+.toolbar-menu-administration > .toolbar-menu > .menu-item.menu-item--active-trail > .toolbar-box > a.toolbar-icon::after,
+.toolbar-menu-administration > .toolbar-menu > .menu-item > .toolbar-icon.is-active::after {
+  background-color: var(--gin-color-primary-light) !important;
+}
+
+.is-horizontal .tabs__link.is-active,
+.is-horizontal .tabs__link:hover,
+.is-horizontal .tabs__link:focus,
+.horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button a:hover,
+.horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button a:focus {
+  background: var(--gin-color-primary-light);
+}
+
+.form-element {
+  border-radius: 0.625rem !important;
+}
+
+html.js.no-touchevents .dropbutton--extrasmall {
+  border-radius: 2.5rem !important;
+  background-color: var(--gin-color-primary-light);
+}
+
+.js .dropbutton--multiple .dropbutton__item:first-of-type > * {
+  border-radius: 2.5rem 0 0 2.5rem !important;
+}
+
+.no-touchevents .dropbutton--extrasmall .dropbutton__toggle {
+  border-radius: 0 2.5rem 2.5rem 0;
+}
+
+.block-system > .views-form [data-drupal-selector*=edit-header],
+.view-content .views-form [data-drupal-selector*=edit-header] {
+  background-color: transparent !important;
+}
+
+.admin-item .admin-item__link:hover,
+.admin-item .admin-item__link:focus {
+  background: rgba(var(--gin-color-primary-rgb), 0.15) !important;
+}
+
+.gin-secondary-toolbar.layout-container {
+  background-color: var(--gin-bg-layer);
+}
+
+body:not(.toolbar-tray-open) .layout-container {
+  padding-left: var(--gin-spacing-m);
+  padding-right: var(--gin-spacing-m);
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+@media screen and (min-width: 38em) {
+  body:not(.toolbar-tray-open) .layout-container {
+    padding-right: 3em;
+    padding-left: 3em;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+@media (min-width: 48em) {
+  body:not(.toolbar-tray-open) .layout-container {
+    padding-left: var(--gin-spacing-xl);
+    padding-right: var(--gin-spacing-xl);
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+@media (min-width: 61em) {
+  body:not(.toolbar-tray-open) .layout-container {
+    padding-left: min(5vw, var(--gin-spacing-xxl));
+    padding-right: min(5vw, var(--gin-spacing-xxl));
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+tbody .views-field:not(.views-field-operations) a {
+  color: var(--gin-color-secondary) !important;
+  font-weight: 500;
+}
+
+.sortable-heading > a::after {
+  content: none;
+}
+
+.tablesort {
+  display: none;
+}
+
+.dropbutton__toggle:focus {
+  box-shadow: none !important;
+}
+
+.path-admin .view-header p {
+  max-width: 1200px;
+}
+
+.js .dropbutton-widget {
+  background-color: transparent;
+}
+
+/* stylelint-enable */
+
+/*# sourceMappingURL=gin-custom.css.map */

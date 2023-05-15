@@ -5,3 +5,5 @@ search:
   enable_search_form: 1
 seo:
   google_site_verification: ''
+image_fallback:
+  teaser: ''
