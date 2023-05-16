@@ -13,9 +13,9 @@
 {% if title is not empty or required -%}
   <label{{ attributes.addClass(classes) }}>
     {{ title }}
-    <span class="colors" style="height: 30px; display: flex;">
+    <span class="colors">
       {% for color in slot_colors %}
-        <span class="color" style="background: var(--global-themes-{{ element['data_global_theme'] }}-colors-slot-{{ color }}); width: 25px; height: 25px;"></span>
+        <span class="color" style="background: var(--global-themes-{{ element['data_global_theme'] }}-colors-slot-{{ color }});"></span>
       {% endfor %}
     </span>
   </label>
