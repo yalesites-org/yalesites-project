@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.node.event.field_category
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_format
@@ -32,7 +33,23 @@ third_party_settings:
         layout_settings:
           label: 'Title Section'
           context_mapping: {  }
-        components: {  }
+        components:
+          e871b39c-4016-4cc5-b897-adf259eb613a:
+            uuid: e871b39c-4016-4cc5-b897-adf259eb613a
+            region: content
+            configuration:
+              id: 'field_block:node:event:field_category'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: entity_reference_label
+                label: above
+                settings:
+                  link: true
+                third_party_settings: {  }
+            weight: 0
+            additional: {  }
         third_party_settings:
           layout_builder_lock:
             lock:
@@ -81,6 +98,14 @@ targetEntityType: node
 bundle: event
 mode: default
 content:
+  field_category:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 4
+    region: content
   field_event_cta:
     type: link_separate
     label: hidden
