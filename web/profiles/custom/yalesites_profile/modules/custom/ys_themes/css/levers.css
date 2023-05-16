@@ -9,7 +9,7 @@
   --color-link-hover: hsl(210, 100%, 21%);
   --color-link-border: hsl(213, 66%, 45%);
   --color-background-primary: var(--color-basic-white);
-  --color-background-hover: hsl(220, 33%, 98%);
+  --color-background-hover: var(--wool);
   --color-border-hover: hsl(213, 66%, 45%);
   --color-text-lighter: #2D424D;
   --color-text-primary: var(--color-gray-800);
