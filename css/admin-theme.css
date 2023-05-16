@@ -52,6 +52,12 @@
   color: var(--darkest-gray);
 }
 
+.ui-widget.ui-dialog.ui-dialog-off-canvas .ui-dialog-titlebar {
+  display: flex;
+  align-items: center;
+  border-color: var(--peacock-green);
+}
+
 .ui-dialog.ui-dialog-off-canvas .ui-dialog-title,
 #drupal-off-canvas form,
 #drupal-off-canvas span,
