@@ -321,6 +321,13 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         }
         break;
 
+      case 'event_category':
+        if (!empty($paramsDecoded['filters']['event_category'][0])) {
+          $tid = (int) $paramsDecoded['filters']['event_category'][0];
+          $defaultParam = $this->entityTypeManager()->getStorage('taxonomy_term')->load($tid);
+        }
+        break;
+
       case 'limit':
         $defaultParam = (empty($paramsDecoded['limit'])) ? 10 : (int) $paramsDecoded['limit'];
         break;

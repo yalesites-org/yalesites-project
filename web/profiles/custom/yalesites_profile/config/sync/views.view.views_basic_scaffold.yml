@@ -4,7 +4,6 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.node.teaser
-    - taxonomy.vocabulary.tags
   module:
     - node
     - taxonomy
@@ -228,8 +227,7 @@ display:
             type: 'entity:taxonomy_term'
             fail: 'not found'
           validate_options:
-            bundles:
-              tags: tags
+            bundles: {  }
             access: false
             operation: view
             multiple: 1

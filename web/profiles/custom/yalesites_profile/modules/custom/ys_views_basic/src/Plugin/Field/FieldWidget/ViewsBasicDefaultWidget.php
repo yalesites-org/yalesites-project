@@ -148,6 +148,15 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
     ];
 
+    $form['group_user_selection']['additional_filters'] = [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => [
+          'grouped-items',
+        ],
+      ],
+    ];
+
     $form['group_user_selection']['options'] = [
       '#type' => 'container',
       '#attributes' => [
@@ -229,6 +238,23 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#validated' => 'true',
       '#prefix' => '<div id="edit-sort-by">',
       '#suffix' => '</div>',
+    ];
+
+    $form['group_user_selection']['additional_filters']['event_category'] = [
+      '#title' => $this->t('Event Category'),
+      '#type' => 'entity_autocomplete',
+      '#target_type' => 'taxonomy_term',
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('event_category', $items[$delta]->params) : NULL,
+      '#selection_settings' => [
+        'target_bundles' => ['event_category'],
+      ],
+      '#states' => [
+        'visible' => [
+          ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][entity_types]"]' => [
+            'value' => 'event',
+          ],
+        ],
+      ],
     ];
 
     $form['group_user_selection']['options']['display'] = [
@@ -322,6 +348,25 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
           ]
         )
       : NULL;
+    $eventCategory = ($form_state->getValue(
+        [
+          'settings',
+          'block_form',
+          'group_user_selection',
+          'additional_filters',
+          'event_category',
+        ]
+      ))
+      ? $form_state->getValue(
+          [
+            'settings',
+            'block_form',
+            'group_user_selection',
+            'additional_filters',
+            'event_category',
+          ]
+        )
+      : NULL;
     foreach ($values as &$value) {
       $paramData = [
         "view_mode" => $form['group_user_selection']['entity_and_view_mode']['view_mode']['#value'],
@@ -331,6 +376,9 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
           ],
           "tags" => [
             $tags,
+          ],
+          "event_category" => [
+            $eventCategory,
           ],
         ],
         "sort_by" => $form_state->getValue(
