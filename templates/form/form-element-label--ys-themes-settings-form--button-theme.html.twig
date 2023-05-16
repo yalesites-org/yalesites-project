@@ -1,0 +1,34 @@
+{%
+  set classes = [
+    title_display == 'after' ? 'option',
+    title_display == 'invisible' ? 'visually-hidden',
+    required ? 'js-form--required',
+    required ? 'form--required form-item__label--required',
+    'form-item__label',
+  ]
+%}
+  {% set color_theme = "one" %}
+
+  {# Set color slots based on label title #}
+  {% if "One" in title %}
+    {% set color_theme = "one" %}
+  {% endif %}
+
+  {% if "Two" in title %}
+    {% set color_theme = "two" %}
+  {% endif %}
+
+  {% if "Three" in title %}
+    {% set color_theme = "five" %}
+  {% endif %}
+
+{% if title is not empty or required -%}
+
+  <label{{ attributes.addClass(classes) }}>
+    {{ title }}
+
+    <span class="colors">
+      <span class="color" style="background: var(--global-themes-{{ site_global__theme }}-colors-slot-{{color_theme}});"></span>
+    </span>
+  </label>
+{%- endif %}
