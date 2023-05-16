@@ -47,6 +47,10 @@
   color: var(--darkest-gray);
 }
 
+.ui-dialog-off-canvas #drupal-off-canvas {
+  padding-inline: var(--size-spacing-5) var(--size-spacing-8);
+}
+
 #drupal-off-canvas form,
 #drupal-off-canvas label {
   color: var(--darkest-gray);
