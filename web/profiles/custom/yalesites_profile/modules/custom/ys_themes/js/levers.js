@@ -47,6 +47,25 @@
           initStyleDrawer();
         }, 0);
       });
+
+      // Get all radio inputs in the glogal_theme name group
+      const radioInputs = document.querySelectorAll('input[name="global_theme"]');
+
+      // Add event listener to each radio input
+      radioInputs.forEach(input => {
+        input.addEventListener('change', function() {
+          if (this.checked) {
+            this.setAttribute('checked', 'checked');
+
+            // Remove the 'checked' attribute from other radio inputs
+            radioInputs.forEach(otherInput => {
+              if (otherInput !== this) {
+                otherInput.removeAttribute('checked');
+              }
+            });
+          }
+        });
+      });
     },
   };
 })(Drupal);
