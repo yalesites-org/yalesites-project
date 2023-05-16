@@ -156,6 +156,9 @@ function ys_themes_preprocess_page(&$variables) {
  * Implements hook_form_alter().
  */
 function ys_themes_form_alter(&$form, $form_state, $form_id) {
+
+  $config = \Drupal::config('ys_themes.theme_settings');
+
   /*
   Turn off the title and hide the inline block "display title" field.
   Rename the field title and description to inform the editor how it is used.
@@ -177,6 +180,25 @@ function ys_themes_form_alter(&$form, $form_state, $form_id) {
   if (in_array($form_id, $formsToStyle)) {
     $form['#attributes']['class'][] = 'layout--centered';
     $form['#attached']['library'][] = 'ys_themes/ys_themes';
+  }
+
+  // Styles submit buttons on webforms.
+  // $buttonTheme comes from the theme settings form.
+  $buttonTheme = $config->get('button_theme');
+
+  if (str_starts_with($form_id, 'webform')) {
+    $form['actions']['submit']['#attributes']['data-cta-theme'] = $buttonTheme;
+    $form['actions']['submit']['#attributes']['data-cta-radius'] = 'none';
+    $form['actions']['submit']['#attributes']['data-cta-style'] = 'filled';
+    $form['actions']['submit']['#attributes']['data-cta-outline-weight'] = 2;
+    $form['actions']['submit']['#attributes']['data-cta-hover-style'] = 'fade';
+    $form['actions']['submit']['#attributes']['class'][] = 'cta';
+
+    // Removes class that causes unnecessary styling.
+    $classes = &$form['actions']['submit']['#attributes'];
+    $classes = array_filter($classes, function ($e) {
+      return $e != 'form-item__textfield';
+    });
   }
 
 }
