@@ -110,6 +110,9 @@
       },
       "drupal/gin_lb": {
         "fix missing file field https://www.drupal.org/project/gin_lb/issues/3349745": "https://www.drupal.org/files/issues/2023-03-23/3349745-8-claro-preprocess-file-fields.patch"
+      },
+      "drupal/autocomplete_deluxe": {
+        "add aria label to input https://www.drupal.org/project/autocomplete_deluxe/issues/2903965#comment-15053774": "https://www.drupal.org/files/issues/2023-05-16/2903965.patch"
       }
     }
   }
