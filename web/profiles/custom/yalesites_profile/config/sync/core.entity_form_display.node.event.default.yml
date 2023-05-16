@@ -17,6 +17,7 @@ dependencies:
     - node.type.event
   module:
     - allowed_formats
+    - autocomplete_deluxe
     - field_group
     - linkit
     - maxlength
@@ -86,14 +87,21 @@ bundle: event
 mode: default
 content:
   field_category:
-    type: entity_reference_autocomplete_tags
+    type: autocomplete_deluxe
     weight: 1
     region: content
     settings:
       match_operator: CONTAINS
-      match_limit: 10
+      autocomplete_route_name: autocomplete_deluxe.autocomplete
       size: 60
-      placeholder: ''
+      selection_handler: default
+      limit: 10
+      min_length: 0
+      delimiter: ''
+      not_found_message_allow: false
+      not_found_message: 'The term ''@term'' will be added'
+      new_terms: true
+      no_empty_message: 'No terms could be found. Please type in order to add a new term.'
     third_party_settings: {  }
   field_event_cta:
     type: linkit
@@ -143,14 +151,21 @@ content:
       use_details: true
     third_party_settings: {  }
   field_tags:
-    type: entity_reference_autocomplete_tags
+    type: autocomplete_deluxe
     weight: 2
     region: content
     settings:
       match_operator: CONTAINS
-      match_limit: 10
+      autocomplete_route_name: autocomplete_deluxe.autocomplete
       size: 60
-      placeholder: ''
+      selection_handler: default
+      limit: 10
+      min_length: 0
+      delimiter: ''
+      not_found_message_allow: false
+      not_found_message: 'The term ''@term'' will be added'
+      new_terms: true
+      no_empty_message: 'No terms could be found. Please type in order to add a new term.'
     third_party_settings: {  }
   field_teaser_media:
     type: media_library_widget
