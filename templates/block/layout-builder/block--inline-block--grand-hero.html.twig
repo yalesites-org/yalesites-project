@@ -2,6 +2,8 @@
 
 {% block content %}
 
+  {{ attach_library('atomic/fontawesome') }}
+
   {% embed "@molecules/banner/grand-hero/yds-grand-hero.twig" with {
     grand_hero__heading: content.field_heading,
     grand_hero__snippet: content.field_text,
