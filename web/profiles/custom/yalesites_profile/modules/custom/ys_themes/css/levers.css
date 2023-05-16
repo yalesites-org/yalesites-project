@@ -1,4 +1,90 @@
+#drupal-off-canvas .ys-themes-settings-form,
 .ys-themes--global-settings .fieldset-wrapper {
   display: flex;
   flex-direction: column;
+  width: 100%;
+}
+
+.ys-themes--global-settings {
+  --color-link-hover: hsl(210, 100%, 21%);
+  --color-link-border: hsl(213, 66%, 45%);
+  --color-background-primary: var(--color-basic-white);
+  --color-background-hover: hsl(220, 33%, 98%);
+  --color-border-hover: hsl(213, 66%, 45%);
+  --color-text-lighter: #2D424D;
+  --color-text-primary: var(--color-gray-800);
+}
+
+#drupal-off-canvas .ys-themes--global-settings .form-item-global-theme {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 1rem;
+}
+
+#drupal-off-canvas .ys-themes--global-settings .form-item-global-theme input {
+  flex: 0 auto;
+}
+
+#drupal-off-canvas .ys-themes--global-settings .form-item-global-theme label {
+  display: block;
+  flex: 1 auto;
+  text-align: left;
+  background: var(--color-basic-white);
+  border: 2px solid var(--color-text-lighter);
+  padding: var(--size-spacing-4) var(--size-spacing-5);
+  color: var(--color-text-primary);
+  border-radius: 0.25rem;
+  transform: rotateZ(0);
+  transition: transform 0.3s, box-shadow 0.35s;
+  margin-bottom: var(--size-spacing-4);
+}
+
+#drupal-off-canvas .ys-themes--global-settings .colors {
+  display: flex;
+  margin-top: .42rem;
+}
+
+#drupal-off-canvas .ys-themes--global-settings .colors > span {
+  display: block;
+  width: var(--size-spacing-8);
+  height: var(--size-spacing-8);
+  border-radius: 100%;
+  margin-right: -.42rem;
+  transition: margin 200ms ease-in;
+  border: 1px solid var(--global-themes-one-colors-slot-five);
+}
+
+#drupal-off-canvas .ys-themes--global-settings .form-item-global-theme:hover label,
+#drupal-off-canvas .ys-themes--global-settings .form-item-global-theme:focus label {
+  background-color: var(--color-background-hover);
+  border-color: var(--color-border-hover);
+}
+
+#drupal-off-canvas .ys-themes--global-settings .form-item-global-theme:hover .color,
+#drupal-off-canvas .ys-themes--global-settings .form-item-global-theme:focus .color {
+  margin-right: 0.5rem;
+}
+
+#drupal-off-canvas .ys-themes--global-settings .form-item-global-theme:hover .colors > span,
+#drupal-off-canvas .ys-themes--global-settings .form-item-global-theme:focus .colors > span {
+  border-color: var(--color-border-hover);
+}
+
+#drupal-off-canvas .ys-themes--global-settings .form-item-global-theme:hover > label,
+#drupal-off-canvas .ys-themes--global-settings .form-item-global-theme:focus > label {
+  color: var(--color-border-hover);
+}
+
+#drupal-off-canvas .ys-themes--global-settings .form-item-global-theme input[checked="checked"] + label {
+  background-color: var(--color-text-primary);
+  color: var(--color-background-primary);
+}
+
+#drupal-off-canvas .ys-themes--global-settings .form-item-global-theme input[checked="checked"] + label .color {
+  margin-right: 0.5rem;
+}
+
+#drupal-off-canvas .ys-themes--global-settings .form-item-global-theme input[checked="checked"] + label .colors > span {
+  border-color: var(--color-border-lightest);
 }
