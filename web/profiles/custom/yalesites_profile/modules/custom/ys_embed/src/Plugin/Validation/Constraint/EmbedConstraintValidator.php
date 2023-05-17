@@ -86,14 +86,14 @@ class EmbedConstraintValidator extends ConstraintValidator implements ContainerI
   }
 
   /**
-    * Check if the embed code matches a track.
-    *
-    * @param string $input
-    *  The user provided embed code.
-    *
-    * @return bool
-    *   TRUE if the embed code matches a track.
-    */
+   * Check if the embed code matches a track.
+   *
+   * @param string $input
+   *  The user provided embed code.
+   *
+   * @return bool
+   *   TRUE if the embed code matches a track.
+   */
   protected function isTrack(string $input): bool {
     if (!$this->isSoundcloud($input)) {
       return FALSE;
