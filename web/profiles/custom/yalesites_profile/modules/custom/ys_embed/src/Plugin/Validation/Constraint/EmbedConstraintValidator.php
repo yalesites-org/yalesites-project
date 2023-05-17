@@ -62,7 +62,7 @@ class EmbedConstraintValidator extends ConstraintValidator implements ContainerI
     }
 
     // Check if the embed code matches a playlist.
-    if ($this->isPlaylist($input)) {
+    if (!$this->isTrack($input)) {
       $this->context->addViolation($constraint->invalidAudioTrack);
       return;
     }
@@ -94,12 +94,12 @@ class EmbedConstraintValidator extends ConstraintValidator implements ContainerI
    * @return bool
    *   TRUE if the embed code matches a track.
    */
-  protected function isPlaylist(string $input): bool {
+  protected function isTrack(string $input): bool {
     if (!$this->isSoundcloud($input)) {
       return FALSE;
     }
 
-    $p1 = "https:\/\/\S+.soundcloud.com\/playlists\S+";
+    $p1 = "https:\/\/\S+.soundcloud.com\/tracks\S+";
     $pattern = "/{$p1}/";
     return (bool) preg_match($pattern, $input, $matches);
   }
