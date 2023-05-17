@@ -86,14 +86,14 @@ class EmbedConstraintValidator extends ConstraintValidator implements ContainerI
   }
 
   /**
-   * Check if the embed code matches a track.
-   *
-   * @param string $input
-   *  The user provided embed code.
-   *
-   * @return bool
-   *   TRUE if the embed code matches a track.
-   */
+    * Check if the embed code matches a track.
+    *
+    * @param string $input
+    *  The user provided embed code.
+    *
+    * @return bool
+    *   TRUE if the embed code matches a track.
+    */
   protected function isTrack(string $input): bool {
     if (!$this->isSoundcloud($input)) {
       return FALSE;
@@ -111,10 +111,12 @@ class EmbedConstraintValidator extends ConstraintValidator implements ContainerI
    *   The user provided embed code.
    *
    * @return bool
+   *   TRUE if the embed code matches a soundcloud track.
    */
   protected function isSoundcloud(string $input): bool {
     $p1 = "https:\/\/\S+.soundcloud.com";
     $pattern = "/{$p1}/";
     return (bool) preg_match($pattern, $input, $matches);
   }
+
 }
