@@ -23,11 +23,11 @@
       component_wrapper__width: component_wrapper__width|default('site'),
       component_wrapper__label: content.field_heading,
       }%}
-      {% if content.field_view_params  %}
-        {% block component_wrapper_inner %}
+      {% block component_wrapper_inner %}
+        {% if content.field_view_params %}
           {{ content.field_view_params }}
-        {% endblock %}
-      {% endif %}
+        {% endif %}
+      {% endblock %}
     {% endembed %}
   </div>
 {% endblock %}
