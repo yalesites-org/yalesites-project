@@ -165,17 +165,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       }
     }
 
-    if (isset($termsArray)) {
-      if ($paramsDecoded['operator'] == 'and') {
-        $filterTerms = implode(',', $termsArray);
-      }
-      else {
-        $filterTerms = implode('+', $termsArray);
-      }
-    }
-    else {
-      $filterTerms = 'all';
-    }
+    $operator = $paramsDecoded['operator'] ?: '+';
+    $filterTerms = isset($termsArray) ? implode($operator, $termsArray) : 'all';
 
     if (
       ($type == 'count' && $paramsDecoded['display'] != 'limit') ||
@@ -189,7 +180,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     $view->setArguments(
       [
         'type' => $filterType,
-        'tags' => $filterTerms,
+        'terms' => $filterTerms,
         'sort' => $paramsDecoded['sort_by'],
         'view' => $paramsDecoded['view_mode'],
         'items' => $itemsLimit,
