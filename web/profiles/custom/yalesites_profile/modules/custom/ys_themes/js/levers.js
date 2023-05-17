@@ -48,6 +48,10 @@
         }, 0);
       });
 
+      //
+      // Add Checked attribute to clicked attibute to visually identify the
+      // active clicked theme option.
+
       // Get all radio inputs in the glogal_theme name group
       const radioInputs = document.querySelectorAll('input[name="global_theme"]');
 
@@ -66,6 +70,27 @@
           }
         });
       });
+
+      // Read active global theme
+      // apply global theme value to our components 
+
+      // const targetElements = document.querySelectorAll('span.component-color');
+
+      // // Get the original background style value
+      // targetElements.forEach(targetElement => {
+      //   const globalTheme = document.querySelector('div[data-global-theme]');
+      //   const currentTheme = globalTheme.getAttribute('data-global-theme');
+      //   console.log(currentTheme);
+      //   const originalBackground = targetElement.style.background;
+        
+      //   // Construct the updated background style value
+      //   const updatedBackground = originalBackground.replace(`--global-themes-`, `--global-themes-${currentTheme}`);
+
+      //   console.log(updatedBackground);
+      //   // Update the inline style with the modified background value
+      //   targetElement.style.background = updatedBackground;
+      // });
+
     },
   };
 })(Drupal);
