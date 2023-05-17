@@ -10,6 +10,7 @@ module:
   block: 0
   block_content: 0
   breakpoint: 0
+  calendar_link: 0
   captcha: 0
   cas: 0
   cas_attributes: 0
