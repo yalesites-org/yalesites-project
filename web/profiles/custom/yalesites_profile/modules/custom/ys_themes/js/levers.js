@@ -68,29 +68,33 @@
               }
             });
           }
+
+          // Read active global theme and find the global-theme number and
+          // update it when on input change.
+
+          // apply global theme value to our components 
+          const targetElements = document.querySelectorAll('span.component-color');
+
+          // Get the original background style value
+          targetElements.forEach(targetElement => {
+            const globalTheme = document.querySelector('div[data-global-theme]');
+            const currentTheme = globalTheme.getAttribute('data-global-theme');
+            const originalBackground = targetElement.style.background;
+
+            // Construct the regular expression pattern dynamically
+            const regexPattern = new RegExp(`--global-themes-(\\w+)-`);
+
+            // // Replace the --global-themes-${globalTheme}- portion
+            // const updatedBackground = originalBackground.replace(/--global-themes-(one|two|three|four|five)-/, `--global-themes-${currentTheme}-`);
+
+            // Replace the --global-themes-${globalTheme}- portion
+            const updatedBackground = originalBackground.replace(regexPattern, `--global-themes-${currentTheme}-`);
+
+            // Update the inline style with the modified background value
+            targetElement.style.background = updatedBackground;
+          });
         });
       });
-
-      // Read active global theme
-      // apply global theme value to our components 
-
-      // const targetElements = document.querySelectorAll('span.component-color');
-
-      // // Get the original background style value
-      // targetElements.forEach(targetElement => {
-      //   const globalTheme = document.querySelector('div[data-global-theme]');
-      //   const currentTheme = globalTheme.getAttribute('data-global-theme');
-      //   console.log(currentTheme);
-      //   const originalBackground = targetElement.style.background;
-        
-      //   // Construct the updated background style value
-      //   const updatedBackground = originalBackground.replace(`--global-themes-`, `--global-themes-${currentTheme}`);
-
-      //   console.log(updatedBackground);
-      //   // Update the inline style with the modified background value
-      //   targetElement.style.background = updatedBackground;
-      // });
-
     },
   };
 })(Drupal);

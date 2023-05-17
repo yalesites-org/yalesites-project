@@ -216,12 +216,10 @@ function ys_themes_preprocess_form_element(array &$variables) {
   //
   if (isset($variables['element']['#formdazzle'])) {
     if ($variables['element']['#formdazzle']['form_id'] == 'ys_themes_settings_form') {
+      $variables['label']['current_global_theme'] = $globalTheme;
+
       if ($variables['name'] == 'global_theme') {
         $variables['label']['data_global_theme'] = $variables['element']['#return_value'];
-      }
-
-      if ($variables['name'] == 'button_theme') {
-        $variables['label']['current_global_theme'] = $globalTheme;
       }
     }
   }
