@@ -154,10 +154,27 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     $filterType = implode('+', $paramsDecoded['filters']['types']);
 
     if (isset($paramsDecoded['filters']['tags'])) {
-      $filterTags = implode('+', $paramsDecoded['filters']['tags']);
+      foreach ($paramsDecoded['filters']['tags'] as $tag) {
+        $termsArray[] = $tag['target_id'];
+      }
+    }
+
+    if (isset($paramsDecoded['filters']['event_category'])) {
+      foreach ($paramsDecoded['filters']['event_category'] as $category) {
+        $termsArray[] = $category['target_id'];
+      }
+    }
+
+    if (isset($termsArray)) {
+      if ($paramsDecoded['operator'] == 'and') {
+        $filterTerms = implode(',', $termsArray);
+      }
+      else {
+        $filterTerms = implode('+', $termsArray);
+      }
     }
     else {
-      $filterTags = 'all';
+      $filterTerms = 'all';
     }
 
     if (
@@ -172,7 +189,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     $view->setArguments(
       [
         'type' => $filterType,
-        'tags' => $filterTags,
+        'tags' => $filterTerms,
         'sort' => $paramsDecoded['sort_by'],
         'view' => $paramsDecoded['view_mode'],
         'items' => $itemsLimit,
@@ -315,16 +332,20 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         break;
 
       case 'tags':
-        if (!empty($paramsDecoded['filters']['tags'][0])) {
-          $tid = (int) $paramsDecoded['filters']['tags'][0];
-          $defaultParam = $this->entityTypeManager()->getStorage('taxonomy_term')->load($tid);
+        if (!empty($paramsDecoded['filters']['tags'])) {
+          foreach ($paramsDecoded['filters']['tags'] as $tag) {
+            $tid = (int) $tag['target_id'];
+            $defaultParam[] = $this->entityTypeManager()->getStorage('taxonomy_term')->load($tid);
+          }
         }
         break;
 
       case 'event_category':
-        if (!empty($paramsDecoded['filters']['event_category'][0])) {
-          $tid = (int) $paramsDecoded['filters']['event_category'][0];
-          $defaultParam = $this->entityTypeManager()->getStorage('taxonomy_term')->load($tid);
+        if (!empty($paramsDecoded['filters']['event_category'])) {
+          foreach ($paramsDecoded['filters']['event_category'] as $category) {
+            $tid = (int) $category['target_id'];
+            $defaultParam[] = $this->entityTypeManager()->getStorage('taxonomy_term')->load($tid);
+          }
         }
         break;
 
