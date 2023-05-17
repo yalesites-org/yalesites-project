@@ -26,9 +26,8 @@
 
   <label{{ attributes.addClass(classes) }}>
     {{ title }}
-
     <span class="colors">
-      <span class="color" style="background: var(--global-themes-{{ site_global__theme }}-colors-slot-{{color_theme}});"></span>
+      <span class="color component-color" style="background: var(--global-themes-{{ element['current_global_theme'] }}-colors-slot-{{color_theme}});"></span>
     </span>
   </label>
 {%- endif %}

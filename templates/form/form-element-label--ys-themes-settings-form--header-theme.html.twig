@@ -22,7 +22,7 @@
 
   {% if "Highlight" in title %}
     {% set color_theme = "three" %}
-    {% set color_theme_2 = "--global-themes-#{ site_global__theme }-colors-slot-one" %}
+    {% set color_theme_2 = "one" %}
   {% endif %}
 
 {% if title is not empty or required -%}
@@ -31,8 +31,13 @@
     {{ title }}
 
     <span class="colors">
-      <span class="color" style="background: var(--global-themes-{{ site_global__theme }}-colors-slot-{{color_theme}});"></span>
-      <span class="color" style="background: var({{color_theme_2}});"></span>
+      <span class="color component-color" style="background: var(--global-themes-{{ element['data_global_theme'] }}-colors-slot-{{color_theme}});"></span>
+
+      {% if "Highlight" in title %}
+        <span class="color component-color" style="background: var(--global-themes-{{ element['data_global_theme'] }}-colors-slot-{{color_theme_2}});"></span>
+        {% else %}
+        <span class="color" style="background: var({{color_theme_2}});"></span>
+      {% endif %}
     </span>
   </label>
 {%- endif %}
