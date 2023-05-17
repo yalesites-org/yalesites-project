@@ -89,7 +89,7 @@ class EmbedConstraintValidator extends ConstraintValidator implements ContainerI
    * Check if the embed code matches a track.
    *
    * @param string $input
-   *  The user provided embed code.
+   *   The user provided embed code.
    *
    * @return bool
    *   TRUE if the embed code matches a track.
