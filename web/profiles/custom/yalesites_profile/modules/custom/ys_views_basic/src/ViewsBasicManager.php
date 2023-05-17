@@ -153,18 +153,22 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
     $filterType = implode('+', $paramsDecoded['filters']['types']);
 
+    // Get tags, for all nodes.
     if (isset($paramsDecoded['filters']['tags'])) {
       foreach ($paramsDecoded['filters']['tags'] as $tag) {
         $termsArray[] = $tag['target_id'];
       }
     }
-
-    if (isset($paramsDecoded['filters']['event_category'])) {
-      foreach ($paramsDecoded['filters']['event_category'] as $category) {
-        $termsArray[] = $category['target_id'];
+    // Get event categories, only if event is selected.
+    if (in_array('event', $paramsDecoded['filters']['types'])) {
+      if (isset($paramsDecoded['filters']['event_category'])) {
+        foreach ($paramsDecoded['filters']['event_category'] as $category) {
+          $termsArray[] = $category['target_id'];
+        }
       }
     }
 
+    // Set operator: "+" is "OR" and "," is "AND".
     $operator = $paramsDecoded['operator'] ?: '+';
     $filterTerms = isset($termsArray) ? implode($operator, $termsArray) : 'all';
 

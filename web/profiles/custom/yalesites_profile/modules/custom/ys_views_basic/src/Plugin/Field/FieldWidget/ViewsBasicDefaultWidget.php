@@ -270,6 +270,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     $form['group_user_selection']['filter_options']['term_operator'] = [
       '#type' => 'radios',
       '#title' => $this->t('Match Content That Has'),
+      // Set operator: "+" is "OR" and "," is "AND".
       '#options' => [
         '+' => $this->t('Any term listed in tags and categories'),
         ',' => $this->t('All terms listed in tags and categories'),
