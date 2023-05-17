@@ -41,10 +41,10 @@
     {{ title }}
 
     <span class="colors">
-      <span class="color component-color" style="background: var(--global-themes-{{ element['data_global_theme'] }}-colors-slot-{{color_theme}});"></span>
+      <span class="color component-color" style="background: var(--global-themes-{{ element['current_global_theme'] }}-colors-slot-{{color_theme}});"></span>
 
       {% if "Deep" in title %}
-        <span class="color component-color" style="background: var(--global-themes-{{ element['data_global_theme'] }}-colors-slot-{{color_theme_2}});"></span>
+        <span class="color component-color" style="background: var(--global-themes-{{ element['current_global_theme'] }}-colors-slot-{{color_theme_2}});"></span>
         {% else %}
         <span class="color" style="background: var({{color_theme_2}});"></span>
       {% endif %}
