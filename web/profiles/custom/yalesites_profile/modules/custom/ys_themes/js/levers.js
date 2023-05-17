@@ -95,6 +95,103 @@
           });
         });
       });
+
+
+      // Get all radio inputs in the nav_position name group
+      const radioInputsNav = document.querySelectorAll('input[name="nav_position"]');
+
+      // Add event listener to each radio input
+      radioInputsNav.forEach(input => {
+        input.addEventListener('change', function() {
+          if (this.checked) {
+            this.setAttribute('checked', 'checked');
+
+            // Remove the 'checked' attribute from other radio inputs
+            radioInputsNav.forEach(otherInput => {
+              if (otherInput !== this) {
+                otherInput.removeAttribute('checked');
+              }
+            });
+          }
+        });
+      });
+
+      // Get all radio inputs in the nav_type name group
+      const radioInputsNavType = document.querySelectorAll('input[name="nav_type"]');
+
+      // Add event listener to each radio input
+      radioInputsNavType.forEach(input => {
+        input.addEventListener('change', function() {
+          if (this.checked) {
+            this.setAttribute('checked', 'checked');
+
+            // Remove the 'checked' attribute from other radio inputs
+            radioInputsNavType.forEach(otherInput => {
+              if (otherInput !== this) {
+                otherInput.removeAttribute('checked');
+              }
+            });
+          }
+        });
+      });
+
+      // Get all radio inputs in the button_theme name group
+      const radioInputsButtonTheme = document.querySelectorAll('input[name="button_theme"]');
+
+      // Add event listener to each radio input
+      radioInputsButtonTheme.forEach(input => {
+        input.addEventListener('change', function() {
+          if (this.checked) {
+            this.setAttribute('checked', 'checked');
+
+            // Remove the 'checked' attribute from other radio inputs
+            radioInputsButtonTheme.forEach(otherInput => {
+              if (otherInput !== this) {
+                otherInput.removeAttribute('checked');
+              }
+            });
+          }
+        });
+      });
+
+      // Get all radio inputs in the header_theme name group
+      const radioInputsHeaderTheme = document.querySelectorAll('input[name="header_theme"]');
+
+      // Add event listener to each radio input
+      radioInputsHeaderTheme.forEach(input => {
+        input.addEventListener('change', function() {
+          if (this.checked) {
+            this.setAttribute('checked', 'checked');
+
+            // Remove the 'checked' attribute from other radio inputs
+            radioInputsHeaderTheme.forEach(otherInput => {
+              if (otherInput !== this) {
+                otherInput.removeAttribute('checked');
+              }
+            });
+          }
+        });
+      });
+
+      // Get all radio inputs in the header_theme name group
+      const radioInputsFooterTheme = document.querySelectorAll('input[name="footer_theme"]');
+
+      // Add event listener to each radio input
+      radioInputsFooterTheme.forEach(input => {
+        input.addEventListener('change', function() {
+          if (this.checked) {
+            this.setAttribute('checked', 'checked');
+
+            // Remove the 'checked' attribute from other radio inputs
+            radioInputsFooterTheme.forEach(otherInput => {
+              if (otherInput !== this) {
+                otherInput.removeAttribute('checked');
+              }
+            });
+          }
+        });
+      });
+
     },
   };
 })(Drupal);
