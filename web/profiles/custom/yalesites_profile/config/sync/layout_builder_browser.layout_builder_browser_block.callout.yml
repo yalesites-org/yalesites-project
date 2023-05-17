@@ -6,6 +6,6 @@ id: callout
 block_id: 'inline_block:callout'
 category: all_blocks
 label: Callout
-image_path: ''
+image_path: themes/contrib/atomic/templates/block/layout-builder/preview-icons/callout.svg
 image_alt: ''
 weight: -4

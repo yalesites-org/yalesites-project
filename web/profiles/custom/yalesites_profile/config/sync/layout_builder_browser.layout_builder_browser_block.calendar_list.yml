@@ -6,6 +6,6 @@ id: calendar_list
 block_id: 'inline_block:event_list'
 category: all_blocks
 label: 'Calendar List'
-image_path: ''
+image_path: 'themes/contrib/atomic/templates/block/layout-builder/preview-icons/calendar list.svg'
 image_alt: ''
 weight: 8

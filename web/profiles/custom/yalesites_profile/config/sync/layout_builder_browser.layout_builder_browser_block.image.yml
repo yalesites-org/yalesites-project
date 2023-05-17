@@ -6,6 +6,6 @@ id: image
 block_id: 'inline_block:image'
 category: all_blocks
 label: Image
-image_path: ''
+image_path: themes/contrib/atomic/templates/block/layout-builder/preview-icons/Image.svg
 image_alt: ''
 weight: 0

@@ -6,6 +6,6 @@ id: accordion
 block_id: 'inline_block:accordion'
 category: all_blocks
 label: Accordion
-image_path: ''
+image_path: themes/contrib/atomic/templates/block/layout-builder/preview-icons/accordion.svg
 image_alt: ''
 weight: -3

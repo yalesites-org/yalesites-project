@@ -8,4 +8,4 @@ category: all_blocks
 label: 'Button Link'
 image_path: ''
 image_alt: ''
-weight: null
+weight: -100

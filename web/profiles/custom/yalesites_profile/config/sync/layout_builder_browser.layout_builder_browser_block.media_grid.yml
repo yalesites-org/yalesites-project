@@ -6,6 +6,6 @@ id: media_grid
 block_id: 'inline_block:media_grid'
 category: all_blocks
 label: 'Media Grid'
-image_path: ''
+image_path: 'themes/contrib/atomic/templates/block/layout-builder/preview-icons/Media Grid.svg'
 image_alt: ''
 weight: 2

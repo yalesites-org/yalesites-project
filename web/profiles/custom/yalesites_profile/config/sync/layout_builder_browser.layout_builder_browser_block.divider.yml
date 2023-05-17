@@ -6,6 +6,6 @@ id: divider
 block_id: 'inline_block:divider'
 category: all_blocks
 label: Divider
-image_path: ''
+image_path: themes/contrib/atomic/templates/block/layout-builder/preview-icons/divider.svg
 image_alt: ''
 weight: -8

@@ -6,6 +6,6 @@ id: quick_links
 block_id: 'inline_block:quick_links'
 category: all_blocks
 label: 'Quick Links'
-image_path: ''
+image_path: 'themes/contrib/atomic/templates/block/layout-builder/preview-icons/quick links.svg'
 image_alt: ''
 weight: 10

@@ -6,6 +6,6 @@ id: video
 block_id: 'inline_block:video'
 category: all_blocks
 label: Video
-image_path: ''
+image_path: themes/contrib/atomic/templates/block/layout-builder/preview-icons/video.svg
 image_alt: ''
 weight: 3

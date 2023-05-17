@@ -6,6 +6,6 @@ id: embed
 block_id: 'inline_block:embed'
 category: all_blocks
 label: Embed
-image_path: ''
+image_path: themes/contrib/atomic/templates/block/layout-builder/preview-icons/embed.svg
 image_alt: ''
 weight: 4
