@@ -1,0 +1,22 @@
+{% set radii__base_class = "cl-radii" %}
+
+<div {{ bem(radii__base_class) }}>
+  <ul {{ bem('list', [], radii__base_class) }}>
+  {% for radius, value in _context.radii %}
+    {% set variable = prefix ~ radius|lower|replace({' ': '-'}) %}
+    {% set radii_item__attributes = {
+      class: bem("item", [], radii__base_class),
+      style: 'border-radius: var(' ~ variable ~ ')',
+      'data-basic-theme': 'gray-700',
+    } %}
+      <li {{ add_attributes(radii_item__attributes) }}>
+        <span {{ bem("title", [], radii__base_class) }}>Radius {{ radius }}</span><br />
+        <details class="cl-info">
+          <summary>Radius Details</summary>
+          <strong>variable:</strong> <code>{{ variable }}</code><br />
+          <strong>value:</strong> {{ value }}
+        </details>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
