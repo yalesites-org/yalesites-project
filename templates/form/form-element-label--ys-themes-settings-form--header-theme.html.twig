@@ -7,23 +7,6 @@
     'form-item__label',
   ]
 %}
-  {% set color_theme = "one" %}
-
-  {# Set color slots based on label title #}
-  {% if "Base" in title %}
-    {% set color_theme = "one" %}
-    {% set color_theme_2 = "--color-basic-white" %}
-  {% endif %}
-
-  {% if "Action" in title %}
-    {% set color_theme = "three" %}
-    {% set color_theme_2 = "--color-gray-100" %}
-  {% endif %}
-
-  {% if "Highlight" in title %}
-    {% set color_theme = "three" %}
-    {% set color_theme_2 = "one" %}
-  {% endif %}
 
 {% if title is not empty or required -%}
 
@@ -31,12 +14,12 @@
     {{ title }}
 
     <span class="colors">
-      <span class="color component-color" style="background: var(--global-themes-{{ element['current_global_theme'] }}-colors-slot-{{color_theme}});"></span>
+      <span class="color component-color" style="background: var(--global-themes-{{ element['current_global_theme'] }}-colors-slot-{{element['color_theme']}});"></span>
 
-      {% if "Highlight" in title %}
-        <span class="color component-color" style="background: var(--global-themes-{{ element['current_global_theme'] }}-colors-slot-{{color_theme_2}});"></span>
+      {% if element['value'] == 'three' %}
+        <span class="color component-color" style="background: var(--global-themes-{{ element['current_global_theme'] }}-colors-slot-{{element['color_theme_2']}});"></span>
         {% else %}
-        <span class="color" style="background: var({{color_theme_2}});"></span>
+        <span class="color" style="background: var({{element['color_theme_2']}});"></span>
       {% endif %}
     </span>
   </label>

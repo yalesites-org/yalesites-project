@@ -7,27 +7,13 @@
     'form-item__label',
   ]
 %}
-  {% set color_theme = "one" %}
-
-  {# Set color slots based on label title #}
-  {% if "One" in title %}
-    {% set color_theme = "one" %}
-  {% endif %}
-
-  {% if "Two" in title %}
-    {% set color_theme = "two" %}
-  {% endif %}
-
-  {% if "Three" in title %}
-    {% set color_theme = "five" %}
-  {% endif %}
 
 {% if title is not empty or required -%}
 
   <label{{ attributes.addClass(classes) }}>
     {{ title }}
     <span class="colors">
-      <span class="color component-color" style="background: var(--global-themes-{{ element['current_global_theme'] }}-colors-slot-{{color_theme}});"></span>
+      <span class="color component-color" style="background: var(--global-themes-{{ element['current_global_theme'] }}-colors-slot-{{ element['color_theme'] }});"></span>
     </span>
   </label>
 {%- endif %}
