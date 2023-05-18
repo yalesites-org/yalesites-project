@@ -45,7 +45,6 @@ function ys_embed_theme($existing, $type, $theme, $path) {
         'form_id' => '',
       ],
     ],
-    'broken' => [
-    ],
+    'broken' => [],
   ];
 }
