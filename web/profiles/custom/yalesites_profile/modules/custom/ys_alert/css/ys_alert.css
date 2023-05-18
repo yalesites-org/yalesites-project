@@ -41,7 +41,7 @@
   background-image: url('../images/emergency.svg');
 }
 
-.ys-alert-settings .form-boolean--type-radio[checked="checked"] + label {
+.ys-alert-settings .form-boolean--type-radio:checked + label {
   border-color: #5B81FF;
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
 }

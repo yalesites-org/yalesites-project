@@ -2,13 +2,17 @@ entity_type_groups:
   node:
     event:
       basic: basic
-    post:
-      basic: basic
     page:
       basic: basic
+    post:
+      basic: basic
+      open_graph: open_graph
 tag_trim_method: beforeValue
 tag_trim_maxlength:
   metatag_maxlength_abstract: null
   metatag_maxlength_description: null
   metatag_maxlength_title: null
+  metatag_maxlength_og_description: null
+  metatag_maxlength_og_site_name: null
+  metatag_maxlength_og_title: null
 tag_scroll_max_height: ''

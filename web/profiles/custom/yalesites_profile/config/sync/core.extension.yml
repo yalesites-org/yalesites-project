@@ -8,6 +8,7 @@ module:
   block: 0
   block_content: 0
   breakpoint: 0
+  calendar_link: 0
   captcha: 0
   cas: 0
   cas_attributes: 0
@@ -60,10 +61,13 @@ module:
   media: 0
   media_library: 0
   media_library_edit: 0
+  media_library_form_element: 0
   menu_breadcrumb: 0
   menu_link_content: 0
   menu_ui: 0
   metatag: 0
+  metatag_open_graph: 0
+  metatag_verification: 0
   metatag_views: 0
   migrate: 0
   migrate_plus: 0

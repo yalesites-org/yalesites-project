@@ -27,6 +27,6 @@ echo -e "${GREEN}Move into theme and create empty component-library-twig directo
 cd ../..
 mkdir node_modules/@yalesites-org/component-library-twig
 echo -e "${GREEN}Copy built dist folder${ENDCOLOR}"
-cp -r component-library-twig/dist node_modules/@yalesites-org/component-library-twig/.
+cp -r _yale-packages/component-library-twig/dist node_modules/@yalesites-org/component-library-twig/.
 echo -e "${GREEN}Copy built components folder${ENDCOLOR}"
-cp -r component-library-twig/components node_modules/@yalesites-org/component-library-twig/.
+cp -r _yale-packages/component-library-twig/components node_modules/@yalesites-org/component-library-twig/.

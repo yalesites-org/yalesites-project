@@ -1,0 +1,23 @@
+uuid: 9d407465-8907-4a5a-a6b4-f64ba1c770bb
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.divider
+    - field.storage.block_content.field_style_width
+  module:
+    - options
+id: block_content.divider.field_style_width
+field_name: field_style_width
+entity_type: block_content
+bundle: divider
+label: 'Divider Width'
+description: ''
+required: true
+translatable: true
+default_value:
+  -
+    value: 100%
+default_value_callback: ''
+settings: {  }
+field_type: list_string

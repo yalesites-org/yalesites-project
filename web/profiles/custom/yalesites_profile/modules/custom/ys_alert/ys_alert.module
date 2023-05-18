@@ -24,3 +24,16 @@ function ys_alert_theme($existing, $type, $theme, $path) {
     ],
   ];
 }
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function ys_alert_preprocess_page(&$variables) {
+  $config = \Drupal::config('ys_alert.settings');
+
+  // Add the cache tag, so that the theme setting information is rebuilt when
+  // the config is saved.
+  // Via: https://drupal.stackexchange.com/questions/266379/how-to-clear-cache-for-config-entity-after-making-changes
+  // Also used: https://github.com/yalesites-org/yalesites-project/blob/4cd183c8f568b771d656478adb3b76985501c3a1/web/profiles/custom/yalesites_profile/modules/custom/ys_themes/ys_themes.module#LL144C1-L144C1
+  \Drupal::service('renderer')->addCacheableDependency($variables, $config);
+}
