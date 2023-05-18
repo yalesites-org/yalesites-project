@@ -38,4 +38,11 @@ class Qualtrics extends EmbedSourceBase implements EmbedSourceInterface {
    */
   protected static $example = 'https://yalesurvey.ca1.qualtrics.com/jfe/form/SV_cDezt2JVsNok77o';
 
+  public function build(array $params): array {
+    return [
+      '#theme' => 'qualtrics',
+      '#title' => $params['title'],
+      '#form_id' => $params['form_id'],
+    ];
+  }
 }
