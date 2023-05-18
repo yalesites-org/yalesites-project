@@ -6,6 +6,6 @@ id: wrapped_image
 block_id: 'inline_block:wrapped_image'
 category: all_blocks
 label: 'Wrapped Image'
-image_path: 'themes/contrib/atomic/templates/block/layout-builder/preview-icons/wrapped image.svg'
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/wrapped-image.svg
 image_alt: ''
 weight: -9

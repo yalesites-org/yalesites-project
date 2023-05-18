@@ -6,6 +6,6 @@ id: view
 block_id: 'inline_block:view'
 category: all_blocks
 label: View
-image_path: themes/contrib/atomic/templates/block/layout-builder/preview-icons/view.svg
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/view.svg
 image_alt: ''
 weight: 6
