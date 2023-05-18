@@ -47,4 +47,10 @@ class Broken extends EmbedSourceBase implements EmbedSourceInterface {
     return FALSE;
   }
 
+  public function build(array $params): array {
+    return [
+      '#theme' => 'broken',
+    ];
+  }
+
 }
