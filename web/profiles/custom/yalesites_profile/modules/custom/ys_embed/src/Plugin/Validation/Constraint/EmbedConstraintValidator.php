@@ -96,7 +96,7 @@ class EmbedConstraintValidator extends ConstraintValidator implements ContainerI
    */
   protected function isTrack(string $input): bool {
     if (!$this->isSoundcloud($input)) {
-      return FALSE;
+      return TRUE;
     }
 
     $p1 = "https:\/\/\S+.soundcloud.com\/tracks\S+";
