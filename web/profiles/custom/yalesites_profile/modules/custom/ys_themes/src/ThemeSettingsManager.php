@@ -112,17 +112,17 @@ class ThemeSettingsManager {
       'default' => 'one',
       'values' => [
         'one' => [
-          'label' => 'Base',
+          'label' => 'Base & White',
           'color_theme' => 'one',
           'color_theme_2' => '--color-basic-white',
         ],
         'two' => [
-          'label' => 'Action',
+          'label' => 'Highlight & Light Gray',
           'color_theme' => 'three',
           'color_theme_2' => '--color-gray-100',
         ],
         'three' => [
-          'label' => 'Highlight',
+          'label' => 'Highlight & Base',
           'color_theme' => 'three',
           'color_theme_2' => 'one',
         ],
@@ -135,27 +135,27 @@ class ThemeSettingsManager {
       'default' => 'one',
       'values' => [
         'one' => [
-          'label' => 'Base',
+          'label' => 'Base & White',
           'color_theme' => 'one',
           'color_theme_2' => '--color-gray-100',
         ],
         'two' => [
-          'label' => 'Action',
+          'label' => 'Deep & White',
           'color_theme' => 'five',
           'color_theme_2' => '--color-basic-white',
         ],
         'three' => [
-          'label' => 'Highlight',
+          'label' => 'Highlight & Light Gray',
           'color_theme' => 'three',
           'color_theme_2' => '--color-gray-100',
         ],
         'four' => [
-          'label' => 'Subtle',
+          'label' => 'Highlight & Dark Gray',
           'color_theme' => 'three',
           'color_theme_2' => '--color-gray-800',
         ],
         'five' => [
-          'label' => 'Deep',
+          'label' => 'Highlight & Base',
           'color_theme' => 'three',
           'color_theme_2' => 'one',
         ],
