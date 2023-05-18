@@ -28,72 +28,138 @@ class ThemeSettingsManager {
   const THEME_SETTINGS = [
     'global_theme' => [
       'name' => 'Color Palette',
-      'values' => [
-        'one' => 'Old Blues',
-        'two' => 'New Haven Green',
-        'three' => 'Shoreline Summer',
-        'four' => 'Elm City Nights',
-        'five' => 'Quiet Corner',
-      ],
       'prop_type' => 'element',
       'selector' => '[data-global-theme]',
       'default' => 'one',
+      'values' => [
+        'one' => [
+          'label' => 'Old Blues',
+          'color_theme' => 'one',
+        ],
+        'two' => [
+          'label' => 'New Haven Green',
+          'color_theme' => 'two',
+        ],
+        'three' => [
+          'label' => 'Shoreline Summer',
+          'color_theme' => 'three',
+        ],
+        'four' => [
+          'label' => 'Elm City Nights',
+          'color_theme' => 'four',
+        ],
+        'five' => [
+          'label' => 'Quiet Corner',
+          'color_theme' => 'five',
+        ],
+      ],
     ],
     'nav_position' => [
       'name' => 'Navigation Position',
-      'values' => [
-        'right' => 'Right',
-        'center' => 'Center',
-        'left' => 'Left',
-      ],
       'prop_type' => 'element',
       'selector' => '[data-site-header-nav-position]',
       'default' => 'left',
+      'values' => [
+        'right' => [
+          'label' => 'Right',
+        ],
+        'center' => [
+          'label' => 'Center',
+        ],
+        'left' => [
+          'label' => 'Left',
+        ],
+      ],
     ],
     'nav_type' => [
       'name' => 'Navigation Type',
-      'values' => [
-        'mega' => 'Mega Menu',
-        'basic' => 'Basic Menu',
-      ],
       'prop_type' => 'element',
       'selector' => '[data-menu-variation]',
       'default' => 'mega',
+      'values' => [
+        'mega' => [
+          'label' => 'Mega Menu',
+        ],
+        'basic' => [
+          'label' => 'Basic Menu',
+        ],
+      ],
     ],
     'button_theme' => [
       'name' => 'Button Theme',
-      'values' => [
-        'one' => 'One',
-        'two' => 'Two',
-        'three' => 'Three',
-      ],
       'prop_type' => 'element',
       'selector' => '[data-cta-theme]',
       'default' => 'one',
+      'values' => [
+        'one' => [
+          'label' => 'One',
+          'color_theme' => 'one',
+        ],
+        'two' => [
+          'label' => 'Two',
+          'color_theme' => 'two',
+        ],
+        'three' => [
+          'label' => 'Three',
+          'color_theme' => 'five',
+        ],
+      ],
     ],
     'header_theme' => [
       'name' => 'Header Theme',
-      'values' => [
-        'one' => 'Base',
-        'two' => 'Action',
-        'three' => 'Highlight',
-      ],
       'prop_type' => 'element',
       'selector' => 'header[data-header-theme]',
       'default' => 'one',
+      'values' => [
+        'one' => [
+          'label' => 'Base',
+          'color_theme' => 'one',
+          'color_theme_2' => '--color-basic-white',
+        ],
+        'two' => [
+          'label' => 'Action',
+          'color_theme' => 'three',
+          'color_theme_2' => '--color-gray-100',
+        ],
+        'three' => [
+          'label' => 'Highlight',
+          'color_theme' => 'three',
+          'color_theme_2' => 'one',
+        ],
+      ],
     ],
     'footer_theme' => [
       'name' => 'Footer Theme',
-      'values' => [
-        'one' => 'Base',
-        'two' => 'Action',
-        'three' => 'Highlight',
-        'four' => 'Subtle',
-        'five' => 'Deep',
-      ],
       'prop_type' => 'element',
       'selector' => 'footer[data-footer-theme]',
       'default' => 'one',
+      'values' => [
+        'one' => [
+          'label' => 'Base',
+          'color_theme' => 'one',
+          'color_theme_2' => '--color-gray-100',
+        ],
+        'two' => [
+          'label' => 'Action',
+          'color_theme' => 'five',
+          'color_theme_2' => '--color-basic-white',
+        ],
+        'three' => [
+          'label' => 'Highlight',
+          'color_theme' => 'three',
+          'color_theme_2' => '--color-gray-100',
+        ],
+        'four' => [
+          'label' => 'Subtle',
+          'color_theme' => 'three',
+          'color_theme_2' => '--color-gray-800',
+        ],
+        'five' => [
+          'label' => 'Deep',
+          'color_theme' => 'three',
+          'color_theme_2' => 'one',
+        ],
+      ],
     ],
   ];
 

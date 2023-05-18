@@ -207,20 +207,26 @@ function ys_themes_form_alter(&$form, $form_state, $form_id) {
  * Implements hook_preprocess_form_element().
  */
 function ys_themes_preprocess_form_element(array &$variables) {
-  $config = \Drupal::config('ys_themes.theme_settings');
-  $globalTheme = $config->get('global_theme');
-
   //
   // Insert the global theme value into the attribute to pass to twig.
   // Used for the color palettes on the theme settings form.
   //
   if (isset($variables['element']['#formdazzle'])) {
     if ($variables['element']['#formdazzle']['form_id'] == 'ys_themes_settings_form') {
-      $variables['label']['current_global_theme'] = $globalTheme;
 
-      if ($variables['name'] == 'global_theme') {
-        $variables['label']['data_global_theme'] = $variables['element']['#return_value'];
-      }
+      $config = \Drupal::config('ys_themes.theme_settings');
+      $globalTheme = $config->get('global_theme');
+      $allOptions = \Drupal::service('ys_themes.theme_settings_manager')->getOptions();
+
+      $elementName = $variables['name'];
+      $value = $variables['element']['#return_value'];
+
+      // Sets various values related to current element as well as global theme
+      // to twig for cleaner twig templates.
+      $variables['label']['color_theme'] = $allOptions[$elementName]['values'][$value]['color_theme'];
+      $variables['label']['color_theme_2'] = $allOptions[$elementName]['values'][$value]['color_theme_2'];
+      $variables['label']['current_global_theme'] = $globalTheme;
+      $variables['label']['value'] = $value;
     }
   }
 }
