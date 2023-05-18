@@ -282,7 +282,9 @@
   color: var(--color-background-primary);
 }
 
-#drupal-off-canvas .ys-themes--global-settings .form-item-button-theme input[checked="checked"] + label:hover {
+#drupal-off-canvas .ys-themes--global-settings .form-item-button-theme input[checked="checked"] + label:hover,
+#drupal-off-canvas .ys-themes--global-settings .form-item-button-theme:hover input[checked="checked"] + label,
+#drupal-off-canvas .ys-themes--global-settings .form-item-button-theme:focus input[checked="checked"] + label {
   color: var(--color-background-primary);
 }
 
@@ -332,7 +334,9 @@
   color: var(--color-background-primary);
 }
 
-#drupal-off-canvas .ys-themes--global-settings .form-item-header-theme input[checked="checked"] + label:hover {
+#drupal-off-canvas .ys-themes--global-settings .form-item-header-theme input[checked="checked"] + label:hover,
+#drupal-off-canvas .ys-themes--global-settings .form-item-header-theme:hover input[checked="checked"] + label,
+#drupal-off-canvas .ys-themes--global-settings .form-item-header-theme:focus input[checked="checked"] + label {
   color: var(--color-background-primary);
 }
 
@@ -372,6 +376,8 @@
   color: var(--color-background-primary);
 }
 
-#drupal-off-canvas .ys-themes--global-settings .form-item-footer-theme input[checked="checked"] + label:hover {
+#drupal-off-canvas .ys-themes--global-settings .form-item-footer-theme input[checked="checked"] + label:hover,
+#drupal-off-canvas .ys-themes--global-settings .form-item-footer-theme:hover input[checked="checked"] + label,
+#drupal-off-canvas .ys-themes--global-settings .form-item-footer-theme:focus input[checked="checked"] + label {
   color: var(--color-background-primary);
 }

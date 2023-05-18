@@ -74,9 +74,9 @@ class ThemeSettingsManager {
     'header_theme' => [
       'name' => 'Header Theme',
       'values' => [
-        'one' => 'Base',
-        'two' => 'Action',
-        'three' => 'Highlight',
+        'one' => 'Base & White',
+        'two' => 'Highlight & Light Gray',
+        'three' => 'Highlight & Base',
       ],
       'prop_type' => 'element',
       'selector' => 'header[data-header-theme]',
@@ -85,11 +85,11 @@ class ThemeSettingsManager {
     'footer_theme' => [
       'name' => 'Footer Theme',
       'values' => [
-        'one' => 'Base',
-        'two' => 'Action',
-        'three' => 'Highlight',
-        'four' => 'Subtle',
-        'five' => 'Deep',
+        'one' => 'Base & White',
+        'two' => 'Deep & White',
+        'three' => 'Highlight & Light Gray',
+        'four' => 'Dark Gray & Highlight',
+        'five' => 'Base & Highlight',
       ],
       'prop_type' => 'element',
       'selector' => 'footer[data-footer-theme]',
