@@ -17,6 +17,12 @@ function ys_embed_theme($existing, $type, $theme, $path) {
         'sources' => [],
       ],
     ],
+    'soundcloud' => [
+      'variables' => [
+        'title' => '',
+        'track_id' => '',
+      ],
+    ],
     'twitter' => [
       'variables' => [
         'blockquote' => '',
