@@ -17,6 +17,11 @@ function ys_embed_theme($existing, $type, $theme, $path) {
         'sources' => [],
       ],
     ],
+    'instagram' => [
+      'variables' => [
+        'embed_code' => '',
+      ],
+    ],
     'qualtrics' => [
       'variables' => [
         'title' => '',
