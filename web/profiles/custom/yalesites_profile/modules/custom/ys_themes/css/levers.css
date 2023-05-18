@@ -356,6 +356,11 @@
   flex: 1 auto;
 }
 
+#drupal-off-canvas .ys-themes--global-settings .form-item-footer-theme:hover .color,
+#drupal-off-canvas .ys-themes--global-settings .form-item-footer-theme:focus .color {
+  margin-right: 0.5rem;
+}
+
 #drupal-off-canvas .ys-themes--global-settings .form-item-footer-theme:hover > label,
 #drupal-off-canvas .ys-themes--global-settings .form-item-footer-theme:focus > label {
   color: var(--color-border-hover);
