@@ -96,102 +96,42 @@
         });
       });
 
-
-      // Get all radio inputs in the nav_position name group
-      const radioInputsNav = document.querySelectorAll('input[name="nav_position"]');
-
-      // Add event listener to each radio input
-      radioInputsNav.forEach(input => {
-        input.addEventListener('change', function() {
-          if (this.checked) {
-            this.setAttribute('checked', 'checked');
-
-            // Remove the 'checked' attribute from other radio inputs
-            radioInputsNav.forEach(otherInput => {
-              if (otherInput !== this) {
-                otherInput.removeAttribute('checked');
-              }
-            });
-          }
+      // Function to handle checked behavior based on radio element selection.
+      // Note: 'global_theme' is excluded because we're doing the same thing above,
+      // but adding on to it. 
+      function handleRadioInputs(radioGroup) {
+        // Get references to the radio input elements within the specified group
+        const radioInputs = document.querySelectorAll(radioGroup);
+      
+        // Add event listener to each radio input
+        radioInputs.forEach(input => {
+          input.addEventListener('change', function() {
+            if (this.checked) {
+              this.setAttribute('checked', 'checked');
+              // Remove the 'checked' attribute from other radio inputs
+              radioInputs.forEach(otherInput => {
+                if (otherInput !== this) {
+                  otherInput.removeAttribute('checked');
+                }
+              });
+            }
+          });
         });
+      }
+      
+      // Store radio input groups in an array
+      const radioGroups = [ 
+        'input[name="nav_position"]',
+        'input[name="nav_type"]',
+        'input[name="button_theme"]',
+        'input[name="header_theme"]',
+        'input[name="footer_theme"]'
+      ];
+      
+      // Apply the function to each radio input group
+      radioGroups.forEach(group => {
+        handleRadioInputs(group);
       });
-
-      // Get all radio inputs in the nav_type name group
-      const radioInputsNavType = document.querySelectorAll('input[name="nav_type"]');
-
-      // Add event listener to each radio input
-      radioInputsNavType.forEach(input => {
-        input.addEventListener('change', function() {
-          if (this.checked) {
-            this.setAttribute('checked', 'checked');
-
-            // Remove the 'checked' attribute from other radio inputs
-            radioInputsNavType.forEach(otherInput => {
-              if (otherInput !== this) {
-                otherInput.removeAttribute('checked');
-              }
-            });
-          }
-        });
-      });
-
-      // Get all radio inputs in the button_theme name group
-      const radioInputsButtonTheme = document.querySelectorAll('input[name="button_theme"]');
-
-      // Add event listener to each radio input
-      radioInputsButtonTheme.forEach(input => {
-        input.addEventListener('change', function() {
-          if (this.checked) {
-            this.setAttribute('checked', 'checked');
-
-            // Remove the 'checked' attribute from other radio inputs
-            radioInputsButtonTheme.forEach(otherInput => {
-              if (otherInput !== this) {
-                otherInput.removeAttribute('checked');
-              }
-            });
-          }
-        });
-      });
-
-      // Get all radio inputs in the header_theme name group
-      const radioInputsHeaderTheme = document.querySelectorAll('input[name="header_theme"]');
-
-      // Add event listener to each radio input
-      radioInputsHeaderTheme.forEach(input => {
-        input.addEventListener('change', function() {
-          if (this.checked) {
-            this.setAttribute('checked', 'checked');
-
-            // Remove the 'checked' attribute from other radio inputs
-            radioInputsHeaderTheme.forEach(otherInput => {
-              if (otherInput !== this) {
-                otherInput.removeAttribute('checked');
-              }
-            });
-          }
-        });
-      });
-
-      // Get all radio inputs in the header_theme name group
-      const radioInputsFooterTheme = document.querySelectorAll('input[name="footer_theme"]');
-
-      // Add event listener to each radio input
-      radioInputsFooterTheme.forEach(input => {
-        input.addEventListener('change', function() {
-          if (this.checked) {
-            this.setAttribute('checked', 'checked');
-
-            // Remove the 'checked' attribute from other radio inputs
-            radioInputsFooterTheme.forEach(otherInput => {
-              if (otherInput !== this) {
-                otherInput.removeAttribute('checked');
-              }
-            });
-          }
-        });
-      });
-
     },
   };
 })(Drupal);
