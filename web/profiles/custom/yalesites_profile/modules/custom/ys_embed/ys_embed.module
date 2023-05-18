@@ -17,6 +17,12 @@ function ys_embed_theme($existing, $type, $theme, $path) {
         'sources' => [],
       ],
     ],
+    'qualtrics' => [
+      'variables' => [
+        'title' => '',
+        'form_id' => '',
+      ],
+    ],
     'broken' => [
     ],
   ];
