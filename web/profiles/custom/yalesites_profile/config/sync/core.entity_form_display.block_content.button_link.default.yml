@@ -1,0 +1,44 @@
+uuid: 3cb8d9c5-4e52-4701-9202-80c09ef7d56e
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.button_link
+    - field.field.block_content.button_link.field_button_link
+  module:
+    - hide_revision_field
+    - link
+id: block_content.button_link.default
+targetEntityType: block_content
+bundle: button_link
+mode: default
+content:
+  field_button_link:
+    type: link_default
+    weight: 82
+    region: content
+    settings:
+      placeholder_url: ''
+      placeholder_title: ''
+    third_party_settings: {  }
+  info:
+    type: string_textfield
+    weight: -5
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  revision_log:
+    type: hide_revision_field_log_widget
+    weight: 80
+    region: content
+    settings:
+      rows: 5
+      placeholder: ''
+      show: true
+      default: ''
+      permission_based: false
+      allow_user_settings: true
+    third_party_settings: {  }
+hidden: {  }

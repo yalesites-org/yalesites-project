@@ -1,0 +1,23 @@
+uuid: 5db2b506-e24d-40b1-8f24-fdca808b0e9c
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.button_link
+    - field.storage.block_content.field_button_link
+  module:
+    - link
+id: block_content.button_link.field_button_link
+field_name: field_button_link
+entity_type: block_content
+bundle: button_link
+label: 'Button Link'
+description: 'Add one or two button links'
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  title: 2
+  link_type: 17
+field_type: link
