@@ -1,0 +1,8 @@
+@use '../../../00-tokens/tokens';
+
+.form-item--radios,
+.form-item--radio__item {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
