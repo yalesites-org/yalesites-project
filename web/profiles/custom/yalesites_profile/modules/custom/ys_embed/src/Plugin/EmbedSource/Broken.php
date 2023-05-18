@@ -47,6 +47,11 @@ class Broken extends EmbedSourceBase implements EmbedSourceInterface {
     return FALSE;
   }
 
+  /**
+   * {@inheritdoc}
+   *
+   * Override the build method so that we use a custom theme template.
+   */
   public function build(array $params): array {
     return [
       '#theme' => 'broken',

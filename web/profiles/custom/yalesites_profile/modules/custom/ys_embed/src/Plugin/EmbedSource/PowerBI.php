@@ -38,6 +38,11 @@ class PowerBI extends EmbedSourceBase implements EmbedSourceInterface {
    */
   protected static $example = 'https://app.powerbi.com/view?r=eyJrIjoiYzQ1ODA0ZjEtZjc5YS00OTgyLWIzOTItNmJmNDY2YmRiODQ2IiwidCI6ImRkOGNiZWJiLTIxMzktNGRmOC1iNDExLTRlM2U4N2FiZWI1YyIsImMiOjF9&pageName=ReportSection2ac2649f17189885d376';
 
+  /**
+   * {@inheritdoc}
+   *
+   * Override the build method so that we use a custom theme template.
+   */
   public function build(array $params): array {
     return [
       '#theme' => 'powerbi',
@@ -45,4 +50,5 @@ class PowerBI extends EmbedSourceBase implements EmbedSourceInterface {
       '#form_params' => $params['form_params'],
     ];
   }
+
 }
