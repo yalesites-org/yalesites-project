@@ -22,6 +22,12 @@ function ys_embed_theme($existing, $type, $theme, $path) {
         'embed_code' => '',
       ],
     ],
+    'powerbi' => [
+      'variables' => [
+        'title' => '',
+        'form_params' => '',
+      ],
+    ],
     'qualtrics' => [
       'variables' => [
         'title' => '',
