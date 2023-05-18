@@ -17,5 +17,7 @@ function ys_embed_theme($existing, $type, $theme, $path) {
         'sources' => [],
       ],
     ],
+    'broken' => [
+    ],
   ];
 }
