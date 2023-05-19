@@ -1,7 +1,0 @@
-services:
-  # Override the mailchimp_transactional API key with value in secrets.json.
-  ys_mail.config_overrides:
-    class: Drupal\ys_mail\Config\MailConfigOverrides
-    arguments: ['@ys_secrets.manager']
-    tags:
-      - { name: config.factory.override, priority: 5 }
