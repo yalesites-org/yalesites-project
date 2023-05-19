@@ -189,7 +189,7 @@ function ys_themes_form_alter(&$form, $form_state, $form_id) {
     $form['#attached']['library'][] = 'ys_themes/ys_themes';
   }
 
-  // Styles submit buttons on webforms.
+  // Styles submit buttons on webforms and views exposed filters.
   // $buttonTheme comes from the theme settings form.
   $buttonTheme = $config->get('button_theme');
 
