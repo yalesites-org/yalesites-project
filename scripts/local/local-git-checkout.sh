@@ -1,0 +1,129 @@
+#!/bin/bash
+
+# default values
+cl_branch="main"
+token_branch="main"
+atomic_branch="main"
+debug=false
+
+# clone_or_switch_branch
+#
+# This function will clone a repo if it doesn't exist, or switch to a branch if
+# it does exist.
+# It ensures that there are no uncommitted changes before switching to save the
+# developer from losing work.
+#
+# params:
+#  name: the name of the repo
+#  git_path: the path to the repo
+#  target_branch: the branch to switch to
+function clone_or_switch_branch() {
+  local name=$1
+  local git_path=$2
+  local target_branch=${3:-main}
+
+  [ -z "$name" ] && _error "You must provide a name" && exit 1
+  [ -z "$git_path" ] && _error "You must provide a git_path" && exit 1
+
+  # Clone if directory doesn't exist
+  [ ! -d "$git_path" ] && 
+    _say "Cloning the $target_branch branch of the $name repo" && 
+    git clone git@github.com:yalesites-org/"$name".git "$git_path" -b "$target_branch"
+
+  # Get current branch of repo
+  current_branch=$(git -C "$git_path" rev-parse --abbrev-ref HEAD)
+
+  # If current branch is not the target branch
+  if [ "$current_branch" != "$target_branch" ]; then
+    # If there are no uncommitted changes, switch to the target branch
+    if git -C "$git_path" diff --quiet --exit-code; then
+      _say "Current branch of $name is $current_branch, switching to $target_branch"
+      git -C "$git_path" fetch --all
+      git -C "$git_path" checkout "$target_branch"
+    else
+      _error "You have uncommitted changes to the $name repo.  Please commit or stash them before running this script."
+      exit 1
+    fi
+  else
+    _say "Already on $target_branch branch of $name repo"
+  fi
+}
+
+# getopts
+while getopts ":dc:t:a:" opt; do
+  case ${opt} in
+    d )
+      debug=true
+      ;;
+    c )
+      cl_branch=$OPTARG
+      ;;
+    t )
+      token_branch=$OPTARG
+      ;;
+    a )
+      atomic_branch=$OPTARG
+      ;;
+    \? )
+      echo "Usage: $0 [-d] [-c <component-library-branch>] [-t <tokens-branch>] [-a <atomic-branch>]"
+      exit 1
+      ;;
+    :)
+      echo "Usage: $0 [-d] [-c <component-library-branch>] [-t <tokens-branch>] [-a <atomic-branch>]"
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 1
+      ;;
+  esac
+done
+
+[ -e "./scripts/local/util/say.sh" ] || (echo -e "[$0] Say utility not found.  You must run this from the yalesites root directory: " && exit 1)
+source ./scripts/local/util/say.sh
+
+[ "$debug" = true ] && _say "Debug mode enabled" && set -x
+
+_say "Let the magic begin!"
+_say "********************"
+
+_say "Attempting to clone $atomic_branch branch of atomic repo"
+clone_or_switch_branch "atomic" "web/themes/contrib/atomic" "$atomic_branch"
+
+_say "Moving to atomic repo"
+cd web/themes/contrib/atomic || (_error "Could not find atomic theme. Are you in the right directory?" && exit 1)
+
+_say "Attempting to clone $token_branch branch of tokens repo"
+clone_or_switch_branch "tokens" "_yale-packages/tokens" "$token_branch"
+
+_say "Moving into tokens repo and creating a global npm link"
+cd _yale-packages/tokens || (_error "Could not find tokens repo. Are you in the right directory?" && exit 1)
+npm link
+
+_say "Moving back to atomic"
+cd ../..
+
+_say "Attempting to clone $cl_branch branch of component-library-twig repo"
+clone_or_switch_branch "component-library-twig" "_yale-packages/component-library-twig" "$cl_branch"
+
+_say "Moving into component library and creating a global npm link"
+cd _yale-packages/component-library-twig || (_error "Could not find component-library-twig repo. Are you in the right directory?" && exit 1)
+npm link
+
+_say "Moving back to atomic"
+cd ../..
+
+_say "Using the component-library global npm link inside the atomic theme"
+npm link @yalesites-org/component-library-twig
+
+_say "Moving into the component library"
+cd _yale-packages/component-library-twig || (_error "Could not find component-library-twig repo. Are you in the right directory?" && exit 1)
+
+_say "Running clean install so we can patch Twig.js"
+npm ci -y
+
+_say "Using the tokens global npm link inside the component library"
+npm link @yalesites-org/tokens
+
+_say "Symlinking to root directory"
+cd ../../../../../..
+[ ! -L "atomic" ] && ln -s web/themes/contrib/atomic atomic
+[ ! -L "component-library-twig" ] && ln -s atomic/_yale-packages/component-library-twig component-library-twig
+[ ! -L "tokens" ] && ln -s atomic/_yale-packages/tokens tokens
