@@ -13,7 +13,7 @@ module:
   cas: 0
   cas_attributes: 0
   chosen_lib: 0
-  ckeditor: 0
+  ckeditor5: 0
   components: 0
   config: 0
   config_filter: 0
