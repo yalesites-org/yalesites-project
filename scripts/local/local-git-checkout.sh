@@ -190,13 +190,24 @@ npm link @yalesites-org/tokens
 cd ../..
 
 _say "Attempting to npm link tokens inside atomic"
-npm link @yalesites-org/tokens
+# You can't do this because only one npm link can exist at a time on a node_module folder :(
+# npm link @yalesites-org/tokens
+# So we do it ourselves
+rm -rf node_modules/@yalesitesorg/tokens 
+cd node_modules/@yalesites-org || (_error "Could not find component-library-twig repo. Are you in the right directory?" && exit 1)
+ln -s ../../_yale-packages/tokens tokens
+cd ../..
 
 [ "$verbose" = true ] && _say "Moving to tokens repo"
 cd _yale-packages/tokens || (_error "Could not find tokens repo. Are you in the right directory?" && exit 1)
 
 _say "Building tokens"
 cd ../tokens || (_error "Could not find tokens repo. Are you in the right directory?" && exit 1)
+npm i -D
+npm run build
+
+_say "Rebuilding component library to have dist folder"
+cd ../component-library-twig || (_error "Could not find component-library-twig repo. Are you in the right directory?" && exit 1)
 npm run build
 
 _say "Symlinking to root directory"
