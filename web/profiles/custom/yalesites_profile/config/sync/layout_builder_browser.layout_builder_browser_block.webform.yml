@@ -6,6 +6,6 @@ id: webform
 block_id: 'inline_block:webform'
 category: all_blocks
 label: Webform
-image_path: ''
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/webform.svg
 image_alt: ''
 weight: 11

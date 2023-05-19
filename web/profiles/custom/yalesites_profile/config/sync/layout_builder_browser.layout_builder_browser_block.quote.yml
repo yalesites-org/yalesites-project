@@ -6,6 +6,6 @@ id: quote
 block_id: 'inline_block:pull_quote'
 category: all_blocks
 label: Quote
-image_path: themes/contrib/atomic/templates/block/layout-builder/preview-icons/avatar-icon.svg
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/pull-quote.svg
 image_alt: ''
 weight: -5
