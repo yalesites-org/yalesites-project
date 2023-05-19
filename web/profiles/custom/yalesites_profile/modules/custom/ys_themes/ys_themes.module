@@ -147,6 +147,7 @@ function ys_themes_preprocess_page(&$variables) {
   // Sets the global theme from lever settings.
   $config = \Drupal::config('ys_themes.theme_settings');
   $variables['site_global__theme'] = $config->get('global_theme');
+  $variables['cta__component_theme'] = $config->get('button_theme');
 
   // Add the cache tag, so that the theme setting information is rebuilt when
   // the config is saved.
