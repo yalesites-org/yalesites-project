@@ -47,6 +47,91 @@
           initStyleDrawer();
         }, 0);
       });
+
+      //
+      // Add Checked attribute to clicked attibute to visually identify the
+      // active clicked theme option.
+
+      // Get all radio inputs in the glogal_theme name group
+      const radioInputs = document.querySelectorAll('input[name="global_theme"]');
+
+      // Add event listener to each radio input
+      radioInputs.forEach(input => {
+        input.addEventListener('change', function() {
+          if (this.checked) {
+            this.setAttribute('checked', 'checked');
+
+            // Remove the 'checked' attribute from other radio inputs
+            radioInputs.forEach(otherInput => {
+              if (otherInput !== this) {
+                otherInput.removeAttribute('checked');
+              }
+            });
+          }
+
+          // Read active global theme and find the global-theme number and
+          // update it when on input change.
+
+          // apply global theme value to our components 
+          const targetElements = document.querySelectorAll('span.component-color');
+
+          // Get the original background style value
+          targetElements.forEach(targetElement => {
+            const globalTheme = document.querySelector('div[data-global-theme]');
+            const currentTheme = globalTheme.getAttribute('data-global-theme');
+            const originalBackground = targetElement.style.background;
+
+            // Construct the regular expression pattern dynamically
+            const regexPattern = new RegExp(`--global-themes-(\\w+)-`);
+
+            // // Replace the --global-themes-${globalTheme}- portion
+            // const updatedBackground = originalBackground.replace(/--global-themes-(one|two|three|four|five)-/, `--global-themes-${currentTheme}-`);
+
+            // Replace the --global-themes-${globalTheme}- portion
+            const updatedBackground = originalBackground.replace(regexPattern, `--global-themes-${currentTheme}-`);
+
+            // Update the inline style with the modified background value
+            targetElement.style.background = updatedBackground;
+          });
+        });
+      });
+
+      // Function to handle checked behavior based on radio element selection.
+      // Note: 'global_theme' is excluded because we're doing the same thing above,
+      // but adding on to it. 
+      function handleRadioInputs(radioGroup) {
+        // Get references to the radio input elements within the specified group
+        const radioInputs = document.querySelectorAll(radioGroup);
+      
+        // Add event listener to each radio input
+        radioInputs.forEach(input => {
+          input.addEventListener('change', function() {
+            if (this.checked) {
+              this.setAttribute('checked', 'checked');
+              // Remove the 'checked' attribute from other radio inputs
+              radioInputs.forEach(otherInput => {
+                if (otherInput !== this) {
+                  otherInput.removeAttribute('checked');
+                }
+              });
+            }
+          });
+        });
+      }
+      
+      // Store radio input groups in an array
+      const radioGroups = [ 
+        'input[name="nav_position"]',
+        'input[name="nav_type"]',
+        'input[name="button_theme"]',
+        'input[name="header_theme"]',
+        'input[name="footer_theme"]'
+      ];
+      
+      // Apply the function to each radio input group
+      radioGroups.forEach(group => {
+        handleRadioInputs(group);
+      });
     },
   };
 })(Drupal);

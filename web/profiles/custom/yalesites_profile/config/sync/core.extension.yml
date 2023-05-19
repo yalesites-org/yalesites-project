@@ -127,6 +127,7 @@ module:
   pathauto: 1
   selective_better_exposed_filters: 1
   externalauth: 10
+  formdazzle: 10
   views: 10
   ys_core: 10
   ys_embed: 10
