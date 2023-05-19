@@ -86,12 +86,12 @@ grand_hero:
   field_style_position:
     values:
       full: Full
-      reduced: 'Floating Box'
+      contained: 'Floating Box'
     default: full
   field_style_variation:
     values:
       full: Tall
-      contained: Short
+      reduced: Short
     default: full
 divider:
   field_style_position:
