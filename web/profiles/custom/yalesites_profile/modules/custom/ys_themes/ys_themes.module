@@ -193,7 +193,7 @@ function ys_themes_form_alter(&$form, $form_state, $form_id) {
   // $buttonTheme comes from the theme settings form.
   $buttonTheme = $config->get('button_theme');
 
-  if (str_starts_with($form_id, 'webform')) {
+  if (str_starts_with($form_id, 'webform') || $form_id == 'views_exposed_form') {
     $form['actions']['submit']['#attributes']['data-cta-theme'] = $buttonTheme;
     $form['actions']['submit']['#attributes']['data-cta-radius'] = 'none';
     $form['actions']['submit']['#attributes']['data-cta-style'] = 'filled';
