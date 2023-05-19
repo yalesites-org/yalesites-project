@@ -17,21 +17,40 @@
 [ -f "./scripts/local/util/say.sh" ] || (echo -e "You must run this from the yalesites root directory" && exit)
 source ./scripts/local/util/say.sh
 
+ _say "Moving to atomic repo"
+cd web/themes/contrib/atomic || (_error "Could not find atomic theme. Are you in the right directory?" && exit)
+
+_say "Attempting to clone tokens repo"
 [ ! -d "_yale-packages/tokens" ] && git clone git@github.com:yalesites-org/tokens.git _yale-packages/tokens
-cd _yale-packages/tokens || exit
+
+_say "Moving into tokens repo and creating a global npm link"
+cd _yale-packages/tokens || (_error "Could not find tokens repo. Are you in the right directory?" && exit)
 npm link
+
+_say "Moving back to atomic"
 cd ../..
-_say "Move into component library and create a global link"
+
+_say "Attempting to clone component-library-twig repo"
 [ ! -d "_yale-packages/component-library-twig" ] && git clone git@github.com:yalesites-org/component-library-twig.git _yale-packages/component-library-twig
-cd _yale-packages/component-library-twig || exit
+
+_say "Moving into component library and creating a global npm link"
+cd _yale-packages/component-library-twig || (_error "Could not find component-library-twig repo. Are you in the right directory?" && exit)
 npm link
-_say "Move into Atomic and use the component-library global link"
+
+_say "Moving back to atomic"
 cd ../..
+
+_say "Using the component-library global npm link inside the atomic theme"
 npm link @yalesites-org/component-library-twig
-_say "Move into the component-library and use the tokens global link"
-cd _yale-packages/component-library-twig || exit
-# Run npm ci. This is required to patch our version of Twig.js.
-npm ci
+
+_say "Moving into the component library"
+cd _yale-packages/component-library-twig || (_error "Could not find component-library-twig repo. Are you in the right directory?" && exit)
+
+_say "Running clean install so we can patch Twig.js"
+npm ci -y
+
+_say "Using the tokens global npm link inside the component library"
 npm link @yalesites-org/tokens
-_say "Run the develop script in the component library"
+
+_say "Running the develop script in the component library"
 npm run develop
