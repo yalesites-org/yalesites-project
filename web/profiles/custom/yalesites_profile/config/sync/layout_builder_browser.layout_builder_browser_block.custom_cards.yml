@@ -6,6 +6,6 @@ id: custom_cards
 block_id: 'inline_block:custom_cards'
 category: all_blocks
 label: 'Custom Cards'
-image_path: ''
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/custom-cards.svg
 image_alt: ''
 weight: 7

@@ -6,6 +6,6 @@ id: divider
 block_id: 'inline_block:divider'
 category: all_blocks
 label: Divider
-image_path: ''
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/divider.svg
 image_alt: ''
 weight: -8

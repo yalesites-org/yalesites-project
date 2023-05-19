@@ -6,6 +6,6 @@ id: grand_hero
 block_id: 'inline_block:grand_hero'
 category: all_blocks
 label: 'Grand Hero'
-image_path: ''
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/grand-hero.svg
 image_alt: ''
 weight: -1
