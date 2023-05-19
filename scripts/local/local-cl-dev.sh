@@ -11,10 +11,12 @@
 # through the regular component library release process, and be included in an
 # official release of Atomic.
 
-source ./util/say.sh
+[ $# -eq 1 ] && [ "$1" == "-h" ] && echo "Usage: $0 [-d]" && exit
+[ $# -eq 1 ] && [ "$1" == "-d" ] && _say "Debug mode enabled" && set -x
 
-_say "Move into tokens repo and create a global link"
-cd web/themes/contrib/atomic
+[ -f "./scripts/local/util/say.sh" ] || (echo -e "You must run this from the yalesites root directory" && exit)
+source ./scripts/local/util/say.sh
+
 [ ! -d "_yale-packages/tokens" ] && git clone git@github.com:yalesites-org/tokens.git _yale-packages/tokens
 cd _yale-packages/tokens || exit
 npm link
