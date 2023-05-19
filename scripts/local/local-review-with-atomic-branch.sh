@@ -1,19 +1,18 @@
 #!/bin/bash
 # This script will checkout the specified branch of atomic for local review.
 
-GREEN='\033[1;32m'
-ENDCOLOR='\033[0m'
+source ./util/say.sh
 
 read -p "Which branch of the atomic repo do you need? " BRANCH
 
-echo -e "${GREEN}Checking out the $BRANCH branch of Atomic${ENDCOLOR}"
+_say "Checking out the $BRANCH branch of Atomic"
 cd web/themes/contrib/atomic || exit
 git checkout develop
 git pull
 git checkout "$BRANCH"
 git pull
-echo -e "${GREEN}npm ci${ENDCOLOR}"
+_say "npm ci"
 npm ci
-echo -e "${GREEN}Clear Drupal's cache${ENDCOLOR}"
+_say "Clear Drupal's cache"
 cd ../../../..
 lando drush cr

@@ -4,29 +4,28 @@
 # folder so that any work-in-progress in the component library can be used
 # during development in Drupal.
 
-GREEN='\033[1;32m'
-ENDCOLOR='\033[0m'
+source ./util/say.sh
 
 read -p "Which branch of the component-library-twig repo do you need? " BRANCH
 
-echo -e "${GREEN}Move into atomic and checkout develop"
+_say "Move into atomic and checkout develop"
 cd web/themes/contrib/atomic || exit
-echo -e "${GREEN}Delete installed component library${ENDCOLOR}"
+_say "Delete installed component library"
 rm -rf node_modules/@yalesites-org/component-library-twig
-echo -e "${GREEN}Clone component library${ENDCOLOR}"
+_say "Clone component library"
 [ ! -d "_yale-packages/component-library-twig" ] && git clone git@github.com:yalesites-org/component-library-twig.git _yale-packages/component-library-twig
-echo -e "${GREEN}Move into component library${ENDCOLOR}"
+_say "Move into component library"
 cd _yale-packages/component-library-twig || exit
-echo -e "${GREEN}Checkout the specified branch${ENDCOLOR}"
+_say "Checkout the specified branch"
 git checkout "$BRANCH"
 git pull
-echo -e "${GREEN}npm ci and npm run build${ENDCOLOR}"
+_say "npm ci and npm run build"
 npm ci
 npm run build
-echo -e "${GREEN}Move into theme and create empty component-library-twig directory${ENDCOLOR}"
+_say "Move into theme and create empty component-library-twig directory"
 cd ../..
 mkdir node_modules/@yalesites-org/component-library-twig
-echo -e "${GREEN}Copy built dist folder${ENDCOLOR}"
+_say "Copy built dist folder"
 cp -r _yale-packages/component-library-twig/dist node_modules/@yalesites-org/component-library-twig/.
-echo -e "${GREEN}Copy built components folder${ENDCOLOR}"
+_say "Copy built components folder"
 cp -r _yale-packages/component-library-twig/components node_modules/@yalesites-org/component-library-twig/.
