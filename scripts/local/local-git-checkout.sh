@@ -122,6 +122,18 @@ npm ci -y
 _say "Using the tokens global npm link inside the component library"
 npm link @yalesites-org/tokens
 
+cd ../..
+
+_say "Attempting to npm link tokens inside atomic"
+npm link @yalesites-org/tokens
+
+_say "Moving to tokens repo"
+cd _yale-packages/tokens || (_error "Could not find tokens repo. Are you in the right directory?" && exit 1)
+
+_say "Building tokens"
+cd ../tokens || (_error "Could not find tokens repo. Are you in the right directory?" && exit 1)
+npm run build
+
 _say "Symlinking to root directory"
 cd ../../../../../..
 [ ! -L "atomic" ] && ln -s web/themes/contrib/atomic atomic
