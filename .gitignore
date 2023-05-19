@@ -125,3 +125,8 @@ reference
 # Yalesites profile assets
 web/profiles/custom/yalesites_profile/composer.lock
 web/profiles/custom/yalesites_profile/vendor/
+
+# Local development symlinks
+atomic
+component-library-twig
+tokens
