@@ -14,7 +14,7 @@ filters:
     status: true
     weight: -10
     settings:
-      allowed_html: '<em> <strong>'
+      allowed_html: '<br> <p> <strong> <em>'
       filter_html_help: false
       filter_html_nofollow: false
   improve_line_breaks_filter:

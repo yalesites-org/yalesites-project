@@ -1,0 +1,24 @@
+uuid: dc69a643-ae98-4b39-85f0-9dc49c34583d
+langcode: en
+status: true
+dependencies:
+  config:
+    - filter.format.heading_html
+  module:
+    - ckeditor5
+format: heading_html
+editor: ckeditor5
+settings:
+  toolbar:
+    items:
+      - bold
+      - italic
+  plugins: {  }
+image_upload:
+  status: false
+  scheme: public
+  directory: inline-images
+  max_size: ''
+  max_dimensions:
+    width: null
+    height: null
