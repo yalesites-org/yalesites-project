@@ -49,8 +49,9 @@
       });
 
       //
-      // Add Checked attribute to clicked attibute to visually identify the
-      // active clicked theme option.
+      // Add Checked (checked = "checked") attribute to clicked radio elements 
+      // to visually identify the active clicked theme option.
+      //
 
       // Get all radio inputs in the glogal_theme name group
       const radioInputs = document.querySelectorAll('input[name="global_theme"]');
@@ -69,13 +70,11 @@
             });
           }
 
-          // Read active global theme and find the global-theme number and
-          // update it when on input change.
-
-          // apply global theme value to our components 
+          // Get each component-color span element
           const targetElements = document.querySelectorAll('span.component-color');
 
-          // Get the original background style value
+          // Read active global theme and capture the number in a variable and
+          // update it on radio input paletter selection change.
           targetElements.forEach(targetElement => {
             const globalTheme = document.querySelector('div[data-global-theme]');
             const currentTheme = globalTheme.getAttribute('data-global-theme');
@@ -83,9 +82,6 @@
 
             // Construct the regular expression pattern dynamically
             const regexPattern = new RegExp(`--global-themes-(\\w+)-`);
-
-            // // Replace the --global-themes-${globalTheme}- portion
-            // const updatedBackground = originalBackground.replace(/--global-themes-(one|two|three|four|five)-/, `--global-themes-${currentTheme}-`);
 
             // Replace the --global-themes-${globalTheme}- portion
             const updatedBackground = originalBackground.replace(regexPattern, `--global-themes-${currentTheme}-`);
@@ -96,7 +92,7 @@
         });
       });
 
-      // Function to handle checked behavior based on radio element selection.
+      // Function to handle radio input checked behavior based on radio element selection.
       // Note: 'global_theme' is excluded because we're doing the same thing above,
       // but adding on to it. 
       function handleRadioInputs(radioGroup) {
