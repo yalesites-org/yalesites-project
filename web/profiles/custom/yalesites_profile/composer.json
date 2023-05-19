@@ -40,8 +40,8 @@
     "drupal/layout_builder_restrictions": "^2.17",
     "drupal/layout_builder_restrictions_by_role": "^1.0@alpha",
     "drupal/libraries": "^4.0",
-    "drupal/linkit": "6.0.x-dev@dev",
-    "drupal/mailchimp_transactional": "^1.0",
+    "drupal/linkit": "^6.0@RC",
+    "drupal/mailchimp_transactional": "dev-3337845-drupal-10-upgrade",
     "drupal/mailsystem": "^4.3",
     "drupal/markup": "^2.0@beta",
     "drupal/maxlength": "^2.0@RC",
@@ -68,8 +68,8 @@
     "drupal/section_library": "^1.1",
     "drupal/simple_sitemap": "^4.1",
     "drupal/smart_date": "^3.5",
-    "drupal/twig_tweak": "^3.1",
-    "drupal/upgrade_status": "^3.18",
+    "drupal/twig_tweak": "^3.2",
+    "drupal/upgrade_status": "^4.0",
     "drupal/webform": "^6.2@beta",
     "drupal/wingsuit_companion": "^2.0@RC",
     "yalesites-org/atomic": "^1.12",
@@ -107,9 +107,6 @@
       },
       "drupal/gin_lb": {
         "fix missing file field https://www.drupal.org/project/gin_lb/issues/3349745": "https://www.drupal.org/files/issues/2023-03-23/3349745-8-claro-preprocess-file-fields.patch"
-      },
-      "drupal/mailchimp_transactional": {
-        "allow D10 installs https://www.drupal.org/project/mailchimp_transactional/issues/3337845": "https://git.drupalcode.org/project/mailchimp_transactional/-/merge_requests/13.diff"
       }
     }
   }
