@@ -17,7 +17,7 @@ verbose=false
 function current_branch_for_path() {
   local git_path=${1-$(pwd)}
 
-  return $(git -C "$git_path" rev-parse --abbrev-ref HEAD)
+  git -C "$git_path" rev-parse --abbrev-ref HEAD
 }
 
 # clone_or_switch_branch
@@ -65,6 +65,23 @@ function clone_or_switch_branch() {
   fi
 }
 
+function repo_has_changes() {
+  local git_path=$1
+
+  # If directory doesn't exist, return 0 (bypass)
+  [ ! -d "$git_path" ] && return 0
+
+  # Check for uncommitted changes
+  if ! git -C "$git_path" diff --quiet --exit-code; then
+    return 1
+  fi
+
+  # Check for untracked files
+  if [ "$(git -C "$git_path" status --porcelain | grep -c '^??')" -gt 0 ]; then
+    return 1
+  fi
+}
+
 # getopts
 while getopts ":dvc:t:a:" opt; do
   case ${opt} in
@@ -100,6 +117,25 @@ source ./scripts/local/util/say.sh
 
 [ "$debug" = true ] && _say "Debug mode enabled" && set -x
 [ "$verbose" = true ] && _say "Verbose mode enabled"
+
+# Shortcircuit running if there are changes already present
+repo_has_changes 'web/themes/contrib/atomic'
+if [ $? -eq 1 ]; then
+  _error "You have uncommitted changes to the atomic repo.  Please commit or stash them before running this script."
+  exit 1
+fi
+
+repo_has_changes 'web/themes/contrib/atomic/_yale-packages/tokens'
+if [ $? -eq 1 ]; then
+  _error "You have uncommitted changes to the tokens repo.  Please commit or stash them before running this script."
+  exit 1
+fi
+
+repo_has_changes 'web/themes/contrib/atomic/_yale-packages/component-library-twig'
+if [ $? -eq 1 ]; then
+  _error "You have uncommitted changes to the component-library-twig repo.  Please commit or stash them before running this script."
+  exit 1
+fi
 
 _say "Let the magic begin!"
 _say "********************"
