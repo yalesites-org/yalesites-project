@@ -136,6 +136,11 @@ function ys_themes_preprocess_block(&$variables) {
       $config = \Drupal::config('ys_themes.theme_settings');
       $variables['cta__component_theme'] = $config->get('button_theme');
       $variables['parentNode'] = $node->getType();
+
+      // Add the cache tag, so that the theme setting information is rebuilt when
+      // the config is saved.
+      // Via: https://drupal.stackexchange.com/questions/266379/how-to-clear-cache-for-config-entity-after-making-changes
+      \Drupal::service('renderer')->addCacheableDependency($variables, $config);
     }
   }
 }
@@ -147,7 +152,6 @@ function ys_themes_preprocess_page(&$variables) {
   // Sets the global theme from lever settings.
   $config = \Drupal::config('ys_themes.theme_settings');
   $variables['site_global__theme'] = $config->get('global_theme');
-  $variables['cta__component_theme'] = $config->get('button_theme');
 
   // Add the cache tag, so that the theme setting information is rebuilt when
   // the config is saved.
