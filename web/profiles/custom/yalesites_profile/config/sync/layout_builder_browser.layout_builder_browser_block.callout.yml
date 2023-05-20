@@ -4,8 +4,8 @@ status: true
 dependencies: {  }
 id: callout
 block_id: 'inline_block:callout'
-category: all_blocks
+category: basic
 label: Callout
 image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/callout.svg
 image_alt: ''
-weight: -4
+weight: -5
