@@ -31,13 +31,20 @@
 /*
 */
 
+/* visually hide the inputs */
 #drupal-off-canvas .ys-themes--global-settings input {
-  flex: 0 auto;
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
 }
 
 #drupal-off-canvas .ys-themes--global-settings label {
   display: block;
-  flex: 1 auto;
   text-align: left;
   background: var(--color-basic-white);
   border: 2px solid var(--color-border);
@@ -45,6 +52,14 @@
   color: var(--color-text-primary);
   border-radius: 0.25rem;
   margin-bottom: var(--size-spacing-4);
+}
+
+#drupal-off-canvas .ys-themes--global-settings fieldset:focus-visible,
+#drupal-off-canvas .ys-themes--global-settings fieldset:focus-within,
+#drupal-off-canvas .ys-themes--global-settings label:focus-visible,
+#drupal-off-canvas .ys-themes-settings-form input[type="submit"].button--primary:focus {
+  outline: var(--size-thickness-2) solid var(--color-link-base);
+  outline-offset: var(--size-thickness-2);
 }
 
 #drupal-off-canvas .ys-themes--global-settings input[checked="checked"] + label .color {
@@ -68,13 +83,6 @@
 /*
 */
 
-#drupal-off-canvas .ys-themes--global-settings .form-item-global-theme {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  gap: 1rem;
-}
-
 #drupal-off-canvas .ys-themes--global-settings .colors {
   display: flex;
   margin-top: .42rem;
@@ -96,7 +104,7 @@
 }
 
 #drupal-off-canvas .ys-themes--global-settings .form-item-global-theme:hover label,
-#drupal-off-canvas .ys-themes--global-settings .form-item-global-theme:focus label {
+#drupal-off-canvas .ys-themes--global-settings .form-item-global-theme:focus label { 
   background-color: var(--color-background-hover);
   border-color: var(--color-border-hover);
 }
@@ -141,10 +149,6 @@
   align-items: center;
   gap: 1rem;
   margin-bottom: var(--size-spacing-8);
-}
-
-#drupal-off-canvas .ys-themes--global-settings .form-item-nav-position input {
-  flex: 0 auto;
 }
 
 #drupal-off-canvas .ys-themes--global-settings .form-item-nav-position label {
@@ -202,10 +206,6 @@
   margin-bottom: var(--size-spacing-8);
 }
 
-#drupal-off-canvas .ys-themes--global-settings .form-item-nav-type input {
-  flex: 0 auto;
-}
-
 #drupal-off-canvas .ys-themes--global-settings .form-item-nav-type label {
   flex: 1 auto;
   padding: var(--size-spacing-6) var(--size-spacing-4);
@@ -253,10 +253,6 @@
   margin-bottom: var(--size-spacing-8);
 }
 
-#drupal-off-canvas .form-item-button-theme input {
-  flex: 0 auto;
-}
-
 #drupal-off-canvas .form-item-button-theme label {
   flex: 1 auto;
 }
@@ -298,10 +294,6 @@
   align-items: center;
   gap: 1rem;
   margin-bottom: var(--size-spacing-8);
-}
-
-#drupal-off-canvas .form-item-header-theme input {
-  flex: 0 auto;
 }
 
 #drupal-off-canvas .form-item-header-theme label {
@@ -350,10 +342,6 @@
   align-items: center;
   gap: 1rem;
   margin-bottom: var(--size-spacing-8);
-}
-
-#drupal-off-canvas .form-item-footer-theme input {
-  flex: 0 auto;
 }
 
 #drupal-off-canvas .form-item-footer-theme label {
