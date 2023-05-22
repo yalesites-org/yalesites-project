@@ -4,8 +4,8 @@ status: true
 dependencies: {  }
 id: media_grid
 block_id: 'inline_block:media_grid'
-category: all_blocks
+category: media
 label: 'Media Grid'
 image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/media-grid.svg
 image_alt: ''
-weight: 2
+weight: -9

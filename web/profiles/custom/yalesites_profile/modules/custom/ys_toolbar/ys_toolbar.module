@@ -21,6 +21,9 @@ function ys_toolbar_toolbar_alter(&$items) {
   // Remove the contextual toggle. This control is confusing to our authors
   // and is not important for our editorial workflow.
   unset($items['contextual']);
+
+  // Attached custom css/js to the toolbar.
+  $items['administration']['#attached']['library'][] = 'ys_toolbar/ys_toolbar';
 }
 
 /**

@@ -1,4 +1,5 @@
 node_layout_form:
   css:
     theme:
+      css/layout-builder-browser.css: {}
       css/multifield-form.css: { }
