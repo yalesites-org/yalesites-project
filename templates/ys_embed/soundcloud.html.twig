@@ -1,10 +1,10 @@
 {% set soundcloud__base_class = soundcloud__base_class|default('ys-embed-soundcloud') %}
-{% set soundcloud__width = "content" %}
-{% set soundcloud__alignment = "left" %}
+{% set soundcloud__width = soundcloud__width|default('content') %}
+{% set soundcloud__alignment = soundcloud__alignment|default('left') %}
 
 {% set soundcloud_embed__attributes = {
-    'data-component-width': soundcloud__width|default('content'),
-    'data-component-alignment': soundcloud__alignment|default('left'),
+    'data-component-width': soundcloud__width,
+    'data-component-alignment': soundcloud__alignment,
     class: bem(soundcloud__base_class, soundcloud__modifiers),
 } %}
 
