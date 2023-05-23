@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # default values
-default_branch="main"
 cl_branch="main"
 token_branch="main"
 atomic_branch="main"
@@ -31,8 +30,18 @@ function current_branch_for_path() {
 branch_exists() {
   local branch_name="$1"
   local git_path="$2"
+  local remote_branches
 
-  git -C "$git_path" rev-parse --quiet --verify "$branch_name" > /dev/null
+  if git -C "$git_path" rev-parse --quiet --verify "$branch_name" > /dev/null; then
+    return 0
+  fi
+
+  remote_branches=$(git ls-remote --heads origin | awk '{print $2}' | sed 's#refs/heads/##')
+  if echo "$remote_branches" | grep -q "^$branch_name$"; then
+    return 0
+  fi
+
+  return 1 # Branch does not exist
 }
 
 # clone_or_switch_branch
@@ -61,11 +70,11 @@ function clone_or_switch_branch() {
   # Clone if directory doesn't exist
   [ ! -d "$git_path" ] && 
     _say "Cloning the $target_branch branch of the $name repo" && 
-    git clone git@github.com:yalesites-org/"$name".git "$git_path" -b "$origin/$target_branch"
+    git clone git@github.com:yalesites-org/"$name".git "$git_path" -b "$target_branch"
 
   # Check if branch existed, and do a backup
   [ ! -d "$git_path" ] && _error "$target_branch not found, defaulting to $backup_branch" && 
-    git clone git@github.com:yalesites-org/"$name".git "$git_path" -b "$origin/$backup_branch"
+    git clone git@github.com:yalesites-org/"$name".git "$git_path" -b "$backup_branch"
 
   # Fail if still not there
   [ ! -d "$git_path" ] && _error "$backup_branch not found; houston, we have a problem..." && exit 1 
@@ -92,6 +101,13 @@ function clone_or_switch_branch() {
   fi
 }
 
+# repo_has_changes
+#
+# This function will return 1 if a repo has changes, 0 if it does not.
+#
+# params:
+#  git_path: the path to the repo
+#
 function repo_has_changes() {
   local git_path=$1
 
@@ -180,8 +196,6 @@ fi
 
 _say "Attempting to clone $atomic_branch branch of atomic repo"
 clone_or_switch_branch "atomic" "web/themes/contrib/atomic" "$atomic_branch"
-
-exit 
 
 [ "$verbose" = true ] && _say "Moving to atomic repo"
 cd web/themes/contrib/atomic || (_error "Could not find atomic theme. Are you in the right directory?" && exit 1)
