@@ -8,6 +8,7 @@ use Drupal\Core\Path\PathValidatorInterface;
 use Drupal\Core\Routing\RequestContext;
 use Drupal\path_alias\AliasManagerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\google_analytics\Constants\GoogleAnalyticsPatterns;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -154,6 +155,13 @@ class SiteSettingsForm extends ConfigFormBase {
       '#default_value' => $yaleConfig->get('seo')['google_site_verification'],
     ];
 
+    $form['google_analytics_id'] = [
+      '#type' => 'textfield',
+      '#description' => $this->t('This ID has the form of <code>UA-xxxxx-yy</code>, <code>G-xxxxxxxx</code>, <code>AW-xxxxxxxxx</code>, or <code>DC-xxxxxxxx</code>. To get a Web Property ID, register your site with Google Analytics, or if you already have registered your site, go to your Google Analytics Settings page to see the ID next to every site profile.'),
+      '#title' => $this->t('Google Analytics Web Property ID'),
+      '#default_value' => $yaleConfig->get('seo')['google_analytics_id'],
+    ];
+
     $form['enable_search_form'] = [
       '#type' => 'checkbox',
       '#description' => $this->t('Enable the search form located in the utility navigation area.'),
@@ -208,6 +216,9 @@ class SiteSettingsForm extends ConfigFormBase {
     // Email validations.
     $this->validateEmail($form_state, 'site_mail');
 
+    // Ensure Google Analytics is a valid format.
+    $this->validateGoogleAnalyticsId($form_state, 'google_analytics_id');
+
     parent::validateForm($form, $form_state);
   }
 
@@ -227,7 +238,11 @@ class SiteSettingsForm extends ConfigFormBase {
       ->set('page.events', $form_state->getValue('site_page_events'))
       ->set('search.enable_search_form', $form_state->getValue('enable_search_form'))
       ->set('seo.google_site_verification', $form_state->getValue('google_site_verification'))
+      ->set('seo.google_analytics_id', $form_state->getValue('google_analytics_id'))
       ->set('image_fallback.teaser', $form_state->getValue('teaser_image_fallback'))
+      ->save();
+    $this->configFactory->getEditable('google_analytics.settings')
+      ->set('account', $form_state->getValue('google_analytics_id'))
       ->save();
 
     parent::submitForm($form, $form_state);
@@ -299,7 +314,7 @@ class SiteSettingsForm extends ConfigFormBase {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state passed by reference.
    * @param string $fieldId
-   *   The id of a field on the connfig form.
+   *   The id of a field on the config form.
    */
   protected function validateEmail(FormStateInterface &$form_state, string $fieldId) {
     if (($value = $form_state->getValue($fieldId))) {
@@ -315,6 +330,29 @@ class SiteSettingsForm extends ConfigFormBase {
       if (strpos($value, '@yale.edu') === FALSE) {
         $form_state->setErrorByName(
           $fieldId, $this->t('Email domain has to be @yale.edu.')
+        );
+      }
+    }
+  }
+
+  /**
+   * Check that a submitted GA value matches a valid Google Analytics format.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state passed by reference.
+   * @param string $fieldId
+   *   The id of a field on the cnnfig form.
+   */
+  protected function validateGoogleAnalyticsId(FormStateInterface &$form_state, string $fieldId) {
+    // Exit early if the google_analytics module changed and no longer applies.
+    if(!class_exists('Drupal\google_analytics\Constants\GoogleAnalyticsPatterns')) {
+      return;
+    }
+    if (($value = $form_state->getValue($fieldId))) {
+      if (!preg_match(GoogleAnalyticsPatterns::GOOGLE_ANALYTICS_GTAG_MATCH, $value)) {
+        $form_state->setErrorByName(
+          $fieldId,
+          $this->t('A valid Google Analytics Web Property ID is case sensitive and formatted like UA-xxxxx-yy, G-xxxxxxxx, AW-xxxxxxxxx, or DC-xxxxxxxx.')
         );
       }
     }
