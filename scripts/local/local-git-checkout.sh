@@ -150,6 +150,12 @@ while getopts ":dvc:t:a:b:" opt; do
       ;;
     \? )
       echo "Usage: $0 [-d] [-b <branch-for-all-repos>] [-c <component-library-branch>] [-t <tokens-branch>] [-a <atomic-branch>]"
+      echo "-d: debug mode"
+      echo "-v: verbose mode"
+      echo "-b <branch>: branch for all repos - use if all repos are on the same branch name"
+      echo "-c <branch>: component library branch to use"
+      echo "-t <branch>: tokens branch to use"
+      echo "-a <branch>: atomic branch to use"
       exit 1
       ;;
     :)
