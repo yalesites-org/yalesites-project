@@ -1,7 +1,15 @@
 # Form to admin theme settings.
-ys_themes.theme_settings:
-  description: 'Set sitewide theme settings.'
-  parent: ys_core.admin_yalesites
-  route_name: ys_themes.theme_settings
-  title: 'Theme Settings'
-  weight: 30
+# Author Experience team is debating if it should be a sidebar or toolbar link.
+# @todo: Remove this if the clients decide to keep theme settings on the top.
+# ys_themes.theme_settings:
+#   description: 'Set sitewide theme settings.'
+#   parent: ys_core.admin_yalesites
+#   route_name: ys_themes.theme_settings
+#   title: 'Theme Settings'
+#   weight: 30
+#   options:
+#     attributes:
+#       class: ['use-ajax']
+#       data-dialog-type: dialog
+#       data-dialog-renderer: off_canvas
+#       data-settings-tray-edit: true
