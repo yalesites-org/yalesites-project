@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # default values
+default_branch="main"
 cl_branch="main"
 token_branch="main"
 atomic_branch="main"
@@ -20,6 +21,20 @@ function current_branch_for_path() {
   git -C "$git_path" rev-parse --abbrev-ref HEAD
 }
 
+# branch_exists
+#
+# This function will return 1 if a branch exists, 0 if it does not.
+#
+# params:
+#  branch_name: the name of the branch
+#
+branch_exists() {
+    local branch_name="$1"
+    local git_path="$2"
+
+    git -C "$git_path" rev-parse --quiet --verify "$branch_name"
+}
+
 # clone_or_switch_branch
 #
 # This function will clone a repo if it doesn't exist, or switch to a branch if
@@ -36,6 +51,7 @@ function clone_or_switch_branch() {
   local name=$1
   local git_path=$2
   local target_branch=${3:-main}
+  local backup_branch=${4:-main}
   local current_branch
 
   [ -z "$name" ] && _error "You must provide a name" && exit 1
@@ -46,6 +62,13 @@ function clone_or_switch_branch() {
     _say "Cloning the $target_branch branch of the $name repo" && 
     git clone git@github.com:yalesites-org/"$name".git "$git_path" -b "$target_branch"
 
+  # Check if branch existed, and do a backup
+  [ ! -d "$git_path" ] && _error "$target_branch not found, defaulting to $backup_branch" && 
+    git clone git@github.com:yalesites-org/"$name".git "$git_path" -b "$backup_branch"
+
+  # Fail if still not there
+  [ ! -d "$git_path" ] && _error "$backup_branch not found; houston, we have a problem..." && exit 1 
+
   # Get current branch of repo
   current_branch=$(current_branch_for_path "$git_path")
 
@@ -53,6 +76,12 @@ function clone_or_switch_branch() {
   if [ "$current_branch" != "$target_branch" ]; then
     # If there are no uncommitted changes, switch to the target branch
     if git -C "$git_path" diff --quiet --exit-code; then
+      # If the target branch doesn't exist, switch to the backup branch
+      if ! branch_exists "$target_branch" "$git_path"; then
+        _error "Target branch $target_branch does not exist, switching to $backup_branch"
+        target_branch="$backup_branch"
+      fi
+
       _say "Current branch of $name is $current_branch, switching to $target_branch"
       git -C "$git_path" fetch --all
       git -C "$git_path" checkout "$target_branch"
