@@ -11,14 +11,26 @@
 # through the regular component library release process, and be included in an
 # official release of Atomic.
 
-[ -e "./scripts/local/util/say.sh" ] || (echo -e "[$0] Say utility not found.  You must run this from the yalesites root directory: " && exit 1)
-source ./scripts/local/util/say.sh
+GREEN='\033[1;32m'
+ENDCOLOR='\033[0m'
 
-if ! ./scripts/local/local-git-checkout.sh -c develop -a develop; then
-  exit 1
-fi
-
-cd atomic || exit
-
-_say "Running the develop script in the component library"
+echo -e "${GREEN}Move into tokens repo and create a global link${ENDCOLOR}"
+cd web/themes/contrib/atomic
+[ ! -d "_yale-packages/tokens" ] && git clone git@github.com:yalesites-org/tokens.git _yale-packages/tokens
+cd _yale-packages/tokens || exit
+npm link
+cd ../..
+echo -e "${GREEN}Move into component library and create a global link${ENDCOLOR}"
+[ ! -d "_yale-packages/component-library-twig" ] && git clone git@github.com:yalesites-org/component-library-twig.git _yale-packages/component-library-twig
+cd _yale-packages/component-library-twig || exit
+npm link
+echo -e "${GREEN}Move into Atomic and use the component-library global link${ENDCOLOR}"
+cd ../..
+npm link @yalesites-org/component-library-twig
+echo -e "${GREEN}Move into the component-library and use the tokens global link${ENDCOLOR}"
+cd _yale-packages/component-library-twig || exit
+# Run npm ci. This is required to patch our version of Twig.js.
+npm ci
+npm link @yalesites-org/tokens
+echo -e "${GREEN}Run the develop script in the component library${ENDCOLOR}"
 npm run develop

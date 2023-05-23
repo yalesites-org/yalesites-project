@@ -11,4 +11,24 @@
 # through the regular component library release process, and be included in an
 # official release of Atomic.
 
-echo -e "Use local-cl-dev.sh instead.  This script is deprecated."
+GREEN='\033[1;32m'
+ENDCOLOR='\033[0m'
+
+echo -e "${GREEN}Move into tokens repo and create a global link${ENDCOLOR}"
+cd web/themes/contrib/atomic
+[ ! -d "_yale-packages/tokens" ] && git clone git@github.com:yalesites-org/tokens.git _yale-packages/tokens
+cd _yale-packages/tokens || exit
+npm link
+cd ../..
+echo -e "${GREEN}Move into component library and create a global link${ENDCOLOR}"
+[ ! -d "_yale-packages/component-library-twig" ] && git clone git@github.com:yalesites-org/component-library-twig.git _yale-packages/component-library-twig
+cd _yale-packages/component-library-twig || exit
+npm link
+echo -e "${GREEN}Move into Atomic and use the component-library global link${ENDCOLOR}"
+cd ../..
+npm link @yalesites-org/component-library-twig
+echo -e "${GREEN}Move into the component-library and use the tokens global link${ENDCOLOR}"
+cd _yale-packages/component-library-twig || exit
+# Run npm ci. This is required to patch our version of Twig.js.
+npm ci
+npm link @yalesites-org/tokens
