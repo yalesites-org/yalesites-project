@@ -345,7 +345,7 @@ class SiteSettingsForm extends ConfigFormBase {
    */
   protected function validateGoogleAnalyticsId(FormStateInterface &$form_state, string $fieldId) {
     // Exit early if the google_analytics module changed and no longer applies.
-    if(!class_exists('Drupal\google_analytics\Constants\GoogleAnalyticsPatterns')) {
+    if (!class_exists('Drupal\google_analytics\Constants\GoogleAnalyticsPatterns')) {
       return;
     }
     if (($value = $form_state->getValue($fieldId))) {
