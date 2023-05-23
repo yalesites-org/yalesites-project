@@ -29,10 +29,10 @@ function current_branch_for_path() {
 #  branch_name: the name of the branch
 #
 branch_exists() {
-    local branch_name="$1"
-    local git_path="$2"
+  local branch_name="$1"
+  local git_path="$2"
 
-    git -C "$git_path" rev-parse --quiet --verify "$branch_name"
+  git -C "$git_path" rev-parse --quiet --verify "$branch_name" > /dev/null
 }
 
 # clone_or_switch_branch
@@ -61,11 +61,11 @@ function clone_or_switch_branch() {
   # Clone if directory doesn't exist
   [ ! -d "$git_path" ] && 
     _say "Cloning the $target_branch branch of the $name repo" && 
-    git clone git@github.com:yalesites-org/"$name".git "$git_path" -b "$target_branch"
+    git clone git@github.com:yalesites-org/"$name".git "$git_path" -b "$origin/$target_branch"
 
   # Check if branch existed, and do a backup
   [ ! -d "$git_path" ] && _error "$target_branch not found, defaulting to $backup_branch" && 
-    git clone git@github.com:yalesites-org/"$name".git "$git_path" -b "$backup_branch"
+    git clone git@github.com:yalesites-org/"$name".git "$git_path" -b "$origin/$backup_branch"
 
   # Fail if still not there
   [ ! -d "$git_path" ] && _error "$backup_branch not found; houston, we have a problem..." && exit 1 
@@ -82,7 +82,7 @@ function clone_or_switch_branch() {
       (! branch_exists "$target_branch" "$git_path") && _error "Target branch $target_branch does not exist, switching to $backup_branch" && target_branch="$backup_branch"
 
       _say "Current branch of $name is $current_branch, switching to $target_branch"
-      git -C "$git_path" checkout --track "$origin/$target_branch"
+      git -C "$git_path" checkout "$target_branch" || git -C "$git_path" checkout --track "$origin/$target_branch"
     else
       _error "You have uncommitted changes to the $name repo.  Please commit or stash them before running this script."
       exit 1
@@ -180,6 +180,8 @@ fi
 
 _say "Attempting to clone $atomic_branch branch of atomic repo"
 clone_or_switch_branch "atomic" "web/themes/contrib/atomic" "$atomic_branch"
+
+exit 
 
 [ "$verbose" = true ] && _say "Moving to atomic repo"
 cd web/themes/contrib/atomic || (_error "Could not find atomic theme. Are you in the right directory?" && exit 1)
