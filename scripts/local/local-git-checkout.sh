@@ -83,7 +83,7 @@ function repo_has_changes() {
 }
 
 # getopts
-while getopts ":dvc:t:a:" opt; do
+while getopts ":dvc:t:a:b:" opt; do
   case ${opt} in
     d )
       debug=true
@@ -100,12 +100,17 @@ while getopts ":dvc:t:a:" opt; do
     v )
       verbose=true
       ;;
+    b )
+      atomic_branch=$OPTARG
+      cl_branch=$OPTARG
+      token_branch=$OPTARG
+      ;;
     \? )
-      echo "Usage: $0 [-d] [-c <component-library-branch>] [-t <tokens-branch>] [-a <atomic-branch>]"
+      echo "Usage: $0 [-d] [-b <branch-for-all-repos>] [-c <component-library-branch>] [-t <tokens-branch>] [-a <atomic-branch>]"
       exit 1
       ;;
     :)
-      echo "Usage: $0 [-d] [-c <component-library-branch>] [-t <tokens-branch>] [-a <atomic-branch>]"
+      echo "Usage: $0 [-d] [-b <branch-for-all-repos>] [-c <component-library-branch>] [-t <tokens-branch>] [-a <atomic-branch>]"
       echo "Option -$OPTARG requires an argument." >&2
       exit 1
       ;;
