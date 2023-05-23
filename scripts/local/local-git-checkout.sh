@@ -52,6 +52,7 @@ function clone_or_switch_branch() {
   local git_path=$2
   local target_branch=${3:-main}
   local backup_branch=${4:-main}
+  local origin=${5:-origin}
   local current_branch
 
   [ -z "$name" ] && _error "You must provide a name" && exit 1
@@ -74,17 +75,14 @@ function clone_or_switch_branch() {
 
   # If current branch is not the target branch
   if [ "$current_branch" != "$target_branch" ]; then
-    # If there are no uncommitted changes, switch to the target branch
+    git -C "$git_path" fetch --all
+    # If there are no uncommitted changes, prepare to switch to the target branch
     if git -C "$git_path" diff --quiet --exit-code; then
       # If the target branch doesn't exist, switch to the backup branch
-      if ! branch_exists "$target_branch" "$git_path"; then
-        _error "Target branch $target_branch does not exist, switching to $backup_branch"
-        target_branch="$backup_branch"
-      fi
+      (! branch_exists "$target_branch" "$git_path") && _error "Target branch $target_branch does not exist, switching to $backup_branch" && target_branch="$backup_branch"
 
       _say "Current branch of $name is $current_branch, switching to $target_branch"
-      git -C "$git_path" fetch --all
-      git -C "$git_path" checkout "$target_branch"
+      git -C "$git_path" checkout --track "$origin/$target_branch"
     else
       _error "You have uncommitted changes to the $name repo.  Please commit or stash them before running this script."
       exit 1
