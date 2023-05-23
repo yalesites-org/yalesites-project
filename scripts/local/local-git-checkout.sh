@@ -157,6 +157,8 @@ clone_or_switch_branch "atomic" "web/themes/contrib/atomic" "$atomic_branch"
 [ "$verbose" = true ] && _say "Moving to atomic repo"
 cd web/themes/contrib/atomic || (_error "Could not find atomic theme. Are you in the right directory?" && exit 1)
 
+[ ! -d "_yale-packages" ] && mkdir _yale-packages && _say "Creating _yale-packages directory for cloning"
+
 _say "Attempting to clone $token_branch branch of tokens repo"
 clone_or_switch_branch "tokens" "_yale-packages/tokens" "$token_branch"
 
