@@ -254,3 +254,11 @@ cd ../../../../../..
 
 [ "$atomic_changed" = true ] && _say "Atomic theme changed, so we need to clear Drupal cache; this could take a while" && lando drush cr
 
+_say "********************"
+_say "All done!"
+_say "********************"
+_say "Current branches"
+_say "Atomic:            $(current_branch_for_path 'web/themes/contrib/atomic')"
+_say "Component Library: $(current_branch_for_path 'web/themes/contrib/atomic/_yale-packages/component-library-twig')"
+_say "Tokens:            $(current_branch_for_path 'web/themes/contrib/atomic/_yale-packages/tokens')"
+_say "********************"
