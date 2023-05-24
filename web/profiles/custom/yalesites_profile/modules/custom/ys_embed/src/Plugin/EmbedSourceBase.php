@@ -59,6 +59,13 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
   protected static $example;
 
   /**
+   * An array of attributes to add to the template.
+   *
+   * @var array
+   */
+  protected static $display_attributes;
+
+  /**
    * Creates a plugin instance.
    *
    * @param array $configuration
@@ -139,10 +146,29 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
    */
   public function build(array $params): array {
     return [
-      '#type' => 'inline_template',
-      '#template' => static::$template,
-      '#context' => $params,
+      '#theme' => 'embed_wrapper',
+      '#title' => $params['title'],
+      '#url' => $this->getUrl($params),
+      '#display_attributes' => static::$display_attributes,
+      '#embedSource' => [
+        '#type' => 'inline_template',
+        '#template' => static::$template,
+        '#context' => $params,
+      ]
     ];
+  }
+
+  /**
+   * Retrieves a URL using the params array.
+   *
+   * @param array $params
+   *   An array of params.
+   *
+   * @return string
+   *   The URL.
+   */
+  public function getUrl(array $params): string {
+    return $params['url'] ?? '';
   }
 
 }
