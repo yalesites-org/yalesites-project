@@ -60,10 +60,13 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
 
   /**
    * An array of attributes to add to the template.
+   * We default isIframe to FALSE so that it renders the inline_template.
    *
    * @var array
    */
-  protected static $display_attributes;
+  protected static $display_attributes = [
+    'isIframe' => FALSE,
+  ];
 
   /**
    * Creates a plugin instance.
