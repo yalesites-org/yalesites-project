@@ -38,14 +38,4 @@ class Twitter extends EmbedSourceBase implements EmbedSourceInterface {
    */
   protected static $example = '<blockquote class="twitter-tweet"><p lang="en" dir="ltr">Yale scientists find a common weed harbors important clues about how to create drought resistant crops in a world beset by climate change.<a href="https://twitter.com/yale_eeb?ref_src=twsrc%5Etfw">@yale_eeb</a> <a href="https://twitter.com/hashtag/Yale?src=hash&amp;ref_src=twsrc%5Etfw">#Yale</a><a href="https://t.co/IsOLJ9hAbh">https://t.co/IsOLJ9hAbh</a></p>&mdash; Yale University (@Yale) <a href="https://twitter.com/Yale/status/1586724355089776640?ref_src=twsrc%5Etfw">October 30, 2022</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>';
 
-  /**
-   * {@inheritdoc}
-   */
-  public function build(array $params): array {
-    return [
-      '#theme' => 'twitter',
-      '#blockquote' => $params['blockquote'],
-    ];
-  }
-
 }
