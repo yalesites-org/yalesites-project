@@ -92,15 +92,15 @@ class ThemeSettingsManager {
       'default' => 'one',
       'values' => [
         'one' => [
-          'label' => 'One',
+          'label' => 'Base',
           'color_theme' => 'one',
         ],
         'two' => [
-          'label' => 'Two',
+          'label' => 'Action',
           'color_theme' => 'two',
         ],
         'three' => [
-          'label' => 'Three',
+          'label' => 'Deep',
           'color_theme' => 'five',
         ],
       ],
