@@ -40,15 +40,21 @@ class SoundCloud extends EmbedSourceBase implements EmbedSourceInterface {
 
   /**
    * {@inheritdoc}
-   *
-   * Override the build method so that we use a custom theme template.
    */
-  public function build(array $params): array {
-    return [
-      '#theme' => 'soundcloud',
-      '#track_id' => $params['track_id'],
-      '#title' => $params['title'],
-    ];
+  protected static $display_attributes = [
+    'width' => '100%',
+    'height' => '240px',
+    'scrolling' => 'no',
+    'frameborder' => 'no',
+    'isIframe' => TRUE,
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getUrl(array $params): string {
+    $track_id = $params['track_id'];
+    return 'https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/' . $track_id;
   }
 
 }
