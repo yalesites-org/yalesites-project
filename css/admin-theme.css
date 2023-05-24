@@ -41,6 +41,40 @@
 }
 
 
+/* Off-canvas overrides */
+#drupal-off-canvas {
+  background-color: var(--wool);
+  color: var(--darkest-gray);
+}
+
+.ui-dialog-off-canvas #drupal-off-canvas {
+  padding-inline: var(--size-spacing-5) var(--size-spacing-8);
+}
+
+#drupal-off-canvas form,
+#drupal-off-canvas label {
+  color: var(--darkest-gray);
+}
+
+.ui-widget.ui-dialog.ui-dialog-off-canvas .ui-dialog-titlebar {
+  display: flex;
+  align-items: center;
+  border-color: var(--peacock-green);
+}
+
+.ui-dialog.ui-dialog-off-canvas .ui-dialog-title,
+#drupal-off-canvas form,
+#drupal-off-canvas span,
+#drupal-off-canvas label,
+#drupal-off-canvas input[type="submit"].button {
+  font-family: var(--gin-font) !important;
+}
+
+#drupal-off-canvas input[type="submit"].button {
+  box-sizing: border-box;
+  padding: var(--size-spacing-5);
+}
+
 /* Modal */
 .ui-widget-overlay {
   background: var(--gin-color-primary) !important;
