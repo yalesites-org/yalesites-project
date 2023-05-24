@@ -96,7 +96,7 @@ class ThemesSettingsForm extends ConfigFormBase {
     foreach ($allSettings as $settingName => $settingDetail) {
       $this->themeSettingsManager->setSetting($settingName, $form_state->getValue($settingName));
     }
-
+    $form_state->setRedirect('<current>');
     return parent::submitForm($form, $form_state);
   }
 

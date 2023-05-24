@@ -4,8 +4,8 @@ status: true
 dependencies: {  }
 id: accordion
 block_id: 'inline_block:accordion'
-category: all_blocks
+category: advanced
 label: Accordion
 image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/accordion.svg
 image_alt: ''
-weight: -3
+weight: -11

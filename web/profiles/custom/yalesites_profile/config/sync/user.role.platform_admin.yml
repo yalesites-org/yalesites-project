@@ -28,6 +28,7 @@ dependencies:
     - path
     - publishcontent
     - quick_node_clone
+    - redirect
     - system
     - taxonomy
     - toolbar
@@ -51,6 +52,7 @@ permissions:
   - 'access webform overview'
   - 'administer blocks'
   - 'administer main menu items'
+  - 'administer redirects'
   - 'administer users'
   - 'administer utility-navigation menu items'
   - 'clone event content'
