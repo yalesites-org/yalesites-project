@@ -40,15 +40,21 @@ class Qualtrics extends EmbedSourceBase implements EmbedSourceInterface {
 
   /**
    * {@inheritdoc}
-   *
-   * Override the build method so that we use a custom theme template.
    */
-  public function build(array $params): array {
-    return [
-      '#theme' => 'qualtrics',
-      '#title' => $params['title'],
-      '#form_id' => $params['form_id'],
-    ];
+  protected static $display_attributes = [
+    'width' => '100%',
+    'height' => '100%',
+    'scrolling' => 'yes',
+    'frameborder' => 'no',
+    'isIframe' => TRUE,
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getUrl(array $params): string {
+    $form_id = $params['form_id'];
+    return 'https://yalesurvey.ca1.qualtrics.com/jfe/form/' . $form_id;
   }
 
 }
