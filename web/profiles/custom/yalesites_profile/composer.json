@@ -28,6 +28,7 @@
     "drupal/entity_redirect": "^2.2",
     "drupal/fast_404": "^2.0@alpha",
     "drupal/field_group": "^3.2",
+    "drupal/formdazzle": "^3.0",
     "drupal/gin": "^3.0@beta",
     "drupal/gin_lb": "^1.0@RC",
     "drupal/hide_revision_field": "^2.2",

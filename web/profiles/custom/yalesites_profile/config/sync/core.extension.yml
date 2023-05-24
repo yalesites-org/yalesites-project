@@ -122,6 +122,7 @@ module:
   menu_admin_per_menu: 1
   pathauto: 1
   externalauth: 10
+  formdazzle: 10
   views: 10
   ys_core: 10
   ys_embed: 10
