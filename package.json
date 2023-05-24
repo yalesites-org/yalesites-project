@@ -43,5 +43,8 @@
     "web/**/*.{js,scss,php}": [
       "npm run prettier"
     ]
+  },
+  "dependencies": {
+    "@drupal/autocomplete": "^0.0.2"
   }
 }
