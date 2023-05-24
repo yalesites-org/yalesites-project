@@ -3,53 +3,193 @@
     "images": [
       {
         "image_id": 1,
-        "image_url": "https://yalesites-assets.yalespace.org/images/2013_10_28_14-51-06_DSC_9836.jpg",
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/2013_10_28_14-51-06_DSC_9836.jpg",
         "alt_text": "Aerial View of Yale University"
       },
       {
         "image_id": 2,
-        "image_url": "https://yalesites-assets.yalespace.org/images/2020_10_15_09-04-37_049a9308.jpg",
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/2020_10_15_09-04-37_049a9308.jpg",
         "alt_text": "Aerial View of Yale University"
       },
       {
         "image_id": 3,
-        "image_url": "https://yalesites-assets.yalespace.org/images/2018_02_22_12-17-40_BeineckeBooks_DP_8517.jpg",
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/2018_02_22_12-17-40_BeineckeBooks_DP_8517.jpg",
         "alt_text": "Towering shelves of books in a library"
       },
       {
         "image_id": 4,
-        "image_url": "https://yalesites-assets.yalespace.org/images/2019_01_14_13-40-17_DP_9969-Stacks.jpg",
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/2019_01_14_13-40-17_DP_9969-Stacks.jpg",
         "alt_text": "Two wooden chairs in an aisle between shelves of books in a library"
       },
       {
         "image_id": 5,
-        "image_url": "https://yalesites-assets.yalespace.org/images/2018_04_18_16-32-44_Stacks1_DP_1752.jpg",
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/2018_04_18_16-32-44_Stacks1_DP_1752.jpg",
         "alt_text": "Dark aisle between shelves of books in a library looking towards an arched window"
       },
       {
         "image_id": 6,
-        "image_url": "https://yalesites-assets.yalespace.org/images/2021_03_03_09-43-15_049A2410.jpg",
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/2021_03_03_09-43-15_049A2410.jpg",
         "alt_text": "Olde English Bulldog sitting in a crown-shaped dog bed in a cathedral-like room"
       },
       {
         "image_id": 7,
-        "image_url": "https://yalesites-assets.yalespace.org/images/2016_10_10_14_48_DSC_9740.jpg",
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/2016_10_10_14_48_DSC_9740.jpg",
         "alt_text": "Yale building reflected in a still pool of water"
       },
       {
         "image_id": 8,
-        "image_url": "https://yalesites-assets.yalespace.org/images/2002_03_25_13_05_16_AD0194.jpg",
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/2002_03_25_13_05_16_AD0194.jpg",
         "alt_text": "Looking down on a spiral staircase with students walking up"
       },
       {
         "image_id": 9,
-        "image_url": "https://yalesites-assets.yalespace.org/images/2014_02_03_11-24-40_DSC_8938.jpg",
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/2014_02_03_11-24-40_DSC_8938.jpg",
         "alt_text": "Red, yellow, and white sculpture against a wintery background"
       },
       {
         "image_id": 10,
-        "image_url": "https://yalesites-assets.yalespace.org/images/2018_10_15_10-25-00_Biking_DP_0035.jpg",
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/2018_10_15_10-25-00_Biking_DP_0035.jpg",
         "alt_text": "Pathway on Yale campus amongst bushes, fall trees, and a bike path"
+      },
+      {
+        "image_id": 11,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/beinecke-library-exterior-close-up.jpg",
+        "alt_text": "Exterior of the Beinecke Library features powerful stone geometry and marble panes"
+      },
+      {
+        "image_id": 12,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/branford-windows-through-trees.jpg",
+        "alt_text": "The gothic windows of Branford peek through tree branches "
+      },
+      {
+        "image_id": 13,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/central-campus-aerial-sunset_paul-coco.jpg",
+        "alt_text": "Sprawling aerial view of Central Campus's gothic architecture at sunset"
+      },
+      {
+        "image_id": 14,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/dwight-hall-memorial-chapel-rooftop-towers.jpg",
+        "alt_text": "Dramatic view of the towers on Yale University's historic Dwight Hall"
+      },
+      {
+        "image_id": 15,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/gargoyle-old-campus_andrew-hurley.jpg",
+        "alt_text": "A lion-headed gargoyle watches over Old Campus"
+      },
+      {
+        "image_id": 16,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/gothic-windows-spring.jpg",
+        "alt_text": "Intricate gothic windows in spring"
+      },
+      {
+        "image_id": 17,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/harkness-memorial-gate-close-up.jpg",
+        "alt_text": "The intricate, wrought iron gate of the Memorial Quadrangle features the Yale motto Lux et Veritas and coat of arms"
+      },
+      {
+        "image_id": 18,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/harkness-tower-clock_andrew-hurley.jpg",
+        "alt_text": "Detailed view of the beauty and grandeur of one of the clocks of Harkness Tower"
+      },
+      {
+        "image_id": 19,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/harkness-tower-dusk.jpg",
+        "alt_text": "Harkness Tower rises dramatically into the darkening sky at dusk"
+      },
+      {
+        "image_id": 20,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/harkness-tower-light-pole_nune-garipian.jpg",
+        "alt_text": "A lamp shines in the darkness as the sun sets on Yale's campus"
+      },
+      {
+        "image_id": 21,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/harkness-tower-through-trees_andrew-hurley.jpg",
+        "alt_text": "The dramatic and gothic Harkness Tower, as seen through treetops, rises into the vibrant blue sky"
+      },
+      {
+        "image_id": 22,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/humanities-quadrangle-night.jpg",
+        "alt_text": "Shadowy and dramatically low lit stone archways of the Humanities Quadrangle at night"
+      },
+      {
+        "image_id": 23,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/illustration-buildings-of-yale-college_michael-marsland.jpg",
+        "alt_text": "An illustration from 1807 depicts a view of the buildings of Yale College"
+      },
+      {
+        "image_id": 24,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/maya-lin-womens-table-close-up.jpg",
+        "alt_text": "Detail of numbers carved into Maya Lin's Women's Table sculpture"
+      },
+      {
+        "image_id": 25,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/rose-walk-cross-campus_dan-renzetti.jpg",
+        "alt_text": "Sunlight pours through a canopy of trees along the Rose Walk on Yale's campus"
+      },
+      {
+        "image_id": 26,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/stained-glass-detail-sterling-memorial-library_michael-marsland.jpg",
+        "alt_text": "Stained glass window depicts a printer removing a page from a printing press while another inks text-blocks"
+      },
+      {
+        "image_id": 27,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/stained-glass-don-quixote-hall-graduate-studies_michael-marsland.jpg",
+        "alt_text": "Detailed and dramatic stained glass depiction of Don Quixote"
+      },
+      {
+        "image_id": 28,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/stained-glass-linsly-chittenden-hall_michael-marsland.jpg",
+        "alt_text": "Detail of the Mary Hartwell Lusk Memorial Window"
+      },
+      {
+        "image_id": 29,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/sterling-memorial-library-stained-glass_jack-devlin.jpg",
+        "alt_text": "Dramatically backlit medieval figures depicted in Sterling Memorial Library's stained glass windows"
+      },
+      {
+        "image_id": 30,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/stone-carving-sterling-memorial-library_michael-marsland.jpg",
+        "alt_text": "Stone carving of a mythical man-bull with wings"
+      },
+      {
+        "image_id": 31,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/woolsey-hall-dome.jpg",
+        "alt_text": "The dome of Woolsey Hall behind delicate tree branches adorned with spring buds"
+      },
+      {
+        "image_id": 32,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/woolsey-hall-interior-staricase_nune-garipian.jpg",
+        "alt_text": "Overhead shot of the Woolsey Hall marble staircase"
+      },
+      {
+        "image_id": 33,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/wrought-iron-fence-snake-close-up.jpg",
+        "alt_text": "A wrought iron fence features serpents wrapped around a staff, representing the caduceus"
+      },
+      {
+        "image_id": 34,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/wrought-iron-wooden-door-close-up.jpg",
+        "alt_text": "Detail show of swirling wrought iron vines adorning a wooden door"
+      },
+      {
+        "image_id": 35,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/yale-motto-carving_dan-renzetti.jpg",
+        "alt_text": "Exterior of Sheffield-Sterling-Strathcona Hall featuring a stone carving of Yale's coat of arms and motto"
+      },
+      {
+        "image_id": 36,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/yale-motto-carving-detail_andrew-hurley.jpg",
+        "alt_text": "Close up of a stone carving of Yale's coat of arms features an open book and Yale's motto, Lux et Veritas"
+      },
+      {
+        "image_id": 37,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/yale-outdoor-education-center_andrew-hurley.jpg",
+        "alt_text": "Sunshine glimmers across a lake framed by the lush greenery of Yale's Outdoor Education Center"
+      },
+      {
+        "image_id": 38,
+        "image_url": "https://yalesites-assets.yalespace.org/v1/optimized/yale-university-art-gallery-interior_elizabeth-felicella.jpg",
+        "alt_text": "A collection of sculptures from the ancient Mediterranean world on display in the Yale University Art Gallery"
       }
     ]
   }

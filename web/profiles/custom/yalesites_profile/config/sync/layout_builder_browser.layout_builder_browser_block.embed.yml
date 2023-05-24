@@ -4,8 +4,8 @@ status: true
 dependencies: {  }
 id: embed
 block_id: 'inline_block:embed'
-category: all_blocks
+category: advanced
 label: Embed
-image_path: ''
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/embed.svg
 image_alt: ''
-weight: 4
+weight: -10

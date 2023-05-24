@@ -28,6 +28,7 @@
     "drupal/entity_redirect": "^2.2",
     "drupal/fast_404": "^2.0@alpha",
     "drupal/field_group": "^3.2",
+    "drupal/formdazzle": "^3.0",
     "drupal/gin": "^3.0@beta",
     "drupal/gin_lb": "^1.0@RC",
     "drupal/hide_revision_field": "^2.2",
@@ -73,7 +74,7 @@
     "drupal/upgrade_status": "^3.18",
     "drupal/webform": "^6.2@beta",
     "drupal/wingsuit_companion": "^2.0@RC",
-    "yalesites-org/atomic": "^1.12",
+    "yalesites-org/atomic": "^1.13",
     "yalesites-org/yale_cas": "^1.0"
   },
   "minimum-stability": "dev",

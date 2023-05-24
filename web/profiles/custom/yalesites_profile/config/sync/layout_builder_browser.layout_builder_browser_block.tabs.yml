@@ -4,8 +4,8 @@ status: true
 dependencies: {  }
 id: tabs
 block_id: 'inline_block:tabs'
-category: all_blocks
+category: advanced
 label: Tabs
-image_path: ''
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/tabs.svg
 image_alt: ''
-weight: 5
+weight: -2

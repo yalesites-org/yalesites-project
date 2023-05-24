@@ -1,0 +1,4 @@
+/* Swap Drupal drop for Yale logo */
+.toolbar .toolbar-bar #toolbar-item-administration-tray .toolbar-icon-admin-toolbar-tools-help.toolbar-icon-default::before {
+  mask-image: url('../images/yale-university-press-1985-2010.svg') !important;
+}

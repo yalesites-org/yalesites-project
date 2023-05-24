@@ -56,13 +56,17 @@ class ThemesSettingsForm extends ConfigFormBase {
     ];
 
     foreach ($allSettings as $settingName => $settingDetail) {
+      $options = [];
+      foreach ($settingDetail['values'] as $key => $value) {
+        $options[$key] = $value['label'];
+      }
       $form['global_settings'][$settingName] = [
         '#type' => 'radios',
         '#title' => $this->t(
           '@setting_name',
           ['@setting_name' => $settingDetail['name']]
         ),
-        '#options' => $settingDetail['values'],
+        '#options' => $options,
         '#default_value' => $this->themeSettingsManager->getSetting($settingName) ?: $settingDetail['default'],
         '#attributes' => [
           'class' => [
@@ -92,7 +96,7 @@ class ThemesSettingsForm extends ConfigFormBase {
     foreach ($allSettings as $settingName => $settingDetail) {
       $this->themeSettingsManager->setSetting($settingName, $form_state->getValue($settingName));
     }
-
+    $form_state->setRedirect('<current>');
     return parent::submitForm($form, $form_state);
   }
 
