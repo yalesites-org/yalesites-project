@@ -17,34 +17,19 @@ function ys_embed_theme($existing, $type, $theme, $path) {
         'sources' => [],
       ],
     ],
-    'soundcloud' => [
+    'embed_wrapper' => [
       'variables' => [
+        'embedSource' => [],
         'title' => '',
-        'track_id' => '',
+        'url' => '',
+        'display_attributes' => [
+          'width' => '100%',
+          'height' => '100%',
+          'scrolling' => 'no',
+          'frameborder' => 'no',
+          'isIframe' => TRUE,
+        ],
       ],
     ],
-    'twitter' => [
-      'variables' => [
-        'blockquote' => '',
-      ],
-    ],
-    'instagram' => [
-      'variables' => [
-        'embed_code' => '',
-      ],
-    ],
-    'powerbi' => [
-      'variables' => [
-        'title' => '',
-        'form_params' => '',
-      ],
-    ],
-    'qualtrics' => [
-      'variables' => [
-        'title' => '',
-        'form_id' => '',
-      ],
-    ],
-    'broken' => [],
   ];
 }
