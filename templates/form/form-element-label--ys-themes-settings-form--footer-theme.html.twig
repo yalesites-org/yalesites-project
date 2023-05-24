@@ -1,0 +1,26 @@
+{%
+  set classes = [
+    title_display == 'after' ? 'option',
+    title_display == 'invisible' ? 'visually-hidden',
+    required ? 'js-form--required',
+    required ? 'form--required form-item__label--required',
+    'form-item__label',
+  ]
+%}
+
+{% if title is not empty or required -%}
+
+  <label{{ attributes.addClass(classes) }}>
+    {{ title }}
+
+    <span class="colors">
+      <span class="color component-color" style="background: var(--global-themes-{{ element['current_global_theme'] }}-colors-slot-{{element['color_theme']}});"></span>
+
+      {% if element['value'] == 'five' %}
+        <span class="color component-color" style="background: var(--global-themes-{{ element['current_global_theme'] }}-colors-slot-{{element['color_theme_2']}});"></span>
+        {% else %}
+        <span class="color" style="background: var({{element['color_theme_2']}});"></span>
+      {% endif %}
+    </span>
+  </label>
+{%- endif %}
