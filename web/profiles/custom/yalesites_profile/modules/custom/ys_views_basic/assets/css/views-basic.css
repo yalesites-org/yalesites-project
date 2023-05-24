@@ -21,3 +21,199 @@
 .views-basic--parameter-preview {
   margin-top: 1rem;
 }
+
+
+/* set variables */
+.layout-builder-configure-block {
+  --color-border: var(--color-gray-500);
+  --color-border-lightest: var(--color-basic-white);
+  --color-link-hover: hsl(210, 100%, 21%);
+  --color-link-border: hsl(213, 66%, 45%);
+  --color-background-primary: var(--color-basic-white);
+  --color-background-hover: var(--wool);
+  --color-border-hover: hsl(213, 66%, 45%);
+  --color-text-lighter: #2D424D;
+  --color-text-primary: var(--color-gray-800);
+}
+
+/* 
+/// Input styles 
+*/
+
+#drupal-off-canvas .layout-builder-configure-block,
+.grouped-items .fieldset__wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+#drupal-off-canvas .layout-builder-configure-block legend {
+  margin-bottom: var(--size-spacing-4);
+}
+
+#drupal-off-canvas .layout-builder-configure-block label {
+  font-size: 1rem;
+}
+
+/* 
+/// in sidebar
+*/
+.ui-widget.ui-dialog.ui-dialog-off-canvas.ui-dialog-position-side .fieldset,
+.ui-dialog-position-side .views-basic--group-user-selection .grouped-items {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.glb-form-type--radio {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* 
+/// in modal
+*/
+.ui-dialog-content.ui-widget-content .layout-builder-configure-block .grouped-items {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+/* first column */ 
+.fieldset--group {
+  flex: 1 0 60%;  
+  display: flex;
+}
+
+/* second column */
+#edit-view-mode {
+  flex: 1 0 40%;
+}
+
+/* visually hide the inputs */
+.layout-builder-configure-block .grouped-items .glb-form-type--radio input {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+.glb-form-type--radio label {
+  flex: 1 auto;
+  padding: var(--size-spacing-6) var(--size-spacing-4);
+  border-radius: 0.25rem;
+  border: 2px solid var(--color-border);
+  aspect-ratio: 2/1;
+  display: block !important;
+  text-align: left;
+  background: var(--color-basic-white);
+  border: 2px solid var(--color-border);
+  padding: var(--size-spacing-4) var(--size-spacing-5);
+  color: var(--color-text-primary);
+  border-radius: 0.25rem;
+  margin-bottom: var(--size-spacing-4);
+}
+
+
+/* Label and fieldset styles */
+
+.layout-builder-configure-block .grouped-items fieldset:focus-visible,
+.layout-builder-configure-block .grouped-items fieldset:focus-within,
+.layout-builder-configure-block .grouped-items label:focus-visible,
+.layout-builder-configure-block .grouped-items input[type="submit"].button--primary:focus {
+  outline: var(--size-thickness-2) solid var(--color-link-base);
+  outline-offset: var(--size-thickness-2);
+}
+
+.layout-builder-configure-block .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types:hover label,
+.layout-builder-configure-block .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types:focus label,
+.layout-builder-configure-block .form-item-settings-block-form-group-user-selection-entity-and-view-mode-view-mode:hover label,
+.layout-builder-configure-block .form-item-settings-block-form-group-user-selection-entity-and-view-mode-view-mode:focus label { 
+  background-color: var(--color-background-hover);
+  border-color: var(--color-border-hover);
+}
+
+.layout-builder-configure-block  .glb-form-type--radio input[checked="checked"] + label,
+.layout-builder-configure-block  .glb-form-type--radio input[checked="checked"] + label:hover,
+.layout-builder-configure-block  .glb-form-type--radio:hover input[checked="checked"] + label {
+  background-color: var(--color-text-primary);
+  color: var(--color-background-primary) !important;
+}
+
+
+/*
+//
+///
+/* I want to show:
+///
+//
+*/
+
+/* Posts */
+
+.glb-form-type--radio input[value="post"] + label {
+  background-image: url('../icons/content-type-post.svg');
+  background-repeat: no-repeat;
+  background-position: center 4rem;
+}
+
+.glb-form-type--radio input[value="post"][checked="checked"] + label {
+  background-color: var(--color-text-primary);
+  color: var(--color-background-primary);
+}
+
+
+/* Events */
+
+.glb-form-type--radio input[value="event"] + label {
+  background-image: url('../icons/content-type-event.svg');
+  background-repeat: no-repeat;
+  background-position: center 4rem;
+}
+
+.glb-form-type--radio input[value="event"][checked="checked"] + label {
+  background-color: var(--color-text-primary);
+  color: var(--color-background-primary);
+}
+
+/* Pages */
+
+.glb-form-type--radio input[value="page"] + label {
+  background-image: url('../icons/content-type-page.svg');
+  background-repeat: no-repeat;
+  background-position: center 4rem;
+}
+
+.glb-form-type--radio input[value="page"][checked="checked"] + label {
+  background-color: var(--color-text-primary);
+  color: var(--color-background-primary);
+}
+
+/*
+//
+///
+/* As:
+///
+//
+*/
+
+#edit-view-mode {
+  width: 100%;
+}
+
+.views-basic--group-user-selection .glb-form-type--radio input[value="card"] + label {
+  background-image: url('../icons/display-type-card-grid.svg');
+  background-repeat: no-repeat;
+  background-position: center 4rem;
+}
+
+.views-basic--group-user-selection .glb-form-type--radio input[value="list_item"] + label {
+  background-image: url('../icons/display-type-list-view.svg');
+  background-repeat: no-repeat;
+  background-position: center 4rem;
+}
