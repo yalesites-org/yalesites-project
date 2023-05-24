@@ -8,7 +8,6 @@
     }
   ],
   "require": {
-    "drupal/a11y_autocomplete_element": "^1.0",
     "drupal/address": "^1.10",
     "drupal/admin_toolbar": "3.3.0",
     "drupal/allowed_formats": "^2.0",

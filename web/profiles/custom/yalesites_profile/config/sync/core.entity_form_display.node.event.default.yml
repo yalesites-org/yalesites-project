@@ -16,7 +16,6 @@ dependencies:
     - field.field.node.event.layout_builder__layout
     - node.type.event
   module:
-    - a11y_autocomplete_element
     - allowed_formats
     - field_group
     - linkit
@@ -87,10 +86,14 @@ bundle: event
 mode: default
 content:
   field_category:
-    type: a11y_autocomplete
+    type: entity_reference_autocomplete_tags
     weight: 1
     region: content
-    settings: {  }
+    settings:
+      match_operator: CONTAINS
+      match_limit: 10
+      size: 60
+      placeholder: ''
     third_party_settings: {  }
   field_event_cta:
     type: linkit
@@ -140,10 +143,14 @@ content:
       use_details: true
     third_party_settings: {  }
   field_tags:
-    type: a11y_autocomplete
+    type: entity_reference_autocomplete_tags
     weight: 2
     region: content
-    settings: {  }
+    settings:
+      match_operator: CONTAINS
+      match_limit: 10
+      size: 60
+      placeholder: ''
     third_party_settings: {  }
   field_teaser_media:
     type: media_library_widget
