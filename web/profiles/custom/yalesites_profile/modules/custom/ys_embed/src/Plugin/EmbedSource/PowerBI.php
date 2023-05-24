@@ -40,15 +40,21 @@ class PowerBI extends EmbedSourceBase implements EmbedSourceInterface {
 
   /**
    * {@inheritdoc}
-   *
-   * Override the build method so that we use a custom theme template.
    */
-  public function build(array $params): array {
-    return [
-      '#theme' => 'powerbi',
-      '#title' => $params['title'],
-      '#form_params' => $params['form_params'],
-    ];
+  protected static $display_attributes = [
+    'width' => '100%',
+    'height' => '100%',
+    'scrolling' => 'yes',
+    'frameborder' => 'no',
+    'isIframe' => TRUE,
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getUrl(array $params): string {
+    $form_params = $params['form_params'];
+    return 'https://app.powerbi.com/view' . $form_params;
   }
 
 }
