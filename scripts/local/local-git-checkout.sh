@@ -266,6 +266,12 @@ _say "Rebuilding component library to have dist folder"
 cd ../component-library-twig || (_error "Could not find component-library-twig repo. Are you in the right directory?" && exit 1)
 npm run build
 
+_say "Symlinking to root directory"
+cd ../../../../../..
+[ ! -L "atomic" ] && ln -s web/themes/contrib/atomic atomic
+[ ! -L "component-library-twig" ] && ln -s atomic/_yale-packages/component-library-twig component-library-twig
+[ ! -L "tokens" ] && ln -s atomic/_yale-packages/tokens tokens
+
 [ "$atomic_changed" = true ] && _say "Atomic theme changed, so we need to clear Drupal cache; this could take a while" && lando drush cr
 
 _say "********************"
