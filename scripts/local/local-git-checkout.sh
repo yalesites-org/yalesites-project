@@ -8,7 +8,7 @@
 #  git_path: the path to the repo
 #
 function current_branch_for_path() {
-  local git_path=${1-$(pwd)}
+  local git_path="${1-$(pwd)}"
 
   git -C "$git_path" rev-parse --abbrev-ref HEAD
 }
@@ -21,8 +21,10 @@ function current_branch_for_path() {
 #  branch_name: the name of the branch
 #
 branch_exists() {
+  [ -z "$1" ] && _error "You must provide a branch name" && exit 1
+
   local branch_name="$1"
-  local git_path="$2"
+  local git_path="${2-$(pwd)}"
   local remote_branches
 
   if git -C "$git_path" rev-parse --quiet --verify "$branch_name" > /dev/null; then
@@ -35,6 +37,28 @@ branch_exists() {
   fi
 
   return 1 # Branch does not exist
+}
+
+# yalesites_git_clone
+#
+# This function will clone a repo if it doesn't exist.
+#
+# params:
+#  name: the name of the repo
+#  git_path: the path to the repo
+#  branch: the branch to clone
+#
+function yalesites_git_clone() {
+  local name="$1"
+  local git_path="${2-$(pwd)}"
+  local branch="${3-main}"
+
+  [ -z "$name" ] && _error "You must provide a name" && exit 1
+
+  # Clone if directory doesn't exist
+  [ ! -d "$git_path" ] && 
+    _say "Cloning the $branch branch of the $name repo" && 
+    git clone git@github.com:yalesites-org/"$name".git "$git_path" -b "$branch"
 }
 
 # clone_or_switch_branch
@@ -50,24 +74,23 @@ branch_exists() {
 #  target_branch: the branch to switch to
 #
 function clone_or_switch_branch() {
-  local name=$1
-  local git_path=$2
+  [ -z "$1" ] && _error "You must provide a name" && exit 1
+
+  local name="$1"
+  local git_path="${2-$(pwd)}"
   local target_branch=${3:-main}
   local backup_branch=${4:-main}
   local origin=${5:-origin}
   local current_branch
 
   [ -z "$name" ] && _error "You must provide a name" && exit 1
-  [ -z "$git_path" ] && _error "You must provide a git_path" && exit 1
 
   # Clone if directory doesn't exist
-  [ ! -d "$git_path" ] && 
-    _say "Cloning the $target_branch branch of the $name repo" && 
-    git clone git@github.com:yalesites-org/"$name".git "$git_path" -b "$target_branch"
+  yalesites_git_clone "$name" "$git_path" "$target_branch"
 
-  # Check if branch existed, and do a backup
+  # Check if it was successful, if not, use the backup branch
   [ ! -d "$git_path" ] && _error "$target_branch not found, defaulting to $backup_branch" && 
-    git clone git@github.com:yalesites-org/"$name".git "$git_path" -b "$backup_branch"
+    yalesites_git_clone "$name" "$git_path" "$backup_branch"
 
   # Fail if still not there
   [ ! -d "$git_path" ] && _error "$backup_branch not found; houston, we have a problem..." && exit 1 
@@ -102,7 +125,7 @@ function clone_or_switch_branch() {
 #  git_path: the path to the repo
 #
 function repo_has_changes() {
-  local git_path=$1
+  local git_path="${1-$(pwd)}"
 
   # If directory doesn't exist, return 0 (bypass)
   [ ! -d "$git_path" ] && return 0
@@ -118,19 +141,25 @@ function repo_has_changes() {
   fi
 }
 
-function do_magic() {
-  # default values
+# Main function that does the work
+function _local-git-checkout() {
+  # Default values
   local cl_branch="main"
   local token_branch="main"
   local atomic_branch="main"
   local debug=false
   local verbose=false
 
+  # Default paths
   local atomic_path="web/themes/contrib/atomic"
   local tokens_path="$atomic_path/_yale-packages/tokens"
   local cl_path="$atomic_path/_yale-packages/component-library-twig"
 
-  # getopts
+  # If atomic changes branches, we need to know this so we can know to 
+  # clear Drupal's cache toward the end of the script.
+  local atomic_changed=false
+
+  # getopts - Parse the options to then use
   while getopts ":dvc:t:a:b:" opt; do
     case ${opt} in
       d )
@@ -172,12 +201,15 @@ function do_magic() {
     esac
   done
 
-  utils_path="./scripts/local/util"
+  # Check for utilities directory
+  local utils_path="./scripts/local/util"
   [ -e "$utils_path" ] || (echo -e "[$0] Utilities not found.  You must run this from the yalesites root directory: " && exit 1)
 
+  # source say.sh so we can use the _say and _error functions
   [ -e "$utils_path/say.sh" ] || (echo -e "[$0] Say utility not found.  You must run this from the yalesites root directory: " && exit 1)
   source ./scripts/local/util/say.sh
 
+  # enable debugging or verbose mode if requested
   [ "$debug" = true ] && _say "Debug mode enabled" && set -x
   [ "$verbose" = true ] && _say "Verbose mode enabled"
 
@@ -200,10 +232,10 @@ function do_magic() {
     exit 1
   fi
 
+  # Now that all checks have passed, let's do some work
   _say "Let the magic begin!"
   _say "********************"
 
-  atomic_changed=false
   # If current branch did change
   if [ "$(current_branch_for_path "$atomic_path")" != "$atomic_branch" ]; then
     atomic_changed=true
@@ -293,4 +325,4 @@ function do_magic() {
   _say "********************"
 }
 
-do_magic "$@"
+_local-git-checkout "$@"
