@@ -2,3 +2,5 @@ ys_views_basic:
   css:
     theme:
       assets/css/views-basic.css: {}
+  js:
+    assets/js/views-basic.js: {}

@@ -107,7 +107,9 @@
 
 /* second column */
 .ui-dialog-content.ui-widget-content .layout-builder-configure-block .grouped-items #edit-view-mode {
+  display: flex;
   flex: 1 auto;
+  width: 100%;
 }
 
 .ui-dialog-content.ui-widget-content .layout-builder-configure-block .grouped-items #edit-view-mode .fieldset--group {
@@ -222,6 +224,19 @@
   color: var(--color-background-primary);
 }
 
+/* Profiles */
+
+.glb-form-type--radio input[value="profile"] + label {
+  background-image: url('../icons/content-type-profile.svg');
+  background-repeat: no-repeat;
+  background-position: center 4rem;
+}
+
+.glb-form-type--radio input[value="profile"][checked="checked"] + label {
+  background-color: var(--color-text-primary);
+  color: var(--color-background-primary);
+}
+
 /*
 //
 ///
@@ -229,10 +244,6 @@
 ///
 //
 */
-
-#edit-view-mode {
-  width: 100%;
-}
 
 .views-basic--group-user-selection .glb-form-type--radio input[value="card"] + label {
   background-image: url('../icons/display-type-card-grid.svg');
