@@ -41,12 +41,12 @@ class SoundCloud extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $display_attributes = [
+  protected static $displayAttributes = [
     'width' => '100%',
     'height' => '240px',
     'scrolling' => 'no',
     'frameborder' => 'no',
-    'embed_type' => 'audio',
+    'embedType' => 'audio',
     'isIframe' => TRUE,
   ];
 
