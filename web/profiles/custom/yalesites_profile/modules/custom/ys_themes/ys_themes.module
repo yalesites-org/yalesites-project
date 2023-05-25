@@ -134,8 +134,13 @@ function ys_themes_preprocess_block(&$variables) {
     $node = \Drupal::routeMatch()->getParameter('node');
     if ($node) {
       $config = \Drupal::config('ys_themes.theme_settings');
-      $variables['cta__component_theme'] = $config->get('button_theme');
       $variables['parentNode'] = $node->getType();
+
+      // Limit variable include to components that need to use 
+      // `cta__component_theme` lever/dial. Currently that is only button_link.
+      if ($variables['derivative_plugin_id'] == 'button_link') {
+        $variables['cta__component_theme'] = $config->get('button_theme');
+      }
 
       // Add the cache tag, so that the theme setting information is rebuilt
       // when the config is saved.
