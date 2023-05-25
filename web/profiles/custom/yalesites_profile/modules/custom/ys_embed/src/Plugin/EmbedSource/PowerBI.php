@@ -41,12 +41,12 @@ class PowerBI extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $display_attributes = [
+  protected static $displayAttributes = [
     'width' => '100%',
     'height' => '100%',
     'scrolling' => 'yes',
     'frameborder' => 'no',
-    'embed_type' => 'form',
+    'embedType' => 'form',
     'isIframe' => TRUE,
   ];
 

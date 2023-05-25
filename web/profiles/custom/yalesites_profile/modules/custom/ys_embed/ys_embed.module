@@ -20,10 +20,10 @@ function ys_embed_theme($existing, $type, $theme, $path) {
     'embed_wrapper' => [
       'variables' => [
         'embedSource' => [],
-        'embed_type' => 'unknown',
+        'embedType' => 'unknown',
         'title' => '',
         'url' => '',
-        'display_attributes' => [
+        'displayAttributes' => [
           'width' => '100%',
           'height' => '100%',
           'scrolling' => 'no',
