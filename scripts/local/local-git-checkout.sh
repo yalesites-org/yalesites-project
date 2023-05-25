@@ -20,7 +20,7 @@ function current_branch_for_path() {
 # params:
 #  branch_name: the name of the branch
 #
-branch_exists() {
+function branch_exists() {
   [ -z "$1" ] && _error "You must provide a branch name" && exit 1
 
   local branch_name="$1"
