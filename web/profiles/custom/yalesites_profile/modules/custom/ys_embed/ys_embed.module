@@ -20,6 +20,7 @@ function ys_embed_theme($existing, $type, $theme, $path) {
     'embed_wrapper' => [
       'variables' => [
         'embedSource' => [],
+        'embed_type' => 'unknown',
         'title' => '',
         'url' => '',
         'display_attributes' => [
@@ -28,6 +29,7 @@ function ys_embed_theme($existing, $type, $theme, $path) {
           'scrolling' => 'no',
           'frameborder' => 'no',
           'isIframe' => TRUE,
+          'isForm' => TRUE,
         ],
       ],
     ],
