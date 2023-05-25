@@ -80,27 +80,43 @@
   width: 100%;
 }
 
+.ui-dialog-content.ui-widget-content .layout-builder-configure-block .grouped-items .glb-form-type--radio {
+  width: auto;
+}
+
 /* first column */ 
 .ui-dialog-content.ui-widget-content .layout-builder-configure-block .grouped-items .fieldset--group {
-  flex: 1 0 60%;  
+  flex: 1 0 52.5%;  
 }
 
-.ui-dialog-content.ui-widget-content .layout-builder-configure-block .grouped-items .fieldset--group .fieldset__wrapper--group {
+/* .ui-dialog-content.ui-widget-content .layout-builder-configure-block .grouped-items .fieldset--group .fieldset__wrapper--group {
   flex-direction: row;
-}
+} */
 
 .ui-dialog-content.ui-widget-content .layout-builder-configure-block .grouped-items .fieldset--group .fieldset__wrapper--group .glb-form-type--radio label {
-  width: 100px;
-  height: 100px;
+  width: 125px;
+  height: 150px;
 }
 
 .ui-dialog-content.ui-widget-content .layout-builder-configure-block .grouped-items .fieldset--group .fieldset__wrapper--group .form-boolean-group {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
   width: 100%;
 }
 
 /* second column */
 .ui-dialog-content.ui-widget-content .layout-builder-configure-block .grouped-items #edit-view-mode {
-  flex: 1 0 40%;
+  flex: 1 auto;
+}
+
+.ui-dialog-content.ui-widget-content .layout-builder-configure-block .grouped-items #edit-view-mode .fieldset--group {
+  flex: 1 auto;
+}
+
+.ui-dialog-content.ui-widget-content .layout-builder-configure-block .grouped-items #edit-view-mode .fieldset--group .fieldset__wrapper--group .glb-form-type--radio label {
+  width: 170px;
+  height: 150px;
 }
 
 /* visually hide the inputs */
