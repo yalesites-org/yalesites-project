@@ -153,24 +153,24 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
     $filterType = implode('+', $paramsDecoded['filters']['types']);
 
-    // Get tags, for all nodes.
-    if (isset($paramsDecoded['filters']['tags'])) {
-      foreach ($paramsDecoded['filters']['tags'] as $tag) {
-        $termsArray[] = $tag['target_id'];
+    // Get terms to include.
+    if (isset($paramsDecoded['filters']['terms_include'])) {
+      foreach ($paramsDecoded['filters']['terms_include'] as $term) {
+        $termsIncludeArray[] = $term['target_id'];
       }
     }
-    // Get event categories, only if event is selected.
-    if (in_array('event', $paramsDecoded['filters']['types'])) {
-      if (isset($paramsDecoded['filters']['event_category'])) {
-        foreach ($paramsDecoded['filters']['event_category'] as $category) {
-          $termsArray[] = $category['target_id'];
-        }
+
+    // Get terms to exclude.
+    if (isset($paramsDecoded['filters']['terms_exclude'])) {
+      foreach ($paramsDecoded['filters']['terms_exclude'] as $term) {
+        $termsExcludeArray[] = $term['target_id'];
       }
     }
 
     // Set operator: "+" is "OR" and "," is "AND".
     $operator = $paramsDecoded['operator'] ?: '+';
-    $filterTerms = isset($termsArray) ? implode($operator, $termsArray) : 'all';
+    $termsInclude = isset($termsIncludeArray) ? implode($operator, $termsIncludeArray) : 'all';
+    $termsExclude = isset($termsExcludeArray) ? implode($operator, $termsExcludeArray) : NULL;
 
     if (
       ($type == 'count' && $paramsDecoded['display'] != 'limit') ||
@@ -184,7 +184,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     $view->setArguments(
       [
         'type' => $filterType,
-        'terms' => $filterTerms,
+        'terms_include' => $termsInclude,
+        'terms_exclude' => $termsExclude,
         'sort' => $paramsDecoded['sort_by'],
         'view' => $paramsDecoded['view_mode'],
         'items' => $itemsLimit,
@@ -326,19 +327,11 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         }
         break;
 
-      case 'tags':
-        if (!empty($paramsDecoded['filters']['tags'])) {
-          foreach ($paramsDecoded['filters']['tags'] as $tag) {
-            $tid = (int) $tag['target_id'];
-            $defaultParam[] = $this->entityTypeManager()->getStorage('taxonomy_term')->load($tid);
-          }
-        }
-        break;
-
-      case 'event_category':
-        if (!empty($paramsDecoded['filters']['event_category'])) {
-          foreach ($paramsDecoded['filters']['event_category'] as $category) {
-            $tid = (int) $category['target_id'];
+      case 'terms_include':
+      case 'terms_exclude':
+        if (!empty($paramsDecoded['filters'][$type])) {
+          foreach ($paramsDecoded['filters'][$type] as $term) {
+            $tid = (int) $term['target_id'];
             $defaultParam[] = $this->entityTypeManager()->getStorage('taxonomy_term')->load($tid);
           }
         }

@@ -141,20 +141,6 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     $form['group_user_selection']['filter_and_sort'] = [
       '#type' => 'container',
-      '#attributes' => [
-        'class' => [
-          'grouped-items',
-        ],
-      ],
-    ];
-
-    $form['group_user_selection']['additional_filters'] = [
-      '#type' => 'container',
-      '#attributes' => [
-        'class' => [
-          'grouped-items',
-        ],
-      ],
     ];
 
     $form['group_user_selection']['filter_options'] = [
@@ -222,16 +208,35 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#suffix' => '</div>',
     ];
 
-    // @todo add validation for only one term.
-    // More info: https://www.drupal.org/project/drupal/issues/2951134
-    $form['group_user_selection']['filter_and_sort']['tags'] = [
-      '#title' => $this->t('Tagged as'),
+    $form['group_user_selection']['filter_and_sort']['terms_include'] = [
+      '#title' => $this->t('Include content that uses the following terms'),
       '#type' => 'entity_autocomplete',
       '#tags' => TRUE,
       '#target_type' => 'taxonomy_term',
-      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('tags', $items[$delta]->params) : [],
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('terms_include', $items[$delta]->params) : [],
+      '#selection_handler' => 'views',
       '#selection_settings' => [
-        'target_bundles' => ['tags'],
+        'view' => [
+          'view_name' => 'taxonomy_lookup',
+          'display_name' => 'entity_reference_1',
+          'arguments' => [],
+        ],
+      ],
+    ];
+
+    $form['group_user_selection']['filter_and_sort']['terms_exclude'] = [
+      '#title' => $this->t('Exclude content that uses the following terms'),
+      '#type' => 'entity_autocomplete',
+      '#tags' => TRUE,
+      '#target_type' => 'taxonomy_term',
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('terms_exclude', $items[$delta]->params) : [],
+      '#selection_handler' => 'views',
+      '#selection_settings' => [
+        'view' => [
+          'view_name' => 'taxonomy_lookup',
+          'display_name' => 'entity_reference_1',
+          'arguments' => [],
+        ],
       ],
     ];
 
@@ -247,24 +252,6 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#validated' => 'true',
       '#prefix' => '<div id="edit-sort-by">',
       '#suffix' => '</div>',
-    ];
-
-    $form['group_user_selection']['additional_filters']['event_category'] = [
-      '#title' => $this->t('Event Category'),
-      '#type' => 'entity_autocomplete',
-      '#tags' => TRUE,
-      '#target_type' => 'taxonomy_term',
-      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('event_category', $items[$delta]->params) : [],
-      '#selection_settings' => [
-        'target_bundles' => ['event_category'],
-      ],
-      '#states' => [
-        'visible' => [
-          ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][entity_types]"]' => [
-            'value' => 'event',
-          ],
-        ],
-      ],
     ];
 
     $form['group_user_selection']['filter_options']['term_operator'] = [
@@ -351,13 +338,13 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
    * Get data from user selection and save into params field.
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
-    $tags = ($form_state->getValue(
+    $terms_include = ($form_state->getValue(
         [
           'settings',
           'block_form',
           'group_user_selection',
           'filter_and_sort',
-          'tags',
+          'terms_include',
         ]
       ))
       ? $form_state->getValue(
@@ -366,17 +353,17 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
             'block_form',
             'group_user_selection',
             'filter_and_sort',
-            'tags',
+            'terms_include',
           ]
         )
       : NULL;
-    $eventCategory = ($form_state->getValue(
+    $terms_exclude = ($form_state->getValue(
         [
           'settings',
           'block_form',
           'group_user_selection',
-          'additional_filters',
-          'event_category',
+          'filter_and_sort',
+          'terms_exclude',
         ]
       ))
       ? $form_state->getValue(
@@ -384,8 +371,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
             'settings',
             'block_form',
             'group_user_selection',
-            'additional_filters',
-            'event_category',
+            'filter_and_sort',
+            'terms_exclude',
           ]
         )
       : NULL;
@@ -396,8 +383,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
           "types" => [
             $form['group_user_selection']['entity_and_view_mode']['entity_types']['#value'],
           ],
-          "tags" => $tags,
-          "event_category" => $eventCategory,
+          "terms_include" => $terms_include,
+          "terms_exclude" => $terms_exclude,
         ],
         "operator" => $form['group_user_selection']['filter_options']['term_operator']['#value'],
         "sort_by" => $form_state->getValue(
