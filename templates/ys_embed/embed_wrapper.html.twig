@@ -1,0 +1,9 @@
+{% set embed_wrapper__embed_type = display_attributes['embed_type']|default('unknown') %}
+{% set embed_wrapper__width = display_attributes['width']|default('100%') %}
+{% set embed_wrapper__height = display_attributes['height']|default('100%') %}
+
+{% if display_attributes['isIframe'] %}
+    <iframe data-embed-type="{{ embed_wrapper__embed_type }}" src="{{ url }}" title="{{ title }}" width="{{ embed_wrapper__width }}" height="{{ embed_wrapper__height }}"></iframe>
+{% else %}
+    {{ embedSource }}
+{% endif %}
