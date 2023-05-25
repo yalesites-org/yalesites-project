@@ -9,7 +9,6 @@
 .views-basic--group-user-selection .grouped-items {
   align-items: flex-start;
   display: flex;
-  gap: 5rem;
 }
 
 .views-basic--user-selection {
@@ -55,16 +54,6 @@
   font-size: 1rem;
 }
 
-/* 
-/// in sidebar
-*/
-.ui-widget.ui-dialog.ui-dialog-off-canvas.ui-dialog-position-side .fieldset,
-.ui-dialog-position-side .views-basic--group-user-selection .grouped-items {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
 .glb-form-type--radio {
   display: flex;
   flex-direction: column;
@@ -72,33 +61,50 @@
 }
 
 /* 
+/// in sidebar
+*/
+#drupal-off-canvas .fieldset,
+#drupal-off-canvas .views-basic--group-user-selection .grouped-items {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+#drupal-off-canvas .views-basic--group-user-selection .grouped-items .fieldset--group .fieldset__wrapper--group .glb-form-radios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+#drupal-off-canvas .grouped-items .fieldset--group .fieldset__wrapper--group .glb-form-type--radio label {
+  width: 125px;
+  height: 150px;
+}
+
+/* 
 /// in modal
 */
-.ui-dialog-content.ui-widget-content .layout-builder-configure-block .grouped-items {
+#layout-builder-modal .grouped-items {
   display: flex;
   flex-direction: row;
   width: 100%;
 }
 
-.ui-dialog-content.ui-widget-content .layout-builder-configure-block .grouped-items .glb-form-type--radio {
+#layout-builder-modal .grouped-items .glb-form-type--radio {
   width: auto;
 }
 
 /* first column */ 
-.ui-dialog-content.ui-widget-content .layout-builder-configure-block .grouped-items .fieldset--group {
+#layout-builder-modal .grouped-items .fieldset--group {
   flex: 1 0 52.5%;  
 }
 
-/* .ui-dialog-content.ui-widget-content .layout-builder-configure-block .grouped-items .fieldset--group .fieldset__wrapper--group {
-  flex-direction: row;
-} */
-
-.ui-dialog-content.ui-widget-content .layout-builder-configure-block .grouped-items .fieldset--group .fieldset__wrapper--group .glb-form-type--radio label {
+#layout-builder-modal .grouped-items .fieldset--group .fieldset__wrapper--group .glb-form-type--radio label {
   width: 125px;
   height: 150px;
 }
 
-.ui-dialog-content.ui-widget-content .layout-builder-configure-block .grouped-items .fieldset--group .fieldset__wrapper--group .form-boolean-group {
+#layout-builder-modal .grouped-items .fieldset--group .fieldset__wrapper--group .form-boolean-group {
   display: flex;
   flex-direction: row;
   gap: 2rem;
@@ -106,17 +112,17 @@
 }
 
 /* second column */
-.ui-dialog-content.ui-widget-content .layout-builder-configure-block .grouped-items #edit-view-mode {
+#layout-builder-modal .grouped-items #edit-view-mode {
   display: flex;
   flex: 1 auto;
   width: 100%;
 }
 
-.ui-dialog-content.ui-widget-content .layout-builder-configure-block .grouped-items #edit-view-mode .fieldset--group {
+#layout-builder-modal .grouped-items #edit-view-mode .fieldset--group {
   flex: 1 auto;
 }
 
-.ui-dialog-content.ui-widget-content .layout-builder-configure-block .grouped-items #edit-view-mode .fieldset--group .fieldset__wrapper--group .glb-form-type--radio label {
+#layout-builder-modal .grouped-items #edit-view-mode .fieldset--group .fieldset__wrapper--group .glb-form-type--radio label {
   width: 170px;
   height: 150px;
 }
