@@ -7,6 +7,10 @@ atomic_branch="main"
 debug=false
 verbose=false
 
+atomic_path="web/themes/contrib/atomic"
+tokens_path="$atomic_path/_yale-packages/tokens"
+cl_path="$atomic_path/_yale-packages/component-library-twig"
+
 # current_branch_for_path
 #
 # This function will return the current branch for a given path.
@@ -169,10 +173,6 @@ done
 utils_path="./scripts/local/util"
 [ -e "$utils_path" ] || (echo -e "[$0] Utilities not found.  You must run this from the yalesites root directory: " && exit 1)
 
-atomic_path="web/themes/contrib/atomic"
-tokens_path="$atomic_path/_yale-packages/tokens"
-cl_path="$atomic_path/_yale-packages/component-library"
-
 [ -e "$utils_path/say.sh" ] || (echo -e "[$0] Say utility not found.  You must run this from the yalesites root directory: " && exit 1)
 source ./scripts/local/util/say.sh
 
@@ -192,7 +192,7 @@ if [ $? -eq 1 ]; then
   exit 1
 fi
 
-repo_has_changes '$atomic_path/_yale-packages/component-library-twig'
+repo_has_changes '$cl_path'
 if [ $? -eq 1 ]; then
   _error "You have uncommitted changes to the component-library-twig repo.  Please commit or stash them before running this script."
   exit 1
@@ -286,6 +286,6 @@ _say "All done!"
 _say "********************"
 _say "Current branches"
 _say "Atomic:            $(current_branch_for_path '$atomic_path')"
-_say "Component Library: $(current_branch_for_path '$atomic_path/_yale-packages/component-library-twig')"
+_say "Component Library: $(current_branch_for_path '$cl_path')"
 _say "Tokens:            $(current_branch_for_path '$tokens_path')"
 _say "********************"
