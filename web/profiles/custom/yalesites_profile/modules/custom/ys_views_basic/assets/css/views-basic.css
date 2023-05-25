@@ -2,26 +2,6 @@
 * @todo Possibly move these styles into admin theme.
 */
 
-.views-basic--params {
-  display: none;
-}
-
-.views-basic--group-user-selection .grouped-items {
-  align-items: flex-start;
-  display: flex;
-}
-
-.views-basic--user-selection {
-  align-items: flex-start;
-  display: flex;
-  gap: 1rem;
-}
-
-.views-basic--parameter-preview {
-  margin-top: 1rem;
-}
-
-
 /* set variables */
 .layout-builder-configure-block {
   --color-border: var(--color-gray-500);
@@ -35,23 +15,14 @@
   --color-text-primary: var(--color-gray-800);
 }
 
-/* 
-/// Input styles 
-*/
 
-#drupal-off-canvas .layout-builder-configure-block,
-.grouped-items .fieldset__wrapper {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
+/* General styles */
+.views-basic--params {
+  display: none;
 }
 
-#drupal-off-canvas .layout-builder-configure-block legend {
-  margin-bottom: var(--size-spacing-4);
-}
-
-#drupal-off-canvas .layout-builder-configure-block label {
-  font-size: 1rem;
+.views-basic--parameter-preview {
+  margin-top: 1rem;
 }
 
 .glb-form-type--radio {
@@ -60,9 +31,73 @@
   width: 100%;
 }
 
+/* visually hide the inputs */
+.layout-builder-configure-block .grouped-items .glb-form-type--radio input {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+/* base for labels */
+.glb-form-type--radio label {
+  flex: 1 auto;
+  padding: var(--size-spacing-6) var(--size-spacing-4);
+  border-radius: 0.25rem;
+  border: 2px solid var(--color-border);
+  aspect-ratio: 2/1;
+  display: block !important;
+  text-align: left;
+  background: var(--color-basic-white);
+  border: 2px solid var(--color-border);
+  padding: var(--size-spacing-4) var(--size-spacing-5);
+  color: var(--color-text-primary);
+  border-radius: 0.25rem;
+  margin-bottom: var(--size-spacing-4);
+}
+
+
+/****** 
+/******** Input styles 
+*******/
+
+/*views-basic--group-user-selection*/
+
+#drupal-off-canvas .layout-builder-configure-block {
+  width: 100%;
+}
+
+.grouped-items .fieldset__wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+#drupal-off-canvas .layout-builder-configure-block legend {
+  margin-bottom: var(--size-spacing-4);
+}
+
+#drupal-off-canvas .layout-builder-configure-block .glb-form-item__label {
+  font-size: 1rem !important;
+}
+
+
 /* 
-/// in sidebar
+/** in sidebar
 */
+
+/*views-basic--group-user-selection*/
+#drupal-off-canvas.ui-dialog-content div.glb-form-item__description {
+  margin-top: 0.5rem;
+}
+
+#drupal-off-canvas.ui-dialog-content div.counter {
+  margin-top: 1rem;
+}
+
 #drupal-off-canvas .fieldset,
 #drupal-off-canvas .views-basic--group-user-selection .grouped-items {
   display: flex;
@@ -70,23 +105,46 @@
   width: 100%;
 }
 
+.grouped-items .glb-form-composite .fieldset__wrapper {
+  border-top: 0.15rem solid var(--color-gray-500);
+}
+
+.glb-fieldset__legend--composite .glb-fieldset__label {
+  font-size: 1rem;
+}
+
 #drupal-off-canvas .views-basic--group-user-selection .grouped-items .fieldset--group .fieldset__wrapper--group .glb-form-radios {
   display: flex;
   flex-wrap: wrap;
-  gap: 2rem;
+  justify-content: start;
+  gap: 0.75rem;
 }
 
+#drupal-off-canvas .views-basic--group-user-selection .grouped-items .fieldset--group .fieldset__wrapper--group .glb-form-radios .glb-form-type--radio {
+  width: auto;
+}
+
+/* first column */
 #drupal-off-canvas .grouped-items .fieldset--group .fieldset__wrapper--group .glb-form-type--radio label {
-  width: 125px;
+  width: 110px;
   height: 150px;
 }
 
+/* second column */
+#drupal-off-canvas .grouped-items .fieldset--group.views-basic--view-mode .fieldset__wrapper--group .glb-form-type--radio label {
+  width: 175px;
+  height: 200px;
+}
+
+
 /* 
-/// in modal
+/** in modal
 */
 #layout-builder-modal .grouped-items {
   display: flex;
   flex-direction: row;
+  align-items: first baseline;
+  gap: 2rem;
   width: 100%;
 }
 
@@ -107,7 +165,7 @@
 #layout-builder-modal .grouped-items .fieldset--group .fieldset__wrapper--group .form-boolean-group {
   display: flex;
   flex-direction: row;
-  gap: 2rem;
+  gap: 1rem;
   width: 100%;
 }
 
@@ -127,36 +185,10 @@
   height: 150px;
 }
 
-/* visually hide the inputs */
-.layout-builder-configure-block .grouped-items .glb-form-type--radio input {
-  border: 0;
-  clip: rect(0 0 0 0);
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  padding: 0;
-  position: absolute;
-  width: 1px;
-}
 
-.glb-form-type--radio label {
-  flex: 1 auto;
-  padding: var(--size-spacing-6) var(--size-spacing-4);
-  border-radius: 0.25rem;
-  border: 2px solid var(--color-border);
-  aspect-ratio: 2/1;
-  display: block !important;
-  text-align: left;
-  background: var(--color-basic-white);
-  border: 2px solid var(--color-border);
-  padding: var(--size-spacing-4) var(--size-spacing-5);
-  color: var(--color-text-primary);
-  border-radius: 0.25rem;
-  margin-bottom: var(--size-spacing-4);
-}
-
-
-/* Label and fieldset styles */
+/****** 
+/******** Label and fieldset styles
+*******/
 
 .layout-builder-configure-block .grouped-items fieldset:focus-visible,
 .layout-builder-configure-block .grouped-items fieldset:focus-within,
@@ -183,15 +215,10 @@
 
 
 /*
-//
-///
-/* I want to show:
-///
-//
+/***** I want to show:
 */
 
 /* Posts */
-
 .glb-form-type--radio input[value="post"] + label {
   background-image: url('../icons/content-type-post.svg');
   background-repeat: no-repeat;
@@ -205,7 +232,6 @@
 
 
 /* Events */
-
 .glb-form-type--radio input[value="event"] + label {
   background-image: url('../icons/content-type-event.svg');
   background-repeat: no-repeat;
@@ -218,7 +244,6 @@
 }
 
 /* Pages */
-
 .glb-form-type--radio input[value="page"] + label {
   background-image: url('../icons/content-type-page.svg');
   background-repeat: no-repeat;
@@ -231,7 +256,6 @@
 }
 
 /* Profiles */
-
 .glb-form-type--radio input[value="profile"] + label {
   background-image: url('../icons/content-type-profile.svg');
   background-repeat: no-repeat;
@@ -244,19 +268,17 @@
 }
 
 /*
-//
-///
-/* As:
-///
-//
+/***** As:
 */
 
+/* Card */
 .views-basic--group-user-selection .glb-form-type--radio input[value="card"] + label {
   background-image: url('../icons/display-type-card-grid.svg');
   background-repeat: no-repeat;
   background-position: center 4rem;
 }
 
+/* List */
 .views-basic--group-user-selection .glb-form-type--radio input[value="list_item"] + label {
   background-image: url('../icons/display-type-list-view.svg');
   background-repeat: no-repeat;
