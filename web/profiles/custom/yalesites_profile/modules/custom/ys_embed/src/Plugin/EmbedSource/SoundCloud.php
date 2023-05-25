@@ -46,6 +46,7 @@ class SoundCloud extends EmbedSourceBase implements EmbedSourceInterface {
     'height' => '240px',
     'scrolling' => 'no',
     'frameborder' => 'no',
+    'embed_type' => 'audio',
     'isIframe' => TRUE,
   ];
 

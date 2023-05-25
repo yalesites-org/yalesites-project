@@ -46,6 +46,7 @@ class Qualtrics extends EmbedSourceBase implements EmbedSourceInterface {
     'height' => '100%',
     'scrolling' => 'yes',
     'frameborder' => 'no',
+    'embed_type' => 'form',
     'isIframe' => TRUE,
   ];
 
