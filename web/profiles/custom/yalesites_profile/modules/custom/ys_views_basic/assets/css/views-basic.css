@@ -219,50 +219,50 @@
 */
 
 /* Posts */
-.glb-form-type--radio input[value="post"] + label {
+.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types input[value="post"] + label {
   background-image: url('../icons/content-type-post.svg');
   background-repeat: no-repeat;
   background-position: center 4rem;
 }
 
-.glb-form-type--radio input[value="post"][checked="checked"] + label {
+.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types input[value="post"][checked="checked"] + label {
   background-color: var(--color-text-primary);
   color: var(--color-background-primary);
 }
 
 
 /* Events */
-.glb-form-type--radio input[value="event"] + label {
+.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types input[value="event"] + label {
   background-image: url('../icons/content-type-event.svg');
   background-repeat: no-repeat;
   background-position: center 4rem;
 }
 
-.glb-form-type--radio input[value="event"][checked="checked"] + label {
+.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types input[value="event"][checked="checked"] + label {
   background-color: var(--color-text-primary);
   color: var(--color-background-primary);
 }
 
 /* Pages */
-.glb-form-type--radio input[value="page"] + label {
+.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types input[value="page"] + label {
   background-image: url('../icons/content-type-page.svg');
   background-repeat: no-repeat;
   background-position: center 4rem;
 }
 
-.glb-form-type--radio input[value="page"][checked="checked"] + label {
+.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types input[value="page"][checked="checked"] + label {
   background-color: var(--color-text-primary);
   color: var(--color-background-primary);
 }
 
 /* Profiles */
-.glb-form-type--radio input[value="profile"] + label {
+.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types input[value="profile"] + label {
   background-image: url('../icons/content-type-profile.svg');
   background-repeat: no-repeat;
   background-position: center 4rem;
 }
 
-.glb-form-type--radio input[value="profile"][checked="checked"] + label {
+.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types input[value="profile"][checked="checked"] + label {
   background-color: var(--color-text-primary);
   color: var(--color-background-primary);
 }
@@ -272,14 +272,14 @@
 */
 
 /* Card */
-.views-basic--group-user-selection .glb-form-type--radio input[value="card"] + label {
+.views-basic--view-mode input[value="card"] + label {
   background-image: url('../icons/display-type-card-grid.svg');
   background-repeat: no-repeat;
   background-position: center 4rem;
 }
 
 /* List */
-.views-basic--group-user-selection .glb-form-type--radio input[value="list_item"] + label {
+.views-basic--view-mode input[value="list_item"] + label {
   background-image: url('../icons/display-type-list-view.svg');
   background-repeat: no-repeat;
   background-position: center 4rem;
