@@ -166,26 +166,33 @@ while getopts ":dvc:t:a:b:" opt; do
   esac
 done
 
-[ -e "./scripts/local/util/say.sh" ] || (echo -e "[$0] Say utility not found.  You must run this from the yalesites root directory: " && exit 1)
+utils_path="./scripts/local/util"
+[ -e "$utils_path" ] || (echo -e "[$0] Utilities not found.  You must run this from the yalesites root directory: " && exit 1)
+
+atomic_path="web/themes/contrib/atomic"
+tokens_path="$atomic_path/_yale-packages/tokens"
+cl_path="$atomic_path/_yale-packages/component-library"
+
+[ -e "$utils_path/say.sh" ] || (echo -e "[$0] Say utility not found.  You must run this from the yalesites root directory: " && exit 1)
 source ./scripts/local/util/say.sh
 
 [ "$debug" = true ] && _say "Debug mode enabled" && set -x
 [ "$verbose" = true ] && _say "Verbose mode enabled"
 
 # Shortcircuit running if there are changes already present
-repo_has_changes 'web/themes/contrib/atomic'
+repo_has_changes '$atomic_path'
 if [ $? -eq 1 ]; then
   _error "You have uncommitted changes to the atomic repo.  Please commit or stash them before running this script."
   exit 1
 fi
 
-repo_has_changes 'web/themes/contrib/atomic/_yale-packages/tokens'
+repo_has_changes '$atomic_path/_yale-packages/tokens'
 if [ $? -eq 1 ]; then
   _error "You have uncommitted changes to the tokens repo.  Please commit or stash them before running this script."
   exit 1
 fi
 
-repo_has_changes 'web/themes/contrib/atomic/_yale-packages/component-library-twig'
+repo_has_changes '$atomic_path/_yale-packages/component-library-twig'
 if [ $? -eq 1 ]; then
   _error "You have uncommitted changes to the component-library-twig repo.  Please commit or stash them before running this script."
   exit 1
@@ -196,15 +203,15 @@ _say "********************"
 
 atomic_changed=false
 # If current branch did change
-if [ "$(current_branch_for_path 'web/themes/contrib/atomic')" != "$atomic_branch" ]; then
+if [ "$(current_branch_for_path '$atomic_path')" != "$atomic_branch" ]; then
   atomic_changed=true
 fi
 
 _say "Attempting to clone $atomic_branch branch of atomic repo"
-clone_or_switch_branch "atomic" "web/themes/contrib/atomic" "$atomic_branch"
+clone_or_switch_branch "atomic" "$atomic_path" "$atomic_branch"
 
 [ "$verbose" = true ] && _say "Moving to atomic repo"
-cd web/themes/contrib/atomic || (_error "Could not find atomic theme. Are you in the right directory?" && exit 1)
+cd $atomic_path || (_error "Could not find atomic theme. Are you in the right directory?" && exit 1)
 
 [ ! -d "_yale-packages" ] && mkdir _yale-packages && _say "Creating _yale-packages directory for cloning"
 
@@ -268,7 +275,7 @@ npm run build
 
 _say "Symlinking to root directory"
 cd ../../../../../..
-[ ! -L "atomic" ] && ln -s web/themes/contrib/atomic atomic
+[ ! -L "atomic" ] && ln -s $atomic_path atomic
 [ ! -L "component-library-twig" ] && ln -s atomic/_yale-packages/component-library-twig component-library-twig
 [ ! -L "tokens" ] && ln -s atomic/_yale-packages/tokens tokens
 
@@ -278,7 +285,7 @@ _say "********************"
 _say "All done!"
 _say "********************"
 _say "Current branches"
-_say "Atomic:            $(current_branch_for_path 'web/themes/contrib/atomic')"
-_say "Component Library: $(current_branch_for_path 'web/themes/contrib/atomic/_yale-packages/component-library-twig')"
-_say "Tokens:            $(current_branch_for_path 'web/themes/contrib/atomic/_yale-packages/tokens')"
+_say "Atomic:            $(current_branch_for_path '$atomic_path')"
+_say "Component Library: $(current_branch_for_path '$atomic_path/_yale-packages/component-library-twig')"
+_say "Tokens:            $(current_branch_for_path '$atomic_path/_yale-packages/tokens')"
 _say "********************"
