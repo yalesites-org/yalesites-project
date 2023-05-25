@@ -1,16 +1,5 @@
 #!/bin/bash
 
-# default values
-cl_branch="main"
-token_branch="main"
-atomic_branch="main"
-debug=false
-verbose=false
-
-atomic_path="web/themes/contrib/atomic"
-tokens_path="$atomic_path/_yale-packages/tokens"
-cl_path="$atomic_path/_yale-packages/component-library-twig"
-
 # current_branch_for_path
 #
 # This function will return the current branch for a given path.
@@ -129,163 +118,179 @@ function repo_has_changes() {
   fi
 }
 
-# getopts
-while getopts ":dvc:t:a:b:" opt; do
-  case ${opt} in
-    d )
-      debug=true
-      ;;
-    c )
-      cl_branch=$OPTARG
-      ;;
-    t )
-      token_branch=$OPTARG
-      ;;
-    a )
-      atomic_branch=$OPTARG
-      ;;
-    v )
-      verbose=true
-      ;;
-    b )
-      atomic_branch=$OPTARG
-      cl_branch=$OPTARG
-      token_branch=$OPTARG
-      ;;
-    \? )
-      echo "Usage: $0 [-d] [-b <branch-for-all-repos>] [-c <component-library-branch>] [-t <tokens-branch>] [-a <atomic-branch>]"
-      echo "-d: debug mode"
-      echo "-v: verbose mode"
-      echo "-b <branch>: branch for all repos - use if all repos are on the same branch name"
-      echo "-c <branch>: component library branch to use"
-      echo "-t <branch>: tokens branch to use"
-      echo "-a <branch>: atomic branch to use"
-      exit 1
-      ;;
-    :)
-      echo "Usage: $0 [-d] [-b <branch-for-all-repos>] [-c <component-library-branch>] [-t <tokens-branch>] [-a <atomic-branch>]"
-      echo "Option -$OPTARG requires an argument." >&2
-      exit 1
-      ;;
-  esac
-done
+function do_magic() {
+  # default values
+  local cl_branch="main"
+  local token_branch="main"
+  local atomic_branch="main"
+  local debug=false
+  local verbose=false
 
-utils_path="./scripts/local/util"
-[ -e "$utils_path" ] || (echo -e "[$0] Utilities not found.  You must run this from the yalesites root directory: " && exit 1)
+  local atomic_path="web/themes/contrib/atomic"
+  local tokens_path="$atomic_path/_yale-packages/tokens"
+  local cl_path="$atomic_path/_yale-packages/component-library-twig"
 
-[ -e "$utils_path/say.sh" ] || (echo -e "[$0] Say utility not found.  You must run this from the yalesites root directory: " && exit 1)
-source ./scripts/local/util/say.sh
+  # getopts
+  while getopts ":dvc:t:a:b:" opt; do
+    case ${opt} in
+      d )
+        debug=true
+        ;;
+      c )
+        cl_branch=$OPTARG
+        ;;
+      t )
+        token_branch=$OPTARG
+        ;;
+      a )
+        atomic_branch=$OPTARG
+        ;;
+      v )
+        verbose=true
+        ;;
+      b )
+        atomic_branch=$OPTARG
+        cl_branch=$OPTARG
+        token_branch=$OPTARG
+        ;;
+      \? )
+        echo "Usage: $0 [-d] [-b <branch-for-all-repos>] [-c <component-library-branch>] [-t <tokens-branch>] [-a <atomic-branch>]"
+        echo ""
+        echo "-d: debug mode"
+        echo "-v: verbose mode"
+        echo "-b <branch>: branch for all repos - use if all repos are on the same branch name"
+        echo "-c <branch>: component library branch to use"
+        echo "-t <branch>: tokens branch to use"
+        echo "-a <branch>: atomic branch to use"
+        exit 1
+        ;;
+      :)
+        echo "Usage: $0 [-d] [-b <branch-for-all-repos>] [-c <component-library-branch>] [-t <tokens-branch>] [-a <atomic-branch>]"
+        echo "Option -$OPTARG requires an argument." >&2
+        exit 1
+        ;;
+    esac
+  done
 
-[ "$debug" = true ] && _say "Debug mode enabled" && set -x
-[ "$verbose" = true ] && _say "Verbose mode enabled"
+  utils_path="./scripts/local/util"
+  [ -e "$utils_path" ] || (echo -e "[$0] Utilities not found.  You must run this from the yalesites root directory: " && exit 1)
 
-# Shortcircuit running if there are changes already present
-repo_has_changes '$atomic_path'
-if [ $? -eq 1 ]; then
-  _error "You have uncommitted changes to the atomic repo.  Please commit or stash them before running this script."
-  exit 1
-fi
+  [ -e "$utils_path/say.sh" ] || (echo -e "[$0] Say utility not found.  You must run this from the yalesites root directory: " && exit 1)
+  source ./scripts/local/util/say.sh
 
-repo_has_changes '$tokens_path'
-if [ $? -eq 1 ]; then
-  _error "You have uncommitted changes to the tokens repo.  Please commit or stash them before running this script."
-  exit 1
-fi
+  [ "$debug" = true ] && _say "Debug mode enabled" && set -x
+  [ "$verbose" = true ] && _say "Verbose mode enabled"
 
-repo_has_changes '$cl_path'
-if [ $? -eq 1 ]; then
-  _error "You have uncommitted changes to the component-library-twig repo.  Please commit or stash them before running this script."
-  exit 1
-fi
+  # Shortcircuit running if there are changes already present
+  repo_has_changes "$atomic_path"
+  if [ $? -eq 1 ]; then
+    _error "You have uncommitted changes to the atomic repo.  Please commit or stash them before running this script."
+    exit 1
+  fi
 
-_say "Let the magic begin!"
-_say "********************"
+  repo_has_changes "$tokens_path"
+  if [ $? -eq 1 ]; then
+    _error "You have uncommitted changes to the tokens repo.  Please commit or stash them before running this script."
+    exit 1
+  fi
 
-atomic_changed=false
-# If current branch did change
-if [ "$(current_branch_for_path '$atomic_path')" != "$atomic_branch" ]; then
-  atomic_changed=true
-fi
+  repo_has_changes "$cl_path"
+  if [ $? -eq 1 ]; then
+    _error "You have uncommitted changes to the component-library-twig repo.  Please commit or stash them before running this script."
+    exit 1
+  fi
 
-_say "Attempting to clone $atomic_branch branch of atomic repo"
-clone_or_switch_branch "atomic" "$atomic_path" "$atomic_branch"
+  _say "Let the magic begin!"
+  _say "********************"
 
-[ "$verbose" = true ] && _say "Moving to atomic repo"
-cd $atomic_path || (_error "Could not find atomic theme. Are you in the right directory?" && exit 1)
+  atomic_changed=false
+  # If current branch did change
+  if [ "$(current_branch_for_path "$atomic_path")" != "$atomic_branch" ]; then
+    atomic_changed=true
+  fi
 
-[ ! -d "_yale-packages" ] && mkdir _yale-packages && _say "Creating _yale-packages directory for cloning"
+  _say "Attempting to clone $atomic_branch branch of atomic repo"
+  clone_or_switch_branch "atomic" "$atomic_path" "$atomic_branch"
 
-_say "Attempting to clone $token_branch branch of tokens repo"
-clone_or_switch_branch "tokens" "_yale-packages/tokens" "$token_branch"
+  [ "$verbose" = true ] && _say "Moving to atomic repo"
+  cd $atomic_path || (_error "Could not find atomic theme. Are you in the right directory?" && exit 1)
 
-_say "Moving into tokens repo and creating a global npm link"
-cd _yale-packages/tokens || (_error "Could not find tokens repo. Are you in the right directory?" && exit 1)
-npm link
+  [ ! -d "_yale-packages" ] && mkdir _yale-packages && _say "Creating _yale-packages directory for cloning"
 
-[ "$verbose" = true ] && _say "Moving back to atomic"
-cd ../..
+  _say "Attempting to clone $token_branch branch of tokens repo"
+  clone_or_switch_branch "tokens" "_yale-packages/tokens" "$token_branch"
 
-_say "Attempting to clone $cl_branch branch of component-library-twig repo"
-clone_or_switch_branch "component-library-twig" "_yale-packages/component-library-twig" "$cl_branch"
+  _say "Moving into tokens repo and creating a global npm link"
+  cd _yale-packages/tokens || (_error "Could not find tokens repo. Are you in the right directory?" && exit 1)
+  npm link
 
-[ "$verbose" = true ] && _say "Moving into component library"
-cd _yale-packages/component-library-twig || (_error "Could not find component-library-twig repo. Are you in the right directory?" && exit 1)
+  [ "$verbose" = true ] && _say "Moving back to atomic"
+  cd ../..
 
-_say "Using the tokens global npm link inside the component library"
-npm link
+  _say "Attempting to clone $cl_branch branch of component-library-twig repo"
+  clone_or_switch_branch "component-library-twig" "_yale-packages/component-library-twig" "$cl_branch"
 
-[ "$verbose" = true ] && _say "Moving back to atomic"
-cd ../..
+  [ "$verbose" = true ] && _say "Moving into component library"
+  cd _yale-packages/component-library-twig || (_error "Could not find component-library-twig repo. Are you in the right directory?" && exit 1)
 
-_say "Using the component-library global npm link inside the atomic theme"
-npm link @yalesites-org/component-library-twig
+  _say "Using the tokens global npm link inside the component library"
+  npm link
 
-[ "$verbose" = true ] && _say "Moving into the component library"
-cd _yale-packages/component-library-twig || (_error "Could not find component-library-twig repo. Are you in the right directory?" && exit 1)
+  [ "$verbose" = true ] && _say "Moving back to atomic"
+  cd ../..
 
-_say "Running clean install so we can patch Twig.js"
-npm ci -y
+  _say "Using the component-library global npm link inside the atomic theme"
+  npm link @yalesites-org/component-library-twig
 
-_say "Using the tokens global npm link inside the component library"
-npm link @yalesites-org/tokens
+  [ "$verbose" = true ] && _say "Moving into the component library"
+  cd _yale-packages/component-library-twig || (_error "Could not find component-library-twig repo. Are you in the right directory?" && exit 1)
 
-[ "$verbose" = true ] && _say "Moving back to atomic"
-cd ../..
+  _say "Running clean install so we can patch Twig.js"
+  npm ci -y
 
-_say "Attempting to npm link tokens inside atomic"
-# You can't do this because only one npm link can exist at a time on a node_module folder :(
-# npm link @yalesites-org/tokens
-# So we do it ourselves
-rm -rf node_modules/@yalesitesorg/tokens 
-cd node_modules/@yalesites-org || (_error "Could not find component-library-twig repo. Are you in the right directory?" && exit 1)
-ln -s ../../_yale-packages/tokens tokens
-cd ../..
+  _say "Using the tokens global npm link inside the component library"
+  npm link @yalesites-org/tokens
 
-[ "$verbose" = true ] && _say "Moving to tokens repo"
-cd _yale-packages/tokens || (_error "Could not find tokens repo. Are you in the right directory?" && exit 1)
+  [ "$verbose" = true ] && _say "Moving back to atomic"
+  cd ../..
 
-_say "Building tokens"
-cd ../tokens || (_error "Could not find tokens repo. Are you in the right directory?" && exit 1)
-npm i -D
-npm run build
+  _say "Attempting to npm link tokens inside atomic"
+  # You can't do this because only one npm link can exist at a time on a node_module folder :(
+  # npm link @yalesites-org/tokens
+  # So we do it ourselves
+  rm -rf node_modules/@yalesitesorg/tokens 
+  cd node_modules/@yalesites-org || (_error "Could not find component-library-twig repo. Are you in the right directory?" && exit 1)
+  ln -s ../../_yale-packages/tokens tokens
+  cd ../..
 
-_say "Rebuilding component library to have dist folder"
-cd ../component-library-twig || (_error "Could not find component-library-twig repo. Are you in the right directory?" && exit 1)
-npm run build
+  [ "$verbose" = true ] && _say "Moving to tokens repo"
+  cd _yale-packages/tokens || (_error "Could not find tokens repo. Are you in the right directory?" && exit 1)
 
-_say "Symlinking to root directory"
-cd ../../../../../..
-[ ! -L "atomic" ] && ln -s $atomic_path atomic
-[ ! -L "component-library-twig" ] && ln -s atomic/_yale-packages/component-library-twig component-library-twig
-[ ! -L "tokens" ] && ln -s atomic/_yale-packages/tokens tokens
+  _say "Building tokens"
+  cd ../tokens || (_error "Could not find tokens repo. Are you in the right directory?" && exit 1)
+  npm i -D
+  npm run build
 
-[ "$atomic_changed" = true ] && _say "Atomic theme changed, so we need to clear Drupal cache; this could take a while" && lando drush cr
+  _say "Rebuilding component library to have dist folder"
+  cd ../component-library-twig || (_error "Could not find component-library-twig repo. Are you in the right directory?" && exit 1)
+  npm run build
 
-_say "********************"
-_say "All done!"
-_say "********************"
-_say "Current branches"
-_say "Atomic:            $(current_branch_for_path '$atomic_path')"
-_say "Component Library: $(current_branch_for_path '$cl_path')"
-_say "Tokens:            $(current_branch_for_path '$tokens_path')"
-_say "********************"
+  _say "Symlinking to root directory"
+  cd ../../../../../..
+  [ ! -L "atomic" ] && ln -s $atomic_path atomic
+  [ ! -L "component-library-twig" ] && ln -s atomic/_yale-packages/component-library-twig component-library-twig
+  [ ! -L "tokens" ] && ln -s atomic/_yale-packages/tokens tokens
+
+  [ "$atomic_changed" = true ] && _say "Atomic theme changed, so we need to clear Drupal cache; this could take a while" && lando drush cr
+
+  _say "********************"
+  _say "All done!"
+  _say "********************"
+  _say "Current branches"
+  _say "Atomic:            $(current_branch_for_path "$atomic_path")"
+  _say "Component Library: $(current_branch_for_path "$cl_path")"
+  _say "Tokens:            $(current_branch_for_path "$tokens_path")"
+  _say "********************"
+}
+
+do_magic "$@"
