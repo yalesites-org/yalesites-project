@@ -186,7 +186,7 @@ if [ $? -eq 1 ]; then
   exit 1
 fi
 
-repo_has_changes '$atomic_path/_yale-packages/tokens'
+repo_has_changes '$tokens_path'
 if [ $? -eq 1 ]; then
   _error "You have uncommitted changes to the tokens repo.  Please commit or stash them before running this script."
   exit 1
@@ -287,5 +287,5 @@ _say "********************"
 _say "Current branches"
 _say "Atomic:            $(current_branch_for_path '$atomic_path')"
 _say "Component Library: $(current_branch_for_path '$atomic_path/_yale-packages/component-library-twig')"
-_say "Tokens:            $(current_branch_for_path '$atomic_path/_yale-packages/tokens')"
+_say "Tokens:            $(current_branch_for_path '$tokens_path')"
 _say "********************"
