@@ -136,7 +136,7 @@ function ys_themes_preprocess_block(&$variables) {
       $config = \Drupal::config('ys_themes.theme_settings');
       $variables['parentNode'] = $node->getType();
 
-      // Limit variable include to components that need to use 
+      // Limit variable include to components that need to use
       // `cta__component_theme` lever/dial. Currently that is only button_link.
       if ($variables['derivative_plugin_id'] == 'button_link') {
         $variables['cta__component_theme'] = $config->get('button_theme');
