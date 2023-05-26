@@ -1,38 +1,44 @@
-{{ title_prefix }}
-{{ title }}
-{{ title_suffix }}
+{% set dom_id_class = dom_id ? 'js-view-dom-id-' ~ dom_id %}
 
-{% if header %}
-  <header>
-    {{ header }}
-  </header>
-{% endif %}
+<div class={{ dom_id_class }}>
+  {{ title_prefix }}
+  {{ title }}
+  {{ title_suffix }}
 
-{{ exposed }}
-{{ attachment_before }}
+  {% if header %}
+    <header>
+      {{ header }}
+    </header>
+  {% endif %}
 
-{% if rows -%}
-  {% embed "@organisms/card-collection/yds-card-collection.twig" with {
-    card_collection__heading: view.args.0,
-    card_collection__featured: 'true',
-    card_collection__type: 'list',
-  } %}
-    {% block card_collection__cards %}
-      {{ rows }}
-    {% endblock %}
-  {% endembed %}
-{% elseif empty -%}
-  {{ empty }}
-{% endif %}
-{{ pager }}
+  {{ attachment_before }}
 
-{{ attachment_after }}
-{{ more }}
+  {% if rows -%}
+    {% embed "@organisms/card-collection/yds-card-collection.twig" with {
+      card_collection__heading: view.args.0,
+      card_collection__featured: 'true',
+      card_collection__type: 'list',
+    } %}
+      {% block card_collection__filters %}
+        {{ exposed }}
+      {% endblock %}
+      {% block card_collection__cards %}
+        {{ rows }}
+      {% endblock %}
+    {% endembed %}
+  {% elseif empty -%}
+    {{ empty }}
+  {% endif %}
+  {{ pager }}
 
-{% if footer %}
-  <footer>
-    {{ footer }}
-  </footer>
-{% endif %}
+  {{ attachment_after }}
+  {{ more }}
 
-{{ feed_icons }}
+  {% if footer %}
+    <footer>
+      {{ footer }}
+    </footer>
+  {% endif %}
+
+  {{ feed_icons }}
+</div>
