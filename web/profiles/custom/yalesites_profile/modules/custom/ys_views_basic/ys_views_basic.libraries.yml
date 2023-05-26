@@ -4,4 +4,3 @@ ys_views_basic:
       assets/css/views-basic.css: {}
   js:
     assets/js/views-basic.js: {}
-    
