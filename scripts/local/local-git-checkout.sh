@@ -61,6 +61,23 @@ function yalesites_git_clone() {
     git clone git@github.com:yalesites-org/"$name".git "$git_path" -b "$branch"
 }
 
+# git_checkout
+#
+# This function will checkout a branch if it exists.
+#
+# params:
+#  git_path: the path to the repo
+#  target_branch: the branch to switch to
+#  origin: the origin to use
+#
+function git_checkout() {
+  local git_path="${1-$(pwd)}"
+  local target_branch=${2:-main}
+  local origin=${3:-origin}
+
+  git -C "$git_path" checkout "$target_branch" || git -C "$git_path" checkout --track "$origin/$target_branch"
+}
+
 # clone_or_switch_branch
 #
 # This function will clone a repo if it doesn't exist, or switch to a branch if
@@ -107,7 +124,7 @@ function clone_or_switch_branch() {
       (! branch_exists "$target_branch" "$git_path") && _error "Target branch $target_branch does not exist, switching to $backup_branch" && target_branch="$backup_branch"
 
       _say "Current branch of $name is $current_branch, switching to $target_branch"
-      git -C "$git_path" checkout "$target_branch" || git -C "$git_path" checkout --track "$origin/$target_branch"
+      git_checkout "$git_path" "$target_branch" "$origin"
 
       # Verify that the checkout was successful
       current_branch=$(current_branch_for_path "$git_path")
@@ -115,7 +132,7 @@ function clone_or_switch_branch() {
         # If not successful, try the backup branch
         _error "Failed to switch to $target_branch branch of $name repo"
         _say "Attempting to switch to $backup_branch branch of $name repo"
-        git -C "$git_path" checkout "$backup_branch" || git -C "$git_path" checkout --track "$origin/$backup_branch"
+        git_checkout "$git_path" "$backup_branch" "$origin"
 
         # check if that was successful
         current_branch=$(current_branch_for_path "$git_path")
