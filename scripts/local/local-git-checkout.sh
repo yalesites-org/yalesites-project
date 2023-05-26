@@ -147,6 +147,7 @@ function _local-git-checkout() {
   local cl_branch="main"
   local token_branch="main"
   local atomic_branch="main"
+  local yalesites_branch="develop"
   local debug=false
   local verbose=false
 
@@ -154,6 +155,7 @@ function _local-git-checkout() {
   local atomic_path="web/themes/contrib/atomic"
   local tokens_path="$atomic_path/_yale-packages/tokens"
   local cl_path="$atomic_path/_yale-packages/component-library-twig"
+  local yalesites_path="./"
 
   # If atomic changes branches, we need to know this so we can know to 
   # clear Drupal's cache toward the end of the script.
@@ -174,6 +176,9 @@ function _local-git-checkout() {
       a )
         atomic_branch=$OPTARG
         ;;
+      m )
+        yalesites_branch=$OPTARG
+        ;;
       v )
         verbose=true
         ;;
@@ -181,9 +186,10 @@ function _local-git-checkout() {
         atomic_branch=$OPTARG
         cl_branch=$OPTARG
         token_branch=$OPTARG
+        yalesites_branch=$OPTARG
         ;;
       \? )
-        echo "Usage: $0 [-d] [-b <branch-for-all-repos>] [-c <component-library-branch>] [-t <tokens-branch>] [-a <atomic-branch>]"
+        echo "Usage: $0 [-d] [-b <branch-for-all-repos>] [-c <component-library-branch>] [-t <tokens-branch>] [-a <atomic-branch>] [-m <yalesites-branch>]"
         echo ""
         echo "-d: debug mode"
         echo "-v: verbose mode"
@@ -191,10 +197,11 @@ function _local-git-checkout() {
         echo "-c <branch>: component library branch to use"
         echo "-t <branch>: tokens branch to use"
         echo "-a <branch>: atomic branch to use"
+        echo "-m <branch>: yalesites branch to use"
         exit 1
         ;;
       :)
-        echo "Usage: $0 [-d] [-b <branch-for-all-repos>] [-c <component-library-branch>] [-t <tokens-branch>] [-a <atomic-branch>]"
+        echo "Usage: $0 [-d] [-b <branch-for-all-repos>] [-c <component-library-branch>] [-t <tokens-branch>] [-a <atomic-branch>] [-m <yalesites-branch>]"
         echo "Option -$OPTARG requires an argument." >&2
         exit 1
         ;;
@@ -214,6 +221,12 @@ function _local-git-checkout() {
   [ "$verbose" = true ] && _say "Verbose mode enabled"
 
   # Shortcircuit running if there are changes already present
+  repo_has_changes "$yalesites_path"
+  if [ $? -eq 1 ]; then
+    _error "You have uncommitted changes to the yalesites repo.  Please commit or stash them before running this script."
+    exit 1
+  fi
+
   repo_has_changes "$atomic_path"
   if [ $? -eq 1 ]; then
     _error "You have uncommitted changes to the atomic repo.  Please commit or stash them before running this script."
@@ -236,6 +249,9 @@ function _local-git-checkout() {
   _say "Let the magic begin!"
   _say "********************"
 
+  # Move yalesites branch
+  clone_or_switch_branch "yalesites-project" "$yalesites_path" "$yalesites_branch"
+  
   # If current branch did change
   if [ "$(current_branch_for_path "$atomic_path")" != "$atomic_branch" ]; then
     atomic_changed=true
@@ -319,6 +335,7 @@ function _local-git-checkout() {
   _say "All done!"
   _say "********************"
   _say "Current branches"
+  _say "YaleSites:         $(current_branch_for_path "$yalesites_path")"
   _say "Atomic:            $(current_branch_for_path "$atomic_path")"
   _say "Component Library: $(current_branch_for_path "$cl_path")"
   _say "Tokens:            $(current_branch_for_path "$tokens_path")"
