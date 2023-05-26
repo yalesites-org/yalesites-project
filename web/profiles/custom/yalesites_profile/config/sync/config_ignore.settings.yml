@@ -1,6 +1,7 @@
 _core:
   default_config_hash: UVH1aJ4b44UM-VdPVN7hNNuuVqfReJxwfVeDQH1Hvsk
 ignored_config_entities:
+  - 'google_analytics.settings:account'
   - 'system.site*'
   - 'ys_alert.settings:alert'
   - 'ys_core*'
