@@ -61,7 +61,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     'page' => [
       'label' => 'Pages',
       'view_modes' => [
-        'teaser' => 'Teasers',
+        'card' => 'Page Grid',
+        'list_item' => 'Page List',
       ],
       'sort_by' => [
         'title:ASC' => 'Title - A-Z',

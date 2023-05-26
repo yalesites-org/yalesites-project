@@ -33,23 +33,7 @@ third_party_settings:
         layout_settings:
           label: 'Title Section'
           context_mapping: {  }
-        components:
-          e871b39c-4016-4cc5-b897-adf259eb613a:
-            uuid: e871b39c-4016-4cc5-b897-adf259eb613a
-            region: content
-            configuration:
-              id: 'field_block:node:event:field_category'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: entity_reference_label
-                label: above
-                settings:
-                  link: true
-                third_party_settings: {  }
-            weight: 0
-            additional: {  }
+        components: {  }
         third_party_settings:
           layout_builder_lock:
             lock:
