@@ -109,13 +109,18 @@ function clone_or_switch_branch() {
       _say "Current branch of $name is $current_branch, switching to $target_branch"
       git -C "$git_path" checkout "$target_branch" || git -C "$git_path" checkout --track "$origin/$target_branch"
 
+      # Verify that the checkout was successful
       current_branch=$(current_branch_for_path "$git_path")
       if [ "$current_branch" != "$target_branch" ]; then
+        # If not successful, try the backup branch
         _error "Failed to switch to $target_branch branch of $name repo"
         _say "Attempting to switch to $backup_branch branch of $name repo"
         git -C "$git_path" checkout "$backup_branch" || git -C "$git_path" checkout --track "$origin/$backup_branch"
+
+        # check if that was successful
         current_branch=$(current_branch_for_path "$git_path")
         if [ "$current_branch" != "$backup_branch" ]; then
+          # If not successful, fail
           _error "Failed to switch to $backup_branch branch of $name repo"
           exit 1
         fi
@@ -174,7 +179,7 @@ function _local-git-checkout() {
   local atomic_changed=false
 
   # getopts - Parse the options to then use
-  while getopts ":dvc:t:a:b:" opt; do
+  while getopts ":dvc:t:a:b:m:" opt; do
     case ${opt} in
       d )
         debug=true
