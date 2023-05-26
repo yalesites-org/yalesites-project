@@ -18,8 +18,8 @@ translatable: false
 default_value:
   -
     group_params:
-      params: '{"view_mode":"card","filters":{"types":[null],"tags":[null]},"sort_by":null,"display":null,"limit":0}'
-    params: '{"view_mode":"card","filters":{"types":["post"],"tags":[null]},"sort_by":null,"display":null,"limit":0}'
+      params: '{"view_mode":"card","filters":{"types":["post"],"tags":null,"event_category":null},"operator":"or","sort_by":null,"display":null,"limit":0}'
+    params: '{"view_mode":"card","filters":{"types":["post"],"tags":null,"event_category":null},"operator":"+","sort_by":null,"display":null,"limit":0}'
 default_value_callback: ''
 settings: {  }
 field_type: views_basic_params
