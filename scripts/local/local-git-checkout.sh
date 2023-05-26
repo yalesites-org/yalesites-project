@@ -108,6 +108,18 @@ function clone_or_switch_branch() {
 
       _say "Current branch of $name is $current_branch, switching to $target_branch"
       git -C "$git_path" checkout "$target_branch" || git -C "$git_path" checkout --track "$origin/$target_branch"
+
+      current_branch=$(current_branch_for_path "$git_path")
+      if [ "$current_branch" != "$target_branch" ]; then
+        _error "Failed to switch to $target_branch branch of $name repo"
+        _say "Attempting to switch to $backup_branch branch of $name repo"
+        git -C "$git_path" checkout "$backup_branch" || git -C "$git_path" checkout --track "$origin/$backup_branch"
+        current_branch=$(current_branch_for_path "$git_path")
+        if [ "$current_branch" != "$backup_branch" ]; then
+          _error "Failed to switch to $backup_branch branch of $name repo"
+          exit 1
+        fi
+      fi
     else
       _error "You have uncommitted changes to the $name repo.  Please commit or stash them before running this script."
       exit 1
