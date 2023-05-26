@@ -1,9 +1,7 @@
 ((Drupal) => {
-  Drupal.behaviors.ysLevers = {
+  Drupal.behaviors.ysViewsBasic = {
     attach: function () { // eslint-disable-line
     // Function to handle radio input checked behavior based on radio element selection.
-      // Note: 'global_theme' is excluded because we're doing the same thing above,
-      // but adding on to it. 
       function handleRadioInputs(radioGroup) {
         // Get references to the radio input elements within the specified group
         const radioInputs = document.querySelectorAll(radioGroup);
