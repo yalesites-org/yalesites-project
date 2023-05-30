@@ -91,8 +91,8 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
     if (!empty($this->view->rowPlugin)) {
 
       // Gets passed view mode from ViewsBasicDefaultFormatter and sets per row.
-      if (isset($this->view->args[3])) {
-        $viewMode = $this->view->args[3];
+      if (isset($this->view->args[4])) {
+        $viewMode = $this->view->args[4];
         $validViewModes = $this->entityDisplay->getViewModeOptions('node');
         if (array_key_exists($viewMode, $validViewModes)) {
           $this->view->rowPlugin->options['view_mode'] = $viewMode;

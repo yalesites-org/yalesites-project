@@ -42,4 +42,11 @@ function ys_views_basic_views_data_alter(array &$data) {
       'id' => 'views_basic_sort',
     ],
   ];
+  $data['node_field_data']['exclude_taxonomy_terms'] = [
+    'title' => t('Exclude Taxonomy Terms'),
+    'filter' => [
+      'help' => t('Excludes taxonomy terms dynamically from the views tool'),
+      'id' => 'exclude_taxonomy_terms',
+    ],
+  ];
 }
