@@ -4,6 +4,7 @@ status: true
 dependencies:
   config:
     - field.field.node.post.field_author
+    - field.field.node.post.field_category
     - field.field.node.post.field_login_required
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
@@ -84,6 +85,14 @@ content:
       link_to_entity: false
     third_party_settings: {  }
     weight: 0
+    region: content
+  field_category:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 1
     region: content
 hidden:
   field_login_required: true
