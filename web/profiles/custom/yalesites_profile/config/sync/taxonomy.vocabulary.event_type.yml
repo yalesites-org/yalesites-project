@@ -1,4 +1,4 @@
-uuid: bd9564f7-fe74-463c-a500-8529f38c1120
+uuid: cca4f998-9ffe-4975-87a6-7e57e434e4b2
 langcode: en
 status: true
 dependencies:
@@ -27,7 +27,7 @@ third_party_settings:
         destination: default
         url: ''
         external: ''
-name: 'Event Format'
-vid: event_format
+name: 'Event Type'
+vid: event_type
 description: ''
 weight: 0

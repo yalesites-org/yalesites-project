@@ -3,12 +3,12 @@
     "terms": [
       {
         "unique_id": 1,
-        "vocabulary": "event_format",
+        "vocabulary": "event_type",
         "name": "In-person"
       },
       {
         "unique_id": 2,
-        "vocabulary": "event_format",
+        "vocabulary": "event_type",
         "name": "Online"
       },
       {
