@@ -1,0 +1,19 @@
+/* These styles are necessary because we're using Layout Builder and need to target
+// more deeply nested selectors than in our component-library.
+
+This overrides the .main-content > *:first-child 
+statement in web/themes/contrib/atomic/_yale-packages/component-library-twig/components/04-page-layouts/page-layouts.scss 
+*/
+
+.main-content .layout--banner {
+  margin-top: 0;
+}
+
+.main-content .layout--banner .layout__region div > *:first-child {
+  margin-top: 0;
+}
+
+.main-content .layout .layout__region div:last-child > .callouts,
+.main-content .layout .layout__region div:last-child > .quick-links {
+  margin-bottom: 0;
+}

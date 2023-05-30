@@ -53,3 +53,7 @@ fontawesome:
       node_modules/@yalesites-org/component-library-twig/fonts/fontawesome/css/fontawesome.css: {}
       node_modules/@yalesites-org/component-library-twig/fonts/fontawesome/css/regular.css: {}
       node_modules/@yalesites-org/component-library-twig/fonts/fontawesome/css/solid.css: {}
+layout-builder: 
+  css: 
+    theme:
+      css/layout-builder.css: {}
