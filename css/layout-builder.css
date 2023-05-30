@@ -1,18 +1,40 @@
 /* These styles are necessary because we're using Layout Builder and need to target
 // more deeply nested selectors than in our component-library.
 
-This overrides the .main-content > *:first-child 
-statement in web/themes/contrib/atomic/_yale-packages/component-library-twig/components/04-page-layouts/page-layouts.scss 
+/***
+****************
+Edit overrides 1
+****************
+
+first and last child component spacing between the 
+site header and site footer, respectively. 
+
+****************
+****************
 */
+
+
+/* This `layout-banner override, overrides the .main-content > *:first-child 
+statement in web/themes/contrib/atomic/_yale-packages/component-library-twig/components/04-page-layouts/page-layouts.scss 
+
+We need to set this region to have no top margin because our component-library doesn't
+account for div elements in-between 'main-content' and the component themselves. 
+
+Without this, the `layout-banner` would get top margin from the component-library
+because the --main-content-top-margin variable isn't set and --size-spacing-6
+would be used instead resulting in top margin of size-spacing-6.  */
 
 .main-content .layout--banner {
   margin-top: 0;
 }
 
+/* This applies margin-top: 0 to the first child inside of our nest divs */
 .main-content .layout--banner .layout__region div > *:first-child {
   margin-top: 0;
 }
 
+/* Here we need to specify which components in the main content layout div 
+need to have margin-bottom set to 0 */
 .main-content .layout .layout__region div:last-child > .callouts,
 .main-content .layout .layout__region div:last-child > .quick-links {
   margin-bottom: 0;
