@@ -1,9 +1,17 @@
 {% set embed_wrapper__embed_type = displayAttributes['embedType']|default('unknown') %}
-{% set embed_wrapper__width = displayAttributes['width']|default('100%') %}
+{% set embed_wrapper__width = displayAttributes['width']|default('site') %}
 {% set embed_wrapper__height = displayAttributes['height']|default('100%') %}
 
 {% if displayAttributes['isIframe'] %}
-    <iframe data-embed-type="{{ embed_wrapper__embed_type }}" src="{{ url }}" title="{{ title }}" width="{{ embed_wrapper__width }}" height="{{ embed_wrapper__height }}"></iframe>
+    <div data-embedded-components>
+        {% embed "@molecules/embed/yds-embed.twig" with {
+            embed__src: url,
+            embed__title: title,
+            embed__width: embed_wrapper__width,
+            embed__type: embed_wrapper__embed_type,
+        } %}
+        {% endembed %}
+    </div>
 {% else %}
     {{ embedSource }}
 {% endif %}
