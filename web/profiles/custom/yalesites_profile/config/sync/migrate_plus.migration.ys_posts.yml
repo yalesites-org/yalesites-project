@@ -11,7 +11,7 @@ field_plugin_method: null
 cck_plugin_method: null
 migration_tags: null
 migration_group: ys_starterkit
-label: 'Starterkit Posts'
+label: 'Starterkit Post'
 source:
   plugin: url
   data_fetcher_plugin: file
@@ -21,7 +21,7 @@ source:
   item_selector: /data/posts
   fields:
     -
-      name: src_post
+      name: src_unique_id
       label: 'Unique ID'
       selector: unique_id
     -
@@ -33,7 +33,7 @@ source:
       label: Author
       selector: field_author
   ids:
-    src_post:
+    src_unique_id:
       type: string
   constants:
     date_format: Y-m-d

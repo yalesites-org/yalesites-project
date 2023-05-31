@@ -14,6 +14,9 @@ dependencies:
     - node.type.event
     - node.type.page
     - node.type.post
+    - taxonomy.vocabulary.event_category
+    - taxonomy.vocabulary.post_category
+    - taxonomy.vocabulary.tags
   module:
     - block
     - contextual
@@ -69,6 +72,9 @@ permissions:
   - 'create media'
   - 'create page content'
   - 'create post content'
+  - 'create terms in event_category'
+  - 'create terms in post_category'
+  - 'create terms in tags'
   - 'create url aliases'
   - 'create video media'
   - 'delete any background_video media'
@@ -90,6 +96,9 @@ permissions:
   - 'delete own page content'
   - 'delete own post content'
   - 'delete own video media'
+  - 'delete terms in event_category'
+  - 'delete terms in post_category'
+  - 'delete terms in tags'
   - 'edit any background_video media'
   - 'edit any document media'
   - 'edit any embed media'
@@ -108,6 +117,9 @@ permissions:
   - 'edit own post content'
   - 'edit own video media'
   - 'edit own webform submission'
+  - 'edit terms in event_category'
+  - 'edit terms in post_category'
+  - 'edit terms in tags'
   - 'mark as hidden in editoria11y'
   - 'override all sticky option'
   - 'override post authored on option'
