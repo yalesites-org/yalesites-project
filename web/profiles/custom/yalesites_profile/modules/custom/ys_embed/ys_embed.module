@@ -24,7 +24,7 @@ function ys_embed_theme($existing, $type, $theme, $path) {
         'title' => '',
         'url' => '',
         'displayAttributes' => [
-          'width' => '100%',
+          'width' => 'site',
           'height' => '100%',
           'scrolling' => 'no',
           'frameborder' => 'no',
