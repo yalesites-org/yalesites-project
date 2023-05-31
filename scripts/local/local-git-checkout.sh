@@ -25,9 +25,10 @@ function branch_exists() {
 
   local branch_name="$1"
   local git_path="${2-$(pwd)}"
+  local origin="${3-origin}"
   local remote_branches
 
-  if git -C "$git_path" rev-parse --quiet --verify "$branch_name" > /dev/null; then
+  if git -C "$git_path" rev-parse --quiet --verify "$origin/$branch_name" > /dev/null; then
     return 0
   fi
 
@@ -121,7 +122,7 @@ function clone_or_switch_branch() {
     # If there are no uncommitted changes, prepare to switch to the target branch
     if git -C "$git_path" diff --quiet --exit-code; then
       # If the target branch doesn't exist, switch to the backup branch
-      (! branch_exists "$target_branch" "$git_path") && _error "Target branch $target_branch does not exist, switching to $backup_branch" && target_branch="$backup_branch"
+      (! branch_exists "$target_branch" "$git_path" "$origin") && _error "Target branch $target_branch does not exist, switching to $backup_branch" && target_branch="$backup_branch"
 
       _say "Current branch of $name is $current_branch, switching to $target_branch"
       git_checkout "$git_path" "$target_branch" "$origin"
@@ -292,7 +293,7 @@ function _local-git-checkout() {
   fi
 
   _say "Attempting to clone $atomic_branch branch of atomic repo"
-  clone_or_switch_branch "atomic" "$atomic_path" "$atomic_branch"
+  clone_or_switch_branch "atomic" "$atomic_path" "$atomic_branch" "main" "composer"
 
   [ "$verbose" = true ] && _say "Moving to atomic repo"
   cd $atomic_path || (_error "Could not find atomic theme. Are you in the right directory?" && exit 1)
