@@ -145,11 +145,13 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
      * to use.
      *
      * The order of these arguments is required as follows:
-     * 1) Content type machine name (can combine content types with + or ,)
-     * 2) Taxonomy term ID (can combine with + or ,)
+     * 0) Content type machine name (can combine content types with + or ,)
+     * 1) Taxonomy term ID to include (can combine with + or ,)
+     * 2) Taxonomy term ID to exclude (can combine with + or ,)
      * 3) Sort field and direction (in format field_name:ASC)
      * 4) View mode machine name (i.e. teaser)
      * 5) Items per page (set to 0 for all items)
+     * 6) Event time period (future, past, all)
      */
 
     $filterType = implode('+', $paramsDecoded['filters']['types']);
@@ -190,6 +192,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'sort' => $paramsDecoded['sort_by'],
         'view' => $paramsDecoded['view_mode'],
         'items' => $itemsLimit,
+        'event_time_period' => $paramsDecoded['filters']['event_time_period'],
       ]
     );
 
@@ -340,6 +343,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
       case 'limit':
         $defaultParam = (empty($paramsDecoded['limit'])) ? 10 : (int) $paramsDecoded['limit'];
+        break;
+
+      case 'event_time_period':
+        $defaultParam = (empty($paramsDecoded['filters']['event_time_period'])) ? '>=' : $paramsDecoded['filters']['event_time_period'];
         break;
 
       default:
