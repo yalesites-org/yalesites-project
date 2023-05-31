@@ -36,14 +36,14 @@ class SoundCloud extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $example = '<iframe width="100%" height="300" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/320687463&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true"></iframe>';
+  protected static $example = '<iframe width="100%" height="130" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/320687463&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true"></iframe>';
 
   /**
    * {@inheritdoc}
    */
   protected static $displayAttributes = [
-    'width' => '100%',
-    'height' => '240px',
+    'width' => 'site',
+    'height' => '180px',
     'scrolling' => 'no',
     'frameborder' => 'no',
     'embedType' => 'audio',
