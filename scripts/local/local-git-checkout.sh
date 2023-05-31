@@ -179,10 +179,12 @@ function repo_has_changes() {
 # Main function that does the work
 function _local-git-checkout() {
   # Default values
-  local cl_branch="main"
-  local token_branch="main"
-  local atomic_branch="main"
-  local yalesites_branch="develop"
+  local default_branch="main"
+  local default_yalesites_branch="develop"
+  local cl_branch="$default_branch"
+  local token_branch="$default_branch"
+  local atomic_branch="$default_branch"
+  local yalesites_branch="$default_yalesites_branch"
   local debug=false
   local verbose=false
 
@@ -285,7 +287,7 @@ function _local-git-checkout() {
   _say "********************"
 
   # Move yalesites branch
-  clone_or_switch_branch "yalesites-project" "$yalesites_path" "$yalesites_branch"
+  clone_or_switch_branch "yalesites-project" "$yalesites_path" "$yalesites_branch" "$default_yalesites_branch"
   
   # If current branch did change
   if [ "$(current_branch_for_path "$atomic_path")" != "$atomic_branch" ]; then
@@ -293,7 +295,7 @@ function _local-git-checkout() {
   fi
 
   _say "Attempting to clone $atomic_branch branch of atomic repo"
-  clone_or_switch_branch "atomic" "$atomic_path" "$atomic_branch" "main" "composer"
+  clone_or_switch_branch "atomic" "$atomic_path" "$atomic_branch" "$default_branch" "composer"
 
   [ "$verbose" = true ] && _say "Moving to atomic repo"
   cd $atomic_path || (_error "Could not find atomic theme. Are you in the right directory?" && exit 1)
@@ -301,7 +303,7 @@ function _local-git-checkout() {
   [ ! -d "_yale-packages" ] && mkdir _yale-packages && _say "Creating _yale-packages directory for cloning"
 
   _say "Attempting to clone $token_branch branch of tokens repo"
-  clone_or_switch_branch "tokens" "_yale-packages/tokens" "$token_branch"
+  clone_or_switch_branch "tokens" "_yale-packages/tokens" "$token_branch" "$default_branch"
 
   _say "Moving into tokens repo and creating a global npm link"
   cd _yale-packages/tokens || (_error "Could not find tokens repo. Are you in the right directory?" && exit 1)
@@ -311,7 +313,7 @@ function _local-git-checkout() {
   cd ../..
 
   _say "Attempting to clone $cl_branch branch of component-library-twig repo"
-  clone_or_switch_branch "component-library-twig" "_yale-packages/component-library-twig" "$cl_branch"
+  clone_or_switch_branch "component-library-twig" "_yale-packages/component-library-twig" "$cl_branch" "$default_branch"
 
   [ "$verbose" = true ] && _say "Moving into component library"
   cd _yale-packages/component-library-twig || (_error "Could not find component-library-twig repo. Are you in the right directory?" && exit 1)
