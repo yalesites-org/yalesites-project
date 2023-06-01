@@ -1,0 +1,141 @@
+{
+  "data": {
+    "terms": [
+      {
+        "unique_id": 1,
+        "vocabulary": "event_type",
+        "name": "In-person"
+      },
+      {
+        "unique_id": 2,
+        "vocabulary": "event_type",
+        "name": "Online"
+      },
+      {
+        "unique_id": 3,
+        "vocabulary": "event_category",
+        "name": "Academic Calendar"
+      },
+      {
+        "unique_id": 4,
+        "vocabulary": "event_category",
+        "name": "Arts & Humanities"
+      },
+      {
+        "unique_id": 5,
+        "vocabulary": "event_category",
+        "name": "Athletics & Recreation"
+      },
+      {
+        "unique_id": 6,
+        "vocabulary": "event_category",
+        "name": "Business & Entrepreneurship"
+      },
+      {
+        "unique_id": 7,
+        "vocabulary": "event_category",
+        "name": "Career & Professional Services"
+      },
+      {
+        "unique_id": 8,
+        "vocabulary": "event_category",
+        "name": "Cultural & International"
+      },
+      {
+        "unique_id": 9,
+        "vocabulary": "event_category",
+        "name": "Diversity, Equity, Inclusion & Belonging"
+      },
+      {
+        "unique_id": 10,
+        "vocabulary": "event_category",
+        "name": "Health & Medicine"
+      },
+      {
+        "unique_id": 11,
+        "vocabulary": "event_category",
+        "name": "Law, Politics & Society"
+      },
+      {
+        "unique_id": 12,
+        "vocabulary": "event_category",
+        "name": "Libraries, Museums & Galleries"
+      },
+      {
+        "unique_id": 13,
+        "vocabulary": "event_category",
+        "name": "Science & Technology"
+      },
+      {
+        "unique_id": 14,
+        "vocabulary": "event_category",
+        "name": "Social Sciences"
+      },
+      {
+        "unique_id": 15,
+        "vocabulary": "event_category",
+        "name": "Spiritual & Religious"
+      },
+      {
+        "unique_id": 16,
+        "vocabulary": "event_category",
+        "name": "Student Life"
+      },
+      {
+        "unique_id": 17,
+        "vocabulary": "event_category",
+        "name": "University Events"
+      },
+      {
+        "unique_id": 18,
+        "vocabulary": "event_category",
+        "name": "Yale & New Haven"
+      },
+      {
+        "unique_id": 19,
+        "vocabulary": "post_category",
+        "name": "Alumni"
+      },
+      {
+        "unique_id": 20,
+        "vocabulary": "post_category",
+        "name": "Arts & Humanities"
+      },
+      {
+        "unique_id": 21,
+        "vocabulary": "post_category",
+        "name": "Business"
+      },
+      {
+        "unique_id": 22,
+        "vocabulary": "post_category",
+        "name": "Campus & Community"
+      },
+      {
+        "unique_id": 23,
+        "vocabulary": "post_category",
+        "name": "Environment"
+      },
+      {
+        "unique_id": 24,
+        "vocabulary": "post_category",
+        "name": "International"
+      },
+      {
+        "unique_id": 25,
+        "vocabulary": "post_category",
+        "name": "Law"
+      },
+      {
+        "unique_id": 26,
+        "vocabulary": "post_category",
+        "name": "Science & Technology"
+      },
+      {
+        "unique_id": 27,
+        "vocabulary": "post_category",
+        "name": "Social Sciences"
+      }
+    ]
+  }
+}

@@ -23,8 +23,8 @@ class ViewsBasicSort extends SortPluginBase {
     $query = $this->query;
 
     // Split out the field and the sort direction.
-    if (isset($this->view->args[2])) {
-      $sortBy = $this->view->args[2];
+    if (isset($this->view->args[3])) {
+      $sortBy = $this->view->args[3];
       if (str_contains($sortBy, ':')) {
         $sortQueryOptions = explode(":", $sortBy);
         if (str_starts_with($sortQueryOptions[0], 'field')) {

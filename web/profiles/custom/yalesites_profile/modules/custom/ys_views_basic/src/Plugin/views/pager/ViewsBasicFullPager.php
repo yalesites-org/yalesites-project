@@ -24,10 +24,10 @@ class ViewsBasicFullPager extends Full {
    * {@inheritdoc}
    */
   public function query() {
-    if (!isset($this->view->args[4])) {
+    if (!isset($this->view->args[5])) {
       return;
     }
-    $this->setItemsPerPage((int) $this->view->args[4]);
+    $this->setItemsPerPage((int) $this->view->args[5]);
     $limit = $this->options['items_per_page'];
     $offset = $this->current_page * $this->options['items_per_page'] + $this->options['offset'];
     if (!empty($this->options['total_pages'])) {

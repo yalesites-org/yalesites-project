@@ -2,22 +2,285 @@
 * @todo Possibly move these styles into admin theme.
 */
 
+/* set variables */
+.layout-builder-configure-block {
+  --color-border: var(--color-gray-500);
+  --color-border-lightest: var(--color-basic-white);
+  --color-link-hover: hsl(210, 100%, 21%);
+  --color-link-border: hsl(213, 66%, 45%);
+  --color-background-primary: var(--color-basic-white);
+  --color-background-hover: var(--wool);
+  --color-border-hover: hsl(213, 66%, 45%);
+  --color-text-lighter: #2D424D;
+  --color-text-primary: var(--color-gray-800);
+}
+
+
+/* General styles */
 .views-basic--params {
   display: none;
 }
 
-.views-basic--group-user-selection .grouped-items {
-  align-items: flex-start;
-  display: flex;
-  gap: 5rem;
-}
-
-.views-basic--user-selection {
-  align-items: flex-start;
-  display: flex;
-  gap: 1rem;
-}
-
 .views-basic--parameter-preview {
   margin-top: 1rem;
+}
+
+.glb-form-type--radio {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* visually hide the inputs */
+.layout-builder-configure-block .grouped-items .glb-form-type--radio input {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+/* base for labels */
+.glb-form-type--radio label {
+  flex: 1 auto;
+  padding: var(--size-spacing-6) var(--size-spacing-4);
+  border-radius: 0.25rem;
+  border: 2px solid var(--color-border);
+  aspect-ratio: 2/1;
+  display: block !important;
+  text-align: left;
+  background: var(--color-basic-white);
+  border: 2px solid var(--color-border);
+  padding: var(--size-spacing-4) var(--size-spacing-5);
+  color: var(--color-text-primary);
+  border-radius: 0.25rem;
+  margin-bottom: var(--size-spacing-4);
+}
+
+
+/****** 
+/******** Input styles 
+*******/
+
+/*views-basic--group-user-selection*/
+
+#drupal-off-canvas .layout-builder-configure-block {
+  width: 100%;
+}
+
+.grouped-items .fieldset__wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+#drupal-off-canvas .layout-builder-configure-block legend {
+  margin-bottom: var(--size-spacing-4);
+}
+
+#drupal-off-canvas .layout-builder-configure-block .glb-form-item__label {
+  font-size: 1rem !important;
+}
+
+
+/* 
+/** in sidebar
+*/
+
+/*views-basic--group-user-selection*/
+#drupal-off-canvas.ui-dialog-content div.glb-form-item__description {
+  margin-top: 0.5rem;
+}
+
+#drupal-off-canvas.ui-dialog-content div.counter {
+  margin-top: 1rem;
+}
+
+#drupal-off-canvas .fieldset,
+#drupal-off-canvas .views-basic--group-user-selection .grouped-items {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.grouped-items .glb-form-composite .fieldset__wrapper {
+  border-top: 0.15rem solid var(--color-gray-500);
+}
+
+.glb-fieldset__legend--composite .glb-fieldset__label {
+  font-size: 1rem;
+}
+
+#drupal-off-canvas .views-basic--group-user-selection .grouped-items .fieldset--group .fieldset__wrapper--group .glb-form-radios {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: start;
+  gap: 0.75rem;
+}
+
+#drupal-off-canvas .views-basic--group-user-selection .grouped-items .fieldset--group .fieldset__wrapper--group .glb-form-radios .glb-form-type--radio {
+  width: auto;
+}
+
+/* first column */
+#drupal-off-canvas .grouped-items .fieldset--group .fieldset__wrapper--group .glb-form-type--radio label {
+  width: 110px;
+  height: 150px;
+}
+
+/* second column */
+#drupal-off-canvas .grouped-items .fieldset--group.views-basic--view-mode .fieldset__wrapper--group .glb-form-type--radio label {
+  width: 175px;
+  height: 200px;
+}
+
+
+/* 
+/** in modal
+*/
+#layout-builder-modal .grouped-items {
+  display: flex;
+  flex-direction: row;
+  align-items: first baseline;
+  gap: 2rem;
+  width: 100%;
+}
+
+#layout-builder-modal .grouped-items .glb-form-type--radio {
+  width: auto;
+}
+
+/* first column */ 
+#layout-builder-modal .grouped-items .fieldset--group {
+  flex: 1 0 52.5%;  
+}
+
+#layout-builder-modal .grouped-items .fieldset--group .fieldset__wrapper--group .glb-form-type--radio label {
+  width: 125px;
+  height: 150px;
+}
+
+#layout-builder-modal .grouped-items .fieldset--group .fieldset__wrapper--group .form-boolean-group {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  width: 100%;
+}
+
+/* second column */
+#layout-builder-modal .grouped-items #edit-view-mode {
+  display: flex;
+  flex: 1 auto;
+  width: 100%;
+}
+
+#layout-builder-modal .grouped-items #edit-view-mode .fieldset--group {
+  flex: 1 auto;
+}
+
+#layout-builder-modal .grouped-items #edit-view-mode .fieldset--group .fieldset__wrapper--group .glb-form-type--radio label {
+  width: 170px;
+  height: 150px;
+}
+
+
+/****** 
+/******** Label and fieldset styles
+*******/
+
+.layout-builder-configure-block .grouped-items fieldset:focus-visible,
+.layout-builder-configure-block .grouped-items fieldset:focus-within,
+.layout-builder-configure-block .grouped-items label:focus-visible,
+.layout-builder-configure-block .grouped-items input[type="submit"].button--primary:focus {
+  outline: var(--size-thickness-2) solid var(--color-link-base);
+  outline-offset: var(--size-thickness-2);
+}
+
+.layout-builder-configure-block .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types:hover label,
+.layout-builder-configure-block .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types:focus label,
+.layout-builder-configure-block .form-item-settings-block-form-group-user-selection-entity-and-view-mode-view-mode:hover label,
+.layout-builder-configure-block .form-item-settings-block-form-group-user-selection-entity-and-view-mode-view-mode:focus label { 
+  background-color: var(--color-background-hover);
+  border-color: var(--color-border-hover);
+}
+
+.layout-builder-configure-block  .glb-form-type--radio input[checked="checked"] + label,
+.layout-builder-configure-block  .glb-form-type--radio input[checked="checked"] + label:hover,
+.layout-builder-configure-block  .glb-form-type--radio:hover input[checked="checked"] + label {
+  background-color: var(--color-text-primary);
+  color: var(--color-background-primary) !important;
+}
+
+
+/*
+/***** I want to show:
+*/
+
+/* Posts */
+.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types input[value="post"] + label {
+  background-image: url('../icons/content-type-post.svg');
+  background-repeat: no-repeat;
+  background-position: center 4rem;
+}
+
+.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types input[value="post"][checked="checked"] + label {
+  background-color: var(--color-text-primary);
+  color: var(--color-background-primary);
+}
+
+
+/* Events */
+.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types input[value="event"] + label {
+  background-image: url('../icons/content-type-event.svg');
+  background-repeat: no-repeat;
+  background-position: center 4rem;
+}
+
+.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types input[value="event"][checked="checked"] + label {
+  background-color: var(--color-text-primary);
+  color: var(--color-background-primary);
+}
+
+/* Pages */
+.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types input[value="page"] + label {
+  background-image: url('../icons/content-type-page.svg');
+  background-repeat: no-repeat;
+  background-position: center 4rem;
+}
+
+.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types input[value="page"][checked="checked"] + label {
+  background-color: var(--color-text-primary);
+  color: var(--color-background-primary);
+}
+
+/* Profiles */
+.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types input[value="profile"] + label {
+  background-image: url('../icons/content-type-profile.svg');
+  background-repeat: no-repeat;
+  background-position: center 4rem;
+}
+
+.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types input[value="profile"][checked="checked"] + label {
+  background-color: var(--color-text-primary);
+  color: var(--color-background-primary);
+}
+
+/*
+/***** As:
+*/
+
+/* Card */
+.views-basic--view-mode input[value="card"] + label {
+  background-image: url('../icons/display-type-card-grid.svg');
+  background-repeat: no-repeat;
+  background-position: center 4rem;
+}
+
+/* List */
+.views-basic--view-mode input[value="list_item"] + label {
+  background-image: url('../icons/display-type-list-view.svg');
+  background-repeat: no-repeat;
+  background-position: center 4rem;
 }

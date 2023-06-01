@@ -5,6 +5,7 @@ dependencies:
   config:
     - core.entity_view_mode.node.teaser
     - field.field.node.post.field_author
+    - field.field.node.post.field_category
     - field.field.node.post.field_login_required
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
@@ -28,6 +29,7 @@ content:
     region: content
 hidden:
   field_author: true
+  field_category: true
   field_login_required: true
   field_metatags: true
   field_publish_date: true

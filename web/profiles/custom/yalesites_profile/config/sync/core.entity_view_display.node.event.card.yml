@@ -4,9 +4,11 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.node.card
+    - field.field.node.event.field_category
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_format
+    - field.field.node.event.field_event_type
     - field.field.node.event.field_login_required
     - field.field.node.event.field_metatags
     - field.field.node.event.field_tags
@@ -66,7 +68,9 @@ content:
     weight: 1
     region: content
 hidden:
+  field_category: true
   field_event_cta: true
+  field_event_type: true
   field_login_required: true
   field_metatags: true
   field_tags: true

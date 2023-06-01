@@ -3,9 +3,11 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.node.event.field_category
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_format
+    - field.field.node.event.field_event_type
     - field.field.node.event.field_login_required
     - field.field.node.event.field_metatags
     - field.field.node.event.field_tags
@@ -81,6 +83,14 @@ targetEntityType: node
 bundle: event
 mode: default
 content:
+  field_category:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 4
+    region: content
   field_event_cta:
     type: link_separate
     label: hidden
@@ -112,6 +122,14 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 2
+    region: content
+  field_event_type:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 5
     region: content
 hidden:
   field_login_required: true

@@ -10,7 +10,7 @@ dependencies:
     - node
     - user
 id: manage_posts
-label: 'Manage Postss'
+label: 'Manage Posts'
 module: views
 description: 'Interface used by authors to manage post content.'
 tag: ''
