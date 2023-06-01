@@ -192,7 +192,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'sort' => $paramsDecoded['sort_by'],
         'view' => $paramsDecoded['view_mode'],
         'items' => $itemsLimit,
-        'event_time_period' => $paramsDecoded['filters']['event_time_period'],
+        'event_time_period' => str_contains($filterType, 'event') ? $paramsDecoded['filters']['event_time_period'] : NULL,
       ]
     );
 
@@ -346,7 +346,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         break;
 
       case 'event_time_period':
-        $defaultParam = (empty($paramsDecoded['filters']['event_time_period'])) ? '>=' : $paramsDecoded['filters']['event_time_period'];
+        $defaultParam = (empty($paramsDecoded['filters']['event_time_period'])) ? 'future' : $paramsDecoded['filters']['event_time_period'];
         break;
 
       default:

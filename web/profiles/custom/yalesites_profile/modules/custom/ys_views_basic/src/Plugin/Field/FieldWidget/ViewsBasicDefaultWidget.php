@@ -272,13 +272,13 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     $form['group_user_selection']['entity_specific']['event_time_period'] = [
       '#type' => 'radios',
-      '#title' => $this->t('Show'),
+      '#title' => $this->t('Event Time Period'),
       '#options' => [
-        '>=' => 'Future Events',
-        '<' => 'Past Events',
+        'future' => 'Future Events',
+        'past' => 'Past Events',
         'all' => 'All Events',
       ],
-      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('event_time_period', $items[$delta]->params) : '>=',
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('event_time_period', $items[$delta]->params) : 'future',
       '#states' => [
         'visible' => [
           ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][entity_types]"]' => [
