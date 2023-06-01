@@ -7,6 +7,7 @@ dependencies:
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_format
+    - field.field.node.event.field_event_type
     - field.field.node.event.field_login_required
     - field.field.node.event.field_metatags
     - field.field.node.event.field_tags
@@ -48,7 +49,7 @@ third_party_settings:
         weight: -10
     group_logistics:
       children:
-        - field_event_format
+        - field_event_type
         - field_event_cta
         - field_event_date
       label: Logistics
@@ -97,7 +98,7 @@ content:
     third_party_settings: {  }
   field_event_cta:
     type: linkit
-    weight: 27
+    weight: 3
     region: content
     settings:
       placeholder_url: ''
@@ -107,7 +108,7 @@ content:
     third_party_settings: {  }
   field_event_date:
     type: smartdate_inline
-    weight: 28
+    weight: 4
     region: content
     settings:
       hide_date: 0
@@ -121,11 +122,15 @@ content:
         custom
       show_extra: false
     third_party_settings: {  }
-  field_event_format:
-    type: options_buttons
-    weight: 26
+  field_event_type:
+    type: entity_reference_autocomplete_tags
+    weight: 1
     region: content
-    settings: {  }
+    settings:
+      match_operator: CONTAINS
+      match_limit: 10
+      size: 60
+      placeholder: ''
     third_party_settings: {  }
   field_login_required:
     type: boolean_checkbox
@@ -222,6 +227,7 @@ content:
     third_party_settings: {  }
 hidden:
   created: true
+  field_event_format: true
   layout_builder__layout: true
   promote: true
   revision_log: true
