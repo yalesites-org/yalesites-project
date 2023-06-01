@@ -19,7 +19,7 @@ dependencies:
   module:
     - allowed_formats
     - field_group
-    - linkit
+    - link
     - maxlength
     - media_library
     - metatag
@@ -97,14 +97,12 @@ content:
       placeholder: ''
     third_party_settings: {  }
   field_event_cta:
-    type: linkit
+    type: link_default
     weight: 3
     region: content
     settings:
       placeholder_url: ''
       placeholder_title: ''
-      linkit_profile: default
-      linkit_auto_link_text: false
     third_party_settings: {  }
   field_event_date:
     type: smartdate_inline
