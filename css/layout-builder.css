@@ -38,6 +38,7 @@ need to have margin-bottom set to 0 */
 .main-content .layout .layout__region div:last-child > .callouts,
 .main-content .layout .layout__region div:last-child > .cta-banner,
 .main-content .layout .layout__region div:last-child > .grand-hero-banner,
-.main-content .layout .layout__region div:last-child > .quick-links {
+.main-content .layout .layout__region div:last-child > .quick-links,
+.main-content > .layout:last-child  {
   margin-bottom: 0;
 }
