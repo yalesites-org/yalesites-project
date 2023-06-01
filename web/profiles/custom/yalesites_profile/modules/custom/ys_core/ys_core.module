@@ -69,6 +69,11 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
   if (isset($form['sticky'])) {
     $form['sticky']['widget']['value']['#title'] = t('Pin to the beginning of list');
   }
+
+  // Hide Relations on taxonomy term edit page.
+  if ($form_id == 'taxonomy_term_tags_form') {
+    $form['relations']['#access'] = FALSE;
+  }
 }
 
 /**
