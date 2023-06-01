@@ -71,7 +71,13 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
   }
 
   // Hide Relations on taxonomy term edit page.
-  if ($form_id == 'taxonomy_term_tags_form') {
+  $vocabularyForms = [
+    'taxonomy_term_tags_form',
+    'taxonomy_term_event_category_form',
+    'taxonomy_term_post_category_form',
+  ];
+
+  if (in_array($form_id, $vocabularyForms)) {
     $form['relations']['#access'] = FALSE;
   }
 }
