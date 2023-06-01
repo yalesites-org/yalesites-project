@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   module:
+    - bugherd
     - media
     - system
 _core:
@@ -12,5 +13,6 @@ label: 'Anonymous user'
 weight: 0
 is_admin: false
 permissions:
+  - 'access bugherd'
   - 'access content'
   - 'view media'
