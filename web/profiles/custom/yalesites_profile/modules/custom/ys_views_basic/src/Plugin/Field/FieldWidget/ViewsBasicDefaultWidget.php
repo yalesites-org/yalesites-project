@@ -274,9 +274,9 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#type' => 'radios',
       '#title' => $this->t('Event Time Period'),
       '#options' => [
-        'future' => 'Future Events',
-        'past' => 'Past Events',
-        'all' => 'All Events',
+        'future' => $this->t('Future Events'),
+        'past' => $this->t('Past Events'),
+        'all' => $this->t('All Events'),
       ],
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('event_time_period', $items[$delta]->params) : 'future',
       '#states' => [
