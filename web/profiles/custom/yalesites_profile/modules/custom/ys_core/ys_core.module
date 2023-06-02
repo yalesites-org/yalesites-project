@@ -80,6 +80,15 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
   if (in_array($form_id, $vocabularyForms)) {
     $form['relations']['#access'] = FALSE;
   }
+
+  // Add vocabulary description to the taxonomy overview form.
+  if ($form_id == 'taxonomy_overview_terms') {
+    $replacements['@description'] = $form_state->getBuildInfo()['args'][0]->getDescription();
+    $form['help']['description'] = [
+      '#type' => 'markup',
+      '#markup' => "<p>" . t('@description', $replacements) . "</p>",
+    ];
+  }
 }
 
 /**
