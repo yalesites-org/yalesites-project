@@ -11,7 +11,7 @@ field_plugin_method: null
 cck_plugin_method: null
 migration_tags: null
 migration_group: ys_starterkit
-label: 'Starterkit Terrms'
+label: 'Starterkit Terms'
 source:
   plugin: url
   data_fetcher_plugin: file
