@@ -60,6 +60,7 @@ module:
   layout_discovery: 0
   libraries: 0
   link: 0
+  linkit: 0
   mailchimp_transactional: 0
   mailsystem: 0
   markup: 0
