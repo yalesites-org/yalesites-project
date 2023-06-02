@@ -1,0 +1,21 @@
+_core:
+  default_config_hash: A1YhiXDQT0YvWBBy9oxEiWz2gjzsJ9mFNQYiO-St8VI
+bugherd_project_key: 7wyg24qv0ivjykxkd3k5fa
+bugherd_widget_position: bottom-right
+bugherd_disable_on_admin: '0'
+reporter_email_autofill: 1
+email_required: 1
+tab_text: ''
+option_title_text: ''
+option_pin_text: ''
+option_site_text: ''
+feedback_entry_placeholder: ''
+feedback_email_placeholder: ''
+feedback_submit_text: ''
+confirm_success_text: ''
+confirm_loading_text: ''
+confirm_close_text: ''
+confirm_error_text: ''
+confirm_retry_text: ''
+confirm_extension_text: ''
+confirm_extension_link_text: ''
