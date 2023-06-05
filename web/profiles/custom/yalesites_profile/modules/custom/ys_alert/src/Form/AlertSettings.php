@@ -10,6 +10,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\CachedDiscoveryClearerInterface;
 use Drupal\ys_alert\AlertManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\path_alias\AliasManager;
 
 /**
  * Defines the manage alerts interface.
@@ -38,6 +39,13 @@ class AlertSettings extends ConfigFormBase {
   protected $alertManager;
 
   /**
+   * The path alias manager.
+   *
+   * @var \Drupal\path_alias\AliasManager
+   */
+  protected $pathAliasManager;
+
+  /**
    * Constructs a SiteInformationForm object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -48,17 +56,21 @@ class AlertSettings extends ConfigFormBase {
    *   The Cache Disovery interface.
    * @param \Drupal\ys_alert\AlertManager $alert_manager
    *   The YaleSites Alert Manager service.
+   * @param \Drupal\path_alias\AliasManager $path_alias_manager
+   *   The Path Alias Manager.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
     CacheBackendInterface $cacheRender,
     CachedDiscoveryClearerInterface $plugin_cache_clearer,
-    AlertManager $alert_manager
+    AlertManager $alert_manager,
+    AliasManager $path_alias_manager,
     ) {
     parent::__construct($config_factory);
     $this->cacheRender = $cacheRender;
     $this->pluginCacheClearer = $plugin_cache_clearer;
     $this->alertManager = $alert_manager;
+    $this->pathAliasManager = $path_alias_manager;
   }
 
   /**
@@ -69,7 +81,8 @@ class AlertSettings extends ConfigFormBase {
       $container->get('config.factory'),
       $container->get('cache.render'),
       $container->get('plugin.cache_clearer'),
-      $container->get('ys_alert.manager')
+      $container->get('ys_alert.manager'),
+      $container->get('path_alias.manager'),
     );
   }
 
@@ -184,6 +197,11 @@ class AlertSettings extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // Retrieve the configuration.
+    $linkUrl = $form_state->getValue('link_url');
+    $linkAlias = (!empty($form_state->getValue('link_url')))
+      ? $this->pathAliasManager->getAliasByPath($linkUrl)
+      : NULL;
+
     $this->configFactory->getEditable('ys_alert.settings')
       // Set the submitted configuration setting.
       ->set('alert.id', time())
@@ -192,7 +210,7 @@ class AlertSettings extends ConfigFormBase {
       ->set('alert.status', $form_state->getValue('status'))
       ->set('alert.type', $form_state->getValue('type'))
       ->set('alert.link_title', $form_state->getValue('link_title'))
-      ->set('alert.link_url', $form_state->getValue('link_url'))
+      ->set('alert.link_url', $linkAlias)
       ->save();
 
     if ($this->cacheRender->get('config')) {
