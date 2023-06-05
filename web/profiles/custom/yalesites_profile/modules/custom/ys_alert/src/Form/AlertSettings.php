@@ -198,9 +198,11 @@ class AlertSettings extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // Retrieve the configuration.
     $linkUrl = $form_state->getValue('link_url');
-    $linkAlias = (!empty($form_state->getValue('link_url')))
-      ? $this->pathAliasManager->getAliasByPath($linkUrl)
-      : NULL;
+    if ($linkUrl) {
+      if (!str_starts_with($linkUrl, "http")) {
+        $linkUrl = $this->pathAliasManager->getAliasByPath($linkUrl);
+      }
+    }
 
     $this->configFactory->getEditable('ys_alert.settings')
       // Set the submitted configuration setting.
@@ -210,7 +212,7 @@ class AlertSettings extends ConfigFormBase {
       ->set('alert.status', $form_state->getValue('status'))
       ->set('alert.type', $form_state->getValue('type'))
       ->set('alert.link_title', $form_state->getValue('link_title'))
-      ->set('alert.link_url', $linkAlias)
+      ->set('alert.link_url', $linkUrl)
       ->save();
 
     if ($this->cacheRender->get('config')) {
