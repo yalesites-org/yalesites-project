@@ -29,5 +29,5 @@ third_party_settings:
         external: ''
 name: 'Event Category'
 vid: event_category
-description: ''
+description: 'A vocabulary is used to classify events based on their categories, such as "Conferences," "Webinars," or "Workshops." This allows you to easily find and navigate events based on your interests and preferences.'
 weight: 0
