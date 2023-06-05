@@ -180,6 +180,9 @@ function ys_themes_form_alter(&$form, $form_state, $form_id) {
     $form['settings']['label']['#description'] = t('Used when not showing content preview');
     $form['settings']['label_display']['#default_value'] = FALSE;
     $form['settings']['label_display']['#access'] = FALSE;
+    $form['settings']['label']['#weight'] = '1000';
+    // Hide the block types as this is added in the instructions.
+    unset($form['settings']['admin_label']);
   }
 
   // Allow front-end theming of the layout builder discard changes form.
