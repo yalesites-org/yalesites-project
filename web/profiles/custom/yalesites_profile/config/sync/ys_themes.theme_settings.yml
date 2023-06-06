@@ -1,6 +1,6 @@
-nav_position: left
-nav_type: mega
-header_theme: one
+nav_position: right
+nav_type: basic
+header_theme: three
 footer_theme: one
-global_theme: one
-button_theme: two
+global_theme: five
+button_theme: three

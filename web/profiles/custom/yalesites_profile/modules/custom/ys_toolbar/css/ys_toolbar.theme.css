@@ -2,3 +2,31 @@
 .toolbar .toolbar-bar #toolbar-item-administration-tray .toolbar-icon-admin-toolbar-tools-help.toolbar-icon-default::before {
   mask-image: url('../images/yale-university-press-1985-2010.svg') !important;
 }
+.toolbar .toolbar-bar .toolbar-icon-edit:before, .toolbar .toolbar-bar .toolbar-tab > .toolbar-icon-edit.toolbar-item:before {
+  -webkit-mask-image: url('../images/icon-gear.svg') !important;
+  mask-image: url('../images/icon-gear.svg') !important;
+  -webkit-mask-size: 24px !important;
+  mask-size: 24px !important;
+}
+
+.toolbar .toolbar-bar .toolbar-icon-edit:before, .toolbar .toolbar-bar .toolbar-tab > .toolbar-icon-edit.toolbar-item.toolbar-icon-levers:before {
+  -webkit-mask-image: url('../images/icon-paint.svg') !important;
+  mask-image: url('../images/icon-paint.svg') !important;
+  -webkit-mask-size: 24px !important;
+  mask-size: 24px !important;
+}
+
+.toolbar .toolbar-bar .toolbar-icon-edit:before, .toolbar .toolbar-bar .toolbar-tab > .toolbar-icon-edit.toolbar-item.toolbar-icon-layout:before {
+  -webkit-mask-image: url('../images/icon-bricks.svg') !important;
+  mask-image: url('../images/icon-bricks.svg') !important;
+  -webkit-mask-size: 24px !important;
+  mask-size: 24px !important;
+}
+
+.glb-sidebar {
+  padding-top: 34px !important;
+}
+
+.glb-messages-list {
+  display: none  !important;
+}

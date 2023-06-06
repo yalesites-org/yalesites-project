@@ -118,7 +118,8 @@ class ToolbarItemsService {
     if ($this->showEditButton()) {
       $this->toolbarItems['toolbar_edit_link'] = $this->buildButton(
         'entity.node.edit_form',
-        'Setup'
+        'Setup',
+        'setup'
       );
     }
 
@@ -126,14 +127,16 @@ class ToolbarItemsService {
     // ensure this link only appears on entities with layout overrides enabled.
     $this->toolbarItems['toolbar_layout_link'] = $this->buildButton(
       'layout_builder.overrides.node.view',
-      'Layout Builder'
+      'Layout Builder',
+      'layout'
     );
 
     // Add a publish button to the toolbar when viewing an unpublished node.
     if ($this->showPublishButton()) {
       $this->toolbarItems['toolbar_publish_link'] = $this->buildButton(
         'entity.node.publish',
-        'Publish'
+        'Publish',
+        'publish'
       );
     }
 
@@ -223,7 +226,7 @@ class ToolbarItemsService {
    * @return array
    *   A rennder array for a toolbar item.
    */
-  protected function buildButton(string $route, string $label): array {
+  protected function buildButton(string $route, string $label, $class = ''): array {
     return [
       '#type' => 'toolbar_item',
       'tab' => [
@@ -242,6 +245,7 @@ class ToolbarItemsService {
           'class' => [
             'toolbar-icon',
             'toolbar-icon-edit',
+            'toolbar-icon-' . $class,
           ],
         ],
         '#cache' => [
@@ -280,6 +284,7 @@ class ToolbarItemsService {
             'use-ajax',
             'toolbar-icon',
             'toolbar-icon-edit',
+            'toolbar-icon-levers',
           ],
           'data-dialog-type' => 'dialog',
           'data-dialog-renderer' => 'off_canvas',
