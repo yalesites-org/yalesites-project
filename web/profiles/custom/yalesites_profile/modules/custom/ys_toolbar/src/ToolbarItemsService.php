@@ -222,11 +222,13 @@ class ToolbarItemsService {
    *   The route for the toolbar item destination.
    * @param string $label
    *   The text label for the toolbar item.
+   * @param string $class
+   *   A css class to add to the memu item.
    *
    * @return array
    *   A rennder array for a toolbar item.
    */
-  protected function buildButton(string $route, string $label, $class = ''): array {
+  protected function buildButton(string $route, string $label, sting $class = ''): array {
     return [
       '#type' => 'toolbar_item',
       'tab' => [
