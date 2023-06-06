@@ -195,8 +195,17 @@ class AlertSettings extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    // Validate link path.
+    $this->validateUrl($form_state, 'link_url');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    // Retrieve the configuration.
+
+    // If link URL is an internal path, use the path alias instead.
     $linkUrl = $form_state->getValue('link_url');
     if ($linkUrl) {
       if (!str_starts_with($linkUrl, "http")) {
@@ -236,6 +245,28 @@ class AlertSettings extends ConfigFormBase {
    */
   public function updateAlertDescriptionWrapperCallback(array $form, FormStateInterface $form_state) {
     return $form['type_description_wrapper'];
+  }
+
+  /**
+   * Check that a submitted value starts with a slash or is an external link.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state of the parent form.
+   * @param string $fieldId
+   *   The id of a field on the config form.
+   */
+  protected function validateUrl(FormStateInterface &$form_state, string $fieldId) {
+    if ($value = $form_state->getValue($fieldId)) {
+      if (!str_starts_with($value, '/') && !str_starts_with($value, 'http')) {
+        $form_state->setErrorByName(
+        $fieldId,
+        $this->t(
+          "The path '%path' has to start with a '/' for internal links or 'https://' for external links.",
+         ['%path' => $form_state->getValue($fieldId)]
+        )
+        );
+      }
+    }
   }
 
 }
