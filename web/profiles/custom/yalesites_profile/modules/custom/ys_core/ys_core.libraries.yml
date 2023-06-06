@@ -3,3 +3,7 @@ node_layout_form:
     theme:
       css/layout-builder-browser.css: {}
       css/multifield-form.css: { }
+taxonomy_form:
+  css:
+    theme:
+      css/taxonomy-form.css: {}

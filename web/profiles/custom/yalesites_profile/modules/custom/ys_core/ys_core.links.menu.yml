@@ -50,3 +50,34 @@ ys_core.menu_utility_edit:
   route_parameters:
     menu: "utility-navigation"
   weight: 15
+# Taxonomy interface
+ys_core.taxonomy_interface:
+  description: "Manage taxonomy terms"
+  parent: system.admin_content
+  route_name: entity.taxonomy_vocabulary.collection
+  title: Manage Taxonomy
+  weight: 20
+# Taxonomy interface - Event Category
+ys_core.taxonomy_interface_event_category:
+  description: "Manage event category taxonomy"
+  parent: ys_core.taxonomy_interface
+  route_name: entity.taxonomy_vocabulary.overview_form
+  title: Event Category
+  route_parameters:
+    taxonomy_vocabulary: "event_category"
+# Taxonomy interface - Post Category
+ys_core.taxonomy_interface_post_category:
+  description: "Manage post category taxonomy"
+  parent: ys_core.taxonomy_interface
+  route_name: entity.taxonomy_vocabulary.overview_form
+  title: Post Category
+  route_parameters:
+    taxonomy_vocabulary: "post_category"
+# Taxonomy interface - Tags
+ys_core.taxonomy_interface_tags:
+  description: "Manage tags taxonomy"
+  parent: ys_core.taxonomy_interface
+  route_name: entity.taxonomy_vocabulary.overview_form
+  title: Tags
+  route_parameters:
+    taxonomy_vocabulary: "tags"

@@ -7,6 +7,7 @@
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
  * @file
@@ -69,6 +70,37 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
   if (isset($form['sticky'])) {
     $form['sticky']['widget']['value']['#title'] = t('Pin to the beginning of list');
   }
+
+  // Hide Relations on taxonomy term edit page.
+  $vocabularyForms = [
+    'taxonomy_term_tags_form',
+    'taxonomy_term_event_category_form',
+    'taxonomy_term_post_category_form',
+  ];
+
+  if (in_array($form_id, $vocabularyForms)) {
+    $form['relations']['#access'] = FALSE;
+  }
+
+  // Increase length of taxonomy vocabulary description field.
+  if ($form_id == 'taxonomy_vocabulary_form') {
+    $form['description']['#maxlength'] = 256;
+  }
+
+  // Hide core taxonomy description.
+  // @see ys_core_help()
+  if ($form_id == 'taxonomy_overview_vocabularies') {
+    $form['#attached']['library'][] = 'ys_core/taxonomy_form';
+  }
+
+  // Add vocabulary description to the taxonomy overview form.
+  if ($form_id == 'taxonomy_overview_terms') {
+    $replacements['@description'] = $form_state->getBuildInfo()['args'][0]->getDescription();
+    $form['help']['description'] = [
+      '#type' => 'markup',
+      '#markup' => "<p>" . t('@description', $replacements) . "</p>",
+    ];
+  }
 }
 
 /**
@@ -126,5 +158,33 @@ function ys_core_preprocess_menu__main(&$variables) {
     // Add cloned item to the beginning of the menu.
     array_unshift($menuItem['below'], $clonedMenuItem);
 
+  }
+}
+
+/**
+ * Implements hook_module_implements_alter().
+ */
+function ys_core_module_implements_alter(&$implementations, $hook) {
+  // Forces ys_core help hook to come before others.
+  // @see https://drupal.stackexchange.com/questions/242572/is-it-possible-to-modify-help-text-on-a-vocabulary-page
+  if ($hook == 'help') {
+    $implementations = ['ys_core' => $implementations['ys_core']] + $implementations;
+  }
+}
+
+/**
+ * Implements hook_help().
+ */
+function ys_core_help($route_name, RouteMatchInterface $route_match) {
+  // Overrides help description.
+  // This is "temporary" until core adds this functionality.
+  // Uses CSS to hide the core description.
+  // @see https://drupal.stackexchange.com/questions/242572/is-it-possible-to-modify-help-text-on-a-vocabulary-page
+  // @see https://www.drupal.org/project/drupal/issues/487386
+  switch ($route_name) {
+    case 'entity.taxonomy_vocabulary.collection':
+
+      $output = '<p class="replacement-taxonomy-help">' . t('Taxonomy is used to classify website content into groups called vocabularies. Each vocabulary contains a set of terms used to categorize content. For example, an "Event Type" vocabulary contains terms like "Online" and "In-Person". This allows for easy categorization and organization of content on a website.') . '</p>';
+      return $output;
   }
 }
