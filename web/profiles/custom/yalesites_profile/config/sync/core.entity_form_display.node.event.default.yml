@@ -103,10 +103,7 @@ content:
     settings:
       placeholder_url: ''
       placeholder_title: ''
-    third_party_settings:
-      maxlength:
-        maxlength_js: null
-        maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
+    third_party_settings: {  }
   field_event_date:
     type: smartdate_inline
     weight: 4
@@ -124,14 +121,10 @@ content:
       show_extra: false
     third_party_settings: {  }
   field_event_type:
-    type: entity_reference_autocomplete_tags
+    type: options_buttons
     weight: 1
     region: content
-    settings:
-      match_operator: CONTAINS
-      match_limit: 10
-      size: 60
-      placeholder: ''
+    settings: {  }
     third_party_settings: {  }
   field_login_required:
     type: boolean_checkbox
