@@ -36,6 +36,9 @@ $config['recaptcha_v3.settings']['site_key'] = $secrets_data['recaptcha_v3_key']
 $config['recaptcha_v3.settings']['secret_key'] = $secrets_data['recaptcha_v3_secret'];
 $config['mailchimp_transactional.settings']['mailchimp_transactional_api_key'] = $secrets_data['mailchimp_transactional_api_key'];
 
+// On production environments, config split should be turned off.
+$config['config_split.config_split.local_config']['status'] = FALSE;
+
 /**
  * If there is a local settings file, then include it
  */
