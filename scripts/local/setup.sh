@@ -15,9 +15,8 @@ fi
 # Create a local Drupal settings file if it does not exist.
 if [[ ! -f "web/sites/default/settings.local.php" ]]; then
   echo "Creating a local Drupal settings file"
-  chmod u+w web/sites/default
   cp web/sites/ys.settings.local.php web/sites/default/settings.local.php
-  chmod u-w web/sites/default
+
 fi
 
 # YALESITES_BUILD_TOKEN is needed for authentication to Github.
