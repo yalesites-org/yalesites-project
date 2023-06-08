@@ -32,6 +32,7 @@ dependencies:
     - publishcontent
     - quick_node_clone
     - redirect
+    - section_library
     - system
     - taxonomy
     - toolbar
@@ -52,6 +53,7 @@ permissions:
   - 'access toolbar'
   - 'access user profiles'
   - 'access webform overview'
+  - 'add section library templates'
   - 'administer blocks'
   - 'administer main menu items'
   - 'administer redirects'
@@ -96,6 +98,7 @@ permissions:
   - 'delete own page content'
   - 'delete own post content'
   - 'delete own video media'
+  - 'delete section library templates'
   - 'delete terms in event_category'
   - 'delete terms in post_category'
   - 'delete terms in tags'
@@ -117,9 +120,11 @@ permissions:
   - 'edit own post content'
   - 'edit own video media'
   - 'edit own webform submission'
+  - 'edit section library templates'
   - 'edit terms in event_category'
   - 'edit terms in post_category'
   - 'edit terms in tags'
+  - 'import template from section library'
   - 'mark as hidden in editoria11y'
   - 'override all sticky option'
   - 'override post authored on option'
@@ -143,6 +148,7 @@ permissions:
   - 'view own webform submission'
   - 'view page revisions'
   - 'view post revisions'
+  - 'view section library templates'
   - 'view the administration theme'
   - 'view unpublished paragraphs'
   - 'yalesites manage alerts'

@@ -28,5 +28,111 @@
 }
 
 .glb-messages-list {
-  display: none  !important;
+  display: none !important;
+}
+
+.layout-container .component-wrapper {
+  margin-block: 0 !important;
+}
+
+.cta-banner:last-child {
+  margin-top: -25px !important;
+}
+
+/*
+ * @file
+ * Provides the layout styles for three-column layout section.
+ */
+
+ .layout--threecol-section {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.layout--threecol-section > .layout__region {
+  flex: 0 1 100%;
+}
+
+@media screen and (min-width: 40em) {
+  .layout--threecol-section--25-50-25 > .layout__region--first,
+  .layout--threecol-section--25-50-25 > .layout__region--third,
+  .layout--threecol-section--25-25-50 > .layout__region--first,
+  .layout--threecol-section--25-25-50 > .layout__region--second,
+  .layout--threecol-section--50-25-25 > .layout__region--second,
+  .layout--threecol-section--50-25-25 > .layout__region--third {
+    flex: 0 1 25%;
+  }
+  .layout--threecol-section--25-50-25 > .layout__region--second,
+  .layout--threecol-section--25-25-50 > .layout__region--third,
+  .layout--threecol-section--50-25-25 > .layout__region--first {
+    flex: 0 1 50%;
+  }
+  .layout--threecol-section--33-34-33 > .layout__region--first,
+  .layout--threecol-section--33-34-33 > .layout__region--third {
+    flex: 0 1 33%;
+  }
+  .layout--threecol-section--33-34-33 > .layout__region--second {
+    flex: 0 1 34%;
+  }
+}
+
+/*
+ * @file
+ * Provides the layout styles for four-column layout section.
+ */
+
+ .layout--fourcol-section {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.layout--fourcol-section > .layout__region {
+  flex: 0 1 100%;
+}
+
+@media screen and (min-width: 40em) {
+  .layout--fourcol-section > .layout__region {
+    flex: 0 1 25%;
+  }
+}
+
+/*
+ * @file
+ * Provides the layout styles for two-column layout section.
+ */
+
+ .layout--twocol-section {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.layout--twocol-section > .layout__region {
+  flex: 0 1 100%;
+}
+
+@media screen and (min-width: 40em) {
+  .layout--twocol-section.layout--twocol-section--50-50 > .layout__region--first,
+  .layout--twocol-section.layout--twocol-section--50-50 > .layout__region--second {
+    flex: 0 1 50%;
+  }
+
+  .layout--twocol-section.layout--twocol-section--33-67 > .layout__region--first,
+  .layout--twocol-section.layout--twocol-section--67-33 > .layout__region--second {
+    flex: 0 1 33%;
+  }
+
+  .layout--twocol-section.layout--twocol-section--33-67 > .layout__region--second,
+  .layout--twocol-section.layout--twocol-section--67-33 > .layout__region--first {
+    flex: 0 1 67%;
+  }
+
+  .layout--twocol-section.layout--twocol-section--25-75 > .layout__region--first,
+  .layout--twocol-section.layout--twocol-section--75-25 > .layout__region--second {
+    flex: 0 1 25%;
+  }
+
+  .layout--twocol-section.layout--twocol-section--25-75 > .layout__region--second,
+  .layout--twocol-section.layout--twocol-section--75-25 > .layout__region--first {
+    flex: 0 1 75%;
+  }
 }

@@ -228,7 +228,7 @@ class ToolbarItemsService {
    * @return array
    *   A rennder array for a toolbar item.
    */
-  protected function buildButton(string $route, string $label, sting $class = ''): array {
+  protected function buildButton(string $route, string $label, string $class = ''): array {
     return [
       '#type' => 'toolbar_item',
       'tab' => [
