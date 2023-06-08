@@ -30,6 +30,11 @@ $config['system.performance']['css']['preprocess'] = FALSE;
 $config['system.performance']['js']['preprocess'] = FALSE;
 
 /**
+ * Disable page cache.
+ */
+$config['system.performance']['cache']['page']['max_age'] = 0;
+
+/**
  * Disable the render cache.
  */
 $settings['cache']['bins']['render'] = 'cache.backend.null';
