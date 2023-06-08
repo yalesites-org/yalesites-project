@@ -70,5 +70,6 @@ if (class_exists('Kint')) {
   \Kint::$depth_limit = 4;
 }
 
-// Enable Config Split locally only
+// Config split for local environments.
 $config['config_split.config_split.local_config']['status'] = TRUE;
+$config['config_split.config_split.production_config']['status'] = FALSE;
