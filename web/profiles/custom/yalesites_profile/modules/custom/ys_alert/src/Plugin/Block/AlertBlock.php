@@ -4,8 +4,8 @@ namespace Drupal\ys_alert\Plugin\Block;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Block\BlockBase;
-use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\ys_alert\AlertManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
