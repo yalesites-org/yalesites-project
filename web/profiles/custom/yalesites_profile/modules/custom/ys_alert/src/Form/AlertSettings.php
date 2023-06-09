@@ -8,9 +8,9 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\CachedDiscoveryClearerInterface;
+use Drupal\path_alias\AliasManager;
 use Drupal\ys_alert\AlertManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\path_alias\AliasManager;
 
 /**
  * Defines the manage alerts interface.
