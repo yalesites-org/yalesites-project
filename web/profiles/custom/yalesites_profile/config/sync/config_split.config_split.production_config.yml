@@ -1,0 +1,16 @@
+uuid: e68def83-5f6f-4116-972f-ea7f37300d39
+langcode: en
+status: true
+dependencies: {  }
+id: production_config
+label: 'Production config'
+description: ''
+weight: 0
+stackable: false
+storage: folder
+folder: profiles/custom/yalesites_profile/config/production_config
+module:
+  pantheon_advanced_page_cache: 0
+theme: {  }
+complete_list: {  }
+partial_list: {  }

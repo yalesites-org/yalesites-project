@@ -1,0 +1,17 @@
+uuid: 8c73f9cb-a3db-4b17-b5a1-66c27749d7d7
+langcode: en
+status: true
+dependencies: {  }
+id: local_config
+label: 'Local config'
+description: ''
+weight: 0
+stackable: false
+storage: folder
+folder: profiles/custom/yalesites_profile/config/local_config
+module:
+  devel: 0
+  devel_kint_extras: 0
+theme: {  }
+complete_list: {  }
+partial_list: {  }

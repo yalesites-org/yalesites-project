@@ -27,8 +27,6 @@ module:
   datetime: 0
   datetime_range: 0
   dblog: 0
-  devel: 0
-  devel_kint_extras: 0
   dynamic_page_cache: 0
   editor: 0
   editoria11y: 0
@@ -87,7 +85,6 @@ module:
   options: 0
   override_node_options: 0
   page_cache: 0
-  pantheon_advanced_page_cache: 0
   paragraphs_features: 0
   path: 0
   path_alias: 0
