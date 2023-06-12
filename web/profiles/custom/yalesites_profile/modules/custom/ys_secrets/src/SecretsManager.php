@@ -2,8 +2,8 @@
 
 namespace Drupal\ys_secrets;
 
-use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\File\FileSystemInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

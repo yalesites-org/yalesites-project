@@ -12,6 +12,13 @@ if [[ ! -f ".lando.local.yml" ]]; then
   cp .lando.local.example.yml .lando.local.yml
 fi
 
+# Create a local Drupal settings file if it does not exist.
+if [[ ! -f "web/sites/default/settings.local.php" ]]; then
+  echo "Creating a local Drupal settings file"
+  cp web/sites/ys.settings.local.php web/sites/default/settings.local.php
+
+fi
+
 # YALESITES_BUILD_TOKEN is needed for authentication to Github.
 if [[ -z "$YALESITES_BUILD_TOKEN" ]]; then
   echo "The YALESITES_BUILD_TOKEN variable must be set before setup can continue."

@@ -6,9 +6,9 @@
  */
 
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldFilteredMarkup;
 use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\Core\Field\FieldDefinitionInterface;
 
 /**
  * Provides custom key-value options for component-specific styling via config.

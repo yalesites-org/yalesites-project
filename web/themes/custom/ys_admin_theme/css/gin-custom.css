@@ -140,10 +140,6 @@ tbody .views-field:not(.views-field-operations) a {
   content: none;
 }
 
-.tablesort {
-  display: none;
-}
-
 .dropbutton__toggle:focus {
   box-shadow: none !important;
 }

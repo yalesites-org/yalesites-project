@@ -6,8 +6,8 @@
  */
 
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Url;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
 
 /**
  * @file
@@ -186,5 +186,16 @@ function ys_core_help($route_name, RouteMatchInterface $route_match) {
 
       $output = '<p class="replacement-taxonomy-help">' . t('Taxonomy is used to classify website content into groups called vocabularies. Each vocabulary contains a set of terms used to categorize content. For example, an "Event Type" vocabulary contains terms like "Online" and "In-Person". This allows for easy categorization and organization of content on a website.') . '</p>';
       return $output;
+  }
+}
+
+/**
+ * Implements hook_page_attachments().
+ */
+function ys_core_page_attachments(array &$page) {
+  // Add Siteimprove Javascript only on production.
+  $config = \Drupal::config('config_split.config_split.production_config');
+  if ($config->get('status')) {
+    $page['#attached']['library'][] = 'ys_core/siteimprove';
   }
 }

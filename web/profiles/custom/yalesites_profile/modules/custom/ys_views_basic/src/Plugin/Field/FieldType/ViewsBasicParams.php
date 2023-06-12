@@ -3,8 +3,8 @@
 namespace Drupal\ys_views_basic\Plugin\Field\FieldType;
 
 use Drupal\Core\Field\FieldItemBase;
-use Drupal\Core\TypedData\DataDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface as StorageDefinition;
+use Drupal\Core\TypedData\DataDefinition;
 
 /**
  * Plugin implementation of the 'views_basic_params' field type.

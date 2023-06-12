@@ -2,8 +2,8 @@
 
 namespace Drupal\ys_core;
 
-use Twig\Extension\AbstractExtension;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
 /**
