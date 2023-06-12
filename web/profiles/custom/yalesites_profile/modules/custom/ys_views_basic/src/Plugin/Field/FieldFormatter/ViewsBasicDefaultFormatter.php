@@ -2,13 +2,13 @@
 
 namespace Drupal\ys_views_basic\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Render\Renderer;
 use Drupal\ys_views_basic\ViewsBasicManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Field\FieldDefinitionInterface;
-use Drupal\Core\Render\Renderer;
 
 /**
  * Plugin implementation of the 'views_basic_default' formatter.
