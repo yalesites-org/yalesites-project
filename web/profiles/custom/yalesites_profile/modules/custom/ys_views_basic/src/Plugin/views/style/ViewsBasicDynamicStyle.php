@@ -2,11 +2,11 @@
 
 namespace Drupal\ys_views_basic\Plugin\views\style;
 
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\views\Plugin\views\style\StylePluginBase;
 use Drupal\Core\Entity\EntityDisplayRepository;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\views\Plugin\views\style\StylePluginBase;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Unformatted style plugin to render rows with dynamic view mode.

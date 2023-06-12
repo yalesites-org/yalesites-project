@@ -2,11 +2,11 @@
 
 namespace Drupal\ys_embed\Plugin\Field\FieldWidget;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Url;
 use Drupal\ys_embed\Plugin\EmbedSourceManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
