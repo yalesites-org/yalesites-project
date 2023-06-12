@@ -11,7 +11,7 @@ dependencies:
 third_party_settings:
   allowed_formats:
     allowed_formats:
-      - heading_html
+      - restricted_html
 id: block_content.wrapped_image.field_caption
 field_name: field_caption
 entity_type: block_content
