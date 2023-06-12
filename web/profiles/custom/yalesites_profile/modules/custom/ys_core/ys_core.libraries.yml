@@ -7,3 +7,6 @@ taxonomy_form:
   css:
     theme:
       css/taxonomy-form.css: {}
+siteimprove:
+  js:
+    https://siteimproveanalytics.com/js/siteanalyze_66356571.js: { type: external, attributes: { async: true } }
