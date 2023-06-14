@@ -1,0 +1,14 @@
+{% set soundcloud__base_class = soundcloud__base_class|default('ys-embed-soundcloud') %}
+{% set soundcloud__width = soundcloud__width|default('content') %}
+{% set soundcloud__alignment = soundcloud__alignment|default('left') %}
+
+{% set soundcloud_embed__attributes = {
+    'data-component-width': soundcloud__width,
+    'data-component-alignment': soundcloud__alignment,
+    class: bem(soundcloud__base_class, soundcloud__modifiers),
+} %}
+
+<div {{ add_attributes(soundcloud_embed__attributes) }}>
+    <iframe title="{{ title }}" width="100%" height="240px" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/{{ track_id }}&color=%02366900&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true"></iframe>
+</div>
+
