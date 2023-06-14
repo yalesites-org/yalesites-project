@@ -41,7 +41,7 @@ function ys_embed_install() {
 }
 
 /**
- * Implements a hook_update()
+ * Implements hook_update().
  */
 function ys_embed_update_9001() {
   // Copy the soundcloud.png file to the media-icons/generic folder.
