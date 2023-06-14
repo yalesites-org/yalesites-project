@@ -29,5 +29,5 @@ third_party_settings:
         external: ''
 name: 'Event Type'
 vid: event_type
-description: ''
+description: 'Used to classify events based on their type, such as "Online" or "In-Person." This allows for easy categorization and organization of events on a website.'
 weight: 0

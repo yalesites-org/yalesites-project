@@ -1,0 +1,25 @@
+uuid: 20015c2c-4cf7-4848-9cd0-806c66b888c8
+langcode: en
+status: true
+dependencies:
+  config:
+    - taxonomy.vocabulary.post_category
+id: taxonomy_term.post_category.default
+targetEntityType: taxonomy_term
+bundle: post_category
+mode: default
+content:
+  name:
+    type: string_textfield
+    weight: 0
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+hidden:
+  description: true
+  path: true
+  revision_log_message: true
+  simple_sitemap: true
+  status: true
