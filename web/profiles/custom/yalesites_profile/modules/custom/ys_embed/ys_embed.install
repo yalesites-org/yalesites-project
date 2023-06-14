@@ -46,7 +46,7 @@ function ys_embed_install() {
 function ys_embed_update_9001() {
   // Copy the soundcloud.png file to the media-icons/generic folder.
   $source = \Drupal::service('extension.list.module')->getPath('ys_embed') . '/images/icons/soundcloud.png';
-  $destination = "public://media-icons/generic";
+  $destination = "public://styles/media_library/public/media-icons/generic";
   /** @var \Drupal\Core\File\FileSystemInterface $file_system */
   $file_system = \Drupal::service('file_system');
   $file_system->prepareDirectory($destination, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
