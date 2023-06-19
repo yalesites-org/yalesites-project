@@ -1,0 +1,25 @@
+uuid: 0f431a72-6f24-427f-b65f-e0bfbd5b8d85
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_weight
+    - node.type.profile
+id: node.profile.field_weight
+field_name: field_weight
+entity_type: node
+bundle: profile
+label: Weight
+description: ''
+required: true
+translatable: false
+default_value:
+  -
+    value: 0
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer
