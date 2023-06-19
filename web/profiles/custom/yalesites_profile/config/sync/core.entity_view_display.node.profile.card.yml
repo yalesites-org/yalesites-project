@@ -1,0 +1,74 @@
+uuid: 5ef26fbd-94ae-421a-9d2c-772a24a27e25
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.node.card
+    - field.field.node.profile.field_affiliation
+    - field.field.node.profile.field_department
+    - field.field.node.profile.field_email
+    - field.field.node.profile.field_login_required
+    - field.field.node.profile.field_metatags
+    - field.field.node.profile.field_netid
+    - field.field.node.profile.field_position
+    - field.field.node.profile.field_subtitle
+    - field.field.node.profile.field_tags
+    - field.field.node.profile.field_teaser_media
+    - field.field.node.profile.field_teaser_text
+    - field.field.node.profile.field_teaser_title
+    - field.field.node.profile.field_telephone
+    - field.field.node.profile.field_weight
+    - field.field.node.profile.layout_builder__layout
+    - node.type.profile
+  module:
+    - layout_builder
+    - text
+    - user
+third_party_settings:
+  layout_builder:
+    enabled: false
+    allow_custom: false
+id: node.profile.card
+targetEntityType: node
+bundle: profile
+mode: card
+content:
+  field_teaser_media:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: card_secondary_3_2
+      link: false
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  field_teaser_text:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_teaser_title:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  field_affiliation: true
+  field_department: true
+  field_email: true
+  field_login_required: true
+  field_metatags: true
+  field_netid: true
+  field_position: true
+  field_subtitle: true
+  field_tags: true
+  field_telephone: true
+  field_weight: true
+  layout_builder__layout: true
+  links: true
+  search_api_excerpt: true
