@@ -38,4 +38,24 @@ class Qualtrics extends EmbedSourceBase implements EmbedSourceInterface {
    */
   protected static $example = 'https://yalesurvey.ca1.qualtrics.com/jfe/form/SV_cDezt2JVsNok77o';
 
+  /**
+   * {@inheritdoc}
+   */
+  protected static $displayAttributes = [
+    'width' => '100%',
+    'height' => '100%',
+    'scrolling' => 'yes',
+    'frameborder' => 'no',
+    'embedType' => 'form',
+    'isIframe' => TRUE,
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getUrl(array $params): string {
+    $form_id = $params['form_id'];
+    return 'https://yalesurvey.ca1.qualtrics.com/jfe/form/' . $form_id;
+  }
+
 }

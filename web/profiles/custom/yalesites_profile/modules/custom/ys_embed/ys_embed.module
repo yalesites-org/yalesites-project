@@ -17,5 +17,21 @@ function ys_embed_theme($existing, $type, $theme, $path) {
         'sources' => [],
       ],
     ],
+    'embed_wrapper' => [
+      'variables' => [
+        'embedSource' => [],
+        'embedType' => 'unknown',
+        'title' => '',
+        'url' => '',
+        'displayAttributes' => [
+          'width' => 'site',
+          'height' => '100%',
+          'scrolling' => 'no',
+          'frameborder' => 'no',
+          'isIframe' => TRUE,
+          'isForm' => TRUE,
+        ],
+      ],
+    ],
   ];
 }
