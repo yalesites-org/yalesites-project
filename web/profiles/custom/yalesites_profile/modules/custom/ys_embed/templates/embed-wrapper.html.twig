@@ -1,0 +1,5 @@
+{% if displayAttributes['isIframe'] %}
+  <iframe data-embed-type="{{ embedType }}" src="{{ url }}" title="{{ title }}" height="{{ displayAttributes['height'] }}" width="{{ displayAttributes['width'] }} scrolling="{{ displayAttributes['scrolling'] }}" frameborder="{{ displayAttributes['frameborder'] }}"></iframe>   
+{% else %}
+  {{ embedSource }}
+{% endif %}

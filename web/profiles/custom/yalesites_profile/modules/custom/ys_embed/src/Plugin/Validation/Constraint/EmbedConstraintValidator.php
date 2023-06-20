@@ -61,6 +61,11 @@ class EmbedConstraintValidator extends ConstraintValidator implements ContainerI
       return;
     }
 
+    // Check if the embed code matches a playlist.
+    if (!$this->isTrack($input)) {
+      $this->context->addViolation($constraint->invalidAudioTrack);
+      return;
+    }
   }
 
   /**
@@ -77,6 +82,40 @@ class EmbedConstraintValidator extends ConstraintValidator implements ContainerI
     $p2 = "^https:\/\/youtu.be\/\S+";
     $p3 = "^https:\/\/vimeo.com\/\S+";
     $pattern = "/{$p1}|{$p2}|{$p3}/";
+    return (bool) preg_match($pattern, $input, $matches);
+  }
+
+  /**
+   * Check if the embed code matches a track.
+   *
+   * @param string $input
+   *   The user provided embed code.
+   *
+   * @return bool
+   *   TRUE if the embed code matches a track.
+   */
+  protected function isTrack(string $input): bool {
+    if (!$this->isSoundcloud($input)) {
+      return TRUE;
+    }
+
+    $p1 = "https:\/\/\S+.soundcloud.com\/tracks\S+";
+    $pattern = "/{$p1}/";
+    return (bool) preg_match($pattern, $input, $matches);
+  }
+
+  /**
+   * Determines if it is a soundcloud embed. Refactor later.
+   *
+   * @param string $input
+   *   The user provided embed code.
+   *
+   * @return bool
+   *   TRUE if the embed code matches a soundcloud track.
+   */
+  protected function isSoundcloud(string $input): bool {
+    $p1 = "https:\/\/\S+.soundcloud.com";
+    $pattern = "/{$p1}/";
     return (bool) preg_match($pattern, $input, $matches);
   }
 
