@@ -38,24 +38,4 @@ class PowerBI extends EmbedSourceBase implements EmbedSourceInterface {
    */
   protected static $example = 'https://app.powerbi.com/view?r=eyJrIjoiYzQ1ODA0ZjEtZjc5YS00OTgyLWIzOTItNmJmNDY2YmRiODQ2IiwidCI6ImRkOGNiZWJiLTIxMzktNGRmOC1iNDExLTRlM2U4N2FiZWI1YyIsImMiOjF9&pageName=ReportSection2ac2649f17189885d376';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $displayAttributes = [
-    'width' => '100%',
-    'height' => '100%',
-    'scrolling' => 'yes',
-    'frameborder' => 'no',
-    'embedType' => 'form',
-    'isIframe' => TRUE,
-  ];
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getUrl(array $params): string {
-    $form_params = $params['form_params'];
-    return 'https://app.powerbi.com/view' . $form_params;
-  }
-
 }

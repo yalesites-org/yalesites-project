@@ -59,17 +59,6 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
   protected static $example;
 
   /**
-   * An array of attributes to add to the template.
-   *
-   * To support previous implementations, embed_type is set to 'form'.
-   *
-   * @var array
-   */
-  protected static $displayAttributes = [
-    'embed_type' => 'form',
-  ];
-
-  /**
    * Creates a plugin instance.
    *
    * @param array $configuration
@@ -149,47 +138,11 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
    * {@inheritdoc}
    */
   public function build(array $params): array {
-    $isIframe = $this->isIframe();
-    $displayAttributes = static::$displayAttributes ?? [];
-    if (!isset($displayAttributes['isIframe'])) {
-      $displayAttributes['isIframe'] = $isIframe;
-    }
-
     return [
-      '#theme' => 'embed_wrapper',
-      '#embedType' => $this->getPluginId(),
-      '#title' => $params['title'],
-      '#url' => $this->getUrl($params),
-      '#displayAttributes' => $displayAttributes,
-      '#embedSource' => [
-        '#type' => 'inline_template',
-        '#template' => static::$template,
-        '#context' => $params,
-      ],
+      '#type' => 'inline_template',
+      '#template' => static::$template,
+      '#context' => $params,
     ];
-  }
-
-  /**
-   * Retrieves a URL using the params array.
-   *
-   * @param array $params
-   *   An array of params.
-   *
-   * @return string
-   *   The URL.
-   */
-  public function getUrl(array $params): string {
-    return $params['url'] ?? '';
-  }
-
-  /**
-   * Determines if the template is an iframe.
-   *
-   * @return bool
-   *   TRUE if the template is an iframe, FALSE otherwise.
-   */
-  protected function isIframe(): bool {
-    return strpos(static::$template, 'iframe') !== FALSE ? TRUE : FALSE;
   }
 
 }
