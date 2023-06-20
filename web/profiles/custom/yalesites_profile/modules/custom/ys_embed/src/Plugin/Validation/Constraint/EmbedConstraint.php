@@ -29,11 +29,4 @@ class EmbedConstraint extends Constraint {
    */
   public $invalidPattern = 'The given source is not a supported embed code.';
 
-  /**
-   * Violation message for invalid audio embed codes.
-   *
-   * @var string
-   */
-  public $invalidAudioTrack = 'The given source must reference a track only.';
-
 }
