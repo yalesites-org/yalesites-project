@@ -110,10 +110,17 @@ class SiteSettingsForm extends ConfigFormBase {
     ];
 
     $form['site_page_front'] = [
-      '#type' => 'textfield',
-      '#description' => $this->t("Specify a relative URL to display as the front page."),
+      '#type' => 'linkit',
+      '#description' => $this->t("Specify a relative URL or autocomplete to display as the front page."),
       '#title' => $this->t('Front page'),
+      '#autocomplete_route_name' => 'linkit.autocomplete',
       '#default_value' => $siteConfig->get('page')['front'],
+      '#autocomplete_route_parameters' => [
+        'linkit_profile_id' => 'default',
+      ],
+      '#attributes' => [
+        'data-linkit-widget-title-autofill-enabled' => 'false',
+      ],
       '#required' => TRUE,
     ];
 
