@@ -25,7 +25,12 @@
       {% if rows -%}
         {{ rows }}
       {% elseif empty -%}
-        {{ empty }}
+        {% if view.args.0 %}
+          {{ empty }}
+        {% else %}
+          {{ "Enter some search terms and then click submit."|trans }}
+        {% endif %}
+
       {% endif %}
       {{ pager }}
 
