@@ -2,16 +2,16 @@
 
 namespace Drupal\ys_views_basic\Plugin\Field\FieldWidget;
 
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\InvokeCommand;
+use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\ys_views_basic\ViewsBasicManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\ReplaceCommand;
-use Drupal\Core\Ajax\InvokeCommand;
 
 /**
  * Plugin implementation of the 'views_basic_default' widget.
@@ -152,6 +152,10 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
     ];
 
+    $form['group_user_selection']['entity_specific'] = [
+      '#type' => 'container',
+    ];
+
     $form['group_user_selection']['options'] = [
       '#type' => 'container',
       '#attributes' => [
@@ -264,6 +268,24 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('operator', $items[$delta]->params) : '+',
 
+    ];
+
+    $form['group_user_selection']['entity_specific']['event_time_period'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('Event Time Period'),
+      '#options' => [
+        'future' => $this->t('Future Events'),
+        'past' => $this->t('Past Events'),
+        'all' => $this->t('All Events'),
+      ],
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('event_time_period', $items[$delta]->params) : 'future',
+      '#states' => [
+        'visible' => [
+          ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][entity_types]"]' => [
+            'value' => 'event',
+          ],
+        ],
+      ],
     ];
 
     $form['group_user_selection']['options']['display'] = [
@@ -385,6 +407,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
           ],
           "terms_include" => $terms_include,
           "terms_exclude" => $terms_exclude,
+          "event_time_period" => $form['group_user_selection']['entity_specific']['event_time_period']['#value'],
         ],
         "operator" => $form['group_user_selection']['filter_options']['term_operator']['#value'],
         "sort_by" => $form_state->getValue(

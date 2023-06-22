@@ -2,13 +2,13 @@
 
 namespace Drupal\ys_core\Form;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Path\PathValidatorInterface;
 use Drupal\Core\Routing\RequestContext;
-use Drupal\path_alias\AliasManagerInterface;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\google_analytics\Constants\GoogleAnalyticsPatterns;
+use Drupal\path_alias\AliasManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

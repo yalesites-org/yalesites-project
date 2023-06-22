@@ -1,0 +1,14 @@
+diff --git a/src/SmartDateTrait.php b/src/SmartDateTrait.php
+index 27ffff1..31afa2b 100644
+--- a/src/SmartDateTrait.php
++++ b/src/SmartDateTrait.php
+@@ -536,7 +536,7 @@ trait SmartDateTrait {
+       if ($year_pos !== FALSE) {
+         $valid_tokens = [];
+         // Check for workable day or month tokens.
+-        preg_match_all('/[djDNlwzSFmMn]/', $settings['date_format'], $valid_tokens, PREG_OFFSET_CAPTURE);
++        preg_match_all('/[djDNlwzSFmMnc]/', $settings['date_format'], $valid_tokens, PREG_OFFSET_CAPTURE);
+         if ($valid_tokens) {
+           if ($year_pos == 0) {
+             // Year is at the beginning, so change the end to start at the
+

@@ -11,7 +11,7 @@ field_name: field_category
 entity_type: node
 bundle: event
 label: Category
-description: ''
+description: 'Separate categories with commas. Categories will autocomplete if one exists.'
 required: false
 translatable: false
 default_value: {  }

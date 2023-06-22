@@ -1,7 +1,8 @@
 #!/bin/bash
 # This script will checkout the specified branch of atomic for local review.
 
-source ./util/say.sh
+[ -e "./scripts/local/util/say.sh" ] || (echo -e "[$0] Say utility not found.  You must run this from the yalesites root directory: " && exit 1)
+source ./scripts/local/util/say.sh
 
 read -p "Which branch of the atomic repo do you need? " BRANCH
 

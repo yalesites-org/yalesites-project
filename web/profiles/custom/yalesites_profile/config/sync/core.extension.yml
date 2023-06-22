@@ -9,6 +9,7 @@ module:
   block: 0
   block_content: 0
   breakpoint: 0
+  bugherd: 0
   calendar_link: 0
   captcha: 0
   cas: 0
@@ -26,8 +27,6 @@ module:
   datetime: 0
   datetime_range: 0
   dblog: 0
-  devel: 0
-  devel_kint_extras: 0
   dynamic_page_cache: 0
   editor: 0
   editoria11y: 0
@@ -38,6 +37,7 @@ module:
   field_group: 0
   field_ui: 0
   file: 0
+  file_mdm: 0
   filter: 0
   gin_lb: 0
   gin_toolbar: 0
@@ -46,6 +46,7 @@ module:
   honeypot: 0
   image: 0
   image_widget_crop: 0
+  imagemagick: 0
   improve_line_breaks_filter: 0
   jquery_ui: 0
   jquery_ui_datepicker: 0
@@ -84,7 +85,6 @@ module:
   options: 0
   override_node_options: 0
   page_cache: 0
-  pantheon_advanced_page_cache: 0
   paragraphs_features: 0
   path: 0
   path_alias: 0
@@ -102,6 +102,7 @@ module:
   simple_sitemap: 0
   smart_date: 0
   smart_date_recur: 0
+  sophron: 0
   system: 0
   taxonomy: 0
   text: 0

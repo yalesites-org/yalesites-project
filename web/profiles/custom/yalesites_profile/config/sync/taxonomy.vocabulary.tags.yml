@@ -1,8 +1,33 @@
 uuid: 2e4d620d-2f88-43fe-8490-42095ca9c77a
 langcode: en
 status: true
-dependencies: {  }
+dependencies:
+  module:
+    - entity_redirect
+third_party_settings:
+  entity_redirect:
+    redirect:
+      anonymous:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+      add:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+      edit:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+      delete:
+        active: false
+        destination: default
+        url: ''
+        external: ''
 name: Tags
 vid: tags
-description: ''
+description: 'A custom vocabulary that allows you to add any tag you want to classify and organize content on your website. Users can freely tag content with any term they like, making it easy to navigate and find related content.'
 weight: 0

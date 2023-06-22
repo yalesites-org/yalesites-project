@@ -1,7 +1,7 @@
 # Local development services.
 #
-# To activate this feature, follow the instructions at the top of the
-# 'example.settings.local.php' file, which sits next to this file.
+# This file is activated locally when using the local.settings.php file that
+# is created during `npm run setup` from 'ys.settings.local.php'.
 parameters:
   http.response.debug_cacheability_headers: true
   twig.config:
