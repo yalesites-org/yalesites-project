@@ -38,7 +38,7 @@ would be used instead resulting in top margin of size-spacing-6.  */
 // `$flush-bottom` above. Then it will have no bottom-margin separating it from
 / the site footer.
 */
-.main-content .layout.layout--onecol .layout__region > div:last-child {
+.main-content .layout.layout--onecol:last-of-type .layout__region > div:last-child {
   margin-bottom: var(--main-content-bottom-margin, var(--size-spacing-13));
 }
 
