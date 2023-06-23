@@ -18,7 +18,6 @@ dependencies:
     - taxonomy.vocabulary.post_category
     - taxonomy.vocabulary.tags
   module:
-    - block
     - contextual
     - editoria11y
     - file
@@ -52,7 +51,6 @@ permissions:
   - 'access toolbar'
   - 'access user profiles'
   - 'access webform overview'
-  - 'administer blocks'
   - 'administer main menu items'
   - 'administer redirects'
   - 'administer users'
