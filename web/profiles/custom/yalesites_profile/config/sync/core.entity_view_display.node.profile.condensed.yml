@@ -1,9 +1,9 @@
-uuid: 5ef26fbd-94ae-421a-9d2c-772a24a27e25
+uuid: 75d2b136-9f46-4c32-8db1-4121ab8ab4af
 langcode: en
 status: true
 dependencies:
   config:
-    - core.entity_view_mode.node.card
+    - core.entity_view_mode.node.condensed
     - field.field.node.profile.field_affiliation
     - field.field.node.profile.field_department
     - field.field.node.profile.field_email
@@ -22,42 +22,27 @@ dependencies:
     - node.type.profile
   module:
     - layout_builder
-    - text
+    - layout_builder_restrictions
     - user
 third_party_settings:
   layout_builder:
     enabled: false
     allow_custom: false
-id: node.profile.card
+  layout_builder_restrictions:
+    allowed_block_categories: {  }
+    entity_view_mode_restriction:
+      allowed_layouts: {  }
+      denylisted_blocks: {  }
+      allowlisted_blocks: {  }
+      restricted_categories: {  }
+    entity_view_mode_restriction_by_region:
+      allowed_layouts: {  }
+id: node.profile.condensed
 targetEntityType: node
 bundle: profile
-mode: card
+mode: condensed
 content:
   field_position:
-    type: string
-    label: hidden
-    settings:
-      link_to_entity: false
-    third_party_settings: {  }
-    weight: 3
-    region: content
-  field_teaser_media:
-    type: entity_reference_entity_view
-    label: hidden
-    settings:
-      view_mode: card_secondary_3_2
-      link: false
-    third_party_settings: {  }
-    weight: 2
-    region: content
-  field_teaser_text:
-    type: text_default
-    label: hidden
-    settings: {  }
-    third_party_settings: {  }
-    weight: 1
-    region: content
-  field_teaser_title:
     type: string
     label: hidden
     settings:
@@ -74,6 +59,9 @@ hidden:
   field_netid: true
   field_subtitle: true
   field_tags: true
+  field_teaser_media: true
+  field_teaser_text: true
+  field_teaser_title: true
   field_telephone: true
   field_weight: true
   layout_builder__layout: true

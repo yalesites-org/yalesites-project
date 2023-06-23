@@ -85,6 +85,7 @@ module:
   options: 0
   override_node_options: 0
   page_cache: 0
+  pantheon_advanced_page_cache: 0
   paragraphs_features: 0
   path: 0
   path_alias: 0

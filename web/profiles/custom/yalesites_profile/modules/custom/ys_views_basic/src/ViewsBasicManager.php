@@ -69,6 +69,17 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'title:DESC' => 'Title - Z-A',
       ],
     ],
+    'profile' => [
+      'label' => 'Profiles',
+      'view_modes' => [
+        'card' => 'Profile Grid',
+        'list_item' => 'Profile List',
+      ],
+      'sort_by' => [
+        'title:ASC' => 'Name - A-Z',
+        'title:DESC' => 'Name - Z-A',
+      ],
+    ],
   ];
 
   /**

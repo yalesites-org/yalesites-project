@@ -182,8 +182,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         'disable-refocus' => FALSE,
         'event' => 'change',
         'progress' => [
-          'type' => 'throbber',
-          'message' => $this->t('Updating other settings...'),
+          'type' => 'none'
         ],
       ],
     ];

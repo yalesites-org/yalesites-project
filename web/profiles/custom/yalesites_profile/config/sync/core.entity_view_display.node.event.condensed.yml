@@ -1,8 +1,9 @@
-uuid: 11493ede-578f-4b77-9014-2d21dc8a045a
+uuid: ff6f5c6f-1100-43a9-b1b7-893043a34160
 langcode: en
 status: true
 dependencies:
   config:
+    - core.entity_view_mode.node.condensed
     - field.field.node.event.field_category
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
@@ -19,21 +20,12 @@ dependencies:
   module:
     - layout_builder
     - layout_builder_restrictions
-    - layout_discovery
-    - link
     - smart_date
     - user
 third_party_settings:
   layout_builder:
-    enabled: true
-    allow_custom: true
-    sections:
-      -
-        layout_id: layout_onecol
-        layout_settings:
-          label: ''
-        components: {  }
-        third_party_settings: {  }
+    enabled: false
+    allow_custom: false
   layout_builder_restrictions:
     allowed_block_categories: {  }
     entity_view_mode_restriction:
@@ -44,6 +36,7 @@ third_party_settings:
         - 'Chaos Tools'
         - 'Content fields'
         - 'Custom block types'
+        - Devel
         - Forms
         - Help
         - 'Lists (Views)'
@@ -55,31 +48,11 @@ third_party_settings:
         - core
     entity_view_mode_restriction_by_region:
       allowed_layouts: {  }
-id: node.event.default
+id: node.event.condensed
 targetEntityType: node
 bundle: event
-mode: default
+mode: condensed
 content:
-  field_category:
-    type: entity_reference_label
-    label: above
-    settings:
-      link: true
-    third_party_settings: {  }
-    weight: 2
-    region: content
-  field_event_cta:
-    type: link_separate
-    label: hidden
-    settings:
-      trim_length: 80
-      url_only: false
-      url_plain: false
-      rel: ''
-      target: ''
-    third_party_settings: {  }
-    weight: 0
-    region: content
   field_event_date:
     type: smartdate_default
     label: hidden
@@ -91,7 +64,7 @@ content:
       add_classes: false
       time_wrapper: true
     third_party_settings: {  }
-    weight: 1
+    weight: 0
     region: content
   field_event_type:
     type: entity_reference_label
@@ -99,9 +72,11 @@ content:
     settings:
       link: false
     third_party_settings: {  }
-    weight: 3
+    weight: 1
     region: content
 hidden:
+  field_category: true
+  field_event_cta: true
   field_event_format: true
   field_login_required: true
   field_metatags: true
