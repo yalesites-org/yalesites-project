@@ -4,7 +4,8 @@
 # folder so that any work-in-progress in the component library can be used
 # during development in Drupal.
 
-source ./util/say.sh
+[ -e "./scripts/local/util/say.sh" ] || (echo -e "[$0] Say utility not found.  You must run this from the yalesites root directory: " && exit 1)
+source ./scripts/local/util/say.sh
 
 read -p "Which branch of the component-library-twig repo do you need? " BRANCH
 
