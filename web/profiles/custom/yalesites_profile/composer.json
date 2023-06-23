@@ -80,7 +80,7 @@
     "drupal/upgrade_status": "^3.18",
     "drupal/webform": "^6.2@beta",
     "drupal/wingsuit_companion": "^2.0@RC",
-    "yalesites-org/atomic": "^1.13",
+    "yalesites-org/atomic": "1.15.1",
     "yalesites-org/yale_cas": "^1.0"
   },
   "minimum-stability": "dev",
@@ -112,9 +112,6 @@
       },
       "drupal/layout_builder_browser": {
         "close modal on submit https://www.drupal.org/project/layout_builder_browser/issues/3352754": "https://www.drupal.org/files/issues/2023-04-19/layout_builder_browser-modal_does_not_close_on_submit-3352754-2.patch"
-      },
-      "drupal/gin_lb": {
-        "fix missing file field https://www.drupal.org/project/gin_lb/issues/3349745": "https://www.drupal.org/files/issues/2023-03-23/3349745-8-claro-preprocess-file-fields.patch"
       },
       "drupal/bugherd": {
         "anonymous user unable to fill in email field https://www.drupal.org/project/bugherd/issues/3364305": "https://git.drupalcode.org/project/bugherd/-/merge_requests/4.diff"

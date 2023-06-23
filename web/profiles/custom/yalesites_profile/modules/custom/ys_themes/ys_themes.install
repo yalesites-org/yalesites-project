@@ -1,0 +1,45 @@
+<?php
+
+/**
+ * @file
+ * Install, uninstall and update hooks for ys_themes module.
+ */
+
+/**
+ * Change grand hero field_style_position and field_style_variation keys.
+ */
+function ys_themes_update_9001() {
+
+  // Changes 'reduced' to 'contained' for grand hero positioning.
+  $positionTables = [
+    'block_content__field_style_position',
+    'block_content_revision__field_style_position',
+  ];
+
+  foreach ($positionTables as $table) {
+    $query = \Drupal::database()->update($table);
+    $query->fields([
+      'field_style_position_value' => 'contained',
+    ]);
+    $query->condition('bundle', 'grand_hero');
+    $query->condition('field_style_position_value', 'reduced');
+    $query->execute();
+  }
+
+  // Changes 'contained' to 'reduced' for grand hero variation.
+  $variationTables = [
+    'block_content__field_style_variation',
+    'block_content_revision__field_style_variation',
+  ];
+
+  foreach ($variationTables as $table) {
+    $query = \Drupal::database()->update($table);
+    $query->fields([
+      'field_style_variation_value' => 'reduced',
+    ]);
+    $query->condition('bundle', 'grand_hero');
+    $query->condition('field_style_variation_value', 'contained');
+    $query->execute();
+  }
+
+}

@@ -12,6 +12,7 @@ use Drupal\ys_node_access\NodeAccessManager;
  * Implements hook_node_grants().
  */
 function ys_node_access_node_grants($account, $op) {
+
   $nodeAccessManager = new NodeAccessManager();
 
   // Only set grants for viewing a node.
@@ -42,7 +43,7 @@ function ys_node_access_node_access_records($node) {
   $nodeAccessManager = new NodeAccessManager();
   // Saving a node, check login required field to set the appropriate grants.
   if ($node->hasField('field_login_required')) {
-    if ($node->get('field_login_required')->getValue()[0]['value'] == 1) {
+    if ($node->get('field_login_required')->getValue()[0]['value'] == 1 || !$node->isPublished()) {
       $private = TRUE;
     }
     else {

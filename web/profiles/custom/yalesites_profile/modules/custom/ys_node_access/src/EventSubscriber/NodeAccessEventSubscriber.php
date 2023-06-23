@@ -52,7 +52,7 @@ class NodeAccessEventSubscriber extends HttpExceptionSubscriberBase {
          * If so, redirect to CAS login.
          */
         if ($node->hasField('field_login_required')) {
-          if (!$node->field_login_required->isEmpty()) {
+          if ($node->isPublished() && $node->field_login_required->first()->getValue()['value']) {
             $casRedirectUrl = Url::fromRoute('cas.login', ['destination' => $node->toUrl()->toString()])->toString();
             $returnResponse = new TrustedRedirectResponse($casRedirectUrl);
             $returnResponse->getCacheableMetadata()->setCacheMaxAge(0);

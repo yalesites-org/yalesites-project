@@ -116,8 +116,8 @@ class AlertSettings extends ConfigFormBase {
 
     $form['status'] = [
       '#type' => 'checkbox',
-      '#title' => $this->t('Enabled?'),
-      '#description' => $this->t('Check this field if you want the alert to be visible across the site.'),
+      '#title' => $this->t('Turn on Alerts'),
+      '#description' => $this->t('When selected, your alert will be visible across the site.'),
       '#default_value' => $config->get('alert.status'),
       '#required' => FALSE,
     ];
@@ -158,12 +158,35 @@ class AlertSettings extends ConfigFormBase {
       '#title' => $this->t('Message'),
       '#default_value' => $config->get('alert.message'),
       '#required' => TRUE,
+      '#attributes' => [
+        'class' => [
+          'maxlength',
+        ],
+        'data-maxlength' => 255,
+        '#maxlength_js_enforce' => TRUE,
+      ],
+      '#attached' => [
+        'library' => [
+          'maxlength/maxlength',
+        ],
+      ],
     ];
 
     $form['link_wrapper'] = [
       '#type' => 'details',
       '#title' => $this->t('Link'),
       '#open' => TRUE,
+    ];
+
+    $form['link_wrapper']['link_url'] = [
+      '#type' => 'linkit',
+      '#title' => $this->t('URL'),
+      '#description' => $this->t('Type the URL or autocomplete for internal paths.'),
+      '#autocomplete_route_name' => 'linkit.autocomplete',
+      '#default_value' => $config->get('alert.link_url'),
+      '#autocomplete_route_parameters' => [
+        'linkit_profile_id' => 'default',
+      ],
     ];
 
     $form['link_wrapper']['link_title'] = [
@@ -175,17 +198,6 @@ class AlertSettings extends ConfigFormBase {
         'required' => [
           ':input[name="link_url"]' => ['filled' => TRUE],
         ],
-      ],
-    ];
-
-    $form['link_wrapper']['link_url'] = [
-      '#type' => 'linkit',
-      '#title' => $this->t('URL'),
-      '#description' => $this->t('Type the URL or autocomplete for internal paths.'),
-      '#autocomplete_route_name' => 'linkit.autocomplete',
-      '#default_value' => $config->get('alert.link_url'),
-      '#autocomplete_route_parameters' => [
-        'linkit_profile_id' => 'default',
       ],
     ];
 
