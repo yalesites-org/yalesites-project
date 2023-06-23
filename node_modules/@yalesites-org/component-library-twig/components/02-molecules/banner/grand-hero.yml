@@ -1,0 +1,4 @@
+grand_hero__heading: 'Heading for the Grand Hero'
+grand_hero__snippet: '<p>Text option, in case there is more that needs to be said.</p>'
+grand_hero__link__url: '#'
+grand_hero__link__content: 'This is a link'

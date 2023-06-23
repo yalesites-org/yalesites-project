@@ -1,0 +1,8 @@
+@use '../../../00-tokens/tokens';
+
+.form-item--checkboxes,
+.form-item--checkbox__item {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
