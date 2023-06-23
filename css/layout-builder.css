@@ -33,12 +33,20 @@ would be used instead resulting in top margin of size-spacing-6.  */
   margin-top: 0;
 }
 
+/* The last item inside the `.main-content` area should have some space between
+// it and the site footer (size-spacing-12 below) - unless it is designated as
+// `$flush-bottom` above. Then it will have no bottom-margin separating it from
+/ the site footer.
+*/
+.main-content .layout .layout__region > div:last-child {
+  margin-bottom: var(--main-content-bottom-margin, var(--size-spacing-13));
+}
+
 /* Here we need to specify which components in the main content layout div 
 need to have margin-bottom set to 0 */
 .main-content .layout .layout__region div:last-child > .callouts,
 .main-content .layout .layout__region div:last-child > .cta-banner,
 .main-content .layout .layout__region div:last-child > .grand-hero-banner,
-.main-content .layout .layout__region div:last-child > .quick-links,
-.main-content > .layout:last-child  {
+.main-content .layout .layout__region div:last-child > .quick-links {
   margin-bottom: 0;
 }
