@@ -51,6 +51,9 @@ need to have margin-bottom set to 0 */
   margin-bottom: 0;
 }
 
+/* This is necessary because there could be more than one instance of
+// layout-onecol 
+*/
 .main-content .layout.layout--onecol:last-child {
   margin-bottom: 0;
 }
