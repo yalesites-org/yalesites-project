@@ -50,3 +50,7 @@ need to have margin-bottom set to 0 */
 .main-content .layout .layout__region--content div:last-child > .quick-links {
   margin-bottom: 0;
 }
+
+.main-content .layout.layout--onecol:last-child {
+  margin-bottom: 0;
+}
