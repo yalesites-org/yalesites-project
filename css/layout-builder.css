@@ -29,7 +29,7 @@ would be used instead resulting in top margin of size-spacing-6.  */
 }
 
 /* This applies margin-top: 0 to the first child inside of our nest divs */
-.main-content .layout--banner .layout__region div > *:first-child {
+.main-content .layout--banner .layout__region > *:first-child {
   margin-top: 0;
 }
 
@@ -38,16 +38,16 @@ would be used instead resulting in top margin of size-spacing-6.  */
 // `$flush-bottom` above. Then it will have no bottom-margin separating it from
 / the site footer.
 */
-.main-content .layout.layout--onecol:last-of-type .layout__region--content > div:last-child > * {
+.main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child > * {
   margin-bottom: var(--main-content-bottom-margin, var(--size-spacing-13));
 }
 
 /* Here we need to specify which components in the main content layout div 
 need to have margin-bottom set to 0 */
-.main-content .layout .layout__region--content div:last-child > .callouts,
-.main-content .layout .layout__region--content div:last-child > .cta-banner,
-.main-content .layout .layout__region--content div:last-child > .grand-hero-banner,
-.main-content .layout .layout__region--content div:last-child > .quick-links {
+.main-content .layout .layout__region--content:last-child > .callouts,
+.main-content .layout .layout__region--content:last-child > .cta-banner,
+.main-content .layout .layout__region--content:last-child > .grand-hero-banner,
+.main-content .layout .layout__region--content:last-child > .quick-links {
   margin-bottom: 0;
 }
 
