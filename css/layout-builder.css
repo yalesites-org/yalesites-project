@@ -44,10 +44,10 @@ would be used instead resulting in top margin of size-spacing-6.  */
 
 /* Here we need to specify which components in the main content layout div 
 need to have margin-bottom set to 0 */
-.main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child > .callouts,
-.main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child > .cta-banner,
-.main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child > .grand-hero-banner,
-.main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child > .quick-links {
+.main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .callouts,
+.main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .cta-banner,
+.main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .grand-hero-banner,
+.main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .quick-links {
   margin-bottom: 0;
 }
 
