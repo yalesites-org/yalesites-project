@@ -291,6 +291,10 @@ table .draggable-table.tabledrag-disabled tr:hover {
   color: var(--darkest-gray);
   text-decoration: underline;
 }
+
+.layout-builder-components-table tr:hover {
+  color: var(--darkest-gray);
+}
  
 /* yalb-1251 - AX: pencil icon difficulty editing blocks */
 /* change the contextual pencil icon to the left-hand side of each component
