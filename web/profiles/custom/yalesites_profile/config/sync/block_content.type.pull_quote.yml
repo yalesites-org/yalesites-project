@@ -1,8 +1,33 @@
 uuid: d367d8b9-e740-4122-b741-80374ca7fbfc
 langcode: en
 status: true
-dependencies: {  }
+dependencies:
+  module:
+    - entity_redirect
+third_party_settings:
+  entity_redirect:
+    redirect:
+      add:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      edit:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      delete:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      anonymous:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
 id: pull_quote
 label: Quote
-revision: 0
+revision: 1
 description: 'Quotes allow you to highlight text from, or in reference to, a larger body of work. For instance, you can highlight from a blog, a post, or a personal phrase on a profile.'
