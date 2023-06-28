@@ -1,0 +1,59 @@
+/* These styles are necessary because we're using Layout Builder and need to target
+// more deeply nested selectors than in our component-library.
+
+/***
+****************
+Edit overrides 1
+****************
+
+first and last child component spacing between the 
+site header and site footer, respectively. 
+
+****************
+****************
+*/
+
+
+/* This `layout-banner override, overrides the .main-content > *:first-child 
+statement in web/themes/contrib/atomic/_yale-packages/component-library-twig/components/04-page-layouts/page-layouts.scss 
+
+We need to set this region to have no top margin because our component-library doesn't
+account for div elements in-between 'main-content' and the component themselves. 
+
+Without this, the `layout-banner` would get top margin from the component-library
+because the --main-content-top-margin variable isn't set and --size-spacing-6
+would be used instead resulting in top margin of size-spacing-6.  */
+
+.main-content .layout--banner {
+  margin-top: 0;
+}
+
+/* This applies margin-top: 0 to the first child inside of our nest divs */
+.main-content .layout--banner .layout__region > *:first-child {
+  margin-top: 0;
+}
+
+/* The last item inside the `.main-content` area should have some space between
+// it and the site footer (size-spacing-12 below) - unless it is designated as
+// `$flush-bottom` above. Then it will have no bottom-margin separating it from
+/ the site footer.
+*/
+.main-content .layout.layout--onecol:last-of-type .layout__region--content > *:last-child {
+  margin-bottom: var(--main-content-bottom-margin, var(--size-spacing-13));
+}
+
+/* Here we need to specify which components in the main content layout div 
+need to have margin-bottom set to 0 */
+.main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .callouts:last-child,
+.main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .cta-banner:last-child,
+.main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .grand-hero-banner:last-child,
+.main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .quick-links:last-child {
+  margin-bottom: 0;
+}
+
+/* This is necessary because there could be more than one instance of
+// layout-onecol 
+*/
+.main-content .layout.layout--onecol:last-child {
+  margin-bottom: 0;
+}

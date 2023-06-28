@@ -6,7 +6,7 @@ core_version_requirement: ^9 || ^10
 
 libraries:
   - atomic/global
-  - ys_themes/layout-paragraphs
+  - atomic/layout-builder
 
 ckeditor_stylesheets:
   - dist/style.css
