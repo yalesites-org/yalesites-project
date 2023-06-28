@@ -1,7 +1,7 @@
 _core:
   default_config_hash: A1YhiXDQT0YvWBBy9oxEiWz2gjzsJ9mFNQYiO-St8VI
 bugherd_project_key: 7wyg24qv0ivjykxkd3k5fa
-bugherd_widget_position: bottom-right
+bugherd_widget_position: bottom-left
 bugherd_disable_on_admin: '0'
 reporter_email_autofill: 1
 email_required: 1
