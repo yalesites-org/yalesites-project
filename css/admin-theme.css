@@ -14,6 +14,12 @@
   --gin-border-m: 0.313rem;
   --gin-bg-app: #fcfefe;
   --gin-bg-app-rgb: rgb(252, 254, 254);
+  --gin-spacing-m: 1rem;
+  --gin-border-l: 0.75rem;
+  --gin-color-warning-light: #efcf64;
+  --gin-bg-warning: #605328;
+  --gin-color-danger-light: #f39b9d;
+  --gin-bg-danger: #583333;
 }
 
 :root [data-gin-accent=light_blue] {
@@ -155,12 +161,12 @@
   background-color: var(--gin-color-primary-light) !important;
 }
 
-.gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab:hover .trigger::before, 
+.gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab:hover .trigger::before,
 .gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab:focus .trigger::before {
   background-color: var(--gin-color-primary) !important;
 }
 
-.gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab > .toolbar-icon-edit.toolbar-item:hover 
+.gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab > .toolbar-icon-edit.toolbar-item:hover
 .gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab > .toolbar-icon-edit.toolbar-item:focus {
   background-color: var(--wool);
 }
@@ -204,7 +210,7 @@
   a:active,
 table tr:hover,
 table .draggable-table.tabledrag-disabled tr:hover {
-  --gin-color-button-text: var(--gin-color-primary); 
+  --gin-color-button-text: var(--gin-color-primary);
   color: var(--wool);
 }
 
@@ -270,17 +276,31 @@ table .draggable-table.tabledrag-disabled tr:hover {
   background-color: var(--gin-color-primary);
 }
 
-.glb-button, 
-.inline-block-create-button, 
+.glb-button,
+.inline-block-create-button,
 .layout-builder__link--add,
 .layout-builder__link {
   font-family: var(--gin-font);
 }
 
 .layout-builder__link--configure {
-  --gin-border-color-form-element: var(--darkest-gray); 
+  --gin-border-color-form-element: var(--darkest-gray);
 }
 .layout-builder__link--add-section-to-library,
 .layout-builder__link--remove {
-  --gin-border-color-form-element: var(--darkest-gray); 
+  --gin-border-color-form-element: var(--darkest-gray);
+}
+
+#media-library-messages .messages {
+  border-radius: var(--gin-border-l);
+  padding: 1rem;
+}
+
+#media-library-messages .messages--error {
+  color: var(--gin-color-danger-light);
+  background-color: var(--gin-bg-danger);
+}
+#media-library-messages .messages--warning {
+  color: var(--gin-color-warning-light);
+  background-color: var(--gin-bg-warning);
 }
