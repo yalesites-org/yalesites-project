@@ -284,3 +284,54 @@ table .draggable-table.tabledrag-disabled tr:hover {
 .layout-builder__link--remove {
   --gin-border-color-form-element: var(--darkest-gray); 
 }
+
+/* yalb-1261 - fix hover color on table */
+
+.layout-builder-components-table__block-label:hover {
+  color: var(--darkest-gray);
+  text-decoration: underline;
+}
+ 
+/* yalb-1251 - AX: pencil icon difficulty editing blocks */
+/* change the contextual pencil icon to the left-hand side of each component
+// instead of the right
+*/
+.layout-builder-block.contextual-region .contextual {
+  top: 1rem;
+  left: 0;
+  width: 20%;
+}
+
+.layout-builder-block.contextual-region .contextual .contextual-links {
+  left: 6px;
+  float: right;
+}
+
+/* increase the size of the clickable/hoverable area */
+.layout-builder-block.contextual-region .contextual .trigger {  
+  width: 50px !important;
+  height: 50px !important;
+}
+
+/* increase the size of the icon itself */
+.layout-builder-block.contextual-region .contextual .trigger::before {
+  width: 1.2rem;
+  height: 1.2rem;
+  mask-size: 1.2rem;
+}
+
+/* add min-height so that smaller (in height) components are more easily
+// able to be interacted with - e.g. `divider`
+*/
+.layout-builder-block {
+  min-height: 6rem;
+}
+
+/* increase padding around the divider when in layout-builder, to make the
+// divider more visible
+*/
+.layout-builder-block .divider__wrapper {
+  display: flex;
+  align-items: center;
+  padding-inline: 2rem;
+}
