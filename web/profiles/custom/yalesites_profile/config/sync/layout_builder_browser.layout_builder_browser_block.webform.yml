@@ -5,7 +5,7 @@ dependencies: {  }
 id: webform
 block_id: 'inline_block:webform'
 category: advanced
-label: Webform
+label: 'Pre-Built Form'
 image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/webform.svg
 image_alt: ''
 weight: -3
