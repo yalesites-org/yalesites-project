@@ -8,8 +8,8 @@ dependencies:
     - field.field.node.profile.field_department
     - field.field.node.profile.field_email
     - field.field.node.profile.field_login_required
+    - field.field.node.profile.field_media
     - field.field.node.profile.field_metatags
-    - field.field.node.profile.field_netid
     - field.field.node.profile.field_position
     - field.field.node.profile.field_subtitle
     - field.field.node.profile.field_tags
@@ -17,7 +17,6 @@ dependencies:
     - field.field.node.profile.field_teaser_text
     - field.field.node.profile.field_teaser_title
     - field.field.node.profile.field_telephone
-    - field.field.node.profile.field_weight
     - field.field.node.profile.layout_builder__layout
     - node.type.profile
   module:
@@ -50,14 +49,13 @@ hidden:
   field_department: true
   field_email: true
   field_login_required: true
+  field_media: true
   field_metatags: true
-  field_netid: true
   field_position: true
   field_subtitle: true
   field_tags: true
   field_teaser_media: true
   field_teaser_title: true
   field_telephone: true
-  field_weight: true
   layout_builder__layout: true
   links: true

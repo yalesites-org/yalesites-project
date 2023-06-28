@@ -41,6 +41,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'view_modes' => [
         'card' => 'Post Card Grid',
         'list_item' => 'Post List',
+        'condensed' => 'Condensed',
       ],
       'sort_by' => [
         'field_publish_date:DESC' => 'Publish Date - newer first',
@@ -52,6 +53,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'view_modes' => [
         'card' => 'Event Card Grid',
         'list_item' => 'Event List',
+        'condensed' => 'Condensed',
       ],
       'sort_by' => [
         'field_event_date:DESC' => 'Event Date - newer first',
@@ -63,6 +65,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'view_modes' => [
         'card' => 'Page Grid',
         'list_item' => 'Page List',
+        'condensed' => 'Condensed',
       ],
       'sort_by' => [
         'title:ASC' => 'Title - A-Z',
@@ -74,6 +77,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'view_modes' => [
         'card' => 'Profile Grid',
         'list_item' => 'Profile List',
+        'directory' => 'Directory Grid',
+        'condensed' => 'Condensed',
       ],
       'sort_by' => [
         'title:ASC' => 'Name - A-Z',

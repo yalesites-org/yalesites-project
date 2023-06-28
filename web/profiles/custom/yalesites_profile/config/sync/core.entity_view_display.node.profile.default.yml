@@ -7,8 +7,8 @@ dependencies:
     - field.field.node.profile.field_department
     - field.field.node.profile.field_email
     - field.field.node.profile.field_login_required
+    - field.field.node.profile.field_media
     - field.field.node.profile.field_metatags
-    - field.field.node.profile.field_netid
     - field.field.node.profile.field_position
     - field.field.node.profile.field_subtitle
     - field.field.node.profile.field_tags
@@ -16,7 +16,6 @@ dependencies:
     - field.field.node.profile.field_teaser_text
     - field.field.node.profile.field_teaser_title
     - field.field.node.profile.field_telephone
-    - field.field.node.profile.field_weight
     - field.field.node.profile.layout_builder__layout
     - node.type.profile
   module:
@@ -173,22 +172,6 @@ third_party_settings:
                 third_party_settings: {  }
             weight: 8
             additional: {  }
-          591c7816-a6a1-4d2c-935b-a2bd7fc25fbb:
-            uuid: 591c7816-a6a1-4d2c-935b-a2bd7fc25fbb
-            region: content
-            configuration:
-              id: 'field_block:node:profile:field_netid'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: string
-                label: above
-                settings:
-                  link_to_entity: false
-                third_party_settings: {  }
-            weight: 9
-            additional: {  }
           45b80d79-bb8a-4819-996a-f500411b7c23:
             uuid: 45b80d79-bb8a-4819-996a-f500411b7c23
             region: content
@@ -252,20 +235,20 @@ third_party_settings:
                 third_party_settings: {  }
             weight: 13
             additional: {  }
-          8efa50f8-2253-4573-afb4-57466073e8ed:
-            uuid: 8efa50f8-2253-4573-afb4-57466073e8ed
+          c9dfe8f9-55b9-42ea-b1d9-c0b6ddb6b591:
+            uuid: c9dfe8f9-55b9-42ea-b1d9-c0b6ddb6b591
             region: content
             configuration:
-              id: 'field_block:node:profile:field_weight'
+              id: 'field_block:node:profile:field_media'
               label_display: '0'
               context_mapping:
                 entity: layout_builder.entity
               formatter:
-                type: number_integer
+                type: entity_reference_entity_view
                 label: above
                 settings:
-                  thousand_separator: ''
-                  prefix_suffix: true
+                  view_mode: default
+                  link: false
                 third_party_settings: {  }
             weight: 14
             additional: {  }
@@ -317,20 +300,21 @@ content:
     third_party_settings: {  }
     weight: 101
     region: content
+  field_media:
+    type: entity_reference_entity_view
+    label: above
+    settings:
+      view_mode: default
+      link: false
+    third_party_settings: {  }
+    weight: 114
+    region: content
   field_metatags:
     type: metatag_empty_formatter
     label: above
     settings: {  }
     third_party_settings: {  }
     weight: 102
-    region: content
-  field_netid:
-    type: string
-    label: above
-    settings:
-      link_to_entity: false
-    third_party_settings: {  }
-    weight: 109
     region: content
   field_position:
     type: string
@@ -385,15 +369,6 @@ content:
       link_to_entity: false
     third_party_settings: {  }
     weight: 111
-    region: content
-  field_weight:
-    type: number_integer
-    label: above
-    settings:
-      thousand_separator: ''
-      prefix_suffix: true
-    third_party_settings: {  }
-    weight: 114
     region: content
   links:
     settings: {  }
