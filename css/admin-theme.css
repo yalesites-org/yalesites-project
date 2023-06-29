@@ -301,14 +301,30 @@ table .draggable-table.tabledrag-disabled tr:hover {
 // instead of the right
 */
 .layout-builder-block.contextual-region .contextual {
+  display: flex;
+  flex-direction: column;
   top: 1rem;
-  left: 0;
-  width: 20%;
+  left: 2vw;
+  right: auto;
+  width: auto;
 }
 
+@media only screen and (min-width: 2200px) {
+  .layout-builder-block.contextual-region .contextual {
+    left: 15vw;
+  }
+} 
+
+@media only screen and (min-width: 2500px) {
+  .layout-builder-block.contextual-region .contextual {
+    left: 20vw;
+  }
+} 
+
 .layout-builder-block.contextual-region .contextual .contextual-links {
-  left: 6px;
-  float: right;
+  left: 0;
+  right: 0;
+  float: unset;
 }
 
 /* increase the size of the clickable/hoverable area */
@@ -322,6 +338,7 @@ table .draggable-table.tabledrag-disabled tr:hover {
   width: 1.2rem;
   height: 1.2rem;
   mask-size: 1.2rem;
+  -webkit-mask-size: 1.2rem;
 }
 
 /* add min-height so that smaller (in height) components are more easily
