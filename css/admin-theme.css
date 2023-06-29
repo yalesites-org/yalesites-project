@@ -292,9 +292,13 @@ table .draggable-table.tabledrag-disabled tr:hover {
   text-decoration: underline;
 }
 
-.text table tr:hover,
 .layout-builder-components-table tr:hover {
   color: var(--darkest-gray);
+}
+
+/* yalb-1296 - table tr hover in text component */
+.text table tr:hover {
+  color: var(--color-text);
 }
  
 /* yalb-1251 - AX: pencil icon difficulty editing blocks */
