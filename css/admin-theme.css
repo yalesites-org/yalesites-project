@@ -292,6 +292,7 @@ table .draggable-table.tabledrag-disabled tr:hover {
   text-decoration: underline;
 }
 
+.text table tr:hover,
 .layout-builder-components-table tr:hover {
   color: var(--darkest-gray);
 }
