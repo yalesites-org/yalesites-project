@@ -16,10 +16,11 @@ description: ''
 required: false
 translatable: true
 default_value:
-  - {  }
+  -
+    markup: null
 default_value_callback: ''
 settings:
   markup:
-    value: "<p>Webform is a component that enables you to insert pre-built form components into your website. For a custom form or survey experience, you can use the embed component to add a Qualtrics form instead.</p>\r\n"
+    value: "<p>Add a pre-built Drupal form. Not intended for custom form creation.</p>\r\n"
     format: basic_html
 field_type: markup

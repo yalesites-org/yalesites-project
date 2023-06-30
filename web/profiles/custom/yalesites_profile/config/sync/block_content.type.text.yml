@@ -1,8 +1,33 @@
 uuid: b110da7c-f687-4372-9b36-7868f635a610
 langcode: en
 status: true
-dependencies: {  }
+dependencies:
+  module:
+    - entity_redirect
+third_party_settings:
+  entity_redirect:
+    redirect:
+      add:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      edit:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      delete:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      anonymous:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
 id: text
 label: Text
-revision: 0
+revision: 1
 description: 'Text is used as your main source of text content on your page.'

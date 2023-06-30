@@ -102,7 +102,8 @@
         "hide remove button": "https://www.drupal.org/files/issues/2020-05-13/hide_field_required_paragraphs_remove_button_1.patch"
       },
       "drupal/core": {
-        "plural results summary https://www.drupal.org/project/drupal/issues/2888320": "https://www.drupal.org/files/issues/2021-12-15/2888320-78.patch"
+        "plural results summary https://www.drupal.org/project/drupal/issues/2888320": "https://www.drupal.org/files/issues/2021-12-15/2888320-78.patch",
+        "Prevent media library item overflow https://www.drupal.org/project/drupal/issues/3059955": "https://www.drupal.org/files/issues/2023-03-18/3059955-167.patch"
       },
       "drupal/entity_redirect": {
         "fix layout route https://www.drupal.org/project/entity_redirect/issues/3352265": "https://git.drupalcode.org/project/entity_redirect/-/merge_requests/6.patch"

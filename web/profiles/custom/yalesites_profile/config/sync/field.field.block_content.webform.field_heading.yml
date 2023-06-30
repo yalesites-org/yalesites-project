@@ -16,7 +16,7 @@ id: block_content.webform.field_heading
 field_name: field_heading
 entity_type: block_content
 bundle: webform
-label: 'Webform Component Title'
+label: 'Pre-Built Form Component Title'
 description: ''
 required: true
 translatable: true
