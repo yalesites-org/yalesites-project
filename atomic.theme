@@ -72,6 +72,8 @@ function atomic_theme_suggestions_container_alter(array &$suggestions, array &$v
  * Implements hook_preprocess_node().
  */
 function atomic_preprocess_node(&$variables) {
-  $date = $variables['node']->getCreatedTime();
-  $variables['date_formatted'] = \Drupal::service('date.formatter')->format($date, '', 'c');
+  if ($variables['node']->getType() == 'post') {
+    $date = strtotime($variables['node']->field_publish_date->first()->getValue()['value']);
+    $variables['date_formatted'] = \Drupal::service('date.formatter')->format($date, '', 'c');
+  }
 }

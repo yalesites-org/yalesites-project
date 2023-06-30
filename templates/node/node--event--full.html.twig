@@ -44,22 +44,16 @@
   {% set cal_text = 'Add to Calendar' %}
 {% endif %}
 
-{% embed "@molecules/page-title/yds-page-title.twig" with {
-  page_title__heading: label,
-  page_title__width: 'content',
+{% include "@molecules/meta/event-meta/yds-event-meta.twig" with {
+  event_title__heading: label,
+  event_meta__date_start: component_date_start,
+  event_meta__date_end: component_date_end,
+  event_meta__format: format_labels,
+  event_meta__address: nothing_yet,
+  event_meta__cta_primary__content: node.field_event_cta.title,
+  event_meta__cta_primary__href: node.field_event_cta.0.getUrl().toString(),
+  event_meta__cta_secondary__content: cal_text,
+  event_meta__cta_secondary__href: cal_link,
 } %}
-  {% block page_title__meta %}
-    {% include "@molecules/meta/event-meta/yds-event-meta.twig" with {
-      event_meta__date_start: component_date_start,
-      event_meta__date_end: component_date_end,
-      event_meta__format: format_labels,
-      event_meta__address: nothing_yet,
-      event_meta__cta_primary__content: node.field_event_cta.title,
-      event_meta__cta_primary__href: node.field_event_cta.0.getUrl().toString(),
-      event_meta__cta_secondary__content: cal_text,
-      event_meta__cta_secondary__href: cal_link,
-    } %}
-  {% endblock %}
-{% endembed %}
 
 {{ content|without('field_event_date', 'field_event_format', 'field_event_cta') }}
