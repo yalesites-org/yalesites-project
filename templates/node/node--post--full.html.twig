@@ -2,7 +2,7 @@
 
 {% include "@molecules/page-title/yds-page-title.twig" with {
   page_title__heading: label,
-  page_title__meta: content.field_author|render ~ date,
+  page_title__meta: content.field_author|render ~ date_formatted|date("l, F j, Y"),
   page_title__width: 'content',
 } %}
 
