@@ -1,0 +1,76 @@
+{# @TODO: Look into refactoring this to use the list component, if possible. #}
+{# @LINK: https://yaleits.atlassian.net/browse/YALB-658 #}
+{#
+ # Available Variables:
+ # - tabs__id: unique ID used to differentiate multiple tab sets on a page.
+ # - tabs: Array of tabs with the following properties.
+ #   - tab__label: The text of the tab.
+ #   - tab__content: The content inside the tabpanel.
+ #}
+
+{% set tabs__base_class = 'tabs' %}
+{% set tabs__id = tabs__id|default(random()) %}
+
+{% set icon_left %}
+  {% include "@atoms/images/icons/_yds-icon.twig" with {
+    icon__name: 'angle-down',
+    icon__blockname: tabs__base_class,
+    icon__modifiers: ['left'],
+    icon__decorative: true,
+  } %}
+{% endset %}
+
+{% set icon_right %}
+  {% include "@atoms/images/icons/_yds-icon.twig" with {
+    icon__name: 'angle-down',
+    icon__blockname: tabs__base_class,
+    icon__modifiers: ['right'],
+    icon__decorative: true,
+  } %}
+{% endset %}
+
+{% set tabs__attributes = {
+  'class': bem(tabs__base_class),
+  'data-overflow': 'none',
+  'data-component-theme': tabs__theme|default('one'),
+} %}
+
+<div {{ add_attributes(tabs__attributes) }}>
+  {% block prefix_suffix %}
+  {% endblock %}
+  <div {{ bem('tabs', [], tabs__base_class) }}>
+    {% include "@atoms/controls/base/yds-control.twig" with {
+      control__content: icon_left,
+      control__base_class: 'control',
+      control__blockname: tabs__base_class,
+      control__modifiers: ['left'],
+      control__attributes: {
+        'aria-hidden': 'true',
+        'tabindex': '-1',
+      },
+    } %}
+    <ul {{ bem('nav', [], tabs__base_class) }} role="tablist">
+      {% block tab__label %}
+        {% for key, tab in tabs %}
+          {% include "@molecules/tabs/_yds-tab-label.twig" %}
+        {% endfor %}
+      {% endblock %}
+    </ul>
+    {% include "@atoms/controls/base/yds-control.twig" with {
+      control__content: icon_right,
+      control__base_class: 'control',
+      control__blockname: tabs__base_class,
+      control__modifiers: ['right'],
+      control__attributes: {
+        'aria-hidden': 'true',
+        'tabindex': '-1',
+      },
+    } %}
+  </div>
+  {# Tab Content #}
+  {% block tab__content__container %}
+    {% for key, tab in tabs %}
+      {% include "@molecules/tabs/_yds-tab-content.twig" %}
+    {% endfor %}
+  {% endblock %}
+</div>
