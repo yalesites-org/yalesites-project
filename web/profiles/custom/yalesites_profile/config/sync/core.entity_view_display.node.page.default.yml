@@ -72,9 +72,7 @@ third_party_settings:
         components: {  }
         third_party_settings:
           layout_builder_lock:
-            lock:
-              6: 6
-              7: 7
+            lock: {  }
   layout_builder_restrictions:
     allowed_block_categories: {  }
     entity_view_mode_restriction:
