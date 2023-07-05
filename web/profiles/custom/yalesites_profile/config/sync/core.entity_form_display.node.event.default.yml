@@ -18,6 +18,7 @@ dependencies:
     - node.type.event
   module:
     - allowed_formats
+    - chosen_field
     - field_group
     - link
     - maxlength
@@ -87,14 +88,10 @@ bundle: event
 mode: default
 content:
   field_category:
-    type: entity_reference_autocomplete_tags
+    type: chosen_select
     weight: 1
     region: content
-    settings:
-      match_operator: CONTAINS
-      match_limit: 10
-      size: 60
-      placeholder: ''
+    settings: {  }
     third_party_settings: {  }
   field_event_cta:
     type: link_default
