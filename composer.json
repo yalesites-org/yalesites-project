@@ -108,8 +108,7 @@
       "drupal/core-composer-scaffold": true,
       "drupal/console-extend-plugin": true,
       "wikimedia/composer-merge-plugin": true,
-      "oomphinc/composer-installers-extender": true,
-      "JJJ/chosen": true
+      "oomphinc/composer-installers-extender": true
     }
   },
   "scripts": {

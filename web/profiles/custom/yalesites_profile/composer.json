@@ -102,6 +102,9 @@
     "patchLevel": {
       "drupal/core": "-p2"
     },
+    "allow-plugins": {
+      "JJJ/chosen": true
+    },
     "merge-plugin": {
       "include": [
         "web/modules/contrib/chosen/composer.libraries.json"
