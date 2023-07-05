@@ -19,6 +19,7 @@
     "drupal/core-recommended": "^9.2",
     "drush/drush": "^11 || ^12",
     "pantheon-systems/drupal-integrations": "^9",
+    "wikimedia/composer-merge-plugin": "^2.1",
     "yalesites-org/yalesites_profile": "*"
   },
   "require-dev": {
@@ -93,6 +94,11 @@
     "composer-exit-on-patch-failure": true,
     "patchLevel": {
       "drupal/core": "-p2"
+    },
+    "merge-plugin": {
+      "include": [
+        "web/modules/contrib/chosen/composer.libraries.json"
+      ]
     }
   },
   "config": {
