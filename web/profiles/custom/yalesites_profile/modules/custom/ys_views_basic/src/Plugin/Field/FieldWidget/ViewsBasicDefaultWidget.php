@@ -214,7 +214,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     $form['group_user_selection']['filter_and_sort']['terms_include'] = [
       '#title' => $this->t('Include content that uses the following terms'),
-      '#type' => 'entity_autocomplete',
+      '#type' => 'chosen_select',
       '#tags' => TRUE,
       '#target_type' => 'taxonomy_term',
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('terms_include', $items[$delta]->params) : [],
@@ -230,7 +230,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     $form['group_user_selection']['filter_and_sort']['terms_exclude'] = [
       '#title' => $this->t('Exclude content that uses the following terms'),
-      '#type' => 'entity_autocomplete',
+      '#type' => 'chosen_select',
       '#tags' => TRUE,
       '#target_type' => 'taxonomy_term',
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('terms_exclude', $items[$delta]->params) : [],
