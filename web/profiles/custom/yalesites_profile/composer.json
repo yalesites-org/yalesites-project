@@ -82,18 +82,29 @@
     "drupal/webform": "^6.2@beta",
     "drupal/wingsuit_companion": "^2.0@RC",
     "yalesites-org/atomic": "1.16.3",
+    "oomphinc/composer-installers-extender": "^2.0",
     "yalesites-org/yale_cas": "^1.0"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
   "config": {
-    "sort-packages": true
+    "sort-packages": true,
+    "allow-plugins": {
+      "composer/installers": true,
+      "oomphinc/composer-installers-extender": true
+    }
   },
   "extra": {
     "enable-patching": true,
     "composer-exit-on-patch-failure": true,
     "patchLevel": {
       "drupal/core": "-p2"
+    },
+    "installer-paths": {
+      "web/libraries/{$name}": [
+        "type:drupal-library",
+        "JJJ/chosen"
+      ]
     },
     "patches": {
       "drupal/layout_paragraphs": {
