@@ -92,8 +92,8 @@
     "sort-packages": true,
     "allow-plugins": {
       "composer/installers": true,
-      "wikimedia/composer-merge-plugin": true,
-      "oomphinc/composer-installers-extender": true
+      "oomphinc/composer-installers-extender": true,
+      "wikimedia/composer-merge-plugin": true
     }
   },
   "extra": {
