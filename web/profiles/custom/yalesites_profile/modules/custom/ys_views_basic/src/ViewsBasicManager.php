@@ -401,7 +401,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   An array of all taxonomy term IDs and labels.
    */
   public function getAllTags(): array {
-    $terms = $this->entityTypeManager()->getStorage('taxonomy_term')->loadMultiple();
+    $terms = $this->entityTypeManager->getStorage('taxonomy_term')->loadMultiple();
     $tagList = [];
 
     foreach ($terms as $term) {
