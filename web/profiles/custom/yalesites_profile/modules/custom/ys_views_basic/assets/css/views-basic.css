@@ -31,6 +31,12 @@
   width: 100%;
 }
 
+/* chosen-specific */
+.chosen-container-multi .chosen-choices {
+  border: unset;
+  border-radius: unset;
+}
+
 /* visually hide the inputs */
 .layout-builder-configure-block .grouped-items .glb-form-type--radio input {
   border: 0;
