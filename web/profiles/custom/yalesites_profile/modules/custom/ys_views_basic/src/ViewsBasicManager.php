@@ -382,7 +382,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *
    * @param mixed $term
    *   The taxonomy term.
-   *
    * @param string $vocabulary
    *   The vocabulary class to load from.
    *
