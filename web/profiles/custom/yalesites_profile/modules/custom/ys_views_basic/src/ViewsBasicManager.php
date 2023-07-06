@@ -335,8 +335,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       case 'terms_exclude':
         if (!empty($paramsDecoded['filters'][$type])) {
           foreach ($paramsDecoded['filters'][$type] as $term) {
-            $tid = (int) $term['target_id'];
-            $defaultParam[] = $this->entityTypeManager()->getStorage('taxonomy_term')->load($tid);
+            $defaultParam[] = (int) $term;
           }
         }
         break;
