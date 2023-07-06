@@ -6,9 +6,10 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityDisplayRepository;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\views\Views;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\taxonomy\Entity\Vocabulary;
+
 /**
  * Service for managing the Views Basic plugins.
  */
@@ -362,6 +363,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   The taxonomy term.
    *
    * @return string
+   *   The vocabulary machine name.
    */
   private function getVocabulary($term) : string {
     return $term->bundle();
@@ -381,14 +383,14 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   }
 
   /**
-    * Returns the label for a given term with the vocabulary label.
-    *
-    * @param mixed $term
-    *   The taxonomy term.
-    *
-    * @return string
-    *   The label with the vocabulary label.
-    */
+   * Returns the label for a given term with the vocabulary label.
+   *
+   * @param mixed $term
+   *   The taxonomy term.
+   *
+   * @return string
+   *   The label with the vocabulary label.
+   */
   private function getLabelWithVocabularyLabel($term) : string {
     return $term->label() . ' (' . $this->getVocabularyLabel($term) . ')';
   }
@@ -411,4 +413,5 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
     return $tagList;
   }
+
 }
