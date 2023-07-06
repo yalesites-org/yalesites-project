@@ -89,26 +89,13 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "config": {
-    "sort-packages": true,
-    "allow-plugins": {
-      "composer/installers": true,
-      "oomphinc/composer-installers-extender": true,
-      "wikimedia/composer-merge-plugin": true
-    }
+    "sort-packages": true
   },
   "extra": {
     "enable-patching": true,
     "composer-exit-on-patch-failure": true,
     "patchLevel": {
       "drupal/core": "-p2"
-    },
-    "allow-plugins": {
-      "JJJ/chosen": true
-    },
-    "merge-plugin": {
-      "include": [
-        "web/modules/contrib/chosen/composer.libraries.json"
-      ]
     },
     "patches": {
       "drupal/layout_paragraphs": {
