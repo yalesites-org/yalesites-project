@@ -87,6 +87,13 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   protected $entityDisplayRepository;
 
   /**
+   * The term storage.
+   *
+   * @var \Drupal\taxonomy\TermStorageInterface
+   */
+  protected $termStorage;
+
+  /**
    * Constructs a new ViewsBasicManager object.
    */
   public function __construct(
@@ -95,6 +102,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityDisplayRepository = $entity_display_repository;
+    $this->termStorage = $this->entityTypeManager->getStorage('taxonomy_term');
   }
 
   /**
@@ -302,7 +310,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   The label of the taxonomy term or empty string.
    */
   public function getTagLabel($tag) {
-    $term = $this->entityTypeManager()->getStorage('taxonomy_term')->load($tag);
+    $term = $this->termStorage->load($tag);
     return ($term) ? $term->name->value : '';
   }
 
@@ -375,11 +383,14 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * @param mixed $term
    *   The taxonomy term.
    *
+   * @param string $vocabulary
+   *   The vocabulary class to load from.
+   *
    * @return string
    *   The vocabulary label.
    */
-  private function getVocabularyLabel($term) : string {
-    return Vocabulary::load($this->getVocabulary($term))->label();
+  private function getVocabularyLabel($term, $vocabulary) : string {
+    return $vocabulary::load($this->getVocabulary($term))->label();
   }
 
   /**
@@ -392,7 +403,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   The label with the vocabulary label.
    */
   private function getLabelWithVocabularyLabel($term) : string {
-    return $term->label() . ' (' . $this->getVocabularyLabel($term) . ')';
+    return $term->label() . ' (' . $this->getVocabularyLabel($term, Vocabulary) . ')';
   }
 
   /**
@@ -402,7 +413,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   An array of all taxonomy term IDs and labels.
    */
   public function getAllTags(): array {
-    $terms = $this->entityTypeManager->getStorage('taxonomy_term')->loadMultiple();
+    $terms = $this->termStorage->loadMultiple();
     $tagList = [];
 
     foreach ($terms as $term) {
