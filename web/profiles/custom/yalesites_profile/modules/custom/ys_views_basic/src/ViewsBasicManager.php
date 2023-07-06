@@ -8,7 +8,7 @@ use Drupal\Core\Entity\EntityDisplayRepository;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\views\Views;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-
+use Drupal\taxonomy\Entity\Vocabulary;
 /**
  * Service for managing the Views Basic plugins.
  */
@@ -357,6 +357,44 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   }
 
   /**
+   * Returns the vocabulary id for a given term.
+   *
+   * @param mixed $term
+   *   The taxonomy term.
+   *
+   * @return string
+   */
+  private function getVocabulary($term) : string {
+    return $term->bundle();
+  }
+
+  /**
+   * Returns the vocabulary label for a given term.
+   *
+   * @param mixed $term
+   *   The taxonomy term.
+   *
+   * @return string
+   *   The vocabulary label.
+   */
+  private function getVocabularyLabel($term) : string {
+    return Vocabulary::load($this->getVocabulary($term))->label();
+  }
+
+  /**
+    * Returns the label for a given term with the vocabulary label.
+    *
+    * @param mixed $term
+    *   The taxonomy term.
+    *
+    * @return string
+    *   The label with the vocabulary label.
+    */
+  private function getLabelWithVocabularyLabel($term) : string {
+    return $term->label() . ' (' . $this->getVocabularyLabel($term) . ')';
+  }
+
+  /**
    * Returns an array of all tags.
    *
    * @return array
@@ -367,8 +405,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     $tagList = [];
 
     foreach ($terms as $term) {
-      $tagList[$term->id()] = $term->label();
+      $tagList[$term->id()] = $this->getLabelWithVocabularyLabel($term);
     }
+
+    asort($tagList);
 
     return $tagList;
   }
