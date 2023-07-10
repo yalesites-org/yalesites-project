@@ -91,13 +91,7 @@
   "config": {
     "sort-packages": true,
     "allow-plugins": {
-      "dealerdirect/phpcodesniffer-composer-installer": true,
-      "composer/installers": true,
-      "cweagans/composer-patches": true,
-      "drupal/core-composer-scaffold": true,
-      "drupal/console-extend-plugin": true,
-      "wikimedia/composer-merge-plugin": true,
-      "oomphinc/composer-installers-extender": true
+      "composer/installers": true
     }
   },
   "extra": {
@@ -105,14 +99,6 @@
     "composer-exit-on-patch-failure": true,
     "patchLevel": {
       "drupal/core": "-p2"
-    },
-    "allow-plugins": {
-      "JJJ/chosen": true
-    },
-    "merge-plugin": {
-      "include": [
-        "web/modules/contrib/chosen/composer.libraries.json"
-      ]
     },
     "patches": {
       "drupal/layout_paragraphs": {
