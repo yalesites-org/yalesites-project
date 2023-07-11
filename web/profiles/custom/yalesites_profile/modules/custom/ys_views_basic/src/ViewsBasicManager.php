@@ -6,7 +6,6 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityDisplayRepository;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\views\Views;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -382,14 +381,14 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *
    * @param mixed $term
    *   The taxonomy term.
-   * @param string $vocabulary
+   * @param \Drupal\taxonomy\VocabularyInterface $vocabularyInterface
    *   The vocabulary class to load from.
    *
    * @return string
    *   The vocabulary label.
    */
-  private function getVocabularyLabel($term, $vocabulary) : string {
-    return $vocabulary::load($this->getVocabulary($term))->label();
+  private function getVocabularyLabel($term, $vocabularyInterface) : string {
+    return $vocabularyInterface->load($this->getVocabulary($term))->label();
   }
 
   /**
@@ -402,7 +401,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   The label with the vocabulary label.
    */
   private function getLabelWithVocabularyLabel($term) : string {
-    return $term->label() . ' (' . $this->getVocabularyLabel($term, Vocabulary) . ')';
+    return $term->label() . ' (' . $this->getVocabularyLabel($term, $this->entityTypeManager->getStorage('taxonomy_vocabulary')) . ')';
   }
 
   /**
