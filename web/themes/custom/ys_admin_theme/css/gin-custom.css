@@ -152,6 +152,19 @@ tbody .views-field:not(.views-field-operations) a {
   background-color: transparent;
 }
 
+/* Chosen overrides for Gin */
+
+/* Chosen dropdown selected color contrast fix */
+/* ******************************************* */
+.chosen-container .chosen-results {
+  color: var(--colorGinInfo);
+}
+
+.chosen-container-multi .chosen-drop .result-selected {
+  color: var(--colorGinGreen);
+}
+/* ************ Contrast fix end ************ */
+
 /* stylelint-enable */
 
 /*# sourceMappingURL=gin-custom.css.map */
