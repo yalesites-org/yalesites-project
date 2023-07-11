@@ -15,6 +15,6 @@ focus_color: ''
 high_contrast_mode: 0
 classic_toolbar: vertical
 secondary_toolbar_frontend: 1
-show_description_toggle: 0
+show_description_toggle: 1
 show_user_theme_settings: 0
 layout_density: default
