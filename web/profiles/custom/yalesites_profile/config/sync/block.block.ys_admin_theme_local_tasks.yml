@@ -2,6 +2,8 @@ uuid: e03d9a42-6814-4262-aec2-1914178b1d69
 langcode: en
 status: true
 dependencies:
+  module:
+    - system
   theme:
     - ys_admin_theme
 _core:
@@ -19,4 +21,8 @@ settings:
   provider: core
   primary: true
   secondary: false
-visibility: {  }
+visibility:
+  request_path:
+    id: request_path
+    negate: true
+    pages: '/node/*'
