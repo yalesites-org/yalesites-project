@@ -1,0 +1,38 @@
+(Inside new block)
+
+{#
+  The duration that is set when you select "all day"
+
+  This is done because smart date is not exposing to node whether you selected
+  all day or not
+#}
+{% set all_day_duration = 1439 %}
+
+{#
+  Since each all day day adds an extra minute, we create a delta based on the
+  number of days selected
+#}
+
+{% set test = 1234 %}
+
+{% set delta = (event_meta__date_duration // all_day_duration) %}
+
+{% if event_meta__date_start %}
+  {# Convert integers to datetime objects for use in calendar link #}
+  {% set start_datetime = date(event_meta__date_start|date_modify('+0 hour')) %}
+  {% set end_datetime = date(event_meta__date_end|date_modify('+0 hour')) %}
+
+  {% set date_time__all_day = (event_meta__date_duration % all_day_duration) <= delta %}
+
+  {#
+    The component is specifying the location as hybrid if multiple formats are
+    selected, so I decided to try to follow suit
+  #}
+  {% set isHybrid = event_meta__format|length > 1 %}
+  {% set calendar_location_text = isHybrid ? 'Hybrid' : event_meta__format|first %}
+
+  {% set event_meta__cta_secondary__href = calendar_link('ics', event_title__heading, start_datetime, end_datetime, date_time__all_day, 'description', calendar_location_text) %}
+  {% set event_meta__cta_secondary__content = 'Add to Calendar' %}
+{% endif %}
+
+{% include '@molecules/meta/event-meta/yds-event-meta.twig' %}
