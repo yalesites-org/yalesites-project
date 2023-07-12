@@ -23,9 +23,8 @@ image_style_mappings:
   -
     image_mapping_type: sizes
     image_mapping:
-      sizes: 100vw
+      sizes: '(min-width: 2400px) 2400px, 100vw'
       sizes_image_styles:
-        - '16_5_2400'
         - '16_5_1120'
         - '16_5_1280'
         - '16_5_1440'
@@ -34,6 +33,7 @@ image_style_mappings:
         - '16_5_1920'
         - '16_5_2080'
         - '16_5_2240'
+        - '16_5_2400'
         - '16_5_320'
         - '16_5_480'
         - '16_5_640'
