@@ -17,7 +17,7 @@ field_name: field_teaser_text
 entity_type: node
 bundle: event
 label: 'Teaser Text'
-description: ''
+description: 'Teaser details display in feeds, views, search engine result pages, and social sharing cards.'
 required: false
 translatable: true
 default_value: {  }

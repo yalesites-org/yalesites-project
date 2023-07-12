@@ -10,7 +10,7 @@ field_name: field_teaser_title
 entity_type: node
 bundle: event
 label: 'Teaser Title'
-description: ''
+description: 'If not specified, the content title is displayed'
 required: false
 translatable: true
 default_value: {  }

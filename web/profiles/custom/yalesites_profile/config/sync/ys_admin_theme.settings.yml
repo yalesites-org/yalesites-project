@@ -13,7 +13,7 @@ accent_color: ''
 preset_focus_color: dark
 focus_color: ''
 high_contrast_mode: 0
-classic_toolbar: vertical
+classic_toolbar: horizontal
 secondary_toolbar_frontend: 1
 show_description_toggle: 1
 show_user_theme_settings: 0
