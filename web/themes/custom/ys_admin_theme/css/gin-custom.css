@@ -157,11 +157,11 @@ tbody .views-field:not(.views-field-operations) a {
 /* Chosen dropdown selected color contrast fix */
 /* ******************************************* */
 .chosen-container .chosen-results {
-  color: var(--colorGinInfo);
+  color: var(--gin-color-info);
 }
 
 .chosen-container-multi .chosen-drop .result-selected {
-  color: var(--colorGinGreen);
+  color: var(--gin-color-green);
 }
 /* ************ Contrast fix end ************ */
 
