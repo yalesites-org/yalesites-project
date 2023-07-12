@@ -120,6 +120,9 @@
       },
       "drupal/smart_date": {
         "add PHP c date format": "patches/add-php-c-format.patch"
+      },
+      "drupal/gin": {
+        "fix description toggle for CKEditor fields https://www.drupal.org/project/gin/issues/3316265": "https://git.drupalcode.org/project/gin/-/merge_requests/227.patch"
       }
     }
   }
