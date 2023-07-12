@@ -105,7 +105,14 @@
 }
 
 .gin-secondary-toolbar--frontend {
+  position: fixed;
   background-color: var(--gin-bg-layer);
+  width: 100%;
+  top: calc(var(--gin-toolbar-secondary-height) - 7px) !important;
+}
+
+body.gin--horizontal-toolbar {
+  padding-top: calc(var(--gin-toolbar-y-offset) + var(--gin-toolbar-secondary-height)) !important;
 }
 
 [data-gin-accent=light_blue] .ui-widget-overlay {
