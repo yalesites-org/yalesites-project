@@ -61,12 +61,12 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
    * Calculates if an event is set to all day.
    *
    * Code copied from contrib module smart_date/src/SmartDateTrait.php because
-   * with version 3.5 of smart_date and PHP 8.1, calling static traits
-   * in this way is deprecated.
+   * with version 3.6 of smart_date and PHP 8.1, calling static traits
+   * in this way is deprecated. Patches to fix failed to apply.
    */
   private function isAllDay($start_ts, $end_ts, $timezone = NULL) {
     if ($timezone) {
-      if ($timezone instanceof DateTimeZone) {
+      if ($timezone instanceof \DateTimeZone) {
         // If provided as an object, convert to a string.
         $timezone = $timezone->getName();
       }
@@ -98,23 +98,23 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
       return [];
     }
 
+    // Event fields.
     $title = $node->getTitle();
     $dateStart = ($node->field_event_date->first()) ? $node->field_event_date->first()->getValue()['value'] : NULL;
     $dateEnd = ($node->field_event_date->first()) ? $node->field_event_date->first()->getValue()['end_value'] : NULL;
     $dateDuration = ($node->field_event_date->first()) ? $node->field_event_date->first()->getValue()['duration'] : NULL;
+    $allDay = $this->isAllDay($dateStart, $dateEnd);
     $url = ($node->field_event_cta->first()) ? Url::fromUri($node->field_event_cta->first()->getValue()['uri'])->toString() : NULL;
     $urlTitle = ($node->field_event_cta->first()) ? $node->field_event_cta->first()->getValue()['title'] : NULL;
 
+    // Event format.
     $eventFormats = [];
-
     foreach ($node->field_event_type->referencedEntities() as $entity) {
       $eventFormats[] = $entity->label();
     }
-    // kint($dateDuration);
-    // kint($dateDuration / 1439);
-    // kint($dateDuration % 1439);
 
-    kint($this->isAllDay($dateStart, $dateEnd));
+    // Add to calendar link.
+    $calendarLocationText = (count($eventFormats) > 1) ? 'Hybrid' : $eventFormats[0];
 
     return [
       '#theme' => 'ys_event_meta_block',
@@ -122,9 +122,11 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
       '#event_meta__date_start' => $dateStart,
       '#event_meta__date_end' => $dateEnd,
       '#event_meta__date_duration' => $dateDuration,
+      '#event_meta__all_day' => $allDay,
       '#event_meta__format' => $eventFormats,
       '#event_meta__cta_primary__href' => $url,
       '#event_meta__cta_primary__content' => $urlTitle,
+      '#calendar_location_text' => $calendarLocationText,
     ];
   }
 

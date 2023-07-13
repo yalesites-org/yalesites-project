@@ -1,7 +1,12 @@
 <?php
 
 /**
- * Add template files
+ * @file
+ * Contains ys_layouts.module functions.
+ */
+
+/**
+ * Add template files.
  *
  * Implements hook_theme().
  */
@@ -13,11 +18,12 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'event_meta__date_start' => NULL,
         'event_meta__date_end' => NULL,
         'event_meta__date_duration' => NULL,
+        'event_meta__all_day' => NULL,
         'event_meta__format' => [],
         'event_meta__cta_primary__href' => NULL,
         'event_meta__cta_primary__content' => NULL,
+        'calendar_location_text' => NULL,
       ],
     ],
   ];
 }
-
