@@ -149,7 +149,7 @@ class YaleSitesTitleBreadcrumbBlock extends BlockBase implements ContainerFactor
       '#options' => [
         'visible' => 'Display Title',
         'visually-hidden' => 'Visually Hidden',
-        'hidden' => 'Hide Title'
+        'hidden' => 'Hide Title',
       ],
     ];
 
@@ -157,11 +157,11 @@ class YaleSitesTitleBreadcrumbBlock extends BlockBase implements ContainerFactor
   }
 
   /**
-  * {@inheritdoc}
-  */
+   * {@inheritdoc}
+   */
   public function blockSubmit($form, FormStateInterface $form_state) : void {
     parent::blockSubmit($form, $form_state);
     $this->configuration['page_title_display'] = $form_state->getValue('page_title_display');
- }
+  }
 
 }
