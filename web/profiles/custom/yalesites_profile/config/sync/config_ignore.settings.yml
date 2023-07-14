@@ -5,4 +5,4 @@ ignored_config_entities:
   - 'system.site*'
   - 'ys_alert.settings:alert'
   - 'ys_core*'
-  - 'ys_themes:theme_setings'
+  - 'ys_themes.theme_setings'
