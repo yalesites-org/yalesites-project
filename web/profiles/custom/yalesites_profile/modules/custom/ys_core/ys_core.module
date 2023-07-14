@@ -48,6 +48,7 @@ function ys_core_theme($existing, $type, $theme, $path): array {
     'ys_title_breadcrumb' => [
       'variables' => [
         'page_title' => NULL,
+        'page_title_display' => NULL,
         'breadcrumbs_placeholder' => [],
       ],
     ],
