@@ -147,9 +147,9 @@ class YaleSitesTitleBreadcrumbBlock extends BlockBase implements ContainerFactor
       '#title' => $this->t('Title Display'),
       '#default_value' => $config['page_title_display'] ?? '',
       '#options' => [
-        'visible' => 'Display Title',
-        'visually-hidden' => 'Visually Hidden',
-        'hidden' => 'Hide Title',
+        'visible' => $this->t('Display Title'),
+        'visually-hidden' => $this->t('Visually Hidden'),
+        'hidden' => $this->t('Hide Title'),
       ],
     ];
 
