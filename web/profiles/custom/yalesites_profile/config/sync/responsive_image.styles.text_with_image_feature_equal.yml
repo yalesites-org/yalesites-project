@@ -13,19 +13,22 @@ dependencies:
     - image.style.max_width_2240
     - image.style.max_width_2400
     - image.style.max_width_320
+    - image.style.max_width_444
     - image.style.max_width_480
+    - image.style.max_width_540
     - image.style.max_width_640
     - image.style.max_width_800
     - image.style.max_width_896
     - image.style.max_width_960
 id: text_with_image_feature_equal
-label: 'Text with Image | Feature | Equal'
+label: 'Text with Image - Feature - Equal'
 image_style_mappings:
   -
     image_mapping_type: sizes
     image_mapping:
-      sizes: '(min-width: 1408px): 660px, (min-width: 992px): 47vw, 96vw'
+      sizes: '(min-width: 1500px) 800px,(min-width: 1408px) 540px, (min-width: 992px) 444px, 96vw'
       sizes_image_styles:
+        - max_width_320
         - max_width_1120
         - max_width_1280
         - max_width_1440
@@ -35,8 +38,9 @@ image_style_mappings:
         - max_width_2080
         - max_width_2240
         - max_width_2400
-        - max_width_320
+        - max_width_444
         - max_width_480
+        - max_width_540
         - max_width_640
         - max_width_800
         - max_width_896
