@@ -84,10 +84,10 @@ function atomic_preprocess_node(&$variables) {
  * Inject the heading_level based on the parent's heading presence.
  */
 function atomic_preprocess_paragraph__accordion_item(&$variables) {
-  $accordion = $variables['paragraph']->getParentEntity();
-
-  if ($accordion->hasField('field_heading')) {
-    $heading = $accordion->field_heading->value;
-    $variables['attributes']['heading_level'] = empty($heading) ? 2 : 3;
+  if ($accordion = $variables['paragraph']->getParentEntity()) {
+    if ($accordion->hasField('field_heading')) {
+      $heading = $accordion->field_heading->value;
+      $variables['attributes']['heading_level'] = empty($heading) ? 2 : 3;
+    }
   }
 }
