@@ -8,14 +8,16 @@
 /**
  * Implements hook_preprocess_region().
  */
-function atomic_preprocess_region(&$variables) {
+function atomic_preprocess_region(&$variables)
+{
   $variables['site_name'] = \Drupal::config('system.site')->get('name');
 }
 
 /**
  * Implements hook_preprocess_menu().
  */
-function atomic_preprocess_menu(&$variables, $hook) {
+function atomic_preprocess_menu(&$variables, $hook)
+{
   $current_path = \Drupal::request()->getRequestUri();
   $items = $variables['items'];
   foreach ($items as $key => $item) {
@@ -45,7 +47,8 @@ function atomic_preprocess_menu(&$variables, $hook) {
 /**
  * Implements hook_theme_suggestions_hook_alter() for containers.
  */
-function atomic_theme_suggestions_container_alter(array &$suggestions, array &$variables) {
+function atomic_theme_suggestions_container_alter(array &$suggestions, array &$variables)
+{
   $type = '';
   $name = '';
 
@@ -71,9 +74,24 @@ function atomic_theme_suggestions_container_alter(array &$suggestions, array &$v
 /**
  * Implements hook_preprocess_node().
  */
-function atomic_preprocess_node(&$variables) {
+function atomic_preprocess_node(&$variables)
+{
   if ($variables['node']->getType() == 'post') {
     $date = strtotime($variables['node']->field_publish_date->first()->getValue()['value']);
     $variables['date_formatted'] = \Drupal::service('date.formatter')->format($date, '', 'c');
+  }
+}
+
+/**
+ * Implements hook_preprocess_paragraph__accordion_item().
+ * Inject the heading_level based on the parent's heading presence.
+ */
+function atomic_preprocess_paragraph__accordion_item(&$variables)
+{
+  $accordion = $variables['paragraph']->getParentEntity();
+
+  if ($accordion->hasField('field_heading')) {
+    $heading = $accordion->field_heading->value;
+    $variables['attributes']['heading_level'] = empty($heading) ? 2 : 3;
   }
 }
