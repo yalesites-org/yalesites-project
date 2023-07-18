@@ -1,8 +1,12 @@
-{% set start_datetime = date(event_meta__date_start|date_modify('+0 hour')) %}
-{% set end_datetime = date(event_meta__date_end|date_modify('+0 hour')) %}
+{% if event_meta__date_start %}
 
-{% set event_meta__cta_secondary__href = calendar_link('ics', event_title__heading, start_datetime, end_datetime, event_meta__all_day, 'description', calendar_location_text) %}
-{% set event_meta__cta_secondary__content = 'Add to Calendar' %}
+  {% set start_datetime = date(event_meta__date_start|date_modify('+0 hour')) %}
+  {% set end_datetime = date(event_meta__date_end|date_modify('+0 hour')) %}
+
+  {% set event_meta__cta_secondary__href = calendar_link('ics', event_title__heading, start_datetime, end_datetime, event_meta__all_day, 'description', calendar_location_text) %}
+  {% set event_meta__cta_secondary__content = 'Add to Calendar' %}
+
+{% endif %}
 
 {# All TWIG variables are named appropriately and pass through to this template #}
 {% include '@molecules/meta/event-meta/yds-event-meta.twig' %}

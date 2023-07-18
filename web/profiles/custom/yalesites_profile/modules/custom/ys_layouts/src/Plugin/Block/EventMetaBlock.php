@@ -114,7 +114,12 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
     }
 
     // Add to calendar link.
-    $calendarLocationText = (count($eventFormats) > 1) ? 'Hybrid' : $eventFormats[0];
+    if (!empty($eventFormats)) {
+      $calendarLocationText = (count($eventFormats) > 1) ? 'Hybrid' : $eventFormats[0];
+    }
+    else {
+      $calendarLocationText = NULL;
+    }
 
     return [
       '#theme' => 'ys_event_meta_block',

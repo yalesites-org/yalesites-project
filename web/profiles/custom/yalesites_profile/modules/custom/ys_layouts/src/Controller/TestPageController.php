@@ -4,11 +4,17 @@ namespace Drupal\ys_layouts\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\node\Entity\Node;
+use Drupal\Core\Plugin\Context\EntityContext;
+use Drupal\node\Entity\NodeType;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\layout_builder\LayoutEntityHelperTrait;
 
 /**
  * Provides route responses for the Example module.
  */
 class TestPageController extends ControllerBase {
+
+  use LayoutEntityHelperTrait;
 
   /**
    * Returns a simple page.
@@ -17,9 +23,11 @@ class TestPageController extends ControllerBase {
    *   A simple renderable array.
    */
   public function testPage() {
-
+    $sectionStorage = \Drupal::service('plugin.manager.layout_builder.section_storage');
+    //kint($sectionStorage->);
     // Gets the main event meta section so we can clone it to nodes that don't have it yet
     $entityTypeManager = \Drupal::service('entity_type.manager');
+
     if ($eventViewDisplay = $entityTypeManager->getStorage('entity_view_display')->load('node.event.default')) {
       if ($eventViewDisplay->isLayoutBuilderEnabled()) {
         $eventSections = $eventViewDisplay->getSections();
@@ -31,8 +39,10 @@ class TestPageController extends ControllerBase {
       }
     }
 
-    // Find all event nodes to update existing.
-    $nids = \Drupal::entityQuery('node')->condition('type','event')->execute();
+    //kint($sectionStorage);
+
+    // //Find all event nodes to update existing.
+    $nids = \Drupal::entityQuery('node')->condition('type', 'event')->execute();
 
     foreach ($nids as $nid) {
       $node = Node::load($nid);
@@ -50,7 +60,12 @@ class TestPageController extends ControllerBase {
     foreach ($nids as $nid) {
       $node = Node::load($nid);
       $layout = $node->get('layout_builder__layout');
+
+      $section_storage = $this->getSectionStorageForEntity($node);
+      $tempstore = \Drupal::service('layout_builder.tempstore_repository');
+      $tempstore->delete($section_storage);
       $layout->insertSection(0, $eventMetaSection);
+
       $node->save();
     }
 
