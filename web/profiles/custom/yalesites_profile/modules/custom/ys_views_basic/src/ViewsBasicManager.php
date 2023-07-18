@@ -308,7 +308,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * @return string
    *   The label of the taxonomy term or empty string.
    */
-  public function getTagLabel($tag) {
+  public function getTagLabel($tag) : string {
     $term = $this->termStorage->load($tag);
     return ($term) ? $term->name->value : '';
   }
@@ -410,7 +410,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * @return array
    *   An array of all taxonomy term IDs and labels.
    */
-  public function getAllTags(): array {
+  public function getAllTags() : array {
     $terms = $this->termStorage->loadMultiple();
     $tagList = [];
 
