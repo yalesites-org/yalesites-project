@@ -43,3 +43,4 @@ _Notes:_
 - `local:cl-dev` Enables a frontend developer to work across all of the repositories (`yalesites-project`, `atomic`, and `component-library-twig`) in an environment configured to support both Storybook development, and have the changes reflected in the Drupal instance. Note: This also wires up the Tokens repo, but if you want to watch for changes there, you'll have to run the `npm run develop` script inside the Tokens directory.
 
 CHANGE ONLY FOR MULTIDEV
+REBUILD 1
