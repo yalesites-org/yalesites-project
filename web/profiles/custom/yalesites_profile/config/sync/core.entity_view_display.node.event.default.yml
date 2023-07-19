@@ -48,11 +48,19 @@ third_party_settings:
             additional: {  }
         third_party_settings:
           layout_builder_lock:
-            lock: {  }
+            lock:
+              1: 1
+              2: 2
+              3: 3
+              4: 4
+              5: 5
+              6: 6
+              7: 7
+              8: 8
       -
         layout_id: layout_onecol
         layout_settings:
-          label: ''
+          label: 'Content Section'
         components: {  }
         third_party_settings: {  }
   layout_builder_restrictions:
