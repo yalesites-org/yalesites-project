@@ -14,6 +14,12 @@
   }
 }
 
+[data-drupal-selector="edit-enable-darkmode"] .form-radios input:checked + .form-item__label,
+[data-drupal-selector="edit-enable-darkmode"] .form-radios .form-item__label:hover,
+[data-drupal-selector="edit-enable-darkmode"] .form-radios .form-item__label:focus {
+  color: var(--dark-theme-gray-hover) !important;
+}
+
 .gin--edit-form
   .page-wrapper__node-edit-form
   .layout-region-node-secondary
@@ -29,6 +35,74 @@
   [open] {
     border-left: 3px solid var(--gin-color-primary);
   }
+}
+
+.gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab .toolbar-tray a:hover, 
+.gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab .toolbar-tray a:active {
+  background-color: var(--dark-theme-gray);
+}
+
+.page-title {
+  color: var(--wool) !important;
+}
+// sticky header title
+.region-sticky--is-sticky .page-title {
+  color: var(--dark-theme-gray) !important;
+}
+
+.form-item__description, .fieldset__description {
+  color: var(--dark-theme-gray) !important;
+}
+
+fieldset:not(.fieldgroup) {
+  color: var(--dark-theme-gray) !important;
+}
+
+
+// media library 
+// https://yalesites-platform.lndo.site/admin/content/media-grid
+.media-library-select-all {
+  color: var(--wool) !important;
+}
+
+.media-library-item__name {
+  color: var(--wool) !important;
+}
+
+.media-library-views-form .fieldset__label, 
+.media-library-views-form .fieldset__label--group, 
+.media-library-views-form .form-item__label {
+  color: var(--wool) !important;
+}
+
+
+// admin links
+
+a.menu-item__link { 
+  color: var(--mediterranean-blue) !important;
+}
+.admin-item .admin-item__link:hover,
+.admin-item .admin-item__link:focus {
+  background: rgba(var(--dark-theme-gray-lightest-rgb), 0.25) !important;
+}
+
+.admin-item .admin-item__link::before {
+  background-color: var(--dark-theme-gray-hover) !important;
+}
+
+.admin-item .admin-item__title {
+  color: var(--dark-theme-gray);
+}
+
+.admin-item__description {
+  color: var(--dark-theme-gray) !important;
+}
+
+.admin-item .admin-item__link:hover ~ .admin-item__title, 
+.admin-item .admin-item__link:hover ~ .admin-item__description, 
+.admin-item .admin-item__link:focus ~ .admin-item__title, 
+.admin-item .admin-item__link:focus ~ .admin-item__description {
+  color: var(--dark-theme-gray-hover) !important;
 }
 
 /* Modal */
@@ -50,6 +124,8 @@
 .button:not(:focus),
 .form-actions .button,
 .action-link--icon-trash.action-link {
+  background-color: var(--custom-button-color);
+  color: var(--custom-button-color-text);
   border-radius: 2.5rem !important;
   box-shadow: none !important;
 }
@@ -59,10 +135,12 @@
   color: var(--custom-button-color-text);
 }
 
+.button:hover,
+.button:focus,
 .button--primary:hover,
 .button--primary:focus {
-  background-color: var(--custom-button-color-text) !important;
-  color: var(--custom-button-color) !important;
+  background-color: var(--custom-button-color-hover) !important;
+  color: var(--custom-button-color-text-hover) !important;
 }
 
 .button.form-submit {
@@ -72,8 +150,8 @@
 
 .button.form-submit:hover,
 .button.form-submit:focus {
-  background-color: var(--custom-button-color-text) !important;
-  color: var(--custom-button-color) !important;
+  background-color: var(--custom-button-color-hover) !important;
+  color: var(--custom-button-color-text-hover) !important;
 }
 
 .toolbar-menu-administration
@@ -135,10 +213,10 @@
 
 html.js.no-touchevents .dropbutton--extrasmall {
   border-radius: 2.5rem !important;
-  background-color: var(--gin-color-primary-light);
+  background-color: var(--mediterranean-blue);
 }
 
-.js .dropbutton--multiple .dropbutton__item:first-of-type > * {
+.js .dropbutton--multiple > .dropbutton__item.dropbutton-action:first-of-type > a:hover {
   border-radius: 2.5rem 0 0 2.5rem !important;
 }
 
@@ -149,11 +227,6 @@ html.js.no-touchevents .dropbutton--extrasmall {
 .block-system > .views-form [data-drupal-selector*="edit-header"],
 .view-content .views-form [data-drupal-selector*="edit-header"] {
   background-color: transparent !important;
-}
-
-.admin-item .admin-item__link:hover,
-.admin-item .admin-item__link:focus {
-  background: rgba(var(--gin-color-primary-rgb), 0.15) !important;
 }
 
 .gin-secondary-toolbar.layout-container {
@@ -199,8 +272,26 @@ tbody .views-field:not(.views-field-operations) a {
   font-weight: 500;
 }
 
+table tr:hover, 
+table .draggable-table.tabledrag-disabled tr:hover {
+  background-color: var(--dark-theme-gray-lightest) !important;
+}
+
 .sortable-heading > a::after {
   content: none;
+}
+
+.sortable-heading > a:focus, 
+.sortable-heading > a:hover {
+  color: var(--dark-theme-gray-lightest);
+}
+
+table tr.selected td {
+  background-color: var(--dark-theme-gray-selected) !important;
+}
+
+.form-boolean--type-checkbox:checked {
+  background-color: var(--dark-theme-gray) !important;
 }
 
 .dropbutton__toggle:focus {
@@ -214,5 +305,95 @@ tbody .views-field:not(.views-field-operations) a {
 .js .dropbutton-widget {
   background-color: transparent;
 }
+
+.action-link {
+  color: var(--dark-theme-gray) !important;
+}
+
+.action-link:hover,
+.action-link:focus {
+  color: var(--dark-theme-gray-lightest) !important;
+}
+
+.action-link:hover .action-link--icon-show::before ,
+.action-link:focus .action-link--icon-show::before  {
+  background-color: var(--dark-theme-gray-lightest) !important;
+}
+
+.action-link--icon-show::before {
+  background-color: var(--dark-theme-gray) !important;
+}
+
+.cke .cke_top,
+.cke .cke_bottom,
+.cke.cke .cke_top,
+.cke_1_bottom {
+  background: var(--dark-theme-gray-lightest) !important;
+}
+
+.cke a.cke_path_item, 
+.cke span.cke_path_empty {
+  color: var(--dark-theme-gray) !important;
+}
+
+.cke a.cke_button_off:hover, 
+.cke a.cke_button_off:focus, 
+.cke a.cke_button_off:active {
+  background: var(--wool) !important;
+}
+
+.gin-layer-wrapper table th, 
+.gin-layer-wrapper table th .form-item__label {
+  color: var(--wool) !important;
+}
+
+.tabledrag-handle::after {
+  background-color: var(--dark-theme-gray) !important;
+}
+
+.field-plugin-summary {
+  color: var(--dark-theme-gray) !important;
+}
+
+.claro-details__summary {
+  color: var(--dark-theme-gray) !important;
+}
+
+.claro-details__summary:hover,
+.claro-details__summary:focus,
+.claro-details[open] > .claro-details__summary,
+.claro-details[open] > .claro-details__summary[aria-expanded="true"] {
+  color: var(--dark-theme-gray-text-light) !important;
+  background-color: var(--dark-theme-gray-text-dark) !important;
+}
+
+.claro-details[open] > .claro-details__summary[aria-expanded="false"]::before,
+.claro-details > .claro-details__summary[aria-expanded="false"]:focus::before,
+.claro-details[open] > .claro-details__summary::before {
+  background-color: var(--dark-theme-gray-text-light) !important;
+}
+
+.claro-details__wrapper a {
+  color: var(--mediterranean-blue) !important;
+}
+
+.claro-details__wrapper a:hover,
+.claro-details__wrapper a:focus {
+  background-color: var(--dark-theme-gray);
+}
+
+.claro-details__wrapper a::before {
+  background-color: var(--mediterranean-blue) !important;
+}
+
+.claro-details__wrapper a:hover::before,
+.claro-details__wrapper a:focus::before {
+  background: var(--dark-theme-gray-lightest) !important;
+}
+
+.claro-details__wrapper a:hover,
+.claro-details__wrapper a:focus {
+  text-decoration: underline;
+}  
 
 /* stylelint-enable */
