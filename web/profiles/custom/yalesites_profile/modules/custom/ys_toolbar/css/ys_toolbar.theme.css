@@ -63,6 +63,7 @@ behind the a.toolbar-icon element. */
 
 .toolbar-horizontal .toolbar-secondary .toolbar-tray[data-toolbar-tray="toolbar-item-user-tray"] .toolbar-lining .toolbar-menu a {
   color: var(--dark-primary-link) !important;
+  background-color: var(--gin-color-title-dark) !important;
 }
 
 
