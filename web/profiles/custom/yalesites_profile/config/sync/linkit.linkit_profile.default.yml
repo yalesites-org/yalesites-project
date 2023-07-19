@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   module:
+    - file
     - node
 _core:
   default_config_hash: Tt8DtxZ3Nooo0PoWPpJvszA3R_5d8MmpUW7LM_R-BzY
@@ -20,4 +21,20 @@ matchers:
       substitution_type: canonical
       limit: 100
       include_unpublished: false
+    weight: 0
+  9a7ef5fd-456e-45c4-b6be-7b2f60f82084:
+    id: 'entity:file'
+    uuid: 9a7ef5fd-456e-45c4-b6be-7b2f60f82084
+    settings:
+      metadata: Files
+      bundles: null
+      group_by_bundle: null
+      substitution_type: file
+      limit: 100
+      file_extensions: ''
+      file_status: 1
+      images:
+        show_dimensions: false
+        show_thumbnail: false
+        thumbnail_image_style: null
     weight: 0

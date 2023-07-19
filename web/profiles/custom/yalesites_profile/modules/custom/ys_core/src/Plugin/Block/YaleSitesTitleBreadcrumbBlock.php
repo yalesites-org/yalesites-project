@@ -4,6 +4,7 @@ namespace Drupal\ys_core\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Controller\TitleResolver;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -128,8 +129,39 @@ class YaleSitesTitleBreadcrumbBlock extends BlockBase implements ContainerFactor
     return [
       '#theme' => 'ys_title_breadcrumb',
       '#page_title' => $page_title,
+      '#page_title_display' => $this->configuration['page_title_display'] ?? '',
       '#breadcrumbs_placeholder' => $breadcrumbs_placeholder,
     ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function blockForm($form, FormStateInterface $form_state) : array {
+    $form = parent::blockForm($form, $form_state);
+    $config = $this->getConfiguration();
+
+    // The form field is defined and added to the form array here.
+    $form['page_title_display'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Title Display'),
+      '#default_value' => $config['page_title_display'] ?? '',
+      '#options' => [
+        'visible' => $this->t('Display Title'),
+        'visually-hidden' => $this->t('Visually Hidden'),
+        'hidden' => $this->t('Hide Title'),
+      ],
+    ];
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function blockSubmit($form, FormStateInterface $form_state) : void {
+    parent::blockSubmit($form, $form_state);
+    $this->configuration['page_title_display'] = $form_state->getValue('page_title_display');
   }
 
 }

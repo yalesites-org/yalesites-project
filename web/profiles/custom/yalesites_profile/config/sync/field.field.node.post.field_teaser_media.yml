@@ -11,7 +11,7 @@ field_name: field_teaser_media
 entity_type: node
 bundle: post
 label: 'Teaser Media'
-description: ''
+description: 'If not specified, the Fallback teaser image is displayed'
 required: false
 translatable: false
 default_value: {  }
