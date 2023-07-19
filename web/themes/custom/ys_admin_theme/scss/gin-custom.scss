@@ -13,9 +13,9 @@
   }
 }
 
-.region-content {
-  color: var(--wool);
-}
+// .region-content {
+//   color: var(--wool);
+// }
 
 .block-help-block {
   color: var(--wool);
@@ -169,15 +169,15 @@ a.menu-item__link {
 }
 
 .update-settings a,
-.gin-layer-wrapper a,
+.gin-layer-wrapper table td a,
 .system-status-general-info__item.card a {
   color: var(--mediterranean-blue) !important;
 }
 
 .update-settings a:hover,
 .update-settings a:focus,
-.gin-layer-wrapper a:hover,
-.gin-layer-wrapper a:focus,
+.gin-layer-wrapper table td a:hover,
+.gin-layer-wrapper table td a:focus,
 .system-status-general-info__item.card a:hover,
 .system-status-general-info__item.card a:focus {
   text-decoration: underline;
@@ -258,6 +258,16 @@ a.menu-item__link {
 .button.form-submit:focus {
   background-color: var(--custom-button-color-hover) !important;
   color: var(--custom-button-color-text-hover) !important;
+}
+
+.gin-layer-wrapper table td .dropbutton-action a {
+  color: var(--wool) !important;
+  border-radius: 0.95rem;
+}
+
+.gin-layer-wrapper table td .dropbutton-action a:hover,
+.gin-layer-wrapper table td .dropbutton-action a:focus {
+  color: var(--dark-theme-gray-hover) !important;
 }
 
 .toolbar-menu-administration
@@ -394,6 +404,12 @@ table .draggable-table.tabledrag-disabled tr:hover {
 
 table tr.selected td {
   background-color: var(--dark-theme-gray-selected) !important;
+}
+
+td.description,
+td .admin-requirements,
+td .admin-required {
+  color: var(--dark-theme-gray) !important;
 }
 
 .form-boolean--type-checkbox:checked {
