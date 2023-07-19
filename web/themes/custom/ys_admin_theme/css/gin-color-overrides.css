@@ -27,7 +27,8 @@
   --gin-color-button-text-hover: var(--dark-theme-gray-hover);
 }
 :root [data-gin-accent=light_blue] {
-  --gin-color-primary-rgb: 217, 241, 243 !important;
+  --gin-color-primary-rgb: 217, 241, 243;
+  /* --gin-color-primary-rgb: 78, 89, 89; */
   --gin-color-text-light: var(--wool);
   --gin-bg-item-hover: var(--dark-theme-gray-hover);
   --gin-color-primary-active: var(--wool) !important;

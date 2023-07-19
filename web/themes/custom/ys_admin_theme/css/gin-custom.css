@@ -1,7 +1,6 @@
 /* stylelint-disable */
-@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap");
 :root {
-  --gin-font: "DM Mono", monospace;
+  --gin-font: Mallory, sans-serif;
   --gin-font-size-h1: 1.75rem;
   --gin-font-size-h2: 1.5rem;
   --gin-font-size-h3: 1.25rem;
@@ -10,6 +9,14 @@
 :root h1,
 :root h2 {
   font-weight: 600;
+}
+
+.region-content {
+  color: var(--wool);
+}
+
+.block-help-block {
+  color: var(--wool);
 }
 
 [data-drupal-selector=edit-enable-darkmode] .form-radios input:checked + .form-item__label,
@@ -25,6 +32,12 @@
 
 .gin--edit-form .page-wrapper__node-edit-form .layout-region-node-secondary .entity-meta [open] {
   border-left: 3px solid var(--gin-color-primary);
+}
+
+.gin--edit-form .page-wrapper__node-edit-form .layout-region-node-secondary .entity-meta__title,
+.gin--edit-form .page-wrapper__node-edit-form .layout-region-node-secondary .entity-meta__header,
+.entity-meta__header .form-type--item .form-item__label {
+  color: var(--wool);
 }
 
 .gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab .toolbar-tray a:hover,
@@ -45,6 +58,18 @@
 }
 
 fieldset:not(.fieldgroup) {
+  color: var(--dark-theme-gray) !important;
+}
+
+:not(.form-checkboxes):not(td):not(.tabledrag-cell-content__item):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .form-type--checkbox label {
+  color: var(--wool) !important;
+}
+
+.layout-region-node-secondary :not(.form-checkboxes):not(td):not(.tabledrag-cell-content__item):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .form-type--checkbox label {
+  color: var(--dark-theme-gray) !important;
+}
+
+.media-library-widget-empty-text {
   color: var(--dark-theme-gray) !important;
 }
 
@@ -90,6 +115,11 @@ a.menu-item__link {
   color: var(--dark-theme-gray-hover) !important;
 }
 
+/* Cards */
+.card__content-wrapper {
+  background-color: var(--wool) !important;
+}
+
 /* Modal */
 .ui-widget-overlay {
   background: var(--gin-color-primary) !important;
@@ -103,14 +133,86 @@ a.menu-item__link {
   content: none;
 }
 
+.panel__title, .system-status-general-info__header,
+.system-status-report__requirements-group > h3,
+.system-themes-list__header {
+  background-color: var(--dark-theme-gray) !important;
+}
+
+.system-status-counter, .upgrade-status-counter,
+.system-status-counter__title-count, .upgrade-status-counter__title-count {
+  color: var(--wool) !important;
+}
+
+.system-status-general-info__item-icon::before {
+  background-color: var(--dark-theme-gray) !important;
+}
+
+.update-settings a,
+.gin-layer-wrapper a,
+.system-status-general-info__item.card a {
+  color: var(--mediterranean-blue) !important;
+}
+
+.update-settings a:hover,
+.update-settings a:focus,
+.gin-layer-wrapper a:hover,
+.gin-layer-wrapper a:focus,
+.system-status-general-info__item.card a:hover,
+.system-status-general-info__item.card a:focus {
+  text-decoration: underline;
+}
+
+/* Buttons and action links */
 .button,
 .button:not(:focus),
-.form-actions .button,
-.action-link--icon-trash.action-link {
+.form-actions .button {
   background-color: var(--custom-button-color);
   color: var(--custom-button-color-text);
   border-radius: 2.5rem !important;
   box-shadow: none !important;
+}
+
+.action-link::before {
+  background: var(--mediterranean-blue) !important;
+}
+
+.action-link:hover::before,
+.action-link:focus::before {
+  background: var(--wool) !important;
+}
+
+.action-link--icon-trash.action-link {
+  border-radius: 2.5rem !important;
+  box-shadow: none !important;
+}
+
+.action-link.action-link--danger,
+.button.action-link--danger {
+  background-color: var(--wool);
+  color: var(--gin-color-danger) !important;
+}
+
+.action-link.action-link--danger:hover,
+.action-link.action-link--danger:focus,
+.button.action-link--danger:hover,
+.button.action-link--danger:focus {
+  color: var(--dark-theme-gray-hover) !important;
+  background-color: var(--wool) !important;
+}
+
+.module-link.action-link--icon-cog::before {
+  background-color: var(--wool) !important;
+}
+
+.action-link.action-link--icon-cog {
+  background-color: var(--dark-theme-gray) !important;
+  color: var(--wool) !important;
+}
+
+.action-link.action-link--icon-checkmark {
+  background-color: var(--dark-theme-gray-hover) !important;
+  color: var(--wool) !important;
 }
 
 .button--primary {
@@ -293,6 +395,7 @@ table tr.selected td {
 }
 
 .gin-layer-wrapper table th,
+.gin-layer-wrapper table th a,
 .gin-layer-wrapper table th .form-item__label {
   color: var(--wool) !important;
 }
@@ -325,20 +428,6 @@ table tr.selected td {
 
 .claro-details__wrapper a {
   color: var(--mediterranean-blue) !important;
-}
-
-.claro-details__wrapper a:hover,
-.claro-details__wrapper a:focus {
-  background-color: var(--dark-theme-gray);
-}
-
-.claro-details__wrapper a::before {
-  background-color: var(--mediterranean-blue) !important;
-}
-
-.claro-details__wrapper a:hover::before,
-.claro-details__wrapper a:focus::before {
-  background: var(--dark-theme-gray-lightest) !important;
 }
 
 .claro-details__wrapper a:hover,
