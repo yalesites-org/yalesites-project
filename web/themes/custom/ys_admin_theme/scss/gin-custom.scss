@@ -170,7 +170,9 @@ a.menu-item__link {
 
 .update-settings a,
 .gin-layer-wrapper table td a,
-.system-status-general-info__item.card a {
+.system-status-general-info__item.card a,
+.region-content .layout-column a,
+.update-manager-update-form a {
   color: var(--mediterranean-blue) !important;
 }
 
@@ -179,7 +181,11 @@ a.menu-item__link {
 .gin-layer-wrapper table td a:hover,
 .gin-layer-wrapper table td a:focus,
 .system-status-general-info__item.card a:hover,
-.system-status-general-info__item.card a:focus {
+.system-status-general-info__item.card a:focus,
+.region-content .layout-column a:hover
+.region-content .layout-column a:focus,
+.update-manager-update-form a:hover,
+.update-manager-update-form a:focus {
   text-decoration: underline;
 }
 
