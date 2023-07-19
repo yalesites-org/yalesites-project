@@ -221,14 +221,6 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#tags' => TRUE,
       '#target_type' => 'taxonomy_term',
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('terms_include', $items[$delta]->params) : [],
-      '#selection_handler' => 'views',
-      '#selection_settings' => [
-        'view' => [
-          'view_name' => 'taxonomy_lookup',
-          'display_name' => 'entity_reference_1',
-          'arguments' => [],
-        ],
-      ],
     ];
 
     $form['group_user_selection']['filter_and_sort']['terms_exclude'] = [
@@ -240,14 +232,6 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#tags' => TRUE,
       '#target_type' => 'taxonomy_term',
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('terms_exclude', $items[$delta]->params) : [],
-      '#selection_handler' => 'views',
-      '#selection_settings' => [
-        'view' => [
-          'view_name' => 'taxonomy_lookup',
-          'display_name' => 'entity_reference_1',
-          'arguments' => [],
-        ],
-      ],
     ];
 
     // Gets the view mode options based on Ajax callbacks or initial load.
