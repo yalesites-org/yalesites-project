@@ -8,16 +8,20 @@
   --light-gray: #d4d4d4;
   --darkest-gray: #1f1f1f;
   --dark-theme-gray:#4E5959;
-  --dark-theme-gray-light:#677979;
+  --dark-theme-gray-selected:#edfbfb;
+  --dark-theme-gray-lightest:#d0e0e0;
+  --dark-theme-gray-lightest-rgb: 208, 224, 224;
+  --dark-theme-gray-light:#606A6A;
   --dark-theme-gray-hover: #353d3d;
   --dark-primary-link: var(--wool);
   --dark-primary-link-hover: #ffffff;
   --dark-theme-gray-text-light:var(--wool);
   --dark-theme-gray-text-dark:var(--dark-theme-gray);
   --custom-button-color: var(--robin-egg);
-  --custom-button-color-hover: var(--peacock-green);
-  --custom-button-color-text: var(--peacock-green);
-  
+  --custom-button-color-hover: var(--wool);
+  --custom-button-color-text: var(--dark-theme-gray-hover);
+  --custom-button-color-text-hover: var(--dark-theme-gray-hover);
+
   --dark-gin-icon-color: var(--wool);
   --gin-color-text-light: var(--wool);
 
@@ -38,8 +42,8 @@
 }
 
 :root [data-gin-accent=light_blue] {
-  --gin-color-primary-rgb: 55, 108, 116;
-  --gin-color-primary-active: var(--peacock-green);
+  --gin-color-primary-rgb: 217, 241, 243;
+  --gin-color-primary-active: var(--wool);
   --gin-color-secondary: var(--mediterranean-blue);
   --gin-color-text-light: var(--wool);
   --gin-icon-color: var(--dark-gin-icon-color);
@@ -54,8 +58,11 @@
   --gin-bg-layer3: var(--dark-theme-gray-hover);
   --gin-color-title: var(--dark-theme-gray-text);
   --gin-color-dark-text: var(--wool);
-  --gin-color-title: var(--dark-theme-gray-text-light);
+  --gin-color-title: var(--dark-theme-gray);
+  --gin-color-title-light: var(--dark-theme-gray-text-light);
   --gin-color-title-dark: var(--dark-theme-gray-text-dark);
+  --gin-color-button-text: var(--dark-theme-gray);
+  --gin-color-button-text-hover: var(--dark-theme-gray-hover);
 }
 
 [data-gin-accent=light_blue] {
@@ -70,10 +77,21 @@
 }
 
 
+
+
+
 /* Off-canvas overrides */
 #drupal-off-canvas {
   background-color: var(--wool);
   color: var(--darkest-gray);
+}
+
+.ui-dialog-content, 
+.ui-dialog-off-canvas .ui-dialog-titlebar {
+  background: var(--wool) !important;
+}
+#layout-builder-modal {
+  background: var(--wool) !important;
 }
 
 .ui-dialog-off-canvas #drupal-off-canvas {
@@ -85,10 +103,64 @@
   color: var(--darkest-gray);
 }
 
+.ui-widget-content a {
+  color: var(--dark-theme-gray) !important;
+} 
+
+
+.ui-menu-item-wrapper:hover {
+  background-color: var(--dark-theme-gray-lightest);
+}
+
 .ui-widget.ui-dialog.ui-dialog-off-canvas .ui-dialog-titlebar {
   display: flex;
   align-items: center;
-  border-color: var(--peacock-green);
+  border-color: var(--dark-theme-gray);
+}
+
+.ui-widget.ui-dialog.ui-dialog-off-canvas .ui-dialog-titlebar {
+  background-color: var(--dark-theme-gray-hover) !important;
+}
+
+.glb-claro-details[open] > .glb-claro-details__summary {
+  color: var(--gin-color-primary) !important;
+  background-color: var(--dark-theme-gray-hover) !important;
+}
+
+.glb-claro-details[open] > .glb-claro-details__summary::before {
+  background: var(--gin-color-primary) !important;
+}
+
+.glb-claro-details__summary:hover::before {
+  background: var(--gin-color-primary) !important;
+}
+
+.glb-form-item__description, .glb-fieldset__description {
+  color: var(--dark-theme-gray) !important;
+}
+
+.glb-form-wrapper .cke .cke_top,
+.glb-form-wrapper .cke .cke_bottom {
+  background: var(--dark-theme-gray-lightest) !important;
+}
+
+.glb-form-wrapper .cke a.cke_path_item, 
+.glb-form-wrapper .cke span.cke_path_empty {
+  color: var(--dark-theme-gray) !important;
+}
+
+.glb-form-wrapper .cke a.cke_button_off:hover, 
+.glb-form-wrapper .cke a.cke_button_off:focus, 
+.glb-form-wrapper .cke a.cke_button_off:active {
+  background: var(--wool) !important;
+}
+
+:not(.glb-form-checkboxes):not(td):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .glb-form-type--checkbox label {
+  color: var(--wool) !important;
+}
+
+[dir="ltr"] .gin-secondary-toolbar .toolbar-secondary .toolbar-bar div:last-child .toolbar-tray {
+  border-radius: 0 0 var(--gin-border-l) var(--gin-border-l);
 }
 
 .ui-dialog.ui-dialog-off-canvas .ui-dialog-title,
@@ -102,7 +174,16 @@
 #drupal-off-canvas input[type="submit"].button {
   box-sizing: border-box;
   padding: var(--size-spacing-5);
+  background-color: var(--custom-button-color) !important;
+  color: var(--custom-button-color-text) !important;
 }
+
+.ui-widget.ui-dialog.ui-dialog-off-canvas #drupal-off-canvas .button--primary[type="submit"]:hover,
+.ui-widget.ui-dialog.ui-dialog-off-canvas #drupal-off-canvas .button--primary[type="submit"]:focus {
+  background-color: var(--dark-theme-gray-hover) !important;
+  color: var(--wool) !important;
+}
+
 
 /* Modal */
 .ui-widget-overlay {
@@ -160,7 +241,7 @@ body.gin--horizontal-toolbar {
 }
 
 [data-gin-accent=light_blue] .ui-dialog-titlebar {
-  background: var(--mediterranean-blue) !important;
+  background: var(--dark-theme-gray) !important;
 }
 
 .toolbar-menu-administration
@@ -210,7 +291,7 @@ body.gin--horizontal-toolbar {
 
 .gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab:hover .trigger::before,
 .gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab:focus .trigger::before {
-  background-color: var(--gin-color-primary) !important;
+  background-color: var(--wool) !important;
 }
 
 .gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab > .toolbar-icon-edit.toolbar-item:hover
@@ -219,7 +300,7 @@ body.gin--horizontal-toolbar {
 }
 
 .gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab:hover .trigger {
-  color: var(--gin-color-primary) !important;
+  color: var(--wool) !important;
 }
 
 .is-horizontal .tabs__link:hover,
@@ -257,8 +338,9 @@ body.gin--horizontal-toolbar {
   a:active,
 table tr:hover,
 table .draggable-table.tabledrag-disabled tr:hover {
-  --gin-color-button-text: var(--gin-color-primary);
+  --gin-color-button-text: var(--dark-primary-link);
   color: var(--wool);
+  background: var(--dark-theme-gray);
 }
 
 #block-atomic-local-tasks ul:not(.contextual-links) {
@@ -302,7 +384,22 @@ table .draggable-table.tabledrag-disabled tr:hover {
 .form-actionsÂ .layout-builder__link--add,
 .glb-action-link--icon-trash.glb-action-link {
   border-radius: 2.5rem !important;
+  border: 2px solid transparent !important;
 }
+
+.glb-button:hover, 
+.inline-block-create-button:hover, 
+.layout-builder__link--add:hover, 
+.glb-button:not(:focus):hover, 
+.inline-block-create-button:not(:focus):hover, 
+.layout-builder__link--add:not(:focus):hover, 
+.form-actions .glb-button:hover, 
+.form-actions .inline-block-create-button:hover, 
+.form-actions .layout-builder__link--add:hover, 
+.glb-action-link--icon-trash.glb-action-link:hover {
+  border-color: var(--dark-theme-gray-hover) !important;
+}
+
 
 .glb-button:not(:focus) {
   filter: none !important;
@@ -311,6 +408,15 @@ table .draggable-table.tabledrag-disabled tr:hover {
 
 .gin-secondary-toolbar__layout-container *:focus {
   box-shadow: 0 0 0 3px #d4d4d4 !important;
+}
+
+.glb-table .tabledrag-handle::after {
+  background-color: var(--dark-theme-gray);
+}
+
+.glb-table tr:hover, 
+.glb-table .draggable-table.tabledrag-disabled tr:hover {
+  background: var(--dark-theme-gray-lightest);
 }
 
 .meta-sidebar__trigger,
@@ -331,11 +437,16 @@ table .draggable-table.tabledrag-disabled tr:hover {
 }
 
 .layout-builder__link--configure {
-  --gin-border-color-form-element: var(--darkest-gray);
+  color: var(--dark-theme-gray);
 }
+
 .layout-builder__link--add-section-to-library,
 .layout-builder__link--remove {
-  --gin-border-color-form-element: var(--darkest-gray);
+  background-color: var(--dark-theme-gray-hover);
+} 
+
+.layout-builder__section:not(.gin-lb--disable-section-focus):hover::after { 
+  border: 0.25rem solid var(--dark-theme-gray-hover) !important;
 }
 
 #media-library-messages .messages {
@@ -350,6 +461,25 @@ table .draggable-table.tabledrag-disabled tr:hover {
 #media-library-messages .messages--warning {
   color: var(--gin-color-warning-light);
   background-color: var(--gin-bg-warning);
+}
+
+.layout-builder__section {
+  margin-inline-start: 0.5rem;
+  margin-inline-end: 0.5rem;
+  background-color: var(--wool);
+}
+
+.layout-builder__section:hover .layout-builder__link--add-section-to-library {
+  background-color: var(--dark-theme-gray-hover) !important;
+}
+
+.layout-builder__section:hover .layout-builder__link--remove {
+  background-color: var(--dark-theme-gray-hover) !important;
+}
+
+.layout-builder__section:hover .layout-builder__link--configure {
+  background-color: var(--dark-theme-gray-hover) !important;
+  color: var(--gin-color-primary) !important;
 }
 
 /* yalb-1261 - fix hover color on table */
