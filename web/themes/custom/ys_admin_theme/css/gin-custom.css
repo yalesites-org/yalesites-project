@@ -56,19 +56,41 @@
   color: var(--gin-color-title);
 }
 
-.compact-link a {
+.gin--dark-mode .compact-link a {
   color: var(--wool);
 }
 
-.compact-link a:hover {
+.gin--dark-mode .compact-link a:hover {
   text-decoration: underline;
 }
 
-.form-item .form-item__description {
+.gin--dark-mode .form-item .form-item__description {
   color: var(--theme-ui-gray);
 }
 
-.form-item--field-heading-0-value .form-item__label {
+.gin--dark-mode .region-help a {
+  color: var(--robin-egg);
+}
+
+.gin--dark-mode .region-help a:hover {
+  text-decoration: underline;
+}
+
+.gin--dark-mode .js-tabs-link.is-active,
+.gin--dark-mode #block-ys-admin-theme-main-page-content {
+  color: var(--wool);
+}
+
+.gin--dark-mode .claro-details__wrapper .claro-details__description,
+.gin--dark-mode .claro-details__wrapper .form-item__label,
+.gin--dark-mode #block-ys-admin-theme-main-page-content .gin-layer-wrapper,
+.gin--dark-mode #update-settings .fieldset__description,
+.gin--dark-mode #update-settings .form-item__label.option,
+.gin--dark-mode #update-manager-update-form,
+.gin--dark-mode .form-item--field-heading-0-value .form-item__label,
+.gin--dark-mode .fieldset__label,
+.gin--dark-mode .fieldset__label--group,
+.gin--dark-mode .system-modules label {
   color: var(--theme-ui-gray) !important;
 }
 
