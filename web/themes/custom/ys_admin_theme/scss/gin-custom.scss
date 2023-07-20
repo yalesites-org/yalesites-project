@@ -203,6 +203,15 @@ a.menu-item__link {
   color: var(--wool);
 }
 
+#block-ys-admin-theme-main-page-content .system-status-general-info__item-details {
+  color: var(--dark-theme-gray);
+}
+
+#block-ys-admin-theme-main-page-content .card__content {
+  color: var(--dark-theme-gray);
+
+}
+
 #block-ys-admin-theme-main-page-content a:hover,
 #block-ys-admin-theme-main-page-content a:focus {
   color: var(--gin-color-primary);
