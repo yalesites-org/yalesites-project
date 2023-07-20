@@ -182,6 +182,11 @@ a.menu-item__link {
   text-decoration: underline;
 }
 
+/* Alerts */
+#block-ys-admin-theme-main-page-content #alert-description-wrapper {
+  color: var(--dark-theme-gray);
+}
+
 /* Buttons and action links */
 .button,
 .button:not(:focus),
