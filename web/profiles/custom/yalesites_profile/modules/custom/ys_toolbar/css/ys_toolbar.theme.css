@@ -148,7 +148,7 @@ behind the a.toolbar-icon element. */
 .fieldset__label, 
 .fieldset__label--group, 
 .form-item__label {
-  color: var(--gin-color-title-dark);
+  color: var(--dark-theme-gray-text-dark);
 }
 
 .module-list__module a {

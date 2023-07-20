@@ -47,8 +47,6 @@
   --gin-color-button-text: var(--custom-button-color-text);
   --gin-bg-layer3: var(--dark-theme-gray-hover);
   --gin-color-title: var(--dark-theme-gray);
-  --gin-color-title-light: var(--dark-theme-gray-text-light);
-  --gin-color-title-dark: var(--dark-theme-gray-text-dark);
 }
 
 /* stylelint-enable */
