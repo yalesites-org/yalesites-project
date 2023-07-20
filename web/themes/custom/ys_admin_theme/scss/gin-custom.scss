@@ -189,13 +189,24 @@ a.menu-item__link {
   text-decoration: underline;
 }
 
+
+// unwrapped content
 [data-gin-accent="light_blue"] .region-content div > h2 {
   color: var(--wool);
 }
 
-
 [data-gin-accent="light_blue"] .region-content div > h2 + p {
   color: var(--wool);
+}
+
+#block-ys-admin-theme-main-page-content {
+  color: var(--wool);
+}
+
+#block-ys-admin-theme-main-page-content a:hover,
+#block-ys-admin-theme-main-page-content a:focus {
+  color: var(--gin-color-primary);
+  text-decoration: underline;
 }
 
 /* Buttons and action links */

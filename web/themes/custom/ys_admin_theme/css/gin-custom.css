@@ -172,6 +172,16 @@ a.menu-item__link {
   color: var(--wool);
 }
 
+#block-ys-admin-theme-main-page-content {
+  color: var(--wool);
+}
+
+#block-ys-admin-theme-main-page-content a:hover,
+#block-ys-admin-theme-main-page-content a:focus {
+  color: var(--gin-color-primary);
+  text-decoration: underline;
+}
+
 /* Buttons and action links */
 .button,
 .button:not(:focus),
