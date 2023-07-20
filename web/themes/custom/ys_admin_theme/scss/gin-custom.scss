@@ -189,6 +189,15 @@ a.menu-item__link {
   text-decoration: underline;
 }
 
+[data-gin-accent="light_blue"] .region-content div > h2 {
+  color: var(--wool);
+}
+
+
+[data-gin-accent="light_blue"] .region-content div > h2 + p {
+  color: var(--wool);
+}
+
 /* Buttons and action links */
 
 .button,
@@ -242,6 +251,11 @@ a.menu-item__link {
   color: var(--wool) !important;
 }
 
+
+.operations .action-link::before {
+  background-color: var(--wool) !important;
+}
+
 .button--primary {
   background-color: var(--custom-button-color);
   color: var(--custom-button-color-text);
@@ -264,6 +278,10 @@ a.menu-item__link {
 .button.form-submit:focus {
   background-color: var(--custom-button-color-hover) !important;
   color: var(--custom-button-color-text-hover) !important;
+}
+
+.messages .button--dismiss {
+  background-color: var(--dark-theme-gray) !important;
 }
 
 .gin-layer-wrapper table td .dropbutton-action a {
