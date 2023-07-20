@@ -72,15 +72,14 @@ third_party_settings:
         components: {  }
         third_party_settings:
           layout_builder_lock:
-            lock:
-              6: 6
-              7: 7
+            lock: {  }
   layout_builder_restrictions:
     allowed_block_categories: {  }
     entity_view_mode_restriction:
       allowed_layouts:
         - layout_onecol
         - ys_layout_banner
+        - ys_layout_two_column
       denylisted_blocks: {  }
       allowlisted_blocks: {  }
       restricted_categories: {  }
@@ -88,12 +87,27 @@ third_party_settings:
       allowed_layouts:
         - layout_onecol
         - ys_layout_banner
+        - ys_layout_two_column
       allowlisted_blocks:
         ys_layout_banner:
           all_regions:
             'Inline blocks':
               - 'inline_block:cta_banner'
               - 'inline_block:grand_hero'
+        ys_layout_two_column:
+          content:
+            'Inline blocks':
+              - 'inline_block:accordion'
+              - 'inline_block:button_link'
+              - 'inline_block:divider'
+              - 'inline_block:image'
+              - 'inline_block:pull_quote'
+              - 'inline_block:tabs'
+              - 'inline_block:text'
+              - 'inline_block:video'
+          sidebar:
+            'Inline blocks':
+              - 'inline_block:text'
       restricted_categories:
         ys_layout_banner:
           all_regions:

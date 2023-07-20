@@ -10,3 +10,17 @@ ys_layout_banner:
   regions:
     content:
       label: Content
+ys_layout_two_column:
+  label: 'Two Column'
+  path: layouts/two_column
+  template: layout--two-column
+  library: ys_layouts/ys_layout_two_column
+  category: 'Columns: 2'
+  default_region: content
+  icon_map:
+    - [content, sidebar]
+  regions:
+    content:
+      label: Content
+    sidebar:
+      label: Sidebar
