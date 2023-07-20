@@ -31,7 +31,7 @@ class UpdateEventMeta {
       if ($eventViewDisplay->isLayoutBuilderEnabled()) {
         $eventSections = $eventViewDisplay->getSections();
         foreach ($eventSections as $section) {
-          if ($section->getLayoutSettings()['label'] == 'Event Meta') {
+          if ($section->getLayoutSettings()['label'] == 'Title and Metadata') {
             $eventMetaSection = $section;
           }
         }
@@ -52,7 +52,7 @@ class UpdateEventMeta {
         foreach ($sections as $section) {
           // If an overridden layout already contains an Event Meta section,
           // remove it from the update list.
-          if ($section->getLayoutSettings()['label'] == 'Event Meta') {
+          if ($section->getLayoutSettings()['label'] == 'Title and Metadata') {
             unset($nids[array_search($nid, $nids)]);
           }
         }
