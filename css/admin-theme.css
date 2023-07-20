@@ -485,12 +485,17 @@ table .draggable-table.tabledrag-disabled tr:hover {
 /* yalb-1261 - fix hover color on table */
 
 .layout-builder-components-table__block-label:hover {
-  color: var(--darkest-gray);
+  color: var(--dark-theme-gray-hover);
   text-decoration: underline;
 }
 
+.layout-builder-components-table th:hover {
+  color: var(--dark-theme-gray-hover);
+}
+
 .layout-builder-components-table tr:hover {
-  color: var(--darkest-gray);
+  color: var(--dark-theme-gray);
+  background-color: var(--dark-theme-gray-lightest);
 }
 
 /* yalb-1296 - table tr hover in text component */
