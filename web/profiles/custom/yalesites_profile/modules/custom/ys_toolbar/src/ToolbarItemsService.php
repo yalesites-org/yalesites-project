@@ -118,7 +118,7 @@ class ToolbarItemsService {
     if ($this->showEditButton()) {
       $this->toolbarItems['toolbar_edit_link'] = $this->buildButton(
         'entity.node.edit_form',
-        'Setup'
+        'Manage Settings'
       );
     }
 
@@ -126,7 +126,7 @@ class ToolbarItemsService {
     // ensure this link only appears on entities with layout overrides enabled.
     $this->toolbarItems['toolbar_layout_link'] = $this->buildButton(
       'layout_builder.overrides.node.view',
-      'Layout Builder'
+      'Edit Layout And Content'
     );
 
     // Add a publish button to the toolbar when viewing an unpublished node.
@@ -134,6 +134,14 @@ class ToolbarItemsService {
       $this->toolbarItems['toolbar_publish_link'] = $this->buildButton(
         'entity.node.publish',
         'Publish'
+      );
+    }
+
+    // Add an unpublish button to the toolbar when viewing a published node.
+    if ($this->showUnpublishButton()) {
+      $this->toolbarItems['toolbar_unpublish_link'] = $this->buildButton(
+        'entity.node.publish',
+        'Unpublish'
       );
     }
 
@@ -187,14 +195,25 @@ class ToolbarItemsService {
   }
 
   /**
-   * Chech if the dedicated 'publish' button should appear on the current route.
+   * Chech if a dedicated 'publish' button should appear on the current route.
    *
    * @return bool
-   *   True if the publish button should appear on the toolbar.
+   *   True if the button should appear on the toolbar.
    */
   protected function showPublishButton(): bool {
-    // Show the edit button on all node routes except the edit form.
+    // Show the button if viewing an unpublished node.
     return !$this->currentNode->isPublished() && $this->isViewRoute();
+  }
+
+  /**
+   * Chech if a dedicated 'unpublish' button should appear on the current route.
+   *
+   * @return bool
+   *   True if the button should appear on the toolbar.
+   */
+  protected function showUnpublishButton(): bool {
+    // Show the button if viewing a published node.
+    return $this->currentNode->isPublished() && $this->isViewRoute();
   }
 
   /**

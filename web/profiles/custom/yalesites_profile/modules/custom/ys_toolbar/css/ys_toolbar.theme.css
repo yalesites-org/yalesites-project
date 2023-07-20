@@ -1,4 +1,18 @@
 /* Swap Drupal drop for Yale logo */
 .toolbar .toolbar-bar #toolbar-item-administration-tray .toolbar-icon-admin-toolbar-tools-help.toolbar-icon-default::before {
+  -webkit-mask-image: url('../images/yale-university-press-1985-2010.svg') !important;
   mask-image: url('../images/yale-university-press-1985-2010.svg') !important;
+}
+
+/* Set z-index on toolbar-icon element so that the  ::after element renders
+behind the a.toolbar-icon element. */
+.toolbar-menu-administration > .toolbar-menu > .menu-item > .toolbar-icon {
+  z-index: 0;
+}
+
+.toolbar-menu-administration
+  > .toolbar-menu
+  > .menu-item
+  > .toolbar-icon::after {
+    z-index: -1;
 }

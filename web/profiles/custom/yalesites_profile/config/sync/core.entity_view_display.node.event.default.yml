@@ -23,6 +23,7 @@ dependencies:
     - link
     - smart_date
     - user
+    - ys_layouts
 third_party_settings:
   layout_builder:
     enabled: true
@@ -31,7 +32,35 @@ third_party_settings:
       -
         layout_id: layout_onecol
         layout_settings:
-          label: ''
+          label: 'Event Meta'
+          context_mapping: {  }
+        components:
+          c9287566-5875-443f-8b6c-7c76dd1a60d4:
+            uuid: c9287566-5875-443f-8b6c-7c76dd1a60d4
+            region: content
+            configuration:
+              id: event_meta_block
+              label: 'Event Meta Block'
+              label_display: ''
+              provider: ys_layouts
+              context_mapping: {  }
+            weight: 0
+            additional: {  }
+        third_party_settings:
+          layout_builder_lock:
+            lock:
+              1: 1
+              2: 2
+              3: 3
+              4: 4
+              5: 5
+              6: 6
+              7: 7
+              8: 8
+      -
+        layout_id: layout_onecol
+        layout_settings:
+          label: 'Content Section'
         components: {  }
         third_party_settings: {  }
   layout_builder_restrictions:
