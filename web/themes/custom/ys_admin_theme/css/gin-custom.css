@@ -1,7 +1,6 @@
 /* stylelint-disable */
-@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap");
 :root {
-  --gin-font: "DM Mono", monospace;
+  --gin-font: Mallory, sans-serif;
   --gin-font-size-h1: 1.75rem;
   --gin-font-size-h2: 1.5rem;
   --gin-font-size-h3: 1.25rem;
@@ -21,6 +20,25 @@
   border-left: 3px solid var(--gin-color-primary);
 }
 
+.views-exposed-form {
+  --gin-color-title: var(--darkest-gray);
+}
+
+/* Shadows */
+.gin--dark-mode .messages,
+.gin--dark-mode .gin-layer-wrapper,
+.gin--dark-mode .gin-layer-wrapper-shadow,
+.gin--dark-mode .block-system > form,
+.gin--dark-mode .views-exposed-form.views-exposed-form,
+.gin--dark-mode .views-edit-view,
+.gin--dark-mode .views-preview-wrapper,
+.gin--dark-mode .modules-tabs,
+.gin--dark-mode .module-filter-update-status-form .table-filter,
+.gin--dark-mode #views-entity-list,
+.gin--dark-mode .admin.my-workbench {
+  box-shadow: none !important;
+}
+
 /* Modal */
 .ui-widget-overlay {
   background: var(--gin-color-primary) !important;
@@ -34,16 +52,52 @@
   content: none;
 }
 
+.tabs__link {
+  color: var(--gin-color-title);
+}
+
+.compact-link a {
+  color: var(--wool);
+}
+
+.compact-link a:hover {
+  text-decoration: underline;
+}
+
+.form-item .form-item__description {
+  color: var(--theme-ui-gray);
+}
+
 .button,
 .button:not(:focus),
 .form-actions .button,
 .action-link--icon-trash.action-link {
   border-radius: 2.5rem !important;
   box-shadow: none !important;
+  color: var(--gin-color-button-text) !important;
+  background-color: var(--gin-color-primary-light) !important;
 }
 
+.button,
+.dropbutton__item > *,
+.dropbutton__toggle,
+.button--primary,
+.button--primary:not(:focus),
+.ief-entity-submit,
 .button.form-submit {
-  background-color: var(--gin-color-primary-light);
+  color: var(--gin-color-button-text) !important;
+  background-color: var(--gin-color-primary-light) !important;
+}
+
+.button:hover,
+.dropbutton__item > *:hover,
+.dropbutton__toggle:hover {
+  color: var(--gin-color-button-text) !important;
+  background-color: var(--theme-ui-gray) !important;
+}
+
+.dropbutton__toggle::before {
+  background-color: var(--robin-egg) !important;
 }
 
 .toolbar-menu-administration > .toolbar-menu > .menu-item:hover > .toolbar-icon::before,
@@ -61,6 +115,10 @@
   background-color: var(--gin-color-primary-light) !important;
 }
 
+.toolbar-tray-horizontal ul li.menu-item--expanded ul li.menu-item--expanded:hover::before {
+  background-color: var(--robin-egg) !important;
+}
+
 .is-horizontal .tabs__link.is-active,
 .is-horizontal .tabs__link:hover,
 .is-horizontal .tabs__link:focus,
@@ -73,13 +131,81 @@
   border-radius: 0.625rem !important;
 }
 
+.admin-list .admin-item__description {
+  color: var(--theme-ui-gray);
+}
+
+.system-status-counter__details a {
+  color: var(--gin-color-title);
+}
+
+.system-status-counter__details a:hover {
+  text-decoration: underline;
+}
+
+.system-status-general-info__item-details .system-status-general-info__item-title {
+  color: var(--theme-ui-gray);
+}
+
+.claro-details .claro-details__summary,
+.claro-details .claro-details__summary.claro-details__summary--system-status-report,
+.claro-details .claro-details__summary:hover,
+.claro-details .claro-details__summary:focus,
+.claro-details[open] > .claro-details__summary:focus,
+.claro-details[open] > .claro-details__summary[aria-expanded=true],
+.claro-details[open] > .claro-details__summary[aria-expanded=false] {
+  color: var(--theme-ui-gray) !important;
+}
+
+.claro-details .system-status-report__status-title {
+  color: var(--theme-ui-gray) !important;
+}
+
+a.action-link {
+  background-color: var(--wool);
+}
+
+a.action-link:hover {
+  background-color: var(--robin-egg);
+  color: var(--theme-ui-gray);
+}
+
+.card__content-item {
+  color: var(--gin-color-title);
+}
+
 html.js.no-touchevents .dropbutton--extrasmall {
   border-radius: 2.5rem !important;
   background-color: var(--gin-color-primary-light);
 }
 
-.js .dropbutton--multiple .dropbutton__item:first-of-type > * {
+.dropbutton > .dropbutton__item > a {
+  border-radius: 2.5rem;
+}
+
+.js .dropbutton--multiple .dropbutton__item.dropbutton-action:first-of-type > * {
   border-radius: 2.5rem 0 0 2.5rem !important;
+}
+
+.js .dropbutton--multiple .dropbutton__item.dropbutton-action.secondary-action > * {
+  background-color: var(--gin-bg-app) !important;
+}
+
+.js .dropbutton--multiple .dropbutton__item.dropbutton-action.secondary-action > a:hover {
+  color: var(--robin-egg) !important;
+}
+
+.js .dropbutton--multiple .dropbutton__item.dropbutton-action.delete > *,
+.js .dropbutton--multiple .dropbutton__item.dropbutton-action.quick-clone > * {
+  border-radius: 2.5rem 0 0 2.5rem !important;
+}
+
+.js .dropbutton--multiple > .dropbutton__item.dropbutton-action:first-of-type > a:hover {
+  border-radius: 2.5rem 0 0 2.5rem !important;
+}
+
+.js .dropbutton--multiple > .dropbutton__item a:hover {
+  background-color: var(--theme-ui-gray);
 }
 
 .no-touchevents .dropbutton--extrasmall .dropbutton__toggle {

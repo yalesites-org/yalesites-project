@@ -6,6 +6,7 @@
   --wool: #fbfbf6;
   --light-gray: #d4d4d4;
   --darkest-gray: #1f1f1f;
+  --theme-ui-gray: #4E5959;
 
   [data-gin-accent] {
     --gin-color-button-text: var(--wool);
@@ -13,7 +14,7 @@
   }
 
   [data-gin-accent="light_blue"] {
-    --gin-color-primary-rgb: 74, 84, 84  !important;
+    --gin-color-primary-rgb: 55, 108, 116;
     --gin-color-primary-active: var(--peacock-green);
     --gin-color-secondary: var(--mediterranean-blue);
     --gin-color-primary-hover: var(--peacock-green);
@@ -36,20 +37,23 @@
 }
 
 .gin--dark-mode [data-gin-accent="light_blue"] {
-  --gin-color-primary-rgb: 74, 84, 84  !important;
-  --gin-color-primary-active: var(--peacock-green) !important;
+  --gin-color-primary-rgb: 55, 108, 116 !important;
+  --gin-color-primary-active: var(--wool) !important;
   --gin-color-secondary: var(--mediterranean-blue) !important;
-  --gin-color-primary-hover: var(--peacock-green) !important;
-  --gin-color-primary-light: var(--robin-egg) !important;
+  --gin-color-primary-hover: var(--robin-egg) !important;
+  --gin-color-primary-light: var(--darkest-gray) !important;
   --gin-border-color-layer: var(--light-gray) !important;
-  --gin-bg-layer: var(--darkest-gray) !important;
+  --gin-bg-layer: var(--theme-ui-gray) !important;
   --gin-border-color-table-header: var(--darkest-gray) !important;
   --gin-bg-input: #fff !important;
   --gin-border-color-form-element: var(--light-gray) !important;
-  --gin-bg-app: #353535;
+  --gin-bg-app: #3e4646;
+  --gin-color-text: var(--theme-ui-gray);
   --gin-color-text-light: var(--light-gray);
   --gin-color-primary-light-active: var(--robin-egg);
   --gin-icon-color: var(--light-gray);
   --gin-color-button-text: #fff;
+  --dark-gin-icon-color: var(--wool);
+  --gin-color-disabled: var(--wool);
 }
 /* stylelint-enable */
