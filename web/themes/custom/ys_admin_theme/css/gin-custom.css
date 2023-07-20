@@ -68,6 +68,10 @@
   color: var(--theme-ui-gray);
 }
 
+.form-item--field-heading-0-value .form-item__label {
+  color: var(--theme-ui-gray) !important;
+}
+
 .button,
 .button:not(:focus),
 .form-actions .button,
