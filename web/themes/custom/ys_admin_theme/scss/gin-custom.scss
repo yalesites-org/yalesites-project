@@ -209,6 +209,10 @@ a.menu-item__link {
   text-decoration: underline;
 }
 
+#block-ys-admin-theme-main-page-content .field--name-field-instructions {
+  color: var(--dark-theme-gray);
+}
+
 /* Alerts */
 #block-ys-admin-theme-main-page-content #alert-description-wrapper {
   color: var(--dark-theme-gray);
@@ -510,6 +514,27 @@ td .admin-required {
   color: var(--wool) !important;
 }
 
+.gin-layer-wrapper table.field-multiple-table th .form-item__label {
+  color: var(--dark-theme-gray) !important;
+}
+
+.vertical-tabs__menu-item.is-selected .vertical-tabs__menu-link,
+.vertical-tabs__menu a.vertical-tabs__menu-link {
+  color: var(--dark-theme-gray) !important;
+}
+
+.vertical-tabs__menu a.vertical-tabs__menu-link:hover {
+  color: var(--wool) !important;
+}
+
+.vertical-tabs__menu a.vertical-tabs__menu-link:hover .vertical-tabs__menu-link-summary {
+  color: var(--wool) !important;
+}
+
+.vertical-tabs__menu-item.is-selected .vertical-tabs__menu-link::before {
+  border-color: var(--mediterranean-blue) !important;
+}
+
 .tabledrag-handle::after {
   background-color: var(--dark-theme-gray) !important;
 }
@@ -521,6 +546,16 @@ td .admin-required {
 // Claro details
 .claro-details__summary {
   color: var(--dark-theme-gray) !important;
+}
+
+.claro-details__summary-summary {
+  color: var(--gin-color-text) !important;
+}
+
+.claro-details__summary:hover .claro-details__summary-summary,
+.claro-details__summary:focus .claro-details__summary-summary,
+.claro-details__summary[aria-expanded="true"] .claro-details__summary-summary {
+  color: var(--wool) !important;
 }
 
 .claro-details__summary:hover,
