@@ -38,3 +38,17 @@
 .cke_dialog tr:nth-child(even) {
   background-color: inherit !important;
 }
+
+.cke_dialog .cke_dialog_title {
+  background: var(--mediterranean-blue) !important;
+  color: var(--wool) !important;
+}
+
+.cke_dialog .cke_dialog_content_body {
+  background: var(--gin-bg-layer) !important;
+  color: var(--gin-color-text) !important;
+}
+
+.cke_dialog .cke_dialog_close_button {
+  background-image: url("data:image/svg+xml,%3Csvg%20width%3D%22100%22%20height%3D%22100%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%20%20%3Cline%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%22100%22%20y2%3D%22100%22%20stroke%3D%22white%22%20stroke-width%3D%223%22%2F%3E%0A%20%20%3Cline%20x1%3D%220%22%20y1%3D%22100%22%20x2%3D%22100%22%20y2%3D%220%22%20stroke%3D%22white%22%20stroke-width%3D%223%22%2F%3E%0A%3C%2Fsvg%3E") !important;
+}
