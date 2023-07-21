@@ -24,3 +24,15 @@ ys_layout_two_column:
       label: Content
     sidebar:
       label: Sidebar
+ys_layout_page_meta:
+  label: 'Page Meta'
+  path: layouts/page-meta
+  template: layout--page-meta
+  library: ys_layouts/ys_page_meta
+  category: 'Columns: 1'
+  default_region: page_meta
+  icon_map:
+    - [page_meta]
+  regions:
+    page_meta:
+      label: Page Meta

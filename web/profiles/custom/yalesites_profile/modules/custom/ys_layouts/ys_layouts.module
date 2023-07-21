@@ -25,5 +25,11 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'calendar_location_text' => NULL,
       ],
     ],
+    'ys_page_meta_block' => [
+      'variables' => [
+        'page_title' => NULL,
+        'page_title_display' => 'visible',
+      ],
+    ],
   ];
 }
