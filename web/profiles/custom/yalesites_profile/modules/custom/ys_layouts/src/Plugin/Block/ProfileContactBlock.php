@@ -9,15 +9,15 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\node\NodeInterface;
 
 /**
- * Block for profile meta data that appears above profiles.
+ * Block for profile contact data that appears in the sidebar of profiles.
  *
  * @Block(
- *   id = "profile_meta_block",
- *   admin_label = @Translation("Profile Meta Block"),
+ *   id = "profile_contact_block",
+ *   admin_label = @Translation("Profile Contact Block"),
  *   category = @Translation("YaleSites Layouts"),
  * )
  */
-class ProfileMetaBlock extends BlockBase implements ContainerFactoryPluginInterface {
+class ProfileContactBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**
    * The current route match.
@@ -68,19 +68,15 @@ class ProfileMetaBlock extends BlockBase implements ContainerFactoryPluginInterf
     }
 
     // Profile fields.
-    $title = $node->getTitle();
-    $position = ($node->field_position->first()) ? $node->field_position->first()->getValue()['value'] : NULL;
-    $subtitle = ($node->field_subtitle->first()) ? $node->field_subtitle->first()->getValue()['value'] : NULL;
-    $department = ($node->field_department->first()) ? $node->field_department->first()->getValue()['value'] : NULL;
-    $mediaId = ($node->field_media->first()) ? $node->field_media->first()->getValue()['target_id'] : NULL;
+    $email = ($node->field_email->first()) ? $node->field_email->first()->getValue()['value'] : NULL;
+    $phone = ($node->field_telephone->first()) ? $node->field_telephone->first()->getValue()['value'] : NULL;
+    $address = ($node->field_address->first()) ? $node->field_address->first()->getValue() : NULL;
 
     return [
-      '#theme' => 'ys_profile_meta_block',
-      '#profile_meta__heading' => $title,
-      '#profile_meta__title_line' => $position,
-      '#profile_meta__subtitle_line' => $subtitle,
-      '#profile_meta__department' => $department,
-      '#media_id' => $mediaId,
+      '#theme' => 'ys_profile_contact_block',
+      '#email' => $email,
+      '#phone' => $phone,
+      '#address' => $address,
     ];
   }
 

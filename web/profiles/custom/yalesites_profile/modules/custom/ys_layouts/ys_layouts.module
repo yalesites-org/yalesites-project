@@ -39,11 +39,18 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
     ],
     'ys_profile_meta_block' => [
       'variables' => [
-        'name' => NULL,
-        'position' => NULL,
-        'subtitle' => NULL,
-        'department' => NULL,
+        'profile_meta__heading' => NULL,
+        'profile_meta__title_line' => NULL,
+        'profile_meta__subtitle_line' => NULL,
+        'profile_meta__department' => NULL,
         'media_id' => NULL,
+      ],
+    ],
+    'ys_profile_contact_block' => [
+      'variables' => [
+        'email' => NULL,
+        'phone' => NULL,
+        'address' => [],
       ],
     ],
   ];

@@ -4,6 +4,7 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.node.condensed
+    - field.field.node.profile.field_address
     - field.field.node.profile.field_affiliation
     - field.field.node.profile.field_department
     - field.field.node.profile.field_email
@@ -50,6 +51,7 @@ content:
     weight: 0
     region: content
 hidden:
+  field_address: true
   field_affiliation: true
   field_department: true
   field_email: true

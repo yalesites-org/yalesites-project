@@ -1,0 +1,11 @@
+uuid: 64dc2440-2827-4ce3-a09a-b8c15a9e9cdf
+langcode: en
+status: true
+dependencies: {  }
+id: profile_contact_info
+block_id: profile_contact_block
+category: basic
+label: 'Profile Contact Info'
+image_path: ''
+image_alt: ''
+weight: -100

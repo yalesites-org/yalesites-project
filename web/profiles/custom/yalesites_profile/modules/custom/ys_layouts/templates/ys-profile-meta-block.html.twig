@@ -1,6 +1,7 @@
-Name: {{ name }}<br>
-Position: {{ position }}<br>
-Subtitle: {{ subtitle }}<br>
-Department: {{ department }}<br>
-
-{{ drupal_entity('media', media_id, 'card_secondary_3_2') }}
+{% embed '@molecules/meta/profile-meta/yds-profile-meta.twig' %}
+  {% block profile__image %}
+    {% if media_id %}
+      {{ drupal_entity('media', media_id, 'card_secondary_3_2') }}
+    {% endif %}
+  {% endblock %}
+{% endembed %}

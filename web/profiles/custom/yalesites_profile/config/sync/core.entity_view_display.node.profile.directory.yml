@@ -4,6 +4,7 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.node.directory
+    - field.field.node.profile.field_address
     - field.field.node.profile.field_affiliation
     - field.field.node.profile.field_department
     - field.field.node.profile.field_email
@@ -98,6 +99,7 @@ content:
     weight: 3
     region: content
 hidden:
+  field_address: true
   field_login_required: true
   field_metatags: true
   field_tags: true
