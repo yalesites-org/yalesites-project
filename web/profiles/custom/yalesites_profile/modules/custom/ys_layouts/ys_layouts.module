@@ -37,5 +37,14 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'date_formatted' => NULL,
       ],
     ],
+    'ys_profile_meta_block' => [
+      'variables' => [
+        'name' => NULL,
+        'position' => NULL,
+        'subtitle' => NULL,
+        'department' => NULL,
+        'media_id' => NULL,
+      ],
+    ],
   ];
 }
