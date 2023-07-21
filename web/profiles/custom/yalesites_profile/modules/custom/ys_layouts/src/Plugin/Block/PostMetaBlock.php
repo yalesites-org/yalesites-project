@@ -9,17 +9,18 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Drupal\node\NodeInterface;
 
 /**
- * Block for page meta data that appears above pages.
+ * Block for post meta data that appears above posts.
  *
  * @Block(
- *   id = "page_meta_block",
- *   admin_label = @Translation("Page Meta Block"),
+ *   id = "post_meta_block",
+ *   admin_label = @Translation("Post Meta Block"),
  *   category = @Translation("YaleSites Layouts"),
  * )
  */
-class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface {
+class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**
    * The current route match.
@@ -84,50 +85,21 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
    */
   public function build() {
 
-    $route = $this->routeMatch->getRouteObject();
-    $request = $this->requestStack->getCurrentRequest();
-    $page_title = '';
+    /** @var \Drupal\node\NodeInterface $node */
+    $node = $this->routeMatch->getParameter('node');
+    if (!($node instanceof NodeInterface)) {
+      return [];
+    }
 
-    // Get the page title.
-    if ($route) {
-      $page_title = $this->titleResolver->getTitle($request, $route);
-    };
-
+    // Post fields.
+    $title = $node->getTitle();
+    $publishDate = strtotime($node->field_publish_date->first()->getValue()['value']);
+    $dateFormatted = \Drupal::service('date.formatter')->format($publishDate, '', 'c');
     return [
-      '#theme' => 'ys_page_meta_block',
-      '#page_title' => $page_title,
-      '#page_title_display' => $this->configuration['page_title_display'] ?? '',
+      '#theme' => 'ys_post_meta_block',
+      '#label' => $title,
+      '#date_formatted' => $dateFormatted,
     ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function blockForm($form, FormStateInterface $form_state) : array {
-    $form = parent::blockForm($form, $form_state);
-    $config = $this->getConfiguration();
-
-    // The form field is defined and added to the form array here.
-    $form['page_title_display'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Title Display'),
-      '#default_value' => $config['page_title_display'] ?? '',
-      '#options' => [
-        'visible' => $this->t('Display Title'),
-        'visually-hidden' => $this->t('Visually Hidden'),
-        'hidden' => $this->t('Hide Title'),
-      ],
-    ];
-
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function blockSubmit($form, FormStateInterface $form_state) : void {
-    parent::blockSubmit($form, $form_state);
-    $this->configuration['page_title_display'] = $form_state->getValue('page_title_display');
   }
 
 }

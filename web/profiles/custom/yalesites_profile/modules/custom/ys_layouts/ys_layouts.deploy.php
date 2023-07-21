@@ -21,4 +21,7 @@ function ys_layouts_deploy_9001() {
 
   // Adds "Add section" to existing pages.
   $updateExistingNodes->updateExistingPageLock();
+
+  // Replaces old title section with new post meta block.
+  $updateExistingNodes->updateExistingPostMeta();
 }

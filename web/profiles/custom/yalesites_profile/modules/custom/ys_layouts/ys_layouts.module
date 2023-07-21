@@ -31,5 +31,11 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'page_title_display' => 'visible',
       ],
     ],
+    'ys_post_meta_block' => [
+      'variables' => [
+        'label' => NULL,
+        'date_formatted' => NULL,
+      ],
+    ],
   ];
 }

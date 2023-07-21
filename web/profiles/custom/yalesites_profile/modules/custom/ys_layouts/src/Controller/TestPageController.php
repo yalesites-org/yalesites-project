@@ -19,7 +19,7 @@ class TestPageController extends ControllerBase {
   public function testPage() {
 
     $updateExistingNodes = new UpdateExistingNodes();
-    $updateExistingNodes->updateExistingPageLock();
+    $updateExistingNodes->updateExistingPostMeta();
 
     return [
       '#markup' => 'Hello, world',

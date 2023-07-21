@@ -153,4 +153,60 @@ class UpdateExistingNodes {
     }
   }
 
+  /**
+   * Updates Post Meta for existing nodes.
+   */
+  public function updateExistingPostMeta() {
+
+    // Gets the main page meta section to clone.
+    $entityTypeManager = \Drupal::service('entity_type.manager');
+    $postMetaSection = NULL;
+
+    if ($postViewDisplay = $entityTypeManager->getStorage('entity_view_display')->load('node.post.default')) {
+      if ($postViewDisplay->isLayoutBuilderEnabled()) {
+        $postSections = $postViewDisplay->getSections();
+        foreach ($postSections as $section) {
+          if ($section->getLayoutSettings()['label'] == 'Title and Metadata') {
+            $postMetaSection = $section;
+          }
+        }
+      }
+    }
+
+    if ($postMetaSection instanceof Section) {
+
+      // Find all post nodes to update existing.
+      $nids = \Drupal::entityQuery('node')->condition('type', 'post')->execute();
+
+      foreach ($nids as $nid) {
+        $node = Node::load($nid);
+        $layout = $node->get('layout_builder__layout');
+        /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $layout */
+        $sections = $layout->getSections();
+
+        foreach ($sections as $section) {
+          // If an overridden layout already contains an Page Meta section,
+          // remove it from the update list.
+          if ($section->getLayoutSettings()['label'] == 'Title and Metadata') {
+            unset($nids[array_search($nid, $nids)]);
+          }
+        }
+      }
+
+      foreach ($nids as $nid) {
+        $node = Node::load($nid);
+        $layout = $node->get('layout_builder__layout');
+
+        $section_storage = $this->getSectionStorageForEntity($node);
+        $tempStore = \Drupal::service('layout_builder.tempstore_repository');
+        /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $layout */
+        // For existing pages, remove the old title and breadcrumb block first.
+        $layout->removeSection(0);
+        $layout->insertSection(0, $postMetaSection);
+        $tempStore->set($section_storage);
+        $node->save();
+      }
+    }
+  }
+
 }
