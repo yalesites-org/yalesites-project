@@ -1,0 +1,6 @@
+/* Fix CKEditor modal table dialog from displaying borders where it should not */
+/* .cke_dialog_body tbody tr:last-child td, td.cke_dialog_ui_vbox_child, td.cke_dialog_contents_body { */
+.cke_dialog td {
+  border-bottom: 0 !important;
+}
+
