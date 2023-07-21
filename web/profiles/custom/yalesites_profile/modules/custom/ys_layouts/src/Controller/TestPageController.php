@@ -3,7 +3,7 @@
 namespace Drupal\ys_layouts\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\ys_layouts\UpdatePageTwoColumn;
+use Drupal\ys_layouts\UpdateExistingNodes;
 
 /**
  * Provides route responses for the Example module.
@@ -18,8 +18,8 @@ class TestPageController extends ControllerBase {
    */
   public function testPage() {
 
-    $updatePageTwoColumn = new UpdatePageTwoColumn();
-    $updatePageTwoColumn->updateExistingPages();
+    $updateExistingNodes = new UpdateExistingNodes();
+    $updateExistingNodes->updateExistingPageMeta();
 
     return [
       '#markup' => 'Hello, world',

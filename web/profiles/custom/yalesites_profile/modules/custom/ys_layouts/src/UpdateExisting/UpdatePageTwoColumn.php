@@ -1,10 +1,10 @@
 <?php
 
-namespace Drupal\ys_layouts;
+namespace Drupal\ys_layouts\UpdateExisting;
 
 /**
  * @file
- * Update event meta via hook_update.
+ * Update two-column via hook_deploy.
  */
 
 use Drupal\node\Entity\Node;

@@ -4,7 +4,7 @@ namespace Drupal\ys_layouts;
 
 /**
  * @file
- * Update event meta via hook_update.
+ * Update existing nodes via hook_deploy.
  */
 
 use Drupal\node\Entity\Node;
@@ -12,9 +12,9 @@ use Drupal\layout_builder\LayoutEntityHelperTrait;
 use Drupal\layout_builder\Section;
 
 /**
- * Updates Event Meta for existing nodes.
+ * Updates existing nodes.
  */
-class UpdateEventMeta {
+class UpdateExistingNodes {
 
   use LayoutEntityHelperTrait;
 
@@ -66,6 +66,62 @@ class UpdateEventMeta {
         $tempStore = \Drupal::service('layout_builder.tempstore_repository');
         /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $layout */
         $layout->insertSection(0, $eventMetaSection);
+        $tempStore->set($section_storage);
+        $node->save();
+      }
+    }
+  }
+
+  /**
+   * Updates Event Meta for existing nodes.
+   */
+  public function updateExistingPageMeta() {
+
+    // Gets the main page meta section to clone.
+    $entityTypeManager = \Drupal::service('entity_type.manager');
+    $pageMetaSection = NULL;
+
+    if ($pageViewDisplay = $entityTypeManager->getStorage('entity_view_display')->load('node.page.default')) {
+      if ($pageViewDisplay->isLayoutBuilderEnabled()) {
+        $pageSections = $pageViewDisplay->getSections();
+        foreach ($pageSections as $section) {
+          if ($section->getLayoutSettings()['label'] == 'Title and Metadata') {
+            $pageMetaSection = $section;
+          }
+        }
+      }
+    }
+
+    if ($pageMetaSection instanceof Section) {
+
+      // Find all event nodes to update existing.
+      $nids = \Drupal::entityQuery('node')->condition('type', 'page')->execute();
+
+      foreach ($nids as $nid) {
+        $node = Node::load($nid);
+        $layout = $node->get('layout_builder__layout');
+        /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $layout */
+        $sections = $layout->getSections();
+
+        foreach ($sections as $section) {
+          // If an overridden layout already contains an Page Meta section,
+          // remove it from the update list.
+          if ($section->getLayoutSettings()['label'] == 'Title and Metadata') {
+            unset($nids[array_search($nid, $nids)]);
+          }
+        }
+      }
+
+      foreach ($nids as $nid) {
+        $node = Node::load($nid);
+        $layout = $node->get('layout_builder__layout');
+
+        $section_storage = $this->getSectionStorageForEntity($node);
+        $tempStore = \Drupal::service('layout_builder.tempstore_repository');
+        /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $layout */
+        // For existing pages, remove the old title and breadcrumb block first.
+        $layout->removeSection(1);
+        $layout->insertSection(1, $pageMetaSection);
         $tempStore->set($section_storage);
         $node->save();
       }
