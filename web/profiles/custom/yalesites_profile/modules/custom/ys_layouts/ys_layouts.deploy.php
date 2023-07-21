@@ -8,12 +8,17 @@
 use Drupal\ys_layouts\UpdateExistingNodes;
 
 /**
- * Add event meta layout section to existing event nodes.
+ * Updates existing nodes with new layouts.
  */
 function ys_layouts_deploy_9001() {
   $updateExistingNodes = new UpdateExistingNodes();
+
+  // Adds new event meta block to existing events.
   $updateExistingNodes->updateExistingEventMeta();
 
-  return t('Updated existing event nodes with meta block.');
+  // Replaces old title and breadcrumb block with new page meta block.
+  $updateExistingNodes->updateExistingPageMeta();
 
+  // Adds "Add section" to existing pages.
+  $updateExistingNodes->updateExistingPageLock();
 }

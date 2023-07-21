@@ -94,7 +94,7 @@ class UpdateExistingNodes {
 
     if ($pageMetaSection instanceof Section) {
 
-      // Find all event nodes to update existing.
+      // Find all page nodes to update existing.
       $nids = \Drupal::entityQuery('node')->condition('type', 'page')->execute();
 
       foreach ($nids as $nid) {
@@ -124,6 +124,31 @@ class UpdateExistingNodes {
         $layout->insertSection(1, $pageMetaSection);
         $tempStore->set($section_storage);
         $node->save();
+      }
+    }
+  }
+
+  /**
+   * Update existing pages to allow adding two column layouts.
+   */
+  public function updateExistingPageLock() {
+    // Find all page nodes to update existing.
+    $nids = \Drupal::entityQuery('node')->condition('type', 'page')->execute();
+
+    foreach ($nids as $nid) {
+      $node = Node::load($nid);
+      $layout = $node->get('layout_builder__layout');
+
+      /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $layout */
+      $sections = $layout->getSections();
+      foreach ($sections as $section) {
+        if ($section->getLayoutSettings()['label'] == 'Content Section') {
+          $section->unsetThirdPartySetting('layout_builder_lock', 'lock');
+          $section_storage = $this->getSectionStorageForEntity($node);
+          $tempStore = \Drupal::service('layout_builder.tempstore_repository');
+          $tempStore->set($section_storage);
+          $node->save();
+        }
       }
     }
   }
