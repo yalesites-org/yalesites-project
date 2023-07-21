@@ -284,7 +284,7 @@ a.menu-item__link {
 }
 
 .gin-layer-wrapper table td .dropbutton-action a {
-  color: var(--wool) !important;
+  color: var(--dark-theme-gray-text-dark) !important;
   border-radius: 0.95rem;
 }
 
@@ -322,11 +322,20 @@ a.menu-item__link {
 
 html.js.no-touchevents .dropbutton--extrasmall {
   border-radius: 2.5rem !important;
-  background-color: var(--mediterranean-blue);
+  background-color: var(--robin-egg);
 }
 
 .js .dropbutton--multiple > .dropbutton__item.dropbutton-action:first-of-type > a:hover {
   border-radius: 2.5rem 0 0 2.5rem !important;
+}
+
+.dropbutton__toggle::before {
+  background-color: var(--dark-theme-gray-hover) !important;
+}
+
+.dropbutton .dropbutton__items > .dropbutton__item > a,
+.dropbutton .dropbutton__items {
+  background-color: var(--robin-egg) !important;
 }
 
 .no-touchevents .dropbutton--extrasmall .dropbutton__toggle {
