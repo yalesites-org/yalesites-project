@@ -4,6 +4,7 @@ namespace Drupal\ys_layouts\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Controller\TitleResolver;
+use Drupal\Core\Datetime\DateFormatter;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\node\NodeInterface;
@@ -43,6 +44,13 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
   protected $requestStack;
 
   /**
+   * The date formatter.
+   *
+   * @var \Drupal\Core\Datetime\DateFormatter
+   */
+  protected $dateFormatter;
+
+  /**
    * Constructs a new YaleSitesBreadcrumbBlock object.
    *
    * @param array $configuration
@@ -57,12 +65,15 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
    *   The title resolver.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
+   * @param \Drupal\Core\Datetime\DateFormatter $date_formatter
+   *   The date formatter.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $route_match, TitleResolver $title_resolver, RequestStack $request_stack) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $route_match, TitleResolver $title_resolver, RequestStack $request_stack, DateFormatter $date_formatter) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->routeMatch = $route_match;
     $this->titleResolver = $title_resolver;
     $this->requestStack = $request_stack;
+    $this->dateFormatter = $date_formatter;
   }
 
   /**
@@ -76,6 +87,7 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
       $container->get('current_route_match'),
       $container->get('title_resolver'),
       $container->get('request_stack'),
+      $container->get('date.formatter'),
     );
   }
 
@@ -93,7 +105,7 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
     // Post fields.
     $title = $node->getTitle();
     $publishDate = strtotime($node->field_publish_date->first()->getValue()['value']);
-    $dateFormatted = \Drupal::service('date.formatter')->format($publishDate, '', 'c');
+    $dateFormatted = $this->dateFormatter->format($publishDate, '', 'c');
     return [
       '#theme' => 'ys_post_meta_block',
       '#label' => $title,
