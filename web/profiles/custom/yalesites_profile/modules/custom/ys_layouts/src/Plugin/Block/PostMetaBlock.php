@@ -6,9 +6,9 @@ use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Controller\TitleResolver;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\node\NodeInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Drupal\node\NodeInterface;
 
 /**
  * Block for post meta data that appears above posts.

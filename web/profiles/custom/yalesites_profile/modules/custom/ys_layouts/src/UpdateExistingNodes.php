@@ -7,9 +7,9 @@ namespace Drupal\ys_layouts;
  * Update existing nodes via hook_deploy.
  */
 
-use Drupal\node\Entity\Node;
 use Drupal\layout_builder\LayoutEntityHelperTrait;
 use Drupal\layout_builder\Section;
+use Drupal\node\Entity\Node;
 
 /**
  * Updates existing nodes.

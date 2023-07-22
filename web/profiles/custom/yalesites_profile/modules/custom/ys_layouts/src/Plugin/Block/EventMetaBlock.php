@@ -4,10 +4,10 @@ namespace Drupal\ys_layouts\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\node\NodeInterface;
 use Drupal\Core\Url;
+use Drupal\node\NodeInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Block for event meta data that appears above events.
