@@ -49,6 +49,7 @@
   --gin-color-text-light: var(--wool);
   --gin-icon-color: var(--dark-gin-icon-color);
   --gin-bg-item-hover: var(--dark-theme-gray-hover);
+  --gin-bg-header: var(--dark-theme-gray);
   --gin-color-primary-hover: var(--dark-primary-link-hover);
   --gin-color-primary-light: var(--gin-bg-item-hover) !important;
   --gin-border-color-layer: var(--light-gray);
