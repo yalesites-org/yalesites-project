@@ -233,14 +233,35 @@ a.menu-item__link {
   color: var(--wool);
 }
 
-#block-ys-admin-theme-main-page-content {
+#block-ys-admin-theme-main-page-content,
+#drupal-modal .views-offset-top,
+#drupal-modal .views-offset-top .form-item__label {
   color: var(--wool);
 }
 
-#block-ys-admin-theme-main-page-content .system-status-general-info__item-details {
-  color: var(--dark-theme-gray);
+#block-ys-admin-theme-main-page-content .view-preview-form,
+#block-ys-admin-theme-main-page-content .preview-section,
+#block-ys-admin-theme-main-page-content .views-edit-view {
+  color: var(--dark-theme-gray) !important;
 }
 
+#block-ys-admin-theme-main-page-content .dropbutton--multiple > .dropbutton__item:first-of-type input,
+#block-ys-admin-theme-main-page-content .views-edit-view a {
+  color: var(--mediterranean-blue);
+}
+
+#block-ys-admin-theme-main-page-content .views-display-top .views-tabs li a {
+  color: var(--wool) !important;
+}
+
+#block-ys-admin-theme-main-page-content .views-display-top .views-tabs li a:hover,
+#block-ys-admin-theme-main-page-content .views-display-top .views-tabs li a:focus,
+#block-ys-admin-theme-main-page-content .views-display-top .views-tabs li a.is-active {
+  color: var(--dark-theme-gray) !important;
+}
+
+#block-ys-admin-theme-main-page-content #edit-help,
+#block-ys-admin-theme-main-page-content .system-status-general-info__item-details,
 #block-ys-admin-theme-main-page-content .card__content {
   color: var(--dark-theme-gray);
 }
@@ -253,6 +274,41 @@ a.menu-item__link {
 
 #block-ys-admin-theme-main-page-content .field--name-field-instructions {
   color: var(--dark-theme-gray);
+}
+
+.draggable.field-plugin-settings-editing,
+.draggable.drag-previous.field-plugin-settings-editing {
+  background: var(--wool) !important;
+}
+
+#views-display-extra-actions {
+  background-color: var(--wool) !important;
+}
+
+#views-display-extra-actions .edit-details:hover {
+  background-color: var(--robin-egg) !important;
+}
+
+.views-ui-dialog .views-add-form-selected > div {
+  background-color: var(--wool) !important;
+}
+
+#block-ys-admin-theme-main-page-content .views-edit-view #edit-display-settings-main a:hover,
+#block-ys-admin-theme-main-page-content .views-edit-view #edit-display-settings-main a:focus,
+#block-ys-admin-theme-main-page-content .views-edit-view #edit-display-settings-top .views-display-setting a:hover,
+#block-ys-admin-theme-main-page-content .views-edit-view #edit-display-settings-top .views-display-setting a:focus,
+#block-ys-admin-theme-main-page-content .views-edit-view #edit-display-settings-top .view.dropbutton__item.dropbutton-action a:hover,
+#block-ys-admin-theme-main-page-content .views-edit-view #edit-display-settings-top .view.dropbutton__item.dropbutton-action a:focus {
+  color: var(--dark-theme-gray) !important;
+}
+
+#block-ys-admin-theme-main-page-content .views-edit-view #views-display-extra-actions a {
+  color: var(--mediterranean-blue) !important;
+}
+
+#block-ys-admin-theme-main-page-content .views-edit-view #views-display-extra-actions a:hover,
+#block-ys-admin-theme-main-page-content .views-edit-view #views-display-extra-actions a:focus {
+  color: var(--dark-theme-gray) !important;
 }
 
 /* Alerts */
@@ -356,6 +412,11 @@ a.menu-item__link {
 .gin-layer-wrapper table td .dropbutton-action a:hover,
 .gin-layer-wrapper table td .dropbutton-action a:focus {
   color: var(--dark-theme-gray-hover) !important;
+}
+
+.views-query-info table tr {
+  background-color: var(--dark-theme-gray-selected) !important;
+  color: var(--wool) !important;
 }
 
 .toolbar-menu-administration > .toolbar-menu > .menu-item:hover > .toolbar-icon::before,
