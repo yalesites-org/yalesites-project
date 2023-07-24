@@ -77,3 +77,17 @@ function atomic_preprocess_node(&$variables) {
     $variables['date_formatted'] = \Drupal::service('date.formatter')->format($date, '', 'c');
   }
 }
+
+/**
+ * Implements hook_preprocess_paragraph__accordion_item().
+ *
+ * Inject the heading_level based on the parent's heading presence.
+ */
+function atomic_preprocess_paragraph__accordion_item(&$variables) {
+  if ($accordion = $variables['paragraph']->getParentEntity()) {
+    if ($accordion->hasField('field_heading')) {
+      $heading = $accordion->field_heading->value;
+      $variables['attributes']['heading_level'] = empty($heading) ? 2 : 3;
+    }
+  }
+}

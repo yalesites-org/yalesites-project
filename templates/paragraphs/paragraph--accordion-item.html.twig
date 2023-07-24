@@ -1,5 +1,5 @@
 {% include "@molecules/accordion/_yds-accordion-item.twig" with {
   accordion__item__heading: content.field_heading,
   accordion__item__content: content.field_content,
-  accordion__item__heading__level: 3
+  accordion__item__heading__level: attributes.heading_level|default(3),
 } %}
