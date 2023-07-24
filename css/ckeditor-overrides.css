@@ -45,7 +45,7 @@
 /* Make the title similar to other titles on the admin side */
 .cke_dialog .cke_dialog_title {
   background: var(--mediterranean-blue) !important;
-  color: var(--wool) !important;
+  color: #fff !important;
 }
 
 /* Make the body color similar to the other displays on the admin side */
