@@ -139,3 +139,29 @@ behind the a.toolbar-icon element. */
 .gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab .toolbar-item:focus {
   color: var(--dark-primary-link-hover) !important;
 }
+
+
+.media-library-wrapper .views-display-link {
+  color: var(--wool) !important;
+}
+
+.media-library-wrapper .views-display-link::before {
+  background-color: var(--wool) !important;
+}
+
+
+.media-library-wrapper .views-display-link.is-active {
+  color: var(--robin-egg) !important;
+}
+
+.media-library-wrapper .views-display-link.is-active::before {
+  background-color: var(--robin-egg) !important;
+}
+
+.media-library-item--table {
+  background: var(--dark-theme-gray-lightest) !important;
+}
+
+.media-library-views-form thead th {
+  background: var(--dark-theme-gray-selected) !important;
+}
