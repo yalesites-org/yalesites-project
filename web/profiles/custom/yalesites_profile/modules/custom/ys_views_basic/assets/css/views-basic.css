@@ -31,6 +31,23 @@
   width: 100%;
 }
 
+/* chosen-specific */
+.chosen-container-multi .chosen-choices {
+  border: unset;
+  border-radius: unset;
+}
+
+/* Chosen dropdown selected color contrast fix */
+/* ******************************************* */
+.chosen-container .chosen-results {
+  color: var(--gin-color-info);
+}
+
+.chosen-container-multi .chosen-drop .result-selected {
+  color: var(--gin-color-green);
+}
+/* ************ Contrast fix end ************ */
+
 /* visually hide the inputs */
 .layout-builder-configure-block .grouped-items .glb-form-type--radio input {
   border: 0;

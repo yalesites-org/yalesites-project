@@ -11,7 +11,7 @@ field_name: field_category
 entity_type: node
 bundle: event
 label: Category
-description: 'Separate categories with commas. Categories will autocomplete if one exists.'
+description: 'Categories will autocomplete as you type.  Choose from pre-created options only.  To add a new category, go to ''Content->Manage Taxonomy->Event Categories''.'
 required: false
 translatable: false
 default_value: {  }

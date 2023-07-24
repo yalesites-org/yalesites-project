@@ -16,6 +16,7 @@ dependencies:
     - node.type.post
   module:
     - allowed_formats
+    - chosen_field
     - datetime
     - field_group
     - maxlength
@@ -72,14 +73,10 @@ content:
       placeholder: ''
     third_party_settings: {  }
   field_category:
-    type: entity_reference_autocomplete_tags
+    type: chosen_select
     weight: 3
     region: content
-    settings:
-      match_operator: CONTAINS
-      match_limit: 10
-      size: 60
-      placeholder: ''
+    settings: {  }
     third_party_settings: {  }
   field_login_required:
     type: boolean_checkbox
@@ -103,14 +100,10 @@ content:
     settings: {  }
     third_party_settings: {  }
   field_tags:
-    type: entity_reference_autocomplete_tags
+    type: chosen_select
     weight: 4
     region: content
-    settings:
-      match_operator: CONTAINS
-      match_limit: 10
-      size: 60
-      placeholder: ''
+    settings: {  }
     third_party_settings: {  }
   field_teaser_media:
     type: media_library_widget

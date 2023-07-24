@@ -18,7 +18,7 @@
     "drupal/calendar_link": "^3.0",
     "drupal/captcha": "^1.8",
     "drupal/cas": "^2.0",
-    "drupal/chosen": "^3.0",
+    "drupal/chosen": "^4.0",
     "drupal/components": "^3.0",
     "drupal/config_filter": "^2.4",
     "drupal/config_ignore": "^3.0",
@@ -82,18 +82,28 @@
     "drupal/webform": "^6.2@beta",
     "drupal/wingsuit_companion": "^2.0@RC",
     "yalesites-org/atomic": "1.16.3",
+    "oomphinc/composer-installers-extender": "^2.0",
+    "wikimedia/composer-merge-plugin": "^2.1",
     "yalesites-org/yale_cas": "^1.0"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
   "config": {
-    "sort-packages": true
+    "sort-packages": true,
+    "allow-plugins": {
+      "composer/installers": true,
+      "oomphinc/composer-installers-extender": true,
+      "wikimedia/composer-merge-plugin": true
+    }
   },
   "extra": {
     "enable-patching": true,
     "composer-exit-on-patch-failure": true,
     "patchLevel": {
       "drupal/core": "-p2"
+    },
+    "installer-paths": {
+      "../../../../web/core": ["type:drupal-core"]
     },
     "patches": {
       "drupal/layout_paragraphs": {
