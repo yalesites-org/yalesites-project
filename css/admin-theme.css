@@ -523,7 +523,6 @@ table .draggable-table.tabledrag-disabled tr:hover {
 .layout-builder__section {
   margin-inline-start: 0.5rem;
   margin-inline-end: 0.5rem;
-  background-color: var(--wool);
 }
 
 .layout-builder__section:hover .layout-builder__link--add-section-to-library {
