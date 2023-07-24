@@ -164,6 +164,59 @@ a.menu-item__link {
   text-decoration: underline;
 }
 
+.gin-layer-wrapper,
+.block-system-main-block > form,
+.views-exposed-form.views-exposed-form,
+.views-edit-view,
+.views-preview-wrapper,
+#views-entity-list,
+.module-filter-update-status-form .table-filter,
+.admin.my-workbench {
+  background: var(--wool) !important;
+}
+
+.fieldset__label,
+.fieldset__label--group,
+.form-item__label {
+  color: var(--dark-theme-gray-text-dark);
+}
+
+.module-list__module a {
+  color: var(--mediterranean-blue) !important;
+}
+
+.system-modules-uninstall thead th {
+  color: var(--wool);
+}
+
+.tabs__link,
+.claro-details__summary,
+.horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button a {
+  color: var(--gin-color-text-light) !important;
+}
+
+#system-modules .claro-details__summary {
+  color: var(--dark-theme-gray-text-dark) !important;
+}
+
+#system-modules .claro-details__summary:hover,
+#system-modules .claro-details__summary:focus,
+#system-modules .claro-details[open] > .claro-details__summary,
+#system-modules .claro-details[open] > .claro-details__summary[aria-expanded=true] {
+  color: var(--dark-theme-gray-text-light) !important;
+  background-color: var(--dark-theme-gray-text-dark) !important;
+}
+
+#system-modules .claro-details[open] > .claro-details__summary[aria-expanded=false]::before,
+#system-modules .claro-details > .claro-details__summary[aria-expanded=false]:focus::before,
+#system-modules .claro-details[open] > .claro-details__summary::before {
+  background-color: var(--dark-theme-gray-text-light) !important;
+}
+
+.claro-details__wrapper.module-details__wrapper {
+  padding-top: 1rem;
+}
+
 [data-gin-accent=light_blue] .region-content div > h2 {
   color: var(--wool);
 }
