@@ -86,11 +86,13 @@ fieldset:not(.fieldgroup) {
   color: var(--dark-theme-gray) !important;
 }
 
-.media-library-select-all {
+#views-form-media-library-page .media-library-select-all,
+#drupal-modal .media-library-select-all {
   color: var(--wool) !important;
 }
 
-.media-library-item__name {
+.media-library-views-form__rows .media-library-item__name,
+#drupal-modal .media-library-item__name {
   color: var(--wool) !important;
 }
 
