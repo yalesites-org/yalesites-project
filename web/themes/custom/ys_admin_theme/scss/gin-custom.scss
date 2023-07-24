@@ -13,9 +13,6 @@
   }
 }
 
-// .region-content {
-//   color: var(--wool);
-// }
 
 .block-help-block {
   color: var(--wool);
@@ -59,8 +56,9 @@
   color: var(--wool) !important;
 }
 // sticky header title
-.region-sticky--is-sticky .page-title {
-  color: var(--dark-theme-gray) !important;
+
+.region-sticky--is-sticky {
+  background-color: rgba(var(--dark-theme-gray-rgb), 0.8) !important; 
 }
 
 .form-item__description, .fieldset__description {
@@ -72,7 +70,7 @@ fieldset:not(.fieldgroup) {
 }
 
 
-:not(.form-checkboxes):not(td):not(.tabledrag-cell-content__item):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .form-type--checkbox label {
+:not(.form-checkboxes):not(.claro-details__content--accordion-item):not(.field--name-field-login-required):not(.field--name-sticky):not(td):not(.tabledrag-cell-content__item):not(.media-library-item__click-to-select-checkbox):not(.field-content):not(.views-ui-admin-settings-basic):not(.claro-details__wrapper.details-wrapper):not(#edit-options) > .form-type--checkbox label {
   color: var(--wool) !important;
 }
 
@@ -201,16 +199,21 @@ a.menu-item__link {
   background: var(--wool) !important;
 }
 
+.views-ui-admin-settings-basic .form-type--checkbox .form-item__label,
 .fieldset__label,
 .fieldset__label--group,
 .form-item__label {
   color: var(--dark-theme-gray-text-dark);
 }
 
-.module-list__module a {
+.views-listing-table a,
+.module-list__module a,
+.update-manager-install-form a {
   color: var(--mediterranean-blue) !important;
 }
 
+
+.views-listing-table thead th,
 .system-modules-uninstall thead th {
   color: var(--wool);
 }
@@ -219,6 +222,10 @@ a.menu-item__link {
 .claro-details__summary,
 .horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button a {
   color: var(--gin-color-text-light) !important;
+}
+
+.update-manager-install-form {
+  color: var(--dark-theme-gray);
 }
 
 
@@ -335,6 +342,10 @@ a.menu-item__link {
 .action-link.action-link--icon-checkmark {
   background-color: var(--dark-theme-gray-hover) !important;
   color: var(--wool) !important;
+}
+
+.action-link--icon-trash.action-link--danger::before {
+  background-color: var(--gin-color-danger) !important;
 }
 
 

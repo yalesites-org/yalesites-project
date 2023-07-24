@@ -4,6 +4,10 @@
   mask-image: url('../images/yale-university-press-1985-2010.svg') !important;
 }
 
+.gin--horizontal-toolbar #toolbar-administration .toolbar-icon-admin-toolbar-tools-help::before {
+  width: 28px !important;
+}
+
 /* Set z-index on toolbar-icon element so that the  ::after element renders
 behind the a.toolbar-icon element. */
 .toolbar-menu-administration > .toolbar-menu > .menu-item > .toolbar-icon {
