@@ -7,6 +7,7 @@
   --wool: #fbfbf6;
   --light-gray: #d4d4d4;
   --darkest-gray: #1f1f1f;
+  --dark-theme-gray-rgb: 78, 89, 89;
   --dark-theme-gray:#4E5959;
   --dark-theme-gray-selected:#edfbfb;
   --dark-theme-gray-lightest:#d0e0e0;
@@ -75,8 +76,63 @@
 }
 
 
+/* media modal */
 
+.glb-view-header a.views-display-link.views-display-link-widget_table {
+  color: var(--wool) !important;
+}
 
+.glb-view-header .views-display-link.views-display-link-widget.is-active {
+  color: var(--wool) !important;
+}
+
+.glb-view-header .views-display-link::before {
+  background-color: var(--wool) !important;
+}
+
+#views-exposed-form-media-library-widget .glb-form-item__label {
+  color: var(--wool) !important;
+}
+
+.glb-form-checkbox:checked {
+  background-color: var(--dark-theme-gray) !important;
+}
+
+.media-library-selected-count {
+  color: var(--dark-theme-gray) !important;
+}
+
+.glb-pager .pager__link {
+  color: var(--mediterranean-blue) !important;
+}
+
+.glb-pager .pager__link:hover,
+.glb-pager .pager__link:focus {
+  background: var(--dark-theme-gray-lightest) !important;
+  border-color: var(--dark-theme-gray) !important;
+}
+
+.glb-pager .pager__item .pager__link--action-link::before,
+.glb-pager .pager__item .pager__link--action-link::after {
+  background: var(--dark-theme-gray) !important;
+}
+
+.glb-pager .pager__item .pager__link--action-link:hover::before,
+.glb-pager .pager__item .pager__link--action-link:focus::after,
+.glb-pager .pager__item .pager__link:hover::after,
+.glb-pager .pager__item .pager__link:focus::after {
+  background: var(--dark-theme-gray) !important;
+}
+
+.glb-pager .pager__link.is-active,
+.glb-pager .pager__item--current {
+  color: var(--dark-theme-gray) !important;
+}
+
+/* linkit ui autocomplete */
+.ui-autocomplete .ui-menu-item-wrapper.ui-state-active {
+  background-color: var(--dark-theme-gray-lightest);
+}
 
 /* Off-canvas overrides */
 #drupal-off-canvas {
@@ -336,7 +392,6 @@ body.gin--horizontal-toolbar {
   a:active,
 table tr:hover,
 table .draggable-table.tabledrag-disabled tr:hover {
-  --gin-color-button-text: var(--dark-primary-link);
   color: var(--wool);
   background: var(--dark-theme-gray);
 }
@@ -398,6 +453,9 @@ table .draggable-table.tabledrag-disabled tr:hover {
   border-color: var(--dark-theme-gray-hover) !important;
 }
 
+.glb-button:hover {
+  color: var(--dark-theme-gray) !important;
+}
 
 .glb-button:not(:focus) {
   filter: none !important;
