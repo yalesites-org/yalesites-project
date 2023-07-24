@@ -23,16 +23,8 @@ fi
 # Wake the environment to make sure the database is reachable.
 terminus -n env:wake "$TERMINUS_SITE.$TERMINUS_ENV"
 
-# Update the Drupal database
-terminus -n drush "$TERMINUS_SITE.$TERMINUS_ENV" -- updatedb  --no-cache-clear -y
-
-# If exported configuration is available, then import it.
-if [ -f "web/profiles/custom/yalesites_profile/config/sync/system.site.yml" ] ; then
-  terminus -n drush "$TERMINUS_SITE.$TERMINUS_ENV" -- config-import --yes
-fi
-
-# Clear Drupal cache
-terminus -n drush "$TERMINUS_SITE.$TERMINUS_ENV" -- cr
+# Run drush deploy - updb, cr, cim, cr, deploy:hook
+terminus -n drush "$TERMINUS_SITE.$TERMINUS_ENV" -- deploy -v -y
 
 # Clear the environment cache
 terminus -n env:clear-cache "$TERMINUS_SITE.$TERMINUS_ENV"
