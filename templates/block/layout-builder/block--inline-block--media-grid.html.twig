@@ -8,7 +8,7 @@
   {% endif %}
 
   {% embed "@organisms/galleries/media-grid/yds-media-grid.twig" with {
-    media_grid__heading: content.field_heading,
+    media_grid__heading: content.field_heading.0,
     media_grid__width: media_grid__width,
   } %}
 

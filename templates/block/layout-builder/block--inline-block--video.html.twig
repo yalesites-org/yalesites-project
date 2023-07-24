@@ -11,7 +11,7 @@
   {% endif %}
 
   {% embed "@molecules/video/yds-video.twig" with {
-    video__heading: content.field_heading,
+    video__heading: content.field_heading.0,
     video__text: content.field_text,
     video__width: video__width|default('site'),
     video__alignment: video__alignment|default('left'),
