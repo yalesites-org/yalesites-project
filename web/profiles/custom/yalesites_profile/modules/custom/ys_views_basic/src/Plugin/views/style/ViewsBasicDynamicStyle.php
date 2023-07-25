@@ -121,9 +121,7 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
 
     // Get node type to pass to template to determine width.
     $entity = $this->routeMatch->getParameter('node');
-    if ($entity) {
-      $parentNode = $entity->getType();
-    }
+    $parentNode = ($entity) ? $entity->getType() : NULL;
 
     return [
       '#theme' => 'views_basic_rows',

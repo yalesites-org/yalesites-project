@@ -34,6 +34,7 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
     'ys_post_meta_block' => [
       'variables' => [
         'label' => NULL,
+        'author' => NULL,
         'date_formatted' => NULL,
       ],
     ],

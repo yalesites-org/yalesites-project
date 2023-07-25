@@ -62,11 +62,9 @@ class UpdateExistingNodes {
         $node = Node::load($nid);
         $layout = $node->get('layout_builder__layout');
 
-        $section_storage = $this->getSectionStorageForEntity($node);
-        $tempStore = \Drupal::service('layout_builder.tempstore_repository');
         /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $layout */
         $layout->insertSection(0, $eventMetaSection);
-        $tempStore->set($section_storage);
+        $this->updateEventTempStore($eventMetaSection);
         $node->save();
       }
     }
@@ -142,9 +140,7 @@ class UpdateExistingNodes {
       foreach ($sections as $section) {
         if ($section->getLayoutSettings()['label'] == 'Content Section') {
           $section->unsetThirdPartySetting('layout_builder_lock', 'lock');
-          $section_storage = $this->getSectionStorageForEntity($node);
-          $tempStore = \Drupal::service('layout_builder.tempstore_repository');
-          $tempStore->set($section_storage);
+          $this->updatePageTempStoreLock();
           $node->save();
         }
       }
@@ -195,13 +191,11 @@ class UpdateExistingNodes {
         $node = Node::load($nid);
         $layout = $node->get('layout_builder__layout');
 
-        $section_storage = $this->getSectionStorageForEntity($node);
-        $tempStore = \Drupal::service('layout_builder.tempstore_repository');
         /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $layout */
         // For existing pages, remove the old title and breadcrumb block first.
         $layout->removeSection(0);
         $layout->insertSection(0, $postMetaSection);
-        $tempStore->set($section_storage);
+        $this->updatePostTempStore($postMetaSection);
         $node->save();
       }
     }
@@ -225,7 +219,9 @@ class UpdateExistingNodes {
         /** @var \Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage $section_storage */
         $section_storage = $stored_data->data['section_storage'];
 
-        if ($section_storage->getSections()[1]->getLayoutSettings()['label'] == 'Title Section') {
+        if (
+          $section_storage->getSections()[1]->getLayoutSettings()['label'] == 'Title Section'
+          && $stored_data->data['section_storage']->getContext('entity')->getContextData()->getEntity()->bundle() == 'page') {
           $section_storage->removeSection(1);
           $section_storage->insertSection(1, $sectionToClone);
 
@@ -243,6 +239,123 @@ class UpdateExistingNodes {
 
       }
 
+    }
+  }
+
+  /**
+   * Updates Page temp store with new section.
+   */
+  public function updatePostTempStore(Section $sectionToClone) {
+
+    $db = \Drupal::database();
+    if ($db->schema()->tableExists('key_value_expire')) {
+      $query = $db->select('key_value_expire', 'kve');
+      $query = $query->condition('collection', 'tempstore.shared.layout_builder.section_storage.overrides', '=')
+        ->fields('kve');
+      $results = $query->execute();
+      foreach ($results as $record) {
+        $stored_data = unserialize($record->value, [
+          'allowed_classes' => TRUE,
+        ]);
+        /** @var \Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage $section_storage */
+        $section_storage = $stored_data->data['section_storage'];
+
+        if (
+          $section_storage->getSections()[1]->getLayoutSettings()['label'] == 'Title Section'
+          && $stored_data->data['section_storage']->getContext('entity')->getContextData()->getEntity()->bundle() == 'page') {
+          $section_storage->removeSection(0);
+          $section_storage->insertSection(0, $sectionToClone);
+
+          $stored_data->data['section_storage'] = $section_storage;
+
+          // Insert the updated tempstore.
+          $db->update('key_value_expire')
+            ->condition('name', $record->name, '=')
+            ->condition('expire', $record->expire, '=')
+            ->fields([
+              'value' => serialize($stored_data),
+            ])
+            ->execute();
+        }
+
+      }
+
+    }
+  }
+
+  /**
+   * Updates Event temp store with new section.
+   */
+  public function updateEventTempStore(Section $sectionToClone) {
+
+    $db = \Drupal::database();
+    if ($db->schema()->tableExists('key_value_expire')) {
+      $query = $db->select('key_value_expire', 'kve');
+      $query = $query->condition('collection', 'tempstore.shared.layout_builder.section_storage.overrides', '=')
+        ->fields('kve');
+      $results = $query->execute();
+      foreach ($results as $record) {
+        $stored_data = unserialize($record->value, [
+          'allowed_classes' => TRUE,
+        ]);
+        /** @var \Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage $section_storage */
+        $section_storage = $stored_data->data['section_storage'];
+        if ($stored_data->data['section_storage']->getContext('entity')->getContextData()->getEntity()->bundle() == 'event') {
+          $section_storage->insertSection(0, $sectionToClone);
+
+          $stored_data->data['section_storage'] = $section_storage;
+
+          // Insert the updated tempstore.
+          $db->update('key_value_expire')
+            ->condition('name', $record->name, '=')
+            ->condition('expire', $record->expire, '=')
+            ->fields([
+              'value' => serialize($stored_data),
+            ])
+            ->execute();
+        }
+      }
+    }
+  }
+
+  /**
+   * Updates Event temp store with new section.
+   */
+  public function updatePageTempStoreLock() {
+
+    $db = \Drupal::database();
+    if ($db->schema()->tableExists('key_value_expire')) {
+      $query = $db->select('key_value_expire', 'kve');
+      $query = $query->condition('collection', 'tempstore.shared.layout_builder.section_storage.overrides', '=')
+        ->fields('kve');
+      $results = $query->execute();
+      foreach ($results as $record) {
+        $stored_data = unserialize($record->value, [
+          'allowed_classes' => TRUE,
+        ]);
+        /** @var \Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage $section_storage */
+        $section_storage = $stored_data->data['section_storage'];
+        if ($stored_data->data['section_storage']->getContext('entity')->getContextData()->getEntity()->bundle() == 'page') {
+          $sections = $section_storage->getSections();
+          foreach ($sections as $key => $section) {
+            if ($section->getLayoutSettings()['label'] == 'Content Section') {
+              $sectionToUpdate = $key;
+            }
+          }
+          $section_storage->getSection($sectionToUpdate)->unsetThirdPartySetting('layout_builder_lock', 'lock');
+
+          $stored_data->data['section_storage'] = $section_storage;
+
+          // Insert the updated tempstore.
+          $db->update('key_value_expire')
+            ->condition('name', $record->name, '=')
+            ->condition('expire', $record->expire, '=')
+            ->fields([
+              'value' => serialize($stored_data),
+            ])
+            ->execute();
+        }
+      }
     }
   }
 

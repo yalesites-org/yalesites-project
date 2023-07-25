@@ -104,11 +104,13 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
 
     // Post fields.
     $title = $node->getTitle();
+    $author = ($node->field_author->first()) ? $node->field_author->first()->getValue()['value'] : NULL;
     $publishDate = strtotime($node->field_publish_date->first()->getValue()['value']);
     $dateFormatted = $this->dateFormatter->format($publishDate, '', 'c');
     return [
       '#theme' => 'ys_post_meta_block',
       '#label' => $title,
+      '#author' => $author,
       '#date_formatted' => $dateFormatted,
     ];
   }
