@@ -222,6 +222,7 @@ class UpdateExistingNodes {
         if (
           $section_storage->getSections()[1]->getLayoutSettings()['label'] == 'Title Section'
           && $stored_data->data['section_storage']->getContext('entity')->getContextData()->getEntity()->bundle() == 'page') {
+
           $section_storage->removeSection(1);
           $section_storage->insertSection(1, $sectionToClone);
 
@@ -260,9 +261,8 @@ class UpdateExistingNodes {
         /** @var \Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage $section_storage */
         $section_storage = $stored_data->data['section_storage'];
 
-        if (
-          $section_storage->getSections()[1]->getLayoutSettings()['label'] == 'Title Section'
-          && $stored_data->data['section_storage']->getContext('entity')->getContextData()->getEntity()->bundle() == 'page') {
+        if ($stored_data->data['section_storage']->getContext('entity')->getContextData()->getEntity()->bundle() == 'post') {
+
           $section_storage->removeSection(0);
           $section_storage->insertSection(0, $sectionToClone);
 
