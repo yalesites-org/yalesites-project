@@ -195,7 +195,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     }
 
     // Set operator: "+" is "OR" and "," is "AND".
-    $operator = $paramsDecoded['operator'] ?: '+';
+    $operator = !empty($paramsDecoded['operator']) ? $paramsDecoded['operator'] : '+';
     $termsInclude = isset($termsIncludeArray) ? implode($operator, $termsIncludeArray) : 'all';
     $termsExclude = isset($termsExcludeArray) ? implode($operator, $termsExcludeArray) : NULL;
 
@@ -208,6 +208,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       $itemsLimit = $paramsDecoded['limit'];
     }
 
+    $eventTimePeriod = NULL;
+    if (str_contains($filterType, 'event') &&
+      !empty($paramsDecoded['filters']['event_time_period'])) {
+      $eventTimePeriod = $paramsDecoded['filters']['event_time_period'];
+    }
+
     $view->setArguments(
       [
         'type' => $filterType,
@@ -216,7 +222,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'sort' => $paramsDecoded['sort_by'],
         'view' => $paramsDecoded['view_mode'],
         'items' => $itemsLimit,
-        'event_time_period' => str_contains($filterType, 'event') ? $paramsDecoded['filters']['event_time_period'] : NULL,
+        'event_time_period' => $eventTimePeriod,
       ]
     );
 
