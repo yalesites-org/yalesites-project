@@ -162,7 +162,6 @@
   color: var(--dark-theme-gray) !important;
 } 
 
-
 .ui-menu-item-wrapper:hover {
   background-color: var(--dark-theme-gray-lightest);
 }
@@ -468,7 +467,7 @@ table .draggable-table.tabledrag-disabled tr:hover {
 }
 
 .glb-table .tabledrag-handle::after {
-  background-color: var(--dark-theme-gray);
+  background-color: var(--dark-theme-gray) !important;
 }
 
 .glb-table tr:hover, 
@@ -618,4 +617,11 @@ table .draggable-table.tabledrag-disabled tr:hover {
   display: flex;
   align-items: center;
   padding-inline: 2rem;
+}
+
+
+/* Blocks - accordion block, button block */
+.field--name-field-accordion-items th h4,
+.field--name-field-button-link th h4 {
+  color: var(--wool) !important;
 }
