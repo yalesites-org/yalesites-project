@@ -193,7 +193,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     }
 
     $eventTimePeriod = NULL;
-    if (str_contains($filterType, 'event') && 
+    if (str_contains($filterType, 'event') &&
       !empty($paramsDecoded['filters']['event_time_period'])) {
       $eventTimePeriod = $paramsDecoded['filters']['event_time_period'];
     }
