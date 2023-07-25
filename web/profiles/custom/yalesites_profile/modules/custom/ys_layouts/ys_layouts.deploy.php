@@ -13,15 +13,15 @@ use Drupal\ys_layouts\UpdateExistingNodes;
 function ys_layouts_deploy_9001() {
   $updateExistingNodes = new UpdateExistingNodes();
 
-  // Adds new event meta block to existing events.
-  $updateExistingNodes->updateExistingEventMeta();
+//   // Adds new event meta block to existing events.
+//   $updateExistingNodes->updateExistingEventMeta();
 
-  // Replaces old title and breadcrumb block with new page meta block.
+//   // Replaces old title and breadcrumb block with new page meta block.
   $updateExistingNodes->updateExistingPageMeta();
 
-  // Adds "Add section" to existing pages.
-  $updateExistingNodes->updateExistingPageLock();
+//   // Adds "Add section" to existing pages.
+//   $updateExistingNodes->updateExistingPageLock();
 
-  // Replaces old title section with new post meta block.
-  $updateExistingNodes->updateExistingPostMeta();
+//   // Replaces old title section with new post meta block.
+//   $updateExistingNodes->updateExistingPostMeta();
 }

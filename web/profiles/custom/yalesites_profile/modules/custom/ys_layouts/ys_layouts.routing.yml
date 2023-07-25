@@ -1,0 +1,7 @@
+ys_layouts.test_page:
+  path: '/ys-layouts/test-page'
+  defaults:
+    _controller: '\Drupal\ys_layouts\Controller\TestPageController::testPage'
+    _title: 'Testing Page Only'
+  requirements:
+    _permission: 'access content'

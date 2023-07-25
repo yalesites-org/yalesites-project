@@ -85,7 +85,7 @@ class UpdateExistingNodes {
       if ($pageViewDisplay->isLayoutBuilderEnabled()) {
         $pageSections = $pageViewDisplay->getSections();
         foreach ($pageSections as $section) {
-          if ($section->getLayoutSettings()['label'] == 'Title and Metadata') {
+          if ($section->getLayoutId() == 'ys_layout_page_meta') {
             $pageMetaSection = $section;
           }
         }
@@ -116,13 +116,11 @@ class UpdateExistingNodes {
         $node = Node::load($nid);
         $layout = $node->get('layout_builder__layout');
 
-        $section_storage = $this->getSectionStorageForEntity($node);
-        $tempStore = \Drupal::service('layout_builder.tempstore_repository');
         /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $layout */
         // For existing pages, remove the old title and breadcrumb block first.
         $layout->removeSection(1);
         $layout->insertSection(1, $pageMetaSection);
-        $tempStore->set($section_storage);
+        $this->updatePageTempStore($pageMetaSection);
         $node->save();
       }
     }
@@ -206,6 +204,45 @@ class UpdateExistingNodes {
         $tempStore->set($section_storage);
         $node->save();
       }
+    }
+  }
+
+  /**
+   * Updates Page temp store with new section.
+   */
+  public function updatePageTempStore(Section $sectionToClone) {
+
+    $db = \Drupal::database();
+    if ($db->schema()->tableExists('key_value_expire')) {
+      $query = $db->select('key_value_expire', 'kve');
+      $query = $query->condition('collection', 'tempstore.shared.layout_builder.section_storage.overrides', '=')
+        ->fields('kve');
+      $results = $query->execute();
+      foreach ($results as $record) {
+        $stored_data = unserialize($record->value, [
+          'allowed_classes' => TRUE,
+        ]);
+        /** @var \Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage $section_storage */
+        $section_storage = $stored_data->data['section_storage'];
+
+        if ($section_storage->getSections()[1]->getLayoutSettings()['label'] == 'Title Section') {
+          $section_storage->removeSection(1);
+          $section_storage->insertSection(1, $sectionToClone);
+
+          $stored_data->data['section_storage'] = $section_storage;
+
+          // Insert the updated tempstore.
+          $db->update('key_value_expire')
+            ->condition('name', $record->name, '=')
+            ->condition('expire', $record->expire, '=')
+            ->fields([
+              'value' => serialize($stored_data),
+            ])
+            ->execute();
+        }
+
+      }
+
     }
   }
 
