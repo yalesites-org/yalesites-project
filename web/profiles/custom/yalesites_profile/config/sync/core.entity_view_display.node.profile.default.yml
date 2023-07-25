@@ -3,7 +3,6 @@ langcode: en
 status: true
 dependencies:
   config:
-    - block_content.type.text
     - field.field.node.profile.field_address
     - field.field.node.profile.field_affiliation
     - field.field.node.profile.field_department
@@ -77,20 +76,6 @@ third_party_settings:
               label_display: ''
               provider: ys_layouts
               context_mapping: {  }
-            weight: 0
-            additional: {  }
-          144cbef4-6f56-4e24-9040-a479993c5c45:
-            uuid: 144cbef4-6f56-4e24-9040-a479993c5c45
-            region: content
-            configuration:
-              id: 'inline_block:text'
-              label: 'Default Text'
-              label_display: ''
-              provider: layout_builder
-              view_mode: full
-              context_mapping: {  }
-              block_revision_id: 1097
-              block_serialized: null
             weight: 0
             additional: {  }
         third_party_settings: {  }
