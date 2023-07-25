@@ -13,6 +13,10 @@
   }
 }
 
+::selection {
+  background: var(--mediterranean-blue) !important;
+  color: var(--wool) !important;
+}
 
 .block-help-block {
   color: var(--wool);
@@ -47,9 +51,18 @@
   color: var(--wool);
 }
 
+.gin-secondary-toolbar {
+  margin: 0 !important;
+  padding-inline: 3rem !important;
+}
+
 .gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab .toolbar-tray a:hover, 
 .gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab .toolbar-tray a:active {
   background-color: var(--dark-theme-gray);
+}
+
+.gin-secondary-toolbar.layout-container {
+  background-color: var(--gin-bg-layer);
 }
 
 .page-title {
@@ -223,7 +236,7 @@ a.menu-item__link {
 .tabs__link,
 .claro-details__summary,
 .horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button a {
-  color: var(--gin-color-text-light) !important;
+  color: var(--wool) !important;
 }
 
 .update-manager-install-form {
@@ -537,9 +550,6 @@ html.js.no-touchevents .dropbutton--extrasmall {
   background-color: transparent !important;
 }
 
-.gin-secondary-toolbar.layout-container {
-  background-color: var(--gin-bg-layer);
-}
 
 body:not(.toolbar-tray-open) .layout-container {
   padding-left: var(--gin-spacing-m);
