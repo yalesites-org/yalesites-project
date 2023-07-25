@@ -165,3 +165,38 @@ behind the a.toolbar-icon element. */
 .media-library-views-form thead th {
   background: var(--dark-theme-gray-selected) !important;
 }
+
+
+/* mobile toolbar */
+#gin-toolbar-bar,
+.toolbar .toolbar-bar .toolbar-tab>.toolbar-icon.toolbar-icon-edit.toolbar-item,
+.toolbar .toolbar-bar .toolbar-tab>.toolbar-icon-edit.toolbar-item.responsive-preview-icon,
+.toolbar .toolbar-bar .toolbar-tab>.toolbar-icon.toolbar-icon-edit.toolbar-item.is-active,
+.toolbar .toolbar-bar .toolbar-tab>.toolbar-icon.toolbar-icon-edit.toolbar-item:focus {
+  color: var(--wool) !important;
+  background: var(--dark-theme-gray) !important;
+}
+
+.toolbar .toolbar-tray-vertical .level-2 .toolbar-menu {
+  color: var(--wool) !important;
+  background: var(--darkest-gray) !important;
+}
+
+.toolbar-tray a,
+.toolbar-tray span,
+.toolbar .toolbar-menu .toolbar-menu a,
+.toolbar .toolbar-menu .toolbar-menu span,
+.toolbar .toolbar-tray-vertical .toolbar-menu a:visited,
+.toolbar .toolbar-tray-vertical .toolbar-menu a:hover,
+.toolbar .toolbar-tray-vertical .toolbar-menu a:focus,
+.toolbar .toolbar-tray-vertical .toolbar-menu span:visited,
+.toolbar .toolbar-tray-vertical .toolbar-menu span:hover,
+.toolbar .toolbar-tray-vertical .toolbar-menu span:focus {
+  color: var(--wool) !important;
+}
+
+.toolbar-tray-horizontal a:focus,
+.toolbar-box a:focus,
+.toolbar .toolbar-icon.toolbar-handle:focus {
+  background: var(--darkest-gray) !important;
+}
