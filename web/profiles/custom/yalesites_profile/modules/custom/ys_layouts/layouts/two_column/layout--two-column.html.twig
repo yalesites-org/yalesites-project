@@ -11,22 +11,30 @@
  * @ingroup themeable
  */
 #}
+{% 
+  set outerClasses = [
+    'yds-two-column'
+  ]
+%}
 {%
   set classes = [
     'yds-two-column__inner'
   ]
 %}
 {% if content %}
-  <div{{ attributes.addClass(classes) }}>
-    {% if content.content %}
-      <div {{ region_attributes.content.addClass('yds-two-column__primary') }}>
-        {{ content.content }}
-      </div>
-    {% endif %}
-    {% if content.sidebar %}
-      <div {{ region_attributes.sidebar.addClass('yds-two-column__secondary') }}>
-        {{ content.sidebar }}
-      </div>
-    {% endif %}
-  </div>
+	<div{{attributes.addClass(outerClasses)}} data-component-width='site' data-embedded-components>
+
+		<div{{attributes.addClass(classes)}}>
+			{% if content.content %}
+				<div {{ region_attributes.content.addClass('yds-two-column__primary') }}>
+					{{ content.content }}
+				</div>
+			{% endif %}
+			{% if content.sidebar %}
+				<div {{ region_attributes.sidebar.addClass('yds-two-column__secondary') }}>
+					{{ content.sidebar }}
+				</div>
+			{% endif %}
+		</div>
+	</div>
 {% endif %}
