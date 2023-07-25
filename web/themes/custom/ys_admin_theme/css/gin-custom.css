@@ -127,6 +127,10 @@ a.menu-item__link {
   color: var(--dark-theme-gray-hover) !important;
 }
 
+.claro-details__description {
+  color: var(--dark-theme-gray) !important;
+}
+
 /* Cards */
 .card__content-wrapper {
   background-color: var(--wool) !important;
