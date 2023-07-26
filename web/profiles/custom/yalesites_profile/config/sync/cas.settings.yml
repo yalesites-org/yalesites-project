@@ -29,8 +29,8 @@ forced_login:
 user_accounts:
   prevent_normal_login: true
   auto_register: true
-  email_assignment_strategy: 1
-  email_hostname: ''
+  email_assignment_strategy: 0
+  email_hostname: noreply.yale.edu
   email_attribute: mail
   auto_assigned_roles: {  }
   restrict_password_management: true
