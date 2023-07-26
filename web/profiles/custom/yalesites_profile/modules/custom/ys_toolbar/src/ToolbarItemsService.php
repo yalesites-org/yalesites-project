@@ -261,6 +261,7 @@ class ToolbarItemsService {
           'class' => [
             'toolbar-icon',
             'toolbar-icon-edit',
+            strtolower(str_replace(' ', '-', $label)),
           ],
         ],
         '#cache' => [
