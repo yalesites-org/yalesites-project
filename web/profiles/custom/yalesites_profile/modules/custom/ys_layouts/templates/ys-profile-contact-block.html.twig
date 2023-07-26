@@ -1,53 +1,53 @@
 
-
-{% embed '@atoms/typography/headings/yds-heading.twig' with {
-  heading: 'Contact Info',
-  heading__level: '3',
+{% embed "@organisms/block-wrapper/yds-block-wrapper.twig" with {
+  block_wrapper__label: 'Contact Info',
+  block_wrapper__heading__level: '3'
 } %}
-{% endembed %}
+  {% block block_wrapper__inner %}
 
-{% if email %}
+    {% if email %}
 
-  {{ attach_library('atomic/text-link') }}
-  {% embed '@atoms/controls/text-link/yds-text-link.twig' with {
-    link__url: '',
-    link__pre_text: email,
-    link__content: '(copy)',
-    link__type: 'email',
-    link__extra_class: ['copy-trigger'],
-  } %}
-
-{% endembed %}
-
-{% endif %}
-
-{% if phone %}
-
-  {% embed '@atoms/controls/text-link/yds-text-link.twig' with {
-    link__url: 'tel:' ~ phone,
-    link__content: phone,
-  } %}
-
-  {% endembed %}
-
-{% endif %}
-
-{% if address %}
-
-  {% set address %}
-    {{ address.address_line1 }}<br>
-    {{ address.address_line2 }}<br>
-    {% if address.locality %}
-      {{ address.locality }},
+      {{ attach_library('atomic/text-link') }}
+      {% embed '@atoms/controls/text-link/yds-text-link.twig' with {
+        link__url: '',
+        link__pre_text: email,
+        link__content: '(copy)',
+        link__type: 'email',
+        link__extra_class: ['copy-trigger'],
+      } %}
+    {% endembed %}
+      <br>
     {% endif %}
-    {{ address.administrative_area }} {{ address.postal_code }}
-  {% endset %}
 
-  {% embed '@molecules/text/yds-text-field.twig' with {
-    text_field__content: address,
-    text_field__alignment: 'left'
-  } %}
+    {% if phone %}
 
+      {% embed '@atoms/controls/text-link/yds-text-link.twig' with {
+        link__url: 'tel:' ~ phone,
+        link__content: phone,
+      } %}
+      {% endembed %}      
+    {% endif %}
+
+    {% if address %}
+
+      {% set address %}
+        <br>
+        {{ address.address_line1 }}<br>
+        {{ address.address_line2 }}<br>
+        {% if address.locality %}
+          {{ address.locality }},
+        {% endif %}
+        {{ address.administrative_area }} {{ address.postal_code }}
+      {% endset %}
+
+      {% embed '@molecules/text/yds-text-field.twig' with {
+        text_field__content: address,
+        text_field__alignment: 'left'
+      } %}
+
+    {% endembed %}
+
+    {% endif %}
+
+  {% endblock %}
 {% endembed %}
-
-{% endif %}
