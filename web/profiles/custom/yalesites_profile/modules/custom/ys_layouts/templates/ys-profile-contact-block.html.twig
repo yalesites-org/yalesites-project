@@ -32,8 +32,12 @@
 
       {% set address %}
         <br>
-        {{ address.address_line1 }}<br>
-        {{ address.address_line2 }}<br>
+        {% if address.address_line1 %}
+          {{ address.address_line1 }}<br>
+        {% endif %}
+        {% if address.address_line2 %}
+          {{ address.address_line2 }}<br>
+        {% endif %}
         {% if address.locality %}
           {{ address.locality }},
         {% endif %}
