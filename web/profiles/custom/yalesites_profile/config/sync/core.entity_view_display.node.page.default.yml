@@ -126,6 +126,9 @@ third_party_settings:
             - 'YaleSites Core'
             - 'YaleSites alert'
             - core
+        ys_layout_two_column:
+          sidebar:
+            - 'YaleSites Layouts'
 id: node.page.default
 targetEntityType: node
 bundle: page
