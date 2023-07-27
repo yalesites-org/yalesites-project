@@ -69,11 +69,17 @@ class UpdateExistingNodes {
         /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $layout */
         $sections = $layout->getSections();
 
-        foreach ($sections as $section) {
-          // If an overridden layout already contains an Page Meta section,
-          // remove it from the update list.
-          if ($section->getLayoutSettings()['label'] == 'Title and Metadata') {
-            unset($nids[array_search($nid, $nids)]);
+        // If there are no sections, this nid has the default layout, remove it.
+        if (count($sections) === 0) {
+          unset($nids[array_search($nid, $nids)]);
+        }
+        else {
+          foreach ($sections as $section) {
+            // If an overridden layout already contains an Page Meta section,
+            // remove it from the update list.
+            if ($section->getLayoutSettings()['label'] == 'Title and Metadata') {
+              unset($nids[array_search($nid, $nids)]);
+            }
           }
         }
       }
@@ -171,11 +177,17 @@ class UpdateExistingNodes {
         /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $layout */
         $sections = $layout->getSections();
 
-        foreach ($sections as $section) {
-          // If an overridden layout already contains an Page Meta section,
-          // remove it from the update list.
-          if ($section->getLayoutSettings()['label'] == 'Title and Metadata') {
-            unset($nids[array_search($nid, $nids)]);
+        // If there are no sections, this nid has the default layout, remove it.
+        if (count($sections) === 0) {
+          unset($nids[array_search($nid, $nids)]);
+        }
+        else {
+          foreach ($sections as $section) {
+            // If an overridden layout already contains an Page Meta section,
+            // remove it from the update list.
+            if ($section->getLayoutSettings()['label'] == 'Title and Metadata') {
+              unset($nids[array_search($nid, $nids)]);
+            }
           }
         }
       }
@@ -230,14 +242,22 @@ class UpdateExistingNodes {
       foreach ($nids as $nid) {
         $node = Node::load($nid);
         $layout = $node->get('layout_builder__layout');
+
         /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $layout */
         $sections = $layout->getSections();
 
-        foreach ($sections as $section) {
-          // If an overridden layout already contains an Event Meta section,
-          // remove it from the update list.
-          if ($section->getLayoutSettings()['label'] == 'Title and Metadata') {
-            unset($nids[array_search($nid, $nids)]);
+        // If there are no sections, this nid has the default layout, remove it.
+        if (count($sections) === 0) {
+          unset($nids[array_search($nid, $nids)]);
+        }
+        else {
+          foreach ($sections as $section) {
+
+            // If an overridden layout already contains an Event Meta section,
+            // remove it from the update list.
+            if ($section->getLayoutSettings()['label'] == 'Title and Metadata') {
+              unset($nids[array_search($nid, $nids)]);
+            }
           }
         }
       }
