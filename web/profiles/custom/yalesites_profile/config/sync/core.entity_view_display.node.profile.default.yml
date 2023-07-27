@@ -23,7 +23,6 @@ dependencies:
     - address
     - layout_builder
     - layout_builder_restrictions
-    - layout_discovery
     - metatag
     - text
     - user
@@ -34,13 +33,13 @@ third_party_settings:
     allow_custom: true
     sections:
       -
-        layout_id: layout_onecol
+        layout_id: ys_layout_banner
         layout_settings:
-          label: 'Title and Metadata'
+          label: 'Banner Section'
           context_mapping: {  }
         components:
-          2eb96ade-9d12-4f3c-9cf6-e7933c0451e6:
-            uuid: 2eb96ade-9d12-4f3c-9cf6-e7933c0451e6
+          03baefc5-294e-480c-85a6-b35ec2c5ff2a:
+            uuid: 03baefc5-294e-480c-85a6-b35ec2c5ff2a
             region: content
             configuration:
               id: profile_meta_block
@@ -80,15 +79,32 @@ third_party_settings:
             additional: {  }
         third_party_settings: {  }
   layout_builder_restrictions:
-    allowed_block_categories: {  }
+    allowed_block_categories:
+      - 'Chaos Tools'
+      - 'Content fields'
+      - 'Custom block types'
+      - Devel
+      - Forms
+      - Help
+      - 'Inline blocks'
+      - 'Lists (Views)'
+      - Menus
+      - System
+      - Webform
+      - 'YaleSites Core'
+      - 'YaleSites Layouts'
+      - 'YaleSites alert'
+      - core
     entity_view_mode_restriction:
       allowed_layouts:
         - layout_onecol
+        - ys_layout_banner
         - ys_layout_two_column
       denylisted_blocks: {  }
       allowlisted_blocks:
         'YaleSites Layouts':
           - profile_contact_block
+          - profile_meta_block
       restricted_categories:
         - 'Chaos Tools'
         - 'Content fields'
@@ -106,12 +122,17 @@ third_party_settings:
     entity_view_mode_restriction_by_region:
       allowed_layouts:
         - layout_onecol
+        - ys_layout_banner
         - ys_layout_two_column
       allowlisted_blocks:
         layout_onecol:
           all_regions:
             'YaleSites Layouts':
               - profile_contact_block
+        ys_layout_banner:
+          all_regions:
+            'YaleSites Layouts':
+              - profile_meta_block
         ys_layout_two_column:
           content:
             'YaleSites Layouts':
@@ -166,6 +187,22 @@ third_party_settings:
             - Devel
             - Forms
             - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites alert'
+            - core
+        ys_layout_banner:
+          all_regions:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - 'Custom block types'
+            - Devel
+            - Forms
+            - Help
+            - 'Inline blocks'
             - 'Lists (Views)'
             - Menus
             - System
