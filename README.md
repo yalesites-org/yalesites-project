@@ -41,5 +41,3 @@ _Notes:_
 - `confim` Imports the current config files to your database.
 - `local:theme-link` Run this script once to establish `npm link`s to all of the frontend-related repositories.
 - `local:cl-dev` Enables a frontend developer to work across all of the repositories (`yalesites-project`, `atomic`, and `component-library-twig`) in an environment configured to support both Storybook development, and have the changes reflected in the Drupal instance. Note: This also wires up the Tokens repo, but if you want to watch for changes there, you'll have to run the `npm run develop` script inside the Tokens directory.
-
-*** MULTIDEV GENERATION ONLY ***
