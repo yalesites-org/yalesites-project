@@ -23,6 +23,13 @@
  * @see template_preprocess_html()
  */
 #}
+
+{%
+  set body_classes = [
+    'ys-content-type-' ~ node_type,
+  ]
+%}
+
 <!DOCTYPE html>
 <html{{ html_attributes }}>
   <head>
@@ -42,7 +49,7 @@
     <meta name="theme-color" content="#ffffff">
 
   </head>
-  <body{{ attributes }}>
+  <body{{ attributes.addClass(body_classes) }}>
     {#
       Keyboard navigation/accessibility link to main content section in
       page.html.twig.
