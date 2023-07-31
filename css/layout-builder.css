@@ -57,3 +57,9 @@ need to have margin-bottom set to 0 */
 .main-content .layout.layout--onecol:last-child {
   margin-bottom: 0;
 }
+
+
+/* Fix for breadcrumb spacing on profile nodes */
+.ys-content-type-profile .main-content .breadcrumbs__wrapper {
+  margin-bottom: var(--size-spacing-7);
+}
