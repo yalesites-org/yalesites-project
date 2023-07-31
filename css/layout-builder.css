@@ -58,6 +58,22 @@ need to have margin-bottom set to 0 */
   margin-bottom: 0;
 }
 
+/*
+// Pull quotes has a <p> element provided by the WYSIWYG 
+// we need to make the `-` character and the attribution text in line, 
+// and remove margin from the <p>
+display: flex;
+*/
+
+.pull-quote__attribution {
+  display: flex;
+}
+
+.pull-quote__attribution p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
 
 /* Fix for breadcrumb spacing on profile nodes */
 .ys-content-type-profile .main-content .breadcrumbs__wrapper {

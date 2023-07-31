@@ -2,7 +2,15 @@
 
 {% block content %}
 
-  {% embed "@molecules/embed/yds-embed.twig" %}
+  {% if parentNode == 'post' or parentNode == 'event' %}
+    {% set embed__width = "content" %}
+  {% else %}
+    {% set embed__width = "site" %}
+  {% endif %}
+
+  {% embed "@molecules/embed/yds-embed.twig" with {
+    embed__width: embed__width,
+  }%}
 
     {% block embed__block %}
       {{ content }}
