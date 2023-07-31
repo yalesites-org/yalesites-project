@@ -56,17 +56,15 @@ function ys_core_theme($existing, $type, $theme, $path): array {
 }
 
 /**
- * Implements hook_form_FORMID_alter().
- */
-function ys_core_form_node_page_layout_builder_form_alter(&$form, $form_state, $form_id) {
-  // Add styles to the layout builder form.
-  $form['#attached']['library'][] = 'ys_core/node_layout_form';
-}
-
-/**
  * Implements hook_form_alter().
  */
 function ys_core_form_alter(&$form, $form_state, $form_id) {
+
+  // Load custom library.
+  if (str_ends_with($form_id, '_layout_builder_form')) {
+    $form['#attached']['library'][] = 'ys_core/node_layout_form';
+  }
+
   // Changes wording of sticky at top of lists.
   if (isset($form['sticky'])) {
     $form['sticky']['widget']['value']['#title'] = t('Pin to the beginning of list');
