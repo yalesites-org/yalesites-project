@@ -55,3 +55,21 @@ definitions:
     weight: 4
     expanded: false
     enabled: true
+  ys_core__menu_main_edit:
+    weight: 9
+    menu_name: admin
+    parent: system.admin_content
+    expanded: false
+    enabled: true
+  ys_core__menu_utility_edit:
+    weight: 10
+    menu_name: admin
+    parent: system.admin_content
+    expanded: false
+    enabled: true
+  ys_core__taxonomy_interface:
+    weight: 11
+    menu_name: admin
+    parent: system.admin_content
+    expanded: false
+    enabled: true
