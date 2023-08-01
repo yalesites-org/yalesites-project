@@ -1,16 +1,16 @@
-uuid: b6c01928-faee-46a6-a157-21c784bb7b37
+uuid: 731900c3-bc43-42ae-82d3-9eea30af0ab0
 langcode: en
 status: true
 dependencies:
   module:
-    - address
     - node
+    - text
 id: node.field_address
 field_name: field_address
 entity_type: node
-type: address
+type: text_long
 settings: {  }
-module: address
+module: text
 locked: false
 cardinality: 1
 translatable: true

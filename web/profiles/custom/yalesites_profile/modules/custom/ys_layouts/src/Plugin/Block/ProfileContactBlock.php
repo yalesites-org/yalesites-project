@@ -70,7 +70,7 @@ class ProfileContactBlock extends BlockBase implements ContainerFactoryPluginInt
     // Profile fields.
     $email = ($node->field_email->first()) ? $node->field_email->first()->getValue()['value'] : NULL;
     $phone = ($node->field_telephone->first()) ? $node->field_telephone->first()->getValue()['value'] : NULL;
-    $address = ($node->field_address->first()) ? $node->field_address->first()->getValue() : NULL;
+    $address = ($node->field_address->first()) ? $node->field_address->first()->getValue()['value'] : NULL;
 
     return [
       '#theme' => 'ys_profile_contact_block',

@@ -78,24 +78,24 @@ third_party_settings:
     entity_view_mode_restriction:
       allowed_layouts:
         - layout_onecol
-        - ys_layout_banner
         - ys_layout_two_column
-        - ys_layout_page_meta
       denylisted_blocks: {  }
       allowlisted_blocks: {  }
       restricted_categories: {  }
     entity_view_mode_restriction_by_region:
       allowed_layouts:
         - layout_onecol
-        - ys_layout_banner
         - ys_layout_two_column
-        - ys_layout_page_meta
       allowlisted_blocks:
         ys_layout_banner:
           all_regions:
             'Inline blocks':
               - 'inline_block:cta_banner'
               - 'inline_block:grand_hero'
+        ys_layout_page_meta:
+          all_regions:
+            'YaleSites Layouts':
+              - page_meta_block
         ys_layout_two_column:
           content:
             'Inline blocks':
@@ -111,6 +111,53 @@ third_party_settings:
             'Inline blocks':
               - 'inline_block:text'
       restricted_categories:
+        ys_layout_two_column:
+          content:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - 'Custom block types'
+            - Devel
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites Layouts'
+            - 'YaleSites alert'
+            - core
+          sidebar:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - 'Custom block types'
+            - Devel
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites Layouts'
+            - 'YaleSites alert'
+            - core
+        layout_onecol:
+          all_regions:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - 'Custom block types'
+            - Devel
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites Layouts'
+            - 'YaleSites alert'
+            - core
         ys_layout_banner:
           all_regions:
             - 'Chaos Tools'
@@ -124,11 +171,25 @@ third_party_settings:
             - System
             - Webform
             - 'YaleSites Core'
+            - 'YaleSites Layouts'
             - 'YaleSites alert'
             - core
-        ys_layout_two_column:
-          sidebar:
-            - 'YaleSites Layouts'
+        ys_layout_page_meta:
+          all_regions:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - 'Custom block types'
+            - Devel
+            - Forms
+            - Help
+            - 'Inline blocks'
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites alert'
+            - core
 id: node.page.default
 targetEntityType: node
 bundle: page

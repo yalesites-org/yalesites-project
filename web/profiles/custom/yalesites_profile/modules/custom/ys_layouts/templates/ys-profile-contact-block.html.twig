@@ -25,24 +25,10 @@
         link__url: 'tel:' ~ phone,
         link__content: phone,
       } %}
-      {% endembed %}      
+      {% endembed %}
     {% endif %}
 
     {% if address %}
-
-      {% set address %}
-        <br>
-        {% if address.address_line1 %}
-          {{ address.address_line1 }}<br>
-        {% endif %}
-        {% if address.address_line2 %}
-          {{ address.address_line2 }}<br>
-        {% endif %}
-        {% if address.locality %}
-          {{ address.locality }},
-        {% endif %}
-        {{ address.administrative_area }} {{ address.postal_code }}
-      {% endset %}
 
       {% embed '@molecules/text/yds-text-field.twig' with {
         text_field__content: address,

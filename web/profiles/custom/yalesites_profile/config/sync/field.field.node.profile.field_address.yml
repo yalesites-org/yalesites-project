@@ -1,4 +1,4 @@
-uuid: dd54a6d3-80ab-4cbc-a5de-0ba5d116765c
+uuid: fc091409-edbc-4be1-932b-a96221f72d61
 langcode: en
 status: true
 dependencies:
@@ -6,7 +6,12 @@ dependencies:
     - field.storage.node.field_address
     - node.type.profile
   module:
-    - address
+    - allowed_formats
+    - text
+third_party_settings:
+  allowed_formats:
+    allowed_formats:
+      - heading_html
 id: node.profile.field_address
 field_name: field_address
 entity_type: node
@@ -15,47 +20,7 @@ label: Address
 description: ''
 required: false
 translatable: false
-default_value:
-  -
-    langcode: null
-    country_code: US
-    administrative_area: ''
-    locality: ''
-    dependent_locality: null
-    postal_code: ''
-    sorting_code: null
-    address_line1: ''
-    address_line2: ''
-    organization: null
-    given_name: null
-    additional_name: null
-    family_name: null
+default_value: {  }
 default_value_callback: ''
-settings:
-  available_countries: {  }
-  langcode_override: ''
-  field_overrides:
-    givenName:
-      override: hidden
-    additionalName:
-      override: hidden
-    familyName:
-      override: hidden
-    organization:
-      override: hidden
-    addressLine1:
-      override: optional
-    addressLine2:
-      override: optional
-    postalCode:
-      override: optional
-    sortingCode:
-      override: hidden
-    dependentLocality:
-      override: optional
-    locality:
-      override: optional
-    administrativeArea:
-      override: optional
-  fields: {  }
-field_type: address
+settings: {  }
+field_type: text_long

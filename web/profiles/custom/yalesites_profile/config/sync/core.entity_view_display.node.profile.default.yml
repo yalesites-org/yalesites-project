@@ -20,7 +20,6 @@ dependencies:
     - field.field.node.profile.layout_builder__layout
     - node.type.profile
   module:
-    - address
     - layout_builder
     - layout_builder_restrictions
     - metatag
@@ -98,7 +97,6 @@ third_party_settings:
     entity_view_mode_restriction:
       allowed_layouts:
         - layout_onecol
-        - ys_layout_banner
         - ys_layout_two_column
       denylisted_blocks: {  }
       allowlisted_blocks:
@@ -122,17 +120,12 @@ third_party_settings:
     entity_view_mode_restriction_by_region:
       allowed_layouts:
         - layout_onecol
-        - ys_layout_banner
         - ys_layout_two_column
       allowlisted_blocks:
         layout_onecol:
           all_regions:
             'YaleSites Layouts':
               - profile_contact_block
-        ys_layout_banner:
-          all_regions:
-            'YaleSites Layouts':
-              - profile_meta_block
         ys_layout_two_column:
           content:
             'Inline blocks':
@@ -197,29 +190,13 @@ third_party_settings:
             - 'YaleSites Core'
             - 'YaleSites alert'
             - core
-        ys_layout_banner:
-          all_regions:
-            - 'Chaos Tools'
-            - 'Content fields'
-            - 'Custom block types'
-            - Devel
-            - Forms
-            - Help
-            - 'Inline blocks'
-            - 'Lists (Views)'
-            - Menus
-            - System
-            - Webform
-            - 'YaleSites Core'
-            - 'YaleSites alert'
-            - core
 id: node.profile.default
 targetEntityType: node
 bundle: profile
 mode: default
 content:
   field_address:
-    type: address_default
+    type: text_default
     label: above
     settings: {  }
     third_party_settings: {  }
