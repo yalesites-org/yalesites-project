@@ -7,7 +7,6 @@ use Drupal\Core\Controller\TitleResolver;
 use Drupal\Core\Datetime\DateFormatter;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\node\NodeInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -51,7 +50,7 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
   protected $dateFormatter;
 
   /**
-   * Constructs a new YaleSitesBreadcrumbBlock object.
+   * Constructs a new PostMetaBlock object.
    *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.
@@ -96,17 +95,23 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
    */
   public function build() {
 
-    /** @var \Drupal\node\NodeInterface $node */
-    $node = $this->routeMatch->getParameter('node');
-    if (!($node instanceof NodeInterface)) {
-      return [];
+    $title = NULL;
+    $author = NULL;
+    $publishDate = NULL;
+    $dateFormatted = NULL;
+
+    $request = $this->requestStack->getCurrentRequest();
+    $route = $this->routeMatch->getRouteObject();
+
+    if ($route) {
+      $node = $request->attributes->get('node');
+      // Post fields.
+      $title = $node->getTitle();
+      $author = ($node->field_author->first()) ? $node->field_author->first()->getValue()['value'] : NULL;
+      $publishDate = strtotime($node->field_publish_date->first()->getValue()['value']);
+      $dateFormatted = $this->dateFormatter->format($publishDate, '', 'c');
     }
 
-    // Post fields.
-    $title = $node->getTitle();
-    $author = ($node->field_author->first()) ? $node->field_author->first()->getValue()['value'] : NULL;
-    $publishDate = strtotime($node->field_publish_date->first()->getValue()['value']);
-    $dateFormatted = $this->dateFormatter->format($publishDate, '', 'c');
     return [
       '#theme' => 'ys_post_meta_block',
       '#label' => $title,

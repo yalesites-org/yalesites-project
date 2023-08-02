@@ -43,7 +43,7 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
   protected $requestStack;
 
   /**
-   * Constructs a new YaleSitesBreadcrumbBlock object.
+   * Constructs a new PageMetaBlock object.
    *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.
