@@ -9,6 +9,7 @@ dependencies:
     - node
     - search_api
     - search_api_exclude
+    - search_api_html_element_filter
 id: node_index
 name: 'Node Index'
 description: ''
@@ -88,6 +89,15 @@ processor_settings:
     exclude_fields: {  }
     highlight: always
     highlight_partial: false
+  html_element_filter:
+    weights:
+      postprocess_query: -30
+      preprocess_index: -30
+    all_fields: 0
+    fields:
+      - field_teaser_text
+      - rendered_item
+    css_selectors: .visually-hidden
   ignorecase:
     weights:
       preprocess_index: -20
