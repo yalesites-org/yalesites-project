@@ -3,6 +3,7 @@
 namespace Drupal\ys_layouts\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -34,6 +35,13 @@ class ProfileContactBlock extends BlockBase implements ContainerFactoryPluginInt
   protected $requestStack;
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * Constructs a new ProfileContactBlock instance.
    *
    * @param array $configuration
@@ -46,24 +54,40 @@ class ProfileContactBlock extends BlockBase implements ContainerFactoryPluginInt
    *   The current route match.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $route_match, RequestStack $request_stack) {
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    RouteMatchInterface $route_match,
+    RequestStack $request_stack,
+    EntityTypeManagerInterface $entity_type_manager
+    ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->routeMatch = $route_match;
     $this->requestStack = $request_stack;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(
+    ContainerInterface $container,
+    array $configuration,
+    $plugin_id,
+    $plugin_definition
+    ) {
     return new static(
       $configuration,
       $plugin_id,
       $plugin_definition,
       $container->get('current_route_match'),
       $container->get('request_stack'),
+      $container->get('entity_type.manager'),
     );
   }
 
@@ -78,9 +102,18 @@ class ProfileContactBlock extends BlockBase implements ContainerFactoryPluginInt
 
     $request = $this->requestStack->getCurrentRequest();
     $route = $this->routeMatch->getRouteObject();
+    $node = $request->attributes->get('node');
+    // When removing the contact block when one already exists,
+    // it no longer has access to the node object. Therefore, we must load it
+    // manually via the ajaxified path.
+    if (!$node) {
+      $layoutBuilderPath = $request->getPathInfo();
+      preg_match('/(node\.+(\d+))/', $layoutBuilderPath, $matches);
+      $nodeStorage = $this->entityTypeManager->getStorage('node');
+      $node = $nodeStorage->load($matches[2]);
+    }
 
     if ($route) {
-      $node = $request->attributes->get('node');
       // Profile fields.
       $email = ($node->field_email->first()) ? $node->field_email->first()->getValue()['value'] : NULL;
       $phone = ($node->field_telephone->first()) ? $node->field_telephone->first()->getValue()['value'] : NULL;
