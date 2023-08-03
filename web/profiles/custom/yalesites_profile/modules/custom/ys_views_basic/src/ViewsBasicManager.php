@@ -86,6 +86,13 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   protected $entityDisplayRepository;
 
   /**
+   * The term storage.
+   *
+   * @var \Drupal\taxonomy\TermStorageInterface
+   */
+  protected $termStorage;
+
+  /**
    * Constructs a new ViewsBasicManager object.
    */
   public function __construct(
@@ -94,6 +101,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityDisplayRepository = $entity_display_repository;
+    $this->termStorage = $this->entityTypeManager->getStorage('taxonomy_term');
   }
 
   /**
@@ -159,14 +167,14 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     // Get terms to include.
     if (isset($paramsDecoded['filters']['terms_include'])) {
       foreach ($paramsDecoded['filters']['terms_include'] as $term) {
-        $termsIncludeArray[] = $term['target_id'];
+        $termsIncludeArray[] = (int) $term;
       }
     }
 
     // Get terms to exclude.
     if (isset($paramsDecoded['filters']['terms_exclude'])) {
       foreach ($paramsDecoded['filters']['terms_exclude'] as $term) {
-        $termsExcludeArray[] = $term['target_id'];
+        $termsExcludeArray[] = (int) $term;
       }
     }
 
@@ -300,8 +308,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * @return string
    *   The label of the taxonomy term or empty string.
    */
-  public function getTagLabel($tag) {
-    $term = $this->entityTypeManager()->getStorage('taxonomy_term')->load($tag);
+  public function getTagLabel($tag) : string {
+    $term = $this->termStorage->load($tag);
     return ($term) ? $term->name->value : '';
   }
 
@@ -335,8 +343,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       case 'terms_exclude':
         if (!empty($paramsDecoded['filters'][$type])) {
           foreach ($paramsDecoded['filters'][$type] as $term) {
-            $tid = (int) $term['target_id'];
-            $defaultParam[] = $this->entityTypeManager()->getStorage('taxonomy_term')->load($tid);
+            $defaultParam[] = (int) $term;
           }
         }
         break;
@@ -354,6 +361,66 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         break;
     }
     return $defaultParam;
+  }
+
+  /**
+   * Returns the vocabulary id for a given term.
+   *
+   * @param mixed $term
+   *   The taxonomy term.
+   *
+   * @return string
+   *   The vocabulary machine name.
+   */
+  private function getVocabulary($term) : string {
+    return $term->bundle();
+  }
+
+  /**
+   * Returns the vocabulary label for a given term.
+   *
+   * @param mixed $term
+   *   The taxonomy term.
+   * @param \Drupal\taxonomy\VocabularyInterface $vocabularyInterface
+   *   The vocabulary class to load from.
+   *
+   * @return string
+   *   The vocabulary label.
+   */
+  private function getVocabularyLabel($term, $vocabularyInterface) : string {
+    return $vocabularyInterface->load($this->getVocabulary($term))->label();
+  }
+
+  /**
+   * Returns the label for a given term with the vocabulary label.
+   *
+   * @param mixed $term
+   *   The taxonomy term.
+   *
+   * @return string
+   *   The label with the vocabulary label.
+   */
+  private function getLabelWithVocabularyLabel($term) : string {
+    return $term->label() . ' (' . $this->getVocabularyLabel($term, $this->entityTypeManager->getStorage('taxonomy_vocabulary')) . ')';
+  }
+
+  /**
+   * Returns an array of all tags.
+   *
+   * @return array
+   *   An array of all taxonomy term IDs and labels.
+   */
+  public function getAllTags() : array {
+    $terms = $this->termStorage->loadMultiple();
+    $tagList = [];
+
+    foreach ($terms as $term) {
+      $tagList[$term->id()] = $this->getLabelWithVocabularyLabel($term);
+    }
+
+    asort($tagList);
+
+    return $tagList;
   }
 
 }
