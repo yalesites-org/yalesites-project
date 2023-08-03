@@ -179,7 +179,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     }
 
     // Set operator: "+" is "OR" and "," is "AND".
-    $operator = isset($paramsDecoded['operator']) ?: '+';
+    $operator = isset($paramsDecoded['operator']) ? $paramsDecoded['operator'] : '+';
     $termsInclude = isset($termsIncludeArray) ? implode($operator, $termsIncludeArray) : 'all';
     $termsExclude = isset($termsExcludeArray) ? implode($operator, $termsExcludeArray) : NULL;
 
