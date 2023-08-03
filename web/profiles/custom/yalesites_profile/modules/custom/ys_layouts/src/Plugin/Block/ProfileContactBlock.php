@@ -113,7 +113,7 @@ class ProfileContactBlock extends BlockBase implements ContainerFactoryPluginInt
       $node = $nodeStorage->load($matches[2]);
     }
 
-    if ($route) {
+    if ($route && $node) {
       // Profile fields.
       $email = ($node->field_email->first()) ? $node->field_email->first()->getValue()['value'] : NULL;
       $phone = ($node->field_telephone->first()) ? $node->field_telephone->first()->getValue()['value'] : NULL;
