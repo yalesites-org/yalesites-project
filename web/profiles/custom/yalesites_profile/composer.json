@@ -16,7 +16,7 @@
     "drupal/block_content_permissions": "^1.11",
     "drupal/bugherd": "1.0",
     "drupal/calendar_link": "^3.0",
-    "drupal/captcha": "^1.8",
+    "drupal/captcha": "1.10.0",
     "drupal/cas": "^2.0",
     "drupal/chosen": "^4.0",
     "drupal/components": "^3.0",
