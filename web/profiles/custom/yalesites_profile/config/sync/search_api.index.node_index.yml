@@ -75,7 +75,7 @@ processor_settings:
   aggregated_field: {  }
   content_access:
     weights:
-      preprocess_query: -30
+      preprocess_query: -50
   entity_status: {  }
   entity_type: {  }
   highlight:
@@ -92,16 +92,34 @@ processor_settings:
   html_element_filter:
     weights:
       postprocess_query: -30
-      preprocess_index: -30
+      preprocess_index: -50
     all_fields: 0
     fields:
       - field_teaser_text
       - rendered_item
     css_selectors: .visually-hidden
+  html_filter:
+    weights:
+      preprocess_index: -49
+      preprocess_query: -48
+    all_fields: false
+    fields:
+      - field_teaser_text
+      - rendered_item
+    title: true
+    alt: true
+    tags:
+      b: 2
+      em: 1
+      h1: 5
+      h2: 3
+      h3: 2
+      strong: 2
+      u: 1
   ignorecase:
     weights:
-      preprocess_index: -20
-      preprocess_query: -20
+      preprocess_index: -48
+      preprocess_query: -47
     all_fields: true
     fields:
       - field_teaser_text
@@ -111,8 +129,8 @@ processor_settings:
   rendered_item: {  }
   stemmer:
     weights:
-      preprocess_index: 0
-      preprocess_query: 0
+      preprocess_index: -42
+      preprocess_query: -42
     all_fields: false
     fields:
       - field_teaser_text
@@ -120,10 +138,22 @@ processor_settings:
     exceptions:
       mexican: mexic
       texan: texa
+  tokenizer:
+    weights:
+      preprocess_index: -45
+      preprocess_query: -44
+    all_fields: false
+    fields:
+      - field_teaser_text
+      - rendered_item
+    spaces: ''
+    ignored: ._-
+    overlap_cjk: 1
+    minimum_word_size: '3'
   transliteration:
     weights:
-      preprocess_index: -20
-      preprocess_query: -20
+      preprocess_index: -47
+      preprocess_query: -46
     all_fields: true
     fields:
       - field_teaser_text
