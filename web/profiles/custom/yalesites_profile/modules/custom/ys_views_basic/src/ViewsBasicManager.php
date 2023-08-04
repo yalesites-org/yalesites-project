@@ -163,6 +163,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
      */
 
     $filterType = implode('+', $paramsDecoded['filters']['types']);
+    $termsIncludeArray = [];
+    $termsExcludeArray = [];
 
     // Get terms to include.
     if (isset($paramsDecoded['filters']['terms_include'])) {
@@ -181,8 +183,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     // Set operator: "+" is "OR" and "," is "AND".
     $operator = $paramsDecoded['operator'] ?? '+';
 
-    $termsInclude = (isset($termsIncludeArray) && is_array($termsIncludeArray)) ? implode($operator, $termsIncludeArray) : 'all';
-    $termsExclude = (isset($termsExcludeArray) && is_array($termsExcludeArray)) ? implode($operator, $termsExcludeArray) : NULL;
+    $termsInclude = (count($termsIncludeArray) != 0) ? implode($operator, $termsIncludeArray) : 'all';
+    $termsExclude = (count($termsExcludeArray) != 0) ? implode($operator, $termsExcludeArray) : NULL;
 
     if (
       ($type == 'count' && $paramsDecoded['display'] != 'limit') ||
