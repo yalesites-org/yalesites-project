@@ -37,7 +37,7 @@ content:
     type: entity_reference_entity_view
     label: hidden
     settings:
-      view_mode: card_list_3_2
+      view_mode: profile_directory_card_1_1_
       link: false
     third_party_settings: {  }
     weight: 0

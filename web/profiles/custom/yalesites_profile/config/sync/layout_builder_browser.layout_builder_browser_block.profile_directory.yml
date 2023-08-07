@@ -1,0 +1,11 @@
+uuid: c653ad03-4817-4b18-80bc-e724445111cd
+langcode: en
+status: true
+dependencies: {  }
+id: profile_directory
+block_id: 'inline_block:directory'
+category: advanced
+label: 'Profile Directory'
+image_path: ''
+image_alt: ''
+weight: -100

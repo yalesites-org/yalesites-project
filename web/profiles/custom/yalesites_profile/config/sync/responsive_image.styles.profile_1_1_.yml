@@ -1,0 +1,16 @@
+uuid: 66eaf895-8286-4589-9f69-6a87066217bb
+langcode: en
+status: true
+dependencies:
+  config:
+    - image.style.1_1_300_
+id: profile_1_1_
+label: 'Profile (1:1)'
+image_style_mappings:
+  -
+    image_mapping_type: image_style
+    image_mapping: '1_1_300_'
+    breakpoint_id: responsive_image.viewport_sizing
+    multiplier: 1x
+breakpoint_group: responsive_image
+fallback_image_style: '1_1_300_'

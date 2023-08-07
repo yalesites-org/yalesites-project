@@ -1,0 +1,26 @@
+uuid: 672d12ef-f635-4d9f-8b90-2ca29cf817d0
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.directory
+    - field.storage.block_content.field_heading
+  module:
+    - allowed_formats
+    - text
+third_party_settings:
+  allowed_formats:
+    allowed_formats:
+      - heading_html
+id: block_content.directory.field_heading
+field_name: field_heading
+entity_type: block_content
+bundle: directory
+label: Heading
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: text
