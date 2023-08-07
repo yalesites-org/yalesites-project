@@ -36,8 +36,8 @@ third_party_settings:
         - field_teaser_media
       label: Teaser
       region: content
-      parent_name: ''
-      weight: 10
+      parent_name: group_general_info
+      weight: 7
       format_type: fieldset
       format_settings:
         classes: ''
@@ -51,7 +51,7 @@ third_party_settings:
       label: 'Publishing Settings'
       region: content
       parent_name: ''
-      weight: 13
+      weight: 14
       format_type: details_sidebar
       format_settings:
         classes: ''
@@ -61,6 +61,60 @@ third_party_settings:
         description: ''
         required_fields: true
         weight: 0
+    group_profile_tabs:
+      children:
+        - group_general_info
+        - group_contact_info
+      label: 'Profile Tabs'
+      region: content
+      parent_name: ''
+      weight: 0
+      format_type: tabs
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        direction: horizontal
+        width_breakpoint: 640
+    group_general_info:
+      children:
+        - title
+        - field_position
+        - field_subtitle
+        - field_department
+        - field_affiliation
+        - field_media
+        - group_teaser
+      label: 'General Info'
+      region: content
+      parent_name: group_profile_tabs
+      weight: 23
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: closed
+        description: ''
+        required_fields: true
+    group_contact_info:
+      children:
+        - field_email
+        - field_telephone
+        - field_address
+        - field_tags
+      label: 'Contact Info'
+      region: content
+      parent_name: group_profile_tabs
+      weight: 24
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: closed
+        description: ''
+        required_fields: true
 id: node.profile.default
 targetEntityType: node
 bundle: profile
@@ -68,7 +122,7 @@ mode: default
 content:
   field_address:
     type: text_textarea
-    weight: 19
+    weight: 6
     region: content
     settings:
       rows: 5
@@ -82,7 +136,7 @@ content:
     third_party_settings: {  }
   field_department:
     type: string_textfield
-    weight: 6
+    weight: 4
     region: content
     settings:
       size: 60
@@ -90,7 +144,7 @@ content:
     third_party_settings: {  }
   field_email:
     type: email_default
-    weight: 3
+    weight: 4
     region: content
     settings:
       placeholder: ''
@@ -105,14 +159,14 @@ content:
     third_party_settings: {  }
   field_media:
     type: media_library_widget
-    weight: 8
+    weight: 6
     region: content
     settings:
       media_types: {  }
     third_party_settings: {  }
   field_metatags:
     type: metatag_firehose
-    weight: 12
+    weight: 13
     region: content
     settings:
       sidebar: true
@@ -120,7 +174,7 @@ content:
     third_party_settings: {  }
   field_position:
     type: string_textfield
-    weight: 1
+    weight: 2
     region: content
     settings:
       size: 60
@@ -128,7 +182,7 @@ content:
     third_party_settings: {  }
   field_subtitle:
     type: text_textfield
-    weight: 2
+    weight: 3
     region: content
     settings:
       size: 60
@@ -183,7 +237,7 @@ content:
     third_party_settings: {  }
   field_telephone:
     type: string_textfield
-    weight: 4
+    weight: 5
     region: content
     settings:
       size: 60
@@ -191,32 +245,32 @@ content:
     third_party_settings: {  }
   path:
     type: path
-    weight: 9
+    weight: 10
     region: content
     settings: {  }
     third_party_settings: {  }
   simple_sitemap:
-    weight: 15
+    weight: 16
     region: content
     settings: {  }
     third_party_settings: {  }
   status:
     type: boolean_checkbox
-    weight: 14
+    weight: 15
     region: content
     settings:
       display_label: true
     third_party_settings: {  }
   title:
     type: string_textfield
-    weight: 0
+    weight: 1
     region: content
     settings:
       size: 60
       placeholder: ''
     third_party_settings: {  }
   url_redirects:
-    weight: 11
+    weight: 12
     region: content
     settings: {  }
     third_party_settings: {  }

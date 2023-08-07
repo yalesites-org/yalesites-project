@@ -10,7 +10,7 @@ field_name: field_position
 entity_type: node
 bundle: profile
 label: Position
-description: ''
+description: 'Enter your position, job title, or primary role. Example: Software Engineer'
 required: false
 translatable: false
 default_value: {  }

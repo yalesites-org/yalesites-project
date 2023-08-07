@@ -17,7 +17,7 @@ field_name: field_subtitle
 entity_type: node
 bundle: profile
 label: Subtitle
-description: ''
+description: 'Display a secondary title, role, or affiliation. Example: Director of Graduate Studies'
 required: false
 translatable: false
 default_value: {  }
