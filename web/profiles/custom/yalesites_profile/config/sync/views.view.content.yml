@@ -76,6 +76,7 @@ display:
           action_title: Action
           include_exclude: include
           selected_actions:
+            - content_bulk_export
             - node_delete_action
             - node_publish_action
             - node_unpublish_action
