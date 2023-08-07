@@ -18,6 +18,7 @@ dependencies:
     - taxonomy.vocabulary.post_category
     - taxonomy.vocabulary.tags
   module:
+    - actions_permissions
     - block_content_permissions
     - contextual
     - editoria11y
@@ -164,6 +165,7 @@ permissions:
   - 'edit terms in event_category'
   - 'edit terms in post_category'
   - 'edit terms in tags'
+  - 'execute content_bulk_export node'
   - 'export block_content content'
   - 'export media content'
   - 'export node content'
