@@ -32,6 +32,7 @@ dependencies:
     - publishcontent
     - quick_node_clone
     - redirect
+    - single_content_sync
     - system
     - taxonomy
     - toolbar
@@ -163,6 +164,13 @@ permissions:
   - 'edit terms in event_category'
   - 'edit terms in post_category'
   - 'edit terms in tags'
+  - 'export block_content content'
+  - 'export media content'
+  - 'export node content'
+  - 'export redirect content'
+  - 'export single content'
+  - 'export taxonomy_term content'
+  - 'import single content'
   - 'mark as hidden in editoria11y'
   - 'override all sticky option'
   - 'override post authored on option'
