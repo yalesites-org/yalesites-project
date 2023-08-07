@@ -105,6 +105,7 @@ module:
   search_api_html_element_filter: 0
   section_library: 0
   simple_sitemap: 0
+  single_content_sync: 0
   smart_date: 0
   smart_date_recur: 0
   sophron: 0
