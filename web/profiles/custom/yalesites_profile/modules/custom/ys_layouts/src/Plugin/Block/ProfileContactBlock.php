@@ -109,8 +109,10 @@ class ProfileContactBlock extends BlockBase implements ContainerFactoryPluginInt
     if (!$node) {
       $layoutBuilderPath = $request->getPathInfo();
       preg_match('/(node\.+(\d+))/', $layoutBuilderPath, $matches);
-      $nodeStorage = $this->entityTypeManager->getStorage('node');
-      $node = $nodeStorage->load($matches[2]);
+      if (!empty($matches)) {
+        $nodeStorage = $this->entityTypeManager->getStorage('node');
+        $node = $nodeStorage->load($matches[2]);
+      }
     }
 
     if ($route && $node) {

@@ -34,7 +34,7 @@ class ViewsBasicSort extends SortPluginBase {
         else {
           $field = $sortQueryOptions[0];
         }
-
+        $query->addOrderBy(NULL, "sticky", 'DESC', 'views_basic_sort');
         $query->addOrderBy(NULL, "{$field}", $sortQueryOptions[1], 'views_basic_sort');
       }
     }

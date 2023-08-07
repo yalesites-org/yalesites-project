@@ -7,6 +7,9 @@ dependencies:
     - field.field.node.profile.field_affiliation
     - field.field.node.profile.field_department
     - field.field.node.profile.field_email
+    - field.field.node.profile.field_first_name
+    - field.field.node.profile.field_honorific_prefix
+    - field.field.node.profile.field_last_name
     - field.field.node.profile.field_login_required
     - field.field.node.profile.field_media
     - field.field.node.profile.field_metatags
@@ -224,6 +227,30 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 110
+    region: content
+  field_first_name:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 116
+    region: content
+  field_honorific_prefix:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 118
+    region: content
+  field_last_name:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 117
     region: content
   field_login_required:
     type: boolean

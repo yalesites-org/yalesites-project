@@ -137,6 +137,19 @@ display:
           entity_type: node
           entity_field: sticky
           plugin_id: standard
+          order: DESC
+          expose:
+            label: ''
+            field_identifier: ''
+          exposed: false
+        field_last_name_value:
+          id: field_last_name_value
+          table: node__field_last_name
+          field: field_last_name_value
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: standard
           order: ASC
           expose:
             label: ''

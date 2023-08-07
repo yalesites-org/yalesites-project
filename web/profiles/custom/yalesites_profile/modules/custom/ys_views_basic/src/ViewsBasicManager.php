@@ -81,8 +81,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'condensed' => 'Condensed',
       ],
       'sort_by' => [
-        'title:ASC' => 'Name - A-Z',
-        'title:DESC' => 'Name - Z-A',
+        'field_last_name:ASC' => 'Last Name - A-Z',
+        'field_last_name:DESC' => 'Last Name - Z-A',
       ],
     ],
   ];

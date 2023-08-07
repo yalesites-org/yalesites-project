@@ -1,17 +1,18 @@
-uuid: cca9c181-8043-40a7-abde-a1d3536c86f2
+uuid: 9c5dc59d-8649-4ce6-a751-24e950331927
 langcode: en
 status: true
 dependencies:
   config:
+    - field.storage.node.field_first_name
     - node.type.profile
-id: node.profile.title
-field_name: title
+id: node.profile.field_first_name
+field_name: field_first_name
 entity_type: node
 bundle: profile
-label: 'Display Name'
+label: 'First Name'
 description: ''
-required: true
-translatable: true
+required: false
+translatable: false
 default_value: {  }
 default_value_callback: ''
 settings: {  }
