@@ -1,10 +1,24 @@
-{% set heading = content.field_teaser_title.0 ? content.field_teaser_title : label %}
+{{ attach_library('atomic/reference-card') }}
 
-{{ heading }}
-{{ content.field_position }}
-{{ content.field_subtitle }}
-{{ content.field_department }}
-{{ content.field_email }}
-{{ content.field_telephone }}
-{{ content.field_affiliation }}
-{{ url }}
+{% set heading = content.field_teaser_title.0 ? content.field_teaser_title : label %}
+{% set reference_card__image = 'false' %}
+
+{% embed "@molecules/cards/directory-listing-card/yds-directory-listing-card.twig" with {
+    directory_listing_card__heading: heading,
+    directory_listing_card__url: url,
+    directory_listing_card__overline: content.field_department,
+    directory_listing_card__subheading: content.field_position,
+    directory_listing_card__snippet: content.field_subtitle,
+    directory_listing_card__email: content.field_email,
+    directory_listing_card__phone: content.field_telephone
+} %}
+
+  {% block directory_listing_card__image %}
+    {% if content.field_media[0] %}
+      {{ content.field_media }}
+    {% elseif getCoreSetting('image_fallback.teaser') %}
+      {{ drupal_entity('media', getCoreSetting('image_fallback.teaser'), 'card_list_3_2') }}
+    {% endif %}
+  {% endblock %}
+
+{% endembed %}

@@ -1,0 +1,14 @@
+{% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
+
+{% block content %}
+
+  {% set view__attibutes = {
+    'data-component-width': 'content',
+    'data-embedded-components': 'true',
+    'data-collection-featured': 'true',
+    'data-collection-type': 'list',
+    class: bem(view__base_class, view__modifiers),
+  } %}
+  {{ drupal_view('directory', 'block_1', content.field_heading.0['#text']) }}
+
+{% endblock %}
