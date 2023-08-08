@@ -18,6 +18,7 @@
     "drupal/core-composer-scaffold": "^9.2",
     "drupal/core-recommended": "^9.2",
     "drush/drush": "^11 || ^12",
+    "oomphinc/composer-installers-extender": "^2.0",
     "pantheon-systems/drupal-integrations": "^9",
     "yalesites-org/yalesites_profile": "*"
   },
@@ -57,6 +58,7 @@
         "[project-root]/.gitattributes": false
       }
     },
+    "installer-types": ["npm-asset"],
     "installer-paths": {
       "web/core": [
         "type:drupal-core"
@@ -87,6 +89,9 @@
       ],
       "web/private/scripts/quicksilver/{$name}/": [
         "type:quicksilver-script"
+      ],
+      "web/libraries/chosen": [
+        "jjj/chosen"
       ]
     },
     "enable-patching": true,
@@ -106,7 +111,8 @@
       "composer/installers": true,
       "cweagans/composer-patches": true,
       "drupal/core-composer-scaffold": true,
-      "drupal/console-extend-plugin": true
+      "drupal/console-extend-plugin": true,
+      "oomphinc/composer-installers-extender": true
     }
   },
   "scripts": {
