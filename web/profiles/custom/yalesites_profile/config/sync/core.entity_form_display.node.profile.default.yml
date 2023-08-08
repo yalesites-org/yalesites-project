@@ -51,6 +51,7 @@ third_party_settings:
     group__publishing:
       children:
         - field_login_required
+        - sticky
       label: 'Publishing Settings'
       region: content
       parent_name: ''
@@ -293,7 +294,7 @@ content:
     third_party_settings: {  }
   sticky:
     type: boolean_checkbox
-    weight: 7
+    weight: 15
     region: content
     settings:
       display_label: true
