@@ -524,7 +524,8 @@ table .draggable-table.tabledrag-disabled tr:hover {
 /* change the contextual pencil icon to the left-hand side of each component
 // instead of the right
 */
-.layout-builder-block.contextual-region .contextual {
+.layout-builder-block.contextual-region .contextual,
+.layout-builder-block-locked.contextual-region .contextual {
   display: flex;
   flex-direction: column;
   top: 1rem;
@@ -534,31 +535,36 @@ table .draggable-table.tabledrag-disabled tr:hover {
 }
 
 @media only screen and (min-width: 2200px) {
-  .layout-builder-block.contextual-region .contextual {
+  .layout-builder-block.contextual-region .contextual,
+  .layout-builder-block-locked.contextual-region .contextual {
     left: 15vw;
   }
 }
 
 @media only screen and (min-width: 2500px) {
-  .layout-builder-block.contextual-region .contextual {
+  .layout-builder-block.contextual-region .contextual,
+  .layout-builder-block-locked.contextual-region .contextual {
     left: 20vw;
   }
 }
 
-.layout-builder-block.contextual-region .contextual .contextual-links {
+.layout-builder-block.contextual-region .contextual .contextual-links,
+.layout-builder-block-locked.contextual-region .contextual .contextual-links {
   left: 0;
   right: 0;
   float: unset;
 }
 
 /* increase the size of the clickable/hoverable area */
-.layout-builder-block.contextual-region .contextual .trigger {
+.layout-builder-block.contextual-region .contextual .trigger,
+.layout-builder-block-locked.contextual-region .contextual .trigger {
   width: 50px !important;
   height: 50px !important;
 }
 
 /* increase the size of the icon itself */
-.layout-builder-block.contextual-region .contextual .trigger::before {
+.layout-builder-block.contextual-region .contextual .trigger::before,
+.layout-builder-block-locked.contextual-region .contextual .trigger::before {
   width: 1.2rem;
   height: 1.2rem;
   mask-size: 1.2rem;
