@@ -350,10 +350,23 @@ body.gin--horizontal-toolbar {
 
 .gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab .toolbar-tray a:hover,
 .gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab .toolbar-tray a:active,
-table tr:hover,
-table .draggable-table.tabledrag-disabled tr:hover {
+#layout-builder-components-table table tr:hover,
+.ui-widget-content #layout-builder-components-table table tr:hover a,
+#layout-builder-components-table table tr td.layout-builder-components-table__block-label:hover,
+#layout-builder-components-table table .draggable-table.tabledrag-disabled tr:hover,
+#layout-builder-components-table table .draggable-table.tabledrag-disabled tr:hover td,
+#layout-builder-components-table table .draggable-table.tabledrag-disabled tr a:hover  {
   color: var(--wool);
   background: var(--dark-theme-gray);
+}
+
+.cke_dialog_contents tr:hover,
+.cke_dialog_contents_body table tr:hover {
+  background: var(--wool);
+}
+
+.cke_dialog_footer_buttons a.cke_dialog_ui_button {
+  color: var(--dark-theme-gray);
 }
 
 #block-atomic-local-tasks ul:not(.contextual-links) {
@@ -515,10 +528,6 @@ table .draggable-table.tabledrag-disabled tr:hover {
   background-color: var(--dark-theme-gray-lightest);
 }
 
-/* yalb-1296 - table tr hover in text component */
-.text table tr:hover {
-  color: var(--color-text);
-}
 
 /* yalb-1251 - AX: pencil icon difficulty editing blocks */
 /* change the contextual pencil icon to the left-hand side of each component
