@@ -4,7 +4,7 @@ __NOTE: Documentation assumes you are using MacOS or a Linux environment.__
 
 ## Requirements
 
-1. [GitHub](#github): SSH Key auth
+1. [GitHub](#github): SSH key auth, [Github Package Personal Access Token](https://github.com/yalesites-org/component-library-twig) in environment variable `YALESITES_BUILD_TOKEN`
 2. [NVM](#additional-tools)
 3. [Node.js (>=8.0)](#additional-tools)
 4. [Composer](#additional-tools): Version 2.x.
@@ -32,6 +32,11 @@ Repositories used to make the platform:
 
 ## Requirement Details
 
+### GitHub
+
+While the project can be checked out and run locally without it, one must setup an SSH key on their development machine if they wish to push code on any of the yalesites repositories.
+Luckily, [GitHub has an intuitive guide on how to setup an SSH key on your machine and register it with your GitHub Account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
+
 ### Terminus
 
 Pantheon's Terminus is a command-line tool for managing sites. The CLI is required to run many of the scripts for building, updating, and deploying changes between the local development environment and the Pantheon platform.
@@ -50,11 +55,6 @@ This project supports development with Lando using the Pantheon recipe. This pro
 2. [Download and install the latest release](https://github.com/lando/lando/releases)
 3. [Setup local certificate authority](https://docs.devwithlando.io/config/security.html)
 4. Increase Docker resources: Locate the 'Resources' section in your Docker preferences. For most architectures, this project requires at least 3GB of memory and 3 CPUs. Additional CPUs and memory may be helpful but should stay under the halfway mark of your total available resources. Also disable the _'Start Docker when you log in'_ setting under the 'General' tab.
-
-### GitHub
-
-While the project can be checked out and run locally without it, one must setup an SSH key on their development machine if they wish to push code on any of the yalesites repositories.
-Luckily, [GitHub has an intuitive guide on how to setup an SSH key on your machine and register it with your GitHub Account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
 
 ### Additional tools
 
