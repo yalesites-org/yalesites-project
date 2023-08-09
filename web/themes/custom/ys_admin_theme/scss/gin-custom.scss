@@ -133,10 +133,15 @@ fieldset:not(.fieldgroup) {
 
 .media-library-views-form .fieldset__label, 
 .media-library-views-form .fieldset__label--group, 
-.media-library-views-form .form-item__label {
+.media-library-views-form .form-item__label,
+.media-library-add-form__input-wrapper .form-item__description,
+.media-library-add-form__input-wrapper .form-item__label {
   color: var(--wool) !important;
 }
 
+.media-library-add-form__input-wrapper {
+  color: var(--wool);
+}
 
 // admin links
 
