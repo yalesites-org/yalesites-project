@@ -1,4 +1,4 @@
-# YaleSites reacptcha
+# YaleSites recaptcha
 
 This module customizes recaptcha settings for the YaleSites platform.
 
