@@ -11,7 +11,7 @@ __NOTE: Documentation assumes you are using MacOS with at least 8GB of memory an
 3. [NVM](#additional-tools)
 4. [Node.js (>= 8.0, < 11.0)](#additional-tools)
 5. [Composer](#additional-tools): Version 2.x.
-6. [Terminus](#terminus): Also machine auth token
+6. [Terminus](#terminus): Machine auth token
 7. [Lando](#lando)
 8. Docker: Use the version Lando wants to install and increase memory resources to at least 3GB memory and 3 CPUs if possible
 9. [Project Files](#project-setup-script)
