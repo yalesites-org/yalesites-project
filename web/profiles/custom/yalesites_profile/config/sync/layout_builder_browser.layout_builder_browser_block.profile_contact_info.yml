@@ -6,6 +6,6 @@ id: profile_contact_info
 block_id: profile_contact_block
 category: basic
 label: 'Profile Contact Info'
-image_path: ''
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/profile-contact-info.svg
 image_alt: ''
 weight: -100
