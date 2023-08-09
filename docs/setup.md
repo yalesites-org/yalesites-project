@@ -6,7 +6,7 @@ __NOTE: Documentation assumes you are using MacOS with at least 8GB of memory an
 
 ## Requirements & Setup
 
-1. [Contact YaleSites](https://yalesites.yale.edu/find-support) for access to resources such as Pantheon.
+1. [Contact YaleSites](mailto:yalesites@yale.edu?subject=Developer%20Access%20Request) for access to resources such as Pantheon.
 2. [GitHub](#github): SSH key auth, [Github Package Personal Access Token](https://github.com/yalesites-org/component-library-twig) in environment variable `YALESITES_BUILD_TOKEN`
 3. [NVM](#additional-tools)
 4. [Node.js (>= 8.0, < 11.0)](#additional-tools)
@@ -31,7 +31,8 @@ Repositories used to make the platform:
   * [Yalsites Project Profile modules](https://github.com/yalesites-org/yalesites-project/tree/develop/web/profiles/custom/yalesites_profile/modules/custom): Each subdirectory should have a README describing the function
 * [Atomic Theme](https://github.com/yalesites-org/atomic): Atomic Drupal Theme bridging the Drupal site and the component library
 * [Component Library Twig](https://github.com/yalesites-org/component-library-twig): Component Library
-* [Tokens](https://github.com/yalesites-org/tokens): Style tokens from Figma; used to drive design of the platform and components
+  * [Deployed Storybook](https://yalesites-org.github.io/component-library-twig)
+* [Tokens](https://github.com/yalesites-org/tokens): Style tokens from [Figma](https://www.figma.com/file/CrE2jOK5R1BYZJ0EzfGnHr/YaleSites-AX-UI-Designs?type=design&node-id=0-1&mode=design&t=PTsl0LTvjb3QWdV9-0); used to drive design of the platform and components
 * [ESLint Config and Other Formatting](https://github.com/yalesites-org/eslint-config-and-other-formatting): Reusable Linting/Formatting included in the project
 
 ## Requirement Details
