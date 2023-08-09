@@ -228,6 +228,7 @@ a.menu-item__link {
   color: var(--dark-theme-gray-text-dark);
 }
 
+#edit-retain-restrictions-after-layout-removal--description a,
 .field-config-edit-form a,
 .system-modules-uninstall a,
 .views-listing-table a,
