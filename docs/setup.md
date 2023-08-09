@@ -28,11 +28,11 @@ __NOTE: Documentation assumes you are using MacOS or a Linux environment.__
 Repositories used to make the platform:
 
 * [Yalesites Project](https://github.com/yalesites-org/yalesites-project): Drupal Platform Site (This repo)
-  * [Yalsites Project Profile modules](https://github.com/yalesites-org/yalesites-project/tree/develop/web/profiles/custom/yalesites_profile/modules/custom)
-* [Atomic Theme](https://github.com/yalesites-org/atomic): Atomic Drupal Theme
+  * [Yalsites Project Profile modules](https://github.com/yalesites-org/yalesites-project/tree/develop/web/profiles/custom/yalesites_profile/modules/custom): Each subdirectory should have a README describing the function
+* [Atomic Theme](https://github.com/yalesites-org/atomic): Atomic Drupal Theme bridging the Drupal site and the component library
 * [Component Library Twig](https://github.com/yalesites-org/component-library-twig): Component Library
-* [Tokens](https://github.com/yalesites-org/tokens): Style tokens from Figma
-* [ESLint Config and Other Formatting](https://github.com/yalesites-org/eslint-config-and-other-formatting): Reusable Linting/Formatting
+* [Tokens](https://github.com/yalesites-org/tokens): Style tokens from Figma; used to drive design of the platform and components
+* [ESLint Config and Other Formatting](https://github.com/yalesites-org/eslint-config-and-other-formatting): Reusable Linting/Formatting included in the project
 
 ## Requirement Details
 
