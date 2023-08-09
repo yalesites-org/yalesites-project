@@ -18,6 +18,17 @@ __NOTE: Documentation assumes you are using MacOS or a Linux environment.__
    npm run setup
 ```
 10. [Project Commands](#project-commands)
+   
+## Repository Links
+
+Repositories used to make the platform:
+
+* [Yalesites Project](https://github.com/yalesites-org/yalesites-project): Drupal Platform Site (This repo)
+  * [Yalsites Project Profile modules](https://github.com/yalesites-org/yalesites-project/tree/develop/web/profiles/custom/yalesites_profile/modules/custom)
+* [Atomic Theme](https://github.com/yalesites-org/atomic): Atomic Drupal Theme
+* [Component Library Twig](https://github.com/yalesites-org/component-library-twig): Component Library
+* [Tokens](https://github.com/yalesites-org/tokens): Style tokens from Figma
+* [ESLint Config and Other Formatting](https://github.com/yalesites-org/eslint-config-and-other-formatting): Reusable Linting/Formatting
 
 ## Requirement Details
 
@@ -66,7 +77,7 @@ A detailed explanation of the setup script appears below.
 
 ```bash
 # Step 1: Clone this repository and enter the project directory.
-git clone https://github.com/yalesites-org/yalesites-project.git
+git clone git@github.com:yalesites-org/yalesites-project.git
 cd yalesites-project
 
 # Step 2: Ignore the composer.lock file on local dev only.
