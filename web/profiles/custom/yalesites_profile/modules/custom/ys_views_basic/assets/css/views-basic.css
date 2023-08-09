@@ -298,9 +298,18 @@
   background-position: center 4rem;
 }
 
+/* Condensed */
+.views-basic--view-mode input[value="condensed"] + label {
+  background-image: url('../icons/display-type-condensed.svg');
+  background-repeat: no-repeat;
+  background-position: center 0;
+  background-size: 150%;
+}
+
 /* Directory */
 .views-basic--view-mode input[value="directory"] + label {
   background-image: url('../icons/display-type-directory.svg');
   background-repeat: no-repeat;
-  background-position: center 4rem;
+  background-position: center 1rem;
+  background-size: 120%;
 }

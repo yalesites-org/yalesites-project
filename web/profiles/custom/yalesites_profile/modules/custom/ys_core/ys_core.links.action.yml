@@ -22,3 +22,11 @@ ys_core.link_add_events:
   title: 'Add events'
   appears_on:
     - view.manage_events.page_1
+# Adds an action link to the manage profiles interface
+ys_core.link_add_profile:
+  route_name: node.add
+  route_parameters:
+    node_type: 'profile'
+  title: 'Add profile'
+  appears_on:
+    - view.manage_profiles.page_1
