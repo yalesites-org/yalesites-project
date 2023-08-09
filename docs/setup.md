@@ -65,9 +65,9 @@ This project supports development with Lando using the Pantheon recipe. This pro
 
 ### Additional tools
 
-- [Composer](https://getcomposer.org/download/): PHP package manager. Version 2.x.
-- [NVM](https://github.com/nvm-sh/nvm#install--update-script): Recommended for installing and switching between Node versions.
-- Node.js (>=8.0). We recommend installing via NVM.
+- [Composer](https://getcomposer.org/download/): PHP package manager. Version 2.x. (Can use lando instead if you prefer)
+- [NVM](https://github.com/nvm-sh/nvm#install--update-script): Node Version Manager
+- Node.js (>=8.0,<11.0). Via NVM.
 
 ## Project setup script
 
