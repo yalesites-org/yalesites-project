@@ -10,6 +10,7 @@ use Drupal\Core\Routing\RequestContext;
 use Drupal\google_analytics\Constants\GoogleAnalyticsPatterns;
 use Drupal\path_alias\AliasManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\file\Entity\File;
 
 /**
  * Form for managing sitewide settings.
@@ -186,14 +187,15 @@ class SiteSettingsForm extends ConfigFormBase {
       '#type' => 'managed_file',
       '#upload_location' => 'public://favicons',
       '#multiple' => FALSE,
-      '#description' => t('Allowed extensions: gif png jpg jpeg'),
+      '#description' => $this->t('Allowed extensions: gif png jpg jpeg svg<br>Image must be at least 260x260'),
       '#upload_validators' => [
-        'file_validate_is_image' => array(),
-        'file_validate_extensions' => array('gif png jpg jpeg'),
+        'file_validate_is_image' => [],
+        'file_validate_extensions' => ['gif png jpg jpeg svg'],
         'file_validate_image_resolution' => [0, "260x260"],
       ],
-      '#title' => t('Upload an image file for this slide')
-];
+      '#title' => $this->t('Custom favicon'),
+      '#default_value' => ($yaleConfig->get('favicon')) ? $yaleConfig->get('favicon') : NULL,
+    ];
 
     return parent::buildForm($form, $form_state);
   }
@@ -262,6 +264,13 @@ class SiteSettingsForm extends ConfigFormBase {
     $this->configFactory->getEditable('google_analytics.settings')
       ->set('account', $form_state->getValue('google_analytics_id'))
       ->save();
+
+    if ($form_state->getValue('favicon')) {
+      $image = $form_state->getValue('favicon');
+      $file = File::load($image[0]);
+      $file->setPermanent();
+      $file->save();
+    }
 
     parent::submitForm($form, $form_state);
   }
