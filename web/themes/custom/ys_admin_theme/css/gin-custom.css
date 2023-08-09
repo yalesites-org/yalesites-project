@@ -238,7 +238,7 @@ a.menu-item__link {
 
 .js-views-ui-dialog .ui-widget-content.ui-dialog-content .views-ui-edit-display-form .form-item__label,
 .js-views-ui-dialog .ui-widget-content.ui-dialog-content .description,
-.js-views-ui-dialog .ui-widget-content.ui-dialog-content .fieldset__label .fieldset__label--group,
+.js-views-ui-dialog .ui-widget-content.ui-dialog-content .fieldset__label.fieldset__label--group,
 .js-views-ui-dialog .ui-widget-content.ui-dialog-content .fieldset__label .form-item__description,
 .js-views-ui-dialog .ui-dialog-content.ui-widget-content .views-ui-edit-display-form .form-item__description,
 .js-views-ui-dialog .ui-dialog-content.ui-widget-content .js-form-item-access-options-perm .form-item__description,
