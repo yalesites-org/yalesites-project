@@ -68,6 +68,22 @@
 .page-title {
   color: var(--wool) !important;
 }
+
+.gin-node-edit-form  .help-icon__description-toggle::before,
+#gin_sidebar #edit-simple-sitemap .claro-details__summary--accordion-item .help-icon__description-toggle::before {
+  background-color: var(--dark-theme-gray);
+}
+
+.gin-node-edit-form  .help-icon__description-toggle:hover::before {
+  background-color: var(--mediterranean-blue);
+}
+
+#gin_sidebar #edit-simple-sitemap .claro-details__summary--accordion-item[aria-expanded="true"] .help-icon__description-toggle::before,
+#gin_sidebar #edit-simple-sitemap .claro-details__summary--accordion-item:hover .help-icon__description-toggle::before {
+  background-color: var(--wool);
+}
+
+
 // sticky header title
 
 .region-sticky--is-sticky {
@@ -83,12 +99,18 @@ fieldset:not(.fieldgroup) {
 }
 
 
-:not(.form-checkboxes):not(.claro-details__content--accordion-item):not(.field--name-field-login-required):not(.field--name-sticky):not(td):not(.tabledrag-cell-content__item):not(.media-library-item__click-to-select-checkbox):not(.field-content):not(.views-ui-admin-settings-basic):not(.claro-details__wrapper.details-wrapper):not(#edit-options) > .form-type--checkbox label {
+:not(.form-checkboxes):not(.claro-details__content--accordion-item):not(.field--name-field-login-required):not(.field--name-sticky):not(td):not(.tabledrag-cell-content__item):not(.media-library-item__click-to-select-checkbox):not(.field-content):not(.views-ui-admin-settings-basic):not(.claro-details__wrapper.details-wrapper):not(#edit-options):not(#view-add-form fieldset .fieldset__wrapper):not(#restriction-plugin-config-form):not(#field-config-edit-form) > .form-type--checkbox label {
   color: var(--wool) !important;
 }
 
 .layout-region-node-secondary :not(.form-checkboxes):not(td):not(.tabledrag-cell-content__item):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .form-type--checkbox label {
   color: var(--dark-theme-gray) !important;
+}
+
+.layout-builder-by-region-allowed-blocks,
+.layout-builder-by-region-allowed-blocks .js-form-type-radio label,
+.layout-builder-by-region-allowed-blocks .fieldset__label {  
+  color: var(--wool) !important;
 }
 
 
@@ -225,16 +247,25 @@ a.menu-item__link {
   color: var(--dark-theme-gray-text-dark);
 }
 
+.field-config-edit-form a,
+.system-modules-uninstall a,
 .views-listing-table a,
 .module-list__module a,
 .update-manager-install-form a {
   color: var(--mediterranean-blue) !important;
 }
 
-
+.js-views-ui-dialog .ui-widget-content.ui-dialog-content .views-ui-edit-display-form .form-item__label,
+.js-views-ui-dialog .ui-widget-content.ui-dialog-content .description,
+.js-views-ui-dialog .ui-widget-content.ui-dialog-content .fieldset__label .fieldset__label--group,
+.js-views-ui-dialog .ui-widget-content.ui-dialog-content .fieldset__label .form-item__description,
+.js-views-ui-dialog .ui-dialog-content.ui-widget-content .views-ui-edit-display-form .form-item__description,
+.js-views-ui-dialog .ui-dialog-content.ui-widget-content .js-form-item-access-options-perm .form-item__description,
+.js-views-ui-dialog .ui-widget-content.ui-dialog-content .views-ui-edit-display-form .fieldset__description,
+.js-views-ui-dialog .ui-dialog-content.ui-widget-content .filter-guidelines__item,
 .views-listing-table thead th,
 .system-modules-uninstall thead th {
-  color: var(--wool);
+  color: var(--wool) !important;
 }
 
 .tabs__link,
@@ -243,10 +274,20 @@ a.menu-item__link {
   color: var(--wool) !important;
 }
 
+#search-api-index-clear-form,
+.system-modules-uninstall-confirm-form,
 .update-manager-install-form {
   color: var(--dark-theme-gray);
 }
 
+.js-views-ui-dialog .ui-widget-content.ui-dialog-content .description a {
+  color: var(--robin-egg);
+  text-decoration: underline;
+}
+
+.js-views-ui-dialog .ui-widget-content.ui-dialog-content .description a:hover {
+  text-decoration: none;
+} 
 
 // modules 
 
@@ -272,7 +313,6 @@ a.menu-item__link {
   padding-top: 1rem;
 }
 
-
 // unwrapped content
 [data-gin-accent="light_blue"] .region-content div > h2 {
   color: var(--wool);
@@ -288,6 +328,9 @@ a.menu-item__link {
   color: var(--wool);
 }
 
+#block-ys-admin-theme-main-page-content #field-config-edit-form,
+#block-ys-admin-theme-main-page-content #restriction-plugin-config-form,
+#block-ys-admin-theme-main-page-content .view-manage-pages,
 #block-ys-admin-theme-main-page-content .view-preview-form,
 #block-ys-admin-theme-main-page-content .preview-section,
 #block-ys-admin-theme-main-page-content .views-edit-view {
