@@ -1,6 +1,6 @@
 # Local Development Environment
 
-__NOTE: Documentation assumes you are using MacOS with at least 8GB of memory and an Intel, M1, or M2 processor__
+__NOTE: Documentation assumes you are using MacOS with at least 8GB of memory on an Intel, M1, or M2 processor__
 
 :clap: Thank you for considering to contribute to the YaleSites Platform!
 
