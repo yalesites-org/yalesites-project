@@ -297,3 +297,10 @@
   background-repeat: no-repeat;
   background-position: center 4rem;
 }
+
+/* Directory */
+.views-basic--view-mode input[value="directory"] + label {
+  background-image: url('../icons/display-type-directory.svg');
+  background-repeat: no-repeat;
+  background-position: center 4rem;
+}
