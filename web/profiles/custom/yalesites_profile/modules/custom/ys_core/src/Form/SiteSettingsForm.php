@@ -182,6 +182,19 @@ class SiteSettingsForm extends ConfigFormBase {
       '#description' => $this->t('This image will be used for event and post card displays when no teaser image is selected.'),
     ];
 
+    $form['favicon'] = [
+      '#type' => 'managed_file',
+      '#upload_location' => 'public://favicons',
+      '#multiple' => FALSE,
+      '#description' => t('Allowed extensions: gif png jpg jpeg'),
+      '#upload_validators' => [
+        'file_validate_is_image' => array(),
+        'file_validate_extensions' => array('gif png jpg jpeg'),
+        'file_validate_image_resolution' => [0, "260x260"],
+      ],
+      '#title' => t('Upload an image file for this slide')
+];
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -244,6 +257,7 @@ class SiteSettingsForm extends ConfigFormBase {
       ->set('seo.google_site_verification', $form_state->getValue('google_site_verification'))
       ->set('seo.google_analytics_id', $form_state->getValue('google_analytics_id'))
       ->set('image_fallback.teaser', $form_state->getValue('teaser_image_fallback'))
+      ->set('favicon', $form_state->getValue('favicon'))
       ->save();
     $this->configFactory->getEditable('google_analytics.settings')
       ->set('account', $form_state->getValue('google_analytics_id'))
