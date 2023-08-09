@@ -1,18 +1,25 @@
 # Local Development Environment
 
-NOTE: Documentation assumes you are using MacOS or a Linux environment.
+__NOTE: Documentation assumes you are using MacOS or a Linux environment.__
 
 ## Requirements
 
-1. [GitHub](#github)
+1. [GitHub](#github): SSH Key auth
 2. [NVM](#additional-tools)
 3. [Node.js (>=8.0)](#additional-tools)
 4. [Composer](#additional-tools): Version 2.x.
-5. [Terminus](#terminus)
+5. [Terminus](#terminus): Also machine auth token
 6. [Lando](#lando)
 7. Docker: Use the version Lando wants to install and increase memory resources to at least 3GB memory and 3CPUs if possible
 8. [Project Files](#project-setup-script)
-9. [Project Commands](#project-commands)
+```bash
+   git clone git@github.com:yalesites-org/yalesites-project
+   cd yalesites-project
+   npm run setup
+```
+10. [Project Commands](#project-commands)
+
+## Requirement Details
 
 ### Terminus
 
@@ -116,29 +123,66 @@ npm run local:theme-link
 
 ## Project Commands
 
+__NOTE: There are more commands, but these are those that current developers feel are most used.__
+
 ### NPM
+
 ```bash
 npm run setup                                   # Setup whole environment
+```
+```bash
 npm run build-with-assets                       # Build/Rebuild with replaced assets
+```
+```bash
 npm run build-with-install                      # Rebuild with fresh imports
+```
+```bash
 npm run local:cl-dev                            # npm link component library with local environment
+```
+```bash
 npm run local:review-with-atomic-and-cl-branch  # Use different branches of each repo
+```
+```bash
 npm run local:review-with-atomic-branch         # Use specific atomic branch
+```
+```bash
 npm run local:review-with-cl-branch             # Use specific component library branch
+```
+```bash
 npm run local:git-checkout                      # Sync:
                                                 #   yalesites-project: develop branch
                                                 #   atomic: main branch
                                                 #   component-library: main branch
                                                 #   tokens: main branch
+```
+```bash
 npm run local:git-checkout -- -h                # More command help
+```
+```bash
 npm run confex                                  # Export drupal configuration
+```
+```bash
 npm run confim                                  # Import drupal configuration
+```
+```bash
 npm run db:get                                  # Download a dev database locally from a pantheon site
+```
+```bash
 npm run files:get                               # Download dev files locally from a pantheon site
+```
+```bash
 npm run lint                                    # Lints js, php, and styles
+```
+```bash
 npm run fix:js                                  # Fixes js linting errors if possible
+```
+```bash
 npm run local:theme-link                        # Alias for cl-dev but doesn't run CL develop
+```
+```bash
 npm run prettier                                # Runs prettier on repo
+```
+```bash
 npm run test                                    # Runs prettier and linting
 ```
 
