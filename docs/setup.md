@@ -2,17 +2,21 @@
 
 __NOTE: Documentation assumes you are using MacOS or a Linux environment.__
 
-## Requirements
+:clap: Thank you for considering to contribute to the YaleSites Platform!
 
-1. [GitHub](#github): SSH key auth, [Github Package Personal Access Token](https://github.com/yalesites-org/component-library-twig) in environment variable `YALESITES_BUILD_TOKEN`
-2. [NVM](#additional-tools)
-3. [Node.js (>=8.0)](#additional-tools)
-4. [Composer](#additional-tools): Version 2.x.
-5. [Terminus](#terminus): Also machine auth token
-6. [Lando](#lando)
-7. Docker: Use the version Lando wants to install and increase memory resources to at least 3GB memory and 3CPUs if possible
-8. [Project Files](#project-setup-script)
+## Requirements & Setup
+
+1. [Contact YaleSites](https://yalesites.yale.edu/find-support) for access to resources such as Pantheon.
+2. [GitHub](#github): SSH key auth, [Github Package Personal Access Token](https://github.com/yalesites-org/component-library-twig) in environment variable `YALESITES_BUILD_TOKEN`
+3. [NVM](#additional-tools)
+4. [Node.js (>= 8.0, < 11.0)](#additional-tools)
+5. [Composer](#additional-tools): Version 2.x.
+6. [Terminus](#terminus): Also machine auth token
+7. [Lando](#lando)
+8. Docker: Use the version Lando wants to install and increase memory resources to at least 3GB memory and 3 CPUs if possible
+9. [Project Files](#project-setup-script)
 ```bash
+   # Set up local development version of repo
    git clone git@github.com:yalesites-org/yalesites-project
    cd yalesites-project
    npm run setup
