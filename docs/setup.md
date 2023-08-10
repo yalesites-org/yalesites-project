@@ -9,7 +9,7 @@ __NOTE: Documentation assumes you are using MacOS with at least 8GB of memory on
 1. [Contact YaleSites](mailto:yalesites@yale.edu?subject=Developer%20Access%20Request) for access to resources such as Pantheon, Figma designs, etc.
 2. [GitHub](#github)
    1. SSH authorization key
-   2. [Github Package Personal Access Token](https://github.com/yalesites-org/component-library-twig) in environment variable `YALESITES_BUILD_TOKEN`
+   2. [Github Package Personal Access Token](#package-personal-access-token) in environment variable `YALESITES_BUILD_TOKEN`
 3. [NVM](#additional-tools)
 4. [Node.js (>= 8.0, < 11.0)](#additional-tools)
 5. [Composer](#additional-tools): Version 2.x.
@@ -43,6 +43,23 @@ Repositories used to make the platform:
 
 While the project can be checked out and run locally without it, one must setup an SSH key on their development machine if they wish to push code on any of the yalesites repositories.
 Luckily, [GitHub has an intuitive guide on how to setup an SSH key on your machine and register it with your GitHub Account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
+
+#### Package Personal Access Token
+
+Each environment that needs to pull @yalesites-org packages from GitHub needs to be authenticated using a "Personal Access Token". This only needs to be done once per-environment.
+
+- Go to `https://github.com/settings/tokens/new`
+  - In the "Note" field add something like "YaleSites GitHub Packages"
+  - Choose an expiration value
+  - Check the box for "write:packages" (this will automatically check all of the "repo" boxes as well)
+  - Click "Generate token"
+- On your local machine, create an environment variable. This process varies depending on the shell and operating system you use. It will be something similar to this though: `export KEY=value`.
+  - The `key` for YaleSites projects needs to be `YALESITES_BUILD_TOKEN`
+  - The `value` is the token you created above
+- Done!
+
+- [Here's a stack overflow post showing how to set persistent environment variables for various shells](https://unix.stackexchange.com/questions/117467/how-to-permanently-set-environmental-variables)
+
 
 ### Terminus
 
@@ -115,7 +132,7 @@ _The steps in this section are completed in the aforementioned setup script._
 
 The YaleSites platform organizes work across a series of custom modules, themes, and an installation profile. To avoid an unnecessarily monolithic architecture, each of these dependencies exist in unique repositories that are included via composer. The previously created local development environment is an ideal place for working on these projects within the context of a YaleSite.
 
-By default, composer dependencies are downloaded in a dist packaged version of the project with git metadata removed. When working on a Yale-managed package, the originally downloaded composer dependency must be replaced with the source packaged version. This allows any changes to be tracked in version control.
+By default, composer dependencies are downloaded in a dist packaged version of the project with git metadata removed. When working on a Yale-managed package such as Atomic or the Component Library, the originally downloaded composer dependency must be replaced with the source packaged version. This allows any changes to be tracked in version control.
 
 ### Atomic theme
 
