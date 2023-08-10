@@ -41,7 +41,7 @@ Repositories used to make the platform:
 
 ### GitHub
 
-While the project can be checked out and run locally without it, one must setup an SSH key on their development machine if they wish to push code on any of the yalesites repositories.
+While the project can be cloned and run locally without it, one must setup an SSH key on their development machine if they wish to push code on any of the yalesites repositories.
 Luckily, [GitHub has an intuitive guide on how to setup an SSH key on your machine and register it with your GitHub Account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
 
 #### Package Personal Access Token
