@@ -86,6 +86,12 @@ This project supports development with Lando using the Pantheon recipe. This pro
 - [NVM](https://github.com/nvm-sh/nvm#install--update-script): Node Version Manager
 - Node.js (>=8.0,<11.0). Via NVM.
 
+### Cloning the project
+
+To clone the project, the above requirements must be met first.  If you have not already cloned the repository:
+
+`git clone git@github.com:yaleitsites-org/yalesites-project.git`
+
 ## Project setup script
 
 This repository contains a custom Pantheon Upstream used to create and manage every site on the YaleSites platform. Out of the box this project is not connected to an individual Drupal site. To contribute to this project, we need to connect the local development environment to a Drupal site to leverage the site's files and database.
