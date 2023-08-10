@@ -3,6 +3,9 @@
 namespace Drupal\ys_core\Form;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Path\PathValidatorInterface;
@@ -10,7 +13,6 @@ use Drupal\Core\Routing\RequestContext;
 use Drupal\google_analytics\Constants\GoogleAnalyticsPatterns;
 use Drupal\path_alias\AliasManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\file\Entity\File;
 
 /**
  * Form for managing sitewide settings.
@@ -21,7 +23,7 @@ use Drupal\file\Entity\File;
  *
  * @package Drupal\ys_core\Form
  */
-class SiteSettingsForm extends ConfigFormBase {
+class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInterface {
 
   /**
    * The path alias manager.
@@ -45,6 +47,13 @@ class SiteSettingsForm extends ConfigFormBase {
   protected $requestContext;
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * Constructs a SiteInformationForm object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -55,12 +64,21 @@ class SiteSettingsForm extends ConfigFormBase {
    *   The path validator.
    * @param \Drupal\Core\Routing\RequestContext $request_context
    *   The request context.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, AliasManagerInterface $alias_manager, PathValidatorInterface $path_validator, RequestContext $request_context) {
+  public function __construct(
+    ConfigFactoryInterface $config_factory,
+    AliasManagerInterface $alias_manager,
+    PathValidatorInterface $path_validator,
+    RequestContext $request_context,
+    EntityTypeManager $entity_type_manager
+    ) {
     parent::__construct($config_factory);
     $this->aliasManager = $alias_manager;
     $this->pathValidator = $path_validator;
     $this->requestContext = $request_context;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -71,7 +89,8 @@ class SiteSettingsForm extends ConfigFormBase {
       $container->get('config.factory'),
       $container->get('path_alias.manager'),
       $container->get('path.validator'),
-      $container->get('router.request_context')
+      $container->get('router.request_context'),
+      $container->get('entity_type.manager')
     );
   }
 
@@ -187,14 +206,16 @@ class SiteSettingsForm extends ConfigFormBase {
       '#type' => 'managed_file',
       '#upload_location' => 'public://favicons',
       '#multiple' => FALSE,
-      '#description' => $this->t('Allowed extensions: gif png jpg jpeg svg<br>Image must be at least 260x260'),
+      '#description' => $this->t('Allowed extensions: gif png jpg jpeg svg<br>Image must be at least 180x180'),
       '#upload_validators' => [
         'file_validate_is_image' => [],
         'file_validate_extensions' => ['gif png jpg jpeg svg'],
-        'file_validate_image_resolution' => [0, "260x260"],
+        'file_validate_image_resolution' => [0, "180x180"],
       ],
-      '#title' => $this->t('Custom favicon'),
+      '#title' => $this->t('Custom Favicon'),
       '#default_value' => ($yaleConfig->get('favicon')) ? $yaleConfig->get('favicon') : NULL,
+      '#theme' => 'image_widget',
+      '#preview_image_style' => 'favicon_16x16',
     ];
 
     return parent::buildForm($form, $form_state);
@@ -245,6 +266,24 @@ class SiteSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+
+    $fileEntity = $this->entityTypeManager->getStorage('file');
+
+    if ($form_state->getValue('favicon')) {
+      $image = $form_state->getValue('favicon');
+      /** @var \Drupal\file\Entity $file */
+      $file = $fileEntity->load($image[0]);
+      $file->setPermanent();
+      $file->save();
+    }
+    else {
+      if ($fid = $this->configFactory->getEditable('ys_core.site')->get('favicon')) {
+        /** @var \Drupal\file\Entity $file */
+        $file = $fileEntity->load($fid[0]);
+        $file->delete();
+      }
+    }
+
     $this->configFactory->getEditable('system.site')
       ->set('name', $form_state->getValue('site_name'))
       ->set('mail', $form_state->getValue('site_mail'))
@@ -264,13 +303,6 @@ class SiteSettingsForm extends ConfigFormBase {
     $this->configFactory->getEditable('google_analytics.settings')
       ->set('account', $form_state->getValue('google_analytics_id'))
       ->save();
-
-    if ($form_state->getValue('favicon')) {
-      $image = $form_state->getValue('favicon');
-      $file = File::load($image[0]);
-      $file->setPermanent();
-      $file->save();
-    }
 
     parent::submitForm($form, $form_state);
   }
