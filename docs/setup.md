@@ -92,42 +92,13 @@ To clone the project, the above requirements must be met first.  If you have not
 
 `git clone git@github.com:yaleitsites-org/yalesites-project.git`
 
-## Project setup script
+## Project setup
 
 This repository contains a custom Pantheon Upstream used to create and manage every site on the YaleSites platform. Out of the box this project is not connected to an individual Drupal site. To contribute to this project, we need to connect the local development environment to a Drupal site to leverage the site's files and database.
 
 ```bash
 # Executing the setup script will prepare the local development environment.
 npm run setup
-```
-
-## Alternative manual setup instructions
-
-A detailed explanation of the setup script appears below.
-
-```bash
-# Step 1: Clone this repository and enter the project directory.
-git clone git@github.com:yalesites-org/yalesites-project.git
-cd yalesites-project
-
-# Step 2: Ignore the composer.lock file on local dev only.
-grep -qxF 'composer.lock' .git/info/exclude || echo 'composer.lock' >> .git/info/exclude
-```
-
-The Pantheon Lando recipe can connect the local development environment to a remotely hosted site. Connection information is stored in a local Lando settings file and includes a Pantheon site name and UUID. While we can connect to any site running this upstream, a particular integration environment has been provisioned for engineers working on this repository or the associated YaleSites profile. Connection information for the integration environment is stored in the example Lando local file.
-
-```bash
-# Step 3: Create a local Lando settings file to connect to the external environment.
-cp .lando.local.example.yml .lando.local.yml
-```
-
-Starting Lando will provision the containers required to run a local development environment. The `pull` command can then sync the database and files from a Pantheon-hosted site with the new local site.
-
-```bash
-# Step 4: Start Lando and import the remote files and database.
-lando start
-lando pull --database=dev --files=dev --code=none
-lando drush cr
 ```
 
 Visit the local dev site [https://yalesites-project.lndo.site/](https://yalesites-project.lndo.site/) or run `lando drush uli` to obtain a login link.
