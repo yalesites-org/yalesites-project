@@ -94,7 +94,7 @@ To clone the project, the above requirements must be met first.  If you have not
 
 ## Project setup
 
-This repository contains a custom Pantheon Upstream used to create and manage every site on the YaleSites platform. Out of the box this project is not connected to an individual Drupal site. To contribute to this project, we need to connect the local development environment to a Drupal site to leverage the site's files and database.
+This repository is a Pantheon Custom Upstream used to create and manage every site on the YaleSites platform. Out of the box this project is not connected to an individual Drupal site. To contribute to this project, we need to connect the local development environment to a Drupal site to leverage the site's files and database.
 
 ```bash
 # Executing the setup script will prepare the local development environment.
