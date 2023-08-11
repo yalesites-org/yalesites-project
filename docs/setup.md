@@ -16,7 +16,7 @@ __NOTE: Documentation assumes you are using MacOS with at least 8GB of memory on
 6. [Terminus](#terminus): Machine auth token
 7. [Lando](#lando)
 8. Docker: Use the version Lando wants to install and increase memory resources to at least 3GB memory and 3 CPUs if possible
-9. [Project Files](#project-setup-script)
+9. [Project Setup](#project-setup)
     ```bash
     # Set up local development version of repo
     git clone git@github.com:yalesites-org/yalesites-project
