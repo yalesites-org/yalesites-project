@@ -66,91 +66,113 @@ class FaviconManager extends ControllerBase implements ContainerInjectionInterfa
     );
   }
 
+  /**
+   * Creates an array to render favicon markup, either custom or fallback.
+   *
+   * @return array
+   *   Favicon data for ys_core_page_attachments() to render in the head.
+   */
   public function getFavicons() {
     $customFaviconId = ($this->yaleSettings->get('custom_favicon')) ? $this->yaleSettings->get('custom_favicon')[0] : NULL;
-    $faviconData = ($customFaviconId) ? $this->getCustomFavicon($customFaviconId) : $this->getFallbackFavicon();
+
+    $faviconData = [
+      'apple-touch-icon' => [
+        '#image_style' => 'favicon_180x180',
+        '#tag' => 'link',
+        '#attributes' => [
+          'rel' => 'apple-touch-icon',
+          'href' => '/profiles/custom/yalesites_profile/modules/custom/ys_core/images/favicons/apple-touch-icon.png',
+        ],
+      ],
+      'icon-32' => [
+        '#image_style' => 'favicon_32x32',
+        '#tag' => 'link',
+        '#attributes' => [
+          'sizes' => '32x32',
+          'rel' => 'icon',
+          'type' => 'image/png',
+          'href' => '/profiles/custom/yalesites_profile/modules/custom/ys_core/images/favicons/favicon-32x32.png',
+        ],
+      ],
+      'icon-16' => [
+        '#image_style' => 'favicon_16x16',
+        '#tag' => 'link',
+        '#attributes' => [
+          'sizes' => '16x16',
+          'rel' => 'icon',
+          'type' => 'image/png',
+          'href' => '/profiles/custom/yalesites_profile/modules/custom/ys_core/images/favicons/favicon-16x16.png',
+        ],
+      ],
+      'icon-ico' => [
+        '#image_style' => 'favicon_16x16_ico',
+        '#tag' => 'link',
+        '#attributes' => [
+          'rel' => 'shortcut icon',
+          'href' => '/profiles/custom/yalesites_profile/modules/custom/ys_core/images/favicons/favicon.ico',
+        ],
+      ],
+    ];
+
+    if ($customFaviconId) {
+      /*
+       * If we have a custom favicon, get favicon image styles
+       * (if they exist) and override the fallback icons.
+       *
+       */
+      /** @var \Drupal\file\Entity\File $fileEntity */
+      $fileEntity = $this->entityTypeManager->getStorage('file');
+      /** @var \Drupal\image\Entity\ImageStyle $imageStyle */
+      $imageStyle = $this->entityTypeManager->getStorage('image_style');
+      $file = $fileEntity->load($customFaviconId);
+      if ($file) {
+        foreach ($faviconData as $key => $favicon) {
+          if ($style = $imageStyle->load($favicon['#image_style'])) {
+            $faviconData[$key]['#attributes']['href'] = $this->fileUrlGenerator->transformRelative($style->buildUrl($file->getFileUri()));
+          }
+          else {
+            unset($faviconData[$key]);
+          }
+        }
+      }
+    }
 
     return $faviconData;
   }
 
-  private function getCustomFavicon($fid) {
-    /** @var \Drupal\file\Entity\File $fileEntity */
-    $fileEntity = $this->entityTypeManager->getStorage('file');
-    /** @var \Drupal\image\Entity\ImageStyle $imageStyle */
-    $imageStyle = $this->entityTypeManager->getStorage('image_style');
-    $file = $fileEntity->load($fid);
+  /**
+   * Handles the creation and deletion of favicons in the filesystem.
+   *
+   * @param array $formValue
+   *   An array with the form value of the favicon selected, if any.
+   * @param array $configValue
+   *   An array with the config value of the favicon saved, if any.
+   */
+  public function handleFaviconFilesystem($formValue, $configValue) {
+    $faviconFormValue = $formValue ? $formValue[0] : NULL;
+    $faviconConfigValue = $configValue ? $configValue[0] : NULL;
 
-    $faviconData['apple-touch-icon'] = [
-      '#tag' => 'link',
-      '#attributes' => [
-        'href' => $this->fileUrlGenerator->transformRelative($imageStyle->load('favicon_180x180')->buildUrl($file->getFileUri())),
-        'sizes' => '180x180',
-        'rel' => 'apple-touch-icon',
-      ],
-    ];
+    if ($faviconFormValue != $faviconConfigValue) {
+      $fileEntity = $this->entityTypeManager->getStorage('file');
 
-    $faviconData['icon-32'] = [
-      '#tag' => 'link',
-      '#attributes' => [
-        'href' => $this->fileUrlGenerator->transformRelative($imageStyle->load('favicon_32x32')->buildUrl($file->getFileUri())),
-        'sizes' => '32x32',
-        'rel' => 'icon',
-        'type' => 'image/png',
-      ],
-    ];
+      // First, delete any previously set favicons.
+      if ($faviconConfigValue) {
+        /** @var \Drupal\file\Entity $file */
+        $file = $fileEntity->load($faviconConfigValue);
+        if ($file) {
+          $file->delete();
+        }
+      }
 
-    $faviconData['icon-16'] = [
-      '#tag' => 'link',
-      '#attributes' => [
-        'href' => $this->fileUrlGenerator->transformRelative($imageStyle->load('favicon_16x16')->buildUrl($file->getFileUri())),
-        'sizes' => '16x16',
-        'rel' => 'icon',
-        'type' => 'image/png',
-      ],
-    ];
+      // Next, set the new favicon.
+      if ($faviconFormValue) {
+        /** @var \Drupal\file\Entity $file */
+        $file = $fileEntity->load($faviconFormValue);
+        $file->setPermanent();
+        $file->save();
+      }
 
-    return $faviconData;
-
-  }
-
-  private function getFallbackFavicon() {
-    return "Fallback";
+    }
   }
 
 }
-
-
-/**
- * Implements hook_page_attachments_alter().
- */
-// function ys_core_page_attachments(array &$page) {
-//   // Add favicons to page, either custom or fallback.
-
-//   $config = \Drupal::config('ys_core.site');
-
-//   // if($fid = $config->get('custom_favicon')) {
-//   //   $file = File::load($fid[0]);
-//   //   $favicons['apple-touch-icon'] = [
-//   //     'href' => \Drupal::service('file_url_generator')
-//   //       ->transformRelative(\Drupal\image\Entity\ImageStyle::load('favicon_180x180')
-//   //       ->buildUrl($file->getFileUri())),
-//   //     'sizes' => '180x180',
-//   //   ];
-//   // }
-
-//   $favicons = [
-//     '#type' => 'html_tag',
-//     '#tag' => 'link',
-//     '#attributes' => [
-//       'rel' => 'testing',
-//       'content' => 'atrus',
-//     ],
-//     '#type' => 'html_tag',
-//     '#tag' => 'link',
-//     '#attributes' => [
-//       'rel' => 'testing2',
-//       'href' => 'thisishref',
-//     ]
-//   ];
-//   $page['#attached']['html_head'][] = [$favicons, 'ys_core_favicons'];
-// }

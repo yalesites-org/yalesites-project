@@ -44,7 +44,7 @@
     {% if data.preview %}
       {{ data.preview }}
     {% else %}
-      <img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/favicons/yale-logo.png" height="16" width="16" alt="Yale Y logo" />
+      <img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/favicons/favicon-16x16.png" height="16" width="16" alt="Yale Y logo" />
     {% endif %}
   {% endset %}
   {{ attach_library('ys_admin_theme/favicon_preview') }}
@@ -56,7 +56,7 @@
             {{ drupal_image(data['fids']['#value'][0], 'media_library', {alt: 'Currently selected favicon'|t}) }}
           {% endif %}
           {% if fallback_image %}
-            <img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/favicons/yale-logo.png" height="180" width="180" alt="Yale Y logo" />
+            <img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/favicons/apple-touch-icon.png" height="180" width="180" alt="Yale Y logo" />
           {% endif %}
         </div>
         <div class="form-managed-file__image-preview">

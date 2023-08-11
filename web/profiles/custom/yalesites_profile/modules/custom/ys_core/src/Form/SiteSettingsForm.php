@@ -11,6 +11,7 @@ use Drupal\Core\Path\PathValidatorInterface;
 use Drupal\Core\Routing\RequestContext;
 use Drupal\google_analytics\Constants\GoogleAnalyticsPatterns;
 use Drupal\path_alias\AliasManagerInterface;
+use Drupal\ys_core\FaviconManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -46,11 +47,11 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
   protected $requestContext;
 
   /**
-   * The entity type manager.
+   * The favicon manager.
    *
-   * @var \Drupal\Core\Entity\EntityTypeManager
+   * @var \Drupal\ys_core\FaviconManager
    */
-  protected $entityTypeManager;
+  protected $faviconManager;
 
   /**
    * Constructs a SiteInformationForm object.
@@ -63,21 +64,21 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
    *   The path validator.
    * @param \Drupal\Core\Routing\RequestContext $request_context
    *   The request context.
-   * @param \Drupal\Core\Entity\EntityTypeManager $entity_type_manager
-   *   The entity type manager.
+   * @param \Drupal\ys_core\FaviconManager $favicon_manager
+   *   The favicon manager.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
     AliasManagerInterface $alias_manager,
     PathValidatorInterface $path_validator,
     RequestContext $request_context,
-    EntityTypeManager $entity_type_manager
+    FaviconManager $favicon_manager,
     ) {
     parent::__construct($config_factory);
     $this->aliasManager = $alias_manager;
     $this->pathValidator = $path_validator;
     $this->requestContext = $request_context;
-    $this->entityTypeManager = $entity_type_manager;
+    $this->faviconManager = $favicon_manager;
   }
 
   /**
@@ -89,7 +90,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       $container->get('path_alias.manager'),
       $container->get('path.validator'),
       $container->get('router.request_context'),
-      $container->get('entity_type.manager')
+      $container->get('ys_core.favicon_manager'),
     );
   }
 
@@ -205,10 +206,10 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#type' => 'managed_file',
       '#upload_location' => 'public://favicons',
       '#multiple' => FALSE,
-      '#description' => $this->t('Allowed extensions: gif png jpg jpeg svg<br>Image must be at least 180x180'),
+      '#description' => $this->t('Allowed extensions: gif png jpg jpeg<br>Image must be at least 180x180'),
       '#upload_validators' => [
         'file_validate_is_image' => [],
-        'file_validate_extensions' => ['gif png jpg jpeg svg'],
+        'file_validate_extensions' => ['gif png jpg jpeg'],
         'file_validate_image_resolution' => [0, "180x180"],
       ],
       '#title' => $this->t('Custom Favicon'),
@@ -266,23 +267,11 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
-    $fileEntity = $this->entityTypeManager->getStorage('file');
-
-    // First, delete any previously set favicons.
-    if ($fid = $this->configFactory->getEditable('ys_core.site')->get('custom_favicon')) {
-      /** @var \Drupal\file\Entity $file */
-      $file = $fileEntity->load($fid[0]);
-      $file->delete();
-    }
-
-    if ($form_state->getValue('favicon')) {
-      // Next, set the new favicon.
-      $fid = $form_state->getValue('favicon');
-      /** @var \Drupal\file\Entity $file */
-      $file = $fileEntity->load($fid[0]);
-      $file->setPermanent();
-      $file->save();
-    }
+    // Handle the favicon filesystem if needed.
+    $this->faviconManager->handleFaviconFilesystem(
+      $form_state->getValue('favicon'),
+      $this->configFactory->getEditable('ys_core.site')->get('custom_favicon')
+    );
 
     $this->configFactory->getEditable('system.site')
       ->set('name', $form_state->getValue('site_name'))

@@ -199,11 +199,9 @@ function ys_core_page_attachments(array &$page) {
     $page['#attached']['library'][] = 'ys_core/siteimprove';
   }
 
-  // Favicons
+  // Custom or fallback favicons.
   $favicons = \Drupal::service('ys_core.favicon_manager')->getFavicons();
-  //kint($favicons);
   foreach ($favicons as $name => $favicon) {
-
     $page['#attached']['html_head'][] = [$favicon, $name];
   }
 
@@ -276,7 +274,8 @@ function ys_core_preprocess_image_widget(&$variables) {
       '#type' => 'hidden',
       '#value' => $file_variables['height'],
     ];
-  } else {
+  }
+  else {
     $variables['fallback_image'] = TRUE;
   }
 
