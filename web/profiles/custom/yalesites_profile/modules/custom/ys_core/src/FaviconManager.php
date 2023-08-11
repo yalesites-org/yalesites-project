@@ -69,8 +69,7 @@ class FaviconManager extends ControllerBase implements ContainerInjectionInterfa
   public function getFavicons() {
     $customFaviconId = ($this->yaleSettings->get('custom_favicon')) ? $this->yaleSettings->get('custom_favicon')[0] : NULL;
     $faviconData = ($customFaviconId) ? $this->getCustomFavicon($customFaviconId) : $this->getFallbackFavicon();
-    $test = \Drupal\Core\Image\Image::convert('ico');
-    kint($test);
+
     return $faviconData;
   }
 
