@@ -149,18 +149,6 @@ npm run build-with-assets                       # Build/Rebuild with replaced as
 npm run build-with-install                      # Rebuild with fresh imports
 ```
 ```bash
-npm run local:cl-dev                            # npm link component library with local environment
-```
-```bash
-npm run local:review-with-atomic-and-cl-branch  # Use different branches of each repo
-```
-```bash
-npm run local:review-with-atomic-branch         # Use specific atomic branch
-```
-```bash
-npm run local:review-with-cl-branch             # Use specific component library branch
-```
-```bash
 npm run local:git-checkout                      # Sync:
                                                 #   yalesites-project: develop branch
                                                 #   atomic: main branch
@@ -187,12 +175,6 @@ npm run lint                                    # Lints js, php, and styles
 ```
 ```bash
 npm run fix:js                                  # Fixes js linting errors if possible
-```
-```bash
-npm run local:theme-link                        # Alias for cl-dev but doesn't run CL develop
-```
-```bash
-npm run prettier                                # Runs prettier on repo
 ```
 ```bash
 npm run test                                    # Runs prettier and linting
