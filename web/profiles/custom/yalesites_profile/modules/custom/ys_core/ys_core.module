@@ -6,9 +6,9 @@
  */
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
-use Drupal\Core\Render\Element;
 
 /**
  * @file
@@ -198,6 +198,15 @@ function ys_core_page_attachments(array &$page) {
   if ($config->get('status')) {
     $page['#attached']['library'][] = 'ys_core/siteimprove';
   }
+
+  // Favicons
+  $favicons = \Drupal::service('ys_core.favicon_manager')->getFavicons();
+  //kint($favicons);
+  foreach ($favicons as $name => $favicon) {
+
+    $page['#attached']['html_head'][] = [$favicon, $name];
+  }
+
 }
 
 /**
@@ -267,6 +276,8 @@ function ys_core_preprocess_image_widget(&$variables) {
       '#type' => 'hidden',
       '#value' => $file_variables['height'],
     ];
+  } else {
+    $variables['fallback_image'] = TRUE;
   }
 
   $variables['data'] = [];

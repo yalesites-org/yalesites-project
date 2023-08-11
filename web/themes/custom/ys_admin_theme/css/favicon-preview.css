@@ -98,3 +98,15 @@ ul.tabs-preview > li::after {
 .clearfix {
   zoom: 1;
 }
+
+.form-managed-file__meta {
+  gap: 2rem;
+}
+
+.form-managed-file__main .file--image a {
+  color: var(--gin-color-primary-light);
+}
+
+.form-managed-file__main .file--image a:hover {
+  color: var(--gin-bg-item-hover) !important;
+}

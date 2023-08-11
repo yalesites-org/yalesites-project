@@ -21,6 +21,7 @@
  * @see claro_preprocess_file_managed_file()
  */
 #}
+
 {%
   set classes = [
     'js-form-managed-file',
@@ -31,18 +32,34 @@
     has_meta ? 'has-meta' : 'no-meta',
   ]
 %}
+
 <div{{ attributes.addClass(classes).removeClass('clearfix') }}>
   <div class="form-managed-file__main">
     {{ main_items.filename }}
     {{ main_items|without('filename') }}
   </div>
 
-  {% if has_meta or data.preview %}
+  {% if has_meta or data.preview or fallback_image %}
+  {% set tab_preview %}
+    {% if data.preview %}
+      {{ data.preview }}
+    {% else %}
+      <img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/favicons/yale-logo.png" height="16" width="16" alt="Yale Y logo" />
+    {% endif %}
+  {% endset %}
   {{ attach_library('ys_admin_theme/favicon_preview') }}
   <div class="form-managed-file__meta-wrapper">
     <div class="form-managed-file__meta">
-      {% if data.preview %}
-        <div class="form-managed-file__image-preview image-preview">
+      {% if data.preview or fallback_image %}
+        <div class="form-managed-file__image-preview__larger">
+          {% if data['fids']['#value'] %}
+            {{ drupal_image(data['fids']['#value'][0], 'media_library', {alt: 'Currently selected favicon'|t}) }}
+          {% endif %}
+          {% if fallback_image %}
+            <img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/favicons/yale-logo.png" height="180" width="180" alt="Yale Y logo" />
+          {% endif %}
+        </div>
+        <div class="form-managed-file__image-preview">
           <div class="image-preview__img-wrapper">
             <div class="tab-preview-container">
               <ul class="tabs-preview clearfix" >
@@ -50,7 +67,7 @@
                   <a>Tab One</a>
                 </li>
                 <li class="active">
-                  <a>{{ data.preview }} Page Title | {{ site_name }}</a>
+                  <a>{{ tab_preview }} Page Title | {{ site_name }}</a>
                 </li>
                 <li>
                   <a>Tab Three</a>
@@ -74,6 +91,8 @@
       {% endif %}
     </div>
   </div>
+  {% else %}
+  We don't have an custom
   {% endif %}
 
   {# Every third-party addition will be rendered here. #}

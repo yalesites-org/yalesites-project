@@ -5,7 +5,6 @@ namespace Drupal\ys_core\Form;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityTypeManager;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Path\PathValidatorInterface;
@@ -15,7 +14,7 @@ use Drupal\path_alias\AliasManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Form for managing sitewide settings.
+ * Form for managing site-wide settings.
  *
  * This form recreates some of the logic from the Drupal Site Information form
  * and may need to be updated if the core form changes. See:
@@ -49,7 +48,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
   /**
    * The entity type manager.
    *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   * @var \Drupal\Core\Entity\EntityTypeManager
    */
   protected $entityTypeManager;
 
@@ -64,7 +63,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
    *   The path validator.
    * @param \Drupal\Core\Routing\RequestContext $request_context
    *   The request context.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManager $entity_type_manager
    *   The entity type manager.
    */
   public function __construct(
@@ -213,7 +212,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
         'file_validate_image_resolution' => [0, "180x180"],
       ],
       '#title' => $this->t('Custom Favicon'),
-      '#default_value' => ($yaleConfig->get('favicon')) ? $yaleConfig->get('favicon') : NULL,
+      '#default_value' => ($yaleConfig->get('custom_favicon')) ? $yaleConfig->get('custom_favicon') : NULL,
       '#theme' => 'image_widget',
       '#preview_image_style' => 'favicon_16x16',
     ];
@@ -269,19 +268,20 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
 
     $fileEntity = $this->entityTypeManager->getStorage('file');
 
-    if ($form_state->getValue('favicon')) {
-      $image = $form_state->getValue('favicon');
+    // First, delete any previously set favicons.
+    if ($fid = $this->configFactory->getEditable('ys_core.site')->get('custom_favicon')) {
       /** @var \Drupal\file\Entity $file */
-      $file = $fileEntity->load($image[0]);
+      $file = $fileEntity->load($fid[0]);
+      $file->delete();
+    }
+
+    if ($form_state->getValue('favicon')) {
+      // Next, set the new favicon.
+      $fid = $form_state->getValue('favicon');
+      /** @var \Drupal\file\Entity $file */
+      $file = $fileEntity->load($fid[0]);
       $file->setPermanent();
       $file->save();
-    }
-    else {
-      if ($fid = $this->configFactory->getEditable('ys_core.site')->get('favicon')) {
-        /** @var \Drupal\file\Entity $file */
-        $file = $fileEntity->load($fid[0]);
-        $file->delete();
-      }
     }
 
     $this->configFactory->getEditable('system.site')
@@ -298,7 +298,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       ->set('seo.google_site_verification', $form_state->getValue('google_site_verification'))
       ->set('seo.google_analytics_id', $form_state->getValue('google_analytics_id'))
       ->set('image_fallback.teaser', $form_state->getValue('teaser_image_fallback'))
-      ->set('favicon', $form_state->getValue('favicon'))
+      ->set('custom_favicon', $form_state->getValue('favicon'))
       ->save();
     $this->configFactory->getEditable('google_analytics.settings')
       ->set('account', $form_state->getValue('google_analytics_id'))
