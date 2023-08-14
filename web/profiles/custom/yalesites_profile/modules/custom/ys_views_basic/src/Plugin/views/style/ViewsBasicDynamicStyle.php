@@ -135,6 +135,7 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
       '#rows' => $rows,
       '#card_collection_type' => $type,
       '#parentNode' => $parentNode,
+      '#contentType' => $this->view->args[0],
     ];
   }
 
