@@ -215,6 +215,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#default_value' => ($yaleConfig->get('custom_favicon')) ? $yaleConfig->get('custom_favicon') : NULL,
       '#theme' => 'image_widget',
       '#preview_image_style' => 'favicon_16x16',
+      '#use_favicon_preview' => TRUE,
     ];
 
     return parent::buildForm($form, $form_state);

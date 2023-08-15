@@ -279,6 +279,10 @@ function ys_core_preprocess_image_widget(&$variables) {
     $variables['fallback_image'] = TRUE;
   }
 
+  // Sets a twig variable to use the favicon preview.
+  // @see web/themes/custom/ys_admin_theme/templates/content-edit/image-widget.html.twig
+  $variables['use_favicon_preview'] = $element['#use_favicon_preview'];
+
   $variables['data'] = [];
   foreach (Element::children($element) as $child) {
     $variables['data'][$child] = $element[$child];

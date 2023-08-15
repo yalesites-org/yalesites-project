@@ -21,7 +21,14 @@
  */
 #}
 
-{% extends 'file-managed-file--favicon.html.twig' %}
+{# This logic only loads the custom template for favicon preview, otherwise
+it will load the default Claro version #}
+
+{% if use_favicon_preview %}
+  {% include 'file-managed-file--favicon.html.twig' %}
+{% else %}
+  {% include 'file-managed-file.html.twig' %}
+{% endif %}
 
 {% set attributes = attributes.addClass('form-managed-file--image') %}
 
