@@ -2,8 +2,14 @@
 
 {% block content %}
 
+  {% if parentNode == 'post' or parentNode == 'event' %}
+    {% set card_collection__width = "content" %}
+  {% else %}
+    {% set card_collection__width = "site" %}
+  {% endif %}
+
   {% set view__attibutes = {
-    'data-component-width': 'content',
+    'data-component-width': card_collection__width,
     'data-embedded-components': 'true',
     'data-collection-featured': 'true',
     'data-collection-type': 'list',
