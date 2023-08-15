@@ -3,13 +3,24 @@ langcode: en
 status: true
 dependencies:
   config:
+    - image.style.1_1_150
+    - image.style.1_1_200
     - image.style.1_1_300_
+    - image.style.1_1_500
+    - image.style.1_1_600
 id: profile_1_1_
 label: 'Profile (1:1)'
 image_style_mappings:
   -
-    image_mapping_type: image_style
-    image_mapping: '1_1_300_'
+    image_mapping_type: sizes
+    image_mapping:
+      sizes: '(min-width: 1344px) 300px, (min-width: 992px) 200px, (min-width: 768px) 400px, 100vw'
+      sizes_image_styles:
+        - '1_1_150'
+        - '1_1_200'
+        - '1_1_300_'
+        - '1_1_500'
+        - '1_1_600'
     breakpoint_id: responsive_image.viewport_sizing
     multiplier: 1x
 breakpoint_group: responsive_image
