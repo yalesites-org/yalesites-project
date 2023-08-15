@@ -46,7 +46,7 @@ mv /tmp/component-library-twig "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/@
 
 # Remove atomic from composer so Integrated Composer doesn't fail.
 cd "$GITHUB_WORKSPACE"/web/profiles/custom/yalesites_profile
-composer remove yalesites-org/atomic --no-update
+composer remove yalesites-org/atomic
 
 # Remove atomic and component library gitignores to commit node_modules.
 rm "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/.gitignore
