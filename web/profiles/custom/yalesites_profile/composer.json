@@ -82,9 +82,9 @@
     "drupal/upgrade_status": "^3.18",
     "drupal/webform": "^6.2@beta",
     "drupal/wingsuit_companion": "^2.0@RC",
+    "yalesites-org/atomic": "1.17.0",
     "oomphinc/composer-installers-extender": "^2.0",
     "wikimedia/composer-merge-plugin": "^2.1",
-    "yalesites-org/atomic": "1.16.3",
     "yalesites-org/yale_cas": "^1.0"
   },
   "minimum-stability": "dev",
