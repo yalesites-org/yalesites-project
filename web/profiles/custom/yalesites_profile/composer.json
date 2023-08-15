@@ -73,6 +73,7 @@
     "drupal/redirect": "^1.7",
     "drupal/search_api": "^1.25",
     "drupal/search_api_exclude": "^2.0",
+    "drupal/search_api_html_element_filter": "^1.0",
     "drupal/section_library": "^1.1",
     "drupal/selective_better_exposed_filters": "^3.0@beta",
     "drupal/simple_sitemap": "^4.1",
