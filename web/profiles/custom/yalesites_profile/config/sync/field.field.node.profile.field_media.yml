@@ -11,7 +11,7 @@ field_name: field_media
 entity_type: node
 bundle: profile
 label: Media
-description: ''
+description: 'Profile photos can be used in various places on the site. The most common usage is in lists, directories, and card views which use a 1:1 ratio image that is best around 600x600 px. The profile detail page uses a 3:2 ratio image that is best around 1080x720 px. For best results, upload a photo that is larger and the site will automatically scale and crop using the crop settings specified during upload.'
 required: false
 translatable: false
 default_value: {  }
