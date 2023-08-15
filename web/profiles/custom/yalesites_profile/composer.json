@@ -97,6 +97,9 @@
     "patchLevel": {
       "drupal/core": "-p2"
     },
+    "installer-paths": {
+      "../../../../web/core": ["type:drupal-core"]
+    },
     "patches": {
       "drupal/layout_paragraphs": {
         "save close tweaks": "https://git.drupalcode.org/project/layout_paragraphs/-/merge_requests/80.patch"
