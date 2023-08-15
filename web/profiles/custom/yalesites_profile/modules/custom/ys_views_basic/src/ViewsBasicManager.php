@@ -163,25 +163,28 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
      */
 
     $filterType = implode('+', $paramsDecoded['filters']['types']);
+    $termsIncludeArray = [];
+    $termsExcludeArray = [];
 
     // Get terms to include.
     if (isset($paramsDecoded['filters']['terms_include'])) {
       foreach ($paramsDecoded['filters']['terms_include'] as $term) {
-        $termsIncludeArray[] = (int) $term;
+        $termsIncludeArray[] = (int) is_object($term) ? $term['target_id'] : $term;
       }
     }
 
     // Get terms to exclude.
     if (isset($paramsDecoded['filters']['terms_exclude'])) {
       foreach ($paramsDecoded['filters']['terms_exclude'] as $term) {
-        $termsExcludeArray[] = (int) $term;
+        $termsExcludeArray[] = (int) is_object($term) ? $term['target_id'] : $term;
       }
     }
 
     // Set operator: "+" is "OR" and "," is "AND".
-    $operator = $paramsDecoded['operator'] ?: '+';
-    $termsInclude = isset($termsIncludeArray) ? implode($operator, $termsIncludeArray) : 'all';
-    $termsExclude = isset($termsExcludeArray) ? implode($operator, $termsExcludeArray) : NULL;
+    $operator = $paramsDecoded['operator'] ?? '+';
+
+    $termsInclude = (count($termsIncludeArray) != 0) ? implode($operator, $termsIncludeArray) : 'all';
+    $termsExclude = (count($termsExcludeArray) != 0) ? implode($operator, $termsExcludeArray) : NULL;
 
     if (
       ($type == 'count' && $paramsDecoded['display'] != 'limit') ||
@@ -192,6 +195,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       $itemsLimit = $paramsDecoded['limit'];
     }
 
+    $eventTimePeriod = $paramsDecoded['filters']['event_time_period'] ?? NULL;
+
     $view->setArguments(
       [
         'type' => $filterType,
@@ -200,7 +205,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'sort' => $paramsDecoded['sort_by'],
         'view' => $paramsDecoded['view_mode'],
         'items' => $itemsLimit,
-        'event_time_period' => str_contains($filterType, 'event') ? $paramsDecoded['filters']['event_time_period'] : NULL,
+        'event_time_period' => str_contains($filterType, 'event') ? $eventTimePeriod : NULL,
       ]
     );
 
