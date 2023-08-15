@@ -44,7 +44,7 @@ rm -rf "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/@yalesites-org/component-
 mkdir -p "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/@yalesites-org
 mv /tmp/component-library-twig "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/@yalesites-org
 
-# Remove atomic from composer so Integrated Composer doesn't fail,
+# Remove atomic from composer so Integrated Composer doesn't fail.
 cd "$GITHUB_WORKSPACE"/web/profiles/custom/yalesites_profile
 composer remove yalesites-org/atomic --no-update
 
@@ -56,3 +56,6 @@ cd "$GITHUB_WORKSPACE"
 
 # Cut the gitignore file so themes can be committed.
 terminus build:gitignore:cut
+
+# Output git status to see what will be committed.
+git status
