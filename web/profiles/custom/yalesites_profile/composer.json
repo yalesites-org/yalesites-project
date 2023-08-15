@@ -83,18 +83,13 @@
     "drupal/webform": "^6.2@beta",
     "drupal/wingsuit_companion": "^2.0@RC",
     "jjj/chosen": "^2.2",
-    "oomphinc/composer-installers-extender": "^2.0",
     "yalesites-org/atomic": "1.17.0",
     "yalesites-org/yale_cas": "^1.0"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
   "config": {
-    "sort-packages": true,
-    "allow-plugins": {
-      "composer/installers": true,
-      "oomphinc/composer-installers-extender": true
-    }
+    "sort-packages": true
   },
   "extra": {
     "enable-patching": true,
