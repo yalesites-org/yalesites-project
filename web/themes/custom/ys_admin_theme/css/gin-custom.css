@@ -29,6 +29,17 @@
   background-color: var(--wool);
 }
 
+.gin-layer-wrapper,
+.block-system-main-block > form,
+.views-exposed-form.views-exposed-form,
+.views-edit-view,
+.views-preview-wrapper,
+#views-entity-list,
+.module-filter-update-status-form .table-filter,
+.admin.my-workbench {
+  background-color: var(--darkest-gray) !important;
+}
+
 .gin--dark-mode .messages,
 .gin--dark-mode .gin-layer-wrapper,
 .gin--dark-mode .gin-layer-wrapper-shadow,

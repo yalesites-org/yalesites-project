@@ -32,6 +32,18 @@
   background-color: var(--wool);
 }
 
+// Make admin content area darker than the top bar dark-theme-gray
+.gin-layer-wrapper, 
+.block-system-main-block > form, 
+.views-exposed-form.views-exposed-form, 
+.views-edit-view, 
+.views-preview-wrapper, 
+#views-entity-list, 
+.module-filter-update-status-form .table-filter, 
+.admin.my-workbench {
+  background-color: var(--darkest-gray) !important;
+}
+
 // remove box-shadows
 .gin--dark-mode .messages,
 .gin--dark-mode .gin-layer-wrapper, 
