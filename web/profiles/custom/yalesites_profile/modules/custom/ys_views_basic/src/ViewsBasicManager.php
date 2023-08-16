@@ -167,14 +167,14 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     // Get terms to include.
     if (isset($paramsDecoded['filters']['terms_include'])) {
       foreach ($paramsDecoded['filters']['terms_include'] as $term) {
-        $termsIncludeArray[] = (int) $term;
+        $termsIncludeArray[] = $this->getTermId($term);
       }
     }
 
     // Get terms to exclude.
     if (isset($paramsDecoded['filters']['terms_exclude'])) {
       foreach ($paramsDecoded['filters']['terms_exclude'] as $term) {
-        $termsExcludeArray[] = (int) $term;
+        $termsExcludeArray[] = $this->getTermId($term);
       }
     }
 
@@ -343,7 +343,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       case 'terms_exclude':
         if (!empty($paramsDecoded['filters'][$type])) {
           foreach ($paramsDecoded['filters'][$type] as $term) {
-            $defaultParam[] = (int) $term;
+            $defaultParam[] = $this->getTermId($term);
           }
         }
         break;
@@ -421,6 +421,24 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     asort($tagList);
 
     return $tagList;
+  }
+
+  /**
+   * Returns an integer representation of the term.
+   *
+   * The term could be either the old Drupal way of an array with a
+   * target_id attribute containing a string representation of the id, or the
+   * chosen way of a string represenation of the id.  This ensures that the
+   * decision of what should be return is handled here and not elsewhere.
+   *
+   * @param mixed $term
+   *   The taxonomy term.
+   *
+   * @return int
+   *   The term ID.
+   */
+  private function getTermId($term) : int {
+    return (int) is_array($term) ? $term['target_id'] : $term;
   }
 
 }
