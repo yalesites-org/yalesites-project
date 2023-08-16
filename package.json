@@ -28,6 +28,11 @@
   },
   "devDependencies": {
     "@semantic-release/git": "^10.0.1",
+    "@yalesites-org/eslint-config-and-other-formatting": "^1.5.0",
+    "eslint-config-drupal": "^5.0.2",
+    "eslint-plugin-jsx-a11y": "^6.5.1",
+    "eslint-plugin-react": "^7.29.4",
+    "eslint-plugin-yml": "^0.14.0",
     "semantic-release-replace-plugin": "^1.2.7",
     "shelljs": "^0.8.5"
   },
