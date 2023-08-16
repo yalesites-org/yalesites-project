@@ -20,6 +20,7 @@ class SocialLinksManager {
     'twitter' => 'Twitter',
     'youtube' => 'YouTube',
     'weibo' => 'Weibo',
+    'linkedin' => 'LinkedIn',
   ];
 
   /**
