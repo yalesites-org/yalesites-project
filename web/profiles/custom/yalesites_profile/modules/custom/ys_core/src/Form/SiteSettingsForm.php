@@ -3,16 +3,18 @@
 namespace Drupal\ys_core\Form;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Path\PathValidatorInterface;
 use Drupal\Core\Routing\RequestContext;
 use Drupal\google_analytics\Constants\GoogleAnalyticsPatterns;
 use Drupal\path_alias\AliasManagerInterface;
+use Drupal\ys_core\FaviconManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Form for managing sitewide settings.
+ * Form for managing site-wide settings.
  *
  * This form recreates some of the logic from the Drupal Site Information form
  * and may need to be updated if the core form changes. See:
@@ -20,7 +22,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @package Drupal\ys_core\Form
  */
-class SiteSettingsForm extends ConfigFormBase {
+class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInterface {
 
   /**
    * The path alias manager.
@@ -44,6 +46,13 @@ class SiteSettingsForm extends ConfigFormBase {
   protected $requestContext;
 
   /**
+   * The favicon manager.
+   *
+   * @var \Drupal\ys_core\FaviconManager
+   */
+  protected $faviconManager;
+
+  /**
    * Constructs a SiteInformationForm object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -54,12 +63,21 @@ class SiteSettingsForm extends ConfigFormBase {
    *   The path validator.
    * @param \Drupal\Core\Routing\RequestContext $request_context
    *   The request context.
+   * @param \Drupal\ys_core\FaviconManager $favicon_manager
+   *   The favicon manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, AliasManagerInterface $alias_manager, PathValidatorInterface $path_validator, RequestContext $request_context) {
+  public function __construct(
+    ConfigFactoryInterface $config_factory,
+    AliasManagerInterface $alias_manager,
+    PathValidatorInterface $path_validator,
+    RequestContext $request_context,
+    FaviconManager $favicon_manager,
+    ) {
     parent::__construct($config_factory);
     $this->aliasManager = $alias_manager;
     $this->pathValidator = $path_validator;
     $this->requestContext = $request_context;
+    $this->faviconManager = $favicon_manager;
   }
 
   /**
@@ -70,7 +88,8 @@ class SiteSettingsForm extends ConfigFormBase {
       $container->get('config.factory'),
       $container->get('path_alias.manager'),
       $container->get('path.validator'),
-      $container->get('router.request_context')
+      $container->get('router.request_context'),
+      $container->get('ys_core.favicon_manager'),
     );
   }
 
@@ -182,6 +201,23 @@ class SiteSettingsForm extends ConfigFormBase {
       '#description' => $this->t('This image will be used for event and post card displays when no teaser image is selected.'),
     ];
 
+    $form['favicon'] = [
+      '#type' => 'managed_file',
+      '#upload_location' => 'public://favicons',
+      '#multiple' => FALSE,
+      '#description' => $this->t('Allowed extensions: gif png jpg jpeg<br>Image must be at least 180x180'),
+      '#upload_validators' => [
+        'file_validate_is_image' => [],
+        'file_validate_extensions' => ['gif png jpg jpeg'],
+        'file_validate_image_resolution' => [0, "180x180"],
+      ],
+      '#title' => $this->t('Custom Favicon'),
+      '#default_value' => ($yaleConfig->get('custom_favicon')) ? $yaleConfig->get('custom_favicon') : NULL,
+      '#theme' => 'image_widget',
+      '#preview_image_style' => 'favicon_16x16',
+      '#use_favicon_preview' => TRUE,
+    ];
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -230,6 +266,13 @@ class SiteSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+
+    // Handle the favicon filesystem if needed.
+    $this->faviconManager->handleFaviconFilesystem(
+      $form_state->getValue('favicon'),
+      $this->configFactory->getEditable('ys_core.site')->get('custom_favicon')
+    );
+
     $this->configFactory->getEditable('system.site')
       ->set('name', $form_state->getValue('site_name'))
       ->set('mail', $form_state->getValue('site_mail'))
@@ -244,6 +287,7 @@ class SiteSettingsForm extends ConfigFormBase {
       ->set('seo.google_site_verification', $form_state->getValue('google_site_verification'))
       ->set('seo.google_analytics_id', $form_state->getValue('google_analytics_id'))
       ->set('image_fallback.teaser', $form_state->getValue('teaser_image_fallback'))
+      ->set('custom_favicon', $form_state->getValue('favicon'))
       ->save();
     $this->configFactory->getEditable('google_analytics.settings')
       ->set('account', $form_state->getValue('google_analytics_id'))
