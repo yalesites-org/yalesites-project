@@ -44,6 +44,7 @@
   --gin-color-primary-light: var(--gin-bg-item-hover) !important;
   --gin-border-color-layer: var(--light-gray);
 
+  --gin-bg-app: var(--darkest-gray);
   --gin-bg-layer: var(--dark-theme-gray);
   --gin-bg-input: var(--darkest-gray) !important;
   --gin-dark-gray: var(--darkest-gray);
