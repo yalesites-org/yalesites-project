@@ -97,9 +97,9 @@
 .layout-builder__link--add,
 .inline-block-create-button:not(:focus),
 .layout-builder__link--add:not(:focus),
-.form-actionsÂ .glb-button,
-.form-actionsÂ .inline-block-create-button,
-.form-actionsÂ .layout-builder__link--add,
+.form-actions .glb-button,
+.form-actions .inline-block-create-button,
+.form-actions .layout-builder__link--add,
 .glb-action-link--icon-trash.glb-action-link,
 .meta-sidebar__trigger.is-active,
 .meta-sidebar__close.is-active {
@@ -112,9 +112,9 @@
 .glb-button:not(:focus),
 .inline-block-create-button:not(:focus),
 .layout-builder__link--add:not(:focus),
-.form-actionsÂ .glb-button,
-.form-actionsÂ .inline-block-create-button,
-.form-actionsÂ .layout-builder__link--add,
+.form-actions .glb-button,
+.form-actions .inline-block-create-button,
+.form-actions .layout-builder__link--add,
 .glb-action-link--icon-trash.glb-action-link {
   border-radius: 2.5rem !important;
   border: 2px solid transparent !important;
