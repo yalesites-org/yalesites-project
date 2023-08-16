@@ -8,20 +8,12 @@
   --darkest-gray: #1f1f1f;
   --dark-theme-gray-rgb: 78, 89, 89;
   --dark-theme-gray:#4E5959;
-  --dark-theme-gray-selected:#edfbfb;
-  --dark-theme-gray-lightest:#d0e0e0;
-  --dark-theme-gray-lightest-rgb: 208, 224, 224;
-  --dark-theme-gray-light:#606A6A;
   --dark-theme-gray-hover: #353d3d;
   --dark-primary-link: var(--wool);
   --dark-primary-link-hover: #ffffff;
   --dark-gin-icon-color: var(--wool);
   --dark-theme-gray-text-light:var(--wool);
   --dark-theme-gray-text-dark:var(--dark-theme-gray);
-  --custom-button-color: var(--robin-egg);
-  --custom-button-color-hover: var(--wool);
-  --custom-button-color-text: var(--dark-theme-gray-hover);
-  --custom-button-color-text-hover: var(--dark-theme-gray-hover);
 
   [data-gin-accent] {
     --gin-color-button-text: var(--dark-theme-gray);
@@ -42,15 +34,15 @@
     --gin-border-color-layer: var(--light-gray) !important;
     --gin-bg-layer: var(--dark-theme-gray) !important;
     --gin-border-color-table-header: var(--darkest-gray) !important;
-    --gin-bg-input: #fff !important;
+    --gin-bg-input: var(--darkest-gray) !important;
     --gin-border-color-form-element: var(--light-gray) !important;
     --gin-bg-app: #707070;
     --gin-color-primary-light-active: var(--robin-egg);
     --gin-icon-color: var(--dark-gin-icon-color);
-    --gin-color-button-text: var(--custom-button-color-text);
+    --gin-color-button-text: var(--dark-theme-gray-hover);
     --gin-bg-layer3: var(--dark-theme-gray-hover);
     // --gin-color-title: var(--dark-theme-gray);
-    --gin-color-primary-hover: var(--custom-button-color-hover) !important;
+    --gin-color-primary-hover: var(--wool) !important;
   }
 }
 

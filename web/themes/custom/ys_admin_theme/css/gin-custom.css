@@ -29,6 +29,7 @@
   background-color: var(--wool);
 }
 
+.gin--dark-mode .messages,
 .gin--dark-mode .gin-layer-wrapper,
 .gin--dark-mode .gin-layer-wrapper-shadow,
 .gin--dark-mode .block-system > form,
@@ -40,6 +41,18 @@
 .gin--dark-mode #views-entity-list,
 .gin--dark-mode .admin.my-workbench {
   box-shadow: unset !important;
+}
+
+.gin--dark-mode .gin-secondary-toolbar.layout-container {
+  background: rgba(var(--dark-theme-gray-rgb), 1);
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding: 0.5rem 2rem;
+}
+
+.gin--dark-mode[dir=ltr] .gin--edit-form .gin-secondary-toolbar {
+  left: unset;
+  transform: unset;
 }
 
 .gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab .toolbar-tray a:hover,
@@ -77,6 +90,20 @@
 .glb-action-link--icon-trash.glb-action-link {
   border-radius: 2.5rem !important;
   border: 2px solid transparent !important;
+}
+
+/* forms */
+.gin--dark-mode .form-element {
+  background-color: var(--dark-theme-gray) !important;
+}
+
+::placeholder {
+  color: var(--wool) !important;
+  opacity: 0.8;
+}
+
+.gin--dark-mode :not(.form-checkboxes):not(td):not(.tabledrag-cell-content__item):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .form-type--checkbox input:checked ~ .checkbox-toggle .checkbox-toggle__inner::before {
+  background-color: var(--darkest-gray) !important;
 }
 
 /* stylelint-enable */
