@@ -109,6 +109,16 @@
   border: 2px solid transparent !important;
 }
 
+.action-link.action-link--danger {
+  background-color: var(--wool);
+}
+
+.action-link--icon-trash.action-link--danger:hover,
+.action-link.action-link--danger:hover {
+  background-color: transparent;
+  color: var(--wool) !important;
+}
+
 /* icons */
 .action-link:hover::before {
   background: var(--robin-egg) !important;
@@ -128,6 +138,10 @@
   background-color: var(--darkest-gray) !important;
 }
 
+[data-drupal-selector="edit-enable-darkmode"] .form-radios input:checked + .form-item__label {
+  background: var(--dark-theme-gray);
+}
+
 /* chosen overrides */
 .gin--dark-mode .chosen-container .chosen-results li.highlighted {
   background-color: var(--gin-color-primary);
@@ -141,6 +155,28 @@
 .gin--dark-mode .chosen-search-input,
 .gin--dark-mode .chosen-search-input::placeholder {
   color: var(--dark-theme-gray) !important;
+}
+
+/* upgrade status on /admin/reports/upgrade-status */
+.upgrade-status-overview th {
+  background-color: var(--dark-theme-gray);
+}
+
+.upgrade-status-next-step-update tr {
+  background-color: var(--wool);
+}
+
+.upgrade-status-summary-environment tr.known-error a,
+.upgrade-status-next-step-update tr a {
+  color: var(--mediterranean-blue);
+}
+
+.upgrade-status-next-step-update tr:hover a {
+  color: var(--gin-color-primary);
+}
+
+.upgrade-status-summary-label:hover {
+  background-color: var(--darkest-gray);
 }
 
 
