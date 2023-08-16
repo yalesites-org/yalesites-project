@@ -9,3 +9,7 @@ tokens:
       node_modules/@yalesites-org/tokens/build/tokens.css: {}
       css/gin-color-overrides.css: {}
       css/gin-custom.css: {}
+favicon_preview:
+  css:
+    theme:
+      css/favicon-preview.css: {}

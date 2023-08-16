@@ -1,0 +1,21 @@
+uuid: 02512e03-9b40-4e26-addb-0b67765569f5
+langcode: en
+status: true
+dependencies: {  }
+name: favicon_16x16
+label: 'Favicon (16x16)'
+effects:
+  69fbcf97-e07b-412a-a622-f00f5c0ccd6e:
+    uuid: 69fbcf97-e07b-412a-a622-f00f5c0ccd6e
+    id: image_convert
+    weight: 1
+    data:
+      extension: png
+  00127b71-2d85-45ab-bbe6-898938bd856e:
+    uuid: 00127b71-2d85-45ab-bbe6-898938bd856e
+    id: image_scale_and_crop
+    weight: 2
+    data:
+      width: 16
+      height: 16
+      anchor: center-center
