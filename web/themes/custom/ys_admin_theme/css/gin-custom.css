@@ -39,7 +39,10 @@
 .gin--dark-mode .modules-tabs,
 .gin--dark-mode .module-filter-update-status-form .table-filter,
 .gin--dark-mode #views-entity-list,
-.gin--dark-mode .admin.my-workbench {
+.gin--dark-mode .admin.my-workbench,
+[dir=ltr] .button--primary,
+[dir=ltr] .button--primary:not(:focus),
+[dir=ltr] .ief-entity-submit {
   box-shadow: unset !important;
 }
 
@@ -62,6 +65,10 @@
 
 .gin--dark-mode .toolbar-tray-horizontal ul li.menu-item--expanded ul li.menu-item--expanded::before {
   background-color: var(--wool);
+}
+
+.is-horizontal .tabs--primary .tabs__link.is-active {
+  background: var(--dark-theme-gray) !important;
 }
 
 .glb-button,
@@ -92,6 +99,11 @@
   border: 2px solid transparent !important;
 }
 
+/* icons */
+.action-link:hover::before {
+  background: var(--robin-egg) !important;
+}
+
 /* forms */
 .gin--dark-mode .form-element {
   background-color: var(--dark-theme-gray) !important;
@@ -104,6 +116,21 @@
 
 .gin--dark-mode :not(.form-checkboxes):not(td):not(.tabledrag-cell-content__item):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .form-type--checkbox input:checked ~ .checkbox-toggle .checkbox-toggle__inner::before {
   background-color: var(--darkest-gray) !important;
+}
+
+/* chosen overrides */
+.gin--dark-mode .chosen-container .chosen-results li.highlighted {
+  background-color: var(--gin-color-primary);
+  color: var(--darkest-gray);
+}
+
+.gin--dark-mode .chosen-container-single .chosen-single span {
+  color: var(--wool);
+}
+
+.gin--dark-mode .chosen-search-input,
+.gin--dark-mode .chosen-search-input::placeholder {
+  color: var(--dark-theme-gray) !important;
 }
 
 /* stylelint-enable */
