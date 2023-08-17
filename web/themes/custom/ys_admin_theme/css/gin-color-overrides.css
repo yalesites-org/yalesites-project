@@ -27,6 +27,7 @@
   --gin-color-primary-light: var(--gin-bg-item-hover) !important;
   --gin-color-primary-light-active: var(--robin-egg);
   --gin-border-color-layer: var(--light-gray) !important;
+  --gin-color-info: var(--mediterranean-blue) !important;
   --gin-bg-layer: var(--dark-theme-gray) !important;
   --gin-bg-input: var(--darkest-gray) !important;
   --gin-border-color-table-header: var(--darkest-gray) !important;

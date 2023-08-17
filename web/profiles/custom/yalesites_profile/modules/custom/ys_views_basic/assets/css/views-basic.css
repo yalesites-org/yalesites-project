@@ -4,13 +4,13 @@
 
 /* set variables */
 .layout-builder-configure-block {
-  --color-border: var(--color-gray-500);
+  --color-border: var(--wool);
   --color-border-lightest: var(--color-basic-white);
   --color-link-hover: hsl(210, 100%, 21%);
-  --color-link-border: hsl(213, 66%, 45%);
+  --color-link-border: #187e9b;
   --color-background-primary: var(--color-basic-white);
-  --color-background-hover: var(--wool);
-  --color-border-hover: hsl(213, 66%, 45%);
+  --color-background-hover: var(--dark-theme-gray);
+  --color-border-hover: var(--darkest-gray);
   --color-text-lighter: #2D424D;
   --color-text-primary: var(--color-gray-800);
 }
@@ -69,7 +69,7 @@
   aspect-ratio: 2/1;
   display: block !important;
   text-align: left;
-  background: var(--color-basic-white);
+  background: var(--dark-theme-gray);
   border: 2px solid var(--color-border);
   padding: var(--size-spacing-4) var(--size-spacing-5);
   color: var(--color-text-primary);
