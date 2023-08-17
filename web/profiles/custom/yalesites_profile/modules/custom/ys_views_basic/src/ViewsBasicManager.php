@@ -449,7 +449,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *
    * The term could be either the old Drupal way of an array with a
    * target_id attribute containing a string representation of the id, or the
-   * chosen way of a string represenation of the id.  This ensures that the
+   * chosen way of a string representation of the id. This ensures that the
    * decision of what should be return is handled here and not elsewhere.
    *
    * @param mixed $term
