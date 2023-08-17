@@ -149,6 +149,14 @@
   background-color: var(--darkest-gray) !important;
 }
 
+.gin--dark-mode .form-boolean--type-checkbox:not(:checked) + .checkbox-toggle .checkbox-toggle__inner {
+  background-color: var(--dark-theme-gray) !important;
+}
+
+.gin--dark-mode .checkbox-toggle {
+  outline: 2px solid;
+}
+
 [data-drupal-selector=edit-enable-darkmode] .form-radios input:checked + .form-item__label {
   background: var(--dark-theme-gray);
 }
