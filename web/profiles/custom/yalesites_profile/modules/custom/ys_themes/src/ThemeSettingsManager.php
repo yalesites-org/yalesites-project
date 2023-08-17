@@ -161,6 +161,20 @@ class ThemeSettingsManager {
         ],
       ],
     ],
+    'animation_style' => [
+      'name' => 'Animation Style',
+      'prop_type' => 'element',
+      'selector' => '[data-site-animation]',
+      'default' => 'minimal',
+      'values' => [
+        'minimal' => [
+          'label' => 'Minimal',
+        ],
+        'artistic' => [
+          'label' => 'Artistic',
+        ],
+      ],
+    ],
   ];
 
   /**
