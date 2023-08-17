@@ -60,6 +60,7 @@
     "drupal/metatag": "^1.19",
     "drupal/migrate_plus": "^6.0",
     "drupal/migrate_tools": "^6.0",
+    "drupal/multivalue_form_element": "^1.0@beta",
     "drupal/node_revision_delete": "^1.0@RC",
     "drupal/override_node_options": "^2.6",
     "drupal/pantheon_advanced_page_cache": "^2.1",

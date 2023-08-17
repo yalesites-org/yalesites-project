@@ -53,8 +53,10 @@ class FooterSettingsForm extends ConfigFormBase {
     $form = parent::buildForm($form, $form_state);
     $config = $this->config('ys_core.social_links');
 
+    $form['#attached']['library'][] = 'ys_core/footer_settings_form';
+
     $form['footer_tabs'] = [
-      '#type' => 'vertical_tabs',
+      '#type' => 'horizontal_tabs',
     ];
 
     $form['footer_content'] = [
@@ -68,6 +70,11 @@ class FooterSettingsForm extends ConfigFormBase {
       '#type' => 'details',
       '#title' => $this->t('Footer Links'),
       '#group' => 'footer_tabs',
+      '#attributes' => [
+        'class' => [
+          'ys-footer-links',
+        ],
+      ],
     ];
 
     $form['social_links'] = [
@@ -84,6 +91,56 @@ class FooterSettingsForm extends ConfigFormBase {
       '#cardinality' => 4,
       //'#default_value' => ($yaleConfig->get('image_fallback')) ? $yaleConfig->get('image_fallback')['teaser'] : NULL,
       //'#description' => $this->t('This image will be used for event and post card displays when no teaser image is selected.'),
+    ];
+
+    $form['footer_links']['links_col_1_heading'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Link Column 1 Heading'),
+    ];
+
+    $form['footer_links']['links_col_2_heading'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Link Column 2 Heading'),
+    ];
+
+    $form['footer_links']['links_col_1'] = [
+      '#type' => 'multivalue',
+      '#title' => $this->t('Links Column 1'),
+      '#cardinality' => 4,
+      'link_url' => [
+        '#type' => 'linkit',
+        '#title' => $this->t('URL'),
+        '#description' => $this->t('Type the URL or autocomplete for internal paths.'),
+        '#autocomplete_route_name' => 'linkit.autocomplete',
+        '#default_value' => $config->get('alert.link_url'),
+        '#autocomplete_route_parameters' => [
+          'linkit_profile_id' => 'default',
+        ],
+      ],
+      'link_title' => [
+        '#type' => 'textfield',
+        '#title' => $this->t('Link Title'),
+      ],
+    ];
+
+    $form['footer_links']['links_col_2'] = [
+      '#type' => 'multivalue',
+      '#title' => $this->t('Links Column 2'),
+      '#cardinality' => 4,
+      'link_url' => [
+        '#type' => 'linkit',
+        '#title' => $this->t('URL'),
+        '#description' => $this->t('Type the URL or autocomplete for internal paths.'),
+        '#autocomplete_route_name' => 'linkit.autocomplete',
+        '#default_value' => $config->get('alert.link_url'),
+        '#autocomplete_route_parameters' => [
+          'linkit_profile_id' => 'default',
+        ],
+      ],
+      'link_title' => [
+        '#type' => 'textfield',
+        '#title' => $this->t('Link Title'),
+      ],
     ];
 
     foreach ($this->socialLinks::SITES as $id => $name) {

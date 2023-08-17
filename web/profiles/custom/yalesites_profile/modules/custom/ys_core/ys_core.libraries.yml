@@ -12,3 +12,7 @@ taxonomy_form:
 siteimprove:
   js:
     https://siteimproveanalytics.com/js/siteanalyze_66356571.js: { type: external, attributes: { async: true } }
+footer_settings_form:
+  css:
+    theme:
+      css/footer-settings-form.css: {}
