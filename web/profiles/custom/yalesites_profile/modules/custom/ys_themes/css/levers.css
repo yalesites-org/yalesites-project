@@ -369,3 +369,29 @@
 #drupal-off-canvas .ys-themes--global-settings .form-item-footer-theme:focus input[checked="checked"] + label {
   color: var(--color-background-primary);
 }
+
+/*
+ * Animation Style
+ */
+#drupal-off-canvas .ys-themes--global-settings .form-item-animation-style input[checked="checked"] + label {
+  background-color: var(--color-text-primary);
+  color: var(--color-background-primary);
+}
+
+#drupal-off-canvas .ys-themes--global-settings .form-item-animation-style:hover > label,
+#drupal-off-canvas .ys-themes--global-settings .form-item-animation-style:focus > label {
+  color: var(--color-border-hover);
+  border-color: var(--color-border-hover);
+}
+
+#drupal-off-canvas .ys-themes--global-settings .form-item-animation-style input[checked="checked"] + label:hover,
+#drupal-off-canvas .ys-themes--global-settings .form-item-animation-style:hover input[checked="checked"] + label,
+#drupal-off-canvas .ys-themes--global-settings .form-item-animation-style:focus input[checked="checked"] + label {
+  color: var(--color-background-primary);
+}
+
+#drupal-off-canvas .ys-themes--global-settings .form-item-animation-style:hover label,
+#drupal-off-canvas .ys-themes--global-settings .form-item-animation-style:focus label { 
+  background-color: var(--color-background-hover);
+  border-color: var(--color-border-hover);
+}
