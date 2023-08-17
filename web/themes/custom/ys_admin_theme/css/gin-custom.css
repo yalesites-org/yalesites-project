@@ -198,6 +198,10 @@
   background-color: var(--darkest-gray);
 }
 
+.upgrade-status-result-circle .percentage {
+  fill: var(--wool);
+}
+
 /* stylelint-enable */
 
 /*# sourceMappingURL=gin-custom.css.map */
