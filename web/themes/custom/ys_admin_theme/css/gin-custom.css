@@ -161,7 +161,8 @@
   background-color: var(--dark-theme-gray) !important;
 }
 
-.gin--dark-mode .form-boolean--type-checkbox .checkbox-toggle {
+.gin--dark-mode .form-boolean--type-checkbox .checkbox-toggle,
+.gin--dark-mode .form-boolean--type-checkbox + .checkbox-toggle {
   outline: 2px solid;
 }
 
@@ -208,6 +209,16 @@
 
 .upgrade-status-result-circle .percentage {
   fill: var(--wool);
+}
+
+.upgrade-status-summary td.status-info-na {
+  background-color: var(--gin-border-color-layer);
+  color: var(--darkest-gray);
+}
+
+.upgrade-status-summary td.status-info-unchecked {
+  background-color: var(--gin-color-primary);
+  color: var(--darkest-gray);
 }
 
 /* stylelint-enable */
