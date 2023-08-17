@@ -45,6 +45,7 @@
   --gin-border-color-layer: var(--light-gray);
 
   --gin-bg-app: var(--darkest-gray);
+  --gin-color-info: var(--mediterranean-blue) !important;
   --gin-bg-layer: var(--dark-theme-gray);
   --gin-bg-input: var(--darkest-gray) !important;
   --gin-dark-gray: var(--darkest-gray);
@@ -85,17 +86,19 @@
 
 /* Buttons */
 .glb-button,
+.form-actions .glb-button,
 .inline-block-create-button,
 .layout-builder__link--add,
 .inline-block-create-button:not(:focus),
 .layout-builder__link--add:not(:focus),
-.form-actions .glb-button,
 .form-actions .inline-block-create-button,
 .form-actions .layout-builder__link--add,
 .glb-action-link--icon-trash.glb-action-link,
 .meta-sidebar__trigger.is-active,
 .meta-sidebar__close.is-active {
   background-color: var(--darkest-gray) !important;
+  border-color: var(--wool) !important;
+  color: var(--robin-egg) !important;
 }
 
 .glb-button,
@@ -109,7 +112,6 @@
 .form-actions .layout-builder__link--add,
 .glb-action-link--icon-trash.glb-action-link {
   border-radius: 2.5rem !important;
-  border: 2px solid transparent !important;
 }
 
 .glb-button:hover,
@@ -158,6 +160,24 @@
   background-color: var(--dark-theme-gray) !important;
 }
 
+.paragraphs-dropdown-toggle {
+  background-color: var(--wool);
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.link.tabledrag-toggle-weight {
+  color: var(--gin-color-primary);
+  background-color: var(--darkest-gray);
+}
+
+/* Media library */ 
+.media-library-item__click-to-select-checkbox .glb-form-checkbox:checked {
+  background-color: var(--darkest-gray) !important;
+}
+
 /* Sections on nodes */
 .layout-builder .layout-builder__add-section {
   position: relative;
@@ -200,7 +220,7 @@
 
 /* Layout builder modal */
 .ws-lb-link__label {
-  color: var(--dark-theme-gray);
+  color: var(--dark-theme-gray) !important;
 }
 
 .gin--dark-mode .glb-form-element {
@@ -211,6 +231,9 @@
   background: var(--darkest-gray);
 }
 
+.gin--dark-mode .field-multiple-table h4 {
+  color: var(--wool);
+}
 
 /* yalb-1261 - fix hover color on table */
 .layout-builder-components-table__block-label {
@@ -311,6 +334,19 @@
 .field--name-field-accordion-items th h4,
 .field--name-field-button-link th h4 {
   color: var(--wool) !important;
+}
+
+/* Gin tables */
+.glb-table tr:nth-child(2n) {
+  background-color: var(--dark-theme-gray);
+}
+
+.js .paragraphs-description .summary-content {
+  color: var(--wool);
+}
+
+.field-multiple-drag.tabledrag-cell {
+  background-color: var(--wool);
 }
 
 
