@@ -52,11 +52,40 @@ class FooterSettingsForm extends ConfigFormBase {
 
     $form = parent::buildForm($form, $form_state);
     $config = $this->config('ys_core.social_links');
+
+    $form['footer_tabs'] = [
+      '#type' => 'vertical_tabs',
+    ];
+
+    $form['footer_content'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Footer Content'),
+      '#open' => TRUE,
+      '#group' => 'footer_tabs',
+    ];
+
+    $form['footer_links'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Footer Links'),
+      '#group' => 'footer_tabs',
+    ];
+
     $form['social_links'] = [
       '#type' => 'details',
       '#title' => $this->t('Social Links'),
-      '#open' => TRUE,
+      '#group' => 'footer_tabs',
     ];
+
+    $form['footer_content']['footer_logos'] = [
+      '#type' => 'media_library',
+      '#allowed_bundles' => ['image'],
+      '#title' => $this->t('Footer logos'),
+      '#required' => FALSE,
+      '#cardinality' => 4,
+      //'#default_value' => ($yaleConfig->get('image_fallback')) ? $yaleConfig->get('image_fallback')['teaser'] : NULL,
+      //'#description' => $this->t('This image will be used for event and post card displays when no teaser image is selected.'),
+    ];
+
     foreach ($this->socialLinks::SITES as $id => $name) {
       $form['social_links'][$id] = [
         '#type' => 'url',
@@ -64,6 +93,7 @@ class FooterSettingsForm extends ConfigFormBase {
         '#default_value' => $config->get($id),
       ];
     }
+
     return $form;
   }
 
