@@ -56,15 +56,21 @@ class FooterSettingsForm extends ConfigFormBase {
 
     $form['#attached']['library'][] = 'ys_core/footer_settings_form';
 
+    // $form['footer_tabs'] = [
+    //   '#type' => 'vertical_tabs',
+    // ];
+
     $form['footer_content'] = [
       '#type' => 'details',
       '#title' => $this->t('Footer Content'),
       '#open' => TRUE,
+      '#group' => 'footer_tabs',
     ];
 
     $form['footer_links'] = [
       '#type' => 'details',
       '#title' => $this->t('Footer Links'),
+      '#group' => 'footer_tabs',
       '#attributes' => [
         'class' => [
           'ys-footer-links',
@@ -75,6 +81,7 @@ class FooterSettingsForm extends ConfigFormBase {
     $form['social_links'] = [
       '#type' => 'details',
       '#title' => $this->t('Social Links'),
+      '#group' => 'footer_tabs',
     ];
 
     $form['footer_content']['footer_logos'] = [
@@ -109,7 +116,7 @@ class FooterSettingsForm extends ConfigFormBase {
       '#type' => 'multivalue',
       '#title' => $this->t('Links Column 1'),
       '#cardinality' => 4,
-      '#default_value' => ($footerConfig->get('links.column_1_links')) ? $footerConfig->get('links.column_1_links') : NULL,
+      '#default_value' => ($footerConfig->get('links.column_1_links')) ? $footerConfig->get('links.column_1_links') : [],
 
       'link_url' => [
         '#type' => 'linkit',
@@ -123,7 +130,6 @@ class FooterSettingsForm extends ConfigFormBase {
       'link_title' => [
         '#type' => 'textfield',
         '#title' => $this->t('Link Title'),
-        '#default_value' => (isset($footerConfig->get('links.links_col_1')['link_title'])) ? $footerConfig->get('links.links_col_1')['link_title'] : NULL,
       ],
     ];
 
@@ -131,7 +137,7 @@ class FooterSettingsForm extends ConfigFormBase {
       '#type' => 'multivalue',
       '#title' => $this->t('Links Column 2'),
       '#cardinality' => 4,
-      '#default_value' => ($footerConfig->get('links.column_2_links')) ? $footerConfig->get('links.column_2_links') : NULL,
+      '#default_value' => ($footerConfig->get('links.column_2_links')) ? $footerConfig->get('links.column_2_links') : [],
       'link_url' => [
         '#type' => 'linkit',
         '#title' => $this->t('URL'),

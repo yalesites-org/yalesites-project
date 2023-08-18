@@ -1,5 +1,5 @@
 @media screen and (min-width: 1380px) {
-  .ys-footer-links .details-wrapper {
+  .ys-footer-links .details-wrapper, .ys-footer-links .claro-details__content {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 2rem;
