@@ -1,15 +1,7 @@
-/* @media screen and (min-width: 640px) {
-  .ys-footer-links .claro-details__content {
+@media screen and (min-width: 1380px) {
+  .ys-footer-links .details-wrapper {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 2rem;
   }
 }
-
-.ys-footer-links
-  .gin-layer-wrapper
-  table.field-multiple-table
-  th
-  .form-item__label {
-  color: var(--wool) !important;
-} */
