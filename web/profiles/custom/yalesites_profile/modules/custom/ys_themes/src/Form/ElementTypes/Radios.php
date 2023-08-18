@@ -2,34 +2,29 @@
 
 namespace Drupal\ys_themes\Form\ElementTypes;
 
-use Drupal\Core\StringTranslation\StringTranslationTrait;
-
 /**
  * Creates form elements for radios with default values for theme settings.
  */
-class Radios {
-  use StringTranslationTrait;
+class Radios extends ElementBase {
 
   /**
    * Generates the form element.
    */
-  public function toElementDefinition($settingName, $settingDetail, $options, $themeSettingsManager) {
-    $translation = $this->getStringTranslation();
-
+  public function toElementDefinition() {
     return [
       '#type' => 'radios',
-      '#title' => $translation->translate(
+      '#title' => $this->translation->translate(
         '@setting_name',
-        ['@setting_name' => $settingDetail['name']]
+        ['@setting_name' => $this->settingDetail['name']]
       ),
-      '#options' => $options,
-      '#default_value' => $themeSettingsManager->getSetting($settingName) ?: $settingDetail['default'],
+      '#options' => $this->options,
+      '#default_value' => $this->themeSettingsManager->getSetting($this->settingName) ?: $this->settingDetail['default'],
       '#attributes' => [
         'class' => [
           'ys-themes--setting',
         ],
-        'data-prop-type' => $settingDetail['prop_type'],
-        'data-selector' => $settingDetail['selector'],
+        'data-prop-type' => $this->settingDetail['prop_type'],
+        'data-selector' => $this->settingDetail['selector'],
       ],
     ];
   }

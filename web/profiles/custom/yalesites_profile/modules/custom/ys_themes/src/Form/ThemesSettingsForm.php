@@ -5,10 +5,9 @@ namespace Drupal\ys_themes\Form;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\ys_themes\Form\ElementTypes\ElementBase;
 use Drupal\ys_themes\ThemeSettingsManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\ys_themes\Form\ElementTypes\Radios;
-use Drupal\ys_themes\Form\ElementTypes\Select;
 
 /**
  * YaleSites themes settings form.
@@ -62,81 +61,12 @@ class ThemesSettingsForm extends ConfigFormBase {
       foreach ($settingDetail['values'] as $key => $value) {
         $options[$key] = $value['label'];
       }
-      $form['global_settings'][$settingName] = $this->getElementByType($settingName, $settingDetail, $options);
+      $element = ElementBase::getElement($settingName, $settingDetail, $options, $this->themeSettingsManager);
+      $form['global_settings'][$settingName] = $element->toElementDefinition();
     }
     $form['#attached']['library'][] = 'ys_themes/levers';
 
     return $form;
-  }
-
-  /**
-   *
-   */
-  public function getElementByType($settingName, $settingDetail, $options) {
-    $returnElement = NULL;
-
-    switch ($settingDetail['type'] ?? 'radios') {
-      case 'select':
-        $returnElement = $this->select($settingName, $settingDetail, $options);
-        break;
-
-      default:
-        $returnElement = $this->radio($settingName, $settingDetail, $options);
-        break;
-    }
-
-    return $returnElement;
-  }
-
-  /**
-   *
-   */
-  public function select($settingName, $settingDetail, $options) {
-    $element = new Select();
-    return $element->toElementDefinition($settingName, $settingDetail, $options, $this->themeSettingsManager);
-    /* return [ */
-    /*   '#type' => 'select', */
-    /*   '#title' => $this->t( */
-    /*     '@setting_name', */
-    /*     ['@setting_name' => $settingDetail['name']] */
-    /*   ), */
-    /*   '#options' => $options, */
-    /*   '#default_value' => $this->themeSettingsManager->getSetting($settingName) ?: $settingDetail['default'], */
-    /*   '#attributes' => [ */
-    /*     'class' => [ */
-    /*       'ys-themes--setting', */
-    /*     ], */
-    /*     'data-prop-type' => $settingDetail['prop_type'], */
-    /*     'data-selector' => $settingDetail['selector'], */
-    /*   ], */
-    /* ]; */
-
-  }
-
-  /**
-   *
-   */
-  public function radio($settingName, $settingDetail, $options) {
-    $element = new Radios();
-    return $element->toElementDefinition($settingName, $settingDetail, $options, $this->themeSettingsManager);
-
-    /* return [ */
-    /*   '#type' => 'radios', */
-    /*   '#title' => $this->t( */
-    /*     '@setting_name', */
-    /*     ['@setting_name' => $settingDetail['name']] */
-    /*   ), */
-    /*   '#options' => $options, */
-    /*   '#default_value' => $this->themeSettingsManager->getSetting($settingName) ?: $settingDetail['default'], */
-    /*   '#attributes' => [ */
-    /*     'class' => [ */
-    /*       'ys-themes--setting', */
-    /*     ], */
-    /*     'data-prop-type' => $settingDetail['prop_type'], */
-    /*     'data-selector' => $settingDetail['selector'], */
-    /*   ], */
-    /* ]; */
-
   }
 
   /**
