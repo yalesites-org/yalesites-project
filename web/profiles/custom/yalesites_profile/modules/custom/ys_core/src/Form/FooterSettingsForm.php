@@ -6,7 +6,6 @@ use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\ys_core\SocialLinksManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -57,21 +56,15 @@ class FooterSettingsForm extends ConfigFormBase {
 
     $form['#attached']['library'][] = 'ys_core/footer_settings_form';
 
-    $form['footer_tabs'] = [
-      '#type' => 'horizontal_tabs',
-    ];
-
     $form['footer_content'] = [
       '#type' => 'details',
       '#title' => $this->t('Footer Content'),
       '#open' => TRUE,
-      '#group' => 'footer_tabs',
     ];
 
     $form['footer_links'] = [
       '#type' => 'details',
       '#title' => $this->t('Footer Links'),
-      '#group' => 'footer_tabs',
       '#attributes' => [
         'class' => [
           'ys-footer-links',
@@ -82,7 +75,6 @@ class FooterSettingsForm extends ConfigFormBase {
     $form['social_links'] = [
       '#type' => 'details',
       '#title' => $this->t('Social Links'),
-      '#group' => 'footer_tabs',
     ];
 
     $form['footer_content']['footer_logos'] = [
@@ -113,16 +105,17 @@ class FooterSettingsForm extends ConfigFormBase {
       '#default_value' => ($footerConfig->get('links.links_col_2_heading')) ? $footerConfig->get('links.links_col_2_heading') : NULL,
     ];
 
-    $form['footer_links']['links_col_1'] = [
+    $form['footer_links']['column_1_links'] = [
       '#type' => 'multivalue',
       '#title' => $this->t('Links Column 1'),
       '#cardinality' => 4,
+      '#default_value' => ($footerConfig->get('links.column_1_links')) ? $footerConfig->get('links.column_1_links') : NULL,
+
       'link_url' => [
         '#type' => 'linkit',
         '#title' => $this->t('URL'),
         '#description' => $this->t('Type the URL or autocomplete for internal paths.'),
         '#autocomplete_route_name' => 'linkit.autocomplete',
-        //'#default_value' => $config->get('alert.link_url'),
         '#autocomplete_route_parameters' => [
           'linkit_profile_id' => 'default',
         ],
@@ -130,19 +123,20 @@ class FooterSettingsForm extends ConfigFormBase {
       'link_title' => [
         '#type' => 'textfield',
         '#title' => $this->t('Link Title'),
+        '#default_value' => (isset($footerConfig->get('links.links_col_1')['link_title'])) ? $footerConfig->get('links.links_col_1')['link_title'] : NULL,
       ],
     ];
 
-    $form['footer_links']['links_col_2'] = [
+    $form['footer_links']['column_2_links'] = [
       '#type' => 'multivalue',
       '#title' => $this->t('Links Column 2'),
       '#cardinality' => 4,
+      '#default_value' => ($footerConfig->get('links.column_2_links')) ? $footerConfig->get('links.column_2_links') : NULL,
       'link_url' => [
         '#type' => 'linkit',
         '#title' => $this->t('URL'),
         '#description' => $this->t('Type the URL or autocomplete for internal paths.'),
         '#autocomplete_route_name' => 'linkit.autocomplete',
-        //'#default_value' => $config->get('alert.link_url'),
         '#autocomplete_route_parameters' => [
           'linkit_profile_id' => 'default',
         ],
@@ -168,8 +162,8 @@ class FooterSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    $this->validateFooterLinks($form_state, 'links_col_1');
-    $this->validateFooterLinks($form_state, 'links_col_2');
+    $this->validateFooterLinks($form_state, 'column_1_links');
+    $this->validateFooterLinks($form_state, 'column_2_links');
   }
 
   /**
@@ -194,6 +188,8 @@ class FooterSettingsForm extends ConfigFormBase {
     $footerConfig->set('content.text', $form_state->getValue('footer_text'));
     $footerConfig->set('links.links_col_1_heading', $form_state->getValue('links_col_1_heading'));
     $footerConfig->set('links.links_col_2_heading', $form_state->getValue('links_col_2_heading'));
+    $footerConfig->set('links.column_1_links', $form_state->getValue('column_1_links'));
+    $footerConfig->set('links.column_2_links', $form_state->getValue('column_2_links'));
 
     $footerConfig->save();
 
@@ -238,29 +234,22 @@ class FooterSettingsForm extends ConfigFormBase {
     $this->socialLinks = $social_links_manager;
   }
 
+  /**
+   * Check that footer links have both a URL and a link title.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state of the parent form.
+   * @param string $field_id
+   *   The id of a field on the config form.
+   */
   protected function validateFooterLinks($form_state, $field_id) {
     if (($value = $form_state->getValue($field_id))) {
-      foreach ($value as $index => $link) {
-
-      //   if (empty($link['link_url'])) {
-      //     $form_state->setErrorByName(
-      //       $field_id,
-      //       $this->t(
-      //         "Links must contain a URL",
-      //         ['%path' => $form_state->getValue($field_id)]
-      //       )
-      //     );
-      //   }
-        global $base_url;
-
-        if (empty($link['link_title'])) {
-          $response = new TrustedRedirectResponse($base_url . '/admin/yalesites/footer#edit-footer-links');
-
+      foreach ($value as $link) {
+        if (empty($link['link_url']) || empty($link['link_title'])) {
           $form_state->setErrorByName(
             $field_id,
-            $this->t("Links must contain a title"),
+            $this->t("Any link specified must have both a URL and a link title."),
           );
-          $form_state->setResponse($response);
         }
 
       }
