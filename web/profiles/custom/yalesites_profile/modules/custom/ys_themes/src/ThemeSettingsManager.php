@@ -162,6 +162,7 @@ class ThemeSettingsManager {
       ],
     ],
     'animation_style' => [
+      'type' => 'select',
       'name' => 'Animation Style',
       'prop_type' => 'element',
       'selector' => '[data-site-animation]',
