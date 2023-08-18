@@ -62,6 +62,7 @@ class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginIn
     return [
       '#theme' => 'ys_footer_block',
       '#footer_links_heading_1' => $this->footerSettings->get('links.links_col_1_heading'),
+      '#footer_links_heading_2' => $this->footerSettings->get('links.links_col_2_heading'),
     ];
   }
 
