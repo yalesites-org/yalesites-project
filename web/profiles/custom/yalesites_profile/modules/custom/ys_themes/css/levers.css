@@ -373,7 +373,7 @@
 /*
  * Animation Style
  */
-#drupal-off-canvas .ys-themes--global-settings .form-item__label {
+#drupal-off-canvas .ys-themes--global-settings .js-form-type-select .form-item__label {
   font-family: var(--gin-font) !important;
   color: inherit;
   background: inherit;
@@ -384,7 +384,8 @@
   font-weight: 400;
   margin-bottom: var(--size-spacing-4);
 }
-#drupal-off-canvas .ys-themes--global-settings .form-item__dropdown + select {
+
+#drupal-off-canvas .ys-themes--global-settings .form-item__dropdown .ys-themes--setting-select {
     --color-dropdown-border: var(--color-gray-400);
     --color-dropdown-border-hover: var(--color-blue-medium);
     --color-dropdown-icon: var(--color-gray-400);

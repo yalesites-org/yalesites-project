@@ -22,6 +22,7 @@ class Select extends ElementBase {
       '#attributes' => [
         'class' => [
           'ys-themes--setting',
+          'ys-themes--setting-select',
         ],
       ],
     ];
