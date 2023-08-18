@@ -122,7 +122,6 @@
         'input[name="button_theme"]',
         'input[name="header_theme"]',
         'input[name="footer_theme"]',
-        'input[name="animation_style"]',
       ];
       
       // Apply the function to each radio input group
