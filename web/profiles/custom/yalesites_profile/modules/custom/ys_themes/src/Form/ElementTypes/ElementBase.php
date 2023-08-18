@@ -70,18 +70,10 @@ class ElementBase {
    * Element factory.
    */
   public static function getElement($settingName, $settingDetail, $options, $themeSettingsManager) {
-    $element = NULL;
-
-    switch ($settingDetail['type'] ?? 'radios') {
-      case 'select':
-        $element = new Select($settingName, $settingDetail, $options, $themeSettingsManager);
-
-        break;
-
-      default:
-        $element = new Radios($settingName, $settingDetail, $options, $themeSettingsManager);
-        break;
-    }
+    $namespace = __NAMESPACE__ . '\\';
+    $elementType = $settingDetail['type'] ?? 'radios';
+    $className = $namespace . ucwords($elementType);
+    $element = new $className($settingName, $settingDetail, $options, $themeSettingsManager);
 
     return $element;
   }
