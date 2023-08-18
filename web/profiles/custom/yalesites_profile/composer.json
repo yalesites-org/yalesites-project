@@ -79,6 +79,7 @@
     "drupal/simple_sitemap": "^4.1",
     "drupal/smart_date": "^3.5",
     "drupal/twig_tweak": "^3.1",
+    "drupal/typogrify": "^1.2",
     "drupal/upgrade_status": "^3.18",
     "drupal/webform": "^6.2@beta",
     "drupal/wingsuit_companion": "^2.0@RC",
