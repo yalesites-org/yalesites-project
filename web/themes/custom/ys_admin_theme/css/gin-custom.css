@@ -691,8 +691,11 @@ td .admin-required {
 }
 
 /* stylelint-enable */
-.gin--edit-form .node-profile-form .field--name-title .form-element {
+.gin--edit-form .node-profile-form .field--name-title .form-element,
+.gin--edit-form .node-profile-edit-form .field--name-title .form-element {
   font-size: 1rem;
+  font-weight: 400;
+  width: 484px;
 }
 
 /*# sourceMappingURL=gin-custom.css.map */
