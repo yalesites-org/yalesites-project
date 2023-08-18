@@ -373,25 +373,46 @@
 /*
  * Animation Style
  */
-#drupal-off-canvas .ys-themes--global-settings .form-item-animation-style input[checked="checked"] + label {
-  background-color: var(--color-text-primary);
-  color: var(--color-background-primary);
+#drupal-off-canvas .ys-themes--global-settings .form-item__label {
+  font-family: var(--gin-font) !important;
+  color: inherit;
+  background: inherit;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font-weight: 400;
+  margin-bottom: var(--size-spacing-4);
+}
+#drupal-off-canvas .ys-themes--global-settings .form-item__dropdown + select {
+    --color-dropdown-border: var(--color-gray-400);
+    --color-dropdown-border-hover: var(--color-blue-medium);
+    --color-dropdown-icon: var(--color-gray-400);
+    --color-dropdown-icon-hover: var(--color-blue-medium);
+    border: var(--border-thickness-1) solid var(--color-dropdown-border);
+    display: block;
+    position: relative;
 }
 
-#drupal-off-canvas .ys-themes--global-settings .form-item-animation-style:hover > label,
-#drupal-off-canvas .ys-themes--global-settings .form-item-animation-style:focus > label {
-  color: var(--color-border-hover);
-  border-color: var(--color-border-hover);
+#drupal-off-canvas .ys-themes--global-settings .form-item__dropdown .form-select {
+    height: 3rem;
 }
 
-#drupal-off-canvas .ys-themes--global-settings .form-item-animation-style input[checked="checked"] + label:hover,
-#drupal-off-canvas .ys-themes--global-settings .form-item-animation-style:hover input[checked="checked"] + label,
-#drupal-off-canvas .ys-themes--global-settings .form-item-animation-style:focus input[checked="checked"] + label {
-  color: var(--color-background-primary);
-}
-
-#drupal-off-canvas .ys-themes--global-settings .form-item-animation-style:hover label,
-#drupal-off-canvas .ys-themes--global-settings .form-item-animation-style:focus label { 
-  background-color: var(--color-background-hover);
-  border-color: var(--color-border-hover);
+#drupal-off-canvas .ys-themes--global-settings .form-item__dropdown .form-item__select {
+  background: none;
+  border: 1px solid rgba(0,0,0,0);
+  appearance: none;
+  --color-select-border: var(--color-gray-400);
+  --color-select-border-hover: var(--color-blue-medium);
+  --color-select-background: var(--color-gray-100);
+  --color-select-icon: var(--color-gray-400);
+  --color-select-icon-hover: var(--color-blue-medium);
+  --color-select-text-color: var(--color-gray-700);
+  font-size: 100%;
+  line-height: 1.4;
+  margin: 0;
+  padding: .5em .8em;
+  width: 100%;
+  min-width: 22rem;
+  color: var(--color-select-text-color);
 }
