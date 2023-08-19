@@ -453,19 +453,6 @@ table .draggable-table.tabledrag-disabled tr:hover {
   font-family: var(--gin-font);
 }
 
-.layout-builder__link--configure {
-  color: var(--dark-theme-gray);
-}
-
-.layout-builder__link--add-section-to-library,
-.layout-builder__link--remove {
-  background-color: var(--dark-theme-gray-hover);
-}
-
-.layout-builder__section:not(.gin-lb--disable-section-focus):hover::after {
-  border: 0.25rem solid var(--dark-theme-gray-hover) !important;
-}
-
 #media-library-messages .messages {
   border-radius: var(--gin-border-l);
   padding: 1rem;
@@ -481,9 +468,46 @@ table .draggable-table.tabledrag-disabled tr:hover {
   background-color: var(--gin-bg-warning);
 }
 
+
+
+/* Sections on nodes */
+.layout-builder .layout-builder__add-section {
+  position: relative;
+  background-color: hsl(180, 7%, 90%);
+  padding: 1rem 2rem;
+  margin: 2rem 1rem;
+  max-width: calc(100% - 2rem);
+}
+
+.layout-builder__link--configure {
+  color: var(--dark-theme-gray);
+}
+
+.layout-builder__link--add-section-to-library,
+.layout-builder__link--remove {
+  background-color: var(--dark-theme-gray-hover);
+}
+
+.layout-builder__section:not(.gin-lb--disable-section-focus)::after {
+  border: 0.35rem solid  hsl(180, 7%, 75%) !important;
+  position: absolute;
+  content: '';
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+}
+
+.layout-builder__section:not(.gin-lb--disable-section-focus):hover::after {
+  border: 0.35rem solid  hsl(180, 7%, 20%) !important;
+}
+
 .layout-builder__section {
-  margin-inline-start: 0.5rem;
-  margin-inline-end: 0.5rem;
+  margin: 2rem 1rem;
+}
+
+.layout-builder__section .js-layout-builder-region {
+  padding: 1rem;
 }
 
 .layout-builder__section:hover .layout-builder__link--add-section-to-library {
@@ -524,7 +548,8 @@ table .draggable-table.tabledrag-disabled tr:hover {
 /* change the contextual pencil icon to the left-hand side of each component
 // instead of the right
 */
-.layout-builder-block.contextual-region .contextual {
+.layout-builder-block.contextual-region .contextual,
+.layout-builder-block-locked.contextual-region .contextual {
   display: flex;
   flex-direction: column;
   top: 1rem;
@@ -534,31 +559,36 @@ table .draggable-table.tabledrag-disabled tr:hover {
 }
 
 @media only screen and (min-width: 2200px) {
-  .layout-builder-block.contextual-region .contextual {
+  .layout-builder-block.contextual-region .contextual,
+  .layout-builder-block-locked.contextual-region .contextual {
     left: 15vw;
   }
 }
 
 @media only screen and (min-width: 2500px) {
-  .layout-builder-block.contextual-region .contextual {
+  .layout-builder-block.contextual-region .contextual,
+  .layout-builder-block-locked.contextual-region .contextual {
     left: 20vw;
   }
 }
 
-.layout-builder-block.contextual-region .contextual .contextual-links {
+.layout-builder-block.contextual-region .contextual .contextual-links,
+.layout-builder-block-locked.contextual-region .contextual .contextual-links {
   left: 0;
   right: 0;
   float: unset;
 }
 
 /* increase the size of the clickable/hoverable area */
-.layout-builder-block.contextual-region .contextual .trigger {
+.layout-builder-block.contextual-region .contextual .trigger,
+.layout-builder-block-locked.contextual-region .contextual .trigger {
   width: 50px !important;
   height: 50px !important;
 }
 
 /* increase the size of the icon itself */
-.layout-builder-block.contextual-region .contextual .trigger::before {
+.layout-builder-block.contextual-region .contextual .trigger::before,
+.layout-builder-block-locked.contextual-region .contextual .trigger::before {
   width: 1.2rem;
   height: 1.2rem;
   mask-size: 1.2rem;

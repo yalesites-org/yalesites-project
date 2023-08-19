@@ -73,3 +73,9 @@ display: flex;
   margin-top: 0;
   margin-bottom: 0;
 }
+
+
+/* Fix for breadcrumb spacing on profile nodes */
+.ys-content-type-profile .main-content .breadcrumbs__wrapper {
+  margin-bottom: var(--size-spacing-7);
+}
