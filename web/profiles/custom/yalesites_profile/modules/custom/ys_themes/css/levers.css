@@ -369,3 +369,13 @@
 #drupal-off-canvas .ys-themes--global-settings .form-item-footer-theme:focus input[checked="checked"] + label {
   color: var(--color-background-primary);
 }
+
+/*
+/* Save configuration
+/*
+*/
+
+.gin--dark-mode #drupal-off-canvas input[type="submit"].button--primary {
+  color: var(--darkest-gray);
+  padding: var(--size-spacing-5);
+}

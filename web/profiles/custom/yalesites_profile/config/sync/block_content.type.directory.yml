@@ -1,0 +1,33 @@
+uuid: 1750e408-d227-4e53-9607-987cba895738
+langcode: en
+status: true
+dependencies:
+  module:
+    - entity_redirect
+third_party_settings:
+  entity_redirect:
+    redirect:
+      add:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      edit:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      delete:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      anonymous:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+id: directory
+label: Directory
+revision: 0
+description: 'Display a list of profiles as a directory list including detailed contact information.'

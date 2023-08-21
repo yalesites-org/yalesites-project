@@ -1,0 +1,72 @@
+uuid: aaf65491-dd12-4a9b-ab58-1ee437bf76b2
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.node.condensed
+    - field.field.node.page.field_login_required
+    - field.field.node.page.field_metatags
+    - field.field.node.page.field_tags
+    - field.field.node.page.field_teaser_media
+    - field.field.node.page.field_teaser_text
+    - field.field.node.page.field_teaser_title
+    - field.field.node.page.layout_builder__layout
+    - node.type.page
+  module:
+    - layout_builder
+    - layout_builder_restrictions
+    - user
+third_party_settings:
+  layout_builder:
+    enabled: false
+    allow_custom: false
+  layout_builder_restrictions:
+    allowed_block_categories: {  }
+    entity_view_mode_restriction:
+      allowed_layouts:
+        - layout_onecol
+        - ys_layout_banner
+      denylisted_blocks: {  }
+      allowlisted_blocks: {  }
+      restricted_categories: {  }
+    entity_view_mode_restriction_by_region:
+      allowed_layouts:
+        - layout_onecol
+        - ys_layout_banner
+      allowlisted_blocks:
+        ys_layout_banner:
+          all_regions:
+            'Inline blocks':
+              - 'inline_block:cta_banner'
+              - 'inline_block:grand_hero'
+      restricted_categories:
+        ys_layout_banner:
+          all_regions:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - 'Custom block types'
+            - Devel
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites alert'
+            - core
+id: node.page.condensed
+targetEntityType: node
+bundle: page
+mode: condensed
+content: {  }
+hidden:
+  field_login_required: true
+  field_metatags: true
+  field_tags: true
+  field_teaser_media: true
+  field_teaser_text: true
+  field_teaser_title: true
+  layout_builder__layout: true
+  links: true
+  search_api_excerpt: true
