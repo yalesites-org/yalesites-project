@@ -372,6 +372,10 @@
 
 /*
  * Animation Style
+ *
+ * To mimic the same feel as the radio buttons above, we attempt to have the
+ * color change when hovering in the same manner, as well as having a darker
+ * border than usual.
  */
 #drupal-off-canvas .ys-themes--global-settings .js-form-type-select .form-item__label {
   font-family: var(--gin-font) !important;
@@ -383,6 +387,20 @@
   font-size: 100%;
   font-weight: 400;
   margin-bottom: var(--size-spacing-4);
+}
+
+/* Hide so we can utilize the same look as the radio buttons */
+#drupal-off-canvas .ys-themes--global-settings .form-item__dropdown {
+    border: none;
+}
+
+/* Because of hiding the original border, we must adjust the right arrow */
+#drupal-off-canvas .ys-themes--global-settings .form-item__dropdown::after {
+    right: 0.5rem !important;
+}
+
+#drupal-off-canvas .ys-themes--global-settings .form-item__dropdown::after:hover {
+  border-color: var(--color-dropdown-icon-hover);
 }
 
 #drupal-off-canvas .ys-themes--global-settings .form-item__dropdown .ys-themes--setting-select {
@@ -401,7 +419,7 @@
 
 #drupal-off-canvas .ys-themes--global-settings .form-item__dropdown .form-item__select {
   background: none;
-  border: 1px solid rgba(0,0,0,0);
+  border: 2px solid var(--color-border);
   appearance: none;
   --color-select-border: var(--color-gray-400);
   --color-select-border-hover: var(--color-blue-medium);
@@ -409,11 +427,16 @@
   --color-select-icon: var(--color-gray-400);
   --color-select-icon-hover: var(--color-blue-medium);
   --color-select-text-color: var(--color-gray-700);
-  font-size: 100%;
-  line-height: 1.4;
-  margin: 0;
-  padding: .5em .8em;
+  font-size: 1rem;
+  line-height: 1.4; margin: 0;
+  padding: .6em .8em;
   width: 100%;
   min-width: 22rem;
   color: var(--color-select-text-color);
+  font-weight: bold;
+}
+
+#drupal-off-canvas .ys-themes--global-settings .form-item__dropdown .form-item__select:hover {
+  border: 2px solid var(--color-border-hover);
+  color: var(--color-border-hover);
 }
