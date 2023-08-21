@@ -7,7 +7,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 /**
  * Base class for elements to share off of.
  */
-class ElementBase {
+class ElementBase implements ElementTypeInterface {
   use StringTranslationTrait;
 
   /**
