@@ -135,6 +135,31 @@
         "unique_id": 27,
         "vocabulary": "post_category",
         "name": "Social Sciences"
+      },
+      {
+        "unique_id": 28,
+        "vocabulary": "affiliation",
+        "name": "Staff"
+      },
+      {
+        "unique_id": 29,
+        "vocabulary": "affiliation",
+        "name": "Faculty"
+      },
+      {
+        "unique_id": 30,
+        "vocabulary": "affiliation",
+        "name": "Student"
+      },
+      {
+        "unique_id": 31,
+        "vocabulary": "affiliation",
+        "name": "Grad Student"
+      },
+      {
+        "unique_id": 32,
+        "vocabulary": "affiliation",
+        "name": "Alumni"
       }
     ]
   }

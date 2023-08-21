@@ -1,0 +1,10 @@
+uuid: f26e7ba2-f23f-49a6-810f-4378d1a72c9d
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+id: node.condensed
+label: Condensed
+targetEntityType: node
+cache: true

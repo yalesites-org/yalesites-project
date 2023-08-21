@@ -1,0 +1,43 @@
+
+{% embed "@organisms/block-wrapper/yds-block-wrapper.twig" with {
+  block_wrapper__label: 'Contact Info',
+  block_wrapper__heading__level: '3'
+} %}
+  {% block block_wrapper__inner %}
+
+    {% if email %}
+
+      {{ attach_library('atomic/text-link') }}
+      {% embed '@atoms/controls/text-link/yds-text-link.twig' with {
+        link__url: '',
+        link__pre_text: email,
+        link__content: '(copy)',
+        link__type: 'email',
+        link__extra_class: ['copy-trigger'],
+      } %}
+    {% endembed %}
+      <br>
+    {% endif %}
+
+    {% if phone %}
+
+      {% embed '@atoms/controls/text-link/yds-text-link.twig' with {
+        link__url: 'tel:' ~ phone,
+        link__content: phone,
+      } %}
+      {% endembed %}
+    {% endif %}
+
+    {% if address %}
+
+      {% embed '@molecules/text/yds-text-field.twig' with {
+        text_field__content: address,
+        text_field__alignment: 'left'
+      } %}
+
+    {% endembed %}
+
+    {% endif %}
+
+  {% endblock %}
+{% endembed %}

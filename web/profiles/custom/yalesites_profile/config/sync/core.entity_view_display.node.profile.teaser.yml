@@ -1,0 +1,57 @@
+uuid: 5b64f91c-c17c-4dc0-9e33-598610d816ac
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.node.teaser
+    - field.field.node.profile.field_address
+    - field.field.node.profile.field_affiliation
+    - field.field.node.profile.field_department
+    - field.field.node.profile.field_email
+    - field.field.node.profile.field_first_name
+    - field.field.node.profile.field_honorific_prefix
+    - field.field.node.profile.field_last_name
+    - field.field.node.profile.field_login_required
+    - field.field.node.profile.field_media
+    - field.field.node.profile.field_metatags
+    - field.field.node.profile.field_position
+    - field.field.node.profile.field_subtitle
+    - field.field.node.profile.field_tags
+    - field.field.node.profile.field_teaser_media
+    - field.field.node.profile.field_teaser_text
+    - field.field.node.profile.field_teaser_title
+    - field.field.node.profile.field_telephone
+    - field.field.node.profile.layout_builder__layout
+    - node.type.profile
+  module:
+    - user
+id: node.profile.teaser
+targetEntityType: node
+bundle: profile
+mode: teaser
+content:
+  links:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 100
+    region: content
+hidden:
+  field_address: true
+  field_affiliation: true
+  field_department: true
+  field_email: true
+  field_first_name: true
+  field_honorific_prefix: true
+  field_last_name: true
+  field_login_required: true
+  field_media: true
+  field_metatags: true
+  field_position: true
+  field_subtitle: true
+  field_tags: true
+  field_teaser_media: true
+  field_teaser_text: true
+  field_teaser_title: true
+  field_telephone: true
+  layout_builder__layout: true
+  search_api_excerpt: true

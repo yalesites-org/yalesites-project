@@ -18,8 +18,8 @@
     "drupal/core-composer-scaffold": "^9.2",
     "drupal/core-recommended": "^9.2",
     "drush/drush": "^11 || ^12",
+    "oomphinc/composer-installers-extender": "^2.0",
     "pantheon-systems/drupal-integrations": "^9",
-    "wikimedia/composer-merge-plugin": "^2.1",
     "yalesites-org/yalesites_profile": "*"
   },
   "require-dev": {
@@ -58,6 +58,7 @@
         "[project-root]/.gitattributes": false
       }
     },
+    "installer-types": ["npm-asset"],
     "installer-paths": {
       "web/core": [
         "type:drupal-core"
@@ -88,20 +89,15 @@
       ],
       "web/private/scripts/quicksilver/{$name}/": [
         "type:quicksilver-script"
+      ],
+      "web/libraries/chosen": [
+        "jjj/chosen"
       ]
     },
     "enable-patching": true,
     "composer-exit-on-patch-failure": true,
     "patchLevel": {
       "drupal/core": "-p2"
-    },
-    "allow-plugins": {
-      "JJJ/chosen": true
-    },
-    "merge-plugin": {
-      "include": [
-        "web/modules/contrib/chosen/composer.libraries.json"
-      ]
     }
   },
   "config": {
@@ -116,7 +112,6 @@
       "cweagans/composer-patches": true,
       "drupal/core-composer-scaffold": true,
       "drupal/console-extend-plugin": true,
-      "wikimedia/composer-merge-plugin": true,
       "oomphinc/composer-installers-extender": true
     }
   },
