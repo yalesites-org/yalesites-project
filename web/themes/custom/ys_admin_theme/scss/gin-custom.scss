@@ -56,7 +56,7 @@
   padding-inline: 3rem !important;
 }
 
-.gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab .toolbar-tray a:hover, 
+.gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab .toolbar-tray a:hover,
 .gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab .toolbar-tray a:active {
   background-color: var(--dark-theme-gray);
 }
@@ -71,7 +71,7 @@
 // sticky header title
 
 .region-sticky--is-sticky {
-  background-color: rgba(var(--dark-theme-gray-rgb), 0.8) !important; 
+  background-color: rgba(var(--dark-theme-gray-rgb), 0.8) !important;
 }
 
 .form-item__description, .fieldset__description {
@@ -92,7 +92,7 @@ fieldset:not(.fieldgroup) {
 }
 
 
-// media library 
+// media library
 // https://yalesites-platform.lndo.site/admin/content/media-grid
 
 .media-library-widget-empty-text {
@@ -109,8 +109,8 @@ fieldset:not(.fieldgroup) {
   color: var(--wool) !important;
 }
 
-.media-library-views-form .fieldset__label, 
-.media-library-views-form .fieldset__label--group, 
+.media-library-views-form .fieldset__label,
+.media-library-views-form .fieldset__label--group,
 .media-library-views-form .form-item__label {
   color: var(--wool) !important;
 }
@@ -118,7 +118,7 @@ fieldset:not(.fieldgroup) {
 
 // admin links
 
-a.menu-item__link { 
+a.menu-item__link {
   color: var(--mediterranean-blue) !important;
 }
 .admin-item .admin-item__link:hover,
@@ -138,9 +138,9 @@ a.menu-item__link {
   color: var(--dark-theme-gray) !important;
 }
 
-.admin-item .admin-item__link:hover ~ .admin-item__title, 
-.admin-item .admin-item__link:hover ~ .admin-item__description, 
-.admin-item .admin-item__link:focus ~ .admin-item__title, 
+.admin-item .admin-item__link:hover ~ .admin-item__title,
+.admin-item .admin-item__link:hover ~ .admin-item__description,
+.admin-item .admin-item__link:focus ~ .admin-item__title,
 .admin-item .admin-item__link:focus ~ .admin-item__description {
   color: var(--dark-theme-gray-hover) !important;
 }
@@ -170,8 +170,8 @@ a.menu-item__link {
 }
 
 
-.panel__title, .system-status-general-info__header, 
-.system-status-report__requirements-group > h3, 
+.panel__title, .system-status-general-info__header,
+.system-status-report__requirements-group > h3,
 .system-themes-list__header {
   background-color: var(--dark-theme-gray) !important;
 }
@@ -248,7 +248,7 @@ a.menu-item__link {
 }
 
 
-// modules 
+// modules
 
 #system-modules .claro-details__summary {
   color: var(--dark-theme-gray-text-dark) !important;
@@ -336,7 +336,7 @@ a.menu-item__link {
 
 #views-display-extra-actions .edit-details:hover {
   background-color: var(--robin-egg) !important;
-} 
+}
 
 .views-ui-dialog .views-add-form-selected > div {
   background-color: var(--wool) !important;
@@ -356,7 +356,7 @@ a.menu-item__link {
 }
 
 #block-ys-admin-theme-main-page-content .views-edit-view #views-display-extra-actions a:hover,
-#block-ys-admin-theme-main-page-content .views-edit-view #views-display-extra-actions a:focus { 
+#block-ys-admin-theme-main-page-content .views-edit-view #views-display-extra-actions a:focus {
   color: var(--dark-theme-gray) !important;
 }
 
@@ -594,7 +594,7 @@ tbody .views-field:not(.views-field-operations) a {
   font-weight: 500;
 }
 
-table tr:hover, 
+table tr:hover,
 table .draggable-table.tabledrag-disabled tr:hover {
   background-color: var(--dark-theme-gray-lightest) !important;
 }
@@ -603,7 +603,7 @@ table .draggable-table.tabledrag-disabled tr:hover {
   content: none;
 }
 
-.sortable-heading > a:focus, 
+.sortable-heading > a:focus,
 .sortable-heading > a:hover {
   color: var(--dark-theme-gray-lightest);
 }
@@ -659,18 +659,18 @@ td .admin-required {
   background: var(--dark-theme-gray-lightest) !important;
 }
 
-.cke a.cke_path_item, 
+.cke a.cke_path_item,
 .cke span.cke_path_empty {
   color: var(--dark-theme-gray) !important;
 }
 
-.cke a.cke_button_off:hover, 
-.cke a.cke_button_off:focus, 
+.cke a.cke_button_off:hover,
+.cke a.cke_button_off:focus,
 .cke a.cke_button_off:active {
   background: var(--wool) !important;
 }
 
-.gin-layer-wrapper table th, 
+.gin-layer-wrapper table th,
 .gin-layer-wrapper table th a,
 .gin-layer-wrapper table th .form-item__label {
   color: var(--wool) !important;
@@ -741,6 +741,30 @@ td .admin-required {
 .claro-details__wrapper a:hover,
 .claro-details__wrapper a:focus {
   text-decoration: underline;
-}  
+}
+
+
+// Horizontal tabs on nodes
+.layout-node-form .horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button a {
+  background-color: var(--dark-theme-gray);
+}
+
+.layout-node-form .horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button.selected a {
+  background-color: var(--robin-egg);
+  color: var(--dark-theme-gray) !important;
+}
+
+.layout-node-form .horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button.selected a::before {
+  border-color: var(--dark-theme-gray);
+}
 
 /* stylelint-enable */
+
+// Match profile display name field to the regular fields as this one "acts"
+// like a regular field as we have auto-entity label enabled for this field.
+.gin--edit-form .node-profile-form .field--name-title .form-element,
+.gin--edit-form .node-profile-edit-form .field--name-title .form-element {
+  font-size: 1rem;
+  font-weight: 400;
+  width: 484px;
+}

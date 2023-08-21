@@ -182,8 +182,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         'disable-refocus' => FALSE,
         'event' => 'change',
         'progress' => [
-          'type' => 'throbber',
-          'message' => $this->t('Updating other settings...'),
+          'type' => 'none',
         ],
       ],
     ];
@@ -239,6 +238,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     $form['group_user_selection']['filter_and_sort']['sort_by'] = [
       '#type' => 'select',
+      '#description' => $this->t('Items marked "Pin to the beginning of list" will precede the selected sort.'),
       '#options' => $sortOptions,
       '#title' => $this->t('Sorting by'),
       '#tree' => TRUE,

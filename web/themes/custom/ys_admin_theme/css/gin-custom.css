@@ -677,6 +677,25 @@ td .admin-required {
   text-decoration: underline;
 }
 
+.layout-node-form .horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button a {
+  background-color: var(--dark-theme-gray);
+}
+
+.layout-node-form .horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button.selected a {
+  background-color: var(--robin-egg);
+  color: var(--dark-theme-gray) !important;
+}
+
+.layout-node-form .horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button.selected a::before {
+  border-color: var(--dark-theme-gray);
+}
+
 /* stylelint-enable */
+.gin--edit-form .node-profile-form .field--name-title .form-element,
+.gin--edit-form .node-profile-edit-form .field--name-title .form-element {
+  font-size: 1rem;
+  font-weight: 400;
+  width: 484px;
+}
 
 /*# sourceMappingURL=gin-custom.css.map */
