@@ -84,7 +84,7 @@
     "drupal/webform": "^6.2@beta",
     "drupal/wingsuit_companion": "^2.0@RC",
     "jjj/chosen": "^2.2",
-    "yalesites-org/atomic": "1.17.0",
+    "yalesites-org/atomic": "1.18.0",
     "yalesites-org/yale_cas": "^1.0"
   },
   "minimum-stability": "dev",
