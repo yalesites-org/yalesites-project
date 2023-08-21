@@ -18,6 +18,8 @@
 /* Restyle Ok button */
 .cke_dialog .cke_dialog_ui_button_ok {
   background-color: var(--gin-color-primary) !important;
+  color: var(--darkest-gray) !important;
+  border-color: var(--darkest-gray) !important;
 }
 
 /* Round inputs */
