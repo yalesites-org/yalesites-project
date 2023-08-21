@@ -13,11 +13,18 @@
 
   {{ attachment_before }}
 
+  {% if parentNode == 'post' or parentNode == 'event' %}
+    {% set card_collection__width = "content" %}
+  {% else %}
+    {% set card_collection__width = "site" %}
+  {% endif %}
+
   {% if rows -%}
     {% embed "@organisms/card-collection/yds-card-collection.twig" with {
       card_collection__heading: view.args.0,
       card_collection__featured: 'true',
       card_collection__type: 'list',
+      card_collection__width: card_collection__width,
     } %}
       {% block card_collection__filters %}
         {{ exposed }}
