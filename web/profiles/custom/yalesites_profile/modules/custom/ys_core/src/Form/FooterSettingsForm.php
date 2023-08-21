@@ -91,6 +91,17 @@ class FooterSettingsForm extends ConfigFormBase {
       '#required' => FALSE,
       '#cardinality' => 4,
       '#default_value' => ($footerConfig->get('content.logos')) ? implode(',', $footerConfig->get('content.logos')) : NULL,
+      '#description' => $this->t('A grid of up to 4 roughly-square logos on the left side of the footer.'),
+    ];
+
+    $form['footer_content']['school_logo'] = [
+      '#type' => 'media_library',
+      '#title' => $this->t('School logo'),
+      '#allowed_bundles' => ['image'],
+      '#required' => FALSE,
+      '#cardinality' => 4,
+      '#default_value' => ($footerConfig->get('content.school_logo')) ? $footerConfig->get('content.school_logo') : NULL,
+      '#description' => $this->t('A horizontal logotype that is placed below the 4 logos on the left side of the footer.'),
     ];
 
     $form['footer_content']['footer_text'] = [
@@ -102,13 +113,13 @@ class FooterSettingsForm extends ConfigFormBase {
 
     $form['footer_links']['links_col_1_heading'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Link Column 1 Heading'),
+      '#title' => $this->t('Links Column 1 Heading'),
       '#default_value' => ($footerConfig->get('links.links_col_1_heading')) ? $footerConfig->get('links.links_col_1_heading') : NULL,
     ];
 
     $form['footer_links']['links_col_2_heading'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Link Column 2 Heading'),
+      '#title' => $this->t('Links Column 2 Heading'),
       '#default_value' => ($footerConfig->get('links.links_col_2_heading')) ? $footerConfig->get('links.links_col_2_heading') : NULL,
     ];
 
@@ -193,6 +204,7 @@ class FooterSettingsForm extends ConfigFormBase {
     if ($form_state->getValue('footer_logos')) {
       $footerConfig->set('content.logos', explode(',', $form_state->getValue('footer_logos')));
     }
+    $footerConfig->set('content.school_logo', $form_state->getValue('school_logo'));
     $footerConfig->set('content.text', $form_state->getValue('footer_text'));
     $footerConfig->set('links.links_col_1_heading', $form_state->getValue('links_col_1_heading'));
     $footerConfig->set('links.links_col_2_heading', $form_state->getValue('links_col_2_heading'));
