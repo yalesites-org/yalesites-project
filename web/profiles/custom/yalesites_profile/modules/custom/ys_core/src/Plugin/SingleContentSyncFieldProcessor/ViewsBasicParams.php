@@ -22,7 +22,7 @@ class ViewsBasicParams extends SingleContentSyncFieldProcessorPluginBase {
    */
   public function exportFieldValue(FieldItemListInterface $field): array {
     \Drupal::logger('ys_core')->notice('ViewsBasicParams exportFieldValue: ' . print_r($field->getValue(), TRUE));
-    
+
     return $field->getValue();
   }
 
@@ -34,4 +34,3 @@ class ViewsBasicParams extends SingleContentSyncFieldProcessorPluginBase {
   }
 
 }
-

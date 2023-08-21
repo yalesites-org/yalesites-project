@@ -8,8 +8,8 @@ use Drupal\single_content_sync\SingleContentSyncFieldProcessorPluginBase;
 
 /**
  * Single Content Sync Markup Handler.
- * Note: Could be replaced by 
- * class Markup extends SimpleField
+ *
+ * Note: Could be replaced by class Markup extends SimpleField.
  *
  * @SingleContentSyncFieldProcessor(
  *   id = "markup",
