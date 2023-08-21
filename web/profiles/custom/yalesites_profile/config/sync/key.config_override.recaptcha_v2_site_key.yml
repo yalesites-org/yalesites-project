@@ -1,0 +1,14 @@
+uuid: 1b8f475d-c8a0-4143-ae4c-c20538b872d7
+langcode: en
+status: true
+dependencies:
+  config:
+    - key.key.recaptcha_v2_key
+    - recaptcha.settings
+id: recaptcha_v2_site_key
+label: 'reCAPTCHA v2 site key'
+config_type: system.simple
+config_prefix: ''
+config_name: recaptcha.settings
+config_item: site_key
+key_id: recaptcha_v2_key
