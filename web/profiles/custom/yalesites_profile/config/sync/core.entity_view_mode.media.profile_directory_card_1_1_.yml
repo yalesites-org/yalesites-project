@@ -1,0 +1,10 @@
+uuid: 597614f2-c4ea-4a55-967b-9eaf37a2a996
+langcode: en
+status: true
+dependencies:
+  module:
+    - media
+id: media.profile_directory_card_1_1_
+label: 'Profile (1:1)'
+targetEntityType: media
+cache: true

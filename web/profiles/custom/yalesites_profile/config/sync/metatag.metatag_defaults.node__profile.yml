@@ -1,0 +1,11 @@
+uuid: 2f944f4f-a6fa-4b9b-a41e-d80c8ac32252
+langcode: en
+status: true
+dependencies: {  }
+id: node__profile
+label: 'Content: Profile'
+tags:
+  og_email: '[node:field_email]'
+  og_phone_number: '[node:field_telephone]'
+  profile_first_name: '[node:field_first_name]'
+  profile_last_name: '[node:field_last_name]'

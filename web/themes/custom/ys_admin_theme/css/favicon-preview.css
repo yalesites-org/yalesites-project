@@ -1,0 +1,112 @@
+/* @see https://codepen.io/jcblw/pen/AbpOzP */
+.tab-preview-container {
+  background: var(--gin-color-secondary);
+  margin: 0;
+  padding: 0;
+  max-height: 35px;
+}
+
+ul.tabs-preview {
+  margin: 0;
+  list-style-type: none;
+  line-height: 35px;
+  max-height: 35px;
+  overflow: hidden;
+  display: inline-block;
+  padding-right: 20px;
+}
+
+ul.tabs-preview > li.active {
+  z-index: 2;
+  background: #efefef;
+}
+
+ul.tabs-preview > li.active::before {
+  border-color: transparent #efefef transparent transparent;
+}
+
+ul.tabs-preview > li.active::after {
+  border-color: transparent transparent transparent #efefef;
+}
+
+ul.tabs-preview > li {
+  float: right;
+  margin: 5px -10px 0;
+  border-top-right-radius: 25px 170px;
+  border-top-left-radius: 20px 90px;
+  padding: 0 30px 0 25px;
+  height: 170px;
+  background: #ddd;
+  position: relative;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 50%);
+  max-width: 400px;
+}
+
+ul.tabs-preview > li > a {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-decoration: none;
+  color: #222;
+}
+
+ul.tabs-preview > li > a:hover {
+  color: #222 !important;
+  text-decoration: none !important;
+}
+
+ul.tabs-preview > li::before,
+ul.tabs-preview > li::after {
+  content: "";
+  background: transparent;
+  height: 20px;
+  width: 20px;
+  border-radius: 100%;
+  border-width: 10px;
+  top: 0;
+  border-style: solid;
+  position: absolute;
+}
+
+ul.tabs-preview > li::before {
+  border-color: transparent #ddd transparent transparent;
+  transform: rotate(48deg);
+  -webkit-transform: rotate(48deg);
+  left: -23px;
+}
+
+ul.tabs-preview > li::after {
+  border-color: transparent transparent transparent #ddd;
+  transform: rotate(-48deg);
+  -webkit-transform: rotate(-48deg);
+  right: -17px;
+}
+
+/* Clear Fix took for HTML 5 Boilerlate*/
+
+.clearfix::before,
+.clearfix::after {
+  content: "";
+  display: table;
+}
+
+.clearfix::after {
+  clear: both;
+}
+
+.clearfix {
+  zoom: 1;
+}
+
+.form-managed-file__meta {
+  gap: 2rem;
+}
+
+.form-managed-file__main .file--image a {
+  color: var(--gin-color-primary-light);
+}
+
+.form-managed-file__main .file--image a:hover {
+  color: var(--gin-bg-item-hover) !important;
+}

@@ -1,0 +1,21 @@
+uuid: f37eca2a-a4af-4809-a1d2-5ef05d60485b
+langcode: en
+status: true
+dependencies: {  }
+name: favicon_32x32
+label: 'Favicon (32x32)'
+effects:
+  c8946d7d-b8b1-4d88-8486-5894e506f63d:
+    uuid: c8946d7d-b8b1-4d88-8486-5894e506f63d
+    id: image_convert
+    weight: 1
+    data:
+      extension: png
+  7fdc7f0a-c22f-4d51-8146-98654ff49054:
+    uuid: 7fdc7f0a-c22f-4d51-8146-98654ff49054
+    id: image_scale_and_crop
+    weight: 2
+    data:
+      width: 32
+      height: 32
+      anchor: center-center

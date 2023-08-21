@@ -6,6 +6,7 @@
  */
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 
@@ -103,6 +104,18 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
 }
 
 /**
+ * Implements hook_preprocess_block().
+ */
+function ys_core_preprocess_block(&$variables) {
+  $config = \Drupal::config('ys_core.social_links');
+
+  // Add the cache tag, so that the theme setting information is rebuilt
+  // when the config is saved.
+  // Via: https://drupal.stackexchange.com/questions/266379/how-to-clear-cache-for-config-entity-after-making-changes
+  \Drupal::service('renderer')->addCacheableDependency($variables, $config);
+}
+
+/**
  * Passes the config to enable/disable search form into templates.
  *
  * Implements hook_preprocess_region().
@@ -196,5 +209,94 @@ function ys_core_page_attachments(array &$page) {
   $config = \Drupal::config('config_split.config_split.production_config');
   if ($config->get('status')) {
     $page['#attached']['library'][] = 'ys_core/siteimprove';
+  }
+
+  // Custom or fallback favicons.
+  $favicons = \Drupal::service('ys_core.favicon_manager')->getFavicons();
+  foreach ($favicons as $name => $favicon) {
+    $page['#attached']['html_head'][] = [$favicon, $name];
+  }
+
+}
+
+/**
+ * Implements hook_preprocess_image_widget() for SiteSettingsForm.php.
+ */
+function ys_core_preprocess_image_widget(&$variables) {
+  /*
+   * Used for previewing the managed file for favicons and others.
+   * @see web/profiles/custom/yalesites_profile/modules/custom/ys_core/src/Form/SiteSettingsForm.php
+   * @see
+   * https://drupal.stackexchange.com/questions/212480/form-api-image-preview
+   */
+  $element = $variables['element'];
+
+  $variables['attributes'] = [
+    'class' => [
+      'image-widget',
+      'js-form-managed-file',
+      'form-managed-file',
+      'clearfix',
+    ],
+  ];
+
+  $config = \Drupal::config('system.site');
+  $variables['site_name'] = $config->get('name');
+
+  if (!empty($element['fids']['#value'])) {
+    $file = reset($element['#files']);
+    $element['file_' . $file->id()]['filename']['#suffix'] = ' <span class="file-size">(' . format_size($file->getSize()) . ')</span> ';
+    $file_variables = [
+      'style_name' => $element['#preview_image_style'],
+      'uri' => $file->getFileUri(),
+    ];
+
+    // Determine image dimensions.
+    if (isset($element['#value']['width']) && isset($element['#value']['height'])) {
+      $file_variables['width'] = $element['#value']['width'];
+      $file_variables['height'] = $element['#value']['height'];
+    }
+    else {
+      $image = \Drupal::service('image.factory')->get($file->getFileUri());
+      if ($image->isValid()) {
+        $file_variables['width'] = $image->getWidth();
+        $file_variables['height'] = $image->getHeight();
+      }
+      else {
+        $file_variables['width'] = $file_variables['height'] = NULL;
+      }
+    }
+
+    $element['preview'] = [
+      '#weight' => -10,
+      '#theme' => 'image_style',
+      '#width' => $file_variables['width'],
+      '#height' => $file_variables['height'],
+      '#style_name' => $file_variables['style_name'],
+      '#uri' => $file_variables['uri'],
+    ];
+
+    // Store the dimensions in the form so the file doesn't have to be
+    // accessed again. This is important for remote files.
+    $element['width'] = [
+      '#type' => 'hidden',
+      '#value' => $file_variables['width'],
+    ];
+    $element['height'] = [
+      '#type' => 'hidden',
+      '#value' => $file_variables['height'],
+    ];
+  }
+  else {
+    $variables['fallback_image'] = TRUE;
+  }
+
+  // Sets a twig variable to use the favicon preview.
+  // @see web/themes/custom/ys_admin_theme/templates/content-edit/image-widget.html.twig
+  $variables['use_favicon_preview'] = $element['#use_favicon_preview'];
+
+  $variables['data'] = [];
+  foreach (Element::children($element) as $child) {
+    $variables['data'][$child] = $element[$child];
   }
 }
