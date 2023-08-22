@@ -45,6 +45,7 @@
 }
 
 // remove box-shadows
+.gin--dark-mode .glb-claro-details__summary::after,
 .gin--dark-mode .messages,
 .gin--dark-mode .gin-layer-wrapper, 
 .gin--dark-mode .gin-layer-wrapper-shadow, 
@@ -80,6 +81,11 @@
 .gin--dark-mode .form-actions .layout-builder__link--add, 
 .gin--dark-mode .glb-action-link--icon-trash.glb-action-link {
   box-shadow: unset !important;
+}
+
+.gin--dark-mode .glb-claro-details,
+.gin--dark-mode .claro-details {
+  background-color: var(--darkest-gray) !important;
 }
 
 .gin--dark-mode .gin-secondary-toolbar.layout-container {
@@ -171,6 +177,10 @@
 
 .gin--dark-mode .form-boolean--type-checkbox:not(:checked) + .checkbox-toggle  .checkbox-toggle__inner {
   background-color: var(--dark-theme-gray) !important;
+}
+
+.gin--dark-mode table th {
+  background: var(--darkest-gray);
 }
 
 [data-drupal-selector="edit-enable-darkmode"] .form-radios input:checked + .form-item__label {

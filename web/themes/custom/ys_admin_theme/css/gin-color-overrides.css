@@ -26,24 +26,22 @@
   --gin-color-primary-hover: var(--wool) !important;
   --gin-color-primary-light: var(--gin-bg-item-hover) !important;
   --gin-color-primary-light-active: var(--robin-egg);
-  --gin-border-color-layer: var(--light-gray) !important;
+  --gin-border-color-layer: var(--wool) !important;
+  --gin-color-danger: #E09494;
   --gin-color-info: var(--mediterranean-blue) !important;
   --gin-bg-layer: var(--dark-theme-gray) !important;
   --gin-bg-input: var(--darkest-gray) !important;
+  --gin-border-color: var(--wool) !important;
   --gin-border-color-table-header: var(--darkest-gray) !important;
   --gin-border-color-form-element: var(--light-gray) !important;
   --gin-bg-app: var(--darkest-gray);
   --gin-bg-layer3: var(--dark-theme-gray-hover);
   --colorGinText: var(--darkest-gray);
-  --gin-border-color-table-header: var(--darkest-gray);
   --gin-color-dark-text: var(--wool);
   --gin-color-title: var(--wool);
   --gin-color-button-text: var(--dark-theme-gray-hover);
   --gin-color-button-text-hover: var(--dark-theme-gray-hover);
-}
-
-.gin--dark-mode [data-gin-accent=light_blue] {
-  --gin-color-primary-rgb: 217, 241, 243 !important;
+  --gin-border-color-layer2: #A8A8A8 !important;
 }
 
 /* stylelint-enable */
