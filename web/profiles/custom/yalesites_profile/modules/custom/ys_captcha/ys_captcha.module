@@ -10,10 +10,11 @@
  */
 function ys_captcha_form_recaptcha_admin_settings_alter(&$form, &$form_state, $form_id) {
   // Disable the recaptcha v2 API key fields from the admin form as
-  // the value is set via Drupal\ys_captcha\Config\CaptchaV2ConfigOverrides.
-  $secrets = \Drupal::service('ys_secrets.manager');
-  $secrets->disableField($form['general']['recaptcha_site_key']);
-  $secrets->disableField($form['general']['recaptcha_secret_key']);
+  // the value is set by Key via Pantheon Secrets.
+  $form['general']['recaptcha_site_key']['#disabled'] = TRUE;
+  $form['general']['recaptcha_secret_key']['#disabled'] = TRUE;
+  $form['general']['recaptcha_site_key']['#default_value'] = 'HIDDEN';
+  $form['general']['recaptcha_secret_key']['#default_value'] = 'HIDDEN';
 }
 
 /**
@@ -21,8 +22,9 @@ function ys_captcha_form_recaptcha_admin_settings_alter(&$form, &$form_state, $f
  */
 function ys_captcha_form_recaptcha_v3_settings_alter(&$form, &$form_state, $form_id) {
   // Disable the recaptcha v3 API key fields from the admin form as
-  // the value is set via Drupal\ys_captcha\Config\CaptchaV3ConfigOverrides.
-  $secrets = \Drupal::service('ys_secrets.manager');
-  $secrets->disableField($form['site_key']);
-  $secrets->disableField($form['secret_key']);
+  // the value is set by Key via Pantheon Secrets.
+  $form['site_key']['#disabled'] = TRUE;
+  $form['secret_key']['#disabled'] = TRUE;
+  $form['site_key']['#default_value'] = "HIDDEN";
+  $form['secret_key']['#default_value'] = "HIDDEN";
 }
