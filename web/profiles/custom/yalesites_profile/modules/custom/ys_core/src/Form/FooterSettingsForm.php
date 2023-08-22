@@ -60,10 +60,16 @@ class FooterSettingsForm extends ConfigFormBase {
       '#type' => 'vertical_tabs',
     ];
 
+    $form['footer_logos'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Footer Logos'),
+      '#open' => TRUE,
+      '#group' => 'footer_tabs',
+    ];
+
     $form['footer_content'] = [
       '#type' => 'details',
       '#title' => $this->t('Footer Content'),
-      '#open' => TRUE,
       '#group' => 'footer_tabs',
     ];
 
@@ -84,17 +90,33 @@ class FooterSettingsForm extends ConfigFormBase {
       '#group' => 'footer_tabs',
     ];
 
-    $form['footer_content']['footer_logos'] = [
-      '#type' => 'media_library',
-      '#title' => $this->t('Footer logos'),
-      '#allowed_bundles' => ['image'],
-      '#required' => FALSE,
+    $form['footer_logos']['logos'] = [
+      '#type' => 'multivalue',
+      '#title' => $this->t('Footer Logos'),
       '#cardinality' => 4,
-      '#default_value' => ($footerConfig->get('content.logos')) ? $footerConfig->get('content.logos') : NULL,
-      '#description' => $this->t('A grid of up to 4 roughly-square logos on the left side of the footer.'),
+      '#default_value' => ($footerConfig->get('content.logos')) ? $footerConfig->get('content.logos') : [],
+
+      'logo' => [
+        '#type' => 'media_library',
+        '#title' => $this->t('Logo'),
+        '#allowed_bundles' => ['image'],
+        '#required' => FALSE,
+        '#cardinality' => 4,
+      ],
+
+      'logo_url' => [
+        '#type' => 'linkit',
+        '#title' => $this->t('URL'),
+        '#description' => $this->t('Type the URL or autocomplete for internal paths.'),
+        '#autocomplete_route_name' => 'linkit.autocomplete',
+        '#autocomplete_route_parameters' => [
+          'linkit_profile_id' => 'default',
+        ],
+      ],
+
     ];
 
-    $form['footer_content']['school_logo'] = [
+    $form['footer_logos']['school_logo'] = [
       '#type' => 'media_library',
       '#title' => $this->t('School logo'),
       '#allowed_bundles' => ['image'],
@@ -202,7 +224,7 @@ class FooterSettingsForm extends ConfigFormBase {
     // Footer settings config.
     $footerConfig = $this->config('ys_core.footer_settings');
 
-    $footerConfig->set('content.logos', $form_state->getValue('footer_logos'));
+    $footerConfig->set('content.logos', $form_state->getValue('logos'));
     $footerConfig->set('content.school_logo', $form_state->getValue('school_logo'));
     $footerConfig->set('content.text', $form_state->getValue('footer_text'));
     $footerConfig->set('links.links_col_1_heading', $form_state->getValue('links_col_1_heading'));

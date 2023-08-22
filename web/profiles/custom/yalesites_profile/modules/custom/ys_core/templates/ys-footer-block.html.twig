@@ -1,11 +1,35 @@
-<p>Mega Footer Block</p>
+
+{% embed "@organisms/site-footer/yds-site-footer.twig" with {
+  site_footer__border_thickness: '8',
+  site_footer__theme: getThemeSetting('footer_theme'),
+  site_footer__variation: 'atrus',
+} %}
+{% endembed %}
+
+
+{# <p>Mega Footer Block</p>
 
 <ul>
   <li>Col 1 heading: {{ footer_links_col_1_heading }}</li>
   <li>Col 2 heading: {{ footer_links_col_2_heading }}</li>
   <li>Footer text: {{ footer_text }}</li>
-  <li>Footer logos: {{ footer_logos }}</li>
   <li>School logo: {{ school_logo }}</li>
+</ul>
+
+Footer logos:
+
+<ul>
+{% for logo in footer_logos %}
+  <li>
+    {% if logo.url %}
+      <a href="{{ logo.url }}">
+    {% endif %}
+    {{ logo }}
+    {% if logo.url %}
+      </a>
+    {% endif %}
+  </li>
+{% endfor %}
 </ul>
 
 Footer links Col 1
@@ -23,3 +47,5 @@ Footer links Col 2
 {% endfor %}
 
 </ul>
+
+{{ drupal_block('social_links_block') }} #}

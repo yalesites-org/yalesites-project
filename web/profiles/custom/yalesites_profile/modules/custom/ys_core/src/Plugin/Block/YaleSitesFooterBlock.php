@@ -76,13 +76,12 @@ class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginIn
    * {@inheritdoc}
    */
   public function build() {
-
-    $footerLogoIds = explode(",", $this->footerSettings->get('content.logos'));
     $footerLogos = [];
 
-    foreach ($footerLogoIds as $logoId) {
-      $footerLogoMedia = $this->entityTypeManager->getStorage('media')->load($logoId);
-      $footerLogos[] = $this->entityTypeManager->getViewBuilder('media')->view($footerLogoMedia, 'profile_directory_card_1_1_');
+    foreach ($this->footerSettings->get('content.logos') as $key => $logoData) {
+      $footerLogoMedia = $this->entityTypeManager->getStorage('media')->load($logoData['logo']);
+      $footerLogos[$key]['logo'] = $this->entityTypeManager->getViewBuilder('media')->view($footerLogoMedia, 'profile_directory_card_1_1_');
+      $footerLogos[$key]['url'] = $logoData['logo_url'];
     }
 
     $schoolLogoId = $this->footerSettings->get('content.school_logo');
