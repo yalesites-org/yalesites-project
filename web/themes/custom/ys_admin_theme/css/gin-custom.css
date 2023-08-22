@@ -36,7 +36,7 @@
 #views-entity-list,
 .module-filter-update-status-form .table-filter,
 .admin.my-workbench {
-  background-color: var(--darkest-gray) !important;
+  background-color: var(--dark-theme-gray) !important;
 }
 
 .gin--dark-mode .messages,
