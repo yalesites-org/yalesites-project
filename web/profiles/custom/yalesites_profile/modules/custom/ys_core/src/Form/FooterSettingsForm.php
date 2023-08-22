@@ -201,9 +201,14 @@ class FooterSettingsForm extends ConfigFormBase {
 
     // Footer settings config.
     $footerConfig = $this->config('ys_core.footer_settings');
+
     if ($form_state->getValue('footer_logos')) {
       $footerConfig->set('content.logos', explode(',', $form_state->getValue('footer_logos')));
     }
+    else {
+      $footerConfig->set('content.logos', []);
+    }
+
     $footerConfig->set('content.school_logo', $form_state->getValue('school_logo'));
     $footerConfig->set('content.text', $form_state->getValue('footer_text'));
     $footerConfig->set('links.links_col_1_heading', $form_state->getValue('links_col_1_heading'));

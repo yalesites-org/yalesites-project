@@ -55,6 +55,8 @@ function ys_core_theme($existing, $type, $theme, $path): array {
     ],
     'ys_footer_block' => [
       'variables' => [
+        'footer_logos' => [],
+        'footer_text' => NULL,
         'footer_links_heading_1' => NULL,
         'footer_links_heading_2' => NULL,
       ]
