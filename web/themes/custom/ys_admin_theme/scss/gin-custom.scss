@@ -227,4 +227,13 @@
   color: var(--darkest-gray);
 }
 
+// Match profile display name field to the regular fields as this one "acts"
+// like a regular field as we have auto-entity label enabled for this field.
+.gin--edit-form .node-profile-form .field--name-title .form-element,
+.gin--edit-form .node-profile-edit-form .field--name-title .form-element {
+  font-size: 1rem;
+  font-weight: 400;
+  width: 484px;
+}
+
 /* stylelint-enable */
