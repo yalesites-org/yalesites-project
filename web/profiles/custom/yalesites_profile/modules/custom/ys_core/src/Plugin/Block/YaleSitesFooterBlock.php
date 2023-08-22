@@ -77,23 +77,35 @@ class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginIn
    */
   public function build() {
 
-    $footerLogoIds = $this->footerSettings->get('content.logos');
+    $footerLogoIds = explode(",", $this->footerSettings->get('content.logos'));
+    $footerLogos = [];
 
     foreach ($footerLogoIds as $logoId) {
-      $media = $this->entityTypeManager->getStorage('media')->load($logoId);
-      $footerLogos[] = $this->entityTypeManager->getViewBuilder('media')->view($media, 'profile_directory_card_1_1_');
+      $footerLogoMedia = $this->entityTypeManager->getStorage('media')->load($logoId);
+      $footerLogos[] = $this->entityTypeManager->getViewBuilder('media')->view($footerLogoMedia, 'profile_directory_card_1_1_');
+    }
+
+    $schoolLogoId = $this->footerSettings->get('content.school_logo');
+    $schoolLogo = [];
+
+    if ($schoolLogoId) {
+      $schoolLogoMedia = $this->entityTypeManager->getStorage('media')->load($schoolLogoId);
+      $schoolLogo = $this->entityTypeManager->getViewBuilder('media')->view($schoolLogoMedia, 'profile_directory_card_1_1_');
     }
 
     return [
       '#theme' => 'ys_footer_block',
       '#footer_logos' => $footerLogos,
+      '#school_logo' => $schoolLogo,
       '#footer_text' => [
         '#type' => 'processed_text',
         '#text' => $this->footerSettings->get('content.text')['value'],
         '#format' => 'restricted_html',
       ],
-      '#footer_links_heading_1' => $this->footerSettings->get('links.links_col_1_heading'),
-      '#footer_links_heading_2' => $this->footerSettings->get('links.links_col_2_heading'),
+      '#footer_links_col_1_heading' => $this->footerSettings->get('links.links_col_1_heading'),
+      '#footer_links_col_2_heading' => $this->footerSettings->get('links.links_col_2_heading'),
+      '#footer_links_col_1' => $this->footerSettings->get('links.links_col_1'),
+      '#footer_links_col_2' => $this->footerSettings->get('links.links_col_2'),
     ];
   }
 

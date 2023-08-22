@@ -90,7 +90,7 @@ class FooterSettingsForm extends ConfigFormBase {
       '#allowed_bundles' => ['image'],
       '#required' => FALSE,
       '#cardinality' => 4,
-      '#default_value' => ($footerConfig->get('content.logos')) ? implode(',', $footerConfig->get('content.logos')) : NULL,
+      '#default_value' => ($footerConfig->get('content.logos')) ? $footerConfig->get('content.logos') : NULL,
       '#description' => $this->t('A grid of up to 4 roughly-square logos on the left side of the footer.'),
     ];
 
@@ -123,11 +123,11 @@ class FooterSettingsForm extends ConfigFormBase {
       '#default_value' => ($footerConfig->get('links.links_col_2_heading')) ? $footerConfig->get('links.links_col_2_heading') : NULL,
     ];
 
-    $form['footer_links']['column_1_links'] = [
+    $form['footer_links']['links_col_1'] = [
       '#type' => 'multivalue',
       '#title' => $this->t('Links Column 1'),
       '#cardinality' => 4,
-      '#default_value' => ($footerConfig->get('links.column_1_links')) ? $footerConfig->get('links.column_1_links') : [],
+      '#default_value' => ($footerConfig->get('links.links_col_1')) ? $footerConfig->get('links.links_col_1') : [],
 
       'link_url' => [
         '#type' => 'linkit',
@@ -144,11 +144,11 @@ class FooterSettingsForm extends ConfigFormBase {
       ],
     ];
 
-    $form['footer_links']['column_2_links'] = [
+    $form['footer_links']['links_col_2'] = [
       '#type' => 'multivalue',
       '#title' => $this->t('Links Column 2'),
       '#cardinality' => 4,
-      '#default_value' => ($footerConfig->get('links.column_2_links')) ? $footerConfig->get('links.column_2_links') : [],
+      '#default_value' => ($footerConfig->get('links.links_col_2')) ? $footerConfig->get('links.links_col_2') : [],
       'link_url' => [
         '#type' => 'linkit',
         '#title' => $this->t('URL'),
@@ -179,8 +179,8 @@ class FooterSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    $this->validateFooterLinks($form_state, 'column_1_links');
-    $this->validateFooterLinks($form_state, 'column_2_links');
+    $this->validateFooterLinks($form_state, 'links_col_1');
+    $this->validateFooterLinks($form_state, 'links_col_2');
   }
 
   /**
@@ -202,19 +202,13 @@ class FooterSettingsForm extends ConfigFormBase {
     // Footer settings config.
     $footerConfig = $this->config('ys_core.footer_settings');
 
-    if ($form_state->getValue('footer_logos')) {
-      $footerConfig->set('content.logos', explode(',', $form_state->getValue('footer_logos')));
-    }
-    else {
-      $footerConfig->set('content.logos', []);
-    }
-
+    $footerConfig->set('content.logos', $form_state->getValue('footer_logos'));
     $footerConfig->set('content.school_logo', $form_state->getValue('school_logo'));
     $footerConfig->set('content.text', $form_state->getValue('footer_text'));
     $footerConfig->set('links.links_col_1_heading', $form_state->getValue('links_col_1_heading'));
     $footerConfig->set('links.links_col_2_heading', $form_state->getValue('links_col_2_heading'));
-    $footerConfig->set('links.column_1_links', $form_state->getValue('column_1_links'));
-    $footerConfig->set('links.column_2_links', $form_state->getValue('column_2_links'));
+    $footerConfig->set('links.links_col_1', $form_state->getValue('links_col_1'));
+    $footerConfig->set('links.links_col_2', $form_state->getValue('links_col_2'));
 
     $footerConfig->save();
 

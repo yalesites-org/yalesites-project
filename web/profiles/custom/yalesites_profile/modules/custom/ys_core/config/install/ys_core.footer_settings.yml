@@ -1,9 +1,9 @@
 content:
-  logos: []
+  logos: ''
   school_logo: ''
   text: []
 links:
-  column_1_heading: ''
-  column_2_heading: ''
-  column_1_links: []
-  column_2_links: []
+  links_col_1_heading: ''
+  links_col_2_heading: ''
+  links_col_1: []
+  links_col_2: []

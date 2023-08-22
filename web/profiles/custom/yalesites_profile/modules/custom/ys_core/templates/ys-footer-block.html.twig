@@ -1,8 +1,25 @@
 <p>Mega Footer Block</p>
 
 <ul>
-  <li>Col 1 heading: {{ footer_links_heading_1 }}</li>
-  <li>Col 2 heading: {{ footer_links_heading_2 }}</li>
+  <li>Col 1 heading: {{ footer_links_col_1_heading }}</li>
+  <li>Col 2 heading: {{ footer_links_col_2_heading }}</li>
   <li>Footer text: {{ footer_text }}</li>
   <li>Footer logos: {{ footer_logos }}</li>
+  <li>School logo: {{ school_logo }}</li>
+</ul>
+
+Footer links Col 1
+<ul>
+{% for link in footer_links_col_1 %}
+  <li><a href="{{ link.link_url }}">{{ link.link_title }}</a></li>
+{% endfor %}
+
+</ul>
+
+Footer links Col 2
+<ul>
+{% for link in footer_links_col_2 %}
+  <li><a href="{{ link.link_url }}">{{ link.link_title }}</a></li>
+{% endfor %}
+
 </ul>
