@@ -83,8 +83,15 @@
   box-shadow: unset !important;
 }
 
-.gin--dark-mode .glb-claro-details,
-.gin--dark-mode .claro-details {
+/* Target accordions and give them a darker background */
+.gin--dark-mode .claro-details__summary,
+.gin--dark-mode .glb-claro-details__summary {
+  background-color: var(--darkest-gray) !important;
+}
+
+/* views forms */
+.gin--dark-mode .views-ui-admin-settings-basic,
+.gin--dark-mode .views-ui-admin-settings-advanced {
   background-color: var(--darkest-gray) !important;
 }
 
@@ -162,8 +169,9 @@
 }
 
 /* forms */
-.gin--dark-mode .form-element {
-  background-color: var(--dark-theme-gray) !important;
+.gin--dark-mode .form-element,
+.gin--dark-mode .glb-form-element {
+  background-color: var(--darkest-gray) !important;
 }
 
 ::placeholder {
@@ -200,6 +208,22 @@
 .gin--dark-mode .chosen-search-input,
 .gin--dark-mode .chosen-search-input::placeholder {
   color: var(--dark-theme-gray) !important;
+}
+
+// Autocomplete
+
+.gin--dark-mode .ui-autocomplete .ui-menu-item-wrapper {
+  color: var(--wool);
+}
+
+.gin--dark-mode .ui-autocomplete .ui-menu-item-wrapper.ui-state-active {
+  background-color: var(--dark-theme-gray);
+  color: var(--wool);
+}
+
+// fieldsets
+.gin--dark-mode fieldset:not(.fieldgroup) {
+  background-color: var(--darkest-gray);
 }
 
 /* upgrade status on /admin/reports/upgrade-status */
