@@ -101,7 +101,6 @@ class FooterSettingsForm extends ConfigFormBase {
         '#title' => $this->t('Logo'),
         '#allowed_bundles' => ['image'],
         '#required' => FALSE,
-        '#cardinality' => 4,
       ],
 
       'logo_url' => [
