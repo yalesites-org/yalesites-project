@@ -1,0 +1,15 @@
+<?php
+
+/**
+ * @file
+ * Install, uninstall and update hooks for ys_node_access.
+ */
+
+/**
+ * Implements hook_install().
+ *
+ * Rebuild the node access permissions to remove default nid 0 entry.
+ */
+function ys_node_access_install() {
+  node_access_rebuild();
+}
