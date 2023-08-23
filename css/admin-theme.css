@@ -42,12 +42,14 @@
   --gin-color-text-light: var(--wool);
   --gin-color-primary-hover: var(--wool) !important;
   --gin-color-primary-light: var(--gin-bg-item-hover) !important;
-  --gin-border-color-layer: var(--light-gray);
+  --gin-border-color-layer: var(--wool) !important;
 
+  --gin-color-danger: #E09494;
   --gin-bg-app: var(--darkest-gray);
   --gin-color-info: var(--mediterranean-blue) !important;
   --gin-bg-layer: var(--dark-theme-gray);
   --gin-bg-input: var(--darkest-gray) !important;
+  --gin-border-color: var(--wool) !important;
   --gin-dark-gray: var(--darkest-gray);
   --colorGinText: var(--darkest-gray);
   --gin-border-color-table-header: var(--darkest-gray);
@@ -56,6 +58,7 @@
   --gin-color-title: var(--wool);
   --gin-color-button-text: var(--dark-theme-gray);
   --gin-color-button-text-hover: var(--dark-theme-gray-hover);
+  --gin-border-color-layer2: #A8A8A8 !important;
 }
 
 
@@ -81,6 +84,10 @@
   background-color: var(--wool);
 }
 
+/* // remove box-shadows */
+.gin--dark-mode .glb-claro-details__summary::after {
+  box-shadow: inset 0 0 0 3px var(--gin-color-primary) !important;
+}
 
 /* // Layout-builder  */
 
@@ -173,6 +180,11 @@
   background-color: var(--darkest-gray);
 }
 
+
+.gin--dark-mode .glb-table .tabledrag-handle::after {
+  background-color: var(--darkest-gray) !important;
+}
+
 /* Media library */ 
 .media-library-item__click-to-select-checkbox .glb-form-checkbox:checked {
   background-color: var(--darkest-gray) !important;
@@ -223,8 +235,15 @@
   color: var(--dark-theme-gray) !important;
 }
 
+.gin--dark-mode .form-element,
 .gin--dark-mode .glb-form-element {
-  background-color: var(--dark-theme-gray) !important;
+  background-color: var(--darkest-gray) !important;
+}
+
+/* remove media button */
+.gin--dark-mode .media-library-add-form__remove-button {
+  background-color: var(--robin-egg);
+  color: var(--darkest-gray);
 }
 
 .ui-dialog-titlebar {
@@ -368,4 +387,36 @@
 /* search input placeholder opacity */
 input[type="search"]::placeholder {
   opacity: 1;
+}
+
+.gin--dark-mode .ui-autocomplete {
+  background-color: var(--darkest-gray);
+}
+
+.gin--dark-mode #drupal-off-canvas .ui-autocomplete .ui-menu-item-wrapper:hover {
+  color: var(--darkest-gray) !important;
+}
+
+/* Target accordions and give them a darker background */
+.gin--dark-mode .claro-details__summary,
+.gin--dark-mode .glb-claro-details__summary {
+  background-color: var(--darkest-gray) !important;
+}
+
+
+/* views forms */
+.gin--dark-mode .views-ui-admin-settings-basic,
+.gin--dark-mode .views-ui-admin-settings-advanced {
+  background-color: var(--darkest-gray) !important;
+}
+
+/* // Autocomplete */
+
+.gin--dark-mode .ui-autocomplete .ui-menu-item-wrapper {
+  color: var(--wool);
+}
+
+.gin--dark-mode .ui-autocomplete .ui-menu-item-wrapper.ui-state-active {
+  background-color: var(--dark-theme-gray);
+  color: var(--wool);
 }
