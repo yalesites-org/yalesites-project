@@ -198,6 +198,12 @@
   color: var(--dark-theme-gray) !important;
 }
 
+/* remove media button */
+.gin--dark-mode .media-library-add-form__remove-button {
+  background-color: var(--robin-egg);
+  color: var(--darkest-gray);
+}
+
 .gin--dark-mode .ui-autocomplete .ui-menu-item-wrapper {
   color: var(--wool);
 }
