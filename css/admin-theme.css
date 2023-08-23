@@ -230,6 +230,14 @@
   padding: 1rem;
 }
 
+/* Make the secondary toolbar fixes */
+.gin-secondary-toolbar--frontend {
+  position: fixed;
+  background-color: var(--gin-bg-layer);
+  width: 100%;
+  top: calc(var(--gin-toolbar-secondary-height) - 7px) !important;
+}
+
 /* Layout builder modal */
 .ws-lb-link__label {
   color: var(--dark-theme-gray) !important;
