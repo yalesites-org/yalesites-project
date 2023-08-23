@@ -30,6 +30,20 @@
   site_footer__variation: 'mega',
 } %}
 
+{# {% block site_footer_logos %}
+
+  {% for logo in footer_logos %}
+    {% if logo.url %}
+      <a href="{{ logo.url }}">
+    {% endif %}
+    {{ logo.logo }}
+    {% if logo.url %}
+      </a>
+    {% endif %}
+  {% endfor %}
+
+{% endblock %} #}
+
   {% block site_footer__logo %}
     {% if footer_logos.0.url %}
       <a href="{{ footer_logos.0.url }}">
