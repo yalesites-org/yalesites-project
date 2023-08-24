@@ -120,7 +120,6 @@ class FooterSettingsForm extends ConfigFormBase {
       '#title' => $this->t('School logo'),
       '#allowed_bundles' => ['image'],
       '#required' => FALSE,
-      '#cardinality' => 4,
       '#default_value' => ($footerConfig->get('content.school_logo')) ? $footerConfig->get('content.school_logo') : NULL,
       '#description' => $this->t('A horizontal logotype that is placed below the 4 logos on the left side of the footer.'),
     ];
