@@ -24,10 +24,11 @@
   {% endif %}
 {% endset %}
 
+{#TODO: set site_footer__variation to getThemeSetting('footer_variation')#}
 {% embed "@organisms/site-footer/yds-site-footer.twig" with {
   site_footer__border_thickness: '8',
   site_footer__theme: getThemeSetting('footer_theme'),
-  site_footer__variation: 'basic',
+  site_footer__variation: 'basic',;
 }%}
   {% if site_footer__variation == 'mega'%}
     {% block site_footer__logo %}
@@ -87,7 +88,6 @@
           {{footer_link_columns}}
         {% endblock %}
       {% endembed %}
-    
       {{ drupal_block('social_links_block') }}
     {% endblock %}
   {% else %}
@@ -99,46 +99,3 @@
   {% endif %}
 {% endembed %}
 
-
-{# <p>Mega Footer Block</p>
-
-<ul>
-  <li>Col 1 heading: {{ footer_links_col_1_heading }}</li>
-  <li>Col 2 heading: {{ footer_links_col_2_heading }}</li>
-  <li>Footer text: {{ footer_text }}</li>
-  <li>School logo: {{ school_logo }}</li>
-</ul>
-
-Footer logos:
-
-<ul>
-{% for logo in footer_logos %}
-  <li>
-    {% if logo.url %}
-      <a href="{{ logo.url }}">
-    {% endif %}
-    {{ logo }}
-    {% if logo.url %}
-      </a>
-    {% endif %}
-  </li>
-{% endfor %}
-</ul>
-
-Footer links Col 1
-<ul>
-{% for link in footer_links_col_1 %}
-  <li><a href="{{ link.link_url }}">{{ link.link_title }}</a></li>
-{% endfor %}
-
-</ul>
-
-Footer links Col 2
-<ul>
-{% for link in footer_links_col_2 %}
-  <li><a href="{{ link.link_url }}">{{ link.link_title }}</a></li>
-{% endfor %}
-
-</ul>
-
-{{ drupal_block('social_links_block') }} #}
