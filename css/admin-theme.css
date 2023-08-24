@@ -428,3 +428,13 @@ input[type="search"]::placeholder {
   background-color: var(--dark-theme-gray);
   color: var(--wool);
 }
+
+/* add space between accordion action buttons */
+.gin--dark-mode .paragraphs-actions .paragraphs-icon-button  + .paragraphs-dropdown {
+  margin-left: 1rem;
+}
+
+/* remove collapsed/truncated text gradient overlay */
+.gin--dark-mode.js .paragraphs-collapsed-description::after {
+  content: unset;
+}
