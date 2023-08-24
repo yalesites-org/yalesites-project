@@ -27,70 +27,76 @@
 {% embed "@organisms/site-footer/yds-site-footer.twig" with {
   site_footer__border_thickness: '8',
   site_footer__theme: getThemeSetting('footer_theme'),
-  site_footer__variation: 'mega',
-} %}
+  site_footer__variation: 'basic',
+}%}
+  {% if site_footer__variation == 'mega'%}
+    {% block site_footer__logo %}
+      {% if footer_logos.0.url %}
+        <a href="{{ footer_logos.0.url }}">
+      {% endif %}
+      {{ footer_logos.0.logo }}
+      {% if footer_logos.0.url %}
+        </a>
+      {% endif %}
+    {% endblock %}
 
-  {% block site_footer__logo %}
-    {% if footer_logos.0.url %}
-      <a href="{{ footer_logos.0.url }}">
-    {% endif %}
-    {{ footer_logos.0.logo }}
-    {% if footer_logos.0.url %}
-      </a>
-    {% endif %}
-  {% endblock %}
+    {% block site_footer__logo_2 %}
+      {% if footer_logos.1.url %}
+        <a href="{{ footer_logos.1.url }}">
+      {% endif %}
+      {{ footer_logos.1.logo }}
+      {% if footer_logos.1.url %}
+        </a>
+      {% endif %}
+    {% endblock %}
 
-  {% block site_footer__logo_2 %}
-    {% if footer_logos.1.url %}
-      <a href="{{ footer_logos.1.url }}">
-    {% endif %}
-    {{ footer_logos.1.logo }}
-    {% if footer_logos.1.url %}
-      </a>
-    {% endif %}
-  {% endblock %}
+    {% block site_footer__logo_3 %}
+      {% if footer_logos.2.url %}
+        <a href="{{ footer_logos.2.url }}">
+      {% endif %}
+      {{ footer_logos.2.logo }}
+      {% if footer_logos.2.url %}
+        </a>
+      {% endif %}
+    {% endblock %}
 
-  {% block site_footer__logo_3 %}
-    {% if footer_logos.2.url %}
-      <a href="{{ footer_logos.2.url }}">
-    {% endif %}
-    {{ footer_logos.2.logo }}
-    {% if footer_logos.2.url %}
-      </a>
-    {% endif %}
-  {% endblock %}
+    {% block site_footer__logo_4 %}
+      {% if footer_logos.3.url %}
+        <a href="{{ footer_logos.3.url }}">
+      {% endif %}
+      {{ footer_logos.3.logo }}
+      {% if footer_logos.3.url %}
+        </a>
+      {% endif %}
+    {% endblock %}
 
-  {% block site_footer__logo_4 %}
-    {% if footer_logos.3.url %}
-      <a href="{{ footer_logos.3.url }}">
-    {% endif %}
-    {{ footer_logos.3.logo }}
-    {% if footer_logos.3.url %}
-      </a>
-    {% endif %}
-  {% endblock %}
+    {% block site_footer__yale_logo %}
+      {{ school_logo }}
+    {% endblock %}
 
-  {% block site_footer__yale_logo %}
-    {{ school_logo }}
-  {% endblock %}
-
-  {% block site_footer__content %}
-    {{ footer_text }}
-  {% endblock %}
-  
-  {% block site_footer__two_columns %}
-    {% embed "@molecules/link-group/yds-link-group.twig" with {
-      link_group__heading_one: footer_links_col_1_heading,
-      link_group__heading_two: footer_links_col_2_heading,
-    } %}
-      {% block link_group__links %}
-        {{footer_link_columns}}
-      {% endblock %}
-    {% endembed %}
+    {% block site_footer__content %}
+      {{ footer_text }}
+    {% endblock %}
     
-    {{ drupal_block('social_links_block') }}
-
-  {% endblock %}
+    {% block site_footer__two_columns %}
+      {% embed "@molecules/link-group/yds-link-group.twig" with {
+        link_group__heading_one: footer_links_col_1_heading,
+        link_group__heading_two: footer_links_col_2_heading,
+      } %}
+        {% block link_group__links %}
+          {{footer_link_columns}}
+        {% endblock %}
+      {% endembed %}
+    
+      {{ drupal_block('social_links_block') }}
+    {% endblock %}
+  {% else %}
+    {% block site_footer__text %}{% endblock %}
+    {% block site_footer__columns %}{% endblock %}
+    {% block site_footer__social %}
+      {{ drupal_block('social_links_block') }}
+    {% endblock %}
+  {% endif %}
 {% endembed %}
 
 
