@@ -1,0 +1,33 @@
+uuid: 327ae514-8556-41e7-9fb1-2a0d2218b2fd
+langcode: en
+status: true
+dependencies:
+  config:
+    - image.style.max_width_180
+    - image.style.max_width_212
+    - image.style.max_width_320
+    - image.style.max_width_444
+    - image.style.max_width_480
+    - image.style.max_width_540
+    - image.style.max_width_640
+    - image.style.max_width_800
+id: image_logos
+label: 'Image - Logos'
+image_style_mappings:
+  -
+    image_mapping_type: sizes
+    image_mapping:
+      sizes: '(min-width: 1344px) 212px, (min-width: 992px) 180px, (min-width: 576px) 25vw,  50vw'
+      sizes_image_styles:
+        - max_width_180
+        - max_width_212
+        - max_width_320
+        - max_width_444
+        - max_width_480
+        - max_width_540
+        - max_width_640
+        - max_width_800
+    breakpoint_id: responsive_image.viewport_sizing
+    multiplier: 1x
+breakpoint_group: responsive_image
+fallback_image_style: max_width_320

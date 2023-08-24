@@ -80,7 +80,7 @@ class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginIn
 
     foreach ($this->footerSettings->get('content.logos') as $key => $logoData) {
       $footerLogoMedia = $this->entityTypeManager->getStorage('media')->load($logoData['logo']);
-      $footerLogos[$key]['logo'] = $this->entityTypeManager->getViewBuilder('media')->view($footerLogoMedia, 'profile_directory_card_1_1_');
+      $footerLogos[$key]['logo'] = $this->entityTypeManager->getViewBuilder('media')->view($footerLogoMedia, 'image_logos');
       $footerLogos[$key]['url'] = $logoData['logo_url'];
     }
 
@@ -89,7 +89,7 @@ class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginIn
 
     if ($schoolLogoId) {
       $schoolLogoMedia = $this->entityTypeManager->getStorage('media')->load($schoolLogoId);
-      $schoolLogo = $this->entityTypeManager->getViewBuilder('media')->view($schoolLogoMedia, 'profile_directory_card_1_1_');
+      $schoolLogo = $this->entityTypeManager->getViewBuilder('media')->view($schoolLogoMedia, 'image_content_width');
     }
 
     return [
