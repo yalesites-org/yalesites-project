@@ -101,6 +101,12 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
       '#markup' => "<p>" . t('@description', $replacements) . "</p>",
     ];
   }
+
+  // Alter description/placeholder to be used for new first level heading link.
+  if ($form_id == 'menu_link_content_menu_link_content_form') {
+    $form['description']['widget'][0]['value']['#description'] = t('Top level main menu links will use this as the CTA text on the left side.');
+    $form['description']['widget'][0]['value']['#placeholder'] = t('Explore all');
+  }
 }
 
 /**
@@ -159,13 +165,12 @@ function ys_core_preprocess_menu__main(&$variables) {
     // We don't want any other subitems, just the top level.
     $clonedMenuItem['below'] = NULL;
 
-    // If a node, use the node title instead of link title.
-    $routeParams = $clonedMenuItem['original_link']->getRouteParameters();
-    if (!empty($routeParams['node'])) {
-      /** @var \Drupal\node\Entity\Node $node */
-      $node = \Drupal::entityTypeManager()->getStorage('node')->load($routeParams['node']);
-      $clonedMenuItem['title'] = $node->getTitle();
-    }
+    // Main menu items get the heading treatment.
+    // @see component-library-twig/components/02-molecules/menu/_yds-menu-item.twig
+    $clonedMenuItem['is_heading'] = TRUE;
+
+    // Get the description in the menu item to use as the CTA.
+    $clonedMenuItem['heading_cta'] = ($clonedMenuItem['original_link']->getDescription()) ?? t('Explore all');
 
     // Add cloned item to the beginning of the menu.
     array_unshift($menuItem['below'], $clonedMenuItem);
