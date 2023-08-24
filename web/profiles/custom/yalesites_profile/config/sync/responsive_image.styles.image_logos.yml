@@ -4,7 +4,8 @@ status: true
 dependencies:
   config:
     - image.style.max_width_180
-    - image.style.max_width_212
+    - image.style.max_width_220
+    - image.style.max_width_250
     - image.style.max_width_320
     - image.style.max_width_444
     - image.style.max_width_480
@@ -19,8 +20,9 @@ image_style_mappings:
     image_mapping:
       sizes: '(min-width: 1344px) 212px, (min-width: 992px) 180px, (min-width: 576px) 25vw,  50vw'
       sizes_image_styles:
+        - max_width_250
         - max_width_180
-        - max_width_212
+        - max_width_220
         - max_width_320
         - max_width_444
         - max_width_480
