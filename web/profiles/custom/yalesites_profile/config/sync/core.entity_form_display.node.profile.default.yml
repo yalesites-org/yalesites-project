@@ -1,0 +1,320 @@
+uuid: eb6e85b6-ab8a-4271-94cd-a2227478135b
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.node.profile.field_address
+    - field.field.node.profile.field_affiliation
+    - field.field.node.profile.field_department
+    - field.field.node.profile.field_email
+    - field.field.node.profile.field_first_name
+    - field.field.node.profile.field_honorific_prefix
+    - field.field.node.profile.field_last_name
+    - field.field.node.profile.field_login_required
+    - field.field.node.profile.field_media
+    - field.field.node.profile.field_metatags
+    - field.field.node.profile.field_position
+    - field.field.node.profile.field_subtitle
+    - field.field.node.profile.field_tags
+    - field.field.node.profile.field_teaser_media
+    - field.field.node.profile.field_teaser_text
+    - field.field.node.profile.field_teaser_title
+    - field.field.node.profile.field_telephone
+    - field.field.node.profile.layout_builder__layout
+    - node.type.profile
+  module:
+    - allowed_formats
+    - field_group
+    - maxlength
+    - media_library
+    - metatag
+    - path
+    - text
+third_party_settings:
+  field_group:
+    group_teaser:
+      children:
+        - field_teaser_title
+        - field_teaser_text
+        - field_teaser_media
+      label: Teaser
+      region: content
+      parent_name: group_general_info
+      weight: 36
+      format_type: fieldset
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        description: ''
+        required_fields: true
+    group__publishing:
+      children:
+        - field_login_required
+        - sticky
+      label: 'Publishing Settings'
+      region: content
+      parent_name: ''
+      weight: 4
+      format_type: details_sidebar
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        open: false
+        description: ''
+        required_fields: true
+        weight: 0
+    group_profile_tabs:
+      children:
+        - group_general_info
+        - group_contact_info
+      label: 'Profile Tabs'
+      region: content
+      parent_name: ''
+      weight: 0
+      format_type: tabs
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        direction: horizontal
+        width_breakpoint: 640
+    group_general_info:
+      children:
+        - field_honorific_prefix
+        - field_first_name
+        - field_last_name
+        - title
+        - field_position
+        - field_subtitle
+        - field_department
+        - field_affiliation
+        - field_media
+        - group_teaser
+      label: 'General Info'
+      region: content
+      parent_name: group_profile_tabs
+      weight: 23
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: closed
+        description: ''
+        required_fields: true
+    group_contact_info:
+      children:
+        - field_email
+        - field_telephone
+        - field_address
+        - field_tags
+      label: 'Contact Info'
+      region: content
+      parent_name: group_profile_tabs
+      weight: 24
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: closed
+        description: ''
+        required_fields: true
+id: node.profile.default
+targetEntityType: node
+bundle: profile
+mode: default
+content:
+  field_address:
+    type: text_textarea
+    weight: 6
+    region: content
+    settings:
+      rows: 5
+      placeholder: ''
+    third_party_settings: {  }
+  field_affiliation:
+    type: options_select
+    weight: 34
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_department:
+    type: string_textfield
+    weight: 33
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  field_email:
+    type: email_default
+    weight: 4
+    region: content
+    settings:
+      placeholder: ''
+      size: 60
+    third_party_settings: {  }
+  field_first_name:
+    type: string_textfield
+    weight: 28
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  field_honorific_prefix:
+    type: string_textfield
+    weight: 27
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  field_last_name:
+    type: string_textfield
+    weight: 29
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  field_login_required:
+    type: boolean_checkbox
+    weight: 14
+    region: content
+    settings:
+      display_label: true
+    third_party_settings: {  }
+  field_media:
+    type: media_library_widget
+    weight: 35
+    region: content
+    settings:
+      media_types: {  }
+    third_party_settings: {  }
+  field_metatags:
+    type: metatag_firehose
+    weight: 3
+    region: content
+    settings:
+      sidebar: true
+      use_details: true
+    third_party_settings: {  }
+  field_position:
+    type: string_textfield
+    weight: 31
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  field_subtitle:
+    type: text_textfield
+    weight: 32
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings:
+      allowed_formats:
+        hide_help: '1'
+        hide_guidelines: '1'
+      maxlength:
+        maxlength_js: null
+        maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
+        maxlength_js_enforce: false
+  field_tags:
+    type: entity_reference_autocomplete_tags
+    weight: 7
+    region: content
+    settings:
+      match_operator: CONTAINS
+      match_limit: 10
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  field_teaser_media:
+    type: media_library_widget
+    weight: 18
+    region: content
+    settings:
+      media_types: {  }
+    third_party_settings: {  }
+  field_teaser_text:
+    type: text_textarea
+    weight: 17
+    region: content
+    settings:
+      rows: 5
+      placeholder: ''
+    third_party_settings:
+      allowed_formats:
+        hide_help: '1'
+        hide_guidelines: '1'
+      maxlength:
+        maxlength_js: 150
+        maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
+        maxlength_js_enforce: true
+  field_teaser_title:
+    type: string_textfield
+    weight: 16
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  field_telephone:
+    type: string_textfield
+    weight: 5
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  path:
+    type: path
+    weight: 1
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  simple_sitemap:
+    weight: 6
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  status:
+    type: boolean_checkbox
+    weight: 5
+    region: content
+    settings:
+      display_label: true
+    third_party_settings: {  }
+  sticky:
+    type: boolean_checkbox
+    weight: 15
+    region: content
+    settings:
+      display_label: true
+    third_party_settings: {  }
+  title:
+    type: string_textfield
+    weight: 30
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  url_redirects:
+    weight: 2
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+hidden:
+  created: true
+  layout_builder__layout: true
+  promote: true
+  revision_log: true
+  uid: true

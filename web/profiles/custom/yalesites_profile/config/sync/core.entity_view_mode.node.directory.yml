@@ -1,0 +1,10 @@
+uuid: 45b4bcbd-e0dc-4c08-b9fc-c0b0904bbb62
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+id: node.directory
+label: Directory
+targetEntityType: node
+cache: true

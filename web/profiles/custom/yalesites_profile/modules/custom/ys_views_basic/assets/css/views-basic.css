@@ -78,8 +78,8 @@
 }
 
 
-/****** 
-/******** Input styles 
+/******
+/******** Input styles
 *******/
 
 /*views-basic--group-user-selection*/
@@ -102,7 +102,7 @@
 }
 
 
-/* 
+/*
 /** in sidebar
 */
 
@@ -154,14 +154,10 @@
 }
 
 
-/* 
+/*
 /** in modal
 */
 #layout-builder-modal .grouped-items {
-  display: flex;
-  flex-direction: row;
-  align-items: first baseline;
-  gap: 2rem;
   width: 100%;
 }
 
@@ -169,9 +165,9 @@
   width: auto;
 }
 
-/* first column */ 
+/* first column */
 #layout-builder-modal .grouped-items .fieldset--group {
-  flex: 1 0 52.5%;  
+  flex: 1 0 52.5%;
 }
 
 #layout-builder-modal .grouped-items .fieldset--group .fieldset__wrapper--group .glb-form-type--radio label {
@@ -203,7 +199,7 @@
 }
 
 
-/****** 
+/******
 /******** Label and fieldset styles
 *******/
 
@@ -218,7 +214,7 @@
 .layout-builder-configure-block .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types:hover label,
 .layout-builder-configure-block .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types:focus label,
 .layout-builder-configure-block .form-item-settings-block-form-group-user-selection-entity-and-view-mode-view-mode:hover label,
-.layout-builder-configure-block .form-item-settings-block-form-group-user-selection-entity-and-view-mode-view-mode:focus label { 
+.layout-builder-configure-block .form-item-settings-block-form-group-user-selection-entity-and-view-mode-view-mode:focus label {
   background-color: var(--color-background-hover);
   border-color: var(--color-border-hover);
 }
@@ -300,4 +296,20 @@
   background-image: url('../icons/display-type-list-view.svg');
   background-repeat: no-repeat;
   background-position: center 4rem;
+}
+
+/* Condensed */
+.views-basic--view-mode input[value="condensed"] + label {
+  background-image: url('../icons/display-type-condensed.svg');
+  background-repeat: no-repeat;
+  background-position: center 0;
+  background-size: 150%;
+}
+
+/* Directory */
+.views-basic--view-mode input[value="directory"] + label {
+  background-image: url('../icons/display-type-directory.svg');
+  background-repeat: no-repeat;
+  background-position: center 1rem;
+  background-size: 120%;
 }

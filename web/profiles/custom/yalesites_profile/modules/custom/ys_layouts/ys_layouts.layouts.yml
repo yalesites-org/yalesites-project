@@ -10,3 +10,29 @@ ys_layout_banner:
   regions:
     content:
       label: Content
+ys_layout_two_column:
+  label: 'Two Column'
+  path: layouts/two_column
+  template: layout--two-column
+  library: ys_layouts/ys_layout_two_column
+  category: 'Columns: 2'
+  default_region: content
+  icon_map:
+    - [content, sidebar]
+  regions:
+    content:
+      label: Content
+    sidebar:
+      label: Sidebar
+ys_layout_page_meta:
+  label: 'Page Meta'
+  path: layouts/page-meta
+  template: layout--page-meta
+  library: ys_layouts/ys_page_meta
+  category: 'Columns: 1'
+  default_region: page_meta
+  icon_map:
+    - [page_meta]
+  regions:
+    page_meta:
+      label: Page Meta
