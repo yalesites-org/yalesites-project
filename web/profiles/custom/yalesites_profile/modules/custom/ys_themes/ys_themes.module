@@ -164,9 +164,11 @@ function ys_themes_preprocess_views_view(&$variables) {
  * Implements hook_preprocess_page().
  */
 function ys_themes_preprocess_page(&$variables) {
-  // Sets the global theme from lever settings.
+  // Add theming attributes to each page including theme and animation style.
+  // See: component-library-twig/components/04-page-layouts/_yds-base.twig.
   $config = \Drupal::config('ys_themes.theme_settings');
   $variables['site_global__theme'] = $config->get('global_theme');
+  $variables['site_animate_components'] = $config->get('animation_style');
 
   // @see ys_themes_preprocess_block() for explanation.
   \Drupal::service('renderer')->addCacheableDependency($variables, $config);
