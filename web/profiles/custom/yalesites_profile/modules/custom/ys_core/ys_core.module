@@ -5,6 +5,7 @@
  * Contains ys_core.module functions.
  */
 
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -307,4 +308,13 @@ function ys_core_preprocess_image_widget(&$variables) {
       $variables['data'][$child] = $element[$child];
     }
   }
+}
+
+/**
+ * Implements hook_ENTITY_update().
+ *
+ * Clears the cache for rendered items on taxonomy term update.
+ */
+function ys_core_taxonomy_term_update() {
+  Cache::invalidateTags(['rendered']);
 }
