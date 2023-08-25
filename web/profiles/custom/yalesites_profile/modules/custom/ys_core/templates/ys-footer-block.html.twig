@@ -21,9 +21,11 @@
     {% endblock %}
 
     {% block site_footer__yale_logo %}
-      <a href="/">
-        {{ school_logo }}
-      </a>
+      {% if school_logo %}
+        <a href="/">
+          {{ school_logo }}
+        </a>
+      {% endif %}
     {% endblock %}
 
     {% block site_footer__content %}

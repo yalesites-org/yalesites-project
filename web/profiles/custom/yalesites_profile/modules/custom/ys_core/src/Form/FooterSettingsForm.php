@@ -243,17 +243,21 @@ class FooterSettingsForm extends ConfigFormBase {
 
     // Translate node links.
     foreach ($form_state->getValue('links_col_1') as $key => $link) {
-      $linksCol1[$key]['link_url'] = $this->translateNodeLinks($link['link_url']);
-      $linksCol1[$key]['link_title'] = $link['link_title'];
+      if ($link['link_url']) {
+        $linksCol1[$key]['link_url'] = $this->translateNodeLinks($link['link_url']);
+        $linksCol1[$key]['link_title'] = $link['link_title'];
+      }
     }
 
     foreach ($form_state->getValue('links_col_2') as $key => $link) {
-      $linksCol2[$key]['link_url'] = $this->translateNodeLinks($link['link_url']);
-      $linksCol2[$key]['link_title'] = $link['link_title'];
+      if ($link['link_url']) {
+        $linksCol2[$key]['link_url'] = $this->translateNodeLinks($link['link_url']);
+        $linksCol2[$key]['link_title'] = $link['link_title'];
+      }
     }
 
     foreach ($form_state->getValue('logos') as $key => $logo) {
-      $logoLinks[$key]['logo_url'] = $this->translateNodeLinks($logo['logo_url']);
+      $logoLinks[$key]['logo_url'] = $logo['logo_url'] ? $this->translateNodeLinks($logo['logo_url']) : NULL;
       $logoLinks[$key]['logo'] = $logo['logo'];
     }
 
@@ -343,6 +347,12 @@ class FooterSettingsForm extends ConfigFormBase {
     }
   }
 
+  /**
+   * Translate internal node links to path links.
+   *
+   * @param string $link
+   *   The path entered from the form.
+   */
   protected function translateNodeLinks($link) {
     // If link URL is an internal path, use the path alias instead.
     if (!str_starts_with($link, "http")) {
