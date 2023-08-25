@@ -6,6 +6,7 @@ use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\path_alias\AliasManager;
 use Drupal\ys_core\SocialLinksManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -36,6 +37,13 @@ class FooterSettingsForm extends ConfigFormBase {
    * @var \Drupal\ys_core\SocialLinksManager
    */
   protected $socialLinks;
+
+  /**
+   * The path alias manager.
+   *
+   * @var \Drupal\path_alias\AliasManager
+   */
+  protected $pathAliasManager;
 
   /**
    * Settings configuration form.
@@ -88,6 +96,18 @@ class FooterSettingsForm extends ConfigFormBase {
       '#type' => 'details',
       '#title' => $this->t('Social Links'),
       '#group' => 'footer_tabs',
+    ];
+
+    $form['footer_variation'] = [
+      '#type' => 'radios',
+      '#options' => [
+        'basic' => $this->t('Basic - displays only the social links.'),
+        'mega' => $this->t('Mega - displays all of the fields listed below.'),
+      ],
+      '#title' => $this->t('Footer variation'),
+      '#description' => $this->t('All variations display Yale branding, accessibility and privacy links, and copyright information.'),
+      '#default_value' => ($footerConfig->get('footer_variation')) ? $footerConfig->get('footer_variation') : 'basic',
+      '#weight' => -1,
     ];
 
     $form['footer_logos']['logos'] = [
@@ -219,16 +239,35 @@ class FooterSettingsForm extends ConfigFormBase {
     }
     $socialConfig->save();
 
+    $linksCol1 = $linksCol2 = $logoLinks = [];
+
+    // Translate node links.
+    foreach ($form_state->getValue('links_col_1') as $key => $link) {
+      $linksCol1[$key]['link_url'] = $this->translateNodeLinks($link['link_url']);
+      $linksCol1[$key]['link_title'] = $link['link_title'];
+    }
+
+    foreach ($form_state->getValue('links_col_2') as $key => $link) {
+      $linksCol2[$key]['link_url'] = $this->translateNodeLinks($link['link_url']);
+      $linksCol2[$key]['link_title'] = $link['link_title'];
+    }
+
+    foreach ($form_state->getValue('logos') as $key => $logo) {
+      $logoLinks[$key]['logo_url'] = $this->translateNodeLinks($logo['logo_url']);
+      $logoLinks[$key]['logo'] = $logo['logo'];
+    }
+
     // Footer settings config.
     $footerConfig = $this->config('ys_core.footer_settings');
 
-    $footerConfig->set('content.logos', $form_state->getValue('logos'));
+    $footerConfig->set('footer_variation', $form_state->getValue('footer_variation'));
+    $footerConfig->set('content.logos', $logoLinks);
     $footerConfig->set('content.school_logo', $form_state->getValue('school_logo'));
     $footerConfig->set('content.text', $form_state->getValue('footer_text'));
     $footerConfig->set('links.links_col_1_heading', $form_state->getValue('links_col_1_heading'));
     $footerConfig->set('links.links_col_2_heading', $form_state->getValue('links_col_2_heading'));
-    $footerConfig->set('links.links_col_1', $form_state->getValue('links_col_1'));
-    $footerConfig->set('links.links_col_2', $form_state->getValue('links_col_2'));
+    $footerConfig->set('links.links_col_1', $linksCol1);
+    $footerConfig->set('links.links_col_2', $linksCol2);
 
     $footerConfig->save();
 
@@ -253,7 +292,8 @@ class FooterSettingsForm extends ConfigFormBase {
     return new static(
       $container->get('config.factory'),
       $container->get('cache.render'),
-      $container->get('ys_core.social_links_manager')
+      $container->get('ys_core.social_links_manager'),
+      $container->get('path_alias.manager'),
     );
   }
 
@@ -266,11 +306,19 @@ class FooterSettingsForm extends ConfigFormBase {
    *   The Cache backend interface.
    * @param \Drupal\ys_core\SocialLinksManager $social_links_manager
    *   The Yale social media links management service.
+   * @param \Drupal\path_alias\AliasManager $path_alias_manager
+   *   The Path Alias Manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, CacheBackendInterface $cache_render, SocialLinksManager $social_links_manager) {
+  public function __construct(
+    ConfigFactoryInterface $config_factory,
+    CacheBackendInterface $cache_render,
+    SocialLinksManager $social_links_manager,
+    AliasManager $path_alias_manager,
+    ) {
     parent::__construct($config_factory);
     $this->cacheRender = $cache_render;
     $this->socialLinks = $social_links_manager;
+    $this->pathAliasManager = $path_alias_manager;
   }
 
   /**
@@ -292,6 +340,14 @@ class FooterSettingsForm extends ConfigFormBase {
         }
 
       }
+    }
+  }
+
+  protected function translateNodeLinks($link) {
+    // If link URL is an internal path, use the path alias instead.
+    if (!str_starts_with($link, "http")) {
+      $linkPath = $this->pathAliasManager->getAliasByPath($link);
+      return $linkPath;
     }
   }
 

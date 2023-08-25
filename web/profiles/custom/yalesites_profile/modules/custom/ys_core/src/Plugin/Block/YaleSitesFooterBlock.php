@@ -76,6 +76,7 @@ class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginIn
    * {@inheritdoc}
    */
   public function build() {
+    $fileEntity = $this->entityTypeManager->getStorage('file');
     $footerLogos = [];
 
     foreach ($this->footerSettings->get('content.logos') as $key => $logoData) {
@@ -84,18 +85,22 @@ class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginIn
       $footerLogos[$key]['url'] = $logoData['logo_url'];
     }
 
-    $schoolLogoId = $this->footerSettings->get('content.school_logo');
-    $schoolLogo = [];
+    $schoolLogoFileUri = NULL;
 
-    if ($schoolLogoId) {
+    if ($schoolLogoId = $this->footerSettings->get('content.school_logo')) {
       $schoolLogoMedia = $this->entityTypeManager->getStorage('media')->load($schoolLogoId);
-      $schoolLogo = $this->entityTypeManager->getViewBuilder('media')->view($schoolLogoMedia, 'image_content_width');
+      $schoolLogoFileUri = $fileEntity->load($schoolLogoMedia->field_media_image->target_id)->getFileUri();
     }
 
     return [
       '#theme' => 'ys_footer_block',
+      '#footer_variation' => $this->footerSettings->get('footer_variation'),
       '#footer_logos' => $footerLogos,
-      '#school_logo' => $schoolLogo,
+      // '#school_logo' => [
+      //   '#type' => 'responsive_image',
+      //   '#responsive_image_style_id' => 'image_content_width',
+      //   //'#uri' => $schoolLogoFileUri,
+      // ],
       '#footer_text' => [
         '#type' => 'processed_text',
         '#text' => $this->footerSettings->get('content.text')['value'],
