@@ -7,8 +7,10 @@ dependencies:
     - field.field.block_content.custom_cards.field_cards
     - field.field.block_content.custom_cards.field_heading
     - field.field.block_content.custom_cards.field_instructions
+    - field.field.block_content.custom_cards.field_style_motion
   module:
     - entity_reference_revisions
+    - options
     - text
 id: block_content.custom_cards.default
 targetEntityType: block_content
@@ -30,6 +32,13 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 0
+    region: content
+  field_style_motion:
+    type: list_key
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 2
     region: content
 hidden:
   field_instructions: true

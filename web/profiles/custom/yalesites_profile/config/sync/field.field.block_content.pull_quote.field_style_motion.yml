@@ -1,0 +1,21 @@
+uuid: 4c77fa8c-5829-49ce-8dd7-672ebfee7d10
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.pull_quote
+    - field.storage.block_content.field_style_motion
+  module:
+    - options
+id: block_content.pull_quote.field_style_motion
+field_name: field_style_motion
+entity_type: block_content
+bundle: pull_quote
+label: Animation
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_string

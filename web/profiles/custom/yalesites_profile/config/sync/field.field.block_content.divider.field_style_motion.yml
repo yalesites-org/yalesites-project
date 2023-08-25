@@ -1,0 +1,21 @@
+uuid: b4c998d1-0283-4a9a-bc02-ad9aed588a71
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.divider
+    - field.storage.block_content.field_style_motion
+  module:
+    - options
+id: block_content.divider.field_style_motion
+field_name: field_style_motion
+entity_type: block_content
+bundle: divider
+label: Animation
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_string

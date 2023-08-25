@@ -1,0 +1,21 @@
+uuid: ca2885dc-daa2-4512-ba90-11885ade9ac7
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.custom_cards
+    - field.storage.block_content.field_style_motion
+  module:
+    - options
+id: block_content.custom_cards.field_style_motion
+field_name: field_style_motion
+entity_type: block_content
+bundle: custom_cards
+label: Animation
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_string
