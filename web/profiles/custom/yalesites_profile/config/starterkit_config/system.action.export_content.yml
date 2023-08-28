@@ -1,0 +1,13 @@
+uuid: 7efda88d-0650-4dcb-9207-4eb705eecfaa
+langcode: en
+status: true
+dependencies:
+  module:
+    - single_content_sync
+id: export_content
+label: 'Export content'
+type: node
+plugin: content_bulk_export
+configuration:
+  assets: '1'
+  translation: '1'
