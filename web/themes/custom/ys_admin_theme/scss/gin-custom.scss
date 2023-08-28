@@ -195,6 +195,12 @@
   background: var(--dark-theme-gray);
 }
 
+/* checkbox BG and spacing */ 
+.gin--dark-mode .js-form-type-checkbox.form-type--checkbox {
+  padding: 0.5rem;
+  background-color: var(--darkest-gray);
+}
+
 /* chosen overrides */
 .gin--dark-mode .chosen-container .chosen-results li.highlighted {
   background-color: var(--gin-color-primary);
@@ -205,10 +211,10 @@
   color: var(--wool);
 }
 
-.gin--dark-mode .chosen-search-input,
-.gin--dark-mode .chosen-search-input::placeholder {
-  color: var(--dark-theme-gray) !important;
-}
+// .gin--dark-mode .chosen-search-input,
+// .gin--dark-mode .chosen-search-input::placeholder {
+//   color: var(--dark-theme-gray) !important;
+// }
 
 /* remove media button */
 .gin--dark-mode .media-library-add-form__remove-button {
@@ -284,6 +290,30 @@
 /* remove collapsed/truncated text gradient overlay */
 .gin--dark-mode.js .paragraphs-collapsed-description::after {
   content: unset;
+}
+
+/* Media library with PNGs */
+.gin--dark-mode .glb-media-library-item__preview img[src*="png"] {
+  background-color: var(--wool);
+} 
+
+/* Embed component */
+.gin--dark-mode .ui-dialog .ui-widget-content.ui-dialog-content h2 {
+  color: var(--wool);
+}
+
+.gin--dark-mode .ui-dialog .ui-widget-content.ui-dialog-content .js-form-wrapper.form-wrapper {
+  padding: 1rem;
+}
+
+.gin--dark-mode .ui-dialog .ui-widget-content.ui-dialog-content .js-form-wrapper.form-wrapper[open] {
+  background-color: var(--darkest-gray);
+  word-break: break-all;
+}
+
+/* Sidebar titlebars */
+.gin--dark-mode .ui-dialog-off-canvas .ui-dialog-titlebar {
+  background-color: var(--darkest-gray) !important;
 }
 
 /* stylelint-enable */
