@@ -140,13 +140,17 @@ class FooterSettingsForm extends ConfigFormBase {
       '#title' => $this->t('School Logo'),
     ];
 
+    $form['footer_logos']['school_logo_group']['aria-description'] = [
+      '#type' => 'markup',
+      '#markup' => "<div id='edit-school-logo--description'>A horizontal logotype that is placed below the 4 logos on the left side of the footer.</div>",
+    ];
+
     $form['footer_logos']['school_logo_group']['school_logo'] = [
       '#type' => 'media_library',
       '#title' => $this->t('School logo'),
       '#allowed_bundles' => ['image'],
       '#required' => FALSE,
       '#default_value' => ($footerConfig->get('content.school_logo')) ? $footerConfig->get('content.school_logo') : NULL,
-      '#description' => $this->t('A horizontal logotype that is placed below the 4 logos on the left side of the footer.'),
     ];
 
     $form['footer_logos']['school_logo_group']['school_logo_url'] = [
