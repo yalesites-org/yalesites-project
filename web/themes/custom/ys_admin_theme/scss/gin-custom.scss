@@ -41,10 +41,11 @@
 #views-entity-list, 
 .module-filter-update-status-form .table-filter, 
 .admin.my-workbench {
-  background-color: var(--darkest-gray) !important;
+  background-color: var(--dark-theme-gray) !important;
 }
 
 // remove box-shadows
+.gin--dark-mode .glb-claro-details__summary::after,
 .gin--dark-mode .messages,
 .gin--dark-mode .gin-layer-wrapper, 
 .gin--dark-mode .gin-layer-wrapper-shadow, 
@@ -80,6 +81,18 @@
 .gin--dark-mode .form-actions .layout-builder__link--add, 
 .gin--dark-mode .glb-action-link--icon-trash.glb-action-link {
   box-shadow: unset !important;
+}
+
+/* Target accordions and give them a darker background */
+.gin--dark-mode .claro-details__summary,
+.gin--dark-mode .glb-claro-details__summary {
+  background-color: var(--darkest-gray) !important;
+}
+
+/* views forms */
+.gin--dark-mode .views-ui-admin-settings-basic,
+.gin--dark-mode .views-ui-admin-settings-advanced {
+  background-color: var(--darkest-gray) !important;
 }
 
 .gin--dark-mode .gin-secondary-toolbar.layout-container {
@@ -156,8 +169,9 @@
 }
 
 /* forms */
-.gin--dark-mode .form-element {
-  background-color: var(--dark-theme-gray) !important;
+.gin--dark-mode .form-element,
+.gin--dark-mode .glb-form-element {
+  background-color: var(--darkest-gray) !important;
 }
 
 ::placeholder {
@@ -173,8 +187,18 @@
   background-color: var(--dark-theme-gray) !important;
 }
 
+.gin--dark-mode table th {
+  background: var(--darkest-gray);
+}
+
 [data-drupal-selector="edit-enable-darkmode"] .form-radios input:checked + .form-item__label {
   background: var(--dark-theme-gray);
+}
+
+/* checkbox BG and spacing */ 
+.gin--dark-mode .js-form-type-checkbox.form-type--checkbox {
+  padding: 0.5rem;
+  background-color: var(--darkest-gray);
 }
 
 /* chosen overrides */
@@ -187,9 +211,31 @@
   color: var(--wool);
 }
 
-.gin--dark-mode .chosen-search-input,
-.gin--dark-mode .chosen-search-input::placeholder {
-  color: var(--dark-theme-gray) !important;
+// .gin--dark-mode .chosen-search-input,
+// .gin--dark-mode .chosen-search-input::placeholder {
+//   color: var(--dark-theme-gray) !important;
+// }
+
+/* remove media button */
+.gin--dark-mode .media-library-add-form__remove-button {
+  background-color: var(--robin-egg);
+  color: var(--darkest-gray);
+}
+
+// Autocomplete
+
+.gin--dark-mode .ui-autocomplete .ui-menu-item-wrapper {
+  color: var(--wool);
+}
+
+.gin--dark-mode .ui-autocomplete .ui-menu-item-wrapper.ui-state-active {
+  background-color: var(--dark-theme-gray);
+  color: var(--wool);
+}
+
+// fieldsets
+.gin--dark-mode fieldset:not(.fieldgroup) {
+  background-color: var(--darkest-gray);
 }
 
 /* upgrade status on /admin/reports/upgrade-status */
@@ -225,6 +271,49 @@
 .upgrade-status-summary td.status-info-unchecked {
   background-color: var(--gin-color-primary);
   color: var(--darkest-gray);
+}
+
+// Match profile display name field to the regular fields as this one "acts"
+// like a regular field as we have auto-entity label enabled for this field.
+.gin--edit-form .node-profile-form .field--name-title .form-element,
+.gin--edit-form .node-profile-edit-form .field--name-title .form-element {
+  font-size: 1rem;
+  font-weight: 400;
+  width: 484px;
+}
+
+/* add space between accordion action buttons */
+.gin--dark-mode .paragraphs-actions .paragraphs-icon-button  + .paragraphs-dropdown {
+  margin-left: 1rem;
+}
+
+/* remove collapsed/truncated text gradient overlay */
+.gin--dark-mode.js .paragraphs-collapsed-description::after {
+  content: unset;
+}
+
+/* Media library with PNGs */
+.gin--dark-mode .glb-media-library-item__preview img[src*="png"] {
+  background-color: var(--wool);
+} 
+
+/* Embed component */
+.gin--dark-mode .ui-dialog .ui-widget-content.ui-dialog-content h2 {
+  color: var(--wool);
+}
+
+.gin--dark-mode .ui-dialog .ui-widget-content.ui-dialog-content .js-form-wrapper.form-wrapper {
+  padding: 1rem;
+}
+
+.gin--dark-mode .ui-dialog .ui-widget-content.ui-dialog-content .js-form-wrapper.form-wrapper[open] {
+  background-color: var(--darkest-gray);
+  word-break: break-all;
+}
+
+/* Sidebar titlebars */
+.gin--dark-mode .ui-dialog-off-canvas .ui-dialog-titlebar {
+  background-color: var(--darkest-gray) !important;
 }
 
 /* stylelint-enable */
