@@ -135,13 +135,29 @@ class FooterSettingsForm extends ConfigFormBase {
 
     ];
 
-    $form['footer_logos']['school_logo'] = [
+    $form['footer_logos']['school_logo_group'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('School Logo'),
+    ];
+
+    $form['footer_logos']['school_logo_group']['school_logo'] = [
       '#type' => 'media_library',
       '#title' => $this->t('School logo'),
       '#allowed_bundles' => ['image'],
       '#required' => FALSE,
       '#default_value' => ($footerConfig->get('content.school_logo')) ? $footerConfig->get('content.school_logo') : NULL,
       '#description' => $this->t('A horizontal logotype that is placed below the 4 logos on the left side of the footer.'),
+    ];
+
+    $form['footer_logos']['school_logo_group']['school_logo_url'] = [
+      '#type' => 'linkit',
+      '#title' => $this->t('School logo URL'),
+      '#description' => $this->t('Type the URL or autocomplete for internal paths.'),
+      '#autocomplete_route_name' => 'linkit.autocomplete',
+      '#autocomplete_route_parameters' => [
+        'linkit_profile_id' => 'default',
+      ],
+      '#default_value' => ($footerConfig->get('content.school_logo_url')) ? $footerConfig->get('content.school_logo_url') : '/',
     ];
 
     $form['footer_content']['footer_text'] = [
@@ -240,6 +256,7 @@ class FooterSettingsForm extends ConfigFormBase {
     $socialConfig->save();
 
     $linksCol1 = $linksCol2 = $logoLinks = [];
+    $schoolLogoLink = NULL;
 
     // Translate node links.
     foreach ($form_state->getValue('links_col_1') as $key => $link) {
@@ -261,12 +278,17 @@ class FooterSettingsForm extends ConfigFormBase {
       $logoLinks[$key]['logo'] = $logo['logo'];
     }
 
+    if ($schoolLogoLink = $form_state->getValue('school_logo_url')) {
+      $schoolLogoLink = $this->translateNodeLinks($schoolLogoLink);
+    }
+
     // Footer settings config.
     $footerConfig = $this->config('ys_core.footer_settings');
 
     $footerConfig->set('footer_variation', $form_state->getValue('footer_variation'));
     $footerConfig->set('content.logos', $logoLinks);
     $footerConfig->set('content.school_logo', $form_state->getValue('school_logo'));
+    $footerConfig->set('content.school_logo_url', $schoolLogoLink);
     $footerConfig->set('content.text', $form_state->getValue('footer_text'));
     $footerConfig->set('links.links_col_1_heading', $form_state->getValue('links_col_1_heading'));
     $footerConfig->set('links.links_col_2_heading', $form_state->getValue('links_col_2_heading'));

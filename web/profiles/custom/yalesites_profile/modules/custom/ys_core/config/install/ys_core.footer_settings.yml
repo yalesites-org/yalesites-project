@@ -2,6 +2,7 @@ footer_variation: 'basic'
 content:
   logos: []
   school_logo: ''
+  school_logo_url: ''
   text: []
 links:
   links_col_1_heading: ''

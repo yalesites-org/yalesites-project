@@ -111,6 +111,7 @@ class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginIn
       '#footer_variation' => $this->footerSettings->get('footer_variation'),
       '#footer_logos' => $footerLogosRender,
       '#school_logo' => $schoolLogoRender,
+      '#school_logo_url' => $this->footerSettings->get('content.school_logo_url'),
       '#footer_text' => [
         '#type' => 'processed_text',
         '#text' => $this->footerSettings->get('content.text')['value'] ?? NULL,

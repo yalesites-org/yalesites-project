@@ -59,6 +59,7 @@ function ys_core_theme($existing, $type, $theme, $path): array {
         'footer_variation' => 'basic',
         'footer_logos' => [],
         'school_logo' => NULL,
+        'school_logo_url' => '/',
         'footer_text' => NULL,
         'footer_links_col_1_heading' => NULL,
         'footer_links_col_2_heading' => NULL,

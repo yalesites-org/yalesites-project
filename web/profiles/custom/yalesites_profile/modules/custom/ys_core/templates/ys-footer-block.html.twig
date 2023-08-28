@@ -1,5 +1,6 @@
 {# Set variable for all the links so we can reference them in a block below  #}
 {% set link_group__base_class = 'link-group' %}
+{% set school_logo_url = school_logo_url|default('/') %}
 
 {#TODO: set site_footer__variation to getThemeSetting('footer_variation')#}
 {% embed "@organisms/site-footer/yds-site-footer.twig" with {
@@ -22,7 +23,7 @@
 
     {% block site_footer__yale_logo %}
       {% if school_logo %}
-        <a href="/">
+        <a href="{{ school_logo_url }}">
           {{ school_logo }}
         </a>
       {% endif %}
