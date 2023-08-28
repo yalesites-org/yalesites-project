@@ -80,16 +80,18 @@ class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginIn
     $footerLogosRender = $schoolLogoRender = [];
 
     // Responsive image render array for logos.
-    foreach ($this->footerSettings->get('content.logos') as $key => $logoData) {
-      if ($logoData['logo']) {
-        $footerLogoMedia = $this->entityTypeManager->getStorage('media')->load($logoData['logo']);
-        $footerLogoFileUri = $fileEntity->load($footerLogoMedia->field_media_image->target_id)->getFileUri();
-        $footerLogosRender[$key]['url'] = $logoData['logo_url'] ?? NULL;
-        $footerLogosRender[$key]['logo'] = [
-          '#type' => 'responsive_image',
-          '#responsive_image_style_id' => 'image_logos',
-          '#uri' => $footerLogoFileUri,
-        ];
+    if ($footerLogosConfig = $this->footerSettings->get('content.logos')) {
+      foreach ($footerLogosConfig as $key => $logoData) {
+        if ($logoData['logo']) {
+          $footerLogoMedia = $this->entityTypeManager->getStorage('media')->load($logoData['logo']);
+          $footerLogoFileUri = $fileEntity->load($footerLogoMedia->field_media_image->target_id)->getFileUri();
+          $footerLogosRender[$key]['url'] = $logoData['logo_url'] ?? NULL;
+          $footerLogosRender[$key]['logo'] = [
+            '#type' => 'responsive_image',
+            '#responsive_image_style_id' => 'image_logos',
+            '#uri' => $footerLogoFileUri,
+          ];
+        }
       }
     }
 
@@ -111,7 +113,7 @@ class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginIn
       '#school_logo' => $schoolLogoRender,
       '#footer_text' => [
         '#type' => 'processed_text',
-        '#text' => $this->footerSettings->get('content.text')['value'],
+        '#text' => $this->footerSettings->get('content.text')['value'] ?? NULL,
         '#format' => 'restricted_html',
       ],
       '#footer_links_col_1_heading' => $this->footerSettings->get('links.links_col_1_heading'),
