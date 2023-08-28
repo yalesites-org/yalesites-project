@@ -90,6 +90,9 @@ class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginIn
             '#type' => 'responsive_image',
             '#responsive_image_style_id' => 'image_logos',
             '#uri' => $footerLogoFileUri,
+            '#attributes' => [
+              'alt' => $footerLogoMedia->get('field_media_image')->first()->get('alt')->getValue(),
+            ],
           ];
         }
       }
@@ -103,6 +106,9 @@ class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginIn
         '#type' => 'responsive_image',
         '#responsive_image_style_id' => 'image_content_width',
         '#uri' => $schoolLogoFileUri,
+        '#attributes' => [
+          'alt' => $schoolLogoMedia->get('field_media_image')->first()->get('alt')->getValue(),
+        ],
       ];
     }
 
