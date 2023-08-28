@@ -316,4 +316,11 @@
   background-color: var(--darkest-gray) !important;
 }
 
+/* Legend */
+.gin--dark-mode .fieldset-legend.fieldset__label {
+  background-color: var(--darkest-gray);
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+}
+
 /* stylelint-enable */
