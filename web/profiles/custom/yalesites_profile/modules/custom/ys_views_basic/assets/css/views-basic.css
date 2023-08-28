@@ -147,6 +147,14 @@
   height: 150px;
 }
 
+/* while other items look great, the term-operators text was getting cut off
+ * so we need to adjust the label width and height for the term operators
+ */
+#drupal-off-canvas .grouped-items .fieldset--group .fieldset__wrapper--group .glb-form-type--radio input.term-operator-item + label {
+  width: 130px !important;
+  height: 150px !important;
+}
+
 /* second column */
 #drupal-off-canvas .grouped-items .fieldset--group.views-basic--view-mode .fieldset__wrapper--group .glb-form-type--radio label {
   width: 175px;
