@@ -65,7 +65,7 @@ function ys_core_theme($existing, $type, $theme, $path): array {
         'footer_links_col_2_heading' => NULL,
         'footer_links_col_1' => [],
         'footer_links_col_2' => [],
-      ]
+      ],
     ],
   ];
 }
