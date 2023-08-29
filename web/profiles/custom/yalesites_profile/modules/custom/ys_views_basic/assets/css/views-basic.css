@@ -4,13 +4,13 @@
 
 /* set variables */
 .layout-builder-configure-block {
-  --color-border: var(--color-gray-500);
+  --color-border: var(--wool);
   --color-border-lightest: var(--color-basic-white);
   --color-link-hover: hsl(210, 100%, 21%);
-  --color-link-border: hsl(213, 66%, 45%);
+  --color-link-border: #187e9b;
   --color-background-primary: var(--color-basic-white);
-  --color-background-hover: var(--wool);
-  --color-border-hover: hsl(213, 66%, 45%);
+  --color-background-hover: var(--dark-theme-gray);
+  --color-border-hover: var(--darkest-gray);
   --color-text-lighter: #2D424D;
   --color-text-primary: var(--color-gray-800);
 }
@@ -69,7 +69,7 @@
   aspect-ratio: 2/1;
   display: block !important;
   text-align: left;
-  background: var(--color-basic-white);
+  background: var(--dark-theme-gray);
   border: 2px solid var(--color-border);
   padding: var(--size-spacing-4) var(--size-spacing-5);
   color: var(--color-text-primary);
@@ -145,14 +145,6 @@
 #drupal-off-canvas .grouped-items .fieldset--group .fieldset__wrapper--group .glb-form-type--radio label {
   width: 110px;
   height: 150px;
-}
-
-/* while other items look great, the term-operators text was getting cut off
- * so we need to adjust the label width and height for the term operators
- */
-#drupal-off-canvas .grouped-items .fieldset--group .fieldset__wrapper--group .glb-form-type--radio input.term-operator-item + label {
-  width: 130px !important;
-  height: 150px !important;
 }
 
 /* second column */
@@ -320,4 +312,34 @@
   background-repeat: no-repeat;
   background-position: center 1rem;
   background-size: 120%;
+}
+
+/*
+/***** Event time period:
+*/
+/* this is temporary until we have icons */
+
+[data-drupal-selector="edit-settings-block-form-group-user-selection-entity-specific"] .fieldset__wrapper.fieldset__wrapper--group {
+  display: flex;
+}
+
+[data-drupal-selector="edit-settings-block-form-group-user-selection-entity-specific"] .glb-form-radios.form-boolean-group {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  gap: 1rem;
+}
+
+[data-drupal-selector="edit-settings-block-form-group-user-selection-entity-specific"] .glb-form-type--radio label {
+  aspect-ratio: unset;
+  min-height: 4rem;
+}
+
+.form-item-settings-block-form-group-user-selection-entity-specific-event-time-period + label {
+  background-color: var(--wool);
+}
+
+.form-item-settings-block-form-group-user-selection-entity-specific-event-time-period input[checked="checked"] + label {
+  background-color: var(--color-text-primary);
+  color: var(--color-background-primary);
 }
