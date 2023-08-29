@@ -103,11 +103,34 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
     ];
   }
 
-  // Alter description/placeholder to be used for new first level heading link.
+  // Alter description/placeholder for new first level heading link.
+  $topLevelTitle = "Top level main menu link CTA";
+  $topLevelDesc = "Top level links in the main menu will use this as the call to action text on the right side of the mega menu.";
+  $topLevelPlaceholder = "Explore all";
+  $replacements = [
+    '@title' => $topLevelTitle,
+    '@desc' => $topLevelDesc,
+    '@placeholder' => $topLevelPlaceholder,
+  ];
+
   if ($form_id == 'menu_link_content_menu_link_content_form') {
-    $form['description']['widget'][0]['value']['#description'] = t('Top level main menu links will use this as the CTA text on the left side.');
-    $form['description']['widget'][0]['value']['#placeholder'] = t('Explore all');
+    $form['description']['widget'][0]['value']['#title'] = t('@title', $replacements);
+    $form['description']['widget'][0]['value']['#description'] = t('@desc', $replacements);
+    $form['description']['widget'][0]['value']['#placeholder'] = t('@placeholder', $replacements);
   }
+
+  $alterDescriptionNodeForms = [
+    'node_page_edit_form',
+    'node_page_add_form',
+  ];
+
+  if (in_array($form_id, $alterDescriptionNodeForms)) {
+    $form['menu']['link']['description']['#title'] = t('@title', $replacements);
+    $form['menu']['link']['description']['#description'] = t('@desc', $replacements);
+    $form['menu']['link']['description']['#placeholder'] = t('@placeholder', $replacements);
+  }
+  // End alter description/placeholder for first level heading link.
+
 }
 
 /**
