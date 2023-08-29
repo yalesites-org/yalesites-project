@@ -263,6 +263,16 @@ class FooterSettingsForm extends ConfigFormBase {
     $schoolLogoLink = NULL;
 
     // Translate node links.
+    foreach ($form_state->getValue('logos') as $key => $logo) {
+
+      $logoLinks[$key]['logo_url'] = $logo['logo_url'] ? $this->translateNodeLinks($logo['logo_url']) : NULL;
+      $logoLinks[$key]['logo'] = $logo['logo'];
+    }
+
+    if ($schoolLogoLink = $form_state->getValue('school_logo_url')) {
+      $schoolLogoLink = $this->translateNodeLinks($schoolLogoLink);
+    }
+
     foreach ($form_state->getValue('links_col_1') as $key => $link) {
       if ($link['link_url']) {
         $linksCol1[$key]['link_url'] = $this->translateNodeLinks($link['link_url']);
@@ -275,15 +285,6 @@ class FooterSettingsForm extends ConfigFormBase {
         $linksCol2[$key]['link_url'] = $this->translateNodeLinks($link['link_url']);
         $linksCol2[$key]['link_title'] = $link['link_title'];
       }
-    }
-
-    foreach ($form_state->getValue('logos') as $key => $logo) {
-      $logoLinks[$key]['logo_url'] = $logo['logo_url'] ? $this->translateNodeLinks($logo['logo_url']) : NULL;
-      $logoLinks[$key]['logo'] = $logo['logo'];
-    }
-
-    if ($schoolLogoLink = $form_state->getValue('school_logo_url')) {
-      $schoolLogoLink = $this->translateNodeLinks($schoolLogoLink);
     }
 
     // Footer settings config.
@@ -381,10 +382,8 @@ class FooterSettingsForm extends ConfigFormBase {
    */
   protected function translateNodeLinks($link) {
     // If link URL is an internal path, use the path alias instead.
-    if (!str_starts_with($link, "http")) {
-      $linkPath = $this->pathAliasManager->getAliasByPath($link);
-      return $linkPath;
-    }
+    $link = (str_starts_with($link, "/node")) ? $this->pathAliasManager->getAliasByPath($link) : $link;
+    return $link;
   }
 
 }
