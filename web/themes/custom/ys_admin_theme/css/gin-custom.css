@@ -294,6 +294,14 @@
   background-color: var(--darkest-gray) !important;
 }
 
+.gin--dark-mode .action-link--icon-trash.action-link--danger {
+  background-color: var(--darkest-gray) !important;
+}
+
+.gin--dark-mode .action-link--icon-trash.action-link--danger::before {
+  background: var(--gin-color-danger) !important;
+}
+
 /* stylelint-enable */
 
 /*# sourceMappingURL=gin-custom.css.map */
