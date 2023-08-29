@@ -18,747 +18,256 @@
   color: var(--wool) !important;
 }
 
-.block-help-block {
+// page title should be light because we're on a dark background.
+.region-sticky__items .block-page-title-block .page-title {
   color: var(--wool);
 }
 
-[data-drupal-selector="edit-enable-darkmode"] .form-radios input:checked + .form-item__label,
-[data-drupal-selector="edit-enable-darkmode"] .form-radios .form-item__label:hover,
-[data-drupal-selector="edit-enable-darkmode"] .form-radios .form-item__label:focus {
-  color: var(--dark-theme-gray-hover) !important;
-}
-
-.gin--edit-form
-  .page-wrapper__node-edit-form
-  .layout-region-node-secondary
-  .entity-meta__title {
-  font-size: var(--gin-font-size-h3);
-  font-weight: 500;
-}
-
-.gin--edit-form
-  .page-wrapper__node-edit-form
-  .layout-region-node-secondary
-  .entity-meta {
-  [open] {
-    border-left: 3px solid var(--gin-color-primary);
-  }
-}
-
-.gin--edit-form .page-wrapper__node-edit-form .layout-region-node-secondary .entity-meta__title,
-.gin--edit-form .page-wrapper__node-edit-form .layout-region-node-secondary .entity-meta__header,
-.entity-meta__header .form-type--item .form-item__label {
-  color: var(--wool);
-}
-
-.gin-secondary-toolbar {
-  margin: 0 !important;
-  padding-inline: 3rem !important;
-}
-
-.gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab .toolbar-tray a:hover,
-.gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab .toolbar-tray a:active {
+// set select input background color so the text is legible.
+.gin--dark-mode .form-element--type-select {  
   background-color: var(--dark-theme-gray);
 }
 
-.gin-secondary-toolbar.layout-container {
-  background-color: var(--gin-bg-layer);
-}
-
-.page-title {
-  color: var(--wool) !important;
-}
-// sticky header title
-
-.region-sticky--is-sticky {
-  background-color: rgba(var(--dark-theme-gray-rgb), 0.8) !important;
-}
-
-.form-item__description, .fieldset__description {
-  color: var(--dark-theme-gray) !important;
-}
-
-fieldset:not(.fieldgroup) {
-  color: var(--dark-theme-gray) !important;
-}
-
-
-:not(.form-checkboxes):not(.claro-details__content--accordion-item):not(.field--name-field-login-required):not(.field--name-sticky):not(td):not(.tabledrag-cell-content__item):not(.media-library-item__click-to-select-checkbox):not(.field-content):not(.views-ui-admin-settings-basic):not(.claro-details__wrapper.details-wrapper):not(#edit-options) > .form-type--checkbox label {
-  color: var(--wool) !important;
-}
-
-.layout-region-node-secondary :not(.form-checkboxes):not(td):not(.tabledrag-cell-content__item):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .form-type--checkbox label {
-  color: var(--dark-theme-gray) !important;
-}
-
-
-// media library
-// https://yalesites-platform.lndo.site/admin/content/media-grid
-
-.media-library-widget-empty-text {
-  color: var(--dark-theme-gray) !important;
-}
-
-#views-form-media-library-page .media-library-select-all,
-#drupal-modal .media-library-select-all {
-  color: var(--wool) !important;
-}
-
-.media-library-views-form__rows .media-library-item__name,
-#drupal-modal .media-library-item__name {
-  color: var(--wool) !important;
-}
-
-.media-library-views-form .fieldset__label,
-.media-library-views-form .fieldset__label--group,
-.media-library-views-form .form-item__label {
-  color: var(--wool) !important;
-}
-
-
-// admin links
-
-a.menu-item__link {
-  color: var(--mediterranean-blue) !important;
-}
-.admin-item .admin-item__link:hover,
-.admin-item .admin-item__link:focus {
-  background: rgba(var(--dark-theme-gray-lightest-rgb), 0.25) !important;
-}
-
-.admin-item .admin-item__link::before {
-  background-color: var(--dark-theme-gray-hover) !important;
-}
-
-.admin-item .admin-item__title {
-  color: var(--dark-theme-gray);
-}
-
-.admin-item__description {
-  color: var(--dark-theme-gray) !important;
-}
-
-.admin-item .admin-item__link:hover ~ .admin-item__title,
-.admin-item .admin-item__link:hover ~ .admin-item__description,
-.admin-item .admin-item__link:focus ~ .admin-item__title,
-.admin-item .admin-item__link:focus ~ .admin-item__description {
-  color: var(--dark-theme-gray-hover) !important;
-}
-
-.claro-details__description {
-  color: var(--dark-theme-gray) !important;
-}
-
-/* Cards */
-.card__content-wrapper {
-  background-color: var(--wool) !important;
-}
-
-/* Modal */
-.ui-widget-overlay {
-  background: var(--gin-color-primary) !important;
-}
-
-.claro-details__wrapper--accordion-item {
-  background-color: white;
-}
-
-[dir="ltr"]
-  [open]
-  > .claro-details__summary--accordion-item:not(:focus):not(:active)::after {
-  content: none;
-}
-
-
-.panel__title, .system-status-general-info__header,
-.system-status-report__requirements-group > h3,
-.system-themes-list__header {
-  background-color: var(--dark-theme-gray) !important;
-}
-
-.system-status-counter, .upgrade-status-counter,
-.system-status-counter__title-count, .upgrade-status-counter__title-count {
-  color: var(--wool) !important;
-}
-
-.system-status-general-info__item-icon::before {
-  background-color: var(--dark-theme-gray) !important;
-}
-
-.update-settings a,
-.gin-layer-wrapper table td a,
-.system-status-general-info__item.card a,
-.region-content .layout-column a,
-.update-manager-update-form a {
-  color: var(--mediterranean-blue) !important;
-}
-
-.update-settings a:hover,
-.update-settings a:focus,
-.gin-layer-wrapper table td a:hover,
-.gin-layer-wrapper table td a:focus,
-.system-status-general-info__item.card a:hover,
-.system-status-general-info__item.card a:focus,
-.region-content .layout-column a:hover
-.region-content .layout-column a:focus,
-.update-manager-update-form a:hover,
-.update-manager-update-form a:focus {
-  text-decoration: underline;
-}
-
-
-.gin-layer-wrapper,
-.block-system-main-block>form,
-.views-exposed-form.views-exposed-form,
-.views-edit-view,
-.views-preview-wrapper,
-#views-entity-list,
-.module-filter-update-status-form .table-filter,
-.admin.my-workbench {
-  background: var(--wool) !important;
-}
-
-.views-ui-admin-settings-basic .form-type--checkbox .form-item__label,
-.fieldset__label,
-.fieldset__label--group,
-.form-item__label {
-  color: var(--dark-theme-gray-text-dark);
-}
-
-.views-listing-table a,
-.module-list__module a,
-.update-manager-install-form a {
-  color: var(--mediterranean-blue) !important;
-}
-
-
-.views-listing-table thead th,
-.system-modules-uninstall thead th {
-  color: var(--wool);
-}
-
-.tabs__link,
-.claro-details__summary,
-.horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button a {
-  color: var(--wool) !important;
-}
-
-.update-manager-install-form {
-  color: var(--dark-theme-gray);
-}
-
-
-// modules
-
-#system-modules .claro-details__summary {
-  color: var(--dark-theme-gray-text-dark) !important;
-}
-
-#system-modules .claro-details__summary:hover,
-#system-modules .claro-details__summary:focus,
-#system-modules .claro-details[open]>.claro-details__summary,
-#system-modules .claro-details[open]>.claro-details__summary[aria-expanded="true"] {
-  color: var(--dark-theme-gray-text-light) !important;
-  background-color: var(--dark-theme-gray-text-dark) !important;
-}
-
-#system-modules .claro-details[open]>.claro-details__summary[aria-expanded="false"]::before,
-#system-modules .claro-details>.claro-details__summary[aria-expanded="false"]:focus::before,
-#system-modules .claro-details[open]>.claro-details__summary::before {
-  background-color: var(--dark-theme-gray-text-light) !important;
-}
-
-.claro-details__wrapper.module-details__wrapper {
-  padding-top: 1rem;
-}
-
-
-// unwrapped content
-[data-gin-accent="light_blue"] .region-content div > h2 {
-  color: var(--wool);
-}
-
-[data-gin-accent="light_blue"] .region-content div > h2 + p {
-  color: var(--wool);
-}
-
-#block-ys-admin-theme-main-page-content,
-#drupal-modal .views-offset-top,
-#drupal-modal .views-offset-top .form-item__label {
-  color: var(--wool);
-}
-
-#block-ys-admin-theme-main-page-content .view-preview-form,
-#block-ys-admin-theme-main-page-content .preview-section,
-#block-ys-admin-theme-main-page-content .views-edit-view {
-  color: var(--dark-theme-gray) !important;
-}
-
-#block-ys-admin-theme-main-page-content .dropbutton--multiple > .dropbutton__item:first-of-type input,
-#block-ys-admin-theme-main-page-content .views-edit-view a {
-  color: var(--mediterranean-blue);
-}
-
-#block-ys-admin-theme-main-page-content .views-display-top .views-tabs li a {
-  color: var(--wool) !important;
-}
-
-#block-ys-admin-theme-main-page-content .views-display-top .views-tabs li a:hover,
-#block-ys-admin-theme-main-page-content .views-display-top .views-tabs li a:focus,
-#block-ys-admin-theme-main-page-content .views-display-top .views-tabs li a.is-active {
-  color: var(--dark-theme-gray) !important;
-}
-
-#block-ys-admin-theme-main-page-content #edit-help,
-#block-ys-admin-theme-main-page-content .system-status-general-info__item-details,
-#block-ys-admin-theme-main-page-content .card__content {
-  color: var(--dark-theme-gray);
-}
-
-#block-ys-admin-theme-main-page-content a:hover,
-#block-ys-admin-theme-main-page-content a:focus {
-  color: var(--gin-color-primary);
-  text-decoration: underline;
-}
-
-#block-ys-admin-theme-main-page-content .field--name-field-instructions {
-  color: var(--dark-theme-gray);
-}
-
-.draggable.field-plugin-settings-editing,
-.draggable.drag-previous.field-plugin-settings-editing {
-  background: var(--wool) !important;
-}
-
-#views-display-extra-actions {
-  background-color: var(--wool) !important;
-}
-
-#views-display-extra-actions .edit-details:hover {
-  background-color: var(--robin-egg) !important;
-}
-
-.views-ui-dialog .views-add-form-selected > div {
-  background-color: var(--wool) !important;
-}
-
-#block-ys-admin-theme-main-page-content .views-edit-view #edit-display-settings-main a:hover,
-#block-ys-admin-theme-main-page-content .views-edit-view #edit-display-settings-main a:focus,
-#block-ys-admin-theme-main-page-content .views-edit-view #edit-display-settings-top .views-display-setting a:hover,
-#block-ys-admin-theme-main-page-content .views-edit-view #edit-display-settings-top .views-display-setting a:focus,
-#block-ys-admin-theme-main-page-content .views-edit-view #edit-display-settings-top .view.dropbutton__item.dropbutton-action a:hover,
-#block-ys-admin-theme-main-page-content .views-edit-view #edit-display-settings-top .view.dropbutton__item.dropbutton-action a:focus {
-  color: var(--dark-theme-gray) !important;
-}
-
-#block-ys-admin-theme-main-page-content .views-edit-view #views-display-extra-actions a {
-  color: var(--mediterranean-blue) !important;
-}
-
-#block-ys-admin-theme-main-page-content .views-edit-view #views-display-extra-actions a:hover,
-#block-ys-admin-theme-main-page-content .views-edit-view #views-display-extra-actions a:focus {
-  color: var(--dark-theme-gray) !important;
-}
-
-/* Alerts */
-#block-ys-admin-theme-main-page-content #alert-description-wrapper {
-  color: var(--dark-theme-gray);
-}
-
-/* Buttons and action links */
-
-.button,
-.button:not(:focus),
-.form-actions .button {
-  background-color: var(--custom-button-color);
-  color: var(--custom-button-color-text);
-  border-radius: 2.5rem !important;
-  box-shadow: none !important;
-}
-
-.action-link::before {
-  background: var(--mediterranean-blue) !important;
-}
-
-.action-link:hover::before,
-.action-link:focus::before {
-  background: var(--wool) !important;
-}
-
-.action-link--icon-trash.action-link {
-  border-radius: 2.5rem !important;
-  box-shadow: none !important;
-}
-
-.action-link.action-link--danger,
-.button.action-link--danger {
+.gin--dark-mode .field-plugin-settings-edit {
   background-color: var(--wool);
-  color: var(--gin-color-danger) !important;
 }
 
-.action-link.action-link--danger:hover,
-.action-link.action-link--danger:focus,
-.button.action-link--danger:hover,
-.button.action-link--danger:focus {
-  color: var(--dark-theme-gray-hover) !important;
-  background-color: var(--wool) !important;
-}
-
-.module-link.action-link--icon-cog::before {
-  background-color: var(--wool) !important;
-}
-
-.action-link.action-link--icon-cog {
-  background-color: var(--dark-theme-gray) !important;
-  color: var(--wool) !important;
-}
-
-.action-link.action-link--icon-checkmark {
-  background-color: var(--dark-theme-gray-hover) !important;
-  color: var(--wool) !important;
-}
-
-.action-link--icon-trash.action-link--danger::before {
-  background-color: var(--gin-color-danger) !important;
-}
-
-
-.operations .action-link::before {
-  background-color: var(--wool) !important;
-}
-
-.button--primary {
-  background-color: var(--custom-button-color);
-  color: var(--custom-button-color-text);
-}
-
-.button:hover,
-.button:focus,
-.button--primary:hover,
-.button--primary:focus {
-  background-color: var(--custom-button-color-hover) !important;
-  color: var(--custom-button-color-text-hover) !important;
-}
-
-.button.form-submit {
-  background-color: var(--custom-button-color);
-  color: var(--custom-button-color-text);
-}
-
-.button.form-submit:hover,
-.button.form-submit:focus {
-  background-color: var(--custom-button-color-hover) !important;
-  color: var(--custom-button-color-text-hover) !important;
-}
-
-.messages .button--dismiss {
+// Make admin content area darker than the top bar dark-theme-gray
+.gin-layer-wrapper, 
+.block-system-main-block > form, 
+.views-exposed-form.views-exposed-form, 
+.views-edit-view, 
+.views-preview-wrapper, 
+#views-entity-list, 
+.module-filter-update-status-form .table-filter, 
+.admin.my-workbench {
   background-color: var(--dark-theme-gray) !important;
 }
 
-.gin-layer-wrapper table td .dropbutton-action a {
-  color: var(--dark-theme-gray-text-dark) !important;
-  border-radius: 0.95rem;
+// remove box-shadows
+.gin--dark-mode .glb-claro-details__summary::after,
+.gin--dark-mode .messages,
+.gin--dark-mode .gin-layer-wrapper, 
+.gin--dark-mode .gin-layer-wrapper-shadow, 
+.gin--dark-mode .block-system > form, 
+.gin--dark-mode .views-exposed-form.views-exposed-form, 
+.gin--dark-mode .views-edit-view, 
+.gin--dark-mode .views-preview-wrapper, 
+.gin--dark-mode .modules-tabs, 
+.gin--dark-mode .module-filter-update-status-form .table-filter, 
+.gin--dark-mode #views-entity-list, 
+.gin--dark-mode .admin.my-workbench,
+[dir="ltr"] .button--primary, 
+[dir="ltr"] .button--primary:not(:focus), 
+[dir="ltr"] .ief-entity-submit,
+.gin--dark-mode .glb-button, 
+.gin--dark-mode .inline-block-create-button, 
+.gin--dark-mode .layout-builder__link--add, 
+.gin--dark-mode .glb-button:not(:focus), 
+.gin--dark-mode .inline-block-create-button:not(:focus), 
+.gin--dark-mode .layout-builder__link--add:not(:focus), 
+.gin--dark-mode .form-actions .glb-button, 
+.gin--dark-mode .form-actions .inline-block-create-button, 
+.gin--dark-mode .form-actions .layout-builder__link--add, 
+.gin--dark-mode .glb-action-link--icon-trash.glb-action-link,
+.gin--dark-mode .glb-button, 
+.gin--dark-mode .inline-block-create-button, 
+.gin--dark-mode .layout-builder__link--add, 
+.gin--dark-mode .glb-button:not(:focus), 
+.gin--dark-mode .inline-block-create-button:not(:focus), 
+.gin--dark-mode .layout-builder__link--add:not(:focus), 
+.gin--dark-mode .form-actions .glb-button, 
+.gin--dark-mode .form-actions .inline-block-create-button, 
+.gin--dark-mode .form-actions .layout-builder__link--add, 
+.gin--dark-mode .glb-action-link--icon-trash.glb-action-link,
+.gin--dark-mode .glb-button--primary, 
+.gin--dark-mode .glb-button--primary:not(:focus) {
+  box-shadow: unset !important;
 }
 
-.gin-layer-wrapper table td .dropbutton-action a:hover,
-.gin-layer-wrapper table td .dropbutton-action a:focus {
-  color: var(--dark-theme-gray-hover) !important;
+/* Target accordions and give them a darker background */
+.gin--dark-mode .claro-details__summary,
+.gin--dark-mode .glb-claro-details__summary {
+  background-color: var(--darkest-gray) !important;
 }
 
-.views-query-info table tr {
-  background-color: var(--dark-theme-gray-selected) !important;
-  color: var(--wool) !important;
+/* views forms */
+.gin--dark-mode .views-ui-admin-settings-basic,
+.gin--dark-mode .views-ui-admin-settings-advanced {
+  background-color: var(--darkest-gray) !important;
 }
 
-.toolbar-menu-administration
-  > .toolbar-menu
-  > .menu-item:hover
-  > .toolbar-icon::before,
-.toolbar-menu-administration
-  > .toolbar-menu
-  > .menu-item:hover
-  > .toolbar-box
-  > a.toolbar-icon::before,
-.toolbar-menu-administration
-  > .toolbar-menu
-  > .menu-item
-  > .toolbar-icon:focus::before,
-.toolbar-menu-administration
-  > .toolbar-menu
-  > .menu-item.menu-item--active-trail
-  > .toolbar-icon::before,
-.toolbar-menu-administration
-  > .toolbar-menu
-  > .menu-item.menu-item--active-trail:hover
-  > .toolbar-icon::before,
-.toolbar-menu-administration
-  > .toolbar-menu
-  > .menu-item.menu-item--active-trail
-  > .toolbar-box
-  > a.toolbar-icon::before {
-  z-index: 1;
+.gin--dark-mode .gin-secondary-toolbar.layout-container {
+  background: rgba(var(--dark-theme-gray-rgb), 1);
+  margin-left: 0 !important; 
+  margin-right: 0 !important; 
+  padding: 0.5rem 2rem;
 }
 
-.toolbar-menu-administration
-  > .toolbar-menu
-  > .menu-item.menu-item--active-trail
-  > .toolbar-icon::after,
-.toolbar-menu-administration
-  > .toolbar-menu
-  > .menu-item.menu-item--active-trail
-  > .toolbar-box
-  > a.toolbar-icon::after,
-.toolbar-menu-administration
-  > .toolbar-menu
-  > .menu-item
-  > .toolbar-icon.is-active::after {
+.gin--dark-mode[dir="ltr"] .gin--edit-form .gin-secondary-toolbar {
+  left: unset;
+  transform: unset;
+}
+
+// toolbar overrides
+.gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab .toolbar-tray a:hover, 
+.gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab .toolbar-tray a:active {
+  background-color: var(--darkest-gray);
+}
+
+// override toolbar drop-down arrow color
+.gin--dark-mode .toolbar-tray-horizontal ul li.menu-item--expanded ul li.menu-item--expanded::before {
+  background-color: var(--wool);
+}
+
+// active tab background
+.is-horizontal .tabs--primary .tabs__link.is-active {
+  background: var(--dark-theme-gray) !important;
+}
+
+
+// Layout-builder 
+
+.inline-block-create-button,
+.layout-builder__link--add,
+.inline-block-create-button:not(:focus),
+.layout-builder__link--add:not(:focus),
+.form-actions .glb-button,
+.form-actions .inline-block-create-button,
+.form-actions .layout-builder__link--add,
+.glb-action-link--icon-trash.glb-action-link,
+.meta-sidebar__trigger.is-active,
+.meta-sidebar__close.is-active {
   background-color: var(--gin-color-primary-light) !important;
 }
 
-.is-horizontal .tabs__link.is-active,
-.is-horizontal .tabs__link:hover,
-.is-horizontal .tabs__link:focus,
-.horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button a:hover,
-.horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button a:focus {
-  background: var(--gin-color-primary-light);
-}
-
-.form-element {
-  border-radius: 0.625rem !important;
-}
-
-html.js.no-touchevents .dropbutton--extrasmall {
+.glb-button,
+.inline-block-create-button,
+.layout-builder__link--add,
+.glb-button:not(:focus),
+.inline-block-create-button:not(:focus),
+.layout-builder__link--add:not(:focus),
+.form-actions .glb-button,
+.form-actions .inline-block-create-button,
+.form-actions .layout-builder__link--add,
+.glb-action-link--icon-trash.glb-action-link {
   border-radius: 2.5rem !important;
-  background-color: var(--robin-egg);
+  border: 2px solid transparent !important;
 }
 
-.js .dropbutton--multiple > .dropbutton__item.dropbutton-action:first-of-type > a:hover {
-  border-radius: 2.5rem 0 0 2.5rem !important;
+.action-link.action-link--danger {
+  background-color: var(--wool);
 }
 
-.dropbutton__toggle::before {
-  background-color: var(--dark-theme-gray-hover) !important;
-}
-
-.dropbutton .dropbutton__items >.dropbutton__item > a,
-.dropbutton .dropbutton__items {
-  background-color: var(--robin-egg) !important;
-}
-
-.no-touchevents .dropbutton--extrasmall .dropbutton__toggle {
-  border-radius: 0 2.5rem 2.5rem 0;
-}
-
-.block-system > .views-form [data-drupal-selector*="edit-header"],
-.view-content .views-form [data-drupal-selector*="edit-header"] {
-  background-color: transparent !important;
-}
-
-
-body:not(.toolbar-tray-open) .layout-container {
-  padding-left: var(--gin-spacing-m);
-  padding-right: var(--gin-spacing-m);
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-}
-
-@media screen and (min-width: 38em) {
-  body:not(.toolbar-tray-open) .layout-container {
-    padding-right: 3em;
-    padding-left: 3em;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-  }
-}
-
-@media (min-width: 48em) {
-  body:not(.toolbar-tray-open) .layout-container {
-    padding-left: var(--gin-spacing-xl);
-    padding-right: var(--gin-spacing-xl);
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-  }
-}
-
-@media (min-width: 61em) {
-  body:not(.toolbar-tray-open) .layout-container {
-    padding-left: min(5vw, var(--gin-spacing-xxl));
-    padding-right: min(5vw, var(--gin-spacing-xxl));
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-  }
-}
-
-tbody .views-field:not(.views-field-operations) a {
-  color: var(--gin-color-secondary) !important;
-  font-weight: 500;
-}
-
-table tr:hover,
-table .draggable-table.tabledrag-disabled tr:hover {
-  background-color: var(--dark-theme-gray-lightest) !important;
-}
-
-.sortable-heading > a::after {
-  content: none;
-}
-
-.sortable-heading > a:focus,
-.sortable-heading > a:hover {
-  color: var(--dark-theme-gray-lightest);
-}
-
-table tr.selected td {
-  background-color: var(--dark-theme-gray-selected) !important;
-}
-
-td.description,
-td .admin-requirements,
-td .admin-required {
-  color: var(--dark-theme-gray) !important;
-}
-
-.form-boolean--type-checkbox:checked {
-  background-color: var(--dark-theme-gray) !important;
-}
-
-.dropbutton__toggle:focus {
-  box-shadow: none !important;
-}
-
-.path-admin .view-header p {
-  max-width: 1200px;
-}
-
-.js .dropbutton-widget {
+.action-link--icon-trash.action-link--danger:hover,
+.action-link.action-link--danger:hover {
   background-color: transparent;
+  color: var(--wool) !important;
 }
 
-.action-link {
-  color: var(--dark-theme-gray) !important;
+/* icons */
+.action-link:hover::before {
+  background: var(--robin-egg) !important;
 }
 
-.action-link:hover,
-.action-link:focus {
-  color: var(--dark-theme-gray-lightest) !important;
+/* forms */
+.gin--dark-mode .form-element,
+.gin--dark-mode .glb-form-element {
+  background-color: var(--darkest-gray) !important;
 }
 
-.action-link:hover .action-link--icon-show::before ,
-.action-link:focus .action-link--icon-show::before  {
-  background-color: var(--dark-theme-gray-lightest) !important;
+::placeholder {
+  color: var(--wool) !important;
+  opacity: 0.8;
 }
 
-.action-link--icon-show::before {
+.gin--dark-mode :not(.form-checkboxes):not(td):not(.tabledrag-cell-content__item):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .form-type--checkbox input:checked ~ .checkbox-toggle .checkbox-toggle__inner::before {
+  background-color: var(--darkest-gray) !important;
+}
+
+.gin--dark-mode .form-boolean--type-checkbox:not(:checked) + .checkbox-toggle  .checkbox-toggle__inner {
   background-color: var(--dark-theme-gray) !important;
 }
 
-.cke .cke_top,
-.cke .cke_bottom,
-.cke.cke .cke_top,
-.cke_1_bottom {
-  background: var(--dark-theme-gray-lightest) !important;
+.gin--dark-mode table th {
+  background: var(--darkest-gray);
 }
 
-.cke a.cke_path_item,
-.cke span.cke_path_empty {
-  color: var(--dark-theme-gray) !important;
+[data-drupal-selector="edit-enable-darkmode"] .form-radios input:checked + .form-item__label {
+  background: var(--dark-theme-gray);
 }
 
-.cke a.cke_button_off:hover,
-.cke a.cke_button_off:focus,
-.cke a.cke_button_off:active {
-  background: var(--wool) !important;
+/* checkbox spacing */ 
+.gin--dark-mode .js-form-type-checkbox.form-type--checkbox {
+  padding: 0.5rem;
 }
 
-.gin-layer-wrapper table th,
-.gin-layer-wrapper table th a,
-.gin-layer-wrapper table th .form-item__label {
-  color: var(--wool) !important;
+/* chosen overrides */
+.gin--dark-mode .chosen-container .chosen-results li.highlighted {
+  background-color: var(--gin-color-primary);
+  color: var(--darkest-gray);
 }
 
-.gin-layer-wrapper table.field-multiple-table th .form-item__label {
-  color: var(--dark-theme-gray) !important;
+.gin--dark-mode .chosen-container-single .chosen-single span {
+  color: var(--wool);
 }
 
-.vertical-tabs__menu-item.is-selected .vertical-tabs__menu-link,
-.vertical-tabs__menu a.vertical-tabs__menu-link {
-  color: var(--dark-theme-gray) !important;
+/* remove media button */
+.gin--dark-mode .media-library-add-form__remove-button {
+  background-color: var(--robin-egg);
+  color: var(--darkest-gray);
 }
 
-.vertical-tabs__menu a.vertical-tabs__menu-link:hover {
-  color: var(--wool) !important;
+// Autocomplete
+
+.gin--dark-mode .ui-autocomplete .ui-menu-item-wrapper {
+  color: var(--wool);
 }
 
-.vertical-tabs__menu a.vertical-tabs__menu-link:hover .vertical-tabs__menu-link-summary {
-  color: var(--wool) !important;
+.gin--dark-mode .ui-autocomplete .ui-menu-item-wrapper.ui-state-active {
+  background-color: var(--dark-theme-gray);
+  color: var(--wool);
 }
 
-.vertical-tabs__menu-item.is-selected .vertical-tabs__menu-link::before {
-  border-color: var(--mediterranean-blue) !important;
+// fieldsets
+.gin--dark-mode fieldset:not(.fieldgroup) {
+  background-color: var(--darkest-gray);
 }
 
-.tabledrag-handle::after {
-  background-color: var(--dark-theme-gray) !important;
-}
-
-.field-plugin-summary {
-  color: var(--dark-theme-gray) !important;
-}
-
-// Claro details
-.claro-details__summary {
-  color: var(--dark-theme-gray) !important;
-}
-
-.claro-details__summary-summary {
-  color: var(--gin-color-text) !important;
-}
-
-.claro-details__summary:hover .claro-details__summary-summary,
-.claro-details__summary:focus .claro-details__summary-summary,
-.claro-details__summary[aria-expanded="true"] .claro-details__summary-summary {
-  color: var(--wool) !important;
-}
-
-.claro-details__summary:hover,
-.claro-details__summary:focus,
-.claro-details[open] > .claro-details__summary,
-.claro-details[open] > .claro-details__summary[aria-expanded="true"] {
-  color: var(--dark-theme-gray-text-light) !important;
-  background-color: var(--dark-theme-gray-text-dark) !important;
-}
-
-.claro-details[open] > .claro-details__summary[aria-expanded="false"]::before,
-.claro-details > .claro-details__summary[aria-expanded="false"]:focus::before,
-.claro-details[open] > .claro-details__summary::before {
-  background-color: var(--dark-theme-gray-text-light) !important;
-}
-
-.claro-details__wrapper a {
-  color: var(--mediterranean-blue) !important;
-}
-
-.claro-details__wrapper a:hover,
-.claro-details__wrapper a:focus {
-  text-decoration: underline;
-}
-
-
-// Horizontal tabs on nodes
-.layout-node-form .horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button a {
+/* upgrade status on /admin/reports/upgrade-status */
+.upgrade-status-overview th {
   background-color: var(--dark-theme-gray);
 }
 
-.layout-node-form .horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button.selected a {
-  background-color: var(--robin-egg);
-  color: var(--dark-theme-gray) !important;
+.upgrade-status-next-step-update tr {
+  background-color: var(--wool);
 }
 
-.layout-node-form .horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button.selected a::before {
-  border-color: var(--dark-theme-gray);
+.upgrade-status-summary-environment tr.known-error a,
+.upgrade-status-next-step-update tr a {
+  color: var(--mediterranean-blue);
 }
 
-/* stylelint-enable */
+.upgrade-status-next-step-update tr:hover a {
+  color: var(--gin-color-primary);
+}
+
+.upgrade-status-summary-label:hover {
+  background-color: var(--darkest-gray);
+}
+
+.upgrade-status-result-circle .percentage {
+  fill: var(--wool);
+}
+
+.upgrade-status-summary td.status-info-na {
+  background-color: var(--gin-border-color-layer);
+  color: var(--darkest-gray);
+} 
+.upgrade-status-summary td.status-info-unchecked {
+  background-color: var(--gin-color-primary);
+  color: var(--darkest-gray);
+}
 
 // Match profile display name field to the regular fields as this one "acts"
 // like a regular field as we have auto-entity label enabled for this field.
@@ -768,3 +277,48 @@ td .admin-required {
   font-weight: 400;
   width: 484px;
 }
+
+/* add space between accordion action buttons */
+.gin--dark-mode .paragraphs-actions .paragraphs-icon-button  + .paragraphs-dropdown {
+  margin-left: 1rem;
+}
+
+/* remove collapsed/truncated text gradient overlay */
+.gin--dark-mode.js .paragraphs-collapsed-description::after {
+  content: unset;
+}
+
+/* Media library with PNGs */
+.gin--dark-mode .glb-media-library-item__preview img[src*="png"] {
+  background-color: var(--wool);
+} 
+
+/* Embed component */
+.gin--dark-mode .ui-dialog .ui-widget-content.ui-dialog-content h2 {
+  color: var(--wool);
+}
+
+.gin--dark-mode .ui-dialog .ui-widget-content.ui-dialog-content .js-form-wrapper.form-wrapper {
+  padding: 1rem;
+}
+
+.gin--dark-mode .ui-dialog .ui-widget-content.ui-dialog-content .js-form-wrapper.form-wrapper[open] {
+  background-color: var(--darkest-gray);
+  word-break: break-all;
+}
+
+/* Sidebar titlebars */
+.gin--dark-mode .ui-dialog-off-canvas .ui-dialog-titlebar {
+  background-color: var(--darkest-gray) !important;
+}
+
+/* Danger button */
+.gin--dark-mode .action-link--icon-trash.action-link--danger {
+  background-color: var(--darkest-gray) !important;
+}
+
+.gin--dark-mode .action-link--icon-trash.action-link--danger::before {
+  background: var(--gin-color-danger) !important;
+}
+
+/* stylelint-enable */
