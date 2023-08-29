@@ -1,0 +1,23 @@
+uuid: c4cb4f27-4116-41c1-bf7e-3be014652c3a
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.cta_banner
+    - field.storage.block_content.field_heading_level
+  module:
+    - options
+id: block_content.cta_banner.field_heading_level
+field_name: field_heading_level
+entity_type: block_content
+bundle: cta_banner
+label: 'Heading Level'
+description: 'Optionally override heading level for this banner'
+required: false
+translatable: false
+default_value:
+  -
+    value: '2'
+default_value_callback: ''
+settings: {  }
+field_type: list_string

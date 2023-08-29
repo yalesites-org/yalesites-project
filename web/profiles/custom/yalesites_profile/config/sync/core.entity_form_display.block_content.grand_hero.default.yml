@@ -5,6 +5,7 @@ dependencies:
   config:
     - block_content.type.grand_hero
     - field.field.block_content.grand_hero.field_heading
+    - field.field.block_content.grand_hero.field_heading_level
     - field.field.block_content.grand_hero.field_instructions
     - field.field.block_content.grand_hero.field_link
     - field.field.block_content.grand_hero.field_media
@@ -39,6 +40,12 @@ content:
         maxlength_js: 50
         maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
         maxlength_js_enforce: false
+  field_heading_level:
+    type: options_select
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_instructions:
     type: markup
     weight: 0
