@@ -313,3 +313,33 @@
   background-position: center 1rem;
   background-size: 120%;
 }
+
+/*
+/***** Event time period:
+*/
+/* this is temporary until we have icons */
+
+[data-drupal-selector="edit-settings-block-form-group-user-selection-entity-specific"] .fieldset__wrapper.fieldset__wrapper--group {
+  display: flex;
+}
+
+[data-drupal-selector="edit-settings-block-form-group-user-selection-entity-specific"] .glb-form-radios.form-boolean-group {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  gap: 1rem;
+}
+
+[data-drupal-selector="edit-settings-block-form-group-user-selection-entity-specific"] .glb-form-type--radio label {
+  aspect-ratio: unset;
+  min-height: 4rem;
+}
+
+.form-item-settings-block-form-group-user-selection-entity-specific-event-time-period + label {
+  background-color: var(--wool);
+}
+
+.form-item-settings-block-form-group-user-selection-entity-specific-event-time-period input[checked="checked"] + label {
+  background-color: var(--color-text-primary);
+  color: var(--color-background-primary);
+}
