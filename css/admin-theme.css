@@ -191,10 +191,9 @@
   background-color: var(--darkest-gray) !important;
 }
 
-/* checkbox BG and spacing */ 
+/* checkbox spacing */ 
 .gin--dark-mode .js-form-type-checkbox.form-type--checkbox {
   padding: 0.5rem;
-  background-color: var(--darkest-gray);
 }
 
 /* Sections on nodes */
@@ -483,4 +482,13 @@ input[type="search"]::placeholder {
   background-color: var(--darkest-gray);
   border-top-left-radius: 0.5rem;
   border-top-right-radius: 0.5rem;
+}
+
+/* Danger button */
+.gin--dark-mode .action-link--icon-trash.action-link--danger {
+  background-color: var(--darkest-gray) !important;
+}
+
+.gin--dark-mode .action-link--icon-trash.action-link--danger::before {
+  background: var(--gin-color-danger) !important;
 }
