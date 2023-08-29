@@ -141,6 +141,11 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     $form['group_user_selection']['filter_and_sort'] = [
       '#type' => 'container',
+      '#attributes' => [
+        'class' => [
+          'grouped-items',
+        ],
+      ],
     ];
 
     $form['group_user_selection']['filter_options'] = [
@@ -233,6 +238,23 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('terms_exclude', $items[$delta]->params) : [],
     ];
 
+    $form['group_user_selection']['filter_and_sort']['term_operator'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('Match Content That Has'),
+      // Set operator: "+" is "OR" and "," is "AND".
+      '#options' => [
+        '+' => $this->t('Can have any term listed in tags and categories'),
+        ',' => $this->t('Must have all terms listed in tags and categories'),
+      ],
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('operator', $items[$delta]->params) : '+',
+      '#attributes' => [
+        'class'     => [
+          'term-operator-item',
+        ],
+      ],
+
+    ];
+
     // Gets the view mode options based on Ajax callbacks or initial load.
     $sortOptions = $this->viewsBasicManager->sortByList($entityValue);
 
@@ -246,18 +268,6 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#validated' => 'true',
       '#prefix' => '<div id="edit-sort-by">',
       '#suffix' => '</div>',
-    ];
-
-    $form['group_user_selection']['filter_options']['term_operator'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Match Content That Has'),
-      // Set operator: "+" is "OR" and "," is "AND".
-      '#options' => [
-        '+' => $this->t('Any term listed in tags and categories'),
-        ',' => $this->t('All terms listed in tags and categories'),
-      ],
-      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('operator', $items[$delta]->params) : '+',
-
     ];
 
     $form['group_user_selection']['entity_specific']['event_time_period'] = [
@@ -399,7 +409,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
           "terms_exclude" => $terms_exclude,
           "event_time_period" => $form['group_user_selection']['entity_specific']['event_time_period']['#value'],
         ],
-        "operator" => $form['group_user_selection']['filter_options']['term_operator']['#value'],
+        "operator" => $form['group_user_selection']['filter_and_sort']['term_operator']['#value'],
         "sort_by" => $form_state->getValue(
           [
             'settings',
