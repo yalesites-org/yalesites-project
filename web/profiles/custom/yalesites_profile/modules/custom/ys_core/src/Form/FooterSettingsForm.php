@@ -64,30 +64,48 @@ class FooterSettingsForm extends ConfigFormBase {
 
     $form['#attached']['library'][] = 'ys_core/footer_settings_form';
 
-    $form['footer_tabs'] = [
-      '#type' => 'vertical_tabs',
+    $form['footer_variation'] = [
+      '#type' => 'radios',
+      '#options' => [
+        'basic' => $this->t('Basic'),
+        'mega' => $this->t('Mega'),
+      ],
+      '#title' => $this->t('Footer variation'),
+      '#description' => $this->t('All variations display Yale branding, accessibility and privacy links, and copyright information.'),
+      '#default_value' => ($footerConfig->get('footer_variation')) ? $footerConfig->get('footer_variation') : 'basic',
     ];
 
     $form['footer_logos'] = [
       '#type' => 'details',
       '#title' => $this->t('Footer Logos'),
-      '#open' => TRUE,
-      '#group' => 'footer_tabs',
+      '#states' => [
+        'visible' => [
+          ':input[name="footer_variation"]' => ['value' => 'mega'],
+        ],
+      ],
     ];
 
     $form['footer_content'] = [
       '#type' => 'details',
       '#title' => $this->t('Footer Content'),
-      '#group' => 'footer_tabs',
+      '#states' => [
+        'visible' => [
+          ':input[name="footer_variation"]' => ['value' => 'mega'],
+        ],
+      ],
     ];
 
     $form['footer_links'] = [
       '#type' => 'details',
       '#title' => $this->t('Footer Links'),
-      '#group' => 'footer_tabs',
       '#attributes' => [
         'class' => [
           'ys-footer-links',
+        ],
+      ],
+      '#states' => [
+        'visible' => [
+          ':input[name="footer_variation"]' => ['value' => 'mega'],
         ],
       ],
     ];
@@ -95,19 +113,11 @@ class FooterSettingsForm extends ConfigFormBase {
     $form['social_links'] = [
       '#type' => 'details',
       '#title' => $this->t('Social Links'),
-      '#group' => 'footer_tabs',
-    ];
-
-    $form['footer_variation'] = [
-      '#type' => 'radios',
-      '#options' => [
-        'basic' => $this->t('Basic - displays only the social links.'),
-        'mega' => $this->t('Mega - displays all of the fields listed below.'),
+      '#states' => [
+        'open' => [
+          ':input[name="footer_variation"]' => ['value' => 'basic'],
+        ],
       ],
-      '#title' => $this->t('Footer variation'),
-      '#description' => $this->t('All variations display Yale branding, accessibility and privacy links, and copyright information.'),
-      '#default_value' => ($footerConfig->get('footer_variation')) ? $footerConfig->get('footer_variation') : 'basic',
-      '#weight' => -1,
     ];
 
     $form['footer_logos']['logos'] = [
@@ -382,7 +392,7 @@ class FooterSettingsForm extends ConfigFormBase {
    */
   protected function translateNodeLinks($link) {
     // If link URL is an internal path, use the path alias instead.
-    $link = (str_starts_with($link, "/node")) ? $this->pathAliasManager->getAliasByPath($link) : $link;
+    $link = (str_starts_with($link, "/node/")) ? $this->pathAliasManager->getAliasByPath($link) : $link;
     return $link;
   }
 
