@@ -294,6 +294,7 @@
   background-color: var(--darkest-gray) !important;
 }
 
+/* Danger button */
 .gin--dark-mode .action-link--icon-trash.action-link--danger {
   background-color: var(--darkest-gray) !important;
 }
