@@ -60,6 +60,7 @@
   --gin-color-button-text-hover: var(--dark-theme-gray-hover);
   --gin-border-color-layer2: #A8A8A8 !important;
   --gin-pattern-fallback: var(--wool);
+  --dropbutton-extrasmall-toggle-size: 1.5rem;
 }
 
 
@@ -89,6 +90,47 @@
 .gin--dark-mode .glb-claro-details__summary::after {
   box-shadow: inset 0 0 0 3px var(--gin-color-primary) !important;
 }
+
+.gin--dark-mode .glb-claro-details__summary::after,
+.gin--dark-mode .messages,
+.gin--dark-mode .gin-layer-wrapper, 
+.gin--dark-mode .gin-layer-wrapper-shadow, 
+.gin--dark-mode .block-system > form, 
+.gin--dark-mode .views-exposed-form.views-exposed-form, 
+.gin--dark-mode .views-edit-view, 
+.gin--dark-mode .views-preview-wrapper, 
+.gin--dark-mode .modules-tabs, 
+.gin--dark-mode .module-filter-update-status-form .table-filter, 
+.gin--dark-mode #views-entity-list, 
+.gin--dark-mode .admin.my-workbench,
+[dir="ltr"] .button--primary, 
+[dir="ltr"] .button--primary:not(:focus), 
+[dir="ltr"] .ief-entity-submit,
+.gin--dark-mode .glb-button, 
+.gin--dark-mode .inline-block-create-button, 
+.gin--dark-mode .layout-builder__link--add, 
+.gin--dark-mode .glb-button:not(:focus), 
+.gin--dark-mode .inline-block-create-button:not(:focus), 
+.gin--dark-mode .layout-builder__link--add:not(:focus), 
+.gin--dark-mode .form-actions .glb-button, 
+.gin--dark-mode .form-actions .inline-block-create-button, 
+.gin--dark-mode .form-actions .layout-builder__link--add, 
+.gin--dark-mode .glb-action-link--icon-trash.glb-action-link,
+.gin--dark-mode .glb-button, 
+.gin--dark-mode .inline-block-create-button, 
+.gin--dark-mode .layout-builder__link--add, 
+.gin--dark-mode .glb-button:not(:focus), 
+.gin--dark-mode .inline-block-create-button:not(:focus), 
+.gin--dark-mode .layout-builder__link--add:not(:focus), 
+.gin--dark-mode .form-actions .glb-button, 
+.gin--dark-mode .form-actions .inline-block-create-button, 
+.gin--dark-mode .form-actions .layout-builder__link--add, 
+.gin--dark-mode .glb-action-link--icon-trash.glb-action-link,
+.gin--dark-mode .glb-button--primary, 
+.gin--dark-mode .glb-button--primary:not(:focus) {
+  box-shadow: unset !important;
+}
+
 
 /* // Layout-builder  */
 
