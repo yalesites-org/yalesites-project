@@ -402,6 +402,24 @@
   -webkit-mask-size: 1.2rem;
 }
 
+/* two-column layout edit adjustments */
+.yds-two-column .layout-builder-block.contextual-region .contextual {
+  left: 0;
+}
+
+@media only screen and (min-width: 2200px) {
+  .yds-two-column .layout-builder-block.contextual-region .contextual  {
+    left: -1vw;
+  }
+}
+
+@media only screen and (min-width: 2500px) {
+  .yds-two-column .layout-builder-block.contextual-region .contextual  {
+    left: -1vw;
+  }
+}
+
+
 /* add min-height so that smaller (in height) components are more easily
 // able to be interacted with - e.g. `divider`
 */
