@@ -17,11 +17,11 @@
         class: bem(view__base_class, view__modifiers),
       } %}
   {% endif %}
-
+  
   <div {{ add_attributes(view__attibutes) }}>
     {% embed "@organisms/component-wrapper/yds-component-wrapper.twig" with {
       component_wrapper__width: component_wrapper__width|default('site'),
-      component_wrapper__label: content.field_heading,
+      component_wrapper__label: content.field_heading.0 ? content.field_heading : '',
       }%}
       {% block component_wrapper_inner %}
         {% if content.field_view_params %}
