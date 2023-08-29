@@ -478,11 +478,35 @@ input[type="search"]::placeholder {
 }
 
 /* Legend */
+.gin--dark-mode legend {
+  display: block;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  width: 100%;
+}
+
 .gin--dark-mode .fieldset-legend.fieldset__label {
-  background-color: var(--darkest-gray);
+  display: block;
+  color: var(--darkest-gray);
+  background-color: var(--wool);
   border-top-left-radius: 0.5rem;
   border-top-right-radius: 0.5rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border: 0.15rem solid var(--gin-border-color);
+  margin-left: -0.15rem;
+  margin-right: -0.15rem;
 }
+
+.gin--dark-mode #edit-footer-logos .fieldset-wrapper {
+  padding: 1rem;
+}
+
+.gin--dark-mode #edit-footer-logos fieldset + .form-item {
+  margin-top: 1rem;
+}
+
 
 /* Danger button */
 .gin--dark-mode .action-link--icon-trash.action-link--danger {
