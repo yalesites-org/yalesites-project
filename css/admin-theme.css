@@ -476,3 +476,12 @@ input[type="search"]::placeholder {
 .gin--dark-mode :not(.glb-form-checkboxes):not(td):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .glb-form-checkbox:checked + .glb-checkbox-toggle {
   background-color: var(--robin-egg) !important;
 }
+
+/* Danger button */
+.gin--dark-mode .action-link--icon-trash.action-link--danger {
+  background-color: var(--darkest-gray) !important;
+}
+
+.gin--dark-mode .action-link--icon-trash.action-link--danger::before {
+  background: var(--gin-color-danger) !important;
+}
