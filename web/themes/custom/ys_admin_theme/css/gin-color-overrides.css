@@ -43,6 +43,7 @@
   --gin-color-button-text-hover: var(--dark-theme-gray-hover);
   --gin-border-color-layer2: #A8A8A8 !important;
   --gin-pattern-fallback: var(--wool);
+  --dropbutton-extrasmall-toggle-size: 1.5rem;
 }
 
 /* stylelint-enable */
