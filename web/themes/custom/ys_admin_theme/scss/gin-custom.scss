@@ -195,10 +195,9 @@
   background: var(--dark-theme-gray);
 }
 
-/* checkbox BG and spacing */ 
+/* checkbox spacing */ 
 .gin--dark-mode .js-form-type-checkbox.form-type--checkbox {
   padding: 0.5rem;
-  background-color: var(--darkest-gray);
 }
 
 /* chosen overrides */
@@ -210,11 +209,6 @@
 .gin--dark-mode .chosen-container-single .chosen-single span {
   color: var(--wool);
 }
-
-// .gin--dark-mode .chosen-search-input,
-// .gin--dark-mode .chosen-search-input::placeholder {
-//   color: var(--dark-theme-gray) !important;
-// }
 
 /* remove media button */
 .gin--dark-mode .media-library-add-form__remove-button {
