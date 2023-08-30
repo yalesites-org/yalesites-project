@@ -159,6 +159,11 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     $form['group_user_selection']['entity_specific'] = [
       '#type' => 'container',
+      '#attributes' => [
+        'class' => [
+          'grouped-items',
+        ],
+      ],
     ];
 
     $form['group_user_selection']['options'] = [
