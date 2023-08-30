@@ -15,9 +15,7 @@ label: 'Heading Level'
 description: 'Optionally override heading level for this banner'
 required: false
 translatable: true
-default_value:
-  -
-    value: '2'
-default_value_callback: ''
+default_value: {  }
+default_value_callback: ys_themes_default_value_function
 settings: {  }
 field_type: list_string

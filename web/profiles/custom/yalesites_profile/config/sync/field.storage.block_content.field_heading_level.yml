@@ -10,14 +10,8 @@ field_name: field_heading_level
 entity_type: block_content
 type: list_string
 settings:
-  allowed_values:
-    -
-      value: '1'
-      label: H1
-    -
-      value: '2'
-      label: H2
-  allowed_values_function: ''
+  allowed_values: {  }
+  allowed_values_function: ys_themes_allowed_values_function
 module: options
 locked: false
 cardinality: 1
