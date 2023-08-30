@@ -18,6 +18,11 @@ cta_banner:
       left: Left
       right: Right
     default: bottom
+  field_heading_level:
+    values:
+      1: h1
+      2: h2
+    default: 2
 pull_quote:
   field_style_variation:
     values:
@@ -93,6 +98,11 @@ grand_hero:
       full: Tall
       reduced: Short
     default: full
+  field_heading_level:
+    values:
+      1: h1
+      2: h2
+    default: 2
 divider:
   field_style_position:
     values:
