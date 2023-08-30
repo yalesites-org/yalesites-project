@@ -3,5 +3,3 @@ type: module
 description: Settings for YaleSites Captcha
 core_version_requirement: '^9 || ^10'
 package: YaleSites
-dependencies:
-  - ys_secrets

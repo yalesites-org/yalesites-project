@@ -16,7 +16,7 @@ id: block_content.cta_banner.field_heading
 field_name: field_heading
 entity_type: block_content
 bundle: cta_banner
-label: 'CTA Banner Heading'
+label: 'Action Banner Heading'
 description: ''
 required: true
 translatable: false
