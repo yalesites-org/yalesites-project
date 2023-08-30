@@ -64,6 +64,7 @@
     "drupal/node_revision_delete": "^1.0@RC",
     "drupal/override_node_options": "^2.6",
     "drupal/pantheon_advanced_page_cache": "^2.1",
+    "drupal/pantheon_secrets": "1.0.1",
     "drupal/paragraphs": "^1.12",
     "drupal/paragraphs_features": "^2.0@beta",
     "drupal/pathauto": "^1.8",
