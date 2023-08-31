@@ -178,6 +178,20 @@ class ThemeSettingsManager {
   ];
 
   /**
+   * A string to represent a false value in an HTML attribute.
+   *
+   * @var string
+   */
+  const ATTRIBUTE_FALSE = "['false']";
+
+  /**
+   * A string to represent a true value in an HTML attribute.
+   *
+   * @var string
+   */
+  const ATTRIBUTE_TRUE = "['true']";
+
+  /**
    * Configuration Factory.
    *
    * @var \Drupal\Core\Config\ConfigFactoryInterface
@@ -247,6 +261,33 @@ class ThemeSettingsManager {
   public function setSetting($setting_name, $value) {
     $this->yaleThemeSettings->set($setting_name, $value);
     $this->yaleThemeSettings->save(TRUE);
+  }
+
+  /**
+   * Check if a component should animate based on global and component settings.
+   *
+   * This method checks the sitewide settings (levers) to see if an animation
+   * style (such as 'artistic') has been set. It then gets the settings on the
+   * component to see if an author disabled animation for a given block. The
+   * method returns a string that represents a true or false attribute to add
+   * to the component.
+   *
+   * @param ?string $field_style_motion_val
+   *   The value stored in field_style_motion on a component.
+   * @return string
+   *   A true or false HTML attribute to render to enable or disable animation.
+   */
+  public function allowAnimation(?string $field_style_motion_value) {
+    $globalStyle = $this->getSetting('animation_style');
+    // Disable component animation if a global animation style is not set.
+    if (empty($globalStyle) || $globalStyle == 'minimal') {
+      return self::ATTRIBUTE_FALSE;
+    }
+    // Disable component animation if componet style is set to 'minimal'.
+    if ($field_style_motion_value == 'minimal') {
+      return self::ATTRIBUTE_FALSE;
+    }
+    return self::ATTRIBUTE_TRUE;
   }
 
 }

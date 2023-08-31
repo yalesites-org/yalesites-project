@@ -25,6 +25,7 @@ class ThemesTwigExtension extends AbstractExtension {
       new TwigFunction('getThemeSetting', [$this, 'getThemeSetting']),
       new TwigFunction('getAllThemeSettings', [$this, 'getAllThemeSettings']),
       new TwigFunction('getSettingValues', [$this, 'getSettingValues']),
+      new TwigFunction('allowAnimation', [$this, 'allowAnimation']),
     ];
   }
 
@@ -60,6 +61,18 @@ class ThemesTwigExtension extends AbstractExtension {
    */
   public function __construct(ThemeSettingsManager $theme_settings_manager) {
     $this->themeSettingsManager = $theme_settings_manager;
+  }
+
+  /**
+   * Check if a component should animate based on global and component settings.
+   *
+   * @param ?string $field_style_motion_val
+   *   The value stored in field_style_motion on a component.
+   * @return string
+   *   A true or false HTML attribute to render to enable or disable animation.
+   */
+  public function allowAnimation(?string $field_style_motion_val): string {
+    return $this->themeSettingsManager->allowAnimation($field_style_motion_val);
   }
 
 }
