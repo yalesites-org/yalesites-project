@@ -5,6 +5,9 @@
       function handleRadioInputs(radioGroup) {
         // Get references to the radio input elements within the specified group
         const radioInputs = document.querySelectorAll(radioGroup);
+        const detailGroups = document.querySelectorAll(
+          ".ys-core-footer-settings-form details"
+        );
 
         // Add event listener to each radio input
         radioInputs.forEach((input) => {
@@ -17,6 +20,11 @@
                   otherInput.removeAttribute("checked");
                 }
               });
+
+              // Closes all details after selecting a new footer variation.
+              for (let i = 0; i < detailGroups.length; i++) {
+                detailGroups[i].removeAttribute("open");
+              }
             }
           });
         });

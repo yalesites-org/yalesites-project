@@ -40,6 +40,10 @@
   display: flex;
 }
 
+.footer-variation-radios .form-type--radio:first-child {
+  margin-left: 0;
+}
+
 .form-item--footer-variation.form-type--radio input {
   border: 0;
   clip: rect(0 0 0 0);
@@ -52,35 +56,13 @@
 }
 
 .form-item--footer-variation.form-type--radio label {
-  flex: 1 auto;
-  padding: var(--size-spacing-6) var(--size-spacing-4);
-  border-radius: 0.25rem;
-  border: 2px solid var(--color-border);
-  aspect-ratio: 2/1;
-  display: block !important;
-  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   background: var(--dark-theme-gray);
-  border: 2px solid white;
-  padding: var(--size-spacing-4) var(--size-spacing-5);
-  color: var(--color-text-primary);
+  border: 2px solid var(--wool);
   border-radius: 0.25rem;
-  margin-bottom: var(--size-spacing-4);
-  width: 178px;
-  height: 131px;
-}
-
-.form-item--footer-variation input[value="basic"] + label {
-  background-image: url("../images/preview-icons/basic-footer.svg");
-  background-repeat: no-repeat;
-  background-position: center -2px;
-  text-align: center;
-}
-
-.form-item--footer-variation input[value="mega"] + label {
-  background-image: url("../images/preview-icons/mega-footer.svg");
-  background-repeat: no-repeat;
-  background-position: center -2px;
-  text-align: center;
+  padding: 0.5rem;
 }
 
 .form-item--footer-variation input[checked="checked"] + label,
@@ -89,6 +71,10 @@
   .form-boolean--type-radio:hover
   input[checked="checked"]
   + label {
-  background-color: #3b3b3f;
+  background-color: var(--darkest-gray);
   color: var(--color-background-primary) !important;
+}
+
+.form-item--footer-variation.form-type--radio input:focus + label {
+  outline: 2px solid var(--wool);
 }
