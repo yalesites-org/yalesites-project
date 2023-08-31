@@ -71,16 +71,57 @@ class FooterSettingsForm extends ConfigFormBase {
         'mega' => $this->t('Mega'),
       ],
       '#title' => $this->t('Footer variation'),
-      '#description' => $this->t('All variations display Yale branding, accessibility and privacy links, and copyright information.'),
       '#default_value' => ($footerConfig->get('footer_variation')) ? $footerConfig->get('footer_variation') : 'basic',
+      '#attributes' => [
+        'class' => [
+          'footer-variation-radios',
+        ],
+      ],
+    ];
+
+    $form['desc_basic_container'] = [
+      '#type' => 'container',
+      '#title' => $this->t('Basic Footer'),
+      '#states' => [
+        'visible' => [
+          ':input[name="footer_variation"]' => ['value' => 'basic'],
+        ],
+      ],
+    ];
+
+    $form['desc_mega_container'] = [
+      '#type' => 'container',
+      '#title' => $this->t('Mega Footer'),
+      '#states' => [
+        'visible' => [
+          ':input[name="footer_variation"]' => ['value' => 'mega'],
+        ],
+      ],
+    ];
+
+    $form['desc_basic_container']['desc_basic'] = [
+      '#type' => 'markup',
+      '#prefix' => '<h2>Basic Footer</h2>',
+      '#markup' => $this->t('The basic footer of your website contains only social media icons and Yale branding.'),
+    ];
+
+    $form['desc_mega_container']['desc_mega'] = [
+      '#type' => 'markup',
+      '#prefix' => '<h2>Mega Footer</h2>',
+      '#markup' => $this->t('The mega footer of your website can be customized to suit your organizational needs. You can upload icons for various organizational identities and other platforms that your organization uses. You can also add a customizable text area with general information, contact information, or a physical address. Additionally, you can add up to 8 links in a two-column format.'),
+    ];
+
+    $form['social_links'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Social Links'),
     ];
 
     $form['footer_logos'] = [
       '#type' => 'details',
       '#title' => $this->t('Footer Logos'),
       '#states' => [
-        'visible' => [
-          ':input[name="footer_variation"]' => ['value' => 'mega'],
+        'disabled' => [
+          ':input[name="footer_variation"]' => ['value' => 'basic'],
         ],
       ],
     ];
@@ -89,8 +130,8 @@ class FooterSettingsForm extends ConfigFormBase {
       '#type' => 'details',
       '#title' => $this->t('Footer Content'),
       '#states' => [
-        'visible' => [
-          ':input[name="footer_variation"]' => ['value' => 'mega'],
+        'disabled' => [
+          ':input[name="footer_variation"]' => ['value' => 'basic'],
         ],
       ],
     ];
@@ -104,17 +145,7 @@ class FooterSettingsForm extends ConfigFormBase {
         ],
       ],
       '#states' => [
-        'visible' => [
-          ':input[name="footer_variation"]' => ['value' => 'mega'],
-        ],
-      ],
-    ];
-
-    $form['social_links'] = [
-      '#type' => 'details',
-      '#title' => $this->t('Social Links'),
-      '#states' => [
-        'open' => [
+        'disabled' => [
           ':input[name="footer_variation"]' => ['value' => 'basic'],
         ],
       ],

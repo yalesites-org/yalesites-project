@@ -1,7 +1,94 @@
 @media screen and (min-width: 1380px) {
-  .ys-footer-links .details-wrapper, .ys-footer-links .claro-details__content {
+  .ys-footer-links .details-wrapper,
+  .ys-footer-links .claro-details__content {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 2rem;
   }
+}
+
+.ys-core-footer-settings-form
+  .claro-details.form-disabled
+  .claro-details__summary {
+  background-color: #6f6f6f !important;
+}
+
+.ys-core-footer-settings-form .claro-details.form-disabled {
+  pointer-events: none;
+  user-select: none;
+}
+
+.ys-core-footer-settings-form
+  .claro-details.form-disabled
+  .claro-details__summary::after {
+  background-image: url("../images/icons/disabled-details.svg");
+  background-repeat: no-repeat;
+  background-size: contain;
+  box-shadow: none;
+  content: "";
+  display: inline-block;
+  height: 2rem;
+  left: 11rem;
+  opacity: 1;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2rem;
+}
+
+.footer-variation-radios .form-radios {
+  display: flex;
+}
+
+.form-item--footer-variation.form-type--radio input {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+.form-item--footer-variation.form-type--radio label {
+  flex: 1 auto;
+  padding: var(--size-spacing-6) var(--size-spacing-4);
+  border-radius: 0.25rem;
+  border: 2px solid var(--color-border);
+  aspect-ratio: 2/1;
+  display: block !important;
+  text-align: left;
+  background: var(--dark-theme-gray);
+  border: 2px solid white;
+  padding: var(--size-spacing-4) var(--size-spacing-5);
+  color: var(--color-text-primary);
+  border-radius: 0.25rem;
+  margin-bottom: var(--size-spacing-4);
+  width: 178px;
+  height: 131px;
+}
+
+.form-item--footer-variation input[value="basic"] + label {
+  background-image: url("../images/preview-icons/basic-footer.svg");
+  background-repeat: no-repeat;
+  background-position: center -2px;
+  text-align: center;
+}
+
+.form-item--footer-variation input[value="mega"] + label {
+  background-image: url("../images/preview-icons/mega-footer.svg");
+  background-repeat: no-repeat;
+  background-position: center -2px;
+  text-align: center;
+}
+
+.form-item--footer-variation input[checked="checked"] + label,
+.form-item--footer-variation input[checked="checked"] + label:hover,
+.form-item--footer-variation
+  .form-boolean--type-radio:hover
+  input[checked="checked"]
+  + label {
+  background-color: #3b3b3f;
+  color: var(--color-background-primary) !important;
 }
