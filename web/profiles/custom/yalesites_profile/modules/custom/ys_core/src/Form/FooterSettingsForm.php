@@ -102,13 +102,13 @@ class FooterSettingsForm extends ConfigFormBase {
     $form['desc_basic_container']['desc_basic'] = [
       '#type' => 'markup',
       '#prefix' => '<h2>Basic Footer</h2>',
-      '#markup' => $this->t('The basic footer of your website contains only social media icons and Yale branding.'),
+      '#markup' => '<p>' . $this->t('The basic footer of your website contains only social media icons and Yale branding.') . '</p>',
     ];
 
     $form['desc_mega_container']['desc_mega'] = [
       '#type' => 'markup',
       '#prefix' => '<h2>Mega Footer</h2>',
-      '#markup' => $this->t('The mega footer of your website can be customized to suit your organizational needs. You can upload icons for various organizational identities and other platforms that your organization uses. You can also add a customizable text area with general information, contact information, or a physical address. Additionally, you can add up to 8 links in a two-column format.'),
+      '#markup' => '<p>' . $this->t('The mega footer of your website can be customized to suit your organizational needs. You can upload icons for various organizational identities and other platforms that your organization uses. You can also add a customizable text area with general information, contact information, or a physical address. Additionally, you can add up to 8 links in a two-column format.') . '</p>',
     ];
 
     $form['social_links'] = [
