@@ -68,6 +68,7 @@ class ThemesTwigExtension extends AbstractExtension {
    *
    * @param ?string $field_style_motion_val
    *   The value stored in field_style_motion on a component.
+   *
    * @return string
    *   A true or false HTML attribute to render to enable or disable animation.
    */

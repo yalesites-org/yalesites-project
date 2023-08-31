@@ -272,8 +272,9 @@ class ThemeSettingsManager {
    * method returns a string that represents a true or false attribute to add
    * to the component.
    *
-   * @param ?string $field_style_motion_val
+   * @param ?string $field_style_motion_value
    *   The value stored in field_style_motion on a component.
+   *
    * @return string
    *   A true or false HTML attribute to render to enable or disable animation.
    */
