@@ -13,9 +13,11 @@ entity_type: block_content
 bundle: divider
 label: Animation
 description: ''
-required: false
+required: true
 translatable: true
-default_value: {  }
+default_value:
+  -
+    value: default
 default_value_callback: ''
 settings: {  }
 field_type: list_string

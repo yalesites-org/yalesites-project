@@ -117,8 +117,8 @@ divider:
     default: left
   field_style_width:
     values:
-      '100%': 100
-      '75%': 75
-      '50%': 50
-      '25%': 25
+      100%: 100
+      75%: 75
+      50%: 50
+      25%: 25
     default: 100%
