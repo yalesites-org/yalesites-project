@@ -1,0 +1,14 @@
+uuid: 4c2195a0-b8d4-4a06-a771-45d276f60f8f
+langcode: en
+status: true
+dependencies:
+  config:
+    - key.key.mailchimp_transactional_api_key
+    - mailchimp_transactional.settings
+id: mailchimp_transactional_api_key
+label: 'Mailchimp Transactional API Key'
+config_type: system.simple
+config_prefix: ''
+config_name: mailchimp_transactional.settings
+config_item: mailchimp_transactional_api_key
+key_id: mailchimp_transactional_api_key

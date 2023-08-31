@@ -1,0 +1,14 @@
+uuid: f6795b10-907b-41a1-bc2b-e3c49593ffb0
+langcode: en
+status: true
+dependencies:
+  config:
+    - key.key.recaptcha_v3_key
+    - recaptcha_v3.settings
+id: recaptcha_v3_site_key
+label: 'reCAPTCHA v3 site key'
+config_type: system.simple
+config_prefix: ''
+config_name: recaptcha_v3.settings
+config_item: site_key
+key_id: recaptcha_v3_key

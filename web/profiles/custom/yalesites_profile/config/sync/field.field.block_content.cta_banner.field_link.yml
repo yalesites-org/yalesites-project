@@ -11,7 +11,7 @@ id: block_content.cta_banner.field_link
 field_name: field_link
 entity_type: block_content
 bundle: cta_banner
-label: Link
+label: Call-to-action
 description: ''
 required: true
 translatable: false

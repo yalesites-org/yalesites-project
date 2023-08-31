@@ -3,5 +3,3 @@ type: module
 description: Email support for YaleSites
 core_version_requirement: '^9 || ^10'
 package: YaleSites
-dependencies:
-  - ys_secrets
