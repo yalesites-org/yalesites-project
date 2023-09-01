@@ -8,8 +8,8 @@ libraries:
   - atomic/global
   - atomic/layout-builder
 
-ckeditor_stylesheets:
-  - dist/style.css
+ckeditor5-stylesheets:
+  - css/ckeditor5.css
 
 regions:
   header: Header
