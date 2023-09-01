@@ -1,53 +1,70 @@
-uuid: 23681889-3337-49e5-af58-b61087d99a4f
+uuid: 05e16a5b-5ad6-4c77-a471-73fa64268cd1
 langcode: en
 status: true
 dependencies:
   config:
     - filter.format.basic_html
   module:
-    - ckeditor
+    - ckeditor5
 format: basic_html
-editor: ckeditor
+editor: ckeditor5
 settings:
   toolbar:
-    rows:
-      -
-        -
-          name: Formatting
-          items:
-            - Bold
-            - Italic
-            - JustifyLeft
-            - JustifyCenter
-            - JustifyRight
-            - Format
-            - '-'
-            - Paste
-            - PasteText
-        -
-          name: Links
-          items:
-            - DrupalLink
-            - DrupalUnlink
-        -
-          name: Lists
-          items:
-            - BulletedList
-            - NumberedList
-            - Outdent
-            - Indent
-        -
-          name: Media
-          items:
-            - Table
-        -
-          name: Tools
-          items:
-            - Source
-            - Maximize
-            - '-'
+    items:
+      - bold
+      - italic
+      - alignment
+      - heading
+      - '|'
+      - link
+      - '|'
+      - bulletedList
+      - numberedList
+      - outdent
+      - indent
+      - '|'
+      - insertTable
+      - '|'
+      - sourceEditing
+      - '|'
+      - blockQuote
+      - code
+      - superscript
+      - subscript
   plugins:
-    drupallink:
+    ckeditor5_heading:
+      enabled_headings:
+        - heading2
+        - heading3
+        - heading4
+        - heading5
+        - heading6
+    ckeditor5_sourceEditing:
+      allowed_tags:
+        - '<cite>'
+        - '<dl>'
+        - '<dt>'
+        - '<dd>'
+        - '<span>'
+        - '<blockquote cite>'
+        - '<ul type>'
+        - '<ol type>'
+        - '<h2 id>'
+        - '<h3 id>'
+        - '<h4 id>'
+        - '<h5 id>'
+        - '<h6 id>'
+        - '<a hreflang title>'
+    ckeditor5_list:
+      reversed: false
+      startIndex: true
+    ckeditor5_alignment:
+      enabled_alignments:
+        - left
+        - center
+        - right
+        - justify
+    linkit_extension:
       linkit_enabled: true
       linkit_profile: default
 image_upload:
