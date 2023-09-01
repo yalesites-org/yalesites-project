@@ -79,7 +79,9 @@
 .gin--dark-mode .form-actions .glb-button,
 .gin--dark-mode .form-actions .inline-block-create-button,
 .gin--dark-mode .form-actions .layout-builder__link--add,
-.gin--dark-mode .glb-action-link--icon-trash.glb-action-link {
+.gin--dark-mode .glb-action-link--icon-trash.glb-action-link,
+.gin--dark-mode .glb-button--primary,
+.gin--dark-mode .glb-button--primary:not(:focus) {
   box-shadow: unset !important;
 }
 
@@ -171,7 +173,7 @@
 /* forms */
 .gin--dark-mode .form-element,
 .gin--dark-mode .glb-form-element {
-  background-color: var(--darkest-gray) !important;
+  background-color: var(--gin-bg-layer2) !important;
 }
 
 ::placeholder {
