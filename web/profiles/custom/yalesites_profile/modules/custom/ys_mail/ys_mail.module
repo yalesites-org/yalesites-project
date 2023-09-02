@@ -10,9 +10,9 @@
  */
 function ys_mail_form_mailchimp_transactional_admin_settings_alter(&$form, &$form_state, $form_id) {
   // Disable the mailchimp_transactional_api_key field from the admin form as
-  // the value is set via Drupal\ys_mail\Config\MailConfigOverrides.
-  $secrets = \Drupal::service('ys_secrets.manager');
-  $secrets->disableField($form['mailchimp_transactional_api_key']);
+  // the value is set via Key via Pantheon Secrets.
+  $form['mailchimp_transactional_api_key']['#disabled'] = TRUE;
+  $form['mailchimp_transactional_api_key']['#default_value'] = 'HIDDEN';
 }
 
 /**

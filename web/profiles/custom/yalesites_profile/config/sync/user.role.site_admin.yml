@@ -6,6 +6,7 @@ dependencies:
     - core.entity_view_display.node.event.default
     - core.entity_view_display.node.page.default
     - core.entity_view_display.node.post.default
+    - core.entity_view_display.node.profile.default
     - media.type.background_video
     - media.type.document
     - media.type.embed
@@ -14,6 +15,7 @@ dependencies:
     - node.type.event
     - node.type.page
     - node.type.post
+    - node.type.profile
     - taxonomy.vocabulary.event_category
     - taxonomy.vocabulary.post_category
     - taxonomy.vocabulary.tags
@@ -62,6 +64,7 @@ permissions:
   - 'configure editable event node layout overrides'
   - 'configure editable page node layout overrides'
   - 'configure editable post node layout overrides'
+  - 'configure editable profile node layout overrides'
   - 'create accordion block content'
   - 'create and edit custom blocks'
   - 'create background_video media'
@@ -85,6 +88,7 @@ permissions:
   - 'create page content'
   - 'create post content'
   - 'create post_list block content'
+  - 'create profile content'
   - 'create pull_quote block content'
   - 'create quick_links block content'
   - 'create tabs block content'
@@ -120,6 +124,7 @@ permissions:
   - 'delete any page content'
   - 'delete any post content'
   - 'delete any post_list block content'
+  - 'delete any profile content'
   - 'delete any pull_quote block content'
   - 'delete any quick_links block content'
   - 'delete any tabs block content'
@@ -138,6 +143,7 @@ permissions:
   - 'delete own image media'
   - 'delete own page content'
   - 'delete own post content'
+  - 'delete own profile content'
   - 'delete own video media'
   - 'delete terms in event_category'
   - 'delete terms in post_category'
@@ -149,6 +155,7 @@ permissions:
   - 'edit any image media'
   - 'edit any page content'
   - 'edit any post content'
+  - 'edit any profile content'
   - 'edit any video media'
   - 'edit any webform submission'
   - 'edit own background_video media'
@@ -158,6 +165,7 @@ permissions:
   - 'edit own image media'
   - 'edit own page content'
   - 'edit own post content'
+  - 'edit own profile content'
   - 'edit own video media'
   - 'edit own webform submission'
   - 'edit terms in event_category'
@@ -172,6 +180,7 @@ permissions:
   - 'revert event revisions'
   - 'revert page revisions'
   - 'revert post revisions'
+  - 'revert profile revisions'
   - 'unpublish any content'
   - 'unpublish editable content'
   - 'update any accordion block content'
@@ -208,6 +217,7 @@ permissions:
   - 'view own webform submission'
   - 'view page revisions'
   - 'view post revisions'
+  - 'view profile revisions'
   - 'view the administration theme'
   - 'view unpublished paragraphs'
   - 'yalesites manage alerts'

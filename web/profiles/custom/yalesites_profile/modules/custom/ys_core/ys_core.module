@@ -5,6 +5,7 @@
  * Contains ys_core.module functions.
  */
 
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -101,6 +102,18 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
       '#markup' => "<p>" . t('@description', $replacements) . "</p>",
     ];
   }
+}
+
+/**
+ * Implements hook_preprocess_block().
+ */
+function ys_core_preprocess_block(&$variables) {
+  $config = \Drupal::config('ys_core.social_links');
+
+  // Add the cache tag, so that the theme setting information is rebuilt
+  // when the config is saved.
+  // Via: https://drupal.stackexchange.com/questions/266379/how-to-clear-cache-for-config-entity-after-making-changes
+  \Drupal::service('renderer')->addCacheableDependency($variables, $config);
 }
 
 /**
@@ -219,72 +232,84 @@ function ys_core_preprocess_image_widget(&$variables) {
    */
   $element = $variables['element'];
 
-  $variables['attributes'] = [
-    'class' => [
-      'image-widget',
-      'js-form-managed-file',
-      'form-managed-file',
-      'clearfix',
-    ],
-  ];
+  if (isset($element['#use_favicon_preview'])) {
 
-  $config = \Drupal::config('system.site');
-  $variables['site_name'] = $config->get('name');
-
-  if (!empty($element['fids']['#value'])) {
-    $file = reset($element['#files']);
-    $element['file_' . $file->id()]['filename']['#suffix'] = ' <span class="file-size">(' . format_size($file->getSize()) . ')</span> ';
-    $file_variables = [
-      'style_name' => $element['#preview_image_style'],
-      'uri' => $file->getFileUri(),
+    $variables['attributes'] = [
+      'class' => [
+        'image-widget',
+        'js-form-managed-file',
+        'form-managed-file',
+        'clearfix',
+      ],
     ];
 
-    // Determine image dimensions.
-    if (isset($element['#value']['width']) && isset($element['#value']['height'])) {
-      $file_variables['width'] = $element['#value']['width'];
-      $file_variables['height'] = $element['#value']['height'];
-    }
-    else {
-      $image = \Drupal::service('image.factory')->get($file->getFileUri());
-      if ($image->isValid()) {
-        $file_variables['width'] = $image->getWidth();
-        $file_variables['height'] = $image->getHeight();
+    $config = \Drupal::config('system.site');
+    $variables['site_name'] = $config->get('name');
+
+    if (!empty($element['fids']['#value'])) {
+      $file = reset($element['#files']);
+      $element['file_' . $file->id()]['filename']['#suffix'] = ' <span class="file-size">(' . format_size($file->getSize()) . ')</span> ';
+      $file_variables = [
+        'style_name' => $element['#preview_image_style'],
+        'uri' => $file->getFileUri(),
+      ];
+
+      // Determine image dimensions.
+      if (isset($element['#value']['width']) && isset($element['#value']['height'])) {
+        $file_variables['width'] = $element['#value']['width'];
+        $file_variables['height'] = $element['#value']['height'];
       }
       else {
-        $file_variables['width'] = $file_variables['height'] = NULL;
+        $image = \Drupal::service('image.factory')->get($file->getFileUri());
+        if ($image->isValid()) {
+          $file_variables['width'] = $image->getWidth();
+          $file_variables['height'] = $image->getHeight();
+        }
+        else {
+          $file_variables['width'] = $file_variables['height'] = NULL;
+        }
       }
+
+      $element['preview'] = [
+        '#weight' => -10,
+        '#theme' => 'image_style',
+        '#width' => $file_variables['width'],
+        '#height' => $file_variables['height'],
+        '#style_name' => $file_variables['style_name'],
+        '#uri' => $file_variables['uri'],
+      ];
+
+      // Store the dimensions in the form so the file doesn't have to be
+      // accessed again. This is important for remote files.
+      $element['width'] = [
+        '#type' => 'hidden',
+        '#value' => $file_variables['width'],
+      ];
+      $element['height'] = [
+        '#type' => 'hidden',
+        '#value' => $file_variables['height'],
+      ];
+    }
+    else {
+      $variables['fallback_image'] = TRUE;
     }
 
-    $element['preview'] = [
-      '#weight' => -10,
-      '#theme' => 'image_style',
-      '#width' => $file_variables['width'],
-      '#height' => $file_variables['height'],
-      '#style_name' => $file_variables['style_name'],
-      '#uri' => $file_variables['uri'],
-    ];
+    // Sets a twig variable to use the favicon preview.
+    // @see web/themes/custom/ys_admin_theme/templates/content-edit/image-widget.html.twig
+    $variables['use_favicon_preview'] = $element['#use_favicon_preview'];
 
-    // Store the dimensions in the form so the file doesn't have to be
-    // accessed again. This is important for remote files.
-    $element['width'] = [
-      '#type' => 'hidden',
-      '#value' => $file_variables['width'],
-    ];
-    $element['height'] = [
-      '#type' => 'hidden',
-      '#value' => $file_variables['height'],
-    ];
+    $variables['data'] = [];
+    foreach (Element::children($element) as $child) {
+      $variables['data'][$child] = $element[$child];
+    }
   }
-  else {
-    $variables['fallback_image'] = TRUE;
-  }
+}
 
-  // Sets a twig variable to use the favicon preview.
-  // @see web/themes/custom/ys_admin_theme/templates/content-edit/image-widget.html.twig
-  $variables['use_favicon_preview'] = $element['#use_favicon_preview'];
-
-  $variables['data'] = [];
-  foreach (Element::children($element) as $child) {
-    $variables['data'][$child] = $element[$child];
-  }
+/**
+ * Implements hook_ENTITY_update().
+ *
+ * Clears the cache for rendered items on taxonomy term update.
+ */
+function ys_core_taxonomy_term_update() {
+  Cache::invalidateTags(['rendered']);
 }

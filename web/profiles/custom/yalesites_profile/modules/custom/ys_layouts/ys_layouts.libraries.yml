@@ -3,3 +3,8 @@ ys_layout_banner:
   css:
     theme:
       layouts/banner/banner.css: {}
+ys_layout_two_column:
+  version: VERSION
+  css:
+    theme:
+      layouts/two_column/two-column.css: {}
