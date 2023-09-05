@@ -185,6 +185,12 @@
   background: var(--dark-theme-gray);
 }
 
+.gin--dark-mode [data-drupal-selector^=views-ui-config-item-form-] .js-form-type-checkbox,
+.gin--dark-mode .js-form-item-required,
+.gin--dark-mode .js-form-item-cas-enabled {
+  background-color: var(--darkest-gray);
+}
+
 /* checkbox spacing */
 .gin--dark-mode .js-form-type-checkbox.form-type--checkbox {
   padding: 0.5rem;
