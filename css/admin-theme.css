@@ -426,10 +426,11 @@
   color: var(--wool);
 }
 
-/* .gin--dark-mode .chosen-search-input,
-.gin--dark-mode .chosen-search-input::placeholder {
-  color: var(--dark-theme-gray) !important;
-} */
+.gin--dark-mode [data-drupal-selector^="views-ui-config-item-form-"] .js-form-type-checkbox,
+.gin--dark-mode .js-form-item-required,
+.gin--dark-mode .js-form-item-cas-enabled {
+  background-color: var(--darkest-gray);
+}
 
 /* search input placeholder opacity */
 input[type="search"]::placeholder {
