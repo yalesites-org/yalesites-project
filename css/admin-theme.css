@@ -426,11 +426,6 @@
   color: var(--wool);
 }
 
-.gin--dark-mode [data-drupal-selector^="views-ui-config-item-form-"] .js-form-type-checkbox,
-.gin--dark-mode .js-form-item-required,
-.gin--dark-mode .js-form-item-cas-enabled {
-  background-color: var(--darkest-gray);
-}
 
 /* search input placeholder opacity */
 input[type="search"]::placeholder {
@@ -489,12 +484,21 @@ input[type="search"]::placeholder {
   background-color: var(--darkest-gray) !important;
 }
 
-.gin--dark-mode .glb-form-checkbox:checked {
+/* checkboxes */
+.gin--dark-mode :not(.glb-form-checkboxes):not(td):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .glb-form-checkbox:checked + .glb-checkbox-toggle {
+  background-color: var(--robin-egg) !important;
+}
+
+.gin--dark-mode :not(.form-checkboxes):not(td):not(.tabledrag-cell-content__item):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .form-type--checkbox .checkbox-toggle__inner::before {
+  background-color: var(--dark-theme-gray) !important;
+}
+
+.gin--dark-mode :not(.form-checkboxes):not(td):not(.tabledrag-cell-content__item):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .form-type--checkbox input:checked ~ .checkbox-toggle .checkbox-toggle__inner::before {
   background-color: var(--darkest-gray) !important;
 }
 
-.gin--dark-mode :not(.glb-form-checkboxes):not(td):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .glb-form-checkbox:checked + .glb-checkbox-toggle {
-  background-color: var(--robin-egg) !important;
+.gin--dark-mode .form-boolean--type-checkbox:not(:checked) + .checkbox-toggle  .checkbox-toggle__inner {
+  background-color: var(--wool) !important;
 }
 
 /* Danger button */
