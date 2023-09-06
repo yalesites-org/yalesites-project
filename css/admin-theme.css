@@ -509,3 +509,9 @@ input[type="search"]::placeholder {
 .gin--dark-mode .action-link--icon-trash.action-link--danger::before {
   background: var(--gin-color-danger) !important;
 }
+
+/* Messages */
+.gin--dark-mode .messages,
+.gin--dark-mode .glb-messages {
+  outline: 0.15rem solid var(--wool);
+}
