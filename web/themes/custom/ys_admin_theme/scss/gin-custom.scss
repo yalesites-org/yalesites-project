@@ -331,4 +331,10 @@
   background: var(--gin-color-danger) !important;
 }
 
+/* Messages */
+.gin--dark-mode .messages,
+.gin--dark-mode .glb-messages {
+  outline: 0.15rem solid var(--wool);
+}
+
 /* stylelint-enable */
