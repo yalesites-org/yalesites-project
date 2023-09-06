@@ -42,7 +42,7 @@
   --gin-color-button-text: var(--dark-theme-gray-hover);
   --gin-color-button-text-hover: var(--dark-theme-gray-hover);
   --gin-border-color-layer2: #A8A8A8 !important;
-  --gin-pattern-fallback: var(--wool);
+  --gin-pattern-fallback: var(--light-gray);
   --dropbutton-extrasmall-toggle-size: 1.5rem;
 }
 

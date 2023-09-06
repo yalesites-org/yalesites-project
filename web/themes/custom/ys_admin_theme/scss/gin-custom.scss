@@ -313,6 +313,10 @@
   background-color: var(--wool);
 } 
 
+.gin--dark-mode[dir="ltr"] .media-library-item img {
+  background-image: unset !important;
+}
+
 /* Embed component */
 .gin--dark-mode .ui-dialog .ui-widget-content.ui-dialog-content h2 {
   color: var(--wool);
@@ -348,11 +352,13 @@
   border: 0;
   padding: 0;
   width: 100%;
+  float: none;
 }
 
-.gin--dark-mode .fieldset-legend.fieldset__label {
+.gin--dark-mode .fieldset-legend.fieldset__label,
+.gin--dark-mode .fieldset__legend.fieldset__legend--visible .fieldset__label {
   display: block;
-  color: var(--darkest-gray);
+  color: var(--darkest-gray) !important;
   background-color: var(--wool);
   border-top-left-radius: 0.5rem;
   border-top-right-radius: 0.5rem;
@@ -361,6 +367,11 @@
   border: 0.15rem solid var(--gin-border-color);
   margin-left: -0.15rem;
   margin-right: -0.15rem;
+}
+
+.gin--dark-mode .fieldset__label.fieldset__label--group {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
 }
 
 .gin--dark-mode #edit-footer-logos .fieldset-wrapper {
@@ -379,6 +390,12 @@
 .gin--dark-mode .messages,
 .gin--dark-mode .glb-messages {
   outline: 0.15rem solid var(--wool);
+}
+
+/* Radios */
+.gin--dark-mode .form-type--radio .form-radio {
+  border: 1px solid var(--wool);
+  background-color: var(--darkest-gray);
 }
 
 /* stylelint-enable */
