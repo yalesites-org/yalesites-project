@@ -59,7 +59,7 @@
   --gin-color-button-text: var(--dark-theme-gray);
   --gin-color-button-text-hover: var(--dark-theme-gray-hover);
   --gin-border-color-layer2: #A8A8A8 !important;
-  --gin-pattern-fallback: var(--wool);
+  --gin-pattern-fallback: var(--light-gray);
   --dropbutton-extrasmall-toggle-size: 1.5rem;
 }
 
@@ -190,6 +190,10 @@
 /* Media library */ 
 .media-library-item__click-to-select-checkbox .glb-form-checkbox:checked {
   background-color: var(--darkest-gray) !important;
+}
+
+.gin--dark-mode[dir="ltr"] .media-library-item img {
+  background-image: unset !important;
 }
 
 /* checkbox spacing */ 
@@ -517,11 +521,13 @@ input[type="search"]::placeholder {
   border: 0;
   padding: 0;
   width: 100%;
+  float: none;
 }
 
-.gin--dark-mode .fieldset-legend.fieldset__label {
+.gin--dark-mode .fieldset-legend.fieldset__label,
+.gin--dark-mode .fieldset__legend.fieldset__legend--visible .fieldset__label {
   display: block;
-  color: var(--darkest-gray);
+  color: var(--darkest-gray) !important;
   background-color: var(--wool);
   border-top-left-radius: 0.5rem;
   border-top-right-radius: 0.5rem;
@@ -531,6 +537,12 @@ input[type="search"]::placeholder {
   margin-left: -0.15rem;
   margin-right: -0.15rem;
 }
+
+.gin--dark-mode .fieldset__label.fieldset__label--group {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
 
 .gin--dark-mode #edit-footer-logos .fieldset-wrapper {
   padding: 1rem;
@@ -543,7 +555,6 @@ input[type="search"]::placeholder {
 .gin--dark-mode fieldset > legend + .fieldset-wrapper {
   padding: 1rem;
 }
-
 
 /* Secondary buttons */ 
 .gin--dark-mode .form-actions .button {
@@ -559,4 +570,10 @@ input[type="search"]::placeholder {
 .gin--dark-mode .messages,
 .gin--dark-mode .glb-messages {
   outline: 0.15rem solid var(--wool);
+}
+
+/* Radios */
+.gin--dark-mode .form-type--radio .form-radio {
+  border: 1px solid var(--wool);
+  background-color: var(--darkest-gray);
 }
