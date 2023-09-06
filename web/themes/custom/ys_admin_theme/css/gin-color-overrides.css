@@ -33,7 +33,7 @@
   --gin-bg-input: var(--darkest-gray) !important;
   --gin-border-color: var(--wool) !important;
   --gin-border-color-table-header: var(--darkest-gray) !important;
-  --gin-border-color-form-element: var(--light-gray) !important;
+  --gin-border-color-form-element: var(--darkest-gray) !important;
   --gin-bg-app: var(--darkest-gray);
   --gin-bg-layer3: var(--dark-theme-gray-hover);
   --colorGinText: var(--darkest-gray);

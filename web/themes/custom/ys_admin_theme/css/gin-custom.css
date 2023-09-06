@@ -169,12 +169,21 @@
   opacity: 0.8;
 }
 
+/* checkboxes */
+.gin--dark-mode :not(.glb-form-checkboxes):not(td):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .glb-form-checkbox:checked + .glb-checkbox-toggle {
+  background-color: var(--robin-egg) !important;
+}
+
+.gin--dark-mode :not(.form-checkboxes):not(td):not(.tabledrag-cell-content__item):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .form-type--checkbox .checkbox-toggle__inner::before {
+  background-color: var(--dark-theme-gray) !important;
+}
+
 .gin--dark-mode :not(.form-checkboxes):not(td):not(.tabledrag-cell-content__item):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .form-type--checkbox input:checked ~ .checkbox-toggle .checkbox-toggle__inner::before {
   background-color: var(--darkest-gray) !important;
 }
 
 .gin--dark-mode .form-boolean--type-checkbox:not(:checked) + .checkbox-toggle .checkbox-toggle__inner {
-  background-color: var(--dark-theme-gray) !important;
+  background-color: var(--wool) !important;
 }
 
 .gin--dark-mode table th {
@@ -183,12 +192,6 @@
 
 [data-drupal-selector=edit-enable-darkmode] .form-radios input:checked + .form-item__label {
   background: var(--dark-theme-gray);
-}
-
-.gin--dark-mode [data-drupal-selector^=views-ui-config-item-form-] .js-form-type-checkbox,
-.gin--dark-mode .js-form-item-required,
-.gin--dark-mode .js-form-item-cas-enabled {
-  background-color: var(--darkest-gray);
 }
 
 /* checkbox spacing */
