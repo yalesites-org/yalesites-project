@@ -498,7 +498,7 @@ input[type="search"]::placeholder {
 }
 
 .gin--dark-mode .form-boolean--type-checkbox:not(:checked) + .checkbox-toggle  .checkbox-toggle__inner {
-  background-color: var(--wool) !important;
+  background-color: var(--light-gray) !important;
 }
 
 /* Danger button */
