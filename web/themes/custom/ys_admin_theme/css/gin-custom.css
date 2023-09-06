@@ -183,7 +183,7 @@
 }
 
 .gin--dark-mode .form-boolean--type-checkbox:not(:checked) + .checkbox-toggle .checkbox-toggle__inner {
-  background-color: var(--wool) !important;
+  background-color: var(--light-gray) !important;
 }
 
 .gin--dark-mode table th {
