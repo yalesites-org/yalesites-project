@@ -165,6 +165,16 @@
   color: var(--wool) !important;
 }
 
+/* Secondary buttons */ 
+.gin--dark-mode .form-actions .button {
+  color: var(--gin-color-primary);
+  background-color: var(--darkest-gray);
+}
+
+.gin--dark-mode .form-actions .button:focus {
+  background-color: var(--wool);
+}
+
 /* icons */
 .action-link:hover::before {
   background: var(--robin-egg) !important;
@@ -329,6 +339,40 @@
 
 .gin--dark-mode .action-link--icon-trash.action-link--danger::before {
   background: var(--gin-color-danger) !important;
+}
+
+/* Legend */
+.gin--dark-mode legend {
+  display: block;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.gin--dark-mode .fieldset-legend.fieldset__label {
+  display: block;
+  color: var(--darkest-gray);
+  background-color: var(--wool);
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border: 0.15rem solid var(--gin-border-color);
+  margin-left: -0.15rem;
+  margin-right: -0.15rem;
+}
+
+.gin--dark-mode #edit-footer-logos .fieldset-wrapper {
+  padding: 1rem;
+}
+
+.gin--dark-mode #edit-footer-logos fieldset + .form-item {
+  margin-top: 1rem;
+}
+
+.gin--dark-mode fieldset > legend + .fieldset-wrapper {
+  padding: 1rem;
 }
 
 /* Messages */
