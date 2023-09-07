@@ -9,7 +9,7 @@ libraries:
   - atomic/layout-builder
 
 ckeditor5-stylesheets:
-  - node_modules/@yalesites-org/component-library-twig/dist/style.css
+  - css/ckeditor5.css
 
 regions:
   header: Header
