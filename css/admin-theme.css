@@ -252,7 +252,7 @@
 
 .gin--dark-mode .form-element,
 .gin--dark-mode .glb-form-element {
-  background-color: var(--darkest-gray) !important;
+  background-color: var(--gin-bg-layer2) !important;
 }
 
 /* remove media button */
