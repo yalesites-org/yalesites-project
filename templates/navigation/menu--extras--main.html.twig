@@ -1,4 +1,6 @@
+{# Note: After enabling menu_item_extras module, this file was renamed from menu--main.html.twig #}
 {{ attach_library('atomic/primary-nav') }}
+{{ attach_library('atomic/fontawesome')}}
 
 {% include "@organisms/menu/primary-nav/yds-primary-nav.twig"  with {
   menu__variation: getThemeSetting('nav_type'),
