@@ -28,6 +28,12 @@ fi
 # Start lando and create containers.
 lando start
 
+# Generate secrets file and copy it into the appserver container.
+terminus plugin:install pantheon-systems/terminus-secrets-manager-plugin
+terminus secret:site:local-generate yalesites-platform --filepath=/tmp/secrets.json
+appserver=$(docker ps --format "{{.Names}}" | grep yalesitesplatform_appserver | grep -v nginx)
+docker cp /tmp/secrets.json "$appserver":/tmp
+
 # Install packages and install Drupal using yalesites_profile.
 npm install
 npm run build-with-install
