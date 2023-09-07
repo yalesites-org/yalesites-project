@@ -86,7 +86,3 @@
   justify-content: flex-end;
   border-top: none;
 }
-
-.ys-alert-settings .js-form-type-checkbox {
-  background-color: var(--darkest-gray);
-}
