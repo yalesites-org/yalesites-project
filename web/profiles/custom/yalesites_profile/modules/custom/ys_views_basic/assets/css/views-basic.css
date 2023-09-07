@@ -2,20 +2,6 @@
 * @todo Possibly move these styles into admin theme.
 */
 
-/* set variables */
-.layout-builder-configure-block {
-  --color-border: var(--wool);
-  --color-border-lightest: var(--color-basic-white);
-  --color-link-hover: hsl(210, 100%, 21%);
-  --color-link-border: #187e9b;
-  --color-background-primary: var(--color-basic-white);
-  --color-background-hover: var(--dark-theme-gray);
-  --color-border-hover: var(--darkest-gray);
-  --color-text-lighter: #2D424D;
-  --color-text-primary: var(--color-gray-800);
-}
-
-
 /* General styles */
 .views-basic--params {
   display: none;
@@ -61,20 +47,24 @@
 }
 
 /* base for labels */
-.glb-form-type--radio label {
+.glb-form-type--radio label.glb-form-item__label.glb-option {
+  display: flex !important;
+  align-items: center;
+  flex-direction: column;
+  gap: 1rem;
   flex: 1 auto;
-  padding: var(--size-spacing-6) var(--size-spacing-4);
-  border-radius: 0.25rem;
-  border: 2px solid var(--color-border);
+  border: 2px solid var(--wool);
   aspect-ratio: 2/1;
-  display: block !important;
   text-align: left;
-  background: var(--dark-theme-gray);
-  border: 2px solid var(--color-border);
+  background-color: var(--dark-theme-gray);
   padding: var(--size-spacing-4) var(--size-spacing-5);
-  color: var(--color-text-primary);
+  color: var(--darkest-gray);
   border-radius: 0.25rem;
   margin-bottom: var(--size-spacing-4);
+}
+
+.glb-form-type--radio label.glb-form-item__label.glb-option:hover {
+  border-color: var(--darkest-gray);
 }
 
 
@@ -223,15 +213,15 @@
 .layout-builder-configure-block .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types:focus label,
 .layout-builder-configure-block .form-item-settings-block-form-group-user-selection-entity-and-view-mode-view-mode:hover label,
 .layout-builder-configure-block .form-item-settings-block-form-group-user-selection-entity-and-view-mode-view-mode:focus label {
-  background-color: var(--color-background-hover);
-  border-color: var(--color-border-hover);
+  background-color: var(--dark-theme-gray);
+  border-color: var(--darkest-gray);
 }
 
 .layout-builder-configure-block  .glb-form-type--radio input[checked="checked"] + label,
 .layout-builder-configure-block  .glb-form-type--radio input[checked="checked"] + label:hover,
 .layout-builder-configure-block  .glb-form-type--radio:hover input[checked="checked"] + label {
-  background-color: var(--color-text-primary);
-  color: var(--color-background-primary) !important;
+  background-color: var(--darkest-gray);
+  color: var(--wool) !important;
 }
 
 
@@ -247,8 +237,8 @@
 }
 
 .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types input[value="post"][checked="checked"] + label {
-  background-color: var(--color-text-primary);
-  color: var(--color-background-primary);
+  background-color: var(--darkest-gray);
+  color: var(--wool);
 }
 
 
@@ -260,8 +250,8 @@
 }
 
 .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types input[value="event"][checked="checked"] + label {
-  background-color: var(--color-text-primary);
-  color: var(--color-background-primary);
+  background-color: var(--darkest-gray);
+  color: var(--wool);
 }
 
 /* Pages */
@@ -272,8 +262,8 @@
 }
 
 .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types input[value="page"][checked="checked"] + label {
-  background-color: var(--color-text-primary);
-  color: var(--color-background-primary);
+  background-color: var(--darkest-gray);
+  color: var(--wool);
 }
 
 /* Profiles */
@@ -284,8 +274,8 @@
 }
 
 .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types input[value="profile"][checked="checked"] + label {
-  background-color: var(--color-text-primary);
-  color: var(--color-background-primary);
+  background-color: var(--darkest-gray);
+  color: var(--wool);
 }
 
 /*
