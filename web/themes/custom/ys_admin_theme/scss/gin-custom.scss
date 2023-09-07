@@ -165,6 +165,16 @@
   color: var(--wool) !important;
 }
 
+/* Secondary buttons */ 
+.gin--dark-mode .form-actions .button {
+  color: var(--gin-color-primary);
+  background-color: var(--darkest-gray);
+}
+
+.gin--dark-mode .form-actions .button:focus {
+  background-color: var(--wool);
+}
+
 /* icons */
 .action-link:hover::before {
   background: var(--robin-egg) !important;
@@ -181,12 +191,21 @@
   opacity: 0.8;
 }
 
+/* checkboxes */
+.gin--dark-mode :not(.glb-form-checkboxes):not(td):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .glb-form-checkbox:checked + .glb-checkbox-toggle {
+  background-color: var(--robin-egg) !important;
+}
+
+.gin--dark-mode :not(.form-checkboxes):not(td):not(.tabledrag-cell-content__item):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .form-type--checkbox .checkbox-toggle__inner::before {
+  background-color: var(--dark-theme-gray) !important;
+}
+
 .gin--dark-mode :not(.form-checkboxes):not(td):not(.tabledrag-cell-content__item):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .form-type--checkbox input:checked ~ .checkbox-toggle .checkbox-toggle__inner::before {
   background-color: var(--darkest-gray) !important;
 }
 
 .gin--dark-mode .form-boolean--type-checkbox:not(:checked) + .checkbox-toggle  .checkbox-toggle__inner {
-  background-color: var(--dark-theme-gray) !important;
+  background-color: var(--light-gray) !important;
 }
 
 .gin--dark-mode table th {
@@ -196,6 +215,7 @@
 [data-drupal-selector="edit-enable-darkmode"] .form-radios input:checked + .form-item__label {
   background: var(--dark-theme-gray);
 }
+
 
 /* checkbox spacing */ 
 .gin--dark-mode .js-form-type-checkbox.form-type--checkbox {
@@ -293,6 +313,22 @@
   background-color: var(--wool);
 } 
 
+.gin--dark-mode[dir="ltr"] .media-library-item img {
+  background-image: unset !important;
+}
+
+.gin--dark-mode .media-library-item .form-item {
+  border: 2px solid var(--darkest-gray);
+  padding: 0;
+  border-radius: 0.25rem;
+}
+
+.gin--dark-mode .media-library-item .media-library-item__remove:link,
+.gin--dark-mode .media-library-item .media-library-item__remove:not(:hover):not(:checked),
+.gin--dark-mode .media-library-item .media-library-item__edit:not(:hover):not(:checked) {
+  border-color: var(--darkest-gray) !important;
+}
+
 /* Embed component */
 .gin--dark-mode .ui-dialog .ui-widget-content.ui-dialog-content h2 {
   color: var(--wool);
@@ -319,6 +355,59 @@
 
 .gin--dark-mode .action-link--icon-trash.action-link--danger::before {
   background: var(--gin-color-danger) !important;
+}
+
+/* Legend */
+.gin--dark-mode legend {
+  display: block;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  width: 100%;
+  float: none;
+}
+
+.gin--dark-mode .fieldset-legend.fieldset__label,
+.gin--dark-mode .fieldset__legend.fieldset__legend--visible .fieldset__label {
+  display: block;
+  color: var(--darkest-gray) !important;
+  background-color: var(--wool);
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border: 0.15rem solid var(--gin-border-color);
+  margin-left: -0.15rem;
+  margin-right: -0.15rem;
+}
+
+.gin--dark-mode .fieldset__label.fieldset__label--group {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.gin--dark-mode #edit-footer-logos .fieldset-wrapper {
+  padding: 1rem;
+}
+
+.gin--dark-mode #edit-footer-logos fieldset + .form-item {
+  margin-top: 1rem;
+}
+
+.gin--dark-mode fieldset > legend + .fieldset-wrapper {
+  padding: 1rem;
+}
+
+/* Messages */
+.gin--dark-mode .messages,
+.gin--dark-mode .glb-messages {
+  outline: 0.15rem solid var(--wool);
+}
+
+/* Radios */
+.gin--dark-mode .form-type--radio .form-radio {
+  border: 1px solid var(--wool);
+  background-color: var(--darkest-gray);
 }
 
 /* stylelint-enable */
