@@ -6,10 +6,12 @@
  */
 
 use Drupal\Core\Cache\Cache;
+use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
+use Drupal\menu_item_extras\Entity\MenuItemExtrasMenuLinkContent;
 
 /**
  * @file
@@ -157,34 +159,36 @@ function ys_core_user_login_form_submit($form, FormStateInterface $form_state) {
 }
 
 /**
- * Implements hook_page_preprocess_menu__main().
+ * Implements theme_preprocess_menu().
  */
-function ys_core_preprocess_menu__main(&$variables) {
-  // If submenu, add the top level link as the first link in the submenu.
-  foreach ($variables['items'] as &$menuItem) {
-    // Skip menu items that do not have subitems.
-    if (empty($menuItem['below'])) {
-      continue;
+function ys_core_preprocess_menu(&$variables) {
+  if ($variables['menu_name'] == 'main') {
+    // If submenu, add the top level link as the first link in the submenu.
+    foreach ($variables['items'] as &$menuItem) {
+      // Skip menu items that do not have subitems.
+      if (empty($menuItem['below'])) {
+        continue;
+      }
+
+      // Clone top level menu item.
+      $clonedMenuItem = $menuItem;
+
+      // We don't want any other subitems, just the top level.
+      $clonedMenuItem['below'] = NULL;
+
+      // Main menu items get the heading treatment.
+      // @see component-library-twig/components/02-molecules/menu/_yds-menu-item.twig
+      $clonedMenuItem['list__item__is_heading'] = TRUE;
+
+      // Get the CTA text from menu item extras field.
+      $clonedMenuItem['heading_cta'] = $clonedMenuItem['entity']->get('field_menu_top_level_link_cta')->value ?: t('Explore all');
+
+      // Add cloned item to the beginning of the menu.
+      array_unshift($menuItem['below'], $clonedMenuItem);
+
     }
-
-    // Clone top level menu item.
-    $clonedMenuItem = $menuItem;
-
-    // We don't want any other subitems, just the top level.
-    $clonedMenuItem['below'] = NULL;
-
-    // If a node, use the node title instead of link title.
-    $routeParams = $clonedMenuItem['original_link']->getRouteParameters();
-    if (!empty($routeParams['node'])) {
-      /** @var \Drupal\node\Entity\Node $node */
-      $node = \Drupal::entityTypeManager()->getStorage('node')->load($routeParams['node']);
-      $clonedMenuItem['title'] = $node->getTitle();
-    }
-
-    // Add cloned item to the beginning of the menu.
-    array_unshift($menuItem['below'], $clonedMenuItem);
-
   }
+
 }
 
 /**
@@ -326,3 +330,91 @@ function ys_core_preprocess_image_widget(&$variables) {
 function ys_core_taxonomy_term_update() {
   Cache::invalidateTags(['rendered']);
 }
+
+/**
+ * The following functions add menu item extras fields to node add/edit forms.
+ *
+ * @see https://www.drupal.org/project/menu_item_extras/issues/2992096#comment-14140361
+ */
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function ys_core_form_node_page_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  ys_core_page_form_alter($form, $form_state);
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function ys_core_form_node_page_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  ys_core_page_form_alter($form, $form_state);
+}
+
+/**
+ * THe Drupal backend cache renderer service.
+ *
+ * @var array $form
+ *  The form array.
+ * @var Drupal\Core\Form\FormStateInterface $form_state
+ *  The current form state.
+ */
+function ys_core_page_form_alter(&$form, FormStateInterface $form_state) {
+
+  // Add menu link fields to node form.
+  if ($link = _ys_core_get_link($form_state)) {
+    $form_display = EntityFormDisplay::load('menu_link_content.' . $link->getMenuName() . '.default');
+    assert($form_display instanceof EntityFormDisplay);
+    $form['menu']['link']['extra'] = [
+      '#type' => 'container',
+      '#parents' => ['menu', 'extra'],
+    ];
+    $form_display->buildForm($link, $form['menu']['link']['extra'], $form_state);
+    // Only keep custom fields, other properties already are in the form.
+    foreach (Element::children($form['menu']['link']['extra']) as $key) {
+      if (strpos($key, 'field_') !== 0) {
+        unset($form['menu']['link']['extra'][$key]);
+      }
+    }
+
+    foreach (array_keys($form['actions']) as $action) {
+      if ($action != 'preview' && isset($form['actions'][$action]['#type']) && $form['actions'][$action]['#type'] === 'submit') {
+        $form['actions'][$action]['#submit'][] = 'ys_core_save_menu_link_fields';
+      }
+    }
+  }
+}
+
+/**
+ * Saves the menu item extras when on the node add/edit pages.
+ *
+ * @throws \Drupal\Core\Entity\EntityStorageException
+ */
+function ys_core_save_menu_link_fields(array $form, FormStateInterface $form_state) {
+  if ($link = _ys_core_get_link($form_state)) {
+    $form_display = EntityFormDisplay::load('menu_link_content.' . $link->getMenuName() . '.default');
+    assert($form_display instanceof EntityFormDisplay);
+    $form_display->extractFormValues($link, $form['menu']['link']['extra'], $form_state);
+    $link->save();
+  }
+}
+
+/**
+ * Gets any menu item extras content.
+ *
+ * @return Drupal\menu_item_extras\Entity\MenuItemExtrasMenuLinkContent
+ *   Menu item extras content.
+ */
+function _ys_core_get_link(FormStateInterface $form_state) {
+  /** @var Drupal\node\Entity $form_state */
+  $node = $form_state->getFormObject()->getEntity();
+  $defaults = menu_ui_get_menu_link_defaults($node);
+  if ($mlid = $defaults['entity_id']) {
+    return MenuItemExtrasMenuLinkContent::load($mlid);
+  }
+  return MenuItemExtrasMenuLinkContent::create($defaults);
+}
+
+/**
+ * End allow menu item extras fields to be included on node add and edit forms.
+ */
