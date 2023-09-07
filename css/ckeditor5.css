@@ -42,3 +42,8 @@
 .glb-table .draggable-table .ck-content td:first-child ~ td {
   padding: 0.4em;
 }
+
+.glb-table .draggable-table .ck-content thead th:not(:first-of-type)::before,
+.glb-table .draggable-table .ck-content thead th:not(:first-of-type)::after {
+  content: unset;
+}
