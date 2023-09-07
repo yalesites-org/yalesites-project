@@ -26,11 +26,6 @@ settings:
       - insertTable
       - '|'
       - sourceEditing
-      - '|'
-      - blockQuote
-      - code
-      - superscript
-      - subscript
   plugins:
     ckeditor5_heading:
       enabled_headings:
