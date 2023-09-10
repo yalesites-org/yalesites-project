@@ -1,14 +1,14 @@
 _core:
   default_config_hash: hSAUW7BoAd9YUpKcVKyZpW4wY67g4XZAYlt3Vnz6SVA
+enabled_default: 0
 default_challenge: recaptcha_v3/form_submission
 description: 'This question is for testing whether or not you are a human visitor and to prevent automated spam submissions.'
 administration_mode: false
+allow_on_admin_pages: false
 whitelist_ips: ''
+add_captcha_description: true
 wrong_captcha_response_message: 'The answer you entered for the CAPTCHA was not correct.'
 default_validation: 1
 persistence: 1
 enable_stats: false
 log_wrong_responses: false
-enabled_default: 0
-allow_on_admin_pages: false
-add_captcha_description: true

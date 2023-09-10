@@ -1,0 +1,23 @@
+uuid: 7b19e30a-e34c-4869-8522-0ec9074beca3
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.grand_hero
+    - field.storage.block_content.field_heading_level
+  module:
+    - options
+id: block_content.grand_hero.field_heading_level
+field_name: field_heading_level
+entity_type: block_content
+bundle: grand_hero
+label: 'Heading Level'
+description: 'Optionally override heading level for this banner'
+required: true
+translatable: true
+default_value:
+  -
+    value: '2'
+default_value_callback: ''
+settings: {  }
+field_type: list_string

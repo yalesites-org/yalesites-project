@@ -7,7 +7,7 @@ logo:
   use_default: 1
 favicon:
   use_default: 1
-enable_darkmode: '0'
+enable_darkmode: '1'
 preset_accent_color: light_blue
 accent_color: ''
 preset_focus_color: dark

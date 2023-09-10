@@ -8,46 +8,42 @@
   --darkest-gray: #1f1f1f;
   --dark-theme-gray-rgb: 78, 89, 89;
   --dark-theme-gray:#4E5959;
-  --dark-theme-gray-selected:#edfbfb;
-  --dark-theme-gray-lightest:#d0e0e0;
-  --dark-theme-gray-lightest-rgb: 208, 224, 224;
-  --dark-theme-gray-light:#606A6A;
   --dark-theme-gray-hover: #353d3d;
   --dark-primary-link: var(--wool);
   --dark-primary-link-hover: #ffffff;
   --dark-gin-icon-color: var(--wool);
-  --dark-theme-gray-text-light:var(--wool);
-  --dark-theme-gray-text-dark:var(--dark-theme-gray);
-  --custom-button-color: var(--robin-egg);
-  --custom-button-color-hover: var(--wool);
-  --custom-button-color-text: var(--dark-theme-gray-hover);
-  --custom-button-color-text-hover: var(--dark-theme-gray-hover);
-}
-:root [data-gin-accent] {
-  --gin-color-button-text: var(--dark-theme-gray);
-  --gin-color-button-text-hover: var(--dark-theme-gray-hover);
 }
 :root [data-gin-accent=light_blue] {
+  --gin-color-primary: var(--robin-egg);
   --gin-color-primary-rgb: 217, 241, 243;
-  /* --gin-color-primary-rgb: 78, 89, 89; */
-  --gin-color-text-light: var(--wool);
-  --gin-bg-item-hover: var(--dark-theme-gray-hover);
-  --gin-bg-header: var(--dark-theme-gray);
   --gin-color-primary-active: var(--wool) !important;
   --gin-color-secondary: var(--mediterranean-blue) !important;
-  --gin-color-primary-hover: var(--dark-theme-gray-hover) !important;
-  --gin-color-primary-light: var(--gin-bg-item-hover) !important;
-  --gin-border-color-layer: var(--light-gray) !important;
-  --gin-bg-layer: var(--dark-theme-gray) !important;
-  --gin-border-color-table-header: var(--darkest-gray) !important;
-  --gin-bg-input: #fff !important;
-  --gin-border-color-form-element: var(--light-gray) !important;
-  --gin-bg-app: #707070;
-  --gin-color-primary-light-active: var(--robin-egg);
   --gin-icon-color: var(--dark-gin-icon-color);
-  --gin-color-button-text: var(--custom-button-color-text);
+  --gin-bg-item-hover: var(--dark-theme-gray-hover);
+  --gin-bg-header: var(--dark-theme-gray);
+  --gin-color-text: var(--wool);
+  --gin-color-text-light: var(--wool);
+  --gin-color-primary-hover: var(--wool) !important;
+  --gin-color-primary-light: var(--gin-bg-item-hover) !important;
+  --gin-color-primary-light-active: var(--robin-egg);
+  --gin-border-color-layer: var(--wool) !important;
+  --gin-color-danger: #E09494;
+  --gin-color-info: var(--mediterranean-blue) !important;
+  --gin-bg-layer: var(--dark-theme-gray) !important;
+  --gin-bg-input: var(--darkest-gray) !important;
+  --gin-border-color: var(--wool) !important;
+  --gin-border-color-table-header: var(--darkest-gray) !important;
+  --gin-border-color-form-element: var(--darkest-gray) !important;
+  --gin-bg-app: var(--darkest-gray);
   --gin-bg-layer3: var(--dark-theme-gray-hover);
-  --gin-color-title: var(--dark-theme-gray);
+  --colorGinText: var(--darkest-gray);
+  --gin-color-dark-text: var(--wool);
+  --gin-color-title: var(--wool);
+  --gin-color-button-text: var(--dark-theme-gray-hover);
+  --gin-color-button-text-hover: var(--dark-theme-gray-hover);
+  --gin-border-color-layer2: #A8A8A8 !important;
+  --gin-pattern-fallback: var(--light-gray);
+  --dropbutton-extrasmall-toggle-size: 1.5rem;
 }
 
 /* stylelint-enable */

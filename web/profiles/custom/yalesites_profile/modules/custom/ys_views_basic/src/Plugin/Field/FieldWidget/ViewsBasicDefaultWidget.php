@@ -141,6 +141,11 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     $form['group_user_selection']['filter_and_sort'] = [
       '#type' => 'container',
+      '#attributes' => [
+        'class' => [
+          'grouped-items',
+        ],
+      ],
     ];
 
     $form['group_user_selection']['filter_options'] = [
@@ -154,6 +159,11 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     $form['group_user_selection']['entity_specific'] = [
       '#type' => 'container',
+      '#attributes' => [
+        'class' => [
+          'grouped-items',
+        ],
+      ],
     ];
 
     $form['group_user_selection']['options'] = [
@@ -233,6 +243,23 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('terms_exclude', $items[$delta]->params) : [],
     ];
 
+    $form['group_user_selection']['filter_and_sort']['term_operator'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('Match Content That Has'),
+      // Set operator: "+" is "OR" and "," is "AND".
+      '#options' => [
+        '+' => $this->t('Can have any term listed in tags and categories'),
+        ',' => $this->t('Must have all terms listed in tags and categories'),
+      ],
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('operator', $items[$delta]->params) : '+',
+      '#attributes' => [
+        'class'     => [
+          'term-operator-item',
+        ],
+      ],
+
+    ];
+
     // Gets the view mode options based on Ajax callbacks or initial load.
     $sortOptions = $this->viewsBasicManager->sortByList($entityValue);
 
@@ -248,25 +275,13 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#suffix' => '</div>',
     ];
 
-    $form['group_user_selection']['filter_options']['term_operator'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Match Content That Has'),
-      // Set operator: "+" is "OR" and "," is "AND".
-      '#options' => [
-        '+' => $this->t('Any term listed in tags and categories'),
-        ',' => $this->t('All terms listed in tags and categories'),
-      ],
-      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('operator', $items[$delta]->params) : '+',
-
-    ];
-
     $form['group_user_selection']['entity_specific']['event_time_period'] = [
       '#type' => 'radios',
       '#title' => $this->t('Event Time Period'),
       '#options' => [
-        'future' => $this->t('Future Events'),
-        'past' => $this->t('Past Events'),
-        'all' => $this->t('All Events'),
+        'future' => $this->t('Future Events') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/event-time-future.svg" alt="Future Events icon showing a calendar with a future-pointing arrow to the right.">',
+        'past' => $this->t('Past Events') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/event-time-past.svg" alt="Past Events icon showing a calendar with a past-pointing arrow to the left.">',
+        'all' => $this->t('All Events') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/event-time-all.svg" alt="All Events icon showing a calendar.">',
       ],
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('event_time_period', $items[$delta]->params) : 'future',
       '#states' => [
@@ -399,7 +414,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
           "terms_exclude" => $terms_exclude,
           "event_time_period" => $form['group_user_selection']['entity_specific']['event_time_period']['#value'],
         ],
-        "operator" => $form['group_user_selection']['filter_options']['term_operator']['#value'],
+        "operator" => $form['group_user_selection']['filter_and_sort']['term_operator']['#value'],
         "sort_by" => $form_state->getValue(
           [
             'settings',

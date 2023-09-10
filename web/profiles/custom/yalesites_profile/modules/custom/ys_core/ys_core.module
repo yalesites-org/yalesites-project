@@ -5,6 +5,7 @@
  * Contains ys_core.module functions.
  */
 
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -143,34 +144,36 @@ function ys_core_user_login_form_submit($form, FormStateInterface $form_state) {
 }
 
 /**
- * Implements hook_page_preprocess_menu__main().
+ * Implements theme_preprocess_menu().
  */
-function ys_core_preprocess_menu__main(&$variables) {
-  // If submenu, add the top level link as the first link in the submenu.
-  foreach ($variables['items'] as &$menuItem) {
-    // Skip menu items that do not have subitems.
-    if (empty($menuItem['below'])) {
-      continue;
+function ys_core_preprocess_menu(&$variables) {
+  if ($variables['menu_name'] == 'main') {
+    // If submenu, add the top level link as the first link in the submenu.
+    foreach ($variables['items'] as &$menuItem) {
+      // Skip menu items that do not have subitems.
+      if (empty($menuItem['below'])) {
+        continue;
+      }
+
+      // Clone top level menu item.
+      $clonedMenuItem = $menuItem;
+
+      // We don't want any other subitems, just the top level.
+      $clonedMenuItem['below'] = NULL;
+
+      // Main menu items get the heading treatment.
+      // @see component-library-twig/components/02-molecules/menu/_yds-menu-item.twig
+      $clonedMenuItem['list__item__is_heading'] = TRUE;
+
+      // Get the CTA text from menu item extras field.
+      $clonedMenuItem['heading_cta'] = $clonedMenuItem['entity']->get('field_menu_top_level_link_cta')->value ?: t('Explore all');
+
+      // Add cloned item to the beginning of the menu.
+      array_unshift($menuItem['below'], $clonedMenuItem);
+
     }
-
-    // Clone top level menu item.
-    $clonedMenuItem = $menuItem;
-
-    // We don't want any other subitems, just the top level.
-    $clonedMenuItem['below'] = NULL;
-
-    // If a node, use the node title instead of link title.
-    $routeParams = $clonedMenuItem['original_link']->getRouteParameters();
-    if (!empty($routeParams['node'])) {
-      /** @var \Drupal\node\Entity\Node $node */
-      $node = \Drupal::entityTypeManager()->getStorage('node')->load($routeParams['node']);
-      $clonedMenuItem['title'] = $node->getTitle();
-    }
-
-    // Add cloned item to the beginning of the menu.
-    array_unshift($menuItem['below'], $clonedMenuItem);
-
   }
+
 }
 
 /**
@@ -302,4 +305,13 @@ function ys_core_preprocess_image_widget(&$variables) {
       $variables['data'][$child] = $element[$child];
     }
   }
+}
+
+/**
+ * Implements hook_ENTITY_update().
+ *
+ * Clears the cache for rendered items on taxonomy term update.
+ */
+function ys_core_taxonomy_term_update() {
+  Cache::invalidateTags(['rendered']);
 }
