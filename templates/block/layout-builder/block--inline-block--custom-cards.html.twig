@@ -3,7 +3,7 @@
 {% block content %}
 
   {% embed "@organisms/custom-card-collection/yds-custom-card-collection.twig" with {
-    custom_card_collection__heading: content.field_heading.0['#text'],
+    custom_card_collection__heading: content.field_heading.0,
     custom_card_collection__width: 'site',
   } %}
     {% block custom_card_collection__cards %}

@@ -15,6 +15,6 @@
     'data-collection-type': 'list',
     class: bem(view__base_class, view__modifiers),
   } %}
-  {{ drupal_view('post_list', 'full', content.field_heading.0['#text']) }}
+  {{ drupal_view('post_list', 'full', content.field_heading.0) }}
 
 {% endblock %}
