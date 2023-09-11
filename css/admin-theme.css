@@ -527,11 +527,11 @@ input[type="search"]::placeholder {
   background: var(--gin-color-danger) !important;
 }
 
-<<<<<<< HEAD
 /* Width override for form offcanvas */
 .gin--dark-mode .ui-dialog-content .form-item {
   max-width: 100%;
-=======
+}
+
 /* Legend */
 .gin--dark-mode legend {
   display: block;
@@ -594,5 +594,4 @@ input[type="search"]::placeholder {
 .gin--dark-mode .form-type--radio .form-radio {
   border: 1px solid var(--wool);
   background-color: var(--darkest-gray);
->>>>>>> develop
 }
