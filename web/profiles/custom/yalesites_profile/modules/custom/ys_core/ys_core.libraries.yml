@@ -3,8 +3,6 @@ node_layout_form:
     theme:
       css/layout-builder-browser.css: {}
       css/multifield-form.css: { }
-  js:
-    js/layout-builder-fix-modals.js: { attributes: { defer: true } }
 taxonomy_form:
   css:
     theme:
