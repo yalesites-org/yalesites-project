@@ -110,7 +110,8 @@
       },
       "drupal/core": {
         "plural results summary https://www.drupal.org/project/drupal/issues/2888320": "https://www.drupal.org/files/issues/2021-12-15/2888320-78.patch",
-        "Prevent media library item overflow https://www.drupal.org/project/drupal/issues/3059955": "https://www.drupal.org/files/issues/2023-03-18/3059955-167.patch"
+        "Prevent media library item overflow https://www.drupal.org/project/drupal/issues/3059955": "https://www.drupal.org/files/issues/2023-03-18/3059955-167.patch",
+        "Remove for Drupal 10 - CKEditor 5 should not grow to infinite height https://www.drupal.org/project/drupal/issues/3273755": "https://www.drupal.org/files/issues/2023-07-26/ckeditor-height-fix.patch"
       },
       "drupal/entity_redirect": {
         "fix layout route https://www.drupal.org/project/entity_redirect/issues/3352265": "https://git.drupalcode.org/project/entity_redirect/-/merge_requests/6.patch"
