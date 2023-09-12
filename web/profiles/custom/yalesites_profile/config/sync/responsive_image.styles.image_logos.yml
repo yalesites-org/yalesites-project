@@ -7,6 +7,8 @@ dependencies:
     - image.style.1_1_200
     - image.style.1_1_250
     - image.style.1_1_300_
+    - image.style.1_1_500
+    - image.style.1_1_600
 id: image_logos
 label: 'Image - Logos'
 image_style_mappings:
@@ -19,6 +21,8 @@ image_style_mappings:
         - '1_1_200'
         - '1_1_250'
         - '1_1_300_'
+        - '1_1_500'
+        - '1_1_600'
     breakpoint_id: responsive_image.viewport_sizing
     multiplier: 1x
 breakpoint_group: responsive_image
