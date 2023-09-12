@@ -16,6 +16,6 @@
     class: bem(view__base_class, view__modifiers),
   } %}
 
-  {{ drupal_view('event_list', 'full', content.field_heading.0) }}
+  {{ drupal_view('event_list', 'full', content.field_heading.0['#text']) }}
 
 {% endblock %}
