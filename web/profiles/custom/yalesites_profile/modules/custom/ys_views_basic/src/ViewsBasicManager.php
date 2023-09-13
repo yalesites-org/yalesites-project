@@ -185,14 +185,14 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     // Get terms to include.
     if (isset($paramsDecoded['filters']['terms_include'])) {
       foreach ($paramsDecoded['filters']['terms_include'] as $term) {
-        $termsIncludeArray[] = $this->getTermId($term);
+        $termsIncludeArray[] = (int) is_object($term) ? $term['target_id'] : $term;
       }
     }
 
     // Get terms to exclude.
     if (isset($paramsDecoded['filters']['terms_exclude'])) {
       foreach ($paramsDecoded['filters']['terms_exclude'] as $term) {
-        $termsExcludeArray[] = $this->getTermId($term);
+        $termsExcludeArray[] = (int) is_object($term) ? $term['target_id'] : $term;
       }
     }
 
