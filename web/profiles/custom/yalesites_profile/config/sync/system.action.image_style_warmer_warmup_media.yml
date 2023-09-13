@@ -1,0 +1,13 @@
+uuid: d37fa586-2bbf-4eef-ae21-a891d0d561ac
+langcode: en
+status: true
+dependencies:
+  module:
+    - image_style_warmer
+_core:
+  default_config_hash: LWfYmnuc4CiDeVi87uTSUt1giyvrpFHkSbUWV6xOXUQ
+id: image_style_warmer_warmup_media
+label: 'Warmup image styles of media entities'
+type: media
+plugin: image_style_warmer_warmup_media
+configuration: {  }

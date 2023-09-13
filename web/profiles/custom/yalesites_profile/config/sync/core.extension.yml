@@ -143,6 +143,7 @@ module:
   selective_better_exposed_filters: 1
   externalauth: 10
   formdazzle: 10
+  image_style_warmer: 10
   views: 10
   ys_core: 10
   ys_embed: 10
