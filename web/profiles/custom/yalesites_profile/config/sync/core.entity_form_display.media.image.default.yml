@@ -24,6 +24,7 @@ content:
       crop_list:
         - banner_16_5
         - card_3_2
+        - logo_horizontal_3_1
         - profile_1_1_
       crop_types_required: {  }
       warn_multiple_usages: true
