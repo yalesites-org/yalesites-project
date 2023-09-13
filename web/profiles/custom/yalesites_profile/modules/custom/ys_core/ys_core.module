@@ -5,7 +5,9 @@
  * Contains ys_core.module functions.
  */
 
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 
@@ -50,6 +52,19 @@ function ys_core_theme($existing, $type, $theme, $path): array {
         'page_title' => NULL,
         'page_title_display' => NULL,
         'breadcrumbs_placeholder' => [],
+      ],
+    ],
+    'ys_footer_block' => [
+      'variables' => [
+        'footer_variation' => 'basic',
+        'footer_logos' => [],
+        'school_logo' => NULL,
+        'school_logo_url' => '/',
+        'footer_text' => NULL,
+        'footer_links_col_1_heading' => NULL,
+        'footer_links_col_2_heading' => NULL,
+        'footer_links_col_1' => [],
+        'footer_links_col_2' => [],
       ],
     ],
   ];
@@ -103,6 +118,18 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
 }
 
 /**
+ * Implements hook_preprocess_block().
+ */
+function ys_core_preprocess_block(&$variables) {
+  $config = \Drupal::config('ys_core.social_links');
+
+  // Add the cache tag, so that the theme setting information is rebuilt
+  // when the config is saved.
+  // Via: https://drupal.stackexchange.com/questions/266379/how-to-clear-cache-for-config-entity-after-making-changes
+  \Drupal::service('renderer')->addCacheableDependency($variables, $config);
+}
+
+/**
  * Passes the config to enable/disable search form into templates.
  *
  * Implements hook_preprocess_region().
@@ -130,34 +157,36 @@ function ys_core_user_login_form_submit($form, FormStateInterface $form_state) {
 }
 
 /**
- * Implements hook_page_preprocess_menu__main().
+ * Implements theme_preprocess_menu().
  */
-function ys_core_preprocess_menu__main(&$variables) {
-  // If submenu, add the top level link as the first link in the submenu.
-  foreach ($variables['items'] as &$menuItem) {
-    // Skip menu items that do not have subitems.
-    if (empty($menuItem['below'])) {
-      continue;
+function ys_core_preprocess_menu(&$variables) {
+  if ($variables['menu_name'] == 'main') {
+    // If submenu, add the top level link as the first link in the submenu.
+    foreach ($variables['items'] as &$menuItem) {
+      // Skip menu items that do not have subitems.
+      if (empty($menuItem['below'])) {
+        continue;
+      }
+
+      // Clone top level menu item.
+      $clonedMenuItem = $menuItem;
+
+      // We don't want any other subitems, just the top level.
+      $clonedMenuItem['below'] = NULL;
+
+      // Main menu items get the heading treatment.
+      // @see component-library-twig/components/02-molecules/menu/_yds-menu-item.twig
+      $clonedMenuItem['list__item__is_heading'] = TRUE;
+
+      // Get the CTA text from menu item extras field.
+      $clonedMenuItem['heading_cta'] = $clonedMenuItem['entity']->get('field_menu_top_level_link_cta')->value ?: t('Explore all');
+
+      // Add cloned item to the beginning of the menu.
+      array_unshift($menuItem['below'], $clonedMenuItem);
+
     }
-
-    // Clone top level menu item.
-    $clonedMenuItem = $menuItem;
-
-    // We don't want any other subitems, just the top level.
-    $clonedMenuItem['below'] = NULL;
-
-    // If a node, use the node title instead of link title.
-    $routeParams = $clonedMenuItem['original_link']->getRouteParameters();
-    if (!empty($routeParams['node'])) {
-      /** @var \Drupal\node\Entity\Node $node */
-      $node = \Drupal::entityTypeManager()->getStorage('node')->load($routeParams['node']);
-      $clonedMenuItem['title'] = $node->getTitle();
-    }
-
-    // Add cloned item to the beginning of the menu.
-    array_unshift($menuItem['below'], $clonedMenuItem);
-
   }
+
 }
 
 /**
@@ -197,4 +226,105 @@ function ys_core_page_attachments(array &$page) {
   if ($config->get('status')) {
     $page['#attached']['library'][] = 'ys_core/siteimprove';
   }
+
+  // Custom or fallback favicons.
+  $favicons = \Drupal::service('ys_core.favicon_manager')->getFavicons();
+  foreach ($favicons as $name => $favicon) {
+    $page['#attached']['html_head'][] = [$favicon, $name];
+  }
+
+}
+
+/**
+ * Implements hook_preprocess_image_widget() for SiteSettingsForm.php.
+ */
+function ys_core_preprocess_image_widget(&$variables) {
+  /*
+   * Used for previewing the managed file for favicons and others.
+   * @see web/profiles/custom/yalesites_profile/modules/custom/ys_core/src/Form/SiteSettingsForm.php
+   * @see
+   * https://drupal.stackexchange.com/questions/212480/form-api-image-preview
+   */
+  $element = $variables['element'];
+
+  if (isset($element['#use_favicon_preview'])) {
+
+    $variables['attributes'] = [
+      'class' => [
+        'image-widget',
+        'js-form-managed-file',
+        'form-managed-file',
+        'clearfix',
+      ],
+    ];
+
+    $config = \Drupal::config('system.site');
+    $variables['site_name'] = $config->get('name');
+
+    if (!empty($element['fids']['#value'])) {
+      $file = reset($element['#files']);
+      $element['file_' . $file->id()]['filename']['#suffix'] = ' <span class="file-size">(' . format_size($file->getSize()) . ')</span> ';
+      $file_variables = [
+        'style_name' => $element['#preview_image_style'],
+        'uri' => $file->getFileUri(),
+      ];
+
+      // Determine image dimensions.
+      if (isset($element['#value']['width']) && isset($element['#value']['height'])) {
+        $file_variables['width'] = $element['#value']['width'];
+        $file_variables['height'] = $element['#value']['height'];
+      }
+      else {
+        $image = \Drupal::service('image.factory')->get($file->getFileUri());
+        if ($image->isValid()) {
+          $file_variables['width'] = $image->getWidth();
+          $file_variables['height'] = $image->getHeight();
+        }
+        else {
+          $file_variables['width'] = $file_variables['height'] = NULL;
+        }
+      }
+
+      $element['preview'] = [
+        '#weight' => -10,
+        '#theme' => 'image_style',
+        '#width' => $file_variables['width'],
+        '#height' => $file_variables['height'],
+        '#style_name' => $file_variables['style_name'],
+        '#uri' => $file_variables['uri'],
+      ];
+
+      // Store the dimensions in the form so the file doesn't have to be
+      // accessed again. This is important for remote files.
+      $element['width'] = [
+        '#type' => 'hidden',
+        '#value' => $file_variables['width'],
+      ];
+      $element['height'] = [
+        '#type' => 'hidden',
+        '#value' => $file_variables['height'],
+      ];
+    }
+    else {
+      $variables['fallback_image'] = TRUE;
+    }
+
+    // Sets a twig variable to use the favicon preview.
+    // @see web/themes/custom/ys_admin_theme/templates/content-edit/image-widget.html.twig
+    $variables['use_favicon_preview'] = $element['#use_favicon_preview'];
+
+    $variables['data'] = [];
+    foreach (Element::children($element) as $child) {
+      $variables['data'][$child] = $element[$child];
+    }
+  }
+}
+
+/**
+ * Implements hook_ENTITY_update().
+ *
+ * Clears the cache for rendered items on taxonomy term update.
+ */
+function ys_core_taxonomy_term_update() {
+  Cache::invalidateTags(['rendered']);
 }

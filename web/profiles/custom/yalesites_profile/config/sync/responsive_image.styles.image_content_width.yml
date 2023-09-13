@@ -13,7 +13,9 @@ dependencies:
     - image.style.max_width_2240
     - image.style.max_width_2400
     - image.style.max_width_320
+    - image.style.max_width_444
     - image.style.max_width_480
+    - image.style.max_width_540
     - image.style.max_width_640
     - image.style.max_width_800
     - image.style.max_width_896
@@ -26,7 +28,6 @@ image_style_mappings:
     image_mapping:
       sizes: '(min-width: 896px) 896px, 100vw'
       sizes_image_styles:
-        - max_width_896
         - max_width_1120
         - max_width_1280
         - max_width_1440
@@ -37,9 +38,12 @@ image_style_mappings:
         - max_width_2240
         - max_width_2400
         - max_width_320
+        - max_width_444
         - max_width_480
+        - max_width_540
         - max_width_640
         - max_width_800
+        - max_width_896
         - max_width_960
     breakpoint_id: responsive_image.viewport_sizing
     multiplier: 1x

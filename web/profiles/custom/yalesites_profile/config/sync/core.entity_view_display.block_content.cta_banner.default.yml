@@ -5,6 +5,7 @@ dependencies:
   config:
     - block_content.type.cta_banner
     - field.field.block_content.cta_banner.field_heading
+    - field.field.block_content.cta_banner.field_heading_level
     - field.field.block_content.cta_banner.field_instructions
     - field.field.block_content.cta_banner.field_link
     - field.field.block_content.cta_banner.field_media
@@ -26,6 +27,13 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 1
+    region: content
+  field_heading_level:
+    type: list_key
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 6
     region: content
   field_link:
     type: link_separate

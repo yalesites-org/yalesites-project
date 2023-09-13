@@ -5,6 +5,7 @@ module:
   admin_toolbar: 0
   admin_toolbar_tools: 0
   allowed_formats: 0
+  auto_entitylabel: 0
   better_exposed_filters: 0
   block: 0
   block_content: 0
@@ -18,7 +19,7 @@ module:
   chosen: 0
   chosen_field: 0
   chosen_lib: 0
-  ckeditor: 0
+  ckeditor5: 0
   components: 0
   config: 0
   config_filter: 0
@@ -55,6 +56,7 @@ module:
   jquery_ui_datepicker: 0
   jquery_ui_slider: 0
   jquery_ui_touch_punch: 0
+  key: 0
   layout_builder: 0
   layout_builder_browser: 0
   layout_builder_lock: 0
@@ -73,6 +75,7 @@ module:
   media_library_edit: 0
   media_library_form_element: 0
   menu_breadcrumb: 0
+  menu_item_extras: 0
   menu_link_content: 0
   menu_ui: 0
   metatag: 0
@@ -82,12 +85,14 @@ module:
   migrate: 0
   migrate_plus: 0
   migrate_tools: 0
+  multivalue_form_element: 0
   mysql: 0
   node: 0
   node_revision_delete: 0
   options: 0
   override_node_options: 0
   page_cache: 0
+  pantheon_secrets: 0
   paragraphs_features: 0
   path: 0
   path_alias: 0
@@ -101,6 +106,7 @@ module:
   search_api: 0
   search_api_db: 0
   search_api_exclude: 0
+  search_api_html_element_filter: 0
   section_library: 0
   simple_sitemap: 0
   smart_date: 0
@@ -123,8 +129,8 @@ module:
   ys_alert: 0
   ys_captcha: 0
   ys_layouts: 0
+  ys_mail: 0
   ys_node_access: 0
-  ys_secrets: 0
   ys_toolbar: 0
   ys_views_basic: 0
   hide_revision_field: 1
@@ -136,7 +142,6 @@ module:
   views: 10
   ys_core: 10
   ys_embed: 10
-  ys_mail: 10
   ys_starterkit: 10
   ys_themes: 10
   paragraphs: 11

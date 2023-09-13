@@ -1,0 +1,26 @@
+uuid: fc091409-edbc-4be1-932b-a96221f72d61
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_address
+    - node.type.profile
+  module:
+    - allowed_formats
+    - text
+third_party_settings:
+  allowed_formats:
+    allowed_formats:
+      - heading_html
+id: node.profile.field_address
+field_name: field_address
+entity_type: node
+bundle: profile
+label: Address
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: text_long

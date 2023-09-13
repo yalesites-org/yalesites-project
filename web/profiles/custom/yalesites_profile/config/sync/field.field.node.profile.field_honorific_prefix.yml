@@ -1,0 +1,19 @@
+uuid: 4cff61d3-f02b-4101-8f34-aa73e2ccdfb0
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_honorific_prefix
+    - node.type.profile
+id: node.profile.field_honorific_prefix
+field_name: field_honorific_prefix
+entity_type: node
+bundle: profile
+label: Prefix
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string
