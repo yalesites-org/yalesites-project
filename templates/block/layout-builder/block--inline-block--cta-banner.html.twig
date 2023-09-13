@@ -4,6 +4,7 @@
 
   {% embed "@molecules/banner/action/yds-action-banner.twig" with {
     banner__heading: content.field_heading,
+    banner__heading__level: content.field_heading_level.0['#markup'],
     banner__snippet: content.field_text,
     banner__link__content: content.field_link.0['#title'],
     banner__link__url: content.field_link.0['#url_title'],

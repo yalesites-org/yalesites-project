@@ -1,0 +1,49 @@
+/* CKEditor 5 overrides */
+
+.ck-content {
+  background-color: var(--wool) !important;
+}
+
+.ck-content > *,
+.glb-table .ck-content tr,
+.glb-table .ck-content tr:hover,
+.gin--dark-mode
+  .ui-dialog
+  .ui-widget-content.ui-dialog-content
+  .ck-content
+  > * {
+  color: var(--darkest-gray);
+}
+
+.ck-content a,
+.ui-widget-content .ck-content a,
+.ui-widget-content .ck-content a strong,
+.ui-widget-content .ck-content a em {
+  color: var(--mediterranean-blue);
+}
+
+.ck-content .table {
+  width: 100%;
+}
+
+/* Overrides tab and accordion component table styling */
+.glb-table .ck-content * {
+  padding: 0;
+  height: unset;
+  color: var(--darkest-gray);
+}
+
+.glb-table .ck-content tr:nth-child(2n) {
+  background-color: var(--wool);
+}
+
+.field-multiple-table tr.draggable .ck-content td:nth-of-type(2),
+.glb-table .draggable-table .ck-content th:first-child ~ th,
+.glb-table .draggable-table .ck-content td:first-child ~ td {
+  padding: 0.4em;
+}
+
+.glb-table .draggable-table .ck-content thead th:not(:first-of-type)::before,
+.glb-table .draggable-table .ck-content thead th:not(:first-of-type)::after {
+  content: unset;
+}

@@ -8,24 +8,13 @@
   --darkest-gray: #1f1f1f;
   --dark-theme-gray-rgb: 78, 89, 89;
   --dark-theme-gray: #4E5959;
-  --dark-theme-gray-selected: #edfbfb;
-  --dark-theme-gray-lightest: #d0e0e0;
-  --dark-theme-gray-lightest-rgb: 208, 224, 224;
-  --dark-theme-gray-light: #606A6A;
   --dark-theme-gray-hover: #353d3d;
   --dark-primary-link: var(--wool);
   --dark-primary-link-hover: #ffffff;
-  --dark-theme-gray-text-light: var(--wool);
-  --dark-theme-gray-text-dark: var(--dark-theme-gray);
-  --custom-button-color: var(--robin-egg);
-  --custom-button-color-hover: var(--wool);
-  --custom-button-color-text: var(--dark-theme-gray-hover);
-  --custom-button-color-text-hover: var(--dark-theme-gray-hover);
-
   --dark-gin-icon-color: var(--wool);
   --gin-color-text-light: var(--wool);
 
-  --gin-font: "DM Mono", monospace;
+  --gin-font: Mallory, sans-serif;
   --gin-font-size-h1: 1.75rem;
   --gin-font-size-h2: 1.5rem;
   --gin-font-size-h3: 1.25rem;
@@ -42,32 +31,38 @@
 }
 
 :root [data-gin-accent=light_blue] {
+  --gin-color-primary: var(--robin-egg);
   --gin-color-primary-rgb: 217, 241, 243;
-  --gin-color-primary-active: var(--wool);
+  --gin-color-primary-active: var(--wool) !important;
   --gin-color-secondary: var(--mediterranean-blue);
-  --gin-color-text-light: var(--wool);
   --gin-icon-color: var(--dark-gin-icon-color);
   --gin-bg-item-hover: var(--dark-theme-gray-hover);
   --gin-bg-header: var(--dark-theme-gray);
-  --gin-color-primary-hover: var(--dark-primary-link-hover);
+  --gin-color-text: var(--wool);
+  --gin-color-text-light: var(--wool);
+  --gin-color-primary-hover: var(--wool) !important;
   --gin-color-primary-light: var(--gin-bg-item-hover) !important;
-  --gin-border-color-layer: var(--light-gray);
+  --gin-border-color-layer: var(--wool) !important;
+
+  --gin-color-danger: #E09494;
+  --gin-bg-app: var(--darkest-gray);
+  --gin-color-info: var(--mediterranean-blue) !important;
   --gin-bg-layer: var(--dark-theme-gray);
+  --gin-bg-input: var(--darkest-gray) !important;
+  --gin-border-color: var(--wool) !important;
   --gin-dark-gray: var(--darkest-gray);
   --colorGinText: var(--darkest-gray);
   --gin-border-color-table-header: var(--darkest-gray);
   --gin-bg-layer3: var(--dark-theme-gray-hover);
-  --gin-color-title: var(--dark-theme-gray-text);
   --gin-color-dark-text: var(--wool);
-  --gin-color-title: var(--dark-theme-gray);
+  --gin-color-title: var(--wool);
   --gin-color-button-text: var(--dark-theme-gray);
   --gin-color-button-text-hover: var(--dark-theme-gray-hover);
+  --gin-border-color-layer2: #A8A8A8 !important;
+  --gin-pattern-fallback: var(--light-gray);
+  --dropbutton-extrasmall-toggle-size: 1.5rem;
 }
 
-[data-gin-accent=light_blue] {
-  --gin-bg-app: #fcfefe;
-  --gin-bg-app-rgb: rgb(252, 254, 254);
-}
 
 /* affect admin paths only */
 :root .path-admin h1,
@@ -75,315 +70,44 @@
   font-weight: 600;
 }
 
-
-/* media modal */
-
-.glb-view-header a.views-display-link.views-display-link-widget_table {
-  color: var(--wool) !important;
+.gin--dark-mode .gin-secondary-toolbar,
+.gin--dark-mode .gin-secondary-toolbar--frontend {
+  background: rgba(var(--dark-theme-gray-rgb), 1);
 }
 
-.glb-view-header .views-display-link.views-display-link-widget.is-active {
-  color: var(--wool) !important;
-}
-
-.glb-view-header .views-display-link::before {
-  background-color: var(--wool) !important;
-}
-
-#views-exposed-form-media-library-widget .glb-form-item__label {
-  color: var(--wool) !important;
-}
-
-.glb-form-checkbox:checked {
-  background-color: var(--dark-theme-gray) !important;
-}
-
-.media-library-selected-count {
-  color: var(--dark-theme-gray) !important;
-}
-
-.glb-pager .pager__link {
-  color: var(--mediterranean-blue) !important;
-}
-
-.glb-pager .pager__link:hover,
-.glb-pager .pager__link:focus {
-  background: var(--dark-theme-gray-lightest) !important;
-  border-color: var(--dark-theme-gray) !important;
-}
-
-.glb-pager .pager__item .pager__link--action-link::before,
-.glb-pager .pager__item .pager__link--action-link::after {
-  background: var(--dark-theme-gray) !important;
-}
-
-.glb-pager .pager__item .pager__link--action-link:hover::before,
-.glb-pager .pager__item .pager__link--action-link:focus::after,
-.glb-pager .pager__item .pager__link:hover::after,
-.glb-pager .pager__item .pager__link:focus::after {
-  background: var(--dark-theme-gray) !important;
-}
-
-.glb-pager .pager__link.is-active,
-.glb-pager .pager__item--current {
-  color: var(--dark-theme-gray) !important;
-}
-
-/* linkit ui autocomplete */
-.ui-autocomplete .ui-menu-item-wrapper.ui-state-active {
-  background-color: var(--dark-theme-gray-lightest);
-}
-
-/* Off-canvas overrides */
-#drupal-off-canvas {
-  background-color: var(--wool);
-  color: var(--darkest-gray);
-}
-
-.ui-dialog-content,
-.ui-dialog-off-canvas .ui-dialog-titlebar {
-  background: var(--wool) !important;
-}
-
-#layout-builder-modal {
-  background: var(--wool) !important;
-}
-
-.ui-dialog-off-canvas #drupal-off-canvas {
-  padding-inline: var(--size-spacing-5) var(--size-spacing-8);
-}
-
-#drupal-off-canvas form,
-#drupal-off-canvas label {
-  color: var(--darkest-gray);
-}
-
-.ui-widget-content a {
-  color: var(--dark-theme-gray) !important;
-}
-
-.ui-menu-item-wrapper:hover {
-  background-color: var(--dark-theme-gray-lightest);
-}
-
-.ui-widget.ui-dialog.ui-dialog-off-canvas .ui-dialog-titlebar {
-  display: flex;
-  align-items: center;
-  border-color: var(--dark-theme-gray);
-}
-
-.ui-widget.ui-dialog.ui-dialog-off-canvas .ui-dialog-titlebar {
-  background-color: var(--dark-theme-gray-hover) !important;
-}
-
-.glb-claro-details[open]>.glb-claro-details__summary {
-  color: var(--gin-color-primary) !important;
-  background-color: var(--dark-theme-gray-hover) !important;
-}
-
-.glb-claro-details[open]>.glb-claro-details__summary::before {
-  background: var(--gin-color-primary) !important;
-}
-
-.glb-claro-details__summary:hover::before {
-  background: var(--gin-color-primary) !important;
-}
-
-.glb-form-item__description,
-.glb-fieldset__description {
-  color: var(--dark-theme-gray) !important;
-}
-
-.glb-form-wrapper .cke .cke_top,
-.glb-form-wrapper .cke .cke_bottom {
-  background: var(--dark-theme-gray-lightest) !important;
-}
-
-.glb-form-wrapper .cke a.cke_path_item,
-.glb-form-wrapper .cke span.cke_path_empty {
-  color: var(--dark-theme-gray) !important;
-}
-
-.glb-form-wrapper .cke a.cke_button_off:hover,
-.glb-form-wrapper .cke a.cke_button_off:focus,
-.glb-form-wrapper .cke a.cke_button_off:active {
-  background: var(--wool) !important;
-}
-
-:not(.glb-form-checkboxes):not(td):not(.media-library-item__click-to-select-checkbox):not(.field-content)>.glb-form-type--checkbox label {
-  color: var(--wool) !important;
-}
-
-[dir="ltr"] .gin-secondary-toolbar .toolbar-secondary .toolbar-bar div:last-child .toolbar-tray {
-  border-radius: 0 0 var(--gin-border-l) var(--gin-border-l);
-}
-
-.ui-dialog.ui-dialog-off-canvas .ui-dialog-title,
-#drupal-off-canvas form,
-#drupal-off-canvas span,
-#drupal-off-canvas label,
-#drupal-off-canvas input[type="submit"].button {
-  font-family: var(--gin-font) !important;
-}
-
-#drupal-off-canvas input[type="submit"].button {
-  box-sizing: border-box;
-  padding: var(--size-spacing-5);
-  background-color: var(--custom-button-color) !important;
-  color: var(--custom-button-color-text) !important;
-}
-
-.ui-widget.ui-dialog.ui-dialog-off-canvas #drupal-off-canvas .button--primary[type="submit"]:hover,
-.ui-widget.ui-dialog.ui-dialog-off-canvas #drupal-off-canvas .button--primary[type="submit"]:focus {
-  background-color: var(--dark-theme-gray-hover) !important;
-  color: var(--wool) !important;
-}
-
-
-/* Modal */
-.ui-widget-overlay {
-  background: var(--gin-color-primary) !important;
-}
-
-.ui-dialog-titlebar {
-  display: flex;
-  align-items: center;
-  background: var(--gin-color-primary-active) !important;
-}
-
-[data-gin-accent="light_blue"] .ws-lb-link__label {
-  background: var(--wool) !important;
-}
-
-[data-gin-accent="light_blue"] .ui-dialog-titlebar .ui-dialog-title {
-  color: var(--wool) !important;
-}
-
-[data-gin-accent="light_blue"] .ui-dialog .ui-dialog-titlebar-close .ui-icon-closethick {
-  background: var(--wool) !important;
-}
-
-.gin-secondary-toolbar--frontend {
-  position: fixed;
-  background-color: var(--gin-bg-layer);
-  width: 100%;
-  top: calc(var(--gin-toolbar-secondary-height) - 7px) !important;
-}
-
-.gin-breadcrumb__item:first-of-type .gin-breadcrumb__link:hover::before {
-  background-color: var(--dark-primary-link-hover) !important;
-}
-
-.gin-breadcrumb__link:hover {
-  text-decoration: underline;
-}
-
-.gin-breadcrumb__link:hover,
-.gin-breadcrumb__link:hover em {
-  color: var(--dark-primary-link-hover) !important;
-}
-
-.gin-breadcrumb__item:first-of-type .gin-breadcrumb__link:hover::before {
-  background-color: var(--dark-primary-link-hover) !important;
-}
-
-body.gin--horizontal-toolbar {
-  padding-top: calc(var(--gin-toolbar-y-offset) + var(--gin-toolbar-secondary-height)) !important;
-}
-
-[data-gin-accent=light_blue] .ui-widget-overlay {
-  background: var(--peacock-green) !important;
-}
-
-[data-gin-accent=light_blue] .ui-dialog-titlebar {
-  background: var(--dark-theme-gray) !important;
-}
-
-.toolbar-menu-administration>.toolbar-menu>.menu-item:hover>.toolbar-icon::before,
-.toolbar-menu-administration>.toolbar-menu>.menu-item:hover>.toolbar-box>a.toolbar-icon::before,
-.toolbar-menu-administration>.toolbar-menu>.menu-item>.toolbar-icon:focus::before,
-.toolbar-menu-administration>.toolbar-menu>.menu-item.menu-item--active-trail>.toolbar-icon::before,
-.toolbar-menu-administration>.toolbar-menu>.menu-item.menu-item--active-trail:hover>.toolbar-icon::before,
-.toolbar-menu-administration>.toolbar-menu>.menu-item.menu-item--active-trail>.toolbar-box>a.toolbar-icon::before {
-  z-index: 1;
-}
-
-.toolbar-menu-administration>.toolbar-menu>.menu-item.menu-item--active-trail>.toolbar-icon::after,
-.toolbar-menu-administration>.toolbar-menu>.menu-item.menu-item--active-trail>.toolbar-box>a.toolbar-icon::after,
-.toolbar-menu-administration>.toolbar-menu>.menu-item>.toolbar-icon.is-active::after {
-  background-color: var(--gin-color-primary-light) !important;
-}
-
-.gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab:hover .trigger::before,
-.gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab:focus .trigger::before {
-  background-color: var(--wool) !important;
-}
-
-.gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab>.toolbar-icon-edit.toolbar-item:hover .gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab>.toolbar-icon-edit.toolbar-item:focus {
-  background-color: var(--wool);
-}
-
-.gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab:hover .trigger {
-  color: var(--wool) !important;
-}
-
-.is-horizontal .tabs__link:hover,
-.is-horizontal .tabs__link:focus,
-.horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button a:hover,
-.horizontal-tabs ul.horizontal-tabs-list li.horizontal-tab-button a:focus {
-  background: var(--gin-color-primary-light);
-}
-
-.form-element {
-  border-radius: 0.625rem !important;
-}
-
-.block-system>.views-form [data-drupal-selector*="edit-header"],
-.view-content .views-form [data-drupal-selector*="edit-header"] {
-  background-color: transparent !important;
-}
-
-.admin-item .admin-item__link:hover,
-.admin-item .admin-item__link:focus {
-  background: rgba(var(--gin-color-primary-rgb), 0.15) !important;
-}
-
+/* // toolbar overrides */
 .gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab .toolbar-tray a:hover,
-.gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab .toolbar-tray a:active,
-table tr:hover,
-table .draggable-table.tabledrag-disabled tr:hover {
-  color: var(--wool);
-  background: var(--dark-theme-gray);
+.gin-secondary-toolbar .toolbar-secondary .toolbar-bar .toolbar-tab .toolbar-tray a:active {
+  background-color: var(--darkest-gray);
 }
 
-#block-atomic-local-tasks ul:not(.contextual-links) {
-  list-style: none;
-  display: flex;
+/* // override toolbar drop-down arrow color */
+.gin--dark-mode .toolbar-tray-horizontal ul li.menu-item--expanded ul li.menu-item--expanded::before {
+  background-color: var(--wool);
 }
 
-/* Layout styles */
+/* // remove box-shadows */
+.gin--dark-mode .glb-claro-details__summary::after {
+  box-shadow: inset 0 0 0 3px var(--gin-color-primary) !important;
+}
 
-/* override button font  */
-.glb-sidebar .form-actions,
+/* // Layout-builder  */
+
+/* Buttons */
 .glb-button,
-.layout-builder__link,
-.glb-form-wrapper,
-.glb-sidebar__content {
-  font-family: var(--gin-font) !important;
-}
-
-.glb-button,
+.form-actions .glb-button,
 .inline-block-create-button,
 .layout-builder__link--add,
 .inline-block-create-button:not(:focus),
 .layout-builder__link--add:not(:focus),
-.form-actionsÂ .glb-button,
-.form-actionsÂ .inline-block-create-button,
-.form-actionsÂ .layout-builder__link--add,
+.form-actions .inline-block-create-button,
+.form-actions .layout-builder__link--add,
 .glb-action-link--icon-trash.glb-action-link,
 .meta-sidebar__trigger.is-active,
 .meta-sidebar__close.is-active {
-  background-color: var(--gin-color-primary-light) !important;
+  background-color: var(--darkest-gray) !important;
+  border-color: var(--wool) !important;
+  color: var(--robin-egg) !important;
 }
 
 .glb-button,
@@ -392,12 +116,11 @@ table .draggable-table.tabledrag-disabled tr:hover {
 .glb-button:not(:focus),
 .inline-block-create-button:not(:focus),
 .layout-builder__link--add:not(:focus),
-.form-actionsÂ .glb-button,
-.form-actionsÂ .inline-block-create-button,
-.form-actionsÂ .layout-builder__link--add,
+.form-actions .glb-button,
+.form-actions .inline-block-create-button,
+.form-actions .layout-builder__link--add,
 .glb-action-link--icon-trash.glb-action-link {
   border-radius: 2.5rem !important;
-  border: 2px solid transparent !important;
 }
 
 .glb-button:hover,
@@ -413,62 +136,82 @@ table .draggable-table.tabledrag-disabled tr:hover {
   border-color: var(--dark-theme-gray-hover) !important;
 }
 
-.glb-button:hover {
-  color: var(--dark-theme-gray) !important;
+.glb-button:active,
+.inline-block-create-button:active,
+.layout-builder__link--add:active,
+.glb-button:focus,
+.inline-block-create-button:focus,
+.layout-builder__link--add:focus,
+.glb-button:not(:focus):active,
+.inline-block-create-button:not(:focus):active,
+.layout-builder__link--add:not(:focus):active,
+.glb-button:not(:focus):focus,
+.inline-block-create-button:not(:focus):focus,
+.layout-builder__link--add:not(:focus):focus,
+.form-actions .glb-button:active,
+.form-actions .inline-block-create-button:active,
+.form-actions .layout-builder__link--add:active,
+.form-actions .glb-button:focus,
+.form-actions .inline-block-create-button:focus,
+.form-actions .layout-builder__link--add:focus,
+.glb-action-link--icon-trash.glb-action-link:active,
+.glb-action-link--icon-trash.glb-action-link:focus {
+  background-color: var(--robin-egg) !important;
 }
 
-.glb-button:not(:focus) {
-  filter: none !important;
-  box-shadow: none !important;
+.layout-builder__section:hover .layout-builder__link--add-section-to-library,
+.layout-builder__section:hover .layout-builder__link--remove {
+  background-color: var(--dark-theme-gray-hover) !important;
 }
 
-.gin-secondary-toolbar__layout-container *:focus {
-  box-shadow: 0 0 0 3px #d4d4d4 !important;
-}
-
-.glb-table .tabledrag-handle::after {
+.layout-builder__section:hover .layout-builder__link--configure {
+  color: var(--wool) !important;
   background-color: var(--dark-theme-gray) !important;
 }
 
-.glb-table tr:hover,
-.glb-table .draggable-table.tabledrag-disabled tr:hover {
-  background: var(--dark-theme-gray-lightest);
+.paragraphs-dropdown-toggle {
+  background-color: var(--wool);
 }
 
-
-.meta-sidebar__trigger,
-.meta-sidebar__close {
-  background-color: var(--gin-color-primary-light);
+.gin--dark-mode .glb-sidebar .link:hover,
+.gin--dark-mode .layout-builder .link:hover  {
+  text-decoration: underline;
 }
 
-.meta-sidebar__trigger::before,
-.meta-sidebar__close::before {
-  background-color: var(--gin-color-primary);
+.gin--dark-mode .link.tabledrag-toggle-weight {
+  color: var(--gin-color-primary);
+  background-color: var(--darkest-gray);
 }
 
-.glb-button,
-.inline-block-create-button,
-.layout-builder__link--add,
-.layout-builder__link {
-  font-family: var(--gin-font);
+.gin--dark-mode .glb-table .tabledrag-handle::after {
+  background-color: var(--darkest-gray) !important;
 }
 
-#media-library-messages .messages {
-  border-radius: var(--gin-border-l);
-  padding: 1rem;
+/* Media library */ 
+.gin--dark-mode .media-library-item__click-to-select-checkbox .glb-form-checkbox:checked {
+  background-color: var(--darkest-gray) !important;
 }
 
-#media-library-messages .messages--error {
-  color: var(--gin-color-danger-light);
-  background-color: var(--gin-bg-danger);
+.gin--dark-mode[dir="ltr"] .media-library-item img {
+  background-image: unset !important;
 }
 
-#media-library-messages .messages--warning {
-  color: var(--gin-color-warning-light);
-  background-color: var(--gin-bg-warning);
+.gin--dark-mode .media-library-item .form-item {
+  border: 2px solid var(--darkest-gray);
+  padding: 0;
+  border-radius: 0.25rem;
 }
 
+.gin--dark-mode .media-library-item .media-library-item__remove:link,
+.gin--dark-mode .media-library-item .media-library-item__remove:not(:hover):not(:checked),
+.gin--dark-mode .media-library-item .media-library-item__edit:not(:hover):not(:checked) {
+  border-color: var(--darkest-gray) !important;
+}
 
+/* checkbox spacing */ 
+.gin--dark-mode .js-form-type-checkbox.form-type--checkbox {
+  padding: 0.5rem;
+}
 
 /* Sections on nodes */
 .layout-builder .layout-builder__add-section {
@@ -510,46 +253,90 @@ table .draggable-table.tabledrag-disabled tr:hover {
   padding: 1rem;
 }
 
-.layout-builder__section:hover .layout-builder__link--add-section-to-library {
-  background-color: var(--dark-theme-gray-hover) !important;
+/* Make the secondary toolbar fixes */
+.gin-secondary-toolbar--frontend {
+  position: fixed;
+  background-color: var(--gin-bg-layer);
+  width: 100%;
+  top: calc(var(--gin-toolbar-secondary-height) - 7px) !important;
 }
 
-.layout-builder__section:hover .layout-builder__link--remove {
-  background-color: var(--dark-theme-gray-hover) !important;
+/* Layout builder modal */
+.ws-lb-link__label {
+  color: var(--dark-theme-gray) !important;
 }
 
-.layout-builder__section:hover .layout-builder__link--configure {
-  background-color: var(--dark-theme-gray-hover) !important;
-  color: var(--gin-color-primary) !important;
+.gin--dark-mode .form-element,
+.gin--dark-mode .glb-form-element {
+  background-color: var(--gin-bg-layer2) !important;
+}
+
+/* remove media button */
+.gin--dark-mode .media-library-add-form__remove-button {
+  background-color: var(--robin-egg);
+  color: var(--darkest-gray);
+}
+
+.gin--dark-mode .ui-dialog-titlebar {
+  background: var(--darkest-gray);
+}
+
+.gin--dark-mode .field-multiple-table h4 {
+  color: var(--wool);
+}
+
+/* Embed component */
+.gin--dark-mode .ui-dialog .ui-widget-content.ui-dialog-content h2 {
+  color: var(--wool);
+}
+
+.gin--dark-mode .ui-dialog .ui-widget-content.ui-dialog-content .js-form-wrapper.form-wrapper {
+  padding: 1rem;
+}
+
+.gin--dark-mode .ui-dialog .ui-widget-content.ui-dialog-content .js-form-wrapper.form-wrapper[open] {
+  word-break: break-all;
+  background-color: var(--darkest-gray);
 }
 
 /* yalb-1261 - fix hover color on table */
-
+.layout-builder-components-table__block-label {
+  color: var(--dark-theme-gray-hover);
+  background-color: var(--wool);
+}
 .layout-builder-components-table__block-label:hover {
   color: var(--dark-theme-gray-hover);
   text-decoration: underline;
 }
 
-.layout-builder-components-table th:hover {
-  color: var(--dark-theme-gray-hover);
+.layout-builder-components-table th {
+  color: var(--wool);
+  background-color: var(--darkest-gray);
 }
 
+.layout-builder-components-table th:hover {
+  color: var(--wool);
+  background-color: var(--darkest-gray);
+}
+.layout-builder-components-table tr:nth-child(2n) {
+  background-color: var(--dark-theme-gray);
+}
 .layout-builder-components-table tr:hover {
   color: var(--dark-theme-gray);
-  background-color: var(--dark-theme-gray-lightest);
+  background-color: var(--wool);
 }
 
-/* yalb-1296 - table tr hover in text component */
-.text table tr:hover {
-  color: var(--color-text);
+.layout-builder-components-table__block-label--current,
+.layout-builder-components-table__block-label--current:hover {
+  color: var(--wool);
+  background-color: var(--dark-theme-gray-hover);
 }
 
 /* yalb-1251 - AX: pencil icon difficulty editing blocks */
 /* change the contextual pencil icon to the left-hand side of each component
 // instead of the right
 */
-.layout-builder-block.contextual-region .contextual,
-.layout-builder-block-locked.contextual-region .contextual {
+.layout-builder-block.contextual-region .contextual {
   display: flex;
   flex-direction: column;
   top: 1rem;
@@ -559,41 +346,54 @@ table .draggable-table.tabledrag-disabled tr:hover {
 }
 
 @media only screen and (min-width: 2200px) {
-  .layout-builder-block.contextual-region .contextual,
-  .layout-builder-block-locked.contextual-region .contextual {
+  .layout-builder-block.contextual-region .contextual {
     left: 15vw;
   }
 }
 
 @media only screen and (min-width: 2500px) {
-  .layout-builder-block.contextual-region .contextual,
-  .layout-builder-block-locked.contextual-region .contextual {
+  .layout-builder-block.contextual-region .contextual {
     left: 20vw;
   }
 }
 
-.layout-builder-block.contextual-region .contextual .contextual-links,
-.layout-builder-block-locked.contextual-region .contextual .contextual-links {
+.layout-builder-block.contextual-region .contextual .contextual-links {
   left: 0;
   right: 0;
   float: unset;
 }
 
 /* increase the size of the clickable/hoverable area */
-.layout-builder-block.contextual-region .contextual .trigger,
-.layout-builder-block-locked.contextual-region .contextual .trigger {
+.layout-builder-block.contextual-region .contextual .trigger {
   width: 50px !important;
   height: 50px !important;
 }
 
 /* increase the size of the icon itself */
-.layout-builder-block.contextual-region .contextual .trigger::before,
-.layout-builder-block-locked.contextual-region .contextual .trigger::before {
+.layout-builder-block.contextual-region .contextual .trigger::before {
   width: 1.2rem;
   height: 1.2rem;
   mask-size: 1.2rem;
   -webkit-mask-size: 1.2rem;
 }
+
+/* two-column layout edit adjustments */
+.yds-two-column .layout-builder-block.contextual-region .contextual {
+  left: 0;
+}
+
+@media only screen and (min-width: 2200px) {
+  .yds-two-column .layout-builder-block.contextual-region .contextual  {
+    left: -1vw;
+  }
+}
+
+@media only screen and (min-width: 2500px) {
+  .yds-two-column .layout-builder-block.contextual-region .contextual  {
+    left: -1vw;
+  }
+}
+
 
 /* add min-height so that smaller (in height) components are more easily
 // able to be interacted with - e.g. `divider`
@@ -618,3 +418,211 @@ table .draggable-table.tabledrag-disabled tr:hover {
   color: var(--wool) !important;
 }
 
+/* Gin tables */
+.glb-table tr:nth-child(2n) {
+  background-color: var(--dark-theme-gray);
+}
+
+.js .paragraphs-description .summary-content {
+  color: var(--wool);
+}
+
+.field-multiple-drag.tabledrag-cell {
+  background-color: var(--wool);
+}
+
+
+/* chosen overrides */
+.gin--dark-mode .chosen-container .chosen-results li.highlighted {
+  background-color: var(--gin-color-primary);
+  color: var(--darkest-gray);
+}
+
+.gin--dark-mode .chosen-container-single .chosen-single span {
+  color: var(--wool);
+}
+
+
+/* search input placeholder opacity */
+input[type="search"]::placeholder {
+  opacity: 1;
+}
+
+.gin--dark-mode .ui-autocomplete {
+  background-color: var(--darkest-gray);
+}
+
+.gin--dark-mode #drupal-off-canvas .ui-autocomplete .ui-menu-item-wrapper:hover {
+  color: var(--darkest-gray) !important;
+}
+
+/* Target accordions and give them a darker background */
+.gin--dark-mode .claro-details__summary,
+.gin--dark-mode .glb-claro-details__summary {
+  background-color: var(--darkest-gray) !important;
+}
+
+
+/* views forms */
+.gin--dark-mode .views-ui-admin-settings-basic,
+.gin--dark-mode .views-ui-admin-settings-advanced {
+  background-color: var(--darkest-gray) !important;
+}
+
+/* // Autocomplete */
+
+.gin--dark-mode .ui-autocomplete .ui-menu-item-wrapper {
+  background-color: var(--darkest-gray);
+  color: var(--wool);
+}
+
+.gin--dark-mode .ui-autocomplete .ui-menu-item-wrapper.ui-state-active {
+  background-color: var(--dark-theme-gray);
+  color: var(--wool);
+}
+
+/* add space between accordion action buttons */
+.gin--dark-mode .paragraphs-actions .paragraphs-icon-button  + .paragraphs-dropdown {
+  margin-left: 1rem;
+}
+
+/* remove collapsed/truncated text gradient overlay */
+.gin--dark-mode.js .paragraphs-collapsed-description::after {
+  content: unset;
+}
+
+/* Media library with PNGs */
+.gin--dark-mode .glb-media-library-item__preview img[src*="png"] {
+  background-color: var(--wool);
+}
+
+/* Sidebar titlebars */
+.gin--dark-mode .ui-dialog-off-canvas .ui-dialog-titlebar {
+  background-color: var(--darkest-gray) !important;
+}
+
+/* checkboxes */
+.gin--dark-mode :not(.glb-form-checkboxes):not(td):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .glb-form-checkbox:checked + .glb-checkbox-toggle {
+  background-color: var(--robin-egg) !important;
+}
+
+.gin--dark-mode :not(.form-checkboxes):not(td):not(.tabledrag-cell-content__item):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .form-type--checkbox .checkbox-toggle__inner::before {
+  background-color: var(--dark-theme-gray) !important;
+}
+
+.gin--dark-mode :not(.form-checkboxes):not(td):not(.tabledrag-cell-content__item):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .form-type--checkbox input:checked ~ .checkbox-toggle .checkbox-toggle__inner::before {
+  background-color: var(--darkest-gray) !important;
+}
+
+.gin--dark-mode .form-boolean--type-checkbox:not(:checked) + .checkbox-toggle  .checkbox-toggle__inner {
+  background-color: var(--light-gray) !important;
+}
+
+/* Legend */
+.gin--dark-mode legend {
+  display: block;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.gin--dark-mode .fieldset-legend.fieldset__label {
+  display: block;
+  color: var(--darkest-gray);
+  background-color: var(--wool);
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border: 0.15rem solid var(--gin-border-color);
+  margin-left: -0.15rem;
+  margin-right: -0.15rem;
+}
+
+.gin--dark-mode #edit-footer-logos .fieldset-wrapper {
+  padding: 1rem;
+}
+
+.gin--dark-mode #edit-footer-logos fieldset + .form-item {
+  margin-top: 1rem;
+}
+
+
+/* Danger button */
+.gin--dark-mode .action-link--icon-trash.action-link--danger {
+  background-color: var(--darkest-gray) !important;
+}
+
+.gin--dark-mode .action-link--icon-trash.action-link--danger::before {
+  background: var(--gin-color-danger) !important;
+}
+
+/* Width override for form offcanvas */
+.gin--dark-mode .ui-dialog-content .form-item {
+  max-width: 100%;
+}
+
+/* Legend */
+.gin--dark-mode legend {
+  display: block;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  width: 100%;
+  float: none;
+}
+
+.gin--dark-mode .fieldset-legend.fieldset__label,
+.gin--dark-mode .fieldset__legend.fieldset__legend--visible .fieldset__label {
+  display: block;
+  color: var(--darkest-gray) !important;
+  background-color: var(--wool);
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border: 0.15rem solid var(--gin-border-color);
+  margin-left: -0.15rem;
+  margin-right: -0.15rem;
+}
+
+.gin--dark-mode .fieldset__label.fieldset__label--group {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+
+.gin--dark-mode #edit-footer-logos .fieldset-wrapper {
+  padding: 1rem;
+}
+
+.gin--dark-mode #edit-footer-logos fieldset + .form-item {
+  margin-top: 1rem;
+}
+
+.gin--dark-mode fieldset > legend + .fieldset-wrapper {
+  padding: 1rem;
+}
+
+/* Secondary buttons */ 
+.gin--dark-mode .form-actions .button {
+  color: var(--gin-color-primary);
+  background-color: var(--darkest-gray);
+}
+
+.gin--dark-mode .form-actions .button:focus {
+  background-color: var(--wool);
+}
+
+/* Messages */
+.gin--dark-mode .messages,
+.gin--dark-mode .glb-messages {
+  outline: 0.15rem solid var(--wool);
+}
+
+/* Radios */
+.gin--dark-mode .form-type--radio .form-radio {
+  border: 1px solid var(--wool);
+  background-color: var(--darkest-gray);
+}

@@ -6,6 +6,7 @@
 
   {% embed "@molecules/banner/grand-hero/yds-grand-hero.twig" with {
     grand_hero__heading: content.field_heading,
+    grand_hero__heading__level: content.field_heading_level.0['#markup'],
     grand_hero__snippet: content.field_text,
     grand_hero__link__content: content.field_link.0['#title'],
     grand_hero__link__url: content.field_link.0['#url_title'],

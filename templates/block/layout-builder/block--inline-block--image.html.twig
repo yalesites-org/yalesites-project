@@ -10,7 +10,7 @@
   {% endif %}
 
   {% embed "@molecules/image/yds-content-image.twig" with {
-    content_image__caption: content.field_text.0['#text'],
+    content_image__caption: content.field_text.0,
     content_image__width: content_image__width|default('content'),
     content_image__alignment: content_image__alignment|default('center'),
   } %}

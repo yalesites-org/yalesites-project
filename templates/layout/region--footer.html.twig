@@ -1,10 +1,8 @@
-{% embed "@organisms/site-footer/yds-site-footer.twig" with {
-  site_footer__border_thickness: '8',
-  site_footer__theme: getThemeSetting('footer_theme'),
-} %}
-  {% block site_footer__text %}{% endblock %}
-  {% block site_footer__columns %}{% endblock %}
-  {% block site_footer__social %}
-    {{ elements.social_links_block }}
-  {% endblock %}
-{% endembed %}
+{#
+ # Footer Block
+ # the Yale Sites Footer Block (admin/structure/block/manage/yalesitesfooterblock?destination=/admin/structure/block)
+ # allows us to conditionally display the contents of a `mega` footer or `basic` footer. 
+ # See template: yalesites_profile/modules/custom/ys_core/templates/ys-footer-block.html.twig
+ #}
+
+{{ elements.yalesitesfooterblock }}

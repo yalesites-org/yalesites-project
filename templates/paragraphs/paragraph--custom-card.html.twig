@@ -4,7 +4,7 @@
 
 {% embed "@molecules/cards/custom-card/yds-custom-card.twig" with {
   custom_card__heading: content.field_heading.0['#text'],
-  custom_card__snippet: content.field_text.0['#text'],
+  custom_card__snippet: content.field_text.0,
   custom_card__url: content.field_link.0['#url_title'],
 } %}
   {% block custom_card__image %}
