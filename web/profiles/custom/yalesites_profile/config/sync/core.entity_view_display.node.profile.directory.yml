@@ -1,0 +1,117 @@
+uuid: 26a91be2-32de-490e-9bf7-e98328d1b265
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.node.directory
+    - field.field.node.profile.field_address
+    - field.field.node.profile.field_affiliation
+    - field.field.node.profile.field_department
+    - field.field.node.profile.field_email
+    - field.field.node.profile.field_first_name
+    - field.field.node.profile.field_honorific_prefix
+    - field.field.node.profile.field_last_name
+    - field.field.node.profile.field_login_required
+    - field.field.node.profile.field_media
+    - field.field.node.profile.field_metatags
+    - field.field.node.profile.field_position
+    - field.field.node.profile.field_subtitle
+    - field.field.node.profile.field_tags
+    - field.field.node.profile.field_teaser_media
+    - field.field.node.profile.field_teaser_text
+    - field.field.node.profile.field_teaser_title
+    - field.field.node.profile.field_telephone
+    - field.field.node.profile.layout_builder__layout
+    - node.type.profile
+  module:
+    - layout_builder
+    - layout_builder_restrictions
+    - text
+    - user
+third_party_settings:
+  layout_builder:
+    enabled: false
+    allow_custom: false
+  layout_builder_restrictions:
+    allowed_block_categories: {  }
+    entity_view_mode_restriction:
+      allowed_layouts: {  }
+      denylisted_blocks: {  }
+      allowlisted_blocks: {  }
+      restricted_categories: {  }
+    entity_view_mode_restriction_by_region:
+      allowed_layouts: {  }
+id: node.profile.directory
+targetEntityType: node
+bundle: profile
+mode: directory
+content:
+  field_affiliation:
+    type: entity_reference_label
+    label: hidden
+    settings:
+      link: false
+    third_party_settings: {  }
+    weight: 4
+    region: content
+  field_department:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 5
+    region: content
+  field_email:
+    type: basic_string
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  field_media:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: profile_directory_card_1_1_
+      link: false
+    third_party_settings: {  }
+    weight: 6
+    region: content
+  field_position:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_subtitle:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_telephone:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 3
+    region: content
+hidden:
+  field_address: true
+  field_first_name: true
+  field_honorific_prefix: true
+  field_last_name: true
+  field_login_required: true
+  field_metatags: true
+  field_tags: true
+  field_teaser_media: true
+  field_teaser_text: true
+  field_teaser_title: true
+  layout_builder__layout: true
+  links: true
+  search_api_excerpt: true

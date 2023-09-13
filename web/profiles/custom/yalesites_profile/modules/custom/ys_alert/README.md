@@ -1,4 +1,4 @@
-# YaleSites Starterkit
+# YaleSites Alert
 
 This module creates an alert banner to display a message across all pages of a
 YaleSite. A backend interface allows site owners to enable or disable alerts.

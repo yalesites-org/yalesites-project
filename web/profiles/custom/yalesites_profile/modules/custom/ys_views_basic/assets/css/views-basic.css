@@ -2,20 +2,6 @@
 * @todo Possibly move these styles into admin theme.
 */
 
-/* set variables */
-.layout-builder-configure-block {
-  --color-border: var(--color-gray-500);
-  --color-border-lightest: var(--color-basic-white);
-  --color-link-hover: hsl(210, 100%, 21%);
-  --color-link-border: hsl(213, 66%, 45%);
-  --color-background-primary: var(--color-basic-white);
-  --color-background-hover: var(--wool);
-  --color-border-hover: hsl(213, 66%, 45%);
-  --color-text-lighter: #2D424D;
-  --color-text-primary: var(--color-gray-800);
-}
-
-
 /* General styles */
 .views-basic--params {
   display: none;
@@ -61,25 +47,29 @@
 }
 
 /* base for labels */
-.glb-form-type--radio label {
+.glb-form-type--radio label.glb-form-item__label.glb-option {
+  display: flex !important;
+  align-items: center;
+  flex-direction: column;
+  gap: 1rem;
   flex: 1 auto;
-  padding: var(--size-spacing-6) var(--size-spacing-4);
-  border-radius: 0.25rem;
-  border: 2px solid var(--color-border);
+  border: 2px solid var(--wool);
   aspect-ratio: 2/1;
-  display: block !important;
   text-align: left;
-  background: var(--color-basic-white);
-  border: 2px solid var(--color-border);
+  background-color: var(--dark-theme-gray);
   padding: var(--size-spacing-4) var(--size-spacing-5);
-  color: var(--color-text-primary);
+  color: var(--darkest-gray);
   border-radius: 0.25rem;
   margin-bottom: var(--size-spacing-4);
 }
 
+.glb-form-type--radio label.glb-form-item__label.glb-option:hover {
+  border-color: var(--darkest-gray);
+}
 
-/****** 
-/******** Input styles 
+
+/******
+/******** Input styles
 *******/
 
 /*views-basic--group-user-selection*/
@@ -102,7 +92,7 @@
 }
 
 
-/* 
+/*
 /** in sidebar
 */
 
@@ -147,6 +137,14 @@
   height: 150px;
 }
 
+/* while other items look great, the term-operators text was getting cut off
+ * so we need to adjust the label width and height for the term operators
+ */
+#drupal-off-canvas .grouped-items .fieldset--group .fieldset__wrapper--group .glb-form-type--radio input.term-operator-item + label {
+  width: 130px !important;
+  height: 150px !important;
+}
+
 /* second column */
 #drupal-off-canvas .grouped-items .fieldset--group.views-basic--view-mode .fieldset__wrapper--group .glb-form-type--radio label {
   width: 175px;
@@ -154,14 +152,10 @@
 }
 
 
-/* 
+/*
 /** in modal
 */
 #layout-builder-modal .grouped-items {
-  display: flex;
-  flex-direction: row;
-  align-items: first baseline;
-  gap: 2rem;
   width: 100%;
 }
 
@@ -169,9 +163,9 @@
   width: auto;
 }
 
-/* first column */ 
+/* first column */
 #layout-builder-modal .grouped-items .fieldset--group {
-  flex: 1 0 52.5%;  
+  flex: 1 0 52.5%;
 }
 
 #layout-builder-modal .grouped-items .fieldset--group .fieldset__wrapper--group .glb-form-type--radio label {
@@ -203,7 +197,7 @@
 }
 
 
-/****** 
+/******
 /******** Label and fieldset styles
 *******/
 
@@ -218,16 +212,16 @@
 .layout-builder-configure-block .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types:hover label,
 .layout-builder-configure-block .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types:focus label,
 .layout-builder-configure-block .form-item-settings-block-form-group-user-selection-entity-and-view-mode-view-mode:hover label,
-.layout-builder-configure-block .form-item-settings-block-form-group-user-selection-entity-and-view-mode-view-mode:focus label { 
-  background-color: var(--color-background-hover);
-  border-color: var(--color-border-hover);
+.layout-builder-configure-block .form-item-settings-block-form-group-user-selection-entity-and-view-mode-view-mode:focus label {
+  background-color: var(--dark-theme-gray);
+  border-color: var(--darkest-gray);
 }
 
 .layout-builder-configure-block  .glb-form-type--radio input[checked="checked"] + label,
 .layout-builder-configure-block  .glb-form-type--radio input[checked="checked"] + label:hover,
 .layout-builder-configure-block  .glb-form-type--radio:hover input[checked="checked"] + label {
-  background-color: var(--color-text-primary);
-  color: var(--color-background-primary) !important;
+  background-color: var(--darkest-gray);
+  color: var(--wool) !important;
 }
 
 
@@ -243,8 +237,8 @@
 }
 
 .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types input[value="post"][checked="checked"] + label {
-  background-color: var(--color-text-primary);
-  color: var(--color-background-primary);
+  background-color: var(--darkest-gray);
+  color: var(--wool);
 }
 
 
@@ -256,8 +250,8 @@
 }
 
 .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types input[value="event"][checked="checked"] + label {
-  background-color: var(--color-text-primary);
-  color: var(--color-background-primary);
+  background-color: var(--darkest-gray);
+  color: var(--wool);
 }
 
 /* Pages */
@@ -268,8 +262,8 @@
 }
 
 .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types input[value="page"][checked="checked"] + label {
-  background-color: var(--color-text-primary);
-  color: var(--color-background-primary);
+  background-color: var(--darkest-gray);
+  color: var(--wool);
 }
 
 /* Profiles */
@@ -280,8 +274,8 @@
 }
 
 .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types input[value="profile"][checked="checked"] + label {
-  background-color: var(--color-text-primary);
-  color: var(--color-background-primary);
+  background-color: var(--darkest-gray);
+  color: var(--wool);
 }
 
 /*
@@ -300,4 +294,20 @@
   background-image: url('../icons/display-type-list-view.svg');
   background-repeat: no-repeat;
   background-position: center 4rem;
+}
+
+/* Condensed */
+.views-basic--view-mode input[value="condensed"] + label {
+  background-image: url('../icons/display-type-condensed.svg');
+  background-repeat: no-repeat;
+  background-position: center 0;
+  background-size: 150%;
+}
+
+/* Directory */
+.views-basic--view-mode input[value="directory"] + label {
+  background-image: url('../icons/display-type-directory.svg');
+  background-repeat: no-repeat;
+  background-position: center 1rem;
+  background-size: 120%;
 }

@@ -1,0 +1,80 @@
+{# Set variable for all the links so we can reference them in a block below  #}
+{% set link_group__base_class = 'link-group' %}
+{% set school_logo_url = school_logo_url|default('/') %}
+
+{% embed "@organisms/site-footer/yds-site-footer.twig" with {
+  site_footer__border_thickness: '8',
+  site_footer__theme: getThemeSetting('footer_theme'),
+  site_footer__variation: footer_variation|default('basic'),
+}%}
+  {% block footer__inner %}
+    {% if site_footer__variation == 'mega'%}
+      {% embed "@organisms/site-footer/_site-footer-mega.twig" %}
+        {% block site_footer__logos %}
+          {% for logo in footer_logos %}
+            {% if logo.url %}
+              <a href="{{ logo.url }}">
+            {% endif %}
+            {{ logo.logo }}
+            {% if logo.url %}
+              </a>
+            {% endif %}
+          {% endfor %}
+        {% endblock %}
+
+        {% block site_footer__yale_logo %}
+          {% if school_logo %}
+            <a href="{{ school_logo_url }}">
+              {{ school_logo }}
+            </a>
+          {% endif %}
+        {% endblock %}
+
+        {% block site_footer__content %}
+          {{ footer_text }}
+        {% endblock %}
+
+        {% block site_footer__two_columns %}
+          {% embed "@molecules/link-group/yds-link-group.twig" with {
+            link_group__heading_one: footer_links_col_1_heading,
+            link_group__heading_two: footer_links_col_2_heading,
+          } %}
+            {% block link_group__links %}
+              {% if footer_links_col_1 %}
+                <ul {{ bem('links-column', ['one'], link_group__base_class) }}>
+                {% for link in footer_links_col_1 %}
+                  {% include "@molecules/link-group/_yds-link-group--links.twig" with {
+                    link_group__link__url: link.link_url,
+                    link_group__link__content: link.link_title,
+                  }%}
+                {% endfor %}
+                </ul>
+              {% endif %}
+              {% if footer_links_col_2 %}
+                <ul {{ bem('links-column', ['two'], link_group__base_class) }}>
+                {% for link in footer_links_col_2 %}
+                  {% include "@molecules/link-group/_yds-link-group--links.twig" with {
+                    link_group__link__url: link.link_url,
+                    link_group__link__content: link.link_title,
+                  }%}
+                {% endfor %}
+                </ul>
+              {% endif %}
+            {% endblock %}
+          {% endembed %}
+          {{ drupal_block('social_links_block') }}
+        {% endblock %}
+      {% endembed %}
+    {% else %}
+    {# basic footer #}
+      {% embed "@organisms/site-footer/_site-footer-basic.twig" %}
+        {% block site_footer__text %}{% endblock %}
+        {% block site_footer__columns %}{% endblock %}
+        {% block site_footer__social %}
+          {{ drupal_block('social_links_block') }}
+        {% endblock %}
+      {% endembed %}
+    {% endif %}
+  {% endblock %}
+{% endembed %}
+

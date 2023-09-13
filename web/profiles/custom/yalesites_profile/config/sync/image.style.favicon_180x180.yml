@@ -1,0 +1,21 @@
+uuid: 2b8b34d6-9d15-4b5f-b64d-681381db1259
+langcode: en
+status: true
+dependencies: {  }
+name: favicon_180x180
+label: 'Favicon (180x180)'
+effects:
+  2f35c000-9eb3-4ee0-a3e2-5cc292475c31:
+    uuid: 2f35c000-9eb3-4ee0-a3e2-5cc292475c31
+    id: image_convert
+    weight: 2
+    data:
+      extension: png
+  d6ed10af-542f-47ba-8b0d-acc8e84bbc4f:
+    uuid: d6ed10af-542f-47ba-8b0d-acc8e84bbc4f
+    id: image_scale_and_crop
+    weight: 3
+    data:
+      width: 180
+      height: 180
+      anchor: center-center

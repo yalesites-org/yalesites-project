@@ -1,0 +1,342 @@
+uuid: a9832e6d-f879-4360-8214-dd6d0c960d20
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.node.profile.field_address
+    - field.field.node.profile.field_affiliation
+    - field.field.node.profile.field_department
+    - field.field.node.profile.field_email
+    - field.field.node.profile.field_first_name
+    - field.field.node.profile.field_honorific_prefix
+    - field.field.node.profile.field_last_name
+    - field.field.node.profile.field_login_required
+    - field.field.node.profile.field_media
+    - field.field.node.profile.field_metatags
+    - field.field.node.profile.field_position
+    - field.field.node.profile.field_subtitle
+    - field.field.node.profile.field_tags
+    - field.field.node.profile.field_teaser_media
+    - field.field.node.profile.field_teaser_text
+    - field.field.node.profile.field_teaser_title
+    - field.field.node.profile.field_telephone
+    - field.field.node.profile.layout_builder__layout
+    - node.type.profile
+  module:
+    - layout_builder
+    - layout_builder_restrictions
+    - metatag
+    - text
+    - user
+    - ys_layouts
+third_party_settings:
+  layout_builder:
+    enabled: true
+    allow_custom: true
+    sections:
+      -
+        layout_id: ys_layout_banner
+        layout_settings:
+          label: 'Banner Section'
+          context_mapping: {  }
+        components:
+          03baefc5-294e-480c-85a6-b35ec2c5ff2a:
+            uuid: 03baefc5-294e-480c-85a6-b35ec2c5ff2a
+            region: content
+            configuration:
+              id: profile_meta_block
+              label: 'Profile Meta Block'
+              label_display: ''
+              provider: ys_layouts
+              context_mapping: {  }
+            weight: 0
+            additional: {  }
+        third_party_settings:
+          layout_builder_lock:
+            lock:
+              1: 1
+              2: 2
+              3: 3
+              4: 4
+              5: 5
+              6: 6
+              7: 7
+              8: 8
+      -
+        layout_id: ys_layout_two_column
+        layout_settings:
+          label: 'Content Section'
+          context_mapping: {  }
+        components:
+          c60f8771-bc1b-46f1-85f5-0bb81f03eb82:
+            uuid: c60f8771-bc1b-46f1-85f5-0bb81f03eb82
+            region: sidebar
+            configuration:
+              id: profile_contact_block
+              label: 'Profile Contact Block'
+              label_display: ''
+              provider: ys_layouts
+              context_mapping: {  }
+            weight: 0
+            additional: {  }
+        third_party_settings: {  }
+  layout_builder_restrictions:
+    allowed_block_categories:
+      - 'Chaos Tools'
+      - 'Content fields'
+      - 'Custom block types'
+      - Devel
+      - Forms
+      - Help
+      - 'Inline blocks'
+      - 'Lists (Views)'
+      - Menus
+      - System
+      - Webform
+      - 'YaleSites Core'
+      - 'YaleSites Layouts'
+      - 'YaleSites alert'
+      - core
+    entity_view_mode_restriction:
+      allowed_layouts:
+        - layout_onecol
+        - ys_layout_two_column
+      denylisted_blocks: {  }
+      allowlisted_blocks:
+        'YaleSites Layouts':
+          - profile_contact_block
+          - profile_meta_block
+      restricted_categories:
+        - 'Chaos Tools'
+        - 'Content fields'
+        - 'Custom block types'
+        - Devel
+        - Forms
+        - Help
+        - 'Lists (Views)'
+        - Menus
+        - System
+        - Webform
+        - 'YaleSites Core'
+        - 'YaleSites alert'
+        - core
+    entity_view_mode_restriction_by_region:
+      allowed_layouts:
+        - layout_onecol
+        - ys_layout_two_column
+      allowlisted_blocks:
+        layout_onecol:
+          all_regions:
+            'YaleSites Layouts':
+              - profile_contact_block
+        ys_layout_two_column:
+          content:
+            'Inline blocks':
+              - 'inline_block:accordion'
+              - 'inline_block:button_link'
+              - 'inline_block:divider'
+              - 'inline_block:image'
+              - 'inline_block:pull_quote'
+              - 'inline_block:tabs'
+              - 'inline_block:text'
+              - 'inline_block:video'
+            'YaleSites Layouts':
+              - profile_contact_block
+          sidebar:
+            'Inline blocks':
+              - 'inline_block:text'
+            'YaleSites Layouts':
+              - profile_contact_block
+      denylisted_blocks: {  }
+      restricted_categories:
+        ys_layout_two_column:
+          sidebar:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - 'Custom block types'
+            - Devel
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites alert'
+            - core
+          content:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - 'Custom block types'
+            - Devel
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites alert'
+            - core
+        layout_onecol:
+          all_regions:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - 'Custom block types'
+            - Devel
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites alert'
+            - core
+id: node.profile.default
+targetEntityType: node
+bundle: profile
+mode: default
+content:
+  field_address:
+    type: text_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 115
+    region: content
+  field_affiliation:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 112
+    region: content
+  field_department:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 113
+    region: content
+  field_email:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 110
+    region: content
+  field_first_name:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 116
+    region: content
+  field_honorific_prefix:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 118
+    region: content
+  field_last_name:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 117
+    region: content
+  field_login_required:
+    type: boolean
+    label: above
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    weight: 101
+    region: content
+  field_media:
+    type: entity_reference_entity_view
+    label: above
+    settings:
+      view_mode: default
+      link: false
+    third_party_settings: {  }
+    weight: 114
+    region: content
+  field_metatags:
+    type: metatag_empty_formatter
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 102
+    region: content
+  field_position:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 107
+    region: content
+  field_subtitle:
+    type: text_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 108
+    region: content
+  field_tags:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 103
+    region: content
+  field_teaser_media:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 104
+    region: content
+  field_teaser_text:
+    type: text_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 105
+    region: content
+  field_teaser_title:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 106
+    region: content
+  field_telephone:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 111
+    region: content
+  links:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 100
+    region: content
+hidden:
+  layout_builder__layout: true
+  search_api_excerpt: true

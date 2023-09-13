@@ -1,5 +1,5 @@
 services:
-  # Service for organizing and renndering social media links.
+  # Service for organizing and rendering social media links.
   ys_core.social_links_manager:
     class: Drupal\ys_core\SocialLinksManager
     arguments: ['@config.factory']
@@ -12,3 +12,6 @@ services:
     arguments: ['@config.factory']
     tags:
       - { name: twig.extension }
+  ys_core.favicon_manager:
+    class: Drupal\ys_core\FaviconManager
+    arguments: ['@config.factory', '@entity_type.manager', '@file_url_generator']
