@@ -648,7 +648,7 @@ display:
             group_items: {  }
           reduce_duplicates: false
           vid: tags
-          type: textfield
+          type: select
           hierarchy: false
           limit: true
           error_message: true
