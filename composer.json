@@ -21,7 +21,6 @@
     "cweagans/composer-patches": "^1.7",
     "drupal/core-composer-scaffold": "^9.2",
     "drupal/core-recommended": "^9.2",
-    "drupal/image_style_warmer": "^1.2",
     "drush/drush": "^11 || ^12",
     "oomphinc/composer-installers-extender": "^2.0",
     "pantheon-systems/drupal-integrations": "^9",
