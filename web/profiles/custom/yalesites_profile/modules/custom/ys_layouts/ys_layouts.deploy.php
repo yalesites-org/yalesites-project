@@ -25,3 +25,11 @@ function ys_layouts_deploy_9001() {
   // Replaces old title section with new post meta block.
   $updateExistingNodes->updateExistingPostMeta();
 }
+
+/**
+ * Updates events to disable adding new sections.
+ */
+function ys_layouts_deploy_9002() {
+  $updateExistingNodes = new UpdateExistingNodes();
+  $updateExistingNodes->updateExistingEventsLock();
+}
