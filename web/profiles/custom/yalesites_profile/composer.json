@@ -50,7 +50,7 @@
     "drupal/layout_builder_restrictions_by_role": "^1.0@alpha",
     "drupal/libraries": "^4.0",
     "drupal/linkit": "^6.0@RC",
-    "drupal/mailchimp_transactional": "^1.0",
+    "drupal/mailchimp_transactional": "dev-3337845-drupal-10-upgrade",
     "drupal/mailsystem": "^4.3",
     "drupal/markup": "2.0.0-beta6",
     "drupal/maxlength": "^2.0@RC",
