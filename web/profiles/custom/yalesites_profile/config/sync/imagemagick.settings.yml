@@ -3,7 +3,7 @@ _core:
 quality: 100
 binaries: imagemagick
 path_to_binaries: ''
-prepend: ''
+prepend: '-limit memory 212MiB'
 log_warnings: true
 debug: false
 locale: en_US.UTF-8
