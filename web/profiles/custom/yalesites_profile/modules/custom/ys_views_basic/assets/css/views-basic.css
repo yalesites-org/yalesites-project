@@ -24,6 +24,7 @@
 }
 
 /* Chosen dropdown selected color contrast fix */
+
 /* ******************************************* */
 .chosen-container .chosen-results {
   color: var(--gin-color-info);
@@ -32,6 +33,7 @@
 .chosen-container-multi .chosen-drop .result-selected {
   color: var(--gin-color-green);
 }
+
 /* ************ Contrast fix end ************ */
 
 /* visually hide the inputs */
@@ -67,12 +69,11 @@
   border-color: var(--darkest-gray);
 }
 
-
 /******
 /******** Input styles
 *******/
 
-/*views-basic--group-user-selection*/
+/* views-basic--group-user-selection */
 
 #drupal-off-canvas .layout-builder-configure-block {
   width: 100%;
@@ -91,12 +92,11 @@
   font-size: 1rem !important;
 }
 
-
 /*
 /** in sidebar
 */
 
-/*views-basic--group-user-selection*/
+/* views-basic--group-user-selection */
 #drupal-off-canvas.ui-dialog-content div.glb-form-item__description {
   margin-top: 0.5rem;
 }
@@ -120,19 +120,35 @@
   font-size: 1rem;
 }
 
-#drupal-off-canvas .views-basic--group-user-selection .grouped-items .fieldset--group .fieldset__wrapper--group .glb-form-radios {
+#drupal-off-canvas
+  .views-basic--group-user-selection
+  .grouped-items
+  .fieldset--group
+  .fieldset__wrapper--group
+  .glb-form-radios {
   display: flex;
   flex-wrap: wrap;
   justify-content: start;
   gap: 0.75rem;
 }
 
-#drupal-off-canvas .views-basic--group-user-selection .grouped-items .fieldset--group .fieldset__wrapper--group .glb-form-radios .glb-form-type--radio {
+#drupal-off-canvas
+  .views-basic--group-user-selection
+  .grouped-items
+  .fieldset--group
+  .fieldset__wrapper--group
+  .glb-form-radios
+  .glb-form-type--radio {
   width: auto;
 }
 
 /* first column */
-#drupal-off-canvas .grouped-items .fieldset--group .fieldset__wrapper--group .glb-form-type--radio label {
+#drupal-off-canvas
+  .grouped-items
+  .fieldset--group
+  .fieldset__wrapper--group
+  .glb-form-type--radio
+  label {
   width: 110px;
   height: 150px;
 }
@@ -140,17 +156,28 @@
 /* while other items look great, the term-operators text was getting cut off
  * so we need to adjust the label width and height for the term operators
  */
-#drupal-off-canvas .grouped-items .fieldset--group .fieldset__wrapper--group .glb-form-type--radio input.term-operator-item + label {
-  width: 130px !important;
-  height: 150px !important;
-}
 
 /* second column */
-#drupal-off-canvas .grouped-items .fieldset--group.views-basic--view-mode .fieldset__wrapper--group .glb-form-type--radio label {
+#drupal-off-canvas
+  .grouped-items
+  .fieldset--group.views-basic--view-mode
+  .fieldset__wrapper--group
+  .glb-form-type--radio
+  label {
   width: 175px;
   height: 200px;
 }
 
+#drupal-off-canvas
+  .grouped-items
+  .fieldset--group
+  .fieldset__wrapper--group
+  .glb-form-type--radio
+  input.term-operator-item
+  + label {
+  width: 130px !important;
+  height: 150px !important;
+}
 
 /*
 /** in modal
