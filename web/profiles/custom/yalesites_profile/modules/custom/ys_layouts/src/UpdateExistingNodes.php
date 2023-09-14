@@ -164,7 +164,7 @@ class UpdateExistingNodes {
       /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $layout */
       $sections = $layout->getSections();
       foreach ($sections as $section) {
-        if ($section->getLayoutSettings()['label'] == '') {
+        if ($section->getLayoutSettings()['label'] != 'Title and Metadata') {
           $section->setThirdPartySetting(
             'layout_builder_lock',
             'lock',
@@ -179,20 +179,22 @@ class UpdateExistingNodes {
               $section_storage = $stored_data->data['section_storage'];
               $sections = $section_storage->getSections();
               foreach ($sections as $key => $section) {
-                if ($section->getLayoutSettings()['label'] == '') {
+                if ($section->getLayoutSettings()['label'] != 'Title and Metadata') {
                   $sectionToUpdate = $key;
                 }
               }
-              $section_storage
-                ->getSection($sectionToUpdate)
-                ->setThirdPartySetting(
-                  'layout_builder_lock',
-                  'lock',
-                  [
-                    6 => 6,
-                    7 => 7,
-                  ]
-                );
+              if (isset($sectionToUpdate)) {
+                $section_storage
+                  ->getSection($sectionToUpdate)
+                  ->setThirdPartySetting(
+                    'layout_builder_lock',
+                    'lock',
+                    [
+                      6 => 6,
+                      7 => 7,
+                    ]
+                  );
+              }
             }
           });
 
