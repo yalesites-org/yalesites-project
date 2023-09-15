@@ -25,7 +25,7 @@ class ThemesTwigExtension extends AbstractExtension {
       new TwigFunction('getThemeSetting', [$this, 'getThemeSetting']),
       new TwigFunction('getAllThemeSettings', [$this, 'getAllThemeSettings']),
       new TwigFunction('getSettingValues', [$this, 'getSettingValues']),
-      new TwigFunction('allowAnimation', [$this, 'allowAnimation']),
+      new TwigFunction('animateItem', [$this, 'animateItem']),
     ];
   }
 
@@ -66,14 +66,19 @@ class ThemesTwigExtension extends AbstractExtension {
   /**
    * Check if a component should animate based on global and component settings.
    *
+   * This method checks the sitewide settings (levers) to see if an animation
+   * style (such as 'artistic') has been set. It then gets the settings on the
+   * component to see if an author disabled animation for a given block. This
+   * method sets the data-animate-item attribute to 'enable' or 'disable'.
+   *
    * @param ?string $field_style_motion_val
    *   The value stored in field_style_motion on a component.
    *
    * @return string
-   *   A true or false HTML attribute to render to enable or disable animation.
+   *   String 'enable' or 'disable' to place on component as HTML attribute.
    */
-  public function allowAnimation(?string $field_style_motion_val): string {
-    return $this->themeSettingsManager->allowAnimation($field_style_motion_val);
+  public function animateItem(?string $field_style_motion_val): string {
+    return $this->themeSettingsManager->animateItem($field_style_motion_val);
   }
 
 }

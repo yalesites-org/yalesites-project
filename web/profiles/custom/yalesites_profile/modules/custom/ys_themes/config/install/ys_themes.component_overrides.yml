@@ -64,24 +64,44 @@ post_list:
       'true': Featured
       'false': Secondary
     default: 'true'
+  field_style_motion:
+    values:
+      default: Default
+      minimal: Minimal
+    default: default
 post_cards:
   field_style_variation:
     values:
       'true': Featured
       'false': Secondary
     default: 'true'
+  field_style_motion:
+    values:
+      default: Default
+      minimal: Minimal
+    default: default
 event_list:
   field_style_variation:
     values:
       'true': Featured
       'false': Secondary
     default: 'true'
+  field_style_motion:
+    values:
+      default: Default
+      minimal: Minimal
+    default: default
 event_cards:
   field_style_variation:
     values:
       'true': Featured
       'false': Secondary
     default: 'true'
+  field_style_motion:
+    values:
+      default: Default
+      minimal: Minimal
+    default: default
 wrapped_image:
   field_style_position:
     values:

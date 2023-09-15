@@ -1,16 +1,16 @@
-uuid: ca2885dc-daa2-4512-ba90-11885ade9ac7
+uuid: b3500f39-efe0-4b66-9b42-dc96bff86990
 langcode: en
 status: true
 dependencies:
   config:
-    - block_content.type.custom_cards
+    - block_content.type.post_list
     - field.storage.block_content.field_style_motion
   module:
     - options
-id: block_content.custom_cards.field_style_motion
+id: block_content.post_list.field_style_motion
 field_name: field_style_motion
 entity_type: block_content
-bundle: custom_cards
+bundle: post_list
 label: Animation
 description: ''
 required: true

@@ -6,7 +6,9 @@ dependencies:
     - block_content.type.post_list
     - field.field.block_content.post_list.field_heading
     - field.field.block_content.post_list.field_instructions
+    - field.field.block_content.post_list.field_style_motion
   module:
+    - options
     - text
 id: block_content.post_list.default
 targetEntityType: block_content
@@ -19,6 +21,13 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 0
+    region: content
+  field_style_motion:
+    type: list_key
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
     region: content
 hidden:
   field_instructions: true

@@ -178,18 +178,18 @@ class ThemeSettingsManager {
   ];
 
   /**
-   * A string to represent a false value in an HTML attribute.
+   * Value to place on the data-animate-item HTML attribute to disable motion.
    *
    * @var string
    */
-  const ATTRIBUTE_FALSE = "['false']";
+  const ATTRIBUTE_DISABLE = "disabled";
 
   /**
-   * A string to represent a true value in an HTML attribute.
+   * Value to place on the data-animate-item HTML attribute to enable motion.
    *
    * @var string
    */
-  const ATTRIBUTE_TRUE = "['true']";
+  const ATTRIBUTE_ENABLE = "enabled";
 
   /**
    * Configuration Factory.
@@ -268,27 +268,26 @@ class ThemeSettingsManager {
    *
    * This method checks the sitewide settings (levers) to see if an animation
    * style (such as 'artistic') has been set. It then gets the settings on the
-   * component to see if an author disabled animation for a given block. The
-   * method returns a string that represents a true or false attribute to add
-   * to the component.
+   * component to see if an author disabled animation for a given block. This
+   * method sets the data-animate-item attribute to 'enable' or 'disable'.
    *
    * @param ?string $field_style_motion_value
    *   The value stored in field_style_motion on a component.
    *
    * @return string
-   *   A true or false HTML attribute to render to enable or disable animation.
+   *   String 'enable' or 'disable' to place on component as HTML attribute.
    */
-  public function allowAnimation(?string $field_style_motion_value) {
+  public function animateItem(?string $field_style_motion_value) {
     $globalStyle = $this->getSetting('animation_style');
     // Disable component animation if a global animation style is not set.
     if (empty($globalStyle) || $globalStyle == 'minimal') {
-      return self::ATTRIBUTE_FALSE;
+      return self::ATTRIBUTE_DISABLE;
     }
     // Disable component animation if componet style is set to 'minimal'.
     if ($field_style_motion_value == 'minimal') {
-      return self::ATTRIBUTE_FALSE;
+      return self::ATTRIBUTE_DISABLE;
     }
-    return self::ATTRIBUTE_TRUE;
+    return self::ATTRIBUTE_ENABLE;
   }
 
 }
