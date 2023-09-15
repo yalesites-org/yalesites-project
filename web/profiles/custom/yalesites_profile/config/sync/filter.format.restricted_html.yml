@@ -14,7 +14,7 @@ filters:
     status: true
     weight: -10
     settings:
-      allowed_html: '<strong> <em> <a href data-entity-type data-entity-uuid data-entity-substitution>'
+      allowed_html: '<br> <p> <strong> <em> <a href data-entity-type data-entity-uuid data-entity-substitution>'
       filter_html_help: true
       filter_html_nofollow: false
   filter_autop:
