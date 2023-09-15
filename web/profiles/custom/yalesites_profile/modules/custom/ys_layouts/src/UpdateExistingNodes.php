@@ -148,6 +148,63 @@ class UpdateExistingNodes {
   }
 
   /**
+   * Update existing events to disable adding more sections.
+   */
+  public function updateExistingEventsLock() {
+    // Find all event nodes to update existing.
+    $nids = \Drupal::entityQuery('node')
+      ->accessCheck(FALSE)
+      ->condition('type', 'event')
+      ->execute();
+
+    foreach ($nids as $nid) {
+      $node = Node::load($nid);
+      $layout = $node->get('layout_builder__layout');
+
+      /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $layout */
+      $sections = $layout->getSections();
+      foreach ($sections as $section) {
+        if ($section->getLayoutSettings()['label'] != 'Title and Metadata') {
+          $section->setThirdPartySetting(
+            'layout_builder_lock',
+            'lock',
+            [
+              6 => 6,
+              7 => 7,
+            ]
+          );
+
+          $this->updateTempStore(function (&$stored_data) {
+            if ($stored_data->data['section_storage']->getContext('entity')->getContextData()->getEntity()->bundle() == 'event') {
+              $section_storage = $stored_data->data['section_storage'];
+              $sections = $section_storage->getSections();
+              foreach ($sections as $key => $section) {
+                if ($section->getLayoutSettings()['label'] != 'Title and Metadata') {
+                  $sectionToUpdate = $key;
+                }
+              }
+              if (isset($sectionToUpdate)) {
+                $section_storage
+                  ->getSection($sectionToUpdate)
+                  ->setThirdPartySetting(
+                    'layout_builder_lock',
+                    'lock',
+                    [
+                      6 => 6,
+                      7 => 7,
+                    ]
+                  );
+              }
+            }
+          });
+
+          $node->save();
+        }
+      }
+    }
+  }
+
+  /**
    * Updates Post Meta for existing nodes.
    */
   public function updateExistingPostMeta() {
