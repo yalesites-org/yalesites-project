@@ -1,10 +1,13 @@
 ((Drupal) => {
-  Drupal.behaviors.ysViewsBasic = {
+  Drupal.behaviors.ysCoreFooterSettings = {
     attach: function() { // eslint-disable-line
       // Function to handle radio input checked behavior based on radio element selection.
       function handleRadioInputs(radioGroup) {
         // Get references to the radio input elements within the specified group
         const radioInputs = document.querySelectorAll(radioGroup);
+        const detailGroups = document.querySelectorAll(
+          ".ys-core-footer-settings-form details"
+        );
 
         // Add event listener to each radio input
         radioInputs.forEach((input) => {
@@ -17,19 +20,18 @@
                   otherInput.removeAttribute("checked");
                 }
               });
+
+              // Closes all details after selecting a new footer variation.
+              for (let i = 0; i < detailGroups.length; i++) {
+                detailGroups[i].removeAttribute("open");
+              }
             }
           });
         });
       }
 
       // Store radio input groups in an array
-      const radioGroups = [
-        'input[name="settings[block_form][group_user_selection][entity_and_view_mode][entity_types]"]',
-        'input[name="settings[block_form][group_user_selection][entity_and_view_mode][view_mode]"]',
-        'input[name="settings[block_form][group_user_selection][filter_options][term_operator]"',
-        'input[name="settings[block_form][group_user_selection][filter_and_sort][term_operator]"',
-        'input[name="settings[block_form][group_user_selection][entity_specific][event_time_period]"]'
-      ];
+      const radioGroups = ['input[name="footer_variation"]'];
 
       // Apply the function to each radio input group
       radioGroups.forEach((group) => {

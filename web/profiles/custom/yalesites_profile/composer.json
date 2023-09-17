@@ -58,9 +58,11 @@
     "drupal/media_library_form_element": "^2.0",
     "drupal/menu_admin_per_menu": "^1.4",
     "drupal/menu_breadcrumb": "^1.16",
+    "drupal/menu_item_extras": "^3.0",
     "drupal/metatag": "^1.19",
     "drupal/migrate_plus": "^6.0",
     "drupal/migrate_tools": "^6.0",
+    "drupal/multivalue_form_element": "^1.0@beta",
     "drupal/node_revision_delete": "^1.0@RC",
     "drupal/override_node_options": "^2.6",
     "drupal/pantheon_advanced_page_cache": "^2.1",
@@ -86,7 +88,7 @@
     "drupal/webform": "^6.2@beta",
     "drupal/wingsuit_companion": "^2.0@RC",
     "jjj/chosen": "^2.2",
-    "yalesites-org/atomic": "1.18.0",
+    "yalesites-org/atomic": "1.20.0",
     "yalesites-org/yale_cas": "^1.0"
   },
   "minimum-stability": "dev",
@@ -109,7 +111,8 @@
       },
       "drupal/core": {
         "plural results summary https://www.drupal.org/project/drupal/issues/2888320": "https://www.drupal.org/files/issues/2021-12-15/2888320-78.patch",
-        "Prevent media library item overflow https://www.drupal.org/project/drupal/issues/3059955": "https://www.drupal.org/files/issues/2023-03-18/3059955-167.patch"
+        "Prevent media library item overflow https://www.drupal.org/project/drupal/issues/3059955": "https://www.drupal.org/files/issues/2023-03-18/3059955-167.patch",
+        "Remove for Drupal 10 - CKEditor 5 should not grow to infinite height https://www.drupal.org/project/drupal/issues/3273755": "https://www.drupal.org/files/issues/2023-07-26/ckeditor-height-fix.patch"
       },
       "drupal/entity_redirect": {
         "fix layout route https://www.drupal.org/project/entity_redirect/issues/3352265": "https://git.drupalcode.org/project/entity_redirect/-/merge_requests/6.patch"
@@ -128,6 +131,9 @@
       },
       "drupal/gin": {
         "fix description toggle for CKEditor fields https://www.drupal.org/project/gin/issues/3316265": "https://git.drupalcode.org/project/gin/-/merge_requests/227.patch"
+      },
+      "drupal/media_library_form_element": {
+        "Order Media items https://www.drupal.org/project/media_library_form_element/issues/3168027":"https://www.drupal.org/files/issues/2022-01-22/order_media_items-3168027-8.patch"
       },
       "drupal/redirect": {
         "fix validation issue on adding url redirect": "https://www.drupal.org/files/issues/2023-08-09/3057250-65.patch"

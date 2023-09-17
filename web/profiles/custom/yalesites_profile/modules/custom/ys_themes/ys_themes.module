@@ -130,10 +130,17 @@ function ys_themes_build_css_variables() : string {
  * Implements hook_preprocess_block().
  */
 function ys_themes_preprocess_block(&$variables) {
+  $config = \Drupal::config('ys_themes.theme_settings');
+
+  // Add the cache tag, so that the theme setting information is rebuilt
+  // when the config is saved.
+  // Via: https://drupal.stackexchange.com/questions/266379/how-to-clear-cache-for-config-entity-after-making-changes
+  \Drupal::service('renderer')->addCacheableDependency($variables, $config);
+
   if (!empty($variables['base_plugin_id']) && $variables['base_plugin_id'] == 'inline_block') {
+
     $node = \Drupal::routeMatch()->getParameter('node');
     if ($node) {
-      $config = \Drupal::config('ys_themes.theme_settings');
       $variables['parentNode'] = $node->getType();
 
       // Limit variable include to components that need to use
@@ -142,10 +149,6 @@ function ys_themes_preprocess_block(&$variables) {
         $variables['cta__component_theme'] = $config->get('button_theme');
       }
 
-      // Add the cache tag, so that the theme setting information is rebuilt
-      // when the config is saved.
-      // Via: https://drupal.stackexchange.com/questions/266379/how-to-clear-cache-for-config-entity-after-making-changes
-      \Drupal::service('renderer')->addCacheableDependency($variables, $config);
     }
   }
 }

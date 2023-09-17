@@ -19,7 +19,7 @@ module:
   chosen: 0
   chosen_field: 0
   chosen_lib: 0
-  ckeditor: 0
+  ckeditor5: 0
   components: 0
   config: 0
   config_filter: 0
@@ -75,6 +75,7 @@ module:
   media_library_edit: 0
   media_library_form_element: 0
   menu_breadcrumb: 0
+  menu_item_extras: 0
   menu_link_content: 0
   menu_ui: 0
   metatag: 0
@@ -84,6 +85,7 @@ module:
   migrate: 0
   migrate_plus: 0
   migrate_tools: 0
+  multivalue_form_element: 0
   mysql: 0
   node: 0
   node_revision_delete: 0
