@@ -6,6 +6,7 @@ dependencies:
     - editor
     - improve_line_breaks_filter
     - linkit
+    - typogrify
 name: 'Basic HTML'
 format: basic_html
 weight: 0
@@ -16,7 +17,7 @@ filters:
     status: true
     weight: -10
     settings:
-      allowed_html: '<em> <strong> <cite> <blockquote cite> <code> <ul type> <ol start type> <li> <dl> <dt> <dd> <h2 id> <h3 id> <h4 id> <h5 id> <h6 id> <p> <br> <span> <a href hreflang data-entity-substitution data-entity-type data-entity-uuid title> <table> <caption> <tbody> <thead> <tfoot> <th> <td> <tr> <sup> <sub>'
+      allowed_html: '<br> <p class="text-align-left text-align-center text-align-right text-align-justify"> <h2 id class="text-align-left text-align-center text-align-right text-align-justify"> <h3 id class="text-align-left text-align-center text-align-right text-align-justify"> <h4 id class="text-align-left text-align-center text-align-right text-align-justify"> <h5 id class="text-align-left text-align-center text-align-right text-align-justify"> <h6 id class="text-align-left text-align-center text-align-right text-align-justify"> <cite> <dl> <dt> <dd> <span> <blockquote cite> <ul type> <ol type start> <a hreflang title href data-entity-type data-entity-uuid data-entity-substitution> <strong> <em> <li> <table> <tr> <td rowspan colspan> <th rowspan colspan> <thead> <tbody> <tfoot> <caption>'
       filter_html_help: false
       filter_html_nofollow: false
   filter_align:
@@ -70,3 +71,24 @@ filters:
     weight: 0
     settings:
       title: true
+  typogrify:
+    id: typogrify
+    provider: typogrify
+    status: true
+    weight: 10
+    settings:
+      smartypants_enabled: '1'
+      smartypants_hyphens: '2'
+      space_hyphens: '0'
+      widont_enabled: '0'
+      hyphenate_shy: '0'
+      space_to_nbsp: '1'
+      wrap_caps: '0'
+      wrap_ampersand: '0'
+      wrap_abbr: '0'
+      wrap_numbers: '0'
+      wrap_initial_quotes: '1'
+      ligatures: 'a:0:{}'
+      arrows: 'a:0:{}'
+      fractions: 'a:0:{}'
+      quotes: 'a:2:{s:2:",,";s:2:",,";s:2:"''''";s:2:"''''";}'
