@@ -335,8 +335,6 @@ function ys_core_taxonomy_term_update() {
  * Checks if the image is a gif and if so, it will remove the animation.
  */
 function ys_core_media_presave($entity) {
-  // Log the instance type.
-  \Drupal::logger('ys_core')->notice('Media type: ' . $entity->bundle());
   // Test if it's an image and a gif.
   if ($entity->bundle() == 'image' && $entity->get('field_media_image')->entity->get('filemime')->value == 'image/gif') {
     // Get the file path.
