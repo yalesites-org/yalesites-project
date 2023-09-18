@@ -75,6 +75,15 @@ function ys_core_theme($existing, $type, $theme, $path): array {
  */
 function ys_core_form_alter(&$form, $form_state, $form_id) {
 
+  // Ensure the CAS bulk add only allows roles that role_delegate will allow.
+  if ($form_id == 'bulk_add_cas_users') {
+    $account = \Drupal::currentUser();
+    $delegatable_roles = \Drupal::service('delegatable_roles');
+
+    $delegatable_roles = $delegatable_roles->getAssignableRoles($account);
+    $form['roles']['#options'] = $delegatable_roles;
+  }
+
   // Load custom library.
   if (str_ends_with($form_id, '_layout_builder_form')) {
     $form['#attached']['library'][] = 'ys_core/node_layout_form';
