@@ -13,6 +13,15 @@
   background-color: #6f6f6f !important;
 }
 
+.ys-core-footer-settings-form .form-element {
+  width: 100%;
+}
+
+.ys-core-footer-settings-form .preview-icon {
+  width: 190px;
+  height: 137px;
+}
+
 .ys-core-footer-settings-form .claro-details.form-disabled {
   pointer-events: none;
   user-select: none;

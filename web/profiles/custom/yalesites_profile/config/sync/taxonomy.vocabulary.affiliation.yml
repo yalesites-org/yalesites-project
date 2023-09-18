@@ -29,5 +29,5 @@ third_party_settings:
         external: ''
 name: Affiliation
 vid: affiliation
-description: ''
+description: 'A vocabulary used to classify a profile based on their affiliation with Yale, such as "Staff", "Faculty", "Student", etc." for affiliation description.'
 weight: 0
