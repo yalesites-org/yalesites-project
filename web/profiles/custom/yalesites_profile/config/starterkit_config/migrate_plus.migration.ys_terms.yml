@@ -1,0 +1,48 @@
+uuid: 3bd796d7-5ec4-4d46-aba2-d2ac96826026
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - ys_starterkit
+id: ys_terms
+class: null
+field_plugin_method: null
+cck_plugin_method: null
+migration_tags: null
+migration_group: ys_starterkit
+label: 'Starterkit Terms'
+source:
+  plugin: url
+  data_fetcher_plugin: file
+  data_parser_plugin: json
+  urls:
+    - profiles/custom/yalesites_profile/modules/custom/ys_starterkit/content/terms.json
+  item_selector: /data/terms
+  fields:
+    -
+      name: src_unique_id
+      label: 'Unique ID'
+      selector: unique_id
+    -
+      name: vocabulary
+      label: Vocabulary
+      selector: vocabulary
+    -
+      name: name
+      label: Name
+      selector: name
+  ids:
+    src_unique_id:
+      type: string
+  constants:
+    date_format: Y-m-d
+process:
+  vid: vocabulary
+  name: name
+  uid:
+    plugin: default_value
+    default_value: 1
+destination:
+  plugin: 'entity:taxonomy_term'
+migration_dependencies: null
