@@ -24,7 +24,7 @@
     "drupal/config_filter": "2.4",
     "drupal/config_ignore": "3.0-beta2",
     "drupal/config_split": "2.0.0-rc4",
-    "drupal/ctools": "^3.7",
+    "drupal/ctools": "4.0.4",
     "drupal/devel": "^5.1",
     "drupal/devel_kint_extras": "^1.0",
     "drupal/easy_breadcrumb": "^2.0",
