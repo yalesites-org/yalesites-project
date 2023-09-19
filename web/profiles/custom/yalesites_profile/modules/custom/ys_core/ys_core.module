@@ -369,5 +369,7 @@ function ys_core_remove_animation_from_gifs($file_path) {
     // Clean up.
     imagedestroy($image);
     imagedestroy($new_image);
+
+    \Drupal::messenger()->addMessage(t('This gif was converted to a static image.'));
   }
 }
