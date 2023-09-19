@@ -75,6 +75,7 @@
     "drupal/recaptcha": "^3.1",
     "drupal/recaptcha_v3": "^1.7",
     "drupal/redirect": "^1.7",
+    "drupal/role_delegation": "^1.2",
     "drupal/search_api": "^1.25",
     "drupal/search_api_exclude": "^2.0",
     "drupal/search_api_html_element_filter": "^1.0",

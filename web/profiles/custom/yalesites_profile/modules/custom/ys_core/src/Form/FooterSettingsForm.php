@@ -154,7 +154,7 @@ class FooterSettingsForm extends ConfigFormBase {
     $form['footer_logos']['logos'] = [
       '#type' => 'multivalue',
       '#title' => $this->t('Footer Logos'),
-      '#cardinality' => 4,
+      '#cardinality' => 2,
       '#default_value' => ($footerConfig->get('content.logos')) ? $footerConfig->get('content.logos') : [],
 
       'logo' => [
