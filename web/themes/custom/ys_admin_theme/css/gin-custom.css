@@ -427,6 +427,11 @@
   background-color: var(--darkest-gray);
 }
 
+/* MaxLength */
+.gin--dark-mode .error strong {
+  color: var(--gin-color-danger-light);
+}
+
 /* stylelint-enable */
 
 /*# sourceMappingURL=gin-custom.css.map */
