@@ -24,6 +24,7 @@ dependencies:
     - node.type.profile
   module:
     - allowed_formats
+    - chosen_field
     - field_group
     - maxlength
     - media_library
@@ -227,14 +228,10 @@ content:
         maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
         maxlength_js_enforce: false
   field_tags:
-    type: entity_reference_autocomplete_tags
+    type: chosen_select
     weight: 7
     region: content
-    settings:
-      match_operator: CONTAINS
-      match_limit: 10
-      size: 60
-      placeholder: ''
+    settings: {  }
     third_party_settings: {  }
   field_teaser_media:
     type: media_library_widget
