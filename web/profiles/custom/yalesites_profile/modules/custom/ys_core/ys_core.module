@@ -188,7 +188,7 @@ function ys_core_preprocess_menu(&$variables) {
       $clonedMenuItem['list__item__is_heading'] = TRUE;
 
       // Get the CTA text from menu item extras field.
-      $clonedMenuItem['heading_cta'] = $clonedMenuItem['entity']->get('field_menu_top_level_link_cta')->value ?: t('Explore all');
+      $clonedMenuItem['heading_cta'] = $clonedMenuItem['entity']->get('field_menu_top_level_link_cta')->value ?: t('Explore @title', array('@title' => $clonedMenuItem['title']));
 
       // Add cloned item to the beginning of the menu.
       array_unshift($menuItem['below'], $clonedMenuItem);
