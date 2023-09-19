@@ -199,6 +199,20 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     // Set operator: "+" is "OR" and "," is "AND".
     $operator = $paramsDecoded['operator'] ?? '+';
 
+    // Fix for older setting terms for nodes not saved with the new storage.
+    if (isset($termsIncludeArray[0]) && is_array($termsIncludeArray[0])) {
+      foreach ($termsIncludeArray as $terms) {
+        $termsIncludeArrayFixed[] = $terms['target_id'];
+      }
+      $termsIncludeArray = $termsIncludeArrayFixed;
+    }
+    if (isset($termsExcludeArray[0]) && is_array($termsExcludeArray[0])) {
+      foreach ($termsExcludeArray as $terms) {
+        $termsExcludeArrayFixed[] = $terms['target_id'];
+      }
+      $termsExcludeArray = $termsExcludeArrayFixed;
+    }
+    // End fix.
     $termsInclude = (count($termsIncludeArray) != 0) ? implode($operator, $termsIncludeArray) : 'all';
     $termsExclude = (count($termsExcludeArray) != 0) ? implode($operator, $termsExcludeArray) : NULL;
 
