@@ -87,6 +87,6 @@ display: flex;
 }
 
 /* Remove margin from `p` element when used in sidebar */
-.yds-two-column__secondary .text p {
+.block-wrapper .text p {
   margin: 0;
 } 
