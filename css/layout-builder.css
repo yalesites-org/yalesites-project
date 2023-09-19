@@ -79,3 +79,14 @@ display: flex;
 .ys-content-type-profile .main-content .breadcrumbs__wrapper {
   margin-bottom: var(--size-spacing-7);
 }
+
+.main-content .layout.layout--onecol .block-wrapper__inner {
+  width: 100%;
+  max-width: 1344px;
+  margin: 0 auto;
+}
+
+/* Remove margin from `p` element when used in sidebar */
+.yds-two-column__secondary .text p {
+  margin: 0;
+} 
