@@ -1,0 +1,37 @@
+uuid: 6b052cd9-2d1c-4b86-9349-7f3b7f7ba104
+langcode: en
+status: true
+dependencies:
+  module:
+    - entity_redirect
+third_party_settings:
+  entity_redirect:
+    redirect:
+      add:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      edit:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      delete:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      anonymous:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+label: 'Logo Horizontal (3:1)'
+id: logo_horizontal_3_1
+description: 'Crop type for landscape/horizontal logos in 3:1 aspect ratio.'
+aspect_ratio: '3:1'
+soft_limit_width: null
+soft_limit_height: null
+hard_limit_width: null
+hard_limit_height: null

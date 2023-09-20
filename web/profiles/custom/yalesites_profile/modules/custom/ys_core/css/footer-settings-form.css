@@ -78,3 +78,7 @@
 .form-item--footer-variation.form-type--radio input:focus + label {
   outline: 2px solid var(--wool);
 }
+
+#edit-footer-variation {
+  margin-top: 1rem;
+}
