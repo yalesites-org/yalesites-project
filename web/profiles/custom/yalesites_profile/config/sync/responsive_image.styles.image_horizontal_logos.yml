@@ -1,0 +1,27 @@
+uuid: 5a91f1a5-323d-4607-b493-7bcbed8e18db
+langcode: en
+status: true
+dependencies:
+  config:
+    - image.style.3_1_300
+    - image.style.3_1_400
+    - image.style.3_1_500
+    - image.style.3_1_600
+    - image.style.3_1_700
+id: image_horizontal_logos
+label: 'Image - Horizontal Logos'
+image_style_mappings:
+  -
+    image_mapping_type: sizes
+    image_mapping:
+      sizes: '(min-width:556px) 500px, 100vw'
+      sizes_image_styles:
+        - '3_1_300'
+        - '3_1_400'
+        - '3_1_500'
+        - '3_1_600'
+        - '3_1_700'
+    breakpoint_id: responsive_image.viewport_sizing
+    multiplier: 1x
+breakpoint_group: responsive_image
+fallback_image_style: '3_1_300'

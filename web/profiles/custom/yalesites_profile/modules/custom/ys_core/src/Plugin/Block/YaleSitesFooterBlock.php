@@ -104,7 +104,7 @@ class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginIn
       $schoolLogoFileUri = $fileEntity->load($schoolLogoMedia->field_media_image->target_id)->getFileUri();
       $schoolLogoRender = [
         '#type' => 'responsive_image',
-        '#responsive_image_style_id' => 'image_content_width',
+        '#responsive_image_style_id' => 'image_horizontal_logos',
         '#uri' => $schoolLogoFileUri,
         '#attributes' => [
           'alt' => $schoolLogoMedia->get('field_media_image')->first()->get('alt')->getValue(),

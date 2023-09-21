@@ -21,6 +21,10 @@ behind the a.toolbar-icon element. */
     z-index: -1;
 }
 
+/* Push down the body when secondary menu is present */
+.gin--horizontal-toolbar.toolbar-horizontal.toolbar-fixed {
+  padding-top: calc(var(--gin-toolbar-secondary-height) + var(--gin-toolbar-y-offset)) !important;
+}
 
 /* Update toolbar icons */
 

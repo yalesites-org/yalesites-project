@@ -10,7 +10,7 @@ field_name: field_menu_top_level_link_cta
 entity_type: menu_link_content
 bundle: main
 label: 'Mega Menu Top Level Link Text'
-description: 'Mega Menu level one links display this link text alongside the Menu link title. If empty, defaults to "Explore all".'
+description: 'Mega Menu level one links display this link text alongside the Menu link title. If empty, defaults to "Explore [Menu Item Title]".'
 required: false
 translatable: false
 default_value: {  }

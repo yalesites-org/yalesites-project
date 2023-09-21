@@ -1,0 +1,26 @@
+uuid: 5a51324b-359a-43fd-bcb4-2be349b5084f
+langcode: en
+status: true
+dependencies:
+  config:
+    - crop.type.logo_horizontal_3_1
+  module:
+    - crop
+name: '3_1_300'
+label: '3:1 (300)'
+effects:
+  aa428c6a-4f01-463a-a2a8-60826c4d4a66:
+    uuid: aa428c6a-4f01-463a-a2a8-60826c4d4a66
+    id: crop_crop
+    weight: 1
+    data:
+      crop_type: logo_horizontal_3_1
+      automatic_crop_provider: null
+  8a3873d2-9ad7-46cb-bdf9-5df37ba25a51:
+    uuid: 8a3873d2-9ad7-46cb-bdf9-5df37ba25a51
+    id: image_scale_and_crop
+    weight: 2
+    data:
+      width: 300
+      height: 100
+      anchor: center-center
