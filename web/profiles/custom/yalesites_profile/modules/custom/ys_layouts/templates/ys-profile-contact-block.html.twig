@@ -7,20 +7,17 @@
 
     {% if email %}
 
-      {{ attach_library('atomic/text-link') }}
-      {% embed '@atoms/controls/text-link/yds-text-link.twig' with {
-        link__url: '',
-        link__pre_text: email,
-        link__content: '(copy)',
-        link__type: 'email',
-        link__extra_class: ['copy-trigger'],
+      {{ attach_library('atomic/text-copy-button') }}
+      {% embed '@atoms/controls/text-copy-button/yds-text-copy-button.twig' with {
+        text_copy_button__pre_text: email,
+        text_copy_button__content: '(copy)',
       } %}
     {% endembed %}
       <br>
     {% endif %}
 
     {% if phone %}
-
+      {{ attach_library('atomic/text-link') }}
       {% embed '@atoms/controls/text-link/yds-text-link.twig' with {
         link__url: 'tel:' ~ phone,
         link__content: phone,
