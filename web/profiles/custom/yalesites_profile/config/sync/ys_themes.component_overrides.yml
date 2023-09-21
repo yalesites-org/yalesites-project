@@ -79,7 +79,7 @@ wrapped_image:
     default: left
   field_style_variation:
     values:
-      floated: Floated
+      floated: Inline
       offset: Offset
     default: offset
 grand_hero:

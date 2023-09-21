@@ -484,7 +484,24 @@ display:
         - 'url.query_args:sort_by'
         - user
         - user.permissions
-      tags: {  }
+      tags:
+        - 'config:core.entity_view_display.media.background_video.default'
+        - 'config:core.entity_view_display.media.background_video.media_library'
+        - 'config:core.entity_view_display.media.document.default'
+        - 'config:core.entity_view_display.media.document.media_library'
+        - 'config:core.entity_view_display.media.embed.default'
+        - 'config:core.entity_view_display.media.embed.media_library'
+        - 'config:core.entity_view_display.media.image.banner_16_5'
+        - 'config:core.entity_view_display.media.image.card_list_3_2'
+        - 'config:core.entity_view_display.media.image.card_secondary_3_2'
+        - 'config:core.entity_view_display.media.image.default'
+        - 'config:core.entity_view_display.media.image.image_content_width'
+        - 'config:core.entity_view_display.media.image.image_float'
+        - 'config:core.entity_view_display.media.image.profile_directory_card_1_1_'
+        - 'config:core.entity_view_display.media.image.text_with_image_feature_equal'
+        - 'config:core.entity_view_display.media.image.token'
+        - 'config:core.entity_view_display.media.video.default'
+        - 'config:core.entity_view_display.media.video.media_library'
   page:
     id: page
     display_title: Page
@@ -544,7 +561,8 @@ display:
           hide_alter_empty: true
           action_title: Action
           include_exclude: exclude
-          selected_actions: {  }
+          selected_actions:
+            - export_media
         name:
           id: name
           table: media_field_data
@@ -781,7 +799,24 @@ display:
         - 'url.query_args:sort_by'
         - user
         - user.permissions
-      tags: {  }
+      tags:
+        - 'config:core.entity_view_display.media.background_video.default'
+        - 'config:core.entity_view_display.media.background_video.media_library'
+        - 'config:core.entity_view_display.media.document.default'
+        - 'config:core.entity_view_display.media.document.media_library'
+        - 'config:core.entity_view_display.media.embed.default'
+        - 'config:core.entity_view_display.media.embed.media_library'
+        - 'config:core.entity_view_display.media.image.banner_16_5'
+        - 'config:core.entity_view_display.media.image.card_list_3_2'
+        - 'config:core.entity_view_display.media.image.card_secondary_3_2'
+        - 'config:core.entity_view_display.media.image.default'
+        - 'config:core.entity_view_display.media.image.image_content_width'
+        - 'config:core.entity_view_display.media.image.image_float'
+        - 'config:core.entity_view_display.media.image.profile_directory_card_1_1_'
+        - 'config:core.entity_view_display.media.image.text_with_image_feature_equal'
+        - 'config:core.entity_view_display.media.image.token'
+        - 'config:core.entity_view_display.media.video.default'
+        - 'config:core.entity_view_display.media.video.media_library'
   widget:
     id: widget
     display_title: Widget
@@ -1101,7 +1136,24 @@ display:
         - url.query_args
         - 'url.query_args:sort_by'
         - user.permissions
-      tags: {  }
+      tags:
+        - 'config:core.entity_view_display.media.background_video.default'
+        - 'config:core.entity_view_display.media.background_video.media_library'
+        - 'config:core.entity_view_display.media.document.default'
+        - 'config:core.entity_view_display.media.document.media_library'
+        - 'config:core.entity_view_display.media.embed.default'
+        - 'config:core.entity_view_display.media.embed.media_library'
+        - 'config:core.entity_view_display.media.image.banner_16_5'
+        - 'config:core.entity_view_display.media.image.card_list_3_2'
+        - 'config:core.entity_view_display.media.image.card_secondary_3_2'
+        - 'config:core.entity_view_display.media.image.default'
+        - 'config:core.entity_view_display.media.image.image_content_width'
+        - 'config:core.entity_view_display.media.image.image_float'
+        - 'config:core.entity_view_display.media.image.profile_directory_card_1_1_'
+        - 'config:core.entity_view_display.media.image.text_with_image_feature_equal'
+        - 'config:core.entity_view_display.media.image.token'
+        - 'config:core.entity_view_display.media.video.default'
+        - 'config:core.entity_view_display.media.video.media_library'
   widget_table:
     id: widget_table
     display_title: 'Widget (table)'

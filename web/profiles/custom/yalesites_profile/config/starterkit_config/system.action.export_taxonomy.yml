@@ -1,0 +1,13 @@
+uuid: 5f2760c9-36a5-407d-a1d1-abde86c6b603
+langcode: en
+status: true
+dependencies:
+  module:
+    - ys_starterkit
+id: export_taxonomy
+label: 'Export taxonomy'
+type: taxonomy_term
+plugin: taxonomy_bulk_export
+configuration:
+  assets: 1
+  translation: 1

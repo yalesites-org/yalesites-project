@@ -5,6 +5,9 @@
  * Install, update and uninstall functions for the module.
  */
 
+use Drupal\migrate\MigrateExecutable;
+use Drupal\migrate\MigrateMessage;
+
 /**
  * Implements hook_uninstall().
  */
@@ -22,5 +25,17 @@ function ys_starterkit_uninstall() {
       \Drupal::configFactory()->getEditable($config)->delete();
     }
 
+  }
+}
+
+/**
+ * Implements hook_update().
+ */
+function ys_starterkit_update_9001() {
+  // Adds starter taxonomy terms.
+  if (!\Drupal::service('config.installer')->isSyncing()) {
+    $migration = \Drupal::service('plugin.manager.migration')->createInstance('ys_terms');
+    $executable = new MigrateExecutable($migration, new MigrateMessage());
+    $executable->import();
   }
 }

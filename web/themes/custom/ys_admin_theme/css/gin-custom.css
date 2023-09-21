@@ -423,6 +423,11 @@
   background-color: var(--darkest-gray);
 }
 
+/* MaxLength */
+.gin--dark-mode .error strong {
+  color: var(--wool);
+}
+
 /* stylelint-enable */
 
 /*# sourceMappingURL=gin-custom.css.map */
