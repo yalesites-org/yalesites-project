@@ -62,3 +62,7 @@ layout-builder:
 text-link:
   js:
     node_modules/@yalesites-org/component-library-twig/dist/js/01-atoms/controls/text-link/yds-text-link.js: {}
+
+text-copy-button:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/01-atoms/controls/text-copy-button/yds-text-copy-button.js: {}
