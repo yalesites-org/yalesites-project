@@ -399,7 +399,7 @@
 // able to be interacted with - e.g. `divider`
 */
 .layout-builder-block {
-  min-height: 6rem;
+  min-height: 9rem;
 }
 
 /* increase padding around the divider when in layout-builder, to make the
@@ -625,4 +625,9 @@ input[type="search"]::placeholder {
 .gin--dark-mode .form-type--radio .form-radio {
   border: 1px solid var(--wool);
   background-color: var(--darkest-gray);
+}
+
+/* MaxLength */
+.gin--dark-mode .error strong {
+  color: var(--wool);
 }
