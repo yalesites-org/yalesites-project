@@ -161,7 +161,35 @@ class ThemeSettingsManager {
         ],
       ],
     ],
+    'animation_style' => [
+      'name' => 'Animation Style',
+      'prop_type' => 'element',
+      'selector' => '[data-site-animation]',
+      'default' => 'minimal',
+      'values' => [
+        'minimal' => [
+          'label' => 'Minimal',
+        ],
+        'artistic' => [
+          'label' => 'Artistic',
+        ],
+      ],
+    ],
   ];
+
+  /**
+   * Value to place on the data-animate-item HTML attribute to disable motion.
+   *
+   * @var string
+   */
+  const ATTRIBUTE_DISABLE = "disabled";
+
+  /**
+   * Value to place on the data-animate-item HTML attribute to enable motion.
+   *
+   * @var string
+   */
+  const ATTRIBUTE_ENABLE = "enabled";
 
   /**
    * Configuration Factory.
@@ -233,6 +261,33 @@ class ThemeSettingsManager {
   public function setSetting($setting_name, $value) {
     $this->yaleThemeSettings->set($setting_name, $value);
     $this->yaleThemeSettings->save(TRUE);
+  }
+
+  /**
+   * Check if a component should animate based on global and component settings.
+   *
+   * This method checks the sitewide settings (levers) to see if an animation
+   * style (such as 'artistic') has been set. It then gets the settings on the
+   * component to see if an author disabled animation for a given block. This
+   * method sets the data-animate-item attribute to 'enable' or 'disable'.
+   *
+   * @param ?string $field_style_motion_value
+   *   The value stored in field_style_motion on a component.
+   *
+   * @return string
+   *   String 'enable' or 'disable' to place on component as HTML attribute.
+   */
+  public function animateItem(?string $field_style_motion_value) {
+    $globalStyle = $this->getSetting('animation_style');
+    // Disable component animation if a global animation style is not set.
+    if (empty($globalStyle) || $globalStyle == 'minimal') {
+      return self::ATTRIBUTE_DISABLE;
+    }
+    // Disable component animation if componet style is set to 'minimal'.
+    if ($field_style_motion_value == 'minimal') {
+      return self::ATTRIBUTE_DISABLE;
+    }
+    return self::ATTRIBUTE_ENABLE;
   }
 
 }

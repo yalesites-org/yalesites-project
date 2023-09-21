@@ -6,6 +6,7 @@ dependencies:
     - block_content.type.pull_quote
     - field.field.block_content.pull_quote.field_caption
     - field.field.block_content.pull_quote.field_instructions
+    - field.field.block_content.pull_quote.field_style_motion
     - field.field.block_content.pull_quote.field_style_variation
     - field.field.block_content.pull_quote.field_text
   module:
@@ -22,6 +23,13 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 1
+    region: content
+  field_style_motion:
+    type: list_key
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 3
     region: content
   field_style_variation:
     type: list_key
