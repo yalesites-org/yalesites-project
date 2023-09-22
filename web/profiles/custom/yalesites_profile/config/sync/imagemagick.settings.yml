@@ -3,7 +3,7 @@ _core:
 quality: 100
 binaries: imagemagick
 path_to_binaries: ''
-prepend: '-limit area 20MP'
+prepend: '-limit area 20MP -limit memory 16MB -limit map 32MB'
 log_warnings: true
 debug: false
 locale: en_US.UTF-8
