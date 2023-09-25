@@ -4,6 +4,11 @@
   mask-image: url('../images/yale-university-press-1985-2010.svg') !important;
 }
 
+/* Hide yalesiites tools help menu as it has no text associated */
+.toolbar .toolbar-bar #toolbar-item-administration-tray.toolbar-tray-vertical ul.toolbar-menu.root li.menu-item.menu-item--expanded.menu-item__admin_toolbar_tools-help.level-1 {
+  display: none;
+}
+
 .gin--horizontal-toolbar #toolbar-administration .toolbar-icon-admin-toolbar-tools-help::before {
   width: 28px !important;
 }

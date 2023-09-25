@@ -219,10 +219,6 @@
   color: var(--wool);
 }
 
-.gin--dark-mode .chosen-container-single .chosen-search-input {
-  color: var(--darkest-gray);
-}
-
 /* remove media button */
 .gin--dark-mode .media-library-add-form__remove-button {
   background-color: var(--robin-egg);
@@ -425,6 +421,11 @@
 .gin--dark-mode .form-type--radio .form-radio {
   border: 1px solid var(--wool);
   background-color: var(--darkest-gray);
+}
+
+/* MaxLength */
+.gin--dark-mode .error strong {
+  color: var(--wool);
 }
 
 /* stylelint-enable */
