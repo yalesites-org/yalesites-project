@@ -22,7 +22,7 @@ behind the a.toolbar-icon element. */
 }
 
 /* Push down the body when secondary menu is present */
-.gin--horizontal-toolbar.toolbar-horizontal.toolbar-fixed:not(.path-admin) {
+.gin--horizontal-toolbar.toolbar-horizontal.toolbar-fixed:not(.path-admin):not(.path-user) {
   padding-top: calc(var(--gin-toolbar-secondary-height) + var(--gin-toolbar-y-offset)) !important;
 }
 
