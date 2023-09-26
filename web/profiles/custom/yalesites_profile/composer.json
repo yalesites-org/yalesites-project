@@ -49,7 +49,7 @@
     "drupal/layout_builder_restrictions": "2.19",
     "drupal/layout_builder_restrictions_by_role": "1.0-alpha5",
     "drupal/libraries": "4.0.4",
-    "drupal/linkit": "6.0.0",
+    "drupal/linkit": "6.1.0",
     "drupal/mailchimp_transactional": "dev-3337845-drupal-10-upgrade",
     "drupal/mailsystem": "4.4",
     "drupal/markup": "2.0.0-beta6",
