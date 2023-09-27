@@ -21,6 +21,7 @@ dependencies:
     - taxonomy.vocabulary.tags
   module:
     - block
+    - block_content
     - block_content_permissions
     - contextual
     - editoria11y
@@ -47,6 +48,7 @@ label: 'Platform administrator'
 weight: 2
 is_admin: null
 permissions:
+  - 'access block library'
   - 'access content overview'
   - 'access contextual links'
   - 'access files overview'
@@ -57,6 +59,8 @@ permissions:
   - 'access toolbar'
   - 'access user profiles'
   - 'access webform overview'
+  - 'administer block content'
+  - 'administer block types'
   - 'administer blocks'
   - 'administer main menu items'
   - 'administer redirects'
@@ -146,6 +150,7 @@ permissions:
   - 'delete own document media'
   - 'delete own embed media'
   - 'delete own event content'
+  - 'delete own files'
   - 'delete own image media'
   - 'delete own page content'
   - 'delete own post content'

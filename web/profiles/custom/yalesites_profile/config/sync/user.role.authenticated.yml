@@ -8,6 +8,7 @@ dependencies:
     - filter.format.restricted_html
   module:
     - bugherd
+    - file
     - filter
     - google_analytics
     - media
@@ -21,6 +22,7 @@ is_admin: false
 permissions:
   - 'access bugherd'
   - 'access content'
+  - 'delete own files'
   - 'opt-in or out of google analytics tracking'
   - 'use text format basic_html'
   - 'use text format heading_html'

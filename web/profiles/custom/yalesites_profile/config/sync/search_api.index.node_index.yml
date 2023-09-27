@@ -9,6 +9,7 @@ dependencies:
     - node
     - search_api
     - search_api_exclude
+    - search_api_html_element_filter
 id: node_index
 name: 'Node Index'
 description: ''
@@ -88,6 +89,15 @@ processor_settings:
     exclude_fields: {  }
     highlight: always
     highlight_partial: false
+  html_element_filter:
+    weights:
+      postprocess_query: -30
+      preprocess_index: -50
+    all_fields: 0
+    fields:
+      - field_teaser_text
+      - rendered_item
+    css_selectors: .visually-hidden
   html_filter:
     weights:
       preprocess_index: -49
@@ -100,12 +110,10 @@ processor_settings:
     alt: true
     tags:
       b: 2
-      em: 1
       h1: 5
       h2: 3
       h3: 2
       strong: 2
-      u: 1
   ignorecase:
     weights:
       preprocess_index: -48
@@ -119,7 +127,7 @@ processor_settings:
   rendered_item: {  }
   stemmer:
     weights:
-      preprocess_index: -42
+      preprocess_index: -45
       preprocess_query: -42
     all_fields: false
     fields:
@@ -130,7 +138,7 @@ processor_settings:
       texan: texa
   tokenizer:
     weights:
-      preprocess_index: -45
+      preprocess_index: -46
       preprocess_query: -44
     all_fields: false
     fields:

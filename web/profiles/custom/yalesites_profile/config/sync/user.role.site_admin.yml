@@ -142,6 +142,7 @@ permissions:
   - 'delete own document media'
   - 'delete own embed media'
   - 'delete own event content'
+  - 'delete own files'
   - 'delete own image media'
   - 'delete own page content'
   - 'delete own post content'
