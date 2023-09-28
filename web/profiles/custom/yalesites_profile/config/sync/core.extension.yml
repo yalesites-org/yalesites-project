@@ -12,7 +12,6 @@ module:
   block_content: 0
   block_content_permissions: 0
   breakpoint: 0
-  bugherd: 0
   calendar_link: 0
   captcha: 0
   cas: 0
@@ -93,6 +92,7 @@ module:
   options: 0
   override_node_options: 0
   page_cache: 0
+  pantheon_advanced_page_cache: 0
   pantheon_secrets: 0
   paragraphs_features: 0
   path: 0
