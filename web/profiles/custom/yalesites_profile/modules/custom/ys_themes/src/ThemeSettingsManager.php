@@ -44,14 +44,6 @@ class ThemeSettingsManager {
           'label' => 'Shoreline Summer',
           'color_theme' => 'three',
         ],
-        'four' => [
-          'label' => 'Elm City Nights',
-          'color_theme' => 'four',
-        ],
-        'five' => [
-          'label' => 'Quiet Corner',
-          'color_theme' => 'five',
-        ],
       ],
     ],
     'nav_position' => [
