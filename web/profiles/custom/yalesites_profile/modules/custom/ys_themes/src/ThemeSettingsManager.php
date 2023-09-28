@@ -109,14 +109,14 @@ class ThemeSettingsManager {
           'color_theme_2' => '--color-basic-white',
         ],
         'two' => [
-          'label' => 'Highlight & Light Gray',
-          'color_theme' => 'three',
-          'color_theme_2' => '--color-gray-100',
+          'label' => 'Action & Dark Gray',
+          'color_theme' => 'two',
+          'color_theme_2' => '--color-gray-800',
         ],
         'three' => [
-          'label' => 'Highlight & Base',
+          'label' => 'Highlight & Yale Blue',
           'color_theme' => 'three',
-          'color_theme_2' => 'one',
+          'color_theme_2' => '--color-blue-yale',
         ],
       ],
     ],
@@ -129,27 +129,17 @@ class ThemeSettingsManager {
         'one' => [
           'label' => 'Base & White',
           'color_theme' => 'one',
-          'color_theme_2' => '--color-gray-100',
-        ],
-        'two' => [
-          'label' => 'Deep & White',
-          'color_theme' => 'five',
           'color_theme_2' => '--color-basic-white',
         ],
-        'three' => [
-          'label' => 'Highlight & Light Gray',
-          'color_theme' => 'three',
-          'color_theme_2' => '--color-gray-100',
-        ],
-        'four' => [
-          'label' => 'Highlight & Dark Gray',
-          'color_theme' => 'three',
+        'two' => [
+          'label' => 'Action & Dark Gray',
+          'color_theme' => 'two',
           'color_theme_2' => '--color-gray-800',
         ],
-        'five' => [
-          'label' => 'Highlight & Base',
+        'three' => [
+          'label' => 'Highlight & Yale Blue',
           'color_theme' => 'three',
-          'color_theme_2' => 'one',
+          'color_theme_2' => '--color-blue-yale',
         ],
       ],
     ],
