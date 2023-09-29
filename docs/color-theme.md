@@ -99,6 +99,12 @@ global-themes:
         value: "{color.blue.yarmouth.value}"
       slot-five:
         value: "{color.gray.hale.value}"
+      slot-six:
+        value: "{color.blue.yale.value}"
+      slot-seven:
+        value: "{color.gray.800.value}"
+      slot-eight:
+        value: "{color.basic.white.value}"
   ```
   - Add your new theme, following the same convention shown above. If there are `three` themes already entered, and yours would be number `four`, name it accordingly.
   - For example (say we wanted to use the new `brown` value we added above): 
@@ -118,6 +124,12 @@ global-themes:
         value: "{color.green.overcast.value}"
       slot-five:
         value: "{color.blue.yorktown.value}"
+      slot-six:
+        value: "{color.blue.yale.value}"
+      slot-seven:
+        value: "{color.gray.800.value}"
+      slot-eight:
+        value: "{color.basic.white.value}"
 ```
 
 - **Step 2**: Compile your changes
@@ -201,6 +213,12 @@ The process of updating these, more specific, component themes is the same as wh
       value: "{color.blue.yarmouth.value}"
     slot-five:
       value: "{color.gray.hale.value}"
+    slot-six:
+      value: "{color.blue.yale.value}"
+    slot-seven:
+      value: "{color.gray.800.value}"
+    slot-eight:
+      value: "{color.basic.white.value}"
   ```
   - Add your new theme following the same convention outlined here. If there are `three` themes already entered, and yours would be number `four`, name it accordingly.
   - For example (say we wanted to use the new `brown` value we added above): 
@@ -223,6 +241,12 @@ The process of updating these, more specific, component themes is the same as wh
       value: "{color.green.overcast.value}"
     slot-five:
       value: "{color.blue.yorktown.value}"
+    slot-six:
+      value: "{color.blue.yale.value}"
+    slot-seven:
+      value: "{color.gray.800.value}"
+    slot-eight:
+      value: "{color.basic.white.value}"
 ```
 
 - **Step 2**: Compile your changes
@@ -294,6 +318,9 @@ We can also set any component-specific token-variables (such as `--color-callout
       --color-slot-three: var(--component-themes-#{$theme}-slot-three);
       --color-slot-four: var(--component-themes-#{$theme}-slot-four);
       --color-slot-five: var(--component-themes-#{$theme}-slot-five);
+      --color-slot-six: var(--component-themes-#{$theme}-slot-six);
+      --color-slot-seven: var(--component-themes-#{$theme}-slot-seven);
+      --color-slot-eight: var(--component-themes-#{$theme}-slot-eight);
     }
   }
 ```
@@ -313,6 +340,9 @@ Next, we set the component-theme slot values, based on the global theme:
       --color-slot-three: var(--global-themes-#{$globalTheme}-colors-slot-three);
       --color-slot-four: var(--global-themes-#{$globalTheme}-colors-slot-four);
       --color-slot-five: var(--global-themes-#{$globalTheme}-colors-slot-five);
+      --color-slot-six: var(--component-themes-#{$theme}-slot-six);
+      --color-slot-seven: var(--component-themes-#{$theme}-slot-seven);
+      --color-slot-eight: var(--component-themes-#{$theme}-slot-eight);
     }
   }
 ```
