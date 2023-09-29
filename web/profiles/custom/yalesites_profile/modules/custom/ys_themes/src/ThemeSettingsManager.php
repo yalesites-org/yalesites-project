@@ -120,6 +120,46 @@ class ThemeSettingsManager {
         ],
       ],
     ],
+    'header_accent' => [
+      'name' => 'Header Accent',
+      'prop_type' => 'element',
+      'selector' => 'header[data-header-accent]',
+      'default' => 'one',
+      'values' => [
+        'one' => [
+          'label' => 'One',
+          'color_theme' => 'one',
+        ],
+        'two' => [
+          'label' => 'Two',
+          'color_theme' => 'two',
+        ],
+        'three' => [
+          'label' => 'Three',
+          'color_theme' => 'three',
+        ],
+        'four' => [
+          'label' => 'Four',
+          'color_theme' => 'four',
+        ],
+        'five' => [
+          'label' => 'Five',
+          'color_theme' => 'five',
+        ],
+        'six' => [
+          'label' => 'Six',
+          'color_theme' => 'six',
+        ],
+        'seven' => [
+          'label' => 'Seven',
+          'color_theme' => 'seven',
+        ],
+        'eight' => [
+          'label' => 'Eight',
+          'color_theme' => 'eight',
+        ],
+      ],
+    ],
     'footer_theme' => [
       'name' => 'Footer Theme',
       'prop_type' => 'element',
