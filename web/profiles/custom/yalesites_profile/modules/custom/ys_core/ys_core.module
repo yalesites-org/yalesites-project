@@ -404,9 +404,10 @@ function ys_core_save_menu_link_fields(array $form, FormStateInterface $form_sta
     // Only save the menu item extras if there is a menu link with a route.
     if ($link->getUrlObject()->getRouteName()) {
       $form_display = EntityFormDisplay::load('menu_link_content.' . $link->getMenuName() . '.default');
-      assert($form_display instanceof EntityFormDisplay);
-      $form_display->extractFormValues($link, $form['menu']['link']['extra'], $form_state);
-      $link->save();
+      if ($form_display instanceof EntityFormDisplay) {
+        $form_display->extractFormValues($link, $form['menu']['link']['extra'], $form_state);
+        $link->save();
+      }
     }
   }
 }
