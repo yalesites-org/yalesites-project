@@ -31,7 +31,7 @@
   --color-text-primary: var(--color-gray-800);
 }
 
-/* 
+/*
 /* Set defaults for labels and inputs in this form
 /*
 */
@@ -109,7 +109,7 @@
 }
 
 #drupal-off-canvas .ys-themes--global-settings .form-item-global-theme:hover label,
-#drupal-off-canvas .ys-themes--global-settings .form-item-global-theme:focus label { 
+#drupal-off-canvas .ys-themes--global-settings .form-item-global-theme:focus label {
   background-color: var(--color-background-hover);
   border-color: var(--color-border-hover);
 }
@@ -139,10 +139,10 @@
   border-color: var(--color-border-lightest);
 }
 
-#drupal-off-canvas fieldset.form-item:not(:last-child) { 
+#drupal-off-canvas fieldset.form-item:not(:last-child) {
   padding-bottom: var(--size-spacing-8);
   margin-bottom: var(--size-spacing-8);
-  border-bottom: var(--thickness-divider) solid var(--color-divider); 
+  border-bottom: var(--thickness-divider) solid var(--color-divider);
 }
 
 /*
@@ -385,6 +385,8 @@
 }
 
 #drupal-off-canvas .ys-themes--global-settings .form-item-footer-theme input[checked="checked"] + label,
+#drupal-off-canvas .ys-themes--global-settings .form-item-footer-theme:focus input[checked="checked"] + label .colors > span,
+#drupal-off-canvas .ys-themes--global-settings .form-item-footer-accent input[checked="checked"] + label,
 #drupal-off-canvas .ys-themes--global-settings .form-item-footer-accent:focus input[checked="checked"] + label .colors > span {
   background-color: var(--color-text-primary);
   color: var(--color-background-primary);

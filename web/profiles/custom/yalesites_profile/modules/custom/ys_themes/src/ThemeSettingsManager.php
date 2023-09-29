@@ -129,42 +129,34 @@ class ThemeSettingsManager {
         'one' => [
           'label' => 'One',
           'color_theme' => 'one',
-          'color_theme_2' => '--color-slot-one',
         ],
         'two' => [
           'label' => 'Two',
           'color_theme' => 'two',
-          'color_theme_2' => '--color-slot-two',
         ],
         'three' => [
           'label' => 'Three',
           'color_theme' => 'three',
-          'color_theme_2' => '--color-slot-three',
         ],
         'four' => [
           'label' => 'Four',
           'color_theme' => 'four',
-          'color_theme_2' => '--color-slot-four',
         ],
         'five' => [
           'label' => 'Five',
           'color_theme' => 'five',
-          'color_theme_2' => '--color-slot-five',
         ],
         'six' => [
           'label' => 'Six',
-          'color_theme' => 'six',
-          'color_theme_2' => '--color-blue-yale',
+          'color_theme' => '--color-blue-yale',
         ],
         'seven' => [
           'label' => 'Seven',
-          'color_theme' => 'seven',
-          'color_theme_2' => '--color-gray-800',
+          'color_theme' => '--color-gray-800',
         ],
         'eight' => [
           'label' => 'Eight',
-          'color_theme' => 'eight',
-          'color_theme_2' => '--color-basic-white',
+          'color_theme' => '--color-basic-white',
         ],
       ],
     ],
@@ -188,6 +180,46 @@ class ThemeSettingsManager {
           'label' => 'Highlight & Yale Blue',
           'color_theme' => 'three',
           'color_theme_2' => '--color-blue-yale',
+        ],
+      ],
+    ],
+    'footer_accent' => [
+      'name' => 'Footer Accent',
+      'prop_type' => 'element',
+      'selector' => 'footer[data-footer-accent]',
+      'default' => 'one',
+      'values' => [
+        'one' => [
+          'label' => 'One',
+          'color_theme' => 'one',
+        ],
+        'two' => [
+          'label' => 'Two',
+          'color_theme' => 'two',
+        ],
+        'three' => [
+          'label' => 'Three',
+          'color_theme' => 'three',
+        ],
+        'four' => [
+          'label' => 'Four',
+          'color_theme' => 'four',
+        ],
+        'five' => [
+          'label' => 'Five',
+          'color_theme' => 'five',
+        ],
+        'six' => [
+          'label' => 'Six',
+          'color_theme' => '--color-blue-yale',
+        ],
+        'seven' => [
+          'label' => 'Seven',
+          'color_theme' => '--color-gray-800',
+        ],
+        'eight' => [
+          'label' => 'Eight',
+          'color_theme' => '--color-basic-white',
         ],
       ],
     ],
