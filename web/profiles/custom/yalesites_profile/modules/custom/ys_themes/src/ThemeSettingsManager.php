@@ -129,34 +129,42 @@ class ThemeSettingsManager {
         'one' => [
           'label' => 'One',
           'color_theme' => 'one',
+          'color_theme_2' => '--color-slot-one',
         ],
         'two' => [
           'label' => 'Two',
           'color_theme' => 'two',
+          'color_theme_2' => '--color-slot-two',
         ],
         'three' => [
           'label' => 'Three',
           'color_theme' => 'three',
+          'color_theme_2' => '--color-slot-three',
         ],
         'four' => [
           'label' => 'Four',
           'color_theme' => 'four',
+          'color_theme_2' => '--color-slot-four',
         ],
         'five' => [
           'label' => 'Five',
           'color_theme' => 'five',
+          'color_theme_2' => '--color-slot-five',
         ],
         'six' => [
           'label' => 'Six',
           'color_theme' => 'six',
+          'color_theme_2' => '--color-blue-yale',
         ],
         'seven' => [
           'label' => 'Seven',
           'color_theme' => 'seven',
+          'color_theme_2' => '--color-gray-800',
         ],
         'eight' => [
           'label' => 'Eight',
           'color_theme' => 'eight',
+          'color_theme_2' => '--color-basic-white',
         ],
       ],
     ],
