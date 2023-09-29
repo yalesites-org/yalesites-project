@@ -106,17 +106,17 @@ class ThemeSettingsManager {
         'one' => [
           'label' => 'Base & White',
           'color_theme' => 'one',
-          'color_theme_2' => '--color-basic-white',
+          'color_theme_2' => 'eight',
         ],
         'two' => [
           'label' => 'Action & Dark Gray',
           'color_theme' => 'two',
-          'color_theme_2' => '--color-gray-800',
+          'color_theme_2' => 'seven',
         ],
         'three' => [
           'label' => 'Highlight & Yale Blue',
           'color_theme' => 'three',
-          'color_theme_2' => '--color-blue-yale',
+          'color_theme_2' => 'six',
         ],
       ],
     ],
@@ -148,15 +148,15 @@ class ThemeSettingsManager {
         ],
         'six' => [
           'label' => 'Six',
-          'color_theme' => '--color-blue-yale',
+          'color_theme' => 'six',
         ],
         'seven' => [
           'label' => 'Seven',
-          'color_theme' => '--color-gray-800',
+          'color_theme' => 'seven',
         ],
         'eight' => [
           'label' => 'Eight',
-          'color_theme' => '--color-basic-white',
+          'color_theme' => 'eight',
         ],
       ],
     ],
@@ -169,17 +169,17 @@ class ThemeSettingsManager {
         'one' => [
           'label' => 'Base & White',
           'color_theme' => 'one',
-          'color_theme_2' => '--color-basic-white',
+          'color_theme_2' => 'eight',
         ],
         'two' => [
           'label' => 'Action & Dark Gray',
           'color_theme' => 'two',
-          'color_theme_2' => '--color-gray-800',
+          'color_theme_2' => 'seven',
         ],
         'three' => [
           'label' => 'Highlight & Yale Blue',
           'color_theme' => 'three',
-          'color_theme_2' => '--color-blue-yale',
+          'color_theme_2' => 'six',
         ],
       ],
     ],
@@ -211,15 +211,15 @@ class ThemeSettingsManager {
         ],
         'six' => [
           'label' => 'Six',
-          'color_theme' => '--color-blue-yale',
+          'color_theme' => 'six',
         ],
         'seven' => [
           'label' => 'Seven',
-          'color_theme' => '--color-gray-800',
+          'color_theme' => 'seven',
         ],
         'eight' => [
           'label' => 'Eight',
-          'color_theme' => '--color-basic-white',
+          'color_theme' => 'eight',
         ],
       ],
     ],
