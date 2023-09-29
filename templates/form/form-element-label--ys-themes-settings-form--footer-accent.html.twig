@@ -14,14 +14,7 @@
     {{ title }}
 
     <span class="colors">
-
-      {% set colorArray = ['six', 'seven', 'eight'] %}
-
-      {% if element['value'] in colorArray %}
-        <span class="color" style="background: var({{element['color_theme']}});"></span>
-      {% else %}
-        <span class="color component-color" style="background: var(--global-themes-{{ element['current_global_theme'] }}-colors-slot-{{element['color_theme']}});"></span>
-      {% endif %}
+      <span class="color component-color" style="background: var(--global-themes-{{ element['current_global_theme'] }}-colors-slot-{{element['color_theme']}});"></span>
     </span>
   </label>
 {%- endif %}
