@@ -97,7 +97,8 @@ class UpdateExistingNodes {
 
           $section_storage = $stored_data->data['section_storage'];
           if (
-            $section_storage->getSections()[1]->getLayoutSettings()['label'] == 'Title Section'
+            !empty($section_storage->getSections()[1])
+            && $section_storage->getSections()[1]->getLayoutSettings()['label'] == 'Title Section'
             && $stored_data->data['section_storage']->getContext('entity')->getContextData()->getEntity()->bundle() == 'page') {
 
             $section_storage = $stored_data->data['section_storage'];
