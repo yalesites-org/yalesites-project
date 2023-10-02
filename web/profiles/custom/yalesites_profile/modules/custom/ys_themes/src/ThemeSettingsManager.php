@@ -92,8 +92,24 @@ class ThemeSettingsManager {
           'color_theme' => 'two',
         ],
         'three' => [
+          'label' => 'Highlight',
+          'color_theme' => 'three',
+        ],
+        'four' => [
+          'label' => 'Subtle',
+          'color_theme' => 'four',
+        ],
+        'five' => [
           'label' => 'Deep',
           'color_theme' => 'five',
+        ],
+        'six' => [
+          'label' => 'Yale Blue',
+          'color_theme' => 'six',
+        ],
+        'seven' => [
+          'label' => 'Gray 800',
+          'color_theme' => 'seven',
         ],
       ],
     ],
