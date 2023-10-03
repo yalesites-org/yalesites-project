@@ -44,6 +44,9 @@ $global-footer-themes: map.deep-get(tokens.$tokens, 'global-themes');
       --color-slot-three: var(--site-footer-themes-#{$theme}-slot-three);
       --color-slot-four: var(--site-footer-themes-#{$theme}-slot-four);
       --color-slot-five: var(--site-footer-themes-#{$theme}-slot-five);
+      --color-slot-six: var(--site-footer-themes-#{$theme}-slot-six);
+      --color-slot-seven: var(--site-footer-themes-#{$theme}-slot-seven);
+      --color-slot-eight: var(--site-footer-themes-#{$theme}-slot-eight);
 
       background-color: var(--color-site-footer-background-color);
       color: var(--color-site-footer-text-color);
@@ -70,47 +73,73 @@ $global-footer-themes: map.deep-get(tokens.$tokens, 'global-themes');
       );
       --color-slot-four: var(--global-themes-#{$globalTheme}-colors-slot-four);
       --color-slot-five: var(--global-themes-#{$globalTheme}-colors-slot-five);
+      --color-slot-six: var(--global-themes-#{$globalTheme}-colors-slot-six);
+      --color-slot-seven: var(
+        --global-themes-#{$globalTheme}-colors-slot-seven
+      );
+      --color-slot-eight: var(
+        --global-themes-#{$globalTheme}-colors-slot-eight
+      );
     }
   }
 
   // Component theme overrides: set specific component themes overrides
   /// define component name spaced variables and map them to global theme slots.
   &[data-footer-theme='one'] {
-    --color-site-footer-yale-branding: var(--color-site-footer-heading);
+    --color-site-footer-yale-branding: var(--color-gray-800);
     --color-site-footer-border-color: var(--color-slot-one);
     --color-site-footer-background-color: var(--color-basic-white);
-    --color-site-footer-text: var(--color-site-footer-heading);
+    --color-site-footer-text-color: var(--color-site-footer-heading);
   }
 
   &[data-footer-theme='two'] {
-    --color-site-footer-yale-branding: var(--color-site-footer-heading);
+    --color-site-footer-yale-branding: var(--color-basic-white);
     --color-site-footer-border-color: var(--color-slot-five);
-    --color-site-footer-background-color: var(--color-basic-white);
-    --color-site-footer-text: var(--color-site-footer-heading);
+    --color-site-footer-background-color: var(--color-gray-800);
+    --color-site-footer-text-color: var(--color-basic-white);
+    --color-site-footer-divider-color: var(--color-basic-white);
   }
 
   &[data-footer-theme='three'] {
     --color-site-footer-yale-branding: var(--color-basic-white);
     --color-site-footer-border-color: var(--color-slot-three);
-    --color-site-footer-background-color: var(--color-gray-100);
+    --color-site-footer-background-color: var(--color-blue-yale);
     --color-site-footer-divider-color: var(--color-basic-white);
-    --color-site-footer-text: var(--color-basic-white);
+    --color-site-footer-text-color: var(--color-basic-white);
   }
 
-  &[data-footer-theme='four'] {
-    --color-site-footer-yale-branding: var(--color-basic-white);
-    --color-site-footer-border-color: var(--color-slot-three);
-    --color-site-footer-background-color: var(--color-gray-700);
-    --color-site-footer-divider-color: var(--color-basic-white);
-    --color-site-footer-text: var(--color-basic-white);
+  // Footer accents
+  // Set border colors for each accent
+  &[data-footer-accent='one'] {
+    --color-site-footer-border-color: var(--color-slot-one);
   }
 
-  &[data-footer-theme='five'] {
-    --color-site-footer-yale-branding: var(--color-basic-white);
+  &[data-footer-accent='two'] {
+    --color-site-footer-border-color: var(--color-slot-two);
+  }
+
+  &[data-footer-accent='three'] {
     --color-site-footer-border-color: var(--color-slot-three);
-    --color-site-footer-background-color: var(--color-slot-one);
-    --color-site-footer-divider-color: var(--color-basic-white);
-    --color-site-footer-text: var(--color-basic-white);
+  }
+
+  &[data-footer-accent='four'] {
+    --color-site-footer-border-color: var(--color-slot-four);
+  }
+
+  &[data-footer-accent='five'] {
+    --color-site-footer-border-color: var(--color-slot-five);
+  }
+
+  &[data-footer-accent='six'] {
+    --color-site-footer-border-color: var(--color-slot-six);
+  }
+
+  &[data-footer-accent='seven'] {
+    --color-site-footer-border-color: var(--color-slot-seven);
+  }
+
+  &[data-footer-accent='eight'] {
+    --color-site-footer-border-color: var(--color-slot-eight);
   }
 
   // Border top thickness

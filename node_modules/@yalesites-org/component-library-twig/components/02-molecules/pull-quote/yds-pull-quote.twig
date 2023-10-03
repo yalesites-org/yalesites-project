@@ -1,6 +1,7 @@
 {#
  # Available Props:
  # - pull_quote__style: bar-left, bar-right, or quote-left
+ # - animate__item: defaults to `enabled`, will only animate if site_animate_components (lever / config) is not `default`
  #
  # Available Variables:
  # - pull_quote__quote (required)
@@ -16,7 +17,6 @@
 {% set pull_quote__attributes = pull_quote__attributes|merge({
 	'data-animate-item': animate__item|default('enabled'),
 }) %}
-
 
 {% set pull_quote__attributes = pull_quote__attributes|merge({
   'data-component-width': pull_quote__width|default('content'),

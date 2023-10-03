@@ -8,14 +8,12 @@
 
   // assign color-slots, mapped to global themes set in
   // components/03-organisms/site-footer/_yds-site-footer.scss
-  [data-footer-theme='one'] &,
-  [data-footer-theme='two'] &,
-  [data-footer-theme='three'] & {
+  [data-footer-theme='one'] & {
     --color-social-links-hover: var(--color-slot-two);
   }
 
-  [data-footer-theme='four'] &,
-  [data-footer-theme='five'] & {
+  [data-footer-theme='two'] &,
+  [data-footer-theme='three'] & {
     --color-social-links-hover: var(--color-slot-four);
   }
 }

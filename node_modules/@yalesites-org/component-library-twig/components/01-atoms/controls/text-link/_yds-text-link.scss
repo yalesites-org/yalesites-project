@@ -95,8 +95,6 @@ $global-link-themes: map.deep-get(tokens.$tokens, 'global-themes');
 // and directly referenced at the bottom of this file in:
 // &[data-link-style='no-underline-animation']
 @mixin plain-link {
-  @include tokens.animate;
-
   // Global themes: set color slots for each theme
   // This establishes `--color-slot-` variables name-spaced to the selector
   // in which it is used. We can map component-level variables to global-level

@@ -4,7 +4,7 @@
   ** Colors **
   ***********/
   --color-action: var(--color-theme-action, var(--color-cta-primary));
-  --color-accent: var(--color-theme-accent, var(--color-blue-medium));
+  --color-accent: var(--color-theme-accent, var(--color-blue-athens));
   --color-divider: var(--color-theme-divider, var(--color-gray-500));
   --color-divider-subtle: var(--color-gray-300);
   /* prettier-ignore */

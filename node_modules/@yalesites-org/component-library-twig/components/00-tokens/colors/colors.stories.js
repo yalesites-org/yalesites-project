@@ -24,7 +24,6 @@ const colorsData = {
   colors: {
     blue: tokens.color.blue,
     green: tokens.color.green,
-    purple: tokens.color.purple,
     orange: tokens.color.orange,
     yellow: tokens.color.yellow,
     basic: tokens.color.basic,
@@ -39,6 +38,28 @@ const siteHeaderThemes = { themes: tokens['site-header-themes'] };
 const siteHeaderThemeOptions = Object.keys(tokens['site-header-themes']);
 const siteFooterThemes = { themes: tokens['site-footer-themes'] };
 const siteFooterThemeOptions = Object.keys(tokens['site-footer-themes']);
+const siteHeaderAccents = [
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+];
+const siteFooterAccents = [
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+];
+
+const ctaButtonThemeOptions = Object.keys(tokens['button-cta-themes']);
 
 // get global themes as `label` : `key` values to pass into options as array.
 const siteGlobalThemeOptions = getGlobalThemes(tokens['global-themes']);
@@ -63,6 +84,7 @@ export const ComponentThemeColorPairings = ({
   description,
   image,
   calloutTheme,
+  ctaButtonTheme,
   qlTheme,
   quoteTheme,
   tabTheme,
@@ -70,6 +92,9 @@ export const ComponentThemeColorPairings = ({
   siteHeaderTwig,
   siteHeaderTheme,
   siteFooterTheme,
+  siteHeaderAccent,
+  siteFooterAccent,
+  siteFooterVariation,
 }) =>
   colorComponentThemeTwig({
     ...imageData.responsive_images['16x9'],
@@ -81,10 +106,14 @@ export const ComponentThemeColorPairings = ({
     ...colorComponentThemeData,
     ...utilityNavData,
     ...primaryNavData,
+    ...siteHeaderAccents,
+    ...siteFooterAccents,
+    ...ctaButtonThemeOptions,
     site_name: 'Department of Chemistry',
     site_header__border_thickness: '8',
     site_header__nav_position: 'left',
     site_header__theme: siteHeaderTheme,
+    site_header__accent: siteHeaderAccent,
     site_header__menu__variation: 'basic',
     utility_nav__items: utilityNavData.items,
     primary_nav__items: primaryNavData.items,
@@ -93,11 +122,14 @@ export const ComponentThemeColorPairings = ({
     quick_links__image: image,
     quick_links__background_color: qlTheme,
     callout__background_color: calloutTheme,
+    cta_button__component_theme: ctaButtonTheme,
     quick_links__links: quickLinksData.quick_links__links,
     tabs__theme: tabTheme,
     banner__content__background: bannerTheme,
     pull_quote__accent_theme: quoteTheme,
     site_footer__theme: siteFooterTheme,
+    site_footer__accent: siteFooterAccent,
+    site_footer__variation: siteFooterVariation,
   });
 ComponentThemeColorPairings.argTypes = {
   siteHeaderTheme: {
@@ -106,10 +138,22 @@ ComponentThemeColorPairings.argTypes = {
     type: 'select',
     defaultValue: 'one',
   },
+  siteHeaderAccent: {
+    name: 'Header Accent Color (dial)',
+    options: siteHeaderAccents,
+    type: 'select',
+    defaultValue: 'one',
+  },
   bannerTheme: {
     name: 'Banner Theme (dial)',
     type: 'select',
     options: ['one', 'two', 'three'],
+    defaultValue: 'one',
+  },
+  ctaButtonTheme: {
+    name: 'Button CTA Theme (dial)',
+    type: 'select',
+    options: ctaButtonThemeOptions,
     defaultValue: 'one',
   },
   qlTheme: {
@@ -142,6 +186,18 @@ ComponentThemeColorPairings.argTypes = {
     type: 'select',
     defaultValue: 'one',
   },
+  siteFooterAccent: {
+    name: 'Footer Accent Color (dial)',
+    options: siteFooterAccents,
+    type: 'select',
+    defaultValue: 'one',
+  },
+  siteFooterVariation: {
+    name: 'Footer Variation (dial)',
+    options: ['basic', 'mega'],
+    type: 'select',
+    defaultValue: 'basic',
+  },
 };
 
 export const GlobalThemeColorPairings = ({
@@ -150,13 +206,17 @@ export const GlobalThemeColorPairings = ({
   image,
   globalTheme,
   calloutTheme,
+  ctaButtonTheme,
   qlTheme,
   quoteTheme,
   tabTheme,
   bannerTheme,
   siteHeaderTwig,
   siteHeaderTheme,
+  siteHeaderAccent,
   siteFooterTheme,
+  siteFooterAccent,
+  siteFooterVariation,
 }) =>
   colorGlobalThemePairingTwig({
     ...imageData.responsive_images['16x9'],
@@ -169,11 +229,14 @@ export const GlobalThemeColorPairings = ({
     ...siteFooterThemes,
     ...utilityNavData,
     ...primaryNavData,
+    ...siteHeaderAccents,
+    ...siteFooterAccents,
     site_global__theme: globalTheme,
     site_name: 'Department of Chemistry',
     site_header__border_thickness: '8',
     site_header__nav_position: 'left',
     site_header__theme: siteHeaderTheme,
+    site_header__accent: siteHeaderAccent,
     site_header__menu__variation: 'basic',
     utility_nav__items: utilityNavData.items,
     primary_nav__items: primaryNavData.items,
@@ -182,11 +245,14 @@ export const GlobalThemeColorPairings = ({
     quick_links__image: image,
     quick_links__background_color: qlTheme,
     callout__background_color: calloutTheme,
+    cta_button__component_theme: ctaButtonTheme,
     quick_links__links: quickLinksData.quick_links__links,
     tabs__theme: tabTheme,
     banner__content__background: bannerTheme,
     pull_quote__accent_theme: quoteTheme,
     site_footer__theme: siteFooterTheme,
+    site_footer__accent: siteFooterAccent,
+    site_footer__variation: siteFooterVariation,
   });
 
 GlobalThemeColorPairings.argTypes = {
@@ -202,10 +268,22 @@ GlobalThemeColorPairings.argTypes = {
     type: 'select',
     defaultValue: 'one',
   },
+  siteHeaderAccent: {
+    name: 'Header Accent Color (dial)',
+    options: siteHeaderAccents,
+    type: 'select',
+    defaultValue: 'one',
+  },
   bannerTheme: {
     name: 'Banner Theme (dial)',
     type: 'select',
     options: ['one', 'two', 'three'],
+    defaultValue: 'one',
+  },
+  ctaButtonTheme: {
+    name: 'Button CTA Theme (dial)',
+    type: 'select',
+    options: ctaButtonThemeOptions,
     defaultValue: 'one',
   },
   qlTheme: {
@@ -237,5 +315,17 @@ GlobalThemeColorPairings.argTypes = {
     options: siteFooterThemeOptions,
     type: 'select',
     defaultValue: 'one',
+  },
+  siteFooterAccent: {
+    name: 'Footer Accent Color (dial)',
+    options: siteFooterAccents,
+    type: 'select',
+    defaultValue: 'one',
+  },
+  siteFooterVariation: {
+    name: 'Footer Variation (dial)',
+    options: ['basic', 'mega'],
+    type: 'select',
+    defaultValue: 'basic',
   },
 };

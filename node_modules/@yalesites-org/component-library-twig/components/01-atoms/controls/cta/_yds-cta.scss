@@ -3,7 +3,7 @@
 @use '../../../00-tokens/functions/map';
 @use '../../../00-tokens/tokens';
 
-$component-cta-themes: map.deep-get(tokens.$tokens, 'component-themes');
+$component-cta-themes: map.deep-get(tokens.$tokens, 'button-cta-themes');
 $component-basic-themes: map.deep-get(tokens.$tokens, 'basic-themes');
 $global-cta-themes: map.deep-get(tokens.$tokens, 'global-themes');
 $cta-radii: (
@@ -51,15 +51,19 @@ $cta-outline-weights: (
   // default variables.
   @each $theme, $value in $component-cta-themes {
     &[data-cta-theme='#{$theme}'] {
-      --color-slot-one: var(--component-themes-#{$theme}-slot-one);
-      --color-slot-two: var(--component-themes-#{$theme}-slot-two);
-      --color-slot-three: var(--component-themes-#{$theme}-slot-three);
-      --color-slot-four: var(--component-themes-#{$theme}-slot-four);
-      --color-slot-five: var(--component-themes-#{$theme}-slot-five);
+      --color-slot-one: var(--button-cta-themes-#{$theme}-slot-one);
+      --color-slot-two: var(--button-cta-themes-#{$theme}-slot-two);
+      --color-slot-three: var(--button-cta-themes-#{$theme}-slot-three);
+      --color-slot-four: var(--button-cta-themes-#{$theme}-slot-four);
+      --color-slot-five: var(--button-cta-themes-#{$theme}-slot-five);
+      --color-slot-six: var(--button-cta-themes-#{$theme}-slot-six);
+      --color-slot-seven: var(--button-cta-themes-#{$theme}-slot-seven);
+      --color-slot-eight: var(--button-cta-themes-#{$theme}-slot-eight);
       --color-action: var(--color-cta-action);
       --color-action-secondary: var(--color-cta-action-secondary);
       --color-cta-action-secondary: var(--color-basic-white);
       --color-cta-action: var(--color-slot-one);
+      --color-link-base: var(--color-slot-two);
     }
   }
 
@@ -100,6 +104,13 @@ $cta-outline-weights: (
       );
       --color-slot-four: var(--global-themes-#{$globalTheme}-colors-slot-four);
       --color-slot-five: var(--global-themes-#{$globalTheme}-colors-slot-five);
+      --color-slot-six: var(--global-themes-#{$globalTheme}-colors-slot-six);
+      --color-slot-seven: var(
+        --global-themes-#{$globalTheme}-colors-slot-seven
+      );
+      --color-slot-eight: var(
+        --global-themes-#{$globalTheme}-colors-slot-eight
+      );
     }
   }
 
@@ -107,7 +118,7 @@ $cta-outline-weights: (
   /// define component name spaced variables and map them to global theme slots.
   &[data-cta-theme='one'] {
     &[data-cta-style='filled'] {
-      --color-cta-action-secondary: var(--color-basic-white);
+      --color-cta-action-secondary: var(--color-slot-eight);
       --color-cta-action: var(--color-slot-one);
       --color-cta-bg: var(--color-slot-one);
       --color-cta-bg-hover: transparent;
@@ -117,7 +128,7 @@ $cta-outline-weights: (
     }
 
     &[data-cta-style='outline'] {
-      --color-cta-action-secondary: var(--color-basic-white);
+      --color-cta-action-secondary: var(--color-slot-eight);
       --color-cta-action: var(--color-slot-one);
       --color-cta-bg: transparent;
       --color-cta-bg-hover: var(--color-action);
@@ -133,12 +144,12 @@ $cta-outline-weights: (
       --color-cta-bg: var(--color-slot-two);
       --color-cta-bg-hover: transparent;
       --color-cta-border: var(--color-action);
-      --color-cta-text: var(--color-basic-white);
+      --color-cta-text: var(--color-slot-eight);
       --color-cta-text-hover: var(--color-action);
     }
 
     &[data-cta-style='outline'] {
-      --color-cta-action-secondary: var(--color-basic-white);
+      --color-cta-action-secondary: var(--color-slot-eight);
       --color-cta-action: var(--color-slot-two);
       --color-cta-bg: transparent;
       --color-cta-bg-hover: var(--color-action);
@@ -150,22 +161,106 @@ $cta-outline-weights: (
 
   &[data-cta-theme='three'] {
     &[data-cta-style='filled'] {
+      --color-cta-action: var(--color-slot-three);
+      --color-cta-bg: var(--color-slot-three);
+      --color-cta-bg-hover: transparent;
+      --color-cta-border: var(--color-action);
+      --color-cta-text: var(--color-slot-seven);
+      --color-cta-text-hover: var(--color-slot-seven);
+    }
+
+    &[data-cta-style='outline'] {
+      --color-cta-action-secondary: var(--color-slot-seven);
+      --color-action: var(--color-slot-three);
+      --color-cta-bg: transparent;
+      --color-cta-bg-hover: var(--color-action);
+      --color-cta-border: var(--color-action);
+      --color-cta-text: var(--color-slot-seven);
+      --color-cta-text-hover: var(--color-cta-action-secondary);
+    }
+  }
+
+  &[data-cta-theme='four'] {
+    &[data-cta-style='filled'] {
+      --color-cta-action: var(--color-slot-four);
+      --color-cta-bg: var(--color-slot-four);
+      --color-cta-bg-hover: transparent;
+      --color-cta-border: var(--color-action);
+      --color-cta-text: var(--color-slot-seven);
+      --color-cta-text-hover: var(--color-slot-seven);
+    }
+
+    &[data-cta-style='outline'] {
+      --color-cta-action-secondary: var(--color-slot-seven);
+      --color-action: var(--color-slot-four);
+      --color-cta-bg: transparent;
+      --color-cta-bg-hover: var(--color-action);
+      --color-cta-border: var(--color-action);
+      --color-cta-text: var(--color-slot-seven);
+      --color-cta-text-hover: var(--color-slot-seven);
+    }
+  }
+
+  &[data-cta-theme='five'] {
+    &[data-cta-style='filled'] {
       --color-cta-action: var(--color-slot-five);
       --color-cta-bg: var(--color-slot-five);
       --color-cta-bg-hover: transparent;
       --color-cta-border: var(--color-action);
-      --color-cta-text: var(--color-basic-white);
+      --color-cta-text: var(--color-slot-eight);
       --color-cta-text-hover: var(--color-action);
     }
 
     &[data-cta-style='outline'] {
-      --color-cta-action-secondary: var(--color-basic-white);
+      --color-cta-action-secondary: var(--color-slot-eight);
       --color-action: var(--color-slot-five);
       --color-cta-bg: transparent;
       --color-cta-bg-hover: var(--color-action);
       --color-cta-border: var(--color-action);
       --color-cta-text: var(--color-action);
       --color-cta-text-hover: var(--color-cta-action-secondary);
+    }
+  }
+
+  &[data-cta-theme='six'] {
+    &[data-cta-style='filled'] {
+      --color-cta-action: var(--color-slot-six);
+      --color-cta-bg: var(--color-slot-six);
+      --color-cta-bg-hover: transparent;
+      --color-cta-border: var(--color-action);
+      --color-cta-text: var(--color-slot-eight);
+      --color-cta-text-hover: var(--color-action);
+    }
+
+    &[data-cta-style='outline'] {
+      --color-cta-action-secondary: var(--color-slot-six);
+      --color-action: var(--color-slot-six);
+      --color-cta-bg: transparent;
+      --color-cta-bg-hover: var(--color-action);
+      --color-cta-border: var(--color-action);
+      --color-cta-text: var(--color-action);
+      --color-cta-text-hover: var(--color-slot-eight);
+    }
+  }
+
+  &[data-cta-theme='seven'] {
+    &[data-cta-style='filled'] {
+      --color-cta-action: var(--color-slot-seven);
+      --color-cta-bg: var(--color-slot-seven);
+      --color-cta-bg-hover: transparent;
+      --color-cta-border: var(--color-action);
+      --color-cta-text: var(--color-slot-eight);
+      --color-cta-text-hover: var(--color-action);
+    }
+
+    &[data-cta-style='outline'] {
+      --color-cta-action-secondary: var(--color-slot-seven);
+      --color-action: var(--color-slot-seven);
+      --color-cta-bg: transparent;
+      --color-cta-bg-hover: var(--color-action);
+      --color-cta-border: var(--color-action);
+      --color-cta-text: var(--color-action);
+      --color-cta-text-hover: var(--color-slot-eight);
     }
   }
 

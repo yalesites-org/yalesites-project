@@ -18,6 +18,16 @@ const siteGlobalThemes = { themes: tokens['global-themes'] };
 const borderThicknessOptions = Object.keys(tokens.border.thickness);
 const siteHeaderThemeOptions = Object.keys(tokens['site-header-themes']);
 const siteGlobalThemeOptions = getGlobalThemes(tokens['global-themes']);
+const siteHeaderAccents = [
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+];
 
 /**
  * Storybook Definition.
@@ -52,12 +62,14 @@ export const Header = ({
   primaryNavPosition,
   siteHeaderTheme,
   menuVariation,
+  siteHeaderAccent,
 }) =>
   siteHeaderTwig({
     site_name: 'Department of Chemistry',
     site_header__border_thickness: borderThickness,
     site_header__nav_position: primaryNavPosition,
     site_header__theme: siteHeaderTheme,
+    site_header__accent: siteHeaderAccent,
     site_header__menu__variation: menuVariation,
     utility_nav__items: utilityNavData.items,
     primary_nav__items: primaryNavData.items,
@@ -65,7 +77,14 @@ export const Header = ({
 
 Header.argTypes = {
   siteHeaderTheme: {
+    name: 'Header Theme (dial)',
     options: siteHeaderThemeOptions,
+    type: 'select',
+    defaultValue: 'one',
+  },
+  siteHeaderAccent: {
+    name: 'Header Accent Color (dial)',
+    options: siteHeaderAccents,
     type: 'select',
     defaultValue: 'one',
   },
@@ -76,12 +95,15 @@ export const HeaderExamples = ({
   primaryNavPosition,
   menuVariation,
   globalTheme,
+  siteHeaderAccent,
 }) =>
   siteHeaderExamples({
     ...siteGlobalThemes,
     ...siteHeaderThemes,
+    ...siteHeaderAccents,
     site_name: 'Department of Chemistry',
     site_global__theme: globalTheme,
+    site_header__accent: siteHeaderAccent,
     site_header__border_thickness: borderThickness,
     site_header__nav_position: primaryNavPosition,
     site_header__menu__variation: menuVariation,
@@ -93,6 +115,12 @@ HeaderExamples.argTypes = {
   globalTheme: {
     name: 'Global Theme (lever)',
     options: siteGlobalThemeOptions,
+    type: 'select',
+    defaultValue: 'one',
+  },
+  siteHeaderAccent: {
+    name: 'Header Accent Color (dial)',
+    options: siteHeaderAccents,
     type: 'select',
     defaultValue: 'one',
   },

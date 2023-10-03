@@ -15,16 +15,110 @@ $break-cta-banner-max: $break-cta-banner - 0.05;
     $banner-spacing: true
   );
 
+  // Component themes defaults: iterate over each component theme to establish
+  // default variables.
+  @each $theme, $value in $component-banner-themes {
+    &[data-component-theme='#{$theme}'] {
+      --color-text: var(--color-banner-text);
+      --color-backgound: var(--color-banner-background);
+      --color-heading: var(--color-banner-heading);
+      --color-action: var(--color-banner-action);
+      --color-action-secondary: var(--color-banner-action-secondary);
+      --color-slot-one: var(--component-themes-#{$theme}-slot-one);
+      --color-slot-two: var(--component-themes-#{$theme}-slot-two);
+      --color-slot-three: var(--component-themes-#{$theme}-slot-three);
+      --color-slot-four: var(--component-themes-#{$theme}-slot-four);
+      --color-slot-five: var(--component-themes-#{$theme}-slot-five);
+      --color-slot-six: var(--component-themes-#{$theme}-slot-six);
+      --color-slot-seven: var(--component-themes-#{$theme}-slot-seven);
+      --color-slot-eight: var(--component-themes-#{$theme}-slot-eight);
+    }
+  }
+
+  // Global themes: set color slots for each theme
+  // This establishes `--color-slot-` variables name-spaced to the selector
+  // in which it is used. We can map component-level variables to global-level
+  // `--color-slot-` variables.
+  @each $globalTheme, $value in $global-banner-themes {
+    [data-global-theme='#{$globalTheme}'] & {
+      --color-slot-one: var(--global-themes-#{$globalTheme}-colors-slot-one);
+      --color-slot-two: var(--global-themes-#{$globalTheme}-colors-slot-two);
+      --color-slot-three: var(
+        --global-themes-#{$globalTheme}-colors-slot-three
+      );
+      --color-slot-four: var(--global-themes-#{$globalTheme}-colors-slot-four);
+      --color-slot-five: var(--global-themes-#{$globalTheme}-colors-slot-five);
+      --color-slot-six: var(--global-themes-#{$globalTheme}-colors-slot-six);
+      --color-slot-seven: var(
+        --global-themes-#{$globalTheme}-colors-slot-seven
+      );
+      --color-slot-eight: var(
+        --global-themes-#{$globalTheme}-colors-slot-eight
+      );
+    }
+  }
+
+  max-width: tokens.$break-max-width;
+  margin-inline-start: auto;
+  margin-inline-end: auto;
   padding: 0;
+  background-color: var(--color-banner-background);
 
   --banner-content-max-width: 37rem;
+
+  // Component theme overrides: set specific component themes overrides
+  /// define component name spaced variables and map them to global theme slots.
+  &[data-component-theme='one'] {
+    --color-banner-background: var(--color-slot-one);
+    --color-banner-text: var(--color-slot-eight);
+    --color-banner-heading: var(--color-slot-eight);
+    --color-banner-action: var(--color-slot-eight);
+    --color-banner-action-secondary: var(--color-slot-one);
+    --color-link-base: var(--color-banner-heading);
+    --color-link-hover: var(--color-banner-heading);
+  }
+
+  &[data-component-theme='two'] {
+    --color-banner-background: var(--color-slot-four);
+    --color-banner-text: var(--color-slot-seven);
+    --color-banner-heading: var(--color-slot-seven);
+    --color-banner-action: var(--color-slot-seven);
+    --color-banner-action-secondary: var(--color-slot-eight);
+    --color-link-base: var(--color-banner-heading);
+    --color-link-hover: var(--color-banner-heading);
+
+    // component theme two has a white background when in global theme one, four, and five.
+    // add border between the bottom of the banner and any content after it.
+    [data-global-theme='one'] &,
+    [data-global-theme='four'] &,
+    [data-global-theme='five'] & {
+      @media (max-width: $break-cta-banner-max) {
+        &::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: var(--size-spacing-site-gutter);
+          right: var(--size-spacing-site-gutter);
+          height: var(--border-thickness-1);
+          background-color: var(--color-gray-300);
+        }
+      }
+    }
+  }
+
+  &[data-component-theme='three'] {
+    --color-banner-background: var(--color-slot-five);
+    --color-banner-text: var(--color-slot-eight);
+    --color-banner-heading: var(--color-slot-eight);
+    --color-banner-action: var(--color-slot-eight);
+    --color-banner-action-secondary: var(--color-slot-one);
+    --color-link-base: var(--color-banner-heading);
+    --color-link-hover: var(--color-banner-heading);
+  }
 }
 
 .cta-banner__content-wrapper {
   position: relative;
-  max-width: tokens.$break-max-width;
-  margin-inline-start: auto;
-  margin-inline-end: auto;
 
   @media (min-width: $break-cta-banner) {
     aspect-ratio: 16 / 5;
@@ -98,34 +192,6 @@ $break-cta-banner-max: $break-cta-banner - 0.05;
   // the `::before` element below.
   background-color: transparent;
 
-  // Component themes defaults: iterate over each component theme to establish
-  // default variables.
-  @each $theme, $value in $component-banner-themes {
-    &[data-component-theme='#{$theme}'] {
-      --color-text: var(--color-banner-text);
-      --color-backgound: var(--color-banner-background);
-      --color-heading: var(--color-banner-heading);
-      --color-action: var(--color-banner-action);
-      --color-action-secondary: var(--color-banner-action-secondary);
-    }
-  }
-
-  // Global themes: set color slots for each theme
-  // This establishes `--color-slot-` variables name-spaced to the selector
-  // in which it is used. We can map component-level variables to global-level
-  // `--color-slot-` variables.
-  @each $globalTheme, $value in $global-banner-themes {
-    [data-global-theme='#{$globalTheme}'] & {
-      --color-slot-one: var(--global-themes-#{$globalTheme}-colors-slot-one);
-      --color-slot-two: var(--global-themes-#{$globalTheme}-colors-slot-two);
-      --color-slot-three: var(
-        --global-themes-#{$globalTheme}-colors-slot-three
-      );
-      --color-slot-four: var(--global-themes-#{$globalTheme}-colors-slot-four);
-      --color-slot-five: var(--global-themes-#{$globalTheme}-colors-slot-five);
-    }
-  }
-
   > * {
     position: relative;
   }
@@ -197,56 +263,6 @@ $break-cta-banner-max: $break-cta-banner - 0.05;
         max-width: var(--banner-content-max-width);
       }
     }
-  }
-
-  // Component theme overrides: set specific component themes overrides
-  /// define component name spaced variables and map them to global theme slots.
-  &[data-component-theme='one'] {
-    --color-banner-background: var(--color-slot-one);
-    --color-banner-text: var(--color-basic-white);
-    --color-banner-heading: var(--color-basic-white);
-    --color-banner-action: var(--color-basic-white);
-    --color-banner-action-secondary: var(--color-slot-one);
-    --color-link-base: var(--color-banner-heading);
-    --color-link-hover: var(--color-banner-heading);
-  }
-
-  &[data-component-theme='two'] {
-    --color-banner-background: var(--color-slot-four);
-    --color-banner-text: var(--color-gray-800);
-    --color-banner-heading: var(--color-gray-800);
-    --color-banner-action: var(--color-gray-800);
-    --color-banner-action-secondary: var(--color-basic-white);
-    --color-link-base: var(--color-banner-heading);
-    --color-link-hover: var(--color-banner-heading);
-
-    // component theme two has a white background when in global theme one, four, and five.
-    // add border between the bottom of the banner and any content after it.
-    [data-global-theme='one'] &,
-    [data-global-theme='four'] &,
-    [data-global-theme='five'] & {
-      @media (max-width: $break-cta-banner-max) {
-        &::after {
-          content: '';
-          position: absolute;
-          bottom: 0;
-          left: var(--size-spacing-site-gutter);
-          right: var(--size-spacing-site-gutter);
-          height: var(--border-thickness-1);
-          background-color: var(--color-gray-300);
-        }
-      }
-    }
-  }
-
-  &[data-component-theme='three'] {
-    --color-banner-background: var(--color-slot-five);
-    --color-banner-text: var(--color-basic-white);
-    --color-banner-heading: var(--color-basic-white);
-    --color-banner-action: var(--color-basic-white);
-    --color-banner-action-secondary: var(--color-slot-one);
-    --color-link-base: var(--color-banner-heading);
-    --color-link-hover: var(--color-banner-heading);
   }
 }
 

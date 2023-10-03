@@ -4,9 +4,9 @@
 // SVG background-images encoded using https://yoksel.github.io/url-encoder/
 .form-item__dropdown {
   --color-dropdown-border: var(--color-gray-400);
-  --color-dropdown-border-hover: var(--color-blue-medium);
+  --color-dropdown-border-hover: var(--color-blue-horizon);
   --color-dropdown-icon: var(--color-gray-400);
-  --color-dropdown-icon-hover: var(--color-blue-medium);
+  --color-dropdown-icon-hover: var(--color-blue-horizon);
 
   border: var(--border-thickness-1) solid var(--color-dropdown-border);
   display: block;
@@ -43,10 +43,10 @@
 
 .form-item__select {
   --color-select-border: var(--color-gray-400);
-  --color-select-border-hover: var(--color-blue-medium);
+  --color-select-border-hover: var(--color-blue-horizon);
   --color-select-background: var(--color-gray-100);
   --color-select-icon: var(--color-gray-400);
-  --color-select-icon-hover: var(--color-blue-medium);
+  --color-select-icon-hover: var(--color-blue-horizon);
   --color-select-text-color: var(--color-gray-700);
 
   font-size: 100%;

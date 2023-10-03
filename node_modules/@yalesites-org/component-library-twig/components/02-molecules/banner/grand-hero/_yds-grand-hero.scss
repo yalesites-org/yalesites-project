@@ -20,6 +20,7 @@ $break-grand-hero-banner: tokens.$break-m;
   width: 100%;
   max-width: tokens.$break-max-width;
   margin: 0 auto;
+  background-color: var(--color-grand-hero-background);
 
   @media (min-width: $break-grand-hero-banner) {
     align-items: center;
@@ -31,6 +32,85 @@ $break-grand-hero-banner: tokens.$break-m;
 
   &[data-grand-hero-size='full'] {
     min-height: calc(95vh - var(--site-header-height));
+  }
+
+  // Component themes defaults: iterate over each component theme to establish
+  // default variables.
+  @each $theme, $value in $component-grand-hero-themes {
+    &[data-component-theme='#{$theme}'] {
+      --color-text: var(--color-grand-hero-text);
+      --color-backgound: var(--color-grand-hero-background);
+      --color-heading: var(--color-grand-hero-heading);
+      --color-action: var(--color-grand-hero-action);
+      --color-action-secondary: var(--color-grand-hero-action-secondary);
+      --color-slot-one: var(--component-themes-#{$theme}-slot-one);
+      --color-slot-two: var(--component-themes-#{$theme}-slot-two);
+      --color-slot-three: var(--component-themes-#{$theme}-slot-three);
+      --color-slot-four: var(--component-themes-#{$theme}-slot-four);
+      --color-slot-five: var(--component-themes-#{$theme}-slot-five);
+      --color-slot-six: var(--component-themes-#{$theme}-slot-six);
+      --color-slot-seven: var(--component-themes-#{$theme}-slot-seven);
+      --color-slot-eight: var(--component-themes-#{$theme}-slot-eight);
+    }
+  }
+
+  // Global themes: set color slots for each theme
+  // This establishes `--color-slot-` variables name-spaced to the selector
+  // in which it is used. We can map component-level variables to global-level
+  // `--color-slot-` variables.
+  @each $globalTheme, $value in $global-grand-hero-themes {
+    [data-global-theme='#{$globalTheme}'] & {
+      --color-slot-one: var(--global-themes-#{$globalTheme}-colors-slot-one);
+      --color-slot-two: var(--global-themes-#{$globalTheme}-colors-slot-two);
+      --color-slot-three: var(
+        --global-themes-#{$globalTheme}-colors-slot-three
+      );
+      --color-slot-four: var(--global-themes-#{$globalTheme}-colors-slot-four);
+      --color-slot-five: var(--global-themes-#{$globalTheme}-colors-slot-five);
+      --color-slot-six: var(--global-themes-#{$globalTheme}-colors-slot-six);
+      --color-slot-seven: var(
+        --global-themes-#{$globalTheme}-colors-slot-seven
+      );
+      --color-slot-eight: var(
+        --global-themes-#{$globalTheme}-colors-slot-eight
+      );
+    }
+  }
+
+  // Component theme overrides: set specific component themes overrides
+  /// define component name spaced variables and map them to global theme slots.
+  &[data-component-theme='one'] {
+    --color-grand-hero-background: var(--color-slot-one);
+    --color-grand-hero-text: var(--color-slot-eight);
+    --color-grand-hero-heading: var(--color-slot-eight);
+    --color-grand-hero-action: var(--color-slot-eight);
+    --color-grand-hero-action-secondary: var(--color-slot-one);
+    --color-link-base: var(--color-grand-hero-text);
+    --color-link-hover: var(--color-grand-hero-text);
+  }
+
+  &[data-component-theme='two'] {
+    --color-grand-hero-background: var(--color-slot-four);
+    --color-grand-hero-text: var(--color-slot-seven);
+    --color-grand-hero-heading: var(--color-slot-seven);
+    --color-grand-hero-action: var(--color-slot-seven);
+    --color-grand-hero-action-secondary: var(--color-slot-eight);
+    --color-link-base: var(--color-grand-hero-text);
+    --color-link-hover: var(--color-grand-hero-text);
+
+    a {
+      color: var(--color-slot-seven);
+    }
+  }
+
+  &[data-component-theme='three'] {
+    --color-grand-hero-background: var(--color-slot-five);
+    --color-grand-hero-text: var(--color-slot-eight);
+    --color-grand-hero-heading: var(--color-slot-eight);
+    --color-grand-hero-action: var(--color-slot-eight);
+    --color-grand-hero-action-secondary: var(--color-slot-one);
+    --color-link-base: var(--color-grand-hero-text);
+    --color-link-hover: var(--color-grand-hero-text);
   }
 }
 
@@ -114,34 +194,6 @@ $break-grand-hero-banner: tokens.$break-m;
   background: transparent;
   color: var(--color-text);
 
-  // Component themes defaults: iterate over each component theme to establish
-  // default variables.
-  @each $theme, $value in $component-grand-hero-themes {
-    &[data-component-theme='#{$theme}'] {
-      --color-text: var(--color-grand-hero-text);
-      --color-backgound: var(--color-grand-hero-background);
-      --color-heading: var(--color-grand-hero-heading);
-      --color-action: var(--color-grand-hero-action);
-      --color-action-secondary: var(--color-grand-hero-action-secondary);
-    }
-  }
-
-  // Global themes: set color slots for each theme
-  // This establishes `--color-slot-` variables name-spaced to the selector
-  // in which it is used. We can map component-level variables to global-level
-  // `--color-slot-` variables.
-  @each $globalTheme, $value in $global-grand-hero-themes {
-    [data-global-theme='#{$globalTheme}'] & {
-      --color-slot-one: var(--global-themes-#{$globalTheme}-colors-slot-one);
-      --color-slot-two: var(--global-themes-#{$globalTheme}-colors-slot-two);
-      --color-slot-three: var(
-        --global-themes-#{$globalTheme}-colors-slot-three
-      );
-      --color-slot-four: var(--global-themes-#{$globalTheme}-colors-slot-four);
-      --color-slot-five: var(--global-themes-#{$globalTheme}-colors-slot-five);
-    }
-  }
-
   [data-grand-hero-overlay-variation='contained'] & {
     margin-bottom: var(--size-spacing-6);
     width: 100%;
@@ -168,42 +220,6 @@ $break-grand-hero-banner: tokens.$break-m;
     width: 100%;
     background-color: var(--color-grand-hero-background);
     opacity: 0.85;
-  }
-
-  // Component theme overrides: set specific component themes overrides
-  /// define component name spaced variables and map them to global theme slots.
-  &[data-component-theme='one'] {
-    --color-grand-hero-background: var(--color-slot-one);
-    --color-grand-hero-text: var(--color-basic-white);
-    --color-grand-hero-heading: var(--color-basic-white);
-    --color-grand-hero-action: var(--color-basic-white);
-    --color-grand-hero-action-secondary: var(--color-slot-one);
-    --color-link-base: var(--color-grand-hero-text);
-    --color-link-hover: var(--color-grand-hero-text);
-  }
-
-  &[data-component-theme='two'] {
-    --color-grand-hero-background: var(--color-slot-four);
-    --color-grand-hero-text: var(--color-gray-800);
-    --color-grand-hero-heading: var(--color-gray-800);
-    --color-grand-hero-action: var(--color-gray-800);
-    --color-grand-hero-action-secondary: var(--color-basic-white);
-    --color-link-base: var(--color-grand-hero-text);
-    --color-link-hover: var(--color-grand-hero-text);
-
-    a {
-      color: var(--color-gray-800);
-    }
-  }
-
-  &[data-component-theme='three'] {
-    --color-grand-hero-background: var(--color-slot-five);
-    --color-grand-hero-text: var(--color-basic-white);
-    --color-grand-hero-heading: var(--color-basic-white);
-    --color-grand-hero-action: var(--color-basic-white);
-    --color-grand-hero-action-secondary: var(--color-slot-one);
-    --color-link-base: var(--color-grand-hero-text);
-    --color-link-hover: var(--color-grand-hero-text);
   }
 }
 

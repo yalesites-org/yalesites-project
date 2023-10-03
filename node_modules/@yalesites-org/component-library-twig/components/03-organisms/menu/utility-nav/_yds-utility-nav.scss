@@ -72,7 +72,7 @@
 
     &::placeholder {
       color: inherit;
-      font-weight: var(--font-weights-mallory-medium);
+      font-weight: var(--font-weights-mallory-book);
 
       @media (max-width: tokens.$break-mobile-max) {
         text-align: center;

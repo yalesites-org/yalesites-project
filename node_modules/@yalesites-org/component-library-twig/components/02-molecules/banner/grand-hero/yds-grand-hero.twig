@@ -22,6 +22,7 @@
 {% set grand_hero__attributes = {
   'data-grand-hero-overlay-variation': grand_hero__overlay_variation,
   'data-grand-hero-size' : grand_hero__size,
+  'data-component-theme' : grand_hero__content__background,
   class: bem(grand_hero__base_class),
 } %}
 
@@ -53,7 +54,7 @@
   {% if grand_hero__heading is not empty or grand_hero__snippet is not empty or grand_hero__link__content is not empty and grand_hero__link__url is not empty %}
     <div {{ bem('outer-wrap', [], grand_hero__base_class) }}>
       <div {{ bem('wrap', [], grand_hero__base_class) }}>
-        <div {{ bem('content', [], grand_hero__base_class) }} data-component-theme={{ grand_hero__content__background }}>
+        <div {{ bem('content', [], grand_hero__base_class) }}>
           <div {{ bem('content-inner', [], grand_hero__base_class) }}>
             {% if grand_hero__heading is not empty %}
               {% include "@atoms/typography/headings/yds-heading.twig" with {

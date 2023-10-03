@@ -38,6 +38,8 @@
   margin-bottom: var(--size-spacing-6);
 
   .text-field a {
+    --color-text-shadow: var(--color-background);
+
     color: var(--color-text);
 
     &:hover {

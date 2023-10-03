@@ -6,17 +6,25 @@
   --color-muted: var(--color-gray-600);
   --color-navigation-border: var(--color-blue-yale);
   --color-navigation-expanded-item: var(--color-basic-brown-gray);
-  --color-navigation-active-item-link-background: var(--color-blue-light);
+  --color-navigation-active-item-link-background: var(--color-blue-shale);
   --color-navigation-active-item-link-opacity: 0.1;
 }
 
 $menu-sub-max-width: 19rem;
 
+[data-header-theme='two'] {
+  --color-muted: var(--color-gray-600);
+  --color-navigation-border: var(--color-gray-600);
+  --color-navigation-expanded-item: var(--color-gray-600);
+  --color-navigation-active-item-link-background: var(--color-blue-horizon);
+  --color-navigation-active-item-link-opacity: 0.13;
+}
+
 [data-header-theme='three'] {
-  --color-muted: var(--color-gray-300);
-  --color-navigation-border: var(--color-gray-300);
-  --color-navigation-expanded-item: var(--color-gray-300);
-  --color-navigation-active-item-link-background: var(--color-blue-medium);
+  --color-muted: var(--color-gray-600);
+  --color-navigation-border: var(--color-gray-600);
+  --color-navigation-expanded-item: var(--color-gray-600);
+  --color-navigation-active-item-link-background: var(--color-blue-horizon);
   --color-navigation-active-item-link-opacity: 0.13;
 }
 
@@ -301,6 +309,7 @@ $menu-sub-max-width: 19rem;
 
   &:hover {
     color: var(--menu-link-color);
+    text-decoration: underline;
   }
 
   &--level-0 {
@@ -387,6 +396,8 @@ $menu-sub-max-width: 19rem;
 // Active trail styles.
 .primary-nav__link.primary-nav__link--active {
   color: var(--menu-link-color);
+  text-decoration: underline;
+  text-decoration-thickness: var(--border-thickness-2);
 }
 
 .primary-nav__link:not(.primary-nav__link--level-0):not(.primary-nav__link--explore-bar).primary-nav__link--active {

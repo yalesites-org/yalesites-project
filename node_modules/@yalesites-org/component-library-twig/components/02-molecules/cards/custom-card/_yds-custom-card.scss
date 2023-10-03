@@ -15,8 +15,8 @@ $global-card-themes: map.deep-get(tokens.$tokens, 'global-themes');
 
   --card-border: 1px solid var(--color-gray-200);
   --color-text-shadow: var(--color-basic-white);
-  --color-card-bar-long: var(--color-blue-light);
-  --color-card-bar-short: var(--color-blue-medium);
+  --color-card-bar-long: var(--color-blue-shale);
+  --color-card-bar-short: var(--color-blue-horizon);
 
   display: grid;
   grid-template-columns: 1fr 2fr;

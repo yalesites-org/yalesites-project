@@ -17,6 +17,7 @@
 
 {% set banner__attributes = {
   'data-banner-content-layout': banner__content__layout|default('bottom'),
+  'data-component-theme': banner__content__background,
   class: bem(banner__base_class),
 } %}
 
@@ -35,7 +36,7 @@
         {% include "@atoms/images/image/_responsive-image.twig" %}
       {% endblock %}
     </div>
-    <div {{ bem('content', [], banner__base_class) }} data-component-theme={{ banner__content__background }}>
+    <div {{ bem('content', [], banner__base_class) }}>
       <div {{ bem('outer-wrap', [], banner__base_class) }}>
         <div {{ bem('wrap', [], banner__base_class) }}>
           <div {{ bem('text', [], banner__base_class) }}>

@@ -38,7 +38,23 @@
       text_field__alignment: 'left',
       text_field__content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. A lacus vestibulum sed arcu non odio euismod lacinia. Varius sit amet mattis vulputate enim nulla. Sit amet justo donec enim diam vulputate ut pharetra sit. Ipsum dolor sit amet consectetur adipiscing elit ut aliquam purus. Lorem ipsum dolor sit amet consectetur adipiscing elit pellentesque. Vitae congue mauris rhoncus aenean vel elit scelerisque. Vulputate odio ut enim blandit volutpat maecenas volutpat blandit aliquam. Turpis massa sed elementum tempus egestas sed sed risus. A erat nam at lectus urna duis convallis convallis. Sollicitudin nibh sit amet commodo nulla. Iaculis urna id volutpat lacus.',
     } %}
+    
+	{% embed "@organisms/component-wrapper/yds-component-wrapper.twig" with {
+      component_wrapper__width: 'site',
+      component_wrapper__alignment: 'left',
+      component__modifiers: ['no-top-margin', 'no-bottom-margin']
+     }%}
+		{% block component_wrapper_inner %}
+      {% include "@atoms/controls/cta/yds-cta.twig" with {
+        cta__content: 'Button link',
+        cta__href: 'javascript:;',
+        cta__blockname: callout__base_class,
+        cta__component_theme: cta_button__component_theme,
+      } %}
+    {% endblock %}
+	{% endembed %}
   </div>
+
 
   <div class="pairing-item">
     {% include "@molecules/quick-links/yds-quick-links.twig" with {

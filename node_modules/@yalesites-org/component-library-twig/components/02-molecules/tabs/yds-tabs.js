@@ -2,6 +2,11 @@ Drupal.behaviors.tabs = {
   attach(context) {
     // Selectors
     const tabs = context.querySelectorAll('.tabs');
+    // Set an extra value to factor into getFirstVisible().
+    // We need this because we no longer have a gap amount set in CSS for the UL.
+    // If we don't have this the calculation fails after a couple clicks through
+    // a tabset with a lot of tabs.
+    const offsetAmount = 2;
 
     // Support the case where multiple tab sets are on the same page.
     tabs.forEach((tabSet) => {
@@ -29,7 +34,10 @@ Drupal.behaviors.tabs = {
         const visibleItems = [];
 
         tabsItems.forEach((item) => {
-          if (item.getBoundingClientRect().right > tabsLeft + controlsWidth) {
+          if (
+            item.getBoundingClientRect().right >
+            tabsLeft + controlsWidth + offsetAmount
+          ) {
             visibleItems.push(item);
           }
         });

@@ -53,6 +53,13 @@ $global-site-themes: map.deep-get(tokens.$tokens, 'global-themes');
       --color-slot-one: var(--site-header-themes-#{$theme}-slot-one);
       --color-slot-two: var(--site-header-themes-#{$theme}-slot-two);
       --color-slot-three: var(--site-header-themes-#{$theme}-slot-three);
+      --color-slot-four: var(--site-header-themes-#{$theme}-slot-four);
+      --color-slot-five: var(--site-header-themes-#{$theme}-slot-five);
+      --color-slot-six: var(--site-header-themes-#{$theme}-slot-six);
+      --color-slot-seven: var(--site-header-themes-#{$theme}-slot-seven);
+      --color-slot-eight: var(--site-header-themes-#{$theme}-slot-eight);
+      --color-action: var(--color-site-header-theme-action);
+      --color-action-secondary: var(--color-site-header-theme-action-secondary);
 
       // prettier-ignore
       --color-site-header-background: var(--site-header-themes-#{$theme}-background);
@@ -84,6 +91,13 @@ $global-site-themes: map.deep-get(tokens.$tokens, 'global-themes');
       );
       --color-slot-four: var(--global-themes-#{$globalTheme}-colors-slot-four);
       --color-slot-five: var(--global-themes-#{$globalTheme}-colors-slot-five);
+      --color-slot-six: var(--global-themes-#{$globalTheme}-colors-slot-six);
+      --color-slot-seven: var(
+        --global-themes-#{$globalTheme}-colors-slot-seven
+      );
+      --color-slot-eight: var(
+        --global-themes-#{$globalTheme}-colors-slot-eight
+      );
     }
   }
 
@@ -92,24 +106,71 @@ $global-site-themes: map.deep-get(tokens.$tokens, 'global-themes');
   &[data-header-theme='one'] {
     --color-site-header-border-color: var(--color-slot-one);
     --color-site-header-background: var(--color-basic-white);
+    --color-site-header-text: var(--color-gray-800);
     --color-site-header-link-hover: var(--color-slot-two);
-    --color-site-header-text: var(--color-site-header-yale-branding);
+    --color-site-header-theme-action: var(--color-slot-two);
+    --color-site-header-theme-action-secondary: var(--color-basic-white);
+    --color-muted: var(--color-gray-600);
+    --color-navigation-expanded-item: var(--color-gray-600);
   }
 
   &[data-header-theme='two'] {
     --color-site-header-border-color: var(--color-slot-three);
-    --color-site-header-background: var(--color-gray-100);
-    --color-site-header-link-hover: var(--color-slot-two);
-    --color-site-header-text: var(--color-site-header-yale-branding);
+    --color-site-header-background: var(--color-gray-800);
+    --color-site-header-text: var(--color-basic-white);
+    --color-site-header-link-hover: var(--color-slot-four);
+    --color-site-header-yale-branding: var(--color-basic-white);
+    --color-site-header-theme-action: var(--color-slot-four);
+    --color-site-header-theme-action-secondary: var(--color-gray-800);
+    --color-muted: var(--color-gray-300);
+    --color-navigation-expanded-item: var(--color-gray-300);
   }
 
   &[data-header-theme='three'] {
-    --color-site-header-yale-branding: var(--color-basic-white);
     --color-site-header-border-color: var(--color-slot-three);
-    --color-site-header-background: var(--color-slot-one);
+    --color-site-header-background: var(--color-blue-yale);
     --color-site-header-divider-color: var(--color-basic-white);
     --color-site-header-text: var(--color-basic-white);
-    --color-site-header-link-hover: var(--color-gray-100);
+    --color-site-header-link-hover: var(--color-slot-four);
+    --color-site-header-yale-branding: var(--color-basic-white);
+    --color-site-header-theme-action: var(--color-slot-four);
+    --color-site-header-theme-action-secondary: var(--color-gray-800);
+    --color-muted: var(--color-gray-300);
+    --color-navigation-expanded-item: var(--color-gray-300);
+  }
+
+  // Header accents
+  // Set border colors for each accent
+  &[data-header-accent='one'] {
+    --color-site-header-border-color: var(--color-slot-one);
+  }
+
+  &[data-header-accent='two'] {
+    --color-site-header-border-color: var(--color-slot-two);
+  }
+
+  &[data-header-accent='three'] {
+    --color-site-header-border-color: var(--color-slot-three);
+  }
+
+  &[data-header-accent='four'] {
+    --color-site-header-border-color: var(--color-slot-four);
+  }
+
+  &[data-header-accent='five'] {
+    --color-site-header-border-color: var(--color-slot-five);
+  }
+
+  &[data-header-accent='six'] {
+    --color-site-header-border-color: var(--color-slot-six);
+  }
+
+  &[data-header-accent='seven'] {
+    --color-site-header-border-color: var(--color-slot-seven);
+  }
+
+  &[data-header-accent='eight'] {
+    --color-site-header-border-color: var(--color-slot-eight);
   }
 
   // Border bottom thickness

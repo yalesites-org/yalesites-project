@@ -27,6 +27,9 @@ $global-callout-themes: map.deep-get(tokens.$tokens, 'global-themes');
       --color-slot-three: var(--component-themes-#{$theme}-slot-three);
       --color-slot-four: var(--component-themes-#{$theme}-slot-four);
       --color-slot-five: var(--component-themes-#{$theme}-slot-five);
+      --color-slot-six: var(--component-themes-#{$theme}-slot-six);
+      --color-slot-seven: var(--component-themes-#{$theme}-slot-seven);
+      --color-slot-eight: var(--component-themes-#{$theme}-slot-eight);
     }
   }
 
@@ -43,6 +46,13 @@ $global-callout-themes: map.deep-get(tokens.$tokens, 'global-themes');
       );
       --color-slot-four: var(--global-themes-#{$globalTheme}-colors-slot-four);
       --color-slot-five: var(--global-themes-#{$globalTheme}-colors-slot-five);
+      --color-slot-six: var(--global-themes-#{$globalTheme}-colors-slot-six);
+      --color-slot-seven: var(
+        --global-themes-#{$globalTheme}-colors-slot-seven
+      );
+      --color-slot-eight: var(
+        --global-themes-#{$globalTheme}-colors-slot-eight
+      );
     }
   }
 
@@ -55,6 +65,7 @@ $global-callout-themes: map.deep-get(tokens.$tokens, 'global-themes');
     --color-action-secondary: var(--color-slot-one);
     --color-text: var(--color-basic-white);
     --color-heading: var(--color-basic-white);
+    --color-link-base: var(--color-slot-eight);
   }
 
   &[data-component-theme='two'] {
@@ -64,6 +75,7 @@ $global-callout-themes: map.deep-get(tokens.$tokens, 'global-themes');
     --color-action-secondary: var(--color-basic-white);
     --color-text: var(--color-gray-800);
     --color-heading: var(--color-gray-800);
+    --color-link-base: var(--color-slot-seven);
   }
 
   &[data-component-theme='three'] {
@@ -73,6 +85,7 @@ $global-callout-themes: map.deep-get(tokens.$tokens, 'global-themes');
     --color-action-secondary: var(--color-slot-one);
     --color-text: var(--color-basic-white);
     --color-heading: var(--color-basic-white);
+    --color-link-base: var(--color-slot-eight);
   }
 }
 

@@ -19,6 +19,26 @@ const siteFooterThemeOptions = Object.keys(tokens['site-footer-themes']);
 const siteGlobalThemeOptions = getGlobalThemes(tokens['global-themes']);
 const siteAnimationOptions = ['artistic', 'default'];
 const siteFooterVariations = ['basic', 'mega'];
+const siteHeaderAccents = [
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+];
+const siteFooterAccents = [
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+];
 
 export default {
   title: 'Config',
@@ -86,6 +106,12 @@ export default {
       type: 'select',
       defaultValue: localStorage.getItem('yds-cl-twig-site-header-theme'),
     },
+    siteHeaderAccent: {
+      name: 'Header Accent Color (dial)',
+      options: siteHeaderAccents,
+      type: 'select',
+      defaultValue: localStorage.getItem('yds-cl-twig-site-header-accent'),
+    },
     headerBorderThickness: {
       name: 'Header: Border thickness',
       options: borderThicknessOptions,
@@ -103,6 +129,12 @@ export default {
       options: siteFooterThemeOptions,
       type: 'select',
       defaultValue: localStorage.getItem('yds-cl-twig-site-footer-theme'),
+    },
+    siteFooterAccent: {
+      name: 'Footer Accent Color (dial)',
+      options: siteFooterAccents,
+      type: 'select',
+      defaultValue: localStorage.getItem('yds-cl-twig-site-footer-accent'),
     },
     footerBorderThickness: {
       name: 'Footer: Border thickness',
@@ -130,8 +162,10 @@ export const GlobalConfig = ({
   actionColor,
   primaryNavPosition,
   siteHeaderTheme,
+  siteHeaderAccent,
   headerBorderThickness,
   siteFooterTheme,
+  siteFooterAccent,
   footerBorderThickness,
   menuVariation,
   globalTheme,
@@ -151,8 +185,10 @@ export const GlobalConfig = ({
     'yds-cl-twig-menu-variation': menuVariation,
     'yds-cl-twig-primary-nav-position': primaryNavPosition,
     'yds-cl-twig-site-header-theme': siteHeaderTheme,
+    'yds-cl-twig-site-header-accent': siteHeaderAccent,
     'yds-cl-twig-header-border-thickness': headerBorderThickness,
     'yds-cl-twig-site-footer-theme': siteFooterTheme,
+    'yds-cl-twig-site-footer-accent': siteFooterAccent,
     'yds-cl-twig-footer-border-thickness': footerBorderThickness,
     'yds-cl-twig-animate-items': allowAnimatedItems,
     'yds-cl-twig-site-footer-variation': siteFooterVariation,
@@ -193,9 +229,11 @@ export const GlobalConfig = ({
     site_header__border_thickness: headerBorderThickness,
     site_header__nav_position: primaryNavPosition,
     site_header__theme: siteHeaderTheme,
+    site_header__accent: siteHeaderAccent,
     site_footer__variation: siteFooterVariation,
     site_footer__border_thickness: footerBorderThickness,
     site_footer__theme: siteFooterTheme,
+    site_footer__accent: siteFooterAccent,
     ...tabsData,
   })}
   `;

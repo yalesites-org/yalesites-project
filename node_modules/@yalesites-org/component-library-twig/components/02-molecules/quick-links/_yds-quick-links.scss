@@ -27,6 +27,13 @@ $component-quick-links-themes: map.deep-get(tokens.$tokens, 'component-themes');
       );
       --color-slot-four: var(--global-themes-#{$globalTheme}-colors-slot-four);
       --color-slot-five: var(--global-themes-#{$globalTheme}-colors-slot-five);
+      --color-slot-six: var(--global-themes-#{$globalTheme}-colors-slot-six);
+      --color-slot-seven: var(
+        --global-themes-#{$globalTheme}-colors-slot-seven
+      );
+      --color-slot-eight: var(
+        --global-themes-#{$globalTheme}-colors-slot-eight
+      );
     }
   }
 
@@ -50,6 +57,7 @@ $component-quick-links-themes: map.deep-get(tokens.$tokens, 'component-themes');
     --color-quick-links-heading: var(--color-basic-white);
     --color-quick-links-action: var(--color-basic-white);
     --color-quick-links-action-secondary: var(--color-slot-one);
+    --color-link-base: var(--color-slot-eight);
   }
 
   &[data-component-theme='two'] {
@@ -58,6 +66,7 @@ $component-quick-links-themes: map.deep-get(tokens.$tokens, 'component-themes');
     --color-quick-links-heading: var(--color-gray-800);
     --color-quick-links-action: var(--color-gray-800);
     --color-quick-links-action-secondary: var(--color-basic-white);
+    --color-link-base: var(--color-slot-seven);
   }
 
   &[data-component-theme='three'] {
@@ -66,6 +75,7 @@ $component-quick-links-themes: map.deep-get(tokens.$tokens, 'component-themes');
     --color-quick-links-heading: var(--color-basic-white);
     --color-quick-links-action: var(--color-basic-white);
     --color-quick-links-action-secondary: var(--color-slot-one);
+    --color-link-base: var(--color-slot-eight);
   }
 }
 
