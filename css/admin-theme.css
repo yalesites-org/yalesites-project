@@ -442,6 +442,9 @@
   color: var(--wool);
 }
 
+.gin--dark-mode .chosen-container-single .chosen-search input[type="text"] {
+  color: var(--darkest-gray);
+}
 
 /* search input placeholder opacity */
 input[type="search"]::placeholder {
