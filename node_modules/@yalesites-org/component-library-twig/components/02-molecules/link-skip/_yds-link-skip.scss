@@ -1,0 +1,20 @@
+@use '../../00-tokens/tokens';
+@use '../../01-atoms/controls/text-link/yds-text-link' as link;
+
+.link-skip__link {
+  @include link.plain-link;
+
+  --color-text-shadow: var(--color-basic-white);
+
+  margin-block-start: var(--size-spacing-4);
+  margin-block-end: var(--size-spacing-4);
+  padding-inline-start: 0;
+
+  &.visually-hidden.focusable:focus {
+    display: block;
+    width: 100%;
+    max-width: 1344px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
