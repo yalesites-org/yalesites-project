@@ -78,7 +78,7 @@
     "drupal/role_delegation": "^1.2",
     "drupal/search_api": "^1.25",
     "drupal/search_api_exclude": "^2.0",
-    "drupal/search_api_html_element_filter": "^1.0",
+    "drupal/search_api_html_element_filter": "dev-3390283-drupal-10-symfony",
     "drupal/section_library": "^1.1",
     "drupal/selective_better_exposed_filters": "^3.0@beta",
     "drupal/simple_sitemap": "^4.1",
@@ -90,7 +90,7 @@
     "drupal/webform": "^6.2@beta",
     "drupal/wingsuit_companion": "^2.0@RC",
     "jjj/chosen": "^2.2",
-    "yalesites-org/atomic": "1.20.1",
+    "yalesites-org/atomic": "1.21.0",
     "yalesites-org/yale_cas": "^1.0"
   },
   "minimum-stability": "dev",
