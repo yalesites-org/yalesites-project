@@ -7,6 +7,10 @@
       "type": "path",
       "url": "web/profiles/custom/yalesites_profile"
     },
+    "drupal/search_api_html_element_filter": {
+      "type": "git",
+      "url": "https://git.drupalcode.org/issue/search_api_html_element_filter-3390283.git"
+    },
     "drupal": {
       "type": "composer",
       "url": "https://packages.drupal.org/8"
