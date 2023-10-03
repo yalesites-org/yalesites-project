@@ -12,7 +12,7 @@
 To add a new color value to the design system: 
 - **Step 1**: In the `tokens` repository ([github](https://github.com/yalesites-org/tokens)) 
   - open the `tokens/figma-export/tokens.json` file
-  - Locate the `color` key which should look like the following:
+  - Locate the `color` key which should look something like the following:
 ```
   "color": {
     "blue": {
@@ -20,14 +20,14 @@ To add a new color value to the design system:
         "value": "#00356b",
         "type": "color"
       },
-      "medium": {
-        "value": "#286dc0",
+      "athens": {
+        "value": "#3E75AD",
         "type": "color"
       },
-      "light": {
-        "value": "#63aaff",
+      "whipple": {
+        "value": "#779FB1",
         "type": "color"
-      }
+      },
     },
     "basic": {
       "white": {
@@ -84,45 +84,57 @@ Global themes are visualized here: https://yalesites-org.github.io/component-lib
   - Open the `tokens/tokens/base/color.yml` file
   - Locate the `global-themes` key which should look something like the following:
   ```
-  global-themes:
-    "one":
-      label:
-        value: "Old Blues"
-      colors:
-        slot-one:
-          value: "{color.blue.yale.value}"
-        slot-two:
-          value: "{color.blue.medium.value}"
-        slot-three:
-          value: "{color.blue.light.value}"
-        slot-four:
-          value: "{color.gray.100.value}"
-        slot-five:
-          value: "{color.gray.800.value}"
-  ```
-  - Add your new theme, following the same convention shown above. If there are `five` themes already entered, and yours would be number `six`, name it accordingly.
-  - For example (say we wanted to use the new `brown` value we added above): 
-
-```
-  "six":
+global-themes:
+  "one":
     label:
-      value: "New Town Brown"
+      value: "Old Blues"
     colors:
       slot-one:
         value: "{color.blue.yale.value}"
       slot-two:
-        value: "{color.blue.medium.value}"
+        value: "{color.blue.athens.value}"
+      slot-three:
+        value: "{color.blue.whipple.value}"
+      slot-four:
+        value: "{color.blue.yarmouth.value}"
+      slot-five:
+        value: "{color.gray.hale.value}"
+      slot-six:
+        value: "{color.blue.yale.value}"
+      slot-seven:
+        value: "{color.gray.800.value}"
+      slot-eight:
+        value: "{color.basic.white.value}"
+  ```
+  - Add your new theme, following the same convention shown above. If there are `three` themes already entered, and yours would be number `four`, name it accordingly.
+  - For example (say we wanted to use the new `brown` value we added above): 
+
+```
+  "four":
+    label:
+      value: "New Browntownswick"
+    colors:
+      slot-one:
+        value: "{color.blue.yale.value}"
+      slot-two:
+        value: "{color.blue.athens.value}"
       slot-three:
         value: "{color.brown.yale.value}"
       slot-four:
-        value: "{color.yellow.primary.value}"
+        value: "{color.green.overcast.value}"
       slot-five:
-        value: "{color.brown.yale.value}"
+        value: "{color.blue.yorktown.value}"
+      slot-six:
+        value: "{color.blue.yale.value}"
+      slot-seven:
+        value: "{color.gray.800.value}"
+      slot-eight:
+        value: "{color.basic.white.value}"
 ```
 
 - **Step 2**: Compile your changes
   - Following the [readme instructions in the Tokens repository](https://github.com/yalesites-org/tokens#developing-on-the-tokens-within-the-component-library)
-  - In your terminal window, navigate to your tokens repository. This is mostly likely here: `yalesites-project/web/themes/contrib/atomic/_yale-packages/tokens`. If you haven't created a new branch do so now. e.g. `yalb-add-global-theme-six`.
+  - In your terminal window, navigate to your tokens repository. This is mostly likely here: `yalesites-project/web/themes/contrib/atomic/_yale-packages/tokens`. If you haven't created a new branch do so now. e.g. `yalb-add-global-theme-four`.
   - When you're ready to compile changes, run `npm run build`. Your changes should be compiled.
   ---
   
@@ -138,7 +150,7 @@ Global themes are visualized here: https://yalesites-org.github.io/component-lib
 
 ---
 - **Step 5**: 
-  - Unless you are adding a brand new `slot-NUMBER` value (e.g. `slot-six`) to the new global theme, the new theme will be included in every component context which iterates over the global theme token values.
+  - Unless you are adding a brand new `slot-NUMBER` value (e.g. `slot-four`) to the new global theme, the new theme will be included in every component context which iterates over the global theme token values.
   - If you have added a new `slot-NUMBER` then you'll need to add a new variable and map it accodingly to each component in which it is applicable.
 
 ---
@@ -154,6 +166,7 @@ Component themes are visualized here: https://yalesites-org.github.io/component-
 
 **Component themes are used by the following components:**
 - Action Banner (`component-library-twig/components/02-molecules/banner/action/yds-action-banner.twig`)
+- Button CTA (`component-library-twig/components/01-atoms/controls/cta/yds-cta.twig`)
 - Grand Hero Banner (`component-library-twig/components/02-molecules/banner/grand-hero/yds-grand-hero.twig`)
 - Callouts (`component-library-twig/components/02-molecules/callout/yds-callout.twig`)
 - Pull Quotes (`component-library-twig/components/02-molecules/pull-quote/yds-pull-quote.twig`)
@@ -184,32 +197,56 @@ The process of updating these, more specific, component themes is the same as wh
   ```
   component-themes:
   "one":
+    background:
+      value: "{color.blue.yale.value}"
+    text:
+      value: "{color.basic.white.value}"
+    heading:
+      value: "{color.basic.white.value}"
     slot-one:
       value: "{color.blue.yale.value}"
     slot-two:
-      value: "{color.blue.secondary.value}"
+      value: "{color.blue.athens.value}"
     slot-three:
-      value: "{color.blue.light.value}"
+      value: "{color.blue.whipple.value}"
     slot-four:
-      value: "{color.gray.100.value}"
+      value: "{color.blue.yarmouth.value}"
     slot-five:
+      value: "{color.gray.hale.value}"
+    slot-six:
+      value: "{color.blue.yale.value}"
+    slot-seven:
       value: "{color.gray.800.value}"
+    slot-eight:
+      value: "{color.basic.white.value}"
   ```
   - Add your new theme following the same convention outlined here. If there are `three` themes already entered, and yours would be number `four`, name it accordingly.
   - For example (say we wanted to use the new `brown` value we added above): 
 
 ```
   "four":
+    background:
+      value: "{color.blue.yale.value}"
+    text:
+      value: "{color.basic.white.value}"
+    heading:
+      value: "{color.basic.white.value}"
     slot-one:
-      value: "{color.brown.yale.value}"
+      value: "{color.blue.yale.value}"
     slot-two:
-      value: "{color.blue.secondary.value}"
+      value: "{color.blue.athens.value}"
     slot-three:
-      value: "{color.blue.light.value}"
-    slot-four:
       value: "{color.brown.yale.value}"
+    slot-four:
+      value: "{color.green.overcast.value}"
     slot-five:
-      value: "{color.gray.800.value}" 
+      value: "{color.blue.yorktown.value}"
+    slot-six:
+      value: "{color.blue.yale.value}"
+    slot-seven:
+      value: "{color.gray.800.value}"
+    slot-eight:
+      value: "{color.basic.white.value}"
 ```
 
 - **Step 2**: Compile your changes
@@ -281,6 +318,9 @@ We can also set any component-specific token-variables (such as `--color-callout
       --color-slot-three: var(--component-themes-#{$theme}-slot-three);
       --color-slot-four: var(--component-themes-#{$theme}-slot-four);
       --color-slot-five: var(--component-themes-#{$theme}-slot-five);
+      --color-slot-six: var(--component-themes-#{$theme}-slot-six);
+      --color-slot-seven: var(--component-themes-#{$theme}-slot-seven);
+      --color-slot-eight: var(--component-themes-#{$theme}-slot-eight);
     }
   }
 ```
@@ -300,6 +340,9 @@ Next, we set the component-theme slot values, based on the global theme:
       --color-slot-three: var(--global-themes-#{$globalTheme}-colors-slot-three);
       --color-slot-four: var(--global-themes-#{$globalTheme}-colors-slot-four);
       --color-slot-five: var(--global-themes-#{$globalTheme}-colors-slot-five);
+      --color-slot-six: var(--component-themes-#{$theme}-slot-six);
+      --color-slot-seven: var(--component-themes-#{$theme}-slot-seven);
+      --color-slot-eight: var(--component-themes-#{$theme}-slot-eight);
     }
   }
 ```
@@ -354,12 +397,14 @@ Commit your changes and open a PR.
 - **Callouts**:`component-library-twig/components/02-molecules/callout/_yds-callout.scss`. 
   - Uses color slots `one`, `four`, and `five`.
 - **CTA**: `component-library-twig/components/01-atoms/controls/cta/_yds-cta.scss` uses its own themes `data-cta-theme` themes. For instances in which a CTA is pulled in to other components, the existing component-specific CSS variables are used. This way we can re-map these variables within the component which uses it.
-  - Uses color slots `one`, `two` and `five`.
+  - Uses color slots `one`, `two` , `three`, `four`, `five`, `six`, `seven`.
 - **Quote**: `component-library-twig/components/02-molecules/pull-quote/_yds-pull-quote.scss` uses global themes for `--color-pull-quote-accent` only.
   - Uses color slots `one`, `three`, and `five`.
 - **Site Header**: `component-library-twig/components/03-organisms/site-header/_yds-site-header.scss`
   - Uses color slots `one`, `two`, and `three`.
+  - Header Accents use slots `one`, `two` , `three`, `four`, `five`, `six`, `seven`. 
 - **Site Footer**: `component-library-twig/components/03-organisms/site-footer/_yds-site-footer.scss`
   - Uses color slots `one`, `three`, and `five`.
+  - Footer Accents use slots `one`, `two` , `three`, `four`, `five`, `six`, `seven`. 
 - **Tabs**: 
   - Uses color slots `one`, `two`, and `five`.

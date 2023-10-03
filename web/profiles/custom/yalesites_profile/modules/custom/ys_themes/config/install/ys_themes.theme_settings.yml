@@ -1,6 +1,8 @@
 nav_position: 'left'
 nav_type: 'basic'
 header_theme: 'one'
+header_accent: 'one'
 footer_theme: 'one'
+footer_accent: 'one'
 global_theme: 'one'
 button_theme: 'one'
