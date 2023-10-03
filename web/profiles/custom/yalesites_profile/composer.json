@@ -50,7 +50,7 @@
     "drupal/layout_builder_restrictions_by_role": "1.0-alpha5",
     "drupal/libraries": "4.0.4",
     "drupal/linkit": "6.1.0",
-    "drupal/mailchimp_transactional": "dev-3337845-drupal-10-upgrade",
+    "drupal/mailchimp_transactional": "1.0.x-dev@dev",
     "drupal/mailsystem": "4.4",
     "drupal/markup": "2.0.0-beta6",
     "drupal/maxlength": "2.1.2",
@@ -139,6 +139,9 @@
       },
       "drupal/smart_date": {
         "add PHP c date format": "patches/add-php-c-format.patch"
+      },
+      "drupal/mailchimp_transactional": {
+        "fix typeError return value https://www.drupal.org/project/mailchimp_transactional/issues/3279838": "https://www.drupal.org/files/issues/2023-04-06/11_0.patch"
       }
     }
   }

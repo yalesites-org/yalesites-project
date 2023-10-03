@@ -13,14 +13,7 @@
     },
     "drupal": {
       "type": "composer",
-      "url": "https://packages.drupal.org/8",
-      "exclude": [
-        "drupal/mailchimp_transactional"
-      ]
-    },
-    "override": {
-      "type": "git",
-      "url": "https://git.drupalcode.org/issue/mailchimp_transactional-3337845/"
+      "url": "https://packages.drupal.org/8"
     }
   },
   "require": {
