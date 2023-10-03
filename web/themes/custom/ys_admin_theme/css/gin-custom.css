@@ -219,6 +219,10 @@
   color: var(--wool);
 }
 
+.gin--dark-mode .chosen-container-single .chosen-search input[type=text] {
+  color: var(--darkest-gray);
+}
+
 /* remove media button */
 .gin--dark-mode .media-library-add-form__remove-button {
   background-color: var(--robin-egg);
