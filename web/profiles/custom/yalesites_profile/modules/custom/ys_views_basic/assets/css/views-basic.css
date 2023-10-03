@@ -3,15 +3,18 @@
 */
 
 /* General styles */
+.views-basic--params,
 #drupal-off-canvas-wrapper .views-basic--params {
   display: none;
 }
 
-.views-basic--parameter-preview {
+.views-basic--parameter-preview,
+#drupal-off-canvas-wrapper .views-basic--parameter-preview {
   margin-top: 1rem;
 }
 
-.glb-form-type--radio {
+.glb-form-type--radio,
+#drupal-off-canvas-wrapper .glb-form-type--radio {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -34,10 +37,17 @@
   color: var(--gin-color-green);
 }
 
+#drupal-off-canvas-wrapper .views-basic--group-user-selection *:where(:not(svg, svg *, .ck-reset *, [data-drupal-ck-style-fence] *, .ui-resizable-handle, .chosen-container)) {
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.4;
+}
+
 /* ************ Contrast fix end ************ */
 
 /* visually hide the inputs */
-.layout-builder-configure-block .grouped-items .glb-form-type--radio input {
+.layout-builder-configure-block .grouped-items .glb-form-type--radio input,
+#drupal-off-canvas-wrapper .layout-builder-configure-block .grouped-items .glb-form-type--radio input {
   border: 0;
   clip: rect(0 0 0 0);
   height: 1px;
@@ -49,7 +59,8 @@
 }
 
 /* base for labels */
-.glb-form-type--radio label.glb-form-item__label.glb-option {
+.glb-form-type--radio label.glb-form-item__label.glb-option,
+#drupal-off-canvas-wrapper .glb-form-type--radio label.glb-form-item__label.glb-option {
   display: flex !important;
   align-items: center;
   flex-direction: column;
@@ -65,7 +76,8 @@
   margin-bottom: var(--size-spacing-4);
 }
 
-.glb-form-type--radio label.glb-form-item__label.glb-option:hover {
+.glb-form-type--radio label.glb-form-item__label.glb-option:hover,
+#drupal-off-canvas-wrapper .glb-form-type--radio label.glb-form-item__label.glb-option:hover {
   border-color: var(--darkest-gray);
 }
 
@@ -81,7 +93,8 @@
   width: 100%;
 }
 
-.grouped-items .fieldset__wrapper {
+.grouped-items .fieldset__wrapper,
+#drupal-off-canvas-wrapper .grouped-items .fieldset__wrapper {
   display: flex;
   flex-direction: column;
 }
@@ -121,11 +134,13 @@
 /*
 /** in modal
 */
-#layout-builder-modal .grouped-items {
+#layout-builder-modal .grouped-items,
+#drupal-off-canvas-wrapper #layout-builder-modal .grouped-items {
   width: 100%;
 }
 
-#layout-builder-modal .grouped-items .glb-form-type--radio {
+#layout-builder-modal .grouped-items .glb-form-type--radio,
+#drupal-off-canvas-wrapper #layout-builder-modal .grouped-items .glb-form-type--radio {
   width: auto;
 }
 
@@ -140,11 +155,13 @@
   width: 100%;
 }
 
-.grouped-items .glb-form-composite .fieldset__wrapper {
+.grouped-items .glb-form-composite .fieldset__wrapper,
+#drupal-off-canvas-wrapper .grouped-items .glb-form-composite .fieldset__wrapper {
   border-top: 0.15rem solid var(--color-gray-500);
 }
 
-.glb-fieldset__legend--composite .glb-fieldset__label {
+.glb-fieldset__legend--composite .glb-fieldset__label,
+#drupal-off-canvas-wrapper .glb-fieldset__legend--composite .glb-fieldset__label {
   font-size: 1rem;
 }
 
@@ -159,6 +176,9 @@
 /* Posts */
 .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
   input[value="post"]
+  + label,
+#drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
+  input[value="post"]
   + label {
   background-image: url("../icons/content-type-post.svg");
   background-repeat: no-repeat;
@@ -168,6 +188,9 @@
 /* Events */
 .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
   input[value="event"]
+  + label,
+#drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
+  input[value="event"]
   + label {
   background-image: url("../icons/content-type-event.svg");
   background-repeat: no-repeat;
@@ -175,6 +198,9 @@
 }
 
 .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
+  input[value="page"]
+  + label,
+#drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
   input[value="page"]
   + label {
   background-image: url("../icons/content-type-page.svg");
@@ -184,6 +210,9 @@
 
 /* Profiles */
 .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
+  input[value="profile"]
+  + label,
+#drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
   input[value="profile"]
   + label {
   background-image: url("../icons/content-type-profile.svg");
@@ -196,21 +225,24 @@
 */
 
 /* Card */
-.views-basic--view-mode input[value="card"] + label {
+.views-basic--view-mode input[value="card"] + label,
+#drupal-off-canvas-wrapper .views-basic--view-mode input[value="card"] + label {
   background-image: url("../icons/display-type-card-grid.svg");
   background-repeat: no-repeat;
   background-position: center 4rem;
 }
 
 /* List */
-.views-basic--view-mode input[value="list_item"] + label {
+.views-basic--view-mode input[value="list_item"] + label,
+#drupal-off-canvas-wrapper .views-basic--view-mode input[value="list_item"] + label {
   background-image: url("../icons/display-type-list-view.svg");
   background-repeat: no-repeat;
   background-position: center 4rem;
 }
 
 /* Condensed */
-.views-basic--view-mode input[value="condensed"] + label {
+.views-basic--view-mode input[value="condensed"] + label,
+#drupal-off-canvas-wrapper .views-basic--view-mode input[value="condensed"] + label {
   background-image: url("../icons/display-type-condensed.svg");
   background-repeat: no-repeat;
   background-position: center 0;
@@ -218,7 +250,8 @@
 }
 
 /* Directory */
-.views-basic--view-mode input[value="directory"] + label {
+.views-basic--view-mode input[value="directory"] + label,
+#drupal-off-canvas-wrapper .views-basic--view-mode input[value="directory"] + label {
   background-image: url("../icons/display-type-directory.svg");
   background-repeat: no-repeat;
   background-position: center 1rem;
@@ -226,9 +259,15 @@
 }
 
 .layout-builder-configure-block .grouped-items fieldset:focus-visible,
+#drupal-off-canvas-wrapper .layout-builder-configure-block .grouped-items fieldset:focus-visible,
 .layout-builder-configure-block .grouped-items fieldset:focus-within,
+#drupal-off-canvas-wrapper .layout-builder-configure-block .grouped-items fieldset:focus-within,
 .layout-builder-configure-block .grouped-items label:focus-visible,
+#drupal-off-canvas-wrapper .layout-builder-configure-block .grouped-items label:focus-visible,
 .layout-builder-configure-block
+  .grouped-items
+  input[type="submit"].button--primary:focus,
+#drupal-off-canvas-wrapper .layout-builder-configure-block
   .grouped-items
   input[type="submit"].button--primary:focus {
   outline: var(--size-thickness-2) solid var(--color-link-base);
@@ -238,13 +277,25 @@
 .layout-builder-configure-block
   .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types:hover
   label,
+#drupal-off-canvas-wrapper .layout-builder-configure-block
+  .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types:hover
+  label,
 .layout-builder-configure-block
+  .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types:focus
+  label,
+#drupal-off-canvas-wrapper .layout-builder-configure-block
   .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types:focus
   label,
 .layout-builder-configure-block
   .form-item-settings-block-form-group-user-selection-entity-and-view-mode-view-mode:hover
   label,
+#drupal-off-canvas-wrapper .layout-builder-configure-block
+  .form-item-settings-block-form-group-user-selection-entity-and-view-mode-view-mode:hover
+  label,
 .layout-builder-configure-block
+  .form-item-settings-block-form-group-user-selection-entity-and-view-mode-view-mode:focus
+  label,
+#drupal-off-canvas-wrapper .layout-builder-configure-block
   .form-item-settings-block-form-group-user-selection-entity-and-view-mode-view-mode:focus
   label {
   background-color: var(--dark-theme-gray);
@@ -254,6 +305,9 @@
 /* Pages */
 .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
   input[value="page"][checked="checked"]
+  + label,
+#drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
+  input[value="page"][checked="checked"]
   + label {
   background-color: var(--darkest-gray);
   color: var(--wool);
@@ -261,6 +315,9 @@
 
 /* Profiles */
 .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
+  input[value="profile"][checked="checked"]
+  + label,
+#drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
   input[value="profile"][checked="checked"]
   + label {
   background-color: var(--darkest-gray);
@@ -270,12 +327,18 @@
 /* Events */
 .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
   input[value="event"][checked="checked"]
+  + label,
+#drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
+  input[value="event"][checked="checked"]
   + label {
   background-color: var(--darkest-gray);
   color: var(--wool);
 }
 
 .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
+  input[value="post"][checked="checked"]
+  + label,
+#drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
   input[value="post"][checked="checked"]
   + label {
   background-color: var(--darkest-gray);
@@ -304,11 +367,23 @@
   .glb-form-type--radio
   input[checked="checked"]
   + label,
+#drupal-off-canvas-wrapper .layout-builder-configure-block
+  .glb-form-type--radio
+  input[checked="checked"]
+  + label,
 .layout-builder-configure-block
   .glb-form-type--radio
   input[checked="checked"]
   + label:hover,
+#drupal-off-canvas-wrapper .layout-builder-configure-block
+  .glb-form-type--radio
+  input[checked="checked"]
+  + label:hover,
 .layout-builder-configure-block
+  .glb-form-type--radio:hover
+  input[checked="checked"]
+  + label,
+#drupal-off-canvas-wrapper .layout-builder-configure-block
   .glb-form-type--radio:hover
   input[checked="checked"]
   + label {
