@@ -37,12 +37,6 @@
   color: var(--gin-color-green);
 }
 
-#drupal-off-canvas-wrapper .views-basic--group-user-selection *:where(:not(svg, svg *, .ck-reset *, [data-drupal-ck-style-fence] *, .ui-resizable-handle, .chosen-container)) {
-  box-sizing: border-box;
-  -webkit-font-smoothing: antialiased;
-  line-height: 1.4;
-}
-
 /* ************ Contrast fix end ************ */
 
 /* visually hide the inputs */
