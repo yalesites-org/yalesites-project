@@ -4,14 +4,10 @@ status: true
 dependencies:
   config:
     - field.storage.paragraph.field_text
+    - filter.format.heading_html
     - paragraphs.paragraphs_type.callout_item
   module:
-    - allowed_formats
     - text
-third_party_settings:
-  allowed_formats:
-    allowed_formats:
-      - heading_html
 id: paragraph.callout_item.field_text
 field_name: field_text
 entity_type: paragraph
@@ -22,5 +18,7 @@ required: false
 translatable: true
 default_value: {  }
 default_value_callback: ''
-settings: {  }
+settings:
+  allowed_formats:
+    - heading_html
 field_type: text_long

@@ -42,9 +42,8 @@ field_settings:
           event: default
           page: default
           post: default
-          profile: default
   status:
-    label: status
+    label: null
     datasource_id: 'entity:node'
     property_path: status
     type: boolean
@@ -54,7 +53,7 @@ field_settings:
       module:
         - node
   uid:
-    label: uid
+    label: null
     datasource_id: 'entity:node'
     property_path: uid
     type: integer
@@ -111,10 +110,12 @@ processor_settings:
     alt: true
     tags:
       b: 2
+      em: 1
       h1: 5
       h2: 3
       h3: 2
       strong: 2
+      u: 1
   ignorecase:
     weights:
       preprocess_index: -48
@@ -128,7 +129,7 @@ processor_settings:
   rendered_item: {  }
   stemmer:
     weights:
-      preprocess_index: -45
+      preprocess_index: -42
       preprocess_query: -42
     all_fields: false
     fields:
@@ -139,7 +140,7 @@ processor_settings:
       texan: texa
   tokenizer:
     weights:
-      preprocess_index: -46
+      preprocess_index: -45
       preprocess_query: -44
     all_fields: false
     fields:

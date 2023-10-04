@@ -14,7 +14,7 @@
   "require": {
     "drupal/address": "1.12",
     "drupal/admin_toolbar": "3.4.1",
-    "drupal/allowed_formats": "2.0",
+    "drupal/allowed_formats": "3.0",
     "drupal/auto_entitylabel": "3.0",
     "drupal/autosave_form": "1.4",
     "drupal/better_exposed_filters": "6.0.3",
