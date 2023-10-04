@@ -38,7 +38,7 @@
     "drupal/field_group": "3.4",
     "drupal/formdazzle": "3.0.0",
     "drupal/gin": "3.0-rc6",
-    "drupal/gin_lb": "1.0.0-rc4",
+    "drupal/gin_lb": "1.0.x-dev@dev",
     "drupal/google_analytics": "4.0.2",
     "drupal/hide_revision_field": "2.3",
     "drupal/honeypot": "2.1.3",
