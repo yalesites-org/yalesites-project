@@ -142,6 +142,9 @@
       },
       "drupal/mailchimp_transactional": {
         "fix typeError return value https://www.drupal.org/project/mailchimp_transactional/issues/3279838": "https://www.drupal.org/files/issues/2023-04-06/11_0.patch"
+      },
+      "drupal/google_analytics": {
+        "Cannot install from existing config https://www.drupal.org/project/google_analytics/issues/3373921": "https://www.drupal.org/files/issues/2023-08-07/google-analytics-issues-3373921-cannot-install-from-existing-config-11.patch"
       }
     }
   }
