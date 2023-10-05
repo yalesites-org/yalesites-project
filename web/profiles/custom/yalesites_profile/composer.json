@@ -22,7 +22,7 @@
     "drupal/bugherd": "1.0",
     "drupal/calendar_link": "^3.0",
     "drupal/captcha": "1.10.0",
-    "drupal/cas": "^2.0",
+    "drupal/cas": "2.1",
     "drupal/chosen": "^4.0",
     "drupal/components": "^3.0",
     "drupal/config_filter": "^2.4",
