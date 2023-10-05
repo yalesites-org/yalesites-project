@@ -3,4 +3,6 @@ nav_type: basic
 header_theme: one
 footer_theme: one
 global_theme: one
-button_theme: two
+button_theme: one
+header_accent: one
+footer_accent: one
