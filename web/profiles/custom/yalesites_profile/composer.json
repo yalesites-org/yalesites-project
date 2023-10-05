@@ -1,12 +1,16 @@
 {
   "name": "yalesites-org/yalesites_profile",
   "type": "drupal-custom-profile",
-  "repositories": [
-    {
+  "repositories": {
+    "drupal/search_api_html_element_filter": {
+      "type": "git",
+      "url": "https://git.drupalcode.org/issue/search_api_html_element_filter-3390283.git"
+    },
+    "drupal": {
       "type": "composer",
       "url": "https://packages.drupal.org/8"
     }
-  ],
+  },
   "require": {
     "drupal/address": "^1.10",
     "drupal/admin_toolbar": "3.3.0",
