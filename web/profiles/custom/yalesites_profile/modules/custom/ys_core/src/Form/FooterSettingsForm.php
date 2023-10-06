@@ -170,7 +170,7 @@ class FooterSettingsForm extends ConfigFormBase {
         '#description' => $this->t('Type the URL or autocomplete for internal paths.'),
         '#autocomplete_route_name' => 'linkit.autocomplete',
         '#autocomplete_route_parameters' => [
-          'linkit_profile_id' => 'default',
+          'linkit_profile' => 'default',
         ],
       ],
 
@@ -200,7 +200,7 @@ class FooterSettingsForm extends ConfigFormBase {
       '#description' => $this->t('Type the URL or autocomplete for internal paths.'),
       '#autocomplete_route_name' => 'linkit.autocomplete',
       '#autocomplete_route_parameters' => [
-        'linkit_profile_id' => 'default',
+        'linkit_profile' => 'default',
       ],
       '#default_value' => ($footerConfig->get('content.school_logo_url')) ? $footerConfig->get('content.school_logo_url') : '/',
     ];
@@ -236,7 +236,7 @@ class FooterSettingsForm extends ConfigFormBase {
         '#description' => $this->t('Type the URL or autocomplete for internal paths.'),
         '#autocomplete_route_name' => 'linkit.autocomplete',
         '#autocomplete_route_parameters' => [
-          'linkit_profile_id' => 'default',
+          'linkit_profile' => 'default',
         ],
       ],
       'link_title' => [
@@ -256,7 +256,7 @@ class FooterSettingsForm extends ConfigFormBase {
         '#description' => $this->t('Type the URL or autocomplete for internal paths.'),
         '#autocomplete_route_name' => 'linkit.autocomplete',
         '#autocomplete_route_parameters' => [
-          'linkit_profile_id' => 'default',
+          'linkit_profile' => 'default',
         ],
       ],
       'link_title' => [
