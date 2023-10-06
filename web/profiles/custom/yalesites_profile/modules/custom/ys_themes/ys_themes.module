@@ -265,3 +265,11 @@ function ys_themes_preprocess_form_element(array &$variables) {
     }
   }
 }
+
+/**
+ * Implements hook_toolbar_alter().
+ */
+function ys_themes_toolbar_alter(&$items) {
+  // Attached custom css/js to the toolbar.
+  $items['administration']['#attached']['library'][] = 'ys_themes/toolbar';
+}
