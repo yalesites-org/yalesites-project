@@ -91,3 +91,14 @@ lando drush migrate-rollback --group ys_starterkit
 # Update partial configuration if altering the migration configuration.
 lando drush cim --partial --source=/app/web/profiles/custom/yalesites_profile/modules/custom/ys_starterkit/config/install -y
 ```
+
+## Data model best practices
+
+A well-structured data model ensures efficiency, maintainability, and scalability within the YaleSites platform. Below are some guiding principles adopted by the platform maintainers:
+
+- **Documentation Maintenance**: Keep the data model documentation up to date. This Teams document includes entity definitions, text formats, display mode definitions, and other content settings. Whenever there's a change to a content type, block, paragraph, taxonomy, or any other entity, make it a priority to update this central documentation source. Maintaining accurate documentation is crucial for team collaboration and project continuity.
+- **Normalize Data**: Follow established principles of database normalization to minimize data redundancy and enhance data integrity. Leverage reference fields and relationships to establish connections between related content instead of duplicating data. This approach ensures that the data remains consistent and predictable.
+- **Reuse Fields**: Reduce the proliferation of field definitions by reusing fields across multiple content bundles, as long as they serve a similar business purpose. For instance, if several content types (e.g., pull quote, video description, banner intro) require a 'field_text' storage, consider reusing this field definition to maintain consistency and simplify content management.
+- **Avoid Single-Purpose Fields or Entities**: When adding fields or entities, strive to make them versatile enough to fulfill multiple purposes across YaleSites. For example, while a dedicated 'Speaker' field might seem useful for an event content type, evaluate whether this feature could be addressed using a content-spotlight block. Add new fields only when they contribute to sorting, filtering, or theming content in specific ways.
+- **Build with Blocks**: Embrace the power of the layout builder by utilizing blocks to define new components. YaleSites relies on blocks for editorial controls and mapping content to the component library. This includes both custom blocks (content entities) and programmatically defined blocks (plugins).
+- **Use Paragraphs for Nested Content**: Paragraphs remain a valuable tool, particularly when dealing with components that contain an indeterminate number of children, such as accordion items, tab items, or gallery items. The Paragraphs module provides intuitive widgets that offer an effective editorial interface for managing reference content within these complex components.
