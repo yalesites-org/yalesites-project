@@ -71,19 +71,21 @@ class HeaderSettingsForm extends ConfigFormBase {
     $form = parent::buildForm($form, $form_state);
     $headerConfig = $this->config('ys_core.header_settings');
 
-    $form['#attached']['library'][] = 'ys_core/footer_settings_form';
+    $form['#attached']['library'][] = 'ys_core/header_footer_settings';
+    $form['#attributes']['class'][] = 'ys-core-header-footer-settings';
 
     $form['header_variation'] = [
       '#type' => 'radios',
       '#options' => [
-        'basic' => $this->t('Basic') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/footer-basic.svg" class="preview-icon" alt="Basic footer icon showing a small Yale logo, and gray placeholders for copyright and social media icons.">',
-        'mega' => $this->t('Mega') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/footer-mega-2.svg" class="preview-icon" alt="Mega footer icon with gray placeholders for more information than the basic footer.">',
+        'basic' => $this->t('Basic') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/header-basic.svg" class="preview-icon" alt="Basic header icon showing a site title and a simplified navigation.">',
+        'mega' => $this->t('Mega') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/header-mega.svg" class="preview-icon" alt="Mega header icon showing a site title and a flyout style mega menu.">',
+        'focus' => $this->t('Focus') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/footer-mega-2.svg" class="preview-icon" alt="TKTKTK">',
       ],
-      '#title' => $this->t('Header type'),
+      '#title' => $this->t('Header variation'),
       '#default_value' => ($headerConfig->get('header_variation')) ? $headerConfig->get('footer_variation') : 'basic',
       '#attributes' => [
         'class' => [
-          'footer-variation-radios',
+          'variation-radios',
         ],
       ],
     ];
@@ -118,6 +120,13 @@ class HeaderSettingsForm extends ConfigFormBase {
       '#type' => 'markup',
       '#prefix' => '<h2>Mega Header</h2>',
       '#markup' => '<p>' . $this->t('The mega header of your website TKTKTK can be customized to suit your organizational needs. You can upload icons for various organizational identities and other platforms that your organization uses. You can also add a customizable text area with general information, contact information, or a physical address. Additionally, you can add up to 8 links in a two-column format.') . '</p>',
+    ];
+
+    $form['enable_search_form'] = [
+      '#type' => 'checkbox',
+      '#description' => $this->t('Enable the search form located in the utility navigation area.'),
+      '#title' => $this->t('Enable search form'),
+      // '#default_value' => $yaleConfig->get('search')['enable_search_form'],
     ];
 
     return $form;

@@ -1,5 +1,5 @@
 ((Drupal) => {
-  Drupal.behaviors.ysCoreFooterSettings = {
+  Drupal.behaviors.ysCoreHeaderFooterSettings = {
     attach: function() { // eslint-disable-line
       // Function to handle radio input checked behavior based on radio element selection.
       function handleRadioInputs(radioGroup) {
@@ -31,10 +31,16 @@
       }
 
       // Store radio input groups in an array
-      const radioGroups = ['input[name="footer_variation"]'];
+      const headerRadioGroups = ['input[name="header_variation"]'];
+      const footerRadioGroups = ['input[name="footer_variation"]'];
 
       // Apply the function to each radio input group
-      radioGroups.forEach((group) => {
+      headerRadioGroups.forEach((group) => {
+        handleRadioInputs(group);
+      });
+
+      // Apply the function to each radio input group
+      footerRadioGroups.forEach((group) => {
         handleRadioInputs(group);
       });
     },

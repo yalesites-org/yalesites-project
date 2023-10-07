@@ -7,27 +7,27 @@
   }
 }
 
-.ys-core-footer-settings-form
+.ys-core-header-footer-settings
   .claro-details.form-disabled
   .claro-details__summary {
   background-color: #6f6f6f !important;
 }
 
-.ys-core-footer-settings-form .form-element {
+.ys-core-header-footer-settings .form-element {
   width: 100%;
 }
 
-.ys-core-footer-settings-form .preview-icon {
+.ys-core-header-footer-settings .preview-icon {
   width: 190px;
   height: 137px;
 }
 
-.ys-core-footer-settings-form .claro-details.form-disabled {
+.ys-core-header-footer-settings .claro-details.form-disabled {
   pointer-events: none;
   user-select: none;
 }
 
-.ys-core-footer-settings-form
+.ys-core-header-footer-settings
   .claro-details.form-disabled
   .claro-details__summary::after {
   background-image: url("../images/icons/disabled-details.svg");
@@ -45,15 +45,16 @@
   width: 2rem;
 }
 
-.footer-variation-radios .form-radios {
+.variation-radios .form-radios {
   display: flex;
+  margin-top: 1rem;
 }
 
-.footer-variation-radios .form-type--radio:first-child {
+.variation-radios .form-type--radio:first-child {
   margin-left: 0;
 }
 
-.form-item--footer-variation.form-type--radio input {
+.variation-radios .form-type--radio input {
   border: 0;
   clip: rect(0 0 0 0);
   height: 1px;
@@ -64,7 +65,7 @@
   width: 1px;
 }
 
-.form-item--footer-variation.form-type--radio label {
+.variation-radios .form-type--radio label {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -74,20 +75,17 @@
   padding: 0.5rem;
 }
 
-.form-item--footer-variation input[checked="checked"] + label,
-.form-item--footer-variation input[checked="checked"] + label:hover,
-.form-item--footer-variation
+.variation-radios .form-type--radio input:focus + label {
+  outline: 2px solid var(--wool);
+}
+
+.variation-radios .form-type--radio input[checked="checked"] + label,
+.variation-radios .form-type--radio input[checked="checked"] + label:hover,
+.variation-radios
+  .form-type--radio
   .form-boolean--type-radio:hover
   input[checked="checked"]
   + label {
   background-color: var(--darkest-gray);
   color: var(--color-background-primary) !important;
-}
-
-.form-item--footer-variation.form-type--radio input:focus + label {
-  outline: 2px solid var(--wool);
-}
-
-#edit-footer-variation {
-  margin-top: 1rem;
 }
