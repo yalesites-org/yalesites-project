@@ -15,9 +15,7 @@ label: 'Divider Width'
 description: ''
 required: true
 translatable: true
-default_value:
-  -
-    value: 100%
-default_value_callback: ''
+default_value: {  }
+default_value_callback: ys_themes_default_value_function
 settings: {  }
 field_type: list_string
