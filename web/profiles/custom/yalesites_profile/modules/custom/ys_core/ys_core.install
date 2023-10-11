@@ -15,19 +15,28 @@ use Drupal\Component\Utility\Xss;
  */
 function ys_core_update_9001() {
   $query = \Drupal::entityQuery('block_content')
-    ->condition('type', 'quick_links');
-  $ids = $query->execute();
-  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
-  $blocks = $block_storage->loadMultiple($ids);
+    ->condition('type', 'quick_links')
+    ->allRevisions();
 
-  foreach ($blocks as $block) {
-    $body = $block->get('field_text')->getValue();
-    foreach ($body as $key => $array_value) {
-      $body[$key] = ys_core_sanitize_content($array_value, ['em', 'p', 'strong']);
-      $body[$key] = ys_core_set_format($array_value, 'heading_html');
+  $ids = $query->execute();
+  $block_content_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+
+  foreach ($ids as $revision_id => $id) {
+    $block = $block_content_storage->loadRevision($revision_id);
+
+    if ($block && $block->id() == $id) {
+      $body = $block->get('field_text')->getValue();
+      foreach ($body as $key => $array_value) {
+        $array_value = ys_core_sanitize_content(
+          $array_value, ['em', 'p', 'strong']
+        );
+        $array_value = ys_core_set_format($array_value, 'heading_html');
+
+        $body[$key] = $array_value;
+      }
+      $block->set('field_text', $body);
+      $block->save();
     }
-    $block->set('field_text', $body);
-    $block->save();
   }
 }
 
