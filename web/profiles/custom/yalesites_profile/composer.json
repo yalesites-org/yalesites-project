@@ -90,7 +90,7 @@
     "drupal/wingsuit_companion": "2.1",
     "jjj/chosen": "2.2.1",
     "laminas/laminas-escaper": "2.12",
-    "yalesites-org/atomic": "1.20.1",
+    "yalesites-org/atomic": "1.21.1",
     "yalesites-org/yale_cas": "1.0.4"
   },
   "minimum-stability": "dev",
