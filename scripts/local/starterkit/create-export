@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+
+# Since this script will attempt to pull the zip from the URL, the SFTP
+# settings must be set beforehand.
+verifyEnvironmentVariables() {
+    declare -a env_vars=("SFTP_URI" "SFTP_PORT" "PANTHEON_NAME")
+
+    for env_var in "${env_vars[@]}"
+        do
+            if [[ -z "${!env_var}" ]]; then
+                echo "Environment variable $env_var is not set. Please pre-set this varaible before running."
+                echo "Environment variables needed: ${env_vars[*]}"
+                exit 1
+            fi
+        done
+}
+
+export-content() {
+    local zipRemoteLocation
+    local zipFilename
+    local destinationFolder="${1:-$(mktemp -d -p .)}"
+
+    zipRemoteLocation="$(retrieveZipLocation "$(runExport)")"
+    zipFilename="$(basename "$zipRemoteLocation")"
+    retrieveFileFromSftp "$zipRemoteLocation"
+    if [[ -f "$zipFilename" ]]; then
+        unzipToFolder "$zipFilename" "$destinationFolder"
+        createCommit "$destinationFolder"
+        removeZipFile "$zipFilename"
+    else
+        exit 1
+    fi
+
+    echo "Content exported to $destinationFolder"
+}
+
+# Figures out the zip location on the remote server based on the stdout of the
+# terminus command.
+retrieveZipLocation() {
+    local zipFilename
+    local tmpPath="/tmp/export/zip"
+
+    # We don't have permission to create the scs-export directory under
+    # /code/web, so it errors out.  We redirect the error to stdouot so we can
+    # capture the file name that was attempted.  We then use the tmp directory
+    # location that it was when it was created, which still exists.
+    zipFilename=$(echo "$1" | head -5 | tail -1 | grep -o "temporary://[^']*" | xargs -I {} basename {})
+    echo "$tmpPath/$zipFilename"
+}
+
+runExport() {
+    terminus drush "$PANTHEON_NAME" -- content:export --all-content --assets --translate 2>&1
+}
+
+# Retrieves the file from a remote server and removes the files afterward.
+retrieveFileFromSftp() {
+        sftp -o Port="$SFTP_PORT" "$SFTP_URI" <<EOF
+            get $1
+            rm $1
+            quit
+EOF
+}
+
+# Unzips the folder to another location so that we can update the git repo.
+unzipToFolder() {
+    createFolderIfNotExists "$2"
+    if [[ -d "$2" ]]; then
+        unzip -o "$1" -d "$2"
+    else
+        echo "Folder $2 does not exist and could not create it.  Please see why."
+        exit 1
+    fi
+}
+
+# handles creating a commit for any new files
+createCommit() {
+    pushd "$1" || exit 1
+    git add .
+    git commit -a -m "Content update: $(date)"
+    # git push
+    popd || exit 1
+}
+
+# Cleans up the zip file after unzipped to the folder.
+removeZipFile() {
+    rm "$1"
+}
+
+createFolderIfNotExists() {
+    if [[ ! -d "$1" ]]; then
+        mkdir -p "$1"
+    fi
+}
+
+verifyEnvironmentVariables
+export-content "$1"
