@@ -1,5 +1,24 @@
 #!/usr/bin/env bash
 
+# The idea is that you would clone the yalesites-starterkit repository to
+# a directory, and then run this script, passing the directory to that
+# repository.  Provided environment variables were set, it will:
+#   - Create the export remotely on the yalesites server
+#   - Retrieve the zip file and delete it from the server
+#   - Unzip it to the repository location
+#   - Create a commit with a timestamp
+#   - Delete the original zip file created
+# 
+# Environment variables needed:
+#   - PANTHEON_NAME: The terminus site name to connect to
+#   - SFTP_PORT: the port to use when SFTPing
+#   - SFTP_URI: the username@location to SFTP to
+# 
+# Usage:
+#   PANTHEON_NAME=ys-starterkit.dev SFTP_PORT=2222 \
+#   SFTP_URI="uritothelocation" ./scripts/local/starterkit/create-export \
+#   /code/yalesites-starterkit
+
 # Since this script will attempt to pull the zip from the URL, the SFTP
 # settings must be set beforehand.
 verifyEnvironmentVariables() {
