@@ -76,14 +76,6 @@
           ]
         }
       ],
-      [
-        "@semantic-release/git",
-        {
-          "assets": [
-            "web/profiles/custom/yalesites_profile/yalesites_profile.info.yml"
-          ]
-        }
-      ],
       "@semantic-release/release-notes-generator",
       "@semantic-release/github"
     ]
