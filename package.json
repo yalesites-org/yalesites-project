@@ -61,7 +61,7 @@
               "files": [
                 "web/profiles/custom/yalesites_profile/yalesites_profile.info.yml"
               ],
-              "from": "version: .*",
+              "from": "#version:",
               "to": "version: ${nextRelease.version}",
               "results": [
                 {
