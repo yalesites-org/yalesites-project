@@ -18,7 +18,7 @@ verifyEnvironmentVariables() {
 export-content() {
     local zipRemoteLocation
     local zipFilename
-    local destinationFolder="${1:-$(mktemp -d -p .)}"
+    local destinationFolder="${1:-$(mktemp -d)}"
 
     zipRemoteLocation="$(retrieveZipLocation "$(runExport)")"
     zipFilename="$(basename "$zipRemoteLocation")"
@@ -31,7 +31,8 @@ export-content() {
         exit 1
     fi
 
-    echo "Content exported to $destinationFolder"
+    echo "Content exported to"
+    echo "$destinationFolder"
 }
 
 # Figures out the zip location on the remote server based on the stdout of the
@@ -72,12 +73,14 @@ unzipToFolder() {
     fi
 }
 
-# handles creating a commit for any new files
+# handles creating a commit for any new files if the directory is a git repo
 createCommit() {
     pushd "$1" || exit 1
-    git add .
-    git commit -a -m "Content update: $(date)"
-    # git push
+    if [[ -d .git ]]; then
+        git add .
+        git commit -a -m "Content update: $(date)"
+        # git push
+    fi
     popd || exit 1
 }
 
