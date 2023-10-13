@@ -7,6 +7,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountProxy;
+use Drupal\ys_core\YaleSitesMediaManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -38,23 +39,34 @@ class HeaderSettingsForm extends ConfigFormBase {
   protected $currentUserSession;
 
   /**
+   * The ys media manager.
+   *
+   * @var \Drupal\ys_core\YaleSitesMediaManager
+   */
+  protected $ysMediaManager;
+
+  /**
    * Constructs the object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
    * @param \Drupal\Core\Path\CacheBackendInterface $cache_render
    *   The Cache backend interface.
-   * @param \Drupal\Core\Session\AccountProxy $currentUserSession
+   * @param \Drupal\Core\Session\AccountProxy $current_user_session
    *   The current user session.
+   * @param \Drupal\ys_core\YaleSitesMediaManager $ys_media_manager
+   *   The media manager.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
     CacheBackendInterface $cache_render,
     AccountProxy $current_user_session,
+    YaleSitesMediaManager $ys_media_manager,
     ) {
     parent::__construct($config_factory);
     $this->cacheRender = $cache_render;
     $this->currentUserSession = $current_user_session;
+    $this->ysMediaManager = $ys_media_manager;
   }
 
   /**
@@ -65,6 +77,7 @@ class HeaderSettingsForm extends ConfigFormBase {
       $container->get('config.factory'),
       $container->get('cache.render'),
       $container->get('current_user'),
+      $container->get('ys_core.media_manager'),
     );
   }
 
@@ -83,11 +96,6 @@ class HeaderSettingsForm extends ConfigFormBase {
 
     $form = parent::buildForm($form, $form_state);
     $headerConfig = $this->config('ys_core.header_settings');
-    $allowSecretItems = FALSE;
-
-    if ($this->currentUserSession->getAccount()->id() == 1 || in_array('platform_admin', $this->currentUserSession->getAccount()->getRoles())) {
-      $allowSecretItems = TRUE;
-    }
 
     $form['#attached']['library'][] = 'ys_core/header_footer_settings';
     $form['#attributes']['class'][] = 'ys-core-header-footer-settings';
@@ -95,9 +103,9 @@ class HeaderSettingsForm extends ConfigFormBase {
     $form['header_variation'] = [
       '#type' => 'radios',
       '#options' => [
-        'basic' => $this->t('Basic') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/header-basic.svg" class="preview-icon" alt="Basic header icon showing a site title and a simplified navigation.">',
-        'mega' => $this->t('Mega') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/header-mega.svg" class="preview-icon" alt="Mega header icon showing a site title and a flyout style mega menu.">',
-        'focus' => $this->t('Focus') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/footer-mega-2.svg" class="preview-icon" alt="TKTKTK">',
+        'basic' => $this->t('Basic Nav') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/header-basic.svg" class="preview-icon" alt="Basic header icon showing a site title and a simplified navigation.">',
+        'mega' => $this->t('Mega Nav') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/header-mega.svg" class="preview-icon" alt="Mega header icon showing a site title and a flyout style mega menu.">',
+        'focus' => $this->t('Focus Nav') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/header-focus.svg" class="preview-icon" alt="TKTKTK">',
       ],
       '#title' => $this->t('Header variation'),
       '#default_value' => ($headerConfig->get('header_variation')) ? $headerConfig->get('header_variation') : 'basic',
@@ -138,16 +146,16 @@ class HeaderSettingsForm extends ConfigFormBase {
       ],
     ];
 
-    if ($allowSecretItems) {
-      $form['all_headers'] = [
+    if ($this->allowSecretItems()) {
+      $form['site_name_image_container'] = [
         '#type' => 'details',
-        '#title' => $this->t('All Headers'),
+        '#title' => $this->t('Site Name Image'),
       ];
     }
 
-    $form['basic_and_mega_header'] = [
+    $form['nav_position_container'] = [
       '#type' => 'details',
-      '#title' => $this->t('Basic & Mega'),
+      '#title' => $this->t('Navigation Position'),
       '#states' => [
         'disabled' => [
           ':input[name="header_variation"]' => [
@@ -157,9 +165,21 @@ class HeaderSettingsForm extends ConfigFormBase {
       ],
     ];
 
-    $form['focus_header'] = [
+    $form['site_search_container'] = [
       '#type' => 'details',
-      '#title' => $this->t('Focus'),
+      '#title' => $this->t('Site Search'),
+      '#states' => [
+        'disabled' => [
+          ':input[name="header_variation"]' => [
+            'value' => 'focus',
+          ],
+        ],
+      ],
+    ];
+
+    $form['full_screen_homepage_image_container'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Full Screen Homepage Image'),
       '#states' => [
         'enabled' => [
           ':input[name="header_variation"]' => [
@@ -171,43 +191,61 @@ class HeaderSettingsForm extends ConfigFormBase {
 
     $form['desc_basic_container']['desc_basic'] = [
       '#type' => 'markup',
-      '#prefix' => '<h2>Basic</h2>',
-      '#markup' => '<p>' . $this->t('The basic header of your website contains...') . '</p>',
+      '#prefix' => '<h2>Basic Nav</h2>',
+      '#markup' => '<p>' . $this->t('The basic nav can have any number of items but only displays up to two levels of navigation using single-column dropdown menus.') . '</p>',
     ];
 
     $form['desc_mega_container']['desc_mega'] = [
       '#type' => 'markup',
-      '#prefix' => '<h2>Mega Header</h2>',
-      '#markup' => '<p>' . $this->t('The mega header of your website can ...') . '</p>',
+      '#prefix' => '<h2>Mega Nav</h2>',
+      '#markup' => '<p>' . $this->t('The mega nav provides a third level of navigation, giving you the ability to organize menu links into columns with dropdown menus.') . '</p>',
     ];
 
     $form['desc_focus_container']['desc_focus'] = [
       '#type' => 'markup',
-      '#prefix' => '<h2>Focus Header</h2>',
-      '#markup' => '<p>' . $this->t('Focus header shows a full-width image on the homepage...') . '</p>',
+      '#prefix' => '<h2>Focus Nav</h2>',
+      '#markup' => '<p>' . $this->t('The focus nav combines a full image landing page with a single level of navigation.') . '</p>',
     ];
 
-    if ($allowSecretItems) {
-      $form['all_headers']['site_name_image'] = [
-        '#type' => 'file',
-        //'#upload_location' => 'public://header-logos',
+    if ($this->allowSecretItems()) {
+      $form['site_name_image_container']['site_name_image'] = [
+        '#type' => 'managed_file',
+        '#upload_location' => 'public://site-name-images',
         '#multiple' => FALSE,
-        '#description' => $this->t('Allowed extensions: svg'),
-        // '#upload_validators' => [
-        //   'file_validate_is_image' => [],
-        //   'file_validate_extensions' => ['svg'],
-        // ],
+        '#description' => $this->t('Replaces the site name text with an image.'),
+        '#upload_validators' => [
+          'file_validate_extensions' => ['svg'],
+          // 'file_validate_image_resolution' => [0, "180x180"],
+        ],
         '#title' => $this->t('Site Name Image'),
-        //'#default_value' => ($yaleConfig->get('custom_favicon')) ? $yaleConfig->get('custom_favicon') : NULL,
-        // '#theme' => 'image_widget',
-        // '#preview_image_style' => 'favicon_16x16',
-        // '#use_favicon_preview' => TRUE,
+        '#default_value' => ($headerConfig->get('site_name_image')) ? $headerConfig->get('site_name_image') : NULL,
+        '#theme' => 'image_widget',
+        '#preview_image_style' => 'media_library',
+        '#use_preview' => TRUE,
+        '#use_svg_preview' => TRUE,
       ];
     }
 
-    $form['basic_and_mega_header']['enable_search_form'] = [
+    $form['nav_position_container']['nav_position'] = [
+      '#type' => 'radios',
+      '#options' => [
+        'left' => $this->t('Left') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/lever-nav-left.svg" class="preview-icon" alt="Basic header icon showing a site title and a simplified navigation.">',
+        'center' => $this->t('Center') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/lever-nav-center.svg" class="preview-icon" alt="Mega header icon showing a site title and a flyout style mega menu.">',
+        'right' => $this->t('Right') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/lever-nav-right.svg" class="preview-icon" alt="TKTKTK">',
+      ],
+      '#title' => $this->t('Navigation Position'),
+      '#description' => $this->t('Justifies the menu to the left, center, or right.'),
+      //'#default_value' => ($headerConfig->get('header_variation')) ? $headerConfig->get('header_variation') : 'basic',
+      '#attributes' => [
+        'class' => [
+          'variation-radios',
+        ],
+      ],
+    ];
+
+    $form['site_search_container']['enable_search_form'] = [
       '#type' => 'checkbox',
-      '#description' => $this->t('Enable the search form located in the utility navigation area.'),
+      '#description' => $this->t('When enabled, a site search form will be displayed in the Utility Menu.'),
       '#title' => $this->t('Enable search form'),
       '#default_value' => $headerConfig->get('search.enable_search_form'),
       '#states' => [
@@ -217,14 +255,14 @@ class HeaderSettingsForm extends ConfigFormBase {
       ],
     ];
 
-    $form['focus_header']['focus_header_image'] = [
-      '#type' => 'media_library',
-      '#allowed_bundles' => ['image'],
-      '#title' => $this->t('Homepage Header image'),
-      '#required' => FALSE,
-      '#default_value' => ($headerConfig->get('focus_header_image')) ? $headerConfig->get('focus_header_image') : NULL,
-      '#description' => $this->t('Used only on the homepage when focus header is selected.'),
-    ];
+    // $form['full_screen_homepage_image_container']['focus_header_image'] = [
+    //   '#type' => 'media_library',
+    //   '#allowed_bundles' => ['image'],
+    //   '#title' => $this->t('Homepage Header image'),
+    //   '#required' => FALSE,
+    //   //'#default_value' => ($headerConfig->get('focus_header_image')) ? $headerConfig->get('focus_header_image') : NULL,
+    //   '#description' => $this->t('Used for the full-screen homepage image when the Focus Header is selected.'),
+    // ];
 
     return $form;
   }
@@ -233,7 +271,7 @@ class HeaderSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    dpm($form_state);
+    //dpm($form_state->getValue('site_name_image'));
   }
 
   /**
@@ -246,10 +284,17 @@ class HeaderSettingsForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
-    // Footer settings config.
+    // Header settings config.
     $headerConfig = $this->config('ys_core.header_settings');
 
+    // Handle the favicon filesystem if needed.
+    $this->ysMediaManager->handleMediaFilesystem(
+      $form_state->getValue('site_name_image'),
+      $headerConfig->get('site_name_image')
+    );
+
     $headerConfig->set('header_variation', $form_state->getValue('header_variation'));
+    $headerConfig->set('site_name_image', $form_state->getValue('site_name_image'));
     $headerConfig->set('search.enable_search_form', $form_state->getValue('enable_search_form'));
     $headerConfig->set('focus_header_image', $form_state->getValue('focus_header_image'));
 
@@ -266,6 +311,22 @@ class HeaderSettingsForm extends ConfigFormBase {
     return [
       'ys_core.header_settings',
     ];
+  }
+
+  /**
+   * If current user is platform admin or user 1, allow secret items.
+   *
+   * @return bool
+   *   Returns TRUE if current user is a platform admin or user 1.
+   */
+  private function allowSecretItems() {
+    $allowSecretItems = FALSE;
+
+    if ($this->currentUserSession->getAccount()->id() == 1 || in_array('platform_admin', $this->currentUserSession->getAccount()->getRoles())) {
+      $allowSecretItems = TRUE;
+    }
+
+    return $allowSecretItems;
   }
 
 }

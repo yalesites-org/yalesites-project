@@ -10,7 +10,7 @@ use Drupal\Core\Path\PathValidatorInterface;
 use Drupal\Core\Routing\RequestContext;
 use Drupal\google_analytics\Constants\GoogleAnalyticsPatterns;
 use Drupal\path_alias\AliasManagerInterface;
-use Drupal\ys_core\FaviconManager;
+use Drupal\ys_core\YaleSitesMediaManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -46,11 +46,11 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
   protected $requestContext;
 
   /**
-   * The favicon manager.
+   * The ys media manager.
    *
-   * @var \Drupal\ys_core\FaviconManager
+   * @var \Drupal\ys_core\YaleSitesMediaManager
    */
-  protected $faviconManager;
+  protected $ysMediaManager;
 
   /**
    * Constructs a SiteInformationForm object.
@@ -63,21 +63,21 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
    *   The path validator.
    * @param \Drupal\Core\Routing\RequestContext $request_context
    *   The request context.
-   * @param \Drupal\ys_core\FaviconManager $favicon_manager
-   *   The favicon manager.
+   * @param \Drupal\ys_core\YaleSitesMediaManager $ys_media_manager
+   *   The media manager.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
     AliasManagerInterface $alias_manager,
     PathValidatorInterface $path_validator,
     RequestContext $request_context,
-    FaviconManager $favicon_manager,
+    YaleSitesMediaManager $ys_media_manager,
     ) {
     parent::__construct($config_factory);
     $this->aliasManager = $alias_manager;
     $this->pathValidator = $path_validator;
     $this->requestContext = $request_context;
-    $this->faviconManager = $favicon_manager;
+    $this->ysMediaManager = $ys_media_manager;
   }
 
   /**
@@ -89,7 +89,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       $container->get('path_alias.manager'),
       $container->get('path.validator'),
       $container->get('router.request_context'),
-      $container->get('ys_core.favicon_manager'),
+      $container->get('ys_core.media_manager'),
     );
   }
 
@@ -215,6 +215,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#default_value' => ($yaleConfig->get('custom_favicon')) ? $yaleConfig->get('custom_favicon') : NULL,
       '#theme' => 'image_widget',
       '#preview_image_style' => 'favicon_16x16',
+      '#use_preview' => TRUE,
       '#use_favicon_preview' => TRUE,
     ];
 
@@ -268,7 +269,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
     // Handle the favicon filesystem if needed.
-    $this->faviconManager->handleFaviconFilesystem(
+    $this->ysMediaManager->handleMediaFilesystem(
       $form_state->getValue('favicon'),
       $this->configFactory->getEditable('ys_core.site')->get('custom_favicon')
     );

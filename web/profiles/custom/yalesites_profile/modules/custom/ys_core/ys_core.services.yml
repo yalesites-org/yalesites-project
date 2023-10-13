@@ -12,6 +12,6 @@ services:
     arguments: ['@config.factory']
     tags:
       - { name: twig.extension }
-  ys_core.favicon_manager:
-    class: Drupal\ys_core\FaviconManager
+  ys_core.media_manager:
+    class: Drupal\ys_core\YaleSitesMediaManager
     arguments: ['@config.factory', '@entity_type.manager', '@file_url_generator']

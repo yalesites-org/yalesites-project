@@ -239,7 +239,7 @@ function ys_core_page_attachments(array &$page) {
   }
 
   // Custom or fallback favicons.
-  $favicons = \Drupal::service('ys_core.favicon_manager')->getFavicons();
+  $favicons = \Drupal::service('ys_core.media_manager')->getFavicons();
   foreach ($favicons as $name => $favicon) {
     $page['#attached']['html_head'][] = [$favicon, $name];
   }
@@ -258,7 +258,7 @@ function ys_core_preprocess_image_widget(&$variables) {
    */
   $element = $variables['element'];
 
-  if (isset($element['#use_favicon_preview'])) {
+  if (isset($element['#use_preview'])) {
 
     $variables['attributes'] = [
       'class' => [
@@ -322,7 +322,8 @@ function ys_core_preprocess_image_widget(&$variables) {
 
     // Sets a twig variable to use the favicon preview.
     // @see web/themes/custom/ys_admin_theme/templates/content-edit/image-widget.html.twig
-    $variables['use_favicon_preview'] = $element['#use_favicon_preview'];
+    $variables['use_favicon_preview'] = $element['#use_favicon_preview'] ?? NULL;
+    $variables['use_svg_preview'] = $element['#use_svg_preview'] ?? NULL;
 
     $variables['data'] = [];
     foreach (Element::children($element) as $child) {

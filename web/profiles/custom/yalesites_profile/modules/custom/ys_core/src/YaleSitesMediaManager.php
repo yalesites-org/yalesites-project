@@ -10,9 +10,9 @@ use Drupal\Core\File\FileUrlGenerator;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Service for managing the favicon associated with a YaleSite.
+ * Service for managing custom media associated with a YaleSite.
  */
-class FaviconManager extends ControllerBase implements ContainerInjectionInterface {
+class YaleSitesMediaManager extends ControllerBase implements ContainerInjectionInterface {
 
   /**
    * Configuration Factory.
@@ -141,33 +141,33 @@ class FaviconManager extends ControllerBase implements ContainerInjectionInterfa
   }
 
   /**
-   * Handles the creation and deletion of favicons in the filesystem.
+   * Handles the creation and deletion of custom media in the filesystem.
    *
    * @param array $formValue
-   *   An array with the form value of the favicon selected, if any.
+   *   An array with the form value of the media selected, if any.
    * @param array $configValue
-   *   An array with the config value of the favicon saved, if any.
+   *   An array with the config value of the media saved, if any.
    */
-  public function handleFaviconFilesystem($formValue, $configValue) {
-    $faviconFormValue = $formValue ? $formValue[0] : NULL;
-    $faviconConfigValue = $configValue ? $configValue[0] : NULL;
+  public function handleMediaFilesystem($formValue, $configValue) {
+    $incomingFormValue = $formValue ? $formValue[0] : NULL;
+    $incomingConfigValue = $configValue ? $configValue[0] : NULL;
 
-    if ($faviconFormValue != $faviconConfigValue) {
+    if ($incomingFormValue != $incomingConfigValue) {
       $fileEntity = $this->entityTypeManager->getStorage('file');
 
-      // First, delete any previously set favicons.
-      if ($faviconConfigValue) {
+      // First, delete any previously set media.
+      if ($incomingConfigValue) {
         /** @var \Drupal\file\Entity $file */
-        $file = $fileEntity->load($faviconConfigValue);
+        $file = $fileEntity->load($incomingConfigValue);
         if ($file) {
           $file->delete();
         }
       }
 
-      // Next, set the new favicon.
-      if ($faviconFormValue) {
+      // Next, set the new media.
+      if ($incomingFormValue) {
         /** @var \Drupal\file\Entity $file */
-        $file = $fileEntity->load($faviconFormValue);
+        $file = $fileEntity->load($incomingFormValue);
         $file->setPermanent();
         $file->save();
       }

@@ -31,16 +31,14 @@
       }
 
       // Store radio input groups in an array
-      const headerRadioGroups = ['input[name="header_variation"]'];
-      const footerRadioGroups = ['input[name="footer_variation"]'];
+      const radioGroups = [
+        'input[name="header_variation"]',
+        'input[name="footer_variation"]',
+        'input[name="nav_position"]',
+      ];
 
       // Apply the function to each radio input group
-      headerRadioGroups.forEach((group) => {
-        handleRadioInputs(group);
-      });
-
-      // Apply the function to each radio input group
-      footerRadioGroups.forEach((group) => {
+      radioGroups.forEach((group) => {
         handleRadioInputs(group);
       });
     },
