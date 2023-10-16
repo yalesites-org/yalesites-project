@@ -1,0 +1,14 @@
+<?php
+
+/**
+ * Add template files for custom blocks.
+ *
+ * Implements hook_theme().
+ */
+function ys_ai_chatbot_theme($existing, $type, $theme, $path): array {
+  return [
+    'ys_ai_chatbot_block' => [
+      'variables' => [],
+    ],
+  ];
+}
