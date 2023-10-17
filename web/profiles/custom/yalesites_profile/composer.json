@@ -3,6 +3,10 @@
   "type": "drupal-custom-profile",
   "repositories": [
     {
+      "type": "vcs",
+      "url": "git@github.com:yalesites-org/yale_ai_react_chat.git"
+    },
+    {
       "type": "composer",
       "url": "https://packages.drupal.org/8"
     }
@@ -90,6 +94,7 @@
     "drupal/webform": "^6.2@beta",
     "drupal/wingsuit_companion": "^2.0@RC",
     "jjj/chosen": "^2.2",
+    "yalesites-org/yale_ai_react_chat": "dev-develop",
     "yalesites-org/atomic": "1.21.1",
     "yalesites-org/yale_cas": "^1.0"
   },
