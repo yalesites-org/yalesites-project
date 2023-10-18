@@ -5,6 +5,7 @@
 {% embed "@organisms/site-footer/yds-site-footer.twig" with {
   site_footer__border_thickness: '8',
   site_footer__theme: getThemeSetting('footer_theme'),
+  site_footer__accent: getThemeSetting('footer_accent'),
   site_footer__variation: footer_variation|default('basic'),
 }%}
   {% block footer__inner %}
@@ -62,6 +63,8 @@
               {% endif %}
             {% endblock %}
           {% endembed %}
+        {% endblock %}
+        {% block site_footer__social_links %}
           {{ drupal_block('social_links_block') }}
         {% endblock %}
       {% endembed %}

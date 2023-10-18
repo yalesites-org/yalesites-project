@@ -1,6 +1,7 @@
 _core:
   default_config_hash: R4IF-ClDHXxblLcG0L7MgsLvfBIMAvi_skumNFQwkDc
 module:
+  action: 0
   address: 0
   admin_toolbar: 0
   admin_toolbar_tools: 0
@@ -11,7 +12,6 @@ module:
   block_content: 0
   block_content_permissions: 0
   breakpoint: 0
-  bugherd: 0
   calendar_link: 0
   captcha: 0
   cas: 0
@@ -103,12 +103,14 @@ module:
   redirect: 0
   redirect_404: 0
   responsive_image: 0
+  role_delegation: 0
   search_api: 0
   search_api_db: 0
   search_api_exclude: 0
   search_api_html_element_filter: 0
   section_library: 0
   simple_sitemap: 0
+  single_content_sync: 0
   smart_date: 0
   smart_date_recur: 0
   sophron: 0
@@ -118,6 +120,7 @@ module:
   token: 0
   toolbar: 0
   twig_tweak: 0
+  typogrify: 0
   update: 0
   upgrade_status: 0
   user: 0
@@ -131,6 +134,7 @@ module:
   ys_layouts: 0
   ys_mail: 0
   ys_node_access: 0
+  ys_starterkit: 0
   ys_toolbar: 0
   ys_views_basic: 0
   hide_revision_field: 1
@@ -142,7 +146,6 @@ module:
   views: 10
   ys_core: 10
   ys_embed: 10
-  ys_starterkit: 10
   ys_themes: 10
   paragraphs: 11
   yalesites_profile: 1000

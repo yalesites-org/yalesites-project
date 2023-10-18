@@ -1,0 +1,13 @@
+uuid: cc2c92e6-7d9d-46ba-972f-f84f3f8084ac
+langcode: en
+status: true
+dependencies:
+  module:
+    - ys_starterkit
+id: export_media
+label: 'Export media'
+type: media
+plugin: media_bulk_export
+configuration:
+  assets: 1
+  translation: 1

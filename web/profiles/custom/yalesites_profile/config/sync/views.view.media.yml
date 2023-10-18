@@ -75,7 +75,8 @@ display:
           hide_alter_empty: true
           action_title: Action
           include_exclude: exclude
-          selected_actions: {  }
+          selected_actions:
+            - export_media
         name:
           id: name
           table: media_field_data
