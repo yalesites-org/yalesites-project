@@ -4,7 +4,7 @@
   "repositories": [
     {
       "type": "vcs",
-      "url": "git@github.com:yalesites-org/yale_ai_react_chat.git"
+      "url": "git@github.com:yalesites-org/yale_ai_drupal_chat.git"
     },
     {
       "type": "composer",
@@ -94,8 +94,8 @@
     "drupal/webform": "^6.2@beta",
     "drupal/wingsuit_companion": "^2.0@RC",
     "jjj/chosen": "^2.2",
-    "yalesites-org/yale_ai_react_chat": "dev-develop",
     "yalesites-org/atomic": "1.21.1",
+    "yalesites-org/yale_ai_drupal_chat": "dev-main",
     "yalesites-org/yale_cas": "^1.0"
   },
   "minimum-stability": "dev",
