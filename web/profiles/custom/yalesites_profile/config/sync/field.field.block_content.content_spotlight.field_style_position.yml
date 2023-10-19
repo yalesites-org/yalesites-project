@@ -13,9 +13,9 @@ entity_type: block_content
 bundle: content_spotlight
 label: 'Image Position'
 description: ''
-required: false
+required: true
 translatable: true
 default_value: {  }
-default_value_callback: ''
+default_value_callback: ys_themes_default_value_function
 settings: {  }
 field_type: list_string
