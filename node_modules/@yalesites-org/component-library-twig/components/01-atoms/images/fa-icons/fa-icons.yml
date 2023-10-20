@@ -1,0 +1,9 @@
+fa_icons:
+  - fa_icon__name: Up Right
+    fa_icon__extra_class: ['fa-solid fa-arrow-up-right']
+  - fa_icon__name: External Link
+    fa_icon__extra_class: ['fa-solid fa-arrow-up-right-from-square']
+  - fa_icon__name: Angle Right
+    fa_icon__extra_class: ['fa-solid fa-angle-right']
+  - fa_icon__name: Circle Down
+    fa_icon__extra_class: ['fa-regular fa-circle-down']
