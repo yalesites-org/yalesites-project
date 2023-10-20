@@ -71,7 +71,7 @@ class ThemesSettingsForm extends ConfigFormBase {
 
     // Display a custom message if the users is not currently viewing a node.
     // This interface is most useful as a preview tool when viewing content.
-    if(!$this->isCurrentPageNodeView()) {
+    if (!$this->isCurrentPageNodeView()) {
       $form['message'] = [
         '#theme' => 'ys_theme_settings_unavailable',
       ];
