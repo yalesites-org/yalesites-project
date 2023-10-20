@@ -13,7 +13,7 @@
     {{ title }}
     <span class="colors">
       {% for key,value in getSettingValues('global_theme') %}
-        <span class="color" style="background: var(--global-themes-{{ element['value'] }}-colors-slot-{{ key }});"></span>
+        <span class="color" style="background: var(--global-themes-{{ element['#context']['value'] }}-colors-slot-{{ key }});"></span>
       {% endfor %}
     </span>
   </label>
