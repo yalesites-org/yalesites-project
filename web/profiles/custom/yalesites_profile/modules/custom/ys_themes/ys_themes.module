@@ -258,10 +258,14 @@ function ys_themes_preprocess_form_element(array &$variables) {
 
       // Sets various values related to current element as well as global theme
       // to twig for cleaner twig templates.
-      $variables['label']['color_theme'] = $allOptions[$elementName]['values'][$value]['color_theme'];
-      $variables['label']['color_theme_2'] = $allOptions[$elementName]['values'][$value]['color_theme_2'];
-      $variables['label']['current_global_theme'] = $globalTheme;
-      $variables['label']['value'] = $value;
+      if (isset($allOptions[$elementName]['values'][$value]['color_theme'])) {
+        $variables['label']['#context']['color_theme'] = $allOptions[$elementName]['values'][$value]['color_theme'];
+      }
+      if (isset($allOptions[$elementName]['values'][$value]['color_theme_2'])) {
+        $variables['label']['#context']['color_theme_2'] = $allOptions[$elementName]['values'][$value]['color_theme_2'];
+      }
+      $variables['label']['#context']['current_global_theme'] = $globalTheme;
+      $variables['label']['#context']['value'] = $value;
     }
   }
 }
