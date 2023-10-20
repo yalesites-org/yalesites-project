@@ -1,0 +1,17 @@
+{% set main_menu_toggle__base_class = 'menu-toggle' %}
+
+{% set menu_toggle__content %}
+  <span {{ bem('text', [], main_menu_toggle__base_class) }}>Menu</span>
+  <span {{ bem('bars', [], main_menu_toggle__base_class) }}>
+    <span {{ bem('bar', [], main_menu_toggle__base_class) }}></span>
+    <span {{ bem('bar', [], main_menu_toggle__base_class) }}></span>
+    <span {{ bem('bar', [], main_menu_toggle__base_class) }}></span>
+  </span>
+{% endset %}
+
+{% include "@atoms/controls/base/yds-control.twig" with {
+  control__base_class: main_menu_toggle__base_class,
+  control__blockname: main_menu_toggle__blockname,
+  aria_expanded: 'false',
+  control__content: menu_toggle__content
+} %}
