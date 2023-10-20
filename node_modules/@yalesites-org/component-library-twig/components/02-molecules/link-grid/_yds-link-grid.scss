@@ -1,0 +1,109 @@
+@use '../../00-tokens/tokens';
+@use '../../01-atoms/atoms';
+@use '../../00-tokens/functions/map';
+
+$break-link-grid: tokens.$break-l;
+$break-link-grid-max: $break-link-grid - 0.05;
+
+// get global themes
+$global-link-grid-themes: map.deep-get(tokens.$tokens, 'global-themes');
+$component-link-grid-themes: map.deep-get(tokens.$tokens, 'component-themes');
+
+.link-grid {
+  @include tokens.spacing-page-section($banner-spacing: true);
+
+  // Global themes: set color slots for each theme
+  // This establishes `--color-slot-` variables name-spaced to the selector
+  // in which it is used. We can map component-level variables to global-level
+  // `--color-slot-` variables.
+  @each $globalTheme, $value in $global-link-grid-themes {
+    [data-global-theme='#{$globalTheme}'] & {
+      --color-slot-one: var(--global-themes-#{$globalTheme}-colors-slot-one);
+      --color-slot-two: var(--global-themes-#{$globalTheme}-colors-slot-two);
+      --color-slot-three: var(
+        --global-themes-#{$globalTheme}-colors-slot-three
+      );
+      --color-slot-four: var(--global-themes-#{$globalTheme}-colors-slot-four);
+      --color-slot-five: var(--global-themes-#{$globalTheme}-colors-slot-five);
+    }
+  }
+
+  // Component themes defaults: iterate over each component theme to establish
+  // default variables.
+  @each $theme, $value in $component-link-grid-themes {
+    &[data-component-theme='#{$theme}'] {
+      --color-action: var(--color-link-grid-action);
+      --color-link-grid-border: var(--color-link-grid-action);
+    }
+  }
+
+  // Component theme overrides: set specific component themes overrides
+  /// define component name spaced variables and map them to global theme slots.
+  &[data-component-theme='one'] {
+    --color-link-grid-action: var(--color-slot-one);
+  }
+
+  &[data-component-theme='two'] {
+    --color-link-grid-action: var(--color-slot-three);
+  }
+
+  &[data-component-theme='three'] {
+    --color-link-grid-action: var(--color-slot-five);
+  }
+}
+
+.link-grid__inner {
+  --color-link-grid-border: var(--color-link-grid-action);
+
+  display: flex;
+  flex-flow: column nowrap;
+  width: 100%;
+  max-width: var(--size-component-layout-width-site);
+  border-color: var(--color-link-grid-border);
+
+  @media (min-width: tokens.$break-m) {
+    flex-flow: row wrap;
+  }
+}
+
+.link-grid__links-column {
+  @include atoms.list-reset;
+
+  width: 100%;
+  border-left: var(--size-thickness-1) solid var(--color-link-grid-border);
+  margin-bottom: var(--size-spacing-7);
+  padding: var(--size-spacing-4) 0;
+
+  // medium = two columns
+  @media (min-width: tokens.$break-m) {
+    flex: 1 1 50%;
+  }
+
+  // large = four columns
+  @media (min-width: $break-link-grid) {
+    flex: 1 1 25%;
+  }
+
+  // first column gets wider border
+  &--one {
+    border-width: var(--size-thickness-4);
+  }
+}
+
+.link-grid__list-item {
+  padding: 0 var(--size-spacing-6);
+  margin-bottom: var(--size-spacing-6);
+  line-height: 1.2;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.link-grid__link {
+  @include atoms.link;
+
+  text-align: left;
+  font-weight: var(--font-weights-mallory-book);
+  color: var(--color-link-base);
+}
