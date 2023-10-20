@@ -61,7 +61,7 @@
               "files": [
                 "web/profiles/custom/yalesites_profile/yalesites_profile.info.yml"
               ],
-              "from": "version: .*",
+              "from": "#version:",
               "to": "version: ${nextRelease.version}",
               "results": [
                 {
@@ -73,14 +73,6 @@
               ],
               "countMatches": true
             }
-          ]
-        }
-      ],
-      [
-        "@semantic-release/git",
-        {
-          "assets": [
-            "web/profiles/custom/yalesites_profile/yalesites_profile.info.yml"
           ]
         }
       ],
