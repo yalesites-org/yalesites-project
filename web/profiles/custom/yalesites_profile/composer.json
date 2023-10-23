@@ -20,6 +20,7 @@
     "drupal/captcha": "1.10.0",
     "drupal/cas": "^2.0",
     "drupal/chosen": "^4.0",
+    "drupal/ckeditor_a11ychecker": "dev-custom#3daf1d88f5ecf624350a3bc87d1b735647ef970e",
     "drupal/components": "^3.0",
     "drupal/config_filter": "^2.4",
     "drupal/config_ignore": "^3.0",
