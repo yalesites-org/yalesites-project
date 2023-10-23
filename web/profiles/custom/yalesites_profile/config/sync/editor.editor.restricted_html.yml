@@ -15,6 +15,7 @@ settings:
       - italic
       - '|'
       - link
+      - a11ychecker
   plugins:
     linkit_extension:
       linkit_enabled: true
