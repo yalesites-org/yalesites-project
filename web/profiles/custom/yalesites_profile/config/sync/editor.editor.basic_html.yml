@@ -26,6 +26,7 @@ settings:
       - insertTable
       - '|'
       - sourceEditing
+      - a11ychecker
   plugins:
     ckeditor5_heading:
       enabled_headings:
