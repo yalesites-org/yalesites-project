@@ -67,6 +67,6 @@ function ys_views_basic_views_pre_build($view) {
   static $counter = 0;
 
   if (empty($view->dom_id)) {
-    $view->dom_id = "ys_views_basic" . $counter++;
+    $view->dom_id = "view_" . $counter++;
   }
 }
