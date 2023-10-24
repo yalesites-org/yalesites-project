@@ -4,14 +4,10 @@ status: true
 dependencies:
   config:
     - field.storage.node.field_teaser_text
+    - filter.format.heading_html
     - node.type.post
   module:
-    - allowed_formats
     - text
-third_party_settings:
-  allowed_formats:
-    allowed_formats:
-      - heading_html
 id: node.post.field_teaser_text
 field_name: field_teaser_text
 entity_type: node
@@ -22,5 +18,7 @@ required: false
 translatable: false
 default_value: {  }
 default_value_callback: ''
-settings: {  }
+settings:
+  allowed_formats:
+    - heading_html
 field_type: text_long
