@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useContext, useLayoutEffect } from "react";
+import { useRef, useState, useEffect, useContext, useLayoutEffect, createElement } from "react";
 import { CommandBarButton, IconButton, Dialog, DialogType, Stack } from "@fluentui/react";
 import { DismissRegular, SquareRegular, ShieldLockRegular, ErrorCircleRegular } from "@fluentui/react-icons";
 
@@ -9,6 +9,7 @@ import uuid from 'react-uuid';
 
 import userAvatar from "../../assets/user-avatar.svg";
 import styles from "./Chat.module.css";
+import loading from "../../assets/ellipsis.svg";
 import Azure from "../../assets/Azure.svg";
 
 import {
@@ -593,16 +594,17 @@ const Chat = () => {
                                         )}
                                     </>
                                 ))}
-                                {showLoadingMessage && (
+                                {showLoadingMessage && (                                    
                                     <>
                                         <div className={styles.chatMessageGpt}>
                                             <Answer
                                                 answer={{
-                                                    answer: "...",
+                                                    answer: '...',
                                                     citations: []
                                                 }}
                                                 onCitationClicked={() => null}
                                             />
+                                            <img src={loading}/>
                                         </div>
                                     </>
                                 )}

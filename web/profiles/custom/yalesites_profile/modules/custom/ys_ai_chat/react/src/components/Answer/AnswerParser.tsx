@@ -1,7 +1,6 @@
 import { AskResponse, Citation } from "../../api";
 import { cloneDeep } from "lodash-es";
 
-
 type ParsedAnswer = {
     citations: Citation[];
     markdownFormatText: string;
