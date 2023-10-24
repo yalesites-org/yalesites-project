@@ -12,18 +12,20 @@ const shareButtonStyles: ICommandBarStyles & IButtonStyles = {
     root: {
       width: 86,
       height: 32,
-      borderRadius: 4,
-      background: 'radial-gradient(109.81% 107.82% at 100.1% 90.19%, #0F6CBD 33.63%, #2D87C3 70.31%, #8DDDD8 100%)',
+    //   borderRadius: 4,
+    //   background: 'radial-gradient(109.81% 107.82% at 100.1% 90.19%, #0F6CBD 33.63%, #2D87C3 70.31%, #8DDDD8 100%)',
     //   position: 'absolute',
     //   right: 20,
-      padding: '5px 12px',
+      background: '#5E5E5E',
+      padding: '1rem 2rem',
       marginRight: '20px'
     },
     icon: {
       color: '#FFFFFF',
     },
     rootHovered: {
-      background: 'linear-gradient(135deg, #0F6CBD 0%, #2D87C3 51.04%, #8DDDD8 100%)',
+    //   background: 'linear-gradient(135deg, #0F6CBD 0%, #2D87C3 51.04%, #8DDDD8 100%)',
+    background: '#5E5E5E',
     },
     label: {
       fontWeight: 600,
