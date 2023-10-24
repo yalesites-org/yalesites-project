@@ -88,7 +88,7 @@ export function ChatHistoryPanel(props: ChatHistoryPanelProps) {
         <section className={styles.container} data-is-scrollable aria-label={"chat history panel"}>
             <Stack horizontal horizontalAlign='space-between' verticalAlign='center' wrap aria-label="chat history header">
                 <StackItem>
-                    <Text role="heading" aria-level={2} style={{ alignSelf: "center", fontWeight: "600", fontSize: "18px", marginRight: "auto", paddingLeft: "20px" }}>Chat history</Text>
+                    <Text role="heading" aria-level={2} style={{ alignSelf: "center", fontWeight: "600", marginRight: "auto", paddingLeft: "20px" }}>Chat history</Text>
                 </StackItem>
                 <Stack verticalAlign="start">
                     <Stack horizontal styles={commandBarButtonStyle}>
@@ -142,14 +142,14 @@ export function ChatHistoryPanel(props: ChatHistoryPanelProps) {
                         <Stack>
                             <Stack horizontalAlign='center' verticalAlign='center' style={{ width: "100%", marginTop: 10 }}>
                                 <StackItem>
-                                    <Text style={{ alignSelf: 'center', fontWeight: '400', fontSize: 16 }}>
+                                    <Text style={{ alignSelf: 'center', fontWeight: '400' }}>
                                         {appStateContext?.state.isCosmosDBAvailable?.status && <span>{appStateContext?.state.isCosmosDBAvailable?.status}</span>}
                                         {!appStateContext?.state.isCosmosDBAvailable?.status && <span>Error loading chat history</span>}
                                         
                                     </Text>
                                 </StackItem>
                                 <StackItem>
-                                    <Text style={{ alignSelf: 'center', fontWeight: '400', fontSize: 14 }}>
+                                    <Text style={{ alignSelf: 'center', fontWeight: '400' }}>
                                         <span>Chat history can't be saved at this time</span>
                                     </Text>
                                 </StackItem>
@@ -163,7 +163,7 @@ export function ChatHistoryPanel(props: ChatHistoryPanelProps) {
                                     <Spinner style={{ alignSelf: "flex-start", height: "100%", marginRight: "5px" }} size={SpinnerSize.medium} />
                                 </StackItem>
                                 <StackItem>
-                                    <Text style={{ alignSelf: 'center', fontWeight: '400', fontSize: 14 }}>
+                                    <Text style={{ alignSelf: 'center', fontWeight: '400' }}>
                                         <span style={{ whiteSpace: 'pre-wrap' }}>Loading chat history</span>
                                     </Text>
                                 </StackItem>

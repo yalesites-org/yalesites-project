@@ -205,7 +205,7 @@ export const ChatHistoryListItemCell: React.FC<ChatHistoryListItemCellProps> = (
                             </Stack.Item>)}
                         </Stack>
                         {errorRename && (
-                            <Text role='alert' aria-label={errorRename} style={{fontSize: 12, fontWeight: 400, color: 'rgb(164,38,44)'}}>{errorRename}</Text>
+                            <Text role='alert' aria-label={errorRename} style={{fontWeight: 400, color: 'rgb(164,38,44)'}}>{errorRename}</Text>
                         )}
                     </form>
                 </Stack.Item>
@@ -222,7 +222,7 @@ export const ChatHistoryListItemCell: React.FC<ChatHistoryListItemCellProps> = (
             {errorDelete && (
                 <Text
                     styles={{
-                        root: { color: 'red', marginTop: 5, fontSize: 14 }
+                        root: { color: 'red', marginTop: 5 }
                     }}
                 >
                     Error: could not delete item

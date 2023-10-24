@@ -24,7 +24,6 @@ export const ShareButton: React.FC<ShareButtonProps> = ({onClick}) => {
         },
         label: {
           fontWeight: 600,
-          fontSize: 14,
           lineHeight: '20px',
           color: '#FFFFFF',
         },

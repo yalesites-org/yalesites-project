@@ -27,8 +27,6 @@ const shareButtonStyles: ICommandBarStyles & IButtonStyles = {
     },
     label: {
       fontWeight: 600,
-      fontSize: 14,
-      lineHeight: '20px',
       color: '#FFFFFF',
     },
   };
@@ -73,14 +71,16 @@ const Layout = () => {
                 // className={styles.headerContainer}
                 >
                     <Stack horizontal verticalAlign="center">
-                        <img
+                    <h2 className={styles.headerTitle}>AskYale</h2>
+
+                        {/* <img
                             src={Azure}
                             className={styles.headerIcon}
                             aria-hidden="true"
                         />
                         <Link to="/" className={styles.headerTitleContainer}>
                             <h1 className={styles.headerTitle}>Azure AI</h1>
-                        </Link>
+                        </Link> */}
                     </Stack>
                     <Stack horizontal tokens={{ childrenGap: 4 }}>
                             {(appStateContext?.state.isCosmosDBAvailable?.status !== CosmosDBStatus.NotConfigured) && 
