@@ -86,6 +86,8 @@ const Chat = () => {
     }
 
     const getUserInfoList = async () => {
+        // Commenting this out as we do not need authentication on the front-end.
+        // @see https://github.com/microsoft/sample-app-aoai-chatGPT#add-an-identity-provider
         // const userInfoList = await getUserInfo();
         // if (userInfoList.length === 0 && window.location.hostname !== "127.0.0.1") {
         //     setShowAuthMessage(true);
