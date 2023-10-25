@@ -1,11 +1,7 @@
 .questionInputContainer {
     height: 120px;
-    position: absolute;
-    left: 6.5%;
-    right: 0%;
-    top: 0%;
-    bottom: 0%;
-    background: #FFFFFF;
+    position: relative;
+    width: 100%;
 }
 
 .questionInputTextArea {
@@ -17,7 +13,6 @@
 
 .questionInputTextArea textarea {
     display: flex;
-    align-items: center;
     font-size: 1.8rem;
     line-height: 1;
     height: 100%;

@@ -71,7 +71,6 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                     <span className={styles.questionInputSendButton}>Ask Yale</span>
                 }
             </div>
-            <div className={styles.questionInputBottomBorder} />
         </Stack>
     );
 };

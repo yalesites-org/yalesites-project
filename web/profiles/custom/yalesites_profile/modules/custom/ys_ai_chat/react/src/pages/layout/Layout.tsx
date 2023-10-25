@@ -25,7 +25,7 @@ const shareButtonStyles: ICommandBarStyles & IButtonStyles = {
     },
     rootHovered: {
     //   background: 'linear-gradient(135deg, #0F6CBD 0%, #2D87C3 51.04%, #8DDDD8 100%)',
-    background: '#5E5E5E',
+    background: '#222',
     },
     label: {
       fontWeight: 600,
