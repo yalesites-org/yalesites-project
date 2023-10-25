@@ -118,6 +118,16 @@
     z-index: 1;
 }
 
+.chatMessageStream a {
+    color: hsl(213, 66%, 45%);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.chatMessageStream a:hover {
+    text-decoration: underline;
+}
+
 .chatMessageUser {
     display: flex;
     justify-content: flex-end;
