@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useBoolean } from "@fluentui/react-hooks"
 import { FontIcon, Stack, Text } from "@fluentui/react";
-
+import aiAvatar from "../../assets/ai-avatar.svg";
+ 
 import styles from "./Answer.module.css";
 
 import { AskResponse, Citation } from "../../api";
@@ -59,6 +60,8 @@ export const Answer = ({
     return (
         <>
             <Stack className={styles.answerContainer} tabIndex={0}>
+            <img className={styles.chatMessageAIMessageAvatar} src={aiAvatar}/>
+
                 <Stack.Item grow>
                     <ReactMarkdown
                         linkTarget="_blank"

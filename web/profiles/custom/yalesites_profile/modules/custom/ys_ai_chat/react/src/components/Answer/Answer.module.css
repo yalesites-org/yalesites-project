@@ -2,18 +2,26 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: 8.1285px;
+    padding: 1rem 4rem;
     gap: 5.42px;
     background: #FFFFFF;
-    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.14), 0px 0px 2px rgba(0, 0, 0, 0.12);
-    border-radius: 5.419px;
+    border: 1px solid hsl(0, 0%, 13%); 
+    position: relative;
+}
+
+.chatMessageAIMessageAvatar {
+    position: absolute;
+    top: 3rem;
+    left: 1rem;
+    width: 2.5rem;
+    height: 2.5rem;
 }
 
 .answerText {
     font-style: normal;
     font-weight: 400;
-    font-size: 14px;
-    line-height: 20px;
+    font-size: 1.4rem;
+    line-height: 1.2;
     color: #323130;
     flex: none;
     order: 1;
@@ -43,8 +51,8 @@
 .answerDisclaimer {
     font-style: normal;
     font-weight: 400;
-    font-size: 12px;
-    line-height: 16px;
+    font-size: 1rem;
+    line-height: 1;
 
     display: flex;
     align-items: center;
@@ -59,8 +67,8 @@
     margin-left: 10px;
     font-style: normal;
     font-weight: 600;
-    font-size: 12px;
-    line-height: 16px;
+    font-size: 1rem;
+    line-height: 1;
 
     color: #115EA3;
     display: flex;
@@ -69,7 +77,6 @@
     padding: 4px 6px;
     gap: 4px;
     border: 1px solid #D1D1D1;
-    border-radius: 4px;
 }
 
 .citationContainer:hover {
@@ -87,14 +94,13 @@
     width: 14px;
     height: 14px;
     border: 1px solid #E0E0E0;
-    border-radius: 4px;
     flex: none;
     flex-grow: 0;
     z-index: 2;
     font-style: normal;
     font-weight: 600;
-    font-size: 10px;
-    line-height: 14px;
+    font-size: 1rem;
+    line-height: 1;
     text-align: center;
     color: #424242;
     cursor: pointer;
@@ -113,7 +119,7 @@
     padding: 0px;
     margin-top: 4px;
     color: #616161;
-    font-size: 10px;
+    font-size: 1rem;
 }
 
 .accordionIcon:hover {
@@ -125,8 +131,8 @@
     margin-left: 10px;
     font-style: normal;
     font-weight: 400;
-    font-size: 12px;
-    line-height: 16px;
+    font-size: 1rem;
+    line-height: 1;
     display: flex;
     align-items: center;
     color: #616161;
@@ -146,15 +152,14 @@
     width: 14px;
     height: 14px;
     border: 1px solid #E0E0E0;
-    border-radius: 4px;
     flex: none;
     order: 2;
     flex-grow: 0;
     z-index: 2;
     font-style: normal;
     font-weight: 600;
-    font-size: 10px;
-    line-height: 14px;
+    font-size: 1rem;
+    line-height: 1;
     text-align: center;
     color: #424242;
     cursor: pointer;
@@ -166,6 +171,6 @@
 }
 
 sup {
-    font-size: 10px;
-    line-height: 10px;
+    font-size: 1rem;
+    line-height: 1;
 }

@@ -2,7 +2,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 20px
+    gap: 20px;
 }
 
 .chatRoot {
@@ -20,11 +20,9 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: radial-gradient(108.78% 108.78% at 50.02% 19.78%, #FFFFFF 57.29%, #EEF6FE 100%);
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.14), 0px 0px 2px rgba(0, 0, 0, 0.12);
-    border-radius: 8px;
     overflow-y: auto;
     max-height: calc(100vh - 100px);
+    background-color: #FFFFFF;
 }
 
 .chatEmptyState {
@@ -38,7 +36,7 @@
 .chatEmptyStateTitle {
     font-style: normal;
     font-weight: 700;
-    font-size: 36px;
+    font-size: 2rem;
     display: flex;
     align-items: flex-end;
     text-align: center;
@@ -51,7 +49,7 @@
     margin-top: 20px;
     font-style: normal;
     font-weight: 400;
-    font-size: 16px;
+    font-size: 1rem;
     line-height: 150%;
     display: flex;
     align-items: flex-end;
@@ -67,7 +65,6 @@
 
 .chatMessageStream {
     flex-grow: 1;
-    max-width: 1028px;
     width: 100%;
     overflow-y: auto;
     padding-left: 24px;
@@ -75,6 +72,8 @@
     display: flex;
     flex-direction: column;
     margin-top: 24px;
+    justify-content: flex-end;
+    background-color: #FFFFFF;
 }
 
 .chatMessageUser {
@@ -84,21 +83,35 @@
 }
 
 .chatMessageUserMessage {
-    padding: 20px;
-    background: #EDF5FD;
-    border-radius: 8px;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.14), 0px 0px 2px rgba(0, 0, 0, 0.12);
+    padding: 2rem 3rem;
+    background: #FFFFFF;
     font-style: normal;
     font-weight: 400;
-    font-size: 14px;
-    line-height: 22px;
-    color: #242424;
+    font-size: 1.4rem;
+    line-height: 1.2;
+    color: #5E5E5E;
     flex: none;
     order: 0;
     flex-grow: 0;
     white-space: pre-wrap;
     word-wrap: break-word;
     max-width: 800px;
+    border: 1px solid #5E5E5E;
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.chatMessageUserMessageWrap {
+    flex: 1 auto;
+}
+
+.chatMessageUserMessageAvatar {
+    flex: 0 auto;
+    width: 2.5rem;
+    height: 2.5rem;
 }
 
 .chatMessageGpt {
@@ -110,7 +123,6 @@
 .chatMessageError {
     padding: 20px;
     /* background: #EDF5FD; */
-    border-radius: 8px;
     box-shadow: rgba(182, 52, 67, 1) 1px 1px 2px, rgba(182, 52, 67, 1) 0px 0px 1px;
     
     color: #242424;
@@ -126,8 +138,8 @@
     font-family: "Segoe UI";
     font-style: normal;
     font-weight: 400;
-    font-size: 14px;
-    line-height: 22px;
+    font-size: 1rem;
+    line-height: 1;
     white-space: pre-wrap;
     word-wrap: break-word;
     gap: 12px;
@@ -142,7 +154,7 @@
     padding-left: 24px;
     padding-right: 24px;
     width: calc(100% - 100px);
-    max-width: 1028px;
+    /* max-width: 1028px; */
     margin-bottom: 50px;
     margin-top: 8px;
 }
@@ -160,7 +172,6 @@
     top: 13px;
     color: #FFFFFF;
     border: 1px solid #D1D1D1;
-    border-radius: 4px;
     z-index: 1;
 }
 
@@ -177,7 +188,6 @@
     top: 66px;
     color: #FFFFFF;
     border: 1px solid #D1D1D1;
-    border-radius: 4px;
     z-index: 1;
 }
 
@@ -194,7 +204,6 @@
     top: 66px;
     color: #FFFFFF;
     border: 1px solid #D1D1D1;
-    border-radius: 4px;
     z-index: 1;
 }
 
@@ -204,15 +213,14 @@
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    padding: 5px 16px;
+    padding: 1rem 2rem;
     gap: 4px;
     position: absolute;
-    width: 161px;
+    width: 200px;
     height: 32px;
     left: calc(50% - 161px/2 + 25.8px);
     bottom: 116px;
-    border: 1px solid #D1D1D1;
-    border-radius: 16px;
+    border: 1px solid hsl(0, 0%, 13%);
 }
 
 .stopGeneratingIcon {
@@ -222,12 +230,12 @@
 }
 
 .stopGeneratingText {
-    width: 103px;
+    width: auto;
     height: 20px;
     font-style: normal;
     font-weight: 600;
-    font-size: 14px;
-    line-height: 20px;
+    font-size: 1rem;
+    line-height: 1;
     display: flex;
     align-items: center;
     color: #242424;
@@ -243,8 +251,6 @@
     padding: 16px 16px;
     gap: 8px;
     background: #FFFFFF;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.14), 0px 0px 2px rgba(0, 0, 0, 0.12);
-    border-radius: 8px;
     flex: auto;
     order: 0;
     align-self: stretch;
@@ -261,8 +267,8 @@
 .citationPanelHeader {
     font-style: normal;
     font-weight: 600;
-    font-size: 18px;
-    line-height: 24px;
+    font-size: 1rem;
+    line-height: 1;
     color: #000000;
     flex: none;
     order: 0;
@@ -283,8 +289,8 @@
 .citationPanelTitle {
     font-style: normal;
     font-weight: 600;
-    font-size: 16px;
-    line-height: 22px;
+    font-size: 1rem;
+    line-height: 1;
     color: #323130;
     margin-top: 12px;
     margin-bottom: 12px;
@@ -298,8 +304,8 @@
 .citationPanelContent {
     font-style: normal;
     font-weight: 400;
-    font-size: 14px;
-    line-height: 20px;
+    font-size: 1rem;
+    line-height: 1;
     color: #000000;
     flex: none;
     order: 1;
@@ -315,15 +321,14 @@ a {
 .viewSourceButton {
     font-style: normal;
     font-weight: 600;
-    font-size: 12px;
-    line-height: 16px;
+    font-size: 1rem;
+    line-height: 1;
     color: #115EA3;
     flex-direction: row;
     align-items: center;
     padding: 4px 6px;
     gap: 4px;
     border: 1px solid #D1D1D1;
-    border-radius: 4px;
 }
 
 .viewSourceButton:hover {
