@@ -4,10 +4,10 @@
 }
 
 .modalContent {
-    width: 80vw;
+    width: 98vw;
     margin: 2rem auto;
     padding: 2rem;
-    height: 80vh;
+    height: 95vh;
     background: linear-gradient(120deg, rgba(223,236,249,1) 0%, rgba(255,255,255,1) 35%, rgba(223,236,249,1) 62%, rgba(255,255,255,1) 100%);
     position: relative;
     z-index: 1;
@@ -30,9 +30,14 @@
     height: 100%;
     width: 100%;
     background: linear-gradient(120deg, rgba(17,17,17,1) 0%, rgba(160,160,160,0) 44%, rgba(223,223,223,1) 74%, rgba(255,255,255,1) 90%);
-    opacity: 0.85;
+    filter: blur(1rem);
+    opacity: 0.65;
     z-index: -1;
   }
+
+.modalCallout {
+    padding: 2rem;
+}
 
 .header {
     padding: 1rem 4rem;
@@ -91,8 +96,4 @@
     background: #FFFFFF;
     border: 1px solid #D1D1D1;
     border-radius: 4px;
-}
-
-.modalCallout {
-    padding: 2rem;
 }
