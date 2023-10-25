@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useBoolean } from "@fluentui/react-hooks"
 import { FontIcon, Stack, Text } from "@fluentui/react";
-import aiAvatar from "../../assets/ai-avatar.svg";
+import aiAvatar from "../../assets/yaleLogo.svg";
  
 import styles from "./Answer.module.css";
 

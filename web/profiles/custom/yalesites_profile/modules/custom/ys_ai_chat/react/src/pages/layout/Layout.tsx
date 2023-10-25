@@ -66,20 +66,20 @@ const Layout = () => {
 // Modal component
 const Modal = ({ onClose }: { onClose: () => void }) => {
     return (
-        <section className={styles.modal}>
+        <section className={styles.modal} aria-modal='true'>
             <div className={styles.modalContent}>
-            <header className={styles.header} role={"banner"}>
-                <Stack horizontal verticalAlign="center" horizontalAlign="space-between" className={styles.headerContainer}>
-                    <img src={aiLogo} className={styles.headerTitle} alt="AskYale" />
+                <header className={styles.header} role={"banner"}>
+                    <Stack horizontal verticalAlign="center" horizontalAlign="space-between" className={styles.headerContainer}>
+                        <img src={aiLogo} className={styles.headerTitle} alt="AskYale" />
 
-                    <Stack horizontal>
-                        <span className="close" onClick={onClose}>
-                            <img src={closeButton} className={styles.closeButton} />
-                        </span>
+                        <Stack horizontal>
+                            <span className="close" onClick={onClose}>
+                                <img src={closeButton} className={styles.closeButton} />
+                            </span>
+                        </Stack>
                     </Stack>
-                </Stack>
-            </header>
-            <Outlet />
+                </header>
+                <Outlet />
             </div>
         </section>
     );

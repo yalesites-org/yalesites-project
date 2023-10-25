@@ -5,12 +5,13 @@
     padding: 1rem 4rem;
     gap: 5.42px;
     background: #FFFFFF;
-    border: 1px solid hsl(210, 100%, 21%); 
+    border: 2px solid hsl(213, 66%, 45%);
     border-radius: 2rem;
     position: relative;
 }
 
-.answerContainer.loading {
+.containerLoading .answerContainer {
+    border-radius: 0;
     -webkit-mask-image: linear-gradient(to bottom,black 10%,transparent 80%);
     mask-image: linear-gradient(to bottom,black 10%,transparent 80%);
 }

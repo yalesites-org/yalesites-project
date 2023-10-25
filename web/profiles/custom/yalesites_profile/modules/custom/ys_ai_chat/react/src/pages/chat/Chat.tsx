@@ -41,6 +41,7 @@ const enum messageStatus {
 
 const Chat = () => {
     const appStateContext = useContext(AppStateContext)
+    const chatMessageStreamStart = useRef<HTMLDivElement | null>(null);
     const chatMessageStreamEnd = useRef<HTMLDivElement | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [showLoadingMessage, setShowLoadingMessage] = useState<boolean>(false);
@@ -533,7 +534,7 @@ const Chat = () => {
     }
 
     return (
-        <div className={styles.container} role="main">
+        <div className={isLoading ? styles.containerLoading : styles.container} role="main">
             {showAuthMessage ? (
                 <Stack className={styles.chatEmptyState}>
                     <ShieldLockRegular className={styles.chatIcon} style={{color: 'darkorange', height: "200px", width: "200px"}}/>
@@ -559,6 +560,7 @@ const Chat = () => {
                             </Stack>
                         ) : (
                             <div className={styles.chatMessageStream} style={{ marginBottom: isLoading ? "40px" : "0px" }} role="log">
+                                <div ref={chatMessageStreamStart} className={styles.chatMessageStreamStart} />
                                 {messages.map((answer, index) => (
                                     <>
                                         {answer.role === "user" ? (
@@ -602,7 +604,7 @@ const Chat = () => {
                                         </div>
                                     </>
                                 )}
-                                <div ref={chatMessageStreamEnd} />
+                                <div ref={chatMessageStreamEnd} className={styles.chatMessageStreamEnd} />
                             </div>
                         )}
 

@@ -1,4 +1,5 @@
-.container {
+.container,
+.containerLoading {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -11,7 +12,6 @@
     margin: 0;
     gap: 5px;
 }
-
 
 .chatEmptyWrapper {
     flex: 1;
@@ -92,8 +92,30 @@
     height: 100%;
     max-height: 600px;
     overflow-y: auto;
-    padding: 1rem 4rem;
-    margin-top: 24px;
+    padding: 0 4rem;
+    position: relative;
+}
+
+.chatMessageStreamStart {
+    display: block;
+    position: sticky;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 10%;
+    background: linear-gradient(0deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
+    z-index: 1;
+}
+
+.chatMessageStreamEnd {
+    display: block;
+    position: sticky;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 10%;
+    background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
+    z-index: 1;
 }
 
 .chatMessageUser {
@@ -151,7 +173,6 @@
     flex: 0 0 100px;
     padding: 3rem 5rem;
     width: 100%;
-    margin-top: 8px;
     background-color: #FFFFFF;
     border: 1px solid #222;
     max-width: 1344px;
