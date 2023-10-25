@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Stack, TextField } from "@fluentui/react";
-import { SendRegular } from "@fluentui/react-icons";
-import Send from "../../assets/Send.svg";
 import styles from "./QuestionInput.module.css";
+import plusChat from "../../assets/plusChat.svg";
 
 interface Props {
     onSend: (question: string, id?: string) => void;
@@ -64,11 +63,13 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                 onKeyDown={e => e.key === "Enter" || e.key === " " ? sendQuestion() : null}
             >
                 { sendQuestionDisabled ? 
-                    <span className={styles.questionInputSendButtonDisabled}>Ask Yale</span>
-                    // <SendRegular className={styles.questionInputSendButtonDisabled}/>
+                    <span className={styles.questionInputSendButtonDisabled}>
+                        Ask <img className={styles.askButton} src={plusChat}/>
+                    </span>
                     :
-                    // <img src={Send} className={styles.questionInputSendButton}/>
-                    <span className={styles.questionInputSendButton}>Ask Yale</span>
+                    <span className={styles.questionInputSendButton}>
+                        Ask <img className={styles.askButton} src={plusChat}/>
+                    </span>
                 }
             </div>
         </Stack>

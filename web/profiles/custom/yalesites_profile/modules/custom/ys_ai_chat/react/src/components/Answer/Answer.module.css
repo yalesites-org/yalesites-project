@@ -5,8 +5,14 @@
     padding: 1rem 4rem;
     gap: 5.42px;
     background: #FFFFFF;
-    border: 1px solid hsl(0, 0%, 13%); 
+    border: 1px solid hsl(210, 100%, 21%); 
+    border-radius: 2rem;
     position: relative;
+}
+
+.answerContainer.loading {
+    -webkit-mask-image: linear-gradient(to bottom,black 10%,transparent 80%);
+    mask-image: linear-gradient(to bottom,black 10%,transparent 80%);
 }
 
 .chatMessageAIMessageAvatar {

@@ -7,7 +7,6 @@ import remarkGfm from 'remark-gfm'
 import rehypeRaw from "rehype-raw";
 import uuid from 'react-uuid';
 
-import userAvatar from "../../assets/user-avatar.svg";
 import styles from "./Chat.module.css";
 import loading from "../../assets/ellipsis.svg";
 import Azure from "../../assets/Azure.svg";
@@ -139,7 +138,6 @@ const Chat = () => {
 
         const request: ConversationRequest = {
             messages: [...conversation.messages.filter((answer) => answer.role !== "error")]
-            // messages: [...conversation.messages.filter((answer) => answer.role === "error")]
         };
 
         let result = {} as ChatResponse;
@@ -551,16 +549,13 @@ const Chat = () => {
                 </Stack>
             ) : (
                 <Stack horizontal className={styles.chatRoot}>
-                    <div className={styles.chatContainer}>
+                    <div className={messages.length < 1 ? styles.chatEmptyWrapper: styles.chatContainer }>
                         {!messages || messages.length < 1 ? (
                             <Stack className={styles.chatEmptyState}>
-                                {/* <img
-                                    src={Azure}
-                                    className={styles.chatIcon}
-                                    aria-hidden="true"
-                                /> */}
-                                <h1 className={styles.chatEmptyStateTitle}>Start chatting</h1>
-                                <h2 className={styles.chatEmptyStateSubtitle}>This chatbot is configured to answer your questions</h2>
+                                <div className={styles.chatEmptyStateContainer}>
+                                    <h1 className={styles.chatEmptyStateTitle}>Start chatting</h1>
+                                    <h2 className={styles.chatEmptyStateSubtitle}>This chatbot is configured to answer your questions</h2>
+                                </div>
                             </Stack>
                         ) : (
                             <div className={styles.chatMessageStream} style={{ marginBottom: isLoading ? "40px" : "0px" }} role="log">
@@ -572,7 +567,6 @@ const Chat = () => {
                                                     <div className={styles.chatMessageUserMessageWrap}>
                                                         {answer.content}
                                                     </div>
-                                                    <img className={styles.chatMessageUserMessageAvatar} src={userAvatar}/>
                                                 </div>
                                             </div>
                                         ) : (
@@ -604,7 +598,7 @@ const Chat = () => {
                                                 }}
                                                 onCitationClicked={() => null}
                                             />
-                                            <img src={loading}/>
+                                            <img className={styles.chatMessageLoading} src={loading}/>
                                         </div>
                                     </>
                                 )}
@@ -627,57 +621,10 @@ const Chat = () => {
                                         <span className={styles.stopGeneratingText} aria-hidden="true">Stop generating</span>
                                 </Stack>
                             )}
-                            {/* <Stack>
-                                {appStateContext?.state.isCosmosDBAvailable?.status !== CosmosDBStatus.NotConfigured && <CommandBarButton
-                                    role="button"
-                                    styles={{
-                                        icon: {
-                                            color: '#FFFFFF',
-                                        },
-                                        root: {
-                                            color: '#FFFFFF',
-                                            background: '#5E5E5E',
-                                            // background: "radial-gradient(109.81% 107.82% at 100.1% 90.19%, #0F6CBD 33.63%, #2D87C3 70.31%, #8DDDD8 100%)"
-                                        },
-                                        rootDisabled: {
-                                            background: "#BDBDBD"
-                                        }
-                                    }}
-                                    className={styles.newChatIcon}
-                                    iconProps={{ iconName: 'Add' }}
-                                    onClick={newChat}
-                                    disabled={disabledButton()}
-                                    aria-label="start a new chat button"
-                                />}
-                                <CommandBarButton
-                                    role="button"
-                                    styles={{
-                                        icon: {
-                                            color: '#FFFFFF',
-                                        },
-                                        root: {
-                                            color: '#FFFFFF',
-                                            background: disabledButton() ? "#BDBDBD" : "radial-gradient(109.81% 107.82% at 100.1% 90.19%, #0F6CBD 33.63%, #2D87C3 70.31%, #8DDDD8 100%)",
-                                            cursor: disabledButton() ? "" : "pointer"
-                                        },
-                                    }}
-                                    className={appStateContext?.state.isCosmosDBAvailable?.status !== CosmosDBStatus.NotConfigured ? styles.clearChatBroom : styles.clearChatBroomNoCosmos}
-                                    iconProps={{ iconName: 'Broom' }}
-                                    onClick={appStateContext?.state.isCosmosDBAvailable?.status !== CosmosDBStatus.NotConfigured ? clearChat : newChat}
-                                    disabled={disabledButton()}
-                                    aria-label="clear chat button"
-                                />
-                                <Dialog
-                                    hidden={hideErrorDialog}
-                                    onDismiss={handleErrorDialogClose}
-                                    dialogContentProps={errorDialogContentProps}
-                                    modalProps={modalProps}
-                                >
-                                </Dialog>
-                            </Stack> */}
+                    
                             <QuestionInput
                                 clearOnSend
-                                placeholder="Ask a question..."
+                                placeholder="Ask any question..."
                                 disabled={isLoading}
                                 onSend={(question, id) => {
                                     appStateContext?.state.isCosmosDBAvailable?.cosmosDB ? makeApiRequestWithCosmosDB(question, id) : makeApiRequestWithoutCosmosDB(question, id)

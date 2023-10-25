@@ -1,31 +1,30 @@
 .questionInputContainer {
-    height: 120px;
+    display: flex;
+    justify-content: space-between;
     position: relative;
     width: 100%;
+    gap: 1rem;
 }
 
 .questionInputTextArea {
+    flex: 1 auto;
     width: 100%;
-    max-width: 90%;
     line-height: 40px;
     margin:0;
 }
 
 .questionInputTextArea textarea {
     display: flex;
-    font-size: 1.8rem;
+    font-size: 1.4rem;
     line-height: 1;
     height: 100%;
-    padding: 2rem;
+    padding: 1rem 3rem;
     border: 2px solid hsl(0, 0%, 13%);
     font-weight: 600;
 }
 
 .questionInputSendButtonContainer {
-    position: absolute;
-    top: 0;
-    right: 24px;
-    bottom: 0;
+    flex: 0 auto;
 }
 
 .questionInputSendButton {
@@ -36,25 +35,26 @@
     min-height: 80px;
     background-color: hsl(210, 100%, 21%);
     color: white;
-    padding: 2rem;
+    padding: 1rem 2rem;
     text-align: center;
-    font-size: 1.8rem;
+    font-size: 1.4rem;
     font-weight: 600;
+    gap: 0.5rem;
 }
 
 .questionInputSendButtonDisabled {
-    /* opacity: 0.4; */
     display: flex;
     align-items: center;
     width: auto;
     height: 100%;
     min-height: 80px;
-    background-color: hsl(210, 100%, 90%);
-    color: hsl(0, 0%, 13%);
-    padding: 2rem;
+    background-color: hsl(210, 100%, 10%);
+    color: white;
+    padding: 1rem 2rem;
     text-align: center;
-    font-size: 1.8rem;
+    font-size: 1.4rem;
     font-weight: 600;
+    gap: 0.5rem;
 }
 
 .questionInputBottomBorder {
