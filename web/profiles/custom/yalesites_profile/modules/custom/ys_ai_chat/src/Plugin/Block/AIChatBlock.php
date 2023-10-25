@@ -7,15 +7,15 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Block for interfacing with the Yale AI chatbot.
+ * Block for interfacing with the Yale AI chat.
  *
  * @Block(
  *   id = "ys_ai_chat_block",
- *   admin_label = @Translation("Yale AI Chatbot"),
- *   category = @Translation("Yale AI Chatbot"),
+ *   admin_label = @Translation("Yale AI Chat"),
+ *   category = @Translation("Yale AI Chat"),
  * )
  */
-class AIChatbotBlock extends BlockBase implements ContainerFactoryPluginInterface {
+class AIChatBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**
    * {@inheritdoc}
