@@ -31,6 +31,7 @@
     align-items: center;
     max-width: 1344px;
     min-height: 450px;
+    max-height: 80vh;
     margin-left: auto;
     margin-right: auto;
     background-color: #FFFFFF;

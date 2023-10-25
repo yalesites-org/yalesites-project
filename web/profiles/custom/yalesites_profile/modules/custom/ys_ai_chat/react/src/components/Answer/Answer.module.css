@@ -8,6 +8,10 @@
     border: 2px solid hsl(213, 66%, 45%);
     border-radius: 2rem;
     position: relative;
+    width: 100%;
+    max-width: 80%;
+    height: 100%;
+    transition: all 200ms ease-in-out;
 }
 
 .containerLoading .answerContainer {
