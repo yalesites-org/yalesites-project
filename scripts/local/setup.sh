@@ -28,6 +28,10 @@ fi
 # Start lando and create containers.
 lando start
 
+# Generate local secrets file.
+terminus plugin:install pantheon-systems/terminus-secrets-manager-plugin
+terminus secret:site:local-generate yalesites-platform --filepath=./secrets.json
+
 # Install packages and install Drupal using yalesites_profile.
 npm install
 npm run build-with-install

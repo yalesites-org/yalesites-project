@@ -22,7 +22,6 @@
 # Ignore SimpleTest multi-site environment.
 /web/sites/simpletest
 
-
 # Ignore custom modules managed by Composer.
 #
 # When a development team creates one or more custom modules that
@@ -130,3 +129,6 @@ web/profiles/custom/yalesites_profile/vendor/
 /atomic
 /component-library-twig
 /tokens
+
+# Secrets for local use
+secrets.json

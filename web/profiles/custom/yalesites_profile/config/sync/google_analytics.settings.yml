@@ -1,7 +1,7 @@
 _core:
   default_config_hash: dwMYPgAnj9KBO77SLEv9Z42NDJAbuxe0uU9eGC8qw3M
 account: ''
-domain_mode: 0
+domain_mode: 1
 cross_domains: ''
 visibility:
   request_path_mode: 0
