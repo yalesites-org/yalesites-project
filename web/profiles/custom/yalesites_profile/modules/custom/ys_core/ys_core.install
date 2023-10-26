@@ -82,3 +82,13 @@ function ys_core_set_format($content_array, $new_format = 'heading_html') {
 
   return $content_array;
 }
+
+/**
+ * Deleting not required crop entities.
+ */
+function ys_core_update_9002() {
+  $crops = \Drupal::entityTypeManager()->getStorage('crop')->loadMultiple();
+  foreach ($crops as $crop) {
+    $crop->delete();
+  }
+}
