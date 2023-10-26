@@ -1,17 +1,17 @@
 #!/bin/bash
 
-STARTERKIT_VERSION=master
-STARTERKIT_FILE=starterkit.zip
+STARTERKIT_VERSION="v1.0.0"
+STARTERKIT_FILE="starterkit.zip"
 
 # Download starterkit export.
-curl -s -L -o "$STARTERKIT_FILE" https://github.com/yalesites-org/yalesites-starterkit/zipball/"$STARTERKIT_VERSION"
+curl -s -O -L https://github.com/yalesites-org/yalesites-starterkit/releases/download/"$STARTERKIT_VERSION"/"$STARTERKIT_FILE"
 
 # Check if running under lando, otherwise assume CI.
 # Put starterkit file in place and import.
 # Clean up, and set front page in config.
 if [ "$YALESITES_INSTALL" == "1" ]; then
   lando drush content:import ../"$STARTERKIT_FILE"
-  lando drush cset system.site page.front '/homepage'
+  lando drush cset system.site page.front '/homepage' -y
   rm "$STARTERKIT_FILE"
 else
   COMMAND=$(terminus connection:info "$SITE_MACHINE_NAME".dev --field=sftp_command)
