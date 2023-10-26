@@ -9,9 +9,14 @@
     border-radius: 2rem;
     position: relative;
     width: 100%;
-    max-width: 80%;
     height: 100%;
     transition: all 200ms ease-in-out;
+}
+
+@media screen and (min-width:800px) {
+    .answerContainer {
+        max-width: 95%;
+    }
 }
 
 .containerLoading .answerContainer {
@@ -31,14 +36,13 @@
 .answerText {
     font-style: normal;
     font-weight: 400;
-    font-size: 1.4rem;
+    font-size: 1.1rem;
     line-height: 1.2;
-    color: #323130;
+    color: #222;
     flex: none;
     order: 1;
     align-self: stretch;
     flex-grow: 0;
-    margin: 11px;
     white-space: normal;
     word-wrap: break-word;
     max-width: 800px;

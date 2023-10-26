@@ -1,9 +1,17 @@
 .questionInputContainer {
     display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
     justify-content: space-between;
     position: relative;
-    width: 100%;
     gap: 1rem;
+}
+
+@media screen and (min-width:800px) {
+    .questionInputContainer {
+        flex-wrap: nowrap;
+        width: 100%;
+    }
 }
 
 .questionInputTextArea {
@@ -15,8 +23,8 @@
 
 .questionInputTextArea textarea {
     display: flex;
-    font-size: 1.4rem;
-    line-height: 1;
+    font-size: 1.1rem;
+    line-height: 1.2;
     height: 100%;
     padding: 1rem 3rem;
     border: 2px solid hsl(0, 0%, 13%);
@@ -24,10 +32,25 @@
 }
 
 .questionInputSendButtonContainer {
-    flex: 0 auto;
+    flex: 0 1 auto;
 }
 
-.questionInputSendButton {
+@media screen and (min-width:800px) {
+    .questionInputSendButtonContainer {
+        flex: 1 auto;
+    }
+}
+
+
+@media screen and (min-width:800px) {
+    .questionInputSendButton,
+    .questionInputSendButtonDisabled  {
+        flex: 1 auto;
+    }
+}
+
+.questionInputSendButton,
+.questionInputSendButtonDisabled {
     display: flex;
     align-items: center;
     width: auto;
@@ -35,26 +58,15 @@
     min-height: 80px;
     background-color: hsl(210, 100%, 21%);
     color: white;
-    padding: 1rem 2rem;
+    padding: 1rem 3rem;
     text-align: center;
-    font-size: 1.4rem;
+    font-size: 1.6rem;
     font-weight: 600;
     gap: 0.5rem;
 }
 
 .questionInputSendButtonDisabled {
-    display: flex;
-    align-items: center;
-    width: auto;
-    height: 100%;
-    min-height: 80px;
     background-color: hsl(210, 100%, 10%);
-    color: white;
-    padding: 1rem 2rem;
-    text-align: center;
-    font-size: 1.4rem;
-    font-weight: 600;
-    gap: 0.5rem;
 }
 
 .questionInputBottomBorder {

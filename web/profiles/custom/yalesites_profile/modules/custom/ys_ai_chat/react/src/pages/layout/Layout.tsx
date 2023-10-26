@@ -1,10 +1,8 @@
 import { Outlet, Link } from "react-router-dom";
 import styles from "./Layout.module.css";
-import Azure from "../../assets/Azure.svg";
-import { CopyRegular, ShareRegular } from "@fluentui/react-icons";
 import { CommandBarButton, Dialog, Stack, TextField, ICommandBarStyles, IButtonStyles, DefaultButton  } from "@fluentui/react";
 import { useContext, useEffect, useState } from "react";
-import { HistoryButton, ShareButton } from "../../components/common/Button";
+import { HistoryButton } from "../../components/common/Button";
 import { AppStateContext } from "../../state/AppProvider";
 import { CosmosDBStatus } from "../../api";
 
@@ -66,16 +64,16 @@ const Layout = () => {
 // Modal component
 const Modal = ({ onClose }: { onClose: () => void }) => {
     return (
-        <section className={styles.modal} aria-modal='true'>
+        <section className={styles.modal} aria-modal={'true'}>
             <div className={styles.modalContent}>
                 <header className={styles.header} role={"banner"}>
                     <Stack horizontal verticalAlign="center" horizontalAlign="space-between" className={styles.headerContainer}>
                         <img src={aiLogo} className={styles.headerTitle} alt="AskYale" />
 
                         <Stack horizontal>
-                            <span className="close" onClick={onClose}>
-                                <img src={closeButton} className={styles.closeButton} />
-                            </span>
+                            <button className={styles.closeButton} onClick={onClose}>
+                                <img src={closeButton} className={styles.closeButtonIcon} />
+                            </button>
                         </Stack>
                     </Stack>
                 </header>
