@@ -37,7 +37,7 @@ const Layout = () => {
     }
     return (
     <div className={styles.layout}>
-        <section className={styles.modalCallout} role={"modal"}>
+        <section className={styles.modalCallout}>
             <button
             type="button"
             onClick={handleOpenModal}
@@ -47,16 +47,6 @@ const Layout = () => {
         </section>
         
         {isModalOpen && <Modal onClose={handleCloseModal} />}
-        {/* <section className={styles.modalContent}>
-            <header className={styles.header} role={"banner"}>
-                <Stack horizontal verticalAlign="center" horizontalAlign="space-between" className={styles.headerContainer}>
-                    <h2 className={styles.headerTitle}>AskYale</h2>
-                    <Stack horizontal tokens={{ childrenGap: 4 }}>
-                    </Stack>
-                </Stack>
-            </header>
-            <Outlet />
-        </section> */}
     </div>
     );
 };
@@ -64,7 +54,7 @@ const Layout = () => {
 // Modal component
 const Modal = ({ onClose }: { onClose: () => void }) => {
     return (
-        <section className={styles.modal} aria-modal={'true'}>
+        <section className={styles.modal} aria-modal={"true"} role={"dialog"}>
             <div className={styles.modalContent}>
                 <header className={styles.header} role={"banner"}>
                     <Stack horizontal verticalAlign="center" horizontalAlign="space-between" className={styles.headerContainer}>
