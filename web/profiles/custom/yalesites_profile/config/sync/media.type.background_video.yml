@@ -1,12 +1,7 @@
 uuid: 92ae5cf0-541b-43ab-a29b-2267289004e7
 langcode: en
 status: true
-dependencies:
-  module:
-    - crop
-third_party_settings:
-  crop:
-    image_field: _none
+dependencies: {  }
 id: background_video
 label: 'Background Video'
 description: 'Used for uploading a video file to Drupal.'

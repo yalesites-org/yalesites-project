@@ -26,7 +26,6 @@ module:
   config_ignore: 0
   config_split: 0
   contextual: 0
-  crop: 0
   ctools: 0
   datetime: 0
   datetime_range: 0
@@ -49,7 +48,6 @@ module:
   help: 0
   honeypot: 0
   image: 0
-  image_widget_crop: 0
   imagemagick: 0
   improve_line_breaks_filter: 0
   jquery_ui: 0
