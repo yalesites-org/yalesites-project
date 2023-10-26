@@ -3,11 +3,7 @@ langcode: en
 status: true
 dependencies:
   module:
-    - crop
     - ys_embed
-third_party_settings:
-  crop:
-    image_field: null
 id: embed
 label: Embed
 description: 'Used for embedding external content.'
