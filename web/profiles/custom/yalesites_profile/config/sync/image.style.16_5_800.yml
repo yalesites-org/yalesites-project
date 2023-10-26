@@ -1,21 +1,10 @@
 uuid: c2104bba-07e7-4a0c-8331-c6abd25969cd
 langcode: en
 status: true
-dependencies:
-  config:
-    - crop.type.banner_16_5
-  module:
-    - crop
+dependencies: {  }
 name: '16_5_800'
 label: '16:5 (800)'
 effects:
-  2f8b8182-8846-4f14-86f7-0e51c0952920:
-    uuid: 2f8b8182-8846-4f14-86f7-0e51c0952920
-    id: crop_crop
-    weight: 1
-    data:
-      crop_type: banner_16_5
-      automatic_crop_provider: null
   97557ad2-084c-446b-848c-816045144225:
     uuid: 97557ad2-084c-446b-848c-816045144225
     id: image_scale_and_crop
