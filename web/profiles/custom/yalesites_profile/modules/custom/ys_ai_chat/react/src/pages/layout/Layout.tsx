@@ -23,13 +23,23 @@ const Layout = () => {
     
     const handleCloseModal = () => {
         setIsModalOpen(false);
-    };  
+    }; 
     
     const handleHistoryClick = () => {
         appStateContext?.dispatch({ type: 'TOGGLE_CHAT_HISTORY' })
     };
 
     useEffect(() => {}, [appStateContext?.state.isCosmosDBAvailable.status]);
+
+    useEffect(() => {
+        const close = (e) => {
+          if(e.keyCode === 27){
+            handleCloseModal();
+          }
+        }
+        window.addEventListener('keydown', close)
+      return () => window.removeEventListener('keydown', close)
+    },[])
 
     const showHistory = () => {
         appStateContext?.state.isCosmosDBAvailable?.status !== CosmosDBStatus.NotConfigured && 
