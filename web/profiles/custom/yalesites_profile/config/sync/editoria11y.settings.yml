@@ -1,14 +1,14 @@
 _core:
   default_config_hash: kIV1woSIwQ7BBcHoAOpa8a26XrvI2jcZbfTjDbLysno
 content_root: ''
+assertiveness: smart
 no_load: ''
+ignore_all_if_absent: ''
 ignore_elements: ''
 embedded_content_warning: ''
-assertiveness: smart
 download_links: ''
 ignore_link_strings: ''
 hidden_handlers: ''
-ignore_all_if_absent: ''
 ed11y_theme: lightTheme
 shadow_components: ''
 disable_sync: false
