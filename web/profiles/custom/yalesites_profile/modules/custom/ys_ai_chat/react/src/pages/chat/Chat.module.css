@@ -46,7 +46,6 @@
     max-width: 1344px;
     margin-left: auto;
     margin-right: auto;
-    padding: 1rem;
 }
 
 @media screen and (min-width:800px) {
@@ -199,9 +198,7 @@
     display: block;
     position: sticky;
     flex: 0 0 100px;
-    padding: 1rem;
     width: 100%;
-    border: 1px solid #222;
     max-width: 1344px;
 }
 
@@ -365,4 +362,23 @@ a {
 .viewSourceButton:hover {
     text-decoration: underline;
     cursor: pointer;
+}
+
+
+.answerDisclaimerContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.answerDisclaimer {
+    width: 100%;
+    max-width: 1344px;
+    margin: 0 auto;
+}
+
+@media screen and (min-width:800px) {
+    .answerDisclaimer {
+        padding: 0 5rem;
+    }
 }

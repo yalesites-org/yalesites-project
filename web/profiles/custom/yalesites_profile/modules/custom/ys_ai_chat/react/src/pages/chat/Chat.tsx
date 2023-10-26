@@ -533,6 +533,10 @@ const Chat = () => {
         return isLoading || (messages && messages.length === 0) || clearingChat || appStateContext?.state.chatHistoryLoadingState === ChatHistoryLoadingState.Loading
     }
 
+    const askButtonFill = () => {
+        return 'click'
+    }
+
     return (
         <div className={isLoading ? styles.containerLoading : styles.container} role="main">
             {showAuthMessage ? (
@@ -554,8 +558,12 @@ const Chat = () => {
                         {!messages || messages.length < 1 ? (
                             <Stack className={styles.chatEmptyState}>
                                 <div className={styles.chatEmptyStateContainer}>
-                                    <h1 className={styles.chatEmptyStateTitle}>Start chatting</h1>
-                                    <h2 className={styles.chatEmptyStateSubtitle}>This chatbot is configured to answer your questions</h2>
+                                    <ul className={styles.chatEmptyStateSuggestions}>
+                                        <li><button onClick={() => askButtonFill()}>How can I get my event catered? <span className={styles.askButtonInline}>Ask</span></button></li>
+                                        <li><a>What time does Cafe Law open? <span className={styles.askButtonInline}>Ask</span></a></li>
+                                        <li><a>When do dining halls close for recess? <span className={styles.askButtonInline}>Ask</span></a></li>
+                                        <li><a>Where can I find vegan pizza? <span className={styles.askButtonInline}>Ask</span></a></li>
+                                    </ul>
                                 </div>
                             </Stack>
                         ) : (
@@ -657,6 +665,10 @@ const Chat = () => {
                 {(appStateContext?.state.isChatHistoryOpen && appStateContext?.state.isCosmosDBAvailable?.status !== CosmosDBStatus.NotConfigured) && <ChatHistoryPanel/>}
                 </Stack>
             )}
+
+            <Stack.Item className={styles.answerDisclaimerContainer}>
+                <span className={styles.answerDisclaimer}>Content is AI-generated</span>
+            </Stack.Item>
         </div>
     );
 };
