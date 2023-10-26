@@ -1,21 +1,10 @@
 uuid: 09d195a6-a6ba-49c2-b736-d87bc423f60f
 langcode: en
 status: true
-dependencies:
-  config:
-    - crop.type.card_3_2
-  module:
-    - crop
+dependencies: {  }
 name: '3_2_1760'
 label: '3:2 (1760)'
 effects:
-  60e3872f-b349-4024-b2f1-be81549e11a2:
-    uuid: 60e3872f-b349-4024-b2f1-be81549e11a2
-    id: crop_crop
-    weight: 1
-    data:
-      crop_type: card_3_2
-      automatic_crop_provider: null
   bb0e5d4c-9ef2-4efa-adff-acc69e86ec9c:
     uuid: bb0e5d4c-9ef2-4efa-adff-acc69e86ec9c
     id: image_scale_and_crop
