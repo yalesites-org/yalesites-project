@@ -1,0 +1,94 @@
+<?php
+
+/**
+ * @file
+ * Install, uninstall and update hooks for ys_core module.
+ */
+
+use Drupal\Component\Utility\Xss;
+
+/**
+ * Implements hook_update().
+ *
+ * This update will update quicklinks blocks by removing any reference to a
+ * link tag, as well as set the format of the content block to heading_html.
+ */
+function ys_core_update_9001() {
+  $query = \Drupal::entityQuery('block_content')
+    ->condition('type', 'quick_links')
+    ->allRevisions();
+
+  $ids = $query->execute();
+  $block_content_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+
+  foreach ($ids as $revision_id => $id) {
+    $block = $block_content_storage->loadRevision($revision_id);
+
+    if ($block && $block->id() == $id) {
+      $body = $block->get('field_text')->getValue();
+      foreach ($body as $key => $array_value) {
+        $array_value = ys_core_sanitize_content(
+          $array_value, ['em', 'p', 'strong']
+        );
+        $array_value = ys_core_set_format($array_value, 'heading_html');
+
+        $body[$key] = $array_value;
+      }
+      $block->set('field_text', $body);
+      $block->save();
+    }
+  }
+}
+
+/**
+ * Sanitizes the value of an array object with allowed_tags.
+ *
+ * @param array $content_array
+ *   The content array.
+ * @param array $allowed_tags
+ *   The allowed tags.
+ *
+ * @return array
+ *   The sanitized content array.
+ */
+function ys_core_sanitize_content($content_array, $allowed_tags = []) {
+  if (!array_key_exists('value', $content_array)) {
+    return $content_array;
+  }
+
+  $value = $content_array['value'];
+  $content_array['value'] = Xss::filter($value, $allowed_tags);
+
+  return $content_array;
+}
+
+/**
+ * Sets the format of an array object.
+ *
+ * @param array $content_array
+ *   The content array.
+ * @param string $new_format
+ *   The new format.
+ *
+ * @return array
+ *   The content array with the new format.
+ */
+function ys_core_set_format($content_array, $new_format = 'heading_html') {
+  if (!array_key_exists('format', $content_array)) {
+    return $content_array;
+  }
+
+  $content_array['format'] = $new_format;
+
+  return $content_array;
+}
+
+/**
+ * Deleting not required crop entities.
+ */
+function ys_core_update_9002() {
+  $crops = \Drupal::entityTypeManager()->getStorage('crop')->loadMultiple();
+  foreach ($crops as $crop) {
+    $crop->delete();
+  }
+}
