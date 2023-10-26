@@ -1,21 +1,10 @@
 uuid: 3de4ac52-e14a-4da2-82b0-f965d3690313
 langcode: en
 status: true
-dependencies:
-  config:
-    - crop.type.profile_1_1_
-  module:
-    - crop
+dependencies: {  }
 name: '1_1_200'
 label: '1:1 (200)'
 effects:
-  cad8cd38-dd25-4c6f-81ec-120efdfb6e50:
-    uuid: cad8cd38-dd25-4c6f-81ec-120efdfb6e50
-    id: crop_crop
-    weight: 1
-    data:
-      crop_type: profile_1_1_
-      automatic_crop_provider: null
   f9abaa02-220c-4165-af4f-5fa5c4258ee4:
     uuid: f9abaa02-220c-4165-af4f-5fa5c4258ee4
     id: image_scale_and_crop
