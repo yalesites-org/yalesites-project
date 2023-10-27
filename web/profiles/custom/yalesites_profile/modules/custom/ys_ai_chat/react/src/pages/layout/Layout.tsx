@@ -48,12 +48,21 @@ const Layout = () => {
     return (
     <div className={styles.layout}>
         <section className={styles.modalCallout}>
-            <button
-            type="button"
-            onClick={handleOpenModal}
-            >
-                Open dialog
-            </button>
+            <div className={styles.modalCalloutContent}>
+                <h2>Open the modal dialog</h2>
+                <p>
+                    Perspiciatis neque delectus voluptatum qui aut veniam voluptatem non.
+                </p>
+                <p>
+                    Officia neque cum iure pariatur asperiores ab et nobis excepturi beatae at itaque sit. Tenetur perspiciatis nesciunt illum ut quisquam est et necessitatibus repellendus qui illo sint. Possimus aliquid quos dolor occaecati at maiores dolore. Qui corrupti animi facilis eos nostrum voluptatem. Perspiciatis ex sed dolor velit. Omnis est voluptatem illo iusto debitis ut sunt deleniti aut repellat.
+                </p>
+                <button
+                type="button"
+                onClick={handleOpenModal}
+                >
+                    Open dialog
+                </button>
+            </div>
         </section>
         
         {isModalOpen && <Modal onClose={handleCloseModal} />}

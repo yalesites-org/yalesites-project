@@ -533,9 +533,10 @@ const Chat = () => {
         return isLoading || (messages && messages.length === 0) || clearingChat || appStateContext?.state.chatHistoryLoadingState === ChatHistoryLoadingState.Loading
     }
 
-    const askButtonFill = () => {
-        return 'click'
-    }
+    // SuggestionButtons
+    const handleButtonClick = (label: string) => {
+        QuestionInput.setQuestion(label);
+    };
 
     return (
         <div className={isLoading ? styles.containerLoading : styles.container} role="main">
@@ -558,12 +559,52 @@ const Chat = () => {
                         {!messages || messages.length < 1 ? (
                             <Stack className={styles.chatEmptyState}>
                                 <div className={styles.chatEmptyStateContainer}>
-                                    <ul className={styles.chatEmptyStateSuggestions}>
-                                        <li><button onClick={() => askButtonFill()}>How can I get my event catered? <span className={styles.askButtonInline}>Ask</span></button></li>
-                                        <li><a>What time does Cafe Law open? <span className={styles.askButtonInline}>Ask</span></a></li>
-                                        <li><a>When do dining halls close for recess? <span className={styles.askButtonInline}>Ask</span></a></li>
-                                        <li><a>Where can I find vegan pizza? <span className={styles.askButtonInline}>Ask</span></a></li>
-                                    </ul>
+                                    {/* <ul className={styles.chatEmptyStateSuggestions}>
+                                        <li>
+                                            <button className={styles.askButton} onClick={() => handleButtonClick('Button 1')}>
+                                                <span className={styles.askButtonPrompt}>How can I get my event catered?</span>
+                                                <span className={styles.askButtonInline}>Ask</span>
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button className={styles.askButton} onClick={() => handleButtonClick('Button 2')}>
+                                                <span className={styles.askButtonPrompt}>What time does Cafe Law open?</span>
+                                                <span className={styles.askButtonInline}>Ask</span>
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button className={styles.askButton} onClick={() => handleButtonClick('Button 3')}>
+                                                <span className={styles.askButtonPrompt}>When do dining halls close for recess?</span>
+                                                <span className={styles.askButtonInline}>Ask</span>
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button className={styles.askButton} onClick={() => handleButtonClick('Button 4')}>
+                                                <span className={styles.askButtonPrompt}>Where can I find vegan pizza?</span>
+                                                <span className={styles.askButtonInline}>Ask</span>
+                                            </button>
+                                        </li>                                                                                
+                                    </ul> */}
+                                    {/* Button 1 */}
+                                    <button onClick={() => handleButtonClick('How can I get my event catered?')}>
+                                        <span>How can I get my event catered?</span>
+                                    </button>
+
+                                    {/* Button 2 */}
+                                    <button onClick={() => handleButtonClick('What time does Cafe Law open?')}>
+                                        <span>What time does Cafe Law open?</span>
+                                    </button>
+
+                                    {/* Button 3 */}
+                                    <button onClick={() => handleButtonClick('When do dining halls close for recess?')}>
+                                        <span>When do dining halls close for recess?</span>
+                                    </button>
+
+                                    {/* Button 4 */}
+                                    <button onClick={() => handleButtonClick('Where can I find vegan pizza?')}>
+                                        <span>Where can I find vegan pizza?</span>
+                                    </button>
+
                                 </div>
                             </Stack>
                         ) : (
