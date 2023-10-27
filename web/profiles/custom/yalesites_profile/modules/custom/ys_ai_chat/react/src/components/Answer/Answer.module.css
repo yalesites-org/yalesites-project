@@ -2,8 +2,8 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: 1rem 4rem;
-    gap: 5.42px;
+    padding: 1rem 4.5rem;
+    gap: 0.25rem;
     background: #FFFFFF;
     border: 2px solid hsl(213, 66%, 45%);
     border-radius: 2rem;
@@ -11,12 +11,6 @@
     width: 100%;
     height: 100%;
     transition: all 200ms ease-in-out;
-}
-
-@media screen and (min-width:800px) {
-    .answerContainer {
-        max-width: 95%;
-    }
 }
 
 .containerLoading .answerContainer {
@@ -27,7 +21,7 @@
 
 .chatMessageAIMessageAvatar {
     position: absolute;
-    top: 3rem;
+    top: 2rem;
     left: 1rem;
     width: 2.5rem;
     height: 2.5rem;
@@ -64,7 +58,7 @@
 }
 
 .answerDisclaimer {
-    font-style: normal;
+    font-style: italic;
     font-weight: 400;
     font-size: 1rem;
     line-height: 1;
@@ -89,7 +83,7 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 4px 6px;
+    padding: 0.25rem 0.5rem;
     gap: 4px;
     border: 1px solid #D1D1D1;
 }

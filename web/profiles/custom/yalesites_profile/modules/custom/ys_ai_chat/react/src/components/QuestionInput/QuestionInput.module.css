@@ -19,6 +19,8 @@
     width: 100%;
     line-height: 40px;
     margin:0;
+    border-radius: 1rem;
+    overflow: hidden;
 }
 
 .questionInputTextArea textarea {
@@ -27,7 +29,9 @@
     line-height: 1.2;
     height: 100%;
     padding: 2rem 7rem 1rem 1rem;
-    border: 2px solid hsl(0, 0%, 13%);
+    border: 0.2rem solid hsl(210, 100%, 21%);
+    border-radius: 1rem;
+    overflow: hidden;/* needed to hide ms-embedded unreachable styles */
     font-weight: 600;
 }
 
@@ -50,19 +54,17 @@
 .questionInputSendButtonDisabled {
     display: flex;
     align-items: center;
+    justify-content: center;
     width: 100px;
     height: 100%;
-    background-color: hsl(210, 100%, 21%);
-    color: white;
     padding: 1rem;
-    text-align: center;
-    font-size: 1rem;
-    font-weight: 600;
-    gap: 0.5rem;
+}
+.questionInputSendButton svg {
+    fill: hsl(210, 100%, 21%);
 }
 
-.questionInputSendButtonDisabled {
-    background-color: hsl(210, 100%, 10%);
+.questionInputSendButtonDisabled svg {
+    fill: hsl(217, 15%, 76%);
 }
 
 .questionInputBottomBorder {

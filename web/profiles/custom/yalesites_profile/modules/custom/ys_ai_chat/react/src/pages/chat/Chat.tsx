@@ -708,7 +708,11 @@ const Chat = () => {
             )}
 
             <Stack.Item className={styles.answerDisclaimerContainer}>
-                <span className={styles.answerDisclaimer}>Content is AI-generated</span>
+                <div className={styles.answerDisclaimer}>
+                    <span className={styles.answerDisclaimerText}>This chat is powered by artificial intelligence.</span>
+                    <span className={styles.answerDisclaimerSeparator}>|</span> 
+                    <span className={styles.answerShareFeedback}>Share feedback</span>
+                </div>
             </Stack.Item>
         </div>
     );
