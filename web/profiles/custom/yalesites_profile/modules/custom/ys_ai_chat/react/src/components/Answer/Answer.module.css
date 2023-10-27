@@ -13,11 +13,6 @@
     transition: all 200ms ease-in-out;
 }
 
-.containerLoading .answerContainer {
-    border-radius: 0;
-    -webkit-mask-image: linear-gradient(to bottom,black 10%,transparent 80%);
-    mask-image: linear-gradient(to bottom,black 10%,transparent 80%);
-}
 
 .chatMessageAIMessageAvatar {
     position: absolute;
@@ -58,7 +53,7 @@
 }
 
 .answerDisclaimer {
-    font-style: italic;
+    font-style: normal;
     font-weight: 400;
     font-size: 1rem;
     line-height: 1;
@@ -70,6 +65,10 @@
     flex: none;
     order: 1;
     flex-grow: 0;
+}
+
+.answerDisclaimerText {
+    font-style: italic;
 }
 
 .citationContainer {

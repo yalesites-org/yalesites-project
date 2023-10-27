@@ -8,7 +8,7 @@ import rehypeRaw from "rehype-raw";
 import uuid from 'react-uuid';
 
 import styles from "./Chat.module.css";
-import loading from "../../assets/ellipsis.svg";
+import loading from "../../assets/loader-chat.gif";
 import Azure from "../../assets/Azure.svg";
 
 import {
@@ -644,7 +644,7 @@ const Chat = () => {
                                         <div className={styles.chatMessageGpt}>
                                             <Answer
                                                 answer={{
-                                                    answer: '...',
+                                                    answer: '.',
                                                     citations: []
                                                 }}
                                                 onCitationClicked={() => null}
@@ -711,7 +711,7 @@ const Chat = () => {
                 <div className={styles.answerDisclaimer}>
                     <span className={styles.answerDisclaimerText}>This chat is powered by artificial intelligence.</span>
                     <span className={styles.answerDisclaimerSeparator}>|</span> 
-                    <span className={styles.answerShareFeedback}>Share feedback</span>
+                    <span className={styles.answerDisclaimerText}>Share feedback</span>
                 </div>
             </Stack.Item>
         </div>
