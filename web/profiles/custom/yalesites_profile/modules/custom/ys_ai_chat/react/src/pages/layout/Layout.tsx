@@ -31,15 +31,20 @@ const Layout = () => {
 
     useEffect(() => {}, [appStateContext?.state.isCosmosDBAvailable.status]);
 
-    useEffect(() => {
-        const close = (e) => {
-          if(e.keyCode === 27){
-            handleCloseModal();
-          }
-        }
-        window.addEventListener('keydown', close)
-      return () => window.removeEventListener('keydown', close)
-    },[])
+    // useEffect(() => {
+    //     interface KeyboardEvent {
+    //         key: string;
+    //       }
+    //     const close = (e: React.KeyboardEvent<object>) => {
+    //     e.preventDefault(); 
+
+    //       if(e.keyCode === 27){
+    //         handleCloseModal();
+    //       }
+    //     }
+    //     window.addEventListener('keydown', close)
+    //   return () => window.removeEventListener('keydown', close)
+    // },[])
 
     const showHistory = () => {
         appStateContext?.state.isCosmosDBAvailable?.status !== CosmosDBStatus.NotConfigured && 

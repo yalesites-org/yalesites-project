@@ -535,7 +535,7 @@ const Chat = () => {
 
     // SuggestionButtons
     const handleButtonClick = (label: string) => {
-        QuestionInput.setQuestion(label);
+        // QuestionInput.setQuestion(label);
     };
 
     return (
