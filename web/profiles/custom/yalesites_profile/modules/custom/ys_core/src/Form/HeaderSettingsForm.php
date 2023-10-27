@@ -212,7 +212,7 @@ class HeaderSettingsForm extends ConfigFormBase {
         '#type' => 'managed_file',
         '#upload_location' => 'public://site-name-images',
         '#multiple' => FALSE,
-        '#description' => $this->t('Replaces the site name text with an image.'),
+        '#description' => $this->t('Replaces the site name text with an image.<br>Allowed extensions: svg'),
         '#upload_validators' => [
           'file_validate_extensions' => ['svg'],
           // 'file_validate_image_resolution' => [0, "180x180"],
@@ -283,8 +283,30 @@ class HeaderSettingsForm extends ConfigFormBase {
    *   Form state.
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    dpm($form_state->getValue('site_name_image'));
+    $fid = $form_state->getValue('site_name_image')[0];
+    $file = \Drupal::entityTypeManager()
+      ->getStorage('file')
+      ->load($fid);
+    //$path = \Drupal::service('file_url_generator')->generateString(($file->getFileUri()));
+    //dpm($path);
+    $fileData = file_get_contents($file->getFileUri(), TRUE);
+    $regEx = "/<title\\b[^>]*>(.*?)<\\/title>/";
+    dpm($fileData);
+    if (preg_match($regEx, $fileData)) {
 
-    // Header settings config.
+      dpm("We have a title tag");
+      $replacement = "<title>A new title</title>";
+      dpm(preg_replace($regEx, $replacement, $fileData));
+
+    } else {
+      dpm("No title tag");
+      $svgPattern = "/(<svg\\b[^>]*>)/";
+      $replacement = "$1\n<title>Adding a new title to one that does not exist</title>";
+      dpm(preg_replace($svgPattern, $replacement, $fileData));
+    }
+
+      // Header settings config.
     $headerConfig = $this->config('ys_core.header_settings');
 
     // Handle the favicon filesystem if needed.
