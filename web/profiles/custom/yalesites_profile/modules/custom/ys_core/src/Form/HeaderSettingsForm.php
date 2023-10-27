@@ -215,7 +215,6 @@ class HeaderSettingsForm extends ConfigFormBase {
         '#description' => $this->t('Replaces the site name text with an image.<br>Allowed extensions: svg'),
         '#upload_validators' => [
           'file_validate_extensions' => ['svg'],
-          // 'file_validate_image_resolution' => [0, "180x180"],
         ],
         '#title' => $this->t('Site Name Image'),
         '#default_value' => ($headerConfig->get('site_name_image')) ? $headerConfig->get('site_name_image') : NULL,
@@ -235,7 +234,7 @@ class HeaderSettingsForm extends ConfigFormBase {
       ],
       '#title' => $this->t('Navigation Position'),
       '#description' => $this->t('Justifies the menu to the left, center, or right.'),
-      //'#default_value' => ($headerConfig->get('header_variation')) ? $headerConfig->get('header_variation') : 'basic',
+      '#default_value' => ($headerConfig->get('nav_position')) ? $headerConfig->get('nav_position') : 'left',
       '#attributes' => [
         'class' => [
           'variation-radios',
@@ -255,14 +254,14 @@ class HeaderSettingsForm extends ConfigFormBase {
       ],
     ];
 
-    // $form['full_screen_homepage_image_container']['focus_header_image'] = [
-    //   '#type' => 'media_library',
-    //   '#allowed_bundles' => ['image'],
-    //   '#title' => $this->t('Homepage Header image'),
-    //   '#required' => FALSE,
-    //   //'#default_value' => ($headerConfig->get('focus_header_image')) ? $headerConfig->get('focus_header_image') : NULL,
-    //   '#description' => $this->t('Used for the full-screen homepage image when the Focus Header is selected.'),
-    // ];
+    $form['full_screen_homepage_image_container']['focus_header_image'] = [
+      '#type' => 'media_library',
+      '#allowed_bundles' => ['image'],
+      '#title' => $this->t('Homepage header image'),
+      '#required' => FALSE,
+      '#default_value' => ($headerConfig->get('focus_header_image')) ? $headerConfig->get('focus_header_image') : NULL,
+      '#description' => $this->t('Used for the full-screen homepage image when the Focus Header is selected.'),
+    ];
 
     return $form;
   }
@@ -271,7 +270,12 @@ class HeaderSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    //dpm($form_state->getValue('site_name_image'));
+    if ($form_state->getValue('header_variation') == 'focus' && !$form_state->getValue('focus_header_image')) {
+      $form_state->setErrorByName(
+        'focus_header_image',
+        $this->t("The homepage header image is required when Focus nav is selected")
+      );
+    }
   }
 
   /**
@@ -283,31 +287,17 @@ class HeaderSettingsForm extends ConfigFormBase {
    *   Form state.
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    dpm($form_state->getValue('site_name_image'));
-    $fid = $form_state->getValue('site_name_image')[0];
-    $file = \Drupal::entityTypeManager()
-      ->getStorage('file')
-      ->load($fid);
-    //$path = \Drupal::service('file_url_generator')->generateString(($file->getFileUri()));
-    //dpm($path);
-    $fileData = file_get_contents($file->getFileUri(), TRUE);
-    $regEx = "/<title\\b[^>]*>(.*?)<\\/title>/";
-    dpm($fileData);
-    if (preg_match($regEx, $fileData)) {
 
-      dpm("We have a title tag");
-      $replacement = "<title>A new title</title>";
-      dpm(preg_replace($regEx, $replacement, $fileData));
-
-    } else {
-      dpm("No title tag");
-      $svgPattern = "/(<svg\\b[^>]*>)/";
-      $replacement = "$1\n<title>Adding a new title to one that does not exist</title>";
-      dpm(preg_replace($svgPattern, $replacement, $fileData));
-    }
-
-      // Header settings config.
+    // Header settings config.
     $headerConfig = $this->config('ys_core.header_settings');
+
+    // Site settings config.
+    $siteConfig = $this->config('system.site');
+
+    // Handles adding a title to the uploaded SVG.
+    if ($siteNameImage = $form_state->getValue('site_name_image')) {
+      $this->ysMediaManager->titleSvg($siteNameImage[0], $siteConfig->get('name'));
+    };
 
     // Handle the favicon filesystem if needed.
     $this->ysMediaManager->handleMediaFilesystem(
@@ -317,6 +307,7 @@ class HeaderSettingsForm extends ConfigFormBase {
 
     $headerConfig->set('header_variation', $form_state->getValue('header_variation'));
     $headerConfig->set('site_name_image', $form_state->getValue('site_name_image'));
+    $headerConfig->set('nav_position', $form_state->getValue('nav_position'));
     $headerConfig->set('search.enable_search_form', $form_state->getValue('enable_search_form'));
     $headerConfig->set('focus_header_image', $form_state->getValue('focus_header_image'));
 

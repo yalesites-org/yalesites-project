@@ -175,4 +175,39 @@ class YaleSitesMediaManager extends ControllerBase implements ContainerInjection
     }
   }
 
+  /**
+   * Adds or replaces the title of an uploaded SVG.
+   *
+   * @param int $fid
+   *   File ID.
+   * @param string $title
+   *   Title to add or replace into SVG.
+   */
+  public function titleSvg($fid, $title) {
+
+    /** @var \Drupal\file\Entity\File $file */
+    if ($file = $this->entityTypeManager()
+      ->getStorage('file')
+      ->load($fid)) {
+      if (str_ends_with($file->getFilename(), '.svg')) {
+        $fileData = file_get_contents($file->getFileUri(), TRUE);
+        $titlePattern = "/<title\\b[^>]*>(.*?)<\\/title>/";
+
+        if (preg_match($titlePattern, $fileData)) {
+          // We have a title tag, let's replace it.
+          $replacement = "<title>{$title}</title>";
+          $replacementSVG = preg_replace($titlePattern, $replacement, $fileData);
+        }
+        else {
+          // No title tag, so let's add one right below the opening svg tag.
+          $svgPattern = "/(<svg\\b[^>]*>)/";
+          $replacement = "$1\n<title>{$title}</title>";
+          $replacementSVG = preg_replace($svgPattern, $replacement, $fileData);
+        }
+
+        file_put_contents($file->getFileUri(), $replacementSVG);
+      }
+    }
+  }
+
 }
