@@ -185,13 +185,6 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#default_value' => $yaleConfig->get('seo')['google_analytics_id'],
     ];
 
-    $form['enable_search_form'] = [
-      '#type' => 'checkbox',
-      '#description' => $this->t('Enable the search form located in the utility navigation area.'),
-      '#title' => $this->t('Enable search form'),
-      '#default_value' => $yaleConfig->get('search')['enable_search_form'],
-    ];
-
     $form['teaser_image_fallback'] = [
       '#type' => 'media_library',
       '#allowed_bundles' => ['image'],
@@ -284,7 +277,6 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     $this->configFactory->getEditable('ys_core.site')
       ->set('page.posts', $form_state->getValue('site_page_posts'))
       ->set('page.events', $form_state->getValue('site_page_events'))
-      ->set('search.enable_search_form', $form_state->getValue('enable_search_form'))
       ->set('seo.google_site_verification', $form_state->getValue('google_site_verification'))
       ->set('seo.google_analytics_id', $form_state->getValue('google_analytics_id'))
       ->set('image_fallback.teaser', $form_state->getValue('teaser_image_fallback'))

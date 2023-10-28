@@ -41,6 +41,36 @@ function ys_core_update_9001() {
 }
 
 /**
+ * Implements hook_update().
+ *
+ * This update will migrate old theme settings to the new header settings.
+ */
+function ys_core_update_9002() {
+  $ysCoreConfig = \Drupal::config('ys_core.site');
+  $themeConfig = \Drupal::config('ys_themes.theme_settings');
+  $headerConfig = \Drupal::service('config.factory')->getEditable('ys_core.header_settings');
+
+  // Migrate search setting from core to header
+  if ($ysCoreConfig->get('search')) {
+    $oldSearchSetting = $ysCoreConfig->get('search')['enable_search_form'];
+    $headerConfig->set('search.enable_search_form', $oldSearchSetting)->save();
+  }
+
+  // Migrate nav_position setting from themes to header settings
+  $oldNavPosition = $themeConfig->get('nav_position');
+  if ($oldNavPosition) {
+    $headerConfig->set('nav_position', $oldNavPosition)->save();
+  }
+
+  // Migrate nav_type setting from themes to header settings header_variation
+  $oldNavType = $themeConfig->get('nav_type');
+  if ($oldNavType) {
+    $headerConfig->set('header_variation', $oldNavType)->save();
+  }
+
+}
+
+/**
  * Sanitizes the value of an array object with allowed_tags.
  *
  * @param array $content_array
