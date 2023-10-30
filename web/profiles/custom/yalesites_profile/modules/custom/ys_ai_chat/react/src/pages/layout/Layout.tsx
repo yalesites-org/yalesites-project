@@ -49,7 +49,7 @@ const Layout = () => {
     <div className={styles.layout}>
         <section className={styles.modalCallout}>
             <div className={styles.modalCalloutContent}>
-                <h2>Open the modal dialog</h2>
+                <h2 className="callout__heading">Open the modal dialog</h2>
                 <p>
                     Perspiciatis neque delectus voluptatum qui aut veniam voluptatem non.
                 </p>

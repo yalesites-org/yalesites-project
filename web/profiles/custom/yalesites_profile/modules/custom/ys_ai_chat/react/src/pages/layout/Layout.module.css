@@ -71,21 +71,26 @@
     max-width: 80ch;
 }
 
+.modalCalloutContent h2 {
+    font-family: 'YaleNew', serif;
+    color: white;
+}
+
 .modalCalloutContent button {
     font-size: 1.2rem;
     font-weight: 600;
-    background-color: white;
-    color: hsl(210, 100%, 21%);
+    background: transparent;
+    color: white;
     border: none;
     padding: 1rem 2rem;
     cursor: pointer;
-    border: 0.25rem solid transparent;
+    border: 0.25rem solid white;
     transition: all 200ms ease-in-out;
 }
 
 .modalCalloutContent button:hover {
-    background: transparent;
-    color: white;   
+    background: white;
+    color: hsl(210, 100%, 21%);
     border-color: white;
 }
 
