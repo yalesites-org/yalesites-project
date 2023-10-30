@@ -28,14 +28,28 @@
 }
 
 .modalContent {
-    width: 96vw;
-    margin: 2rem auto;
-    padding: 2rem;
-    height: 100%;
-    max-height: 80vh;
     background: linear-gradient(120deg, rgba(223,236,249,1) 0%, rgba(255,255,255,1) 35%, rgba(223,236,249,1) 62%, rgba(255,255,255,1) 100%);
-    position: relative;
+    position: fixed;
+    top: 0.5rem;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    left: 0.5rem;
     z-index: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+@media screen and (min-width:800px) {
+    .modalContent {
+        top: 2rem;
+        right: 2rem;
+        bottom: 2rem;
+        left: 2rem;
+        padding: 2rem 4rem;
+    }
 }
 
 /* Modal Callout */
@@ -63,17 +77,16 @@
     padding: 1rem 2rem;
 
 }
-/* Header */
-.header {
+/* .header {
     padding: 1rem;
+    border: 1px solid red;
 }
-
 
 @media screen and (min-width:800px) {
     .header {
-        padding: 1rem 4rem 3rem;
+        padding: 2rem 4rem;
     }
-}
+} */
 
 .headerContainer {
     display: flex;
@@ -133,7 +146,19 @@
 
 button.closeButton {
     background-color: transparent;
-    border: none;
+    border: #286DC0 1px solid;
+    border-radius: 2px;
+    fill: #286DC0;
+    transition: all 0.15s;
+    padding: 1rem;
+    line-height: 0;
+    height: 35px;
+    display: flex;
+    align-items: center;
+}
+
+button.closeButton:hover {
+    background: rgba(255, 255, 255, 0.7);
 }
 
 button.closeButton:focus-visible {
