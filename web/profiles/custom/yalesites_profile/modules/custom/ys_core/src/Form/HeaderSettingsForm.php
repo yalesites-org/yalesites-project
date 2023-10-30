@@ -291,14 +291,6 @@ class HeaderSettingsForm extends ConfigFormBase {
     // Header settings config.
     $headerConfig = $this->config('ys_core.header_settings');
 
-    // Site settings config.
-    $siteConfig = $this->config('system.site');
-
-    // Handles adding a title to the uploaded SVG.
-    if ($siteNameImage = $form_state->getValue('site_name_image')) {
-      $this->ysMediaManager->titleSvg($siteNameImage[0], $siteConfig->get('name'));
-    };
-
     // Handle the favicon filesystem if needed.
     $this->ysMediaManager->handleMediaFilesystem(
       $form_state->getValue('site_name_image'),

@@ -22,6 +22,13 @@ class YaleSitesMediaManager extends ControllerBase implements ContainerInjection
   protected $yaleSettings;
 
   /**
+   * Configuration Factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $siteSettings;
+
+  /**
    * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManager
@@ -51,6 +58,7 @@ class YaleSitesMediaManager extends ControllerBase implements ContainerInjection
     FileUrlGenerator $file_url_generator
     ) {
     $this->yaleSettings = $config_factory->get('ys_core.site');
+    $this->siteSettings = $config_factory->get('system.site');
     $this->entityTypeManager = $entity_type_manager;
     $this->fileUrlGenerator = $file_url_generator;
   }
@@ -176,19 +184,18 @@ class YaleSitesMediaManager extends ControllerBase implements ContainerInjection
   }
 
   /**
-   * Adds or replaces the title of an uploaded SVG.
+   * Gets SVG for the uploaded site name as image and adds site name as title.
    *
    * @param int $fid
    *   File ID.
-   * @param string $title
-   *   Title to add or replace into SVG.
    */
-  public function titleSvg($fid, $title) {
+  public function getSiteNameImage($fid) {
 
     /** @var \Drupal\file\Entity\File $file */
     if ($file = $this->entityTypeManager()
       ->getStorage('file')
       ->load($fid)) {
+      $title = $this->siteSettings->get('name');
       if (str_ends_with($file->getFilename(), '.svg')) {
         $fileData = file_get_contents($file->getFileUri(), TRUE);
         $titlePattern = "/<title\\b[^>]*>(.*?)<\\/title>/";
@@ -205,7 +212,7 @@ class YaleSitesMediaManager extends ControllerBase implements ContainerInjection
           $replacementSVG = preg_replace($svgPattern, $replacement, $fileData);
         }
 
-        file_put_contents($file->getFileUri(), $replacementSVG);
+        return $replacementSVG;
       }
     }
   }

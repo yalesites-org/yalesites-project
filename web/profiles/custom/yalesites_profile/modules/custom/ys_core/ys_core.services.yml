@@ -9,7 +9,7 @@ services:
   # Twig functions for passing core settings to templates.
   ys_core.core_twig_extension:
     class: Drupal\ys_core\CoreTwigExtension
-    arguments: ['@config.factory']
+    arguments: ['@config.factory', '@ys_core.media_manager']
     tags:
       - { name: twig.extension }
   ys_core.media_manager:
