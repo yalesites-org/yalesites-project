@@ -76,7 +76,7 @@ export const Answer = ({
                         onKeyDown={e => e.key === "Enter" || e.key === " " ? toggleIsRefAccordionOpen() : null}
                     >
                         <Stack style={{width: "100%"}} >
-                            <Stack horizontal horizontalAlign='start' verticalAlign='center'>
+                            <Stack horizontal horizontalAlign='start' verticalAlign='center' className={styles.answerReferences}>
                                 <Text
                                     className={styles.accordionTitle}
                                     onClick={toggleIsRefAccordionOpen}
