@@ -328,14 +328,18 @@
 } 
 
 .citationPanelTitle svg {
-    width: 1.2rem;
-    height: 1.2rem;
+    width: 1rem;
+    height: 1rem;
     fill: hsl(213, 66%, 45%);
 }
 
 .citationPanelTitle:hover {
     text-decoration: underline;
     cursor: pointer;
+}
+
+.citationPanelTitle:hover svg {
+    fill: hsl(213, 66%, 21%);
 }
 
 .citationPanelContent {
@@ -400,3 +404,26 @@ a {
 .askButton {
     background: transparent;
 }
+
+/* Chat Prompt Suggestions */
+
+.chatPromptSuggestions {
+    margin: 0;
+    padding: 0;
+}
+
+.chatPromptSuggestions li {
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+    line-height: 1.5;
+}
+
+.chatPromptSuggestions button {
+    background-color: transparent;
+    border: none;
+    font-size: 1.2rem;
+    font-style: italic;
+}
+
+

@@ -592,11 +592,15 @@ const Chat = () => {
                         {!messages || messages.length < 1 ? (
                             <Stack className={styles.chatEmptyState}>
                                 <div className={styles.chatEmptyStateContainer}>
+                                    <ul className={styles.chatPromptSuggestions}>
                                     {promptList.map((prompt) => (
-                                        <button key={prompt} onClick={() => handleButtonClick(prompt)}>
-                                            <span>{prompt}</span>
-                                        </button>)
+                                        <li>
+                                            <button key={prompt} onClick={() => handleButtonClick(prompt)}>
+                                                <span>{prompt}</span>
+                                        </button>
+                                        </li>)
                                     )}
+                                    </ul>
                                 </div>
                             </Stack>
                         ) : (
