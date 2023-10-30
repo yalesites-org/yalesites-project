@@ -3,7 +3,6 @@
 namespace Drupal\ys_core;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\ys_core\YaleSitesMediaManager;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
