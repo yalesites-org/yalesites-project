@@ -1,5 +1,7 @@
 {{ elements.alert_block }}
 
+{% set site_header__site_name_is_image = getHeaderSetting('site_name_image') %}
+
 {% embed "@organisms/site-header/yds-site-header.twig" with {
   site_name: site_name,
   site_header__border_thickness: '8',
@@ -17,4 +19,5 @@
       {{ site_header__background_image }}
     {% endblock %}
   {% endif %}
+
 {% endembed %}
