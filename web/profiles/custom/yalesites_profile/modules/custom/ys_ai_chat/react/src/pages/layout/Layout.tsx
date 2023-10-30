@@ -10,9 +10,6 @@ import aiLogo from "../../assets/Logo.svg";
 import closeButton from "../../assets/Close.svg";
 
 const Layout = () => {
-    // const [isSharePanelOpen, setIsSharePanelOpen] = useState<boolean>(false);
-    // const [copyClicked, setCopyClicked] = useState<boolean>(false);
-    // const [copyText, setCopyText] = useState<string>("Copy URL");
     const appStateContext = useContext(AppStateContext)
     
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -31,20 +28,18 @@ const Layout = () => {
 
     useEffect(() => {}, [appStateContext?.state.isCosmosDBAvailable.status]);
 
-    // useEffect(() => {
-    //     interface KeyboardEvent {
-    //         key: string;
-    //       }
-    //     const close = (e: React.KeyboardEvent<object>) => {
-    //     e.preventDefault(); 
-
-    //       if(e.keyCode === 27){
-    //         handleCloseModal();
-    //       }
-    //     }
-    //     window.addEventListener('keydown', close)
-    //   return () => window.removeEventListener('keydown', close)
-    // },[])
+    /**
+     * Close modal on escape key press.
+     */
+    useEffect(() => {
+        const close = (e: { key: string; }) => {
+          if(e.key === 'Escape'){
+            handleCloseModal()
+          }
+        }
+        window.addEventListener('keydown', close)
+      return () => window.removeEventListener('keydown', close)
+    },[])
 
     const showHistory = () => {
         appStateContext?.state.isCosmosDBAvailable?.status !== CosmosDBStatus.NotConfigured && 
@@ -75,7 +70,6 @@ const Layout = () => {
     );
 };
 
-// Modal component
 const Modal = ({ onClose }: { onClose: () => void }) => {
     return (
         <section className={styles.modal} aria-modal={"true"} role={"dialog"}>
@@ -85,8 +79,8 @@ const Modal = ({ onClose }: { onClose: () => void }) => {
                         <img src={aiLogo} className={styles.headerTitle} alt="AskYale" />
 
                         <Stack horizontal>
-                            <button className={styles.closeButton} onClick={onClose}>
-                                <img src={closeButton} className={styles.closeButtonIcon} />
+                            <button className={styles.closeButton} onClick={onClose} aria-label="Close modal">
+                                <img src={closeButton} className={styles.closeButtonIcon} alt="Close" />
                             </button>
                         </Stack>
                     </Stack>
