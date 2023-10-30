@@ -291,7 +291,7 @@ class HeaderSettingsForm extends ConfigFormBase {
     // Header settings config.
     $headerConfig = $this->config('ys_core.header_settings');
 
-    // Handle the favicon filesystem if needed.
+    // Handle the filesystem if needed.
     $this->ysMediaManager->handleMediaFilesystem(
       $form_state->getValue('site_name_image'),
       $headerConfig->get('site_name_image')

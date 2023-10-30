@@ -188,6 +188,9 @@ class YaleSitesMediaManager extends ControllerBase implements ContainerInjection
    *
    * @param int $fid
    *   File ID.
+   *
+   * @return string
+   *   SVG in raw form for use in twig templates.
    */
   public function getSiteNameImage($fid) {
 
