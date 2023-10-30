@@ -436,12 +436,14 @@ a {
     display: none;
 }
 
-.chatPromptSuggestions button:hover {
+.chatPromptSuggestions button:hover,
+.chatPromptSuggestions button:focus-visible {
     color: hsl(213, 66%, 45%);
     background-color: rgba(255, 255, 255, 0.9);
 }
 
-.chatPromptSuggestions button:hover svg {
+.chatPromptSuggestions button:hover svg,
+.chatPromptSuggestions button:focus-visible svg {
     display: block;
     width: 1.8rem;
     height: 1.8rem;

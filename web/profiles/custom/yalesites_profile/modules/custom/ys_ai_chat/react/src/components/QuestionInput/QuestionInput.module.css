@@ -35,13 +35,17 @@
     font-weight: 600;
 }
 
+.questionInputTextArea textarea:focus,
+.questionInputTextArea textarea:focus-visible {
+    border-color: hsl(213, 66%, 45%);
+}
+
 .questionInputSendButtonContainer {
     position: absolute;
     top: 0;
     bottom: 0;
     right: 0;
 }
-
 
 @media screen and (min-width:800px) {
     .questionInputSendButton,
