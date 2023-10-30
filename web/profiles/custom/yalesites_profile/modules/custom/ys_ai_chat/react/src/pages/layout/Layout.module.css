@@ -55,7 +55,7 @@
 
 /* Modal Callout */
 .modalCallout {
-    padding: 2rem;
+    padding: 2rem 2rem 4rem;
     background-color: hsl(210, 100%, 21%);
 }
 
@@ -63,9 +63,11 @@
     max-width: 1344px;
     margin: 0 auto;
     color: white;
+    font-family: Mallory, sans-serif;
 }
 
 .modalCalloutContent p {
+    font-size: 1.2rem;
     max-width: 80ch;
 }
 
@@ -76,8 +78,17 @@
     color: hsl(210, 100%, 21%);
     border: none;
     padding: 1rem 2rem;
-
+    cursor: pointer;
+    border: 0.25rem solid transparent;
+    transition: all 200ms ease-in-out;
 }
+
+.modalCalloutContent button:hover {
+    background: transparent;
+    color: white;   
+    border-color: white;
+}
+
 /* .header {
     padding: 1rem;
     border: 1px solid red;
