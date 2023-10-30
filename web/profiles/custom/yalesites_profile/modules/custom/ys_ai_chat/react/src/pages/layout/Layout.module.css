@@ -1,7 +1,7 @@
 .layout {
     display: flex;
     flex-direction: column;
-    font-family: 'Mallory, sans-serif';
+    font-family: 'Mallory', sans-serif;
 }
 
 /* Modal */
@@ -63,7 +63,7 @@
     max-width: 1344px;
     margin: 0 auto;
     color: white;
-    font-family: Mallory, sans-serif;
+    font-family: 'Mallory', sans-serif;
 }
 
 .modalCalloutContent p {
