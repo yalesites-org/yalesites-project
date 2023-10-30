@@ -426,6 +426,7 @@ a {
     border: none;
     font-size: 1.5rem;
     font-style: italic;
+    font-family: serif;
     padding: 0.5rem 1rem;
     color: hsl(213, 66%, 21%);
     cursor: pointer;
