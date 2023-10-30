@@ -104,7 +104,7 @@
     border: 1px solid #E0E0E0;
     flex: none;
     flex-grow: 0;
-    z-index: 2;
+    z-index: 0;
     font-style: normal;
     font-weight: 600;
     font-size: 1rem;
