@@ -54,6 +54,7 @@ const Chat = () => {
     const [clearingChat, setClearingChat] = useState<boolean>(false);
     const [hideErrorDialog, { toggle: toggleErrorDialog }] = useBoolean(true);
     const [errorMsg, setErrorMsg] = useState<ErrorMessage | null>()
+    const [providedQuestion, setProvidedQuestion] = useState<string>('')
 
     const errorDialogContentProps = {
         type: DialogType.close,
@@ -535,8 +536,33 @@ const Chat = () => {
 
     // SuggestionButtons
     const handleButtonClick = (label: string) => {
-        // QuestionInput.setQuestion(label);
+        setProvidedQuestion(label)
     };
+
+    /**
+     * A list of possible prompts to show when the chat is empty.
+     */
+    const questionPrompts = [
+        'How can I get my event catered?',
+        'What time does Cafe Law open?',
+        'When do dining halls close for recess?',
+        'Where can I find vegan pizza?',
+    ]
+    
+    /**
+     * 
+     * @param num A number of prompts to return
+     * @returns 
+     */
+    const getMultipleRandomQuestionPrompts = (num: number | undefined) => {
+        const shuffled = [...questionPrompts].sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, num);
+    }
+
+    /**
+     * A list of prompts to show when the chat is empty.
+     */
+    const promptList = getMultipleRandomQuestionPrompts(4)
 
     return (
         <div className={isLoading ? styles.containerLoading : styles.container} role="main">
@@ -548,7 +574,7 @@ const Chat = () => {
                         This app does not have authentication configured. Please add an identity provider by finding your app in the
                         <a href="https://portal.azure.com/" target="_blank"> Azure Portal </a>
                         and following
-                         <a href="https://learn.microsoft.com/en-us/azure/app-service/scenario-secure-app-authentication-app-service#3-configure-authentication-and-authorization" target="_blank"> these instructions</a>.
+                        <a href="https://learn.microsoft.com/en-us/azure/app-service/scenario-secure-app-authentication-app-service#3-configure-authentication-and-authorization" target="_blank"> these instructions</a>.
                     </h2>
                     <h2 className={styles.chatEmptyStateSubtitle}><strong>Authentication configuration takes a few minutes to apply. </strong></h2>
                     <h2 className={styles.chatEmptyStateSubtitle}><strong>If you deployed in the last 10 minutes, please wait and reload the page after 10 minutes.</strong></h2>
@@ -559,52 +585,11 @@ const Chat = () => {
                         {!messages || messages.length < 1 ? (
                             <Stack className={styles.chatEmptyState}>
                                 <div className={styles.chatEmptyStateContainer}>
-                                    {/* <ul className={styles.chatEmptyStateSuggestions}>
-                                        <li>
-                                            <button className={styles.askButton} onClick={() => handleButtonClick('Button 1')}>
-                                                <span className={styles.askButtonPrompt}>How can I get my event catered?</span>
-                                                <span className={styles.askButtonInline}>Ask</span>
-                                            </button>
-                                        </li>
-                                        <li>
-                                            <button className={styles.askButton} onClick={() => handleButtonClick('Button 2')}>
-                                                <span className={styles.askButtonPrompt}>What time does Cafe Law open?</span>
-                                                <span className={styles.askButtonInline}>Ask</span>
-                                            </button>
-                                        </li>
-                                        <li>
-                                            <button className={styles.askButton} onClick={() => handleButtonClick('Button 3')}>
-                                                <span className={styles.askButtonPrompt}>When do dining halls close for recess?</span>
-                                                <span className={styles.askButtonInline}>Ask</span>
-                                            </button>
-                                        </li>
-                                        <li>
-                                            <button className={styles.askButton} onClick={() => handleButtonClick('Button 4')}>
-                                                <span className={styles.askButtonPrompt}>Where can I find vegan pizza?</span>
-                                                <span className={styles.askButtonInline}>Ask</span>
-                                            </button>
-                                        </li>                                                                                
-                                    </ul> */}
-                                    {/* Button 1 */}
-                                    <button onClick={() => handleButtonClick('How can I get my event catered?')}>
-                                        <span>How can I get my event catered?</span>
-                                    </button>
-
-                                    {/* Button 2 */}
-                                    <button onClick={() => handleButtonClick('What time does Cafe Law open?')}>
-                                        <span>What time does Cafe Law open?</span>
-                                    </button>
-
-                                    {/* Button 3 */}
-                                    <button onClick={() => handleButtonClick('When do dining halls close for recess?')}>
-                                        <span>When do dining halls close for recess?</span>
-                                    </button>
-
-                                    {/* Button 4 */}
-                                    <button onClick={() => handleButtonClick('Where can I find vegan pizza?')}>
-                                        <span>Where can I find vegan pizza?</span>
-                                    </button>
-
+                                    {promptList.map((prompt) => (
+                                        <button key={prompt} onClick={() => handleButtonClick(prompt)}>
+                                            <span>{prompt}</span>
+                                        </button>)
+                                    )}
                                 </div>
                             </Stack>
                         ) : (
@@ -675,8 +660,9 @@ const Chat = () => {
                     
                             <QuestionInput
                                 clearOnSend
-                                placeholder="Ask any question..."
+                                placeholder={providedQuestion || "Ask any question..."}
                                 disabled={isLoading}
+                                providedQuestion={providedQuestion}
                                 onSend={(question, id) => {
                                     appStateContext?.state.isCosmosDBAvailable?.cosmosDB ? makeApiRequestWithCosmosDB(question, id) : makeApiRequestWithoutCosmosDB(question, id)
                                 }}

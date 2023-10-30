@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Stack, TextField } from "@fluentui/react";
 import styles from "./QuestionInput.module.css";
 
@@ -8,10 +8,19 @@ interface Props {
     placeholder?: string;
     clearOnSend?: boolean;
     conversationId?: string;
+    providedQuestion?: string;
 }
 
-export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conversationId }: Props) => {
-    const [question, setQuestion] = useState<string>("");
+export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conversationId, providedQuestion }: Props) => {
+    const [question, setQuestion] = useState<string>(providedQuestion as string);
+
+    /**
+     * If a question is provided, set it as the question state.
+     */
+    useEffect(() => {
+        setQuestion(providedQuestion as string)
+    }, [providedQuestion])
+    
 
     const sendQuestion = () => {
         if (disabled || !question.trim()) {
