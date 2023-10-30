@@ -55,6 +55,8 @@ const Chat = () => {
     const [hideErrorDialog, { toggle: toggleErrorDialog }] = useBoolean(true);
     const [errorMsg, setErrorMsg] = useState<ErrorMessage | null>()
     const [providedQuestion, setProvidedQuestion] = useState<string>('')
+    const [promptList, setPromptList] = useState<string[]>([])
+    const [promptsLoaded, setpromptsLoaded] = useState<boolean>(false)
 
     const errorDialogContentProps = {
         type: DialogType.close,
@@ -539,31 +541,36 @@ const Chat = () => {
         setProvidedQuestion(label)
     };
 
-    /**
-     * A list of possible prompts to show when the chat is empty.
-     */
-    const questionPrompts = [
-        'How can I get my event catered?',
-        'What time does Cafe Law open?',
-        'When do dining halls close for recess?',
-        'Where can I find vegan pizza?',
-    ]
+    useEffect(() => {
+        /**
+         * A list of possible prompts to show when the chat is empty.
+         */
+        const questionPrompts = [
+            'How can I get my event catered?',
+            'What time does Cafe Law open?',
+            'When do dining halls close for recess?',
+            'Where can I find vegan pizza?',
+        ]
+        
+        /**
+         * 
+         * @param num A number of prompts to return
+         * @returns 
+         */
+        const getMultipleRandomQuestionPrompts = (num: number | undefined) => {
+            const shuffled = [...questionPrompts].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, num);
+        }
+
+        /**
+         * A list of prompts to show when the chat is empty.
+         */
+        if (!promptsLoaded) {
+            setPromptList(getMultipleRandomQuestionPrompts(4))
+            setpromptsLoaded(true)
+        }
+    }, [])
     
-    /**
-     * 
-     * @param num A number of prompts to return
-     * @returns 
-     */
-    const getMultipleRandomQuestionPrompts = (num: number | undefined) => {
-        const shuffled = [...questionPrompts].sort(() => 0.5 - Math.random());
-        return shuffled.slice(0, num);
-    }
-
-    /**
-     * A list of prompts to show when the chat is empty.
-     */
-    const promptList = getMultipleRandomQuestionPrompts(4)
-
     return (
         <div className={isLoading ? styles.containerLoading : styles.container} role="main">
             {showAuthMessage ? (
@@ -629,7 +636,7 @@ const Chat = () => {
                                         <div className={styles.chatMessageGpt}>
                                             <Answer
                                                 answer={{
-                                                    answer: '.',
+                                                    answer: '&nbsp;',
                                                     citations: []
                                                 }}
                                                 onCitationClicked={() => null}
