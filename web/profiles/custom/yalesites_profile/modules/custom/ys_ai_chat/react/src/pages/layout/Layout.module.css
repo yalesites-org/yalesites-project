@@ -1,6 +1,7 @@
 .layout {
     display: flex;
     flex-direction: column;
+    font-family: 'Mallory, sans-serif';
 }
 
 /* Modal */
