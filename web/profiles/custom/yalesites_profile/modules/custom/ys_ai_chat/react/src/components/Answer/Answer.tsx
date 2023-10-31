@@ -70,8 +70,8 @@ export const Answer = ({
                         className={styles.answerText}
                     />
                 </Stack.Item>
-                <Stack horizontal className={styles.answerFooter}>
                 {!!parsedAnswer.citations.length && (
+                <Stack horizontal className={styles.answerFooter}>
                     <Stack.Item
                         onKeyDown={e => e.key === "Enter" || e.key === " " ? toggleIsRefAccordionOpen() : null}
                     >
@@ -90,11 +90,10 @@ export const Answer = ({
                                 onClick={handleChevronClick} iconName={chevronIsExpanded ? 'ChevronDown' : 'ChevronRight'}
                                 />
                             </Stack>
-                            
                         </Stack>
                     </Stack.Item>
-                )}
                 </Stack>
+                )}
                 {chevronIsExpanded && 
                     <div style={{ marginTop: 8, display: "flex", flexFlow: "wrap row", maxHeight: "150px", gap: "4px" }}>
                         {parsedAnswer.citations.map((citation, idx) => {
