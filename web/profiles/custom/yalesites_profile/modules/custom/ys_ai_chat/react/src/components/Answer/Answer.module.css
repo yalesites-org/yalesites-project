@@ -2,7 +2,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: 1rem 4.5rem;
+    padding: 1rem 1rem 1rem 4.5rem;
     gap: 0.25rem;
     background: #FFFFFF;
     border: 2px solid hsl(213, 66%, 45%);
@@ -11,6 +11,12 @@
     width: 100%;
     height: 100%;
     transition: all 200ms ease-in-out;
+}
+
+@media screen and (min-width:800px) {
+    .answerContainer {
+        padding: 1rem 4.5rem;
+    }
 }
 
 

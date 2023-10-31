@@ -608,7 +608,7 @@ const Chat = () => {
                                 </div>
                             </Stack>
                         ) : (
-                            <div className={styles.chatMessageStream} style={{ marginBottom: isLoading ? "40px" : "0px" }} role="log">
+                            <div className={styles.chatMessageStream} style={{ marginBottom: isLoading ? "40px" : "" }} role="log">
                                 <div ref={chatMessageStreamStart} className={styles.chatMessageStreamStart} />
                                 {messages.map((answer, index) => (
                                     <>
@@ -716,13 +716,13 @@ const Chat = () => {
                 </Stack>
             )}
 
-            <Stack.Item className={styles.answerDisclaimerContainer}>
+            {/* <Stack.Item className={styles.answerDisclaimerContainer}>
                 <div className={styles.answerDisclaimer}>
                     <span className={styles.answerDisclaimerText}>This chat is powered by artificial intelligence.</span>
                     <span className={styles.answerDisclaimerSeparator}>|</span> 
                     <span className={styles.answerDisclaimerText}>Share feedback</span>
                 </div>
-            </Stack.Item>
+            </Stack.Item> */}
         </div>
     );
 };
