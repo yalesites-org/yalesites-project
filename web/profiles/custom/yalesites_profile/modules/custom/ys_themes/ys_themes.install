@@ -43,3 +43,20 @@ function ys_themes_update_9001() {
   }
 
 }
+
+/**
+ * Implements hook_update().
+ *
+ * This update will migrate old footer setting theme four to theme one.
+ */
+function ys_themes_update_9002() {
+  $themeConfig = \Drupal::service('config.factory')->getEditable('ys_themes.theme_settings');
+
+  // Migrate search setting from core to header.
+  if ($themeConfig->get('footer_theme')) {
+    if ($themeConfig->get('footer_theme') == 'four') {
+      $themeConfig->set('footer_theme', 'one')->save();
+    }
+  }
+
+}
