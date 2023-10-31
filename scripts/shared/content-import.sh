@@ -6,6 +6,13 @@ STARTERKIT_FILE="starterkit.zip"
 # Download starterkit export.
 curl -s -O -L https://github.com/yalesites-org/yalesites-starterkit/releases/download/"$STARTERKIT_VERSION"/"$STARTERKIT_FILE"
 
+if [ $? -eq 0 ]; then
+  echo "Starterkit file downloaded successfully."
+else
+  echo "Failed to download starterkit file."
+  exit -1
+fi
+
 # Check if running under lando, otherwise assume CI.
 # Put starterkit file in place and import.
 # Clean up, and set front page in config.
