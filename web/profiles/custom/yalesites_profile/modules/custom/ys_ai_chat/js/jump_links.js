@@ -1,6 +1,6 @@
 /**
  * @file
- * JavaScript for alert settings form confirmation modal.
+ * JavaScript for jump links when askYale is on a page.
  */
 
 ((Drupal) => {
