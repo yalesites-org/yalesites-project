@@ -60,6 +60,30 @@ export const Answer = ({
     return (
         <>
             <Stack className={styles.answerContainer} tabIndex={0}>
+            {!!parsedAnswer.citations.length && (
+                <Stack horizontal className={styles.answerHeader}>
+                    <span className={styles.answerHeaderLabel}>References:</span>
+                    <ul className={styles.citationList}>
+                        {parsedAnswer.citations.map((citation, idx) => {
+                            return (
+                                <li>
+                                    <button 
+                                    className={styles.citationContainer}
+                                    title={createCitationFilepath(citation, ++idx)} 
+                                    tabIndex={0} 
+                                    role="button" 
+                                    key={idx} 
+                                    onClick={() => onCitationClicked(citation)} 
+                                    onKeyDown={e => e.key === "Enter" || e.key === " " ? onCitationClicked(citation) : null}
+                                    aria-label={createCitationFilepath(citation, idx)}>
+                                        <div className={styles.citation}>{idx}</div>
+                                        {createCitationFilepath(citation, idx, true)}
+                                    </button>
+                                </li>);
+                        })}
+                    </ul>
+                </Stack>
+            )}
             <img className={styles.chatMessageAIMessageAvatar} src={aiAvatar}/>
 
                 <Stack.Item grow>
@@ -70,7 +94,7 @@ export const Answer = ({
                         className={styles.answerText}
                     />
                 </Stack.Item>
-                {!!parsedAnswer.citations.length && (
+                {/* {!!parsedAnswer.citations.length && (
                 <Stack horizontal className={styles.answerFooter}>
                     <Stack.Item
                         onKeyDown={e => e.key === "Enter" || e.key === " " ? toggleIsRefAccordionOpen() : null}
@@ -114,7 +138,7 @@ export const Answer = ({
                                 </li>);
                         })}
                     </ul>
-                }
+                } */}
             </Stack>
         </>
     );

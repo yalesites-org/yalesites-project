@@ -1,12 +1,11 @@
 /**
  * @file
- * JavaScript for alert settings form confirmation modal.
+ * JavaScript for jump links when askYale is on a page.
  */
 
 ((Drupal) => {
   Drupal.behaviors.ysAiChatJumpLinks = {
     attach: function() { // eslint-disable-line
-      console.log(`Here I am`);
 
       // Select all h2, h3, and h4 elements inside the main element.
       const headings = document.querySelectorAll('main h2, main h3, main h4');
