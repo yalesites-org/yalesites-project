@@ -90,3 +90,8 @@ display: flex;
 .block-wrapper .text p {
   margin: 0;
 } 
+
+/* Get sticky footer to work in Layout Builder */
+#block-yalesitesfooterblock {
+  margin-top: auto;
+}
