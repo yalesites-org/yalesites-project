@@ -2,7 +2,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: 1rem 1rem 1rem 4.5rem;
+    padding: 1rem 1rem 2rem 4.5rem;
     gap: 0.25rem;
     background: #FFFFFF;
     border: 2px solid hsl(213, 66%, 45%);
@@ -15,24 +15,24 @@
 
 @media screen and (min-width:800px) {
     .answerContainer {
-        padding: 1rem 4.5rem;
+        padding: 1rem 1rem 2rem 4.5rem;
     }
 }
 
-
 .chatMessageAIMessageAvatar {
     position: absolute;
-    top: 2rem;
+    top: 1rem;
     left: 1rem;
     width: 2.5rem;
     height: 2.5rem;
 }
 
 .answerText {
+    font-family: 'Mallory', sans-serif;
     font-style: normal;
     font-weight: 400;
-    font-size: 1.1rem;
-    line-height: 1.2;
+    font-size: 1rem;
+    line-height: 1.3;
     color: #222;
     flex: none;
     order: 1;
@@ -41,7 +41,22 @@
     white-space: normal;
     word-wrap: break-word;
     max-width: 800px;
-    overflow-x: auto;
+}
+
+@media screen and (min-width:800px) {
+    font-size: 1.1rem;
+}
+
+.answerText > *:first-child {
+    margin-top: 0;
+}
+
+.answerText > *:last-child {
+    margin-bottom: 0;
+}
+
+.answerText ol {
+    padding-left: 1.5rem;
 }
 
 .answerReferences {
@@ -57,6 +72,7 @@
     justify-content: space-between;
     border-top: 1px solid hsl(213, 66%, 45%);
     padding-top: 0.5rem;
+    margin-top: 0.5rem;
 }
 
 .citationContainer {
@@ -65,7 +81,7 @@
     font-weight: 400;
     font-size: 0.9rem;
     line-height: 1;
-
+    background: white;
     color: #115EA3;
     display: flex;
     flex-direction: row;
@@ -75,8 +91,24 @@
     border: 1px solid hsl(213, 66%, 45%);
 }
 
-.citationContainer + .citationContainer {
-    margin-left: 0.5rem;
+.citationList {
+    padding: 0;
+    margin: .5rem 0 0;
+    display: flex;
+    flex-flow: column nowrap;
+    gap: .5rem;
+}
+
+@media screen and (min-width:800px) {
+    .citationList {
+        flex-flow: row wrap;
+    } 
+}
+
+.citationList li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
 }
 
 .citationContainer:hover {
@@ -128,6 +160,7 @@
 }
 
 .accordionTitle {
+    font-family: 'Mallory', sans-serif;
     margin:0;
     font-style: normal;
     font-weight: 400;

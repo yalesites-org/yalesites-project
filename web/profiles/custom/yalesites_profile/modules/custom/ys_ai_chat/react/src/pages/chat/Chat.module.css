@@ -1,23 +1,30 @@
 :root {
-    --chat-width: 1100px;
+    --chat-width: 900px;
+    --error-red-100: #FBE9E9;
+    --error-red-200: #F7D2D2;
+    --error-red-300: #EFA6A6;
+    --error-red-400: #E67979;
+    --error-red-500: #DE4D4D;
+    --error-red-600: #D62020;
+    --error-red-700: #AB1A1A;
+    --error-red-800: #801313;
+    --error-red-900: #560D0D;
+    --error-red-1000: #2B0606;
 }
 .container,
 .containerLoading {
-    /* flex: 1;
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 20px; */
+    gap: 20px;
     padding: 1rem;
-    /* overflow-y: auto;
-    justify-content: flex-end; */
 }
 
 .chatRoot {
-    /* flex: 1;
+    flex: 1;
     display: flex;
     margin: 0;
-    gap: 5px; */
-    position: relative;
+    gap: 5px;
 }
 
 .chatEmptyWrapper {
@@ -31,18 +38,16 @@
 }
 
 .chatContainer {
-    /* flex: 1;
+    flex: 1;
     display: flex;
-    gap: 1rem;
     flex-direction: column;
-    align-items: center; */
+    align-items: center;
     max-width: var(--chat-width);
-    /* min-height: 450px;
-    margin-left: auto;
-    margin-right: auto; */
+    min-height: 450px;
     max-height: 90vh;
-    overflow: auto;
-    /* justify-content: flex-end; */
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
 }
 
 .chatEmptyState {
@@ -100,28 +105,21 @@
 }
 
 .chatMessageStream {
-    display: flex;
-    flex-flow: column nowrap;
-    gap: 1rem;
-    justify-content: flex-end;
     flex-grow: 1;
     width: 100%;
     height: 100%;
-    margin-top: calc(67px + 10px); /* matches height of .header + 10px */
-    margin-bottom: calc(88px + 10px); /* matches height of .header + 10px */
-    /* max-height: 600px; */
-    /* overflow-y: auto; */
+    overflow-y: auto;
     position: relative;
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 1rem;
+    padding-top: 60px;
 }
 
 @media screen and (min-width:800px) {
     .chatMessageStream {
-        padding: 0 2rem;
+        padding: 100px 0 0;
     }
-}
-
-.chatMessageStream div:empty {
-    display: none;
 }
 
 .chatMessageStream a {
@@ -137,16 +135,15 @@
 .chatMessageUser {
     display: flex;
     justify-content: flex-end;
-    max-width: 90%;
     align-self: flex-end;
-    /* margin-bottom: 2rem; */
+    max-width: 90%;
 }
 
 .chatMessageUserMessage {
     padding: 1rem 2rem;
     font-style: normal;
     font-weight: 400;
-    font-size: 1.1rem;
+    font-size: 1rem;
     line-height: 1.2;
     color: white;
     white-space: pre-wrap;
@@ -156,12 +153,17 @@
     background-color: hsl(213, 66%, 45%);
 }
 
+@media screen and (min-width:800px) {
+    .chatMessageUserMessage {
+        font-size: 1.1rem;
+    }
+}
+
 .chatMessageGpt {
     display: flex;
     position: relative;
-    max-width: 90%;
     align-self: flex-start;
-    /* margin: 0 auto 2rem; */
+    width: 90%;
 }
 
 @media screen and (min-width:800px) {
@@ -171,45 +173,38 @@
 }
 
 .chatMessageError {
+    background: var(--error-red-700);
+    border: 1px solid var(--error-red-900);
+    border-radius: 2px;
+    color: white;
     padding: 20px;
-    /* background: #EDF5FD; */
-    box-shadow: rgba(182, 52, 67, 1) 1px 1px 2px, rgba(182, 52, 67, 1) 0px 0px 1px;
-    
-    color: #242424;
     flex: none;
     order: 0;
     flex-grow: 0;
-    max-width: 800px;
-}
-
-.chatMessageErrorContent {
-    font-family: "Segoe UI";
+    font-family: 'Mallory', sans-serif;
     font-style: normal;
     font-weight: 400;
     font-size: 1rem;
-    line-height: 1;
+    line-height: 1.2;
     white-space: pre-wrap;
     word-wrap: break-word;
-    gap: 12px;
+}
+
+.chatMessageErrorContentHeader {
+    font-size: 1.2rem;
+    display: flex;
     align-items: center;
+    gap: .5rem;
+    margin-bottom: .5rem;
 }
 
 .chatInput {
     display: block;
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    /* flex: 0 0 100px; */
+    /* position: sticky; */
+    flex: 0 0 100px;
     width: 100%;
     max-width: var(--chat-width);
 }
-
-/* @media screen and (min-width:800px) {
-    .chatInput {
-        padding: 2rem 2rem 0;
-    }
-} */
 
 .chatContainer .chatInput {
     border-color: transparent;
@@ -217,8 +212,8 @@
 
 .chatMessageLoading {
     position: absolute;
-    top: 2rem;
-    left: 4rem;
+    top: 1rem;
+    left: 4.5rem;
     width: 3rem;
     height: 3rem;
 }
@@ -279,13 +274,25 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    z-index: 0;
+    z-index: 2000;
+    font-family: 'Mallory', sans-serif;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    justify-content: space-around;
+    padding: 1rem;
+    margin: -0.5rem;
 }
 
-.citationPanelInner {
-    position: absolute;
-    left: 0; 
-    right: 0; 
+@media screen and (min-width:800px) {
+    .citationPanel {
+        margin: -2rem;
+    }
+}
+
+.citationPanelInner { 
     margin-left: auto; 
     margin-right: auto;
     width: 100%; 
@@ -303,10 +310,12 @@
     position: absolute;
     top: 0;
     left: 0;
+    right: 0;
+    bottom: 0;
     height: 100%;
     width: 100%;
     z-index: 2;
-    background: rgba(0, 69, 120, 0.70);
+    background: rgba(0, 69, 120, 0.90);
     background-blend-mode: multiply;
     backdrop-filter: blur(6.843055725097656px);
 }
@@ -319,6 +328,7 @@
     font-style: normal;
     font-weight: 600;
     font-size: 1rem;
+    text-transform: uppercase;
     line-height: 1;
     color: #000000;
     flex: none;
@@ -338,11 +348,9 @@
 }
 
 .citationPanelTitle {
-    display: flex;
-    align-items: center;
     font-style: normal;
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 1.3rem;
     line-height: 1;
     color: hsl(213, 66%, 45%);
     margin-top: 1rem;
@@ -351,9 +359,12 @@
 } 
 
 .citationPanelTitle svg {
+    margin-left: .25rem;
     width: 1rem;
     height: 1rem;
     fill: hsl(213, 66%, 45%);
+    position: relative;
+    top: 2px;
 }
 
 .citationPanelTitle:hover {
@@ -400,8 +411,30 @@ a {
     cursor: pointer;
 }
 
+/* Answer Disclaimer */
+.answerDisclaimer {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 0.7rem;
+    line-height: 1;
 
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: #707070;
+    flex: none;
+    order: 1;
+    flex-grow: 0;
+    width: 100%;
+    max-width: var(--chat-width);
+    margin: 0 auto;
+}
 
+@media screen and (min-width:800px) {
+    .answerDisclaimer {
+        font-size: 1rem;
+    }
+}
 
 .askButton {
     background: transparent;

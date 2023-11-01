@@ -5,6 +5,7 @@ import { useContext, useEffect, useState } from "react";
 import { HistoryButton } from "../../components/common/Button";
 import { AppStateContext } from "../../state/AppProvider";
 import { CosmosDBStatus } from "../../api";
+import { motion } from "framer-motion"
 
 import aiLogo from "../../assets/Logo.svg";
 import closeButton from "../../assets/Close.svg";
@@ -73,7 +74,11 @@ const Layout = () => {
 const Modal = ({ onClose }: { onClose: () => void }) => {
     return (
         <section className={styles.modal} aria-modal={"true"} role={"dialog"}>
-            <div className={styles.modalContent}>
+            <motion.div 
+                className={styles.modalContent} 
+                initial={{ y: 50, opacity: 0, scale: 0.75 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }} 
+                transition={{ type: "spring", duration: 0.35 }}>
                 <header className={styles.header} role={"banner"}>
                     <Stack horizontal verticalAlign="center" horizontalAlign="space-between" className={styles.headerContainer}>
                         <img src={aiLogo} className={styles.headerTitle} alt="AskYale" />
@@ -93,7 +98,7 @@ const Modal = ({ onClose }: { onClose: () => void }) => {
                         <span className={styles.answerDisclaimerText}>Share feedback</span>
                     </div>
                 </Stack.Item>
-            </div>
+            </motion.div>
         </section>
     );
 };

@@ -28,7 +28,6 @@
     font-size: 1.1rem;
     line-height: 1.2;
     height: 100%;
-    min-height: auto;
     padding: 1rem 3rem 1rem 1rem;
     border: 0.2rem solid hsl(210, 100%, 21%);
     border-radius: 1rem;
@@ -38,15 +37,7 @@
 
 @media screen and (min-width:800px) {
     .questionInputTextArea textarea {
-        display: flex;
-        font-size: 1.1rem;
-        line-height: 1.2;
-        height: 100%;
         padding: 2rem 7rem 1rem 1rem;
-        border: 0.2rem solid hsl(210, 100%, 21%);
-        border-radius: 1rem;
-        overflow: hidden;/* needed to hide ms-embedded unreachable styles */
-        font-weight: 600;
     }
 }
 
@@ -69,8 +60,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 60px;
-    padding: 1rem;
+    width: 70px;
+    height: 100%;
 }
 
 @media screen and (min-width:800px) {
@@ -79,6 +70,7 @@
         flex: 1 auto;
         width: 100px;
         height: 100%;
+        padding: 1rem;
     }
 }
 
