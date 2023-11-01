@@ -65,6 +65,24 @@
     gap: 0.5rem;
 }
 
+.answerHeaderLabel {
+    font-style: normal;
+    font-size: 1rem;
+}
+
+.answerHeader {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    width: 100%;
+    height: auto;
+    box-sizing: border-box;
+    border-bottom: 1px solid hsl(213, 66%, 45%);
+    padding-bottom: 2rem;
+    margin-bottom: 2rem;
+    gap:0.5rem;
+}
+
 .answerFooter {
     display: flex;
     flex-flow: row nowrap;
