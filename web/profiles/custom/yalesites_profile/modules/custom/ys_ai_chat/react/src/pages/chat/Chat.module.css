@@ -286,6 +286,12 @@
     margin: -0.5rem;
 }
 
+@media screen and (min-width:800px) {
+    .citationPanel {
+        margin: -2rem;
+    }
+}
+
 .citationPanelInner { 
     margin-left: auto; 
     margin-right: auto;
@@ -342,8 +348,6 @@
 }
 
 .citationPanelTitle {
-    display: flex;
-    align-items: center;
     font-style: normal;
     font-weight: 600;
     font-size: 1.3rem;
@@ -355,9 +359,12 @@
 } 
 
 .citationPanelTitle svg {
+    margin-left: .25rem;
     width: 1rem;
     height: 1rem;
     fill: hsl(213, 66%, 45%);
+    position: relative;
+    top: 2px;
 }
 
 .citationPanelTitle:hover {
