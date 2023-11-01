@@ -675,7 +675,7 @@ const Chat = () => {
                     
                             <QuestionInput
                                 clearOnSend
-                                placeholder={providedQuestion || "Ask any question..."}
+                                placeholder="Ask any question..."
                                 disabled={isLoading}
                                 providedQuestion={providedQuestion}
                                 onSend={(question, id) => {

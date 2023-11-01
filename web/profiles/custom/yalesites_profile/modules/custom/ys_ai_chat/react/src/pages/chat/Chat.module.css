@@ -235,24 +235,28 @@
 }
 
 .stopGeneratingContainer {
+    display: inline-block;
     box-sizing: border-box;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    padding: 1rem 2rem;
-    gap: 4px;
+    padding: 1rem 1.5rem;
     margin: 1rem 0 3rem;
     position: relative;
-    width: 200px;
-    height: 32px;
-    border: 1px solid hsl(0, 0%, 13%);
+    border: 2px solid #00356B;
+    background: #00356B;
+    color: white;
+    transition: all 0.15s;
+}
+
+.stopGeneratingContainer:hover {
+    background: white;
+    color: #00356B;
+    text-decoration: underline;
 }
 
 .stopGeneratingIcon {
     width: 14px;
     height: 14px;
     color: #424242;
+    display: none !important;
 }
 
 .stopGeneratingText {
@@ -260,14 +264,29 @@
     height: 20px;
     font-style: normal;
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 1.1rem;
     line-height: 1;
     display: flex;
     align-items: center;
-    color: #242424;
     flex: none;
     order: 0;
     flex-grow: 0;
+}
+
+.stopGeneratingText::after {
+    display: inline-block;
+    animation: dotty steps(1,end) 2s infinite;
+    letter-spacing: 0.2rem;
+    margin-left: 0.2rem;
+    content: '';
+}
+
+@keyframes dotty {
+    0%   { content: ''; }
+    25%  { content: '.'; }
+    50%  { content: '..'; }
+    75%  { content: '...'; }
+    100% { content: ''; }
 }
 
 .citationPanel {
