@@ -1,6 +1,9 @@
 {{ elements.alert_block }}
 
-{% set site_header__site_name_is_image = getHeaderSetting('site_name_image') %}
+{% if getHeaderSetting('site_name_image') %}
+  {% set isSiteHeaderLogo = TRUE %}
+  {% set site_header__site_name_is_image = getHeaderSetting('site_name_image') %}
+{% endif %}
 
 {% embed "@organisms/site-header/yds-site-header.twig" with {
   site_name: site_name,
