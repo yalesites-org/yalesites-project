@@ -143,7 +143,7 @@
     padding: 1rem 2rem;
     font-style: normal;
     font-weight: 400;
-    font-size: 1.1rem;
+    font-size: 1rem;
     line-height: 1.2;
     color: white;
     white-space: pre-wrap;
@@ -151,6 +151,12 @@
     position: relative;
     border-radius: 2rem;
     background-color: hsl(213, 66%, 45%);
+}
+
+@media screen and (min-width:800px) {
+    .chatMessageUserMessage {
+        font-size: 1.1rem;
+    }
 }
 
 .chatMessageGpt {
@@ -268,13 +274,19 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    z-index: 0;
+    z-index: 2000;
+    font-family: 'Mallory', sans-serif;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    justify-content: space-around;
+    padding: 1rem;
+    margin: -0.5rem;
 }
 
-.citationPanelInner {
-    position: absolute;
-    left: 0; 
-    right: 0; 
+.citationPanelInner { 
     margin-left: auto; 
     margin-right: auto;
     width: 100%; 
@@ -292,10 +304,12 @@
     position: absolute;
     top: 0;
     left: 0;
+    right: 0;
+    bottom: 0;
     height: 100%;
     width: 100%;
     z-index: 2;
-    background: rgba(0, 69, 120, 0.70);
+    background: rgba(0, 69, 120, 0.90);
     background-blend-mode: multiply;
     backdrop-filter: blur(6.843055725097656px);
 }
@@ -308,6 +322,7 @@
     font-style: normal;
     font-weight: 600;
     font-size: 1rem;
+    text-transform: uppercase;
     line-height: 1;
     color: #000000;
     flex: none;
@@ -331,7 +346,7 @@
     align-items: center;
     font-style: normal;
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 1.3rem;
     line-height: 1;
     color: hsl(213, 66%, 45%);
     margin-top: 1rem;

@@ -6,10 +6,10 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from 'remark-gfm'
 import rehypeRaw from "rehype-raw";
 import uuid from 'react-uuid';
+import { motion } from "framer-motion"
 
 import styles from "./Chat.module.css";
 import loading from "../../assets/loader-chat.gif";
-import Azure from "../../assets/Azure.svg";
 
 import {
     ChatMessage,
@@ -688,7 +688,11 @@ const Chat = () => {
                     {/* Citation Panel */}
                     {messages && messages.length > 0 && isCitationPanelOpen && activeCitation && (
                     <Stack.Item className={styles.citationPanel} tabIndex={0} role="tabpanel" aria-label="Citations Panel">
-                        <div className={styles.citationPanelInner}>
+                        <motion.div 
+                            className={styles.citationPanelInner}
+                            initial={{ y: 50, opacity: 0, scale: 0.75 }}
+                            animate={{ y: 0, opacity: 1, scale: 1 }} 
+                            transition={{ type: "spring", duration: 0.35 }}>
 
                             <Stack aria-label="Citations Panel Header Container" horizontal className={styles.citationPanelHeaderContainer} horizontalAlign="space-between" verticalAlign="center">
                                 <span aria-label="Citations" className={styles.citationPanelHeader}>Citations</span>
@@ -709,7 +713,7 @@ const Chat = () => {
                                 rehypePlugins={[rehypeRaw]}
                             />
                             </div>
-                        </div>
+                        </motion.div>
                     </Stack.Item>
                 )}
                 {(appStateContext?.state.isChatHistoryOpen && appStateContext?.state.isCosmosDBAvailable?.status !== CosmosDBStatus.NotConfigured) && <ChatHistoryPanel/>}

@@ -95,24 +95,25 @@ export const Answer = ({
                 </Stack>
                 )}
                 {chevronIsExpanded && 
-                    <div style={{ marginTop: 8, display: "flex", flexFlow: "wrap row", maxHeight: "150px", gap: "4px" }}>
+                    <ul className={styles.citationList}>
                         {parsedAnswer.citations.map((citation, idx) => {
                             return (
-                                <span 
+                                <li>
+                                    <button 
+                                    className={styles.citationContainer}
                                     title={createCitationFilepath(citation, ++idx)} 
                                     tabIndex={0} 
-                                    role="link" 
+                                    role="button" 
                                     key={idx} 
                                     onClick={() => onCitationClicked(citation)} 
                                     onKeyDown={e => e.key === "Enter" || e.key === " " ? onCitationClicked(citation) : null}
-                                    className={styles.citationContainer}
-                                    aria-label={createCitationFilepath(citation, idx)}
-                                >
-                                    <div className={styles.citation}>{idx}</div>
-                                    {createCitationFilepath(citation, idx, true)}
-                                </span>);
+                                    aria-label={createCitationFilepath(citation, idx)}>
+                                        <div className={styles.citation}>{idx}</div>
+                                        {createCitationFilepath(citation, idx, true)}
+                                    </button>
+                                </li>);
                         })}
-                    </div>
+                    </ul>
                 }
             </Stack>
         </>
