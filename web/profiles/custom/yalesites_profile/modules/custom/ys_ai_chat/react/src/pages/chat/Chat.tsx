@@ -630,8 +630,8 @@ const Chat = () => {
                                                     onCitationClicked={c => onShowCitation(c)}
                                                 />
                                             </div> : answer.role === "error" ? <div className={styles.chatMessageError}>
-                                                <Stack horizontal className={styles.chatMessageErrorContent}>
-                                                    <ErrorCircleRegular className={styles.errorIcon} style={{color: "rgba(182, 52, 67, 1)"}} />
+                                                <Stack horizontal className={styles.chatMessageErrorContentHeader}>
+                                                    <ErrorCircleRegular className={styles.errorIcon} />
                                                     <span>Error</span>
                                                 </Stack>
                                                 <span className={styles.chatMessageErrorContent}>{answer.content}</span>
@@ -715,14 +715,6 @@ const Chat = () => {
                 {(appStateContext?.state.isChatHistoryOpen && appStateContext?.state.isCosmosDBAvailable?.status !== CosmosDBStatus.NotConfigured) && <ChatHistoryPanel/>}
                 </Stack>
             )}
-
-            <Stack.Item className={styles.answerDisclaimerContainer}>
-                <div className={styles.answerDisclaimer}>
-                    <span className={styles.answerDisclaimerText}>This chat is powered by artificial intelligence.</span>
-                    <span className={styles.answerDisclaimerSeparator}>|</span> 
-                    <span className={styles.answerDisclaimerText}>Share feedback</span>
-                </div>
-            </Stack.Item>
         </div>
     );
 };

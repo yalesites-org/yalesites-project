@@ -86,6 +86,13 @@ const Modal = ({ onClose }: { onClose: () => void }) => {
                     </Stack>
                 </header>
                 <Outlet />
+                <Stack.Item className={styles.answerDisclaimerContainer}>
+                    <div className={styles.answerDisclaimer}>
+                        <span className={styles.answerDisclaimerText}>This chat is powered by artificial intelligence.</span>
+                        <span className={styles.answerDisclaimerSeparator}>|</span> 
+                        <span className={styles.answerDisclaimerText}>Share feedback</span>
+                    </div>
+                </Stack.Item>
             </div>
         </section>
     );

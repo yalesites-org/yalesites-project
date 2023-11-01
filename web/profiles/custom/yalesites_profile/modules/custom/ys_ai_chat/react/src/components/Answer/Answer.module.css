@@ -2,7 +2,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: 1rem 4.5rem;
+    padding: 1rem 1rem 1rem 4.5rem;
     gap: 0.25rem;
     background: #FFFFFF;
     border: 2px solid hsl(213, 66%, 45%);
@@ -13,16 +13,22 @@
     transition: all 200ms ease-in-out;
 }
 
+@media screen and (min-width:800px) {
+    .answerContainer {
+        padding: 1rem 4.5rem;
+    }
+}
 
 .chatMessageAIMessageAvatar {
     position: absolute;
-    top: 2rem;
+    top: 1rem;
     left: 1rem;
     width: 2.5rem;
     height: 2.5rem;
 }
 
 .answerText {
+    font-family: 'Mallory', sans-serif;
     font-style: normal;
     font-weight: 400;
     font-size: 1.1rem;
@@ -36,6 +42,14 @@
     word-wrap: break-word;
     max-width: 800px;
     overflow-x: auto;
+}
+
+.answerText > *:first-child {
+    margin-top: 0;
+}
+
+.answerText > *:last-child {
+    margin-bottom: 0;
 }
 
 .answerReferences {
@@ -122,6 +136,7 @@
 }
 
 .accordionTitle {
+    font-family: 'Mallory', sans-serif;
     margin:0;
     font-style: normal;
     font-weight: 400;
