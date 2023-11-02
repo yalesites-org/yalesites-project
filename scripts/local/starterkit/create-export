@@ -94,8 +94,11 @@ unzipToFolder() {
 
 # handles creating a commit for any new files if the directory is a git repo
 createCommit() {
+    local hasGit
+
     pushd "$1" || exit 1
-    if [[ -d .git ]]; then
+    hasGit=$(git rev-parse --show-toplevel 2> /dev/null)
+    if [[ "$hasGit" ]]; then
         git add .
         git commit -a -m "Content update: $(date)"
         # git push
