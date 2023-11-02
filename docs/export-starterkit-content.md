@@ -1,0 +1,53 @@
+# Exporting starterkit content
+
+## Purpose
+
+There are certain YaleSite sites whose purpose is to provide a starting set of
+pages for new YaleSites to use. This is a way to export the content of those
+sites for import into a new site.  This document will focus on the yalesites
+starterkit site. (ys-starterkit)
+
+## What does it do?
+
+This will attempt to execute an export of the pantheon site using the terminus
+command, then SFTP to it to retrieve the zip file, and attempt to unzip it into
+a git repository to make a new commit.
+
+New commits will look like the following:
+
+`Content update: <date>`
+
+## Prerequisites
+
+1. The following installed:
+    1. Terminus
+    2. Sftp
+    3. Git
+1. [Terminus with auth tokens already provided](https://github.com/yalesites-org/yalesites-project/blob/develop/docs/setup.md#terminus)
+
+## Usage
+
+1. Clone this repository.
+1. Clone the [yalesites-starterkit](https://github.com/yalesites-org/yalesites-starterkit) repository at a separate location.
+1. In this local repository, you'll run the following:
+  
+  ```sh
+  PANTHEON_NAME=<pantheon site name> SFTP_PORT=2222 \
+  SFTP_URI="<sftp username@sftp url>" ./scripts/local/starterkit/create-export \
+  <location of yalesites-starterkit>/starterkit
+  ```
+  
+4. PANTHEON_NAME is the name of the Pantheon site you want to export from.
+   (i.e. ys-starterkit.dev)
+1. SFTP_PORT is the port number for the SFTP connection. (i.e. 2222)
+1. SFTP_URI is the username and url for the SFTP connection. (username@url)
+
+## Where can I get this information?
+
+* PANTHEON_NAME: This is the name of the site as it appears in the Pantheon
+  dashboard.
+* SFTP_PORT: Usually port 2222, it is also on the connection information in the
+  dashboard.
+* SFTP_URI: This is the username and url for the SFTP connection. It is also on
+  the connection information in the dashboard.  It must be in the form of
+  username@url.
