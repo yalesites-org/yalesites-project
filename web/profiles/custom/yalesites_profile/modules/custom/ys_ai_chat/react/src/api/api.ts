@@ -2,7 +2,7 @@ import { UserInfo, ConversationRequest, Conversation, ChatMessage, CosmosDBHealt
 import { chatHistorySampleData } from "../constants/chatHistory";
 
 export async function conversationApi(options: ConversationRequest, abortSignal: AbortSignal): Promise<Response> {
-    const response = await fetch("https://yalechanceryvectorchatgpt4.azurewebsites.net/conversation", {
+    const response = await fetch("https://askyalewebapp.azurewebsites.net/conversation", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -17,7 +17,7 @@ export async function conversationApi(options: ConversationRequest, abortSignal:
 }
 
 export async function getUserInfo(): Promise<UserInfo[]> {
-    const response = await fetch('https://yalechanceryvectorchatgpt4.azurewebsites.net/.auth/me');
+    const response = await fetch('https://askyalewebapp.azurewebsites.net/.auth/me');
     if (!response.ok) {
         console.log("No identity provider found. Access to chat will be blocked.")
         return [];
@@ -36,7 +36,7 @@ export const fetchChatHistoryInit = (): Conversation[] | null => {
 }
 
 export const historyList = async (): Promise<Conversation[] | null> => {
-    const response = await fetch("https://yalechanceryvectorchatgpt4.azurewebsites.net/history/list", {
+    const response = await fetch("https://askyalewebapp.azurewebsites.net/history/list", {
         method: "GET",
     }).then(async (res) => {
         const payload = await res.json();
@@ -72,7 +72,7 @@ export const historyList = async (): Promise<Conversation[] | null> => {
 }
 
 export const historyRead = async (convId: string): Promise<ChatMessage[]> => {
-    const response = await fetch("https://yalechanceryvectorchatgpt4.azurewebsites.net/history/read", {
+    const response = await fetch("https://askyalewebapp.azurewebsites.net/history/read", {
         method: "POST",
         body: JSON.stringify({
             conversation_id: convId
@@ -118,7 +118,7 @@ export const historyGenerate = async (options: ConversationRequest, abortSignal:
             messages: options.messages
         })
     }
-    const response = await fetch("https://yalechanceryvectorchatgpt4.azurewebsites.net/history/generate", {
+    const response = await fetch("https://askyalewebapp.azurewebsites.net/history/generate", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -136,7 +136,7 @@ export const historyGenerate = async (options: ConversationRequest, abortSignal:
 }
 
 export const historyUpdate = async (messages: ChatMessage[], convId: string): Promise<Response> => {
-    const response = await fetch("https://yalechanceryvectorchatgpt4.azurewebsites.net/history/update", {
+    const response = await fetch("https://askyalewebapp.azurewebsites.net/history/update", {
         method: "POST",
         body: JSON.stringify({
             conversation_id: convId,
@@ -161,7 +161,7 @@ export const historyUpdate = async (messages: ChatMessage[], convId: string): Pr
 }
 
 export const historyDelete = async (convId: string) : Promise<Response> => {
-    const response = await fetch("https://yalechanceryvectorchatgpt4.azurewebsites.net/history/delete", {
+    const response = await fetch("https://askyalewebapp.azurewebsites.net/history/delete", {
         method: "DELETE",
         body: JSON.stringify({
             conversation_id: convId,
@@ -186,7 +186,7 @@ export const historyDelete = async (convId: string) : Promise<Response> => {
 }
 
 export const historyDeleteAll = async () : Promise<Response> => {
-    const response = await fetch("https://yalechanceryvectorchatgpt4.azurewebsites.net/history/delete_all", {
+    const response = await fetch("https://askyalewebapp.azurewebsites.net/history/delete_all", {
         method: "DELETE",
         body: JSON.stringify({}),
         headers: {
@@ -209,7 +209,7 @@ export const historyDeleteAll = async () : Promise<Response> => {
 }
 
 export const historyClear = async (convId: string) : Promise<Response> => {
-    const response = await fetch("https://yalechanceryvectorchatgpt4.azurewebsites.net/history/clear", {
+    const response = await fetch("https://askyalewebapp.azurewebsites.net/history/clear", {
         method: "POST",
         body: JSON.stringify({
             conversation_id: convId,
@@ -234,7 +234,7 @@ export const historyClear = async (convId: string) : Promise<Response> => {
 }
 
 export const historyRename = async (convId: string, title: string) : Promise<Response> => {
-    const response = await fetch("https://yalechanceryvectorchatgpt4.azurewebsites.net/history/rename", {
+    const response = await fetch("https://askyalewebapp.azurewebsites.net/history/rename", {
         method: "POST",
         body: JSON.stringify({
             conversation_id: convId,
@@ -260,7 +260,7 @@ export const historyRename = async (convId: string, title: string) : Promise<Res
 }
 
 export const historyEnsure = async (): Promise<CosmosDBHealth> => {
-    const response = await fetch("https://yalechanceryvectorchatgpt4.azurewebsites.net/history/ensure", {
+    const response = await fetch("https://askyalewebapp.azurewebsites.net/history/ensure", {
         method: "GET",
     })
     .then(async res => {

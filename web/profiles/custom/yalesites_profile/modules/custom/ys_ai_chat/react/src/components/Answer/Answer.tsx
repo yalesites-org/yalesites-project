@@ -37,23 +37,26 @@ export const Answer = ({
     }, [isRefAccordionOpen]);
 
     const createCitationFilepath = (citation: Citation, index: number, truncate: boolean = false) => {
-        let citationFilename = "";
+        // temporarily set citationFilename equal to Citation and index number.
+        let citationFilename = `Citation ${index}`;
 
-        if (citation.filepath && citation.chunk_id) {
-            if (truncate && citation.filepath.length > filePathTruncationLimit) {
-                const citationLength = citation.filepath.length;
-                citationFilename = `${citation.filepath.substring(0, 20)}...${citation.filepath.substring(citationLength -20)} - Part ${parseInt(citation.chunk_id) + 1}`;
-            }
-            else {
-                citationFilename = `${citation.filepath} - Part ${parseInt(citation.chunk_id) + 1}`;
-            }
-        }
-        else if (citation.filepath && citation.reindex_id) {
-            citationFilename = `${citation.filepath} - Part ${citation.reindex_id}`;
-        }
-        else {
-            citationFilename = `Citation ${index}`;
-        }
+        // The following contextual variable declaration is commented out because the returned citactionFilename was not ideal. 
+
+        // if (citation.filepath && citation.chunk_id) {
+        //     if (truncate && citation.filepath.length > filePathTruncationLimit) {
+        //         const citationLength = citation.filepath.length;
+        //         citationFilename = `${citation.filepath.substring(0, 20)}...${citation.filepath.substring(citationLength -20)} - Part ${parseInt(citation.chunk_id) + 1}`;
+        //     }
+        //     else {
+        //         citationFilename = `${citation.filepath} - Part ${parseInt(citation.chunk_id) + 1}`;
+        //     }
+        // }
+        // else if (citation.filepath && citation.reindex_id) {
+        //     citationFilename = `${citation.filepath} - Part ${citation.reindex_id}`;
+        // }
+        // else {
+        //     citationFilename = `Citation ${index}`;
+        // }
         return citationFilename;
     }
 
