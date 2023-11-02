@@ -17,7 +17,7 @@
 # Usage:
 #   PANTHEON_NAME=ys-starterkit.dev SFTP_PORT=2222 \
 #   SFTP_URI="uritothelocation" ./scripts/local/starterkit/create-export \
-#   /code/yalesites-starterkit
+#   /code/yalesites-starterkit/starterkit
 
 # Since this script will attempt to pull the zip from the URL, the SFTP
 # settings must be set beforehand.
