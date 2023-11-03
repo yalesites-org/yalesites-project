@@ -20,7 +20,6 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
     useEffect(() => {
         setQuestion(providedQuestion as string)
     }, [providedQuestion])
-    
 
     const sendQuestion = () => {
         if (disabled || !question.trim()) {
@@ -37,6 +36,10 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
             setQuestion("");
         }
     };
+
+    if (providedQuestion?.length > 0) {
+        sendQuestion();
+    }
 
     const onEnterPress = (ev: React.KeyboardEvent<Element>) => {
         if (ev.key === "Enter" && !ev.shiftKey) {

@@ -594,7 +594,7 @@ const Chat = () => {
                                 <div className={styles.chatEmptyStateContainer}>
                                     <ul className={styles.chatPromptSuggestions}>
                                     {promptList.map((prompt) => (
-                                        <li>
+                                        <li key={prompt}>
                                             <button key={prompt} onClick={() => handleButtonClick(prompt)}>
                                                 <span>{prompt}</span>
                                                 <svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">

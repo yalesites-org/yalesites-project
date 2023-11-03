@@ -30,7 +30,7 @@ export const Answer = ({
     const handleChevronClick = () => {
         setChevronIsExpanded(!chevronIsExpanded);
         toggleIsRefAccordionOpen();
-      };
+    };
 
     useEffect(() => {
         setChevronIsExpanded(isRefAccordionOpen);
@@ -69,7 +69,7 @@ export const Answer = ({
                     <ul className={styles.citationList}>
                         {parsedAnswer.citations.map((citation, idx) => {
                             return (
-                                <li>
+                                <li key={idx}>
                                     <button 
                                     className={styles.citationContainer}
                                     title={createCitationFilepath(citation, ++idx)} 
