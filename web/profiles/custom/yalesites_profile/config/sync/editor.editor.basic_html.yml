@@ -29,10 +29,10 @@ settings:
   plugins:
     ckeditor5_alignment:
       enabled_alignments:
-        - left
         - center
-        - right
         - justify
+        - left
+        - right
     ckeditor5_heading:
       enabled_headings:
         - heading2
