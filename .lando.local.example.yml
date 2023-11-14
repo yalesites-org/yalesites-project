@@ -42,5 +42,6 @@ services:
     overrides:
       environment:
         COMPOSER_PROCESS_TIMEOUT: 1800
+        CUSTOMER_SECRETS_FAKE_FILE: /app/secrets.json
     # This is needed to expose the reverse proxy to the xdebug port (9003)
     xdebug: true

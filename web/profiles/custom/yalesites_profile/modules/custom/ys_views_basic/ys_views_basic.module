@@ -59,3 +59,14 @@ function ys_views_basic_views_data_alter(array &$data) {
   ];
 
 }
+
+/**
+ * Implements hook_views_pre_build().
+ */
+function ys_views_basic_views_pre_build($view) {
+  static $counter = 0;
+
+  if (empty($view->dom_id)) {
+    $view->dom_id = "view_" . $counter++;
+  }
+}
