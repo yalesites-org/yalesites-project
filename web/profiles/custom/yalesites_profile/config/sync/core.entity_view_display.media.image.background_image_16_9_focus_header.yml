@@ -1,0 +1,36 @@
+uuid: c8e77859-a557-41b4-b240-2869c47c5b87
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.media.background_image_16_9_focus_header
+    - field.field.media.image.field_media_image
+    - media.type.image
+    - responsive_image.styles.background_image_focus_header
+  module:
+    - layout_builder
+    - responsive_image
+third_party_settings:
+  layout_builder:
+    enabled: false
+    allow_custom: false
+id: media.image.background_image_16_9_focus_header
+targetEntityType: media
+bundle: image
+mode: background_image_16_9_focus_header
+content:
+  field_media_image:
+    type: responsive_image
+    label: hidden
+    settings:
+      responsive_image_style: background_image_focus_header
+      image_link: ''
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  created: true
+  name: true
+  search_api_excerpt: true
+  thumbnail: true
+  uid: true

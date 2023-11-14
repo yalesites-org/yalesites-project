@@ -1,0 +1,15 @@
+uuid: a28b30bb-3075-4d17-9d9d-11e14e704f29
+langcode: en
+status: true
+dependencies: {  }
+name: '16_9_2400'
+label: '16:9 (2400)'
+effects:
+  85d811de-88a2-4dc4-818a-a7151fbcdcd8:
+    uuid: 85d811de-88a2-4dc4-818a-a7151fbcdcd8
+    id: image_scale_and_crop
+    weight: 1
+    data:
+      width: 2400
+      height: 1350
+      anchor: center-center

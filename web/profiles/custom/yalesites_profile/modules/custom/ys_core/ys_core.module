@@ -157,7 +157,7 @@ function ys_core_preprocess_region(&$variables) {
       $focusHeaderImageFileUri = $fileEntity->load($focusHeaderImageMedia->field_media_image->target_id)->getFileUri();
       $focusHeaderImageRender = [
         '#type' => 'responsive_image',
-        '#responsive_image_style_id' => 'banner_16_5_',
+        '#responsive_image_style_id' => 'background_image_focus_header',
         '#uri' => $focusHeaderImageFileUri,
         '#attributes' => [
           'alt' => $focusHeaderImageMedia->get('field_media_image')->first()->get('alt')->getValue(),
