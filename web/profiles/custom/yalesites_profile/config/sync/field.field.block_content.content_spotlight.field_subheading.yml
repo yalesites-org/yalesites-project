@@ -5,13 +5,9 @@ dependencies:
   config:
     - block_content.type.content_spotlight
     - field.storage.block_content.field_subheading
+    - filter.format.heading_html
   module:
-    - allowed_formats
     - text
-third_party_settings:
-  allowed_formats:
-    allowed_formats:
-      - heading_html
 id: block_content.content_spotlight.field_subheading
 field_name: field_subheading
 entity_type: block_content
@@ -22,5 +18,7 @@ required: false
 translatable: false
 default_value: {  }
 default_value_callback: ''
-settings: {  }
+settings:
+  allowed_formats:
+    - heading_html
 field_type: text

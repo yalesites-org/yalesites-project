@@ -10,7 +10,6 @@ module:
   better_exposed_filters: 0
   block: 0
   block_content: 0
-  block_content_permissions: 0
   breakpoint: 0
   calendar_link: 0
   captcha: 0
@@ -96,6 +95,7 @@ module:
   paragraphs_features: 0
   path: 0
   path_alias: 0
+  phpass: 0
   publishcontent: 0
   quick_node_clone: 0
   recaptcha: 0

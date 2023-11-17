@@ -410,3 +410,16 @@
   color: var(--darkest-gray);
   padding: var(--size-spacing-5);
 }
+
+/* Drupal 10 fix */
+
+#drupal-off-canvas
+  .ys-themes--global-settings
+  :is(#drupal-off-canvas-wrapper input[type="radio"])
+  + label,
+#drupal-off-canvas
+  .ys-themes--global-settings
+  :is(#drupal-off-canvas-wrapper input[type="checkbox"])
+  + label {
+  display: block;
+}

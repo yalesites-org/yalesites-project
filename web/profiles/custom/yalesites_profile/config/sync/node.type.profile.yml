@@ -36,9 +36,14 @@ third_party_settings:
   search_api_exclude:
     enabled: 1
   node_revision_delete:
-    minimum_revisions_to_keep: 1
-    minimum_age_to_delete: 12
-    when_to_delete: 0
+    amount:
+      status: true
+      settings:
+        amount: 1
+    created:
+      status: true
+      settings:
+        age: 12
 name: Profile
 type: profile
 description: 'Manage and present profiles and directories on your website.'
