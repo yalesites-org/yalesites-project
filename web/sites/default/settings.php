@@ -37,5 +37,16 @@ if (file_exists($local_settings)) {
   include $local_settings;
 }
 
+/**
+ * If there is a site-specific settings file, then include it
+ */
+if (isset($_ENV['PANTHEON_SITE_NAME'])) {
+  $site_settings = __DIR__ . "/settings." . $_ENV['PANTHEON_SITE_NAME'] . ".php";
+
+  if (file_exists($site_settings)) {
+    include $site_settings;
+  }
+}
+
 // Set the install profile as the source of site config.
 $settings['config_sync_directory'] = 'profiles/custom/yalesites_profile/config/sync';

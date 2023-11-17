@@ -7,6 +7,7 @@ dependencies:
     - filter.format.heading_html
     - filter.format.restricted_html
   module:
+    - file
     - filter
     - google_analytics
     - media
@@ -19,6 +20,7 @@ weight: 1
 is_admin: false
 permissions:
   - 'access content'
+  - 'delete own files'
   - 'opt-in or out of google analytics tracking'
   - 'use text format basic_html'
   - 'use text format heading_html'
