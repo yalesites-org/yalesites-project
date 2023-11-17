@@ -5,15 +5,15 @@ workflows:
   clone_database:
     after:
       - type: webphp
-        description: Import configuration from .yml files
-        script: private/scripts/confim.php
+        description: Run drush deploy
+        script: private/scripts/drush_deploy.php
   deploy:
     after:
       - type: webphp
-        description: Import configuration from .yml files
-        script: private/scripts/confim.php
+        description: Run drush deploy
+        script: private/scripts/drush_deploy.php
   sync_code:
     after:
       - type: webphp
-        description: Import configuration from .yml files
-        script: private/scripts/confim.php
+        description: Run drush deploy
+        script: private/scripts/drush_deploy.php
