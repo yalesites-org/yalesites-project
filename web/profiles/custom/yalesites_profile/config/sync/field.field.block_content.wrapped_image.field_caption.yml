@@ -5,13 +5,9 @@ dependencies:
   config:
     - block_content.type.wrapped_image
     - field.storage.block_content.field_caption
+    - filter.format.restricted_html
   module:
-    - allowed_formats
     - text
-third_party_settings:
-  allowed_formats:
-    allowed_formats:
-      - restricted_html
 id: block_content.wrapped_image.field_caption
 field_name: field_caption
 entity_type: block_content
@@ -22,5 +18,7 @@ required: false
 translatable: false
 default_value: {  }
 default_value_callback: ''
-settings: {  }
+settings:
+  allowed_formats:
+    - restricted_html
 field_type: text_long

@@ -2,7 +2,7 @@ alert_types:
   -
     id: announcement
     label: Announcement
-    description: 'Announcement alerts are for sharing information relevant to the current site users'' actions and goals they are seeking to accomplish. This includes planned outages, closures, important deadlines, and COVID-19 info and regulations.'
+    description: "Announcement alerts are for sharing information relevant to the current site users' actions and goals they are seeking to accomplish. This includes planned outages, closures, important deadlines, and COVID-19 info and regulations."
   -
     id: marketing
     label: Marketing
@@ -10,7 +10,7 @@ alert_types:
   -
     id: emergency
     label: Emergency
-    description: 'Emergency alerts are for sharing information vital to the average user''s current situation. This includes lockdown/safety information, severe weather that requires people to take shelter, or other events with possible detrimental effects on ones safety. Only use this type of alert in the case of an extreme emergency.'
+    description: "Emergency alerts are for sharing information vital to the average user's current situation. This includes lockdown/safety information, severe weather that requires people to take shelter, or other events with possible detrimental effects on ones safety. Only use this type of alert in the case of an extreme emergency."
 alert:
   id: 1660263375
   headline: 'Optional banner for displaying an announcement or notice'

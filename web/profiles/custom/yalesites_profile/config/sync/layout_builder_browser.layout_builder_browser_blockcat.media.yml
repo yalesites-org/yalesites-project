@@ -5,3 +5,4 @@ dependencies: {  }
 id: media
 label: Media
 weight: -8
+opened: true
