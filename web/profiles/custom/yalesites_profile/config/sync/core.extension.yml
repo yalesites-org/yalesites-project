@@ -85,6 +85,7 @@ module:
   migrate: 0
   migrate_plus: 0
   migrate_tools: 0
+  multiple_fields_remove_button: 0
   multivalue_form_element: 0
   mysql: 0
   node: 0
