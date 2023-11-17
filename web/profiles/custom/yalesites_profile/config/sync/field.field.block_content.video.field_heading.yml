@@ -5,13 +5,9 @@ dependencies:
   config:
     - block_content.type.video
     - field.storage.block_content.field_heading
+    - filter.format.heading_html
   module:
-    - allowed_formats
     - text
-third_party_settings:
-  allowed_formats:
-    allowed_formats:
-      - heading_html
 id: block_content.video.field_heading
 field_name: field_heading
 entity_type: block_content
@@ -22,5 +18,7 @@ required: false
 translatable: true
 default_value: {  }
 default_value_callback: ''
-settings: {  }
+settings:
+  allowed_formats:
+    - heading_html
 field_type: text
