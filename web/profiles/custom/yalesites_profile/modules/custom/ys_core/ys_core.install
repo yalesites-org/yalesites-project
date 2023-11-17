@@ -15,6 +15,7 @@ use Drupal\Component\Utility\Xss;
  */
 function ys_core_update_9001() {
   $query = \Drupal::entityQuery('block_content')
+    ->accessCheck(FALSE)
     ->condition('type', 'quick_links')
     ->allRevisions();
 

@@ -80,15 +80,21 @@ filters:
       smartypants_enabled: '1'
       smartypants_hyphens: '2'
       space_hyphens: '0'
-      widont_enabled: '0'
-      hyphenate_shy: '0'
-      space_to_nbsp: '1'
-      wrap_caps: '0'
       wrap_ampersand: '0'
+      widont_enabled: '0'
+      space_to_nbsp: '1'
+      hyphenate_shy: '0'
       wrap_abbr: '0'
-      wrap_numbers: '0'
+      wrap_caps: '0'
       wrap_initial_quotes: '1'
+      wrap_numbers: '0'
       ligatures: 'a:0:{}'
       arrows: 'a:0:{}'
       fractions: 'a:0:{}'
       quotes: 'a:2:{s:2:",,";s:2:",,";s:2:"''''";s:2:"''''";}'
+  filter_image_lazy_load:
+    id: filter_image_lazy_load
+    provider: filter
+    status: true
+    weight: 12
+    settings: {  }
