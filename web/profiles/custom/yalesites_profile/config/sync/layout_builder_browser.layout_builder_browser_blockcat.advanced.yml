@@ -5,3 +5,4 @@ dependencies: {  }
 id: advanced
 label: Advanced
 weight: -7
+opened: true

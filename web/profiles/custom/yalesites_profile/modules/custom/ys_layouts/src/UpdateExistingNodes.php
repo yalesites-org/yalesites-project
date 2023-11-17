@@ -61,7 +61,9 @@ class UpdateExistingNodes {
     if ($this->pageMetaSection instanceof Section) {
 
       // Find all page nodes to update existing.
-      $nids = \Drupal::entityQuery('node')->condition('type', 'page')->execute();
+      $nids = \Drupal::entityQuery('node')
+        ->accessCheck(FALSE)
+        ->condition('type', 'page')->execute();
 
       foreach ($nids as $nid) {
         $node = Node::load($nid);
@@ -117,7 +119,9 @@ class UpdateExistingNodes {
    */
   public function updateExistingPageLock() {
     // Find all page nodes to update existing.
-    $nids = \Drupal::entityQuery('node')->condition('type', 'page')->execute();
+    $nids = \Drupal::entityQuery('node')
+      ->accessCheck(FALSE)
+      ->condition('type', 'page')->execute();
 
     foreach ($nids as $nid) {
       $node = Node::load($nid);
@@ -227,7 +231,9 @@ class UpdateExistingNodes {
     if ($this->postMetaSection instanceof Section) {
 
       // Find all post nodes to update existing.
-      $nids = \Drupal::entityQuery('node')->condition('type', 'post')->execute();
+      $nids = \Drupal::entityQuery('node')
+        ->accessCheck(FALSE)
+        ->condition('type', 'post')->execute();
 
       foreach ($nids as $nid) {
         $node = Node::load($nid);
@@ -295,7 +301,9 @@ class UpdateExistingNodes {
     if ($this->eventMetaSection instanceof Section) {
 
       // Find all event nodes to update existing.
-      $nids = \Drupal::entityQuery('node')->condition('type', 'event')->execute();
+      $nids = \Drupal::entityQuery('node')
+        ->accessCheck(FALSE)
+        ->condition('type', 'event')->execute();
 
       foreach ($nids as $nid) {
         $node = Node::load($nid);

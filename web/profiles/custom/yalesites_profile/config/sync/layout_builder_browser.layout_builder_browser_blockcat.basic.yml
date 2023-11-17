@@ -5,3 +5,4 @@ dependencies: {  }
 id: basic
 label: Basic
 weight: -9
+opened: true

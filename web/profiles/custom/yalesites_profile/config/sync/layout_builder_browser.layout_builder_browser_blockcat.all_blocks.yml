@@ -5,3 +5,4 @@ dependencies: {  }
 id: all_blocks
 label: 'All Blocks'
 weight: -10
+opened: true

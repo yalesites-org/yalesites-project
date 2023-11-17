@@ -126,6 +126,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         'class' => [
           'views-basic--group-user-selection',
         ],
+        'data-drupal-ck-style-fence' => '',
       ],
       '#weight' => 10,
     ];
