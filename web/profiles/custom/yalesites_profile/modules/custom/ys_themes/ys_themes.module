@@ -269,3 +269,12 @@ function ys_themes_preprocess_form_element(array &$variables) {
     }
   }
 }
+
+// WIP: Testing reusable blocks
+function ys_themes_theme_suggestions_block($variables) {
+  if (isset($variables['elements']['content']['#block_content'])) {
+    return [
+      'block__inline_block__' . $variables['elements']['content']['#block_content']->bundle(),
+    ];
+  }
+}
