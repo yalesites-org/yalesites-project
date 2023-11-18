@@ -1,0 +1,13 @@
+name: 'Layout Builder Block Clone (Block Duplicate)'
+type: module
+description: 'Layout Builder Block Clone (Block Duplicate) module.'
+core: 8.x
+core_version_requirement: ^8 || ^9 || ^10
+package: 'drupal'
+dependencies:
+  - drupal:layout_builder
+
+# Information added by Drupal.org packaging script on 2021-02-14
+version: '8.x-1.2'
+project: 'layout_builder_block_clone'
+datestamp: 1613309136

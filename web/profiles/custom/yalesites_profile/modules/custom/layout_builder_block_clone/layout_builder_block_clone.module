@@ -1,0 +1,17 @@
+<?php
+
+use Drupal\layout_builder_block_clone\Element\CloneLayoutBuilderBlock;
+
+/**
+ * Implements hook_element_info_alter().
+ * @param array $info
+ */
+function layout_builder_block_clone_element_info_alter(array &$info) {
+  if (isset($info['layout_builder'])) {
+    // Add 'clone' to metadata operations.
+    $info['layout_builder']['#pre_render'][] = [
+      0 => CloneLayoutBuilderBlock::class,
+      1 => 'preRenderLayoutBuilder',
+    ];
+  }
+}

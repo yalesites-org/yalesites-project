@@ -1,0 +1,9 @@
+layout_builder_block_clone.clone:
+  title: 'Clone'
+  route_name: 'layout_builder_block_clone.clone_block_form'
+  group: 'layout_builder_block'
+  options:
+    attributes:
+      class: ['use-ajax']
+      data-dialog-type: dialog
+      data-dialog-renderer: off_canvas
