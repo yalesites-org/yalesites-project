@@ -30,15 +30,7 @@ function ys_core_theme($existing, $type, $theme, $path): array {
         'items' => [],
       ],
     ],
-    'ys_support_form' => [
-      'variables' => [
-        'link' => NULL,
-      ],
-    ],
     'ys_dashboard' => [
-      'variables' => [],
-    ],
-    'ys_dashboard_resources' => [
       'variables' => [],
     ],
     'ys_social_links' => [
