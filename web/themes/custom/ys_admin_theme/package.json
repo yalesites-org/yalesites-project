@@ -3,7 +3,8 @@
   "version": "0.0.0-development",
   "description": "Admin theme for YaleSites projects.",
   "scripts": {
-    "develop": "sass --watch scss:css",
+    "develop": "npm run copy-tokens && sass --watch scss:css",
+    "copy-tokens": "cp node_modules/@yalesites-org/tokens/build/css/tokens.css ./css",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
