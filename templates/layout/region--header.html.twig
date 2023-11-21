@@ -17,10 +17,11 @@
   {% block site_header__primary_nav %}
     {{ elements.main_navigation }}
   {% endblock %}
-  {% if site_header__background_image %}
-    {% block site_header__background_image %}
+
+  {% block site_header__background_image %}
+    {% if site_header__background_image %}
       {{ site_header__background_image }}
-    {% endblock %}
-  {% endif %}
+    {% endif %}
+  {% endblock %}
 
 {% endembed %}
