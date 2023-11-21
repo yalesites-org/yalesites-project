@@ -160,9 +160,8 @@ function ys_core_preprocess_region(&$variables) {
       $alias = \Drupal::service('path_alias.manager')->getAliasByPath($path);
       $frontPage = \Drupal::config('system.site')->get('page.front');
 
-      $isFrontPage = ($alias == $frontPage || $path == $frontPage || \Drupal::service('path.matcher')->isFrontPage()) ? TRUE : FALSE;
-
       // See if the path is the front page.
+      $isFrontPage = ($alias == $frontPage || $path == $frontPage || \Drupal::service('path.matcher')->isFrontPage());
       $variables['site_header__background_image'] = $isFrontPage ? $focusHeaderImageRender : FALSE;
     }
 
