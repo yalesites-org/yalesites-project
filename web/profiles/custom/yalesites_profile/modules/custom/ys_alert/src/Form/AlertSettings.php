@@ -185,7 +185,7 @@ class AlertSettings extends ConfigFormBase {
       '#autocomplete_route_name' => 'linkit.autocomplete',
       '#default_value' => $config->get('alert.link_url'),
       '#autocomplete_route_parameters' => [
-        'linkit_profile' => 'default',
+        'linkit_profile_id' => 'default',
       ],
     ];
 

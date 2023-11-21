@@ -137,7 +137,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#default_value' => $siteConfig->get('page')['front'],
       '#required' => TRUE,
       '#autocomplete_route_parameters' => [
-        'linkit_profile' => 'default',
+        'linkit_profile_id' => 'default',
       ],
     ];
 
