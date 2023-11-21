@@ -105,7 +105,7 @@ class HeaderSettingsForm extends ConfigFormBase {
       '#options' => [
         'basic' => $this->t('Basic Nav') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/header-basic.svg" class="preview-icon" alt="Basic header icon showing a site title and a simplified navigation.">',
         'mega' => $this->t('Mega Nav') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/header-mega.svg" class="preview-icon" alt="Mega header icon showing a site title and a flyout style mega menu.">',
-        'focus' => $this->t('Focus Nav') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/header-focus.svg" class="preview-icon" alt="TKTKTK">',
+        'focus' => $this->t('Focus Nav') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/header-focus.svg" class="preview-icon" alt="Focus header icon showing single level navigation and simplified header.">',
       ],
       '#title' => $this->t('Header variation'),
       '#default_value' => ($headerConfig->get('header_variation')) ? $headerConfig->get('header_variation') : 'basic',
@@ -228,9 +228,9 @@ class HeaderSettingsForm extends ConfigFormBase {
     $form['nav_position_container']['nav_position'] = [
       '#type' => 'radios',
       '#options' => [
-        'left' => $this->t('Left') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/lever-nav-left.svg" class="preview-icon" alt="Basic header icon showing a site title and a simplified navigation.">',
-        'center' => $this->t('Center') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/lever-nav-center.svg" class="preview-icon" alt="Mega header icon showing a site title and a flyout style mega menu.">',
-        'right' => $this->t('Right') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/lever-nav-right.svg" class="preview-icon" alt="TKTKTK">',
+        'left' => $this->t('Left') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/lever-nav-left.svg" class="preview-icon" alt="Icon showing a left aligned main navigation menu and left aligned site title above the navigation.">',
+        'center' => $this->t('Center') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/lever-nav-center.svg" class="preview-icon" alt="Icon showing a center aligned main navigation menu and centered site title above the navigation.">',
+        'right' => $this->t('Right') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/lever-nav-right.svg" class="preview-icon" alt="Icon showing a right aligned main navigation menu and left aligned site title on the same level as the main navigation.">',
       ],
       '#title' => $this->t('Navigation Position'),
       '#description' => $this->t('Justifies the menu to the left, center, or right.'),
