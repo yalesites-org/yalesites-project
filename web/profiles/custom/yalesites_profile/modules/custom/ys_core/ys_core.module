@@ -155,7 +155,15 @@ function ys_core_preprocess_region(&$variables) {
           'alt' => $focusHeaderImageMedia->get('field_media_image')->first()->get('alt')->getValue(),
         ],
       ];
-      $variables['site_header__background_image'] = (\Drupal::service('path.matcher')->isFrontPage()) ? $focusHeaderImageRender : FALSE;
+
+      $path = \Drupal::service('path.current')->getPath();
+      $alias = \Drupal::service('path_alias.manager')->getAliasByPath($path);
+      $frontPage = \Drupal::config('system.site')->get('page.front');
+
+      $isFrontPage = ($alias == $frontPage || $path == $frontPage || \Drupal::service('path.matcher')->isFrontPage()) ? TRUE : FALSE;
+
+      // See if the path is the front page.
+      $variables['site_header__background_image'] = $isFrontPage ? $focusHeaderImageRender : FALSE;
     }
 
   }
