@@ -81,10 +81,25 @@ retrieveFileFromSftp() {
 EOF
 }
 
+# Remove all files in the destination location before unzipping.
+# The reasoning is that we don't want lingering yml files from nodes
+# we might have deleted since the last export.
+removeCurrentFilesInGitRepo() {
+    read -rp "Are you sure you want to delete the contents of $1? (y/n) " answer
+
+    if [ "$answer" != "y" ]; then
+        echo "Aborting."
+        exit 1
+    fi
+
+    rm -rf "${1:?}"/*
+}
+
 # Unzips the folder to another location so that we can update the git repo.
 unzipToFolder() {
     createFolderIfNotExists "$2"
     if [[ -d "$2" ]]; then
+        removeCurrentFilesInGitRepo "$2"
         unzip -o "$1" -d "$2"
     else
         echo "Folder $2 does not exist and could not create it.  Please see why."
