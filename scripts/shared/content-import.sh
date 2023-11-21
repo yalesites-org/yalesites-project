@@ -1,6 +1,6 @@
 #!/bin/bash
 
-STARTERKIT_VERSION="v1.0.0"
+STARTERKIT_VERSION="latest"
 STARTERKIT_FILE="starterkit.zip"
 
 # Download starterkit export.
