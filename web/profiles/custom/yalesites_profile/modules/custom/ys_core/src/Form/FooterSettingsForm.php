@@ -62,7 +62,8 @@ class FooterSettingsForm extends ConfigFormBase {
     $socialConfig = $this->config('ys_core.social_links');
     $footerConfig = $this->config('ys_core.footer_settings');
 
-    $form['#attached']['library'][] = 'ys_core/footer_settings_form';
+    $form['#attached']['library'][] = 'ys_core/header_footer_settings';
+    $form['#attributes']['class'][] = 'ys-core-header-footer-settings';
 
     $form['footer_variation'] = [
       '#type' => 'radios',
@@ -74,7 +75,7 @@ class FooterSettingsForm extends ConfigFormBase {
       '#default_value' => ($footerConfig->get('footer_variation')) ? $footerConfig->get('footer_variation') : 'basic',
       '#attributes' => [
         'class' => [
-          'footer-variation-radios',
+          'variation-radios',
         ],
       ],
     ];

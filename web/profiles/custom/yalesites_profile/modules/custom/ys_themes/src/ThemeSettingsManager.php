@@ -46,37 +46,6 @@ class ThemeSettingsManager {
         ],
       ],
     ],
-    'nav_position' => [
-      'name' => 'Navigation Position',
-      'prop_type' => 'element',
-      'selector' => '[data-site-header-nav-position]',
-      'default' => 'left',
-      'values' => [
-        'right' => [
-          'label' => 'Right',
-        ],
-        'center' => [
-          'label' => 'Center',
-        ],
-        'left' => [
-          'label' => 'Left',
-        ],
-      ],
-    ],
-    'nav_type' => [
-      'name' => 'Navigation Type',
-      'prop_type' => 'element',
-      'selector' => '[data-menu-variation]',
-      'default' => 'mega',
-      'values' => [
-        'mega' => [
-          'label' => 'Mega Menu',
-        ],
-        'basic' => [
-          'label' => 'Basic Menu',
-        ],
-      ],
-    ],
     'button_theme' => [
       'name' => 'Button Theme',
       'prop_type' => 'element',

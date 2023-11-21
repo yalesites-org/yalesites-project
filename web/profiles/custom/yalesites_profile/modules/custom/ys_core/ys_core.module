@@ -138,9 +138,26 @@ function ys_core_preprocess_block(&$variables) {
  * Implements hook_preprocess_region().
  */
 function ys_core_preprocess_region(&$variables) {
-  $config = \Drupal::config('ys_core.site');
-  if ($variables['elements']['#region'] == 'header' && $config->get('search')) {
-    $variables['utility_nav__search'] = $config->get('search')['enable_search_form'];
+  $config = \Drupal::config('ys_core.header_settings');
+  if ($variables['elements']['#region'] == 'header') {
+    $variables['utility_nav__search'] = ($config->get('search')) ? $config->get('search')['enable_search_form'] : NULL;
+
+    // Responsive image render array for focus header image.
+    if ($focusHeaderImageId = $config->get('focus_header_image')) {
+      $focusHeaderImageMedia = \Drupal::service('entity_type.manager')->getStorage('media')->load($focusHeaderImageId);
+      $fileEntity = \Drupal::service('entity_type.manager')->getStorage('file');
+      $focusHeaderImageFileUri = $fileEntity->load($focusHeaderImageMedia->field_media_image->target_id)->getFileUri();
+      $focusHeaderImageRender = [
+        '#type' => 'responsive_image',
+        '#responsive_image_style_id' => 'background_image_focus_header',
+        '#uri' => $focusHeaderImageFileUri,
+        '#attributes' => [
+          'alt' => $focusHeaderImageMedia->get('field_media_image')->first()->get('alt')->getValue(),
+        ],
+      ];
+      $variables['site_header__background_image'] = (\Drupal::service('path.matcher')->isFrontPage()) ? $focusHeaderImageRender : FALSE;
+    }
+
   }
 }
 
@@ -231,7 +248,7 @@ function ys_core_page_attachments(array &$page) {
   }
 
   // Custom or fallback favicons.
-  $favicons = \Drupal::service('ys_core.favicon_manager')->getFavicons();
+  $favicons = \Drupal::service('ys_core.media_manager')->getFavicons();
   foreach ($favicons as $name => $favicon) {
     $page['#attached']['html_head'][] = [$favicon, $name];
   }
@@ -250,7 +267,7 @@ function ys_core_preprocess_image_widget(&$variables) {
    */
   $element = $variables['element'];
 
-  if (isset($element['#use_favicon_preview'])) {
+  if (isset($element['#use_preview'])) {
 
     $variables['attributes'] = [
       'class' => [
@@ -314,7 +331,8 @@ function ys_core_preprocess_image_widget(&$variables) {
 
     // Sets a twig variable to use the favicon preview.
     // @see web/themes/custom/ys_admin_theme/templates/content-edit/image-widget.html.twig
-    $variables['use_favicon_preview'] = $element['#use_favicon_preview'];
+    $variables['use_favicon_preview'] = $element['#use_favicon_preview'] ?? NULL;
+    $variables['use_svg_preview'] = $element['#use_svg_preview'] ?? NULL;
 
     $variables['data'] = [];
     foreach (Element::children($element) as $child) {
@@ -423,3 +441,14 @@ function _ys_core_get_link(FormStateInterface $form_state) {
 /**
  * End allow menu item extras fields to be included on node add and edit forms.
  */
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function ys_core_preprocess_page(&$variables) {
+  // Add the cache tag, so that the theme setting information is rebuilt
+  // when the config is saved.
+  // Via: https://drupal.stackexchange.com/questions/266379/how-to-clear-cache-for-config-entity-after-making-changes
+  $config = \Drupal::config('ys_core.header_settings');
+  \Drupal::service('renderer')->addCacheableDependency($variables, $config);
+}
