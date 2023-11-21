@@ -64,7 +64,7 @@ retrieveZipLocation() {
     # /code/web, so it errors out.  We redirect the error to stdouot so we can
     # capture the file name that was attempted.  We then use the tmp directory
     # location that it was when it was created, which still exists.
-    zipFilename=$(echo "$1" | head -5 | tail -1 | grep -o "temporary://[^']*" | xargs -I {} basename {})
+    zipFilename=$(echo "$1" | tr '\n' ' ' | tr -d ' ' | grep -o "temporary://[^']*" | xargs -I {} basename {})
     echo "$tmpPath/$zipFilename"
 }
 
