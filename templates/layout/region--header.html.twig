@@ -1,14 +1,27 @@
 {{ elements.alert_block }}
 
+{% if getHeaderSetting('site_name_image') %}
+  {% set isSiteHeaderLogo = TRUE %}
+  {% set site_header__site_name_is_image = getHeaderSetting('site_name_image') %}
+{% endif %}
+
 {% embed "@organisms/site-header/yds-site-header.twig" with {
   site_name: site_name,
   site_header__border_thickness: '8',
   site_header__theme: getThemeSetting('header_theme'),
   site_header__accent: getThemeSetting('header_accent'),
-  site_header__nav_position: getThemeSetting('nav_position'),
-  drupal_utility_nav: elements.utility_navigation
+  site_header__menu__variation: getHeaderSetting('header_variation'),
+  site_header__nav_position: getHeaderSetting('nav_position'),
+  drupal_utility_nav: elements.utility_navigation,
 } %}
   {% block site_header__primary_nav %}
     {{ elements.main_navigation }}
   {% endblock %}
+
+  {% block site_header__background_image %}
+    {% if site_header__background_image %}
+      {{ site_header__background_image }}
+    {% endif %}
+  {% endblock %}
+
 {% endembed %}
