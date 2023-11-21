@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define variable to check from other scripts if this script is being invoked.
-export YALESITES_INSTALL=1
+export YALESITES_IS_LOCAL=1
 
 # Ignore the composer.lock file on local dev only.
 if ! grep -qxF 'composer.lock' .git/info/exclude; then

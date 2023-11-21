@@ -16,7 +16,7 @@ fi
 # Check if running under lando, otherwise assume CI.
 # Put starterkit file in place and import.
 # Clean up, and set front page in config.
-if [ "$YALESITES_INSTALL" == "1" ]; then
+if [ "$YALESITES_IS_LOCAL" == "1" ]; then
   lando drush content:import ../"$STARTERKIT_FILE"
   lando drush cset system.site page.front '/homepage' -y
   rm "$STARTERKIT_FILE"
