@@ -23,6 +23,7 @@ New commits will look like the following:
     1. Terminus
     2. Sftp
     3. Git
+    4. tr (most linux/bsd/unix based systems have this)
 1. [Terminus with auth tokens already provided](https://github.com/yalesites-org/yalesites-project/blob/develop/docs/setup.md#terminus)
 
 ## Usage
@@ -32,22 +33,15 @@ New commits will look like the following:
 1. In this local repository, you'll run the following:
   
   ```sh
-  PANTHEON_NAME=<pantheon site name> SFTP_PORT=2222 \
-  SFTP_URI="<sftp username@sftp url>" ./scripts/local/starterkit/create-export \
+  SITE_MACHINE_NAME=<pantheon site name> \
+  ./scripts/local/starterkit/create-export \
   <location of yalesites-starterkit>/starterkit
   ```
   
-4. PANTHEON_NAME is the name of the Pantheon site you want to export from.
+4. SITE_MACHINE_NAME is the name of the Pantheon site you want to export from.
    (i.e. ys-starterkit.dev)
-1. SFTP_PORT is the port number for the SFTP connection. (i.e. 2222)
-1. SFTP_URI is the username and url for the SFTP connection. (username@url)
 
 ## Where can I get this information?
 
 * PANTHEON_NAME: This is the name of the site as it appears in the Pantheon
   dashboard.
-* SFTP_PORT: Usually port 2222, it is also on the connection information in the
-  dashboard.
-* SFTP_URI: This is the username and url for the SFTP connection. It is also on
-  the connection information in the dashboard.  It must be in the form of
-  username@url.
