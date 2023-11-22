@@ -10,6 +10,18 @@
     "drupal": {
       "type": "composer",
       "url": "https://packages.drupal.org/8"
+    },
+    "ckeditor5-anchor-drupal": {
+      "type": "package",
+      "package": {
+        "name": "northernco/ckeditor5-anchor-drupal",
+        "version": "0.3.0",
+        "type": "drupal-library",
+        "dist": {
+          "url": "https://registry.npmjs.org/@northernco/ckeditor5-anchor-drupal/-/ckeditor5-anchor-drupal-0.3.0.tgz",
+          "type": "tar"
+        }
+      }
     }
   },
   "require": {
@@ -20,6 +32,7 @@
     "drupal/core-recommended": "^10",
     "drush/drush": "^11 || ^12",
     "oomphinc/composer-installers-extender": "^2.0",
+    "northernco/ckeditor5-anchor-drupal": "^0.3.0",
     "pantheon-systems/drupal-integrations": "^10",
     "yalesites-org/yalesites_profile": "*"
   },
