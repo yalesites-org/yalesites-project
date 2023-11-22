@@ -1,0 +1,15 @@
+uuid: b7a8dfd5-46ad-4c2a-9d97-531eb8d0ee4d
+langcode: en
+status: true
+dependencies: {  }
+name: '16_9_600'
+label: '16:9 (600)'
+effects:
+  20ecb5c2-8cb1-4e89-aa5d-0f4e4bf7bdff:
+    uuid: 20ecb5c2-8cb1-4e89-aa5d-0f4e4bf7bdff
+    id: image_scale_and_crop
+    weight: 1
+    data:
+      width: 600
+      height: 337
+      anchor: center-center

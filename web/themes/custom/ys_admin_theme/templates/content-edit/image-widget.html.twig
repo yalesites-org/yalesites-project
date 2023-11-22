@@ -26,9 +26,10 @@ it will load the default Claro version #}
 
 {% if use_favicon_preview %}
   {% include 'file-managed-file--favicon.html.twig' %}
+{% elseif use_svg_preview %}
+  {% include 'file-managed-file--svg.html.twig' %}
 {% else %}
   {% include 'file-managed-file.html.twig' %}
 {% endif %}
 
 {% set attributes = attributes.addClass('form-managed-file--image') %}
-

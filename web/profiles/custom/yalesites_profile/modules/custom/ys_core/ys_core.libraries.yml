@@ -10,9 +10,9 @@ taxonomy_form:
 siteimprove:
   js:
     https://siteimproveanalytics.com/js/siteanalyze_66356571.js: { type: external, attributes: { async: true } }
-footer_settings_form:
+header_footer_settings:
   css:
     theme:
-      css/footer-settings-form.css: {}
+      css/header-footer-settings.css: {}
   js:
-    js/footer-settings.js: {}
+    js/header-footer-settings.js: {}
