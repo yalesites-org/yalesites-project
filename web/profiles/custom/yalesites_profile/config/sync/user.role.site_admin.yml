@@ -39,6 +39,7 @@ dependencies:
     - node.type.page
     - node.type.post
     - node.type.profile
+    - taxonomy.vocabulary.affiliation
     - taxonomy.vocabulary.event_category
     - taxonomy.vocabulary.post_category
     - taxonomy.vocabulary.tags
@@ -118,6 +119,7 @@ permissions:
   - 'create pull_quote block content'
   - 'create quick_links block content'
   - 'create tabs block content'
+  - 'create terms in affiliation'
   - 'create terms in event_category'
   - 'create terms in post_category'
   - 'create terms in tags'
@@ -194,6 +196,7 @@ permissions:
   - 'delete own post content'
   - 'delete own profile content'
   - 'delete own video media'
+  - 'delete terms in affiliation'
   - 'delete terms in event_category'
   - 'delete terms in post_category'
   - 'delete terms in tags'
@@ -240,6 +243,7 @@ permissions:
   - 'edit own profile content'
   - 'edit own video media'
   - 'edit own webform submission'
+  - 'edit terms in affiliation'
   - 'edit terms in event_category'
   - 'edit terms in post_category'
   - 'edit terms in tags'

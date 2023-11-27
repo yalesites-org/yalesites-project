@@ -80,6 +80,14 @@ ys_core.taxonomy_interface_post_category:
   title: Post Category
   route_parameters:
     taxonomy_vocabulary: "post_category"
+# Taxonomy interface - Profile Affiliation
+ys_core.taxonomy_interface_affiliation:
+  description: "Manage profile affiliation taxonomy"
+  parent: ys_core.taxonomy_interface
+  route_name: entity.taxonomy_vocabulary.overview_form
+  title: Profile Affiliation
+  route_parameters:
+    taxonomy_vocabulary: "affiliation"
 # Taxonomy interface - Tags
 ys_core.taxonomy_interface_tags:
   description: "Manage tags taxonomy"
