@@ -84,16 +84,18 @@ class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginIn
       foreach ($footerLogosConfig as $key => $logoData) {
         if ($logoData['logo']) {
           $footerLogoMedia = $this->entityTypeManager->getStorage('media')->load($logoData['logo']);
-          $footerLogoFileUri = $fileEntity->load($footerLogoMedia->field_media_image->target_id)->getFileUri();
-          $footerLogosRender[$key]['url'] = $logoData['logo_url'] ?? NULL;
-          $footerLogosRender[$key]['logo'] = [
-            '#type' => 'responsive_image',
-            '#responsive_image_style_id' => 'image_logos',
-            '#uri' => $footerLogoFileUri,
-            '#attributes' => [
-              'alt' => $footerLogoMedia->get('field_media_image')->first()->get('alt')->getValue(),
-            ],
-          ];
+          if ($footerLogoMedia) {
+            $footerLogoFileUri = $fileEntity->load($footerLogoMedia->field_media_image->target_id)->getFileUri();
+            $footerLogosRender[$key]['url'] = $logoData['logo_url'] ?? NULL;
+            $footerLogosRender[$key]['logo'] = [
+              '#type' => 'responsive_image',
+              '#responsive_image_style_id' => 'image_logos',
+              '#uri' => $footerLogoFileUri,
+              '#attributes' => [
+                'alt' => $footerLogoMedia->get('field_media_image')->first()->get('alt')->getValue(),
+              ],
+            ];
+          }
         }
       }
     }
