@@ -26,8 +26,8 @@ content:
     weight: 0
     region: content
   field_style_alignment:
-    type: list_default
-    label: above
+    type: list_key
+    label: hidden
     settings: {  }
     third_party_settings: {  }
     weight: 2
