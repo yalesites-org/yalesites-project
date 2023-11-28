@@ -4,7 +4,7 @@ STARTERKIT_VERSION="latest"
 STARTERKIT_FILE="starterkit.zip"
 
 # Download starterkit export.
-curl -s -O -L https://github.com/yalesites-org/yalesites-starterkit/releases/download/"$STARTERKIT_VERSION"/"$STARTERKIT_FILE"
+curl -s -O -L https://github.com/yalesites-org/yalesites-starterkit/releases/"$STARTERKIT_VERSION"/download/"$STARTERKIT_FILE"
 
 if [ $? -eq 0 ]; then
   echo "Starterkit file downloaded successfully."
