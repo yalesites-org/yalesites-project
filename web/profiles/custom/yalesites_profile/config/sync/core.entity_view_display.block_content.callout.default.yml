@@ -6,6 +6,7 @@ dependencies:
     - block_content.type.callout
     - field.field.block_content.callout.field_callout
     - field.field.block_content.callout.field_instructions
+    - field.field.block_content.callout.field_style_alignment
     - field.field.block_content.callout.field_style_color
   module:
     - entity_reference_revisions
@@ -23,6 +24,13 @@ content:
       link: ''
     third_party_settings: {  }
     weight: 0
+    region: content
+  field_style_alignment:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 2
     region: content
   field_style_color:
     type: list_key
