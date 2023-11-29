@@ -9,7 +9,7 @@ callout:
     values:
       left: Left
       center: Center
-    default: Center
+    default: center
 cta_banner:
   field_style_color:
     values:
