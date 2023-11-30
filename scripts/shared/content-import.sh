@@ -2,15 +2,14 @@
 
 STARTERKIT_VERSION="latest"
 STARTERKIT_FILE="starterkit.zip"
+DOWNLOAD_URL="https://github.com/yalesites-org/yalesites-starterkit/releases/$STARTERKIT_VERSION/download/$STARTERKIT_FILE"
 
 # Download starterkit export.
-curl -s -O -L https://github.com/yalesites-org/yalesites-starterkit/releases/"$STARTERKIT_VERSION"/download/"$STARTERKIT_FILE"
-
-if [ $? -eq 0 ]; then
+if curl -s -O -L "$DOWNLOAD_URL"; then
   echo "Starterkit file downloaded successfully."
 else
   echo "Failed to download starterkit file."
-  exit -1
+  exit 1
 fi
 
 # Check if running under lando, otherwise assume CI.
