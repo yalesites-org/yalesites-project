@@ -85,6 +85,7 @@ third_party_settings:
       - 'Chaos Tools'
       - 'Content fields'
       - 'Custom block types'
+      - 'Custom blocks'
       - Devel
       - Forms
       - Help
@@ -109,7 +110,7 @@ third_party_settings:
       restricted_categories:
         - 'Chaos Tools'
         - 'Content fields'
-        - 'Custom block types'
+        - 'Custom blocks'
         - Devel
         - Forms
         - Help
@@ -131,6 +132,15 @@ third_party_settings:
               - profile_contact_block
         ys_layout_two_column:
           content:
+            'Custom block types':
+              - accordion
+              - button_link
+              - divider
+              - image
+              - pull_quote
+              - tabs
+              - text
+              - video
             'Inline blocks':
               - 'inline_block:accordion'
               - 'inline_block:button_link'
@@ -143,6 +153,8 @@ third_party_settings:
             'YaleSites Layouts':
               - profile_contact_block
           sidebar:
+            'Custom block types':
+              - text
             'Inline blocks':
               - 'inline_block:text'
             'YaleSites Layouts':
@@ -150,10 +162,10 @@ third_party_settings:
       denylisted_blocks: {  }
       restricted_categories:
         ys_layout_two_column:
-          sidebar:
+          content:
             - 'Chaos Tools'
             - 'Content fields'
-            - 'Custom block types'
+            - 'Custom blocks'
             - Devel
             - Forms
             - Help
@@ -164,10 +176,10 @@ third_party_settings:
             - 'YaleSites Core'
             - 'YaleSites alert'
             - core
-          content:
+          sidebar:
             - 'Chaos Tools'
             - 'Content fields'
-            - 'Custom block types'
+            - 'Custom blocks'
             - Devel
             - Forms
             - Help
@@ -182,7 +194,7 @@ third_party_settings:
           all_regions:
             - 'Chaos Tools'
             - 'Content fields'
-            - 'Custom block types'
+            - 'Custom blocks'
             - Devel
             - Forms
             - Help

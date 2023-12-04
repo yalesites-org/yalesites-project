@@ -56,3 +56,16 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
     ],
   ];
 }
+
+/**
+ * Allows global blocks to use the same template as inline blocks.
+ *
+ * Implements hook_theme_suggestions_block().
+ */
+function ys_layouts_theme_suggestions_block($variables) {
+  if (isset($variables['elements']['content']['#block_content'])) {
+    return [
+      'block__inline_block__' . $variables['elements']['content']['#block_content']->bundle(),
+    ];
+  }
+}

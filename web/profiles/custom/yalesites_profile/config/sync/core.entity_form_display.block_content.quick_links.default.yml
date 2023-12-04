@@ -24,7 +24,7 @@ mode: default
 content:
   field_heading:
     type: text_textfield
-    weight: 1
+    weight: 2
     region: content
     settings:
       size: 60
@@ -45,7 +45,7 @@ content:
     third_party_settings: {  }
   field_links:
     type: link_default
-    weight: 4
+    weight: 5
     region: content
     settings:
       placeholder_url: ''
@@ -53,7 +53,7 @@ content:
     third_party_settings: {  }
   field_media:
     type: media_library_widget
-    weight: 3
+    weight: 4
     region: content
     settings:
       media_types: {  }
@@ -62,7 +62,7 @@ content:
         show_edit: '1'
   field_text:
     type: text_textarea
-    weight: 2
+    weight: 3
     region: content
     settings:
       rows: 3
@@ -75,6 +75,13 @@ content:
         maxlength_js: 100
         maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
         maxlength_js_enforce: true
+  info:
+    type: string_textfield
+    weight: 1
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
 hidden:
-  info: true
   revision_log: true
