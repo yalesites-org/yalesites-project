@@ -5,7 +5,7 @@ updates:
     open-pull-requests-limit: 5
     target-branch: "develop"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     directory: "/"
     versioning-strategy: increase
     commit-message:
@@ -23,7 +23,7 @@ updates:
     open-pull-requests-limit: 5
     target-branch: "develop"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     directory: "/web/profiles/custom/yalesites_profile"
     versioning-strategy: increase
     commit-message:
