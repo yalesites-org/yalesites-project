@@ -97,6 +97,21 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     FormStateInterface $formState
   ) {
 
+    /*
+     * We need to check if we are in layout builder or not as the arrays are
+     * different between layout builder and the global block editor.
+     *
+     * This flag is set in ys_views_basic.module.
+     *
+     */
+    $inLayoutBuilder = ($formState->getCompleteForm() &&
+    isset($formState->getCompleteForm()['#in_layout_builder'])) ? $formState->getCompleteForm()['#in_layout_builder'] : FALSE;
+
+    // Pass this to massageFormValues and the Ajax callbacks.
+    if ($inLayoutBuilder) {
+      $form['#in_layout_builder'] = $inLayoutBuilder;
+    }
+
     $entity_list = $this->viewsBasicManager->entityTypeList();
     $entityValue = array_key_first($entity_list);
     $decodedParams = json_decode($items[$delta]->params, TRUE);
@@ -108,7 +123,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     // Via: https://www.drupal.org/project/drupal/issues/2758631
     if ($formState->isRebuilding()) {
       $allValues = $formState->getValues();
-      $entityValue = $allValues['settings']['block_form']['group_user_selection']['entity_and_view_mode']['entity_types'];
+      $entityValue = $inLayoutBuilder ? $allValues['settings']['block_form']['group_user_selection']['entity_and_view_mode']['entity_types'] : $allValues['entity_types'];
     }
 
     $element['group_params'] = [
@@ -276,6 +291,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#suffix' => '</div>',
     ];
 
+    $entityTypesAjaxArray = $inLayoutBuilder ? ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][entity_types]"]' : ':input[name="entity_types"]';
+
     $form['group_user_selection']['entity_specific']['event_time_period'] = [
       '#type' => 'radios',
       '#title' => $this->t('Event Time Period'),
@@ -287,7 +304,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('event_time_period', $items[$delta]->params) : 'future',
       '#states' => [
         'visible' => [
-          ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][entity_types]"]' => [
+          $entityTypesAjaxArray => [
             'value' => 'event',
           ],
         ],
@@ -328,6 +345,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       }
     }
 
+    $displayAjaxArray = $inLayoutBuilder ? ':input[name="settings[block_form][group_user_selection][options][display]"]' : ':input[name="display"]';
+
     $form['group_user_selection']['options']['limit'] = [
       '#title' => $limitTitle,
       '#type' => 'number',
@@ -336,7 +355,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#required' => TRUE,
       '#states' => [
         'invisible' => [
-          ':input[name="settings[block_form][group_user_selection][options][display]"]' => [
+          $displayAjaxArray => [
             'value' => 'all',
           ],
         ],
@@ -366,44 +385,71 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
    * Get data from user selection and save into params field.
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
-    $terms_include = ($form_state->getValue(
-        [
-          'settings',
-          'block_form',
-          'group_user_selection',
-          'filter_and_sort',
-          'terms_include',
-        ]
-      ))
-      ? $form_state->getValue(
-          [
-            'settings',
-            'block_form',
-            'group_user_selection',
-            'filter_and_sort',
-            'terms_include',
-          ]
-        )
-      : NULL;
-    $terms_exclude = ($form_state->getValue(
-        [
-          'settings',
-          'block_form',
-          'group_user_selection',
-          'filter_and_sort',
-          'terms_exclude',
-        ]
-      ))
-      ? $form_state->getValue(
-          [
-            'settings',
-            'block_form',
-            'group_user_selection',
-            'filter_and_sort',
-            'terms_exclude',
-          ]
-        )
-      : NULL;
+    $inLayoutBuilder = $form['#in_layout_builder'] ?? FALSE;
+
+    $termsIncludeAjaxArray = $inLayoutBuilder ? [
+      'settings',
+      'block_form',
+      'group_user_selection',
+      'filter_and_sort',
+      'terms_include',
+    ] : [
+      'group_user_selection',
+      'filter_and_sort',
+      'terms_include',
+    ];
+
+    $termsExcludeAjaxArray = $inLayoutBuilder ? [
+      'settings',
+      'block_form',
+      'group_user_selection',
+      'filter_and_sort',
+      'terms_exclude',
+    ] : [
+      'group_user_selection',
+      'filter_and_sort',
+      'terms_exclude',
+    ];
+
+    $sortByAjaxArray = $inLayoutBuilder ? [
+      'settings',
+      'block_form',
+      'group_user_selection',
+      'filter_and_sort',
+      'sort_by',
+    ] : [
+      'group_user_selection',
+      'filter_and_sort',
+      'sort_by',
+    ];
+
+    $displayAjaxArray = $inLayoutBuilder ? [
+      'settings',
+      'block_form',
+      'group_user_selection',
+      'options',
+      'display',
+    ] : [
+      'group_user_selection',
+      'options',
+      'display',
+    ];
+
+    $limitAjaxArray = $inLayoutBuilder ? [
+      'settings',
+      'block_form',
+      'group_user_selection',
+      'options',
+      'limit',
+    ] : [
+      'group_user_selection',
+      'options',
+      'limit',
+    ];
+
+    $terms_include = ($form_state->getValue($termsIncludeAjaxArray)) ?? NULL;
+    $terms_exclude = ($form_state->getValue($termsExcludeAjaxArray)) ?? NULL;
+
     foreach ($values as &$value) {
       $paramData = [
         "view_mode" => $form['group_user_selection']['entity_and_view_mode']['view_mode']['#value'],
@@ -416,27 +462,9 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
           "event_time_period" => $form['group_user_selection']['entity_specific']['event_time_period']['#value'],
         ],
         "operator" => $form['group_user_selection']['filter_and_sort']['term_operator']['#value'],
-        "sort_by" => $form_state->getValue(
-          [
-            'settings',
-            'block_form',
-            'group_user_selection',
-            'filter_and_sort',
-            'sort_by',
-          ]
-        ),
-        "display" => $form_state->getValue(
-          [
-            'settings',
-            'block_form',
-            'group_user_selection',
-            'options',
-            'display',
-          ]
-        ),
-        "limit" => (int) $form_state->getValue(
-          ['settings', 'block_form', 'group_user_selection', 'options', 'limit']
-        ),
+        "sort_by" => $form_state->getValue($sortByAjaxArray),
+        "display" => $form_state->getValue($displayAjaxArray),
+        "limit" => (int) $form_state->getValue($limitAjaxArray),
       ];
       $value['params'] = json_encode($paramData);
     }
@@ -447,11 +475,16 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
    * Ajax callback to return only view modes for the specified content type.
    */
   public function updateOtherSettings(array &$form, FormStateInterface $form_state) {
+    $inLayoutBuilder = $form['#in_layout_builder'] ?? FALSE;
+
+    $viewModeAjaxArray = $inLayoutBuilder ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : $form['group_user_selection']['entity_and_view_mode']['view_mode'];
+    $sortByAjaxArray = $inLayoutBuilder ? $form['settings']['block_form']['group_user_selection']['filter_and_sort']['sort_by'] : $form['group_user_selection']['filter_and_sort']['sort_by'];
+
     $response = new AjaxResponse();
-    $response->addCommand(new ReplaceCommand('#edit-view-mode', $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['view_mode']));
+    $response->addCommand(new ReplaceCommand('#edit-view-mode', $viewModeAjaxArray));
     $selector = '.views-basic--view-mode[name="group_user_selection[entity_and_view_mode][view_mode]"]:first';
     $response->addCommand(new InvokeCommand($selector, 'prop', [['checked' => TRUE]]));
-    $response->addCommand(new ReplaceCommand('#edit-sort-by', $form['settings']['block_form']['group_user_selection']['filter_and_sort']['sort_by']));
+    $response->addCommand(new ReplaceCommand('#edit-sort-by', $sortByAjaxArray));
     return $response;
   }
 
@@ -459,12 +492,15 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
    * Ajax callback to update the limit field.
    */
   public function updateLimitField(array &$form, FormStateInterface $form_state) {
-    $displayValue = $form_state->getValue(
+    $inLayoutBuilder = $form['#in_layout_builder'] ?? FALSE;
+
+    $displayValue = $inLayoutBuilder ? $form_state->getValue(
       ['settings', 'block_form', 'group_user_selection', 'options', 'display']
-    );
+    ) : ['group_user_selection', 'options', 'display'];
     $response = new AjaxResponse();
     if ($displayValue != 'all') {
-      $response->addCommand(new ReplaceCommand('#edit-limit', $form['settings']['block_form']['group_user_selection']['options']['limit']));
+      $limitAjaxArray = $inLayoutBuilder ? $form['settings']['block_form']['group_user_selection']['options']['limit'] : $form['group_user_selection']['options']['limit'];
+      $response->addCommand(new ReplaceCommand('#edit-limit', $limitAjaxArray));
     }
     return $response;
   }
