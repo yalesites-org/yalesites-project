@@ -171,6 +171,11 @@ function ys_core_preprocess_region(&$variables) {
         '@isFrontPage' => $isFrontPage ? 'TRUE' : 'FALSE',
       ]);
 
+      // Log the focusHeaderImageRender array.
+      \Drupal::logger('ys_core')->notice('Focus Header Image Render Array: @focusHeaderImageRender', [
+        '@focusHeaderImageRender' => print_r($focusHeaderImageRender, TRUE),
+      ]);
+
       $variables['site_header__background_image'] = $isFrontPage ? $focusHeaderImageRender : FALSE;
     }
 
