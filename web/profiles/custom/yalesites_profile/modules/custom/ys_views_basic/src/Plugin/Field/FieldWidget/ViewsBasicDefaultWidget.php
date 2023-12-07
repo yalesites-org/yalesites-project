@@ -394,8 +394,6 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       'filter_and_sort',
       'terms_include',
     ] : [
-      'group_user_selection',
-      'filter_and_sort',
       'terms_include',
     ];
 
@@ -406,8 +404,6 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       'filter_and_sort',
       'terms_exclude',
     ] : [
-      'group_user_selection',
-      'filter_and_sort',
       'terms_exclude',
     ];
 
@@ -418,8 +414,6 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       'filter_and_sort',
       'sort_by',
     ] : [
-      'group_user_selection',
-      'filter_and_sort',
       'sort_by',
     ];
 
@@ -430,8 +424,6 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       'options',
       'display',
     ] : [
-      'group_user_selection',
-      'options',
       'display',
     ];
 
@@ -442,8 +434,6 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       'options',
       'limit',
     ] : [
-      'group_user_selection',
-      'options',
       'limit',
     ];
 
