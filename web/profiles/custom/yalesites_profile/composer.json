@@ -83,7 +83,7 @@
     "drupal/section_library": "1.1.1",
     "drupal/selective_better_exposed_filters": "3.0.0-beta1",
     "drupal/simple_sitemap": "4.1.6",
-    "drupal/single_content_sync": "1.4.1",
+    "drupal/single_content_sync": "> 1.0",
     "drupal/smart_date": "4.0.3",
     "drupal/twig_tweak": "3.2.1",
     "drupal/typogrify": "1.2",
