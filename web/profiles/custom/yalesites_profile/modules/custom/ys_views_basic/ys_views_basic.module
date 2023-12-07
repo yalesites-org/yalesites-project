@@ -85,10 +85,10 @@ function ys_views_basic_form_alter(&$form, $form_state, $form_id) {
       $form['#in_layout_builder'] = TRUE;
     }
   }
+  // Add messaging to global blocks to inform content editors where to go to edit.
   if ($form_id == 'layout_builder_update_block') {
     if (!isset($form['settings']['block_form'])) {
-      // $form['']
-      // dpm($form_state);
+      $form['settings']['global_info']['#markup'] = "<p>This is a global block. Visit the <a href='/admin/content/block'>custom block library</a> to edit global blocks. This specific block is called '{$form['settings']['admin_label']['#plain_text']}'</p>";
     }
   }
 }
