@@ -3,6 +3,8 @@ langcode: en
 status: true
 dependencies:
   config:
+    - image.style.3_2_1120
+    - image.style.3_2_1280
     - image.style.3_2_1440
     - image.style.3_2_1600
     - image.style.3_2_175
@@ -18,8 +20,10 @@ image_style_mappings:
   -
     image_mapping_type: sizes
     image_mapping:
-      sizes: '(min-width: 1344px) 640px, (min-width: 500px) 320px, (min-width: 400px) 175px, 100vw'
+      sizes: '(min-width: 991px) 640px, 100vw'
       sizes_image_styles:
+        - '3_2_1120'
+        - '3_2_1280'
         - '3_2_1440'
         - '3_2_1600'
         - '3_2_175'
