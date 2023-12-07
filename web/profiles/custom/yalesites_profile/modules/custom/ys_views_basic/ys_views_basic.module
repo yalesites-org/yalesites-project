@@ -87,31 +87,4 @@ function ys_views_basic_form_alter(&$form, $form_state, $form_id) {
     }
   }
 
-  /* Add messaging with link to edit global block and destination back to
-    layout builder.
-   */
-  if ($form_id == 'layout_builder_update_block') {
-
-    // block_form is not set on global blocks.
-    if (!isset($form['settings']['block_form'])) {
-      // We need the global block uuid to look up the block id.
-      $blockUUID = explode(":", $form_state->getBuildInfo()['callback_object']->getCurrentComponent()->get('configuration')['id']);
-      $blocks = \Drupal::entityTypeManager()->getStorage('block_content')->loadByProperties([
-        'uuid' => $blockUUID[1],
-      ]);
-      $blockId = array_key_first($blocks);
-
-      // We need the current path to extract the node id.
-      $current_path = \Drupal::service('path.current')->getPath();
-      preg_match('/node\.(\d+)/', $current_path, $matches);
-
-      $parentBlockTitle = $form['settings']['admin_label']['#plain_text'] . ' global block';
-      // Compiled global block message.
-      $form['settings']['global_info'] = [
-        '#markup' => "<p>Note: This is a global block. Any changes made to a global block will be reflected anywhere it is used.</p> <a class='glb-button glb-button--primary' href='/admin/content/block/{$blockId}?destination=/node/{$matches[1]}/layout'>Edit {$parentBlockTitle}</a>",
-      ];
-    }
-
-  }
-
 }
