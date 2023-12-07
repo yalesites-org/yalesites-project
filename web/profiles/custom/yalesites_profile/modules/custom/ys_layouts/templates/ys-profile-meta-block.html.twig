@@ -1,7 +1,7 @@
 {% embed '@molecules/meta/profile-meta/yds-profile-meta.twig' %}
   {% block profile__image %}
     {% if media_id %}
-      {{ drupal_entity('media', media_id, 'card_secondary_3_2') }}
+      {{ drupal_entity('media', media_id, 'banner_profile') }}
     {% endif %}
   {% endblock %}
 {% endembed %}
