@@ -1,0 +1,35 @@
+version: 2
+updates:
+  # Update root composer.json and drupal/core only.
+  - package-ecosystem: "composer"
+    open-pull-requests-limit: 5
+    target-branch: "develop"
+    schedule:
+      interval: "monthly"
+    directory: "/"
+    versioning-strategy: increase
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    allow:
+      - dependency-name: "drupal/core-*"
+    groups:
+      drupal-core:
+        patterns:
+          - "drupal/core-*"
+
+  # Update yalesites_profile composer.json.
+  - package-ecosystem: "composer"
+    open-pull-requests-limit: 5
+    target-branch: "develop"
+    schedule:
+      interval: "monthly"
+    directory: "/web/profiles/custom/yalesites_profile"
+    versioning-strategy: increase
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      yalesites-profile:
+        patterns:
+          - "*"
