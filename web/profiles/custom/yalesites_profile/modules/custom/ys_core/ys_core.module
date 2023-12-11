@@ -241,6 +241,11 @@ function ys_core_help($route_name, RouteMatchInterface $route_match) {
 
       $output = '<p class="replacement-taxonomy-help">' . t('Taxonomy is used to classify website content into groups called vocabularies. Each vocabulary contains a set of terms used to categorize content. For example, an "Event Type" vocabulary contains terms like "Online" and "In-Person". This allows for easy categorization and organization of content on a website.') . '</p>';
       return $output;
+
+      case 'entity.block_content.collection':
+
+      $output = '<p class="replacement-block-help">' . t('Blocks are used for reusable content. Create global blocks here, and they will show up in layout builder at the bottom of the list under a reusable section to place on any page. If the block is updated here, the content will be updated anywhere the block is used.') . '</p>';
+      return $output;
   }
 }
 
