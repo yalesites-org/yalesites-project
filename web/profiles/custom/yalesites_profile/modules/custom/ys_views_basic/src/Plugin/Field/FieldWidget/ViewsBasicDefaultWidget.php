@@ -151,6 +151,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#attributes' => [
         'class' => [
           'grouped-items',
+          'views-basic--entity-view-mode',
         ],
       ],
     ];
