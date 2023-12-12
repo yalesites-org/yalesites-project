@@ -2,6 +2,11 @@
 * @todo Possibly move these styles into admin theme.
 */
 
+.views-basic--group-user-selection {
+  --size-spacing-4: 0.75rem;
+  --size-spacing-5: 1rem;
+}
+
 /* General styles */
 .views-basic--params {
   display: none;
@@ -12,6 +17,7 @@
   display: flex;
   flex-direction: column;
   width: auto;
+  margin-left: 0;
 }
 
 /* chosen-specific */
@@ -85,6 +91,7 @@
 .views-basic--group-user-selection .glb-form-item__label,
 .views-basic--group-user-selection .form-item__label {
   font-size: 1rem !important;
+  color: var(--wool) !important;
 }
 
 .views-basic--group-user-selection .grouped-items .fieldset__wrapper {
@@ -94,6 +101,15 @@
 .views-basic--group-user-selection .glb-fieldset__label,
 .views-basic--group-user-selection .fieldset__label {
   font-size: 1rem;
+}
+
+.gin--dark-mode .views-basic--group-user-selection .fieldset-legend.fieldset__label,
+.gin--dark-mode .views-basic--group-user-selection .fieldset__legend.fieldset__legend--visible .fieldset__label {
+  background-color: transparent;
+  border: 0;
+  color: var(--wool) !important;
+  font-weight: 700;
+  padding-left: 0;
 }
 
 .views-basic--group-user-selection .grouped-items fieldset:focus-visible,
@@ -132,118 +148,42 @@
   color: var(--wool);
 }
 
-
-
-
-/*  We are here */
-
-
-#drupal-off-canvas-wrapper
-  .views-basic--group-user-selection
-  .grouped-items
-  .fieldset--group
-  .fieldset__wrapper--group
-  .glb-form-radios,
-#drupal-off-canvas:not(.drupal-off-canvas-reset)
-  .views-basic--group-user-selection
-  .grouped-items
-  .fieldset--group
-  .fieldset__wrapper--group
-  .glb-form-radios {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: start;
-  gap: 0.75rem;
-}
-
-
-
-#drupal-off-canvas-wrapper
-  .views-basic--group-user-selection
-  .grouped-items
-  .fieldset--group
-  .fieldset__wrapper--group
-  .glb-form-radios
-  .glb-form-type--radio,
-#drupal-off-canvas:not(.drupal-off-canvas-reset)
-  .views-basic--group-user-selection
-  .grouped-items
-  .fieldset--group
-  .fieldset__wrapper--group
-  .glb-form-radios
-  .glb-form-type--radio {
-  width: auto;
-}
-
 .views-basic--group-user-selection
   .grouped-items
   .fieldset--group
   .fieldset__wrapper--group
   .glb-form-type--radio
+  label,
+.views-basic--group-user-selection
+  .grouped-items
+  .fieldset--group
+  .fieldset__wrapper--group
+  .form-type--radio
   label {
-  width: 125px;
-  height: 150px;
+  width: 135px;
+  height: 135px;
 }
 
-/* first column */
-#drupal-off-canvas-wrapper
+.views-basic--group-user-selection
   .grouped-items
+  #edit-view-mode
   .fieldset--group
   .fieldset__wrapper--group
   .glb-form-type--radio
   label,
-#drupal-off-canvas:not(.drupal-off-canvas-reset)
+.views-basic--group-user-selection
   .grouped-items
+  #edit-view-mode
   .fieldset--group
   .fieldset__wrapper--group
-  .glb-form-type--radio
+  .form-type--radio
   label {
-  width: 110px;
-  height: 150px;
+  width: 170px;
+  height: 170px;
 }
 
-/* while other items look great, the term-operators text was getting cut off
- * so we need to adjust the label width and height for the term operators
- */
-
-/* second column */
-#drupal-off-canvas-wrapper
-  .grouped-items
-  .fieldset--group.views-basic--view-mode
-  .fieldset__wrapper--group
-  .glb-form-type--radio
-  label,
-#drupal-off-canvas:not(.drupal-off-canvas-reset)
-  .grouped-items
-  .fieldset--group.views-basic--view-mode
-  .fieldset__wrapper--group
-  .glb-form-type--radio
-  label {
-  width: 175px;
-  height: 200px;
-}
-
-#drupal-off-canvas-wrapper
-  .grouped-items
-  .fieldset--group
-  .fieldset__wrapper--group
-  .glb-form-type--radio
-  input.term-operator-item
-  + label,
-#drupal-off-canvas:not(.drupal-off-canvas-reset)
-  .grouped-items
-  .fieldset--group
-  .fieldset__wrapper--group
-  .glb-form-type--radio
-  input.term-operator-item
-  + label {
-  width: 130px !important;
-  height: 150px !important;
-}
-
-/* first column */
-.views-basic--group-user-selection .grouped-items .fieldset--group {
-  flex: 1 0 52.5%;
+.views-basic--group-user-selection .grouped-items img {
+  width: auto;
 }
 
 .views-basic--group-user-selection
@@ -255,26 +195,4 @@
   flex-direction: row;
   gap: 1rem;
   width: 100%;
-}
-
-/* second column */
-.views-basic--group-user-selection .grouped-items #edit-view-mode {
-  display: flex;
-  flex: 1 auto;
-  width: 100%;
-}
-
-.views-basic--group-user-selection .grouped-items #edit-view-mode .fieldset--group {
-  flex: 1 auto;
-}
-
-.views-basic--group-user-selection
-  .grouped-items
-  #edit-view-mode
-  .fieldset--group
-  .fieldset__wrapper--group
-  .glb-form-type--radio
-  label {
-  width: 170px;
-  height: 150px;
 }
