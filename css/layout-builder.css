@@ -101,10 +101,10 @@ display: flex;
 }
 
 .block-categories.glb-layout-builder-browser .glb-claro-details__wrapper {
-  justify-content: space-between;
+  gap: 0.5rem;
 }
 
 .block-categories .layout-builder-browser-block-item {
   width: 100%;
-  max-width: 30%;
+  max-width: calc(33% - 1rem);
 }
