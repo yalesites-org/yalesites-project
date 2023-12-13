@@ -90,3 +90,21 @@ display: flex;
 .block-wrapper .text p {
   margin: 0;
 } 
+
+
+/* Wingsuit layout builder styles */
+
+.block-categories .layout-builder-browser-block-item img {
+  width: 100%;
+  margin-bottom: 1rem;
+  filter: unset;
+}
+
+.block-categories.glb-layout-builder-browser .glb-claro-details__wrapper {
+  justify-content: space-between;
+}
+
+.block-categories .layout-builder-browser-block-item {
+  width: 100%;
+  max-width: 30%;
+}
