@@ -106,5 +106,12 @@ display: flex;
 
 .block-categories .layout-builder-browser-block-item {
   width: 100%;
-  max-width: calc(33% - 1rem);
+  max-width: calc(50% - 1rem);
+}
+
+@media screen and (min-width: 500px) {
+  .block-categories .layout-builder-browser-block-item {
+    max-width: calc(33% - 1rem);
+  }
+  
 }
