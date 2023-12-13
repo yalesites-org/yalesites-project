@@ -96,3 +96,12 @@ ys_core.taxonomy_interface_tags:
   title: Tags
   route_parameters:
     taxonomy_vocabulary: "tags"
+# Blocks interface
+ys_core.custom_block_library:
+  description: "Manage global blocks"
+  parent: system.admin_content
+  route_name: entity.block_content.collection
+  title: Manage Global Blocks
+  route_parameters:
+    menu: "main"
+  weight: 20
