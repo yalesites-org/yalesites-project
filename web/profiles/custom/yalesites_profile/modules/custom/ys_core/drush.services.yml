@@ -1,8 +1,0 @@
-services:
-  ys_core.commands:
-    class: \Drupal\ys_core\Commands\YSCoreCommands
-    arguments:
-      - '@messenger'
-      - '@path_alias.manager'
-    tags:
-      - { name: drush.command }
