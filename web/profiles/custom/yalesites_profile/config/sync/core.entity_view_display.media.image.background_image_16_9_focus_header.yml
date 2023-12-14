@@ -25,6 +25,8 @@ content:
     settings:
       responsive_image_style: background_image_focus_header
       image_link: ''
+      image_loading:
+        attribute: eager
     third_party_settings: {  }
     weight: 0
     region: content
