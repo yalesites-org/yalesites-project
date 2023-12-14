@@ -14,15 +14,18 @@ fi
 
 # Check if running under lando, otherwise assume CI.
 # Put starterkit file in place and import.
-# Clean up, and set front page in config.
+# Get home page node path and set as front page in config.
+nid_command="print \Drupal::service('path_alias.manager')->getPathByAlias('/homepage');"
+
 if [ "$YALESITES_IS_LOCAL" == "1" ]; then
-  lando drush content:import ../"$STARTERKIT_FILE"
-  lando drush cset system.site page.front '/homepage' -y
-  rm "$STARTERKIT_FILE"
+  lando drush content:import ../"$STARTERKIT_FILE" && rm "$STARTERKIT_FILE"
+  homepage_nid=$(lando drush ev "$nid_command")
+  lando drush cset system.site page.front "$homepage_nid" -y
 else
   COMMAND=$(terminus connection:info "$SITE_MACHINE_NAME".dev --field=sftp_command)
   eval "$COMMAND:/files/ <<< 'put $STARTERKIT_FILE'"
   terminus drush "$SITE_MACHINE_NAME".dev -- content:import ../../files/"$STARTERKIT_FILE"
   eval "$COMMAND:/files/ <<< 'rm $STARTERKIT_FILE'"
-  terminus drush "$SITE_MACHINE_NAME".dev -- cset system.site page.front '/homepage' -y
+  homepage_nid=$(echo "$nid_command" | terminus drush "$SITE_MACHINE_NAME".dev -- php-script - 2>/dev/null)
+  terminus drush "$SITE_MACHINE_NAME".dev -- cset system.site page.front "$homepage_nid" -y
 fi
