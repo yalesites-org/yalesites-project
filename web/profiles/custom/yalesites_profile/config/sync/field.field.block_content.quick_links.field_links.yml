@@ -12,7 +12,7 @@ field_name: field_links
 entity_type: block_content
 bundle: quick_links
 label: Links
-description: ''
+description: 'This block requires a minimum of 3 and a maximum of 9 links.'
 required: true
 translatable: false
 default_value: {  }
