@@ -40,6 +40,8 @@ function ys_node_access_node_grants($account, $op) {
  */
 function ys_node_access_node_access_records($node) {
 
+  $private = FALSE;
+
   $nodeAccessManager = new NodeAccessManager();
   // Saving a node, check login required field to set the appropriate grants.
   if ($node->hasField('field_login_required')) {
