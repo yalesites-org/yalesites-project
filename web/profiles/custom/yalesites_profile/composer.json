@@ -10,10 +10,10 @@
       "type": "package",
       "package": {
         "name": "northernco/ckeditor5-anchor-drupal",
-        "version": "0.3.0",
+        "version": "0.4.0",
         "type": "drupal-library",
         "dist": {
-          "url": "https://registry.npmjs.org/@northernco/ckeditor5-anchor-drupal/-/ckeditor5-anchor-drupal-0.3.0.tgz",
+          "url": "https://registry.npmjs.org/@northernco/ckeditor5-anchor-drupal/-/ckeditor5-anchor-drupal-0.4.0.tgz",
           "type": "tar"
         }
       }
@@ -23,7 +23,7 @@
     "drupal/address": "1.12",
     "drupal/admin_toolbar": "3.4.1",
     "drupal/allowed_formats": "3.0",
-    "drupal/anchor_link": "3.0.x-dev@dev",
+    "drupal/anchor_link": "3.0.0-alpha1",
     "drupal/auto_entitylabel": "3.0",
     "drupal/autosave_form": "1.4",
     "drupal/better_exposed_filters": "6.0.3",
@@ -105,7 +105,7 @@
     "drupal/wingsuit_companion": "2.1",
     "jjj/chosen": "2.2.1",
     "laminas/laminas-escaper": "2.12",
-    "northernco/ckeditor5-anchor-drupal": "0.3.0",
+    "northernco/ckeditor5-anchor-drupal": "0.4.0",
     "yalesites-org/atomic": "1.21.1",
     "yalesites-org/yale_cas": "1.0.4"
   },
