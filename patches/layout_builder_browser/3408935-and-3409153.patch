@@ -1,0 +1,134 @@
+diff --git a/config/schema/layout_builder_browser.schema.yml b/config/schema/layout_builder_browser.schema.yml
+index b05fa2f..2311486 100644
+--- a/config/schema/layout_builder_browser.schema.yml
++++ b/config/schema/layout_builder_browser.schema.yml
+@@ -17,3 +17,12 @@ layout_builder_browser.settings:
+       sequence:
+         type: string
+         label: 'Block content bundle'
++    group_reusable_blocks_together:
++        type: boolean
++        label: 'Group reusable blocks together'
++    image_fallback:
++      type: string
++      label: 'Fallback image path'
++    image_fallback_alt:
++      type: string
++      label: 'Fallback image alt'
+diff --git a/src/Controller/BrowserController.php b/src/Controller/BrowserController.php
+index 9331cae..615287d 100644
+--- a/src/Controller/BrowserController.php
++++ b/src/Controller/BrowserController.php
+@@ -187,6 +187,12 @@ class BrowserController extends ControllerBase {
+     $existing_blocks = $this->entityTypeManager->getStorage('layout_builder_browser_block')
+       ->loadMultiple();
+     $existing_blocks_ids = array_column($existing_blocks, 'block_id');
++
++    // If grouping reusable blocks together, set the empty array first.
++    if ($config->get('group_reusable_blocks_together')) {
++      $block_categories['reusable_blocks']['links'] = [];
++    }
++
+     foreach ($auto_added_reusable_bundles as $machine_name) {
+       $blocks = [];
+       $content_blocks = $this->entityTypeManager->getStorage('block_content')
+@@ -206,12 +212,29 @@ class BrowserController extends ControllerBase {
+         $block_links = $this->getBlocks($section_storage, $delta, $region, $blocks);
+         if ($block_links) {
+           $bundle_label = $bundles[$machine_name]['label'];
+-          // Only add the information if the category has links.
+-          $block_categories[$bundle_label]['links'] = $block_links;
+-          $block_categories[$bundle_label]['#type'] = 'details';
+-          $block_categories[$bundle_label]['#attributes']['class'][] = 'js-layout-builder-category';
+-          $block_categories[$bundle_label]['#open'] = $blockcat->getOpened();
+-          $block_categories[$bundle_label]['#title'] = $this->t('Reusable @block_type_label', ['@block_type_label' => $bundle_label]);
++
++          // If grouping reusable blocks together.
++          if ($config->get('group_reusable_blocks_together')) {
++
++            foreach ($block_links as $key => $block_link) {
++              $block_links[$key]['#title']['label']['#markup'] = "{$block_link['#title']['label']['#markup']} ({$bundle_label})";
++            }
++
++            // Only add the information if the category has links.
++            array_push($block_categories['reusable_blocks']['links'], $block_links);
++            $block_categories['reusable_blocks']['#type'] = 'details';
++            $block_categories['reusable_blocks']['#attributes']['class'][] = 'js-layout-builder-category';
++            $block_categories['reusable_blocks']['#open'] = $blockcat->getOpened();
++            $block_categories['reusable_blocks']['#title'] = $this->t('Reusable blocks');
++          }
++          else {
++            // Only add the information if the category has links.
++            $block_categories[$bundle_label]['links'] = $block_links;
++            $block_categories[$bundle_label]['#type'] = 'details';
++            $block_categories[$bundle_label]['#attributes']['class'][] = 'js-layout-builder-category';
++            $block_categories[$bundle_label]['#open'] = $blockcat->getOpened();
++            $block_categories[$bundle_label]['#title'] = $this->t('Reusable @block_type_label', ['@block_type_label' => $bundle_label]);
++          }
+         }
+       }
+     }
+@@ -252,6 +275,7 @@ class BrowserController extends ControllerBase {
+    */
+   protected function getBlocks(SectionStorageInterface $section_storage, $delta, $region, array $blocks) {
+     $links = [];
++    $config = $this->config('layout_builder_browser.settings');
+ 
+     foreach ($blocks as $block_id => $block) {
+       $attributes = $this->getAjaxAttributes();
+@@ -266,6 +290,13 @@ class BrowserController extends ControllerBase {
+           '#alt' => $block['layout_builder_browser_data']->image_alt,
+         ];
+       }
++      elseif ($config->get('image_fallback')) {
++        $block_render_array['image'] = [
++          '#theme' => 'image',
++          '#uri' => $config->get('image_fallback'),
++          '#alt' => $config->get('image_fallback_alt'),
++        ];
++      }
+       $block_render_array['label'] = ['#markup' => (empty($block["layout_builder_browser_data"])) ? $block['admin_label'] : $block["layout_builder_browser_data"]->label()];
+       $link = [
+         '#type' => 'link',
+diff --git a/src/Form/SettingsForm.php b/src/Form/SettingsForm.php
+index 90253f0..ac718ca 100644
+--- a/src/Form/SettingsForm.php
++++ b/src/Form/SettingsForm.php
+@@ -83,6 +83,27 @@ class SettingsForm extends ConfigFormBase {
+       '#default_value' => $config->get('auto_added_reusable_block_content_bundles') ?? [],
+     ];
+ 
++    $form['group_reusable_blocks_together'] = [
++      '#title' => $this->t('Group reusable blocks together'),
++      '#description' => $this->t('By default, reusable blocks are grouped according to their bundle type. Checking this box will group all reusable blocks together in one group.'),
++      '#type' => 'checkbox',
++      '#default_value' => $config->get('group_reusable_blocks_together') ?? FALSE,
++    ];
++
++    $form['image_fallback'] = [
++      '#title' => $this->t('Fallback image'),
++      '#description' => $this->t('Image to use for reusable blocks and for blocks with no image specified.'),
++      '#type' => 'textfield',
++      '#default_value' => $config->get('image_fallback') ?? NULL,
++    ];
++
++    $form['image_fallback_alt'] = [
++      '#title' => $this->t('Fallback image alt'),
++      '#description' => $this->t('Alt text for fallback image'),
++      '#type' => 'textfield',
++      '#default_value' => $config->get('image_fallback_alt') ?? NULL,
++    ];
++
+     return parent::buildForm($form, $form_state);
+   }
+ 
+@@ -95,6 +116,9 @@ class SettingsForm extends ConfigFormBase {
+     $config->set('enabled_section_storages', array_filter($form_state->getValue('enabled_section_storages')));
+     $config->set('use_modal', $form_state->getValue('use_modal'));
+     $config->set('auto_added_reusable_block_content_bundles', array_filter($form_state->getValue('auto_added_reusable_block_content_bundles')));
++    $config->set('group_reusable_blocks_together', $form_state->getValue('group_reusable_blocks_together'));
++    $config->set('image_fallback', $form_state->getValue('image_fallback'));
++    $config->set('image_fallback_alt', $form_state->getValue('image_fallback_alt'));
+     $config->save();
+ 
+     parent::submitForm($form, $form_state);

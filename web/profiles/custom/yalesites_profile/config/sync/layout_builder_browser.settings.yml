@@ -27,3 +27,6 @@ auto_added_reusable_block_content_bundles:
   view: view
   webform: webform
   wrapped_image: wrapped_image
+group_reusable_blocks_together: true
+image_fallback: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/fallback-global-block.jpg
+image_fallback_alt: ''
