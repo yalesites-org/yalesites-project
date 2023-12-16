@@ -1,15 +1,17 @@
-{# If we're in layout-builder, we need to add/wrap a '<div>' around each 
+{# If we're in layout-builder, we need to add/wrap a '<div>' around each
 component to make them drag-n-droppable #}
 {% if attributes.hasClass('js-layout-builder-block') %}
 
-  {# Set a variable to true if we're in in_layout_builder so that we can 
-  close the div after the block content instance, which removes all attributes because of 
-  emulsify_twig. Without this the div can't close by checking 
+  {# Set a variable to true if we're in in_layout_builder so that we can
+  close the div after the block content instance, which removes all attributes because of
+  emulsify_twig. Without this the div can't close by checking
     {% if attributes.hasClass('js-layout-builder-block') %}
    #}
   {% set in_layout_builder = TRUE %}
 
-  <div{{ attributes }}>
+  {% set reusable_class = is_reusable ? 'ys-layout-builder--is-reusable' %}
+
+  <div{{ attributes.addClass(reusable_class) }}>
     {{ attach_library('ys_themes/ys_themes') }}
     <div class="ys-layout-builder--drag-drop">
     </div>
