@@ -7,4 +7,21 @@
   float: none;
 }
 
+/**
+ * Set the max-height equal to the browser height.
+ */
+.ck-editor__main > .ck-editor__editable,
+.ck-editor__main .ck-source-editing-area {
+  height: 200px;
+  max-height: calc(100vh - var(--drupal-displace-offset-top, 0px) - 20px);
+}
+
+/**
+ * Overflow for the textarea needs to be added for the same results when using
+ * source view.
+ */
+.ck-editor__main > .ck-source-editing-area > textarea {
+  overflow: auto;
+}
+
 /*# sourceMappingURL=admin-ui.css.map */
