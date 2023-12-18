@@ -119,7 +119,29 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
       '#markup' => "<p>" . t('@description', $replacements) . "</p>",
     ];
   }
+
+  $layout_builder_block_forms = [
+    'layout_builder_update_block',
+    'layout_builder_add_block'
+  ];
+
+  if (in_array($form_id, $layout_builder_block_forms)) {
+    // Get the block type from the form.
+    $block = $form['settings']['block_form']['#block'];
+    $limited_block_types = [
+      'tabs',
+      'quick_links',
+      'media_grid',
+      'gallery'
+    ];
+    if (in_array($block->bundle(), $limited_block_types)) {
+      $form['#attached']['library'][] = 'ys_core/block_form';
+    }
+
+
+  }
 }
+
 
 /**
  * Implements hook_preprocess_block().
@@ -474,6 +496,7 @@ function ys_core_form_block_content_quick_links_form_alter(&$form, FormStateInte
   // Use custom constraints instead (see ys_core_entity_bundle_field_info_alter)
   $form['field_links']['widget']['add_more']['#limit_validation_errors'] = [];
 }
+
 
 /**
  * Implements hook_entity_bundle_field_info_alter().

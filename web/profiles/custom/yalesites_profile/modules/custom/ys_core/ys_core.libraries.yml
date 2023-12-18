@@ -16,3 +16,6 @@ header_footer_settings:
       css/header-footer-settings.css: {}
   js:
     js/header-footer-settings.js: {}
+block_form:
+  js:
+    js/block-form.js: {}
