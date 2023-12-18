@@ -12,8 +12,7 @@
  */
 .ck-editor__main > .ck-editor__editable,
 .ck-editor__main .ck-source-editing-area {
-  height: 200px;
-  max-height: calc(100vh - var(--drupal-displace-offset-top, 0px) - 20px);
+  max-height: 200px;
 }
 
 /**
