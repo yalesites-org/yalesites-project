@@ -1,3 +1,8 @@
+:root {
+  --drupal-displace-offset-top: 35rem;
+  --drupal-displace-offset-bottom: 35rem;
+}
+
 .media-library-edit__link {
   overflow: hidden;
   color: transparent !important;
@@ -5,22 +10,6 @@
 
 .toolbar-horizontal .local-tasks-toolbar-tab .toolbar-menu {
   float: none;
-}
-
-/**
- * Set the max-height equal to the browser height.
- */
-.ck-editor__main > .ck-editor__editable,
-.ck-editor__main .ck-source-editing-area {
-  max-height: 200px;
-}
-
-/**
- * Overflow for the textarea needs to be added for the same results when using
- * source view.
- */
-.ck-editor__main > .ck-source-editing-area > textarea {
-  overflow: auto;
 }
 
 /*# sourceMappingURL=admin-ui.css.map */
