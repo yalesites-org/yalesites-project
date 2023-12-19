@@ -16,7 +16,7 @@ index b05fa2f..4b5c9b8 100644
 +      type: string
 +      label: 'Fallback image alt'
 diff --git a/src/Controller/BrowserController.php b/src/Controller/BrowserController.php
-index 9331cae..645dbcf 100644
+index 9331cae..91d02fe 100644
 --- a/src/Controller/BrowserController.php
 +++ b/src/Controller/BrowserController.php
 @@ -146,6 +146,9 @@ class BrowserController extends ControllerBase {
@@ -70,7 +70,7 @@ index 9331cae..645dbcf 100644
      foreach ($auto_added_reusable_bundles as $machine_name) {
        $blocks = [];
        $content_blocks = $this->entityTypeManager->getStorage('block_content')
-@@ -203,19 +233,57 @@ class BrowserController extends ControllerBase {
+@@ -203,19 +233,58 @@ class BrowserController extends ControllerBase {
          }
        }
        if ($blocks) {
@@ -99,13 +99,14 @@ index 9331cae..645dbcf 100644
 +            $changed = date('m/d/Y - H:i', $block->get('changed')->getString());
 +            foreach ($block_links as $key => $block_link) {
 +              $block_links[$key]['#title']['label']['#markup'] = "
-+                {$block_link['#title']['label']['#markup']}
++                <span class='underlined-title'>{$block_link['#title']['label']['#markup']}</span>
 +                <br>
 +                Type: {$bundle_label}
 +                <br>
 +                Changed: {$changed}
 +              ";
 +              $block_links['changed'] = $block->get('changed')->getString();
++              $block_links[$key]['#attributes']['class'][] = 'layout-builder-browser-reusable-block';
 +            }
 +
 +            // Only add the information if the category has links.
@@ -134,7 +135,7 @@ index 9331cae..645dbcf 100644
      $build['block_categories'] = $block_categories;
      $build['#attached']['library'][] = 'layout_builder_browser/browser';
  
-@@ -266,6 +334,16 @@ class BrowserController extends ControllerBase {
+@@ -266,6 +335,16 @@ class BrowserController extends ControllerBase {
            '#alt' => $block['layout_builder_browser_data']->image_alt,
          ];
        }
