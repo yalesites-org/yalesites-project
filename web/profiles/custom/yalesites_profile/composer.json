@@ -50,6 +50,7 @@
     "drupal/layout_builder_restrictions_by_role": "1.0-alpha5",
     "drupal/libraries": "4.0.4",
     "drupal/linkit": "6.1.0",
+    "drupal/lock_layout_builder": "^1.2",
     "drupal/mailchimp_transactional": "1.1.0",
     "drupal/mailsystem": "4.4",
     "drupal/markup": "2.0.0-beta6",
@@ -147,6 +148,10 @@
       },
       "drupal/quick_node_clone": {
         "Fix cloning of inline blocks and paragraphs: https://www.drupal.org/project/quick_node_clone/issues/3100117": "https://www.drupal.org/files/issues/2023-04-25/quick-node-clone--inline-blocks--3100117-32.patch"
+      },
+      "drupal/content_lock": {
+        "Fix isses with ckeditor https://www.drupal.org/project/content_lock/issues/3396683": "https://www.drupal.org/files/issues/2023-11-14/content_lock-lock_ckeditor_5-3396683-4.patch",
+        "Fix php 8.2 deprecations https://www.drupal.org/project/content_lock/issues/3343964": "https://git.drupalcode.org/project/content_lock/-/merge_requests/13.diff"
       }
     }
   }

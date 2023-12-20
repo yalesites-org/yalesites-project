@@ -45,6 +45,7 @@ dependencies:
     - taxonomy.vocabulary.tags
   module:
     - block_content
+    - content_lock
     - contextual
     - editoria11y
     - file
@@ -80,6 +81,7 @@ permissions:
   - 'access toolbar'
   - 'access user profiles'
   - 'access webform overview'
+  - 'administer content lock'
   - 'administer main menu items'
   - 'administer redirects'
   - 'administer users'

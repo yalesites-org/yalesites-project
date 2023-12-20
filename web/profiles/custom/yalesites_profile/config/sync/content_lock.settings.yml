@@ -1,0 +1,73 @@
+_core:
+  default_config_hash: 6Ka3T1c-CIjEUO1Q64NXKksLthkMhj53a6zy4RJBtkc
+verbose: 1
+types:
+  block_content: {  }
+  crop: {  }
+  file: {  }
+  media: {  }
+  menu_link_content: {  }
+  node:
+    '*': '*'
+  path_alias: {  }
+  redirect: {  }
+  search_api_task: {  }
+  section_library_template: {  }
+  smart_date_rule: {  }
+  smart_date_override: {  }
+  taxonomy_term: {  }
+  user: {  }
+  webform_submission: {  }
+  paragraph: {  }
+types_translation_lock: {  }
+types_js_lock: {  }
+form_op_lock:
+  block_content:
+    mode: 0
+    values: {  }
+  crop:
+    mode: 0
+    values: {  }
+  file:
+    mode: 0
+    values: {  }
+  media:
+    mode: 0
+    values: {  }
+  menu_link_content:
+    mode: 0
+    values: {  }
+  node:
+    mode: 1
+    values:
+      layout_builder: layout_builder
+  path_alias:
+    mode: 0
+    values: {  }
+  redirect:
+    mode: 0
+    values: {  }
+  search_api_task:
+    mode: 0
+    values: {  }
+  section_library_template:
+    mode: 0
+    values: {  }
+  smart_date_rule:
+    mode: 0
+    values: {  }
+  smart_date_override:
+    mode: 0
+    values: {  }
+  taxonomy_term:
+    mode: 0
+    values: {  }
+  user:
+    mode: 0
+    values: {  }
+  webform_submission:
+    mode: 0
+    values: {  }
+  paragraph:
+    mode: 0
+    values: {  }
