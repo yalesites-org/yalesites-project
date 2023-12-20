@@ -50,7 +50,7 @@
     "drupal/layout_builder_restrictions_by_role": "1.0-alpha5",
     "drupal/libraries": "4.0.4",
     "drupal/linkit": "6.1.0",
-    "drupal/lock_layout_builder": "^1.2",
+    "drupal/lock_layout_builder": "1.2",
     "drupal/mailchimp_transactional": "1.1.0",
     "drupal/mailsystem": "4.4",
     "drupal/markup": "2.0.0-beta6",
