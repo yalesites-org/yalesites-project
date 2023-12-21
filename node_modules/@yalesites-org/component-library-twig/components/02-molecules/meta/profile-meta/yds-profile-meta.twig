@@ -1,0 +1,56 @@
+{#
+ # Available Variables:
+ # - event_meta__format: Multiselect. Options are 'In-person', 'Virtual', or both.
+ # - event_meta__address
+ #}
+
+{% set profile_meta__base_class = 'profile-meta' %}
+{% set profile_meta__background = profile_meta__background|default('one') %}
+
+{% set profile_meta__attributes = {
+  'data-component-width': profile_meta__width|default('site'),
+  class: bem(profile_meta__base_class, [], profile_meta__blockname, profile_meta__additional_classes),
+} %}
+
+<div {{ add_attributes(profile_meta__attributes) }} data-component-theme={{ profile_meta__background }} data-embedded-components>
+  <div {{ bem('inner', [], profile_meta__base_class) }}>
+
+    <div {{ bem('image', [], profile_meta__base_class) }}>
+      {% block profile__image %}
+        {% include "@atoms/images/image/_responsive-image.twig" %}
+      {% endblock %}
+    </div>
+
+    <div {{ bem('content', [], profile_meta__base_class) }}>
+      {% include "@molecules/page-title/yds-page-title.twig" with {
+        page_title__heading: profile_meta__heading,
+        page_title__blockname: 'profile-title',
+      }%}
+      
+      {% if profile_meta__title_line %}
+        {% include "@atoms/typography/text/yds-text.twig" with {
+          text__blockname: profile_meta__base_class,
+          text__content: profile_meta__title_line,
+          text__base_class: 'title-line',
+        } %}
+      {% endif %}
+
+      {% if profile_meta__subtitle_line %}
+        {% include "@atoms/typography/text/yds-text.twig" with {
+          text__blockname: profile_meta__base_class,
+          text__content: profile_meta__subtitle_line,
+          text__base_class: 'subtitle-line',
+        } %}
+      {% endif %}
+
+      {% if profile_meta__department %}
+        {% include "@atoms/typography/text/yds-text.twig" with {
+          text__blockname: profile_meta__base_class,
+          text__content: profile_meta__department,
+          text__base_class: 'department-line',
+        } %}
+      {% endif %}
+    </div>
+
+  </div>
+</div>
