@@ -111,3 +111,9 @@ divider:
       '50%': 50
       '25%': 25
     default: 100%
+text:
+  field_style_variation:
+    values:
+      default: 'Default'
+      emphasized: 'Emphasized'
+    default: default
