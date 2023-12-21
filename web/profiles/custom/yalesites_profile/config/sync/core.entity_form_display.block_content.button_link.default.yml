@@ -7,20 +7,26 @@ dependencies:
     - field.field.block_content.button_link.field_button_link
   module:
     - hide_revision_field
-    - link
+    - linkit
+    - maxlength
 id: block_content.button_link.default
 targetEntityType: block_content
 bundle: button_link
 mode: default
 content:
   field_button_link:
-    type: link_default
+    type: linkit
     weight: 82
     region: content
     settings:
       placeholder_url: ''
       placeholder_title: ''
-    third_party_settings: {  }
+      linkit_profile: default
+      linkit_auto_link_text: false
+    third_party_settings:
+      maxlength:
+        maxlength_js: null
+        maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
   info:
     type: string_textfield
     weight: -5
