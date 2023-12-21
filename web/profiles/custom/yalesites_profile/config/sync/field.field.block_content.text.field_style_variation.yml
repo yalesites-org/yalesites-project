@@ -1,0 +1,21 @@
+uuid: 423a367c-5159-4a40-a107-031f8c53c99e
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.text
+    - field.storage.block_content.field_style_variation
+  module:
+    - options
+id: block_content.text.field_style_variation
+field_name: field_style_variation
+entity_type: block_content
+bundle: text
+label: Text Style Variation
+description: ''
+required: true
+translatable: false
+default_value: {}
+default_value_callback: ys_themes_default_value_function
+settings: {}
+field_type: list_string
