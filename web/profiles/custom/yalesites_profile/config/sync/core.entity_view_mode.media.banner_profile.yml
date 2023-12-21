@@ -1,0 +1,10 @@
+uuid: 0c1f8db3-f81e-4e91-9ee2-a8ab5eb89ed3
+langcode: en
+status: true
+dependencies:
+  module:
+    - media
+id: media.banner_profile
+label: 'Banner Profile'
+targetEntityType: media
+cache: true
