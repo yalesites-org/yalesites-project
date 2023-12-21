@@ -5,6 +5,11 @@ callout:
       two: Two
       three: Three
     default: one
+  field_style_alignment:
+    values:
+      left: Left
+      center: Center
+    default: center
 cta_banner:
   field_style_color:
     values:
