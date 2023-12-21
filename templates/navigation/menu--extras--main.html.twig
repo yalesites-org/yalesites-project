@@ -3,5 +3,5 @@
 {{ attach_library('atomic/fontawesome')}}
 
 {% include "@organisms/menu/primary-nav/yds-primary-nav.twig"  with {
-  menu__variation: getThemeSetting('nav_type'),
+  menu__variation: getHeaderSetting('header_variation'),
 }%}
