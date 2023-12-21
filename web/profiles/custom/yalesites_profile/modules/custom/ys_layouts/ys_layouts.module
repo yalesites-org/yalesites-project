@@ -5,8 +5,6 @@
  * Contains ys_layouts.module functions.
  */
 
-use Drupal\Core\Form\FormStateInterface;
-
 /**
  * Add template files.
  *
