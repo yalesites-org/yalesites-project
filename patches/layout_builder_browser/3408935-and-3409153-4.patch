@@ -16,7 +16,7 @@ index b05fa2f..4b5c9b8 100644
 +      type: string
 +      label: 'Fallback image alt'
 diff --git a/src/Controller/BrowserController.php b/src/Controller/BrowserController.php
-index 9331cae..91d02fe 100644
+index 9331cae..52f5f5a 100644
 --- a/src/Controller/BrowserController.php
 +++ b/src/Controller/BrowserController.php
 @@ -146,6 +146,9 @@ class BrowserController extends ControllerBase {
@@ -70,7 +70,7 @@ index 9331cae..91d02fe 100644
      foreach ($auto_added_reusable_bundles as $machine_name) {
        $blocks = [];
        $content_blocks = $this->entityTypeManager->getStorage('block_content')
-@@ -203,19 +233,58 @@ class BrowserController extends ControllerBase {
+@@ -203,19 +233,60 @@ class BrowserController extends ControllerBase {
          }
        }
        if ($blocks) {
@@ -79,7 +79,9 @@ index 9331cae..91d02fe 100644
 +        foreach ($blocks as $reusableBlock) {
 +          preg_match('/(?<=\:)(.*?)(?=\:)/', $reusableBlock['config_dependencies']['content'][0], $matches);
 +          if (isset($matches[0])) {
-+            $blocks[array_key_first($blocks)]['reusable_image'] = $allBlockImages[$matches[0]];
++            foreach ($blocks as $key => $reusableBlock) {
++              $blocks[$key]['reusable_image'] = $allBlockImages[$matches[0]];
++            }
 +          }
 +        }
 +
@@ -135,7 +137,7 @@ index 9331cae..91d02fe 100644
      $build['block_categories'] = $block_categories;
      $build['#attached']['library'][] = 'layout_builder_browser/browser';
  
-@@ -266,6 +335,16 @@ class BrowserController extends ControllerBase {
+@@ -266,6 +337,16 @@ class BrowserController extends ControllerBase {
            '#alt' => $block['layout_builder_browser_data']->image_alt,
          ];
        }
