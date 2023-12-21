@@ -6,6 +6,7 @@ dependencies:
     - block_content.type.callout
     - field.field.block_content.callout.field_callout
     - field.field.block_content.callout.field_instructions
+    - field.field.block_content.callout.field_style_alignment
     - field.field.block_content.callout.field_style_color
   module:
     - markup
@@ -43,6 +44,12 @@ content:
   field_instructions:
     type: markup
     weight: 0
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_style_alignment:
+    type: options_select
+    weight: 3
     region: content
     settings: {  }
     third_party_settings: {  }

@@ -66,8 +66,8 @@ content:
     region: content
     settings:
       media_types:
-        - background_video
         - image
+        - background_video
     third_party_settings:
       media_library_edit:
         show_edit: '1'
