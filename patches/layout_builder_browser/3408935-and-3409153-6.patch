@@ -16,7 +16,7 @@ index b05fa2f..4b5c9b8 100644
 +      type: string
 +      label: 'Fallback image alt'
 diff --git a/src/Controller/BrowserController.php b/src/Controller/BrowserController.php
-index 9331cae..52f5f5a 100644
+index 9331cae..376d953 100644
 --- a/src/Controller/BrowserController.php
 +++ b/src/Controller/BrowserController.php
 @@ -146,6 +146,9 @@ class BrowserController extends ControllerBase {
@@ -70,18 +70,18 @@ index 9331cae..52f5f5a 100644
      foreach ($auto_added_reusable_bundles as $machine_name) {
        $blocks = [];
        $content_blocks = $this->entityTypeManager->getStorage('block_content')
-@@ -203,19 +233,60 @@ class BrowserController extends ControllerBase {
+@@ -203,19 +233,62 @@ class BrowserController extends ControllerBase {
          }
        }
        if ($blocks) {
 +
 +        // For reusable blocks, get the machine name to attach images to.
-+        foreach ($blocks as $reusableBlock) {
-+          preg_match('/(?<=\:)(.*?)(?=\:)/', $reusableBlock['config_dependencies']['content'][0], $matches);
-+          if (isset($matches[0])) {
-+            foreach ($blocks as $key => $reusableBlock) {
-+              $blocks[$key]['reusable_image'] = $allBlockImages[$matches[0]];
-+            }
++        foreach ($blocks as $key => $reusableBlock) {
++          $blockParts = explode(":", $reusableBlock['config_dependencies']['content'][0]);
++          if (!empty($blockParts)) {
++            $entity = $this->entityTypeManager()->getStorage('block_content')->loadByProperties(['uuid' => $blockParts[2]]);
++            $blocks[$key]['reusable_image'] = $allBlockImages[$blockParts[1]];
++            $blocks[$key]['#changed'] = $entity[array_key_first($entity)]->get('changed')->getString();
 +          }
 +        }
 +
@@ -98,8 +98,8 @@ index 9331cae..52f5f5a 100644
 +          // If grouping reusable blocks together.
 +          if ($config->get('group_reusable_blocks_together')) {
 +
-+            $changed = date('m/d/Y - H:i', $block->get('changed')->getString());
 +            foreach ($block_links as $key => $block_link) {
++              $changed = date('m/d/Y - H:i', $block_link['#changed']);
 +              $block_links[$key]['#title']['label']['#markup'] = "
 +                <span class='underlined-title'>{$block_link['#title']['label']['#markup']}</span>
 +                <br>
@@ -107,12 +107,14 @@ index 9331cae..52f5f5a 100644
 +                <br>
 +                Changed: {$changed}
 +              ";
-+              $block_links['changed'] = $block->get('changed')->getString();
 +              $block_links[$key]['#attributes']['class'][] = 'layout-builder-browser-reusable-block';
 +            }
 +
 +            // Only add the information if the category has links.
-+            array_push($block_categories['reusable_blocks']['links'], $block_links);
++            foreach ($block_links as $link) {
++              $block_categories['reusable_blocks']['links'][] = $link;
++            }
++
 +            $block_categories['reusable_blocks']['#type'] = 'details';
 +            $block_categories['reusable_blocks']['#attributes']['class'][] = 'js-layout-builder-category';
 +            $block_categories['reusable_blocks']['#open'] = $blockcat->getOpened();
@@ -131,13 +133,13 @@ index 9331cae..52f5f5a 100644
      }
  
 +    usort($block_categories['reusable_blocks']['links'], function($a, $b) {
-+      return $b['changed'] <=> $a['changed'];
++      return $b['#changed'] <=> $a['#changed'];
 +    });
 +
      $build['block_categories'] = $block_categories;
      $build['#attached']['library'][] = 'layout_builder_browser/browser';
  
-@@ -266,6 +337,16 @@ class BrowserController extends ControllerBase {
+@@ -266,6 +339,16 @@ class BrowserController extends ControllerBase {
            '#alt' => $block['layout_builder_browser_data']->image_alt,
          ];
        }
@@ -154,6 +156,14 @@ index 9331cae..52f5f5a 100644
        $block_render_array['label'] = ['#markup' => (empty($block["layout_builder_browser_data"])) ? $block['admin_label'] : $block["layout_builder_browser_data"]->label()];
        $link = [
          '#type' => 'link',
+@@ -280,6 +363,7 @@ class BrowserController extends ControllerBase {
+           ]
+         ),
+         '#attributes' => $attributes,
++        '#changed' => $block['#changed'],
+       ];
+ 
+       $links[] = $link;
 diff --git a/src/Form/SettingsForm.php b/src/Form/SettingsForm.php
 index 90253f0..b1c5ff2 100644
 --- a/src/Form/SettingsForm.php
