@@ -47,4 +47,9 @@ matchers:
     id: phone
     uuid: 5d407f45-1ebb-45c7-8659-fa367cc55944
     settings: {  }
-    weight: 0
+    weight: -7
+  eb63571b-a45e-46d7-9af1-ef58dd1a9eae:
+    id: front_page
+    uuid: eb63571b-a45e-46d7-9af1-ef58dd1a9eae
+    settings: {  }
+    weight: -6
