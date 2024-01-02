@@ -114,8 +114,8 @@ content_spotlight_portrait:
     default: image-left
   field_style_variation:
     values:
-      inline: 'Inline'
-      offset: 'Offset'
+      inline: Inline
+      offset: Offset
     default: inline
   field_style_color:
     values:

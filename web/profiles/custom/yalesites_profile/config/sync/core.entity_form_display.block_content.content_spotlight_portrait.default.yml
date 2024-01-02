@@ -8,6 +8,7 @@ dependencies:
     - field.field.block_content.content_spotlight_portrait.field_instructions
     - field.field.block_content.content_spotlight_portrait.field_link
     - field.field.block_content.content_spotlight_portrait.field_media
+    - field.field.block_content.content_spotlight_portrait.field_style_color
     - field.field.block_content.content_spotlight_portrait.field_style_position
     - field.field.block_content.content_spotlight_portrait.field_style_variation
     - field.field.block_content.content_spotlight_portrait.field_subheading
@@ -68,6 +69,12 @@ content:
     third_party_settings:
       media_library_edit:
         show_edit: '1'
+  field_style_color:
+    type: options_select
+    weight: 2
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_style_position:
     type: options_select
     weight: 8
