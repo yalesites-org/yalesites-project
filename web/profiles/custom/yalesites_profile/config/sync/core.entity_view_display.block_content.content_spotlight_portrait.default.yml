@@ -14,7 +14,6 @@ dependencies:
     - field.field.block_content.content_spotlight_portrait.field_text
   module:
     - link
-    - markup
     - options
     - text
 id: block_content.content_spotlight_portrait.default
@@ -27,14 +26,7 @@ content:
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 0
-    region: content
-  field_instructions:
-    type: markup
-    label: above
-    settings: {  }
-    third_party_settings: {  }
-    weight: 7
+    weight: 1
     region: content
   field_link:
     type: link_separate
@@ -52,7 +44,7 @@ content:
     type: entity_reference_entity_view
     label: hidden
     settings:
-      view_mode: text_with_image_feature_equal
+      view_mode: content_spotlight_portrait_2_3
       link: false
     third_party_settings: {  }
     weight: 0
@@ -86,4 +78,5 @@ content:
     weight: 3
     region: content
 hidden:
+  field_instructions: true
   search_api_excerpt: true
