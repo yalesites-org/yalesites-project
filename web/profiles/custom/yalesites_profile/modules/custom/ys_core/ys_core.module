@@ -120,9 +120,20 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
     ];
   }
 
+  $block_content_forms = [
+    'block_content_tabs_form',
+    'block_content_quick_links_form',
+    'block_content_media_grid_form',
+    'block_content_gallery_form',
+  ];
+
+  if (in_array($form_id, $block_content_forms)) {
+    $form['#attached']['library'][] = 'ys_core/block_form';
+  }
+
   $layout_builder_block_forms = [
     'layout_builder_update_block',
-    'layout_builder_add_block'
+    'layout_builder_add_block',
   ];
 
   if (in_array($form_id, $layout_builder_block_forms)) {
@@ -137,7 +148,6 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
     if (in_array($block->bundle(), $limited_block_types)) {
       $form['#attached']['library'][] = 'ys_core/block_form';
     }
-
 
   }
 }
@@ -486,45 +496,4 @@ function ys_core_preprocess_page(&$variables) {
   // Via: https://drupal.stackexchange.com/questions/266379/how-to-clear-cache-for-config-entity-after-making-changes
   $config = \Drupal::config('ys_core.header_settings');
   \Drupal::service('renderer')->addCacheableDependency($variables, $config);
-}
-
-/**
- * Implements hook_form_FORM_ID_alter().
- */
-function ys_core_form_block_content_quick_links_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  // Prevent validation on 'add more' ajax callback for links.
-  // Use custom constraints instead (see ys_core_entity_bundle_field_info_alter)
-  $form['field_links']['widget']['add_more']['#limit_validation_errors'] = [];
-}
-
-
-/**
- * Implements hook_entity_bundle_field_info_alter().
- */
-function ys_core_entity_bundle_field_info_alter(&$fields, EntityTypeInterface $entity_type, $bundle) {
-  if ($entity_type->id() == 'block_content') {
-    // Bundle in this case refers to the block type.
-    switch ($bundle) {
-      case 'tabs':
-        if (isset($fields['field_tabs'])) {
-          $fields['field_tabs']->addConstraint('MinMax', ['min' => 2, 'max' => 5, 'type' => 'tabs']);
-        }
-        break;
-      case 'quick_links':
-        if (isset($fields['field_links'])) {
-          $fields['field_links']->addConstraint('MinMax', ['min' => 3, 'max' => 9, 'type' => 'links']);
-        }
-        break;
-      case 'media_grid':
-        if (isset($fields['field_media_grid_items'])) {
-          $fields['field_media_grid_items']->addConstraint('MinMax', ['min' => 2, 'type' => 'media grid items']);
-        }
-        break;
-      case 'gallery':
-        if (isset($fields['field_gallery_items'])) {
-          $fields['field_gallery_items']->addConstraint('MinMax', ['min' => 2, 'type' => 'gallery items']);
-        }
-        break;
-    }
-  }
 }
