@@ -1,0 +1,24 @@
+uuid: 379be8ed-e580-4fdc-bbb0-db7d0001e329
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.content_spotlight_portrait
+    - field.storage.block_content.field_heading
+    - filter.format.heading_html
+  module:
+    - text
+id: block_content.content_spotlight_portrait.field_heading
+field_name: field_heading
+entity_type: block_content
+bundle: content_spotlight_portrait
+label: Heading
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - heading_html
+field_type: text

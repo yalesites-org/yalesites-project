@@ -1,0 +1,89 @@
+uuid: b36183ee-14fd-4001-82da-3dd2f5659e9b
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.content_spotlight_portrait
+    - field.field.block_content.content_spotlight_portrait.field_heading
+    - field.field.block_content.content_spotlight_portrait.field_instructions
+    - field.field.block_content.content_spotlight_portrait.field_link
+    - field.field.block_content.content_spotlight_portrait.field_media
+    - field.field.block_content.content_spotlight_portrait.field_style_position
+    - field.field.block_content.content_spotlight_portrait.field_style_variation
+    - field.field.block_content.content_spotlight_portrait.field_subheading
+    - field.field.block_content.content_spotlight_portrait.field_text
+  module:
+    - link
+    - markup
+    - options
+    - text
+id: block_content.content_spotlight_portrait.default
+targetEntityType: block_content
+bundle: content_spotlight_portrait
+mode: default
+content:
+  field_heading:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_instructions:
+    type: markup
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 7
+    region: content
+  field_link:
+    type: link_separate
+    label: hidden
+    settings:
+      trim_length: null
+      url_only: false
+      url_plain: false
+      rel: '0'
+      target: '0'
+    third_party_settings: {  }
+    weight: 4
+    region: content
+  field_media:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: text_with_image_feature_equal
+      link: false
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_style_position:
+    type: list_key
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 6
+    region: content
+  field_style_variation:
+    type: list_key
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 5
+    region: content
+  field_subheading:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  field_text:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 3
+    region: content
+hidden:
+  search_api_excerpt: true
