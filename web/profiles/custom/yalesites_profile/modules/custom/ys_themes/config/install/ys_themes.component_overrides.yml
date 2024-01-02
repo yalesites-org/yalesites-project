@@ -117,3 +117,10 @@ content_spotlight_portrait:
       inline: 'Inline'
       offset: 'Offset'
     default: inline
+  field_style_color:
+    values:
+      default: Default
+      one: One
+      two: Two
+      three: Three
+    default: default
