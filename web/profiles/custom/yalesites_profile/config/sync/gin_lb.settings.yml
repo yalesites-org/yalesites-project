@@ -4,5 +4,5 @@ toastify_loading: custom
 enable_preview_regions: false
 hide_discard_button: false
 hide_revert_button: false
-save_behavior: stay
+save_behavior: default
 safe_behavior: stay
