@@ -146,7 +146,7 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
       'tabs',
       'quick_links',
       'media_grid',
-      'gallery'
+      'gallery',
     ];
     if (in_array($block->bundle(), $limited_block_types)) {
       $form['#attached']['library'][] = 'ys_core/block_form';
