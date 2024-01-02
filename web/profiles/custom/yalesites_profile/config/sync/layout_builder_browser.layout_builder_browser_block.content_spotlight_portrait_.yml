@@ -1,0 +1,11 @@
+uuid: fbab32f8-2324-4370-a03c-804791a5888b
+langcode: en
+status: true
+dependencies: {  }
+id: content_spotlight_portrait_
+block_id: 'inline_block:content_spotlight_portrait'
+category: basic
+label: 'Content Spotlight (Portrait)'
+image_path: ''
+image_alt: ''
+weight: -3
