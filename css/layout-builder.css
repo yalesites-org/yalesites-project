@@ -129,6 +129,10 @@ display: flex;
   flex-grow: unset;
 }
 
-.layout-builder-configure-block .form-item-reusable {
+/* Used with patch to add reusable blocks from within layout builder */
+
+.layout-builder-configure-block .form-item-reusable,
+.layout-builder-configure-block .form-item-reusable + .form-type--textfield {
   padding-left: 20px;
+  padding-right: 21px;
 }
