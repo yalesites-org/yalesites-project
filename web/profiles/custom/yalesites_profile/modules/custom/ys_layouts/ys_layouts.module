@@ -71,40 +71,6 @@ function ys_layouts_theme_suggestions_block($variables) {
 }
 
 /**
- * Implements hook_form_alter().
- */
-function ys_layouts_form_alter(&$form, $form_state, $form_id) {
-  // Add message, link to edit global block, destination back to layout builder.
-  $reusableDesc = '<p>Note: This is a Global Block.</p><p>Any changes made to a Global Block will be reflected anywhere it is used.</p>';
-
-  // Only target the update block form.
-  if ($form_id == 'layout_builder_update_block') {
-
-    // Only target reusable blocks.
-    if (!isset($form['settings']['block_form'])) {
-
-      // We need the global block uuid to look up the block id.
-      $blockUUID = explode(":", $form_state->getBuildInfo()['callback_object']->getCurrentComponent()->get('configuration')['id']);
-      $blocks = \Drupal::entityTypeManager()->getStorage('block_content')->loadByProperties([
-        'uuid' => $blockUUID[1],
-      ]);
-
-      $blockId = array_key_first($blocks);
-
-      // We need the current path to extract the node id.
-      $current_path = \Drupal::service('path.current')->getPath();
-      preg_match('/node\.(\d+)/', $current_path, $nodeId);
-
-      // Compiled global block message.
-      $form['settings']['global_info'] = [
-        '#markup' => "{$reusableDesc} <a class='glb-button glb-button--primary' href='/admin/content/block/{$blockId}?destination=/node/{$nodeId[1]}/layout'>Edit Global Block</a>",
-      ];
-    }
-  }
-
-}
-
-/**
  * Implements hook_preprocess_block().
  */
 function ys_layouts_preprocess_block(&$variables) {
