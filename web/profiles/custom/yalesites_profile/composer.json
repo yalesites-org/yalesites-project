@@ -49,7 +49,7 @@
     "drupal/layout_builder_restrictions": "2.19",
     "drupal/layout_builder_restrictions_by_role": "1.0-alpha5",
     "drupal/libraries": "4.0.4",
-    "drupal/linkit": "6.1.0",
+    "drupal/linkit": "6.1.2",
     "drupal/mailchimp_transactional": "1.1.0",
     "drupal/mailsystem": "4.4",
     "drupal/markup": "2.0.0-beta6",
@@ -83,7 +83,7 @@
     "drupal/section_library": "1.1.1",
     "drupal/selective_better_exposed_filters": "3.0.0-beta1",
     "drupal/simple_sitemap": "4.1.6",
-    "drupal/single_content_sync": "1.4.1",
+    "drupal/single_content_sync": "1.4.4",
     "drupal/smart_date": "4.0.3",
     "drupal/twig_tweak": "3.2.1",
     "drupal/typogrify": "1.2",
@@ -143,7 +143,8 @@
         "Cannot install from existing config https://www.drupal.org/project/google_analytics/issues/3373921": "https://www.drupal.org/files/issues/2023-08-07/google-analytics-issues-3373921-cannot-install-from-existing-config-11.patch"
       },
       "drupal/linkit": {
-        "Add phone number matcher https://www.drupal.org/project/linkit/issues/3273630": "https://git.drupalcode.org/project/linkit/-/merge_requests/36.diff"
+        "Add phone number matcher https://www.drupal.org/project/linkit/issues/3273630": "https://git.drupalcode.org/project/linkit/-/merge_requests/36.diff",
+        "Fix linkit autocomplete alias selection https://www.drupal.org/project/linkit/issues/2877535": "https://www.drupal.org/files/issues/2023-10-05/linkit-2877535-64.patch"
       },
       "drupal/quick_node_clone": {
         "Fix cloning of inline blocks and paragraphs: https://www.drupal.org/project/quick_node_clone/issues/3100117": "https://www.drupal.org/files/issues/2023-04-25/quick-node-clone--inline-blocks--3100117-32.patch"
