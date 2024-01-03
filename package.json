@@ -6,6 +6,7 @@
     "build-with-install": "./scripts/local/build-with-install.sh",
     "build-with-assets": "./scripts/local/build-with-assets.sh",
     "confex": "./scripts/local/confex.sh",
+    "content-import": "./scripts/shared/content-import.sh",
     "confim": "./scripts/local/confim.sh",
     "db:get": "./scripts/local/db-get.sh",
     "files:get": "./scripts/local/files-get.sh",
