@@ -124,6 +124,7 @@ permissions:
   - 'create profile content'
   - 'create pull_quote block content'
   - 'create quick_links block content'
+  - 'create reusable blocks'
   - 'create tabs block content'
   - 'create terms in affiliation'
   - 'create terms in event_category'
