@@ -129,10 +129,15 @@ display: flex;
   flex-grow: unset;
 }
 
-/* Used with patch to add reusable blocks from within layout builder */
+/*
+Used with patch to add reusable blocks from within layout builder
+Note: div[data-drupal-selector="edit-block-form"] is for reusable block editing
+area needed more padding.
+*/
 
 .layout-builder-configure-block .form-item-reusable,
-.layout-builder-configure-block .form-item-reusable + .form-type--textfield {
+.layout-builder-configure-block .form-item-reusable + .form-type--textfield,
+div[data-drupal-selector="edit-block-form"] {
   padding-left: 20px;
   padding-right: 21px;
 }
