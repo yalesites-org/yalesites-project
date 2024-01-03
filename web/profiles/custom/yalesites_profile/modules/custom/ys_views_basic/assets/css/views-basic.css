@@ -192,7 +192,7 @@
   .fieldset__wrapper--group
   .form-boolean-group {
   display: flex;
-  flex-direction: row;
   gap: 1rem;
   width: 100%;
+  flex-flow: row wrap;
 }
