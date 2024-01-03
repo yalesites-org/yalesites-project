@@ -115,6 +115,12 @@ jobs:
           if [ -n "$contrib_check" ]; then
             echo "::error::$contrib_check found in /composer.json and should be moved to /web/profiles/custom/yalesites_profile/composer.json" && exit 1
           fi
+      - name: Check for unpinned dependencies
+        run: |
+          unpinned_dependencies=$(jq -r '.require | to_entries | map(select(.value | test("\\^|\\~|\\>|\\<")) | "\(.key): \(.value)") | join(", ")' ./web/profiles/custom/yalesites_profile/composer.json)
+          if [ -n "$unpinned_dependencies" ]; then
+            echo "::error::$unpinned_dependencies found in /web/profiles/custom/yalesites_profile/composer.json. Please switch to pinned versions." && exit 1
+          fi
 
       - name: run static tests
         run: |

@@ -1,0 +1,27 @@
+uuid: 506ffaab-1da4-48a7-9356-1d89c25bd6c7
+langcode: en
+status: true
+dependencies:
+  config:
+    - image.style.3_2_175
+    - image.style.3_2_320
+    - image.style.3_2_480
+    - image.style.3_2_540
+    - image.style.3_2_640
+id: banner_profile
+label: 'Banner Profile (3:2)'
+image_style_mappings:
+  -
+    image_mapping_type: sizes
+    image_mapping:
+      sizes: '(min-width: 1344px) 640px, (min-width: 991px) 640px, 100vw'
+      sizes_image_styles:
+        - '3_2_175'
+        - '3_2_320'
+        - '3_2_480'
+        - '3_2_540'
+        - '3_2_640'
+    breakpoint_id: responsive_image.viewport_sizing
+    multiplier: 1x
+breakpoint_group: responsive_image
+fallback_image_style: '3_2_480'
