@@ -1,0 +1,93 @@
+#!/bin/bash
+
+set -eo pipefail
+
+# Create a pull request to merge develop into master.
+pull_request_response=$(curl -s -H "Accept: application/vnd.github+json" \
+  -H "Authorization: token $ACCESS_TOKEN" \
+  -X POST -d '{"title": "Release", "head": "develop", "base": "master"}' \
+  "https://api.github.com/repos/$REPO/pulls")
+
+# Check if the pull request creation was successful.
+if [ -n "$(echo "$pull_request_response" | jq -r '.html_url')" ]; then
+  message=$(echo "$pull_request_response" | jq -r '.errors[].message')
+  echo "Failed to create pull request."
+  echo "Error: $message"
+  exit 1
+fi
+
+# Extract the pull request number from the response.
+pr_number=$(echo "$pull_request_response" | jq -r '.number')
+
+# Page through the /pulls/#/commits endpoint.
+page=1
+per_page=100
+
+while true; do
+  # Get the list of commits from the pull request and extract commit SHAs.
+  commits_response=$(curl --silent -H "Authorization: token $ACCESS_TOKEN" \
+    "https://api.github.com/repos/$REPO/pulls/$pr_number/commits?per_page=$per_page&page=$page")
+
+  current_commit_shas=$(echo "$commits_response" | jq -r '.[].sha')
+
+  # Append current commit SHAs to the overall list.
+  commit_shas+="$current_commit_shas"
+
+  # Check if there are more pages, otherwise finish.
+  if [[ $(echo "$commits_response" | jq -r '. | length') -lt "$per_page" ]]; then
+    break
+  fi
+
+  # Increment page number for the next API call.
+  ((page++))
+done
+
+# Create list of unique pull requests based on commit SHAs, and another for changes without PRs.
+pull_requests=()
+changes_without_pr=()
+
+for sha in $commit_shas; do
+  pr_url=$(curl -s -H "Authorization: token $ACCESS_TOKEN" \
+    "https://api.github.com/repos/$REPO/commits/$sha/pulls" \
+    | jq -r '.[].html_url')
+
+  if [ -n "$pr_url" ]; then
+    pull_requests+=("$pr_url")
+  else
+    changes_without_pr+=("$sha")
+  fi
+done
+
+# Dedupe pull request URLs.
+pull_requests=($(printf '%s\n' "${pull_requests[@]}" | sort -u))
+
+# Begin outputting description if there are PRs.
+if [[ -n "${pull_requests[*]}" ]]; then
+  description+="## Pull requests\n"
+
+  # Create pull request description with list of pull requests as a markdown list.
+  for pr in "${pull_requests[@]}"; do
+      description+="- $pr\n"
+  done
+
+fi
+
+# Output changes that are not in a pull request.
+if [[ -n "${changes_without_pr[*]}" ]]; then
+  description+="\n## Changes without a pull rqeuest:\n"
+
+  for sha in "${changes_without_pr[@]}"; do
+      description+="- $sha\n"
+  done
+fi
+
+# Update pull request with new description.
+update_pull_request=$(curl -s -L \
+  -H "Accept: application/vnd.github+json" \
+  -H "Authorization: token $ACCESS_TOKEN" \
+  -X PATCH -d "{\"body\": \"$description\"}" \
+  "https://api.github.com/repos/$REPO/pulls/$pr_number")
+
+if [[ -n "$pull_request_response" || -n "$update_pull_request" ]]; then
+  echo "Pull request created"
+fi
