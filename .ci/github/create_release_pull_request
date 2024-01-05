@@ -9,11 +9,13 @@ pull_request_response=$(curl -s -H "Accept: application/vnd.github+json" \
   "https://api.github.com/repos/$REPO/pulls")
 
 # Check if the pull request creation was successful.
-if [ -n "$(echo "$pull_request_response" | jq -r '.html_url')" ]; then
+if [ -z "$(echo "$pull_request_response" | jq -r '.html_url')" ]; then
   message=$(echo "$pull_request_response" | jq -r '.errors[].message')
   echo "Failed to create pull request."
   echo "Error: $message"
   exit 1
+else
+  opened_pr_url=$(echo "$pull_request_response" | jq -r '.html_url')
 fi
 
 # Extract the pull request number from the response.
@@ -89,5 +91,5 @@ update_pull_request=$(curl -s -L \
   "https://api.github.com/repos/$REPO/pulls/$pr_number")
 
 if [[ -n "$pull_request_response" || -n "$update_pull_request" ]]; then
-  echo "Pull request created"
+  echo "Pull request created: $opened_pr_url"
 fi
