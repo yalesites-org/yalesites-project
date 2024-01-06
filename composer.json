@@ -10,6 +10,18 @@
     "drupal": {
       "type": "composer",
       "url": "https://packages.drupal.org/8"
+    },
+    "ckeditor5-anchor-drupal": {
+      "type": "package",
+      "package": {
+        "name": "northernco/ckeditor5-anchor-drupal",
+        "version": "0.4.0",
+        "type": "drupal-library",
+        "dist": {
+          "url": "https://registry.npmjs.org/@northernco/ckeditor5-anchor-drupal/-/ckeditor5-anchor-drupal-0.4.0.tgz",
+          "type": "tar"
+        }
+      }
     }
   },
   "require": {

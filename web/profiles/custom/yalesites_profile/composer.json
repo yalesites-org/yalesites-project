@@ -5,12 +5,25 @@
     "drupal": {
       "type": "composer",
       "url": "https://packages.drupal.org/8"
+    },
+    "ckeditor5-anchor-drupal": {
+      "type": "package",
+      "package": {
+        "name": "northernco/ckeditor5-anchor-drupal",
+        "version": "0.4.0",
+        "type": "drupal-library",
+        "dist": {
+          "url": "https://registry.npmjs.org/@northernco/ckeditor5-anchor-drupal/-/ckeditor5-anchor-drupal-0.4.0.tgz",
+          "type": "tar"
+        }
+      }
     }
   },
   "require": {
     "drupal/address": "2.0.0",
     "drupal/admin_toolbar": "3.4.2",
     "drupal/allowed_formats": "3.0",
+    "drupal/anchor_link": "3.0.0-alpha1",
     "drupal/auto_entitylabel": "3.0",
     "drupal/autosave_form": "1.4",
     "drupal/better_exposed_filters": "6.0.3",
@@ -92,6 +105,7 @@
     "drupal/wingsuit_companion": "2.1",
     "jjj/chosen": "2.2.1",
     "laminas/laminas-escaper": "2.13.0",
+    "northernco/ckeditor5-anchor-drupal": "0.4.0",
     "yalesites-org/atomic": "1.22.0",
     "yalesites-org/yale_cas": "1.0.4"
   },
