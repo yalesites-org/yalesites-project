@@ -33,6 +33,7 @@ module:
   dblog: 0
   dynamic_page_cache: 0
   editor: 0
+  editor_advanced_link: 0
   editoria11y: 0
   emulsify_twig: 0
   entity_redirect: 0
