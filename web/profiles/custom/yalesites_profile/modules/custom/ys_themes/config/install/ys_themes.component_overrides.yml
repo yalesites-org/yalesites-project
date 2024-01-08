@@ -48,10 +48,10 @@ content_spotlight:
     default: equal
   field_style_color:
     values:
-      default: Default
-      one: One
-      two: Two
-      three: Three
+      default: 'Default - No Color'
+      one: 'One'
+      two: 'Two'
+      three: 'Three'
     default: default
 quick_links:
   field_style_variation:
@@ -131,10 +131,10 @@ content_spotlight_portrait:
     default: inline
   field_style_color:
     values:
-      default: Default
-      one: One
-      two: Two
-      three: Three
+      default: 'Default - No Color'
+      one: 'One'
+      two: 'Two'
+      three: 'Three'
     default: default
 text:
   field_style_variation:
