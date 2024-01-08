@@ -91,7 +91,6 @@ display: flex;
   margin: 0;
 }
 
-
 /* Wingsuit layout builder styles */
 
 .block-categories .layout-builder-browser-block-item img {
@@ -140,4 +139,9 @@ area needed more padding.
 div[data-drupal-selector="edit-block-form"] {
   padding-left: 20px;
   padding-right: 21px;
+}
+
+/* Get sticky footer to work in Layout Builder */
+#block-yalesitesfooterblock {
+  margin-top: auto;
 }
