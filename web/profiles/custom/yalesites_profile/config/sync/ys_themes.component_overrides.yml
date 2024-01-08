@@ -46,6 +46,13 @@ content_spotlight:
       equal: 'Equal Focus'
       image: 'Image Focus'
     default: equal
+  field_style_color:
+    values:
+      default: Default
+      one: One
+      two: Two
+      three: Three
+    default: default
 quick_links:
   field_style_variation:
     values:
