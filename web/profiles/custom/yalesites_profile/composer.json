@@ -67,6 +67,7 @@
     "drupal/mailsystem": "4.4",
     "drupal/markup": "2.0.0-beta6",
     "drupal/maxlength": "2.1.2",
+    "drupal/media_entity_download": "2.2",
     "drupal/media_library_edit": "3.0.2",
     "drupal/media_library_form_element": "2.0.6",
     "drupal/menu_admin_per_menu": "1.5",
