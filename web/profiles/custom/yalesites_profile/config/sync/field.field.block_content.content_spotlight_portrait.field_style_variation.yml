@@ -11,7 +11,7 @@ id: block_content.content_spotlight_portrait.field_style_variation
 field_name: field_style_variation
 entity_type: block_content
 bundle: content_spotlight_portrait
-label: Style
+label: 'Image Style'
 description: ''
 required: true
 translatable: false
