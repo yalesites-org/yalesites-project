@@ -29,7 +29,7 @@ mode: default
 content:
   field_heading:
     type: text_textfield
-    weight: 1
+    weight: 2
     region: content
     settings:
       size: 60
@@ -44,7 +44,7 @@ content:
         maxlength_js_enforce: false
   field_instructions:
     type: markup
-    weight: 0
+    weight: 1
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -62,7 +62,7 @@ content:
         maxlength_js_enforce: false
   field_media:
     type: media_library_widget
-    weight: 2
+    weight: 3
     region: content
     settings:
       media_types: {  }
@@ -71,7 +71,7 @@ content:
         show_edit: '1'
   field_style_color:
     type: options_select
-    weight: 2
+    weight: 7
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -83,7 +83,7 @@ content:
     third_party_settings: {  }
   field_style_variation:
     type: options_select
-    weight: 10
+    weight: 9
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -119,7 +119,7 @@ content:
         maxlength_js_enforce: true
   info:
     type: string_textfield
-    weight: -5
+    weight: 0
     region: content
     settings:
       size: 60
@@ -127,7 +127,7 @@ content:
     third_party_settings: {  }
   revision_log:
     type: hide_revision_field_log_widget
-    weight: 80
+    weight: 10
     region: content
     settings:
       rows: 5

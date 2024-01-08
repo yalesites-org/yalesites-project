@@ -139,6 +139,6 @@ content_spotlight_portrait:
 text:
   field_style_variation:
     values:
-      default: 'Default'
-      emphasized: 'Emphasized'
+      default: Default
+      emphasized: Emphasized
     default: default
