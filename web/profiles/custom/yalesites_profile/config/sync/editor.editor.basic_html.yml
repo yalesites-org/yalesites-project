@@ -18,6 +18,8 @@ settings:
       - '|'
       - link
       - '|'
+      - anchor
+      - '|'
       - bulletedList
       - numberedList
       - outdent
