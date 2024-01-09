@@ -22,7 +22,7 @@ index 9331cae..376d953 100644
 @@ -146,6 +146,9 @@ class BrowserController extends ControllerBase {
        ->loadByProperties(['status' => TRUE]);
      uasort($blockcats, ['Drupal\Core\Config\Entity\ConfigEntityBase', 'sort']);
- 
+
 +    // For use with reusable images.
 +    $allBlockImages = [];
 +
@@ -31,7 +31,7 @@ index 9331cae..376d953 100644
        $blocks = [];
 @@ -168,6 +171,27 @@ class BrowserController extends ControllerBase {
        }
- 
+
        $block_categories[$blockcat->id()]['links'] = $this->getBlocks($section_storage, $delta, $region, $blocks);
 +
 +      // Sets the images for each block into an array for reusable blocks.
@@ -118,7 +118,7 @@ index 9331cae..376d953 100644
 +            $block_categories['reusable_blocks']['#type'] = 'details';
 +            $block_categories['reusable_blocks']['#attributes']['class'][] = 'js-layout-builder-category';
 +            $block_categories['reusable_blocks']['#open'] = $blockcat->getOpened();
-+            $block_categories['reusable_blocks']['#title'] = $this->t('Reusable blocks');
++            $block_categories['reusable_blocks']['#title'] = $this->t('Global Blocks');
 +          }
 +          else {
 +            // Only add the information if the category has links.
@@ -131,14 +131,14 @@ index 9331cae..376d953 100644
          }
        }
      }
- 
+
 +    usort($block_categories['reusable_blocks']['links'], function($a, $b) {
 +      return $b['#changed'] <=> $a['#changed'];
 +    });
 +
      $build['block_categories'] = $block_categories;
      $build['#attached']['library'][] = 'layout_builder_browser/browser';
- 
+
 @@ -266,6 +339,16 @@ class BrowserController extends ControllerBase {
            '#alt' => $block['layout_builder_browser_data']->image_alt,
          ];
@@ -162,7 +162,7 @@ index 9331cae..376d953 100644
          '#attributes' => $attributes,
 +        '#changed' => $block['#changed'],
        ];
- 
+
        $links[] = $link;
 diff --git a/src/Form/SettingsForm.php b/src/Form/SettingsForm.php
 index 90253f0..b1c5ff2 100644
@@ -171,7 +171,7 @@ index 90253f0..b1c5ff2 100644
 @@ -83,6 +83,27 @@ class SettingsForm extends ConfigFormBase {
        '#default_value' => $config->get('auto_added_reusable_block_content_bundles') ?? [],
      ];
- 
+
 +    $form['group_reusable_blocks_together'] = [
 +      '#title' => $this->t('Group reusable blocks together'),
 +      '#description' => $this->t('By default, reusable blocks are grouped according to their bundle type. Checking this box will group all reusable blocks together in one group.'),
@@ -195,7 +195,7 @@ index 90253f0..b1c5ff2 100644
 +
      return parent::buildForm($form, $form_state);
    }
- 
+
 @@ -95,6 +116,9 @@ class SettingsForm extends ConfigFormBase {
      $config->set('enabled_section_storages', array_filter($form_state->getValue('enabled_section_storages')));
      $config->set('use_modal', $form_state->getValue('use_modal'));
@@ -204,5 +204,5 @@ index 90253f0..b1c5ff2 100644
 +    $config->set('reusable_image_fallback', $form_state->getValue('reusable_image_fallback'));
 +    $config->set('reusable_image_fallback_alt', $form_state->getValue('reusable_image_fallback_alt'));
      $config->save();
- 
+
      parent::submitForm($form, $form_state);

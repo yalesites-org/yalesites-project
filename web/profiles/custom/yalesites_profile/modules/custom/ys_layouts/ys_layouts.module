@@ -81,3 +81,21 @@ function ys_layouts_preprocess_block(&$variables) {
     }
   }
 }
+
+/**
+ * Implements hook_form_alter().
+ */
+function ys_layouts_form_alter(&$form, $form_state, $form_id) {
+
+  // Updates the title and help text of reusable blocks.
+  if ($form_id == 'layout_builder_update_block' || $form_id == 'layout_builder_add_block') {
+    if (isset($form['reusable'])) {
+      $form['reusable']['#title'] = t('Global Block');
+      $form['reusable']['#description'] = t('Create reusable content with Global Blocks. Changes made to a Global Block’s content are reflected anywhere the Block is used. This setting cannot be changed after saving.');
+
+      $form['info']['#title'] = t('Global Block title');
+      $form['info']['#description'] = t('Add a short, descriptive title to easily find and reuse the Global Block. Defaults to Administrative label if no title is provided.');
+    }
+  }
+
+}

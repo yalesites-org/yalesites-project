@@ -244,7 +244,7 @@ function ys_core_help($route_name, RouteMatchInterface $route_match) {
 
     case 'entity.block_content.collection':
 
-      $output = '<p class="replacement-block-help">' . t('Blocks are used for reusable content. Create global blocks here, and they will show up in layout builder at the bottom of the list under a reusable section to place on any page. If the block is updated here, the content will be updated anywhere the block is used.') . '</p>';
+      $output = '<p class="replacement-block-help">' . t('Reuse your content with Global Blocks. Once created, Global Blocks will be available in the Block Picker and can be added when editing content in Layout Builder. Changes made to a Global Block’s content are reflected anywhere the Block is used.') . '</p>';
       return $output;
   }
 }

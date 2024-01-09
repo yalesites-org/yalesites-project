@@ -1,0 +1,7 @@
+block_content_add_action:
+  route_name: block_content.add_page
+  title: 'Add global block'
+  appears_on:
+    - block.admin_library
+    - entity.block_content.collection
+  class: \Drupal\block_content\Plugin\Menu\LocalAction\BlockContentAddLocalAction
