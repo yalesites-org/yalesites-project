@@ -6,6 +6,7 @@
  */
 
 use Drupal\Core\Cache\Cache;
+use Drupal\Core\Database\Database;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
@@ -415,6 +416,22 @@ function ys_core_form_node_page_edit_form_alter(&$form, FormStateInterface $form
  */
 function ys_core_form_node_page_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   ys_core_page_form_alter($form, $form_state);
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * This renames any menu_link_content with a bundle of menu_link_content to
+ * main so that extra menu items can be properly loaded.
+ */
+function ys_core_cache_flush() {
+  $database = Database::getConnection();
+
+  $query = $database->update('menu_link_content')
+    ->fields(['bundle' => 'main'])
+    ->condition('bundle', 'menu_link_content');
+
+  $query->execute();
 }
 
 /**
