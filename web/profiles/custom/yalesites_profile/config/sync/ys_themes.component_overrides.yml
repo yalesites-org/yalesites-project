@@ -49,9 +49,9 @@ content_spotlight:
   field_style_color:
     values:
       default: 'Default - No Color'
-      one: 'One'
-      two: 'Two'
-      three: 'Three'
+      one: One
+      two: Two
+      three: Three
     default: default
 quick_links:
   field_style_variation:
@@ -126,19 +126,19 @@ content_spotlight_portrait:
     default: image-left
   field_style_variation:
     values:
-      inline: 'Inline'
-      offset: 'Offset'
+      inline: Inline
+      offset: Offset
     default: inline
   field_style_color:
     values:
       default: 'Default - No Color'
-      one: 'One'
-      two: 'Two'
-      three: 'Three'
+      one: One
+      two: Two
+      three: Three
     default: default
 text:
   field_style_variation:
     values:
-      default: 'Default'
-      emphasized: 'Emphasized'
+      default: Default
+      emphasized: Emphasized
     default: default
