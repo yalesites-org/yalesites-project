@@ -6,7 +6,6 @@
  */
 
 use Drupal\Core\Cache\Cache;
-use Drupal\Core\Database\Database;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
@@ -425,13 +424,34 @@ function ys_core_form_node_page_form_alter(&$form, FormStateInterface $form_stat
  * main so that extra menu items can be properly loaded.
  */
 function ys_core_cache_flush() {
-  $database = Database::getConnection();
+  _ys_core_fix_menu_link_content_bundles();
+}
 
-  $query = $database->update('menu_link_content')
-    ->fields(['bundle' => 'main'])
+/**
+ * Changes all menu_link_content bundles to main.
+ *
+ * The reasoning for this is that the menu_link_content bundle does not
+ * actually exist, and as such does not contain the definitions for the menu
+ * item extra fields we have for things like the mega menu CTA text.  This
+ * ensures that on a cache refresh we update them to have the main bundle so
+ * that they do have these defined.
+ */
+function _ys_core_fix_menu_link_content_bundles() {
+  $entityTypeManager = \Drupal::service('entity_type.manager');
+
+  $query = $entityTypeManager->getStorage('menu_link_content')
+    ->getQuery()
+    ->accessCheck(FALSE)
     ->condition('bundle', 'menu_link_content');
 
-  $query->execute();
+  $menuLinkIds = $query->execute();
+
+  $menuLinkEntities = $entityTypeManager->getStorage('menu_link_content')->loadMultiple($menuLinkIds);
+
+  foreach ($menuLinkEntities as $menuLinkEntity) {
+    $menuLinkEntity->bundle = 'main';
+    $menuLinkEntity->save();
+  }
 }
 
 /**
