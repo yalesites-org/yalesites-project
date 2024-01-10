@@ -2,24 +2,26 @@
 
 set -eo pipefail
 
-# Create a pull request to merge develop into master.
-pull_request_response=$(curl -s -H "Accept: application/vnd.github+json" \
-  -H "Authorization: token $ACCESS_TOKEN" \
-  -X POST -d '{"title": "Release", "head": "develop", "base": "master"}' \
-  "https://api.github.com/repos/$REPO/pulls")
+# If we aren't updating an existing pull request, create one to merge develop into master.
+if [ -z "$PR_NUMBER" ]; then
+  pull_request_response=$(curl -s -H "Accept: application/vnd.github+json" \
+    -H "Authorization: token $ACCESS_TOKEN" \
+    -X POST -d '{"title": "Release", "head": "develop", "base": "master"}' \
+    "https://api.github.com/repos/$REPO/pulls")
 
-# Check if the pull request creation was successful.
-if [ -z "$(echo "$pull_request_response" | jq -r '.html_url')" ]; then
-  message=$(echo "$pull_request_response" | jq -r '.errors[].message')
-  echo "Failed to create pull request."
-  echo "Error: $message"
-  exit 1
-else
-  opened_pr_url=$(echo "$pull_request_response" | jq -r '.html_url')
+  # Check if the pull request creation was successful.
+  if [ -z "$(echo "$pull_request_response" | jq -r '.html_url')" ]; then
+    message=$(echo "$pull_request_response" | jq -r '.errors[].message')
+    echo "Failed to create pull request."
+    echo "Error: $message"
+    exit 1
+  else
+    opened_pr_url=$(echo "$pull_request_response" | jq -r '.html_url')
+  fi
+
+  # Extract the pull request number from the response.
+  PR_NUMBER=$(echo "$pull_request_response" | jq -r '.number')
 fi
-
-# Extract the pull request number from the response.
-pr_number=$(echo "$pull_request_response" | jq -r '.number')
 
 # Page through the /pulls/#/commits endpoint.
 page=1
@@ -28,7 +30,7 @@ per_page=100
 while true; do
   # Get the list of commits from the pull request and extract commit SHAs.
   commits_response=$(curl --silent -H "Authorization: token $ACCESS_TOKEN" \
-    "https://api.github.com/repos/$REPO/pulls/$pr_number/commits?per_page=$per_page&page=$page")
+    "https://api.github.com/repos/$REPO/pulls/$PR_NUMBER/commits?per_page=$per_page&page=$page")
 
   current_commit_shas=$(echo "$commits_response" | jq -r '.[].sha')
 
@@ -76,7 +78,7 @@ fi
 
 # Output changes that are not in a pull request.
 if [[ -n "${changes_without_pr[*]}" ]]; then
-  description+="\n## Changes without a pull rqeuest:\n"
+  description+="\n## Changes without a pull request:\n"
 
   for sha in "${changes_without_pr[@]}"; do
       description+="- $sha\n"
@@ -88,7 +90,7 @@ update_pull_request=$(curl -s -L \
   -H "Accept: application/vnd.github+json" \
   -H "Authorization: token $ACCESS_TOKEN" \
   -X PATCH -d "{\"body\": \"$description\"}" \
-  "https://api.github.com/repos/$REPO/pulls/$pr_number")
+  "https://api.github.com/repos/$REPO/pulls/$PR_NUMBER")
 
 if [[ -n "$pull_request_response" || -n "$update_pull_request" ]]; then
   echo "Pull request created: $opened_pr_url"
