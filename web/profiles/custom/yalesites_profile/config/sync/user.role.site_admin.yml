@@ -70,7 +70,6 @@ label: 'Site administrator'
 weight: 3
 is_admin: null
 permissions:
-  - 'access block library'
   - 'access content overview'
   - 'access contextual links'
   - 'access files overview'
