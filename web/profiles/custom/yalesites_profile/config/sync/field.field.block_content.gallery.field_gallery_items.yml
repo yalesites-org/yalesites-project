@@ -13,7 +13,7 @@ field_name: field_gallery_items
 entity_type: block_content
 bundle: gallery
 label: Images
-description: ''
+description: 'This block requires a minimum of 2 gallery items.'
 required: true
 translatable: false
 default_value: {  }

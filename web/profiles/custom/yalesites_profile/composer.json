@@ -128,7 +128,8 @@
         "hide remove button": "https://www.drupal.org/files/issues/2020-05-13/hide_field_required_paragraphs_remove_button_1.patch"
       },
       "drupal/core": {
-        "plural results summary https://www.drupal.org/project/drupal/issues/2888320": "https://www.drupal.org/files/issues/2021-12-15/2888320-78.patch"
+        "plural results summary https://www.drupal.org/project/drupal/issues/2888320": "https://www.drupal.org/files/issues/2021-12-15/2888320-78.patch",
+        "Prevent empty block_content info fields from causing php deprecation notices": "https://www.drupal.org/files/issues/2023-07-21/3340159-empty-block-label_0.patch"
       },
       "drupal/entity_redirect": {
         "fix layout route https://www.drupal.org/project/entity_redirect/issues/3352265": "https://git.drupalcode.org/project/entity_redirect/-/merge_requests/6.patch"
@@ -142,6 +143,9 @@
       "drupal/gin": {
         "fix description toggle for CKEditor fields https://www.drupal.org/project/gin/issues/3316265": "https://git.drupalcode.org/project/gin/-/merge_requests/227.patch",
         "update dark mode localstorage https://www.drupal.org/project/gin/issues/3387653": "https://git.drupalcode.org/project/gin/-/merge_requests/304.diff"
+      },
+      "drupal/gin_lb": {
+        "fix multivalued fields throw an error": "https://www.drupal.org/files/issues/2024-01-02/gin_lb-fix-attribute-3387157-5.patch"
       },
       "drupal/media_library_form_element": {
         "Order Media items https://www.drupal.org/project/media_library_form_element/issues/3168027":"https://www.drupal.org/files/issues/2022-01-22/order_media_items-3168027-8.patch",
