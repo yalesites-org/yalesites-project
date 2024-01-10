@@ -98,10 +98,10 @@ ys_core.taxonomy_interface_tags:
     taxonomy_vocabulary: "tags"
 # Blocks interface
 ys_core.custom_block_library:
-  description: "Manage global blocks"
+  description: "Manage reusable blocks"
   parent: system.admin_content
   route_name: entity.block_content.collection
-  title: Manage Global Blocks
+  title: Manage Reusable Blocks
   route_parameters:
     menu: "main"
   weight: 20

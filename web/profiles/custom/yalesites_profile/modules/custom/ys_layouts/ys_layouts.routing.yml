@@ -2,7 +2,7 @@ block_content.add_page:
   path: '/block/add'
   defaults:
     _controller: '\Drupal\block_content\Controller\BlockContentController::add'
-    _title: 'Add global block'
+    _title: 'Add reusable block'
   options:
     _admin_route: TRUE
   requirements:
