@@ -118,6 +118,41 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
       '#markup' => "<p>" . t('@description', $replacements) . "</p>",
     ];
   }
+
+  $block_content_forms = [
+    'block_content_tabs_form',
+    'block_content_quick_links_form',
+    'block_content_media_grid_form',
+    'block_content_gallery_form',
+    'block_content_tabs_edit_form',
+    'block_content_quick_links_edit_form',
+    'block_content_media_grid_edit_form',
+    'block_content_gallery_edit_form',
+  ];
+
+  if (in_array($form_id, $block_content_forms)) {
+    $form['#attached']['library'][] = 'ys_core/block_form';
+  }
+
+  $layout_builder_block_forms = [
+    'layout_builder_update_block',
+    'layout_builder_add_block',
+  ];
+
+  if (in_array($form_id, $layout_builder_block_forms)) {
+    // Get the block type from the form.
+    $block = $form['settings']['block_form']['#block'];
+    $limited_block_types = [
+      'tabs',
+      'quick_links',
+      'media_grid',
+      'gallery',
+    ];
+    if (in_array($block->bundle(), $limited_block_types)) {
+      $form['#attached']['library'][] = 'ys_core/block_form';
+    }
+
+  }
 }
 
 /**
