@@ -118,7 +118,7 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
         'hidden' => $this->t('Hide Title: Should only be used when a page’s banner Block title is set to H1'),
       ],
       '#description' => $this->t('For more information about conditional banner titles, <a href="https://yalesites.yale.edu/posts/2023-10-17-community-spotlight-yale-united-way-campaign#tips" target="_blank">view our tips and tricks on this topic</a>.'),
-      ];
+    ];
 
     return $form;
   }
