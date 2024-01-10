@@ -11,11 +11,11 @@ id: block_content.text.field_style_variation
 field_name: field_style_variation
 entity_type: block_content
 bundle: text
-label: Text Style Variation
+label: 'Text Style Variation'
 description: ''
 required: true
 translatable: false
-default_value: {}
+default_value: {  }
 default_value_callback: ys_themes_default_value_function
-settings: {}
+settings: {  }
 field_type: list_string
