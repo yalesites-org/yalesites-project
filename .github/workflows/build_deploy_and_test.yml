@@ -211,6 +211,9 @@ jobs:
           YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
         run: |
           ./.ci/build/build_frontend
+      
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
 
       # Deploy to Pantheon
       - name: deploy to Pantheon
