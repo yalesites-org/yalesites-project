@@ -79,10 +79,7 @@ third_party_settings:
               context_mapping: {  }
             weight: 0
             additional: {  }
-        third_party_settings:
-          layout_builder_lock:
-            lock:
-              5: 5
+        third_party_settings: {  }
   layout_builder_restrictions:
     allowed_block_categories:
       - 'Chaos Tools'
