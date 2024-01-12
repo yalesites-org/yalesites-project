@@ -64,8 +64,32 @@ behind the a.toolbar-icon element. */
   mask-image: url('../images/more_actions.svg');
 }
 
+/*
+//
+// Toolbar //
+//
+*/
 
-/* Toolbar */
+/* Fix active toggle color in dark mode */
 .gin--dark-mode :not(.glb-form-checkboxes):not(td):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .glb-form-type--checkbox input:checked ~ .glb-checkbox-toggle .glb-checkbox-toggle__inner {
   background-color: var(--gin-color-primary) !important;
+}
+
+/* Make the secondary toolbar the same color as the primary toolbar */
+.gin-secondary-toolbar--frontend {
+  background: rgba(255, 255, 255, 1) !important;
+}
+
+.gin--dark-mode .gin-secondary-toolbar--frontend {
+  background: rgba(42, 42, 45, 1) !important;
+}
+
+@supports ((-webkit-backdrop-filter: blur()) or (backdrop-filter: blur())) {
+  .gin-secondary-toolbar--frontend {
+    background: rgba(255, 255, 255, 1) !important;
+  }
+
+  .gin--dark-mode .gin-secondary-toolbar--frontend {
+    background: rgba(42, 42, 45, 1) !important;
+  }
 }
