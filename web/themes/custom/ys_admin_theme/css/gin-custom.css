@@ -5,6 +5,7 @@
   --gin-font-size-h2: 1.5rem;
   --gin-font-size-h3: 1.25rem;
   --gin-border-m: 0.313rem;
+  --jui-dropdown-bg-color: var(--gin-bg-layer);
 }
 :root h1,
 :root h2 {

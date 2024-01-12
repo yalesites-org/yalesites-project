@@ -25,7 +25,7 @@
   --color-link-hover: hsl(210, 100%, 21%);
   --color-link-border: hsl(213, 66%, 45%);
   --color-background-primary: var(--color-basic-white);
-  --color-background-hover: var(--wool);
+  --color-background-hover: var(--color-text-primary);
   --color-border-hover: hsl(213, 66%, 45%);
   --color-text-lighter: #2D424D;
   --color-text-primary: var(--color-gray-800);
@@ -126,7 +126,7 @@
 
 #drupal-off-canvas .ys-themes--global-settings .form-item-global-theme:hover > label,
 #drupal-off-canvas .ys-themes--global-settings .form-item-global-theme:focus > label {
-  color: var(--color-border-hover);
+  color: var(--color-basic-white);
 }
 
 #drupal-off-canvas .ys-themes--global-settings .form-item-global-theme input[checked="checked"] + label {
@@ -166,7 +166,7 @@
 
 #drupal-off-canvas .ys-themes--global-settings .form-item-nav-position:hover > label,
 #drupal-off-canvas .ys-themes--global-settings .form-item-nav-position:focus > label {
-  color: var(--color-border-hover);
+  color: var(--color-text-primary);
   border-color: var(--color-border-hover);
 }
 
@@ -221,7 +221,7 @@
 
 #drupal-off-canvas .ys-themes--global-settings .form-item-nav-type:hover > label,
 #drupal-off-canvas .ys-themes--global-settings .form-item-nav-type:focus > label {
-  color: var(--color-border-hover);
+  color: var(--color-text-primary);
   border-color: var(--color-border-hover);
 }
 
@@ -264,8 +264,9 @@
 
 #drupal-off-canvas .ys-themes--global-settings .form-item-button-theme:hover > label,
 #drupal-off-canvas .ys-themes--global-settings .form-item-button-theme:focus > label {
-  color: var(--color-border-hover);
+  color: var(--color-basic-white);
   border-color: var(--color-border-hover);
+  background-color: var(--color-text-primary);
 }
 
 #drupal-off-canvas .ys-themes--global-settings .form-item-button-theme:hover input[checked="checked"] + label .colors > span,

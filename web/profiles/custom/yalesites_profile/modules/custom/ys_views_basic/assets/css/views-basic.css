@@ -60,19 +60,18 @@
   flex-direction: column;
   gap: 1rem;
   flex: 1 auto;
-  border: 2px solid var(--wool);
+  border: 2px solid;
   aspect-ratio: 2/1;
   text-align: left;
-  background-color: var(--dark-theme-gray);
   padding: var(--size-spacing-4) var(--size-spacing-5);
-  color: var(--darkest-gray);
+  color: var(--gin-color-text);
   border-radius: 0.25rem;
   margin-bottom: var(--size-spacing-4);
 }
 
 .glb-form-type--radio label.glb-form-item__label.glb-option:hover,
 #drupal-off-canvas-wrapper .glb-form-type--radio label.glb-form-item__label.glb-option:hover {
-  border-color: var(--darkest-gray);
+  border-color: var(--darkest-color-border);
 }
 
 /******
@@ -292,8 +291,7 @@
 #drupal-off-canvas-wrapper .layout-builder-configure-block
   .form-item-settings-block-form-group-user-selection-entity-and-view-mode-view-mode:focus
   label {
-  background-color: var(--dark-theme-gray);
-  border-color: var(--darkest-gray);
+  border-color: var(--gin-color-primary);
 }
 
 /* Pages */
@@ -303,8 +301,8 @@
 #drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
   input[value="page"][checked="checked"]
   + label {
-  background-color: var(--darkest-gray);
-  color: var(--wool);
+  color: var(--gin-color-primary) !important;
+  border-color: var(--gin-color-primary);
 }
 
 /* Profiles */
@@ -314,8 +312,8 @@
 #drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
   input[value="profile"][checked="checked"]
   + label {
-  background-color: var(--darkest-gray);
-  color: var(--wool);
+    color: var(--gin-color-primary) !important;
+    border-color: var(--gin-color-primary);
 }
 
 /* Events */
@@ -325,8 +323,8 @@
 #drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
   input[value="event"][checked="checked"]
   + label {
-  background-color: var(--darkest-gray);
-  color: var(--wool);
+    color: var(--gin-color-primary) !important;
+    border-color: var(--gin-color-primary);
 }
 
 .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
@@ -335,8 +333,8 @@
 #drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
   input[value="post"][checked="checked"]
   + label {
-  background-color: var(--darkest-gray);
-  color: var(--wool);
+    color: var(--gin-color-primary) !important;
+    border-color: var(--gin-color-primary);
 }
 
 #drupal-off-canvas-wrapper
@@ -381,8 +379,8 @@
   .glb-form-type--radio:hover
   input[checked="checked"]
   + label {
-  background-color: var(--darkest-gray);
-  color: var(--wool) !important;
+    color: var(--gin-color-primary) !important;
+    border-color: var(--gin-color-primary);
 }
 
 #drupal-off-canvas-wrapper

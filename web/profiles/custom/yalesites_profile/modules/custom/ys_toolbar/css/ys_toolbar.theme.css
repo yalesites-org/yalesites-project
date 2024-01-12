@@ -63,3 +63,9 @@ behind the a.toolbar-icon element. */
   -webkit-mask-image: url('../images/more_actions.svg');
   mask-image: url('../images/more_actions.svg');
 }
+
+
+/* Toolbar */
+.gin--dark-mode :not(.glb-form-checkboxes):not(td):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .glb-form-type--checkbox input:checked ~ .glb-checkbox-toggle .glb-checkbox-toggle__inner {
+  background-color: var(--gin-color-primary) !important;
+}
