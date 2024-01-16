@@ -408,7 +408,7 @@
 */
 
 .gin--dark-mode #drupal-off-canvas input[type="submit"].button--primary {
-  color: var(--darkest-gray);
+  color: var(--color-basic-white);
   padding: var(--size-spacing-5);
 }
 
