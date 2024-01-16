@@ -105,12 +105,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
      *
      */
     $inLayoutBuilder = ($formState->getCompleteForm() &&
-    isset($formState->getCompleteForm()['#in_layout_builder'])) ? $formState->getCompleteForm()['#in_layout_builder'] : FALSE;
-
-    // Pass this to massageFormValues and the Ajax callbacks.
-    if ($inLayoutBuilder) {
-      $form['#in_layout_builder'] = $inLayoutBuilder;
-    }
+    str_starts_with($formState->getCompleteForm()['#form_id'], 'layout_builder_')) ? TRUE : FALSE;
 
     $entity_list = $this->viewsBasicManager->entityTypeList();
     $entityValue = array_key_first($entity_list);
@@ -386,7 +381,9 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
    * Get data from user selection and save into params field.
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
-    $inLayoutBuilder = $form['#in_layout_builder'] ?? FALSE;
+
+    $inLayoutBuilder = ($form_state->getCompleteForm() &&
+    str_starts_with($form_state->getCompleteForm()['#form_id'], 'layout_builder_')) ? TRUE : FALSE;
 
     $termsIncludeAjaxArray = $inLayoutBuilder ? [
       'settings',
@@ -466,7 +463,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
    * Ajax callback to return only view modes for the specified content type.
    */
   public function updateOtherSettings(array &$form, FormStateInterface $form_state) {
-    $inLayoutBuilder = $form['#in_layout_builder'] ?? FALSE;
+    $inLayoutBuilder = (str_starts_with($form['#form_id'], 'layout_builder_')) ? TRUE : FALSE;
 
     $viewModeAjaxArray = $inLayoutBuilder ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : $form['group_user_selection']['entity_and_view_mode']['view_mode'];
     $sortByAjaxArray = $inLayoutBuilder ? $form['settings']['block_form']['group_user_selection']['filter_and_sort']['sort_by'] : $form['group_user_selection']['filter_and_sort']['sort_by'];
@@ -483,7 +480,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
    * Ajax callback to update the limit field.
    */
   public function updateLimitField(array &$form, FormStateInterface $form_state) {
-    $inLayoutBuilder = $form['#in_layout_builder'] ?? FALSE;
+    $inLayoutBuilder = (str_starts_with($form['#form_id'], 'layout_builder_')) ? TRUE : FALSE;
 
     $displayValue = $inLayoutBuilder ? $form_state->getValue(
       ['settings', 'block_form', 'group_user_selection', 'options', 'display']

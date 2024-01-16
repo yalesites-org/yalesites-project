@@ -141,7 +141,7 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
 
   if (in_array($form_id, $layout_builder_block_forms)) {
     // Get the block type from the form.
-    $block = $form['settings']['block_form']['#block'];
+    $block = isset($form['settings']['block_form']['#block']) ? $form['settings']['block_form']['#block'] : $form['block_form']['#block'];
     $limited_block_types = [
       'tabs',
       'quick_links',
