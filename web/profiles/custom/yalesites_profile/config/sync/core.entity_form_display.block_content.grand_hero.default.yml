@@ -27,7 +27,7 @@ mode: default
 content:
   field_heading:
     type: text_textfield
-    weight: 5
+    weight: 3
     region: content
     settings:
       size: 60
@@ -42,7 +42,7 @@ content:
         maxlength_js_enforce: false
   field_heading_level:
     type: options_select
-    weight: 10
+    weight: 8
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -54,7 +54,7 @@ content:
     third_party_settings: {  }
   field_link:
     type: link_default
-    weight: 7
+    weight: 5
     region: content
     settings:
       placeholder_url: ''
@@ -62,7 +62,7 @@ content:
     third_party_settings: {  }
   field_media:
     type: media_library_widget
-    weight: 4
+    weight: 2
     region: content
     settings:
       media_types:
@@ -73,19 +73,19 @@ content:
         show_edit: '1'
   field_style_position:
     type: options_select
-    weight: 9
+    weight: 7
     region: content
     settings: {  }
     third_party_settings: {  }
   field_style_variation:
     type: options_select
-    weight: 8
+    weight: 6
     region: content
     settings: {  }
     third_party_settings: {  }
   field_text:
     type: text_textarea
-    weight: 6
+    weight: 4
     region: content
     settings:
       rows: 3
@@ -98,6 +98,13 @@ content:
         maxlength_js: 90
         maxlength_js_label: 'Content recommended length set to @limit characters, remaining: <strong>@remaining</strong>'
         maxlength_js_enforce: false
+  info:
+    type: string_textfield
+    weight: 1
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
 hidden:
-  info: true
   revision_log: true

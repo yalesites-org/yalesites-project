@@ -96,6 +96,15 @@ third_party_settings:
               - page_meta_block
         ys_layout_two_column:
           content:
+            'Custom block types':
+              - accordion
+              - button_link
+              - divider
+              - image
+              - pull_quote
+              - tabs
+              - text
+              - video
             'Inline blocks':
               - 'inline_block:accordion'
               - 'inline_block:button_link'
@@ -106,6 +115,8 @@ third_party_settings:
               - 'inline_block:text'
               - 'inline_block:video'
           sidebar:
+            'Custom block types':
+              - text
             'Inline blocks':
               - 'inline_block:text'
       restricted_categories:
@@ -113,7 +124,6 @@ third_party_settings:
           content:
             - 'Chaos Tools'
             - 'Content fields'
-            - 'Custom block types'
             - Devel
             - Forms
             - Help
@@ -128,7 +138,6 @@ third_party_settings:
           sidebar:
             - 'Chaos Tools'
             - 'Content fields'
-            - 'Custom block types'
             - Devel
             - Forms
             - Help
@@ -144,7 +153,6 @@ third_party_settings:
           all_regions:
             - 'Chaos Tools'
             - 'Content fields'
-            - 'Custom block types'
             - Devel
             - Forms
             - Help

@@ -70,3 +70,21 @@ function ys_views_basic_views_pre_build($view) {
     $view->dom_id = "view_" . $counter++;
   }
 }
+
+/**
+ * Implements hook_form_alter().
+ */
+function ys_views_basic_form_alter(&$form, $form_state, $form_id) {
+
+  /* The views tool uses Ajax and the form elements and arrays are different
+  when loaded in layout builder vs the global Drupal block edit form. This
+  will add a key that we use in ViewsBasicDefaultWidget to determine the
+  correct arrays to use for Ajax calls.
+   */
+  if (str_starts_with($form_id, 'layout_builder_')) {
+    if (isset($form['settings']['block_form']) && $form['settings']['block_form']['#block']->bundle() == 'view') {
+      $form['#in_layout_builder'] = TRUE;
+    }
+  }
+
+}
