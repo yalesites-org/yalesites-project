@@ -13,6 +13,15 @@
   font-weight: 600;
 }
 
+/* chosen overrides */
+.chosen-container-single .chosen-single {
+  color: var(--gin-color-text);
+}
+
+.gin--dark-mode .chosen-search .chosen-search-input {
+  color: var(--gin-bg-layer);
+}
+
 /* stylelint-enable */
 
 /*# sourceMappingURL=gin-custom.css.map */
