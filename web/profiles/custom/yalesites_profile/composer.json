@@ -170,6 +170,9 @@
       },
       "drupal/layout_builder_browser": {
         "Add grouping of reusable blocks (3409153) and add fallback images (3408935) - can't use both patches from d.o would cause merge conflict, combined patch": "patches/layout_builder_browser/3408935-and-3409153-7.patch"
+      },
+      "drupal/section_library": {
+        "Fix access check issues on add_to_template link: https://www.drupal.org/project/section_library/issues/3241715": "https://www.drupal.org/files/issues/2022-09-21/3241715-6.patch"
       }
     }
   }
