@@ -142,6 +142,7 @@ module:
   ys_mail: 0
   ys_node_access: 0
   ys_starterkit: 0
+  ys_templated_content: 0
   ys_toolbar: 0
   ys_views_basic: 0
   hide_revision_field: 1
