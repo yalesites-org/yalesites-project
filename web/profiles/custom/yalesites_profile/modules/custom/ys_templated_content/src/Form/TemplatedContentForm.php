@@ -21,6 +21,16 @@ class TemplatedContentForm extends FormBase implements FormInterface {
   protected $entityManager;
 
   /**
+   * The available templates.
+   *
+   * @var array
+   */
+  protected const TEMPLATES = [
+    'faq' => 'FAQ',
+    'landing_page' => 'Landing Page',
+  ];
+
+  /**
    * Constructs the controller object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
@@ -55,6 +65,13 @@ class TemplatedContentForm extends FormBase implements FormInterface {
       '#type' => 'select',
       '#title' => $this->t('Content Type'),
       '#options' => $this->getContentTypes(),
+      '#required' => TRUE,
+    ];
+
+    $form['template'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Template'),
+      '#options' => self::TEMPLATES,
       '#required' => TRUE,
     ];
 
