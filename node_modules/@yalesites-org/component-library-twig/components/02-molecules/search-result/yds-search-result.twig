@@ -1,0 +1,41 @@
+{#
+ # Available Variables:
+ # - search_result__title
+ # - search_result__url
+ # - search_result__highlighted
+ # - search_result__teaser
+ #}
+
+{% set search_result__base_class = 'search-result' %}
+
+{% set search_result__attributes = {
+  'class': bem(search_result__base_class),
+} %}
+
+<div {{ add_attributes(search_result__attributes) }}>
+  <div {{ bem('content', [], search_result__base_class) }} data-embedded-components>
+    {% include "@atoms/typography/headings/yds-heading.twig" with {
+      heading__level: '2',
+      heading__blockname: search_result__base_class,
+      heading: search_result__title,
+      heading__url: search_result__url,
+    } %}
+    {% include "@organisms/menu/breadcrumbs/yds-breadcrumbs.twig" with {
+      breadcrumbs__modifiers: search_result__base_class
+    } %}
+    {% if search_result__highlighted %}
+      {% include "@atoms/typography/text/yds-text.twig" with {
+        text__base_class: 'highlighted',
+        text__blockname: search_result__base_class,
+        text__content: search_result__highlighted,
+      } %}
+    {% endif %}
+    {% if search_result__teaser %}
+      {% include "@atoms/typography/text/yds-text.twig" with {
+        text__base_class: 'teaser',
+        text__blockname: search_result__base_class,
+        text__content: search_result__teaser,
+      } %}
+    {% endif %}
+  </div>
+</div>
