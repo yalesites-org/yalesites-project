@@ -1,0 +1,5 @@
+name: YaleSites Templated Content
+type: module
+description: Create templated content that users can add via a UI
+core_version_requirement: '^9 || ^10'
+package: YaleSites
