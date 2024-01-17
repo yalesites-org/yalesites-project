@@ -7,6 +7,7 @@ dependencies:
     - block_content.type.button_link
     - block_content.type.callout
     - block_content.type.content_spotlight
+    - block_content.type.content_spotlight_portrait
     - block_content.type.cta_banner
     - block_content.type.custom_cards
     - block_content.type.directory
@@ -97,6 +98,7 @@ permissions:
   - 'create button_link block content'
   - 'create callout block content'
   - 'create content_spotlight block content'
+  - 'create content_spotlight_portrait block content'
   - 'create cta_banner block content'
   - 'create custom_cards block content'
   - 'create divider block content'
@@ -138,6 +140,8 @@ permissions:
   - 'delete any callout block content revisions'
   - 'delete any content_spotlight block content'
   - 'delete any content_spotlight block content revisions'
+  - 'delete any content_spotlight_portrait block content'
+  - 'delete any content_spotlight_portrait block content revisions'
   - 'delete any cta_banner block content'
   - 'delete any cta_banner block content revisions'
   - 'delete any custom_cards block content'
@@ -204,6 +208,7 @@ permissions:
   - 'edit any button_link block content'
   - 'edit any callout block content'
   - 'edit any content_spotlight block content'
+  - 'edit any content_spotlight_portrait block content'
   - 'edit any cta_banner block content'
   - 'edit any custom_cards block content'
   - 'edit any directory block content'
@@ -256,6 +261,7 @@ permissions:
   - 'revert any button_link block content revisions'
   - 'revert any callout block content revisions'
   - 'revert any content_spotlight block content revisions'
+  - 'revert any content_spotlight_portrait block content revisions'
   - 'revert any cta_banner block content revisions'
   - 'revert any custom_cards block content revisions'
   - 'revert any directory block content revisions'
@@ -289,6 +295,7 @@ permissions:
   - 'view any button_link block content history'
   - 'view any callout block content history'
   - 'view any content_spotlight block content history'
+  - 'view any content_spotlight_portrait block content history'
   - 'view any cta_banner block content history'
   - 'view any custom_cards block content history'
   - 'view any directory block content history'
