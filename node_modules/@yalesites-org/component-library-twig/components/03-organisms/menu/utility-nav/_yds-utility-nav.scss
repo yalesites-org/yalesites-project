@@ -65,10 +65,12 @@
 
   input {
     background: transparent;
-    border: none;
     color: inherit;
     min-height: var(--size-click-target-minimum);
-    width: 7.5rem;
+    border: var(--border-thickness-2) solid;
+    border-radius: var(--radius-20);
+    width: 100%;
+    max-width: 11rem;
 
     &::placeholder {
       color: inherit;
@@ -97,40 +99,28 @@
     }
 
     @media (max-width: tokens.$break-mobile-max) {
-      border: var(--border-thickness-2) solid;
-      width: 100%;
       max-width: 25rem;
     }
   }
 
   .form-item {
-    display: flex;
-    align-items: center;
-
-    @media (max-width: tokens.$break-mobile-max) {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-    }
+    display: grid;
+    grid-template-columns: 1fr 1fr;
   }
 
   .form-item label {
     display: flex; // get the svg to vertically center.
-
-    @media (max-width: tokens.$break-mobile-max) {
-      grid-area: 1/-1; // force the icon label inside the input.
-      margin-left: var(--size-spacing-5);
-    }
+    grid-area: 1/-1; // force the icon label inside the input.
+    margin-left: var(--size-spacing-5);
+    margin-right: var(--size-spacing-5);
+    align-items: center;
+    justify-content: flex-end;
   }
 
   .form-item input {
-    padding-left: var(--size-spacing-3);
-    @media (max-width: tokens.$break-mobile-max) {
-      grid-area: 1/3;
-
-      &:focus {
-        padding-left: var(--size-spacing-9);
-      }
-    }
+    padding-left: var(--size-spacing-4);
+    padding-right: var(--size-spacing-4);
+    grid-area: 1/3;
   }
 }
 

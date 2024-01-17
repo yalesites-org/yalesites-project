@@ -13,28 +13,36 @@
 
 {% if modal_item__heading is not empty or modal_item__content is not empty %}
 	{% set media_grid__item__content %}
-	{# Content Heading #}
-	{% if modal_item__heading is not empty %}
-		{% include "@atoms/typography/headings/yds-heading.twig" with {
-          heading__level: '2',
-          heading: modal_item__heading,
-          heading__blockname: media_grid__modal__base_class,
-        } %}
-	{% endif %}
-	{# Content Text #}
-	{% if modal_item__content %}
-		<div {{ bem('text', [], media_grid__modal__base_class) }}>
-			{{ modal_item__content }}
-		</div>
     <button {{ bem('toggle-caption', ['expand-content'], media_grid__modal__base_class) }}>
       {% include "@atoms/images/icons/_yds-icon.twig" with {
-        icon__name: 'arrow-up',
+        icon__name: 'circle-plus',
         icon__decorative: true,
         icon__blockname: media_grid__modal__base_class,
-        icon__modifiers: ['arrow-up'],
+        icon__modifiers: ['expand-content'],
+      } %}
+      {% include "@atoms/images/icons/_yds-icon.twig" with {
+        icon__name: 'circle-minus',
+        icon__decorative: true,
+        icon__blockname: media_grid__modal__base_class,
+        icon__modifiers: ['collapse-content'],
       } %}
     </button>
-	{% endif %}
+    <div {{ bem('content-wrapper', [], media_grid__modal__base_class) }}>
+    {# Content Heading #}
+    {% if modal_item__heading is not empty %}
+      {% include "@atoms/typography/headings/yds-heading.twig" with {
+        heading__level: '2',
+        heading: modal_item__heading,
+        heading__blockname: media_grid__modal__base_class,
+      } %}
+    {% endif %}
+    {# Content Text #}
+    {% if modal_item__content %}
+      <div {{ bem('text', [], media_grid__modal__base_class) }}>
+        {{ modal_item__content }}
+      </div>
+    {% endif %}
+    </div>
 	{% endset %}
 	{% include "@molecules/text/yds-text-field.twig" with {
       text_field__content: media_grid__item__content,

@@ -36,10 +36,10 @@ export const InteractiveGrid = ({ gridHeading }) => `
     ...mediaGridData,
     media_grid__variation: 'interactive',
     media_grid__heading: gridHeading,
-  })};
+  })}
   ${mediaGridTwig({
     ...mediaGridData,
     media_grid__variation: 'interactive',
     media_grid__heading: gridHeading,
-  })};
+  })}
 `;

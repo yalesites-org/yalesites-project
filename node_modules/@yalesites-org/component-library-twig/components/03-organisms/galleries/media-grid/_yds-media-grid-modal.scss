@@ -169,7 +169,7 @@ $modal-speed: var(--animation-speed-slow);
     }
   }
 
-  @media (max-width: tokens.$break-s - 0.05) {
+  @media (max-width: (tokens.$break-s - 0.05)) {
     &:not(.media-grid-modal__pager-item--total):not([data-media-grid-modal-item-active='true']):not([aria-current='true']) {
       display: none;
     }
@@ -201,35 +201,51 @@ $modal-speed: var(--animation-speed-slow);
   }
 }
 
+.media-grid-modal__content-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-spacing-3);
+  width: 100%;
+  max-width: calc(100% - var(--size-click-target-minimum));
+  overflow: hidden;
+
+  &[aria-expanded='true'] {
+    overflow: auto;
+  }
+}
+
 .media-grid-modal__content {
   overflow: hidden;
   grid-area: content;
   position: relative;
   width: 100%;
-  padding-block-start: var(--size-spacing-5);
-  padding-block-end: var(--size-spacing-5);
+  padding-block-start: var(--size-spacing-6);
+  padding-block-end: var(--size-spacing-6);
+  align-self: flex-end;
+  max-height: var(--modal-content-item-height);
 
   .text {
     display: flex;
-    flex-direction: column;
-    gap: var(--size-spacing-3);
-    padding-inline-end: var(--size-spacing-9);
+    flex-direction: row;
+    justify-content: start;
+    align-items: center;
+    gap: var(--size-spacing-5);
+  }
+
+  &[aria-expanded] {
+    background-color: var(--color-gray-800);
   }
 
   &[aria-expanded='true'] {
-    @include tokens.animate(all, var(--animation-speed-slow));
+    @include tokens.animate(max-height, var(--animation-speed-slow));
 
-    background-color: var(--color-background);
     overflow: auto;
-    position: absolute;
-    bottom: 0;
     z-index: 1;
-  }
 
-  &[aria-expanded='false'] {
-    @include tokens.animate(all, var(--animation-speed-slow));
-
-    max-height: var(--modal-content-item-height);
+    .text {
+      justify-content: start;
+      align-items: flex-start;
+    }
   }
 
   a {
@@ -249,7 +265,7 @@ $modal-speed: var(--animation-speed-slow);
     @include typography.truncate-text;
   }
 
-  @media (max-width: tokens.$break-s - 0.05) {
+  @media (max-width: (tokens.$break-s - 0.05)) {
     @include tokens.body-default;
   }
 
@@ -269,7 +285,7 @@ $modal-speed: var(--animation-speed-slow);
     @include typography.truncate-text;
   }
 
-  @media (max-width: tokens.$break-s - 0.05) {
+  @media (max-width: (tokens.$break-s - 0.05)) {
     @include tokens.body-s;
 
     max-height: 60vh;
@@ -280,6 +296,12 @@ $modal-speed: var(--animation-speed-slow);
     @include tokens.body-s;
 
     max-height: 20vh;
+  }
+
+  &--has-heading {
+    [aria-expanded='false'] & {
+      display: none;
+    }
   }
 }
 
@@ -336,27 +358,32 @@ $modal-speed: var(--animation-speed-slow);
 }
 
 .media-grid-modal__toggle-caption {
-  position: absolute;
-  top: var(--size-spacing-4);
-  right: var(--size-spacing-4);
+  display: none;
+  flex: 0 0 var(--size-click-target-minimum);
+  position: relative;
   padding: 0;
   cursor: pointer;
   background-color: transparent;
   border: none;
   height: var(--size-click-target-minimum);
   width: var(--size-click-target-minimum);
-  display: none;
+  overflow: hidden;
 
   svg {
-    @include tokens.animate($property: 'transform', $duration: 400ms);
-
-    transform: rotate3d(0, 0, 0);
     fill: var(--color-text);
   }
 
+  svg.media-grid-modal__icon--collapse-content {
+    display: none;
+  }
+
   [aria-expanded='true'] & {
-    svg {
-      transform: rotate3d(0, 0, 1, -180deg);
+    svg.media-grid-modal__icon--expand-content {
+      display: none;
+    }
+
+    svg.media-grid-modal__icon--collapse-content {
+      display: block;
     }
   }
 }

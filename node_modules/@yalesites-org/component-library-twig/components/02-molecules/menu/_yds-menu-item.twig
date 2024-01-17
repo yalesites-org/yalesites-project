@@ -44,6 +44,7 @@
 
 {# Set link component as default #}
 {% set list__item %}
+  {% set link__item_title = item.title %}
   {# Set aria-current if the link is the current page #}
   {% if item.is_active %}
     {% set link__attributes = link__attributes|merge({
@@ -61,8 +62,16 @@
     {% set link__type = 'with-chevron' %}
   {% endif %}
 
+  {% if menu__variation == 'basic'
+     and menu__level == 1
+     and [item]|first
+     and item.list__item__is_heading
+  %}
+    {% set link__item_title = item.node_title %}
+  {% endif %}
+
   {% include "@atoms/controls/text-link/yds-text-link.twig" with {
-    link__content: item.title,
+    link__content: link__item_title,
     link__base_class: 'link',
     link__blockname: menu__base_class,
     link__modifiers: item__modifiers,

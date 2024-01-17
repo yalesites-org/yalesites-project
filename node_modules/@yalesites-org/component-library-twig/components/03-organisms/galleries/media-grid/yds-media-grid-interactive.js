@@ -151,6 +151,10 @@ Drupal.behaviors.mediaGridInteractive = {
           '.media-grid-modal__toggle-caption',
         );
 
+        const captionHeading = imageCaption.querySelector(
+          '.media-grid-modal__heading',
+        );
+
         // Check if captionContent exists.
         if (captionContent) {
           // Store the full caption text.
@@ -160,6 +164,12 @@ Drupal.behaviors.mediaGridInteractive = {
 
           const fullCaption = captionContent.textContent.trim();
 
+          if (captionHeading) {
+            captionContent.classList.add('media-grid-modal__text--has-heading');
+            imageCaption.classList.add(
+              'media-grid-modal__content--has-heading',
+            );
+          }
           // Check the length of the caption and truncate if necessary
           if (toggleCaption && fullCaption.length > maxLength) {
             const truncatedCaption = handleCaptionTruncation(
@@ -179,10 +189,10 @@ Drupal.behaviors.mediaGridInteractive = {
             imageCaption.setAttribute('aria-expanded', 'false');
             imageCaption.style.setProperty(
               '--modal-content-item-height',
-              `${imageCaption.scrollHeight}px`,
+              `${imageCaption.offsetHeight}px`,
             );
 
-            // Toggle the full caption when the "up arrow" toggle is clicked
+            // Toggle the full caption when the "circle plus" toggle is clicked
             if (!body.hasAttribute('gallery-has-click-event')) {
               toggleCaption.addEventListener('click', function _(e) {
                 e.preventDefault();
@@ -202,7 +212,7 @@ Drupal.behaviors.mediaGridInteractive = {
                   imageCaption.setAttribute('aria-expanded', 'false');
                   imageCaption.style.setProperty(
                     '--modal-content-item-height',
-                    `${imageCaption.scrollHeight}px`,
+                    `${imageCaption.offsetHeight}px`,
                   );
                 }
               });
