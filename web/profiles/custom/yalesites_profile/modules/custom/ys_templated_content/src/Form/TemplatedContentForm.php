@@ -26,8 +26,28 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    * @var array
    */
   protected const TEMPLATES = [
-    'faq' => 'FAQ',
-    'landing_page' => 'Landing Page',
+    'page' => [
+      'empty' => 'Empty',
+      'faq' => 'FAQ',
+      'landing_page' => 'Landing Page',
+    ],
+    'event' => [
+      'empty' => 'Empty',
+      'in_person' => 'In Person',
+      'online' => 'Online',
+    ],
+    'post' => [
+      'empty' => 'Empty',
+      'blog' => 'Blog',
+      'news' => 'News',
+      'press_release' => 'Press Release',
+    ],
+    'profile' => [
+      'empty' => 'Empty',
+      'student' => 'Student',
+      'faculty' => 'Faculty',
+      'staff' => 'Staff',
+    ],
   ];
 
   /**
@@ -59,20 +79,36 @@ class TemplatedContentForm extends FormBase implements FormInterface {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $_form_state) {
-    /* $form['#theme'] = 'ys_templated_content'; */
+  public function buildForm(array $form, FormStateInterface $form_state) {
     $form['content_types'] = [
       '#type' => 'select',
       '#title' => $this->t('Content Type'),
       '#options' => $this->getContentTypes(),
       '#required' => TRUE,
+      '#empty_option' => "Select a content type",
+      '#ajax' => [
+        'callback' => [$this, 'updateTemplates'],
+        'wrapper' => 'template-update-wrapper',
+        'disable-refocus' => FALSE,
+        'event' => 'change',
+        'progress' => [
+          'type' => 'none',
+        ],
+      ],
     ];
 
     $form['template'] = [
       '#type' => 'select',
       '#title' => $this->t('Template'),
-      '#options' => self::TEMPLATES,
+      '#options' => $this->getCurrentTemplates($form_state),
       '#required' => TRUE,
+      '#prefix' => '<div id="template-update-wrapper">',
+      '#suffix' => '</div>',
+      '#states' => [
+        'visible' => [
+          ':input[name="content_types"]' => ['!value' => ''],
+        ],
+      ],
     ];
 
     $form['submit'] = [
@@ -101,6 +137,40 @@ class TemplatedContentForm extends FormBase implements FormInterface {
       $options[$content_type->id()] = $content_type->label();
     }
     return $options;
+  }
+
+  /**
+   * Update the template options when the content type changes.
+   *
+   * @param array $form
+   *   The form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   *
+   * @return array
+   *   The updated template options.
+   */
+  public function updateTemplates(array &$form, FormStateInterface $form_state) {
+    $form['template']['#options'] = $this->getCurrentTemplates($form_state);
+    return $form['template'];
+  }
+
+  /**
+   * Get the template options for the currrent content type.
+   *
+   * @return array
+   *   The template options.
+   */
+  protected function getCurrentTemplates($form_state) {
+    $content_type = $form_state->getValue('content_types');
+    $templates = [];
+
+    // Return an empty array if there is no content type.
+    if ($content_type) {
+      $templates = self::TEMPLATES[$content_type];
+    }
+
+    return $templates;
   }
 
 }
