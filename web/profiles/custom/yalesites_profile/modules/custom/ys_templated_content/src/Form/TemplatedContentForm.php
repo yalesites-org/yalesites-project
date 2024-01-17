@@ -27,23 +27,23 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    */
   protected const TEMPLATES = [
     'page' => [
-      'empty' => 'Empty',
+      '' => 'Empty',
       'faq' => 'FAQ',
       'landing_page' => 'Landing Page',
     ],
     'event' => [
-      'empty' => 'Empty',
+      '' => 'Empty',
       'in_person' => 'In Person',
       'online' => 'Online',
     ],
     'post' => [
-      'empty' => 'Empty',
+      '' => 'Empty',
       'blog' => 'Blog',
       'news' => 'News',
       'press_release' => 'Press Release',
     ],
     'profile' => [
-      'empty' => 'Empty',
+      '' => 'Empty',
       'student' => 'Student',
       'faculty' => 'Faculty',
       'staff' => 'Staff',
@@ -97,11 +97,11 @@ class TemplatedContentForm extends FormBase implements FormInterface {
       ],
     ];
 
-    $form['template'] = [
+    $form['templates'] = [
       '#type' => 'select',
       '#title' => $this->t('Template'),
       '#options' => $this->getCurrentTemplates($form_state),
-      '#required' => TRUE,
+      '#required' => FALSE,
       '#prefix' => '<div id="template-update-wrapper">',
       '#suffix' => '</div>',
       '#states' => [
@@ -151,8 +151,9 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    *   The updated template options.
    */
   public function updateTemplates(array &$form, FormStateInterface $form_state) {
-    $form['template']['#options'] = $this->getCurrentTemplates($form_state);
-    return $form['template'];
+    $form['templates']['#options'] = $this->getCurrentTemplates($form_state);
+    $form_state->setValue('templates', '');
+    return $form['templates'];
   }
 
   /**
