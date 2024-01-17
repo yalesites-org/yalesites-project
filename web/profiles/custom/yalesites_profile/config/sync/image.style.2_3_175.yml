@@ -1,0 +1,15 @@
+uuid: 6c152a0d-68ce-45bc-a2d0-e2a65e79e96e
+langcode: en
+status: true
+dependencies: {  }
+name: '2_3_175'
+label: '2:3 (175)'
+effects:
+  ff8f0ea2-8b1a-4fb4-a772-cdf7db229547:
+    uuid: ff8f0ea2-8b1a-4fb4-a772-cdf7db229547
+    id: image_scale_and_crop
+    weight: 1
+    data:
+      width: 175
+      height: 262
+      anchor: center-center

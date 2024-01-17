@@ -1,4 +1,4 @@
-uuid: 045c7b01-536a-4ecb-a54e-6c328ce91888
+uuid: b6c1e225-d1e1-4b06-a972-d6223b25c923
 langcode: en
 status: true
 dependencies:
@@ -27,7 +27,7 @@ third_party_settings:
         destination: default
         url: ''
         external: ''
-id: content_spotlight
-label: 'Spotlight - Landscape'
-revision: 1
-description: 'Spotlight - Landscape allows you to display a landscape 3x2 image adjacent to text. This component has optional content, varying sizes, and different orientations.'
+id: content_spotlight_portrait
+label: 'Spotlight - Portrait'
+revision: 0
+description: 'Spotlight - Portrait allows you to display a portrait 2x3 image adjacent to text. This component has optional content, an image offset option, and different orientations.'
