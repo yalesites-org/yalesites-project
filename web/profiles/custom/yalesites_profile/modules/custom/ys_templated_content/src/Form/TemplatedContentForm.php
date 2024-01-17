@@ -80,12 +80,14 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    $currentContentType = $this->getCurrentContentType($form_state);
+
     $form['content_types'] = [
       '#type' => 'select',
       '#title' => $this->t('Content Type'),
       '#options' => $this->getContentTypes(),
       '#required' => TRUE,
-      '#empty_option' => "Select a content type",
+      '#default_value' => 'page',
       '#ajax' => [
         'callback' => [$this, 'updateTemplates'],
         'wrapper' => 'template-update-wrapper',
@@ -100,15 +102,10 @@ class TemplatedContentForm extends FormBase implements FormInterface {
     $form['templates'] = [
       '#type' => 'select',
       '#title' => $this->t('Template'),
-      '#options' => $this->getCurrentTemplates($form_state),
+      '#options' => $this->getCurrentTemplates($currentContentType),
       '#required' => FALSE,
       '#prefix' => '<div id="template-update-wrapper">',
       '#suffix' => '</div>',
-      '#states' => [
-        'visible' => [
-          ':input[name="content_types"]' => ['!value' => ''],
-        ],
-      ],
     ];
 
     $form['submit'] = [
@@ -123,19 +120,24 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $content_type = $form_state->getValue('content_types');
+    $content_type = $this->getCurrentContentType($form_state);
     $form_state->setRedirect('node.add', ['node_type' => $content_type]);
   }
 
   /**
    * Get all content types.
+   *
+   * @return array
+   *   The content types.
    */
   private function getContentTypes() {
     $content_types = $this->entityManager->getStorage('node_type')->loadMultiple();
     $options = [];
+
     foreach ($content_types as $content_type) {
       $options[$content_type->id()] = $content_type->label();
     }
+
     return $options;
   }
 
@@ -151,9 +153,23 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    *   The updated template options.
    */
   public function updateTemplates(array &$form, FormStateInterface $form_state) {
-    $form['templates']['#options'] = $this->getCurrentTemplates($form_state);
+    $currentContentType = $this->getCurrentContentType($form_state);
+    $form['templates']['#options'] = $this->getCurrentTemplates($currentContentType);
     $form_state->setValue('templates', '');
     return $form['templates'];
+  }
+
+  /**
+   * Get the content type from the form state.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   *
+   * @return string
+   *   The content type.
+   */
+  protected function getCurrentContentType($form_state) {
+    return $form_state->getValue('content_types') ?? 'page';
   }
 
   /**
@@ -162,8 +178,7 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    * @return array
    *   The template options.
    */
-  protected function getCurrentTemplates($form_state) {
-    $content_type = $form_state->getValue('content_types');
+  protected function getCurrentTemplates($content_type) {
     $templates = [];
 
     // Return an empty array if there is no content type.
