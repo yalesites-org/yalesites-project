@@ -4,4 +4,4 @@ ys_templated_content.selection:
     _controller: '\Drupal\ys_templated_content\Controller\TemplatedContentController::build'
     _title: 'Create content from a template'
   requirements:
-    _permission: 'create content'
+    _permission: 'create page content'
