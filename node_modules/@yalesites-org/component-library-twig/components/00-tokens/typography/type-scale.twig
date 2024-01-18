@@ -1,0 +1,14 @@
+{% set type__base_class = 'cl-type' %}
+
+<ul {{ bem(type__base_class) }}>
+  {% for key, value in font_scale %}
+    <li {{ bem('item', [], type__base_class) }}>
+      <div {{ bem('sample', [], type__base_class) }} style="font-size: {{ value }}; font-family: var(--font-families-mallory-compact);">
+        The quick brown fox jumps over the lazy dog.
+      </div>
+      <div class="cl-info">
+        <code>--font-scale-{{ key }}</code>
+      </div>
+    </li>
+  {% endfor %}
+</ul>

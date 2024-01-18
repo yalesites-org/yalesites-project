@@ -1,0 +1,114 @@
+{% extends "@page-layouts/yds-full-width.twig" %}
+  {% block page__content %}
+    {% include "@organisms/menu/breadcrumbs/yds-breadcrumbs.twig" %}
+    {% include "@molecules/page-title/yds-page-title.twig" %}
+
+    {% include "@molecules/text/yds-text-field.twig" with {
+      text_field__alignment: 'left',
+      text_field__content: '<h2>Headings in the same Text Block</h2>
+        <p>Bacon ipsum dolor amet t-bone shankle rump corned beef. Buffalo tri-tip pork belly meatball andouille shoulder. Sausage cow capicola, boudin venison drumstick kielbasa hamburger short loin. Brisket pancetta kielbasa, pastrami picanha short loin alcatra ribeye pig burgdoggen andouille pork chop fatback. Buffalo turducken burgdoggen bresaola, chuck landjaeger biltong hamburger shank andouille. Shank kevin jowl, picanha venison doner sirloin boudin. Shank brisket boudin flank hamburger drumstick turducken tri-tip corned beef t-bone pancetta spare ribs.</p>
+        <h3>Heading 3</h3>
+        <p>Bacon ipsum dolor amet t-bone shankle rump corned beef. Buffalo tri-tip pork belly meatball andouille shoulder. Sausage cow capicola, boudin venison drumstick kielbasa hamburger short loin. Brisket pancetta kielbasa, pastrami picanha short loin alcatra ribeye pig burgdoggen andouille pork chop fatback.</p>
+        <h4>Heading 4</h4>
+        <p>Shank kevin jowl, picanha venison doner sirloin boudin. Shank brisket boudin flank hamburger drumstick turducken tri-tip corned beef t-bone pancetta spare ribs.</p>
+        <h2>Another H2</h2>
+        <p>Buffalo turducken burgdoggen bresaola, chuck landjaeger biltong hamburger shank andouille. Shank kevin jowl, picanha venison doner sirloin boudin. Shank brisket boudin flank hamburger drumstick turducken tri-tip corned beef t-bone pancetta spare ribs.</p>
+      '
+    } %}
+
+    {% include "@molecules/content-spotlight-portrait/yds-content-spotlight-portrait.twig" with {
+      content_spotlight_portrait__style: 'inline',
+      content_spotlight_portrait__theme: 'one',
+    }%}
+
+    {% include "@molecules/content-spotlight-portrait/yds-content-spotlight-portrait.twig" with {
+        content_spotlight_portrait__style: 'inline',
+        content_spotlight_portrait__position: 'image-right',
+        content_spotlight_portrait__theme: 'two',
+      }%}
+
+    {% include "@molecules/content-spotlight-portrait/yds-content-spotlight-portrait.twig" with {
+        content_spotlight_portrait__style: 'offset',
+        content_spotlight_portrait__theme: 'one',
+      }%}
+
+    {% include "@molecules/content-spotlight-portrait/yds-content-spotlight-portrait.twig" with {
+        content_spotlight_portrait__style: 'offset',
+        content_spotlight_portrait__position: 'image-right',
+        content_spotlight_portrait__theme: 'two',
+    }%}
+
+    {% include "@molecules/content-spotlight-portrait/yds-content-spotlight-portrait.twig" with {
+        content_spotlight_portrait__style: 'offset',
+        content_spotlight_portrait__position: 'image-left',
+        content_spotlight_portrait__theme: 'default',
+    }%}
+
+    {% include "@molecules/content-spotlight-portrait/yds-content-spotlight-portrait.twig" with {
+        content_spotlight_portrait__style: 'offset',
+        content_spotlight_portrait__position: 'image-right',
+        content_spotlight_portrait__theme: 'default',
+    }%}
+
+    {% include "@molecules/content-spotlight-portrait/yds-content-spotlight-portrait.twig" with {
+        content_spotlight_portrait__style: 'inline',
+        content_spotlight_portrait__position: 'image-left',
+        content_spotlight_portrait__theme: 'default',
+    }%}
+
+    {% include "@molecules/content-spotlight-portrait/yds-content-spotlight-portrait.twig" with {
+        content_spotlight_portrait__style: 'inline',
+        content_spotlight_portrait__position: 'image-right',
+        content_spotlight_portrait__theme: 'default',
+    }%}
+
+    {% include "@molecules/text/yds-text-field.twig" with {
+      text_field__alignment: 'left',
+      text_field__content: '<h2>New Text Block</h2>
+        <p>People will want to chunk out text content by sections, often kicking off with a heading, to make it easier to maintain. E.g. rearranging sections of the page, dropping in CTAs, etc. The spacing isn’t the same using this approach, though.</p>
+        '
+    }%}
+
+    {% include "@atoms/divider/yds-divider.twig" with {
+      divider__component_width: 'site',
+      animate__item: 'enabled',
+    } %}
+
+    {% include "@molecules/text/yds-text-field.twig" with { 
+      text_field__alignment: 'left', 
+      text_field__content: '<p>Chemistry has been responsible for some of the most significant improvements in our quality of life over the last century.</p><p>The discovery of antibiotics and other pharmaceuticals, the advent of computers, and the development of industrial methods to produce fertilizer, all have required fundamental advances in chemistry. Chemistry is increasingly playing a central role in the development of alternative-energy vectors to replace fossil fuels, the realization of practical quantum computers, the discovery of new methods to treat and prevent diseases, and the adoption of more sustainable industrial processes.</p>',
+    } %}
+
+    {% include "@molecules/text/yds-text-field.twig" with {
+      text_field__alignment: 'left',
+      text_field__content: '<p>The undergraduate program in Chemistry at Yale reflects the position of chemistry as the foundation of all the molecular sciences. Students are equipped with the technical skills to appreciate the scientific basis for previous discoveries and develop the fundamental expertise required to make future breakthroughs. Under the tutelage of world-leading researchers, students are exposed to a broad range of topics in chemistry. The development of technical skills through lecture classes is complemented with hands-on experience in state-of-the-art chemistry laboratories.</p><h2>Heading 2</h2><p>Many students also perform independent laboratory research under the guidance of a faculty mentor. This rigorous training prepares students for professional careers in a diverse array of fields by teaching them how to apply the scientific method, providing them with skills in quantitative reasoning, and exposing them to scientific research.</p><h3>Heading 3</h3><p>After graduation, students with a B.A. or B.S. degree often pursue work or further studies in chemistry, biochemistry, or health-related disciplines, but also find their broad scientific training beneficial in energy research, policy, environment, business management, and law. As the problems of contemporary society involve ever more complex scientific issues, degree programs in the sciences become increasingly appropriate for students wishing to pursue careers in public policy, government, or public service.</p><p><strong>The following headings are here only on this page to showcase them inside a text block</strong>.</p><h4>Heading 4</h4><p>After graduation, students with a B.A. or B.S. degree often pursue work or further studies in chemistry, biochemistry, or health-related disciplines, but also find their broad scientific training beneficial in energy research, policy, environment, business management, and law. As the problems of contemporary society involve ever more complex scientific issues, degree programs in the sciences become increasingly appropriate for students wishing to pursue careers in public policy, government, or public service.</p><h5>Heading 5</h5><p>After graduation, students with a B.A. or B.S. degree often pursue work or further studies in chemistry, biochemistry, or health-related disciplines, but also find their broad scientific training beneficial in energy research, policy, environment, business management, and law. As the problems of contemporary society involve ever more complex scientific issues, degree programs in the sciences become increasingly appropriate for students wishing to pursue careers in public policy, government, or public service.</p><h6>Heading 6</h6><p>After graduation, students with a B.A. or B.S. degree often pursue work or further studies in chemistry, biochemistry, or health-related disciplines, but also find their broad scientific training beneficial in energy research, policy, environment, business management, and law. As the problems of contemporary society involve ever more complex scientific issues, degree programs in the sciences become increasingly appropriate for students wishing to pursue careers in public policy, government, or public service.</p>',
+    } %}
+
+    {% include "@atoms/divider/yds-divider.twig" with {
+      divider__component_width: 'site',
+      animate__item: 'enabled',
+    } %}
+
+    {% include "@molecules/text/yds-text-field.twig" with {
+      text_field__alignment: 'left', 
+      text_field__content: '<h2>Program Information</h2><h3>The Undergraduate Handbook</h3><p>A comprehensive guide for prospective and current Chemistry Majors, with a complete description of requirements and opportunities.</p><p><a href="#">View the handbook online</a></p><h3>Course List</h3><p>A list of courses and a description of the Chemistry undergraduate program, including information on placement exams, laboratory registration, premedical students, and major requirements</p><p><a href="#">Yale College programs of study</a></p>',
+    } %}
+
+    {% include "@molecules/callout/yds-callout.twig" with {
+      callout__alignment: 'left',
+      callouts: [
+        {
+          callout__heading: 'Degree Programs',
+          callout__text: 'Designed for those who intend to pursue graduate and those who wish to immediately enter a career in which broad scientific training is beneficial.',
+          callout__link__content: 'Programs',
+          callout__link__url: '#',
+        },
+        {
+          callout__heading: 'Preference Selection',
+          callout__text: 'Preference Selection system is now open and will close again on Monday, January 10, 2022.',
+          callout__link__content: 'Select preferences',
+          callout__link__url: '#',
+        },
+      ],
+    } %}
+  {% endblock %}
