@@ -301,15 +301,6 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         'limit' => $this->t('Limit to'),
         'pager' => $this->t('Pagination after'),
       ],
-      // '#ajax' => [
-      //   'callback' => [$this, 'updateLimitField'],
-      //   'disable-refocus' => FALSE,
-      //   'event' => 'change',
-      //   'progress' => [
-      //     'type' => 'throbber',
-      //     'message' => $this->t('Updating limit field...'),
-      //   ],
-      // ],
     ];
 
     // This section calculates the title for the limit field based on display.
@@ -403,17 +394,5 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     $response->addCommand(new ReplaceCommand('#edit-sort-by', $formSelectors['sort_by_ajax']));
     return $response;
   }
-
-  // /**
-  //  * Ajax callback to update the limit field.
-  //  */
-  // public function updateLimitField(array &$form, FormStateInterface $form_state) {
-  //   $formSelectors = $this->viewsBasicManager->getFormSelectors($form_state, $form);
-  //   $response = new AjaxResponse();
-  //   if ($formSelectors['display_value_ajax'] != 'all') {
-  //     $response->addCommand(new ReplaceCommand('#edit-limit', $formSelectors['limit_ajax']));
-  //   }
-  //   return $response;
-  // }
 
 }
