@@ -6,12 +6,65 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\single_content_sync\ContentImporterInterface;
+use Drupal\single_content_sync\ContentSyncHelperInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Form for allowing users to create nodes based on templated content.
  */
 class TemplatedContentForm extends FormBase implements FormInterface {
+
+  const CONTENT = <<<EOT
+site_uuid: 3be7d457-cc13-4e03-bde2-d004a9e0f46e
+uuid: 15011b23-65a3-4083-b7e3-2e861f33a2fe
+entity_type: node
+bundle: page
+base_fields:
+  title: 'Test Page'
+  status: true
+  langcode: en
+  created: '1705614253'
+  author: admin@example.com
+  url: /test-page
+  revision_log_message: null
+  revision_uid: '1'
+custom_fields:
+  field_login_required:
+    -
+      value: '0'
+  field_metatags: null
+  field_tags: null
+  field_teaser_media:
+    -
+      uuid: b7103556-2f77-429a-b2f9-159617684731
+      entity_type: media
+      bundle: image
+      base_fields:
+        name: students-cross-campus_anna-zhang.jpg
+        created: '1693934413'
+        status: true
+        langcode: en
+      custom_fields:
+        field_media_image:
+          -
+            uri: 'public://2023-09/students-cross-campus_anna-zhang.jpg'
+            url: 'https://yalesites-platform.lndo.site/sites/default/files/2023-09/students-cross-campus_anna-zhang.jpg'
+            alt: "students enjoy the vibrancy of Yale's campus scenery"
+            title: ''
+  field_teaser_text:
+    -
+      value: '<p>This is only a test</p>'
+      format: heading_html
+  field_teaser_title:
+    -
+      value: 'A test to remember'
+  layout_builder__layout: null
+EOT;
+
+  protected $contentImporterInterface;
+
+  protected $contentSyncHelper;
 
   /**
    * The entity type manager.
@@ -56,8 +109,10 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager to get the content types available.
    */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager) {
+  public function __construct(EntityTypeManagerInterface $entityTypeManager, ContentImporterInterface $contentImporterInterface, ContentSyncHelperInterface $contentSyncHelper) {
     $this->entityManager = $entityTypeManager;
+    $this->contentImporterInterface = $contentImporterInterface;
+    $this->contentSyncHelper = $contentSyncHelper;
   }
 
   /**
@@ -65,7 +120,9 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('single_content_sync.importer'),
+      $container->get('single_content_sync.helper'),
     );
   }
 
@@ -121,7 +178,31 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $content_type = $this->getCurrentContentType($form_state);
-    $form_state->setRedirect('node.add', ['node_type' => $content_type]);
+    $template = $form_state->getValue('templates');
+
+    if ($template == '') {
+      $form_state->setRedirect('node.add', ['node_type' => $content_type, 'template' => $template]);
+    }
+    else {
+      $this->createImport($form_state, $content_type, $template);
+    }
+  }
+
+  /**
+   *
+   */
+  protected function createImport($form_state, $content_type, $template) {
+    try {
+      $content_array = $this->contentSyncHelper->validateYamlFileContent($this::CONTENT);
+      $content_array['uuid'] = \Drupal::service('uuid')->generate();
+
+      $entity = $this->contentImporterInterface->doImport($content_array);
+      $form_state->setRedirect('entity.' . $entity->getEntityTypeId() . '.edit_form', [$entity->getEntityTypeId() => $entity->id()]);
+    }
+    catch (\Exception $e) {
+      $this->messenger()->addError($e->getMessage());
+      return;
+    }
   }
 
   /**
