@@ -33,7 +33,7 @@ content:
         hide_guidelines: '1'
       maxlength:
         maxlength_js: null
-        maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
+        maxlength_js_label: 'Content recommended length set to @limit characters, remaining: <strong>@remaining</strong>'
         maxlength_js_enforce: false
   field_instructions:
     type: markup
@@ -63,7 +63,7 @@ content:
         hide_guidelines: '1'
       maxlength:
         maxlength_js: 200
-        maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
+        maxlength_js_label: 'Content recommended length set to @limit characters, remaining: <strong>@remaining</strong>'
         maxlength_js_enforce: false
 hidden:
   info: true

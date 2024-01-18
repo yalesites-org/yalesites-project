@@ -91,3 +91,25 @@ lando drush migrate-rollback --group ys_starterkit
 # Update partial configuration if altering the migration configuration.
 lando drush cim --partial --source=/app/web/profiles/custom/yalesites_profile/modules/custom/ys_starterkit/config/install -y
 ```
+
+## Data model best practices
+
+A well-structured data model ensures efficiency, maintainability, and scalability within the YaleSites platform. Below are some guiding principles adopted by the platform maintainers:
+
+- **Documentation Maintenance**: Keep the data model documentation up to date. This Teams document includes entity definitions, text formats, display mode definitions, and other content settings. Whenever there's a change to a content type, block, paragraph, taxonomy, or any other entity, make it a priority to update this central documentation source. Maintaining accurate documentation is crucial for team collaboration and project continuity.
+- **Normalize Data**: Follow established principles of database normalization to minimize data redundancy and enhance data integrity. Leverage reference fields and relationships to establish connections between related content instead of duplicating data. This approach ensures that the data remains consistent and predictable.
+- **Reuse Fields**: Reduce the proliferation of field definitions by reusing fields across multiple content bundles, as long as they serve a similar business purpose. For instance, if several content types (e.g., pull quote, video description, banner intro) require a 'field_text' storage, consider reusing this field definition to maintain consistency and simplify content management.
+- **Avoid Single-Purpose Fields or Entities**: When adding fields or entities, strive to make them versatile enough to fulfill multiple purposes across YaleSites. For example, while a dedicated 'Speaker' field might seem useful for an event content type, evaluate whether this feature could be addressed using a content-spotlight block. Add new fields only when they contribute to sorting, filtering, or theming content in specific ways.
+- **Build with Blocks**: Embrace the power of the layout builder by utilizing blocks to define new components. YaleSites relies on blocks for editorial controls and mapping content to the component library. This includes both custom blocks (content entities) and programmatically defined blocks (plugins).
+- **Use Paragraphs for Nested Content**: Paragraphs remain a valuable tool, particularly when dealing with components that contain an indeterminate number of children, such as accordion items, tab items, or gallery items. The Paragraphs module provides intuitive widgets that offer an effective editorial interface for managing reference content within these complex components.
+
+## Adding a 'dial' for theming a component
+
+This project features custom fields for block theming. For example, the divider block includes settings for position, width, and animation style. In contrast to traditional Drupal projects using predefined list-field options in the configuration file, we've chosen a distinct approach. Our approach prioritizes the ability to add, remove, and dynamically adjust these options in future YaleSites themes and platform iterations, ensuring enduring flexibility. This system accommodates unique values for each field instance and supports changes over time, avoiding database integrity concerns. To add a dial:
+
+1. Begin by adding the desired style field to the custom block using the standard field UI. Whenever feasible, utilize an existing field like field_style_position, field_style_width, or field_style_variation.
+2. Configure the display of this field using the Field UI. Ensure that the style field is presented without a label and employs the 'key' formatter.
+3. Export the site configuration to generate all the associated field YAML files.
+4. In the event that this is a newly created field, update the field storage configuration file. Specify the callback function for values using `allowed_values_function: ys_themes_allowed_values_function`.
+5. Proceed to update the key-value pairs within `ys_themes.component_overrides.yml`. Remember to make these updates in two locations: the config/sync directory and the module/install directory.
+6. With these adjustments in place, you can now connect these values to components within the theme templates, achieving the desired styling and functionality.

@@ -30,15 +30,7 @@ function ys_core_theme($existing, $type, $theme, $path): array {
         'items' => [],
       ],
     ],
-    'ys_support_form' => [
-      'variables' => [
-        'link' => NULL,
-      ],
-    ],
     'ys_dashboard' => [
-      'variables' => [],
-    ],
-    'ys_dashboard_resources' => [
       'variables' => [],
     ],
     'ys_social_links' => [
@@ -126,6 +118,41 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
       '#markup' => "<p>" . t('@description', $replacements) . "</p>",
     ];
   }
+
+  $block_content_forms = [
+    'block_content_tabs_form',
+    'block_content_quick_links_form',
+    'block_content_media_grid_form',
+    'block_content_gallery_form',
+    'block_content_tabs_edit_form',
+    'block_content_quick_links_edit_form',
+    'block_content_media_grid_edit_form',
+    'block_content_gallery_edit_form',
+  ];
+
+  if (in_array($form_id, $block_content_forms)) {
+    $form['#attached']['library'][] = 'ys_core/block_form';
+  }
+
+  $layout_builder_block_forms = [
+    'layout_builder_update_block',
+    'layout_builder_add_block',
+  ];
+
+  if (in_array($form_id, $layout_builder_block_forms)) {
+    // Get the block type from the form.
+    $block = $form['settings']['block_form']['#block'];
+    $limited_block_types = [
+      'tabs',
+      'quick_links',
+      'media_grid',
+      'gallery',
+    ];
+    if (in_array($block->bundle(), $limited_block_types)) {
+      $form['#attached']['library'][] = 'ys_core/block_form';
+    }
+
+  }
 }
 
 /**
@@ -146,9 +173,33 @@ function ys_core_preprocess_block(&$variables) {
  * Implements hook_preprocess_region().
  */
 function ys_core_preprocess_region(&$variables) {
-  $config = \Drupal::config('ys_core.site');
-  if ($variables['elements']['#region'] == 'header' && $config->get('search')) {
-    $variables['utility_nav__search'] = $config->get('search')['enable_search_form'];
+  $config = \Drupal::config('ys_core.header_settings');
+  if ($variables['elements']['#region'] == 'header') {
+    $variables['utility_nav__search'] = ($config->get('search')) ? $config->get('search')['enable_search_form'] : NULL;
+
+    // Responsive image render array for focus header image.
+    if ($focusHeaderImageId = $config->get('focus_header_image')) {
+      $focusHeaderImageMedia = \Drupal::service('entity_type.manager')->getStorage('media')->load($focusHeaderImageId);
+      $fileEntity = \Drupal::service('entity_type.manager')->getStorage('file');
+      $focusHeaderImageFileUri = $fileEntity->load($focusHeaderImageMedia->field_media_image->target_id)->getFileUri();
+      $focusHeaderImageRender = [
+        '#type' => 'responsive_image',
+        '#responsive_image_style_id' => 'background_image_focus_header',
+        '#uri' => $focusHeaderImageFileUri,
+        '#attributes' => [
+          'alt' => $focusHeaderImageMedia->get('field_media_image')->first()->get('alt')->getValue(),
+        ],
+      ];
+
+      $path = \Drupal::service('path.current')->getPath();
+      $alias = \Drupal::service('path_alias.manager')->getAliasByPath($path);
+      $frontPage = \Drupal::config('system.site')->get('page.front');
+
+      // See if the path is the front page.
+      $isFrontPage = ($alias == $frontPage || $path == $frontPage || \Drupal::service('path.matcher')->isFrontPage());
+      $variables['site_header__background_image'] = $isFrontPage ? $focusHeaderImageRender : FALSE;
+    }
+
   }
 }
 
@@ -225,6 +276,11 @@ function ys_core_help($route_name, RouteMatchInterface $route_match) {
 
       $output = '<p class="replacement-taxonomy-help">' . t('Taxonomy is used to classify website content into groups called vocabularies. Each vocabulary contains a set of terms used to categorize content. For example, an "Event Type" vocabulary contains terms like "Online" and "In-Person". This allows for easy categorization and organization of content on a website.') . '</p>';
       return $output;
+
+    case 'entity.block_content.collection':
+
+      $output = '<p class="replacement-block-help">' . t('Blocks are used for reusable content. Create global blocks here, and they will show up in layout builder at the bottom of the list under a reusable section to place on any page. If the block is updated here, the content will be updated anywhere the block is used.') . '</p>';
+      return $output;
   }
 }
 
@@ -239,7 +295,7 @@ function ys_core_page_attachments(array &$page) {
   }
 
   // Custom or fallback favicons.
-  $favicons = \Drupal::service('ys_core.favicon_manager')->getFavicons();
+  $favicons = \Drupal::service('ys_core.media_manager')->getFavicons();
   foreach ($favicons as $name => $favicon) {
     $page['#attached']['html_head'][] = [$favicon, $name];
   }
@@ -258,7 +314,7 @@ function ys_core_preprocess_image_widget(&$variables) {
    */
   $element = $variables['element'];
 
-  if (isset($element['#use_favicon_preview'])) {
+  if (isset($element['#use_preview'])) {
 
     $variables['attributes'] = [
       'class' => [
@@ -322,7 +378,8 @@ function ys_core_preprocess_image_widget(&$variables) {
 
     // Sets a twig variable to use the favicon preview.
     // @see web/themes/custom/ys_admin_theme/templates/content-edit/image-widget.html.twig
-    $variables['use_favicon_preview'] = $element['#use_favicon_preview'];
+    $variables['use_favicon_preview'] = $element['#use_favicon_preview'] ?? NULL;
+    $variables['use_svg_preview'] = $element['#use_svg_preview'] ?? NULL;
 
     $variables['data'] = [];
     foreach (Element::children($element) as $child) {
@@ -431,3 +488,14 @@ function _ys_core_get_link(FormStateInterface $form_state) {
 /**
  * End allow menu item extras fields to be included on node add and edit forms.
  */
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function ys_core_preprocess_page(&$variables) {
+  // Add the cache tag, so that the theme setting information is rebuilt
+  // when the config is saved.
+  // Via: https://drupal.stackexchange.com/questions/266379/how-to-clear-cache-for-config-entity-after-making-changes
+  $config = \Drupal::config('ys_core.header_settings');
+  \Drupal::service('renderer')->addCacheableDependency($variables, $config);
+}

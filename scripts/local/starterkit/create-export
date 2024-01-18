@@ -1,0 +1,139 @@
+#!/usr/bin/env bash
+
+# The idea is that you would clone the yalesites-starterkit repository to
+# a directory, and then run this script, passing the directory to that
+# repository.  Provided environment variables were set, it will:
+#   - Create the export remotely on the yalesites server
+#   - Retrieve the zip file and delete it from the server
+#   - Unzip it to the repository location
+#   - Create a commit with a timestamp
+#   - Delete the original zip file created
+# 
+# Environment variables needed:
+#   - SITE_MACHINE_NAME: The terminus site name to connect to
+# 
+# Usage:
+#   SITE_MACHINE_NAME=ys-starterkit.dev ./scripts/local/starterkit/create-export \
+#   /code/yalesites-starterkit/starterkit
+
+# Since this script will attempt to pull the zip from the URL, the SFTP
+# settings must be set beforehand.
+verifyEnvironmentVariables() {
+    if [[ -z "$SITE_MACHINE_NAME" ]]; then
+        echo "Environment variable SITE_MACHINE_NAME is not set. Please pre-set this varaible before running."
+        exit 1
+    fi
+}
+
+export-content() {
+    local zipRemoteLocation
+    local zipFilename
+    local destinationFolder="${1:-$(mktemp -d)}"
+
+    zipRemoteLocation="$(retrieveZipLocation "$(runExport)")"
+    zipFilename="$(basename "$zipRemoteLocation")"
+    retrieveFileFromSftp "$zipRemoteLocation"
+    if [[ -f "$zipFilename" ]]; then
+        unzipToFolder "$zipFilename" "$destinationFolder"
+        createCommit "$destinationFolder"
+        removeZipFile "$zipFilename"
+    else
+        exit 1
+    fi
+
+    echo "Content exported to"
+    echo "$destinationFolder"
+}
+
+retrieveConnectionInfoForPantheonSite() {
+    local siteMachineName="$1"
+    local connectionInfo
+
+    connectionInfo=$(terminus connection:info "$siteMachineName" --field=sftp_command)
+    echo "$connectionInfo"
+}
+
+# Figures out the zip location on the remote server based on the stdout of the
+# terminus command.
+retrieveZipLocation() {
+    local zipFilename
+    local tmpPath="/tmp/export/zip"
+
+    # We don't have permission to create the scs-export directory under
+    # /code/web, so it errors out.  We redirect the error to stdouot so we can
+    # capture the file name that was attempted.  We then use the tmp directory
+    # location that it was when it was created, which still exists.
+    zipFilename=$(echo "$1" | tr '\n' ' ' | tr -d ' ' | grep -o "temporary://[^']*" | xargs -I {} basename {})
+    echo "$tmpPath/$zipFilename"
+}
+
+runExport() {
+    echo "Retrieving SFTP connection info; this could take a while."
+    terminus drush "$SITE_MACHINE_NAME" -- content:export --all-content --assets --translate 2>&1
+}
+
+# Retrieves the file from a remote server and removes the files afterward.
+retrieveFileFromSftp() {
+    local sftpCommand
+
+    sftpCommand=$(retrieveConnectionInfoForPantheonSite "$SITE_MACHINE_NAME")
+    $sftpCommand <<EOF
+        get $1
+        rm $1
+        quit
+EOF
+}
+
+# Remove all files in the destination location before unzipping.
+# The reasoning is that we don't want lingering yml files from nodes
+# we might have deleted since the last export.
+removeCurrentFilesInGitRepo() {
+    read -rp "Are you sure you want to delete the contents of $1? (y/n) " answer
+
+    if [ "$answer" != "y" ]; then
+        echo "Aborting."
+        exit 1
+    fi
+
+    rm -rf "${1:?}"/*
+}
+
+# Unzips the folder to another location so that we can update the git repo.
+unzipToFolder() {
+    createFolderIfNotExists "$2"
+    if [[ -d "$2" ]]; then
+        removeCurrentFilesInGitRepo "$2"
+        unzip -o "$1" -d "$2"
+    else
+        echo "Folder $2 does not exist and could not create it.  Please see why."
+        exit 1
+    fi
+}
+
+# handles creating a commit for any new files if the directory is a git repo
+createCommit() {
+    local hasGit
+
+    pushd "$1" || exit 1
+    hasGit=$(git rev-parse --show-toplevel 2> /dev/null)
+    if [[ "$hasGit" ]]; then
+        git add .
+        git commit -a -m "Content update: $(date)"
+        # git push
+    fi
+    popd || exit 1
+}
+
+# Cleans up the zip file after unzipped to the folder.
+removeZipFile() {
+    rm "$1"
+}
+
+createFolderIfNotExists() {
+    if [[ ! -d "$1" ]]; then
+        mkdir -p "$1"
+    fi
+}
+
+verifyEnvironmentVariables
+export-content "$1"

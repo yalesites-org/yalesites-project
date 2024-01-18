@@ -1,0 +1,10 @@
+uuid: a71d250d-989a-4554-95cb-f04af8833400
+langcode: en
+status: true
+dependencies:
+  module:
+    - media
+id: media.background_image_16_9_focus_header
+label: 'Background Image (16:9) | Focus Header'
+targetEntityType: media
+cache: true

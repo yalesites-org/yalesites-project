@@ -5,12 +5,25 @@
     "drupal": {
       "type": "composer",
       "url": "https://packages.drupal.org/8"
+    },
+    "ckeditor5-anchor-drupal": {
+      "type": "package",
+      "package": {
+        "name": "northernco/ckeditor5-anchor-drupal",
+        "version": "0.4.0",
+        "type": "drupal-library",
+        "dist": {
+          "url": "https://registry.npmjs.org/@northernco/ckeditor5-anchor-drupal/-/ckeditor5-anchor-drupal-0.4.0.tgz",
+          "type": "tar"
+        }
+      }
     }
   },
   "require": {
     "drupal/address": "1.12",
     "drupal/admin_toolbar": "3.4.1",
     "drupal/allowed_formats": "3.0",
+    "drupal/anchor_link": "3.0.0-alpha1",
     "drupal/auto_entitylabel": "3.0",
     "drupal/autosave_form": "1.4",
     "drupal/better_exposed_filters": "6.0.3",
@@ -49,7 +62,7 @@
     "drupal/layout_builder_restrictions": "2.19",
     "drupal/layout_builder_restrictions_by_role": "1.0-alpha5",
     "drupal/libraries": "4.0.4",
-    "drupal/linkit": "6.1.0",
+    "drupal/linkit": "6.1.2",
     "drupal/mailchimp_transactional": "1.1.0",
     "drupal/mailsystem": "4.4",
     "drupal/markup": "2.0.0-beta6",
@@ -62,6 +75,7 @@
     "drupal/metatag": "2.0.0",
     "drupal/migrate_plus": "6.0.1",
     "drupal/migrate_tools": "6.0.2",
+    "drupal/multiple_fields_remove_button": "2.2",
     "drupal/multivalue_form_element": "1.0-beta6",
     "drupal/node_revision_delete": "2.0.0-alpha2",
     "drupal/override_node_options": "2.7",
@@ -82,7 +96,7 @@
     "drupal/section_library": "1.1.1",
     "drupal/selective_better_exposed_filters": "3.0.0-beta1",
     "drupal/simple_sitemap": "4.1.6",
-    "drupal/single_content_sync": "1.4.1",
+    "drupal/single_content_sync": "1.4.4",
     "drupal/smart_date": "4.0.3",
     "drupal/twig_tweak": "3.2.1",
     "drupal/typogrify": "1.2",
@@ -91,7 +105,8 @@
     "drupal/wingsuit_companion": "2.1",
     "jjj/chosen": "2.2.1",
     "laminas/laminas-escaper": "2.12",
-    "yalesites-org/atomic": "1.21.1",
+    "northernco/ckeditor5-anchor-drupal": "0.4.0",
+    "yalesites-org/atomic": "1.25.0",
     "yalesites-org/yale_cas": "1.0.4"
   },
   "minimum-stability": "dev",
@@ -113,7 +128,8 @@
         "hide remove button": "https://www.drupal.org/files/issues/2020-05-13/hide_field_required_paragraphs_remove_button_1.patch"
       },
       "drupal/core": {
-        "plural results summary https://www.drupal.org/project/drupal/issues/2888320": "https://www.drupal.org/files/issues/2021-12-15/2888320-78.patch"
+        "plural results summary https://www.drupal.org/project/drupal/issues/2888320": "https://www.drupal.org/files/issues/2021-12-15/2888320-78.patch",
+        "Prevent empty block_content info fields from causing php deprecation notices": "https://www.drupal.org/files/issues/2023-07-21/3340159-empty-block-label_0.patch"
       },
       "drupal/entity_redirect": {
         "fix layout route https://www.drupal.org/project/entity_redirect/issues/3352265": "https://git.drupalcode.org/project/entity_redirect/-/merge_requests/6.patch"
@@ -128,8 +144,12 @@
         "fix description toggle for CKEditor fields https://www.drupal.org/project/gin/issues/3316265": "https://git.drupalcode.org/project/gin/-/merge_requests/227.patch",
         "update dark mode localstorage https://www.drupal.org/project/gin/issues/3387653": "https://git.drupalcode.org/project/gin/-/merge_requests/304.diff"
       },
+      "drupal/gin_lb": {
+        "fix multivalued fields throw an error": "https://www.drupal.org/files/issues/2024-01-02/gin_lb-fix-attribute-3387157-5.patch"
+      },
       "drupal/media_library_form_element": {
-        "Order Media items https://www.drupal.org/project/media_library_form_element/issues/3168027":"https://www.drupal.org/files/issues/2022-01-22/order_media_items-3168027-8.patch"
+        "Order Media items https://www.drupal.org/project/media_library_form_element/issues/3168027":"https://www.drupal.org/files/issues/2022-01-22/order_media_items-3168027-8.patch",
+        "Deprecated function: explode(): Passing null to parameter #2 ($string) of type string is deprecated https://www.drupal.org/project/media_library_form_element/issues/3277273": "https://www.drupal.org/files/issues/2023-01-25/deprecated-explode-3277273-11.patch"
       },
       "drupal/redirect": {
         "fix validation issue on adding url redirect": "https://www.drupal.org/files/issues/2023-08-09/3057250-65.patch"
@@ -139,6 +159,16 @@
       },
       "drupal/google_analytics": {
         "Cannot install from existing config https://www.drupal.org/project/google_analytics/issues/3373921": "https://www.drupal.org/files/issues/2023-08-07/google-analytics-issues-3373921-cannot-install-from-existing-config-11.patch"
+      },
+      "drupal/linkit": {
+        "Add phone number matcher https://www.drupal.org/project/linkit/issues/3273630": "https://git.drupalcode.org/project/linkit/-/merge_requests/36.diff",
+        "Fix linkit autocomplete alias selection https://www.drupal.org/project/linkit/issues/2877535": "https://www.drupal.org/files/issues/2023-10-05/linkit-2877535-64.patch"
+      },
+      "drupal/quick_node_clone": {
+        "Fix cloning of inline blocks and paragraphs: https://www.drupal.org/project/quick_node_clone/issues/3100117": "https://www.drupal.org/files/issues/2023-04-25/quick-node-clone--inline-blocks--3100117-32.patch"
+      },
+      "drupal/section_library": {
+        "Fix access check issues on add_to_template link: https://www.drupal.org/project/section_library/issues/3241715": "https://www.drupal.org/files/issues/2022-09-21/3241715-6.patch"
       }
     }
   }

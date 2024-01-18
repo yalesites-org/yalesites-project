@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Define variable to check from other scripts if this script is being invoked.
+export YALESITES_IS_LOCAL=1
+
 # Ignore the composer.lock file on local dev only.
 if ! grep -qxF 'composer.lock' .git/info/exclude; then
   echo "Excluding composer.lock to keep it out of the repo."
@@ -27,6 +30,10 @@ fi
 
 # Start lando and create containers.
 lando start
+
+# Generate local secrets file.
+terminus plugin:install pantheon-systems/terminus-secrets-manager-plugin
+terminus secret:site:local-generate yalesites-platform --filepath=./secrets.json
 
 # Install packages and install Drupal using yalesites_profile.
 npm install

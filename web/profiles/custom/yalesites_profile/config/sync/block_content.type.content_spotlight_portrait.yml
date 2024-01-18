@@ -1,0 +1,33 @@
+uuid: b6c1e225-d1e1-4b06-a972-d6223b25c923
+langcode: en
+status: true
+dependencies:
+  module:
+    - entity_redirect
+third_party_settings:
+  entity_redirect:
+    redirect:
+      add:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      edit:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      delete:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      anonymous:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+id: content_spotlight_portrait
+label: 'Spotlight - Portrait'
+revision: 0
+description: 'Spotlight - Portrait allows you to display a portrait 2x3 image adjacent to text. This component has optional content, an image offset option, and different orientations.'

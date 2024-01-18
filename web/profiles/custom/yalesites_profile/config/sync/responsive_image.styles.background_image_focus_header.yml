@@ -1,0 +1,31 @@
+uuid: 4e08ad05-a17d-486f-b391-d017ca163c66
+langcode: en
+status: true
+dependencies:
+  config:
+    - image.style.16_9_1000
+    - image.style.16_9_1400
+    - image.style.16_9_1800
+    - image.style.16_9_2400
+    - image.style.16_9_400
+    - image.style.16_9_600
+    - image.style.16_9_800
+id: background_image_focus_header
+label: 'Background Image - Focus Header'
+image_style_mappings:
+  -
+    image_mapping_type: sizes
+    image_mapping:
+      sizes: 100vw
+      sizes_image_styles:
+        - '16_9_400'
+        - '16_9_1000'
+        - '16_9_1400'
+        - '16_9_1800'
+        - '16_9_2400'
+        - '16_9_600'
+        - '16_9_800'
+    breakpoint_id: responsive_image.viewport_sizing
+    multiplier: 1x
+breakpoint_group: responsive_image
+fallback_image_style: '16_9_1000'
