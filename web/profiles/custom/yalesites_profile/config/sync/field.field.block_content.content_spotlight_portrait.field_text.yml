@@ -1,24 +1,24 @@
-uuid: c6d12903-64f2-438a-b602-26bea3619569
+uuid: ac38c825-b1e0-41c4-8987-89348c9e56ea
 langcode: en
 status: true
 dependencies:
   config:
-    - block_content.type.quick_links
+    - block_content.type.content_spotlight_portrait
     - field.storage.block_content.field_text
     - filter.format.restricted_html
   module:
     - text
-id: block_content.quick_links.field_text
+id: block_content.content_spotlight_portrait.field_text
 field_name: field_text
 entity_type: block_content
-bundle: quick_links
-label: 'Quick Link Content'
+bundle: content_spotlight_portrait
+label: Content
 description: ''
-required: false
-translatable: true
+required: true
+translatable: false
 default_value: {  }
 default_value_callback: ''
 settings:
   allowed_formats:
-    - heading_html
+    - restricted_html
 field_type: text_long

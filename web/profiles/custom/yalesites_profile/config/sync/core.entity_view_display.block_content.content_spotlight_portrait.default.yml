@@ -1,26 +1,25 @@
-uuid: db6dc6ba-c0d5-4e7f-9334-00c643c3529c
+uuid: b36183ee-14fd-4001-82da-3dd2f5659e9b
 langcode: en
 status: true
 dependencies:
   config:
-    - block_content.type.content_spotlight
-    - field.field.block_content.content_spotlight.field_heading
-    - field.field.block_content.content_spotlight.field_instructions
-    - field.field.block_content.content_spotlight.field_link
-    - field.field.block_content.content_spotlight.field_media
-    - field.field.block_content.content_spotlight.field_style_color
-    - field.field.block_content.content_spotlight.field_style_position
-    - field.field.block_content.content_spotlight.field_style_variation
-    - field.field.block_content.content_spotlight.field_style_width
-    - field.field.block_content.content_spotlight.field_subheading
-    - field.field.block_content.content_spotlight.field_text
+    - block_content.type.content_spotlight_portrait
+    - field.field.block_content.content_spotlight_portrait.field_heading
+    - field.field.block_content.content_spotlight_portrait.field_instructions
+    - field.field.block_content.content_spotlight_portrait.field_link
+    - field.field.block_content.content_spotlight_portrait.field_media
+    - field.field.block_content.content_spotlight_portrait.field_style_color
+    - field.field.block_content.content_spotlight_portrait.field_style_position
+    - field.field.block_content.content_spotlight_portrait.field_style_variation
+    - field.field.block_content.content_spotlight_portrait.field_subheading
+    - field.field.block_content.content_spotlight_portrait.field_text
   module:
     - link
     - options
     - text
-id: block_content.content_spotlight.default
+id: block_content.content_spotlight_portrait.default
 targetEntityType: block_content
-bundle: content_spotlight
+bundle: content_spotlight_portrait
 mode: default
 content:
   field_heading:
@@ -46,7 +45,7 @@ content:
     type: entity_reference_entity_view
     label: hidden
     settings:
-      view_mode: text_with_image_feature_equal
+      view_mode: content_spotlight_portrait_2_3
       link: false
     third_party_settings: {  }
     weight: 0
@@ -56,28 +55,21 @@ content:
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 1
+    weight: 5
     region: content
   field_style_position:
     type: list_key
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 6
+    weight: 7
     region: content
   field_style_variation:
     type: list_key
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 5
-    region: content
-  field_style_width:
-    type: list_key
-    label: hidden
-    settings: {  }
-    third_party_settings: {  }
-    weight: 7
+    weight: 6
     region: content
   field_subheading:
     type: text_default
