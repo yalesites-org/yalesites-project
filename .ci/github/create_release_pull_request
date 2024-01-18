@@ -63,8 +63,10 @@ for sha in $commit_shas; do
     "https://api.github.com/repos/$REPO/commits/$sha/pulls" \
     | jq -r 'if type == "object" and has("message") and length > 0 then null else .[].html_url // empty end')
 
-  if [[ -n "$single_pr_url" ]]; then
+  if [[ -n "$single_pr_url" && "$single_pr_url" != "null" ]]; then
     pull_requests+=("$single_pr_url")
+  elif [[ "$single_pr_url" == "null" ]]; then
+    :
   else
     changes_without_pr+=("$sha")
   fi
