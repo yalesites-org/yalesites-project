@@ -539,4 +539,76 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     return (int) is_array($term) ? $term['target_id'] : $term;
   }
 
+  /**
+   * Checks if the form is loaded via layout builder and, if so, is the
+   * block reusable. This aids in setting the correct arrays and Ajax calls
+   * below as the selectors are different depending on what form is being
+   * loaded.
+   *
+   * @see https://www.drupal.org/project/drupal/issues/2758631
+   *
+   */
+  public function getFormSelectors($formState, $form = NULL, $entityValue = NULL) {
+    $formSelectors = [];
+
+    $rebuildValues = ($formState->isRebuilding()) ? $formState->getValues() : NULL;
+
+    if ($formState->getCompleteForm() && str_starts_with($formState->getCompleteForm()['#form_id'], 'layout_builder_')) {
+      if (isset($formState->getCompleteForm()['block_form']['#block']) && $formState->getCompleteForm()['block_form']['#block']->isReusable()) {
+        // Reusable block Layout Builder form
+        $formSelectors = [
+          'entity_types' => ($rebuildValues) ? $rebuildValues['block_form']['group_user_selection']['entity_and_view_mode']['entity_types'] : $entityValue,
+          'entity_types_ajax' => ':input[name="block_form[group_user_selection][entity_and_view_mode][entity_types]"]',
+          'view_mode_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
+          'massage_terms_include_array' => ['block_form', 'group_user_selection', 'filter_and_sort', 'terms_include'],
+          'massage_terms_exclude_array' => ['block_form', 'group_user_selection', 'filter_and_sort', 'terms_exclude'],
+          'operator_array' => [],
+          'sort_by_array' => ['block_form', 'group_user_selection', 'filter_and_sort', 'sort_by'],
+          'sort_by_ajax' => ($form) ? $form['block_form']['group_user_selection']['filter_and_sort']['sort_by'] : NULL,
+          'display_array' => ['block_form', 'group_user_selection', 'options', 'display'],
+          'display_ajax' => ':input[name="block_form[group_user_selection][options][display]"]',
+          'display_value_ajax' => $formState->getValue(['block_form', 'group_user_selection', 'options', 'display']),
+          'limit_array' => ['block_form', 'group_user_selection', 'options', 'limit'],
+          'limit_ajax' => ($form) ? $form['block_form']['group_user_selection']['options']['limit'] : NULL,
+        ];
+      }
+      else {
+        // Regular block Layout Builder form
+        $formSelectors = [
+          'entity_types' => ($rebuildValues) ? $rebuildValues['settings']['block_form']['group_user_selection']['entity_and_view_mode']['entity_types'] : $entityValue,
+          'entity_types_ajax' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][entity_types]"]',
+          'view_mode_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
+          'massage_terms_include_array' => ['settings', 'block_form', 'group_user_selection', 'filter_and_sort', 'terms_include'],
+          'massage_terms_exclude_array' => ['settings', 'block_form', 'group_user_selection', 'filter_and_sort', 'terms_exclude'],
+          'operator_array' => [],
+          'sort_by_array' => ['settings', 'block_form', 'group_user_selection', 'filter_and_sort', 'sort_by'],
+          'sort_by_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['filter_and_sort']['sort_by'] : NULL,
+          'display_array' => ['settings', 'block_form', 'group_user_selection', 'options', 'display'],
+          'display_ajax' => ':input[name="settings[block_form][group_user_selection][options][display]"]',
+          'display_value_ajax' => $formState->getValue(['settings', 'block_form', 'group_user_selection', 'options', 'display']),
+          'limit_array' => ['settings', 'block_form', 'group_user_selection', 'options', 'limit'],
+          'limit_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['options']['limit'] : NULL,
+        ];
+      }
+    } else {
+      // Drupal core block form
+      $formSelectors = [
+          'entity_types' => ($rebuildValues) ? $rebuildValues['entity_types'] : $entityValue,
+          'entity_types_ajax' => ':input[name="entity_types"]',
+          'view_mode_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
+          'massage_terms_include_array' => ['terms_include'],
+          'massage_terms_exclude_array' => ['terms_exclude'],
+          'operator_array' => [],
+          'sort_by_array' => ['sort_by'],
+          'sort_by_ajax' => ($form) ? $form['group_user_selection']['filter_and_sort']['sort_by']: NULL,
+          'display_array' => ['display'],
+          'display_ajax' => ':input[name="display"]',
+          'display_value_ajax' => $formState->getValue(['group_user_selection', 'options', 'display']),
+          'limit_array' => ['limit'],
+          'limit_ajax' => ($form) ? $form['group_user_selection']['options']['limit'] : NULL,
+        ];
+    }
+
+    return $formSelectors;
+  }
 }
