@@ -3,24 +3,32 @@
 set -eo pipefail
 
 # If we aren't updating an existing pull request, create one to merge develop into master.
-if [ -z "$PR_NUMBER" ]; then
+if [[ -z "$PR_NUMBER" ]]; then
   pull_request_response=$(curl -s -H "Accept: application/vnd.github+json" \
     -H "Authorization: token $ACCESS_TOKEN" \
     -X POST -d '{"title": "Release", "head": "develop", "base": "master"}' \
     "https://api.github.com/repos/$REPO/pulls")
 
+  message=$(echo "$pull_request_response" | jq -r 'if has("errors") then .errors[].message else empty end')
+
   # Check if the pull request creation was successful.
-  if [ -z "$(echo "$pull_request_response" | jq -r '.html_url')" ]; then
-    message=$(echo "$pull_request_response" | jq -r '.errors[].message')
+  if [ -n "$message" ]; then
     echo "Failed to create pull request."
     echo "Error: $message"
     exit 1
   else
-    opened_pr_url=$(echo "$pull_request_response" | jq -r '.html_url')
+    pr_url=$(echo "$pull_request_response" | jq -r '.html_url')
   fi
 
   # Extract the pull request number from the response.
   PR_NUMBER=$(echo "$pull_request_response" | jq -r '.number')
+
+# If there is an existing PR number, get the PR.
+else
+  pull_request_response=$(curl --silent -H "Authorization: token $ACCESS_TOKEN" \
+    "https://api.github.com/repos/$REPO/pulls/$PR_NUMBER")
+
+  pr_url=$(echo "$pull_request_response" | jq -r '.html_url')
 fi
 
 # Page through the /pulls/#/commits endpoint.
@@ -51,12 +59,12 @@ pull_requests=()
 changes_without_pr=()
 
 for sha in $commit_shas; do
-  pr_url=$(curl -s -H "Authorization: token $ACCESS_TOKEN" \
+  single_pr_url=$(curl -s -H "Authorization: token $ACCESS_TOKEN" \
     "https://api.github.com/repos/$REPO/commits/$sha/pulls" \
     | jq -r '.[].html_url')
 
-  if [ -n "$pr_url" ]; then
-    pull_requests+=("$pr_url")
+  if [[ -n "$single_pr_url" ]]; then
+    pull_requests+=("$single_pr_url")
   else
     changes_without_pr+=("$sha")
   fi
@@ -93,5 +101,5 @@ update_pull_request=$(curl -s -L \
   "https://api.github.com/repos/$REPO/pulls/$PR_NUMBER")
 
 if [[ -n "$pull_request_response" || -n "$update_pull_request" ]]; then
-  echo "Pull request created: $opened_pr_url"
+  echo "Pull request created or updated: $pr_url"
 fi
