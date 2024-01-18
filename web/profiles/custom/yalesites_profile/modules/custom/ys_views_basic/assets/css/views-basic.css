@@ -71,7 +71,7 @@
 
 .glb-form-type--radio label.glb-form-item__label.glb-option:hover,
 #drupal-off-canvas-wrapper .glb-form-type--radio label.glb-form-item__label.glb-option:hover {
-  border-color: var(--darkest-color-border);
+  border-color: var(--gin-color-text-light);
 }
 
 /******
