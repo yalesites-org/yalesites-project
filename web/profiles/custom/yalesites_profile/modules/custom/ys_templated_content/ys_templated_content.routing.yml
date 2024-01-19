@@ -1,5 +1,5 @@
 ys_templated_content.selection:
-  path: '/content/from_template'
+  path: '/admin/node/add/from_template'
   defaults:
     _controller: '\Drupal\ys_templated_content\Controller\TemplatedContentController::build'
     _title: 'Create content from a template'
