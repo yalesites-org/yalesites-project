@@ -4,12 +4,12 @@ namespace Drupal\ys_templated_content\Form;
 
 use Drupal\Component\Uuid\UuidInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\single_content_sync\ContentImporterInterface;
 use Drupal\single_content_sync\ContentSyncHelperInterface;
+use Drupal\ys_templated_content\Support\TemplateFilenameHelper;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -17,7 +17,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class TemplatedContentForm extends FormBase implements FormInterface {
 
-  const TEMPLATE_PATH = '/config/templates/';
+  /**
+   * The template filename helper.
+   *
+   * @var \Drupal\ys_templated_content\Support\TemplateFilenameHelper
+   */
+  protected $templateFilenameHelper;
 
   /**
    * The templates that will be available to the user to select from.
@@ -25,13 +30,6 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    * @var array
    */
   protected $templates = [];
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Module\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
 
   /**
    * The UUID service.
@@ -72,22 +70,22 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    *   The content sync helper.
    * @param \Drupal\Core\Uuid\UuidInterface $uuidService
    *   The UUID service.
-   * @param \Drupal\Core\Module\ModuleHandlerInterface $moduleHandler
-   *   The module handler.
+   * @param \Drupal\ys_templated_content\Support\TemplateFilenameHelper $templateFilenameHelper
+   *   The template filename helper.
    */
   public function __construct(
     EntityTypeManagerInterface $entityTypeManager,
     ContentImporterInterface $contentImporter,
     ContentSyncHelperInterface $contentSyncHelper,
     UuidInterface $uuidService,
-    ModuleHandlerInterface $moduleHandler
+    TemplateFilenameHelper $templateFilenameHelper,
   ) {
     $this->entityManager = $entityTypeManager;
     $this->contentImporter = $contentImporter;
     $this->contentSyncHelper = $contentSyncHelper;
     $this->uuidService = $uuidService;
-    $this->moduleHandler = $moduleHandler;
-    $this->templates = $this->refreshTemplates($this->getTemplateBasePath());
+    $this->templateFilenameHelper = $templateFilenameHelper;
+    $this->templates = $this->refreshTemplates($this->templateFilenameHelper->getTemplateBasePath());
   }
 
   /**
@@ -99,7 +97,7 @@ class TemplatedContentForm extends FormBase implements FormInterface {
       $container->get('single_content_sync.importer'),
       $container->get('single_content_sync.helper'),
       $container->get('uuid'),
-      $container->get('module_handler'),
+      $container->get('ys_templated_content.template_filename_helper'),
     );
   }
 
@@ -194,12 +192,14 @@ class TemplatedContentForm extends FormBase implements FormInterface {
      */
     try {
       $content = file_get_contents(
-        $this->getImportFilePath($content_type, $template)
+        $this->templateFilenameHelper->getImportFilePath($content_type, $template)
       );
+
       $content_array = $this
         ->contentSyncHelper
         ->validateYamlFileContent($content);
-      $content_array['uuid'] = $this->uuidService->generate();
+
+      $content_array = $this->modifyForAddition($content_array);
 
       $entity = $this->contentImporter->doImport($content_array);
       $this->messenger()->addMessage("Content generated successfully.  Please make any edits now as this has already been created for you.  Don't forget to change the URL alias.");
@@ -215,6 +215,18 @@ class TemplatedContentForm extends FormBase implements FormInterface {
   }
 
   /**
+   * Modify the content array for addition.
+   *
+   * @param array $content_array
+   *   The content array.
+   */
+  protected function modifyForAddition(array $content_array) : array {
+    $content_array['uuid'] = $this->uuidService->generate();
+
+    return $content_array;
+  }
+
+  /**
    * Get the entity path.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
@@ -225,90 +237,6 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    */
   private function getEntityEditFormPath($entity) {
     return 'entity.' . $entity->getEntityTypeId() . '.edit_form';
-  }
-
-  /**
-   * Get the import file path.
-   *
-   * @param string $content_type
-   *   The content type.
-   * @param string $template
-   *   The template.
-   *
-   * @return string
-   *   The file path.
-   */
-  protected function getImportFilePath(
-    String $content_type,
-    String $template
-  ) : String {
-    $filename = $this->constructImportFilename($content_type, $template);
-    $path = $this->getFullFilenamePath($filename);
-    $this->validatePath($path);
-    return $path;
-  }
-
-  /**
-   * Get the full file path.
-   *
-   * @param string $filename
-   *   The filename.
-   *
-   * @return string
-   *   The full file path from the base template path.
-   */
-  protected function getFullFilenamePath(String $filename) : String {
-    return $this->getTemplateBasePath() . $filename;
-  }
-
-  /**
-   * Get the base template path.
-   *
-   * @return string
-   *   The base template path.
-   */
-  protected function getTemplateBasePath() : String {
-    return $this
-      ->moduleHandler
-      ->getModule('ys_templated_content')
-      ->getPath() . $this::TEMPLATE_PATH;
-  }
-
-  /**
-   * Validate the import file path.
-   *
-   * @param string $path
-   *   The path.
-   *
-   * @return bool
-   *   Whether the path exists.
-   *
-   * @throws \Exception
-   */
-  protected function validatePath(String $path) : bool {
-    if (!file_exists($path)) {
-      throw new \Exception('The import file does not exist.  Please ensure there is an import for this content type and template.');
-    }
-
-    return TRUE;
-  }
-
-  /**
-   * Construct the import filename.
-   *
-   * @param string $content_type
-   *   The content type.
-   * @param string $template
-   *   The template.
-   *
-   * @return string
-   *   The filename.
-   */
-  protected function constructImportFilename(
-    String $content_type,
-    String $template
-  ) : String {
-    return $content_type . '__' . $template . '.yml';
   }
 
   /**
@@ -350,6 +278,7 @@ class TemplatedContentForm extends FormBase implements FormInterface {
     $form['templates']['#options'] = $this
       ->getCurrentTemplates($currentContentType);
     $form_state->setValue('templates', '');
+
     return $form['templates'];
   }
 
@@ -395,8 +324,8 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    *   The templates.
    */
   protected function refreshTemplates($path) : array {
-    $filenames = $this->getSanitizedFilenamesFromPath($path);
-    $templates = $this->constructTemplatesArrayFromFilenames($filenames);
+    $filenames = $this->templateFilenameHelper->getSanitizedFilenamesFromPath($path);
+    $templates = $this->templateFilenameHelper->constructTemplatesArrayFromFilenames($filenames);
 
     // Prepend the Empty case.
     foreach ($templates as $key => $template) {
@@ -404,61 +333,6 @@ class TemplatedContentForm extends FormBase implements FormInterface {
     }
 
     return $templates;
-  }
-
-  /**
-   * Construct the templates array from the filenames.
-   *
-   * @param array $filenames
-   *   The filenames.
-   *
-   * @return array
-   *   The templates.
-   */
-  protected function constructTemplatesArrayFromFilenames($filenames) : array {
-    $templates = [];
-    foreach ($filenames as $filename) {
-      $filename = str_replace('.yml', '', $filename);
-      $filename_parts = explode('__', $filename);
-      // We should probably create a parser for this so we're not
-      // primitively obsessing.
-      $templates[$filename_parts[0]][$filename_parts[1]] = $this->humanReadable($filename_parts[1]);
-    }
-    return $templates;
-  }
-
-  /**
-   * Get the sanitized filenames from the path.
-   *
-   * This will remove . and .. from the array.
-   *
-   * @param string $path
-   *   The path.
-   *
-   * @return array
-   *   The filenames.
-   */
-  protected function getSanitizedFilenamesFromPath($path) : array {
-    $filenames = scandir($path);
-    // Remove . and .. from the array.
-    $filenames = array_slice($filenames, 2);
-    return $filenames;
-  }
-
-  /**
-   * Make a string human readable.
-   *
-   * Given a string like 'this_is_a_string',
-   * this will return 'This Is A String'.
-   *
-   * @param string $string
-   *   The string.
-   *
-   * @return string
-   *   The human readable string.
-   */
-  protected function humanReadable($string) : string {
-    return ucwords(str_replace('_', ' ', $string));
   }
 
 }
