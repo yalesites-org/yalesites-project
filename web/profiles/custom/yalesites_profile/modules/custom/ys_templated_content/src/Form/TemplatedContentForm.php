@@ -233,6 +233,8 @@ EOT;
    *   Redirects to the edit form of the imported entity.
    */
   protected function createImport(FormStateInterface $form_state, String $content_type, String $template) : void {
+    // Taken from the implementation of single_content_sync.
+    // This would be a great way to contribute back: $this->contentSyncHelper->generateEntityFromStringYaml($this::CONTENT);
     try {
       $content_array = $this->contentSyncHelper->validateYamlFileContent($this::CONTENT);
       $content_array['uuid'] = $this->uuidService->generate();
