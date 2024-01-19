@@ -1,0 +1,235 @@
+site_uuid: 3be7d457-cc13-4e03-bde2-d004a9e0f46e
+uuid: 0bcab768-2c96-4cf0-9212-decb43fff261
+entity_type: node
+bundle: page
+base_fields:
+  title: 'Example Landing Page'
+  status: true
+  langcode: en
+  created: '1692038776'
+  author: sebastianna.skalisky@yale.edu
+  url: /example-landing-page
+  revision_log_message: null
+  revision_uid: '2'
+  menu_link:
+    uuid: a9c3e005-0ff8-483d-a334-f93672ea6654
+    entity_type: menu_link_content
+    bundle: main
+    base_fields:
+      title: 'Landing Page'
+      enabled: true
+      expanded: false
+      langcode: en
+      menu_name: main
+      description: null
+      link:
+        -
+          uri: 'entity:node/0bcab768-2c96-4cf0-9212-decb43fff261'
+          title: null
+          options: {  }
+          entity:
+            uuid: 0bcab768-2c96-4cf0-9212-decb43fff261
+            entity_type: node
+            base_fields:
+              title: 'Example Landing Page'
+              status: true
+              langcode: en
+              created: '1692038776'
+              author: sebastianna.skalisky@yale.edu
+              url: /example-landing-page
+              revision_log_message: null
+              revision_uid: '2'
+            bundle: page
+      weight: 2
+      parent: ''
+    custom_fields:
+      field_menu_top_level_link_cta: null
+custom_fields:
+  field_login_required:
+    -
+      value: '0'
+  field_metatags: null
+  field_tags:
+    -
+      uuid: dfcb8179-6080-45aa-b54b-fe0cab774c05
+      entity_type: taxonomy_term
+      bundle: tags
+      base_fields:
+        name: example
+        weight: 0
+        langcode: en
+        description: null
+        parent: 0
+      custom_fields: {  }
+  field_teaser_media:
+    -
+      uuid: 5385328c-f1fb-428f-b10e-408377759c13
+      entity_type: media
+      bundle: image
+      base_fields:
+        name: beinecke-library-exterior-close-up.jpg
+        created: '1691598171'
+        status: true
+        langcode: en
+      custom_fields:
+        field_media_image:
+          -
+            uri: 'public://starterkit/beinecke-library-exterior-close-up.jpg'
+            url: 'https://dev-ys-starterkit.pantheonsite.io/sites/default/files/starterkit/beinecke-library-exterior-close-up.jpg'
+            alt: 'Exterior of the Beinecke Library features powerful stone geometry and marble panes'
+  field_teaser_text:
+    -
+      value: "<p>Learn how to use taxonomy terms and the <strong>View Block</strong> to create dynamic landing pages to showcase your content.</p>\r\n"
+      format: heading_html
+  field_teaser_title: null
+  layout_builder__layout:
+    sections: TzoyOToiRHJ1cGFsXGxheW91dF9idWlsZGVyXFNlY3Rpb24iOjQ6e3M6MTE6IgAqAGxheW91dElkIjtzOjE2OiJ5c19sYXlvdXRfYmFubmVyIjtzOjE3OiIAKgBsYXlvdXRTZXR0aW5ncyI7YToyOntzOjU6ImxhYmVsIjtzOjE0OiJCYW5uZXIgU2VjdGlvbiI7czoxNToiY29udGV4dF9tYXBwaW5nIjthOjA6e319czoxMzoiACoAY29tcG9uZW50cyI7YToxOntzOjM2OiJlNWZkY2NjOC02YzkwLTQ5NWQtOGQxNy1hYWMxNjJmMTFmNDUiO086Mzg6IkRydXBhbFxsYXlvdXRfYnVpbGRlclxTZWN0aW9uQ29tcG9uZW50Ijo1OntzOjc6IgAqAHV1aWQiO3M6MzY6ImU1ZmRjY2M4LTZjOTAtNDk1ZC04ZDE3LWFhYzE2MmYxMWY0NSI7czo5OiIAKgByZWdpb24iO3M6NzoiY29udGVudCI7czoxNjoiACoAY29uZmlndXJhdGlvbiI7YTo4OntzOjI6ImlkIjtzOjIzOiJpbmxpbmVfYmxvY2s6Z3JhbmRfaGVybyI7czo1OiJsYWJlbCI7czoyNToibGFuZGluZyBwYWdlIC0gZ3JhbmQgaGVybyI7czoxMzoibGFiZWxfZGlzcGxheSI7YjowO3M6ODoicHJvdmlkZXIiO3M6MTQ6ImxheW91dF9idWlsZGVyIjtzOjk6InZpZXdfbW9kZSI7czo0OiJmdWxsIjtzOjE3OiJibG9ja19yZXZpc2lvbl9pZCI7czoyOiI5NCI7czoxNjoiYmxvY2tfc2VyaWFsaXplZCI7TjtzOjE1OiJjb250ZXh0X21hcHBpbmciO2E6MDp7fX1zOjk6IgAqAHdlaWdodCI7aTowO3M6MTM6IgAqAGFkZGl0aW9uYWwiO2E6MDp7fX19czoyMToiACoAdGhpcmRQYXJ0eVNldHRpbmdzIjthOjE6e3M6MTk6ImxheW91dF9idWlsZGVyX2xvY2siO2E6MTp7czo0OiJsb2NrIjthOjQ6e2k6NTtpOjU7aTo2O2k6NjtpOjc7aTo3O2k6ODtpOjg7fX19fXxPOjI5OiJEcnVwYWxcbGF5b3V0X2J1aWxkZXJcU2VjdGlvbiI6NDp7czoxMToiACoAbGF5b3V0SWQiO3M6MTk6InlzX2xheW91dF9wYWdlX21ldGEiO3M6MTc6IgAqAGxheW91dFNldHRpbmdzIjthOjI6e3M6NToibGFiZWwiO3M6MTg6IlRpdGxlIGFuZCBNZXRhZGF0YSI7czoxNToiY29udGV4dF9tYXBwaW5nIjthOjA6e319czoxMzoiACoAY29tcG9uZW50cyI7YToxOntzOjM2OiJiYjFkYWUwMy0xMDczLTRjOTktYTkxNC1hOGEyZjVmMGE4YzQiO086Mzg6IkRydXBhbFxsYXlvdXRfYnVpbGRlclxTZWN0aW9uQ29tcG9uZW50Ijo1OntzOjc6IgAqAHV1aWQiO3M6MzY6ImJiMWRhZTAzLTEwNzMtNGM5OS1hOTE0LWE4YTJmNWYwYThjNCI7czo5OiIAKgByZWdpb24iO3M6OToicGFnZV9tZXRhIjtzOjE2OiIAKgBjb25maWd1cmF0aW9uIjthOjY6e3M6MjoiaWQiO3M6MTU6InBhZ2VfbWV0YV9ibG9jayI7czo1OiJsYWJlbCI7czoxNToiUGFnZSBNZXRhIEJsb2NrIjtzOjEzOiJsYWJlbF9kaXNwbGF5IjtzOjA6IiI7czo4OiJwcm92aWRlciI7czoxMDoieXNfbGF5b3V0cyI7czoxNToiY29udGV4dF9tYXBwaW5nIjthOjA6e31zOjE4OiJwYWdlX3RpdGxlX2Rpc3BsYXkiO3M6NzoidmlzaWJsZSI7fXM6OToiACoAd2VpZ2h0IjtpOjA7czoxMzoiACoAYWRkaXRpb25hbCI7YTowOnt9fX1zOjIxOiIAKgB0aGlyZFBhcnR5U2V0dGluZ3MiO2E6MTp7czoxOToibGF5b3V0X2J1aWxkZXJfbG9jayI7YToxOntzOjQ6ImxvY2siO2E6Nzp7aToyO2k6MjtpOjM7aTozO2k6NDtpOjQ7aTo1O2k6NTtpOjY7aTo2O2k6NztpOjc7aTo4O2k6ODt9fX19fE86Mjk6IkRydXBhbFxsYXlvdXRfYnVpbGRlclxTZWN0aW9uIjo0OntzOjExOiIAKgBsYXlvdXRJZCI7czoxMzoibGF5b3V0X29uZWNvbCI7czoxNzoiACoAbGF5b3V0U2V0dGluZ3MiO2E6Mjp7czo1OiJsYWJlbCI7czoxNToiQ29udGVudCBTZWN0aW9uIjtzOjE1OiJjb250ZXh0X21hcHBpbmciO2E6MDp7fX1zOjEzOiIAKgBjb21wb25lbnRzIjthOjQ6e3M6MzY6ImVlYjc1Njk2LTk2ZjItNDAzZi1hNjg4LWUxZmJhNTdiZDBlMyI7TzozODoiRHJ1cGFsXGxheW91dF9idWlsZGVyXFNlY3Rpb25Db21wb25lbnQiOjU6e3M6NzoiACoAdXVpZCI7czozNjoiZWViNzU2OTYtOTZmMi00MDNmLWE2ODgtZTFmYmE1N2JkMGUzIjtzOjk6IgAqAHJlZ2lvbiI7czo3OiJjb250ZW50IjtzOjE2OiIAKgBjb25maWd1cmF0aW9uIjthOjg6e3M6MjoiaWQiO3M6MTc6ImlubGluZV9ibG9jazp2aWV3IjtzOjU6ImxhYmVsIjtzOjI3OiJsYW5kaW5nIHBhZ2UgLSB2aWV3IC0gcGFnZXMiO3M6MTM6ImxhYmVsX2Rpc3BsYXkiO2I6MDtzOjg6InByb3ZpZGVyIjtzOjE0OiJsYXlvdXRfYnVpbGRlciI7czo5OiJ2aWV3X21vZGUiO3M6NDoiZnVsbCI7czoxNzoiYmxvY2tfcmV2aXNpb25faWQiO3M6MjoiNTciO3M6MTY6ImJsb2NrX3NlcmlhbGl6ZWQiO047czoxNToiY29udGV4dF9tYXBwaW5nIjthOjA6e319czo5OiIAKgB3ZWlnaHQiO2k6MjtzOjEzOiIAKgBhZGRpdGlvbmFsIjthOjA6e319czozNjoiMDY2YjQ5MzktZmY5NC00YzkwLWE1ZDktYjNlMDczYTQwODRhIjtPOjM4OiJEcnVwYWxcbGF5b3V0X2J1aWxkZXJcU2VjdGlvbkNvbXBvbmVudCI6NTp7czo3OiIAKgB1dWlkIjtzOjM2OiIwNjZiNDkzOS1mZjk0LTRjOTAtYTVkOS1iM2UwNzNhNDA4NGEiO3M6OToiACoAcmVnaW9uIjtzOjc6ImNvbnRlbnQiO3M6MTY6IgAqAGNvbmZpZ3VyYXRpb24iO2E6ODp7czoyOiJpZCI7czoxNzoiaW5saW5lX2Jsb2NrOnRleHQiO3M6NToibGFiZWwiO3M6MjU6ImxhbmRpbmcgcGFnZSAtIGludHJvIHRleHQiO3M6MTM6ImxhYmVsX2Rpc3BsYXkiO2I6MDtzOjg6InByb3ZpZGVyIjtzOjE0OiJsYXlvdXRfYnVpbGRlciI7czo5OiJ2aWV3X21vZGUiO3M6NDoiZnVsbCI7czoxNzoiYmxvY2tfcmV2aXNpb25faWQiO3M6MjoiNjQiO3M6MTY6ImJsb2NrX3NlcmlhbGl6ZWQiO047czoxNToiY29udGV4dF9tYXBwaW5nIjthOjA6e319czo5OiIAKgB3ZWlnaHQiO2k6MDtzOjEzOiIAKgBhZGRpdGlvbmFsIjthOjA6e319czozNjoiNzE3NTNlMDYtNDA3NS00MGRhLWI0YjItYWY5MDRlZGU0MmZjIjtPOjM4OiJEcnVwYWxcbGF5b3V0X2J1aWxkZXJcU2VjdGlvbkNvbXBvbmVudCI6NTp7czo3OiIAKgB1dWlkIjtzOjM2OiI3MTc1M2UwNi00MDc1LTQwZGEtYjRiMi1hZjkwNGVkZTQyZmMiO3M6OToiACoAcmVnaW9uIjtzOjc6ImNvbnRlbnQiO3M6MTY6IgAqAGNvbmZpZ3VyYXRpb24iO2E6ODp7czoyOiJpZCI7czoxNzoiaW5saW5lX2Jsb2NrOnRleHQiO3M6NToibGFiZWwiO3M6MjY6ImxhbmRpbmcgcGFnZSAtIHVzaW5nIHZpZXdzIjtzOjEzOiJsYWJlbF9kaXNwbGF5IjtiOjA7czo4OiJwcm92aWRlciI7czoxNDoibGF5b3V0X2J1aWxkZXIiO3M6OToidmlld19tb2RlIjtzOjQ6ImZ1bGwiO3M6MTc6ImJsb2NrX3JldmlzaW9uX2lkIjtzOjI6IjY1IjtzOjE2OiJibG9ja19zZXJpYWxpemVkIjtOO3M6MTU6ImNvbnRleHRfbWFwcGluZyI7YTowOnt9fXM6OToiACoAd2VpZ2h0IjtpOjQ7czoxMzoiACoAYWRkaXRpb25hbCI7YTowOnt9fXM6MzY6ImYwYzAzNjMzLTE5OWYtNDdlNi04YmE2LTcwMGMwZGUyYWNhMCI7TzozODoiRHJ1cGFsXGxheW91dF9idWlsZGVyXFNlY3Rpb25Db21wb25lbnQiOjU6e3M6NzoiACoAdXVpZCI7czozNjoiZjBjMDM2MzMtMTk5Zi00N2U2LThiYTYtNzAwYzBkZTJhY2EwIjtzOjk6IgAqAHJlZ2lvbiI7czo3OiJjb250ZW50IjtzOjE2OiIAKgBjb25maWd1cmF0aW9uIjthOjg6e3M6MjoiaWQiO3M6MjA6ImlubGluZV9ibG9jazpjYWxsb3V0IjtzOjU6ImxhYmVsIjtzOjMxOiJsYW5kaW5nIHBhZ2UgLSB0YXhvbm9teSBjYWxsb3V0IjtzOjEzOiJsYWJlbF9kaXNwbGF5IjtiOjA7czo4OiJwcm92aWRlciI7czoxNDoibGF5b3V0X2J1aWxkZXIiO3M6OToidmlld19tb2RlIjtzOjQ6ImZ1bGwiO3M6MTc6ImJsb2NrX3JldmlzaW9uX2lkIjtzOjI6IjY2IjtzOjE2OiJibG9ja19zZXJpYWxpemVkIjtOO3M6MTU6ImNvbnRleHRfbWFwcGluZyI7YTowOnt9fXM6OToiACoAd2VpZ2h0IjtpOjU7czoxMzoiACoAYWRkaXRpb25hbCI7YTowOnt9fX1zOjIxOiIAKgB0aGlyZFBhcnR5U2V0dGluZ3MiO2E6MDp7fX0=
+    blocks:
+      -
+        uuid: a09bc059-d815-465e-9a2a-a35a47789b85
+        entity_type: block_content
+        bundle: grand_hero
+        base_fields:
+          info: 'landing page - grand hero'
+          reusable: false
+          langcode: en
+          block_revision_id: '94'
+          enforce_new_revision: true
+        custom_fields:
+          field_heading:
+            -
+              value: 'First impressions matter'
+              format: heading_html
+          field_heading_level: null
+          field_instructions:
+            -
+              markup: null
+          field_link: null
+          field_media:
+            -
+              uuid: f44332ab-7060-44cb-be9e-8960bc9a5e7c
+              entity_type: media
+              bundle: image
+              base_fields:
+                name: harkness-tower-dusk.jpg
+                created: '1691598171'
+                status: true
+                langcode: en
+              custom_fields:
+                field_media_image:
+                  -
+                    uri: 'public://starterkit/harkness-tower-dusk.jpg'
+                    url: 'https://dev-ys-starterkit.pantheonsite.io/sites/default/files/starterkit/harkness-tower-dusk.jpg'
+                    alt: 'Harkness Tower rises dramatically into the darkening sky at dusk'
+          field_style_position:
+            -
+              value: contained
+          field_style_variation:
+            -
+              value: reduced
+          field_text:
+            -
+              value: "<p>Capture your users’ attention with the bold, visually engaging <strong>Grand Hero</strong>.</p>\r\n"
+              format: heading_html
+      -
+        uuid: b20ea8cf-a48a-473f-80bd-b025a4a3add7
+        entity_type: block_content
+        bundle: view
+        base_fields:
+          info: 'landing page - view - pages'
+          reusable: false
+          langcode: en
+          block_revision_id: '57'
+          enforce_new_revision: true
+        custom_fields:
+          field_heading:
+            -
+              value: 'View of pages'
+              format: heading_html
+          field_instructions:
+            -
+              markup: null
+          field_view_params:
+            -
+              params: '{"view_mode":"card","filters":{"types":["page"],"terms_include":null,"terms_exclude":{"28":"28"},"event_time_period":"future"},"operator":"+","sort_by":"title:ASC","display":"all","limit":10}'
+      -
+        uuid: 61ebe857-7a0e-4ddc-a3cb-1e2826300170
+        entity_type: block_content
+        bundle: text
+        base_fields:
+          info: 'landing page - intro text'
+          reusable: false
+          langcode: en
+          block_revision_id: '64'
+          enforce_new_revision: true
+        custom_fields:
+          field_instructions:
+            -
+              markup: null
+          field_style_variation: null
+          field_text:
+            -
+              value: "<p>Quickly build dynamic landing pages to help your users navigate and engage with sections of your website by using the <strong>View Block</strong>.</p>\r\n"
+              format: basic_html
+      -
+        uuid: d06f38f1-6741-4e3b-a13d-36340e6f17b1
+        entity_type: block_content
+        bundle: text
+        base_fields:
+          info: 'landing page - using views'
+          reusable: false
+          langcode: en
+          block_revision_id: '65'
+          enforce_new_revision: true
+        custom_fields:
+          field_instructions:
+            -
+              markup: null
+          field_style_variation: null
+          field_text:
+            -
+              value: "<h2>How it works</h2>\r\n\r\n<p>Say you're creating an Academics section on your website that contains several sub-pages. Add an 'academics' tag to each of your pages. Then, place a View of Pages on your landing page and set it to only include content that uses the term 'academics.' Your View will automatically update whenever you publish or unpublish a page tagged 'academics.'</p>\r\n\r\n<p>Conversely, you can build a View by excluding terms, as we've done here. Our homepage and landing page are tagged 'example' to remove them from our View. Try editing the example View Block's settings so you can see how it works.</p>\r\n\r\n<p>This approach can be used to curate any published content type. For example, you can make a featured news area on your homepage, highlight marquee events or create a custom Profile directory.</p>\r\n"
+              format: basic_html
+      -
+        uuid: 5acabff2-d3d4-4a14-9971-b0b603695aed
+        entity_type: block_content
+        bundle: callout
+        base_fields:
+          info: 'landing page - taxonomy callout'
+          reusable: false
+          langcode: en
+          block_revision_id: '66'
+          enforce_new_revision: true
+        custom_fields:
+          field_callout:
+            -
+              uuid: ec330bb9-deec-45ca-b971-fe1baa6c28d2
+              entity_type: paragraph
+              bundle: callout_item
+              base_fields:
+                status: true
+                langcode: en
+                created: '1692102212'
+                behavior_settings: {  }
+              custom_fields:
+                field_heading:
+                  -
+                    value: 'Tags and categories'
+                    format: heading_html
+                field_link:
+                  -
+                    uri: 'internal:/admin/structure/taxonomy'
+                    title: 'Manage Taxonomy'
+                    options: {  }
+                field_text:
+                  -
+                    value: "<p>YaleSites includes a selection of commonly used taxonomy terms to help get you started, but you can add your own at any time.</p>\r\n"
+                    format: heading_html
+          field_instructions:
+            -
+              markup: null
+          field_style_alignment: null
+          field_style_color:
+            -
+              value: two
+

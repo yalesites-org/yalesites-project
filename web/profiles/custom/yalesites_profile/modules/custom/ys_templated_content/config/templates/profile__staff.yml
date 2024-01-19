@@ -1,0 +1,48 @@
+site_uuid: 3be7d457-cc13-4e03-bde2-d004a9e0f46e
+uuid: 4ed010f9-0949-466a-abf7-1f559fd315fa
+entity_type: node
+bundle: profile
+base_fields:
+  title: Glenda
+  status: true
+  langcode: en
+  created: '1705675292'
+  author: admin@example.com
+  url: /profile/glenda
+  revision_log_message: null
+  revision_uid: '1'
+custom_fields:
+  field_address: null
+  field_affiliation: null
+  field_department:
+    -
+      value: ITS
+  field_email: null
+  field_first_name:
+    -
+      value: Glenda
+  field_honorific_prefix: null
+  field_last_name:
+    -
+      value: Goodwitch
+  field_login_required:
+    -
+      value: '0'
+  field_media: null
+  field_metatags: null
+  field_position:
+    -
+      value: 'Software Engineer'
+  field_subtitle: null
+  field_tags: null
+  field_teaser_media: null
+  field_teaser_text:
+    -
+      value: '<p>Please edit this.</p>'
+      format: heading_html
+  field_teaser_title:
+    -
+      value: 'A wonderful staff member that you should edit!'
+  field_telephone: null
+  layout_builder__layout: null
+

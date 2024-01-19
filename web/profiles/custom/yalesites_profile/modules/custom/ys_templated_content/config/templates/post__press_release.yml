@@ -1,0 +1,92 @@
+site_uuid: 3be7d457-cc13-4e03-bde2-d004a9e0f46e
+uuid: 6d56779c-a7d4-43b3-a1de-c579dd673371
+entity_type: node
+bundle: post
+base_fields:
+  title: ' Release Notes 9.26.23'
+  status: true
+  langcode: en
+  created: '1695834759'
+  author: julie.ramaccia@yale.edu
+  url: /posts/2023-09-26-release-notes-92623
+  revision_log_message: null
+  revision_uid: '6'
+custom_fields:
+  field_author: null
+  field_category: null
+  field_login_required:
+    -
+      value: '0'
+  field_metatags: null
+  field_publish_date:
+    -
+      value: '2023-09-26'
+  field_tags:
+    -
+      uuid: d445d597-210e-4395-ba79-28cff59f8267
+      entity_type: taxonomy_term
+      bundle: tags
+      base_fields:
+        name: front
+        weight: 0
+        langcode: en
+        description: null
+        parent: 0
+      custom_fields: {  }
+    -
+      uuid: 136ddf11-6543-4c2a-98d7-46e5ae36953f
+      entity_type: taxonomy_term
+      bundle: tags
+      base_fields:
+        name: 'Release Notes'
+        weight: 0
+        langcode: en
+        description: null
+        parent: 0
+      custom_fields: {  }
+  field_teaser_media:
+    -
+      uuid: 68caa477-9646-488b-abfc-8edb5c658bee
+      entity_type: media
+      bundle: image
+      base_fields:
+        name: woolsey-hall-interior-staricase_nune-garipian.jpg
+        created: '1684952079'
+        status: true
+        langcode: en
+      custom_fields:
+        field_media_image:
+          -
+            uri: 'public://starterkit/woolsey-hall-interior-staricase_nune-garipian.jpg'
+            url: 'https://dev.yalesites.yale.edu/sites/default/files/starterkit/woolsey-hall-interior-staricase_nune-garipian.jpg'
+            alt: 'Overhead shot of the Woolsey Hall marble staircase'
+  field_teaser_text:
+    -
+      value: '<p>A variety of new features have been implemented, including the profile content type.</p>'
+      format: heading_html
+  field_teaser_title:
+    -
+      value: ' Release Notes 9.26.23'
+  layout_builder__layout:
+    sections: TzoyOToiRHJ1cGFsXGxheW91dF9idWlsZGVyXFNlY3Rpb24iOjQ6e3M6MTE6IgAqAGxheW91dElkIjtzOjEzOiJsYXlvdXRfb25lY29sIjtzOjE3OiIAKgBsYXlvdXRTZXR0aW5ncyI7YToyOntzOjU6ImxhYmVsIjtzOjE4OiJUaXRsZSBhbmQgTWV0YWRhdGEiO3M6MTU6ImNvbnRleHRfbWFwcGluZyI7YTowOnt9fXM6MTM6IgAqAGNvbXBvbmVudHMiO2E6MTp7czozNjoiNmFiZjZhMGMtYWUzZC00N2Y4LWJmMzAtMDhlMzgyYzkwMTI0IjtPOjM4OiJEcnVwYWxcbGF5b3V0X2J1aWxkZXJcU2VjdGlvbkNvbXBvbmVudCI6NTp7czo3OiIAKgB1dWlkIjtzOjM2OiI2YWJmNmEwYy1hZTNkLTQ3ZjgtYmYzMC0wOGUzODJjOTAxMjQiO3M6OToiACoAcmVnaW9uIjtzOjc6ImNvbnRlbnQiO3M6MTY6IgAqAGNvbmZpZ3VyYXRpb24iO2E6NTp7czoyOiJpZCI7czoxNToicG9zdF9tZXRhX2Jsb2NrIjtzOjU6ImxhYmVsIjtzOjE1OiJQb3N0IE1ldGEgQmxvY2siO3M6MTM6ImxhYmVsX2Rpc3BsYXkiO3M6MDoiIjtzOjg6InByb3ZpZGVyIjtzOjEwOiJ5c19sYXlvdXRzIjtzOjE1OiJjb250ZXh0X21hcHBpbmciO2E6MDp7fX1zOjk6IgAqAHdlaWdodCI7aTowO3M6MTM6IgAqAGFkZGl0aW9uYWwiO2E6MDp7fX19czoyMToiACoAdGhpcmRQYXJ0eVNldHRpbmdzIjthOjE6e3M6MTk6ImxheW91dF9idWlsZGVyX2xvY2siO2E6MTp7czo0OiJsb2NrIjthOjg6e2k6MTtpOjE7aToyO2k6MjtpOjM7aTozO2k6NDtpOjQ7aTo1O2k6NTtpOjY7aTo2O2k6NztpOjc7aTo4O2k6ODt9fX19fE86Mjk6IkRydXBhbFxsYXlvdXRfYnVpbGRlclxTZWN0aW9uIjo0OntzOjExOiIAKgBsYXlvdXRJZCI7czoxMzoibGF5b3V0X29uZWNvbCI7czoxNzoiACoAbGF5b3V0U2V0dGluZ3MiO2E6Mjp7czo1OiJsYWJlbCI7czoxNToiQ29udGVudCBTZWN0aW9uIjtzOjE1OiJjb250ZXh0X21hcHBpbmciO2E6MDp7fX1zOjEzOiIAKgBjb21wb25lbnRzIjthOjE6e3M6MzY6IjVjOGJlZjVhLTk5YTMtNDUwMi04M2VhLWQ0MjRlNDQyNDk3MCI7TzozODoiRHJ1cGFsXGxheW91dF9idWlsZGVyXFNlY3Rpb25Db21wb25lbnQiOjU6e3M6NzoiACoAdXVpZCI7czozNjoiNWM4YmVmNWEtOTlhMy00NTAyLTgzZWEtZDQyNGU0NDI0OTcwIjtzOjk6IgAqAHJlZ2lvbiI7czo3OiJjb250ZW50IjtzOjE2OiIAKgBjb25maWd1cmF0aW9uIjthOjg6e3M6MjoiaWQiO3M6MTc6ImlubGluZV9ibG9jazp0ZXh0IjtzOjU6ImxhYmVsIjtzOjIxOiJSZWxlYXNlIE5vdGVzIDkuMjYuMjMiO3M6MTM6ImxhYmVsX2Rpc3BsYXkiO2I6MDtzOjg6InByb3ZpZGVyIjtzOjE0OiJsYXlvdXRfYnVpbGRlciI7czo5OiJ2aWV3X21vZGUiO3M6NDoiZnVsbCI7czoxNzoiYmxvY2tfcmV2aXNpb25faWQiO3M6NDoiMTI0MiI7czoxNjoiYmxvY2tfc2VyaWFsaXplZCI7TjtzOjE1OiJjb250ZXh0X21hcHBpbmciO2E6MDp7fX1zOjk6IgAqAHdlaWdodCI7aTowO3M6MTM6IgAqAGFkZGl0aW9uYWwiO2E6MDp7fX19czoyMToiACoAdGhpcmRQYXJ0eVNldHRpbmdzIjthOjE6e3M6MTk6ImxheW91dF9idWlsZGVyX2xvY2siO2E6MTp7czo0OiJsb2NrIjthOjI6e2k6NjtpOjY7aTo3O2k6Nzt9fX19
+    blocks:
+      -
+        uuid: 44254e84-f266-4e74-8438-f3ee0c984fcb
+        entity_type: block_content
+        bundle: text
+        base_fields:
+          info: 'Release Notes 9.26.23'
+          reusable: false
+          langcode: en
+          block_revision_id: '1242'
+          enforce_new_revision: true
+        custom_fields:
+          field_instructions:
+            -
+              markup: null
+          field_style_variation: null
+          field_text:
+            -
+              value: '<h2><span lang="EN-US"><strong>What''s changed?</strong> </span><span>&nbsp;</span></h2><p><span lang="EN-US">A variety of new features have been implemented, as well as fixes and improvements impacting the display, authoring, and editing experiences: </span><span>&nbsp;</span></p><h3><span lang="EN-US"><strong>New Features</strong></span><span>&nbsp;</span></h3><ul><li><span lang="EN-US">Added Profile content type, associated fields, permissions, and layout section settings&nbsp;</span><span>&nbsp;</span></li><li><span lang="EN-US">New Mega Footer- allows for further customization and branding &nbsp;</span><span>&nbsp;</span></li><li><span lang="EN-US">Condensed Views - allows flexibility in displaying Views content&nbsp;&nbsp;</span><span>&nbsp;</span></li><li><span lang="EN-US">Ability to hide page titles</span><span>&nbsp;</span><span lang="EN-US">&nbsp;</span><span>&nbsp;</span></li><li><span lang="EN-US">Ability to change banner heading levels between H1 and H2 &nbsp;</span><span>&nbsp;</span></li><li><span lang="EN-US">Added LinkedIn to the social links in footer</span><span>&nbsp;</span><span lang="EN-US">&nbsp;</span><span>&nbsp;</span></li><li><span lang="EN-US">Updated the mega menu’s display of the level one link, use of Explore All link</span><span>&nbsp;</span></li></ul><h3><span lang="EN-US"><strong>Fixes and Improvements</strong></span><span>&nbsp;</span></h3><h4><span lang="EN-US"><strong>Display  </strong></span><span>&nbsp;</span></h4><ul><li><span lang="EN-US">Button Link block now appears in the flow of content for all content types &nbsp;</span><span>&nbsp;</span></li><li><span lang="EN-US">Removed the extra spacing under the Button Link block &nbsp;</span><span>&nbsp;</span></li><li><span lang="EN-US">Email link now has correct pointer display and link style treatment &nbsp;</span><span>&nbsp;</span></li><li><span lang="EN-US">Image Gallery Caption display improvement- the captions now expand and collapse</span><span>&nbsp;</span><span lang="EN-US">&nbsp;</span><span>&nbsp;</span></li><li><span lang="EN-US">Content Spotlight content section allows for links now</span><span>&nbsp;</span><span lang="EN-US">&nbsp;</span><span>&nbsp;</span></li><li><span lang="EN-US">Adjustments to verify that images are using optimized styles</span><span>&nbsp;</span><span lang="EN-US">&nbsp;</span><span>&nbsp;</span></li><li><span lang="EN-US">Improved filter styles and filter by tags&nbsp;</span></li></ul><h4><span lang="EN-US"><strong>Authoring Experience  </strong></span><span>&nbsp;</span></h4><ul><li><span lang="EN-US">Updated the admin toolbar icons, fonts, and colors to a sleek dark mode</span><span> </span><span lang="EN-US">  </span><span>&nbsp;</span></li></ul><h4><span lang="EN-US"><strong>WYSIWYG Editor </strong></span><span>&nbsp;</span></h4><ul><li><span lang="EN-US">Updated to CK5 Editor 5 &nbsp;</span><span>&nbsp;</span></li><li><span lang="EN-US">Addition of automatic smart quotes to WYSIWYG fields</span><span>&nbsp;</span></li></ul>'
+              format: basic_html
+

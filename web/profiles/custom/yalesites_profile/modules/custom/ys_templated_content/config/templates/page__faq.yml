@@ -1,0 +1,123 @@
+site_uuid: 3be7d457-cc13-4e03-bde2-d004a9e0f46e
+uuid: 5ef6ed9e-444d-4183-ad18-b09a5650ecb9
+entity_type: node
+bundle: page
+base_fields:
+  title: FAQ
+  status: true
+  langcode: en
+  created: '1705673930'
+  author: admin@example.com
+  url: /faq
+  revision_log_message: null
+  revision_uid: '1'
+custom_fields:
+  field_login_required:
+    -
+      value: '0'
+  field_metatags: null
+  field_tags: null
+  field_teaser_media:
+    -
+      uuid: cae04706-21ac-41aa-9dd6-8f2e509ddb3a
+      entity_type: media
+      bundle: image
+      base_fields:
+        name: yale-brick-in-wall-detail.jpg
+        created: '1691755627'
+        status: true
+        langcode: en
+      custom_fields:
+        field_media_image:
+          -
+            uri: 'public://2023-08/yale-brick-in-wall-detail.jpg'
+            url: 'https://yalesites-platform.lndo.site/sites/default/files/2023-08/yale-brick-in-wall-detail.jpg'
+            alt: 'brick wall with YALE carved into one of the bricks'
+            title: ''
+  field_teaser_text:
+    -
+      value: '<p>Frequently asked questions from the community, aggregated and answered for your viewing pleasure.</p>'
+      format: heading_html
+  field_teaser_title:
+    -
+      value: 'Frequently Asked Questions (FAQ)'
+  layout_builder__layout:
+    sections: TzoyOToiRHJ1cGFsXGxheW91dF9idWlsZGVyXFNlY3Rpb24iOjQ6e3M6MTE6IgAqAGxheW91dElkIjtzOjE2OiJ5c19sYXlvdXRfYmFubmVyIjtzOjE3OiIAKgBsYXlvdXRTZXR0aW5ncyI7YToyOntzOjU6ImxhYmVsIjtzOjE0OiJCYW5uZXIgU2VjdGlvbiI7czoxNToiY29udGV4dF9tYXBwaW5nIjthOjA6e319czoxMzoiACoAY29tcG9uZW50cyI7YTowOnt9czoyMToiACoAdGhpcmRQYXJ0eVNldHRpbmdzIjthOjE6e3M6MTk6ImxheW91dF9idWlsZGVyX2xvY2siO2E6MTp7czo0OiJsb2NrIjthOjQ6e2k6NTtpOjU7aTo2O2k6NjtpOjc7aTo3O2k6ODtpOjg7fX19fXxPOjI5OiJEcnVwYWxcbGF5b3V0X2J1aWxkZXJcU2VjdGlvbiI6NDp7czoxMToiACoAbGF5b3V0SWQiO3M6MTk6InlzX2xheW91dF9wYWdlX21ldGEiO3M6MTc6IgAqAGxheW91dFNldHRpbmdzIjthOjI6e3M6NToibGFiZWwiO3M6MTg6IlRpdGxlIGFuZCBNZXRhZGF0YSI7czoxNToiY29udGV4dF9tYXBwaW5nIjthOjA6e319czoxMzoiACoAY29tcG9uZW50cyI7YToxOntzOjM2OiJiYjFkYWUwMy0xMDczLTRjOTktYTkxNC1hOGEyZjVmMGE4YzQiO086Mzg6IkRydXBhbFxsYXlvdXRfYnVpbGRlclxTZWN0aW9uQ29tcG9uZW50Ijo1OntzOjc6IgAqAHV1aWQiO3M6MzY6ImJiMWRhZTAzLTEwNzMtNGM5OS1hOTE0LWE4YTJmNWYwYThjNCI7czo5OiIAKgByZWdpb24iO3M6OToicGFnZV9tZXRhIjtzOjE2OiIAKgBjb25maWd1cmF0aW9uIjthOjY6e3M6MjoiaWQiO3M6MTU6InBhZ2VfbWV0YV9ibG9jayI7czo1OiJsYWJlbCI7czoxNToiUGFnZSBNZXRhIEJsb2NrIjtzOjEzOiJsYWJlbF9kaXNwbGF5IjtzOjA6IiI7czo4OiJwcm92aWRlciI7czoxMDoieXNfbGF5b3V0cyI7czoxNToiY29udGV4dF9tYXBwaW5nIjthOjA6e31zOjE4OiJwYWdlX3RpdGxlX2Rpc3BsYXkiO3M6NzoidmlzaWJsZSI7fXM6OToiACoAd2VpZ2h0IjtpOjA7czoxMzoiACoAYWRkaXRpb25hbCI7YTowOnt9fX1zOjIxOiIAKgB0aGlyZFBhcnR5U2V0dGluZ3MiO2E6MTp7czoxOToibGF5b3V0X2J1aWxkZXJfbG9jayI7YToxOntzOjQ6ImxvY2siO2E6Njp7aToyO2k6MjtpOjM7aTozO2k6NDtpOjQ7aTo1O2k6NTtpOjY7aTo2O2k6ODtpOjg7fX19fXxPOjI5OiJEcnVwYWxcbGF5b3V0X2J1aWxkZXJcU2VjdGlvbiI6NDp7czoxMToiACoAbGF5b3V0SWQiO3M6MTM6ImxheW91dF9vbmVjb2wiO3M6MTc6IgAqAGxheW91dFNldHRpbmdzIjthOjI6e3M6NToibGFiZWwiO3M6MTU6IkNvbnRlbnQgU2VjdGlvbiI7czoxNToiY29udGV4dF9tYXBwaW5nIjthOjA6e319czoxMzoiACoAY29tcG9uZW50cyI7YToxOntzOjM2OiI1MzZlMDgzNy00MmI4LTQyMDQtYmRiZS0wYmM3MWU5NzZhNmIiO086Mzg6IkRydXBhbFxsYXlvdXRfYnVpbGRlclxTZWN0aW9uQ29tcG9uZW50Ijo1OntzOjc6IgAqAHV1aWQiO3M6MzY6IjUzNmUwODM3LTQyYjgtNDIwNC1iZGJlLTBiYzcxZTk3NmE2YiI7czo5OiIAKgByZWdpb24iO3M6NzoiY29udGVudCI7czoxNjoiACoAY29uZmlndXJhdGlvbiI7YTo4OntzOjI6ImlkIjtzOjIyOiJpbmxpbmVfYmxvY2s6YWNjb3JkaW9uIjtzOjU6ImxhYmVsIjtzOjI1OiJGQVEgUXVlc3Rpb25zIGFuZCBBbnN3ZXJzIjtzOjEzOiJsYWJlbF9kaXNwbGF5IjtiOjA7czo4OiJwcm92aWRlciI7czoxNDoibGF5b3V0X2J1aWxkZXIiO3M6OToidmlld19tb2RlIjtzOjQ6ImZ1bGwiO3M6MTc6ImJsb2NrX3JldmlzaW9uX2lkIjtzOjM6IjE5NiI7czoxNjoiYmxvY2tfc2VyaWFsaXplZCI7TjtzOjE1OiJjb250ZXh0X21hcHBpbmciO2E6MDp7fX1zOjk6IgAqAHdlaWdodCI7aTowO3M6MTM6IgAqAGFkZGl0aW9uYWwiO2E6MDp7fX19czoyMToiACoAdGhpcmRQYXJ0eVNldHRpbmdzIjthOjE6e3M6MTk6ImxheW91dF9idWlsZGVyX2xvY2siO2E6MTp7czo0OiJsb2NrIjthOjA6e319fX0=
+    blocks:
+      -
+        uuid: 57496997-111f-4847-b06a-0fa9220340c8
+        entity_type: block_content
+        bundle: accordion
+        base_fields:
+          info: 'FAQ Questions and Answers'
+          reusable: false
+          langcode: en
+          block_revision_id: '196'
+          enforce_new_revision: true
+        custom_fields:
+          field_accordion_items:
+            -
+              uuid: f04f957d-e9ee-4d32-88a3-b11c241078e6
+              entity_type: paragraph
+              bundle: accordion_item
+              base_fields:
+                status: true
+                langcode: en
+                created: '1705674028'
+                behavior_settings: {  }
+              custom_fields:
+                field_content:
+                  -
+                    uuid: a392be1b-bdb9-4cce-830f-f1a8fbb03a42
+                    entity_type: paragraph
+                    bundle: text
+                    base_fields:
+                      status: true
+                      langcode: en
+                      created: '1705674028'
+                      behavior_settings: {  }
+                    custom_fields:
+                      field_text:
+                        -
+                          value: '<p>This platform was made with a lot of love and hard work. &nbsp;We are pleased that you have chosen to use this as a way to create beautiful content for the web.</p>'
+                          format: basic_html
+                field_heading:
+                  -
+                    value: 'How did you all make this wonderful platform?'
+                    format: heading_html
+            -
+              uuid: eed6a7f3-b41f-4121-8077-b6b089aba5b1
+              entity_type: paragraph
+              bundle: accordion_item
+              base_fields:
+                status: true
+                langcode: en
+                created: '1705674155'
+                behavior_settings: {  }
+              custom_fields:
+                field_content:
+                  -
+                    uuid: 32f6cd5c-3544-495b-af29-928320bf95c2
+                    entity_type: paragraph
+                    bundle: text
+                    base_fields:
+                      status: true
+                      langcode: en
+                      created: '1705674155'
+                      behavior_settings: {  }
+                    custom_fields:
+                      field_text:
+                        -
+                          value: '<p>You can find more on <a href="https://yalesites.yale.edu/our-vision-guiding-principles">our vision</a> for the platform, but here are a few takeaways:</p><ul><li>Uniformity</li><li>Inclusivity</li><li>User-centricity</li><li>Standardization</li><li>Sustainability</li></ul>'
+                          format: basic_html
+                field_heading:
+                  -
+                    value: 'What have you focused on in making this platform?'
+                    format: heading_html
+          field_heading:
+            -
+              value: 'Frequently Asked Questions'
+              format: heading_html
+          field_instructions:
+            -
+              markup: null
