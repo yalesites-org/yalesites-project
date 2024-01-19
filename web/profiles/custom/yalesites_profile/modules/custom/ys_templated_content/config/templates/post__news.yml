@@ -1,0 +1,75 @@
+site_uuid: 3be7d457-cc13-4e03-bde2-d004a9e0f46e
+uuid: 46a8c1f4-e2ab-49d5-8d3a-a0ec87bfeb69
+entity_type: node
+bundle: post
+base_fields:
+  title: 'Breaking news!'
+  status: true
+  langcode: en
+  created: '1705674792'
+  author: admin@example.com
+  url: /posts/2024-01-13-breaking-news
+  revision_log_message: null
+  revision_uid: '1'
+custom_fields:
+  field_author:
+    -
+      value: Someone
+  field_category: null
+  field_login_required:
+    -
+      value: '0'
+  field_metatags: null
+  field_publish_date:
+    -
+      value: '2024-01-13'
+  field_tags: null
+  field_teaser_media:
+    -
+      uuid: cae04706-21ac-41aa-9dd6-8f2e509ddb3a
+      entity_type: media
+      bundle: image
+      base_fields:
+        name: yale-brick-in-wall-detail.jpg
+        created: '1691755627'
+        status: true
+        langcode: en
+      custom_fields:
+        field_media_image:
+          -
+            uri: 'public://2023-08/yale-brick-in-wall-detail.jpg'
+            url: 'https://yalesites-platform.lndo.site/sites/default/files/2023-08/yale-brick-in-wall-detail.jpg'
+            alt: 'brick wall with YALE carved into one of the bricks'
+            title: ''
+  field_teaser_text:
+    -
+      value: '<p>Please change this.</p>'
+      format: heading_html
+  field_teaser_title:
+    -
+      value: 'YaleSites is great!'
+  layout_builder__layout:
+    sections: TzoyOToiRHJ1cGFsXGxheW91dF9idWlsZGVyXFNlY3Rpb24iOjQ6e3M6MTE6IgAqAGxheW91dElkIjtzOjEzOiJsYXlvdXRfb25lY29sIjtzOjE3OiIAKgBsYXlvdXRTZXR0aW5ncyI7YToyOntzOjU6ImxhYmVsIjtzOjE4OiJUaXRsZSBhbmQgTWV0YWRhdGEiO3M6MTU6ImNvbnRleHRfbWFwcGluZyI7YTowOnt9fXM6MTM6IgAqAGNvbXBvbmVudHMiO2E6Mjp7czozNjoiNmFiZjZhMGMtYWUzZC00N2Y4LWJmMzAtMDhlMzgyYzkwMTI0IjtPOjM4OiJEcnVwYWxcbGF5b3V0X2J1aWxkZXJcU2VjdGlvbkNvbXBvbmVudCI6NTp7czo3OiIAKgB1dWlkIjtzOjM2OiI2YWJmNmEwYy1hZTNkLTQ3ZjgtYmYzMC0wOGUzODJjOTAxMjQiO3M6OToiACoAcmVnaW9uIjtzOjc6ImNvbnRlbnQiO3M6MTY6IgAqAGNvbmZpZ3VyYXRpb24iO2E6NTp7czoyOiJpZCI7czoxNToicG9zdF9tZXRhX2Jsb2NrIjtzOjU6ImxhYmVsIjtzOjE1OiJQb3N0IE1ldGEgQmxvY2siO3M6MTM6ImxhYmVsX2Rpc3BsYXkiO3M6MDoiIjtzOjg6InByb3ZpZGVyIjtzOjEwOiJ5c19sYXlvdXRzIjtzOjE1OiJjb250ZXh0X21hcHBpbmciO2E6MDp7fX1zOjk6IgAqAHdlaWdodCI7aTowO3M6MTM6IgAqAGFkZGl0aW9uYWwiO2E6MDp7fX1zOjM2OiIzYWJkOTI0Yi0wNjYyLTQxMzctOTdhMi1lYmI1NmEyMzAzNjciO086Mzg6IkRydXBhbFxsYXlvdXRfYnVpbGRlclxTZWN0aW9uQ29tcG9uZW50Ijo1OntzOjc6IgAqAHV1aWQiO3M6MzY6IjNhYmQ5MjRiLTA2NjItNDEzNy05N2EyLWViYjU2YTIzMDM2NyI7czo5OiIAKgByZWdpb24iO3M6NzoiY29udGVudCI7czoxNjoiACoAY29uZmlndXJhdGlvbiI7YTo4OntzOjI6ImlkIjtzOjE3OiJpbmxpbmVfYmxvY2s6dGV4dCI7czo1OiJsYWJlbCI7czoxODoiWWFsZVNpdGVzIGlzIEdyZWF0IjtzOjEzOiJsYWJlbF9kaXNwbGF5IjtiOjA7czo4OiJwcm92aWRlciI7czoxNDoibGF5b3V0X2J1aWxkZXIiO3M6OToidmlld19tb2RlIjtzOjQ6ImZ1bGwiO3M6MTc6ImJsb2NrX3JldmlzaW9uX2lkIjtzOjM6IjE5NyI7czoxNjoiYmxvY2tfc2VyaWFsaXplZCI7TjtzOjE1OiJjb250ZXh0X21hcHBpbmciO2E6MDp7fX1zOjk6IgAqAHdlaWdodCI7aToxO3M6MTM6IgAqAGFkZGl0aW9uYWwiO2E6MDp7fX19czoyMToiACoAdGhpcmRQYXJ0eVNldHRpbmdzIjthOjE6e3M6MTk6ImxheW91dF9idWlsZGVyX2xvY2siO2E6MTp7czo0OiJsb2NrIjthOjg6e2k6MTtpOjE7aToyO2k6MjtpOjM7aTozO2k6NDtpOjQ7aTo1O2k6NTtpOjY7aTo2O2k6NztpOjc7aTo4O2k6ODt9fX19fE86Mjk6IkRydXBhbFxsYXlvdXRfYnVpbGRlclxTZWN0aW9uIjo0OntzOjExOiIAKgBsYXlvdXRJZCI7czoxMzoibGF5b3V0X29uZWNvbCI7czoxNzoiACoAbGF5b3V0U2V0dGluZ3MiO2E6Mjp7czo1OiJsYWJlbCI7czoxNToiQ29udGVudCBTZWN0aW9uIjtzOjE1OiJjb250ZXh0X21hcHBpbmciO2E6MDp7fX1zOjEzOiIAKgBjb21wb25lbnRzIjthOjA6e31zOjIxOiIAKgB0aGlyZFBhcnR5U2V0dGluZ3MiO2E6MTp7czoxOToibGF5b3V0X2J1aWxkZXJfbG9jayI7YToxOntzOjQ6ImxvY2siO2E6Mjp7aTo2O2k6NjtpOjc7aTo3O319fX0=
+    blocks:
+      -
+        uuid: 1db6dd8a-7f64-4825-8f78-fe271f95949a
+        entity_type: block_content
+        bundle: text
+        base_fields:
+          info: 'YaleSites is Great'
+          reusable: false
+          langcode: en
+          block_revision_id: '197'
+          enforce_new_revision: true
+        custom_fields:
+          field_instructions:
+            -
+              markup: null
+          field_style_variation:
+            -
+              value: default
+          field_text:
+            -
+              value: '<p>YaleSites is great! &nbsp;We are so happy you are using it!</p>'
+              format: basic_html
+
