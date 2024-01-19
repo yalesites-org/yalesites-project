@@ -4,6 +4,7 @@ namespace Drupal\ys_templated_content\Form;
 
 use Drupal\Component\Uuid\UuidInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -16,57 +17,21 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class TemplatedContentForm extends FormBase implements FormInterface {
 
-  /*
-   * Sample content to import.
+  const TEMPLATE_PATH = '/config/templates/';
+
+  /**
+   * The templates that will be available to the user to select from.
    *
-   * @var string
+   * @var array
    */
-  const CONTENT = <<<EOT
-site_uuid: 3be7d457-cc13-4e03-bde2-d004a9e0f46e
-uuid: 15011b23-65a3-4083-b7e3-2e861f33a2fe
-entity_type: node
-bundle: page
-base_fields:
-  title: 'Test Page'
-  status: true
-  langcode: en
-  created: '1705614253'
-  author: admin@example.com
-  url: /test-page
-  revision_log_message: null
-  revision_uid: '1'
-custom_fields:
-  field_login_required:
-    -
-      value: '0'
-  field_metatags: null
-  field_tags: null
-  field_teaser_media:
-    -
-      uuid: b7103556-2f77-429a-b2f9-159617684731
-      entity_type: media
-      bundle: image
-      base_fields:
-        name: students-cross-campus_anna-zhang.jpg
-        created: '1693934413'
-        status: true
-        langcode: en
-      custom_fields:
-        field_media_image:
-          -
-            uri: 'public://2023-09/students-cross-campus_anna-zhang.jpg'
-            url: 'https://yalesites-platform.lndo.site/sites/default/files/2023-09/students-cross-campus_anna-zhang.jpg'
-            alt: "students enjoy the vibrancy of Yale's campus scenery"
-            title: ''
-  field_teaser_text:
-    -
-      value: '<p>This is only a test</p>'
-      format: heading_html
-  field_teaser_title:
-    -
-      value: 'A test to remember'
-  layout_builder__layout: null
-EOT;
+  protected $templates = [];
+
+  /**
+   * The module handler.
+   *
+   * @var \Drupal\Core\Module\ModuleHandlerInterface
+   */
+  protected $moduleHandler;
 
   /**
    * The UUID service.
@@ -97,36 +62,6 @@ EOT;
   protected $entityManager;
 
   /**
-   * The available templates.
-   *
-   * @var array
-   */
-  protected const TEMPLATES = [
-    'page' => [
-      '' => 'Empty',
-      'faq' => 'FAQ',
-      'landing_page' => 'Landing Page',
-    ],
-    'event' => [
-      '' => 'Empty',
-      'in_person' => 'In Person',
-      'online' => 'Online',
-    ],
-    'post' => [
-      '' => 'Empty',
-      'blog' => 'Blog',
-      'news' => 'News',
-      'press_release' => 'Press Release',
-    ],
-    'profile' => [
-      '' => 'Empty',
-      'student' => 'Student',
-      'faculty' => 'Faculty',
-      'staff' => 'Staff',
-    ],
-  ];
-
-  /**
    * Constructs the controller object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
@@ -137,12 +72,22 @@ EOT;
    *   The content sync helper.
    * @param \Drupal\Core\Uuid\UuidInterface $uuidService
    *   The UUID service.
+   * @param \Drupal\Core\Module\ModuleHandlerInterface $moduleHandler
+   *   The module handler.
    */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager, ContentImporterInterface $contentImporter, ContentSyncHelperInterface $contentSyncHelper, UuidInterface $uuidService) {
+  public function __construct(
+    EntityTypeManagerInterface $entityTypeManager,
+    ContentImporterInterface $contentImporter,
+    ContentSyncHelperInterface $contentSyncHelper,
+    UuidInterface $uuidService,
+    ModuleHandlerInterface $moduleHandler
+  ) {
     $this->entityManager = $entityTypeManager;
     $this->contentImporter = $contentImporter;
     $this->contentSyncHelper = $contentSyncHelper;
     $this->uuidService = $uuidService;
+    $this->moduleHandler = $moduleHandler;
+    $this->templates = $this->refreshTemplates($this->getTemplateBasePath());
   }
 
   /**
@@ -154,6 +99,7 @@ EOT;
       $container->get('single_content_sync.importer'),
       $container->get('single_content_sync.helper'),
       $container->get('uuid'),
+      $container->get('module_handler'),
     );
   }
 
@@ -212,7 +158,10 @@ EOT;
     $template = $form_state->getValue('templates');
 
     if ($template == '') {
-      $form_state->setRedirect('node.add', ['node_type' => $content_type, 'template' => $template]);
+      $form_state->setRedirect(
+        'node.add',
+        ['node_type' => $content_type, 'template' => $template]
+      );
     }
     else {
       $this->createImport($form_state, $content_type, $template);
@@ -232,20 +181,134 @@ EOT;
    * @return void
    *   Redirects to the edit form of the imported entity.
    */
-  protected function createImport(FormStateInterface $form_state, String $content_type, String $template) : void {
-    // Taken from the implementation of single_content_sync: https://git.drupalcode.org/project/single_content_sync/-/blob/1.4.x/src/Form/ContentImportForm.php?ref_type=heads#L136-143
-    // This would be a great way to contribute back: $this->contentSyncHelper->generateEntityFromStringYaml($this::CONTENT);
+  protected function createImport(
+    FormStateInterface $form_state,
+    String $content_type,
+    String $template
+  ) : void {
+    /* Taken from the implementation of single_content_sync:
+     * https://git.drupalcode.org/project/single_content_sync/-/blob/1.4.x/src/Form/ContentImportForm.php?ref_type=heads#L136-143
+     *
+     * This would be a great way to contribute back:
+     * $this->contentSyncHelper->generateEntityFromStringYaml($this::CONTENT);
+     */
     try {
-      $content_array = $this->contentSyncHelper->validateYamlFileContent($this::CONTENT);
+      $content = file_get_contents(
+        $this->getImportFilePath($content_type, $template)
+      );
+      $content_array = $this
+        ->contentSyncHelper
+        ->validateYamlFileContent($content);
       $content_array['uuid'] = $this->uuidService->generate();
 
       $entity = $this->contentImporter->doImport($content_array);
-      $form_state->setRedirect('entity.' . $entity->getEntityTypeId() . '.edit_form', [$entity->getEntityTypeId() => $entity->id()]);
+      $this->messenger()->addMessage("Content generated successfully.  Please make any edits now as this has already been created for you.  Don't forget to change the URL alias.");
+      $form_state->setRedirect(
+        $this->getEntityEditFormPath($entity),
+        [$entity->getEntityTypeId() => $entity->id()]
+      );
     }
     catch (\Exception $e) {
       $this->messenger()->addError($e->getMessage());
       return;
     }
+  }
+
+  /**
+   * Get the entity path.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity.
+   *
+   * @return string
+   *   The path to the edit form.
+   */
+  private function getEntityEditFormPath($entity) {
+    return 'entity.' . $entity->getEntityTypeId() . '.edit_form';
+  }
+
+  /**
+   * Get the import file path.
+   *
+   * @param string $content_type
+   *   The content type.
+   * @param string $template
+   *   The template.
+   *
+   * @return string
+   *   The file path.
+   */
+  protected function getImportFilePath(
+    String $content_type,
+    String $template
+  ) : String {
+    $filename = $this->constructImportFilename($content_type, $template);
+    $path = $this->getFullFilenamePath($filename);
+    $this->validatePath($path);
+    return $path;
+  }
+
+  /**
+   * Get the full file path.
+   *
+   * @param string $filename
+   *   The filename.
+   *
+   * @return string
+   *   The full file path from the base template path.
+   */
+  protected function getFullFilenamePath(String $filename) : String {
+    return $this->getTemplateBasePath() . $filename;
+  }
+
+  /**
+   * Get the base template path.
+   *
+   * @return string
+   *   The base template path.
+   */
+  protected function getTemplateBasePath() : String {
+    return $this
+      ->moduleHandler
+      ->getModule('ys_templated_content')
+      ->getPath() . $this::TEMPLATE_PATH;
+  }
+
+  /**
+   * Validate the import file path.
+   *
+   * @param string $path
+   *   The path.
+   *
+   * @return bool
+   *   Whether the path exists.
+   *
+   * @throws \Exception
+   */
+  protected function validatePath(String $path) : bool {
+    if (!file_exists($path)) {
+      throw new \Exception('The import file does not exist.  Please ensure there is an import for this content type and template.');
+    }
+
+    return TRUE;
+  }
+
+  /**
+   * Construct the import filename.
+   *
+   * @param string $content_type
+   *   The content type.
+   * @param string $template
+   *   The template.
+   *
+   * @return string
+   *   The filename.
+   */
+  protected function constructImportFilename(
+    String $content_type,
+    String $template
+  ) : String {
+    return $content_type . '__' . $template . '.yml';
   }
 
   /**
@@ -255,7 +318,10 @@ EOT;
    *   The content types.
    */
   private function getContentTypes() : array {
-    $content_types = $this->entityManager->getStorage('node_type')->loadMultiple();
+    $content_types = $this
+      ->entityManager
+      ->getStorage('node_type')
+      ->loadMultiple();
     $options = [];
 
     foreach ($content_types as $content_type) {
@@ -276,9 +342,13 @@ EOT;
    * @return array
    *   The updated template options.
    */
-  public function updateTemplates(array &$form, FormStateInterface $form_state) : array {
+  public function updateTemplates(
+    array &$form,
+    FormStateInterface $form_state
+  ) : array {
     $currentContentType = $this->getCurrentContentType($form_state);
-    $form['templates']['#options'] = $this->getCurrentTemplates($currentContentType);
+    $form['templates']['#options'] = $this
+      ->getCurrentTemplates($currentContentType);
     $form_state->setValue('templates', '');
     return $form['templates'];
   }
@@ -292,7 +362,9 @@ EOT;
    * @return string
    *   The content type.
    */
-  protected function getCurrentContentType(FormStateInterface $form_state) : String {
+  protected function getCurrentContentType(
+    FormStateInterface $form_state
+  ) : String {
     return $form_state->getValue('content_types') ?? 'page';
   }
 
@@ -307,10 +379,86 @@ EOT;
 
     // Return an empty array if there is no content type.
     if ($content_type) {
-      $templates = self::TEMPLATES[$content_type];
+      $templates = $this->templates[$content_type];
     }
 
     return $templates;
+  }
+
+  /**
+   * Refresh the templates array.
+   *
+   * @param string $path
+   *   The path to the templates.
+   *
+   * @return array
+   *   The templates.
+   */
+  protected function refreshTemplates($path) : array {
+    $filenames = $this->getSanitizedFilenamesFromPath($path);
+    $templates = $this->constructTemplatesArrayFromFilenames($filenames);
+
+    // Prepend the Empty case.
+    foreach ($templates as $key => $template) {
+      $templates[$key] = ['' => 'Empty'] + $template;
+    }
+
+    return $templates;
+  }
+
+  /**
+   * Construct the templates array from the filenames.
+   *
+   * @param array $filenames
+   *   The filenames.
+   *
+   * @return array
+   *   The templates.
+   */
+  protected function constructTemplatesArrayFromFilenames($filenames) : array {
+    $templates = [];
+    foreach ($filenames as $filename) {
+      $filename = str_replace('.yml', '', $filename);
+      $filename_parts = explode('__', $filename);
+      // We should probably create a parser for this so we're not
+      // primitively obsessing.
+      $templates[$filename_parts[0]][$filename_parts[1]] = $this->humanReadable($filename_parts[1]);
+    }
+    return $templates;
+  }
+
+  /**
+   * Get the sanitized filenames from the path.
+   *
+   * This will remove . and .. from the array.
+   *
+   * @param string $path
+   *   The path.
+   *
+   * @return array
+   *   The filenames.
+   */
+  protected function getSanitizedFilenamesFromPath($path) : array {
+    $filenames = scandir($path);
+    // Remove . and .. from the array.
+    $filenames = array_slice($filenames, 2);
+    return $filenames;
+  }
+
+  /**
+   * Make a string human readable.
+   *
+   * Given a string like 'this_is_a_string',
+   * this will return 'This Is A String'.
+   *
+   * @param string $string
+   *   The string.
+   *
+   * @return string
+   *   The human readable string.
+   */
+  protected function humanReadable($string) : string {
+    return ucwords(str_replace('_', ' ', $string));
   }
 
 }
