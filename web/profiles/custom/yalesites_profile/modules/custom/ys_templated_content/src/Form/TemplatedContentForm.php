@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_templated_content\Form;
 
+use Drupal\Component\Uuid\UuidInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormInterface;
@@ -15,6 +16,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class TemplatedContentForm extends FormBase implements FormInterface {
 
+  /*
+   * Sample content to import.
+   *
+   * @var string
+   */
   const CONTENT = <<<EOT
 site_uuid: 3be7d457-cc13-4e03-bde2-d004a9e0f46e
 uuid: 15011b23-65a3-4083-b7e3-2e861f33a2fe
@@ -62,8 +68,25 @@ custom_fields:
   layout_builder__layout: null
 EOT;
 
-  protected $contentImporterInterface;
+  /**
+   * The UUID service.
+   *
+   * @var \Drupal\Core\Uuid\UuidInterface
+   */
+  protected $uuidService;
 
+  /**
+   * The content importer.
+   *
+   * @var \Drupal\single_content_sync\ContentImporterInterface
+   */
+  protected $contentImporter;
+
+  /**
+   * The content sync helper.
+   *
+   * @var \Drupal\single_content_sync\ContentSyncHelperInterface
+   */
   protected $contentSyncHelper;
 
   /**
@@ -108,11 +131,18 @@ EOT;
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager to get the content types available.
+   * @param \Drupal\single_content_sync\ContentImporterInterface $contentImporter
+   *   The content importer.
+   * @param \Drupal\single_content_sync\ContentSyncHelperInterface $contentSyncHelper
+   *   The content sync helper.
+   * @param \Drupal\Core\Uuid\UuidInterface $uuidService
+   *   The UUID service.
    */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager, ContentImporterInterface $contentImporterInterface, ContentSyncHelperInterface $contentSyncHelper) {
+  public function __construct(EntityTypeManagerInterface $entityTypeManager, ContentImporterInterface $contentImporter, ContentSyncHelperInterface $contentSyncHelper, UuidInterface $uuidService) {
     $this->entityManager = $entityTypeManager;
-    $this->contentImporterInterface = $contentImporterInterface;
+    $this->contentImporter = $contentImporter;
     $this->contentSyncHelper = $contentSyncHelper;
+    $this->uuidService = $uuidService;
   }
 
   /**
@@ -123,6 +153,7 @@ EOT;
       $container->get('entity_type.manager'),
       $container->get('single_content_sync.importer'),
       $container->get('single_content_sync.helper'),
+      $container->get('uuid'),
     );
   }
 
@@ -189,14 +220,24 @@ EOT;
   }
 
   /**
+   * Create the import from the sample content.
    *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   * @param string $content_type
+   *   The content type.
+   * @param string $template
+   *   The template.
+   *
+   * @return void
+   *   Redirects to the edit form of the imported entity.
    */
-  protected function createImport($form_state, $content_type, $template) {
+  protected function createImport(FormStateInterface $form_state, String $content_type, String $template) : void {
     try {
       $content_array = $this->contentSyncHelper->validateYamlFileContent($this::CONTENT);
-      $content_array['uuid'] = \Drupal::service('uuid')->generate();
+      $content_array['uuid'] = $this->uuidService->generate();
 
-      $entity = $this->contentImporterInterface->doImport($content_array);
+      $entity = $this->contentImporter->doImport($content_array);
       $form_state->setRedirect('entity.' . $entity->getEntityTypeId() . '.edit_form', [$entity->getEntityTypeId() => $entity->id()]);
     }
     catch (\Exception $e) {
@@ -211,7 +252,7 @@ EOT;
    * @return array
    *   The content types.
    */
-  private function getContentTypes() {
+  private function getContentTypes() : array {
     $content_types = $this->entityManager->getStorage('node_type')->loadMultiple();
     $options = [];
 
@@ -233,7 +274,7 @@ EOT;
    * @return array
    *   The updated template options.
    */
-  public function updateTemplates(array &$form, FormStateInterface $form_state) {
+  public function updateTemplates(array &$form, FormStateInterface $form_state) : array {
     $currentContentType = $this->getCurrentContentType($form_state);
     $form['templates']['#options'] = $this->getCurrentTemplates($currentContentType);
     $form_state->setValue('templates', '');
@@ -249,7 +290,7 @@ EOT;
    * @return string
    *   The content type.
    */
-  protected function getCurrentContentType($form_state) {
+  protected function getCurrentContentType(FormStateInterface $form_state) : String {
     return $form_state->getValue('content_types') ?? 'page';
   }
 
@@ -259,7 +300,7 @@ EOT;
    * @return array
    *   The template options.
    */
-  protected function getCurrentTemplates($content_type) {
+  protected function getCurrentTemplates($content_type) : array {
     $templates = [];
 
     // Return an empty array if there is no content type.
