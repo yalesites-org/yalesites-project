@@ -1,0 +1,5 @@
+ys_templated_content.from_template:
+  title: 'From Template'
+  description: 'Add a node from a list of available templates'
+  parent: admin_toolbar_tools.extra_links:node.add
+  route_name: ys_templated_content.selection
