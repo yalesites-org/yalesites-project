@@ -1,0 +1,10 @@
+uuid: 95bbedd5-f503-4e01-a21e-447ee08309c1
+langcode: en
+status: true
+dependencies:
+  module:
+    - media
+id: media.content_spotlight_portrait_2_3
+label: 'Content Spotlight - Portrait (2:3)'
+targetEntityType: media
+cache: true

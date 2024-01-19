@@ -113,10 +113,11 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
       '#title' => $this->t('Title Display'),
       '#default_value' => $config['page_title_display'] ?? '',
       '#options' => [
-        'visible' => $this->t('Display Title'),
-        'visually-hidden' => $this->t('Visually Hidden'),
-        'hidden' => $this->t('Hide Title'),
+        'visible' => $this->t('Display Title: Your page title is visible and used as the H1'),
+        'visually-hidden' => $this->t('Visually Hidden: Hide your page title without impacting site accessibility'),
+        'hidden' => $this->t('Hide Title: Should only be used when a page’s banner Block title is set to H1'),
       ],
+      '#description' => $this->t('For more information about conditional banner titles, <a href="https://yalesites.yale.edu/posts/2023-10-17-community-spotlight-yale-united-way-campaign#tips" target="_blank">view our tips and tricks on this topic</a>.'),
     ];
 
     return $form;
