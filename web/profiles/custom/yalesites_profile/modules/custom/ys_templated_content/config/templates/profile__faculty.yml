@@ -1,0 +1,64 @@
+site_uuid: 3be7d457-cc13-4e03-bde2-d004a9e0f46e
+uuid: 2609ada7-005c-4ed1-8514-fa33671c1c1c
+entity_type: node
+bundle: profile
+base_fields:
+  title: Pat
+  status: true
+  langcode: en
+  created: '1705675401'
+  author: admin@example.com
+  url: /profile/pat
+  revision_log_message: null
+  revision_uid: '1'
+custom_fields:
+  field_address: null
+  field_affiliation:
+    -
+      uuid: 67b75e07-dcf6-484e-b4f8-0567baa8d0ff
+      entity_type: taxonomy_term
+      bundle: affiliation
+      base_fields:
+        name: Faculty
+        weight: 0
+        langcode: en
+        description: null
+        parent: 0
+      custom_fields: {  }
+  field_department:
+    -
+      value: 'School of Change Me'
+  field_email: null
+  field_first_name:
+    -
+      value: Patricia
+  field_honorific_prefix:
+    -
+      value: Dr.
+  field_last_name:
+    -
+      value: Teachrite
+  field_login_required:
+    -
+      value: '0'
+  field_media: null
+  field_metatags: null
+  field_position:
+    -
+      value: 'Director of Greatness'
+  field_subtitle:
+    -
+      value: Emeritus
+      format: heading_html
+  field_tags: null
+  field_teaser_media: null
+  field_teaser_text:
+    -
+      value: '<p>Please change me</p>'
+      format: heading_html
+  field_teaser_title:
+    -
+      value: 'Another one you should edit'
+  field_telephone: null
+  layout_builder__layout: null
+
