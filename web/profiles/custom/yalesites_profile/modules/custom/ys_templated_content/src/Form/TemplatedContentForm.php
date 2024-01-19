@@ -233,7 +233,7 @@ EOT;
    *   Redirects to the edit form of the imported entity.
    */
   protected function createImport(FormStateInterface $form_state, String $content_type, String $template) : void {
-    // Taken from the implementation of single_content_sync.
+    // Taken from the implementation of single_content_sync: https://git.drupalcode.org/project/single_content_sync/-/blob/1.4.x/src/Form/ContentImportForm.php?ref_type=heads#L136-143
     // This would be a great way to contribute back: $this->contentSyncHelper->generateEntityFromStringYaml($this::CONTENT);
     try {
       $content_array = $this->contentSyncHelper->validateYamlFileContent($this::CONTENT);
