@@ -9,7 +9,7 @@ dependencies:
     - paragraphs.paragraphs_type.callout_item
   module:
     - allowed_formats
-    - link
+    - linkit
     - maxlength
     - text
 id: paragraph.callout_item.default
@@ -33,12 +33,14 @@ content:
         maxlength_js_label: 'Content recommended length set to @limit characters, remaining: <strong>@remaining</strong>'
         maxlength_js_enforce: false
   field_link:
-    type: link_default
+    type: linkit
     weight: 3
     region: content
     settings:
       placeholder_url: ''
       placeholder_title: ''
+      linkit_profile: default
+      linkit_auto_link_text: false
     third_party_settings: {  }
   field_text:
     type: text_textarea

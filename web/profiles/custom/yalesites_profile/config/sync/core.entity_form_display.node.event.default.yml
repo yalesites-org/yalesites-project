@@ -20,7 +20,7 @@ dependencies:
     - allowed_formats
     - chosen_field
     - field_group
-    - link
+    - linkit
     - maxlength
     - media_library
     - metatag
@@ -94,12 +94,14 @@ content:
     settings: {  }
     third_party_settings: {  }
   field_event_cta:
-    type: link_default
+    type: linkit
     weight: 3
     region: content
     settings:
       placeholder_url: ''
       placeholder_title: ''
+      linkit_profile: default
+      linkit_auto_link_text: false
     third_party_settings: {  }
   field_event_date:
     type: smartdate_inline
@@ -116,6 +118,9 @@ content:
         custom
       show_extra: false
       hide_date: false
+      allday: true
+      remove_seconds: false
+      separator: to
     third_party_settings: {  }
   field_event_type:
     type: options_buttons
