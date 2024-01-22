@@ -1,0 +1,5 @@
+services:
+  # Service to query and prepare content for JSON feed.
+  ai_feed.sources:
+    class: Drupal\ai_feed\Sources
+    arguments: ['@entity_type.manager', '@logger.channel.default', '@renderer']

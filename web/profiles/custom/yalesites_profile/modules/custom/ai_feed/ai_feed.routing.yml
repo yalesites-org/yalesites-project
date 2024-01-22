@@ -1,0 +1,8 @@
+# JSON feed of rendered Drupal nodes and metadata for AI Ingestion.
+ai_feed.content:
+  path: '/api/ai/v1/content'
+  defaults:
+    _controller: '\Drupal\ai_feed\Controller\ContentFeed::jsonResponse'
+    _title: 'Content Feed'
+  requirements:
+    _permission: 'access content'

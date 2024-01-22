@@ -1,0 +1,9 @@
+name: 'AI Feed'
+type: module
+description: 'Provides JSON feeds of website content for AI ingestion.'
+core_version_requirement: ^9 || ^10
+package: Custom
+version: 1.0
+project: 'ai_feed'
+dependencies:
+  - node:node
