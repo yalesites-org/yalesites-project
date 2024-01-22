@@ -174,6 +174,8 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
    * @param string $content_type
+   *   The content type.
+   * @param string $template
    *   The template.
    *
    * @return void
