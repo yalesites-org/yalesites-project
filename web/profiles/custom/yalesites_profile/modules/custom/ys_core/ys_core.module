@@ -249,7 +249,10 @@ function ys_core_preprocess_menu(&$variables) {
       if ($menuItem['url']->isRouted()) {
         $nodeId = $menuItem['url']->getRouteParameters()['node'];
         $node = \Drupal::entityTypeManager()->getStorage('node')->load($nodeId);
-        $clonedMenuItem['node_title'] = $node->getTitle();
+
+        if ($node) {
+          $clonedMenuItem['node_title'] = $node->getTitle();
+        }
       }
 
       // Add cloned item to the beginning of the menu.
