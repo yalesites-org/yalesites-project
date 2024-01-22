@@ -224,7 +224,7 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    */
   protected function modifyForAddition(array $content_array) : array {
     $content_array['uuid'] = $this->uuidService->generate();
-    $content_array = $this->replaceBrokenImages($content_array);
+    /* $content_array = $this->replaceBrokenImages($content_array); */
 
     return $content_array;
   }
