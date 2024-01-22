@@ -1,0 +1,21 @@
+{% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
+
+{% block content %}
+
+  {% if parentNode == 'post' or parentNode == 'event' %}
+    {% set text_field__width = "content" %}
+    {% set text_field__alignment = "center" %}
+  {% else %}
+    {% set text_field__width = "site" %}
+    {% set text_field__alignment = "left" %}
+  {% endif %}
+
+  {% embed "@molecules/text/yds-text-field.twig" with {
+    text_field__content: "This Reusable Block has been deleted. Remove this instance of the deleted block.",
+    text_field__width: text_field__width,
+    text_field__alignment: text_field__alignment,
+    text_field__variation: content.field_style_variation.0['#markup'],
+  } %}
+  {% endembed %}
+
+{% endblock %}
