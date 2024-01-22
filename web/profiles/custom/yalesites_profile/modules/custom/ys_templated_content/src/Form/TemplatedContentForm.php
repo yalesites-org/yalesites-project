@@ -397,11 +397,46 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    * @return string
    *   The unique alias (original alias with date/time).
    */
-  protected function generateUniqueAlias($alias) {
+  protected function generateUniqueAliasWithDate($alias) {
     $date = date('Y-m-d-H-i-s');
     $alias .= '-' . $date;
 
     return $alias;
+  }
+
+  /**
+   * Generate a unique alias with a sequential number.
+   *
+   * @param string $alias
+   *   The alias.
+   *
+   * @return string
+   *   The unique alias (original alias with sequential number).
+   */
+  protected function generateUniqueAliasWithSequentialNumber($alias) {
+    $aliasNumber = 1;
+    $newAlias = $alias . '-' . $aliasNumber;
+
+    while ($this->pathAliasRepository->lookupByAlias($newAlias, 'en')) {
+      $aliasNumber++;
+      $newAlias = $alias . '-' . $aliasNumber;
+    }
+
+    return $newAlias;
+  }
+
+  /**
+   * Generate a unique alias.
+   *
+   * @param string $alias
+   *   The alias.
+   *
+   * @return string
+   *   The unique alias.
+   */
+  protected function generateUniqueAlias($alias) {
+    return $this->generateUniqueAliasWithSequentialNumber($alias);
+    /* return $this->generateUniqueAliasWithDate($alias); */
   }
 
   /**
