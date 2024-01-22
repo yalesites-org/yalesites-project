@@ -2,13 +2,12 @@
 
 namespace Drupal\ai_feed;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Render\RendererInterface;
-use Psr\Log\LoggerInterface;
-use Drupal\node\NodeInterface;
-
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Render\RendererInterface;
+use Drupal\node\NodeInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * The AI Feed Sources service.
@@ -39,9 +38,10 @@ class Sources {
   protected $renderer;
 
   /**
-   * .
+   * Retrieves content for the JSON feed.
    *
-   * @return void
+   * @return array
+   *   An array of content data for the JSON feed.
    */
   public function getContent() {
     // Query to build a collection of data to be ingested.
@@ -60,7 +60,7 @@ class Sources {
         'source' => 'drupal',
         'url' => $this->getUrl($entity),
         'documentType' => $this->getDocumentType($entity),
-        'docuemntId' => $entity->id(),
+        'documentId' => $entity->id(),
         'documentTitle' => $entity->getTitle(),
         'documentContent' => $this->processContentBody($entity),
         'metaTags' => '',
@@ -88,7 +88,7 @@ class Sources {
   }
 
   /**
-   * Undocumented function
+   * Processes the content body of a content entity.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   A content entity.
@@ -103,7 +103,7 @@ class Sources {
   }
 
   /**
-   * Undocumented function
+   * Gets a standardizaed document type.
    *
    * Document type is the name of the Drupal entity and possible bundle.
    * Examples: "node/post", "media/image", or "user".
@@ -123,7 +123,7 @@ class Sources {
   }
 
   /**
-   * Undocumented function
+   * Retrieves the canonical URL for a content entity.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   A content entity.
@@ -131,7 +131,7 @@ class Sources {
    * @return string
    *   The canonical URL as a string.
    */
-  protected function getUrl($entity) {
+  protected function getUrl(EntityInterface $entity) {
     return $entity->toUrl('canonical', ['absolute' => TRUE])->toString();
   }
 
