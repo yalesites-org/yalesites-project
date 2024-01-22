@@ -13,7 +13,7 @@ use Drupal\Core\File\FileSystemInterface;
  *
  * Taken from ys_core/ys_core.install to install fallback image.
  */
-function ys_embed_install() {
+function ys_templated_content_install() {
   $source = \Drupal::service('extension.list.module')->getPath('ys_templated_content') . '/images';
   // @todo Debug why the destination can not be loaded dynamically on install.
   // $destination = \Drupal::config('media.settings')->get('icon_base_uri');
