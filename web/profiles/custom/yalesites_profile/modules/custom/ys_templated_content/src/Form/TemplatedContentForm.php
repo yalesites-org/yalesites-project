@@ -17,6 +17,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class TemplatedContentForm extends FormBase implements FormInterface {
 
+  const PLACEHOLDER = 'public://templated-content-images/placeholder.png';
+
   /**
    * The template filename helper.
    *
@@ -222,6 +224,7 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    */
   protected function modifyForAddition(array $content_array) : array {
     $content_array['uuid'] = $this->uuidService->generate();
+    $content_array = $this->replaceBrokenImages($content_array);
 
     return $content_array;
   }
@@ -333,6 +336,32 @@ class TemplatedContentForm extends FormBase implements FormInterface {
     }
 
     return $templates;
+  }
+
+  /**
+   * Replace broken images with a placeholder.
+   *
+   * @param array $content_array
+   *   The content array.
+   *
+   * @return array
+   *   The content array with images fixed with placeholder.
+   */
+  protected function replaceBrokenImages(array $content_array) : array {
+    foreach ($content_array as $key => $value) {
+      if (is_array($value)) {
+        $content_array[$key] = $this->replaceBrokenImages($value);
+      }
+      elseif ($key == 'uri') {
+        $path = $value;
+        $path = str_replace('public://', 'sites/default/files/', $path);
+        if (!file_exists($path)) {
+          $content_array[$key] = $this::PLACEHOLDER;
+        }
+      }
+    }
+
+    return $content_array;
   }
 
 }
