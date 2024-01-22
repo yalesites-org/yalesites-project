@@ -30,7 +30,6 @@ class TemplatedContentController extends ControllerBase implements ContainerInje
    * Builds the content selection form.
    */
   public function build() {
-    // Get form builder.
     $formBuilder = $this->formBuilder();
 
     return $formBuilder->getForm('Drupal\ys_templated_content\Form\TemplatedContentForm');
