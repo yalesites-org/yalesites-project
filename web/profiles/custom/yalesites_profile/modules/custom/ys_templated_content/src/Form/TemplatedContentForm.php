@@ -7,6 +7,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\path_alias\AliasRepositoryInterface;
 use Drupal\single_content_sync\ContentImporterInterface;
 use Drupal\single_content_sync\ContentSyncHelperInterface;
 use Drupal\ys_templated_content\Support\TemplateFilenameHelper;
@@ -18,6 +19,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class TemplatedContentForm extends FormBase implements FormInterface {
 
   const PLACEHOLDER = 'public://templated-content-images/placeholder.png';
+
+  /**
+   * The path alias repository.
+   *
+   * @var \Drupal\path_alias\AliasRepositoryInterface
+   */
+  protected $pathAliasRepository;
 
   /**
    * The template filename helper.
@@ -74,6 +82,8 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    *   The UUID service.
    * @param \Drupal\ys_templated_content\Support\TemplateFilenameHelper $templateFilenameHelper
    *   The template filename helper.
+   * @param \Drupal\path_alias\PathAliasInterface $pathAliasRepository
+   *   The path alias repository.
    */
   public function __construct(
     EntityTypeManagerInterface $entityTypeManager,
@@ -81,12 +91,14 @@ class TemplatedContentForm extends FormBase implements FormInterface {
     ContentSyncHelperInterface $contentSyncHelper,
     UuidInterface $uuidService,
     TemplateFilenameHelper $templateFilenameHelper,
+    AliasRepositoryInterface $pathAliasRepository,
   ) {
     $this->entityManager = $entityTypeManager;
     $this->contentImporter = $contentImporter;
     $this->contentSyncHelper = $contentSyncHelper;
     $this->uuidService = $uuidService;
     $this->templateFilenameHelper = $templateFilenameHelper;
+    $this->pathAliasRepository = $pathAliasRepository;
     $this->templates = $this->refreshTemplates($this->templateFilenameHelper->getTemplateBasePath());
   }
 
@@ -100,6 +112,7 @@ class TemplatedContentForm extends FormBase implements FormInterface {
       $container->get('single_content_sync.helper'),
       $container->get('uuid'),
       $container->get('ys_templated_content.template_filename_helper'),
+      $container->get('path_alias.repository'),
     );
   }
 
@@ -235,6 +248,7 @@ class TemplatedContentForm extends FormBase implements FormInterface {
   protected function modifyForAddition(array $content_array) : array {
     $content_array['uuid'] = $this->uuidService->generate();
     $content_array = $this->replaceBrokenImages($content_array);
+    $content_array = $this->generateAlias($content_array);
 
     return $content_array;
   }
@@ -368,6 +382,43 @@ class TemplatedContentForm extends FormBase implements FormInterface {
         if (!file_exists($path)) {
           $content_array[$key] = $this::PLACEHOLDER;
         }
+      }
+    }
+
+    return $content_array;
+  }
+
+  /**
+   * Generate a unique alias using the current date/time.
+   *
+   * @param string $alias
+   *   The alias.
+   *
+   * @return string
+   *   The unique alias (original alias with date/time).
+   */
+  protected function generateUniqueAlias($alias) {
+    $date = date('Y-m-d-H-i-s');
+    $alias .= '-' . $date;
+
+    return $alias;
+  }
+
+  /**
+   * Generate a unique alias if the alias already exists.
+   *
+   * @param array $content_array
+   *   The content array.
+   *
+   * @return array
+   *   The content array with a unique alias.
+   */
+  protected function generateAlias($content_array) {
+    if (isset($content_array['base_fields']['url'])) {
+      $alias = $content_array['base_fields']['url'];
+
+      if ($this->pathAliasRepository->lookupByAlias($alias, 'en')) {
+        $content_array['base_fields']['url'] = $this->generateUniqueAlias($alias);
       }
     }
 
