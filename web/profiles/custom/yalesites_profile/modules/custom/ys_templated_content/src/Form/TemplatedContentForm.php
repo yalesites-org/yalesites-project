@@ -174,8 +174,6 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
    * @param string $content_type
-   *   The content type.
-   * @param string $template
    *   The template.
    *
    * @return void
@@ -205,6 +203,16 @@ class TemplatedContentForm extends FormBase implements FormInterface {
 
       $entity = $this->contentImporter->doImport($content_array);
       $this->messenger()->addMessage("Content generated successfully.  Please make any edits now as this has already been created for you.  Don't forget to change the URL alias.");
+
+      // Noticed that when you update a node, a log is created.
+      // Figured we need to also have a log showing it was imported.
+      $this->logger('ys_templated_content')->notice(
+        'Templated content created: @label (@type)',
+        [
+          '@label' => $entity->label(),
+          '@type' => $entity->getEntityTypeId(),
+        ]
+      );
       $form_state->setRedirect(
         $this->getEntityEditFormPath($entity),
         [$entity->getEntityTypeId() => $entity->id()]
@@ -352,7 +360,7 @@ class TemplatedContentForm extends FormBase implements FormInterface {
       if (is_array($value)) {
         $content_array[$key] = $this->replaceBrokenImages($value);
       }
-      elseif ($key == 'uri') {
+      elseif ($key == 'uri' && strpos($value, 'public://') !== FALSE) {
         $path = $value;
         $path = str_replace('public://', 'sites/default/files/', $path);
         if (!file_exists($path)) {
