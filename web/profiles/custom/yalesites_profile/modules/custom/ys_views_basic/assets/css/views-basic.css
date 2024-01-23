@@ -29,11 +29,11 @@
 /* Chosen dropdown selected color contrast fix */
 
 /* ******************************************* */
-.chosen-container .chosen-results {
+.gin--dark-mode .chosen-container .chosen-results {
   color: var(--gin-bg-layer);
 }
 
-.chosen-container-multi .chosen-drop .result-selected {
+.gin--dark-mode .chosen-container-multi .chosen-drop .result-selected {
   color: var(--gin-color-focus);
   background-color: var(--gin-bg-layer);
 }
