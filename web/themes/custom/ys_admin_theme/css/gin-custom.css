@@ -13,6 +13,14 @@
   font-weight: 600;
 }
 
+.views-bulk-actions__item .button--primary:not(:disabled, .is-disabled) {
+  background-color: var(--gin-color-primary);
+}
+
+.views-bulk-actions__item .button--primary:not(:disabled, .is-disabled):hover {
+  background-color: var(--gin-color-primary-active);
+}
+
 /* chosen overrides */
 .chosen-container-single .chosen-single {
   color: var(--gin-color-text);
