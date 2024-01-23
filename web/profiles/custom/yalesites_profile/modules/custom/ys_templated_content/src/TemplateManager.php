@@ -156,9 +156,16 @@ class TemplateManager {
     $templates = [];
     // Return an empty array if there is no content type.
     if ($content_type) {
-      $templates = $this->templates[$content_type];
+      // For each key and title value, create an array of the key and title.
+      foreach ($this->templates[$content_type] as $key => $template) {
+        $templates[$key] = $template['title'];
+      }
     }
     return $templates;
+  }
+
+  public function getTemplateDescription($content_type, $template_name) {
+    return $this->templates[$content_type][$template_name]['description'] ?? "Hi";
   }
 
   /**
