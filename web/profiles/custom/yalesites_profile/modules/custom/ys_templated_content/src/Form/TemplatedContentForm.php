@@ -115,6 +115,22 @@ class TemplatedContentForm extends FormBase implements FormInterface {
       '#required' => FALSE,
       '#prefix' => '<div id="template-update-wrapper">',
       '#suffix' => '</div>',
+      '#ajax' => [
+        'callback' => [$this, 'updateDescription'],
+        'wrapper' => 'template-description-wrapper',
+        'disable-refocus' => FALSE,
+        'event' => 'change',
+        'progress' => [
+          'type' => 'none',
+        ],
+      ]
+    ];
+
+    $form['template_description'] = [
+      '#type' => 'item',
+      '#markup' => $this->templateManager->getTemplateDescription($currentContentType, ''),
+      '#prefix' => '<div id="template-description-wrapper">',
+      '#suffix' => '</div>',
     ];
 
     $form['submit'] = [
@@ -185,6 +201,17 @@ class TemplatedContentForm extends FormBase implements FormInterface {
     $form_state->setValue('templates', '');
 
     return $form['templates'];
+  }
+
+  public function updateDescription(
+    array &$form,
+    FormStateInterface $form_state
+  ) : array {
+    $currentContentType = $this->getCurrentContentType($form_state);
+    $currentTemplate = $form_state->getValue('templates');
+    $form['template_description']['#markup'] = $this
+      ->templateManager->getTemplateDescription($currentContentType, $currentTemplate);
+    return $form['template_description'];
   }
 
   /**
