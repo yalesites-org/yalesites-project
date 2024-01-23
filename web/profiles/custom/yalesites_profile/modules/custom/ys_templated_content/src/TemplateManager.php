@@ -14,7 +14,86 @@ class TemplateManager {
    *
    * @var array
    */
-  protected $templates = [];
+  protected $templates = [
+    'page' => [
+      '' => [
+        'title' => 'Empty',
+        'description' => 'An empty template.',
+        'filename' => '',
+      ],
+      'faq' => [
+        'title' => 'FAQ',
+        'description' => 'A template for a FAQ page.',
+        'filename' => 'page__faq.yml',
+      ],
+      'landing_page' => [
+        'title' => 'Landing Page',
+        'description' => 'A template for a landing page.',
+        'filename' => 'page__landing_page.yml',
+      ],
+    ],
+    'post' => [
+      '' => [
+        'title' => 'Empty',
+        'description' => 'An empty template.',
+        'filename' => '',
+      ],
+      'blog' => [
+        'title' => 'Blog',
+        'description' => 'A template for a blog post.',
+        'filename' => 'post__blog.yml',
+      ],
+      'news' => [
+        'title' => 'News',
+        'description' => 'A template for a news post.',
+        'filename' => 'post__news.yml',
+      ],
+      'press_release' => [
+        'title' => 'Press Release',
+        'description' => 'A template for a press release.',
+        'filename' => 'post__press_release.yml',
+      ],
+    ],
+    'event' => [
+      '' => [
+        'title' => 'Empty',
+        'description' => 'An empty template.',
+        'filename' => '',
+      ],
+      'in_person' => [
+        'title' => 'In Person',
+        'description' => 'A template for an in person event.',
+        'filename' => 'event__in_person.yml',
+      ],
+      'online' => [
+        'title' => 'Online',
+        'description' => 'A template for an online event.',
+        'filename' => 'event__online.yml',
+      ],
+    ],
+    'profile' => [
+      '' => [
+        'title' => 'Empty',
+        'description' => 'An empty template.',
+        'filename' => '',
+      ],
+      'faculty' => [
+        'title' => 'Faculty',
+        'description' => 'A template for a faculty profile.',
+        'filename' => 'profile__faculty.yml',
+      ],
+      'student' => [
+        'title' => 'Student',
+        'description' => 'A template for a student profile.',
+        'filename' => 'profile__student.yml',
+      ],
+      'staff' => [
+        'title' => 'Staff',
+        'description' => 'A template for a staff profile.',
+        'filename' => 'profile__staff.yml',
+      ],
+    ],
+  ];
 
   /**
    * The template filename helper.
@@ -33,7 +112,7 @@ class TemplateManager {
     TemplateFilenameHelper $templateFilenameHelper,
   ) {
     $this->templateFilenameHelper = $templateFilenameHelper;
-    $this->templates = $this->reload();
+    /* $this->templates = $this->reload(); */
   }
 
   /**
@@ -49,7 +128,7 @@ class TemplateManager {
    * Get the template options for the currrent content type.
    */
   public function reload() {
-    $this->templates = $this->refreshTemplates($this->templateFilenameHelper->getTemplateBasePath());
+    /* $this->templates = $this->refreshTemplates($this->templateFilenameHelper->getTemplateBasePath()); */
   }
 
   /**
@@ -92,15 +171,19 @@ class TemplateManager {
    *   The templates.
    */
   protected function refreshTemplates($path) : array {
-    $filenames = $this->templateFilenameHelper->getSanitizedFilenamesFromPath($path);
-    $templates = $this->templateFilenameHelper->constructTemplatesArrayFromFilenames($filenames);
+    /* $filenames = $this->templateFilenameHelper->getSanitizedFilenamesFromPath($path); */
+    /* $templates = $this->templateFilenameHelper->constructTemplatesArrayFromFilenames($filenames); */
 
-    // Prepend the Empty case.
-    foreach ($templates as $key => $template) {
-      $templates[$key] = ['' => 'Empty'] + $template;
-    }
+    /* // Prepend the Empty case. */
+    /* foreach ($templates as $key => $template) { */
+    /*   $templates[$key] = ['' => 'Empty'] + $template; */
+    /* } */
 
-    return $templates;
+    return $this->templates;
+  }
+
+  public function getTemplates() {
+    return $this->templates;
   }
 
 }
