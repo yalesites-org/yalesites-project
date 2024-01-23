@@ -108,6 +108,7 @@
     "jjj/chosen": "2.2.1",
     "laminas/laminas-escaper": "2.12",
     "northernco/ckeditor5-anchor-drupal": "0.4.0",
+    "yalesites-org/ai_feed": "1.0.0",
     "yalesites-org/atomic": "1.25.0",
     "yalesites-org/yale_cas": "1.0.4"
   },
