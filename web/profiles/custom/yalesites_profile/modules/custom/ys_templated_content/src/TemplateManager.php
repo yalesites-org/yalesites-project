@@ -14,22 +14,25 @@ class TemplateManager {
    *
    * @var array
    */
-  protected $templates = [
+  public $templates = [
     'page' => [
       '' => [
         'title' => 'Empty',
         'description' => 'An empty template.',
         'filename' => '',
+        'preview_image' => '',
       ],
       'faq' => [
         'title' => 'FAQ',
         'description' => 'A template for a FAQ page.',
         'filename' => 'page__faq.yml',
+        'preview_image' => '',
       ],
       'landing_page' => [
         'title' => 'Landing Page',
         'description' => 'A template for a landing page.',
         'filename' => 'page__landing_page.yml',
+        'preview_image' => '',
       ],
     ],
     'post' => [
@@ -37,21 +40,25 @@ class TemplateManager {
         'title' => 'Empty',
         'description' => 'An empty template.',
         'filename' => '',
+        'preview_image' => '',
       ],
       'blog' => [
         'title' => 'Blog',
         'description' => 'A template for a blog post.',
         'filename' => 'post__blog.yml',
+        'preview_image' => '',
       ],
       'news' => [
         'title' => 'News',
         'description' => 'A template for a news post.',
         'filename' => 'post__news.yml',
+        'preview_image' => '',
       ],
       'press_release' => [
         'title' => 'Press Release',
         'description' => 'A template for a press release.',
         'filename' => 'post__press_release.yml',
+        'preview_image' => '',
       ],
     ],
     'event' => [
@@ -59,16 +66,19 @@ class TemplateManager {
         'title' => 'Empty',
         'description' => 'An empty template.',
         'filename' => '',
+        'preview_image' => '',
       ],
       'in_person' => [
         'title' => 'In Person',
         'description' => 'A template for an in person event.',
         'filename' => 'event__in_person.yml',
+        'preview_image' => '',
       ],
       'online' => [
         'title' => 'Online',
         'description' => 'A template for an online event.',
         'filename' => 'event__online.yml',
+        'preview_image' => '',
       ],
     ],
     'profile' => [
@@ -76,21 +86,25 @@ class TemplateManager {
         'title' => 'Empty',
         'description' => 'An empty template.',
         'filename' => '',
+        'preview_image' => '',
       ],
       'faculty' => [
         'title' => 'Faculty',
         'description' => 'A template for a faculty profile.',
         'filename' => 'profile__faculty.yml',
+        'preview_image' => '',
       ],
       'student' => [
         'title' => 'Student',
         'description' => 'A template for a student profile.',
         'filename' => 'profile__student.yml',
+        'preview_image' => '',
       ],
       'staff' => [
         'title' => 'Staff',
         'description' => 'A template for a staff profile.',
         'filename' => 'profile__staff.yml',
+        'preview_image' => '',
       ],
     ],
   ];
@@ -164,31 +178,24 @@ class TemplateManager {
     return $templates;
   }
 
+  /**
+   * Get the template options for the currrent content type.
+   *
+   * @param string $content_type
+   *   The content type.
+   * @param string $template_name
+   *   The template name.
+   *
+   * @return array
+   *   The template options.
+   */
   public function getTemplateDescription($content_type, $template_name) {
     return $this->templates[$content_type][$template_name]['description'] ?? "Hi";
   }
 
   /**
-   * Refresh the templates array.
-   *
-   * @param string $path
-   *   The path to the templates.
-   *
-   * @return array
-   *   The templates.
+   * Get the templates.
    */
-  protected function refreshTemplates($path) : array {
-    /* $filenames = $this->templateFilenameHelper->getSanitizedFilenamesFromPath($path); */
-    /* $templates = $this->templateFilenameHelper->constructTemplatesArrayFromFilenames($filenames); */
-
-    /* // Prepend the Empty case. */
-    /* foreach ($templates as $key => $template) { */
-    /*   $templates[$key] = ['' => 'Empty'] + $template; */
-    /* } */
-
-    return $this->templates;
-  }
-
   public function getTemplates() {
     return $this->templates;
   }

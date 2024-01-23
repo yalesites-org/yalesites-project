@@ -123,7 +123,7 @@ class TemplatedContentForm extends FormBase implements FormInterface {
         'progress' => [
           'type' => 'none',
         ],
-      ]
+      ],
     ];
 
     $form['template_description'] = [
@@ -203,6 +203,17 @@ class TemplatedContentForm extends FormBase implements FormInterface {
     return $form['templates'];
   }
 
+  /**
+   * Update the template description when the template changes.
+   *
+   * @param array $form
+   *   The form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   *
+   * @return array
+   *   The updated template description.
+   */
   public function updateDescription(
     array &$form,
     FormStateInterface $form_state
