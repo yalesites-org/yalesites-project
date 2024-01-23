@@ -2,14 +2,11 @@
 
 namespace Drupal\ys_templated_content\Form;
 
-use Drupal\Component\Uuid\UuidInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\path_alias\AliasRepositoryInterface;
-use Drupal\single_content_sync\ContentImporterInterface;
-use Drupal\single_content_sync\ContentSyncHelperInterface;
+use Drupal\ys_templated_content\ImportManager;
 use Drupal\ys_templated_content\TemplateManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -19,13 +16,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class TemplatedContentForm extends FormBase implements FormInterface {
 
   const PLACEHOLDER = 'public://templated-content-images/placeholder.png';
-
-  /**
-   * The path alias repository.
-   *
-   * @var \Drupal\path_alias\AliasRepositoryInterface
-   */
-  protected $pathAliasRepository;
 
   /**
    * The template manager.
@@ -42,63 +32,38 @@ class TemplatedContentForm extends FormBase implements FormInterface {
   protected $templates = [];
 
   /**
-   * The UUID service.
-   *
-   * @var \Drupal\Core\Uuid\UuidInterface
-   */
-  protected $uuidService;
-
-  /**
-   * The content importer.
-   *
-   * @var \Drupal\single_content_sync\ContentImporterInterface
-   */
-  protected $contentImporter;
-
-  /**
-   * The content sync helper.
-   *
-   * @var \Drupal\single_content_sync\ContentSyncHelperInterface
-   */
-  protected $contentSyncHelper;
-
-  /**
    * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityManager;
 
+
+  /**
+   * Allows us to create an import of a template.
+   *
+   * @var \Drupal\ys_templated_content\ImportManager
+   */
+  protected $importManager;
+
   /**
    * Constructs the controller object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager to get the content types available.
-   * @param \Drupal\single_content_sync\ContentImporterInterface $contentImporter
-   *   The content importer.
-   * @param \Drupal\single_content_sync\ContentSyncHelperInterface $contentSyncHelper
-   *   The content sync helper.
-   * @param \Drupal\Core\Uuid\UuidInterface $uuidService
-   *   The UUID service.
-   * @param \Drupal\path_alias\PathAliasInterface $pathAliasRepository
-   *   The path alias repository.
    * @param \Drupal\ys_templated_content\TemplateManager $templateManager
    *   The template manager.
+   * @param \Drupal\ys_templated_content\ImportManager $importManager
+   *   The import manager.
    */
   public function __construct(
     EntityTypeManagerInterface $entityTypeManager,
-    ContentImporterInterface $contentImporter,
-    ContentSyncHelperInterface $contentSyncHelper,
-    UuidInterface $uuidService,
-    AliasRepositoryInterface $pathAliasRepository,
     TemplateManager $templateManager,
+    ImportManager $importManager,
   ) {
     $this->entityManager = $entityTypeManager;
-    $this->contentImporter = $contentImporter;
-    $this->contentSyncHelper = $contentSyncHelper;
-    $this->uuidService = $uuidService;
-    $this->pathAliasRepository = $pathAliasRepository;
     $this->templateManager = $templateManager;
+    $this->importManager = $importManager;
     $this->templates = $this->templateManager->reload();
   }
 
@@ -108,11 +73,8 @@ class TemplatedContentForm extends FormBase implements FormInterface {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('entity_type.manager'),
-      $container->get('single_content_sync.importer'),
-      $container->get('single_content_sync.helper'),
-      $container->get('uuid'),
-      $container->get('path_alias.repository'),
       $container->get('ys_templated_content.template_manager'),
+      $container->get('ys_templated_content.import_manager'),
     );
   }
 
@@ -177,113 +139,29 @@ class TemplatedContentForm extends FormBase implements FormInterface {
       );
     }
     else {
-      $this->createImport($form_state, $content_type, $template);
-    }
-  }
+      try {
+        $entity = $this->importManager->createImport($content_type, $template);
+        $this->messenger()->addMessage("Content generated successfully.  Please make any edits now as this has already been created for you.  Don't forget to change the URL alias.");
 
-  /**
-   * Create the import from the sample content.
-   *
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state.
-   * @param string $content_type
-   *   The content type.
-   * @param string $template
-   *   The template.
-   *
-   * @return void
-   *   Redirects to the edit form of the imported entity.
-   */
-  protected function createImport(
-    FormStateInterface $form_state,
-    String $content_type,
-    String $template
-  ) : void {
-    /* Taken from the implementation of single_content_sync:
-     * https://git.drupalcode.org/project/single_content_sync/-/blob/1.4.x/src/Form/ContentImportForm.php?ref_type=heads#L136-143
-     *
-     * This would be a great way to contribute back:
-     * $this->contentSyncHelper->generateEntityFromStringYaml($this::CONTENT);
-     */
-    try {
-      $content = file_get_contents(
-        $this->templateManager->getFilenameForTemplate($content_type, $template)
-      );
-
-      $content_array = $this
-        ->contentSyncHelper
-        ->validateYamlFileContent($content);
-
-      $content_array = $this->modifyForAddition($content_array);
-
-      $entity = $this->contentImporter->doImport($content_array);
-      $this->messenger()->addMessage("Content generated successfully.  Please make any edits now as this has already been created for you.  Don't forget to change the URL alias.");
-
-      // Noticed that when you update a node, a log is created.
-      // Figured we need to also have a log showing it was imported.
-      $this->logger('ys_templated_content')->notice(
+        // Noticed that when you update a node, a log is created.
+        // Figured we need to also have a log showing it was imported.
+        $this->logger('ys_templated_content')->notice(
         'Templated content created: @label (@type)',
         [
           '@label' => $entity->label(),
           '@type' => $entity->getEntityTypeId(),
         ]
-      );
-      $form_state->setRedirect(
+        );
+        $form_state->setRedirect(
         $this->getEntityEditFormPath($entity),
         [$entity->getEntityTypeId() => $entity->id()]
-      );
+        );
+      }
+      catch (\Exception $e) {
+        $this->messenger()->addError($e->getMessage());
+        return;
+      }
     }
-    catch (\Exception $e) {
-      $this->messenger()->addError($e->getMessage());
-      return;
-    }
-  }
-
-  /**
-   * Modify the content array for addition.
-   *
-   * @param array $content_array
-   *   The content array.
-   */
-  protected function modifyForAddition(array $content_array) : array {
-    $content_array['uuid'] = $this->uuidService->generate();
-    $content_array = $this->replaceBrokenImages($content_array);
-    $content_array = $this->generateAlias($content_array);
-
-    return $content_array;
-  }
-
-  /**
-   * Get the entity path.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity.
-   *
-   * @return string
-   *   The path to the edit form.
-   */
-  private function getEntityEditFormPath($entity) {
-    return 'entity.' . $entity->getEntityTypeId() . '.edit_form';
-  }
-
-  /**
-   * Get all content types.
-   *
-   * @return array
-   *   The content types.
-   */
-  private function getContentTypes() : array {
-    $content_types = $this
-      ->entityManager
-      ->getStorage('node_type')
-      ->loadMultiple();
-    $options = [];
-
-    foreach ($content_types as $content_type) {
-      $options[$content_type->id()] = $content_type->label();
-    }
-
-    return $options;
   }
 
   /**
@@ -325,101 +203,36 @@ class TemplatedContentForm extends FormBase implements FormInterface {
   }
 
   /**
-   * Replace broken images with a placeholder.
+   * Get the entity path.
    *
-   * @param array $content_array
-   *   The content array.
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity.
+   *
+   * @return string
+   *   The path to the edit form.
+   */
+  private function getEntityEditFormPath($entity) {
+    return 'entity.' . $entity->getEntityTypeId() . '.edit_form';
+  }
+
+  /**
+   * Get all content types.
    *
    * @return array
-   *   The content array with images fixed with placeholder.
+   *   The content types.
    */
-  protected function replaceBrokenImages(array $content_array) : array {
-    foreach ($content_array as $key => $value) {
-      if (is_array($value)) {
-        $content_array[$key] = $this->replaceBrokenImages($value);
-      }
-      elseif ($key == 'uri' && strpos($value, 'public://') !== FALSE) {
-        $path = $value;
-        $path = str_replace('public://', 'sites/default/files/', $path);
-        if (!file_exists($path)) {
-          $content_array[$key] = $this::PLACEHOLDER;
-        }
-      }
+  private function getContentTypes() : array {
+    $content_types = $this
+      ->entityManager
+      ->getStorage('node_type')
+      ->loadMultiple();
+    $options = [];
+
+    foreach ($content_types as $content_type) {
+      $options[$content_type->id()] = $content_type->label();
     }
 
-    return $content_array;
-  }
-
-  /**
-   * Generate a unique alias using the current date/time.
-   *
-   * @param string $alias
-   *   The alias.
-   *
-   * @return string
-   *   The unique alias (original alias with date/time).
-   */
-  protected function generateUniqueAliasWithDate($alias) {
-    $date = date('Y-m-d-H-i-s');
-    $alias .= '-' . $date;
-
-    return $alias;
-  }
-
-  /**
-   * Generate a unique alias with a sequential number.
-   *
-   * @param string $alias
-   *   The alias.
-   *
-   * @return string
-   *   The unique alias (original alias with sequential number).
-   */
-  protected function generateUniqueAliasWithSequentialNumber($alias) {
-    $aliasNumber = 1;
-    $newAlias = $alias . '-' . $aliasNumber;
-
-    while ($this->pathAliasRepository->lookupByAlias($newAlias, 'en')) {
-      $aliasNumber++;
-      $newAlias = $alias . '-' . $aliasNumber;
-    }
-
-    return $newAlias;
-  }
-
-  /**
-   * Generate a unique alias.
-   *
-   * @param string $alias
-   *   The alias.
-   *
-   * @return string
-   *   The unique alias.
-   */
-  protected function generateUniqueAlias($alias) {
-    return $this->generateUniqueAliasWithSequentialNumber($alias);
-    /* return $this->generateUniqueAliasWithDate($alias); */
-  }
-
-  /**
-   * Generate a unique alias if the alias already exists.
-   *
-   * @param array $content_array
-   *   The content array.
-   *
-   * @return array
-   *   The content array with a unique alias.
-   */
-  protected function generateAlias($content_array) {
-    if (isset($content_array['base_fields']['url'])) {
-      $alias = $content_array['base_fields']['url'];
-
-      if ($this->pathAliasRepository->lookupByAlias($alias, 'en')) {
-        $content_array['base_fields']['url'] = $this->generateUniqueAlias($alias);
-      }
-    }
-
-    return $content_array;
+    return $options;
   }
 
 }

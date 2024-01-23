@@ -1,7 +1,23 @@
 services:
   ys_templated_content.template_filename_helper:
     class: Drupal\ys_templated_content\Support\TemplateFilenameHelper
-    arguments: ['@module_handler']
+    arguments: ["@module_handler"]
   ys_templated_content.template_manager:
     class: Drupal\ys_templated_content\TemplateManager
-    arguments: ['@ys_templated_content.template_filename_helper']
+    arguments: ["@ys_templated_content.template_filename_helper"]
+  ys_templated_content.import_manager:
+    class: Drupal\ys_templated_content\ImportManager
+    arguments:
+      [
+        "@single_content_sync.importer",
+        "@single_content_sync.helper",
+        "@ys_templated_content.template_manager",
+        "@ys_templated_content.template_modifier",
+      ]
+  ys_templated_content.template_modifier:
+    class: Drupal\ys_templated_content\Support\TemplateModifier
+    arguments:
+      [
+        "@uuid",
+        "@path_alias.repository",
+      ]
