@@ -1,4 +1,4 @@
-name: Create release pull request
+name: Create/update release pull request
 on:
   pull_request:
     branches:
@@ -6,6 +6,8 @@ on:
   workflow_dispatch:
 jobs:
   create_pull_request:
+    if: github.head_ref == 'develop' ||
+        github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     env:
       ACCESS_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
