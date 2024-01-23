@@ -12,7 +12,7 @@ field_name: field_button_link
 entity_type: block_content
 bundle: button_link
 label: 'Button Link'
-description: 'Add one or two button links'
+description: 'For more information about linking content, view our resource <a href="https://yalesites.yale.edu/resource-library/linking-content-on-yalesites" target="_blank">Linking Content on YaleSites</a>.'
 required: true
 translatable: false
 default_value: {  }

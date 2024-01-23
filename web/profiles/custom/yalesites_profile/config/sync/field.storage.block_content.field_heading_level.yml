@@ -13,10 +13,10 @@ settings:
   allowed_values:
     -
       value: '1'
-      label: H1
+      label: 'H1: This page’s title is hidden'
     -
       value: '2'
-      label: H2
+      label: 'H2: This page’s title is displayed or visually hidden'
   allowed_values_function: ''
 module: options
 locked: false
