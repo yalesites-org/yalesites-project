@@ -10,7 +10,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\path_alias\AliasRepositoryInterface;
 use Drupal\single_content_sync\ContentImporterInterface;
 use Drupal\single_content_sync\ContentSyncHelperInterface;
-use Drupal\ys_templated_content\Support\TemplateFilenameHelper;
+use Drupal\ys_templated_content\TemplateManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -28,11 +28,11 @@ class TemplatedContentForm extends FormBase implements FormInterface {
   protected $pathAliasRepository;
 
   /**
-   * The template filename helper.
+   * The template manager.
    *
-   * @var \Drupal\ys_templated_content\Support\TemplateFilenameHelper
+   * @var \Drupal\ys_templated_content\TemplateManager
    */
-  protected $templateFilenameHelper;
+  protected $templateManager;
 
   /**
    * The templates that will be available to the user to select from.
@@ -80,26 +80,26 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    *   The content sync helper.
    * @param \Drupal\Core\Uuid\UuidInterface $uuidService
    *   The UUID service.
-   * @param \Drupal\ys_templated_content\Support\TemplateFilenameHelper $templateFilenameHelper
-   *   The template filename helper.
    * @param \Drupal\path_alias\PathAliasInterface $pathAliasRepository
    *   The path alias repository.
+   * @param \Drupal\ys_templated_content\TemplateManager $templateManager
+   *   The template manager.
    */
   public function __construct(
     EntityTypeManagerInterface $entityTypeManager,
     ContentImporterInterface $contentImporter,
     ContentSyncHelperInterface $contentSyncHelper,
     UuidInterface $uuidService,
-    TemplateFilenameHelper $templateFilenameHelper,
     AliasRepositoryInterface $pathAliasRepository,
+    TemplateManager $templateManager,
   ) {
     $this->entityManager = $entityTypeManager;
     $this->contentImporter = $contentImporter;
     $this->contentSyncHelper = $contentSyncHelper;
     $this->uuidService = $uuidService;
-    $this->templateFilenameHelper = $templateFilenameHelper;
     $this->pathAliasRepository = $pathAliasRepository;
-    $this->templates = $this->refreshTemplates($this->templateFilenameHelper->getTemplateBasePath());
+    $this->templateManager = $templateManager;
+    $this->templates = $this->templateManager->reload();
   }
 
   /**
@@ -111,8 +111,8 @@ class TemplatedContentForm extends FormBase implements FormInterface {
       $container->get('single_content_sync.importer'),
       $container->get('single_content_sync.helper'),
       $container->get('uuid'),
-      $container->get('ys_templated_content.template_filename_helper'),
       $container->get('path_alias.repository'),
+      $container->get('ys_templated_content.template_manager'),
     );
   }
 
@@ -149,7 +149,7 @@ class TemplatedContentForm extends FormBase implements FormInterface {
     $form['templates'] = [
       '#type' => 'select',
       '#title' => $this->t('Template'),
-      '#options' => $this->getCurrentTemplates($currentContentType),
+      '#options' => $this->templateManager->getCurrentTemplates($currentContentType),
       '#required' => FALSE,
       '#prefix' => '<div id="template-update-wrapper">',
       '#suffix' => '</div>',
@@ -207,7 +207,7 @@ class TemplatedContentForm extends FormBase implements FormInterface {
      */
     try {
       $content = file_get_contents(
-        $this->templateFilenameHelper->getImportFilePath($content_type, $template)
+        $this->templateManager->getFilenameForTemplate($content_type, $template)
       );
 
       $content_array = $this
@@ -303,7 +303,7 @@ class TemplatedContentForm extends FormBase implements FormInterface {
   ) : array {
     $currentContentType = $this->getCurrentContentType($form_state);
     $form['templates']['#options'] = $this
-      ->getCurrentTemplates($currentContentType);
+      ->templateManager->getCurrentTemplates($currentContentType);
     $form_state->setValue('templates', '');
 
     return $form['templates'];
@@ -322,44 +322,6 @@ class TemplatedContentForm extends FormBase implements FormInterface {
     FormStateInterface $form_state
   ) : String {
     return $form_state->getValue('content_types') ?? 'page';
-  }
-
-  /**
-   * Get the template options for the currrent content type.
-   *
-   * @return array
-   *   The template options.
-   */
-  protected function getCurrentTemplates($content_type) : array {
-    $templates = [];
-
-    // Return an empty array if there is no content type.
-    if ($content_type) {
-      $templates = $this->templates[$content_type];
-    }
-
-    return $templates;
-  }
-
-  /**
-   * Refresh the templates array.
-   *
-   * @param string $path
-   *   The path to the templates.
-   *
-   * @return array
-   *   The templates.
-   */
-  protected function refreshTemplates($path) : array {
-    $filenames = $this->templateFilenameHelper->getSanitizedFilenamesFromPath($path);
-    $templates = $this->templateFilenameHelper->constructTemplatesArrayFromFilenames($filenames);
-
-    // Prepend the Empty case.
-    foreach ($templates as $key => $template) {
-      $templates[$key] = ['' => 'Empty'] + $template;
-    }
-
-    return $templates;
   }
 
   /**
