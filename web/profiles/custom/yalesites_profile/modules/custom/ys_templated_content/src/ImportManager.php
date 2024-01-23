@@ -23,25 +23,11 @@ class ImportManager {
   protected $templateModifier;
 
   /**
-   * The path alias repository.
-   *
-   * @var \Drupal\path_alias\AliasRepositoryInterface
-   */
-  protected $pathAliasRepository;
-
-  /**
    * The template manager.
    *
    * @var \Drupal\ys_templated_content\TemplateManager
    */
   protected $templateManager;
-
-  /**
-   * The UUID service.
-   *
-   * @var \Drupal\Core\Uuid\UuidInterface
-   */
-  protected $uuidService;
 
   /**
    * The content importer.
