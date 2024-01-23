@@ -1,0 +1,19 @@
+<?php
+
+/**
+ * @file
+ * Contains ys_askyale.module functions.
+ */
+
+/**
+ * Add template files for custom blocks.
+ *
+ * Implements hook_theme().
+ */
+function ys_askyale_theme($existing, $type, $theme, $path): array {
+  return [
+    'ys_askyale_chat_block' => [
+      'variables' => [],
+    ],
+  ];
+}

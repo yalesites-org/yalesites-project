@@ -1,0 +1,7 @@
+name: askYale
+type: module
+description: Provides a block that interfaces with a Yale specific AI chat
+core_version_requirement: '^9 || ^10'
+package: YaleSites
+dependencies:
+  - drupal:block

@@ -1,0 +1,200 @@
+/* Modal */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 800; /* figure out a lower number, in Drupal this needs to be high */
+}
+
+.modal::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: -1;
+  background: rgba(0, 69, 120, 0.70);
+  background-blend-mode: multiply;
+  backdrop-filter: blur(6.843055725097656px);
+}
+
+.modalContent {
+  background: linear-gradient(120deg, rgba(223,236,249,1) 0%, rgba(255,255,255,1) 35%, rgba(223,236,249,1) 62%, rgba(255,255,255,1) 100%);
+  position: fixed;
+  top: 0.5rem;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  left: 0.5rem;
+  z-index: 1;
+  display: flex;
+  flex-flow: column nowrap;
+}
+
+.modalCitation {
+  composes: modalContent;
+  background: transparent;
+  justify-content: center;
+}
+
+@media screen and (max-width:500px) {
+  .modalContent {
+    display: block;
+    overflow-y: auto;
+  }
+}
+
+@media screen and (min-width:800px) {
+  .modalContent {
+      top: 2rem;
+      right: 2rem;
+      bottom: 2rem;
+      left: 2rem;
+  }
+}
+
+.modalFooter {
+  flex: 0 auto;
+}
+
+.modalContentInner {
+  display: flex;
+  flex-direction: column;
+  flex: 0 auto;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Citation Varition - content inner*/
+.modalContentInnerCitation{
+  composes: modalContentInner;
+  justify-content: flex-start;
+  height: auto;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+
+.modalHeader {
+  padding: 1rem;
+  position: absolute;
+  backdrop-filter: blur(10px);
+  z-index: 900;
+  width: 100%;
+}
+
+/* Citation Varition - Header */
+.modalHeaderCitation {
+  composes: modalHeader;
+  position: relative;
+  max-width: 600px;
+  margin: 0 auto;
+  background-color: white;
+}
+
+@media screen and (max-width:500px) {
+  .modalHeader {
+      position: relative;
+  }
+
+  .modalFooter {
+    position: relative;
+  }
+}
+
+@media screen and (min-width:800px) {
+  .modalHeader {
+      padding: 2rem;
+  }
+}
+
+.modalHeaderContainer > img {
+  max-width: 130px;
+}
+
+.modalContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
+  width: 100vw;
+  z-index: 900;
+}
+
+/* Citation Varition - Container */
+.modalContainerCitation {
+  composes: modalContainer;
+  z-index: 900;
+}
+
+.modalHeaderContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  font-family: 'Mallory', sans-serif;
+}
+
+.modalHeaderTitleContainer {
+  display: flex;
+  align-items: center;
+  margin-left: 14px;
+  text-decoration: none;
+}
+
+.modalHeaderTitle {
+  font-style: normal;
+  font-weight: 800;
+  font-size: 2rem;
+  line-height: 1.2;
+  display: flex;
+  align-items: flex-end;
+  color: hsl(210, 100%, 21%);
+  max-width: 130px;
+}
+
+button.closeButton {
+  background-color: #286DC0;
+  border: #286DC0 1px solid;
+  border-radius: 2px;
+  transition: all 0.15s;
+  padding: 1rem;
+  line-height: 0;
+  height: 35px;
+  display: flex;
+  align-items: center;
+}
+
+button.closeButton svg {
+  fill: #fff;
+}
+
+button.closeButton:hover {
+  background: #222;
+}
+
+button.closeButton:focus-visible {
+  outline: 2px solid #286DC0;
+  outline-offset: 0.25rem;
+}
+
+.copyButtonContainer {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 5px 12px;
+  gap: 4px;
+  background: #FFFFFF;
+  border: 1px solid #D1D1D1;
+  border-radius: 4px;
+}
+

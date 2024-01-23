@@ -1,0 +1,6 @@
+react_app:
+  css:
+    theme:
+      react/static/assets/index.css: {}
+  js:
+    react/static/assets/index.js: { attributes: { type: module } }

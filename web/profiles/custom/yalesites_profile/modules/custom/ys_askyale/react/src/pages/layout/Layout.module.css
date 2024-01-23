@@ -1,0 +1,225 @@
+.layout {
+    display: flex;
+    flex-direction: column;
+    font-family: 'Mallory', sans-serif;
+    width: 100%;
+}
+
+.hero {
+    padding: 1.5rem 1rem 4.5rem;
+    background-color: white;
+    margin-top: 3rem;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+}
+
+.heroText {
+    max-width: 60vw;
+    color: #222;
+    font-family: 'Mallory', sans-serif;
+}
+
+.heroText h2,
+.heroText p {
+    color: #222;
+    font-family: 'Mallory', sans-serif;
+}
+
+.heroText h2 {
+    font-family: 'YaleNew', serif;
+    margin: 0 0 0.75rem;
+    font-size: 2.5rem;
+    font-weight: 400;
+    line-height: 1;
+    text-wrap: balance;
+    color: #222;
+    max-width: 600px;
+    margin-block-end: 0 !important;
+}
+
+.heroText p {
+    font-size: clamp(1.0625rem, calc(0.36vw + 0.9314rem), 1.25rem) !important;
+    max-width: 400px;
+}
+
+.heroText button {
+    font-size: 1rem;
+    font-weight: 600;
+    background: #00356B;
+    color: white;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border: 0.25rem solid #00356B;
+    transition: all 200ms ease-in-out;
+    font-family: 'Mallory', sans-serif;
+    margin-top: 1rem;
+}
+
+.heroText button:hover,
+.heroText button:focus-visible {
+    background: white;
+    color: hsl(210, 100%, 21%);
+    border-color: #00356B;
+}
+
+.heroText button:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 0.5rem;
+}
+
+.heroFigure {
+    position: absolute;
+    margin: 0;
+    top: 0;
+    left: 60vw;
+    width: 100%;
+}
+
+.heroFigureCaption {
+    position: relative;
+    display: none;
+}
+
+.heroImage {
+    max-width: 50%;
+    max-height: 475px;
+    width: auto;
+}
+
+@media screen and (min-width: 500px) {
+    .heroText {
+        max-width: 60vw;
+    }
+
+    .heroText h2 {
+        font-size: clamp(3.05rem, 3.06vw + 2.29rem, 5rem) !important;
+    }
+}
+
+@media screen and (min-width: 700px) {
+    .hero {
+        padding: 1.5rem 1rem 7rem;
+    }
+}
+
+@media screen and (min-width: 800px) {
+    .hero {
+        padding: 8rem 2rem 1rem;
+        display: flex;
+        flex-flow: row nowrap;
+        max-width: 1344px;
+        margin: 0 auto;
+        overflow: hidden;
+    }
+
+    .heroText {
+        max-width: none;
+    }
+
+    .heroText h2 {
+        max-width: 765px; 
+    }
+
+    .heroText button {
+        font-size: 1.2rem;
+        padding: 1rem 2rem;
+    }
+
+    .heroFigure {
+        position: relative;
+        top: -5rem;
+        left: 0;
+        width: auto;
+    }
+
+    .heroFigure > * {
+        position: relative;
+        z-index: 2;
+    }
+
+    .heroFigure::after {
+        content: "";
+        border-radius: 914px;
+        background: radial-gradient(50% 50% at 50% 50%, rgba(215 211 179 / 50%) 0%, rgba(215 211 179 / 0%) 100%);
+        width: 914px;
+        height: 145px;
+        display: block;
+        position: absolute;
+        bottom: -3rem;
+        left: -19rem;
+        z-index: 0;
+    }
+
+    .heroImage {
+        max-width: none;
+        max-height: 567px;
+    }
+
+    .heroFigureCaption {
+        display: block;
+        max-width: 400px;
+        position: absolute;
+        bottom: -52px;
+        left: 0;
+        font: var(--font-style-body-s);
+    }
+}
+
+@media screen and (min-width: 950px) {
+    .heroFigureCaption {
+        max-width: 250px;
+        bottom: 0;
+        left: -200px;
+    }
+}
+
+@media screen and (min-width: 1400px) {
+    .heroFigureCaption {
+        bottom: 0;
+        left: 300px;
+        width: 260px;
+    }
+}
+
+/* Modal footer content */
+
+.answerDisclaimerText {
+    font-style: italic;
+    font-size: 0.7rem;
+    font-family: 'Mallory', sans-serif;
+  }
+  
+  .answerDisclaimerText a {
+    color: #00356B;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.25rem;
+  }
+  
+  .answerDisclaimerText a:hover {
+    text-decoration: none;
+  }
+  
+  .answerDisclaimerContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: .5rem;
+  }
+  
+  .answerDisclaimerSeparator {
+    margin: 0 0.5rem;
+    font-style: normal;
+  }
+  
+  .urlTextBox {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 1rem;
+    line-height: 1;
+    color: #707070;
+    border: 1px solid #D1D1D1;
+    border-radius: 4px;
+  }
+  
