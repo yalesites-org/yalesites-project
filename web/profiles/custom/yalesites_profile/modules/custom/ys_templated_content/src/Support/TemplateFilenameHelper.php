@@ -6,6 +6,9 @@ use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 
 /**
  * Helper class for template filenames.
+ *
+ * Currently handles all of the things related to getting info on templated
+ * filenames, like the full path, base location, etc.
  */
 class TemplateFilenameHelper implements ContainerInjectionInterface {
 
@@ -52,7 +55,7 @@ class TemplateFilenameHelper implements ContainerInjectionInterface {
     String $content_type,
     String $template
   ) : String {
-    $filename = $this->constructImportFilename($content_type, $template);
+    $filename = ContentTypedFilename::constructFilename($content_type, $template);
     $path = $this->getFullFilenamePath($filename);
     $this->validatePath($path);
     return $path;
@@ -101,24 +104,6 @@ class TemplateFilenameHelper implements ContainerInjectionInterface {
     }
 
     return TRUE;
-  }
-
-  /**
-   * Construct the import filename.
-   *
-   * @param string $content_type
-   *   The content type.
-   * @param string $template
-   *   The template.
-   *
-   * @return string
-   *   The filename.
-   */
-  protected function constructImportFilename(
-    String $content_type,
-    String $template
-  ) : String {
-    return $content_type . '__' . $template . '.yml';
   }
 
   /**

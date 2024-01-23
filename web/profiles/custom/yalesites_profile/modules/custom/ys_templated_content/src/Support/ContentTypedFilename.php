@@ -3,7 +3,9 @@
 namespace Drupal\ys_templated_content\Support;
 
 /**
- * Helper class for template filenames.
+ * Helper to make templated filenames easier to retrieve data about.
+ *
+ * This works for filenames of the form <content_type>__<template_name>.yml.
  */
 class ContentTypedFilename {
 
@@ -91,6 +93,21 @@ class ContentTypedFilename {
    */
   protected function humanizedName(String $template) : String {
     return ucwords(str_replace('_', ' ', $template));
+  }
+
+  /**
+   * Create the filename from the content type and template.
+   *
+   * @param string $content_type
+   *   The content type.
+   * @param string $template
+   *   The template.
+   *
+   * @return string
+   *   The filename.
+   */
+  public static function constructFilename($content_type, $template) {
+    return $content_type . '__' . $template . '.yml';
   }
 
 }
