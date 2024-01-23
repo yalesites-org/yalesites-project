@@ -30,11 +30,12 @@
 
 /* ******************************************* */
 .chosen-container .chosen-results {
-  color: var(--gin-color-info);
+  color: var(--gin-bg-layer);
 }
 
 .chosen-container-multi .chosen-drop .result-selected {
-  color: var(--gin-color-green);
+  color: var(--gin-color-focus);
+  background-color: var(--gin-bg-layer);
 }
 
 /* ************ Contrast fix end ************ */
