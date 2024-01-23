@@ -222,10 +222,12 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    *   The content types.
    */
   private function getContentTypes() : array {
+    $content_types_with_templates = array_keys($this->templateManager->getTemplates());
+    // Get all content types that match the content types with templates.
     $content_types = $this
       ->entityManager
       ->getStorage('node_type')
-      ->loadMultiple();
+      ->loadByProperties(['type' => $content_types_with_templates]);
     $options = [];
 
     foreach ($content_types as $content_type) {
