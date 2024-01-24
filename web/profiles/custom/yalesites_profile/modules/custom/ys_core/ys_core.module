@@ -438,9 +438,13 @@ function ys_core_get_block_type(&$form, &$form_state) {
   if (strpos($inline_block_type_name, ':') !== FALSE) {
     $block_type_name = explode(':', $inline_block_type_name)[1];
   }
-  // Otherwise, attempt to get it the original way.
-  else {
+  // Otherwise, attempt to get it the original way if it exists.
+  elseif (isset($form['settings']['block_form'])) {
     $block_type_name = $form['settings']['block_form']['#block']->bundle();
+  }
+  // If we can't find it, make it something that will fail any future checks.
+  else {
+    $block_type_name = "unknown";
   }
 
   return $block_type_name;
