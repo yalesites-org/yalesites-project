@@ -248,9 +248,19 @@ function ys_core_preprocess_menu(&$variables) {
       // If the menu item is associated with a node, replace the node_title
       // with the node's title.
       if ($menuItem['url']->isRouted()) {
-        $nodeId = $menuItem['url']->getRouteParameters()['node'];
-        $node = \Drupal::entityTypeManager()->getStorage('node')->load($nodeId);
-        $clonedMenuItem['node_title'] = $node->getTitle();
+        $routeParameters = $menuItem['url']->getRouteParameters();
+
+        if (array_key_exists('node', $routeParameters)) {
+          $nodeId = $routeParameters['node'];
+
+          if ($nodeId) {
+            $node = \Drupal::entityTypeManager()->getStorage('node')->load($nodeId);
+
+            if ($node) {
+              $clonedMenuItem['node_title'] = $node->getTitle();
+            }
+          }
+        }
       }
 
       // Add cloned item to the beginning of the menu.
