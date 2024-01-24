@@ -137,18 +137,17 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
     'layout_builder_add_block',
   ];
 
-  // In some cases, block_form will not exist, so we guard against this.
-  // It does seem to exist in the casese we are checking for.
-  if (in_array($form_id, $layout_builder_block_forms) && isset($form['settings']['block_form'])) {
-    // Get the block type from the form.
-    $block = $form['settings']['block_form']['#block'];
+  if (in_array($form_id, $layout_builder_block_forms)) {
+    $inline_block_type_name = $form_state->getBuildInfo()['args'][3];
+    $block_type_name = explode(':', $inline_block_type_name)[-1];
+
     $limited_block_types = [
       'tabs',
       'quick_links',
       'media_grid',
       'gallery',
     ];
-    if (in_array($block->bundle(), $limited_block_types)) {
+    if (in_array($block_type_name, $limited_block_types)) {
       $form['#attached']['library'][] = 'ys_core/block_form';
     }
 
