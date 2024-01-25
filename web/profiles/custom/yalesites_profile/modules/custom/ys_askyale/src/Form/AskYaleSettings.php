@@ -2,6 +2,9 @@
 
 namespace Drupal\ys_askyale\Form;
 
+use Drupal\Core\Cache\Cache;
+use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -12,11 +15,35 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class AskYaleSettings extends ConfigFormBase {
 
   /**
+   * A cache backend interface instance.
+   *
+   * @var \Drupal\Core\Cache\CacheBackendInterface
+   */
+  protected $cacheRender;
+
+  /**
+   * Constructs a SiteInformationForm object.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The factory for configuration objects.
+   * @param \Drupal\Core\Path\CacheBackendInterface $cacheRender
+   *   The Cache BE interface.
+   */
+  public function __construct(
+    ConfigFactoryInterface $config_factory,
+    CacheBackendInterface $cacheRender,
+    ) {
+    parent::__construct($config_factory);
+    $this->cacheRender = $cacheRender;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('config.factory')
+      $container->get('config.factory'),
+      $container->get('cache.render'),
     );
   }
 
@@ -73,6 +100,10 @@ class AskYaleSettings extends ConfigFormBase {
       ->set('azure_base_url', $form_state->getValue('azure_base_url'))
       ->set('initial_questions', $form_state->getValue('initial_questions'))
       ->save();
+
+    if ($this->cacheRender->get('config')) {
+      Cache::invalidateTags(['block.block.askyalechatblock']);
+    }
 
     parent::submitForm($form, $form_state);
   }
