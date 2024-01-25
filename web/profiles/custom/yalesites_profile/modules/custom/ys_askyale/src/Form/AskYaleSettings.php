@@ -7,6 +7,7 @@ use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Plugin\CachedDiscoveryClearerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -22,19 +23,30 @@ class AskYaleSettings extends ConfigFormBase {
   protected $cacheRender;
 
   /**
+   * A plugin cache clear instance.
+   *
+   * @var \Drupal\Core\Plugin\CachedDiscoveryClearerInterface
+   */
+  protected $pluginCacheClearer;
+
+  /**
    * Constructs a SiteInformationForm object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
    * @param \Drupal\Core\Path\CacheBackendInterface $cacheRender
    *   The Cache BE interface.
+   * @param \Drupal\Core\Routing\CachedDiscoveryClearerInterface $plugin_cache_clearer
+   *   The Cache Disovery interface.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
     CacheBackendInterface $cacheRender,
+    CachedDiscoveryClearerInterface $plugin_cache_clearer,
     ) {
     parent::__construct($config_factory);
     $this->cacheRender = $cacheRender;
+    $this->pluginCacheClearer = $plugin_cache_clearer;
   }
 
   /**
@@ -44,6 +56,7 @@ class AskYaleSettings extends ConfigFormBase {
     return new static(
       $container->get('config.factory'),
       $container->get('cache.render'),
+      $container->get('plugin.cache_clearer'),
     );
   }
 
@@ -104,6 +117,8 @@ class AskYaleSettings extends ConfigFormBase {
     if ($this->cacheRender->get('config')) {
       Cache::invalidateTags(['block.block.askyalechatblock']);
     }
+    $this->cacheRender->invalidateAll();
+    $this->pluginCacheClearer->clearCachedDefinitions();
 
     parent::submitForm($form, $form_state);
   }
