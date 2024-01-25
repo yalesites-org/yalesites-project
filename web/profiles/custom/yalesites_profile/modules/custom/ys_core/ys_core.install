@@ -77,23 +77,29 @@ function ys_core_update_9002() {
  * This update will set a default field_style_variation for text blocks.
  */
 function ys_core_update_9003() {
-  // Get all blocks that have field_style_variation that is empty.
-  $query = \Drupal::entityQuery('block_content')
-    ->accessCheck(FALSE)
-    ->condition('type', 'text')
-    ->allRevisions();
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+  $query = $block_storage->getQuery();
+  $query->accessCheck(FALSE)
+    ->condition('type', 'text');
 
   $ids = $query->execute();
-  $block_content_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+
   foreach ($ids as $id) {
-    $block = $block_content_storage->load($id);
-    if ($block && $block->id() == $id) {
-      $style_variation = $block->get('field_style_variation')->getValue();
-      if (empty($style_variation)) {
-        $block->set('field_style_variation', 'default');
-        $block->save();
-      }
+    $block = $block_storage->load($id);
+    $latestRevisionId = $block_storage->getLatestRevisionId($id);
+
+    if (!$latestRevisionId) {
+      $latestRevision = $block_storage->createRevision($block);
     }
+    else {
+      $latestRevision = $block_storage->loadRevision($latestRevisionId);
+    }
+
+    if ($latestRevision->get('field_style_variation')->isEmpty()) {
+      $latestRevision->set('field_style_variation', 'default');
+      $latestRevision->save();
+    }
+
   }
 
 }
