@@ -134,6 +134,7 @@ module:
   wingsuit_lb: 0
   yale_cas: 0
   ys_alert: 0
+  ys_askyale: 0
   ys_captcha: 0
   ys_layouts: 0
   ys_mail: 0

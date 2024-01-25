@@ -1,0 +1,11 @@
+uuid: 1f9f6242-b230-402e-8d02-c02a17a9b978
+langcode: en
+status: true
+dependencies: {  }
+id: askyale
+block_id: ys_askyale_chat_block
+category: advanced
+label: askYale
+image_path: ''
+image_alt: ''
+weight: null

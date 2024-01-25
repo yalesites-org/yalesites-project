@@ -66,6 +66,7 @@ dependencies:
     - toolbar
     - webform
     - ys_alert
+    - ys_askyale
     - ys_core
 id: platform_admin
 label: 'Platform administrator'
@@ -258,6 +259,7 @@ permissions:
   - 'edit terms in event_category'
   - 'edit terms in post_category'
   - 'edit terms in tags'
+  - 'manage askyale'
   - 'mark as hidden in editoria11y'
   - 'override all authored by option'
   - 'override all authored on option'
