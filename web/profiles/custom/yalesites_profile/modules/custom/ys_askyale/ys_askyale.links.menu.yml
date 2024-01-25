@@ -1,0 +1,6 @@
+ys_askyale.settings:
+  title: 'askYale settings'
+  description: 'Settings for the askYale chat service'
+  route_name: ys_askyale.settings
+  parent: ys_core.admin_yalesites
+  weight: 0

@@ -13,7 +13,10 @@
 function ys_askyale_theme($existing, $type, $theme, $path): array {
   return [
     'ys_askyale_chat_block' => [
-      'variables' => [],
+      'variables' => [
+        'azure_root_url' => NULL,
+        'initial_questions' => [],
+      ],
     ],
   ];
 }

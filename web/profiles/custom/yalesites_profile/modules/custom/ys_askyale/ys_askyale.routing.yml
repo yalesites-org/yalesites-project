@@ -1,0 +1,7 @@
+ys_askyale.settings:
+  path: '/admin/yalesites/askyale'
+  defaults:
+    _form: '\Drupal\ys_askyale\Form\AskYaleSettings'
+    _title: 'askYale Settings'
+  requirements:
+    _permission: 'manage askyale'

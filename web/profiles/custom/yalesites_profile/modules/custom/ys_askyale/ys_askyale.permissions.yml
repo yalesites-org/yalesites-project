@@ -1,0 +1,4 @@
+# Permission to manage YaleSites alerts.
+manage askyale:
+  title: 'Manage askYale Settings'
+  description: 'Set and change askYale settings.'

@@ -42,6 +42,11 @@ const enum messageStatus {
 }
 
 const Chat = () => {
+
+    // Gets initial questions.
+    const questionsFromData = document.getElementById("root")?.getAttribute('data-initial-questions');
+    const initialQuestions = (questionsFromData) ? JSON.parse(questionsFromData!) : [];
+
     const appStateContext = useContext(AppStateContext)
     const chatMessageStreamStart = useRef<HTMLDivElement | null>(null);
     const chatMessageStreamEnd = useRef<HTMLDivElement | null>(null);
@@ -75,14 +80,14 @@ const Chat = () => {
     }
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    
+
     const handleOpenModal = () => {
         setIsModalOpen(true);
     };
-    
+
     const handleCloseModal = () => {
         setIsModalOpen(false);
-    }; 
+    };
 
     useEffect(() => {
         if(appStateContext?.state.isCosmosDBAvailable?.status === CosmosDBStatus.NotWorking && appStateContext.state.chatHistoryLoadingState === ChatHistoryLoadingState.Fail && hideErrorDialog){
@@ -558,16 +563,13 @@ const Chat = () => {
         /**
          * A list of possible prompts to show when the chat is empty.
          */
-        const questionPrompts = [
-            'What meals are served at breakfast, lunch, and dinner?',
-            'Do you accommodate special dietary needs or allergies?',
-            'Where can I use my lunch transfers?',
-        ]
-        
+
+        const questionPrompts = initialQuestions ? initialQuestions : [];
+
         /**
-         * 
+         *
          * @param num A number of prompts to return
-         * @returns 
+         * @returns
          */
         const getMultipleRandomQuestionPrompts = (num: number | undefined) => {
             const shuffled = [...questionPrompts].sort(() => 0.5 - Math.random());
@@ -591,12 +593,12 @@ const Chat = () => {
             </Stack>
         );
     }
-    
+
     const customStyles = () => {
-        return { 
+        return {
             position: 'relative',
         }
-        
+
     }
 
     return (
@@ -661,7 +663,7 @@ const Chat = () => {
                                         )}
                                     </>
                                 ))}
-                                {showLoadingMessage && (                                    
+                                {showLoadingMessage && (
                                     <>
                                         <div className={styles.chatMessageGpt}>
                                             <Answer
@@ -694,7 +696,7 @@ const Chat = () => {
                                         <span className={styles.stopGeneratingText} aria-hidden="true">Stop generating</span>
                                 </Stack>
                             )}
-                    
+
                             <QuestionInput
                                 clearOnSend
                                 placeholder="Ask any question..."
@@ -731,7 +733,7 @@ const Chat = () => {
                     </div>
                     {/* Citation Panel */}
                     {isModalOpen && <Modal show={isModalOpen} header={<CitationHeader />} footer={null} close={handleCloseModal} variant={'citation'}>
-                        
+
                     {messages && messages.length > 0 && isCitationPanelOpen && activeCitation && (
                         <Stack.Item className={`${styles.citationPanel}`} tabIndex={0} role="tabpanel" aria-label="Citations Panel">
 
@@ -753,7 +755,7 @@ const Chat = () => {
                                 </div>
                             </div>
                         </Stack.Item>
-                        
+
                         )}
                     </Modal>}
 
