@@ -139,7 +139,6 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
 
   if (in_array($form_id, $layout_builder_block_forms)) {
     // Get the block type from the form.
-
     if (isset($form['settings']['block_form']['#block'])) {
       $block = $form['settings']['block_form']['#block'];
     }
