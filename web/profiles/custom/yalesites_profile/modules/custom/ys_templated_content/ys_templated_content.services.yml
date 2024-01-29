@@ -4,7 +4,10 @@ services:
     arguments: ["@module_handler"]
   ys_templated_content.template_manager:
     class: Drupal\ys_templated_content\TemplateManager
-    arguments: ["@ys_templated_content.template_filename_helper"]
+    arguments: [
+      "@ys_templated_content.template_filename_helper",
+      "@module_handler",
+    ]
   ys_templated_content.import_manager:
     class: Drupal\ys_templated_content\ImportManager
     arguments:
