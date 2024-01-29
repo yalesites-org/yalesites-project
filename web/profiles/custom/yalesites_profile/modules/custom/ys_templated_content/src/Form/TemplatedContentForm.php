@@ -64,7 +64,6 @@ class TemplatedContentForm extends FormBase implements FormInterface {
     $this->entityManager = $entityTypeManager;
     $this->templateManager = $templateManager;
     $this->importManager = $importManager;
-    $this->templates = $this->templateManager->reload();
   }
 
   /**
@@ -157,7 +156,7 @@ class TemplatedContentForm extends FormBase implements FormInterface {
     else {
       try {
         $entity = $this->importManager->createImport($content_type, $template);
-        $this->messenger()->addMessage("Content generated successfully.  Please make any edits now as this has already been created for you.  Don't forget to change the URL alias.");
+        $this->messenger()->addMessage("Content generated successfully.  Please make any edits now as this has already been created for you.");
 
         // Noticed that when you update a node, a log is created.
         // Figured we need to also have a log showing it was imported.
