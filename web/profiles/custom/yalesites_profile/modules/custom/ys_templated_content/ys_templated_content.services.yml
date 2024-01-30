@@ -21,11 +21,3 @@ services:
         "@uuid",
         "@path_alias.repository",
       ]
-  ys_templated_content.importFileSubscriber:
-    class: Drupal\ys_templated_content\EventSubscriber\ImportFileSubscriber
-    arguments:
-      [
-        '@ys_templated_content.template_modifier'
-      ]
-    tags:
-      - {name: event_subscriber}
