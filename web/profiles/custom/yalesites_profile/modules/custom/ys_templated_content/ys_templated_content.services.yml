@@ -15,7 +15,7 @@ services:
         "@ys_templated_content.template_modifier",
       ]
   ys_templated_content.template_modifier:
-    class: Drupal\ys_templated_content\Support\TemplateModifier
+    class: Drupal\ys_templated_content\Modifiers\TemplateModifier
     arguments:
       [
         "@uuid",
