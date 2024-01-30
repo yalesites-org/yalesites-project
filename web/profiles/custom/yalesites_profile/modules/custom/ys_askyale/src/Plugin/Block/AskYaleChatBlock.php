@@ -70,8 +70,10 @@ class AskYaleChatBlock extends BlockBase implements ContainerFactoryPluginInterf
   public function build() {
     $configQuestions = $this->config->get('ys_askyale.settings')->get('initial_questions');
     $questions = [];
-    foreach ($configQuestions as $question) {
-      $questions[] = $question['question'];
+    if ($configQuestions) {
+      foreach ($configQuestions as $question) {
+        $questions[] = $question['question'];
+      }
     }
 
     return [
