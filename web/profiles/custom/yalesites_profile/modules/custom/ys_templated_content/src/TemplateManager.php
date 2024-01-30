@@ -2,24 +2,13 @@
 
 namespace Drupal\ys_templated_content;
 
-use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\ys_templated_content\Support\TemplateFilenameHelper;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Manager for templates.
  */
-class TemplateManager implements ContainerInjectionInterface {
-  const TEMPLATE_PATH = '/config/templates/';
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
+class TemplateManager {
   /**
    * The templates that will be available to the user to select from.
    *
@@ -132,15 +121,12 @@ class TemplateManager implements ContainerInjectionInterface {
    *
    * @param \Drupal\ys_templated_content\Support\TemplateFilenameHelper $templateFilenameHelper
    *   The template filename helper.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
-   *   The module handler.
    */
   public function __construct(
     TemplateFilenameHelper $templateFilenameHelper,
-    ModuleHandlerInterface $moduleHandler,
   ) {
     $this->templateFilenameHelper = $templateFilenameHelper;
-    $this->moduleHandler = $moduleHandler;
+    /* $this->templates = $this->reload(); */
   }
 
   /**
@@ -149,8 +135,14 @@ class TemplateManager implements ContainerInjectionInterface {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('ys_templated_content.template_filename_helper'),
-      $container->get('module_handler'),
     );
+  }
+
+  /**
+   * Get the template options for the currrent content type.
+   */
+  public function reload() {
+    /* $this->templates = $this->refreshTemplates($this->templateFilenameHelper->getTemplateBasePath()); */
   }
 
   /**
@@ -165,10 +157,7 @@ class TemplateManager implements ContainerInjectionInterface {
    *   The file path.
    */
   public function getFilenameForTemplate($content_type, $template) {
-    return $this
-      ->moduleHandler
-      ->getModule('ys_templated_content')
-      ->getPath() . $this::TEMPLATE_PATH . $this->templates[$content_type][$template]['filename'];
+    return $this->templateFilenameHelper->getImportFilePath($content_type, $template);
   }
 
   /**
