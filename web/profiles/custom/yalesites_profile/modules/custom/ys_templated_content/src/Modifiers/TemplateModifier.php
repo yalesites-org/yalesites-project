@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\ys_templated_content\Support;
+namespace Drupal\ys_templated_content\Modifiers;
 
 use Drupal\Component\Uuid\UuidInterface;
 use Drupal\path_alias\AliasRepositoryInterface;
