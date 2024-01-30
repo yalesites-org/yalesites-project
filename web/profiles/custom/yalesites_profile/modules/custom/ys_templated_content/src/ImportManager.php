@@ -5,7 +5,7 @@ namespace Drupal\ys_templated_content;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\single_content_sync\ContentImporterInterface;
 use Drupal\single_content_sync\ContentSyncHelperInterface;
-use Drupal\ys_templated_content\Support\TemplateModifier;
+use Drupal\ys_templated_content\Modifiers\TemplateModifier;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
