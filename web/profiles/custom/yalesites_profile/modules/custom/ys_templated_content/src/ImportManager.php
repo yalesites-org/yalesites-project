@@ -5,7 +5,6 @@ namespace Drupal\ys_templated_content;
 use Drupal\Core\Serialization\Yaml;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
-use Drupal\node\Entity\Node;
 use Drupal\single_content_sync\ContentImporterInterface;
 use Drupal\single_content_sync\ContentSyncHelperInterface;
 use Drupal\ys_templated_content\Modifiers\TemplateModifier;
@@ -216,17 +215,16 @@ class ImportManager {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public static function importFinished($success, $results, $operations) {
-    // Get the last node created.
+    // Get the last node created to redirect to.
     $query = \Drupal::entityQuery('node')
       ->sort('changed', 'DESC')
       ->range(0, 1)
       ->accessCheck(FALSE);
     $nids = $query->execute();
     $nid = reset($nids);
-    $node = Node::load($nid);
 
     return new RedirectResponse(
       Url::fromRoute(
@@ -241,11 +239,30 @@ class ImportManager {
    *
    * @param string $filename
    *   The filename.
+   * @param array $context
+   *   The batch context for when we add it to a batch service.
    *
    * @return \Drupal\Core\Entity\EntityInterface
    *   Redirects to the edit form of the imported entity.
    */
   public function importFromFile($filename, &$context = NULL) {
+    $content_array = $this->getContentFromFile($filename);
+
+    $entity = $this->contentImporter->doImport($content_array);
+
+    return $entity;
+  }
+
+  /**
+   * Get the content from a file.
+   *
+   * @param string $filename
+   *   The filename.
+   *
+   * @return array
+   *   The content array.
+   */
+  public function getContentFromFile($filename) {
     /* Taken from the implementation of single_content_sync:
      * https://git.drupalcode.org/project/single_content_sync/-/blob/1.4.x/src/Form/ContentImportForm.php?ref_type=heads#L136-143
      *
@@ -260,28 +277,18 @@ class ImportManager {
 
     $content_array = $this->templateModifier->process($content_array);
 
-    $entity = $this->contentImporter->doImport($content_array);
-
-    return $entity;
-  }
-
-  /**
-   *
-   */
-  public function getContentFromFile($filename) {
-    $content = file_get_contents($filename);
-
-    $content_array = $this
-      ->contentSyncHelper
-      ->validateYamlFileContent($content);
-
-    $content_array = $this->templateModifier->process($content_array);
-
     return $content_array;
   }
 
   /**
+   * Write the content to a file.
    *
+   * We use this to re-write the modified YAML to the file.
+   *
+   * @param string $yamlFilename
+   *   The filename.
+   * @param array $content
+   *   The content array.
    */
   public function writeContentToFile($yamlFilename, $content) {
     $yaml = Yaml::encode($content);
@@ -289,7 +296,20 @@ class ImportManager {
   }
 
   /**
+   * Replace the UUIDs in the content array.
    *
+   * Any reference to the main UUID should be replaced so that we reference
+   * the newly created one.
+   *
+   * @param array $content
+   *   The content array.
+   * @param string $uuid
+   *   The UUID to replace.
+   * @param string $newUuid
+   *   The new UUID.
+   *
+   * @return array
+   *   The content array with the UUIDs replaced.
    */
   public function replaceUuids($content, $uuid, $newUuid) {
     if (array_key_exists('uuid', $content) && $content['uuid'] === $uuid) {
@@ -313,7 +333,10 @@ class ImportManager {
   }
 
   /**
+   * Generate a UUID.
    *
+   * @return string
+   *   The UUID.
    */
   public function generateUuid() {
     return $this->templateModifier->generateUuid();
