@@ -44,26 +44,6 @@ third_party_settings:
               context_mapping: {  }
             weight: 0
             additional: {  }
-          ddc8a9b0-567c-48e6-b7f0-18e35722350e:
-            uuid: ddc8a9b0-567c-48e6-b7f0-18e35722350e
-            region: content
-            configuration:
-              id: 'field_block:node:post:field_external_source'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: link
-                label: above
-                settings:
-                  trim_length: 80
-                  url_only: false
-                  url_plain: false
-                  rel: ''
-                  target: ''
-                third_party_settings: {  }
-            weight: 1
-            additional: {  }
         third_party_settings:
           layout_builder_lock:
             lock:

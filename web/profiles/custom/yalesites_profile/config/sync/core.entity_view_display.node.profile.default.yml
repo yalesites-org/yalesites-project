@@ -7,6 +7,7 @@ dependencies:
     - field.field.node.profile.field_affiliation
     - field.field.node.profile.field_department
     - field.field.node.profile.field_email
+    - field.field.node.profile.field_external_source
     - field.field.node.profile.field_first_name
     - field.field.node.profile.field_honorific_prefix
     - field.field.node.profile.field_last_name
@@ -25,6 +26,7 @@ dependencies:
   module:
     - layout_builder
     - layout_builder_restrictions
+    - link
     - metatag
     - text
     - user
@@ -228,6 +230,18 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 110
+    region: content
+  field_external_source:
+    type: link
+    label: above
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 4
     region: content
   field_first_name:
     type: string
