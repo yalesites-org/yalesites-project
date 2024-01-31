@@ -3,8 +3,8 @@ import react from "@vitejs/plugin-react";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    base: '/profiles/custom/yalesites_profile/modules/custom/ys_askyale/react/static',
-    plugins: [react()],
+  base: '/profiles/custom/yalesites_profile/modules/custom/ys_askyale/react/static',
+  plugins: [react()],
     build: {
         outDir: "static",
         emptyOutDir: true,

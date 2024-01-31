@@ -1,17 +1,23 @@
-import { useRef, useState, useEffect, useContext, useLayoutEffect, createElement } from "react";
+import { useRef, useState, useEffect, useContext, useLayoutEffect } from "react";
 import { CommandBarButton, IconButton, Dialog, DialogType, Stack } from "@fluentui/react";
-import { DismissRegular, SquareRegular, ShieldLockRegular, ErrorCircleRegular } from "@fluentui/react-icons";
+import { SquareRegular, ShieldLockRegular, ErrorCircleRegular } from "@fluentui/react-icons";
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from 'remark-gfm'
 import rehypeRaw from "rehype-raw";
 import uuid from 'react-uuid';
+
 import { motion } from "framer-motion"
 
 import Modal from "../../components/Modal/Modal";
 
+import { isEmpty } from "lodash-es";
+import DOMPurify from 'dompurify';
+
 import styles from "./Chat.module.css";
 import loading from "../../assets/loader-chat.gif";
+import Contoso from "../../assets/Contoso.svg";
+import { XSSAllowTags } from "../../constants/xssAllowTags";
 
 import {
     ChatMessage,
@@ -48,14 +54,14 @@ const Chat = () => {
     const initialQuestions = (questionsFromData) ? JSON.parse(questionsFromData!) : [];
 
     const appStateContext = useContext(AppStateContext)
-    const chatMessageStreamStart = useRef<HTMLDivElement | null>(null);
+    const AUTH_ENABLED = appStateContext?.state.frontendSettings?.auth_enabled;
     const chatMessageStreamEnd = useRef<HTMLDivElement | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [showLoadingMessage, setShowLoadingMessage] = useState<boolean>(false);
     const [activeCitation, setActiveCitation] = useState<Citation>();
     const [isCitationPanelOpen, setIsCitationPanelOpen] = useState<boolean>(false);
     const abortFuncs = useRef([] as AbortController[]);
-    const [showAuthMessage, setShowAuthMessage] = useState<boolean>(true);
+    const [showAuthMessage, setShowAuthMessage] = useState<boolean>(false);
     const [messages, setMessages] = useState<ChatMessage[]>([])
     const [processMessages, setProcessMessages] = useState<messageStatus>(messageStatus.NotRunning);
     const [clearingChat, setClearingChat] = useState<boolean>(false);
@@ -89,8 +95,15 @@ const Chat = () => {
         setIsModalOpen(false);
     };
 
+    const [ASSISTANT, TOOL, ERROR] = ["assistant", "tool", "error"]
+
     useEffect(() => {
-        if(appStateContext?.state.isCosmosDBAvailable?.status === CosmosDBStatus.NotWorking && appStateContext.state.chatHistoryLoadingState === ChatHistoryLoadingState.Fail && hideErrorDialog){
+        if (appStateContext?.state.isCosmosDBAvailable?.status === CosmosDBStatus.NotWorking
+            || appStateContext?.state.isCosmosDBAvailable?.status === CosmosDBStatus.InvalidCredentials
+            || appStateContext?.state.isCosmosDBAvailable?.status.includes(CosmosDBStatus.InvalidDatabase)
+            || appStateContext?.state.isCosmosDBAvailable?.status.includes(CosmosDBStatus.InvalidContainer)
+            && appStateContext.state.chatHistoryLoadingState === ChatHistoryLoadingState.Fail
+            && hideErrorDialog) {
             let subtitle = `${appStateContext.state.isCosmosDBAvailable.status}. Please contact the site administrator.`
             setErrorMsg({
                 title: "Chat history is not enabled",
@@ -107,9 +120,15 @@ const Chat = () => {
         }, 500);
     }
 
+    useEffect(() => {
+        setIsLoading(appStateContext?.state.chatHistoryLoadingState === ChatHistoryLoadingState.Loading)
+    }, [appStateContext?.state.chatHistoryLoadingState])
+
     const getUserInfoList = async () => {
-        // Commenting this out as we do not need authentication on the front-end.
-        // @see https://github.com/microsoft/sample-app-aoai-chatGPT#add-an-identity-provider
+        // if (!AUTH_ENABLED) {
+        //     setShowAuthMessage(false);
+        //     return;
+        // }
         // const userInfoList = await getUserInfo();
         // if (userInfoList.length === 0 && window.location.hostname !== "127.0.0.1") {
         //     setShowAuthMessage(true);
@@ -118,6 +137,30 @@ const Chat = () => {
         //     setShowAuthMessage(false);
         // }
         setShowAuthMessage(false);
+    }
+
+    let assistantMessage = {} as ChatMessage
+    let toolMessage = {} as ChatMessage
+    let assistantContent = ""
+
+    const processResultMessage = (resultMessage: ChatMessage, userMessage: ChatMessage, conversationId?: string) => {
+        if (resultMessage.role === ASSISTANT) {
+            assistantContent += resultMessage.content
+            assistantMessage = resultMessage
+            assistantMessage.content = assistantContent
+        }
+
+        if (resultMessage.role === TOOL) toolMessage = resultMessage
+
+        if (!conversationId) {
+            isEmpty(toolMessage) ?
+                setMessages([...messages, userMessage, assistantMessage]) :
+                setMessages([...messages, userMessage, toolMessage, assistantMessage]);
+        } else {
+            isEmpty(toolMessage) ?
+                setMessages([...messages, assistantMessage]) :
+                setMessages([...messages, toolMessage, assistantMessage]);
+        }
     }
 
     const makeApiRequestWithoutCosmosDB = async (question: string, conversationId?: string) => {
@@ -134,22 +177,22 @@ const Chat = () => {
         };
 
         let conversation: Conversation | null | undefined;
-        if(!conversationId){
+        if (!conversationId) {
             conversation = {
                 id: conversationId ?? uuid(),
                 title: question,
                 messages: [userMessage],
                 date: new Date().toISOString(),
             }
-        }else{
+        } else {
             conversation = appStateContext?.state?.currentChat
-            if(!conversation){
+            if (!conversation) {
                 console.error("Conversation not found.");
                 setIsLoading(false);
                 setShowLoadingMessage(false);
                 abortFuncs.current = abortFuncs.current.filter(a => a !== abortController);
                 return;
-            }else{
+            } else {
                 conversation.messages.push(userMessage);
             }
         }
@@ -158,7 +201,7 @@ const Chat = () => {
         setMessages(conversation.messages)
 
         const request: ConversationRequest = {
-            messages: [...conversation.messages.filter((answer) => answer.role !== "error")]
+            messages: [...conversation.messages.filter((answer) => answer.role !== ERROR)]
         };
 
         let result = {} as ChatResponse;
@@ -170,7 +213,7 @@ const Chat = () => {
 
                 while (true) {
                     setProcessMessages(messageStatus.Processing)
-                    const {done, value} = await reader.read();
+                    const { done, value } = await reader.read();
                     if (done) break;
 
                     var text = new TextDecoder("utf-8").decode(value);
@@ -180,26 +223,24 @@ const Chat = () => {
                             runningText += obj;
                             result = JSON.parse(runningText);
                             result.choices[0].messages.forEach((obj) => {
-                                obj.id = uuid();
+                                obj.id = result.id;
                                 obj.date = new Date().toISOString();
                             })
                             setShowLoadingMessage(false);
-                            if(!conversationId){
-                                setMessages([...messages, userMessage, ...result.choices[0].messages]);
-                            }else{
-                                setMessages([...messages, ...result.choices[0].messages]);
-                            }
+                            result.choices[0].messages.forEach((resultObj) => {
+                                processResultMessage(resultObj, userMessage, conversationId);
+                            })
                             runningText = "";
                         }
                         catch { }
                     });
                 }
-                conversation.messages.push(...result.choices[0].messages)
+                conversation.messages.push(toolMessage, assistantMessage)
                 appStateContext?.dispatch({ type: 'UPDATE_CURRENT_CHAT', payload: conversation });
-                setMessages([...messages, ...result.choices[0].messages]);
+                setMessages([...messages, toolMessage, assistantMessage]);
             }
 
-        } catch ( e )  {
+        } catch (e) {
             if (!abortController.signal.aborted) {
                 let errorMessage = "An error occurred. Please try again. If the problem persists, please contact the site administrator.";
                 if (result.error?.message) {
@@ -210,7 +251,7 @@ const Chat = () => {
                 }
                 let errorChatMsg: ChatMessage = {
                     id: uuid(),
-                    role: "error",
+                    role: ERROR,
                     content: errorMessage,
                     date: new Date().toISOString()
                 }
@@ -246,40 +287,42 @@ const Chat = () => {
         //api call params set here (generate)
         let request: ConversationRequest;
         let conversation;
-        if(conversationId){
+        if (conversationId) {
             conversation = appStateContext?.state?.chatHistory?.find((conv) => conv.id === conversationId)
-            if(!conversation){
+            if (!conversation) {
                 console.error("Conversation not found.");
                 setIsLoading(false);
                 setShowLoadingMessage(false);
                 abortFuncs.current = abortFuncs.current.filter(a => a !== abortController);
                 return;
-            }else{
+            } else {
                 conversation.messages.push(userMessage);
                 request = {
-                    messages: [...conversation.messages.filter((answer) => answer.role !== "error")]
+                    messages: [...conversation.messages.filter((answer) => answer.role !== ERROR)]
                 };
             }
-        }else{
+        } else {
             request = {
-                messages: [userMessage].filter((answer) => answer.role !== "error")
+                messages: [userMessage].filter((answer) => answer.role !== ERROR)
             };
             setMessages(request.messages)
         }
         let result = {} as ChatResponse;
         try {
             const response = conversationId ? await historyGenerate(request, abortController.signal, conversationId) : await historyGenerate(request, abortController.signal);
-            if(!response?.ok){
+            if (!response?.ok) {
+                const responseJson = await response.json();
+                var errorResponseMessage = responseJson.error === undefined ? "Please try again. If the problem persists, please contact the site administrator." : responseJson.error;
                 let errorChatMsg: ChatMessage = {
                     id: uuid(),
-                    role: "error",
-                    content: "There was an error generating a response. Chat history can't be saved at this time. If the problem persists, please contact the site administrator.",
+                    role: ERROR,
+                    content: `There was an error generating a response. Chat history can't be saved at this time. ${errorResponseMessage}`,
                     date: new Date().toISOString()
                 }
                 let resultConversation;
-                if(conversationId){
+                if (conversationId) {
                     resultConversation = appStateContext?.state?.chatHistory?.find((conv) => conv.id === conversationId)
-                    if(!resultConversation){
+                    if (!resultConversation) {
                         console.error("Conversation not found.");
                         setIsLoading(false);
                         setShowLoadingMessage(false);
@@ -287,7 +330,7 @@ const Chat = () => {
                         return;
                     }
                     resultConversation.messages.push(errorChatMsg);
-                }else{
+                } else {
                     setMessages([...messages, userMessage, errorChatMsg])
                     setIsLoading(false);
                     setShowLoadingMessage(false);
@@ -304,7 +347,7 @@ const Chat = () => {
 
                 while (true) {
                     setProcessMessages(messageStatus.Processing)
-                    const {done, value} = await reader.read();
+                    const { done, value } = await reader.read();
                     if (done) break;
 
                     var text = new TextDecoder("utf-8").decode(value);
@@ -314,15 +357,13 @@ const Chat = () => {
                             runningText += obj;
                             result = JSON.parse(runningText);
                             result.choices[0].messages.forEach((obj) => {
-                                obj.id = uuid();
+                                obj.id = result.id;
                                 obj.date = new Date().toISOString();
                             })
                             setShowLoadingMessage(false);
-                            if(!conversationId){
-                                setMessages([...messages, userMessage, ...result.choices[0].messages]);
-                            }else{
-                                setMessages([...messages, ...result.choices[0].messages]);
-                            }
+                            result.choices[0].messages.forEach((resultObj) => {
+                                processResultMessage(resultObj, userMessage, conversationId);
+                            })
                             runningText = "";
                         }
                         catch { }
@@ -330,38 +371,44 @@ const Chat = () => {
                 }
 
                 let resultConversation;
-                if(conversationId){
+                if (conversationId) {
                     resultConversation = appStateContext?.state?.chatHistory?.find((conv) => conv.id === conversationId)
-                    if(!resultConversation){
+                    if (!resultConversation) {
                         console.error("Conversation not found.");
                         setIsLoading(false);
                         setShowLoadingMessage(false);
                         abortFuncs.current = abortFuncs.current.filter(a => a !== abortController);
                         return;
                     }
-                    resultConversation.messages.push(...result.choices[0].messages);
-                }else{
+                    isEmpty(toolMessage) ?
+                        resultConversation.messages.push(assistantMessage) :
+                        resultConversation.messages.push(toolMessage, assistantMessage)
+                } else {
                     resultConversation = {
                         id: result.history_metadata.conversation_id,
                         title: result.history_metadata.title,
                         messages: [userMessage],
                         date: result.history_metadata.date
                     }
-                    resultConversation.messages.push(...result.choices[0].messages);
+                    isEmpty(toolMessage) ?
+                        resultConversation.messages.push(assistantMessage) :
+                        resultConversation.messages.push(toolMessage, assistantMessage)
                 }
-                if(!resultConversation){
+                if (!resultConversation) {
                     setIsLoading(false);
                     setShowLoadingMessage(false);
                     abortFuncs.current = abortFuncs.current.filter(a => a !== abortController);
                     return;
                 }
                 appStateContext?.dispatch({ type: 'UPDATE_CURRENT_CHAT', payload: resultConversation });
-                setMessages([...messages, ...result.choices[0].messages]);
+                isEmpty(toolMessage) ?
+                    setMessages([...messages, assistantMessage]) :
+                    setMessages([...messages, toolMessage, assistantMessage]);
             }
 
-        } catch ( e )  {
+        } catch (e) {
             if (!abortController.signal.aborted) {
-                let errorMessage = "An error occurred. Please try again. If the problem persists, please contact the site administrator.";
+                let errorMessage = `An error occurred. ${errorResponseMessage}`;
                 if (result.error?.message) {
                     errorMessage = result.error.message;
                 }
@@ -370,14 +417,14 @@ const Chat = () => {
                 }
                 let errorChatMsg: ChatMessage = {
                     id: uuid(),
-                    role: "error",
+                    role: ERROR,
                     content: errorMessage,
                     date: new Date().toISOString()
                 }
                 let resultConversation;
-                if(conversationId){
+                if (conversationId) {
                     resultConversation = appStateContext?.state?.chatHistory?.find((conv) => conv.id === conversationId)
-                    if(!resultConversation){
+                    if (!resultConversation) {
                         console.error("Conversation not found.");
                         setIsLoading(false);
                         setShowLoadingMessage(false);
@@ -385,9 +432,17 @@ const Chat = () => {
                         return;
                     }
                     resultConversation.messages.push(errorChatMsg);
-                }else{
-                    if(!result.history_metadata){
+                } else {
+                    if (!result.history_metadata) {
                         console.error("Error retrieving data.", result);
+                        console.log("errorMessage", errorMessage)
+                        let errorChatMsg: ChatMessage = {
+                            id: uuid(),
+                            role: ERROR,
+                            content: errorMessage,
+                            date: new Date().toISOString()
+                        }
+                        setMessages([...messages, userMessage, errorChatMsg])
                         setIsLoading(false);
                         setShowLoadingMessage(false);
                         abortFuncs.current = abortFuncs.current.filter(a => a !== abortController);
@@ -401,7 +456,7 @@ const Chat = () => {
                     }
                     resultConversation.messages.push(errorChatMsg);
                 }
-                if(!resultConversation){
+                if (!resultConversation) {
                     setIsLoading(false);
                     setShowLoadingMessage(false);
                     abortFuncs.current = abortFuncs.current.filter(a => a !== abortController);
@@ -424,17 +479,17 @@ const Chat = () => {
 
     const clearChat = async () => {
         setClearingChat(true)
-        if(appStateContext?.state.currentChat?.id && appStateContext?.state.isCosmosDBAvailable.cosmosDB){
+        if (appStateContext?.state.currentChat?.id && appStateContext?.state.isCosmosDBAvailable.cosmosDB) {
             let response = await historyClear(appStateContext?.state.currentChat.id)
-            if(!response.ok){
+            if (!response.ok) {
                 setErrorMsg({
                     title: "Error clearing current chat",
                     subtitle: "Please try again. If the problem persists, please contact the site administrator.",
                 })
                 toggleErrorDialog();
-            }else{
-                appStateContext?.dispatch({ type: 'DELETE_CURRENT_CHAT_MESSAGES', payload: appStateContext?.state.currentChat.id});
-                appStateContext?.dispatch({ type: 'UPDATE_CHAT_HISTORY', payload: appStateContext?.state.currentChat});
+            } else {
+                appStateContext?.dispatch({ type: 'DELETE_CURRENT_CHAT_MESSAGES', payload: appStateContext?.state.currentChat.id });
+                appStateContext?.dispatch({ type: 'UPDATE_CHAT_HISTORY', payload: appStateContext?.state.currentChat });
                 setActiveCitation(undefined);
                 setIsCitationPanelOpen(false);
                 setMessages([])
@@ -460,9 +515,8 @@ const Chat = () => {
 
     useEffect(() => {
         if (appStateContext?.state.currentChat) {
-
             setMessages(appStateContext.state.currentChat.messages)
-        }else{
+        } else {
             setMessages([])
         }
     }, [appStateContext?.state.currentChat]);
@@ -474,22 +528,22 @@ const Chat = () => {
         }
 
         if (appStateContext && appStateContext.state.currentChat && processMessages === messageStatus.Done) {
-                if(appStateContext.state.isCosmosDBAvailable.cosmosDB){
-                    if(!appStateContext?.state.currentChat?.messages){
-                        console.error("Failure fetching current chat state.")
-                        return
-                    }
-                    saveToDB(appStateContext.state.currentChat.messages, appStateContext.state.currentChat.id)
+            if (appStateContext.state.isCosmosDBAvailable.cosmosDB) {
+                if (!appStateContext?.state.currentChat?.messages) {
+                    console.error("Failure fetching current chat state.")
+                    return
+                }
+                saveToDB(appStateContext.state.currentChat.messages, appStateContext.state.currentChat.id)
                     .then((res) => {
-                        if(!res.ok){
+                        if (!res.ok) {
                             let errorMessage = "An error occurred. Answers can't be saved at this time. If the problem persists, please contact the site administrator.";
                             let errorChatMsg: ChatMessage = {
                                 id: uuid(),
-                                role: "error",
+                                role: ERROR,
                                 content: errorMessage,
                                 date: new Date().toISOString()
                             }
-                            if(!appStateContext?.state.currentChat?.messages){
+                            if (!appStateContext?.state.currentChat?.messages) {
                                 let err: Error = {
                                     ...new Error,
                                     message: "Failure fetching current chat state."
@@ -509,17 +563,17 @@ const Chat = () => {
                         }
                         return errRes;
                     })
-                }else{
-                }
-                appStateContext?.dispatch({ type: 'UPDATE_CHAT_HISTORY', payload: appStateContext.state.currentChat });
-                setMessages(appStateContext.state.currentChat.messages)
+            } else {
+            }
+            appStateContext?.dispatch({ type: 'UPDATE_CHAT_HISTORY', payload: appStateContext.state.currentChat });
+            setMessages(appStateContext.state.currentChat.messages)
             setProcessMessages(messageStatus.NotRunning)
         }
     }, [processMessages]);
 
     useEffect(() => {
-        getUserInfoList();
-    }, []);
+        if (AUTH_ENABLED !== undefined) getUserInfoList();
+    }, [AUTH_ENABLED]);
 
     useLayoutEffect(() => {
         chatMessageStreamEnd.current?.scrollIntoView({ behavior: "smooth" })
@@ -528,7 +582,6 @@ const Chat = () => {
     const onShowCitation = (citation: Citation) => {
         setActiveCitation(citation);
         setIsCitationPanelOpen(true);
-        setIsModalOpen(true);
     };
 
     const onViewSource = (citation: Citation) => {

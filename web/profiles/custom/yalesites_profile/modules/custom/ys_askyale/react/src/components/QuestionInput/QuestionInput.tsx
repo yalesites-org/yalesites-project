@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Stack, TextField } from "@fluentui/react";
+import { SendRegular } from "@fluentui/react-icons";
+import Send from "../../assets/Send.svg";
 import styles from "./QuestionInput.module.css";
 
 interface Props {
@@ -22,7 +24,6 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
             onSend(providedQuestion as string);
         }
     }, [providedQuestion])
-    
 
     const sendQuestion = () => {
         if (disabled || !question.trim()) {
@@ -66,13 +67,13 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                 onKeyDown={onEnterPress}
                 inputClassName={styles.questionInputItem}
             />
-            <button className={styles.questionInputSendButtonContainer} 
+            <button className={styles.questionInputSendButtonContainer}
                 aria-label="Ask question button"
                 onClick={sendQuestion}
                 onKeyDown={e => e.key === "Enter" || e.key === " " ? sendQuestion() : null}
                 aria-disabled= {sendQuestionDisabled}
             >
-                { sendQuestionDisabled ? 
+                { sendQuestionDisabled ?
                     <span className={styles.questionInputSendButtonDisabled}>
                          <svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
                             <title>Ask any question</title>

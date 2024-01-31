@@ -13,6 +13,7 @@
     "@fluentui/react-hooks": "^8.6.29",
     "@fluentui/react-icons": "^2.0.195",
     "framer-motion": "^10.16.4",
+    "dompurify": "^3.0.8",
     "lodash": "^4.17.21",
     "lodash-es": "^4.17.21",
     "react": "^18.2.0",
@@ -25,6 +26,7 @@
     "remark-supersub": "^1.0.0"
   },
   "devDependencies": {
+    "@types/dompurify": "^3.0.5",
     "@types/lodash-es": "^4.17.7",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",

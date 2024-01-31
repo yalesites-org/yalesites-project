@@ -1,37 +1,62 @@
 import { Outlet, Link } from "react-router-dom";
 import styles from "./Layout.module.css";
-import { Stack } from "@fluentui/react";
-import { useContext, useEffect, useState, useRef } from "react";
-import { HistoryButton } from "../../components/common/Button";
+import Contoso from "../../assets/Contoso.svg";
+import { CopyRegular, ShareRegular } from "@fluentui/react-icons";
+import { Dialog, Stack, TextField, ICommandBarStyles, IButtonStyles } from "@fluentui/react";
+import { useContext, useEffect, useState } from "react";
+import { HistoryButton, ShareButton } from "../../components/common/Button";
 import { AppStateContext } from "../../state/AppProvider";
 import { CosmosDBStatus } from "../../api";
-import heroImage from "../../assets/heroImage.png";
-
 import aiLogo from "../../assets/Logo.svg";
 import Modal from "../../components/Modal/Modal";
+import heroImage from "../../assets/heroImage.png";
 
 const Layout = () => {
+    const [isSharePanelOpen, setIsSharePanelOpen] = useState<boolean>(false);
+    const [copyClicked, setCopyClicked] = useState<boolean>(false);
+    const [copyText, setCopyText] = useState<string>("Copy URL");
     const appStateContext = useContext(AppStateContext)
-    
+
     const [isModalOpen, setIsModalOpen] = useState(false);
-    
+
     const handleOpenModal = () => {
         setIsModalOpen(true);
         document.body.setAttribute('data-modal-active', 'true');
         document.body.setAttribute('data-body-frozen', 'true');
     };
-    
+
     const handleCloseModal = () => {
         setIsModalOpen(false);
         document.body.removeAttribute('data-modal-active');
         document.body.removeAttribute('data-body-frozen');
-    }; 
-    
+    };
+
+    const handleShareClick = () => {
+        setIsSharePanelOpen(true);
+    };
+
+    const handleSharePanelDismiss = () => {
+        setIsSharePanelOpen(false);
+        setCopyClicked(false);
+        setCopyText("Copy URL");
+    };
+
+    const handleCopyClick = () => {
+        navigator.clipboard.writeText(window.location.href);
+        setCopyClicked(true);
+    };
+
     const handleHistoryClick = () => {
         appStateContext?.dispatch({ type: 'TOGGLE_CHAT_HISTORY' })
     };
 
-    useEffect(() => {}, [appStateContext?.state.isCosmosDBAvailable.status]);
+    useEffect(() => {
+        if (copyClicked) {
+            setCopyText("Copied URL");
+        }
+    }, [copyClicked]);
+
+    useEffect(() => { }, [appStateContext?.state.isCosmosDBAvailable.status]);
 
     // Set const for modal footer content
     const LandingFooter = () => {
@@ -66,10 +91,6 @@ const Layout = () => {
       return () => window.removeEventListener('keydown', close)
     },[])
 
-    const showHistory = () => {
-        appStateContext?.state.isCosmosDBAvailable?.status !== CosmosDBStatus.NotConfigured && 
-            <HistoryButton onClick={handleHistoryClick} text={appStateContext?.state?.isChatHistoryOpen ? "Hide chat history" : "Show chat history"}/>    
-    }
     return (
     <div className={styles.layout}>
         {isModalOpen && <Modal show={isModalOpen} header={<LandingHeader />} footer={<LandingFooter />} close={handleCloseModal} variant={''}><Outlet /></Modal>}
@@ -91,7 +112,7 @@ const Layout = () => {
             <figcaption className={styles.heroFigureCaption}><em>Untitled</em> by Jean-Michel Basquiat (American, 1960–1988). Yale University Art Gallery.</figcaption>
           </figure>
         </section>
-        
+
     </div>
     );
 };

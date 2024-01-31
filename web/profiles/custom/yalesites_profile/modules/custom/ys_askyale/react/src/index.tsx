@@ -19,7 +19,7 @@ export default function App() {
                 <Routes>
                     <Route path="/" element={<Layout />}>
                         <Route index element={<Chat />} />
-                        <Route path="*" element={<Chat />} />
+                        <Route path="*" element={<NoPage />} />
                     </Route>
                 </Routes>
             </HashRouter>

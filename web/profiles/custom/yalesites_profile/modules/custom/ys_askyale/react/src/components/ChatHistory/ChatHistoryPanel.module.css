@@ -18,6 +18,7 @@
     padding-top: 5px;
     padding-bottom: 5px;
     box-sizing: border-box;
+    border-radius: 5px;
     display: flex;
 }
 
@@ -32,6 +33,7 @@
     width: 28px;
     height: 28px;
     border: 1px solid #d1d1d1;
+    border-radius: 5px;
     background-color: white;
     margin: auto 2.5px;
     cursor: pointer;
@@ -46,12 +48,19 @@
     width: 100%;
 }
 
+.spinnerContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50px;
+}
+
 .chatList {
     width: 100%;
 }
 
 .chatMonth {
-    font-size: 1rem;
+    font-size: 14px;
     font-weight: 600;
     margin-bottom: 5px;
     padding-left: 15px;
