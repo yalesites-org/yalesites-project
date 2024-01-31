@@ -3,20 +3,45 @@
 namespace Drupal\ys_templated_content;
 
 /**
- *
+ * Takes a zip file and modifies it for new import.
  */
 class ZipFile {
 
+  /**
+   * The path to the temporary directory.
+   *
+   * @var string
+   */
   protected $tempDir;
 
+  /**
+   * The different YAML files found in the zip.
+   *
+   * @var array
+   */
   protected $yamls;
 
+  /**
+   * The filename.
+   *
+   * @var string
+   */
   protected $file;
 
+  /**
+   * The import manager.
+   *
+   * @var \Drupal\ys_templated_content\ImportManager
+   */
   protected $importManager;
 
   /**
+   * ZipFile constructor.
    *
+   * @param string $file
+   *   The filename.
+   * @param \Drupal\ys_templated_content\ImportManager $importManager
+   *   The import manager.
    */
   public function __construct($file, $importManager) {
     $this->file = $file;
@@ -24,7 +49,10 @@ class ZipFile {
   }
 
   /**
+   * Process the zip file.
    *
+   * @return string
+   *   The new filename of the modified zip.
    */
   public function process() {
     $this->extractToTemp();
@@ -35,7 +63,7 @@ class ZipFile {
   }
 
   /**
-   *
+   * Extract the zip to a temporary directory.
    */
   protected function extractToTemp() {
     $this->tempDir = tempnam(sys_get_temp_dir(), 'zip');
@@ -48,7 +76,7 @@ class ZipFile {
   }
 
   /**
-   *
+   * Find all the YAML files in the temp directory.
    */
   protected function findYamlFiles() {
     $this->yamls = [];
@@ -64,7 +92,7 @@ class ZipFile {
   }
 
   /**
-   *
+   * Process the YAML files found for insert.
    */
   protected function processYamls() {
     foreach ($this->yamls as $yaml) {
@@ -73,7 +101,10 @@ class ZipFile {
   }
 
   /**
+   * Modify the YAML file for new insert.
    *
+   * @param string $yaml
+   *   The YAML file.
    */
   protected function modifyForInsertion($yaml) {
     $content = $this->importManager->getContentFromFile($yaml);
@@ -86,7 +117,10 @@ class ZipFile {
   }
 
   /**
+   * Zip the modified archive.
    *
+   * @return string
+   *   The new file path of the modified zip.
    */
   protected function zipModifiedArchive() {
     $zip = new \ZipArchive();
@@ -99,7 +133,10 @@ class ZipFile {
   }
 
   /**
+   * Add files to the zip.
    *
+   * @param \ZipArchive $zip
+   *   The zip archive.
    */
   protected function addFilesToZip($zip) {
     $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->tempDir));
