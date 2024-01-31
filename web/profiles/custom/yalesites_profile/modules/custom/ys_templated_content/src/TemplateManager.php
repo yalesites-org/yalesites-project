@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_templated_content;
 
+use Drupal\Core\Extension\ModuleHandler;
 use Drupal\ys_templated_content\Support\TemplateFilenameHelper;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -9,6 +10,16 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Manager for templates.
  */
 class TemplateManager {
+
+  const TEMPLATE_PATH = '/config/templates/';
+
+  /**
+   * The module handler.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandler
+   */
+  protected $moduleHandler;
+
   /**
    * The templates that will be available to the user to select from.
    *
@@ -20,6 +31,12 @@ class TemplateManager {
         'title' => 'Empty',
         'description' => 'An empty template.',
         'filename' => '',
+        'preview_image' => '',
+      ],
+      'zip_file' => [
+        'title' => 'Zip',
+        'description' => 'A template for a zip file.',
+        'filename' => 'page__zip_file.zip',
         'preview_image' => '',
       ],
       'faq' => [
@@ -119,14 +136,17 @@ class TemplateManager {
   /**
    * Constructs the controller object.
    *
+   * @param \Drupal\Core\Extension\ModuleHandler $module_handler
+   *   The module handler.
    * @param \Drupal\ys_templated_content\Support\TemplateFilenameHelper $templateFilenameHelper
    *   The template filename helper.
    */
   public function __construct(
+    ModuleHandler $module_handler,
     TemplateFilenameHelper $templateFilenameHelper,
   ) {
+    $this->moduleHandler = $module_handler;
     $this->templateFilenameHelper = $templateFilenameHelper;
-    /* $this->templates = $this->reload(); */
   }
 
   /**
@@ -134,15 +154,9 @@ class TemplateManager {
    */
   public static function create(ContainerInterface $container) {
     return new static(
+      $container->get('module_handler'),
       $container->get('ys_templated_content.template_filename_helper'),
     );
-  }
-
-  /**
-   * Get the template options for the currrent content type.
-   */
-  public function reload() {
-    /* $this->templates = $this->refreshTemplates($this->templateFilenameHelper->getTemplateBasePath()); */
   }
 
   /**
@@ -157,7 +171,11 @@ class TemplateManager {
    *   The file path.
    */
   public function getFilenameForTemplate($content_type, $template) {
-    return $this->templateFilenameHelper->getImportFilePath($content_type, $template);
+    $filename = $this->templates[$content_type][$template]['filename'];
+    return $this
+      ->moduleHandler
+      ->getModule('ys_templated_content')
+      ->getPath() . $this::TEMPLATE_PATH . $filename;
   }
 
   /**
