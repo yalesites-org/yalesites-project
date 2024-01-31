@@ -166,10 +166,22 @@ class TemplateModifier {
     return $content_array;
   }
 
+  /**
+   * Generate a UUID.
+   *
+   * @return string
+   *   The UUID.
+   */
   public function generateUuid() {
     return $this->uuidService->generate();
   }
 
+  /**
+   * Get the current unix timestamp.
+   *
+   * @return int
+   *   The current unix timestamp.
+   */
   public function getUnixTimestamp() {
     return time();
   }
