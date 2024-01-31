@@ -25,13 +25,6 @@ class TemplatedContentForm extends FormBase implements FormInterface {
   protected $templateManager;
 
   /**
-   * The templates that will be available to the user to select from.
-   *
-   * @var array
-   */
-  protected $templates = [];
-
-  /**
    * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
@@ -64,7 +57,6 @@ class TemplatedContentForm extends FormBase implements FormInterface {
     $this->entityManager = $entityTypeManager;
     $this->templateManager = $templateManager;
     $this->importManager = $importManager;
-    $this->templates = $this->templateManager->reload();
   }
 
   /**
@@ -157,21 +149,23 @@ class TemplatedContentForm extends FormBase implements FormInterface {
     else {
       try {
         $entity = $this->importManager->createImport($content_type, $template);
-        $this->messenger()->addMessage("Content generated successfully.  Please make any edits now as this has already been created for you.  Don't forget to change the URL alias.");
+        if ($entity) {
+          $this->messenger()->addMessage("Content generated successfully.  Please make any edits now as this has already been created for you.  Don't forget to change the URL alias.");
 
-        // Noticed that when you update a node, a log is created.
-        // Figured we need to also have a log showing it was imported.
-        $this->logger('ys_templated_content')->notice(
-        'Templated content created: @label (@type)',
-        [
-          '@label' => $entity->label(),
-          '@type' => $entity->getEntityTypeId(),
-        ]
-        );
-        $form_state->setRedirect(
-        $this->getEntityEditFormPath($entity),
-        [$entity->getEntityTypeId() => $entity->id()]
-        );
+          // Noticed that when you update a node, a log is created.
+          // Figured we need to also have a log showing it was imported.
+          $this->logger('ys_templated_content')->notice(
+          'Templated content created: @label (@type)',
+          [
+            '@label' => $entity->label(),
+            '@type' => $entity->getEntityTypeId(),
+          ]
+          );
+          $form_state->setRedirect(
+          $this->getEntityEditFormPath($entity),
+          [$entity->getEntityTypeId() => $entity->id()]
+          );
+        }
       }
       catch (\Exception $e) {
         $this->messenger()->addError($e->getMessage());
