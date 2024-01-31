@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.node.page.field_external_source
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
     - field.field.node.page.field_tags
@@ -15,6 +16,7 @@ dependencies:
     - allowed_formats
     - chosen_field
     - field_group
+    - link
     - maxlength
     - media_library
     - metatag
@@ -30,7 +32,7 @@ third_party_settings:
       label: Teaser
       region: content
       parent_name: ''
-      weight: 2
+      weight: 3
       format_type: fieldset
       format_settings:
         classes: ''
@@ -44,7 +46,7 @@ third_party_settings:
       label: 'Publishing Settings'
       region: content
       parent_name: ''
-      weight: 6
+      weight: 7
       format_type: details_sidebar
       format_settings:
         classes: ''
@@ -59,6 +61,14 @@ targetEntityType: node
 bundle: page
 mode: default
 content:
+  field_external_source:
+    type: link_default
+    weight: 2
+    region: content
+    settings:
+      placeholder_url: ''
+      placeholder_title: ''
+    third_party_settings: {  }
   field_login_required:
     type: boolean_checkbox
     weight: 7
@@ -68,7 +78,7 @@ content:
     third_party_settings: {  }
   field_metatags:
     type: metatag_firehose
-    weight: 5
+    weight: 6
     region: content
     settings:
       sidebar: true
@@ -112,7 +122,7 @@ content:
     third_party_settings: {  }
   path:
     type: path
-    weight: 3
+    weight: 4
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -137,7 +147,7 @@ content:
       placeholder: ''
     third_party_settings: {  }
   url_redirects:
-    weight: 4
+    weight: 5
     region: content
     settings: {  }
     third_party_settings: {  }

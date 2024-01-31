@@ -1,0 +1,23 @@
+uuid: 3824ffd7-47ac-4d5b-a270-c842c7554ad9
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_external_source
+    - node.type.event
+  module:
+    - link
+id: node.event.field_external_source
+field_name: field_external_source
+entity_type: node
+bundle: event
+label: 'External Source'
+description: 'Provide a URL to redirect visitors to an external page.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  title: 0
+  link_type: 16
+field_type: link

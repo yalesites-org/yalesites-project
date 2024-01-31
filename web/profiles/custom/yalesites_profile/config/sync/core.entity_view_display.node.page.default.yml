@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.node.page.field_external_source
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
     - field.field.node.page.field_tags
@@ -15,6 +16,7 @@ dependencies:
     - layout_builder
     - layout_builder_restrictions
     - layout_discovery
+    - link
     - user
     - ys_layouts
 third_party_settings:
@@ -27,7 +29,27 @@ third_party_settings:
         layout_settings:
           label: 'Banner Section'
           context_mapping: {  }
-        components: {  }
+        components:
+          31040ac7-4c9d-4dff-abe0-d9e91b821904:
+            uuid: 31040ac7-4c9d-4dff-abe0-d9e91b821904
+            region: content
+            configuration:
+              id: 'field_block:node:page:field_external_source'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: link
+                label: above
+                settings:
+                  trim_length: 80
+                  url_only: false
+                  url_plain: false
+                  rel: ''
+                  target: ''
+                third_party_settings: {  }
+            weight: 0
+            additional: {  }
         third_party_settings:
           layout_builder_lock:
             lock:
@@ -192,7 +214,19 @@ id: node.page.default
 targetEntityType: node
 bundle: page
 mode: default
-content: {  }
+content:
+  field_external_source:
+    type: link
+    label: above
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 1
+    region: content
 hidden:
   field_login_required: true
   field_metatags: true

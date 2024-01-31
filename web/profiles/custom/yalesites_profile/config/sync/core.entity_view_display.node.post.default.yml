@@ -5,6 +5,7 @@ dependencies:
   config:
     - field.field.node.post.field_author
     - field.field.node.post.field_category
+    - field.field.node.post.field_external_source
     - field.field.node.post.field_login_required
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
@@ -18,6 +19,7 @@ dependencies:
     - layout_builder
     - layout_builder_restrictions
     - layout_discovery
+    - link
     - user
     - ys_layouts
 third_party_settings:
@@ -41,6 +43,26 @@ third_party_settings:
               provider: ys_layouts
               context_mapping: {  }
             weight: 0
+            additional: {  }
+          ddc8a9b0-567c-48e6-b7f0-18e35722350e:
+            uuid: ddc8a9b0-567c-48e6-b7f0-18e35722350e
+            region: content
+            configuration:
+              id: 'field_block:node:post:field_external_source'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: link
+                label: above
+                settings:
+                  trim_length: 80
+                  url_only: false
+                  url_plain: false
+                  rel: ''
+                  target: ''
+                third_party_settings: {  }
+            weight: 1
             additional: {  }
         third_party_settings:
           layout_builder_lock:
@@ -105,6 +127,18 @@ content:
       link: true
     third_party_settings: {  }
     weight: 1
+    region: content
+  field_external_source:
+    type: link
+    label: above
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 2
     region: content
 hidden:
   field_login_required: true
