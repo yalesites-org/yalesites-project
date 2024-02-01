@@ -2,8 +2,8 @@
 
 namespace Drupal\ys_core\EventSubscriber;
 
-use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Routing\TrustedRedirectResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
@@ -47,9 +47,9 @@ class ExternalSourceRedirectSubscriber implements EventSubscriberInterface {
     if ($this->routeMatch->getRouteName() === 'entity.node.canonical') {
       /** @var \Drupal\node\NodeInterface $node */
       $node = $this->routeMatch->getParameter('node');
-      if (!empty($node) && $node->hasField(SELF::SOURCE_FIELD)) {
-        if (!empty($node->get(SELF::SOURCE_FIELD)->first())) {
-          $link = $node->get(SELF::SOURCE_FIELD)->first()->getValue();
+      if (!empty($node) && $node->hasField(self::SOURCE_FIELD)) {
+        if (!empty($node->get(self::SOURCE_FIELD)->first())) {
+          $link = $node->get(self::SOURCE_FIELD)->first()->getValue();
           if (!empty($link['uri'])) {
             $response = new TrustedRedirectResponse($link['uri']);
             $event->setResponse($response);
@@ -58,7 +58,6 @@ class ExternalSourceRedirectSubscriber implements EventSubscriberInterface {
       }
     }
   }
-
 
   /**
    * Constructs a new ExternalSourceRedirectSubscriber object.
