@@ -12,7 +12,7 @@ field_name: field_external_source
 entity_type: node
 bundle: event
 label: 'External Source'
-description: 'Provide a URL to redirect visitors to an external page.'
+description: 'External Source automatically redirects users to the URL provided, bypassing content in Layout Builder.'
 required: false
 translatable: false
 default_value: {  }

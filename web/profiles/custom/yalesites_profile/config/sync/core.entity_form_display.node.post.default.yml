@@ -61,6 +61,22 @@ third_party_settings:
         description: ''
         required_fields: true
         weight: 0
+    group_external_link:
+      children:
+        - field_external_source
+      label: 'External Link'
+      region: content
+      parent_name: ''
+      weight: 12
+      format_type: details_sidebar
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        open: false
+        description: ''
+        required_fields: true
+        weight: 0
 id: node.post.default
 targetEntityType: node
 bundle: post
@@ -152,7 +168,7 @@ content:
     settings: {  }
     third_party_settings: {  }
   simple_sitemap:
-    weight: 12
+    weight: 13
     region: content
     settings: {  }
     third_party_settings: {  }
