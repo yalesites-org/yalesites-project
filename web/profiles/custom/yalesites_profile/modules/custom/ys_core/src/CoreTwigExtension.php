@@ -151,7 +151,7 @@ class CoreTwigExtension extends AbstractExtension {
    *   TRUE if the URL is internal.
    */
   private function isInternal($url) {
-    return $this->urlHasCurrentDomain($url) || $this->isAnchor($url) || $this->isRelative($url) || $this->isData($url);
+    return $this->urlHasCurrentDomain($url) || $this->isQueryString($url) || $this->isAnchor($url) || $this->isRelative($url) || $this->isData($url);
   }
 
   /**
@@ -235,6 +235,19 @@ class CoreTwigExtension extends AbstractExtension {
    */
   private function isAnchor($url) {
     return str_starts_with($url, '#');
+  }
+
+  /**
+   * Check if a URL is a query string.
+   *
+   * @param string $url
+   *   The URL to check.
+   *
+   * @return bool
+   *   TRUE if the URL is a query string.
+   */
+  private function isQueryString($url) {
+    return str_starts_with($url, '?');
   }
 
   /**
