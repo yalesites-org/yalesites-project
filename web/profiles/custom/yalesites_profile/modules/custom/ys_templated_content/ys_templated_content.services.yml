@@ -1,11 +1,8 @@
 services:
-  ys_templated_content.template_filename_helper:
-    class: Drupal\ys_templated_content\Helpers\TemplateFilenameHelper
-    arguments: ["@module_handler"]
   ys_templated_content.template_manager:
     class: Drupal\ys_templated_content\Managers\TemplateManager
     arguments:
-      ["@module_handler", "@ys_templated_content.template_filename_helper"]
+      ["@module_handler"]
   ys_templated_content.import_manager:
     class: Drupal\ys_templated_content\Managers\ImportManager
     arguments:

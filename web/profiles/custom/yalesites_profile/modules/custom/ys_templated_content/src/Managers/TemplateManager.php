@@ -127,26 +127,15 @@ class TemplateManager {
   ];
 
   /**
-   * The template filename helper.
-   *
-   * @var \Drupal\ys_templated_content\Helpers\TemplateFilenameHelper
-   */
-  protected $templateFilenameHelper;
-
-  /**
    * Constructs the controller object.
    *
    * @param \Drupal\Core\Extension\ModuleHandler $module_handler
    *   The module handler.
-   * @param \Drupal\ys_templated_content\Helpers\TemplateFilenameHelper $templateFilenameHelper
-   *   The template filename helper.
    */
   public function __construct(
     ModuleHandler $module_handler,
-    TemplateFilenameHelper $templateFilenameHelper,
   ) {
     $this->moduleHandler = $module_handler;
-    $this->templateFilenameHelper = $templateFilenameHelper;
   }
 
   /**
