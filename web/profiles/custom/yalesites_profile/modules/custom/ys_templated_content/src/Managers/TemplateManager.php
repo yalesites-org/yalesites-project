@@ -3,7 +3,6 @@
 namespace Drupal\ys_templated_content\Managers;
 
 use Drupal\Core\Extension\ModuleHandler;
-use Drupal\ys_templated_content\Helpers\TemplateFilenameHelper;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
