@@ -48,10 +48,12 @@ class ExternalSourceRedirectSubscriber implements EventSubscriberInterface {
       /** @var \Drupal\node\NodeInterface $node */
       $node = $this->routeMatch->getParameter('node');
       if (!empty($node) && $node->hasField(SELF::SOURCE_FIELD)) {
-        $link = $node->get(SELF::SOURCE_FIELD)->first()->getValue();
-        if (!empty($link['uri'])) {
-          $response = new TrustedRedirectResponse($link['uri']);
-          $event->setResponse($response);
+        if (!empty($node->get(SELF::SOURCE_FIELD)->first())) {
+          $link = $node->get(SELF::SOURCE_FIELD)->first()->getValue();
+          if (!empty($link['uri'])) {
+            $response = new TrustedRedirectResponse($link['uri']);
+            $event->setResponse($response);
+          }
         }
       }
     }
