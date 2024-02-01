@@ -60,10 +60,12 @@ class TemplateModifier {
    *   The content array.
    */
   public function process($content_array) {
-    $content_array['uuid'] = $this->uuidService->generate();
+    $originalUuid = $content_array['uuid'];
+    $newUuid = $this->uuidService->generate();
     $content_array['base_fields']['created'] = $this->getUnixTimestamp();
     $content_array = $this->replaceBrokenImages($content_array);
     $content_array = $this->generateAlias($content_array);
+    $content_array = $this->replaceUuids($content_array, $originalUuid, $newUuid);
 
     return $content_array;
   }
@@ -92,6 +94,43 @@ class TemplateModifier {
     }
 
     return $content_array;
+  }
+
+  /**
+   * Replace the UUIDs in the content array.
+   *
+   * Any reference to the main UUID should be replaced so that we reference
+   * the newly created one.
+   *
+   * @param array $content
+   *   The content array.
+   * @param string $uuid
+   *   The UUID to replace.
+   * @param string $newUuid
+   *   The new UUID.
+   *
+   * @return array
+   *   The content array with the UUIDs replaced.
+   */
+  public function replaceUuids($content, $uuid, $newUuid) {
+    if (array_key_exists('uuid', $content) && $content['uuid'] === $uuid) {
+      $content['uuid'] = $newUuid;
+    }
+    // Find any other element that has the original UUID passed and replace it
+    // with the new one.
+    foreach ($content as $key => $value) {
+      if (is_array($value)) {
+        $content[$key] = $this->replaceUuids($value, $uuid, $newUuid);
+      }
+      elseif (is_string($value) && strpos($value, 'entity:node/') !== FALSE) {
+        $content[$key] = str_replace('entity:node/' . $uuid, 'entity:node/' . $newUuid, $value);
+      }
+      elseif (is_string($value) && strpos($value, $uuid) !== FALSE) {
+        $content[$key] = str_replace($uuid, $newUuid, $value);
+      }
+    }
+
+    return $content;
   }
 
   /**

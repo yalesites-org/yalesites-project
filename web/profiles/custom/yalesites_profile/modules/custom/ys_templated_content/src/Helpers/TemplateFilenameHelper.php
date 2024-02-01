@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\ys_templated_content\Support;
+namespace Drupal\ys_templated_content\Helpers;
 
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 
