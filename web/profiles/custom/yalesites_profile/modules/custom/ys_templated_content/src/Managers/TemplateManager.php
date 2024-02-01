@@ -1,9 +1,9 @@
 <?php
 
-namespace Drupal\ys_templated_content;
+namespace Drupal\ys_templated_content\Managers;
 
 use Drupal\Core\Extension\ModuleHandler;
-use Drupal\ys_templated_content\Support\TemplateFilenameHelper;
+use Drupal\ys_templated_content\Helpers\TemplateFilenameHelper;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -129,7 +129,7 @@ class TemplateManager {
   /**
    * The template filename helper.
    *
-   * @var \Drupal\ys_templated_content\Support\TemplateFilenameHelper
+   * @var \Drupal\ys_templated_content\Helpers\TemplateFilenameHelper
    */
   protected $templateFilenameHelper;
 
@@ -138,7 +138,7 @@ class TemplateManager {
    *
    * @param \Drupal\Core\Extension\ModuleHandler $module_handler
    *   The module handler.
-   * @param \Drupal\ys_templated_content\Support\TemplateFilenameHelper $templateFilenameHelper
+   * @param \Drupal\ys_templated_content\Helpers\TemplateFilenameHelper $templateFilenameHelper
    *   The template filename helper.
    */
   public function __construct(

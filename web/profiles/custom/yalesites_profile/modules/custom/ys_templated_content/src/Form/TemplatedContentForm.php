@@ -6,8 +6,8 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\ys_templated_content\ImportManager;
-use Drupal\ys_templated_content\TemplateManager;
+use Drupal\ys_templated_content\Managers\ImportManager;
+use Drupal\ys_templated_content\Managers\TemplateManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -44,9 +44,9 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager to get the content types available.
-   * @param \Drupal\ys_templated_content\TemplateManager $templateManager
+   * @param \Drupal\ys_templated_content\Managers\TemplateManager $templateManager
    *   The template manager.
-   * @param \Drupal\ys_templated_content\ImportManager $importManager
+   * @param \Drupal\ys_templated_content\Managers\ImportManager $importManager
    *   The import manager.
    */
   public function __construct(

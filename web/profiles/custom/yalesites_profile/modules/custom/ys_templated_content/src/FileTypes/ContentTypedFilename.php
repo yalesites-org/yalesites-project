@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\ys_templated_content\Support;
+namespace Drupal\ys_templated_content\FileTypes;
 
 /**
  * Helper to make templated filenames easier to retrieve data about.
