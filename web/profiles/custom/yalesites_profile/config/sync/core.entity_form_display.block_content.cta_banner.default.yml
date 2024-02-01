@@ -14,7 +14,7 @@ dependencies:
     - field.field.block_content.cta_banner.field_text
   module:
     - allowed_formats
-    - link
+    - linkit
     - markup
     - maxlength
     - media_library
@@ -53,12 +53,14 @@ content:
     settings: {  }
     third_party_settings: {  }
   field_link:
-    type: link_default
+    type: linkit
     weight: 11
     region: content
     settings:
       placeholder_url: ''
       placeholder_title: ''
+      linkit_profile: default
+      linkit_auto_link_text: false
     third_party_settings: {  }
   field_media:
     type: media_library_widget

@@ -12,7 +12,7 @@ field_name: field_link
 entity_type: paragraph
 bundle: custom_card
 label: Link
-description: ''
+description: 'For more information about linking content, view our resource <a href="https://yalesites.yale.edu/resource-library/linking-content-on-yalesites" target="_blank">Linking Content on YaleSites</a>.'
 required: true
 translatable: true
 default_value: {  }
