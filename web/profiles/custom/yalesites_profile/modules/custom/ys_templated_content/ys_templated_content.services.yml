@@ -1,13 +1,13 @@
 services:
   ys_templated_content.template_filename_helper:
-    class: Drupal\ys_templated_content\Support\TemplateFilenameHelper
+    class: Drupal\ys_templated_content\Helpers\TemplateFilenameHelper
     arguments: ["@module_handler"]
   ys_templated_content.template_manager:
-    class: Drupal\ys_templated_content\TemplateManager
+    class: Drupal\ys_templated_content\Managers\TemplateManager
     arguments:
       ["@module_handler", "@ys_templated_content.template_filename_helper"]
   ys_templated_content.import_manager:
-    class: Drupal\ys_templated_content\ImportManager
+    class: Drupal\ys_templated_content\Managers\ImportManager
     arguments:
       [
         "@single_content_sync.importer",
