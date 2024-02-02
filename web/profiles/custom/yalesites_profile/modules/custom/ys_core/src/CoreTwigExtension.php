@@ -188,6 +188,7 @@ class CoreTwigExtension extends AbstractExtension {
       'zip',
       'csv',
       'xml',
+      'rtf',
     ]);
     $extension = strtolower(pathinfo($url, PATHINFO_EXTENSION));
     return in_array($extension, $fileExtensions);
