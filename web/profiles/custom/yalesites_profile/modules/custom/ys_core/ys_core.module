@@ -318,7 +318,6 @@ function ys_core_page_attachments(array &$page) {
   foreach ($favicons as $name => $favicon) {
     $page['#attached']['html_head'][] = [$favicon, $name];
   }
-
 }
 
 /**
