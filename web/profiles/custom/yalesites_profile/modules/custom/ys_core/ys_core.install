@@ -72,6 +72,39 @@ function ys_core_update_9002() {
 }
 
 /**
+ * Implements hook_update().
+ *
+ * This update will set a default field_style_variation for text blocks.
+ */
+function ys_core_update_9003() {
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+  $query = $block_storage->getQuery();
+  $query->accessCheck(FALSE)
+    ->condition('type', 'text');
+
+  $ids = $query->execute();
+
+  foreach ($ids as $id) {
+    $block = $block_storage->load($id);
+    $latestRevisionId = $block_storage->getLatestRevisionId($id);
+
+    if (!$latestRevisionId) {
+      $latestRevision = $block_storage->createRevision($block);
+    }
+    else {
+      $latestRevision = $block_storage->loadRevision($latestRevisionId);
+    }
+
+    if ($latestRevision->get('field_style_variation')->isEmpty()) {
+      $latestRevision->set('field_style_variation', 'default');
+      $latestRevision->save();
+    }
+
+  }
+
+}
+
+/**
  * Sanitizes the value of an array object with allowed_tags.
  *
  * @param array $content_array

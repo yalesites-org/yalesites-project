@@ -21,7 +21,7 @@ mode: default
 content:
   field_heading:
     type: text_textfield
-    weight: 1
+    weight: 2
     region: content
     settings:
       size: 60
@@ -42,7 +42,7 @@ content:
     third_party_settings: {  }
   field_media_grid_items:
     type: paragraphs
-    weight: 2
+    weight: 3
     region: content
     settings:
       title: image
@@ -64,6 +64,13 @@ content:
         add_in_between_link_count: 3
         delete_confirmation: true
         show_drag_and_drop: true
+  info:
+    type: string_textfield
+    weight: 1
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
 hidden:
-  info: true
   revision_log: true

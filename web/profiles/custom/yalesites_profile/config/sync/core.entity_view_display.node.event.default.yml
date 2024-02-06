@@ -78,7 +78,6 @@ third_party_settings:
       restricted_categories:
         - 'Chaos Tools'
         - 'Content fields'
-        - 'Custom block types'
         - Forms
         - Help
         - 'Lists (Views)'
