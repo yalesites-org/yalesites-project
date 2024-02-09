@@ -38,9 +38,3 @@ ys_core.admin_dashboard:
     _title: 'Dashboard'
   requirements:
     _permission: 'yalesites manage settings'
-ys_core.path.autocomplete:
-  path: 'ys_core/autocomplete_path'
-  defaults:
-    _controller: 'Drupal\ys_core\Controller\AutocompletePathController::handleAutocomplete'
-  requirements:
-    _permission: 'yalesites manage settings'

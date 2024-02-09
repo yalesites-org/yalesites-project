@@ -4,10 +4,12 @@ namespace Drupal\ys_core\Form;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Path\PathValidatorInterface;
 use Drupal\Core\Routing\RequestContext;
+use Drupal\Core\Session\AccountProxy;
 use Drupal\google_analytics\Constants\GoogleAnalyticsPatterns;
 use Drupal\path_alias\AliasManagerInterface;
 use Drupal\ys_core\YaleSitesMediaManager;
@@ -53,6 +55,20 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
   protected $ysMediaManager;
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * The current user.
+   *
+   * @var \Drupal\Core\Session\AccountProxy
+   */
+  protected $currentUser;
+
+  /**
    * Constructs a SiteInformationForm object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -65,6 +81,10 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
    *   The request context.
    * @param \Drupal\ys_core\YaleSitesMediaManager $ys_media_manager
    *   The media manager.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param \Drupal\Core\Session\AccountProxy $account_interface
+   *   The current user.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
@@ -72,12 +92,16 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     PathValidatorInterface $path_validator,
     RequestContext $request_context,
     YaleSitesMediaManager $ys_media_manager,
+    EntityTypeManagerInterface $entity_type_manager,
+    AccountProxy $account_interface,
     ) {
     parent::__construct($config_factory);
     $this->aliasManager = $alias_manager;
     $this->pathValidator = $path_validator;
     $this->requestContext = $request_context;
     $this->ysMediaManager = $ys_media_manager;
+    $this->entityTypeManager = $entity_type_manager;
+    $this->currentUser = $account_interface;
   }
 
   /**
@@ -90,6 +114,8 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       $container->get('path.validator'),
       $container->get('router.request_context'),
       $container->get('ys_core.media_manager'),
+      $container->get('entity_type.manager'),
+      $container->get('current_user'),
     );
   }
 
@@ -130,12 +156,12 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     ];
 
     $form['site_page_front'] = [
-      '#type' => 'textfield',
+      '#type' => 'entity_autocomplete',
       '#title' => $this->t('Front page'),
       '#description' => $this->t("Specify a relative URL to display as the front page. Typically this points to a page in Drupal and is referenced by a node id. Use this autocomplete field to select the correct node."),
-      '#default_value' => $siteConfig->get('page')['front'],
+      '#default_value' => $this->pathToNode($siteConfig->get('page')['front']),
       '#required' => TRUE,
-      '#autocomplete_route_name' => 'ys_core.path.autocomplete',
+      '#target_type' => 'node',
     ];
 
     $form['site_page_posts'] = [
@@ -217,8 +243,9 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     // Validate front, post, and event page paths.
-    $this->validateStartWithSlash($form_state, 'site_page_front');
-    $this->validatePath($form_state, 'site_page_front');
+    /* $this->validateStartWithSlash($form_state, 'site_page_front'); */
+    /* $this->validatePath($form_state, 'site_page_front'); */
+    $this->validateIsNode($form_state, 'site_page_front');
 
     if (!$form_state->isValueEmpty('site_page_posts')) {
       $this->validateStartWithSlash($form_state, 'site_page_posts');
@@ -267,7 +294,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     $this->configFactory->getEditable('system.site')
       ->set('name', $form_state->getValue('site_name'))
       ->set('mail', $form_state->getValue('site_mail'))
-      ->set('page.front', $form_state->getValue('site_page_front'))
+      ->set('page.front', '/node/' . $form_state->getValue('site_page_front'))
       ->set('page.403', $form_state->getValue('site_page_403'))
       ->set('page.404', $form_state->getValue('site_page_404'))
       ->save();
@@ -394,6 +421,60 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
         );
       }
     }
+  }
+
+  /**
+   * Check that a submitted value is a valid node that the user has access to.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state passed by reference.
+   * @param string $fieldId
+   *   The id of a field on the config form.
+   */
+  protected function validateIsNode(FormStateInterface &$form_state, string $fieldId) {
+    $value = $form_state->getValue($fieldId);
+    $node = NULL;
+    $access = FALSE;
+
+    $isNumeric = is_numeric($value);
+    if ($isNumeric) {
+      $node = $this->entityTypeManager->getStorage('node')->load($value);
+    }
+
+    if ($node) {
+      $access = $node->access('view', $this->currentUser);
+    }
+
+    if (!$isNumeric || !$node || !$access) {
+      $form_state->setErrorByName(
+      $fieldId,
+      $this->t(
+        "The node '%node' is invalid or you do not have access to it.",
+        ['%node' => $form_state->getValue($fieldId)]
+      )
+      );
+    }
+
+  }
+
+  /**
+   * Convert a path to a node entity.
+   *
+   * @param string|object $pathOrNode
+   *   A path or node object.
+   *
+   * @return object
+   *   A node object.
+   */
+  protected function pathToNode($pathOrNode) {
+    if ($pathOrNode && is_string($pathOrNode)) {
+      $parts = explode('/', trim($pathOrNode, '/'));
+      $node_id = end($parts);
+      $node = $this->entityTypeManager->getStorage('node')->load($node_id);
+      return $node;
+    }
+
+    return $pathOrNode;
   }
 
 }
