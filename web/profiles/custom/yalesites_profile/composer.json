@@ -57,7 +57,7 @@
     "drupal/imagemagick": "3.4",
     "drupal/improve_line_breaks_filter": "1.5",
     "drupal/inline_entity_form": "2.0.0-rc9",
-    "drupal/layout_builder_browser": "1.x-dev@dev",
+    "drupal/layout_builder_browser": "1.6",
     "drupal/layout_builder_iframe_modal": "1.3",
     "drupal/layout_builder_lock": "1.2",
     "drupal/layout_builder_restrictions": "2.19",
@@ -131,6 +131,7 @@
       },
       "drupal/core": {
         "plural results summary https://www.drupal.org/project/drupal/issues/2888320": "https://www.drupal.org/files/issues/2021-12-15/2888320-78.patch",
+        "Add reusable option to inline block creation https://www.drupal.org/project/drupal/issues/2999491": "https://git.drupalcode.org/issue/drupal-2999491/-/commit/1330eff91b1234979cf697a66a48e34eb116b441.patch",
         "Prevent empty block_content info fields from causing php deprecation notices": "https://www.drupal.org/files/issues/2023-07-21/3340159-empty-block-label_0.patch"
       },
       "drupal/entity_redirect": {
@@ -168,6 +169,9 @@
       },
       "drupal/quick_node_clone": {
         "Fix cloning of inline blocks and paragraphs: https://www.drupal.org/project/quick_node_clone/issues/3100117": "https://www.drupal.org/files/issues/2023-04-25/quick-node-clone--inline-blocks--3100117-32.patch"
+      },
+      "drupal/layout_builder_browser": {
+        "Add grouping of reusable blocks (3409153) and add fallback images (3408935) - can't use both patches from d.o would cause merge conflict, combined patch": "patches/layout_builder_browser/3408935-and-3409153-7.patch"
       },
       "drupal/section_library": {
         "Fix access check issues on add_to_template link: https://www.drupal.org/project/section_library/issues/3241715": "https://www.drupal.org/files/issues/2022-09-21/3241715-6.patch"

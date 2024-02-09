@@ -138,19 +138,19 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
   ];
 
   if (in_array($form_id, $layout_builder_block_forms)) {
-    // Get the block type from the form.
-    $block = $form['settings']['block_form']['#block'];
+    $block_type_name = ys_core_get_block_type($form, $form_state);
     $limited_block_types = [
       'tabs',
       'quick_links',
       'media_grid',
       'gallery',
     ];
-    if (in_array($block->bundle(), $limited_block_types)) {
+    if (in_array($block_type_name, $limited_block_types)) {
       $form['#attached']['library'][] = 'ys_core/block_form';
     }
 
   }
+
 }
 
 /**
@@ -247,9 +247,19 @@ function ys_core_preprocess_menu(&$variables) {
       // If the menu item is associated with a node, replace the node_title
       // with the node's title.
       if ($menuItem['url']->isRouted()) {
-        $nodeId = $menuItem['url']->getRouteParameters()['node'];
-        $node = \Drupal::entityTypeManager()->getStorage('node')->load($nodeId);
-        $clonedMenuItem['node_title'] = $node->getTitle();
+        $routeParameters = $menuItem['url']->getRouteParameters();
+
+        if (array_key_exists('node', $routeParameters)) {
+          $nodeId = $routeParameters['node'];
+
+          if ($nodeId) {
+            $node = \Drupal::entityTypeManager()->getStorage('node')->load($nodeId);
+
+            if ($node) {
+              $clonedMenuItem['node_title'] = $node->getTitle();
+            }
+          }
+        }
       }
 
       // Add cloned item to the beginning of the menu.
@@ -288,7 +298,7 @@ function ys_core_help($route_name, RouteMatchInterface $route_match) {
 
     case 'entity.block_content.collection':
 
-      $output = '<p class="replacement-block-help">' . t('Blocks are used for reusable content. Create global blocks here, and they will show up in layout builder at the bottom of the list under a reusable section to place on any page. If the block is updated here, the content will be updated anywhere the block is used.') . '</p>';
+      $output = '<p class="replacement-block-help">' . t('Reuse your content with Reusable Blocks. Once created, Reusable Blocks will be available in the Block Picker and can be added when editing content in Layout Builder. Changes made to a Reusable Block’s content are reflected anywhere the Block is used.') . '</p>';
       return $output;
   }
 }
@@ -308,7 +318,6 @@ function ys_core_page_attachments(array &$page) {
   foreach ($favicons as $name => $favicon) {
     $page['#attached']['html_head'][] = [$favicon, $name];
   }
-
 }
 
 /**
@@ -415,4 +424,44 @@ function ys_core_preprocess_page(&$variables) {
   // Via: https://drupal.stackexchange.com/questions/266379/how-to-clear-cache-for-config-entity-after-making-changes
   $config = \Drupal::config('ys_core.header_settings');
   \Drupal::service('renderer')->addCacheableDependency($variables, $config);
+}
+
+/**
+ * Retrieves the block type from a form.
+ *
+ * @param array $form
+ *   The form array.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state.
+ *
+ * @return string
+ *   The block type name.
+ */
+function ys_core_get_block_type(&$form, &$form_state) {
+  $block_type_name = "";
+  $inline_block_type_name = $form_state->getBuildInfo()['args'][3];
+
+  // If adding a new element, arg 3 should be of the form:
+  // inline_block:BLOCK_TYPE_NAME.
+  if (strpos($inline_block_type_name, ':') !== FALSE) {
+    $block_type_name = explode(':', $inline_block_type_name)[1];
+  }
+  // Otherwise, attempt to get it the original way if it exists.
+  elseif (isset($form['settings']['block_form'])) {
+    $block_type_name = $form['settings']['block_form']['#block']->bundle();
+  }
+  // If we can't find it, make it something that will fail any future checks.
+  else {
+    $block_type_name = "unknown";
+  }
+
+  return $block_type_name;
+}
+
+/**
+ * Implements hook_preprocess_html().
+ */
+function ys_core_preprocess_html(&$variables) {
+  // Adds the content type in a class to support specific content type styling.
+  $variables['attributes']['class'][] = isset($variables['node_type']) ? "ys-content-type-{$variables['node_type']}" : NULL;
 }
