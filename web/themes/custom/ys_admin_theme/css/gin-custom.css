@@ -432,6 +432,14 @@
   color: var(--wool);
 }
 
+/* Site Settings specific overrides */
+.ys-admin-settings {
+  /* entity_autocomplete and other inputs */
+}
+.ys-admin-settings .claro-autocomplete input.form-autocomplete, .ys-admin-settings .form-element {
+  max-width: 485px;
+}
+
 /* stylelint-enable */
 
 /*# sourceMappingURL=gin-custom.css.map */
