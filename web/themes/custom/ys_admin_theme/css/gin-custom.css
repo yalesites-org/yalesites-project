@@ -437,7 +437,7 @@
   /* entity_autocomplete and other inputs */
 }
 .ys-admin-settings .claro-autocomplete input.form-autocomplete, .ys-admin-settings .form-element {
-  max-width: 520px;
+  max-width: 485px;
 }
 
 /* stylelint-enable */
