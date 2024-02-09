@@ -169,24 +169,6 @@ class TemplateManager {
   /**
    * Get the template options for the currrent content type.
    *
-   * @return array
-   *   The template options.
-   */
-  public function getCurrentTemplates($content_type) : array {
-    $templates = [];
-    // Return an empty array if there is no content type.
-    if ($content_type) {
-      // For each key and title value, create an array of the key and title.
-      foreach ($this->templates[$content_type] as $key => $template) {
-        $templates[$key] = $template['title'];
-      }
-    }
-    return $templates;
-  }
-
-  /**
-   * Get the template options for the currrent content type.
-   *
    * @param string $content_type
    *   The content type.
    * @param string $template_name
@@ -196,13 +178,17 @@ class TemplateManager {
    *   The template options.
    */
   public function getTemplateDescription($content_type, $template_name) {
-    return $this->templates[$content_type][$template_name]['description'] ?? "Hi";
+    return $this->templates[$content_type][$template_name]['description'] ?? "";
   }
 
   /**
    * Get the templates.
    */
-  public function getTemplates() {
+  public function getTemplates($content_type = NULL) {
+    if ($content_type) {
+      return $this->templates[$content_type];
+    }
+
     return $this->templates;
   }
 
