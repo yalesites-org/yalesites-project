@@ -103,7 +103,7 @@ class TemplatedContentForm extends FormBase implements FormInterface {
     $form['templates'] = [
       '#type' => 'select',
       '#title' => $this->t('Template'),
-      '#options' => $this->templateManager->getCurrentTemplates($currentContentType),
+      '#options' => $this->getCurrentTemplateOptions($currentContentType),
       '#required' => FALSE,
       '#prefix' => '<div id="template-update-wrapper">',
       '#suffix' => '</div>',
@@ -191,7 +191,7 @@ class TemplatedContentForm extends FormBase implements FormInterface {
   ) : array {
     $currentContentType = $this->getCurrentContentType($form_state);
     $form['templates']['#options'] = $this
-      ->templateManager->getCurrentTemplates($currentContentType);
+      ->getCurrentTemplateOptions($currentContentType);
     $form_state->setValue('templates', '');
 
     return $form['templates'];
@@ -267,6 +267,25 @@ class TemplatedContentForm extends FormBase implements FormInterface {
     }
 
     return $options;
+  }
+
+  /**
+   * Get the template options for the currrent content type.
+   *
+   * @param string $content_type
+   *   The content type to get templates for.
+   *
+   * @return array
+   *   The template options.
+   */
+  private function getCurrentTemplateOptions($content_type) {
+    $keyValuePairs = [];
+    $templates = $this->templateManager->getTemplates($content_type);
+    foreach ($templates as $key => $template) {
+      $keyValuePairs[$key] = $template['title'];
+    }
+
+    return $keyValuePairs;
   }
 
 }
