@@ -434,16 +434,12 @@
 
 /* Site Settings specific overrides */
 .ys-admin-settings {
-  /* entity_autocomplete */
+  /* entity_autocomplete and other inputs */
 }
-.ys-admin-settings .claro-autocomplete input.form-autocomplete {
-  width: 520px;
-}
-.ys-admin-settings .form-element {
-  width: 520px;
+.ys-admin-settings .claro-autocomplete input.form-autocomplete, .ys-admin-settings .form-element {
+  max-width: 520px;
 }
 
-/* site settings inputs */
 /* stylelint-enable */
 
 /*# sourceMappingURL=gin-custom.css.map */
