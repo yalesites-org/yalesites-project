@@ -2,4 +2,5 @@ ys_toolbar:
   version: VERSION
   css:
     theme:
+      css/gin_overrides.theme.css: { media: screen }
       css/ys_toolbar.theme.css: { media: screen }

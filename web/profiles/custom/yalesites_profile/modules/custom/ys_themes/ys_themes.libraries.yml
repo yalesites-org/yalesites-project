@@ -1,3 +1,7 @@
+toolbar:
+  css:
+    theme:
+      css/toolbar.css : {}
 ys_themes:
   css:
     theme:
