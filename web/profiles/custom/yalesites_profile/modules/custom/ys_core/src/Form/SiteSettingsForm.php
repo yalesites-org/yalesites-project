@@ -466,13 +466,37 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
    */
   protected function pathToNode($pathOrNode) {
     if ($pathOrNode && is_string($pathOrNode)) {
-      $parts = explode('/', trim($pathOrNode, '/'));
-      $node_id = end($parts);
+      $node_id = $this->getIdFromNodePath($pathOrNode);
       $node = $this->entityTypeManager->getStorage('node')->load($node_id);
+
+      if ($node === NULL) {
+        // Attempt to get the node by the alias if it exists.
+        $alias = $this->aliasManager->getPathByAlias($pathOrNode);
+        $node_id = $this->getIdFromNodePath($alias);
+        $node = $this->entityTypeManager->getStorage('node')->load($node_id);
+      }
       return $node;
     }
 
     return $pathOrNode;
+  }
+
+  /**
+   * Get the ID from a node path.
+   *
+   * @param string $nodePath
+   *   A node path.
+   *
+   * @return string
+   *   The node id.
+   */
+  private function getIdFromNodePath($nodePath) {
+    if ($nodePath && is_string($nodePath)) {
+      $parts = explode('/', trim($nodePath, '/'));
+      return end($parts);
+    }
+
+    return NULL;
   }
 
 }
