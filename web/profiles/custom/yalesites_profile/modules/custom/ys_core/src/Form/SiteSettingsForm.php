@@ -243,8 +243,6 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     // Validate front, post, and event page paths.
-    /* $this->validateStartWithSlash($form_state, 'site_page_front'); */
-    /* $this->validatePath($form_state, 'site_page_front'); */
     $this->validateIsNode($form_state, 'site_page_front');
 
     if (!$form_state->isValueEmpty('site_page_posts')) {
