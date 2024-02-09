@@ -32,4 +32,13 @@
   color: var(--gin-bg-layer);
 }
 
+/* Site Settings specific overrides */
+.ys-admin-settings {
+  /* entity_autocomplete and other inputs */
+  & .claro-autocomplete input.form-autocomplete,
+  & .form-element {
+    max-width: 485px;
+  }
+}
+
 /* stylelint-enable */
