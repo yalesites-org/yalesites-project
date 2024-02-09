@@ -26,18 +26,6 @@ class TemplateManager {
    */
   public $templates = [
     'page' => [
-      '' => [
-        'title' => 'Empty',
-        'description' => 'An empty template.',
-        'filename' => '',
-        'preview_image' => '',
-      ],
-      'zip_file' => [
-        'title' => 'Zip',
-        'description' => 'A template for a zip file.',
-        'filename' => 'page__zip_file.zip',
-        'preview_image' => '',
-      ],
       'faq' => [
         'title' => 'FAQ',
         'description' => 'A template for a FAQ page.',
@@ -50,14 +38,14 @@ class TemplateManager {
         'filename' => 'page__landing_page.yml',
         'preview_image' => '',
       ],
-    ],
-    'post' => [
-      '' => [
-        'title' => 'Empty',
-        'description' => 'An empty template.',
-        'filename' => '',
+      'zip_file' => [
+        'title' => 'Zip',
+        'description' => 'A template for a zip file.',
+        'filename' => 'page__zip_file.zip',
         'preview_image' => '',
       ],
+    ],
+    'post' => [
       'blog' => [
         'title' => 'Blog',
         'description' => 'A template for a blog post.',
@@ -78,12 +66,6 @@ class TemplateManager {
       ],
     ],
     'event' => [
-      '' => [
-        'title' => 'Empty',
-        'description' => 'An empty template.',
-        'filename' => '',
-        'preview_image' => '',
-      ],
       'in_person' => [
         'title' => 'In Person',
         'description' => 'A template for an in person event.',
@@ -98,12 +80,6 @@ class TemplateManager {
       ],
     ],
     'profile' => [
-      '' => [
-        'title' => 'Empty',
-        'description' => 'An empty template.',
-        'filename' => '',
-        'preview_image' => '',
-      ],
       'faculty' => [
         'title' => 'Faculty',
         'description' => 'A template for a faculty profile.',
