@@ -49,7 +49,7 @@
     "drupal/field_group": "3.4",
     "drupal/formdazzle": "3.0.0",
     "drupal/gin": "3.0-rc6",
-    "drupal/gin_lb": "1.0.x-dev@dev",
+    "drupal/gin_lb": "1.0.0-rc5",
     "drupal/google_analytics": "4.0.2",
     "drupal/hide_revision_field": "2.3",
     "drupal/honeypot": "2.1.3",
@@ -146,6 +146,9 @@
       "drupal/gin": {
         "fix description toggle for CKEditor fields https://www.drupal.org/project/gin/issues/3316265": "https://git.drupalcode.org/project/gin/-/merge_requests/227.patch",
         "update dark mode localstorage https://www.drupal.org/project/gin/issues/3387653": "https://git.drupalcode.org/project/gin/-/merge_requests/304.diff"
+      },
+      "drupal/gin_lb": {
+        "Fix multivalued fields throw an error https://www.drupal.org/project/gin_lb/issues/3387157": "https://www.drupal.org/files/issues/2024-01-02/gin_lb-fix-attribute-3387157-5.patch"
       },
       "drupal/media_library_form_element": {
         "Order Media items https://www.drupal.org/project/media_library_form_element/issues/3168027":"https://www.drupal.org/files/issues/2022-01-22/order_media_items-3168027-8.patch",

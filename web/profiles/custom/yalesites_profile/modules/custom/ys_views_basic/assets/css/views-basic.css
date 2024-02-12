@@ -29,12 +29,13 @@
 /* Chosen dropdown selected color contrast fix */
 
 /* ******************************************* */
-.chosen-container .chosen-results {
-  color: var(--gin-color-info);
+.gin--dark-mode .chosen-container .chosen-results {
+  color: var(--gin-bg-layer);
 }
 
-.chosen-container-multi .chosen-drop .result-selected {
-  color: var(--gin-color-green);
+.gin--dark-mode .chosen-container-multi .chosen-drop .result-selected {
+  color: var(--gin-color-focus);
+  background-color: var(--gin-bg-layer);
 }
 
 /* ************ Contrast fix end ************ */
@@ -65,19 +66,18 @@
   flex-direction: column;
   gap: 1rem;
   flex: 1 auto;
-  border: 2px solid var(--wool);
+  border: 2px solid;
   aspect-ratio: 2/1;
   text-align: left;
-  background-color: var(--dark-theme-gray);
   padding: var(--size-spacing-4) var(--size-spacing-5);
-  color: var(--darkest-gray);
+  color: var(--gin-color-text);
   border-radius: 0.25rem;
   margin-bottom: var(--size-spacing-4);
 }
 
-.views-basic--group-user-selection .glb-form-type--radio label.glb-form-item__label.glb-option:hover,
-.views-basic--group-user-selection .form-type--radio label.option:hover {
-  border-color: var(--darkest-gray);
+.glb-form-type--radio label.glb-form-item__label.glb-option:hover,
+#drupal-off-canvas-wrapper .glb-form-type--radio label.glb-form-item__label.glb-option:hover {
+  border-color: var(--gin-color-text-light);
 }
 
 /******
@@ -136,19 +136,127 @@
 .views-basic--group-user-selection
   .form-item-settings-block-form-group-user-selection-entity-and-view-mode-view-mode:focus
   label {
-  background-color: var(--dark-theme-gray);
-  border-color: var(--darkest-gray);
+  border-color: var(--gin-color-primary);
 }
 
-/* Checked inputs */
-
-.views-basic--group-user-selection .form-type--radio input[checked="checked"] + label,
-.views-basic--group-user-selection .glb-form-type--radio input[checked="checked"] + label {
-  background-color: var(--darkest-gray);
-  color: var(--wool);
+/* Pages */
+.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
+  input[value="page"][checked="checked"]
+  + label,
+#drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
+  input[value="page"][checked="checked"]
+  + label {
+  color: var(--gin-color-primary) !important;
+  border-color: var(--gin-color-primary);
 }
 
-.views-basic--group-user-selection
+/* Profiles */
+.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
+  input[value="profile"][checked="checked"]
+  + label,
+#drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
+  input[value="profile"][checked="checked"]
+  + label {
+    color: var(--gin-color-primary) !important;
+    border-color: var(--gin-color-primary);
+}
+
+/* Events */
+.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
+  input[value="event"][checked="checked"]
+  + label,
+#drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
+  input[value="event"][checked="checked"]
+  + label {
+    color: var(--gin-color-primary) !important;
+    border-color: var(--gin-color-primary);
+}
+
+.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
+  input[value="post"][checked="checked"]
+  + label,
+#drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
+  input[value="post"][checked="checked"]
+  + label {
+    color: var(--gin-color-primary) !important;
+    border-color: var(--gin-color-primary);
+}
+
+#drupal-off-canvas-wrapper
+  .views-basic--group-user-selection
+  .grouped-items
+  .fieldset--group
+  .fieldset__wrapper--group
+  .glb-form-radios,
+#drupal-off-canvas:not(.drupal-off-canvas-reset)
+  .views-basic--group-user-selection
+  .grouped-items
+  .fieldset--group
+  .fieldset__wrapper--group
+  .glb-form-radios {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: start;
+  gap: 0.75rem;
+}
+
+.layout-builder-configure-block
+  .glb-form-type--radio
+  input[checked="checked"]
+  + label,
+#drupal-off-canvas-wrapper .layout-builder-configure-block
+  .glb-form-type--radio
+  input[checked="checked"]
+  + label,
+.layout-builder-configure-block
+  .glb-form-type--radio
+  input[checked="checked"]
+  + label:hover,
+#drupal-off-canvas-wrapper .layout-builder-configure-block
+  .glb-form-type--radio
+  input[checked="checked"]
+  + label:hover,
+.layout-builder-configure-block
+  .glb-form-type--radio:hover
+  input[checked="checked"]
+  + label,
+#drupal-off-canvas-wrapper .layout-builder-configure-block
+  .glb-form-type--radio:hover
+  input[checked="checked"]
+  + label {
+    color: var(--gin-color-primary) !important;
+    border-color: var(--gin-color-primary);
+}
+
+#drupal-off-canvas-wrapper
+  .views-basic--group-user-selection
+  .grouped-items
+  .fieldset--group
+  .fieldset__wrapper--group
+  .glb-form-radios
+  .glb-form-type--radio,
+#drupal-off-canvas:not(.drupal-off-canvas-reset)
+  .views-basic--group-user-selection
+  .grouped-items
+  .fieldset--group
+  .fieldset__wrapper--group
+  .glb-form-radios
+  .glb-form-type--radio {
+  width: auto;
+}
+
+#layout-builder-modal
+  .grouped-items
+  .fieldset--group
+  .fieldset__wrapper--group
+  .glb-form-type--radio
+  label {
+  width: 125px;
+  height: 150px;
+}
+
+/* first column */
+#drupal-off-canvas-wrapper
   .grouped-items
   .fieldset--group
   .fieldset__wrapper--group
