@@ -40,8 +40,8 @@ third_party_settings:
         - field_teaser_media
       label: Teaser
       region: content
-      parent_name: group_general_info
-      weight: 36
+      parent_name: ''
+      weight: 3
       format_type: fieldset
       format_settings:
         classes: ''
@@ -56,7 +56,7 @@ third_party_settings:
       label: 'Publishing Settings'
       region: content
       parent_name: ''
-      weight: 4
+      weight: 7
       format_type: details_sidebar
       format_settings:
         classes: ''
@@ -66,43 +66,26 @@ third_party_settings:
         description: ''
         required_fields: true
         weight: 0
-    group_profile_tabs:
+    group_general_info:
       children:
-        - group_general_info
-        - group_contact_info
-      label: 'Profile Tabs'
+        - field_first_name
+        - field_last_name
+        - field_honorific_prefix
+        - title
+        - field_position
+        - field_department
+        - field_subtitle
+        - field_affiliation
+        - field_tags
+      label: 'General Information'
       region: content
       parent_name: ''
       weight: 0
-      format_type: tabs
+      format_type: fieldset
       format_settings:
         classes: ''
         show_empty_fields: false
         id: ''
-        direction: horizontal
-        width_breakpoint: 640
-    group_general_info:
-      children:
-        - field_honorific_prefix
-        - field_first_name
-        - field_last_name
-        - title
-        - field_position
-        - field_subtitle
-        - field_department
-        - field_affiliation
-        - field_media
-        - group_teaser
-      label: 'General Info'
-      region: content
-      parent_name: group_profile_tabs
-      weight: 23
-      format_type: tab
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        formatter: closed
         description: ''
         required_fields: true
     group_contact_info:
@@ -110,17 +93,15 @@ third_party_settings:
         - field_email
         - field_telephone
         - field_address
-        - field_tags
-      label: 'Contact Info'
+      label: 'Contact Information'
       region: content
-      parent_name: group_profile_tabs
-      weight: 24
-      format_type: tab
+      parent_name: ''
+      weight: 1
+      format_type: fieldset
       format_settings:
         classes: ''
         show_empty_fields: false
         id: ''
-        formatter: closed
         description: ''
         required_fields: true
 id: node.profile.default
@@ -138,7 +119,7 @@ content:
     third_party_settings: {  }
   field_affiliation:
     type: options_select
-    weight: 34
+    weight: 35
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -168,7 +149,7 @@ content:
     third_party_settings: {  }
   field_honorific_prefix:
     type: string_textfield
-    weight: 27
+    weight: 30
     region: content
     settings:
       size: 60
@@ -191,14 +172,14 @@ content:
     third_party_settings: {  }
   field_media:
     type: media_library_widget
-    weight: 35
+    weight: 2
     region: content
     settings:
       media_types: {  }
     third_party_settings: {  }
   field_metatags:
     type: metatag_firehose
-    weight: 3
+    weight: 6
     region: content
     settings:
       sidebar: true
@@ -206,7 +187,7 @@ content:
     third_party_settings: {  }
   field_position:
     type: string_textfield
-    weight: 31
+    weight: 32
     region: content
     settings:
       size: 60
@@ -214,7 +195,7 @@ content:
     third_party_settings: {  }
   field_subtitle:
     type: text_textfield
-    weight: 32
+    weight: 34
     region: content
     settings:
       size: 60
@@ -229,7 +210,7 @@ content:
         maxlength_js_enforce: false
   field_tags:
     type: chosen_select
-    weight: 7
+    weight: 36
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -273,18 +254,18 @@ content:
     third_party_settings: {  }
   path:
     type: path
-    weight: 1
+    weight: 4
     region: content
     settings: {  }
     third_party_settings: {  }
   simple_sitemap:
-    weight: 6
+    weight: 9
     region: content
     settings: {  }
     third_party_settings: {  }
   status:
     type: boolean_checkbox
-    weight: 5
+    weight: 8
     region: content
     settings:
       display_label: true
@@ -298,14 +279,14 @@ content:
     third_party_settings: {  }
   title:
     type: string_textfield
-    weight: 30
+    weight: 31
     region: content
     settings:
       size: 60
       placeholder: ''
     third_party_settings: {  }
   url_redirects:
-    weight: 2
+    weight: 5
     region: content
     settings: {  }
     third_party_settings: {  }
