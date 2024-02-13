@@ -38,6 +38,47 @@
   max-width: 485px;
 }
 
+/*
+// Profile edit form - YALB-1659 | YSP-292
+*/
+@media screen and (min-width: 1600px) {
+  .node-profile-edit-form .layout-region-node-main fieldset#edit-group-general-info .fieldset__wrapper {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media screen and (min-width: 1600px) {
+  .node-profile-edit-form .layout-region-node-main fieldset#edit-group-contact-info .fieldset__wrapper {
+    display: grid;
+    gap: 1rem;
+    grid-template: "left right" "bottom bottom"/1fr 1fr;
+  }
+}
+
+@media screen and (min-width: 1600px) {
+  .node-profile-edit-form .layout-region-node-main fieldset#edit-group-contact-info .fieldset__wrapper .field--name-field-email {
+    grid-area: left;
+  }
+}
+
+@media screen and (min-width: 1600px) {
+  .node-profile-edit-form .layout-region-node-main fieldset#edit-group-contact-info .fieldset__wrapper .field--name-field-telephone {
+    grid-area: right;
+  }
+}
+
+@media screen and (min-width: 1600px) {
+  .node-profile-edit-form .layout-region-node-main fieldset#edit-group-contact-info .fieldset__wrapper .field--name-field-address {
+    grid-area: bottom;
+  }
+}
+
+.node-profile-edit-form .layout-region-node-main .form-element {
+  width: 100%;
+}
+
 /* stylelint-enable */
 
 /*# sourceMappingURL=gin-custom.css.map */

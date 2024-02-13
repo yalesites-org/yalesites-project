@@ -41,4 +41,57 @@
   }
 }
 
+
+/*
+// Profile edit form - YALB-1659 | YSP-292
+*/
+
+// make general info fields grid two columns
+.node-profile-edit-form .layout-region-node-main fieldset#edit-group-general-info .fieldset__wrapper {
+  @media screen and (min-width: 1600px) {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+// display grid for contact info fields
+// make a two-column grid for email and telephone
+// make a one-column grid for address
+.node-profile-edit-form .layout-region-node-main fieldset#edit-group-contact-info .fieldset__wrapper {
+  @media screen and (min-width: 1600px) {
+    display: grid;
+    gap: 1rem;
+    grid-template: 
+    "left right"
+    "bottom bottom"
+    / 1fr 1fr;
+  }
+}
+
+// flex-basis 50%
+.node-profile-edit-form .layout-region-node-main fieldset#edit-group-contact-info .fieldset__wrapper .field--name-field-email {
+  @media screen and (min-width: 1600px) {
+    grid-area: left;
+  }
+}
+
+.node-profile-edit-form .layout-region-node-main fieldset#edit-group-contact-info .fieldset__wrapper .field--name-field-telephone {
+  @media screen and (min-width: 1600px) {
+    grid-area: right;
+  }
+}
+
+.node-profile-edit-form .layout-region-node-main fieldset#edit-group-contact-info .fieldset__wrapper .field--name-field-address {
+  @media screen and (min-width: 1600px) {
+    grid-area: bottom;
+  }
+}
+
+// make the fields 100% width
+.node-profile-edit-form .layout-region-node-main .form-element {
+  width: 100%;
+}
+
+
 /* stylelint-enable */
