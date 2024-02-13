@@ -22,13 +22,14 @@
 .ys-themes--global-settings {
   --color-border: var(--color-gray-500);
   --color-border-lightest: var(--color-basic-white);
-  --color-link-hover: hsl(210, 100%, 21%);
+  --color-link-hover: hsl(213, 66%, 45%);
   --color-link-border: hsl(213, 66%, 45%);
   --color-background-primary: var(--color-basic-white);
-  --color-background-hover: var(--wool);
+  --color-background-hover: var(--color-text-primary);
   --color-border-hover: hsl(213, 66%, 45%);
   --color-text-lighter: #2D424D;
   --color-text-primary: var(--color-gray-800);
+  --color-link-active: var(--color-basic-white);
 }
 
 /*
@@ -110,8 +111,8 @@
 
 #drupal-off-canvas .ys-themes--global-settings .form-item-global-theme:hover label,
 #drupal-off-canvas .ys-themes--global-settings .form-item-global-theme:focus label {
-  background-color: var(--color-background-hover);
   border-color: var(--color-border-hover);
+  color: var(--color-link-hover);
 }
 
 #drupal-off-canvas .ys-themes--global-settings .form-item-global-theme:hover .color,
@@ -126,12 +127,13 @@
 
 #drupal-off-canvas .ys-themes--global-settings .form-item-global-theme:hover > label,
 #drupal-off-canvas .ys-themes--global-settings .form-item-global-theme:focus > label {
-  color: var(--color-border-hover);
+  color: var(--color-link-hover);
+  border-color: var(--color-border-hover);
 }
 
 #drupal-off-canvas .ys-themes--global-settings .form-item-global-theme input[checked="checked"] + label {
   background-color: var(--color-text-primary);
-  color: var(--color-background-primary);
+  color: var(--color-link-active);
 }
 
 #drupal-off-canvas .ys-themes--global-settings .form-item-global-theme:hover input[checked="checked"] + label .colors > span,
@@ -166,7 +168,7 @@
 
 #drupal-off-canvas .ys-themes--global-settings .form-item-nav-position:hover > label,
 #drupal-off-canvas .ys-themes--global-settings .form-item-nav-position:focus > label {
-  color: var(--color-border-hover);
+  color: var(--color-link-hover);
   border-color: var(--color-border-hover);
 }
 
@@ -196,7 +198,7 @@
 
 #drupal-off-canvas .ys-themes--global-settings .form-item-nav-position input[checked="checked"] + label {
   background-color: var(--color-text-primary);
-  color: var(--color-background-primary);
+  color: var(--color-link-active);
 }
 
 /*
@@ -221,7 +223,7 @@
 
 #drupal-off-canvas .ys-themes--global-settings .form-item-nav-type:hover > label,
 #drupal-off-canvas .ys-themes--global-settings .form-item-nav-type:focus > label {
-  color: var(--color-border-hover);
+  color: var(--color-link-hover);
   border-color: var(--color-border-hover);
 }
 
@@ -243,7 +245,7 @@
 
 #drupal-off-canvas .ys-themes--global-settings .form-item-nav-type input[checked="checked"] + label {
   background-color: var(--color-text-primary);
-  color: var(--color-background-primary);
+  color: var(--color-link-active);
 }
 
 /*
@@ -255,7 +257,6 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: var(--size-spacing-8);
 }
 
 #drupal-off-canvas .form-item-button-theme label {
@@ -264,7 +265,7 @@
 
 #drupal-off-canvas .ys-themes--global-settings .form-item-button-theme:hover > label,
 #drupal-off-canvas .ys-themes--global-settings .form-item-button-theme:focus > label {
-  color: var(--color-border-hover);
+  color: var(--color-link-hover);
   border-color: var(--color-border-hover);
 }
 
@@ -275,18 +276,20 @@
 
 #drupal-off-canvas .ys-themes--global-settings .form-item-button-theme:hover input[checked="checked"] + label,
 #drupal-off-canvas .ys-themes--global-settings .form-item-button-theme:focus input[checked="checked"] + label {
-  color: var(--color-link-hover);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-hover);
 }
 
 #drupal-off-canvas .ys-themes--global-settings .form-item-button-theme input[checked="checked"] + label {
   background-color: var(--color-text-primary);
-  color: var(--color-background-primary);
+  color: var(--color-link-active);
 }
 
 #drupal-off-canvas .ys-themes--global-settings .form-item-button-theme input[checked="checked"] + label:hover,
 #drupal-off-canvas .ys-themes--global-settings .form-item-button-theme:hover input[checked="checked"] + label,
 #drupal-off-canvas .ys-themes--global-settings .form-item-button-theme:focus input[checked="checked"] + label {
-  color: var(--color-background-primary);
+  color: var(--color-link-active);
+  border-color: var(--color-border-hover);
 }
 
 /*
@@ -299,7 +302,6 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: var(--size-spacing-8);
 }
 
 #drupal-off-canvas .form-item-header-theme label,
@@ -325,7 +327,7 @@
 #drupal-off-canvas .ys-themes--global-settings .form-item-header-theme:focus > label,
 #drupal-off-canvas .ys-themes--global-settings .form-item-header-accent:hover > label,
 #drupal-off-canvas .ys-themes--global-settings .form-item-header-accent:focus > label {
-  color: var(--color-border-hover);
+  color: var(--color-link-hover);
   border-color: var(--color-border-hover);
 }
 
@@ -348,7 +350,7 @@
 #drupal-off-canvas .ys-themes--global-settings .form-item-header-accent input[checked="checked"] + label:hover,
 #drupal-off-canvas .ys-themes--global-settings .form-item-header-accent:hover input[checked="checked"] + label,
 #drupal-off-canvas .ys-themes--global-settings .form-item-header-accent:focus input[checked="checked"] + label  {
-  color: var(--color-background-primary);
+  color: var(--color-link-active);
 }
 
 /*
@@ -361,7 +363,6 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: var(--size-spacing-8);
 }
 
 #drupal-off-canvas .form-item-footer-theme label,
@@ -380,7 +381,7 @@
 #drupal-off-canvas .ys-themes--global-settings .form-item-footer-theme:focus > label,
 #drupal-off-canvas .ys-themes--global-settings .form-item-footer-accent:hover > label,
 #drupal-off-canvas .ys-themes--global-settings .form-item-footer-accent:focus > label {
-  color: var(--color-border-hover);
+  color: var(--color-link-hover);
   border-color: var(--color-border-hover);
 }
 
@@ -398,7 +399,7 @@
 #drupal-off-canvas .ys-themes--global-settings .form-item-footer-accent input[checked="checked"] + label:hover,
 #drupal-off-canvas .ys-themes--global-settings .form-item-footer-accent:hover input[checked="checked"] + label,
 #drupal-off-canvas .ys-themes--global-settings .form-item-footer-accent:focus input[checked="checked"] + label {
-  color: var(--color-background-primary);
+  color: var(--color-link-active);
 }
 
 /*
@@ -407,7 +408,7 @@
 */
 
 .gin--dark-mode #drupal-off-canvas input[type="submit"].button--primary {
-  color: var(--darkest-gray);
+  color: var(--color-basic-white);
   padding: var(--size-spacing-5);
 }
 

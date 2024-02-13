@@ -11,7 +11,7 @@ dependencies:
     - field.field.block_content.quick_links.field_text
   module:
     - allowed_formats
-    - link
+    - linkit
     - markup
     - maxlength
     - media_library
@@ -24,7 +24,7 @@ mode: default
 content:
   field_heading:
     type: text_textfield
-    weight: 1
+    weight: 2
     region: content
     settings:
       size: 60
@@ -44,16 +44,18 @@ content:
     settings: {  }
     third_party_settings: {  }
   field_links:
-    type: link_default
+    type: linkit
     weight: 4
     region: content
     settings:
       placeholder_url: ''
       placeholder_title: ''
+      linkit_profile: default
+      linkit_auto_link_text: false
     third_party_settings: {  }
   field_media:
     type: media_library_widget
-    weight: 3
+    weight: 4
     region: content
     settings:
       media_types: {  }
@@ -62,7 +64,7 @@ content:
         show_edit: '1'
   field_text:
     type: text_textarea
-    weight: 2
+    weight: 3
     region: content
     settings:
       rows: 3
@@ -75,6 +77,13 @@ content:
         maxlength_js: 100
         maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
         maxlength_js_enforce: true
+  info:
+    type: string_textfield
+    weight: 1
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
 hidden:
-  info: true
   revision_log: true
