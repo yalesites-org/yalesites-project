@@ -79,6 +79,16 @@
   width: 100%;
 }
 
+.action-link--icon-trash.action-link--danger::before,
+.button.button--danger::before {
+  background-color: var(--gin-color-danger) !important;
+}
+
+.action-link--icon-trash.action-link--danger:hover::before,
+.button.button--danger:hover::before {
+  background-color: var(--gin-bg-layer) !important;
+}
+
 /* stylelint-enable */
 
 /*# sourceMappingURL=gin-custom.css.map */
