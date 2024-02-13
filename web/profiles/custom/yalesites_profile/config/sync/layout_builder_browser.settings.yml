@@ -3,4 +3,30 @@ _core:
 enabled_section_storages:
   - overrides
 use_modal: true
-auto_added_reusable_block_content_bundles: {  }
+auto_added_reusable_block_content_bundles:
+  accordion: accordion
+  button_link: button_link
+  callout: callout
+  content_spotlight: content_spotlight
+  cta_banner: cta_banner
+  custom_cards: custom_cards
+  directory: directory
+  divider: divider
+  embed: embed
+  event_list: event_list
+  gallery: gallery
+  grand_hero: grand_hero
+  image: image
+  media_grid: media_grid
+  post_list: post_list
+  pull_quote: pull_quote
+  quick_links: quick_links
+  tabs: tabs
+  text: text
+  video: video
+  view: view
+  webform: webform
+  wrapped_image: wrapped_image
+group_reusable_blocks_together: true
+image_fallback: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/fallback-global-block.jpg
+image_fallback_alt: ''

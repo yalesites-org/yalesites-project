@@ -17,6 +17,9 @@ settings:
       - link
       - anchor
   plugins:
+    editor_advanced_link_link:
+      enabled_attributes:
+        - target
     linkit_extension:
       linkit_enabled: true
       linkit_profile: default

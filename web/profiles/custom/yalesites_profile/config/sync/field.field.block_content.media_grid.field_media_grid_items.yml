@@ -13,7 +13,7 @@ field_name: field_media_grid_items
 entity_type: block_content
 bundle: media_grid
 label: Media
-description: ''
+description: 'This block requires a minimum of 2 media grid items.'
 required: false
 translatable: false
 default_value: {  }

@@ -60,7 +60,6 @@ third_party_settings:
               4: 4
               5: 5
               6: 6
-              7: 7
               8: 8
       -
         layout_id: ys_layout_two_column
@@ -79,12 +78,15 @@ third_party_settings:
               context_mapping: {  }
             weight: 0
             additional: {  }
-        third_party_settings: {  }
+        third_party_settings:
+          layout_builder_lock:
+            lock: {  }
   layout_builder_restrictions:
     allowed_block_categories:
       - 'Chaos Tools'
       - 'Content fields'
       - 'Custom block types'
+      - 'Custom blocks'
       - Devel
       - Forms
       - Help
@@ -109,7 +111,7 @@ third_party_settings:
       restricted_categories:
         - 'Chaos Tools'
         - 'Content fields'
-        - 'Custom block types'
+        - 'Custom blocks'
         - Devel
         - Forms
         - Help
@@ -131,6 +133,15 @@ third_party_settings:
               - profile_contact_block
         ys_layout_two_column:
           content:
+            'Custom block types':
+              - accordion
+              - button_link
+              - divider
+              - image
+              - pull_quote
+              - tabs
+              - text
+              - video
             'Inline blocks':
               - 'inline_block:accordion'
               - 'inline_block:button_link'
@@ -143,6 +154,8 @@ third_party_settings:
             'YaleSites Layouts':
               - profile_contact_block
           sidebar:
+            'Custom block types':
+              - text
             'Inline blocks':
               - 'inline_block:text'
             'YaleSites Layouts':
@@ -150,10 +163,10 @@ third_party_settings:
       denylisted_blocks: {  }
       restricted_categories:
         ys_layout_two_column:
-          sidebar:
+          content:
             - 'Chaos Tools'
             - 'Content fields'
-            - 'Custom block types'
+            - 'Custom blocks'
             - Devel
             - Forms
             - Help
@@ -164,10 +177,10 @@ third_party_settings:
             - 'YaleSites Core'
             - 'YaleSites alert'
             - core
-          content:
+          sidebar:
             - 'Chaos Tools'
             - 'Content fields'
-            - 'Custom block types'
+            - 'Custom blocks'
             - Devel
             - Forms
             - Help
@@ -182,7 +195,7 @@ third_party_settings:
           all_regions:
             - 'Chaos Tools'
             - 'Content fields'
-            - 'Custom block types'
+            - 'Custom blocks'
             - Devel
             - Forms
             - Help
