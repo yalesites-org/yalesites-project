@@ -2,22 +2,22 @@
 * @todo Possibly move these styles into admin theme.
 */
 
+.views-basic--group-user-selection {
+  --size-spacing-4: 0.75rem;
+  --size-spacing-5: 1rem;
+}
+
 /* General styles */
-.views-basic--params,
-#drupal-off-canvas-wrapper .views-basic--params {
+.views-basic--params {
   display: none;
 }
 
-.views-basic--parameter-preview,
-#drupal-off-canvas-wrapper .views-basic--parameter-preview {
-  margin-top: 1rem;
-}
-
-.glb-form-type--radio,
-#drupal-off-canvas-wrapper .glb-form-type--radio {
+.views-basic--entity-view-mode .glb-form-type--radio,
+.views-basic--entity-view-mode .form-type--radio {
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: auto;
+  margin-left: 0;
 }
 
 /* chosen-specific */
@@ -29,19 +29,25 @@
 /* Chosen dropdown selected color contrast fix */
 
 /* ******************************************* */
-.chosen-container .chosen-results {
-  color: var(--gin-color-info);
+.gin--dark-mode .chosen-container .chosen-results {
+  color: var(--gin-bg-layer);
 }
 
-.chosen-container-multi .chosen-drop .result-selected {
-  color: var(--gin-color-green);
+.gin--dark-mode .chosen-container-multi .chosen-drop .result-selected {
+  color: var(--gin-color-focus);
+  background-color: var(--gin-bg-layer);
 }
 
 /* ************ Contrast fix end ************ */
 
 /* visually hide the inputs */
-.layout-builder-configure-block .grouped-items .glb-form-type--radio input,
-#drupal-off-canvas-wrapper .layout-builder-configure-block .grouped-items .glb-form-type--radio input {
+
+.views-basic--group-user-selection .grouped-items .glb-form-type--radio,
+.views-basic--group-user-selection .grouped-items .form-type--radio {
+  position: relative;
+}
+
+.views-basic--group-user-selection .grouped-items input.form-radio {
   border: 0;
   clip: rect(0 0 0 0);
   height: 1px;
@@ -53,247 +59,84 @@
 }
 
 /* base for labels */
-.glb-form-type--radio label.glb-form-item__label.glb-option,
-#drupal-off-canvas-wrapper .glb-form-type--radio label.glb-form-item__label.glb-option {
+.views-basic--group-user-selection .glb-form-type--radio label.glb-option,
+.views-basic--group-user-selection .form-type--radio label.option {
   display: flex !important;
   align-items: center;
   flex-direction: column;
   gap: 1rem;
   flex: 1 auto;
-  border: 2px solid var(--wool);
+  border: 2px solid;
   aspect-ratio: 2/1;
   text-align: left;
-  background-color: var(--dark-theme-gray);
   padding: var(--size-spacing-4) var(--size-spacing-5);
-  color: var(--darkest-gray);
+  color: var(--gin-color-text);
   border-radius: 0.25rem;
   margin-bottom: var(--size-spacing-4);
 }
 
 .glb-form-type--radio label.glb-form-item__label.glb-option:hover,
 #drupal-off-canvas-wrapper .glb-form-type--radio label.glb-form-item__label.glb-option:hover {
-  border-color: var(--darkest-gray);
+  border-color: var(--gin-color-text-light);
 }
 
 /******
 /******** Input styles
 *******/
 
-/* views-basic--group-user-selection */
-
-#drupal-off-canvas-wrapper .layout-builder-configure-block,
-#drupal-off-canvas:not(.drupal-off-canvas-reset)
-  .layout-builder-configure-block {
-  width: 100%;
-}
-
-.grouped-items .fieldset__wrapper,
-#drupal-off-canvas-wrapper .grouped-items .fieldset__wrapper {
-  display: flex;
-  flex-direction: column;
-}
-
-#drupal-off-canvas-wrapper .layout-builder-configure-block legend,
-#drupal-off-canvas:not(.drupal-off-canvas-reset)
-  .layout-builder-configure-block
-  legend {
+.views-basic--group-user-selection legend {
   margin-bottom: var(--size-spacing-4);
 }
 
-#drupal-off-canvas-wrapper
-  .layout-builder-configure-block
-  .glb-form-item__label,
-#drupal-off-canvas:not(.drupal-off-canvas-reset)
-  .layout-builder-configure-block
-  .glb-form-item__label {
+.views-basic--group-user-selection .glb-form-item__label,
+.views-basic--group-user-selection .form-item__label {
   font-size: 1rem !important;
+  color: var(--wool) !important;
 }
 
-/*
-/** in sidebar
-*/
-
-/* views-basic--group-user-selection */
-#drupal-off-canvas-wrapper.ui-dialog-content div.glb-form-item__description,
-#drupal-off-canvas:not(.drupal-off-canvas-reset).ui-dialog-content
-  div.glb-form-item__description {
-  margin-top: 0.5rem;
-}
-
-#drupal-off-canvas-wrapper.ui-dialog-content div.counter,
-#drupal-off-canvas:not(.drupal-off-canvas-reset).ui-dialog-content div.counter {
-  margin-top: 1rem;
-}
-
-/*
-/** in modal
-*/
-#layout-builder-modal .grouped-items,
-#drupal-off-canvas-wrapper #layout-builder-modal .grouped-items {
-  width: 100%;
-}
-
-#layout-builder-modal .grouped-items .glb-form-type--radio,
-#drupal-off-canvas-wrapper #layout-builder-modal .grouped-items .glb-form-type--radio {
-  width: auto;
-}
-
-#drupal-off-canvas-wrapper .fieldset,
-#drupal-off-canvas:not(.drupal-off-canvas-reset) .fieldset,
-#drupal-off-canvas-wrapper .views-basic--group-user-selection .grouped-items,
-#drupal-off-canvas:not(.drupal-off-canvas-reset)
-  .views-basic--group-user-selection
-  .grouped-items {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-.grouped-items .glb-form-composite .fieldset__wrapper,
-#drupal-off-canvas-wrapper .grouped-items .glb-form-composite .fieldset__wrapper {
+.views-basic--group-user-selection .grouped-items .fieldset__wrapper {
   border-top: 0.15rem solid var(--color-gray-500);
 }
 
-.glb-fieldset__legend--composite .glb-fieldset__label,
-#drupal-off-canvas-wrapper .glb-fieldset__legend--composite .glb-fieldset__label {
+.views-basic--group-user-selection .glb-fieldset__label,
+.views-basic--group-user-selection .fieldset__label {
   font-size: 1rem;
 }
 
-/******
-/******** Label and fieldset styles
-*******/
-
-/*
-/***** I want to show:
-*/
-
-/* Posts */
-.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
-  input[value="post"]
-  + label,
-#drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
-  input[value="post"]
-  + label {
-  background-image: url("../icons/content-type-post.svg");
-  background-repeat: no-repeat;
-  background-position: center 4rem;
+.gin--dark-mode .views-basic--group-user-selection .fieldset-legend.fieldset__label,
+.gin--dark-mode .views-basic--group-user-selection .fieldset__legend.fieldset__legend--visible .fieldset__label {
+  background-color: transparent;
+  border: 0;
+  color: var(--wool) !important;
+  font-weight: 700;
+  padding-left: 0;
 }
 
-/* Events */
-.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
-  input[value="event"]
-  + label,
-#drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
-  input[value="event"]
-  + label {
-  background-image: url("../icons/content-type-event.svg");
-  background-repeat: no-repeat;
-  background-position: center 4rem;
-}
-
-.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
-  input[value="page"]
-  + label,
-#drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
-  input[value="page"]
-  + label {
-  background-image: url("../icons/content-type-page.svg");
-  background-repeat: no-repeat;
-  background-position: center 4rem;
-}
-
-/* Profiles */
-.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
-  input[value="profile"]
-  + label,
-#drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
-  input[value="profile"]
-  + label {
-  background-image: url("../icons/content-type-profile.svg");
-  background-repeat: no-repeat;
-  background-position: center 4rem;
-}
-
-/*
-/***** As:
-*/
-
-/* Card */
-.views-basic--view-mode input[value="card"] + label,
-#drupal-off-canvas-wrapper .views-basic--view-mode input[value="card"] + label {
-  background-image: url("../icons/display-type-card-grid.svg");
-  background-repeat: no-repeat;
-  background-position: center 4rem;
-}
-
-/* List */
-.views-basic--view-mode input[value="list_item"] + label,
-#drupal-off-canvas-wrapper .views-basic--view-mode input[value="list_item"] + label {
-  background-image: url("../icons/display-type-list-view.svg");
-  background-repeat: no-repeat;
-  background-position: center 4rem;
-}
-
-/* Condensed */
-.views-basic--view-mode input[value="condensed"] + label,
-#drupal-off-canvas-wrapper .views-basic--view-mode input[value="condensed"] + label {
-  background-image: url("../icons/display-type-condensed.svg");
-  background-repeat: no-repeat;
-  background-position: center 0;
-  background-size: 150%;
-}
-
-/* Directory */
-.views-basic--view-mode input[value="directory"] + label,
-#drupal-off-canvas-wrapper .views-basic--view-mode input[value="directory"] + label {
-  background-image: url("../icons/display-type-directory.svg");
-  background-repeat: no-repeat;
-  background-position: center 1rem;
-  background-size: 120%;
-}
-
-.layout-builder-configure-block .grouped-items fieldset:focus-visible,
-#drupal-off-canvas-wrapper .layout-builder-configure-block .grouped-items fieldset:focus-visible,
-.layout-builder-configure-block .grouped-items fieldset:focus-within,
-#drupal-off-canvas-wrapper .layout-builder-configure-block .grouped-items fieldset:focus-within,
-.layout-builder-configure-block .grouped-items label:focus-visible,
-#drupal-off-canvas-wrapper .layout-builder-configure-block .grouped-items label:focus-visible,
-.layout-builder-configure-block
+.views-basic--group-user-selection .grouped-items fieldset:focus-visible,
+.views-basic--group-user-selection .grouped-items fieldset:focus-within,
+.views-basic--group-user-selection .grouped-items label:focus-visible,
+.views-basic--group-user-selection
   .grouped-items
   input[type="submit"].button--primary:focus,
-#drupal-off-canvas-wrapper .layout-builder-configure-block
   .grouped-items
   input[type="submit"].button--primary:focus {
   outline: var(--size-thickness-2) solid var(--color-link-base);
   outline-offset: var(--size-thickness-2);
 }
 
-.layout-builder-configure-block
+.views-basic--group-user-selection
   .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types:hover
   label,
-#drupal-off-canvas-wrapper .layout-builder-configure-block
-  .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types:hover
-  label,
-.layout-builder-configure-block
+.views-basic--group-user-selection
   .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types:focus
   label,
-#drupal-off-canvas-wrapper .layout-builder-configure-block
-  .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types:focus
-  label,
-.layout-builder-configure-block
+.views-basic--group-user-selection
   .form-item-settings-block-form-group-user-selection-entity-and-view-mode-view-mode:hover
   label,
-#drupal-off-canvas-wrapper .layout-builder-configure-block
-  .form-item-settings-block-form-group-user-selection-entity-and-view-mode-view-mode:hover
-  label,
-.layout-builder-configure-block
-  .form-item-settings-block-form-group-user-selection-entity-and-view-mode-view-mode:focus
-  label,
-#drupal-off-canvas-wrapper .layout-builder-configure-block
+.views-basic--group-user-selection
   .form-item-settings-block-form-group-user-selection-entity-and-view-mode-view-mode:focus
   label {
-  background-color: var(--dark-theme-gray);
-  border-color: var(--darkest-gray);
+  border-color: var(--gin-color-primary);
 }
 
 /* Pages */
@@ -303,8 +146,8 @@
 #drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
   input[value="page"][checked="checked"]
   + label {
-  background-color: var(--darkest-gray);
-  color: var(--wool);
+  color: var(--gin-color-primary) !important;
+  border-color: var(--gin-color-primary);
 }
 
 /* Profiles */
@@ -314,8 +157,8 @@
 #drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
   input[value="profile"][checked="checked"]
   + label {
-  background-color: var(--darkest-gray);
-  color: var(--wool);
+    color: var(--gin-color-primary) !important;
+    border-color: var(--gin-color-primary);
 }
 
 /* Events */
@@ -325,8 +168,8 @@
 #drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
   input[value="event"][checked="checked"]
   + label {
-  background-color: var(--darkest-gray);
-  color: var(--wool);
+    color: var(--gin-color-primary) !important;
+    border-color: var(--gin-color-primary);
 }
 
 .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
@@ -335,8 +178,8 @@
 #drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
   input[value="post"][checked="checked"]
   + label {
-  background-color: var(--darkest-gray);
-  color: var(--wool);
+    color: var(--gin-color-primary) !important;
+    border-color: var(--gin-color-primary);
 }
 
 #drupal-off-canvas-wrapper
@@ -381,8 +224,8 @@
   .glb-form-type--radio:hover
   input[checked="checked"]
   + label {
-  background-color: var(--darkest-gray);
-  color: var(--wool) !important;
+    color: var(--gin-color-primary) !important;
+    border-color: var(--gin-color-primary);
 }
 
 #drupal-off-canvas-wrapper
@@ -419,89 +262,45 @@
   .fieldset__wrapper--group
   .glb-form-type--radio
   label,
-#drupal-off-canvas:not(.drupal-off-canvas-reset)
+.views-basic--group-user-selection
   .grouped-items
   .fieldset--group
   .fieldset__wrapper--group
-  .glb-form-type--radio
+  .form-type--radio
   label {
-  width: 110px;
-  height: 150px;
+  width: 135px;
+  height: 135px;
 }
 
-/* while other items look great, the term-operators text was getting cut off
- * so we need to adjust the label width and height for the term operators
- */
-
-/* second column */
-#drupal-off-canvas-wrapper
-  .grouped-items
-  .fieldset--group.views-basic--view-mode
-  .fieldset__wrapper--group
-  .glb-form-type--radio
-  label,
-#drupal-off-canvas:not(.drupal-off-canvas-reset)
-  .grouped-items
-  .fieldset--group.views-basic--view-mode
-  .fieldset__wrapper--group
-  .glb-form-type--radio
-  label {
-  width: 175px;
-  height: 200px;
-}
-
-#drupal-off-canvas-wrapper
-  .grouped-items
-  .fieldset--group
-  .fieldset__wrapper--group
-  .glb-form-type--radio
-  input.term-operator-item
-  + label,
-#drupal-off-canvas:not(.drupal-off-canvas-reset)
-  .grouped-items
-  .fieldset--group
-  .fieldset__wrapper--group
-  .glb-form-type--radio
-  input.term-operator-item
-  + label {
-  width: 130px !important;
-  height: 150px !important;
-}
-
-/* first column */
-#layout-builder-modal .grouped-items .fieldset--group {
-  flex: 1 0 52.5%;
-}
-
-#layout-builder-modal
-  .grouped-items
-  .fieldset--group
-  .fieldset__wrapper--group
-  .form-boolean-group {
-  display: flex;
-  flex-direction: row;
-  gap: 1rem;
-  width: 100%;
-}
-
-/* second column */
-#layout-builder-modal .grouped-items #edit-view-mode {
-  display: flex;
-  flex: 1 auto;
-  width: 100%;
-}
-
-#layout-builder-modal .grouped-items #edit-view-mode .fieldset--group {
-  flex: 1 auto;
-}
-
-#layout-builder-modal
+.views-basic--group-user-selection
   .grouped-items
   #edit-view-mode
   .fieldset--group
   .fieldset__wrapper--group
   .glb-form-type--radio
+  label,
+.views-basic--group-user-selection
+  .grouped-items
+  #edit-view-mode
+  .fieldset--group
+  .fieldset__wrapper--group
+  .form-type--radio
   label {
   width: 170px;
-  height: 150px;
+  height: 170px;
+}
+
+.views-basic--group-user-selection .grouped-items img {
+  width: auto;
+}
+
+.views-basic--group-user-selection
+  .grouped-items
+  .fieldset--group
+  .fieldset__wrapper--group
+  .form-boolean-group {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  flex-flow: row wrap;
 }

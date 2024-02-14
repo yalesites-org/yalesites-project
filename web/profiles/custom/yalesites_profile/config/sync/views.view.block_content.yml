@@ -21,7 +21,7 @@ display:
     display_plugin: default
     position: 0
     display_options:
-      title: 'Custom block library'
+      title: 'Reusable Blocks'
       fields:
         info:
           id: info
@@ -33,7 +33,7 @@ display:
           entity_type: null
           entity_field: info
           plugin_id: field
-          label: 'Block description'
+          label: 'Reusable Block title'
           exclude: false
           alter:
             alter_text: false
@@ -314,19 +314,8 @@ display:
           admin_label: ''
           plugin_id: text_custom
           empty: true
-          content: 'There are no custom blocks available.'
+          content: 'There are no reusable blocks available. You may add using the link above.'
           tokenize: false
-        block_content_listing_empty:
-          id: block_content_listing_empty
-          table: block_content
-          field: block_content_listing_empty
-          relationship: none
-          group_type: group
-          admin_label: ''
-          entity_type: block_content
-          plugin_id: block_content_listing_empty
-          label: ''
-          empty: true
       sorts: {  }
       arguments: {  }
       filters:
@@ -346,7 +335,7 @@ display:
           exposed: true
           expose:
             operator_id: info_op
-            label: 'Block description'
+            label: 'Reusable Block title'
             description: ''
             use_operator: false
             operator: info_op
@@ -359,7 +348,9 @@ display:
             remember_roles:
               authenticated: authenticated
               anonymous: '0'
-              administrator: '0'
+              platform_admin: '0'
+              site_admin: '0'
+            placeholder: ''
           is_grouped: false
           group_info:
             label: ''
@@ -531,7 +522,10 @@ display:
     display_plugin: page
     position: 1
     display_options:
-      display_extenders: {  }
+      display_extenders:
+        metatag_display_extender:
+          metatags: {  }
+          tokenize: false
       path: admin/content/block
       menu:
         type: tab
