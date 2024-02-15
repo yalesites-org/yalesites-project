@@ -4,22 +4,25 @@ status: true
 dependencies:
   config:
     - field.field.media.image.field_media_image
+    - image.style.crop_thumbnail
     - media.type.image
   module:
+    - focal_point
     - hide_revision_field
-    - image
 id: media.image.default
 targetEntityType: media
 bundle: image
 mode: default
 content:
   field_media_image:
-    type: image_image
+    type: image_focal_point
     weight: 0
     region: content
     settings:
       progress_indicator: throbber
-      preview_image_style: ''
+      preview_image_style: crop_thumbnail
+      preview_link: true
+      offsets: '50,50'
     third_party_settings: {  }
   revision_log_message:
     type: hide_revision_field_log_widget

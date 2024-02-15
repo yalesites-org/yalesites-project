@@ -44,6 +44,7 @@ module:
   file: 0
   file_mdm: 0
   filter: 0
+  focal_point: 0
   gin_lb: 0
   gin_toolbar: 0
   google_analytics: 0

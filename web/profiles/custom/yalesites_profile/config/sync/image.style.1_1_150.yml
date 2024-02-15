@@ -1,15 +1,17 @@
 uuid: 9ebe7c40-8228-4dc7-9949-0cb9060d97da
 langcode: en
 status: true
-dependencies: {  }
+dependencies:
+  module:
+    - focal_point
 name: '1_1_150'
 label: '1:1 (150)'
 effects:
-  0b1d59a7-f84c-41fc-bd1f-eddf1b0fea22:
-    uuid: 0b1d59a7-f84c-41fc-bd1f-eddf1b0fea22
-    id: image_scale_and_crop
+  65c052b1-21f0-4991-8195-38f826b6b593:
+    uuid: 65c052b1-21f0-4991-8195-38f826b6b593
+    id: focal_point_scale_and_crop
     weight: 2
     data:
       width: 150
       height: 150
-      anchor: center-center
+      crop_type: focal_point
