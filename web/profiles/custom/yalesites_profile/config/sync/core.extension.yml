@@ -50,7 +50,6 @@ module:
   help: 0
   honeypot: 0
   image: 0
-  image_widget_crop: 0
   imagemagick: 0
   improve_line_breaks_filter: 0
   jquery_ui: 0
