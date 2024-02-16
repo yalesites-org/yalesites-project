@@ -1,15 +1,17 @@
 uuid: 98367c5b-ef66-4ec2-b03c-fc5e24d5796c
 langcode: en
 status: true
-dependencies: {  }
+dependencies:
+  module:
+    - focal_point
 name: '16_5_2240'
 label: '16:5 (2240)'
 effects:
-  922fa242-4f12-43fb-81b6-7e6ed1600c56:
-    uuid: 922fa242-4f12-43fb-81b6-7e6ed1600c56
-    id: image_scale_and_crop
+  aab5ac34-d6c2-4307-8f00-2318ef0dc2b8:
+    uuid: aab5ac34-d6c2-4307-8f00-2318ef0dc2b8
+    id: focal_point_scale_and_crop
     weight: 2
     data:
       width: 2240
       height: 700
-      anchor: center-center
+      crop_type: focal_point

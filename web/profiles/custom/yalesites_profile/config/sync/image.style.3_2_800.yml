@@ -1,15 +1,17 @@
 uuid: 727255ae-0327-4f53-aa01-8ee373c1d352
 langcode: en
 status: true
-dependencies: {  }
+dependencies:
+  module:
+    - focal_point
 name: '3_2_800'
 label: '3:2 (800)'
 effects:
-  1ec7177d-d45d-4a7c-aa9d-b7a43357dac8:
-    uuid: 1ec7177d-d45d-4a7c-aa9d-b7a43357dac8
-    id: image_scale_and_crop
+  d7c55f7e-f2a7-4b4b-8e1d-72d3419340ca:
+    uuid: d7c55f7e-f2a7-4b4b-8e1d-72d3419340ca
+    id: focal_point_scale_and_crop
     weight: 2
     data:
       width: 800
-      height: 533
-      anchor: center-center
+      height: 553
+      crop_type: focal_point

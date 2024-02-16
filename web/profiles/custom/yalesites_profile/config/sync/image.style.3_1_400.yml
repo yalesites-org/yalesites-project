@@ -1,15 +1,17 @@
 uuid: 36d76d1d-fd7a-4deb-94e8-87b4f059b78b
 langcode: en
 status: true
-dependencies: {  }
+dependencies:
+  module:
+    - focal_point
 name: '3_1_400'
 label: '3:1 (400)'
 effects:
-  1779826d-ec52-4a15-b9e1-3ad08b1549a3:
-    uuid: 1779826d-ec52-4a15-b9e1-3ad08b1549a3
-    id: image_scale_and_crop
+  2be14fa6-1e8d-4d31-8aa9-9117ea6a7b34:
+    uuid: 2be14fa6-1e8d-4d31-8aa9-9117ea6a7b34
+    id: focal_point_scale_and_crop
     weight: 2
     data:
       width: 400
       height: 133
-      anchor: center-center
+      crop_type: focal_point

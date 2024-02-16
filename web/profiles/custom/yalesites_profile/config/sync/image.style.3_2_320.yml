@@ -1,15 +1,17 @@
 uuid: f4678a4e-d655-4bf6-bffc-f4de163bdb03
 langcode: en
 status: true
-dependencies: {  }
+dependencies:
+  module:
+    - focal_point
 name: '3_2_320'
 label: '3:2 (320)'
 effects:
-  07a9e1a4-fa7e-46f7-88f9-980a3b7b99c6:
-    uuid: 07a9e1a4-fa7e-46f7-88f9-980a3b7b99c6
-    id: image_scale_and_crop
+  61c49bc3-72d8-4813-9d80-f9d30f647533:
+    uuid: 61c49bc3-72d8-4813-9d80-f9d30f647533
+    id: focal_point_scale_and_crop
     weight: 2
     data:
       width: 320
       height: 213
-      anchor: center-center
+      crop_type: focal_point
