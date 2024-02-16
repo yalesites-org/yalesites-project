@@ -102,6 +102,7 @@ const Layout = () => {
             </p>
             <button
             type="button"
+            id="ask-yale-modal-button"
             onClick={handleOpenModal}
             >
                 Try askYale Now
