@@ -6,19 +6,19 @@
 Edit overrides 1
 ****************
 
-first and last child component spacing between the 
-site header and site footer, respectively. 
+first and last child component spacing between the
+site header and site footer, respectively.
 
 ****************
 ****************
 */
 
 
-/* This `layout-banner override, overrides the .main-content > *:first-child 
-statement in web/themes/contrib/atomic/_yale-packages/component-library-twig/components/04-page-layouts/page-layouts.scss 
+/* This `layout-banner override, overrides the .main-content > *:first-child
+statement in web/themes/contrib/atomic/_yale-packages/component-library-twig/components/04-page-layouts/page-layouts.scss
 
 We need to set this region to have no top margin because our component-library doesn't
-account for div elements in-between 'main-content' and the component themselves. 
+account for div elements in-between 'main-content' and the component themselves.
 
 Without this, the `layout-banner` would get top margin from the component-library
 because the --main-content-top-margin variable isn't set and --size-spacing-6
@@ -42,7 +42,7 @@ would be used instead resulting in top margin of size-spacing-6.  */
   margin-bottom: var(--main-content-bottom-margin, var(--size-spacing-13));
 }
 
-/* Here we need to specify which components in the main content layout div 
+/* Here we need to specify which components in the main content layout div
 need to have margin-bottom set to 0 */
 .main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .callouts:last-child,
 .main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .cta-banner:last-child,
@@ -52,15 +52,15 @@ need to have margin-bottom set to 0 */
 }
 
 /* This is necessary because there could be more than one instance of
-// layout-onecol 
+// layout-onecol
 */
 .main-content .layout.layout--onecol:last-child {
   margin-bottom: 0;
 }
 
 /*
-// Pull quotes has a <p> element provided by the WYSIWYG 
-// we need to make the `-` character and the attribution text in line, 
+// Pull quotes has a <p> element provided by the WYSIWYG
+// we need to make the `-` character and the attribution text in line,
 // and remove margin from the <p>
 display: flex;
 */
@@ -89,7 +89,188 @@ display: flex;
 /* Remove margin from `p` element when used in sidebar */
 .block-wrapper .text p {
   margin: 0;
-} 
+}
+
+/* Wingsuit layout builder styles */
+
+.block-categories .layout-builder-browser-block-item img {
+  width: 100%;
+  margin-bottom: 1rem;
+  filter: unset;
+}
+
+.block-categories.glb-layout-builder-browser .glb-claro-details__wrapper {
+  gap: 0.5rem;
+}
+
+.block-categories .layout-builder-browser-block-item {
+  width: 100%;
+  max-width: calc(50% - 1rem);
+}
+
+@media screen and (min-width: 500px) {
+  .block-categories .layout-builder-browser-block-item {
+    max-width: calc(33% - 1rem);
+  }
+
+}
+
+.layout-builder-browser-reusable-block {
+  text-decoration: none;
+  line-height: 1.5rem;
+}
+
+.layout-builder-browser-reusable-block .underlined-title {
+  text-decoration: underline;
+}
+
+.glb-canvas-form__settings {
+  flex-grow: unset;
+}
+
+/*
+Used with patch to add reusable blocks from within layout builder
+Note: div[data-drupal-selector="edit-block-form"] is for reusable block editing
+area needed more padding.
+*/
+
+.layout-builder-configure-block .form-item-reusable,
+.layout-builder-configure-block .form-item-reusable + .form-type--textfield,
+div[data-drupal-selector="edit-block-form"] {
+  padding-left: 20px;
+  padding-right: 21px;
+}
+
+/* Override layout builder buttons in dark mode */
+.gin--dark-mode [data-gin-accent="light_blue"] .layout-builder__link--add:not(:focus) {
+  color: var(--color-gray-800) !important;
+}
+
+.gin--dark-mode .ws-lb-link__label {
+  background-color: var(--gin-bg-layer);
+}
+
+/* layout builder section borders */
+.layout-builder__section:not(.gin-lb--disable-section-focus)::after {
+  border: 0.35rem solid  hsl(180, 7%, 75%) !important;
+  position: absolute;
+  content: '';
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+}
+
+.layout-builder__section:not(.gin-lb--disable-section-focus):hover::after {
+  border: 0.35rem solid  hsl(180, 7%, 20%) !important;
+}
+
+.layout-builder__section {
+  margin: 2rem 1rem;
+}
+
+.layout-builder__section .js-layout-builder-region {
+  padding: 1rem;
+}
+
+.layout-builder-components-table th {
+  background-color: transparent;
+  border: none;
+}
+
+.layout-builder-components-table tr:nth-child(2n) {
+  background-color: var(--gin-bg-layer);
+}
+
+
+#drupal-off-canvas-wrapper .draggable:hover, 
+#drupal-off-canvas-wrapper .draggable:focus-within {
+  background-color: var(--gin-bg-layer2);
+}
+
+/* Change layoutbuilder configure/UI element colors in dark mode because the defaults don't look good */
+.gin--dark-mode .layout-builder__link--configure:hover {
+  background-color: var(--gin-bg-layer) !important;
+}
+
+.gin--dark-mode .layout-builder__section:hover .layout-builder__link--configure {
+  background-color: var(--gin-bg-layer) !important;
+  color: var(--gin-color-primary) !important;
+}
+
+.gin--dark-mode .layout-builder__section:hover .layout-builder__link--add-section-to-library,
+.gin--dark-mode .layout-builder__section:hover .layout-builder__link--remove {
+  background-color: var(--gin-bg-layer) !important;
+  color: var(--gin-color-primary) !important;
+}
+
+.layout-builder__section .layout-builder__link--add-section-to-library {
+  position: absolute;
+  top: -24px;
+  left: 275px;
+  font-size: 1rem;
+}
+
+/* Override layout builder block categories hover state in dark mode */
+.gin--dark-mode .glb-grid-item:hover, 
+.gin--dark-mode .layout-builder-browser-block-item:hover {
+  color: white;
+  background-color: var(--gin-color-primary-light-rgb) !important;
+}
+
+
+/* Wingsuit layout builder styles */
+
+.block-categories .layout-builder-browser-block-item img {
+  width: 100%;
+  margin-bottom: 1rem;
+  filter: unset;
+}
+
+.block-categories.glb-layout-builder-browser .glb-claro-details__wrapper {
+  gap: 0.5rem;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.block-categories .layout-builder-browser-block-item {
+  width: 100%;
+  max-width: calc(50% - 1.30rem);
+  border: 0.15rem solid;
+}
+
+@media screen and (min-width: 500px) {
+  .block-categories .layout-builder-browser-block-item {
+    max-width: calc(33% - 1.30rem);
+  }
+
+}
+
+.layout-builder-browser-reusable-block {
+  text-decoration: none;
+  line-height: 1.5rem;
+}
+
+.layout-builder-browser-reusable-block .underlined-title {
+  text-decoration: underline;
+}
+
+.glb-canvas-form__settings {
+  flex-grow: unset;
+}
+
+/*
+Used with patch to add reusable blocks from within layout builder
+Note: div[data-drupal-selector="edit-block-form"] is for reusable block editing
+area needed more padding.
+*/
+
+.layout-builder-configure-block .form-item-reusable,
+.layout-builder-configure-block .form-item-reusable + .form-type--textfield,
+div[data-drupal-selector="edit-block-form"] {
+  padding-left: 20px;
+  padding-right: 21px;
+}
 
 /* Get sticky footer to work in Layout Builder */
 #block-yalesitesfooterblock {
