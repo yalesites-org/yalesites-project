@@ -1,3 +1,5 @@
+{% set url = content.field_external_source[0]['#url']|render ? content.field_external_source[0]['#url']|render : url %}
+
 {% include "@molecules/search-result/yds-search-result.twig" with {
   search_result__title: label,
   search_result__url: url,
