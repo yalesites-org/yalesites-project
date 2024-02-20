@@ -8,6 +8,7 @@ dependencies:
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_format
     - field.field.node.event.field_event_type
+    - field.field.node.event.field_external_source
     - field.field.node.event.field_login_required
     - field.field.node.event.field_metatags
     - field.field.node.event.field_tags
@@ -20,6 +21,7 @@ dependencies:
     - allowed_formats
     - chosen_field
     - field_group
+    - link
     - linkit
     - maxlength
     - media_library
@@ -82,6 +84,22 @@ third_party_settings:
         description: ''
         required_fields: true
         weight: 0
+    group_external_link:
+      children:
+        - field_external_source
+      label: 'External Link'
+      region: content
+      parent_name: ''
+      weight: 10
+      format_type: details_sidebar
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        open: false
+        description: ''
+        required_fields: true
+        weight: 0
 id: node.event.default
 targetEntityType: node
 bundle: event
@@ -127,6 +145,14 @@ content:
     weight: 1
     region: content
     settings: {  }
+    third_party_settings: {  }
+  field_external_source:
+    type: link_default
+    weight: 12
+    region: content
+    settings:
+      placeholder_url: ''
+      placeholder_title: ''
     third_party_settings: {  }
   field_login_required:
     type: boolean_checkbox
@@ -186,7 +212,7 @@ content:
     settings: {  }
     third_party_settings: {  }
   simple_sitemap:
-    weight: 10
+    weight: 11
     region: content
     settings: {  }
     third_party_settings: {  }
