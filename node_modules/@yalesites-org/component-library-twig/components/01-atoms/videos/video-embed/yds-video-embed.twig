@@ -1,0 +1,18 @@
+{#
+ # Available variables:
+ # - video_embed__content - the content of the video (typically an iframe)
+ #   the "|raw" filter is applied so that the iframe is rendered instead
+ #   of simply passing the iframe as plain text.
+ #
+ # Available blocks:
+ # - video_embed__content - used to replace the content of the video with something other than the typical iframe
+ #   for example: to insert an html5 video component
+#}
+
+{% set video_embed__base_class = video_embed__base_class|default('video-embed') %}
+
+<div {{ bem(video_embed__base_class, video_embed__modifiers, video_embed__blockname) }}>
+  {% block video_embed__content %}
+    {{ video_embed__content|raw }}
+  {% endblock %}
+</div>
