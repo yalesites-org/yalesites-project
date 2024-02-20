@@ -6,6 +6,7 @@ dependencies:
     - core.entity_view_mode.node.list_item
     - field.field.node.post.field_author
     - field.field.node.post.field_category
+    - field.field.node.post.field_external_source
     - field.field.node.post.field_login_required
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
@@ -16,6 +17,7 @@ dependencies:
     - field.field.node.post.layout_builder__layout
     - node.type.post
   module:
+    - link
     - text
     - user
 id: node.post.list_item
@@ -23,6 +25,18 @@ targetEntityType: node
 bundle: post
 mode: list_item
 content:
+  field_external_source:
+    type: link_separate
+    label: hidden
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 5
+    region: content
   field_teaser_media:
     type: entity_reference_entity_view
     label: hidden

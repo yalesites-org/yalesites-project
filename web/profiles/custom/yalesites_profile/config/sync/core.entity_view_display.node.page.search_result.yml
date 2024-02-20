@@ -4,6 +4,7 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.node.search_result
+    - field.field.node.page.field_external_source
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
     - field.field.node.page.field_tags
@@ -33,6 +34,7 @@ content:
     weight: 0
     region: content
 hidden:
+  field_external_source: true
   field_login_required: true
   field_metatags: true
   field_tags: true
