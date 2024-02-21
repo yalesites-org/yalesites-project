@@ -59,9 +59,9 @@ jobs:
           /usr/local/bin/terminus
           ~/.terminus
           ~/.ssh
-        key: ${{ github.job }}-setup-cache
+        key: release-pr-setup-cache
         restore-keys: |
-          ${{ github.job }}-setup-cache
+          release-pr-setup-cache
 
   get_next_release_version:
     runs-on: ubuntu-latest
@@ -170,9 +170,9 @@ jobs:
           /usr/local/bin/terminus
           ~/.terminus
           ~/.ssh
-        key: ${{ github.job }}-setup-cache
+        key: release-pr-setup-cache
         restore-keys: |
-          ${{ github.job }}-setup-cache
+          release-pr-setup-cache
 
     - name: Deploy to environments
       run: ./.ci/github/deploy_release_sites
@@ -196,9 +196,9 @@ jobs:
           /usr/local/bin/terminus
           ~/.terminus
           ~/.ssh
-        key: ${{ runner.os }}-terminus-cache-${{ hashFiles('**/composer.lock') }}
+        key: release-pr-setup-cache
         restore-keys: |
-          ${{ runner.os }}-terminus-cache-
+          release-pr-setup-cache
 
     - name: Clean up
       env:
