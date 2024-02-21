@@ -6,6 +6,7 @@ dependencies:
     - core.entity_view_mode.node.condensed
     - field.field.node.post.field_author
     - field.field.node.post.field_category
+    - field.field.node.post.field_external_source
     - field.field.node.post.field_login_required
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
@@ -19,6 +20,7 @@ dependencies:
     - datetime
     - layout_builder
     - layout_builder_restrictions
+    - link
     - user
 third_party_settings:
   layout_builder:
@@ -51,6 +53,18 @@ targetEntityType: node
 bundle: post
 mode: condensed
 content:
+  field_external_source:
+    type: link_separate
+    label: hidden
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: '0'
+      target: '0'
+    third_party_settings: {  }
+    weight: 2
+    region: content
   field_publish_date:
     type: datetime_default
     label: hidden
