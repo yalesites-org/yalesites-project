@@ -56,3 +56,46 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
     ],
   ];
 }
+
+/**
+ * Allows reusable blocks to use the same template as inline blocks.
+ *
+ * Implements hook_theme_suggestions_block().
+ */
+function ys_layouts_theme_suggestions_block($variables) {
+  if (isset($variables['elements']['content']['#block_content'])) {
+    return [
+      'block__inline_block__' . $variables['elements']['content']['#block_content']->bundle(),
+    ];
+  }
+}
+
+/**
+ * Implements hook_preprocess_block().
+ */
+function ys_layouts_preprocess_block(&$variables) {
+  // Sets variable if block is reusable for layout builder preview for styling.
+  if ($variables['in_preview'] && isset($variables['content']['#block_content'])) {
+    if ($variables['content']['#block_content']->isReusable()) {
+      $variables['is_reusable'] = TRUE;
+    }
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function ys_layouts_form_alter(&$form, $form_state, $form_id) {
+
+  // Updates the title and help text of reusable blocks.
+  if ($form_id == 'layout_builder_update_block' || $form_id == 'layout_builder_add_block') {
+    if (isset($form['reusable'])) {
+      $form['reusable']['#title'] = t('Reusable Block');
+      $form['reusable']['#description'] = t('Create reusable content with Reusable Blocks. Changes made to a Reusable Block’s content are reflected anywhere the Block is used. This setting cannot be changed after saving.');
+
+      $form['info']['#title'] = t('Reusable Block title');
+      $form['info']['#description'] = t('Add a short, descriptive title to easily find and reuse the Reusable Block. Defaults to Administrative label if no title is provided.');
+    }
+  }
+
+}

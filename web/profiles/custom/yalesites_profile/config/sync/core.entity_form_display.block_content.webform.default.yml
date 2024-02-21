@@ -20,7 +20,7 @@ mode: default
 content:
   field_form:
     type: webform_entity_reference_select
-    weight: 1
+    weight: 2
     region: content
     settings:
       default_data: false
@@ -28,7 +28,7 @@ content:
     third_party_settings: {  }
   field_heading:
     type: text_textfield
-    weight: 2
+    weight: 3
     region: content
     settings:
       size: 60
@@ -47,6 +47,13 @@ content:
     region: content
     settings: {  }
     third_party_settings: {  }
+  info:
+    type: string_textfield
+    weight: 1
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
 hidden:
-  info: true
   revision_log: true

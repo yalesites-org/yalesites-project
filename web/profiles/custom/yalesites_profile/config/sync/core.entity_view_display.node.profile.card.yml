@@ -8,6 +8,7 @@ dependencies:
     - field.field.node.profile.field_affiliation
     - field.field.node.profile.field_department
     - field.field.node.profile.field_email
+    - field.field.node.profile.field_external_source
     - field.field.node.profile.field_first_name
     - field.field.node.profile.field_honorific_prefix
     - field.field.node.profile.field_last_name
@@ -25,6 +26,7 @@ dependencies:
     - node.type.profile
   module:
     - layout_builder
+    - link
     - text
     - user
 third_party_settings:
@@ -36,6 +38,18 @@ targetEntityType: node
 bundle: profile
 mode: card
 content:
+  field_external_source:
+    type: link_separate
+    label: hidden
+    settings:
+      trim_length: 80
+      url_only: true
+      url_plain: true
+      rel: '0'
+      target: '0'
+    third_party_settings: {  }
+    weight: 5
+    region: content
   field_media:
     type: entity_reference_entity_view
     label: hidden

@@ -12,7 +12,7 @@ field_name: field_heading_level
 entity_type: block_content
 bundle: cta_banner
 label: 'Heading Level'
-description: 'Optionally override heading level for this banner'
+description: 'For more information about conditional banner titles, <a href="https://yalesites.yale.edu/posts/2023-10-17-community-spotlight-yale-united-way-campaign#tips" target="_blank">view our tips and tricks on this topic</a>.'
 required: true
 translatable: false
 default_value:

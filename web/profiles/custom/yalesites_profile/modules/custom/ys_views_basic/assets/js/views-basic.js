@@ -25,10 +25,17 @@
       // Store radio input groups in an array
       const radioGroups = [
         'input[name="settings[block_form][group_user_selection][entity_and_view_mode][entity_types]"]',
+        'input[name="block_form[group_user_selection][entity_and_view_mode][entity_types]"]',
+        'input[name="entity_types"]',
         'input[name="settings[block_form][group_user_selection][entity_and_view_mode][view_mode]"]',
-        'input[name="settings[block_form][group_user_selection][filter_options][term_operator]"',
+        'input[name="block_form[group_user_selection][entity_and_view_mode][view_mode]"]',
+        'input[name="view_mode"]',
         'input[name="settings[block_form][group_user_selection][filter_and_sort][term_operator]"',
-        'input[name="settings[block_form][group_user_selection][entity_specific][event_time_period]"]'
+        'input[name="block_form[group_user_selection][filter_and_sort][term_operator]"',
+        'input[name="term_operator"]',
+        'input[name="settings[block_form][group_user_selection][entity_specific][event_time_period]"]',
+        'input[name="block_form[group_user_selection][entity_specific][event_time_period]"]',
+        'input[name="event_time_period"]',
       ];
 
       // Apply the function to each radio input group

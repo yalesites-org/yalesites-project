@@ -21,7 +21,7 @@ mode: default
 content:
   field_accordion_items:
     type: paragraphs
-    weight: 2
+    weight: 3
     region: content
     settings:
       title: accordion
@@ -45,7 +45,7 @@ content:
         show_drag_and_drop: true
   field_heading:
     type: text_textfield
-    weight: 1
+    weight: 2
     region: content
     settings:
       size: 60
@@ -64,6 +64,13 @@ content:
     region: content
     settings: {  }
     third_party_settings: {  }
+  info:
+    type: string_textfield
+    weight: 1
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
 hidden:
-  info: true
   revision_log: true
