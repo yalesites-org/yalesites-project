@@ -69,6 +69,7 @@ jobs:
     if: ${{ github.event.action != 'synchronize' && github.event.action != 'closed' }}
     outputs:
       NEXT_VERSION: ${{ steps.get_release_number.outputs.next_version }}
+      RELEASE_BRANCH: ${{ steps.get_release_number.outputs.release_branch }}
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -105,7 +106,10 @@ jobs:
             release_branch="${next_version//.}"
           fi
         fi
+
+        # Set outputs for next steps when running from workflow_dispatch.
         echo next_version="$next_version" >> "$GITHUB_OUTPUT"
+        echo release_branch="$release_branch" >> "$GITHUB_OUTPUT"
 
         # Set release branch as a variable for access.
         gh variable set RELEASE_BRANCH --body "$release_branch"
@@ -113,7 +117,7 @@ jobs:
     - name: Create release branch
       if: ${{ github.event.number == '' }}
       env:
-        RELEASE_BRANCH: ${{ vars.RELEASE_BRANCH }}
+        RELEASE_BRANCH: ${{ steps.get_release_number.outputs.release_branch }}
       run: |
         echo "The release branch is: $RELEASE_BRANCH" 
         git checkout -b "$RELEASE_BRANCH"
@@ -125,7 +129,7 @@ jobs:
     outputs:
       PR_NUMBER: ${{ steps.create_pull_request.outputs.PR_NUMBER }}
     env:
-      RELEASE_BRANCH: ${{ vars.RELEASE_BRANCH }}
+      RELEASE_BRANCH: ${{ needs.get_next_release_version.outputs.RELEASE_BRANCH || vars.RELEASE_BRANCH }}
       NEXT_VERSION: ${{ needs.get_next_release_version.outputs.NEXT_VERSION }}
     runs-on: ubuntu-latest
     steps:
@@ -137,11 +141,11 @@ jobs:
       run: ./.ci/github/create_release_pull_request
 
   release_sites:
-    needs: [setup, create_pull_request]
+    needs: [setup, get_next_release_version, create_pull_request]
     runs-on: ubuntu-latest
     if: ${{ always() && github.event.action != 'closed' }}
     env:
-      RELEASE_BRANCH: ${{ vars.RELEASE_BRANCH }}
+      RELEASE_BRANCH: ${{ needs.get_next_release_version.outputs.RELEASE_BRANCH || vars.RELEASE_BRANCH }}
       PR_NUMBER: ${{ needs.create_pull_request.outputs.PR_NUMBER }}
       RELEASE_SITES_DEPLOYED: ${{ vars.RELEASE_SITES_DEPLOYED }}
     steps:
