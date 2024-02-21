@@ -7,7 +7,7 @@ push_code() {
   git remote add "$site_machine_name" "$git_path"
   git fetch "$site_machine_name"
   git push "$site_machine_name" "$RELEASE_BRANCH:$RELEASE_BRANCH" --force
-  terminus workflow:wait "$site_machine_name"."$RELEASE_BRANCH" --max=420
+  terminus workflow:wait "$site_machine_name"."$RELEASE_BRANCH" --max=600
 }
 
 drush_deploy() {
@@ -24,6 +24,9 @@ process_site() {
 
   # If multidev does not exist, create it, otherwise deploy code updates.
   if [ "$env_status" != 1 ]; then
+    # Push release branch.
+    push_code
+
     echo -e "\nCreating multidev $site_machine_name.$RELEASE_BRANCH from $site_with_env...\n"
 
     if [ "$site_machine_name" = "yalesites-platform" ]; then
@@ -31,8 +34,6 @@ process_site() {
     else
       terminus multidev:create "$site_with_env" "$RELEASE_BRANCH"
     fi
-
-    push_code
 
     # Do a fresh install on yalesites-platform site.
     if [ "$site_machine_name" = "yalesites-platform" ]; then
