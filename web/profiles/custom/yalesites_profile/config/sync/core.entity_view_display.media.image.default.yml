@@ -4,6 +4,7 @@ status: true
 dependencies:
   config:
     - field.field.media.image.field_media_image
+    - field.field.media.image.field_tags
     - media.type.image
     - responsive_image.styles.image_max_width
   module:
@@ -26,6 +27,7 @@ content:
     region: content
 hidden:
   created: true
+  field_tags: true
   name: true
   search_api_excerpt: true
   thumbnail: true

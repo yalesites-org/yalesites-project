@@ -5,6 +5,7 @@ dependencies:
   config:
     - core.entity_form_mode.media.media_library
     - field.field.media.video.field_media_oembed_video
+    - field.field.media.video.field_tags
     - media.type.video
 id: media.video.media_library
 targetEntityType: media
@@ -22,6 +23,7 @@ content:
 hidden:
   created: true
   field_media_oembed_video: true
+  field_tags: true
   path: true
   revision_log_message: true
   status: true

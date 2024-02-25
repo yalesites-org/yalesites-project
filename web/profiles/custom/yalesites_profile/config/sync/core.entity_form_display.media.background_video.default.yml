@@ -4,8 +4,10 @@ status: true
 dependencies:
   config:
     - field.field.media.background_video.field_media_video_file
+    - field.field.media.background_video.field_tags
     - media.type.background_video
   module:
+    - chosen_field
     - file
 id: media.background_video.default
 targetEntityType: media
@@ -18,6 +20,12 @@ content:
     region: content
     settings:
       progress_indicator: throbber
+    third_party_settings: {  }
+  field_tags:
+    type: chosen_select
+    weight: 1
+    region: content
+    settings: {  }
     third_party_settings: {  }
   name:
     type: string_textfield

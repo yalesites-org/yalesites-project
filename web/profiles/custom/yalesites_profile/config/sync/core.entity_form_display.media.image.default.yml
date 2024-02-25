@@ -4,9 +4,10 @@ status: true
 dependencies:
   config:
     - field.field.media.image.field_media_image
+    - field.field.media.image.field_tags
     - media.type.image
   module:
-    - hide_revision_field
+    - chosen_field
     - image_widget_crop
 id: media.image.default
 targetEntityType: media
@@ -31,21 +32,16 @@ content:
       show_crop_area: false
       show_default_crop: true
     third_party_settings: {  }
-  revision_log_message:
-    type: hide_revision_field_log_widget
-    weight: 80
+  field_tags:
+    type: chosen_select
+    weight: 1
     region: content
-    settings:
-      rows: 5
-      placeholder: ''
-      show: false
-      default: ''
-      permission_based: false
-      allow_user_settings: true
+    settings: {  }
     third_party_settings: {  }
 hidden:
   created: true
   name: true
   path: true
+  revision_log_message: true
   status: true
   uid: true

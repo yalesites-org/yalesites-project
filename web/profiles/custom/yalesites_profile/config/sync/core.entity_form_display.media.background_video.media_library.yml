@@ -5,6 +5,7 @@ dependencies:
   config:
     - core.entity_form_mode.media.media_library
     - field.field.media.background_video.field_media_video_file
+    - field.field.media.background_video.field_tags
     - media.type.background_video
 id: media.background_video.media_library
 targetEntityType: media
@@ -22,6 +23,7 @@ content:
 hidden:
   created: true
   field_media_video_file: true
+  field_tags: true
   path: true
   revision_log_message: true
   status: true
