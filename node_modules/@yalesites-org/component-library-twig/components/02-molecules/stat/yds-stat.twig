@@ -1,0 +1,50 @@
+{#
+ # Available Props:
+ # - stat__presentation_style: basic, with-icon, icon-only
+ # - stat__font_style: numeric-oldstyle, normal
+ # - stat__has_icon: true, false
+ # - stat__icon_name: string
+ # - stat__alignment: left, center
+ #
+ # Available Variables:
+ # - stat__stat (required)
+ # - stat__content
+ #}
+
+{% set stat__base_class = 'stat' %}
+{% set stat__presentation_style = stat__presentation_style|default('basic') %}
+{% set stat__font_style = stat__font_style|default('numeric-oldstyle') %}
+
+{# If stat__attributes is not defined, set it to an empty object by default #}
+{% set stat__attributes = stat__attributes|default({}) %}
+
+{% set stat__attributes = stat__attributes|merge({
+  'data-stat-style': stat__presentation_style,
+  'data-stat-font-style': stat__font_style,
+	'data-stat-has-icon': stat__has_icon == 'true' ? 'true' : 'false',
+  'data-component-alignment': stat__alignment|default('center'),
+	'data-component-theme': stat__theme|default('one'),
+  class: bem(stat__base_class, stat__modifiers),
+}) %}
+
+<li {{ add_attributes(stat__attributes) }}>
+	<div {{ bem('inner', [], stat__base_class) }}>
+		{% if stat__has_icon == 'true' %}
+			{% block stat__icon %}
+				<div {{ bem('icon', [], stat__base_class) }}>
+					{% include "@atoms/images/icons/_yds-icon.twig" with {
+            icon__name: stat__icon_name|default('sack-dollar-solid'),
+            icon__base_class: 'stat-icon',
+            icon__blockname: stat__base_class,
+          } %}
+				</div>		
+			{% endblock %}
+		{% endif %}	
+			<div {{ bem('stat', [], stat__base_class) }}>
+				{{ stat__stat }}
+			</div>
+      <div {{ bem('content', [], stat__base_class) }}>
+				{{ stat__content }}
+			</div>
+	</div>
+</li>
