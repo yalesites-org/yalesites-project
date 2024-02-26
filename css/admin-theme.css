@@ -162,3 +162,9 @@
 .js.gin--dark-mode .paragraphs-description .summary-content {
   color: var(--gin-color-text) !important;
 }
+
+/* In light mode, gin is displaying a mustard background with a black 
+foreground. This causes contrast issues.  */
+html:not(.gin--dark-mode) #drupal-off-canvas:not(.drupal-off-canvas-reset).ui-dialog-content div:not([data-drupal-ck-style-fence] *), #drupal-off-canvas-wrapper .ui-dialog-content div:not([data-drupal-ck-style-fence] *) {
+  color: var(--color-basic-white);
+}
