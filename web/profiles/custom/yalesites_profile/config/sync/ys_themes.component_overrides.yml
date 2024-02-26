@@ -5,6 +5,11 @@ callout:
       two: Two
       three: Three
     default: one
+  field_style_alignment:
+    values:
+      left: Left
+      center: Center
+    default: center
 cta_banner:
   field_style_color:
     values:
@@ -41,6 +46,13 @@ content_spotlight:
       equal: 'Equal Focus'
       image: 'Image Focus'
     default: equal
+  field_style_color:
+    values:
+      default: 'Default - No Color'
+      one: One
+      two: Two
+      three: Three
+    default: default
 quick_links:
   field_style_variation:
     values:
@@ -106,3 +118,27 @@ divider:
       50%: 50
       25%: 25
     default: 100%
+content_spotlight_portrait:
+  field_style_position:
+    values:
+      image-left: 'Image Left'
+      image-right: 'Image Right'
+    default: image-left
+  field_style_variation:
+    values:
+      inline: Inline
+      offset: Offset
+    default: inline
+  field_style_color:
+    values:
+      default: 'Default - No Color'
+      one: One
+      two: Two
+      three: Three
+    default: default
+text:
+  field_style_variation:
+    values:
+      default: Default
+      emphasized: Emphasized
+    default: default

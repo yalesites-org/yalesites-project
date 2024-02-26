@@ -8,6 +8,7 @@ dependencies:
     - field.field.node.profile.field_affiliation
     - field.field.node.profile.field_department
     - field.field.node.profile.field_email
+    - field.field.node.profile.field_external_source
     - field.field.node.profile.field_first_name
     - field.field.node.profile.field_honorific_prefix
     - field.field.node.profile.field_last_name
@@ -93,6 +94,15 @@ content:
     third_party_settings: {  }
     weight: 1
     region: content
+  field_teaser_media:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: profile_directory_card_1_1_
+      link: false
+    third_party_settings: {  }
+    weight: 7
+    region: content
   field_telephone:
     type: string
     label: hidden
@@ -103,13 +113,13 @@ content:
     region: content
 hidden:
   field_address: true
+  field_external_source: true
   field_first_name: true
   field_honorific_prefix: true
   field_last_name: true
   field_login_required: true
   field_metatags: true
   field_tags: true
-  field_teaser_media: true
   field_teaser_text: true
   field_teaser_title: true
   layout_builder__layout: true

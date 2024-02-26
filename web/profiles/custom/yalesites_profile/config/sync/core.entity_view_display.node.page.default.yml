@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.node.page.field_external_source
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
     - field.field.node.page.field_tags
@@ -15,6 +16,7 @@ dependencies:
     - layout_builder
     - layout_builder_restrictions
     - layout_discovery
+    - link
     - user
     - ys_layouts
 third_party_settings:
@@ -61,7 +63,6 @@ third_party_settings:
               4: 4
               5: 5
               6: 6
-              7: 7
               8: 8
       -
         layout_id: layout_onecol
@@ -97,6 +98,15 @@ third_party_settings:
               - page_meta_block
         ys_layout_two_column:
           content:
+            'Custom block types':
+              - accordion
+              - button_link
+              - divider
+              - image
+              - pull_quote
+              - tabs
+              - text
+              - video
             'Inline blocks':
               - 'inline_block:accordion'
               - 'inline_block:button_link'
@@ -107,6 +117,8 @@ third_party_settings:
               - 'inline_block:text'
               - 'inline_block:video'
           sidebar:
+            'Custom block types':
+              - text
             'Inline blocks':
               - 'inline_block:text'
       restricted_categories:
@@ -114,7 +126,6 @@ third_party_settings:
           content:
             - 'Chaos Tools'
             - 'Content fields'
-            - 'Custom block types'
             - Devel
             - Forms
             - Help
@@ -129,7 +140,6 @@ third_party_settings:
           sidebar:
             - 'Chaos Tools'
             - 'Content fields'
-            - 'Custom block types'
             - Devel
             - Forms
             - Help
@@ -145,7 +155,6 @@ third_party_settings:
           all_regions:
             - 'Chaos Tools'
             - 'Content fields'
-            - 'Custom block types'
             - Devel
             - Forms
             - Help
@@ -193,7 +202,19 @@ id: node.page.default
 targetEntityType: node
 bundle: page
 mode: default
-content: {  }
+content:
+  field_external_source:
+    type: link
+    label: above
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 1
+    region: content
 hidden:
   field_login_required: true
   field_metatags: true

@@ -4,6 +4,7 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.node.condensed
+    - field.field.node.page.field_external_source
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
     - field.field.node.page.field_tags
@@ -15,6 +16,7 @@ dependencies:
   module:
     - layout_builder
     - layout_builder_restrictions
+    - link
     - user
 third_party_settings:
   layout_builder:
@@ -59,7 +61,19 @@ id: node.page.condensed
 targetEntityType: node
 bundle: page
 mode: condensed
-content: {  }
+content:
+  field_external_source:
+    type: link_separate
+    label: hidden
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: '0'
+      target: '0'
+    third_party_settings: {  }
+    weight: 2
+    region: content
 hidden:
   field_login_required: true
   field_metatags: true

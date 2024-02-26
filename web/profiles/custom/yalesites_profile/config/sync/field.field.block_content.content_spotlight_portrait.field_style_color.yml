@@ -1,0 +1,21 @@
+uuid: 1da613ab-03a4-4618-8ae1-48b31cd8d122
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.content_spotlight_portrait
+    - field.storage.block_content.field_style_color
+  module:
+    - options
+id: block_content.content_spotlight_portrait.field_style_color
+field_name: field_style_color
+entity_type: block_content
+bundle: content_spotlight_portrait
+label: 'Theme Color'
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ys_themes_default_value_function
+settings: {  }
+field_type: list_string

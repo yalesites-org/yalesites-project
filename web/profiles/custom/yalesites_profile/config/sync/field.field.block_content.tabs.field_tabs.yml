@@ -13,7 +13,7 @@ field_name: field_tabs
 entity_type: block_content
 bundle: tabs
 label: Tabs
-description: ''
+description: 'This block requires a minimum of 2 and a maximum of 5 tabs.'
 required: true
 translatable: false
 default_value: {  }

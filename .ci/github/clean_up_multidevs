@@ -1,0 +1,18 @@
+#!/bin/bash -x
+
+clean_up_multidevs() {
+  site_with_env="$1"
+  site_machine_name="${site_with_env%.*}"
+  terminus multidev:delete "$site_machine_name"."$RELEASE_BRANCH" --delete-branch -y
+}
+
+export -f clean_up_multidevs
+
+# Get sites into array.
+readarray -t release_sites <<< "$(tr -d '\r' <<< "$RELEASE_SITES")"
+
+# Run cleanup with parallel.
+parallel --jobs 0 --keep-order --line-buffer clean_up_multidevs ::: "${release_sites[@]}"
+
+# Reset tracking variable for release site deployment.
+gh variable set RELEASE_SITES_DEPLOYED --body "0"

@@ -1,0 +1,38 @@
+uuid: 38cdb103-9f65-4764-acd9-2c65b7e3c1c3
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.media.banner_profile
+    - field.field.media.image.field_media_image
+    - media.type.image
+    - responsive_image.styles.banner_profile
+  module:
+    - layout_builder
+    - responsive_image
+third_party_settings:
+  layout_builder:
+    enabled: false
+    allow_custom: false
+id: media.image.banner_profile
+targetEntityType: media
+bundle: image
+mode: banner_profile
+content:
+  field_media_image:
+    type: responsive_image
+    label: hidden
+    settings:
+      responsive_image_style: banner_profile
+      image_link: ''
+      image_loading:
+        attribute: eager
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  created: true
+  name: true
+  search_api_excerpt: true
+  thumbnail: true
+  uid: true
