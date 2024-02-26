@@ -2,6 +2,7 @@
 
 {% set heading = content.field_teaser_title.0 ? content.field_teaser_title : label %}
 {% set reference_card__image = 'false' %}
+{% set url = content.field_external_source[0]['#url']|render ? content.field_external_source[0]['#url']|render : url %}
 
 {% set profile_subheading %}
   {{ content.field_position.0['#context']['value'] }}

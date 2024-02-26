@@ -47,7 +47,9 @@ need to have margin-bottom set to 0 */
 .main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .callouts:last-child,
 .main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .cta-banner:last-child,
 .main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .grand-hero-banner:last-child,
-.main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .quick-links:last-child {
+.main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .quick-links:last-child,
+.main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .text-with-image:not([data-component-theme='default']):last-child, 
+.main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .content-spotlight-portrait:not([data-component-theme='default']):last-child {
   margin-bottom: 0;
 }
 

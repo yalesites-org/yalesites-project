@@ -1,10 +1,11 @@
 {% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
 
 {% block content %}
+  {{ attach_library('atomic/spotlights') }}
 
   {% embed "@molecules/content-spotlight-portrait/yds-content-spotlight-portrait.twig" with {
-      content_spotlight_portrait__heading: content.field_heading,
-      content_spotlight_portrait__subheading: content.field_subheading,
+      content_spotlight_portrait__heading: content.field_heading.0,
+      content_spotlight_portrait__subheading: content.field_subheading.0,
       content_spotlight_portrait__text: content.field_text,
       content_spotlight_portrait__link__content: content.field_link.0['#title'],
       content_spotlight_portrait__link__url: content.field_link.0['#url_title'],

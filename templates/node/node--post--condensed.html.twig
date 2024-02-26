@@ -2,6 +2,7 @@
 
 {% set heading = content.field_teaser_title.0 ? content.field_teaser_title : label %}
 {% set reference_card__image = 'false' %}
+{% set url = content.field_external_source[0]['#url']|render ? content.field_external_source[0]['#url']|render : url %}
 
 {% set date__formatted %}
   {% include "@atoms/date-time/yds-date-time.twig" with {
