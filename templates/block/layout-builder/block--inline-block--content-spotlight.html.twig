@@ -1,6 +1,7 @@
 {% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
 
 {% block content %}
+  {{ attach_library('atomic/spotlights') }}
 
   {% embed "@molecules/text-with-image/yds-text-with-image.twig" with {
     text_with_image__heading: content.field_heading,
