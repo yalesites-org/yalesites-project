@@ -108,7 +108,7 @@
     "jjj/chosen": "2.2.1",
     "laminas/laminas-escaper": "2.12",
     "northernco/ckeditor5-anchor-drupal": "0.4.0",
-    "yalesites-org/atomic": "1.25.0",
+    "yalesites-org/atomic": "1.26.0",
     "yalesites-org/yale_cas": "1.0.4"
   },
   "minimum-stability": "dev",
@@ -151,7 +151,7 @@
         "Fix multivalued fields throw an error https://www.drupal.org/project/gin_lb/issues/3387157": "https://www.drupal.org/files/issues/2024-01-02/gin_lb-fix-attribute-3387157-5.patch"
       },
       "drupal/media_library_form_element": {
-        "Order Media items https://www.drupal.org/project/media_library_form_element/issues/3168027":"https://www.drupal.org/files/issues/2022-01-22/order_media_items-3168027-8.patch",
+        "Order Media items https://www.drupal.org/project/media_library_form_element/issues/3168027": "https://www.drupal.org/files/issues/2022-01-22/order_media_items-3168027-8.patch",
         "Deprecated function: explode(): Passing null to parameter #2 ($string) of type string is deprecated https://www.drupal.org/project/media_library_form_element/issues/3277273": "https://www.drupal.org/files/issues/2023-01-25/deprecated-explode-3277273-11.patch"
       },
       "drupal/redirect": {
@@ -175,6 +175,9 @@
       },
       "drupal/section_library": {
         "Fix access check issues on add_to_template link: https://www.drupal.org/project/section_library/issues/3241715": "https://www.drupal.org/files/issues/2022-09-21/3241715-6.patch"
+      },
+      "drupal/smart_date": {
+        "Fix deprecation:": "https://git.drupalcode.org/project/smart_date/-/merge_requests/63.diff"
       }
     }
   }
