@@ -10,7 +10,7 @@
     directory_listing_card__overline: content.field_department,
     directory_listing_card__subheading: content.field_position,
     directory_listing_card__snippet: content.field_subtitle,
-    directory_listing_card__email: content.field_email,
+    directory_listing_card__email: content.field_email[0]['#context'].value|trim|lower,
     directory_listing_card__phone: content.field_telephone,
     directory_listing_card_link__content: directory_listing_card_link__content,
     directory_listing_card_link__url: 'mailto:' ~ content.field_email[0]['#context'].value|trim|lower,
