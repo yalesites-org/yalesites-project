@@ -3,7 +3,10 @@ langcode: en
 status: true
 dependencies:
   config:
+    - node.type.event
     - node.type.page
+    - node.type.post
+    - node.type.profile
   module:
     - content_moderation
 id: editorial
@@ -61,5 +64,8 @@ type_settings:
       weight: 1
   entity_types:
     node:
+      - event
       - page
+      - post
+      - profile
   default_moderation_state: draft
