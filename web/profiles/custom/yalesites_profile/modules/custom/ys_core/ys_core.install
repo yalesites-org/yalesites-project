@@ -105,6 +105,23 @@ function ys_core_update_9003() {
 }
 
 /**
+ * Implements hook_update().
+ *
+ * This update will convert an alias'd front page to a node based one.
+ */
+function ys_core_update_9004() {
+  $frontPage = \Drupal::config('system.site')->get('page.front');
+
+  if (strpos($frontPage, '/node') === FALSE) {
+    // Path should be already the form we need: /node/<number>.
+    $path = \Drupal::service('path_alias.manager')->getPathByAlias($frontPage);
+    if ($path) {
+      \Drupal::configFactory()->getEditable('system.site')->set('page.front', $path)->save();
+    }
+  }
+}
+
+/**
  * Sanitizes the value of an array object with allowed_tags.
  *
  * @param array $content_array
