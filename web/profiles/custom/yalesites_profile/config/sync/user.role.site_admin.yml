@@ -56,7 +56,6 @@ dependencies:
     - override_node_options
     - paragraphs
     - path
-    - publishcontent
     - quick_node_clone
     - redirect
     - role_delegation
@@ -256,8 +255,6 @@ permissions:
   - 'mark as hidden in editoria11y'
   - 'override all sticky option'
   - 'override post authored on option'
-  - 'publish any content'
-  - 'publish editable content'
   - 'revert all revisions'
   - 'revert any accordion block content revisions'
   - 'revert any button_link block content revisions'
@@ -287,8 +284,6 @@ permissions:
   - 'revert page revisions'
   - 'revert post revisions'
   - 'revert profile revisions'
-  - 'unpublish any content'
-  - 'unpublish editable content'
   - 'update any media'
   - 'update media'
   - 'view all media revisions'
