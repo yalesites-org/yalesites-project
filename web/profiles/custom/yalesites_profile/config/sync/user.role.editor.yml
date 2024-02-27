@@ -1,0 +1,22 @@
+uuid: db0091cb-c8f3-4d75-b6ce-1739ea6fec00
+langcode: en
+status: true
+dependencies:
+  config:
+    - workflows.workflow.editorial
+  module:
+    - content_moderation
+    - moderation_sidebar
+id: editor
+label: Editor
+weight: -7
+is_admin: null
+permissions:
+  - 'use editorial transition archive'
+  - 'use editorial transition archived_draft'
+  - 'use editorial transition archived_published'
+  - 'use editorial transition create_new_draft'
+  - 'use editorial transition publish'
+  - 'use moderation sidebar'
+  - 'view any unpublished content'
+  - 'view latest version'

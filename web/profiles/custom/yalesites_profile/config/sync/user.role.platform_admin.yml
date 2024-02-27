@@ -68,7 +68,7 @@ dependencies:
     - ys_core
 id: platform_admin
 label: 'Platform administrator'
-weight: 2
+weight: -5
 is_admin: null
 permissions:
   - 'access block library'

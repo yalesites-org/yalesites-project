@@ -67,7 +67,7 @@ dependencies:
     - ys_core
 id: site_admin
 label: 'Site administrator'
-weight: 3
+weight: -6
 is_admin: null
 permissions:
   - 'access block library'
