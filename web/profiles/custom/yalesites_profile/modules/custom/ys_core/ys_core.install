@@ -112,7 +112,7 @@ function ys_core_update_9003() {
 function ys_core_update_9004() {
   $frontPage = \Drupal::config('system.site')->get('page.front');
 
-  if (strpos($frontPage, '/node') === FALSE) {
+  if ($frontPage && strpos($frontPage, '/node') === FALSE) {
     // Path should be already the form we need: /node/<number>.
     $path = \Drupal::service('path_alias.manager')->getPathByAlias($frontPage);
     if ($path) {
