@@ -118,7 +118,7 @@ index 9331cae..376d953 100644
 +            $block_categories['reusable_blocks']['#type'] = 'details';
 +            $block_categories['reusable_blocks']['#attributes']['class'][] = 'js-layout-builder-category';
 +            $block_categories['reusable_blocks']['#open'] = $blockcat->getOpened();
-+            $block_categories['reusable_blocks']['#title'] = $this->t('Global Blocks');
++            $block_categories['reusable_blocks']['#title'] = $this->t('Reusable Blocks');
 +          }
 +          else {
 +            // Only add the information if the category has links.
