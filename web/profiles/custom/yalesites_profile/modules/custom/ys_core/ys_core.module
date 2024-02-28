@@ -178,24 +178,26 @@ function ys_core_preprocess_region(&$variables) {
     // Responsive image render array for focus header image.
     if ($focusHeaderImageId = $config->get('focus_header_image')) {
       $focusHeaderImageMedia = \Drupal::service('entity_type.manager')->getStorage('media')->load($focusHeaderImageId);
-      $fileEntity = \Drupal::service('entity_type.manager')->getStorage('file');
-      $focusHeaderImageFileUri = $fileEntity->load($focusHeaderImageMedia->field_media_image->target_id)->getFileUri();
-      $focusHeaderImageRender = [
-        '#type' => 'responsive_image',
-        '#responsive_image_style_id' => 'background_image_focus_header',
-        '#uri' => $focusHeaderImageFileUri,
-        '#attributes' => [
-          'alt' => $focusHeaderImageMedia->get('field_media_image')->first()->get('alt')->getValue(),
-        ],
-      ];
+      if ($focusHeaderImageMedia) {
+        $fileEntity = \Drupal::service('entity_type.manager')->getStorage('file');
+        $focusHeaderImageFileUri = $fileEntity->load($focusHeaderImageMedia->field_media_image->target_id)->getFileUri();
+        $focusHeaderImageRender = [
+          '#type' => 'responsive_image',
+          '#responsive_image_style_id' => 'background_image_focus_header',
+          '#uri' => $focusHeaderImageFileUri,
+          '#attributes' => [
+            'alt' => $focusHeaderImageMedia->get('field_media_image')->first()->get('alt')->getValue(),
+          ],
+        ];
 
-      $path = \Drupal::service('path.current')->getPath();
-      $alias = \Drupal::service('path_alias.manager')->getAliasByPath($path);
-      $frontPage = \Drupal::config('system.site')->get('page.front');
+        $path = \Drupal::service('path.current')->getPath();
+        $alias = \Drupal::service('path_alias.manager')->getAliasByPath($path);
+        $frontPage = \Drupal::config('system.site')->get('page.front');
 
-      // See if the path is the front page.
-      $isFrontPage = ($alias == $frontPage || $path == $frontPage || \Drupal::service('path.matcher')->isFrontPage());
-      $variables['site_header__background_image'] = $isFrontPage ? $focusHeaderImageRender : FALSE;
+        // See if the path is the front page.
+        $isFrontPage = ($alias == $frontPage || $path == $frontPage || \Drupal::service('path.matcher')->isFrontPage());
+        $variables['site_header__background_image'] = $isFrontPage ? $focusHeaderImageRender : FALSE;
+      }
     }
 
   }
