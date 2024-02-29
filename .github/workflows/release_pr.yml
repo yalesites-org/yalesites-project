@@ -1,19 +1,206 @@
-name: Create release pull request
+name: Release pull request
 on:
   pull_request:
+    types:
+      - synchronize
+      - closed
     branches:
       - master
   workflow_dispatch:
+env:
+  YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
+  GH_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
+  ACCESS_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
+  REPO: ${{ github.repository }}
+  PR_NUMBER: ${{ github.event.number }}
+  RELEASE_PR_URL: ${{ github.event.pull_request._links.html.href }}
+  RELEASE_SITES: ${{ vars.RELEASE_SITES }}
 jobs:
-  create_pull_request:
+  setup:
     runs-on: ubuntu-latest
+    steps:
+    - name: Determine Terminus version
+      shell: bash
+      run: |
+        TERMINUS_RELEASE=$(
+          curl --silent \
+            --header 'authorization: Bearer ${{ github.token }}' \
+            "https://api.github.com/repos/pantheon-systems/terminus/releases/latest" \
+            | perl -nle'print $& while m#"tag_name": "\K[^"]*#g'
+        )
+        echo "TERMINUS_RELEASE=$TERMINUS_RELEASE" >> $GITHUB_ENV
+
+    - name: Install Terminus
+      shell: bash
+      run: |
+        mkdir ~/terminus && cd ~/terminus
+        echo "Installing Terminus v$TERMINUS_RELEASE"
+        curl -L https://github.com/pantheon-systems/terminus/releases/download/$TERMINUS_RELEASE/terminus.phar -o /usr/local/bin/terminus
+        chmod +x /usr/local/bin/terminus
+
+    - name: Authenticate to Terminus
+      env:
+        TERMINUS_TOKEN: ${{ secrets.TERMINUS_TOKEN }}
+      run: |
+        terminus auth:login --machine-token="${TERMINUS_TOKEN}"
+
+    - name: Install SSH key
+      uses: shimataro/ssh-key-action@v2
+      with:
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        known_hosts: unnecessary
+        config: ${{ secrets.SSH_CONFIG }}
+
+    - name: Cache terminus
+      uses: actions/cache@v4
+      id: terminus-cache
+      with:
+        path: |
+          /usr/local/bin/terminus
+          ~/.terminus
+          ~/.ssh
+        key: release-pr-setup-cache
+        restore-keys: |
+          release-pr-setup-cache
+
+  get_next_release_version:
+    runs-on: ubuntu-latest
+    needs: [setup]
+    if: ${{ github.event.action != 'synchronize' && github.event.action != 'closed' }}
+    outputs:
+      NEXT_VERSION: ${{ steps.get_release_number.outputs.next_version }}
+      RELEASE_BRANCH: ${{ steps.get_release_number.outputs.release_branch }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        ref: master
+        fetch-depth: 0
+
+    - name: Setup node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
+    - name: Git setup
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+
+    - name: Get next release number
+      id: get_release_number
+      run: |
+        if [[ "$PR_NUMBER" ]]; then
+          release_branch=$(gh pr view "$PR_NUMBER" --json headRefName --jq '.[]')
+        else
+          git merge origin/develop --no-edit -X theirs
+          npm install --force
+          unset GITHUB_ACTIONS
+          unset GITHUB_EVENT_NAME
+          semantic_release=$(npx --no-install semantic-release --no-ci --dry-run 2>/dev/null)
+          next_version=$(echo "$semantic_release" | sed -nE 's/.*The next release version is ([0-9]+\.[0-9]+\.[0-9]+).*/v\1/p')
+          
+          if [ -z "$next_version" ]; then
+            exit 1
+          else
+            release_branch="${next_version//.}"
+          fi
+        fi
+
+        # Set outputs for next steps when running from workflow_dispatch.
+        echo next_version="$next_version" >> "$GITHUB_OUTPUT"
+        echo release_branch="$release_branch" >> "$GITHUB_OUTPUT"
+
+        # Set release branch as a variable for access.
+        gh variable set RELEASE_BRANCH --body "$release_branch"
+
+    - name: Create release branch
+      if: ${{ github.event.number == '' }}
+      env:
+        RELEASE_BRANCH: ${{ steps.get_release_number.outputs.release_branch }}
+      run: |
+        echo "The release branch is: $RELEASE_BRANCH" 
+        git checkout -b "$RELEASE_BRANCH"
+        git push origin "$RELEASE_BRANCH"
+
+  create_pull_request:
+    needs: [setup, get_next_release_version]
+    if: ${{ always() && github.event.action != 'closed' }}
+    outputs:
+      PR_NUMBER: ${{ steps.create_pull_request.outputs.PR_NUMBER }}
     env:
-      ACCESS_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
-      REPO: ${{ github.repository }}
-      PR_NUMBER: ${{ github.event.number }}
+      RELEASE_BRANCH: ${{ needs.get_next_release_version.outputs.RELEASE_BRANCH || vars.RELEASE_BRANCH }}
+      NEXT_VERSION: ${{ needs.get_next_release_version.outputs.NEXT_VERSION }}
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v4
 
     - name: Create pull request
+      id: create_pull_request
       run: ./.ci/github/create_release_pull_request
+
+  release_sites:
+    needs: [setup, get_next_release_version, create_pull_request]
+    runs-on: ubuntu-latest
+    if: ${{ always() && github.event.action != 'closed' }}
+    env:
+      RELEASE_BRANCH: ${{ needs.get_next_release_version.outputs.RELEASE_BRANCH || vars.RELEASE_BRANCH }}
+      PR_NUMBER: ${{ needs.create_pull_request.outputs.PR_NUMBER }}
+      RELEASE_SITES_DEPLOYED: ${{ vars.RELEASE_SITES_DEPLOYED }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ env.RELEASE_BRANCH }}
+        fetch-depth: 0
+
+    - name: Git setup
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+
+    - name: Restore cache
+      uses: actions/cache@v4
+      id: terminus-cache
+      with:
+        path: |
+          /usr/local/bin/terminus
+          ~/.terminus
+          ~/.ssh
+        key: release-pr-setup-cache
+        restore-keys: |
+          release-pr-setup-cache
+
+    - name: Deploy to environments
+      run: ./.ci/github/deploy_release_sites
+
+  clean_up_multidevs:
+    if: ${{ github.event.action == 'closed' }}
+    needs: [setup]
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_BRANCH: ${{ vars.RELEASE_BRANCH }}
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v4
+        
+    - name: Restore cache
+      uses: actions/cache@v4
+      id: terminus-cache
+      with:
+        path: |
+          /usr/local/bin/terminus
+          ~/.terminus
+          ~/.ssh
+        key: release-pr-setup-cache
+        restore-keys: |
+          release-pr-setup-cache
+
+    - name: Clean up
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: ./.ci/github/clean_up_multidevs

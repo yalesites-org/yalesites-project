@@ -8,6 +8,7 @@ dependencies:
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_format
     - field.field.node.event.field_event_type
+    - field.field.node.event.field_external_source
     - field.field.node.event.field_login_required
     - field.field.node.event.field_metatags
     - field.field.node.event.field_tags
@@ -77,7 +78,6 @@ third_party_settings:
       restricted_categories:
         - 'Chaos Tools'
         - 'Content fields'
-        - 'Custom block types'
         - Forms
         - Help
         - 'Lists (Views)'
@@ -134,6 +134,18 @@ content:
       link: false
     third_party_settings: {  }
     weight: 3
+    region: content
+  field_external_source:
+    type: link
+    label: above
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 4
     region: content
 hidden:
   field_event_format: true

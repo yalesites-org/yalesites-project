@@ -11,6 +11,7 @@ dependencies:
     - filter
     - google_analytics
     - media
+    - media_entity_download
     - system
 _core:
   default_config_hash: dJ0L2DNSj5q6XVZAGsuVDpJTh5UeYkIPwKrUOOpr8YI
@@ -21,6 +22,7 @@ is_admin: false
 permissions:
   - 'access content'
   - 'delete own files'
+  - 'download media'
   - 'opt-in or out of google analytics tracking'
   - 'use text format basic_html'
   - 'use text format heading_html'

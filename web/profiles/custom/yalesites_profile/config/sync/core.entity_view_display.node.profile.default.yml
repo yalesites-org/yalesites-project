@@ -7,6 +7,7 @@ dependencies:
     - field.field.node.profile.field_affiliation
     - field.field.node.profile.field_department
     - field.field.node.profile.field_email
+    - field.field.node.profile.field_external_source
     - field.field.node.profile.field_first_name
     - field.field.node.profile.field_honorific_prefix
     - field.field.node.profile.field_last_name
@@ -25,6 +26,7 @@ dependencies:
   module:
     - layout_builder
     - layout_builder_restrictions
+    - link
     - metatag
     - text
     - user
@@ -86,6 +88,7 @@ third_party_settings:
       - 'Chaos Tools'
       - 'Content fields'
       - 'Custom block types'
+      - 'Custom blocks'
       - Devel
       - Forms
       - Help
@@ -110,7 +113,7 @@ third_party_settings:
       restricted_categories:
         - 'Chaos Tools'
         - 'Content fields'
-        - 'Custom block types'
+        - 'Custom blocks'
         - Devel
         - Forms
         - Help
@@ -132,6 +135,15 @@ third_party_settings:
               - profile_contact_block
         ys_layout_two_column:
           content:
+            'Custom block types':
+              - accordion
+              - button_link
+              - divider
+              - image
+              - pull_quote
+              - tabs
+              - text
+              - video
             'Inline blocks':
               - 'inline_block:accordion'
               - 'inline_block:button_link'
@@ -144,6 +156,8 @@ third_party_settings:
             'YaleSites Layouts':
               - profile_contact_block
           sidebar:
+            'Custom block types':
+              - text
             'Inline blocks':
               - 'inline_block:text'
             'YaleSites Layouts':
@@ -151,10 +165,10 @@ third_party_settings:
       denylisted_blocks: {  }
       restricted_categories:
         ys_layout_two_column:
-          sidebar:
+          content:
             - 'Chaos Tools'
             - 'Content fields'
-            - 'Custom block types'
+            - 'Custom blocks'
             - Devel
             - Forms
             - Help
@@ -165,10 +179,10 @@ third_party_settings:
             - 'YaleSites Core'
             - 'YaleSites alert'
             - core
-          content:
+          sidebar:
             - 'Chaos Tools'
             - 'Content fields'
-            - 'Custom block types'
+            - 'Custom blocks'
             - Devel
             - Forms
             - Help
@@ -183,7 +197,7 @@ third_party_settings:
           all_regions:
             - 'Chaos Tools'
             - 'Content fields'
-            - 'Custom block types'
+            - 'Custom blocks'
             - Devel
             - Forms
             - Help
@@ -228,6 +242,18 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 110
+    region: content
+  field_external_source:
+    type: link
+    label: above
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 4
     region: content
   field_first_name:
     type: string

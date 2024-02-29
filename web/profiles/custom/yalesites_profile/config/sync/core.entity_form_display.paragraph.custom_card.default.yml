@@ -10,7 +10,7 @@ dependencies:
     - paragraphs.paragraphs_type.custom_card
   module:
     - allowed_formats
-    - link
+    - linkit
     - maxlength
     - media_library
     - media_library_edit
@@ -45,12 +45,14 @@ content:
       media_library_edit:
         show_edit: '1'
   field_link:
-    type: link_default
+    type: linkit
     weight: 3
     region: content
     settings:
       placeholder_url: ''
       placeholder_title: ''
+      linkit_profile: default
+      linkit_auto_link_text: false
     third_party_settings:
       maxlength:
         maxlength_js: null
