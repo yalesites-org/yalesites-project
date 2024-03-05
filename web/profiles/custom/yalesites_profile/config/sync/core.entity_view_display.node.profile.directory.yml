@@ -70,6 +70,18 @@ content:
     third_party_settings: {  }
     weight: 2
     region: content
+  field_external_source:
+    type: link_separate
+    label: hidden
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: '0'
+      target: '0'
+    third_party_settings: {  }
+    weight: 2
+    region: content
   field_media:
     type: entity_reference_entity_view
     label: hidden
@@ -113,7 +125,6 @@ content:
     region: content
 hidden:
   field_address: true
-  field_external_source: true
   field_first_name: true
   field_honorific_prefix: true
   field_last_name: true
