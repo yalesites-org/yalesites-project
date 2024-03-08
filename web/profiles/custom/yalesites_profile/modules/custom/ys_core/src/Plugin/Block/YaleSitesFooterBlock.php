@@ -93,12 +93,23 @@ class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginIn
   protected function clearFooterConfig($configName) {
     $this->footerSettings->set($configName, NULL);
     $this->footerSettings->save();
-    $message = $this->t('Note, the image for :config_name has been deleted. You may set a new one in <a href=":footer_settings_path">footer settings form<a>.',
-      [
-        ':config_name' => $configName,
-        ':footer_settings_path' => Url::fromRoute('ys_core.admin_footer_settings')->toString(),
-      ]);
-    $this->messenger->addError($message);
+    $logoType = NULL;
+
+    if (str_starts_with($configName, 'content.logos')) {
+      $logoType = 'one of the footer logo images';
+    }
+    else {
+      $logoType = 'the school footer logo image';
+    }
+    if ($logoType) {
+      $footerSettingsPath = Url::fromRoute('ys_core.admin_footer_settings')->toString();
+      $message = $this->t('Note, :logo_type has been deleted. You may set a new one in the <a href=":footer_settings_path">footer settings form<a>.',
+        [
+          ':logo_type' => $logoType,
+          ':footer_settings_path' => $footerSettingsPath,
+        ]);
+      $this->messenger->addError($message);
+    }
   }
 
   /**
@@ -111,7 +122,7 @@ class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginIn
     // Responsive image render array for logos.
     if ($footerLogosConfig = $this->footerSettings->get('content.logos')) {
       foreach ($footerLogosConfig as $key => $logoData) {
-        if ($logoData['logo']) {
+        if (isset($logoData['logo'])) {
           // This check is because if a media item is deleted and one added,
           // it creates an array of ID's which does not work.
           if (is_numeric($logoData['logo'])) {
