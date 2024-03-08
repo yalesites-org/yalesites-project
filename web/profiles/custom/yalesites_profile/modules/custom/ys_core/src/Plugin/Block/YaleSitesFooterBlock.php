@@ -140,11 +140,11 @@ class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginIn
               ];
             }
             else {
-              $this->clearFooterConfig('content.logos.' . $key);
+              $this->clearFooterConfig('content.logos.' . $key . '.logo');
             }
           }
           else {
-            $this->clearFooterConfig('content.logos.' . $key);
+            $this->clearFooterConfig('content.logos.' . $key . '.logo');
           }
         }
       }
