@@ -1,0 +1,24 @@
+id: localist_event_types
+source:
+  plugin: embedded_data
+  data_rows:
+    - fruit_name: 'Grape'
+      fruit_description: 'Eat fresh or prepare some jelly.'
+    - fruit_name: 'Red grape'
+      fruit_description: 'Sweet grape'
+      fruit_parent: 'Grape'
+    - fruit_name: 'Pear'
+      fruit_description: 'Eat fresh or prepare a jam.'
+  ids:
+    fruit_name:
+      type: string
+process:
+  name: fruit_name
+  description: fruit_description
+  parent:
+    plugin: migration_lookup
+    migration: localist_event_types
+    source: fruit_parent
+destination:
+  plugin: 'entity:taxonomy_term'
+  default_bundle: event_type
