@@ -5,7 +5,9 @@ namespace Drupal\ys_core\Plugin\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\Core\Messenger\Messenger;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Url;
 use Drupal\ys_core\SocialLinksManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -42,6 +44,13 @@ class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginIn
   protected $entityTypeManager;
 
   /**
+   * Drupal messenger.
+   *
+   * @var Drupal\Core\Messenger\Messenger
+   */
+  protected $messenger;
+
+  /**
    * {@inheritdoc}
    */
   public function __construct(
@@ -51,11 +60,13 @@ class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginIn
     SocialLinksManager $social_links_manager,
     ConfigFactoryInterface $config_factory,
     EntityTypeManager $entity_type_manager,
+    Messenger $messenger,
     ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->socialLinks = $social_links_manager;
-    $this->footerSettings = $config_factory->get('ys_core.footer_settings');
+    $this->footerSettings = $config_factory->getEditable('ys_core.footer_settings');
     $this->entityTypeManager = $entity_type_manager;
+    $this->messenger = $messenger;
   }
 
   /**
@@ -69,7 +80,25 @@ class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginIn
       $container->get('ys_core.social_links_manager'),
       $container->get('config.factory'),
       $container->get('entity_type.manager'),
+      $container->get('messenger'),
     );
+  }
+
+  /**
+   * Removes config for a deleted media item if used in the footer.
+   *
+   * @param string $configName
+   *   The configuration key to remove.
+   */
+  protected function clearFooterConfig($configName) {
+    $this->footerSettings->set($configName, NULL);
+    $this->footerSettings->save();
+    $message = $this->t('Note, the image for :config_name has been deleted. You may set a new one in <a href=":footer_settings_path">footer settings form<a>.',
+      [
+        ':config_name' => $configName,
+        ':footer_settings_path' => Url::fromRoute('ys_core.admin_footer_settings')->toString(),
+      ]);
+    $this->messenger->addError($message);
   }
 
   /**
@@ -83,18 +112,28 @@ class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginIn
     if ($footerLogosConfig = $this->footerSettings->get('content.logos')) {
       foreach ($footerLogosConfig as $key => $logoData) {
         if ($logoData['logo']) {
-          $footerLogoMedia = $this->entityTypeManager->getStorage('media')->load($logoData['logo']);
-          if ($footerLogoMedia) {
-            $footerLogoFileUri = $fileEntity->load($footerLogoMedia->field_media_image->target_id)->getFileUri();
-            $footerLogosRender[$key]['url'] = $logoData['logo_url'] ?? NULL;
-            $footerLogosRender[$key]['logo'] = [
-              '#type' => 'responsive_image',
-              '#responsive_image_style_id' => 'image_logos',
-              '#uri' => $footerLogoFileUri,
-              '#attributes' => [
-                'alt' => $footerLogoMedia->get('field_media_image')->first()->get('alt')->getValue(),
-              ],
-            ];
+          // This check is because if a media item is deleted and one added,
+          // it creates an array of ID's which does not work.
+          if (is_numeric($logoData['logo'])) {
+            $footerLogoMedia = $this->entityTypeManager->getStorage('media')->load($logoData['logo']);
+            if ($footerLogoMedia) {
+              $footerLogoFileUri = $fileEntity->load($footerLogoMedia->field_media_image->target_id)->getFileUri();
+              $footerLogosRender[$key]['url'] = $logoData['logo_url'] ?? NULL;
+              $footerLogosRender[$key]['logo'] = [
+                '#type' => 'responsive_image',
+                '#responsive_image_style_id' => 'image_logos',
+                '#uri' => $footerLogoFileUri,
+                '#attributes' => [
+                  'alt' => $footerLogoMedia->get('field_media_image')->first()->get('alt')->getValue(),
+                ],
+              ];
+            }
+            else {
+              $this->clearFooterConfig('content.logos.' . $key);
+            }
+          }
+          else {
+            $this->clearFooterConfig('content.logos.' . $key);
           }
         }
       }
@@ -102,16 +141,27 @@ class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginIn
 
     // Responsive image render array for school logo.
     if ($schoolLogoId = $this->footerSettings->get('content.school_logo')) {
-      $schoolLogoMedia = $this->entityTypeManager->getStorage('media')->load($schoolLogoId);
-      $schoolLogoFileUri = $fileEntity->load($schoolLogoMedia->field_media_image->target_id)->getFileUri();
-      $schoolLogoRender = [
-        '#type' => 'responsive_image',
-        '#responsive_image_style_id' => 'image_horizontal_logos',
-        '#uri' => $schoolLogoFileUri,
-        '#attributes' => [
-          'alt' => $schoolLogoMedia->get('field_media_image')->first()->get('alt')->getValue(),
-        ],
-      ];
+      // This check is because if a media item is deleted and one added,
+      // it creates an array of ID's which does not work.
+      if (is_numeric($schoolLogoId)) {
+        if ($schoolLogoMedia = $this->entityTypeManager->getStorage('media')->load($schoolLogoId)) {
+          $schoolLogoFileUri = $fileEntity->load($schoolLogoMedia->field_media_image->target_id)->getFileUri();
+          $schoolLogoRender = [
+            '#type' => 'responsive_image',
+            '#responsive_image_style_id' => 'image_horizontal_logos',
+            '#uri' => $schoolLogoFileUri,
+            '#attributes' => [
+              'alt' => $schoolLogoMedia->get('field_media_image')->first()->get('alt')->getValue(),
+            ],
+          ];
+        }
+        else {
+          $this->clearFooterConfig('content.school_logo');
+        }
+      }
+      else {
+        $this->clearFooterConfig('content.school_logo');
+      }
     }
 
     $footerBlockRender = [
