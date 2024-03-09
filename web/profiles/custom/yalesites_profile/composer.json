@@ -178,6 +178,9 @@
       },
       "drupal/smart_date": {
         "Fix deprecation:": "https://git.drupalcode.org/project/smart_date/-/merge_requests/63.diff"
+      },
+      "drupal/migrate_plus": {
+        "Allow callback for Url source, and single item Json plugin https://www.drupal.org/project/migrate_plus/issues/3040427": "https://www.drupal.org/files/issues/2023-02-15/3040427-42-migrate_plus_multiple_urls.patch"
       }
     }
   }

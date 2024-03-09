@@ -1,63 +1,70 @@
 id: localist_events
 label: 'Localist events'
 source:
-  plugin: embedded_data
-  data_rows:
-    - unique_id: 1
-      title: 'First event of many'
-      start: '2024-04-01T13:00:00-04:00'
-      end: '2024-04-01T14:00:00-04:00'
-    - unique_id: 2
-      title: 'Second chance event'
-      start: '2024-04-01T13:00:00-04:00'
-      end: '2024-05-02T14:00:00-04:00'
+  plugin: url
+  data_fetcher_plugin: http
+  data_parser_plugin: json
+  urls:
+    callback: ys_localist_migrate_url
+  item_selector: events
+  fields:
+    -
+      name: event_instance_id
+      label: 'Event Instance ID'
+      selector: event/event_instances/0/event_instance/id
+    -
+      name: localist_title
+      label: 'Localist title'
+      selector: event/title
   ids:
-    unique_id:
-      type: integer
+    event_instance_id:
+      # This would be an int, but it is too long for the DB
+      type: string
 process:
-  datetime_start:
-    plugin: substr
-    source: start
-    start: 0
-    length: 19
-  datetime_end:
-    plugin: substr
-    source: end
-    start: 0
-    length: 19
-  timezone_start:
-    plugin: substr
-    source: start
-    start: -6
-    length: 6
-  timezone_end:
-    plugin: substr
-    source: end
-    start: -6
-    length: 6
-  title: title
-  field_localist_date/value:
-    plugin: format_date
-    from_format: 'Y-m-d\TH:i:s'
-    to_format: 'Y-m-d\TH:i:s'
-    from_timezone:
-      plugin: timezone_offset
-      source: '@timezone_start'
-    to_timezone: 'UTC'
-    settings:
-      validate_format: false
-    source: '@datetime_start'
-  field_localist_date/end_value:
-    plugin: format_date
-    from_format: 'Y-m-d\TH:i:s'
-    to_format: 'Y-m-d\TH:i:s'
-    from_timezone:
-      plugin: timezone_offset
-      source: '@timezone_end'
-    to_timezone: 'UTC'
-    settings:
-      validate_format: false
-    source: '@datetime_end'
+  # datetime_start:
+  #   plugin: substr
+  #   source: start
+  #   start: 0
+  #   length: 19
+  # datetime_end:
+  #   plugin: substr
+  #   source: end
+  #   start: 0
+  #   length: 19
+  # timezone_start:
+  #   plugin: substr
+  #   source: start
+  #   start: -6
+  #   length: 6
+  # timezone_end:
+  #   plugin: substr
+  #   source: end
+  #   start: -6
+  #   length: 6
+  title: localist_title
+  field_localist_id: event_instance_id
+  # field_localist_date/value:
+  #   plugin: format_date
+  #   from_format: 'Y-m-d\TH:i:s'
+  #   to_format: 'Y-m-d\TH:i:s'
+  #   from_timezone:
+  #     plugin: timezone_offset
+  #     source: '@timezone_start'
+  #   to_timezone: 'UTC'
+  #   settings:
+  #     validate_format: false
+  #   source: '@datetime_start'
+  # field_localist_date/end_value:
+  #   plugin: format_date
+  #   from_format: 'Y-m-d\TH:i:s'
+  #   to_format: 'Y-m-d\TH:i:s'
+  #   from_timezone:
+  #     plugin: timezone_offset
+  #     source: '@timezone_end'
+  #   to_timezone: 'UTC'
+  #   settings:
+  #     validate_format: false
+  #   source: '@datetime_end'
 
 destination:
   plugin: 'entity:node'
