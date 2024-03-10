@@ -7,14 +7,6 @@ dependencies:
 name: '16_5_2400'
 label: '16:5 (2400)'
 effects:
-  5edd8c6f-ea77-4173-b296-a52387766695:
-    uuid: 5edd8c6f-ea77-4173-b296-a52387766695
-    id: image_scale_and_crop
-    weight: 2
-    data:
-      width: 2400
-      height: 750
-      anchor: center-center
   f8b443d2-37c3-4d20-8a4e-52cce9472d92:
     uuid: f8b443d2-37c3-4d20-8a4e-52cce9472d92
     id: focal_point_scale_and_crop
