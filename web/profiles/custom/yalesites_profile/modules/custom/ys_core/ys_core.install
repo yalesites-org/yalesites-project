@@ -6,6 +6,7 @@
  */
 
 use Drupal\Component\Utility\Xss;
+use Drupal\crop\Entity\Crop;
 
 /**
  * Implements hook_update().
@@ -162,4 +163,38 @@ function ys_core_set_format($content_array, $new_format = 'heading_html') {
   $content_array['format'] = $new_format;
 
   return $content_array;
+}
+
+
+/**
+ * Implements hook_update().
+ *
+ * Updates all crops to focal point.
+ */
+function ys_core_update_9007() {
+  $crops = \Drupal::entityTypeManager()->getStorage('crop')->loadMultiple();
+
+    // To translate from iwc crops to focal point, the x and y stay
+    // the same, we need to set the image dimensions to those of the
+    // original file.
+    /** @var Crop $crop */
+    foreach($crops as $crop) {
+
+      $image = \Drupal::service('image.factory')->get($crop->uri->value);
+
+      // Get the original image dimensions.
+      $image_width = $image->getWidth() ?? 0;
+      $image_height = $image->getHeight() ?? 0;
+
+      // Update the type.
+      $crop->type = 'focal_point';
+
+      // Update the dimensions and save.
+      $crop->setSize($image_width, $image_height);
+      $crop->save();
+
+      // Flush to refresh image styles.
+      image_path_flush($image->getSource());
+
+    }
 }
