@@ -171,10 +171,9 @@ function ys_core_preprocess_block(&$variables) {
  * Implements hook_preprocess_region().
  */
 function ys_core_preprocess_region(&$variables) {
-  $config = \Drupal::config('ys_core.header_settings');
+  $config = \Drupal::configFactory()->getEditable('ys_core.header_settings');
   if ($variables['elements']['#region'] == 'header') {
     $variables['utility_nav__search'] = ($config->get('search')) ? $config->get('search')['enable_search_form'] : NULL;
-
     // Responsive image render array for focus header image.
     if ($focusHeaderImageId = $config->get('focus_header_image')) {
       $focusHeaderImageMedia = \Drupal::service('entity_type.manager')->getStorage('media')->load($focusHeaderImageId);
@@ -197,6 +196,12 @@ function ys_core_preprocess_region(&$variables) {
         // See if the path is the front page.
         $isFrontPage = ($alias == $frontPage || $path == $frontPage || \Drupal::service('path.matcher')->isFrontPage());
         $variables['site_header__background_image'] = $isFrontPage ? $focusHeaderImageRender : FALSE;
+      }
+      else {
+        // Media was most likely deleted, this will remove the config so any
+        // new media will work again.
+        $config->set('focus_header_image', NULL);
+        $config->save();
       }
     }
 
@@ -255,6 +260,7 @@ function ys_core_preprocess_menu(&$variables) {
           $nodeId = $routeParameters['node'];
 
           if ($nodeId) {
+            /** @var \Drupal\node\Entity\Node $node */
             $node = \Drupal::entityTypeManager()->getStorage('node')->load($nodeId);
 
             if ($node) {
