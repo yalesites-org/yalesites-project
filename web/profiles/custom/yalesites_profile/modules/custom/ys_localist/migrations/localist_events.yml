@@ -5,6 +5,7 @@ source:
   data_fetcher_plugin: http
   data_parser_plugin: json
   urls:
+    # @see ys_localist.module
     callback: ys_localist_migrate_url
   item_selector: events
   fields:
@@ -16,55 +17,43 @@ source:
       name: localist_title
       label: 'Localist title'
       selector: event/title
+    -
+      name: start_date
+      label: 'Start date'
+      selector: event/event_instances/0/event_instance/start
+    -
+      name: end_date
+      label: 'End date'
+      selector: event/event_instances/0/event_instance/end
+
   ids:
     event_instance_id:
       # This would be an int, but it is too long for the DB
       type: string
+  constants:
+    timezone: America/New_York
 process:
-  # datetime_start:
-  #   plugin: substr
-  #   source: start
-  #   start: 0
-  #   length: 19
-  # datetime_end:
-  #   plugin: substr
-  #   source: end
-  #   start: 0
-  #   length: 19
-  # timezone_start:
-  #   plugin: substr
-  #   source: start
-  #   start: -6
-  #   length: 6
-  # timezone_end:
-  #   plugin: substr
-  #   source: end
-  #   start: -6
-  #   length: 6
   title: localist_title
   field_localist_id: event_instance_id
-  # field_localist_date/value:
-  #   plugin: format_date
-  #   from_format: 'Y-m-d\TH:i:s'
-  #   to_format: 'Y-m-d\TH:i:s'
-  #   from_timezone:
-  #     plugin: timezone_offset
-  #     source: '@timezone_start'
-  #   to_timezone: 'UTC'
-  #   settings:
-  #     validate_format: false
-  #   source: '@datetime_start'
-  # field_localist_date/end_value:
-  #   plugin: format_date
-  #   from_format: 'Y-m-d\TH:i:s'
-  #   to_format: 'Y-m-d\TH:i:s'
-  #   from_timezone:
-  #     plugin: timezone_offset
-  #     source: '@timezone_end'
-  #   to_timezone: 'UTC'
-  #   settings:
-  #     validate_format: false
-  #   source: '@datetime_end'
+  field_event_date/value:
+      plugin: callback
+      callable: strtotime
+      source: start_date
+  field_event_date/end_value:
+    -
+      plugin: null_coalesce
+      source:
+        - end_date
+        - start_date
+    -
+      plugin: callback
+      callable: strtotime
+  field_event_date/timezone: constants/timezone
+  field_event_date/duration:
+      plugin: get_date_duration
+      source: end_date
+      values:
+        - start_date
 
 destination:
   plugin: 'entity:node'

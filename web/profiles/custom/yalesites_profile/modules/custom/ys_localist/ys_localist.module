@@ -9,7 +9,19 @@ use Drupal\migrate\Plugin\MigrationInterface;
 
 /**
  * Returns dynamic URLs for Localist migrations.
+ * @see migrations/localist_events.yml.
  */
 function ys_localist_migrate_url(MigrationInterface $migration) {
-  return ["https://yale.enterprise.localist.com/api/2/events?start=2024-03-13"];
+  // @todo Eventually these values will come from a settings page.
+  $baseURL = "https://yale.enterprise.localist.com/api/2/events";
+
+  // Currently testing the Yale Health group.
+  $groupId = 45811180571509;
+
+  // Localist supports only getting 365 days from start date, default to today.
+  $endDate = date('Y-m-d', strtotime("+364 days"));
+
+  $endPointWithParams = "$baseURL?end=$endDate&group_id=$groupId";
+
+  return [$endPointWithParams];
 }
