@@ -42,9 +42,14 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'img_alt' => 'Speech bubble icon',
       'view_modes' => [
         'card' => [
-          'label' => 'Post Card Grid',
+          'label' => 'Visual Card',
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-card-grid.svg',
           'img_alt' => 'Icon showing 3 generic cards next to each other. Image placement is on the top of each card.',
+        ],
+        'text_card' => [
+          'label' => 'Text Card',
+          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-text-card-grid.svg',
+          'img_alt' => 'Icon showing 3 generic cards next to each other with no images on the cards.',
         ],
         'list_item' => [
           'label' => 'Post List',

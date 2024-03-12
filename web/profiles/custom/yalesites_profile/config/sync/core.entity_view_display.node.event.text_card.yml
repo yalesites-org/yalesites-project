@@ -1,0 +1,111 @@
+uuid: a6481e96-1a61-4bcb-ab69-ee86fa824777
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.node.text_card
+    - field.field.node.event.field_category
+    - field.field.node.event.field_event_cta
+    - field.field.node.event.field_event_date
+    - field.field.node.event.field_event_format
+    - field.field.node.event.field_event_type
+    - field.field.node.event.field_external_source
+    - field.field.node.event.field_login_required
+    - field.field.node.event.field_metatags
+    - field.field.node.event.field_tags
+    - field.field.node.event.field_teaser_media
+    - field.field.node.event.field_teaser_text
+    - field.field.node.event.field_teaser_title
+    - field.field.node.event.layout_builder__layout
+    - node.type.event
+  module:
+    - layout_builder
+    - layout_builder_restrictions
+    - link
+    - smart_date
+    - text
+    - user
+third_party_settings:
+  layout_builder:
+    enabled: false
+    allow_custom: false
+  layout_builder_restrictions:
+    allowed_block_categories: {  }
+    entity_view_mode_restriction:
+      allowed_layouts: {  }
+      denylisted_blocks: {  }
+      allowlisted_blocks: {  }
+      restricted_categories:
+        - 'Chaos Tools'
+        - 'Content fields'
+        - Forms
+        - Help
+        - 'Lists (Views)'
+        - Menus
+        - System
+        - Webform
+        - 'YaleSites Core'
+        - 'YaleSites alert'
+        - core
+    entity_view_mode_restriction_by_region:
+      allowed_layouts: {  }
+id: node.event.text_card
+targetEntityType: node
+bundle: event
+mode: text_card
+content:
+  field_event_date:
+    type: smartdate_plain
+    label: hidden
+    settings:
+      timezone_override: ''
+      separator: '-'
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  field_event_type:
+    type: entity_reference_label
+    label: hidden
+    settings:
+      link: false
+    third_party_settings: {  }
+    weight: 3
+    region: content
+  field_external_source:
+    type: link_separate
+    label: hidden
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 4
+    region: content
+  field_teaser_text:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_teaser_title:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  field_category: true
+  field_event_cta: true
+  field_event_format: true
+  field_login_required: true
+  field_metatags: true
+  field_tags: true
+  field_teaser_media: true
+  layout_builder__layout: true
+  links: true
+  search_api_excerpt: true

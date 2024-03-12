@@ -1,10 +1,10 @@
-uuid: e508c5f6-fec0-4c90-8ccf-b649b267243c
+uuid: 7d628f57-b603-4c10-bf70-4222ae9ae55a
 langcode: en
 status: true
 dependencies:
   module:
     - node
-id: node.card
-label: 'Visual Card'
+id: node.text_card
+label: 'Text Card'
 targetEntityType: node
 cache: true
