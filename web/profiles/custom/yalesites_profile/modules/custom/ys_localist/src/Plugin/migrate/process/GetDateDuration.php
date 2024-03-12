@@ -18,8 +18,7 @@ use Drupal\migrate\Row;
  * process:
  *   plugin: get_duration
  *   source: end_date
- *   values:
- *     - start_date
+ *   start: start_date
  * @endcode
  *
  * This will perform the mathematical operation on the date strings.
@@ -34,13 +33,7 @@ class GetDateDuration extends ProcessPluginBase {
    * {@inheritdoc}
    */
   public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
-    $values = $this->configuration['values'];
-    foreach ($values as &$item) {
-      if (is_string($item) && $row->hasSourceProperty($item)) {
-        $item = $row->getSourceProperty($item);
-      }
-    }
-    $startDate = strtotime($values[0]);
+    $startDate = strtotime($row->getSourceProperty($this->configuration['start']));
     $endDate = strtotime($value);
 
     $duration = ($endDate - $startDate) / 60;
