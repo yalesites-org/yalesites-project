@@ -165,7 +165,7 @@
         "Fix linkit autocomplete alias selection https://www.drupal.org/project/linkit/issues/2877535": "https://www.drupal.org/files/issues/2023-10-05/linkit-2877535-64.patch"
       },
       "drupal/quick_node_clone": {
-        "Fix cloning of inline blocks and paragraphs: https://www.drupal.org/project/quick_node_clone/issues/3100117": "https://www.drupal.org/files/issues/2023-04-25/quick-node-clone--inline-blocks--3100117-32.patch"
+        "Fix cloning of inline blocks and paragraphs: https://www.drupal.org/project/quick_node_clone/issues/3100117": "https://git.drupalcode.org/project/quick_node_clone/-/merge_requests/22.diff"
       },
       "drupal/layout_builder_browser": {
         "Add grouping of reusable blocks (3409153) and add fallback images (3408935) - can't use both patches from d.o would cause merge conflict, combined patch": "patches/layout_builder_browser/3408935-and-3409153-8.patch"
