@@ -42,12 +42,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'img_alt' => 'Speech bubble icon',
       'view_modes' => [
         'card' => [
-          'label' => 'Post Visual Card Grid',
+          'label' => 'Post Visual Cards',
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-card-grid.svg',
           'img_alt' => 'Icon showing 3 generic cards next to each other. Image placement is on the top of each card.',
         ],
         'text_card' => [
-          'label' => 'Post Text Card Grid',
+          'label' => 'Post Text Cards',
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-text-card-grid.svg',
           'img_alt' => 'Icon showing 3 generic cards next to each other with no images on the cards.',
         ],
@@ -73,12 +73,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'img_alt' => 'Calendar icon',
       'view_modes' => [
         'card' => [
-          'label' => 'Event Visual Card Grid',
+          'label' => 'Event Visual Cards',
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-card-grid.svg',
           'img_alt' => 'Icon showing 3 generic cards next to each other. Image placement is on the top of each card.',
         ],
         'text_card' => [
-          'label' => 'Event Text Card Grid',
+          'label' => 'Event Text Cards',
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-text-card-grid.svg',
           'img_alt' => 'Icon showing 3 generic cards next to each other with no images on the cards.',
         ],
@@ -104,12 +104,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'img_alt' => 'Blank page icon',
       'view_modes' => [
         'card' => [
-          'label' => 'Page Visual Card Grid',
+          'label' => 'Page Visual Cards',
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-card-grid.svg',
           'img_alt' => 'Icon showing 3 generic cards next to each other. Image placement is on the top of each card.',
         ],
         'text_card' => [
-          'label' => 'Page Text Card Grid',
+          'label' => 'Page Text Cards',
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-text-card-grid.svg',
           'img_alt' => 'Icon showing 3 generic cards next to each other with no images on the cards.',
         ],
@@ -135,12 +135,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'img_alt' => 'Generic person head icon',
       'view_modes' => [
         'card' => [
-          'label' => 'Profile Visual Card Grid',
+          'label' => 'Profile Visual Cards',
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-card-grid.svg',
           'img_alt' => 'Icon showing 3 generic cards next to each other. Image placement is on the top of each card.',
         ],
         'text_card' => [
-          'label' => 'Profile Text Card Grid',
+          'label' => 'Profile Text Cards',
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-text-card-grid.svg',
           'img_alt' => 'Icon showing 3 generic cards next to each other with no images on the cards.',
         ],
