@@ -135,6 +135,7 @@ module:
   ys_alert: 0
   ys_captcha: 0
   ys_layouts: 0
+  ys_localist: 0
   ys_mail: 0
   ys_node_access: 0
   ys_starterkit: 0
