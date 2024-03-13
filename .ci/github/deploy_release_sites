@@ -3,7 +3,7 @@
 set -eo pipefail
 
 push_code() {
-  git_path=$(terminus connection:info "$site_with_env" --field=git_url)
+  git_path=$(terminus connection:info "$site_machine_name".dev --field=git_url)
   git remote add "$site_machine_name" "$git_path"
   git fetch "$site_machine_name"
   git push "$site_machine_name" "$RELEASE_BRANCH:$RELEASE_BRANCH" --force

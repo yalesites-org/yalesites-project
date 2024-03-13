@@ -445,10 +445,22 @@ function ys_core_get_block_type(&$form, &$form_state) {
   // inline_block:BLOCK_TYPE_NAME.
   if (strpos($inline_block_type_name, ':') !== FALSE) {
     $block_type_name = explode(':', $inline_block_type_name)[1];
+    // While global block adds have this kind of inline block type name,
+    // it's by UUID.
+    if (strlen($block_type_name) == 36) {
+      $block_content_manager = Drupal::entityTypeManager()
+        ->getStorage('block_content');
+      $block_content = $block_content_manager->loadByProperties(['uuid' => $block_type_name]);
+      $block_type_name = reset($block_content)->bundle();
+    }
   }
   // Otherwise, attempt to get it the original way if it exists.
   elseif (isset($form['settings']['block_form'])) {
     $block_type_name = $form['settings']['block_form']['#block']->bundle();
+  }
+  // If we're using reusable blocks, this is how we can get the block type.
+  elseif (isset($form['block_form']['#block'])) {
+    $block_type_name = $form['block_form']['#block']->bundle();
   }
   // If we can't find it, make it something that will fail any future checks.
   else {
