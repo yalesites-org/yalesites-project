@@ -9,7 +9,8 @@ use Drupal\migrate\Plugin\MigrationInterface;
 
 /**
  * Returns dynamic URLs for Localist migrations.
- * @see migrations/localist_events.yml.
+ *
+ * @see migrations/localist_events.yml
  */
 function ys_localist_migrate_url(MigrationInterface $migration) {
   // @todo Eventually these values will come from a settings page.

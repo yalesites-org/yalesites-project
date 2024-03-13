@@ -36,7 +36,8 @@ class GetDateDuration extends ProcessPluginBase {
     $startDate = strtotime($row->getSourceProperty($this->configuration['start']));
     $endDate = strtotime($value);
 
-    $duration = ($endDate - $startDate) / 60;
+    // If there is no end date, this is an all day event, set to 23h 59m.
+    $duration = $endDate ? ($endDate - $startDate) / 60 : 1439;
 
     return $duration;
   }
