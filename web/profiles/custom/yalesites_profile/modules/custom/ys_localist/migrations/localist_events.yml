@@ -3,7 +3,7 @@ label: 'Localist events'
 source:
   plugin: url
   data_fetcher_plugin: http
-  data_parser_plugin: json
+  data_parser_plugin: localist_json
   track_changes: true
   urls:
     # @see ys_localist.module
@@ -13,31 +13,27 @@ source:
     -
       name: event_id
       label: 'Event ID'
-      selector: event/id
+      selector: localist_data/id
     -
       name: localist_title
       label: 'Localist title'
-      selector: event/title
+      selector: localist_data/title
     -
       name: localist_description
       label: 'Localist description'
-      selector: event/description
+      selector: localist_data/description
     -
       name: localist_room
       label: 'Localist room'
-      selector: event/room_number
+      selector: localist_data/room_number
     -
       name: localist_photo_url
       label: 'Localist photo URL'
-      selector: event/photo_url
+      selector: localist_data/photo_url
     -
-      name: start_date
-      label: 'Start date'
-      selector: event/event_instances/0/event_instance/start
-    -
-      name: end_date
-      label: 'End date'
-      selector: event/event_instances/0/event_instance/end
+      name: event_instances
+      label: 'Event instance'
+      selector: instances
 
   ids:
     event_id:
@@ -54,31 +50,14 @@ process:
     default_value: basic_html
   field_localist_room: localist_room
   field_localist_photo_url: localist_photo_url
-  # field_event_date/value:
-  #     plugin: callback
-  #     callable: strtotime
-  #     source: start_date
-  # field_event_date/end_value:
-  #   -
-  #     plugin: null_coalesce
-  #     source:
-  #       - end_date
-  #       - start_date
-  #   -
-  #     plugin: callback
-  #     callable: strtotime
-  # field_event_date/timezone: constants/timezone
-  # field_event_date/duration:
-  #     plugin: get_date_duration
-  #     source: end_date
-  #     start:
-  #       - start_date
+  field_event_date: event_instances
 
 destination:
   plugin: 'entity:node'
   default_bundle: event
   overwrite_properties:
     - field_localist_description
+    - field_event_date
 # migration_dependencies:
 #   required:
 #     - localist_event_types
