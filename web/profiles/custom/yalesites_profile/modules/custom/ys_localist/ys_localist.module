@@ -13,6 +13,9 @@ use Drupal\migrate\Plugin\MigrationInterface;
  * @see migrations/localist_events.yml
  */
 function ys_localist_migrate_url(MigrationInterface $migration) {
+  // Gets the latest version from the API by changing the request URL each time.
+  $version = time();
+
   // @todo Eventually these values will come from a settings page.
   $baseURL = "https://yale.enterprise.localist.com/api/2/events";
 
@@ -22,7 +25,7 @@ function ys_localist_migrate_url(MigrationInterface $migration) {
   // Localist supports only getting 365 days from start date, default to today.
   $endDate = date('Y-m-d', strtotime("+364 days"));
 
-  $endPointWithParams = "$baseURL?end=$endDate&group_id=$groupId";
+  $endPointWithParams = "$baseURL?end=$endDate&v=$version"; //&group_id=$groupId
 
   return [$endPointWithParams];
 }

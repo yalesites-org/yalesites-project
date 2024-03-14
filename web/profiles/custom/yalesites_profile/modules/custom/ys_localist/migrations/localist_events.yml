@@ -4,19 +4,32 @@ source:
   plugin: url
   data_fetcher_plugin: http
   data_parser_plugin: json
+  track_changes: true
   urls:
     # @see ys_localist.module
     callback: ys_localist_migrate_url
   item_selector: events
   fields:
     -
-      name: event_instance_id
-      label: 'Event Instance ID'
-      selector: event/event_instances/0/event_instance/id
+      name: event_id
+      label: 'Event ID'
+      selector: event/id
     -
       name: localist_title
       label: 'Localist title'
       selector: event/title
+    -
+      name: localist_description
+      label: 'Localist description'
+      selector: event/description
+    -
+      name: localist_room
+      label: 'Localist room'
+      selector: event/room_number
+    -
+      name: localist_photo_url
+      label: 'Localist photo URL'
+      selector: event/photo_url
     -
       name: start_date
       label: 'Start date'
@@ -27,37 +40,45 @@ source:
       selector: event/event_instances/0/event_instance/end
 
   ids:
-    event_instance_id:
+    event_id:
       # This would be an int, but it is too long for the DB
       type: string
   constants:
     timezone: America/New_York
 process:
   title: localist_title
-  field_localist_id: event_instance_id
-  field_event_date/value:
-      plugin: callback
-      callable: strtotime
-      source: start_date
-  field_event_date/end_value:
-    -
-      plugin: null_coalesce
-      source:
-        - end_date
-        - start_date
-    -
-      plugin: callback
-      callable: strtotime
-  field_event_date/timezone: constants/timezone
-  field_event_date/duration:
-      plugin: get_date_duration
-      source: end_date
-      values:
-        - start_date
+  field_localist_id: event_id
+  field_localist_description/value: localist_description
+  field_localist_description/format:
+    plugin: default_value
+    default_value: basic_html
+  field_localist_room: localist_room
+  field_localist_photo_url: localist_photo_url
+  # field_event_date/value:
+  #     plugin: callback
+  #     callable: strtotime
+  #     source: start_date
+  # field_event_date/end_value:
+  #   -
+  #     plugin: null_coalesce
+  #     source:
+  #       - end_date
+  #       - start_date
+  #   -
+  #     plugin: callback
+  #     callable: strtotime
+  # field_event_date/timezone: constants/timezone
+  # field_event_date/duration:
+  #     plugin: get_date_duration
+  #     source: end_date
+  #     start:
+  #       - start_date
 
 destination:
   plugin: 'entity:node'
   default_bundle: event
+  overwrite_properties:
+    - field_localist_description
 # migration_dependencies:
 #   required:
 #     - localist_event_types
