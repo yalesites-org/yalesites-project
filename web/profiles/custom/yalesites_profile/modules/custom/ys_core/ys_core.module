@@ -225,7 +225,7 @@ function ys_core_form_views_exposed_form_alter(array &$form, FormStateInterface 
     // View id => name of taxonomy.
     'post_list' => 'category',
     'event_list' => 'category',
-    'directory' => 'affiliation'.
+    'directory' => 'affiliation',
   ];
   foreach ($view_blocks as $key => $value) {
     if ($view['view']->id() == $key) {
