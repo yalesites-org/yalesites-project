@@ -21,7 +21,8 @@ use Drupal\Core\Url;
  *
  * Implements hook_theme().
  */
-function ys_core_theme($existing, $type, $theme, $path): array {
+function ys_core_theme($existing, $type, $theme, $path): array
+{
   return [
     'ys_breadcrumb_block' => [
       'variables' => [
@@ -65,7 +66,8 @@ function ys_core_theme($existing, $type, $theme, $path): array {
 /**
  * Implements hook_form_alter().
  */
-function ys_core_form_alter(&$form, $form_state, $form_id) {
+function ys_core_form_alter(&$form, $form_state, $form_id)
+{
 
   // Ensure the CAS bulk add only allows roles that role_delegate will allow.
   if ($form_id == 'bulk_add_cas_users') {
@@ -148,15 +150,14 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
     if (in_array($block_type_name, $limited_block_types)) {
       $form['#attached']['library'][] = 'ys_core/block_form';
     }
-
   }
-
 }
 
 /**
  * Implements hook_preprocess_block().
  */
-function ys_core_preprocess_block(&$variables) {
+function ys_core_preprocess_block(&$variables)
+{
   $config = \Drupal::config('ys_core.social_links');
 
   // Add the cache tag, so that the theme setting information is rebuilt
@@ -170,55 +171,58 @@ function ys_core_preprocess_block(&$variables) {
  *
  * Implements hook_preprocess_region().
  */
-function ys_core_preprocess_region(&$variables) {
-  $config = \Drupal::configFactory()->getEditable('ys_core.header_settings');
+function ys_core_preprocess_region(&$variables)
+{
+  $config = \Drupal::config('ys_core.header_settings');
   if ($variables['elements']['#region'] == 'header') {
     $variables['utility_nav__search'] = ($config->get('search')) ? $config->get('search')['enable_search_form'] : NULL;
     // Responsive image render array for focus header image.
     if ($focusHeaderImageId = $config->get('focus_header_image')) {
-      $focusHeaderImageMedia = \Drupal::service('entity_type.manager')->getStorage('media')->load($focusHeaderImageId);
-      if ($focusHeaderImageMedia) {
-        $fileEntity = \Drupal::service('entity_type.manager')->getStorage('file');
-        $focusHeaderImageFileUri = $fileEntity->load($focusHeaderImageMedia->field_media_image->target_id)->getFileUri();
-        $focusHeaderImageRender = [
-          '#type' => 'responsive_image',
-          '#responsive_image_style_id' => 'background_image_focus_header',
-          '#uri' => $focusHeaderImageFileUri,
-          '#attributes' => [
-            'alt' => $focusHeaderImageMedia->get('field_media_image')->first()->get('alt')->getValue(),
-          ],
-        ];
+      // There are cases where the id is really an array of images over one.
+      // We ensure that there will be only one numeric ID.
+      if (!is_numeric($focusHeaderImageId)) {
+        if ($focusHeaderImageMedia = \Drupal::service('entity_type.manager')->getStorage('media')->load($focusHeaderImageId)) {
+          $fileEntity = \Drupal::service('entity_type.manager')->getStorage('file');
+          $focusHeaderImageFileUri = $fileEntity->load($focusHeaderImageMedia->field_media_image->target_id)->getFileUri();
+          $focusHeaderImageRender = [
+            '#type' => 'responsive_image',
+            '#responsive_image_style_id' => 'background_image_focus_header',
+            '#uri' => $focusHeaderImageFileUri,
+            '#attributes' => [
+              'alt' => $focusHeaderImageMedia->get('field_media_image')->first()->get('alt')->getValue(),
+            ],
+          ];
 
-        $path = \Drupal::service('path.current')->getPath();
-        $alias = \Drupal::service('path_alias.manager')->getAliasByPath($path);
-        $frontPage = \Drupal::config('system.site')->get('page.front');
+          $path = \Drupal::service('path.current')->getPath();
+          $alias = \Drupal::service('path_alias.manager')->getAliasByPath($path);
+          $frontPage = \Drupal::config('system.site')->get('page.front');
 
-        // See if the path is the front page.
-        $isFrontPage = ($alias == $frontPage || $path == $frontPage || \Drupal::service('path.matcher')->isFrontPage());
-        $variables['site_header__background_image'] = $isFrontPage ? $focusHeaderImageRender : FALSE;
-      }
-      else {
-        // Media was most likely deleted, this will remove the config so any
-        // new media will work again.
-        $config->set('focus_header_image', NULL);
-        $config->save();
+          // See if the path is the front page.
+          $isFrontPage = ($alias == $frontPage || $path == $frontPage || \Drupal::service('path.matcher')->isFrontPage());
+          $variables['site_header__background_image'] = $isFrontPage ? $focusHeaderImageRender : FALSE;
+        } else {
+          _ys_core_clear_focus_header_image_config('ys_core.header_settings');
+        }
+      } else {
+        _ys_core_clear_focus_header_image_config('ys_core.header_settings');
       }
     }
-
   }
 }
 
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function ys_core_form_user_login_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+function ys_core_form_user_login_form_alter(&$form, FormStateInterface $form_state, $form_id)
+{
   $form['#submit'][] = 'ys_core_user_login_form_submit';
 }
 
 /**
  * Custom submit handler for the login form.
  */
-function ys_core_user_login_form_submit($form, FormStateInterface $form_state) {
+function ys_core_user_login_form_submit($form, FormStateInterface $form_state)
+{
   $url = Url::fromRoute('<front>');
   $form_state->setRedirectUrl($url);
 }
@@ -226,7 +230,8 @@ function ys_core_user_login_form_submit($form, FormStateInterface $form_state) {
 /**
  * Implements theme_preprocess_menu().
  */
-function ys_core_preprocess_menu(&$variables) {
+function ys_core_preprocess_menu(&$variables)
+{
   if ($variables['menu_name'] == 'main') {
     // If submenu, add the top level link as the first link in the submenu.
     foreach ($variables['items'] as &$menuItem) {
@@ -272,16 +277,15 @@ function ys_core_preprocess_menu(&$variables) {
 
       // Add cloned item to the beginning of the menu.
       array_unshift($menuItem['below'], $clonedMenuItem);
-
     }
   }
-
 }
 
 /**
  * Implements hook_module_implements_alter().
  */
-function ys_core_module_implements_alter(&$implementations, $hook) {
+function ys_core_module_implements_alter(&$implementations, $hook)
+{
   // Forces ys_core help hook to come before others.
   // @see https://drupal.stackexchange.com/questions/242572/is-it-possible-to-modify-help-text-on-a-vocabulary-page
   if ($hook == 'help') {
@@ -292,7 +296,8 @@ function ys_core_module_implements_alter(&$implementations, $hook) {
 /**
  * Implements hook_help().
  */
-function ys_core_help($route_name, RouteMatchInterface $route_match) {
+function ys_core_help($route_name, RouteMatchInterface $route_match)
+{
   // Overrides help description.
   // This is "temporary" until core adds this functionality.
   // Uses CSS to hide the core description.
@@ -314,7 +319,8 @@ function ys_core_help($route_name, RouteMatchInterface $route_match) {
 /**
  * Implements hook_page_attachments().
  */
-function ys_core_page_attachments(array &$page) {
+function ys_core_page_attachments(array &$page)
+{
   // Add Siteimprove Javascript only on production.
   $config = \Drupal::config('config_split.config_split.production_config');
   if ($config->get('status')) {
@@ -331,7 +337,8 @@ function ys_core_page_attachments(array &$page) {
 /**
  * Implements hook_preprocess_image_widget() for SiteSettingsForm.php.
  */
-function ys_core_preprocess_image_widget(&$variables) {
+function ys_core_preprocess_image_widget(&$variables)
+{
   /*
    * Used for previewing the managed file for favicons and others.
    * @see web/profiles/custom/yalesites_profile/modules/custom/ys_core/src/Form/SiteSettingsForm.php
@@ -366,14 +373,12 @@ function ys_core_preprocess_image_widget(&$variables) {
       if (isset($element['#value']['width']) && isset($element['#value']['height'])) {
         $file_variables['width'] = $element['#value']['width'];
         $file_variables['height'] = $element['#value']['height'];
-      }
-      else {
+      } else {
         $image = \Drupal::service('image.factory')->get($file->getFileUri());
         if ($image->isValid()) {
           $file_variables['width'] = $image->getWidth();
           $file_variables['height'] = $image->getHeight();
-        }
-        else {
+        } else {
           $file_variables['width'] = $file_variables['height'] = NULL;
         }
       }
@@ -397,8 +402,7 @@ function ys_core_preprocess_image_widget(&$variables) {
         '#type' => 'hidden',
         '#value' => $file_variables['height'],
       ];
-    }
-    else {
+    } else {
       $variables['fallback_image'] = TRUE;
     }
 
@@ -419,14 +423,16 @@ function ys_core_preprocess_image_widget(&$variables) {
  *
  * Clears the cache for rendered items on taxonomy term update.
  */
-function ys_core_taxonomy_term_update() {
+function ys_core_taxonomy_term_update()
+{
   Cache::invalidateTags(['rendered']);
 }
 
 /**
  * Implements hook_preprocess_page().
  */
-function ys_core_preprocess_page(&$variables) {
+function ys_core_preprocess_page(&$variables)
+{
   // Add the cache tag, so that the theme setting information is rebuilt
   // when the config is saved.
   // Via: https://drupal.stackexchange.com/questions/266379/how-to-clear-cache-for-config-entity-after-making-changes
@@ -445,7 +451,8 @@ function ys_core_preprocess_page(&$variables) {
  * @return string
  *   The block type name.
  */
-function ys_core_get_block_type(&$form, &$form_state) {
+function ys_core_get_block_type(&$form, &$form_state)
+{
   $block_type_name = "";
   $inline_block_type_name = $form_state->getBuildInfo()['args'][3];
 
@@ -481,7 +488,30 @@ function ys_core_get_block_type(&$form, &$form_state) {
 /**
  * Implements hook_preprocess_html().
  */
-function ys_core_preprocess_html(&$variables) {
+function ys_core_preprocess_html(&$variables)
+{
   // Adds the content type in a class to support specific content type styling.
   $variables['attributes']['class'][] = isset($variables['node_type']) ? "ys-content-type-{$variables['node_type']}" : NULL;
+}
+
+/**
+ * Helper function to clear the focus header image config.
+ *
+ * @param string $configName
+ *  The name of the config to clear the focus header on.
+ */
+function _ys_core_clear_focus_header_image_config($configName)
+{
+  $config = \Drupal::configFactory()->getEditable($configName);
+  $config->clear('focus_header_image')->save();
+
+  $headerSettingsPath = Url::fromRoute('ys_core.admin_header_settings')->toString();
+  $message = t(
+    'Note, the focus header image has been deleted.  You may set a new one in the <a href=":header_settings_path">header settings form<a>.',
+    [
+      ':header_settings_path' => $headerSettingsPath,
+    ]
+  );
+
+  \Drupal::messenger()->addError($message);
 }
