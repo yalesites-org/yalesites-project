@@ -222,10 +222,10 @@ function ys_core_form_views_exposed_form_alter(array &$form, FormStateInterface 
   $view = $form_state->getStorage('view');
   // For these blocks, hide the exposed filters if there are no term options.
   $view_blocks = [
-    // view id => name of taxonomy.
+    // View id => name of taxonomy.
     'post_list' => 'category',
     'event_list' => 'category',
-    'directory' => 'affiliation'
+    'directory' => 'affiliation'.
   ];
   foreach ($view_blocks as $key => $value) {
     if ($view['view']->id() == $key) {
