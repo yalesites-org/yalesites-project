@@ -221,11 +221,18 @@ function ys_core_form_user_login_form_alter(&$form, FormStateInterface $form_sta
 function ys_core_form_views_exposed_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
   $view = $form_state->getStorage('view');
   // For these blocks, hide the exposed filters if there are no term options.
-  $view_blocks = ['post_list', 'event_list', 'directory'];
+  $view_blocks = ['post_list', 'event_list'];
   if (in_array($view['view']->id(), $view_blocks)) {
     if (isset($form['category']['#options']) && !empty($form['category']['#options'])) {
       if (count($form['category']['#options']) < 2) {
-        $form['#attributes']['class'][] = 'hide-exposed';
+        $form['#attributes']['style'] = 'display: none';
+      }
+    }
+  }
+  if ($view['view']->id() == 'directory') {
+    if (isset($form['affiliation']['#options']) && !empty($form['affiliation']['#options'])) {
+      if (count($form['affiliation']['#options']) < 2) {
+        $form['#attributes']['style'] = 'display: none';
       }
     }
   }
