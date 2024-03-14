@@ -176,7 +176,7 @@ function ys_core_preprocess_region(&$variables) {
     if ($focusHeaderImageId = $config->get('focus_header_image')) {
       // There are cases where the id is really an array of images over one.
       // We ensure that there will be only one numeric ID.
-      if (!is_numeric($focusHeaderImageId)) {
+      if (is_numeric($focusHeaderImageId)) {
         if ($focusHeaderImageMedia = \Drupal::service('entity_type.manager')->getStorage('media')->load($focusHeaderImageId)) {
           $fileEntity = \Drupal::service('entity_type.manager')->getStorage('file');
           $focusHeaderImageFileUri = $fileEntity->load($focusHeaderImageMedia->field_media_image->target_id)->getFileUri();
