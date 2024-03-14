@@ -7,14 +7,6 @@ dependencies:
 name: '1_1_200'
 label: '1:1 (200)'
 effects:
-  f9abaa02-220c-4165-af4f-5fa5c4258ee4:
-    uuid: f9abaa02-220c-4165-af4f-5fa5c4258ee4
-    id: image_scale_and_crop
-    weight: -9
-    data:
-      width: 200
-      height: 200
-      anchor: center-center
   096f516a-570c-4ed4-bc3c-98d972236215:
     uuid: 096f516a-570c-4ed4-bc3c-98d972236215
     id: focal_point_scale_and_crop
