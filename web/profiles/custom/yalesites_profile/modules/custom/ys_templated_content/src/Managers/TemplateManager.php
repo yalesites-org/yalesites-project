@@ -130,8 +130,10 @@ class TemplateManager {
    *
    * @param \Drupal\Core\Extension\ModuleHandler $module_handler
    *   The module handler.
-   * @param \Drupal\ys_templated_content\TemplateFilenameHelper $fileRepository
+   * @param \Drupal\file\FileRepositoryInterface $fileRepository
    *   The file repository.
+   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
+   *   The file system.
    */
   public function __construct(
     ModuleHandler $module_handler,
@@ -168,13 +170,17 @@ class TemplateManager {
   public function getFilenameForTemplate($content_type, $template) {
     $filename = $this->templates[$content_type][$template]['filename'];
 
-    // See if the filename is a remote URL or a filename.
-    // If it is a remote URL, we will download the file and store it in the temp directory.
-    // If it is a filename, we will just return the filename.
+    // See if the filename is a remote URL or a filename. If it is a remote
+    // URL, we will download the file and store it in the temp directory. If it
+    // is a filename, we will just return the filename.
     if (filter_var($filename, FILTER_VALIDATE_URL)) {
       $temp_dir = 'temporary://';
       $temp_filename = $temp_dir . basename($filename);
-      $temp_file = $this->fileRepository->writeData(file_get_contents($filename), $temp_filename, FileSystemInterface::EXISTS_REPLACE);
+      $temp_file = $this->fileRepository->writeData(
+        file_get_contents($filename),
+        $temp_filename,
+        FileSystemInterface::EXISTS_REPLACE
+      );
       return $this->fileSystem->realpath($temp_file->getFileUri());
     }
     else {
