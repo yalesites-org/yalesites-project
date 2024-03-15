@@ -1,0 +1,24 @@
+# Note: This is being done with embedded data because Localist does not have
+# an endpoint to fetch experiences.
+id: localist_experiences
+label: 'Localist experiences'
+source:
+  plugin: embedded_data
+  data_rows:
+    - localist_name: 'inperson'
+      human_name: 'In-Person'
+    - localist_name: 'virtual'
+      human_name: 'Virtual'
+    - localist_name: 'hybrid'
+      human_name: 'Hybrid'
+  ids:
+    localist_name:
+      type: string
+
+process:
+  name: human_name
+  field_localist_name: localist_name
+
+destination:
+  plugin: 'entity:taxonomy_term'
+  default_bundle: event_type

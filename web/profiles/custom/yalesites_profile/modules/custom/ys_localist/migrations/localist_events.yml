@@ -34,13 +34,19 @@ source:
       name: event_instances
       label: 'Event instance'
       selector: instances
+    -
+      name: recurring
+      label: Recurring
+      selector: localist_data/recurring
+    -
+      name: experience
+      label: Experience
+      selector: localist_data/experience
 
   ids:
     event_id:
       # This would be an int, but it is too long for the DB
       type: string
-  constants:
-    timezone: America/New_York
 process:
   title: localist_title
   field_localist_id: event_id
@@ -51,6 +57,11 @@ process:
   field_localist_room: localist_room
   field_localist_photo_url: localist_photo_url
   field_event_date: event_instances
+  field_localist_recurring: recurring
+  field_event_type:
+    plugin: migration_lookup
+    migration: localist_experiences
+    source: experience
 
 destination:
   plugin: 'entity:node'
@@ -58,7 +69,8 @@ destination:
   overwrite_properties:
     - field_localist_description
     - field_event_date
-# migration_dependencies:
-#   required:
-#     - localist_event_types
-#   optional: []
+    - field_event_type
+migration_dependencies:
+  required:
+    - localist_experiences
+  optional: []
