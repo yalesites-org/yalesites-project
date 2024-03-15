@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Drupal\ys_localist\Plugin\migrate_plus\data_parser;
 
