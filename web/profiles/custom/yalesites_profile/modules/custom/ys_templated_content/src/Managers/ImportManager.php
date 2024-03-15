@@ -93,18 +93,31 @@ class ImportManager {
     String $template
   ) {
     $filename = $this->templateManager->getFilenameForTemplate($content_type, $template);
+    $templateTitle = $this->templateManager->getTemplateTitle($content_type, $template);
+
+    if ($filename === NULL) {
+      return FALSE;
+    }
 
     $extension = pathinfo($filename, PATHINFO_EXTENSION);
+    $importResult = NULL;
     switch ($extension) {
       case 'zip':
-        return (new ZipFileImporter($this))->import($filename);
+        $importResult = (new ZipFileImporter($this))->import($filename);
 
       case 'yml':
-        return (new YamlFileImporter($this))->import($filename);
+        try {
+          $importResult = (new YamlFileImporter($this))->import($filename);
+        }
+        catch (\Exception $e) {
+          throw new \Exception('The file could not be imported at this time: ' . $templateTitle);
+        }
 
       default:
         throw new \Exception("Unknown extension: $extension");
     }
+
+    return $importResult;
   }
 
   /**
@@ -123,7 +136,11 @@ class ImportManager {
      * This would be a great way to contribute back:
      * $this->contentSyncHelper->generateEntityFromStringYaml($this::CONTENT);
      */
-    $content = file_get_contents($filename);
+    $content = @file_get_contents($filename);
+
+    if ($content === FALSE) {
+      throw new \Exception('The file could not be read at this time: ' . $filename);
+    }
 
     $content_array = $this
       ->contentSyncHelper
