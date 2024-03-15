@@ -3,12 +3,15 @@
 namespace Drupal\ys_templated_content\Managers;
 
 use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\File\FileSystemInterface;
+use Drupal\file\FileRepositoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Manager for templates.
  */
-class TemplateManager {
+class TemplateManager
+{
 
   const TEMPLATE_PATH = '/config/templates/';
 
@@ -18,6 +21,20 @@ class TemplateManager {
    * @var \Drupal\Core\Extension\ModuleHandler
    */
   protected $moduleHandler;
+
+  /**
+   * The file system.
+   * @var \Drupal\Core\File\FileRepositoryInterface
+   * The file system.
+   */
+  protected $fileRepository;
+
+  /**
+   * The file system.
+   * @var \Drupal\Core\File\FileSystemInterface
+   * The file system.
+   */
+  protected $fileSystem;
 
   /**
    * The templates that will be available to the user to select from.
@@ -38,9 +55,15 @@ class TemplateManager {
         'filename' => 'page__landing_page.yml',
         'preview_image' => '',
       ],
-      'zip_file' => [
-        'title' => 'Zip',
-        'description' => 'A template for a zip file.',
+      'remote_zip_file' => [
+        'title' => 'Remote Zip',
+        'description' => 'A template for a remote zip file.',
+        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/page__zip_file.zip',
+        'preview_image' => '',
+      ],
+      'local_zip_file' => [
+        'title' => 'Local Zip',
+        'description' => 'A template for a local zip file.',
         'filename' => 'page__zip_file.zip',
         'preview_image' => '',
       ],
@@ -106,20 +129,28 @@ class TemplateManager {
    *
    * @param \Drupal\Core\Extension\ModuleHandler $module_handler
    *   The module handler.
+   *  @param \Drupal\ys_templated_content\TemplateFilenameHelper $fileRepository
+   *  The file repository.
    */
   public function __construct(
     ModuleHandler $module_handler,
+    FileRepositoryInterface $fileRepository,
+    FileSystemInterface $fileSystem,
   ) {
     $this->moduleHandler = $module_handler;
+    $this->fileRepository = $fileRepository;
+    $this->fileSystem = $fileSystem;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container)
+  {
     return new static(
       $container->get('module_handler'),
-      $container->get('ys_templated_content.template_filename_helper'),
+      $container->get('file.repository'),
+      $container->get('file_system'),
     );
   }
 
@@ -134,12 +165,24 @@ class TemplateManager {
    * @return string
    *   The file path.
    */
-  public function getFilenameForTemplate($content_type, $template) {
+  public function getFilenameForTemplate($content_type, $template)
+  {
     $filename = $this->templates[$content_type][$template]['filename'];
-    return $this
-      ->moduleHandler
-      ->getModule('ys_templated_content')
-      ->getPath() . $this::TEMPLATE_PATH . $filename;
+
+    // See if the filename is a remote URL or a filename.
+    // If it is a remote URL, we will download the file and store it in the temp directory.
+    // If it is a filename, we will just return the filename.
+    if (filter_var($filename, FILTER_VALIDATE_URL)) {
+      $temp_dir = 'temporary://';
+      $temp_filename = $temp_dir . basename($filename);
+      $temp_file = $this->fileRepository->writeData(file_get_contents($filename), $temp_filename, FileSystemInterface::EXISTS_REPLACE);
+      return $this->fileSystem->realpath($temp_file->getFileUri());
+    } else {
+      return $this
+        ->moduleHandler
+        ->getModule('ys_templated_content')
+        ->getPath() . $this::TEMPLATE_PATH . $filename;
+    }
   }
 
   /**
@@ -153,19 +196,20 @@ class TemplateManager {
    * @return array
    *   The template options.
    */
-  public function getTemplateDescription($content_type, $template_name) {
+  public function getTemplateDescription($content_type, $template_name)
+  {
     return $this->templates[$content_type][$template_name]['description'] ?? "";
   }
 
   /**
    * Get the templates.
    */
-  public function getTemplates($content_type = NULL) {
+  public function getTemplates($content_type = NULL)
+  {
     if ($content_type) {
       return $this->templates[$content_type];
     }
 
     return $this->templates;
   }
-
 }
