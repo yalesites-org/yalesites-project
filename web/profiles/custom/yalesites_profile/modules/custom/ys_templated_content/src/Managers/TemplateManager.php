@@ -68,6 +68,18 @@ class TemplateManager {
         'filename' => 'page__zip_file.zip',
         'preview_image' => '',
       ],
+      'remote_zip_file_dne' => [
+        'title' => 'Remote Zip Does Not Exist',
+        'description' => 'A template for a remote zip file.',
+        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/page__zip_files.zip',
+        'preview_image' => '',
+      ],
+      'landing_page_dne' => [
+        'title' => 'Landing Page Does Not Exist',
+        'description' => 'A template for a landing page.',
+        'filename' => 'page__landing_pages.yml',
+        'preview_image' => '',
+      ],
     ],
     'post' => [
       'blog' => [
@@ -176,8 +188,14 @@ class TemplateManager {
     if (filter_var($filename, FILTER_VALIDATE_URL)) {
       $temp_dir = 'temporary://';
       $temp_filename = $temp_dir . basename($filename);
+      $file_data = @file_get_contents($filename);
+
+      if ($file_data === FALSE) {
+        throw new \Exception('The file could not be downloaded for template at this time: ' . $this->getTemplateTitle($content_type, $template));
+      }
+
       $temp_file = $this->fileRepository->writeData(
-        file_get_contents($filename),
+        $file_data,
         $temp_filename,
         FileSystemInterface::EXISTS_REPLACE
       );
@@ -215,6 +233,21 @@ class TemplateManager {
     }
 
     return $this->templates;
+  }
+
+  /**
+   * Get the template options for the currrent content type.
+   *
+   * @param string $content_type
+   *   The content type to get templates for.
+   * @param string $template
+   *   The template name.
+   *
+   * @return array
+   *   The template options.
+   */
+  public function getTemplateTitle($content_type, $template) {
+    return $this->templates[$content_type][$template]['title'];
   }
 
 }
