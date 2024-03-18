@@ -57,6 +57,7 @@ hidden:
   field_event_date: true
   field_event_format: true
   field_event_type: true
+  field_localist_id: true
   field_login_required: true
   field_metatags: true
   field_tags: true

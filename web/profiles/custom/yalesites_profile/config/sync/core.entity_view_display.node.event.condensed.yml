@@ -88,6 +88,7 @@ hidden:
   field_category: true
   field_event_cta: true
   field_event_format: true
+  field_localist_id: true
   field_login_required: true
   field_metatags: true
   field_tags: true

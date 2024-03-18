@@ -7,6 +7,11 @@ dependencies:
     - node.type.event
   module:
     - smart_date
+    - smart_date_recur
+third_party_settings:
+  smart_date_recur:
+    allow_recurring: true
+    month_limit: 12
 id: node.event.field_event_date
 field_name: field_event_date
 entity_type: node
@@ -21,6 +26,8 @@ default_value:
     default_duration_increments: "30\r\n60|1 hour\r\n90\r\n120|2 hours\r\ncustom"
     default_date_type: ''
     default_date: ''
+    min: ''
+    max: ''
 default_value_callback: ''
 settings: {  }
 field_type: smartdate

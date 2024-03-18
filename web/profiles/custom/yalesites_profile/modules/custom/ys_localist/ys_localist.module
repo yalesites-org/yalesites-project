@@ -25,11 +25,6 @@ function ys_localist_migrate_url(MigrationInterface $migration) {
   // Localist supports only getting 365 days from today.
   $endDate = date('Y-m-d', strtotime("+364 days"));
 
-  /* @todo - `pp=` fetches 100 date instances (the max that Localist  supports).
-   * This endpoint does support paging, eventually we need to support that here
-   * as well. Migrate Plus has a patch that isn't currently applying:
-   * https://www.drupal.org/project/migrate_plus/issues/2640516
-   * */
   $endPointWithParams = "$baseURL?end=$endDate&group_id=$groupId&v=$version&pp=100";
 
   return [$endPointWithParams];
