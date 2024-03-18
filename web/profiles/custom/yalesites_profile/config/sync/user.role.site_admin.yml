@@ -84,6 +84,8 @@ permissions:
   - 'administer redirects'
   - 'administer users'
   - 'administer utility-navigation menu items'
+  - 'assign author role'
+  - 'assign editor role'
   - 'assign site_admin role'
   - 'clone event content'
   - 'clone page content'
