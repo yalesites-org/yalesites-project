@@ -24,6 +24,18 @@ targetEntityType: node
 bundle: post
 mode: search_result
 content:
+  field_external_source:
+    type: link_separate
+    label: hidden
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 2
+    region: content
   field_teaser_text:
     type: text_default
     label: hidden
@@ -39,7 +51,6 @@ content:
 hidden:
   field_author: true
   field_category: true
-  field_external_source: true
   field_login_required: true
   field_metatags: true
   field_publish_date: true
