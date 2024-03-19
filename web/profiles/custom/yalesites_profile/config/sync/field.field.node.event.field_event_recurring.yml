@@ -1,0 +1,21 @@
+uuid: d9cbed57-dd5d-4054-800e-b76fe624caec
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_event_recurring
+    - node.type.event
+id: node.event.field_event_recurring
+field_name: field_event_recurring
+entity_type: node
+bundle: event
+label: 'Event recurring'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'Yes'
+  off_label: 'No'
+field_type: boolean

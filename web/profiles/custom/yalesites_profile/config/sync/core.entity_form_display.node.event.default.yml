@@ -6,9 +6,17 @@ dependencies:
     - field.field.node.event.field_category
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
+    - field.field.node.event.field_event_description
     - field.field.node.event.field_event_format
+    - field.field.node.event.field_event_place
+    - field.field.node.event.field_event_recurring
+    - field.field.node.event.field_event_room
     - field.field.node.event.field_event_type
     - field.field.node.event.field_external_source
+    - field.field.node.event.field_localist_event_photo_url
+    - field.field.node.event.field_localist_event_url
+    - field.field.node.event.field_localist_ics_url
+    - field.field.node.event.field_localist_id
     - field.field.node.event.field_login_required
     - field.field.node.event.field_metatags
     - field.field.node.event.field_tags
@@ -140,6 +148,39 @@ content:
       remove_seconds: false
       separator: to
     third_party_settings: {  }
+  field_event_description:
+    type: text_textarea
+    weight: 20
+    region: content
+    settings:
+      rows: 5
+      placeholder: ''
+    third_party_settings: {  }
+  field_event_place:
+    type: entity_reference_autocomplete
+    weight: 19
+    region: content
+    settings:
+      match_operator: CONTAINS
+      match_limit: 10
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  field_event_recurring:
+    type: boolean_checkbox
+    weight: 22
+    region: content
+    settings:
+      display_label: true
+    third_party_settings: {  }
+  field_event_room:
+    type: string_textfield
+    weight: 21
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
   field_event_type:
     type: options_buttons
     weight: 1
@@ -153,6 +194,38 @@ content:
     settings:
       placeholder_url: ''
       placeholder_title: ''
+    third_party_settings: {  }
+  field_localist_event_photo_url:
+    type: link_default
+    weight: 24
+    region: content
+    settings:
+      placeholder_url: ''
+      placeholder_title: ''
+    third_party_settings: {  }
+  field_localist_event_url:
+    type: link_default
+    weight: 23
+    region: content
+    settings:
+      placeholder_url: ''
+      placeholder_title: ''
+    third_party_settings: {  }
+  field_localist_ics_url:
+    type: link_default
+    weight: 25
+    region: content
+    settings:
+      placeholder_url: ''
+      placeholder_title: ''
+    third_party_settings: {  }
+  field_localist_id:
+    type: string_textfield
+    weight: 12
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
     third_party_settings: {  }
   field_login_required:
     type: boolean_checkbox
@@ -246,7 +319,6 @@ content:
 hidden:
   created: true
   field_event_format: true
-  field_localist_id: true
   layout_builder__layout: true
   promote: true
   revision_log: true

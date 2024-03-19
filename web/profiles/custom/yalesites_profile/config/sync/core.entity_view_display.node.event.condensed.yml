@@ -7,9 +7,17 @@ dependencies:
     - field.field.node.event.field_category
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
+    - field.field.node.event.field_event_description
     - field.field.node.event.field_event_format
+    - field.field.node.event.field_event_place
+    - field.field.node.event.field_event_recurring
+    - field.field.node.event.field_event_room
     - field.field.node.event.field_event_type
     - field.field.node.event.field_external_source
+    - field.field.node.event.field_localist_event_photo_url
+    - field.field.node.event.field_localist_event_url
+    - field.field.node.event.field_localist_ics_url
+    - field.field.node.event.field_localist_id
     - field.field.node.event.field_login_required
     - field.field.node.event.field_metatags
     - field.field.node.event.field_tags
@@ -87,7 +95,14 @@ content:
 hidden:
   field_category: true
   field_event_cta: true
+  field_event_description: true
   field_event_format: true
+  field_event_place: true
+  field_event_recurring: true
+  field_event_room: true
+  field_localist_event_photo_url: true
+  field_localist_event_url: true
+  field_localist_ics_url: true
   field_localist_id: true
   field_login_required: true
   field_metatags: true

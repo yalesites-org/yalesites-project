@@ -8,7 +8,7 @@
 use Drupal\migrate\Plugin\MigrationInterface;
 
 /**
- * Returns dynamic URLs for Localist migrations.
+ * Returns dynamic URLs for Localist event migrations.
  *
  * @see migrations/localist_events.yml
  */
@@ -28,4 +28,26 @@ function ys_localist_migrate_url(MigrationInterface $migration) {
   $endPointWithParams = "$baseURL?end=$endDate&group_id=$groupId&v=$version&pp=100";
 
   return [$endPointWithParams];
+}
+
+/**
+ * Returns dynamic URLs for Localist places migrations.
+ *
+ * @see migrations/localist_places.yml
+ */
+function ys_localist_places_url(MigrationInterface $migration) {
+  $placesURL = "https://yale.enterprise.localist.com/api/2/places?pp=100";
+  $placesEndpoints = [];
+
+  $response = \Drupal::httpClient()->get($placesURL);
+  $data = json_decode($response->getBody(), TRUE);
+  $totalPages = $data['page']['total'];
+
+  $i = 1;
+  while ($i <= $totalPages) {
+    $placesEndpoints[] = "$placesURL&page=$i";
+    $i++;
+  }
+
+  return $placesEndpoints;
 }

@@ -31,6 +31,14 @@ source:
       label: 'Localist photo URL'
       selector: localist_data/photo_url
     -
+      name: localist_event_url
+      label: 'Localist event URL'
+      selector: localist_data/localist_url
+    -
+      name: localist_ics_url
+      label: ICS URL
+      selector: localist_data/localist_ics_url
+    -
       name: event_instances
       label: 'Event instance'
       selector: instances
@@ -42,6 +50,10 @@ source:
       name: experience
       label: Experience
       selector: localist_data/experience
+    -
+      name: place_name
+      label: Place name
+      selector: localist_data/location_name
 
   ids:
     event_id:
@@ -50,18 +62,27 @@ source:
 process:
   title: localist_title
   field_localist_id: event_id
-  field_localist_description/value: localist_description
-  field_localist_description/format:
+  field_event_description/value: localist_description
+  field_event_description/format:
     plugin: default_value
     default_value: basic_html
-  field_localist_room: localist_room
-  field_localist_photo_url: localist_photo_url
+  field_event_room: localist_room
+  field_localist_event_url/uri: localist_event_url
+  field_localist_event_photo_url/uri: localist_photo_url
+  field_localist_ics_url/uri: localist_ics_url
   field_event_date: event_instances
-  field_localist_recurring: recurring
+  field_event_recurring: recurring
   field_event_type:
     plugin: migration_lookup
     migration: localist_experiences
     source: experience
+  field_event_place:
+    plugin: entity_lookup
+    source: place_name
+    value_key: name
+    bundle_key: vid
+    bundle: event_place
+    entity_type: taxonomy_term
 
 destination:
   plugin: 'entity:node'
@@ -73,4 +94,5 @@ destination:
 migration_dependencies:
   required:
     - localist_experiences
+    - localist_places
   optional: []

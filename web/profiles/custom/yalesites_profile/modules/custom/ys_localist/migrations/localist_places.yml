@@ -1,0 +1,104 @@
+id: localist_places
+label: 'Localist places'
+source:
+  plugin: url
+  data_fetcher_plugin: http
+  data_parser_plugin: json
+  track_changes: true
+  urls:
+    # @see ys_localist.module
+    callback: ys_localist_places_url
+  item_selector: places
+  fields:
+    -
+      name: place_id
+      label: 'Place ID'
+      selector: place/id
+    -
+      name: place_name
+      label: 'Place name'
+      selector: place/name
+    -
+      name: country_code
+      label: 'Country code'
+      selector: place/geo/country
+    -
+      name: state_code
+      label: 'State or admin area code'
+      selector: place/geo/state
+    -
+      name: city
+      label: 'City'
+      selector: place/geo/city
+    -
+      name: postal_code
+      label: 'Postal code'
+      selector: place/geo/zip
+    -
+      name: address
+      label: 'Address'
+      selector: place/geo/street
+    -
+      name: latitude
+      label: 'Latitude'
+      selector: place/geo/latitude
+    -
+      name: longitude
+      label: 'Longitude'
+      selector: place/geo/longitude
+    -
+      name: place_description
+      label: 'Place description'
+      selector: place/description
+    -
+      name: place_localist_url
+      label: 'Place Localist URL'
+      selector: place/localist_url
+    -
+      name: place_external_url
+      label: 'Place external URL'
+      selector: place/url
+    -
+      name: place_image_url
+      label: 'Place image URL'
+      selector: place/photo_url
+    -
+      name: place_phone
+      label: 'Place phone number'
+      selector: place/phone
+    -
+      name: place_hours
+      label: 'Place hours'
+      selector: place/hours
+    -
+      name: place_parking
+      label: 'Place parking info'
+      selector: place/parking
+  ids:
+    place_id:
+      # This would be an int, but it is too long for the DB
+      type: string
+process:
+  name: place_name
+  field_localist_id: place_id
+  field_address/country_code: country_code
+  field_address/administrative_area: state_code
+  field_address/locality: city
+  field_address/postal_code: postal_code
+  field_address/address_line1: address
+  field_latitude: latitude
+  field_longitude: longitude
+  field_place_description/value: place_description
+  field_place_description/format:
+    plugin: default_value
+    default_value: basic_html
+  field_place_localist_url: place_localist_url
+  field_place_url/uri: place_external_url
+  field_place_image_url/uri: place_image_url
+  field_phone: place_phone
+  field_hours: place_hours
+  field_parking: place_parking
+
+destination:
+  plugin: 'entity:taxonomy_term'
+  default_bundle: event_place

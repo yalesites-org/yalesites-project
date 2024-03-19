@@ -83,6 +83,7 @@ class LocalistJson extends Json implements ContainerFactoryPluginInterface, Data
             'duration' => $duration,
           ];
         }
+
         $reformattedSource[$parentEventId] = [
           'localist_data' => $data['event'],
           'instances' => $dates[$parentEventId],
