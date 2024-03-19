@@ -179,6 +179,9 @@
       },
       "drupal/smart_date": {
         "Fix deprecation:": "https://git.drupalcode.org/project/smart_date/-/merge_requests/63.diff"
+      },
+      "drupal/focal_point": {
+        "Limit image styles on preview page": "https://www.drupal.org/files/issues/2021-08-13/2830678-29.patch"
       }
     }
   }
