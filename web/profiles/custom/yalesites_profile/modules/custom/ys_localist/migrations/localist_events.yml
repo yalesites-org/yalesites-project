@@ -27,8 +27,8 @@ source:
       label: 'Localist room'
       selector: localist_data/room_number
     -
-      name: localist_photo_url
-      label: 'Localist photo URL'
+      name: localist_image_url
+      label: 'Localist image URL'
       selector: localist_data/photo_url
     -
       name: localist_event_url
@@ -68,7 +68,7 @@ process:
     default_value: basic_html
   field_event_room: localist_room
   field_localist_event_url/uri: localist_event_url
-  field_localist_event_photo_url/uri: localist_photo_url
+  field_localist_event_image_url/uri: localist_image_url
   field_localist_ics_url/uri: localist_ics_url
   field_event_date: event_instances
   field_event_recurring: recurring

@@ -13,7 +13,7 @@ dependencies:
     - field.field.node.event.field_event_room
     - field.field.node.event.field_event_type
     - field.field.node.event.field_external_source
-    - field.field.node.event.field_localist_event_photo_url
+    - field.field.node.event.field_localist_event_image_url
     - field.field.node.event.field_localist_event_url
     - field.field.node.event.field_localist_ics_url
     - field.field.node.event.field_localist_id
@@ -195,9 +195,9 @@ content:
       placeholder_url: ''
       placeholder_title: ''
     third_party_settings: {  }
-  field_localist_event_photo_url:
+  field_localist_event_image_url:
     type: link_default
-    weight: 24
+    weight: 26
     region: content
     settings:
       placeholder_url: ''

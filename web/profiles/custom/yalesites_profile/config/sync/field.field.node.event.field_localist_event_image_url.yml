@@ -1,17 +1,17 @@
-uuid: 290e83b2-b58e-4a47-a836-542fc37a365d
+uuid: f1064ade-a3f4-458a-aa3b-4418be407f5d
 langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.node.field_localist_event_photo_url
+    - field.storage.node.field_localist_event_image_url
     - node.type.event
   module:
     - link
-id: node.event.field_localist_event_photo_url
-field_name: field_localist_event_photo_url
+id: node.event.field_localist_event_image_url
+field_name: field_localist_event_image_url
 entity_type: node
 bundle: event
-label: 'Localist event photo URL'
+label: 'Localist event image URL'
 description: ''
 required: false
 translatable: false

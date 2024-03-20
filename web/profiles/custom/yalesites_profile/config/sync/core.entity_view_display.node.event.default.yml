@@ -13,7 +13,7 @@ dependencies:
     - field.field.node.event.field_event_room
     - field.field.node.event.field_event_type
     - field.field.node.event.field_external_source
-    - field.field.node.event.field_localist_event_photo_url
+    - field.field.node.event.field_localist_event_image_url
     - field.field.node.event.field_localist_event_url
     - field.field.node.event.field_localist_ics_url
     - field.field.node.event.field_localist_id
@@ -141,26 +141,6 @@ third_party_settings:
                 third_party_settings: {  }
             weight: 9
             additional: {  }
-          4b825dd7-1cfe-41f8-89f3-ad0ebe573882:
-            uuid: 4b825dd7-1cfe-41f8-89f3-ad0ebe573882
-            region: content
-            configuration:
-              id: 'field_block:node:event:field_localist_event_photo_url'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: link
-                label: above
-                settings:
-                  trim_length: 80
-                  url_only: false
-                  url_plain: false
-                  rel: ''
-                  target: ''
-                third_party_settings: {  }
-            weight: 10
-            additional: {  }
           b3524d8c-fd7b-4615-8a7b-e00c16dcc80a:
             uuid: b3524d8c-fd7b-4615-8a7b-e00c16dcc80a
             region: content
@@ -180,6 +160,26 @@ third_party_settings:
                   target: ''
                 third_party_settings: {  }
             weight: 11
+            additional: {  }
+          552fb3df-a426-4f6c-9fef-843d60eeb10b:
+            uuid: 552fb3df-a426-4f6c-9fef-843d60eeb10b
+            region: content
+            configuration:
+              id: 'field_block:node:event:field_localist_event_image_url'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: link
+                label: above
+                settings:
+                  trim_length: 80
+                  url_only: false
+                  url_plain: false
+                  rel: ''
+                  target: ''
+                third_party_settings: {  }
+            weight: 12
             additional: {  }
         third_party_settings:
           layout_builder_lock:
@@ -314,7 +314,7 @@ content:
     third_party_settings: {  }
     weight: 4
     region: content
-  field_localist_event_photo_url:
+  field_localist_event_image_url:
     type: link
     label: above
     settings:
@@ -324,7 +324,7 @@ content:
       rel: ''
       target: ''
     third_party_settings: {  }
-    weight: 14
+    weight: 16
     region: content
   field_localist_event_url:
     type: link
