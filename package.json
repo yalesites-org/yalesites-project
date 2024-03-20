@@ -28,6 +28,8 @@
     "test": "./scripts/local/test.sh"
   },
   "devDependencies": {
+    "@saithodev/semantic-release-backmerge": "^4.0.1",
+    "@semantic-release/git": "^10.0.1",
     "@yalesites-org/eslint-config-and-other-formatting": "^1.5.0",
     "eslint-config-drupal": "^5.0.2",
     "eslint-plugin-jsx-a11y": "^6.5.1",
@@ -78,6 +80,21 @@
         }
       ],
       "@semantic-release/release-notes-generator",
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "web/profiles/custom/yalesites_profile/yalesites_profile.info.yml"
+          ],
+          "message": "chore: bump yalesites_profile to ${nextRelease.version}"
+        }
+      ],
+      [
+        "@saithodev/semantic-release-backmerge",
+        {
+          "backmergeBranches": ["develop"]
+        }
+      ],
       "@semantic-release/github"
     ]
   }
