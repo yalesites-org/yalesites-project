@@ -1,0 +1,39 @@
+From 30bf569df2f6b17d5ea64da83bf3372165bfa98a Mon Sep 17 00:00:00 2001
+From: Marc Berger <marc@fourkitchens.com>
+Date: Wed, 20 Mar 2024 18:41:32 -0700
+Subject: [PATCH] fix(3432551): If all exposed form elements are set to hide,
+ also hide the form.
+
+---
+ .../filter/SelectiveFilterBase.php               | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/src/Plugin/better_exposed_filters/filter/SelectiveFilterBase.php b/src/Plugin/better_exposed_filters/filter/SelectiveFilterBase.php
+index 9d064a2..c4440b9 100644
+--- a/src/Plugin/better_exposed_filters/filter/SelectiveFilterBase.php
++++ b/src/Plugin/better_exposed_filters/filter/SelectiveFilterBase.php
+@@ -269,6 +269,22 @@ abstract class SelectiveFilterBase {
+               )
+             ) {
+               $element['#access'] = FALSE;
++
++              // Helps with check if all elements are hidden later.
++              $element['#sef_hidden'] = TRUE;
++
++              // If all exposed form elements are hidden, hide the form.
++              $i = 0;
++              foreach ($form['#info'] as $exposedFilter) {
++                if (isset($form[$exposedFilter['value']]['#sef_hidden']) && $form[$exposedFilter['value']]['#sef_hidden']) {
++                  $i++;
++                }
++              }
++
++              if ($i == count($form['#info'])) {
++                $form['#access'] = FALSE;
++              }
++
+             }
+           }
+         }
+--
+GitLab
