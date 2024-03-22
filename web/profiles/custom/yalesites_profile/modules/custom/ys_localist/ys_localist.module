@@ -51,3 +51,14 @@ function ys_localist_places_url(MigrationInterface $migration) {
 
   return $placesEndpoints;
 }
+
+/**
+ * Returns dynamic URLs for Localist places migrations.
+ *
+ * @see migrations/localist_places.yml
+ */
+function ys_localist_filters_url(MigrationInterface $migration) {
+  $filtersURL = "https://yale.enterprise.localist.com/api/2/events/filters?pp=100";
+
+  return [$filtersURL];
+}

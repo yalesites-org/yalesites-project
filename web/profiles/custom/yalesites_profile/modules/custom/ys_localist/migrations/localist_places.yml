@@ -102,3 +102,16 @@ process:
 destination:
   plugin: 'entity:taxonomy_term'
   default_bundle: event_place
+  overwrite_properties:
+    - name
+    - field_localist_id
+    - field_address
+    - field_latitude
+    - field_longitude
+    - field_place_description
+    - field_place_localist_url
+    - field_place_url
+    - field_place_image_url
+    - field_phone
+    - field_hours
+    - field_parking

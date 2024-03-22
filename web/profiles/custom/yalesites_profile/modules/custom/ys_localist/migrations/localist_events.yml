@@ -54,11 +54,17 @@ source:
       name: place_name
       label: Place name
       selector: localist_data/location_name
+    -
+      name: event_types
+      label: Event types
+      selector: localist_data/filters
 
   ids:
     event_id:
       # This would be an int, but it is too long for the DB
       type: string
+  constants:
+    testing: [45552991027315, 45552991025266]
 process:
   title: localist_title
   field_localist_id: event_id
@@ -83,16 +89,72 @@ process:
     bundle_key: vid
     bundle: event_place
     entity_type: taxonomy_term
+  # temp:
+  #   -
+  #     plugin: callback
+  #     callable: var_dump
+  #     source: constants/testing
+  # temp2:
+  #   -
+  #     plugin: extract
+  #     source: event_types
+  #     index:
+  #       - event_types
+  #   -
+  #     plugin: extract_localist_filter
+  field_localist_event_type:
+    -
+      plugin: extract
+      source: event_types
+      index:
+        - event_types
+    -
+      plugin: extract_localist_filter
+    -
+      plugin: sub_process
+      process:
+        target_id:
+          plugin: migration_lookup
+          migration: localist_event_types
+          no_stub: true
+
+
+  #   # -
+  #   #   plugin: skip_on_empty
+  #   #   source: event_types
+  #   #   method: process
+  #   -
+  #     plugin: extract
+  #     source: event_types
+  #     index:
+  #       - event_types
+  #   -
+  #     plugin: callback
+  #     callable: var_dump
+    # -
+    #   plugin: extract_localist_filter
+    # -
+    #   plugin: migration_lookup
+    #   migration: localist_event_types
+    #   no_stub: true
 
 destination:
   plugin: 'entity:node'
   default_bundle: event
   overwrite_properties:
+    - title
+    - field_localist_id
     - field_localist_description
+    - field_event_room
+    - field_localist_event_url
+    - field_localist_event_image_url
+    - field_localist_ics_url
     - field_event_date
     - field_event_type
+    - field_event_place
 migration_dependencies:
   required:
     - localist_experiences
     - localist_places
+    - localist_event_types
   optional: []

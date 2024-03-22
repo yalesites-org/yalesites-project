@@ -1,0 +1,40 @@
+id: localist_event_types
+label: 'Localist event_types'
+source:
+  plugin: url
+  data_fetcher_plugin: http
+  data_parser_plugin: json
+  track_changes: true
+  urls:
+    # @see ys_localist.module
+    callback: ys_localist_filters_url
+  item_selector: event_types
+  fields:
+    -
+      name: event_type_id
+      label: 'Event type ID'
+      selector: id
+    -
+      name: event_type_name
+      label: 'Event type name'
+      selector: name
+    -
+      name: event_type_parent_id
+      label: 'Event type parent ID'
+      selector: parent_id
+  ids:
+    event_type_id:
+      # This would be an int, but it is too long for the DB
+      type: string
+process:
+  name: event_type_name
+  parent:
+    plugin: migration_lookup
+    migration: localist_event_types
+    source: event_type_parent_id
+
+destination:
+  plugin: 'entity:taxonomy_term'
+  default_bundle: localist_event_type
+  overwrite_properties:
+    - name

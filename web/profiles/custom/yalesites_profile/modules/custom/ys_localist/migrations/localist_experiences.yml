@@ -4,6 +4,7 @@ id: localist_experiences
 label: 'Localist experiences'
 source:
   plugin: embedded_data
+  track_changes: true
   data_rows:
     - localist_name: 'inperson'
       human_name: 'In-Person'
@@ -22,3 +23,6 @@ process:
 destination:
   plugin: 'entity:taxonomy_term'
   default_bundle: event_type
+  overwrite_properties:
+    - name
+    - field_localist_name
