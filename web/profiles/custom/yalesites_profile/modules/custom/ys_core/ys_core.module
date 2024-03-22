@@ -216,30 +216,6 @@ function ys_core_form_user_login_form_alter(&$form, FormStateInterface $form_sta
 }
 
 /**
- * Implements hook_form_FORM_ID_alter().
- */
-function ys_core_form_views_exposed_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
-  $view = $form_state->getStorage('view');
-  // For these blocks, hide the exposed filters if there are no term options.
-  $view_blocks = [
-    // View id => name of taxonomy.
-    'post_list' => 'category',
-    'event_list' => 'category',
-    'directory' => 'affiliation',
-  ];
-  foreach ($view_blocks as $key => $value) {
-    if ($view['view']->id() == $key) {
-      if (isset($form[$value]['#options']) && !empty($form[$value]['#options'])) {
-        // We have to account for the 'any' option.
-        if (count($form[$value]['#options']) < 2) {
-          $form['#attributes']['style'] = 'display: none';
-        }
-      }
-    }
-  }
-}
-
-/**
  * Custom submit handler for the login form.
  */
 function ys_core_user_login_form_submit($form, FormStateInterface $form_state) {
