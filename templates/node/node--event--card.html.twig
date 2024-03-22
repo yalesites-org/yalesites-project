@@ -6,7 +6,7 @@
   } %}
 {% endset %}
 
-{% if content.field_event_type %}
+{% if content.field_event_type.0 %}
   {% set reference_card__overline -%}
     {% include "@molecules/cards/reference-card/event/_yds-event-format.twig" with {
       format: content.field_event_type,
