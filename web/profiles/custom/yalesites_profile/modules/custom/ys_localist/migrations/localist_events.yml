@@ -129,7 +129,7 @@ destination:
   overwrite_properties:
     - title
     - field_localist_id
-    - field_localist_description
+    - field_event_description
     - field_event_room
     - field_localist_event_url
     - field_localist_event_image_url
