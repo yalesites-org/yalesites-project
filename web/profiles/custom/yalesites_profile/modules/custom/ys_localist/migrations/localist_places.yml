@@ -7,7 +7,8 @@ source:
   track_changes: true
   urls:
     # @see ys_localist.module
-    callback: ys_localist_places_url
+    callback: ys_localist_migrate_url
+  localist_endpoint: 'places'
   item_selector: places
   fields:
     -

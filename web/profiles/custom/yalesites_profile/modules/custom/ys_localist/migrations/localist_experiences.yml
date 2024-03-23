@@ -18,11 +18,9 @@ source:
 
 process:
   name: human_name
-  field_localist_name: localist_name
 
 destination:
   plugin: 'entity:taxonomy_term'
   default_bundle: event_type
   overwrite_properties:
     - name
-    - field_localist_name

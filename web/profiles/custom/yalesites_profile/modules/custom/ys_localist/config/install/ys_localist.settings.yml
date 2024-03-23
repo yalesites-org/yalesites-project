@@ -1,1 +1,3 @@
-localist_endpoint: 'https://yale.enterprise.localist.com/api/2/events?end=2024-12-13'
+enable_localist_sync: FALSE
+localist_endpoint: ''
+localist_group: ''

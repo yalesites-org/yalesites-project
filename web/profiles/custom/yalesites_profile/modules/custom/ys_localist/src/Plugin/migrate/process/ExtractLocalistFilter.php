@@ -4,31 +4,27 @@ declare(strict_types = 1);
 
 namespace Drupal\ys_localist\Plugin\migrate\process;
 
-use Drupal\migrate\MigrateException;
 use Drupal\migrate\MigrateExecutableInterface;
 use Drupal\migrate\ProcessPluginBase;
 use Drupal\migrate\Row;
 
 /**
- * Performs an array_pop() on a source array.
+ * Extracts filters from Localist events to prepare for entity reference.
  *
  * @MigrateProcessPlugin(
  *   id = "extract_localist_filter",
  *   handle_multiples = TRUE
  * )
  *
- * The "extract" plugin in core can extract array values when indexes are
- * already known. This plugin helps extract the last value in an array by
- * performing a "pop" operation.
- *
- * Example: Say, the migration source has an associative array of names in
- * a property called "authors" and the keys in the array can vary, you
- * can extract the last value like this:
+ * Localist events can contain filters which can be imported into Drupal by
+ * way of an entity reference to a taxonomy term, for example. To choose the
+ * filter, pass it in the filter parameter.
  *
  * @code
- *   last_author:
- *     plugin: array_pop
- *     source: authors
+ *   field_event_type:
+ *     plugin: extract_localist_filter
+ *     source: event_filters
+ *     filter: event_types
  * @endcode
  */
 class ExtractLocalistFilter extends ProcessPluginBase {
@@ -37,11 +33,22 @@ class ExtractLocalistFilter extends ProcessPluginBase {
    * {@inheritdoc}
    */
   public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
+
+    $filter = $this->configuration['filter'];
     $filterArray = [];
-    foreach ($value as $filter) {
-      $filterArray[] = [$filter['id']];
+    if (isset($value[$filter])) {
+      foreach ($value[$filter] as $filterValues) {
+        $filterArray[] = $filterValues['id'];
+      }
     }
     return $filterArray;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function multiple(): bool {
+    return TRUE;
   }
 
 }

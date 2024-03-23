@@ -13,52 +13,10 @@ use Drupal\migrate\Plugin\MigrationInterface;
  * @see migrations/localist_events.yml
  */
 function ys_localist_migrate_url(MigrationInterface $migration) {
-  // Gets the latest version from the API by changing the request URL each time.
-  $version = time();
+  $endpointType = $migration->getPluginDefinition()['source']['localist_endpoint'] ?? 'events';
+  $localistManager = \Drupal::service('ys_localist.manager');
 
-  // @todo Eventually many of these values will come from a settings page.
-  $baseURL = "https://yale.enterprise.localist.com/api/2/events";
+  $endpointURLs = $localistManager->getEndpointUrls($endpointType);
 
-  // Currently testing the Yale Health group.
-  $groupId = 45811180571509;
-
-  // Localist supports only getting 365 days from today.
-  $endDate = date('Y-m-d', strtotime("+364 days"));
-
-  $endPointWithParams = "$baseURL?end=$endDate&group_id=$groupId&v=$version&pp=100";
-
-  return [$endPointWithParams];
-}
-
-/**
- * Returns dynamic URLs for Localist places migrations.
- *
- * @see migrations/localist_places.yml
- */
-function ys_localist_places_url(MigrationInterface $migration) {
-  $placesURL = "https://yale.enterprise.localist.com/api/2/places?pp=100";
-  $placesEndpoints = [];
-
-  $response = \Drupal::httpClient()->get($placesURL);
-  $data = json_decode($response->getBody(), TRUE);
-  $totalPages = $data['page']['total'];
-
-  $i = 1;
-  while ($i <= $totalPages) {
-    $placesEndpoints[] = "$placesURL&page=$i";
-    $i++;
-  }
-
-  return $placesEndpoints;
-}
-
-/**
- * Returns dynamic URLs for Localist places migrations.
- *
- * @see migrations/localist_places.yml
- */
-function ys_localist_filters_url(MigrationInterface $migration) {
-  $filtersURL = "https://yale.enterprise.localist.com/api/2/events/filters?pp=100";
-
-  return [$filtersURL];
+  return $endpointURLs;
 }

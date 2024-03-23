@@ -1,0 +1,7 @@
+ys_localist.settings:
+  path: '/admin/yalesites/localist'
+  defaults:
+    _form: '\Drupal\ys_localist\Form\LocalistSettings'
+    _title: 'Localist Settings'
+  requirements:
+    _permission: 'yalesites manage localist'

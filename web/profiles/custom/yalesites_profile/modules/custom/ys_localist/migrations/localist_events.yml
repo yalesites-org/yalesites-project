@@ -8,6 +8,8 @@ source:
   urls:
     # @see ys_localist.module
     callback: ys_localist_migrate_url
+  # To cut down on the number of functions in .module file
+  localist_endpoint: 'events'
   item_selector: events
   fields:
     -
@@ -44,27 +46,42 @@ source:
       selector: instances
     -
       name: recurring
-      label: Recurring
+      label: 'Recurring'
       selector: localist_data/recurring
     -
       name: experience
-      label: Experience
+      label: 'Experience'
       selector: localist_data/experience
     -
       name: place_name
-      label: Place name
+      label: 'Place name'
       selector: localist_data/location_name
     -
-      name: event_types
-      label: Event types
+      name: filters
+      label: 'Localist filters'
       selector: localist_data/filters
+    -
+      name: ticket_cost
+      label: 'Ticket cost'
+      selector: localist_data/ticket_cost
+    -
+      name: ticket_registration_url
+      label: 'Ticket registration URL'
+      selector: localist_data/ticket_url
+    -
+      name: event_status
+      label: 'Event status'
+      selector: localist_data/status
+    -
+      name: external_url
+      label: 'Event external URL'
+      selector: localist_data/url
 
   ids:
     event_id:
       # This would be an int, but it is too long for the DB
       type: string
-  constants:
-    testing: [45552991027315, 45552991025266]
+
 process:
   title: localist_title
   field_localist_id: event_id
@@ -89,54 +106,22 @@ process:
     bundle_key: vid
     bundle: event_place
     entity_type: taxonomy_term
-  # temp:
-  #   -
-  #     plugin: callback
-  #     callable: var_dump
-  #     source: constants/testing
-  # temp2:
-  #   -
-  #     plugin: extract
-  #     source: event_types
-  #     index:
-  #       - event_types
-  #   -
-  #     plugin: extract_localist_filter
   field_localist_event_type:
     -
-      plugin: extract
-      source: event_types
-      index:
-        - event_types
-    -
       plugin: extract_localist_filter
+      source: filters
+      filter: event_types
     -
-      plugin: sub_process
-      process:
-        target_id:
-          plugin: migration_lookup
-          migration: localist_event_types
-          no_stub: true
-
-
-  #   # -
-  #   #   plugin: skip_on_empty
-  #   #   source: event_types
-  #   #   method: process
-  #   -
-  #     plugin: extract
-  #     source: event_types
-  #     index:
-  #       - event_types
-  #   -
-  #     plugin: callback
-  #     callable: var_dump
-    # -
-    #   plugin: extract_localist_filter
-    # -
-    #   plugin: migration_lookup
-    #   migration: localist_event_types
-    #   no_stub: true
+      plugin: migration_lookup
+      migration: localist_event_types
+      no_stub: true
+  field_ticket_cost: ticket_cost
+  field_ticket_registration_url/uri: ticket_registration_url
+  field_event_status:
+    plugin: migration_lookup
+    migration: localist_status
+    source: event_status
+  field_localist_ext_event_url/uri: external_url
 
 destination:
   plugin: 'entity:node'
@@ -152,9 +137,16 @@ destination:
     - field_event_date
     - field_event_type
     - field_event_place
+    - field_localist_event_type
+    - field_ticket_cost
+    - field_ticket_registration_url
+    - field_event_status
+    - field_localist_ext_event_url
 migration_dependencies:
   required:
     - localist_experiences
     - localist_places
     - localist_event_types
+    - localist_status
+    - localist_groups
   optional: []
