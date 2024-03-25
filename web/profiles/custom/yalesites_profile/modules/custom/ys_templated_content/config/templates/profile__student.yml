@@ -1,0 +1,78 @@
+site_uuid: 3be7d457-cc13-4e03-bde2-d004a9e0f46e
+uuid: 46f012e3-518e-4d9f-84ec-dd8b8bb8efb1
+entity_type: node
+bundle: profile
+base_fields:
+  title: Stu
+  status: true
+  langcode: en
+  created: '1705675143'
+  author: admin@example.com
+  url: /profile/stu
+  revision_log_message: null
+  revision_uid: '1'
+custom_fields:
+  field_address: null
+  field_affiliation:
+    -
+      uuid: e756fcda-3e07-4a22-86f1-319b514b046d
+      entity_type: taxonomy_term
+      bundle: affiliation
+      base_fields:
+        name: Student
+        weight: 0
+        langcode: en
+        description: null
+        parent: 0
+      custom_fields: {  }
+  field_department:
+    -
+      value: 'School of Nursing'
+  field_email: null
+  field_first_name:
+    -
+      value: Student
+  field_honorific_prefix: null
+  field_last_name:
+    -
+      value: McStudentstein
+  field_login_required:
+    -
+      value: '0'
+  field_media: null
+  field_metatags: null
+  field_position:
+    -
+      value: Student
+  field_subtitle:
+    -
+      value: Undergraduate
+      format: heading_html
+  field_tags: null
+  field_teaser_media:
+    -
+      uuid: cae04706-21ac-41aa-9dd6-8f2e509ddb3a
+      entity_type: media
+      bundle: image
+      base_fields:
+        name: yale-brick-in-wall-detail.jpg
+        created: '1691755627'
+        status: true
+        langcode: en
+      custom_fields:
+        field_media_image:
+          -
+            uri: 'public://2023-08/yale-brick-in-wall-detail.jpg'
+            url: 'https://yalesites-platform.lndo.site/sites/default/files/2023-08/yale-brick-in-wall-detail.jpg'
+            alt: 'brick wall with YALE carved into one of the bricks'
+            title: ''
+  field_teaser_text:
+    -
+      value: '<p>A great student that you should edit now!</p>'
+      format: heading_html
+  field_teaser_title:
+    -
+      value: 'Stu McStudentstein'
+  field_telephone: null
+  layout_builder__layout: null
+

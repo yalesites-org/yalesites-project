@@ -1,0 +1,72 @@
+site_uuid: 3be7d457-cc13-4e03-bde2-d004a9e0f46e
+uuid: 4f07627c-cb1e-4a6a-8928-0050632f1487
+entity_type: node
+bundle: event
+base_fields:
+  title: "You're Online Event"
+  status: true
+  langcode: en
+  created: '1705674637'
+  author: admin@example.com
+  url: /events/youre-online-event
+  revision_log_message: null
+  revision_uid: '1'
+custom_fields:
+  field_category: null
+  field_event_cta:
+    -
+      uri: 'https://yale.edu'
+      title: 'Change Me'
+      options: {  }
+  field_event_date:
+    -
+      value: '1705140000'
+      end_value: '1705143600'
+      duration: '60'
+      rrule: null
+      rrule_index: null
+      timezone: ''
+  field_event_format: null
+  field_event_type:
+    -
+      uuid: d22299b1-d122-4294-84f8-295b3f69c7f5
+      entity_type: taxonomy_term
+      bundle: event_type
+      base_fields:
+        name: Online
+        weight: 0
+        langcode: en
+        description: null
+        parent: 0
+      custom_fields: {  }
+  field_login_required:
+    -
+      value: '0'
+  field_metatags: null
+  field_tags: null
+  field_teaser_media:
+    -
+      uuid: cae04706-21ac-41aa-9dd6-8f2e509ddb3a
+      entity_type: media
+      bundle: image
+      base_fields:
+        name: yale-brick-in-wall-detail.jpg
+        created: '1691755627'
+        status: true
+        langcode: en
+      custom_fields:
+        field_media_image:
+          -
+            uri: 'public://2023-08/yale-brick-in-wall-detail.jpg'
+            url: 'https://yalesites-platform.lndo.site/sites/default/files/2023-08/yale-brick-in-wall-detail.jpg'
+            alt: 'brick wall with YALE carved into one of the bricks'
+            title: ''
+  field_teaser_text:
+    -
+      value: '<p>This is a placeholder for your wonderful online event!</p>'
+      format: heading_html
+  field_teaser_title:
+    -
+      value: 'This is a placeholder'
+  layout_builder__layout: null
+
