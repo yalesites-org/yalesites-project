@@ -47,6 +47,7 @@
     "drupal/entity_redirect": "2.2",
     "drupal/fast_404": "3.2",
     "drupal/field_group": "3.4",
+    "drupal/focal_point": "2.0.2",
     "drupal/formdazzle": "3.0.0",
     "drupal/gin": "3.0-rc6",
     "drupal/gin_lb": "1.0.0-rc5",
@@ -108,7 +109,8 @@
     "jjj/chosen": "2.2.1",
     "laminas/laminas-escaper": "2.12",
     "northernco/ckeditor5-anchor-drupal": "0.4.0",
-    "yalesites-org/atomic": "1.27.0",
+    "yalesites-org/ai_engine": "1.1.4",
+    "yalesites-org/atomic": "1.28.0",
     "yalesites-org/yale_cas": "1.0.4"
   },
   "minimum-stability": "dev",
@@ -181,6 +183,9 @@
       },
       "drupal/migrate_plus": {
         "Allow callback for Url source, and single item Json plugin https://www.drupal.org/project/migrate_plus/issues/3040427": "https://www.drupal.org/files/issues/2023-02-15/3040427-42-migrate_plus_multiple_urls.patch"
+      },
+        "drupal/focal_point": {
+        "Limit image styles on preview page": "https://www.drupal.org/files/issues/2021-08-13/2830678-29.patch"
       }
     }
   }
