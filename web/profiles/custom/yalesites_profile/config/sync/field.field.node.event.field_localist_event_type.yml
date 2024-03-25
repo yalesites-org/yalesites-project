@@ -1,17 +1,17 @@
-uuid: f58a6cdd-eda2-44ae-92d4-1c7a1b0fe66d
+uuid: 42d0ba67-aea7-4499-816e-42a38d9d9406
 langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.node.field_event_type
+    - field.storage.node.field_localist_event_type
     - node.type.event
-    - taxonomy.vocabulary.event_type
-id: node.event.field_event_type
-field_name: field_event_type
+    - taxonomy.vocabulary.localist_event_type
+id: node.event.field_localist_event_type
+field_name: field_localist_event_type
 entity_type: node
 bundle: event
-label: 'Event Experience'
-description: 'In-person, online, or hybrid'
+label: 'Event Type'
+description: ''
 required: false
 translatable: false
 default_value: {  }
@@ -20,7 +20,7 @@ settings:
   handler: 'default:taxonomy_term'
   handler_settings:
     target_bundles:
-      event_type: event_type
+      localist_event_type: localist_event_type
     sort:
       field: name
       direction: asc

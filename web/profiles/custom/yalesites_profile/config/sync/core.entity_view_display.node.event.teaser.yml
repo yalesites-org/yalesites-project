@@ -12,10 +12,13 @@ dependencies:
     - field.field.node.event.field_event_place
     - field.field.node.event.field_event_recurring
     - field.field.node.event.field_event_room
+    - field.field.node.event.field_event_status
     - field.field.node.event.field_event_type
     - field.field.node.event.field_external_source
     - field.field.node.event.field_localist_event_image_url
+    - field.field.node.event.field_localist_event_type
     - field.field.node.event.field_localist_event_url
+    - field.field.node.event.field_localist_ext_event_url
     - field.field.node.event.field_localist_ics_url
     - field.field.node.event.field_localist_id
     - field.field.node.event.field_login_required
@@ -24,6 +27,8 @@ dependencies:
     - field.field.node.event.field_teaser_media
     - field.field.node.event.field_teaser_text
     - field.field.node.event.field_teaser_title
+    - field.field.node.event.field_ticket_cost
+    - field.field.node.event.field_ticket_registration_url
     - field.field.node.event.layout_builder__layout
     - node.type.event
   module:
@@ -47,10 +52,13 @@ hidden:
   field_event_place: true
   field_event_recurring: true
   field_event_room: true
+  field_event_status: true
   field_event_type: true
   field_external_source: true
   field_localist_event_image_url: true
+  field_localist_event_type: true
   field_localist_event_url: true
+  field_localist_ext_event_url: true
   field_localist_ics_url: true
   field_localist_id: true
   field_login_required: true
@@ -59,5 +67,7 @@ hidden:
   field_teaser_media: true
   field_teaser_text: true
   field_teaser_title: true
+  field_ticket_cost: true
+  field_ticket_registration_url: true
   layout_builder__layout: true
   search_api_excerpt: true

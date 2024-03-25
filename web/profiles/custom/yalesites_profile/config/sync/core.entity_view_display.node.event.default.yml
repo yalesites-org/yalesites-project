@@ -11,10 +11,13 @@ dependencies:
     - field.field.node.event.field_event_place
     - field.field.node.event.field_event_recurring
     - field.field.node.event.field_event_room
+    - field.field.node.event.field_event_status
     - field.field.node.event.field_event_type
     - field.field.node.event.field_external_source
     - field.field.node.event.field_localist_event_image_url
+    - field.field.node.event.field_localist_event_type
     - field.field.node.event.field_localist_event_url
+    - field.field.node.event.field_localist_ext_event_url
     - field.field.node.event.field_localist_ics_url
     - field.field.node.event.field_localist_id
     - field.field.node.event.field_login_required
@@ -23,6 +26,8 @@ dependencies:
     - field.field.node.event.field_teaser_media
     - field.field.node.event.field_teaser_text
     - field.field.node.event.field_teaser_title
+    - field.field.node.event.field_ticket_cost
+    - field.field.node.event.field_ticket_registration_url
     - field.field.node.event.layout_builder__layout
     - node.type.event
   module:
@@ -181,6 +186,94 @@ third_party_settings:
                 third_party_settings: {  }
             weight: 12
             additional: {  }
+          20ce85ac-d983-4e5f-9300-8025ee100582:
+            uuid: 20ce85ac-d983-4e5f-9300-8025ee100582
+            region: content
+            configuration:
+              id: 'field_block:node:event:field_localist_event_type'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: entity_reference_label
+                label: above
+                settings:
+                  link: true
+                third_party_settings: {  }
+            weight: 13
+            additional: {  }
+          edabc578-5c8a-443e-921b-006940a096a7:
+            uuid: edabc578-5c8a-443e-921b-006940a096a7
+            region: content
+            configuration:
+              id: 'field_block:node:event:field_ticket_cost'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: string
+                label: above
+                settings:
+                  link_to_entity: false
+                third_party_settings: {  }
+            weight: 14
+            additional: {  }
+          305db884-227f-4bb8-b0e2-fabc11a9233c:
+            uuid: 305db884-227f-4bb8-b0e2-fabc11a9233c
+            region: content
+            configuration:
+              id: 'field_block:node:event:field_ticket_registration_url'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: link
+                label: above
+                settings:
+                  trim_length: 80
+                  url_only: false
+                  url_plain: false
+                  rel: ''
+                  target: ''
+                third_party_settings: {  }
+            weight: 15
+            additional: {  }
+          090d3340-2670-408f-a84e-a06f8f1a72cc:
+            uuid: 090d3340-2670-408f-a84e-a06f8f1a72cc
+            region: content
+            configuration:
+              id: 'field_block:node:event:field_event_status'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: entity_reference_label
+                label: above
+                settings:
+                  link: true
+                third_party_settings: {  }
+            weight: 16
+            additional: {  }
+          126a5cd7-86f1-44f5-84e0-eb9e565b8c25:
+            uuid: 126a5cd7-86f1-44f5-84e0-eb9e565b8c25
+            region: content
+            configuration:
+              id: 'field_block:node:event:field_localist_ext_event_url'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: link
+                label: above
+                settings:
+                  trim_length: 80
+                  url_only: false
+                  url_plain: false
+                  rel: ''
+                  target: ''
+                third_party_settings: {  }
+            weight: 17
+            additional: {  }
         third_party_settings:
           layout_builder_lock:
             lock:
@@ -294,6 +387,14 @@ content:
     third_party_settings: {  }
     weight: 11
     region: content
+  field_event_status:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 20
+    region: content
   field_event_type:
     type: entity_reference_label
     label: hidden
@@ -326,6 +427,14 @@ content:
     third_party_settings: {  }
     weight: 16
     region: content
+  field_localist_event_type:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 17
+    region: content
   field_localist_event_url:
     type: link
     label: above
@@ -338,6 +447,18 @@ content:
     third_party_settings: {  }
     weight: 13
     region: content
+  field_localist_ext_event_url:
+    type: link
+    label: above
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 21
+    region: content
   field_localist_ics_url:
     type: link
     label: above
@@ -349,6 +470,26 @@ content:
       target: ''
     third_party_settings: {  }
     weight: 15
+    region: content
+  field_ticket_cost:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 18
+    region: content
+  field_ticket_registration_url:
+    type: link
+    label: above
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 19
     region: content
 hidden:
   field_event_format: true

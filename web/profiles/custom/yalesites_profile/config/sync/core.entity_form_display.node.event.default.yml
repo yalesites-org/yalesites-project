@@ -11,10 +11,13 @@ dependencies:
     - field.field.node.event.field_event_place
     - field.field.node.event.field_event_recurring
     - field.field.node.event.field_event_room
+    - field.field.node.event.field_event_status
     - field.field.node.event.field_event_type
     - field.field.node.event.field_external_source
     - field.field.node.event.field_localist_event_image_url
+    - field.field.node.event.field_localist_event_type
     - field.field.node.event.field_localist_event_url
+    - field.field.node.event.field_localist_ext_event_url
     - field.field.node.event.field_localist_ics_url
     - field.field.node.event.field_localist_id
     - field.field.node.event.field_login_required
@@ -23,6 +26,8 @@ dependencies:
     - field.field.node.event.field_teaser_media
     - field.field.node.event.field_teaser_text
     - field.field.node.event.field_teaser_title
+    - field.field.node.event.field_ticket_cost
+    - field.field.node.event.field_ticket_registration_url
     - field.field.node.event.layout_builder__layout
     - node.type.event
   module:
@@ -181,6 +186,16 @@ content:
       size: 60
       placeholder: ''
     third_party_settings: {  }
+  field_event_status:
+    type: entity_reference_autocomplete
+    weight: 30
+    region: content
+    settings:
+      match_operator: CONTAINS
+      match_limit: 10
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
   field_event_type:
     type: options_buttons
     weight: 1
@@ -203,9 +218,27 @@ content:
       placeholder_url: ''
       placeholder_title: ''
     third_party_settings: {  }
+  field_localist_event_type:
+    type: entity_reference_autocomplete
+    weight: 27
+    region: content
+    settings:
+      match_operator: CONTAINS
+      match_limit: 10
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
   field_localist_event_url:
     type: link_default
     weight: 23
+    region: content
+    settings:
+      placeholder_url: ''
+      placeholder_title: ''
+    third_party_settings: {  }
+  field_localist_ext_event_url:
+    type: link_default
+    weight: 31
     region: content
     settings:
       placeholder_url: ''
@@ -277,6 +310,22 @@ content:
     settings:
       size: 60
       placeholder: ''
+    third_party_settings: {  }
+  field_ticket_cost:
+    type: string_textfield
+    weight: 28
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  field_ticket_registration_url:
+    type: link_default
+    weight: 29
+    region: content
+    settings:
+      placeholder_url: ''
+      placeholder_title: ''
     third_party_settings: {  }
   path:
     type: path

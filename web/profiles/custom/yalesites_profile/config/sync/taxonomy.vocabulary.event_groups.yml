@@ -1,4 +1,4 @@
-uuid: 0790b3a4-de29-442a-bb4b-0dc40a8a481d
+uuid: 141aac9b-2b16-4cdf-b091-21343ab6dee9
 langcode: en
 status: true
 dependencies:
@@ -27,7 +27,7 @@ third_party_settings:
         destination: default
         url: ''
         external: ''
-name: 'Event Place'
-vid: event_place
-description: 'A vocabulary that connects an event to a place which can contain address, map, contact, and other specific information about that place.'
+name: 'Event Groups'
+vid: event_groups
+description: ''
 weight: 0

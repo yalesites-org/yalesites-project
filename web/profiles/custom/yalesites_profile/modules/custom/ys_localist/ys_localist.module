@@ -20,3 +20,22 @@ function ys_localist_migrate_url(MigrationInterface $migration) {
 
   return $endpointURLs;
 }
+
+/**
+ * Implements hook_cron().
+ */
+function ys_localist_cron() {
+  $config = \Drupal::config('ys_localist.settings');
+  if ($config->get('enable_localist_sync')) {
+
+    $state = \Drupal::state();
+
+    $next_execution_time = $state->get("localist_migrations", 0);
+    $current_time = \Drupal::time()->getRequestTime();
+    if ($current_time > $next_execution_time) {
+      $state->set("localist_migrations", $current_time + 3600);
+      $localistManager = \Drupal::service('ys_localist.manager');
+      $localistManager->runAllMigrations();
+    }
+  }
+}
