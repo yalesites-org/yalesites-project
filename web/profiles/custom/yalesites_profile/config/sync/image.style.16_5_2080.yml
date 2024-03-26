@@ -2,25 +2,16 @@ uuid: 0f2d8725-4a60-4d73-b1f3-6456179c4914
 langcode: en
 status: true
 dependencies:
-  config:
-    - crop.type.banner_16_5
   module:
-    - crop
+    - focal_point
 name: '16_5_2080'
 label: '16:5 (2080)'
 effects:
-  b7294c69-6971-48f4-9859-a1de8155be91:
-    uuid: b7294c69-6971-48f4-9859-a1de8155be91
-    id: crop_crop
-    weight: 1
-    data:
-      crop_type: banner_16_5
-      automatic_crop_provider: null
-  214a9ddb-a4ac-4da2-8d86-4719f7cbaed7:
-    uuid: 214a9ddb-a4ac-4da2-8d86-4719f7cbaed7
-    id: image_scale_and_crop
+  2543a5a3-892e-487c-8f69-2656d9ac3898:
+    uuid: 2543a5a3-892e-487c-8f69-2656d9ac3898
+    id: focal_point_scale_and_crop
     weight: 2
     data:
       width: 2080
       height: 650
-      anchor: center-center
+      crop_type: focal_point

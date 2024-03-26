@@ -2,25 +2,16 @@ uuid: cd767818-12f2-498e-9045-91cf5921c376
 langcode: en
 status: true
 dependencies:
-  config:
-    - crop.type.profile_1_1_
   module:
-    - crop
+    - focal_point
 name: '1_1_500'
 label: '1:1 (500)'
 effects:
-  dee3d107-4247-4fb6-af07-b129fa3474b5:
-    uuid: dee3d107-4247-4fb6-af07-b129fa3474b5
-    id: crop_crop
-    weight: 1
-    data:
-      crop_type: profile_1_1_
-      automatic_crop_provider: null
-  020cb8ff-c370-4002-a26f-ad606ef4b335:
-    uuid: 020cb8ff-c370-4002-a26f-ad606ef4b335
-    id: image_scale_and_crop
-    weight: 2
+  38494fb8-a34c-4e58-95c6-c19278c63924:
+    uuid: 38494fb8-a34c-4e58-95c6-c19278c63924
+    id: focal_point_scale_and_crop
+    weight: -10
     data:
       width: 500
       height: 500
-      anchor: center-center
+      crop_type: focal_point

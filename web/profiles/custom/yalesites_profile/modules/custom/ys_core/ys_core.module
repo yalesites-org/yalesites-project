@@ -148,9 +148,7 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
     if (in_array($block_type_name, $limited_block_types)) {
       $form['#attached']['library'][] = 'ys_core/block_form';
     }
-
   }
-
 }
 
 /**
@@ -174,30 +172,39 @@ function ys_core_preprocess_region(&$variables) {
   $config = \Drupal::config('ys_core.header_settings');
   if ($variables['elements']['#region'] == 'header') {
     $variables['utility_nav__search'] = ($config->get('search')) ? $config->get('search')['enable_search_form'] : NULL;
-
     // Responsive image render array for focus header image.
     if ($focusHeaderImageId = $config->get('focus_header_image')) {
-      $focusHeaderImageMedia = \Drupal::service('entity_type.manager')->getStorage('media')->load($focusHeaderImageId);
-      $fileEntity = \Drupal::service('entity_type.manager')->getStorage('file');
-      $focusHeaderImageFileUri = $fileEntity->load($focusHeaderImageMedia->field_media_image->target_id)->getFileUri();
-      $focusHeaderImageRender = [
-        '#type' => 'responsive_image',
-        '#responsive_image_style_id' => 'background_image_focus_header',
-        '#uri' => $focusHeaderImageFileUri,
-        '#attributes' => [
-          'alt' => $focusHeaderImageMedia->get('field_media_image')->first()->get('alt')->getValue(),
-        ],
-      ];
+      // There are cases where the id is really an array of images over one.
+      // We ensure that there will be only one numeric ID.
+      if (is_numeric($focusHeaderImageId)) {
+        if ($focusHeaderImageMedia = \Drupal::service('entity_type.manager')->getStorage('media')->load($focusHeaderImageId)) {
+          $fileEntity = \Drupal::service('entity_type.manager')->getStorage('file');
+          $focusHeaderImageFileUri = $fileEntity->load($focusHeaderImageMedia->field_media_image->target_id)->getFileUri();
+          $focusHeaderImageRender = [
+            '#type' => 'responsive_image',
+            '#responsive_image_style_id' => 'background_image_focus_header',
+            '#uri' => $focusHeaderImageFileUri,
+            '#attributes' => [
+              'alt' => $focusHeaderImageMedia->get('field_media_image')->first()->get('alt')->getValue(),
+            ],
+          ];
 
-      $path = \Drupal::service('path.current')->getPath();
-      $alias = \Drupal::service('path_alias.manager')->getAliasByPath($path);
-      $frontPage = \Drupal::config('system.site')->get('page.front');
+          $path = \Drupal::service('path.current')->getPath();
+          $alias = \Drupal::service('path_alias.manager')->getAliasByPath($path);
+          $frontPage = \Drupal::config('system.site')->get('page.front');
 
-      // See if the path is the front page.
-      $isFrontPage = ($alias == $frontPage || $path == $frontPage || \Drupal::service('path.matcher')->isFrontPage());
-      $variables['site_header__background_image'] = $isFrontPage ? $focusHeaderImageRender : FALSE;
+          // See if the path is the front page.
+          $isFrontPage = ($alias == $frontPage || $path == $frontPage || \Drupal::service('path.matcher')->isFrontPage());
+          $variables['site_header__background_image'] = $isFrontPage ? $focusHeaderImageRender : FALSE;
+        }
+        else {
+          _ys_core_clear_focus_header_image_config('ys_core.header_settings');
+        }
+      }
+      else {
+        _ys_core_clear_focus_header_image_config('ys_core.header_settings');
+      }
     }
-
   }
 }
 
@@ -253,6 +260,7 @@ function ys_core_preprocess_menu(&$variables) {
           $nodeId = $routeParameters['node'];
 
           if ($nodeId) {
+            /** @var \Drupal\node\Entity\Node $node */
             $node = \Drupal::entityTypeManager()->getStorage('node')->load($nodeId);
 
             if ($node) {
@@ -264,10 +272,8 @@ function ys_core_preprocess_menu(&$variables) {
 
       // Add cloned item to the beginning of the menu.
       array_unshift($menuItem['below'], $clonedMenuItem);
-
     }
   }
-
 }
 
 /**
@@ -445,10 +451,22 @@ function ys_core_get_block_type(&$form, &$form_state) {
   // inline_block:BLOCK_TYPE_NAME.
   if (strpos($inline_block_type_name, ':') !== FALSE) {
     $block_type_name = explode(':', $inline_block_type_name)[1];
+    // While global block adds have this kind of inline block type name,
+    // it's by UUID.
+    if (strlen($block_type_name) == 36) {
+      $block_content_manager = Drupal::entityTypeManager()
+        ->getStorage('block_content');
+      $block_content = $block_content_manager->loadByProperties(['uuid' => $block_type_name]);
+      $block_type_name = reset($block_content)->bundle();
+    }
   }
   // Otherwise, attempt to get it the original way if it exists.
   elseif (isset($form['settings']['block_form'])) {
     $block_type_name = $form['settings']['block_form']['#block']->bundle();
+  }
+  // If we're using reusable blocks, this is how we can get the block type.
+  elseif (isset($form['block_form']['#block'])) {
+    $block_type_name = $form['block_form']['#block']->bundle();
   }
   // If we can't find it, make it something that will fail any future checks.
   else {
@@ -464,4 +482,25 @@ function ys_core_get_block_type(&$form, &$form_state) {
 function ys_core_preprocess_html(&$variables) {
   // Adds the content type in a class to support specific content type styling.
   $variables['attributes']['class'][] = isset($variables['node_type']) ? "ys-content-type-{$variables['node_type']}" : NULL;
+}
+
+/**
+ * Helper function to clear the focus header image config.
+ *
+ * @param string $configName
+ *   The name of the config to clear the focus header on.
+ */
+function _ys_core_clear_focus_header_image_config($configName) {
+  $config = \Drupal::configFactory()->getEditable($configName);
+  $config->clear('focus_header_image')->save();
+
+  $headerSettingsPath = Url::fromRoute('ys_core.admin_header_settings')->toString();
+  $message = t(
+    'Note, the focus header image has been deleted.  You may set a new one in the <a href=":header_settings_path">header settings form<a>.',
+    [
+      ':header_settings_path' => $headerSettingsPath,
+    ]
+  );
+
+  \Drupal::messenger()->addError($message);
 }
