@@ -168,7 +168,7 @@
       "drupal/linkit": {
         "Add phone number matcher https://www.drupal.org/project/linkit/issues/3273630": "https://git.drupalcode.org/project/linkit/-/merge_requests/36.diff",
         "Fix linkit autocomplete alias selection https://www.drupal.org/project/linkit/issues/2877535": "https://www.drupal.org/files/issues/2023-10-05/linkit-2877535-64.patch",
-        "Decode file URLs": "patches/linkit/linkit-decode-url-in-helper.patch"
+        "Decode file URLs https://www.drupal.org/project/linkit/issues/3348154": "patches/linkit/linkit-urldecode-files-3348154-12.patch"
       },
       "drupal/quick_node_clone": {
         "Fix cloning of inline blocks and paragraphs: https://www.drupal.org/project/quick_node_clone/issues/3100117": "https://www.drupal.org/files/issues/2023-04-25/quick-node-clone--inline-blocks--3100117-32.patch"
