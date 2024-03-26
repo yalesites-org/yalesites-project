@@ -2,16 +2,25 @@ uuid: ca64aeaa-66be-473d-81fe-5152776d1699
 langcode: en
 status: true
 dependencies:
+  config:
+    - crop.type.card_3_2
   module:
-    - focal_point
+    - crop
 name: '3_2_1440'
 label: '3:2 (1440)'
 effects:
-  295732ae-e107-4bca-9de2-0a9021bf714a:
-    uuid: 295732ae-e107-4bca-9de2-0a9021bf714a
-    id: focal_point_scale_and_crop
+  6a3ba4e6-54ac-497c-8634-0b9e0b91a405:
+    uuid: 6a3ba4e6-54ac-497c-8634-0b9e0b91a405
+    id: crop_crop
+    weight: 1
+    data:
+      crop_type: card_3_2
+      automatic_crop_provider: null
+  79b88390-26c1-4322-bc44-0a2522f1347e:
+    uuid: 79b88390-26c1-4322-bc44-0a2522f1347e
+    id: image_scale_and_crop
     weight: 2
     data:
       width: 1440
       height: 960
-      crop_type: focal_point
+      anchor: center-center

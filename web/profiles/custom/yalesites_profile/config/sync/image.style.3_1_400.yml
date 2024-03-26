@@ -2,16 +2,25 @@ uuid: 36d76d1d-fd7a-4deb-94e8-87b4f059b78b
 langcode: en
 status: true
 dependencies:
+  config:
+    - crop.type.logo_horizontal_3_1
   module:
-    - focal_point
+    - crop
 name: '3_1_400'
 label: '3:1 (400)'
 effects:
-  2be14fa6-1e8d-4d31-8aa9-9117ea6a7b34:
-    uuid: 2be14fa6-1e8d-4d31-8aa9-9117ea6a7b34
-    id: focal_point_scale_and_crop
+  06a2fdc7-3eb2-437b-b96e-2b06edb78127:
+    uuid: 06a2fdc7-3eb2-437b-b96e-2b06edb78127
+    id: crop_crop
+    weight: 1
+    data:
+      crop_type: logo_horizontal_3_1
+      automatic_crop_provider: null
+  1779826d-ec52-4a15-b9e1-3ad08b1549a3:
+    uuid: 1779826d-ec52-4a15-b9e1-3ad08b1549a3
+    id: image_scale_and_crop
     weight: 2
     data:
       width: 400
       height: 133
-      crop_type: focal_point
+      anchor: center-center
