@@ -25,6 +25,7 @@ module:
   config_filter: 0
   config_ignore: 0
   config_split: 0
+  content_lock: 0
   contextual: 0
   crop: 0
   ctools: 0
@@ -67,6 +68,7 @@ module:
   libraries: 0
   link: 0
   linkit: 0
+  lock_layout_builder: 0
   mailchimp_transactional: 0
   mailsystem: 0
   markup: 0
