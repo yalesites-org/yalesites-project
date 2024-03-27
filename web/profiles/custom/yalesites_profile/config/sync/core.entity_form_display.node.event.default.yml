@@ -18,6 +18,7 @@ dependencies:
     - field.field.node.event.field_localist_event_type
     - field.field.node.event.field_localist_event_url
     - field.field.node.event.field_localist_ext_event_url
+    - field.field.node.event.field_localist_group
     - field.field.node.event.field_localist_ics_url
     - field.field.node.event.field_localist_id
     - field.field.node.event.field_login_required
@@ -243,6 +244,16 @@ content:
     settings:
       placeholder_url: ''
       placeholder_title: ''
+    third_party_settings: {  }
+  field_localist_group:
+    type: entity_reference_autocomplete
+    weight: 32
+    region: content
+    settings:
+      match_operator: CONTAINS
+      match_limit: 10
+      size: 60
+      placeholder: ''
     third_party_settings: {  }
   field_localist_ics_url:
     type: link_default
