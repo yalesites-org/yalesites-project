@@ -19,7 +19,6 @@ dependencies:
     - field.field.node.event.field_localist_event_image_url
     - field.field.node.event.field_localist_event_type
     - field.field.node.event.field_localist_event_url
-    - field.field.node.event.field_localist_ext_event_url
     - field.field.node.event.field_localist_group
     - field.field.node.event.field_localist_ics_url
     - field.field.node.event.field_localist_id
@@ -109,7 +108,6 @@ hidden:
   field_localist_event_image_url: true
   field_localist_event_type: true
   field_localist_event_url: true
-  field_localist_ext_event_url: true
   field_localist_group: true
   field_localist_ics_url: true
   field_localist_id: true

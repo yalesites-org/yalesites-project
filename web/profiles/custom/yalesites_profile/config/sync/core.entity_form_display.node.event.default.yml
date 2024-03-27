@@ -18,7 +18,6 @@ dependencies:
     - field.field.node.event.field_localist_event_image_url
     - field.field.node.event.field_localist_event_type
     - field.field.node.event.field_localist_event_url
-    - field.field.node.event.field_localist_ext_event_url
     - field.field.node.event.field_localist_group
     - field.field.node.event.field_localist_ics_url
     - field.field.node.event.field_localist_id
@@ -53,34 +52,18 @@ third_party_settings:
         - field_teaser_media
       label: Teaser
       region: content
-      parent_name: ''
-      weight: 4
-      format_type: fieldset
+      parent_name: group_event_tabs
+      weight: 3
+      format_type: tab
       format_settings:
         classes: ''
         show_empty_fields: false
         id: ''
+        formatter: closed
         description: ''
         required_fields: true
-        formatter: closed
         open: true
         weight: -10
-    group_logistics:
-      children:
-        - field_event_cta
-        - field_event_date
-      label: Logistics
-      region: content
-      parent_name: ''
-      weight: 3
-      format_type: fieldset
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        description: ''
-        required_fields: true
-        formatter: closed
     group_publishing_settings:
       children:
         - field_login_required
@@ -88,7 +71,7 @@ third_party_settings:
       label: 'Publishing Settings'
       region: content
       parent_name: ''
-      weight: 8
+      weight: 9
       format_type: details_sidebar
       format_settings:
         classes: ''
@@ -104,7 +87,7 @@ third_party_settings:
       label: 'External Link'
       region: content
       parent_name: ''
-      weight: 10
+      weight: 11
       format_type: details_sidebar
       format_settings:
         classes: ''
@@ -114,6 +97,99 @@ third_party_settings:
         description: ''
         required_fields: true
         weight: 0
+    group_event_tabs:
+      children:
+        - group_basic_info
+        - group_teaser
+        - group_classifications
+        - group_tickets
+        - group_localist_links
+      label: 'Event tabs'
+      region: content
+      parent_name: ''
+      weight: 0
+      format_type: tabs
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        direction: horizontal
+        width_breakpoint: 640
+    group_basic_info:
+      children:
+        - title
+        - field_event_description
+        - field_event_cta
+        - field_event_date
+        - field_event_recurring
+        - field_localist_event_experience
+        - field_event_place
+        - field_event_room
+      label: 'Basic info'
+      region: content
+      parent_name: group_event_tabs
+      weight: 2
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: closed
+        description: ''
+        required_fields: true
+    group_classifications:
+      children:
+        - field_tags
+        - field_category
+        - field_localist_event_type
+        - field_localist_group
+      label: Classifications
+      region: content
+      parent_name: group_event_tabs
+      weight: 4
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: closed
+        description: ''
+        required_fields: true
+    group_localist_links:
+      children:
+        - field_localist_id
+        - field_event_status
+        - field_localist_event_url
+        - field_localist_event_image_url
+        - field_localist_ics_url
+      label: 'Localist data'
+      region: content
+      parent_name: group_event_tabs
+      weight: 6
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: closed
+        description: ''
+        required_fields: true
+    group_tickets:
+      children:
+        - field_ticket_cost
+        - field_ticket_registration_url
+      label: Tickets
+      region: content
+      parent_name: group_event_tabs
+      weight: 5
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: closed
+        description: ''
+        required_fields: true
 id: node.event.default
 targetEntityType: node
 bundle: event
@@ -121,7 +197,7 @@ mode: default
 content:
   field_category:
     type: chosen_select
-    weight: 1
+    weight: 23
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -156,46 +232,38 @@ content:
     third_party_settings: {  }
   field_event_description:
     type: text_textarea
-    weight: 14
+    weight: 2
     region: content
     settings:
       rows: 5
       placeholder: ''
     third_party_settings: {  }
   field_event_place:
-    type: entity_reference_autocomplete
-    weight: 13
+    type: chosen_select
+    weight: 7
     region: content
-    settings:
-      match_operator: CONTAINS
-      match_limit: 10
-      size: 60
-      placeholder: ''
+    settings: {  }
     third_party_settings: {  }
   field_event_recurring:
     type: boolean_checkbox
-    weight: 16
+    weight: 5
     region: content
     settings:
       display_label: true
     third_party_settings: {  }
   field_event_room:
     type: string_textfield
-    weight: 15
+    weight: 8
     region: content
     settings:
       size: 60
       placeholder: ''
     third_party_settings: {  }
   field_event_status:
-    type: entity_reference_autocomplete
-    weight: 23
+    type: chosen_select
+    weight: 14
     region: content
-    settings:
-      match_operator: CONTAINS
-      match_limit: 10
-      size: 60
-      placeholder: ''
+    settings: {  }
     third_party_settings: {  }
   field_external_source:
     type: link_default
@@ -206,34 +274,40 @@ content:
       placeholder_title: ''
     third_party_settings: {  }
   field_localist_event_experience:
-    type: entity_reference_autocomplete
-    weight: 26
+    type: chosen_select
+    weight: 6
     region: content
-    settings:
-      match_operator: CONTAINS
-      match_limit: 10
-      size: 60
-      placeholder: ''
+    settings: {  }
     third_party_settings: {  }
   field_localist_event_image_url:
     type: link_default
-    weight: 19
+    weight: 16
     region: content
     settings:
       placeholder_url: ''
       placeholder_title: ''
     third_party_settings: {  }
   field_localist_event_type:
-    type: entity_reference_autocomplete
-    weight: 20
+    type: chosen_select
+    weight: 24
     region: content
-    settings:
-      match_operator: CONTAINS
-      match_limit: 10
-      size: 60
-      placeholder: ''
+    settings: {  }
     third_party_settings: {  }
   field_localist_event_url:
+    type: link_default
+    weight: 15
+    region: content
+    settings:
+      placeholder_url: ''
+      placeholder_title: ''
+    third_party_settings: {  }
+  field_localist_group:
+    type: chosen_select
+    weight: 25
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_localist_ics_url:
     type: link_default
     weight: 17
     region: content
@@ -241,35 +315,9 @@ content:
       placeholder_url: ''
       placeholder_title: ''
     third_party_settings: {  }
-  field_localist_ext_event_url:
-    type: link_default
-    weight: 24
-    region: content
-    settings:
-      placeholder_url: ''
-      placeholder_title: ''
-    third_party_settings: {  }
-  field_localist_group:
-    type: entity_reference_autocomplete
-    weight: 25
-    region: content
-    settings:
-      match_operator: CONTAINS
-      match_limit: 10
-      size: 60
-      placeholder: ''
-    third_party_settings: {  }
-  field_localist_ics_url:
-    type: link_default
-    weight: 18
-    region: content
-    settings:
-      placeholder_url: ''
-      placeholder_title: ''
-    third_party_settings: {  }
   field_localist_id:
     type: string_textfield
-    weight: 12
+    weight: 13
     region: content
     settings:
       size: 60
@@ -284,7 +332,7 @@ content:
     third_party_settings: {  }
   field_metatags:
     type: metatag_firehose
-    weight: 7
+    weight: 8
     region: content
     settings:
       sidebar: true
@@ -292,7 +340,7 @@ content:
     third_party_settings: {  }
   field_tags:
     type: chosen_select
-    weight: 2
+    weight: 22
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -328,7 +376,7 @@ content:
     third_party_settings: {  }
   field_ticket_cost:
     type: string_textfield
-    weight: 21
+    weight: 22
     region: content
     settings:
       size: 60
@@ -336,7 +384,7 @@ content:
     third_party_settings: {  }
   field_ticket_registration_url:
     type: link_default
-    weight: 22
+    weight: 23
     region: content
     settings:
       placeholder_url: ''
@@ -344,18 +392,18 @@ content:
     third_party_settings: {  }
   path:
     type: path
-    weight: 5
+    weight: 6
     region: content
     settings: {  }
     third_party_settings: {  }
   simple_sitemap:
-    weight: 11
+    weight: 12
     region: content
     settings: {  }
     third_party_settings: {  }
   status:
     type: boolean_checkbox
-    weight: 9
+    weight: 10
     region: content
     settings:
       display_label: true
@@ -369,14 +417,14 @@ content:
     third_party_settings: {  }
   title:
     type: string_textfield
-    weight: 0
+    weight: 1
     region: content
     settings:
       size: 60
       placeholder: ''
     third_party_settings: {  }
   url_redirects:
-    weight: 6
+    weight: 7
     region: content
     settings: {  }
     third_party_settings: {  }

@@ -9,7 +9,7 @@ id: node.event.field_event_recurring
 field_name: field_event_recurring
 entity_type: node
 bundle: event
-label: 'Event recurring'
+label: 'Recurring Event'
 description: ''
 required: false
 translatable: false

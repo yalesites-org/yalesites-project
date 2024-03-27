@@ -10,7 +10,7 @@ id: node.event.field_localist_group
 field_name: field_localist_group
 entity_type: node
 bundle: event
-label: 'Localist groups'
+label: Groups
 description: ''
 required: false
 translatable: false

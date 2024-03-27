@@ -136,7 +136,8 @@ process:
     plugin: migration_lookup
     migration: localist_status
     source: event_status
-  field_localist_ext_event_url/uri: external_url
+  field_event_cta/uri: external_url
+  field_event_cta/title: external_url
   field_localist_group:
     -
       plugin: extract_localist_groups
@@ -157,7 +158,7 @@ destination:
     - field_localist_event_url
     - field_localist_event_image_url
     - field_localist_ics_url
-    - field_event_date
+    - field_localist_event_experience
     - field_event_type
     - field_tags
     - field_event_place
@@ -165,7 +166,6 @@ destination:
     - field_ticket_cost
     - field_ticket_registration_url
     - field_event_status
-    - field_localist_ext_event_url
 migration_dependencies:
   required:
     - localist_experiences

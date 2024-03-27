@@ -10,7 +10,7 @@ id: node.event.field_event_type
 field_name: field_event_type
 entity_type: node
 bundle: event
-label: 'Event Experience'
+label: Experience
 description: 'In-person, online, or hybrid'
 required: false
 translatable: false
