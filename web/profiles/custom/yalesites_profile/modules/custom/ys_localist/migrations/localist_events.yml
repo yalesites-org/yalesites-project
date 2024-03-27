@@ -61,6 +61,10 @@ source:
       label: 'Localist filters'
       selector: localist_data/filters
     -
+      name: localist_tags
+      label: 'Tags'
+      selector: localist_data/tags
+    -
       name: ticket_cost
       label: 'Ticket cost'
       selector: localist_data/ticket_cost
@@ -76,6 +80,10 @@ source:
       name: external_url
       label: 'Event external URL'
       selector: localist_data/url
+    -
+      name: localist_groups
+      label: 'Localist groups'
+      selector: localist_data/groups
 
   ids:
     event_id:
@@ -99,6 +107,13 @@ process:
     plugin: migration_lookup
     migration: localist_experiences
     source: experience
+  field_tags:
+    plugin: entity_generate
+    entity_type: taxonomy_term
+    value_key: name
+    bundle_key: vid
+    bundle: tags
+    source: localist_tags
   field_event_place:
     plugin: entity_lookup
     source: place_name
@@ -122,6 +137,14 @@ process:
     migration: localist_status
     source: event_status
   field_localist_ext_event_url/uri: external_url
+  field_localist_group:
+    -
+      plugin: extract_localist_groups
+      source: localist_groups
+    -
+      plugin: migration_lookup
+      migration: localist_groups
+      no_stub: true
 
 destination:
   plugin: 'entity:node'
@@ -136,6 +159,7 @@ destination:
     - field_localist_ics_url
     - field_event_date
     - field_event_type
+    - field_tags
     - field_event_place
     - field_localist_event_type
     - field_ticket_cost
