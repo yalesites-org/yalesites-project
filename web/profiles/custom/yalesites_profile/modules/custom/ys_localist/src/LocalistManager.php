@@ -247,13 +247,16 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
         $migration->setStatus(MigrationInterface::STATUS_IDLE);
       }
 
+      if ($this->localistConfig->get('delete_old_events')) {
+        // Runs migration with the --sync flag.
+        $migration->set('syncSource', TRUE);
+      }
+
       /*
        * @todo Possibly implement the following flags, if needed.
        * Runs migration with the --update flag.
        * $migration_update = $migration->getIdMap();
        * $migration_update->prepareUpdate();
-       * Runs migration with the --sync flag.
-       * $migration->set('syncSource', TRUE);
        */
 
       $message = new MigrateMessage();

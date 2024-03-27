@@ -123,6 +123,13 @@ class LocalistSettings extends ConfigFormBase {
       ];
     }
 
+    $form['delete_old_events'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Delete old events'),
+      '#description' => $this->t('If an event is no longer in the Localist feed (all dates have passed), delete the event in Drupal.'),
+      '#default_value' => $config->get('delete_old_events') ?: FALSE,
+    ];
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -159,6 +166,7 @@ class LocalistSettings extends ConfigFormBase {
       ->set('enable_localist_sync', $form_state->getValue('enable_localist_sync'))
       ->set('localist_endpoint', rtrim($form_state->getValue('localist_endpoint'), "/"))
       ->set('localist_group', $form_state->getValue('localist_group'))
+      ->set('delete_old_events', $form_state->getValue('delete_old_events'))
       ->save();
 
     // Generate groups if not already done.

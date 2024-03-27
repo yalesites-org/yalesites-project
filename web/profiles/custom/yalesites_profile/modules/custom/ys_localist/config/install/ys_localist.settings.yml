@@ -1,3 +1,4 @@
 enable_localist_sync: FALSE
 localist_endpoint: ''
 localist_group: ''
+delete_old_events: FALSE
