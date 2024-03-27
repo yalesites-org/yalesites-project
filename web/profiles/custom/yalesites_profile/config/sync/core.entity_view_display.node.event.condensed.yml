@@ -15,6 +15,7 @@ dependencies:
     - field.field.node.event.field_event_status
     - field.field.node.event.field_event_type
     - field.field.node.event.field_external_source
+    - field.field.node.event.field_localist_event_experience
     - field.field.node.event.field_localist_event_image_url
     - field.field.node.event.field_localist_event_type
     - field.field.node.event.field_localist_event_url
@@ -107,6 +108,7 @@ hidden:
   field_event_recurring: true
   field_event_room: true
   field_event_status: true
+  field_localist_event_experience: true
   field_localist_event_image_url: true
   field_localist_event_type: true
   field_localist_event_url: true

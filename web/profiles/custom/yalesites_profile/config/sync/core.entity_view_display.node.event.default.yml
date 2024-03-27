@@ -14,6 +14,7 @@ dependencies:
     - field.field.node.event.field_event_status
     - field.field.node.event.field_event_type
     - field.field.node.event.field_external_source
+    - field.field.node.event.field_localist_event_experience
     - field.field.node.event.field_localist_event_image_url
     - field.field.node.event.field_localist_event_type
     - field.field.node.event.field_localist_event_url
@@ -291,6 +292,22 @@ third_party_settings:
                 third_party_settings: {  }
             weight: 18
             additional: {  }
+          b0e0a1a4-2044-4058-aede-69d9d7358b6c:
+            uuid: b0e0a1a4-2044-4058-aede-69d9d7358b6c
+            region: content
+            configuration:
+              id: 'field_block:node:event:field_localist_event_experience'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: entity_reference_label
+                label: above
+                settings:
+                  link: true
+                third_party_settings: {  }
+            weight: 19
+            additional: {  }
         third_party_settings:
           layout_builder_lock:
             lock:
@@ -431,6 +448,14 @@ content:
       target: ''
     third_party_settings: {  }
     weight: 4
+    region: content
+  field_localist_event_experience:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 23
     region: content
   field_localist_event_image_url:
     type: link

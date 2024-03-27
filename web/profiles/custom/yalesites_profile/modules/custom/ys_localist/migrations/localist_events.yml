@@ -103,7 +103,7 @@ process:
   field_localist_ics_url/uri: localist_ics_url
   field_event_date: event_instances
   field_event_recurring: recurring
-  field_event_type:
+  field_localist_event_experience:
     plugin: migration_lookup
     migration: localist_experiences
     source: experience
