@@ -2,4 +2,4 @@ services:
   # Service for interacting with Localist sync and configuration.
   ys_localist.manager:
     class: Drupal\ys_localist\LocalistManager
-    arguments: ['@config.factory', '@http_client', '@entity_type.manager', '@plugin.manager.migration', '@module_handler', '@datetime.time']
+    arguments: ['@config.factory', '@http_client', '@entity_type.manager', '@plugin.manager.migration', '@module_handler', '@datetime.time', '@messenger']

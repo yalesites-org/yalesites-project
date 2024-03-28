@@ -69,9 +69,11 @@ class RunMigrations extends ControllerBase implements ContainerInjectionInterfac
     if ($this->localistConfig->get('enable_localist_sync')) {
 
       $messageData = $this->localistManager->runAllMigrations();
-      $eventsImported = $messageData['localist_events']['imported'];
-      $message = "Synchronized $eventsImported events.";
-      $this->messenger()->addStatus($message);
+      if ($messageData) {
+        $eventsImported = $messageData['localist_events']['imported'];
+        $message = "Synchronized $eventsImported events.";
+        $this->messenger()->addStatus($message);
+      }
     }
     else {
       $message = "Localist sync is not enabled. No sync was performed.";

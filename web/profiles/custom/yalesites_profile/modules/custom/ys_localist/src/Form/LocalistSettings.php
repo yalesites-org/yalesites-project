@@ -102,7 +102,7 @@ class LocalistSettings extends ConfigFormBase {
       '#type' => 'url',
       '#title' => $this->t('Localist endpoint base URL'),
       '#description' => $this->t('Ex: https://yale.enterprise.localist.com'),
-      '#default_value' => $config->get('localist_endpoint') ?: NULL,
+      '#default_value' => $config->get('localist_endpoint') ?: 'https://yale.enterprise.localist.com',
     ];
 
     // Only show the group picker if the group migration has been run.
@@ -122,13 +122,12 @@ class LocalistSettings extends ConfigFormBase {
         '#required' => TRUE,
       ];
     }
-
-    $form['delete_old_events'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Delete old events'),
-      '#description' => $this->t('If an event is no longer in the Localist feed (all dates have passed), delete the event in Drupal.'),
-      '#default_value' => $config->get('delete_old_events') ?: FALSE,
-    ];
+    else {
+      $form['no_group_sync_message'] = [
+        '#type' => 'markup',
+        '#markup' => '<p>Groups have no yet been synchronized. Save this form to create groups.',
+      ];
+    }
 
     return parent::buildForm($form, $form_state);
   }
@@ -166,7 +165,6 @@ class LocalistSettings extends ConfigFormBase {
       ->set('enable_localist_sync', $form_state->getValue('enable_localist_sync'))
       ->set('localist_endpoint', rtrim($form_state->getValue('localist_endpoint'), "/"))
       ->set('localist_group', $form_state->getValue('localist_group'))
-      ->set('delete_old_events', $form_state->getValue('delete_old_events'))
       ->save();
 
     // Generate groups if not already done.

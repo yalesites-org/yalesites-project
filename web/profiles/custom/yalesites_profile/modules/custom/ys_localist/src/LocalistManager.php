@@ -8,6 +8,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\migrate\MigrateExecutable;
 use Drupal\migrate\MigrateMessage;
 use Drupal\migrate\Plugin\MigrationInterface;
@@ -82,6 +83,13 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
   protected $time;
 
   /**
+   * Drupal messenger.
+   *
+   * @var \Drupal\Core\Messenger\MessengerInterface
+   */
+  protected $messenger;
+
+  /**
    * Constructs a new LocalistManager object.
    */
   public function __construct(
@@ -91,6 +99,7 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
     MigrationPluginManager $migration_manager,
     ModuleHandler $module_handler,
     TimeInterface $time,
+    MessengerInterface $messenger,
     ) {
     $this->localistConfig = $config_factory->get('ys_localist.settings');
     $this->endpointBase = $this->localistConfig->get('localist_endpoint');
@@ -99,6 +108,7 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
     $this->migrationManager = $migration_manager;
     $this->moduleHandler = $module_handler;
     $this->time = $time;
+    $this->messenger = $messenger;
   }
 
   /**
@@ -112,6 +122,7 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
       $container->get('plugin.manager.migration'),
       $container->get('module_handler'),
       $container->get('datetime.time'),
+      $container->get('messenger'),
     );
   }
 
@@ -132,10 +143,7 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
         // Group ID is required.
         $groupId = $this->getGroupTaxonomyEntity();
 
-        if (!$groupId) {
-          $endpointsWithParams[] = '';
-        }
-        else {
+        if ($groupId) {
           $eventsURL = "$this->endpointBase/api/2/events";
 
           // Gets the latest version from the API by changing the URL each time.
@@ -220,13 +228,19 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
    *   Array of status of all migrations run.
    */
   public function runAllMigrations() {
-    foreach (self::LOCALIST_MIGRATIONS as $migration) {
-      $this->runMigration($migration);
-      $messageData[$migration] = [
-        'imported' => $this->getMigrationStatus($migration),
-      ];
+    if ($this->getEndpointUrls('events')) {
+      foreach (self::LOCALIST_MIGRATIONS as $migration) {
+        $this->runMigration($migration);
+        $messageData[$migration] = [
+          'imported' => $this->getMigrationStatus($migration),
+        ];
+      }
+      return $messageData;
     }
-    return $messageData;
+    else {
+      $this->messenger()->addError('Localist endpoint not configured correctly. No events imported.');
+    }
+
   }
 
   /**
@@ -239,17 +253,12 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
     // Loop over the list of the migrations and check if they require
     // execution.
     // Prevent non-existent migrations from breaking cron.
-    $migration = $this->migrationManager->createInstance($migration);
-    if ($migration) {
+    $migrationInstance = $this->migrationManager->createInstance($migration);
+    if ($migrationInstance) {
       // Check if the migration status is IDLE, if not, make it so.
-      $status = $migration->getStatus();
+      $status = $migrationInstance->getStatus();
       if ($status !== MigrationInterface::STATUS_IDLE) {
-        $migration->setStatus(MigrationInterface::STATUS_IDLE);
-      }
-
-      if ($this->localistConfig->get('delete_old_events')) {
-        // Runs migration with the --sync flag.
-        $migration->set('syncSource', TRUE);
+        $migrationInstance->setStatus(MigrationInterface::STATUS_IDLE);
       }
 
       /*
@@ -257,10 +266,14 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
        * Runs migration with the --update flag.
        * $migration_update = $migration->getIdMap();
        * $migration_update->prepareUpdate();
+       * Runs migration with the --sync flag.
+       * The problem here is if editor adds layout builder, this will wipe those
+       * changes out before recreating. So, this not be a good idea.
+       * $migrationInstance->set('syncSource', TRUE);
        */
 
       $message = new MigrateMessage();
-      $executable = new MigrateExecutable($migration, $message);
+      $executable = new MigrateExecutable($migrationInstance, $message);
       $executable->import();
 
       /* If using migrate_plus module, update the migrate_last_imported value
@@ -269,7 +282,7 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
 
       if ($this->moduleHandler->moduleExists('migrate_plus')) {
         $migrate_last_imported_store = $this->keyValue('migrate_last_imported');
-        $migrate_last_imported_store->set($migration->id(), round($this->time->getCurrentMicroTime() * 1000));
+        $migrate_last_imported_store->set($migrationInstance->id(), round($this->time->getCurrentMicroTime() * 1000));
       }
     }
   }
@@ -291,19 +304,42 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
    * Imports groups, if specific criteria are met.
    */
   public function generateGroups() {
-    if (
-      $this->localistConfig->get('enable_localist_sync') &&
-      $this->localistConfig->get('localist_endpoint') &&
-      $this->getMigrationStatus('localist_groups') == 0
+    if ($this->localistConfig->get('enable_localist_sync')) {
+      if (
+        $this->localistConfig->get('localist_endpoint') &&
+        $this->getMigrationStatus('localist_groups') == 0 &&
+        $this->checkGroupsEndpoint()
       ) {
-      $this->runMigration('localist_groups');
-      if ($this->getMigrationStatus('localist_groups') == 0) {
-        $this->messenger()->addError($this->t("Error getting groups."));
-      }
-      else {
-        $this->messenger()->addStatus($this->t("Localist groups successfully imported."));
+        $this->runMigration('localist_groups');
+        if ($this->getMigrationStatus('localist_groups') == 0) {
+          $this->messenger()->addError($this->t("Error getting groups. Check that the endpoint is correct."));
+        }
+        else {
+          $this->messenger()->addStatus($this->t("Localist groups successfully imported."));
+        }
       }
     }
+  }
+
+  /**
+   * Checks the group endpoint to make sure we are receiving a JSON feed.
+   */
+  private function checkGroupsEndpoint() {
+    $returnVal = FALSE;
+    if ($endpoint = $this->localistConfig->get('localist_endpoint')) {
+      $endpointUrl = $endpoint . "/api/2/groups";
+      try {
+        $response = $this->httpClient->get($endpointUrl);
+        $returnVal = str_contains($response->getHeader("Content-Type")[0], 'json') ? TRUE : FALSE;
+      }
+      catch (\Throwable $th) {
+
+      }
+
+    }
+
+    return $returnVal;
+
   }
 
 }
