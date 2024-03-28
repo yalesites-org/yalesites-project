@@ -1,0 +1,6 @@
+ys_localist.settings:
+  title: 'Localist settings'
+  description: 'Configure Localist sync settings'
+  route_name: ys_localist.settings
+  parent: ys_core.admin_yalesites
+  weight: 0

@@ -1,0 +1,19 @@
+uuid: 70014b66-9129-4cdd-b77f-358b4dded11b
+langcode: en
+status: true
+dependencies:
+  module:
+    - taxonomy
+    - text
+id: taxonomy_term.field_place_description
+field_name: field_place_description
+entity_type: taxonomy_term
+type: text_long
+settings: {  }
+module: text
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

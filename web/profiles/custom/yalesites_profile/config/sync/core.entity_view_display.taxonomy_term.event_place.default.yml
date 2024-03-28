@@ -1,0 +1,132 @@
+uuid: 0724803f-1b6e-4994-8a49-b7b78e37bd02
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.taxonomy_term.event_place.field_address
+    - field.field.taxonomy_term.event_place.field_hours
+    - field.field.taxonomy_term.event_place.field_latitude
+    - field.field.taxonomy_term.event_place.field_localist_id
+    - field.field.taxonomy_term.event_place.field_longitude
+    - field.field.taxonomy_term.event_place.field_parking
+    - field.field.taxonomy_term.event_place.field_phone
+    - field.field.taxonomy_term.event_place.field_place_description
+    - field.field.taxonomy_term.event_place.field_place_image_url
+    - field.field.taxonomy_term.event_place.field_place_localist_url
+    - field.field.taxonomy_term.event_place.field_place_url
+    - taxonomy.vocabulary.event_place
+  module:
+    - address
+    - link
+    - text
+id: taxonomy_term.event_place.default
+targetEntityType: taxonomy_term
+bundle: event_place
+mode: default
+content:
+  description:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_address:
+    type: address_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  field_hours:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 9
+    region: content
+  field_latitude:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 3
+    region: content
+  field_localist_id:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_longitude:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 4
+    region: content
+  field_parking:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 10
+    region: content
+  field_phone:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 8
+    region: content
+  field_place_description:
+    type: text_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 5
+    region: content
+  field_place_image_url:
+    type: link
+    label: above
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 7
+    region: content
+  field_place_localist_url:
+    type: link
+    label: above
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 11
+    region: content
+  field_place_url:
+    type: link
+    label: above
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 6
+    region: content
+hidden:
+  search_api_excerpt: true

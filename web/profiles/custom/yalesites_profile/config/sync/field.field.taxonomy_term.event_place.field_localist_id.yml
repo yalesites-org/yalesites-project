@@ -1,0 +1,19 @@
+uuid: 50a21c55-a645-4f88-8e66-39ac78500b32
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.taxonomy_term.field_localist_id
+    - taxonomy.vocabulary.event_place
+id: taxonomy_term.event_place.field_localist_id
+field_name: field_localist_id
+entity_type: taxonomy_term
+bundle: event_place
+label: 'Localist ID'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

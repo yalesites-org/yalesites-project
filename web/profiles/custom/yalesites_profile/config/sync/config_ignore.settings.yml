@@ -6,3 +6,4 @@ ignored_config_entities:
   - 'ys_alert.settings:alert'
   - 'ys_core*'
   - ys_themes.theme_settings
+  - 'ys_localist*'

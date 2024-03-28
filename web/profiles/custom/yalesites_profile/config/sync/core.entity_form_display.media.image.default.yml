@@ -4,32 +4,32 @@ status: true
 dependencies:
   config:
     - field.field.media.image.field_media_image
-    - image.style.crop_thumbnail
     - media.type.image
   module:
-    - focal_point
     - hide_revision_field
+    - image_widget_crop
 id: media.image.default
 targetEntityType: media
 bundle: image
 mode: default
 content:
   field_media_image:
-    type: image_focal_point
+    type: image_widget_crop
     weight: 0
     region: content
     settings:
       progress_indicator: throbber
-      preview_image_style: crop_thumbnail
-      preview_link: true
-      offsets: '50,50'
-      preview_styles:
-        '16_5_640': '16_5_640'
-        '16_9_600': '16_9_600'
-        '1_1_600': '1_1_600'
-        '2_3_640': '2_3_640'
-        '3_1_600': '3_1_600'
-        '3_2_640': '3_2_640'
+      preview_image_style: ''
+      crop_preview_image_style: crop_thumbnail
+      crop_list:
+        - banner_16_5
+        - card_3_2
+        - logo_horizontal_3_1
+        - profile_1_1_
+      crop_types_required: {  }
+      warn_multiple_usages: true
+      show_crop_area: false
+      show_default_crop: true
     third_party_settings: {  }
   revision_log_message:
     type: hide_revision_field_log_widget

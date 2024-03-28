@@ -11,7 +11,7 @@ id: node.event.field_event_cta
 field_name: field_event_cta
 entity_type: node
 bundle: event
-label: 'Call to Action'
+label: 'Event Website'
 description: "Add an optional link to the top of event pages. For example, 'Register', 'RSVP', or 'Volunteer' links that take visitors to external events management systems."
 required: false
 translatable: false

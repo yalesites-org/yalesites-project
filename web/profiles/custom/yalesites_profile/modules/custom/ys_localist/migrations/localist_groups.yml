@@ -1,0 +1,35 @@
+id: localist_groups
+label: 'Localist groups'
+source:
+  plugin: url
+  data_fetcher_plugin: http
+  data_parser_plugin: json
+  track_changes: true
+  urls:
+    # @see ys_localist.module
+    callback: ys_localist_migrate_url
+  localist_endpoint: 'groups'
+  item_selector: groups
+  fields:
+    -
+      name: group_id
+      label: 'Group ID'
+      selector: group/id
+    -
+      name: group_name
+      label: 'Group name'
+      selector: group/name
+  ids:
+    group_id:
+      # This would be an int, but it is too long for the DB
+      type: string
+process:
+  name: group_name
+  field_localist_group_id: group_id
+
+destination:
+  plugin: 'entity:taxonomy_term'
+  default_bundle: event_groups
+  overwrite_properties:
+    - name
+    - field_localist_group_id
