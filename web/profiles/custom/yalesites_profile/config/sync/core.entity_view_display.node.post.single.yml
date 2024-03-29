@@ -1,0 +1,91 @@
+uuid: 5d8989f3-cc8e-4cc4-af1e-960f752b086c
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.node.single
+    - field.field.node.post.field_author
+    - field.field.node.post.field_category
+    - field.field.node.post.field_external_source
+    - field.field.node.post.field_login_required
+    - field.field.node.post.field_metatags
+    - field.field.node.post.field_publish_date
+    - field.field.node.post.field_tags
+    - field.field.node.post.field_teaser_media
+    - field.field.node.post.field_teaser_text
+    - field.field.node.post.field_teaser_title
+    - field.field.node.post.layout_builder__layout
+    - node.type.post
+  module:
+    - layout_builder
+    - layout_builder_restrictions
+    - link
+    - user
+third_party_settings:
+  layout_builder:
+    enabled: false
+    allow_custom: false
+  layout_builder_restrictions:
+    allowed_block_categories: {  }
+    entity_view_mode_restriction:
+      allowed_layouts: {  }
+      denylisted_blocks: {  }
+      allowlisted_blocks: {  }
+      restricted_categories:
+        - 'Chaos Tools'
+        - 'Content fields'
+        - Forms
+        - Help
+        - 'Lists (Views)'
+        - Menus
+        - System
+        - Webform
+        - 'YaleSites Core'
+        - 'YaleSites alert'
+        - core
+    entity_view_mode_restriction_by_region:
+      allowed_layouts: {  }
+id: node.post.single
+targetEntityType: node
+bundle: post
+mode: single
+content:
+  field_author:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_category:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_external_source:
+    type: link
+    label: above
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 2
+    region: content
+hidden:
+  field_login_required: true
+  field_metatags: true
+  field_publish_date: true
+  field_tags: true
+  field_teaser_media: true
+  field_teaser_text: true
+  field_teaser_title: true
+  layout_builder__layout: true
+  links: true
+  search_api_excerpt: true

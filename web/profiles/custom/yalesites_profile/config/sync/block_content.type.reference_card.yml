@@ -1,0 +1,33 @@
+uuid: 3ff3d3c3-7213-4dba-85f0-db24528b1a0a
+langcode: en
+status: true
+dependencies:
+  module:
+    - entity_redirect
+third_party_settings:
+  entity_redirect:
+    redirect:
+      add:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      edit:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      delete:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      anonymous:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+id: reference_card
+label: 'Reference card'
+revision: 0
+description: 'Authors can select an existing Post, Event, or Profile.'

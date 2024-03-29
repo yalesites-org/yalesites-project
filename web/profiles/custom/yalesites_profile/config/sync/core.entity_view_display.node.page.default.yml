@@ -104,6 +104,7 @@ third_party_settings:
               - divider
               - image
               - pull_quote
+              - reference_card
               - tabs
               - text
               - video
@@ -113,6 +114,7 @@ third_party_settings:
               - 'inline_block:divider'
               - 'inline_block:image'
               - 'inline_block:pull_quote'
+              - 'inline_block:reference_card'
               - 'inline_block:tabs'
               - 'inline_block:text'
               - 'inline_block:video'
@@ -123,7 +125,7 @@ third_party_settings:
               - 'inline_block:text'
       restricted_categories:
         ys_layout_two_column:
-          content:
+          sidebar:
             - 'Chaos Tools'
             - 'Content fields'
             - Devel
@@ -137,10 +139,9 @@ third_party_settings:
             - 'YaleSites Layouts'
             - 'YaleSites alert'
             - core
-          sidebar:
+          content:
             - 'Chaos Tools'
             - 'Content fields'
-            - Devel
             - Forms
             - Help
             - 'Lists (Views)'

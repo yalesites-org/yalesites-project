@@ -1,0 +1,22 @@
+uuid: f1801eac-2806-40a2-a703-17aa24811c7e
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.reference_card
+    - field.field.block_content.reference_card.field_content_ref
+id: block_content.reference_card.default
+targetEntityType: block_content
+bundle: reference_card
+mode: default
+content:
+  field_content_ref:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  search_api_excerpt: true
