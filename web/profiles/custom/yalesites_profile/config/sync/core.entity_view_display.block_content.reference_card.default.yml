@@ -11,10 +11,11 @@ bundle: reference_card
 mode: default
 content:
   field_content_ref:
-    type: entity_reference_label
-    label: above
+    type: entity_reference_entity_view
+    label: hidden
     settings:
-      link: true
+      view_mode: single
+      link: false
     third_party_settings: {  }
     weight: 0
     region: content

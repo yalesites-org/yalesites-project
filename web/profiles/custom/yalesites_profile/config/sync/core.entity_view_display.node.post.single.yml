@@ -17,9 +17,11 @@ dependencies:
     - field.field.node.post.layout_builder__layout
     - node.type.post
   module:
+    - datetime
     - layout_builder
     - layout_builder_restrictions
     - link
+    - text
     - user
 third_party_settings:
   layout_builder:
@@ -50,25 +52,9 @@ targetEntityType: node
 bundle: post
 mode: single
 content:
-  field_author:
-    type: string
-    label: hidden
-    settings:
-      link_to_entity: false
-    third_party_settings: {  }
-    weight: 0
-    region: content
-  field_category:
-    type: entity_reference_label
-    label: above
-    settings:
-      link: true
-    third_party_settings: {  }
-    weight: 1
-    region: content
   field_external_source:
     type: link
-    label: above
+    label: hidden
     settings:
       trim_length: 80
       url_only: false
@@ -78,14 +64,45 @@ content:
     third_party_settings: {  }
     weight: 2
     region: content
+  field_publish_date:
+    type: datetime_default
+    label: hidden
+    settings:
+      timezone_override: ''
+      format_type: medium
+    third_party_settings: {  }
+    weight: 4
+    region: content
+  field_teaser_media:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: default
+      link: true
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_teaser_text:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_teaser_title:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 3
+    region: content
 hidden:
+  field_author: true
+  field_category: true
   field_login_required: true
   field_metatags: true
-  field_publish_date: true
   field_tags: true
-  field_teaser_media: true
-  field_teaser_text: true
-  field_teaser_title: true
   layout_builder__layout: true
   links: true
   search_api_excerpt: true
