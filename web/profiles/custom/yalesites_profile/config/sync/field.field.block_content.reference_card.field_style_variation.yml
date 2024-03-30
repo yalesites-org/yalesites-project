@@ -1,0 +1,21 @@
+uuid: dde9fb9b-584c-46cc-94b1-63fe181938ac
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.reference_card
+    - field.storage.block_content.field_style_variation
+  module:
+    - options
+id: block_content.reference_card.field_style_variation
+field_name: field_style_variation
+entity_type: block_content
+bundle: reference_card
+label: Style
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ys_themes_default_value_function
+settings: {  }
+field_type: list_string

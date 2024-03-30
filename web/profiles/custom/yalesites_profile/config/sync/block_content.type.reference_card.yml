@@ -30,4 +30,4 @@ third_party_settings:
 id: reference_card
 label: 'Reference card'
 revision: 0
-description: 'Authors can select an existing Post, Event, or Profile.'
+description: 'Select an existing Post, Event, or Profile to display a single card.'
