@@ -191,7 +191,7 @@ class ZipFileImporter {
       );
     }
     else {
-      drupal_set_message(t('An error occurred and the content could not be imported.'), 'error');
+      \Drupal::messenger()->addError('An error occurred and the content could not be imported.');
     }
   }
 
