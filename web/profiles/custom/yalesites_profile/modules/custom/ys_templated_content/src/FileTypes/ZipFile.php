@@ -15,23 +15,13 @@ class ZipFile {
   protected $filename;
 
   /**
-   * The import manager.
-   *
-   * @var \Drupal\ys_templated_content\Managers\ImportManager
-   */
-  protected $importManager;
-
-  /**
    * ZipFile constructor.
    *
    * @param string $filename
    *   The filename of the existing zip file.
-   * @param \Drupal\ys_templated_content\ImportManager $importManager
-   *   The import manager.
    */
-  public function __construct($filename, $importManager) {
+  public function __construct($filename) {
     $this->filename = $filename;
-    $this->importManager = $importManager;
   }
 
   /**
