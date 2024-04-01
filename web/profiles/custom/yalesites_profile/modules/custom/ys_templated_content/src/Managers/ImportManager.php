@@ -104,6 +104,7 @@ class ImportManager {
     switch ($extension) {
       case 'zip':
         $importResult = (new ZipFileImporter($this))->import($filename);
+        break;
 
       case 'yml':
         try {
@@ -112,6 +113,7 @@ class ImportManager {
         catch (\Exception $e) {
           throw new \Exception('The file could not be imported at this time: ' . $templateTitle);
         }
+        break;
 
       default:
         throw new \Exception("Unknown extension: $extension");
