@@ -62,7 +62,7 @@ class TemplateModifier {
   public function process($content_array) {
     $originalUuid = $content_array['uuid'];
     $newUuid = $this->uuidService->generate();
-    $content_array['base_fields']['created'] = $this->getUnixTimestamp();
+    $content_array['base_fields']['created'] = time();
     $content_array = $this->replaceBrokenImages($content_array);
     $content_array = $this->generateAlias($content_array);
     $content_array = $this->replaceUuids($content_array, $originalUuid, $newUuid);
@@ -213,16 +213,6 @@ class TemplateModifier {
    */
   public function generateUuid() {
     return $this->uuidService->generate();
-  }
-
-  /**
-   * Get the current unix timestamp.
-   *
-   * @return int
-   *   The current unix timestamp.
-   */
-  public function getUnixTimestamp() {
-    return time();
   }
 
 }
