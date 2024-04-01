@@ -69,6 +69,7 @@ dependencies:
     - webform
     - ys_alert
     - ys_core
+    - ys_templated_content
 id: platform_admin
 label: 'Platform administrator'
 weight: -5
@@ -349,3 +350,4 @@ permissions:
   - 'view unpublished paragraphs'
   - 'yalesites manage alerts'
   - 'yalesites manage settings'
+  - 'yalesites manage template usage'
