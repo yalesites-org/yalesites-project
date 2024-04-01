@@ -45,9 +45,38 @@ class YamlFileImporter {
   public function import($filename) {
     $content_array = $this->importManager->getContentFromFile($filename);
 
+    $content_array = $this->process($content_array);
+
     $entity = $this->contentImporter->doImport($content_array);
 
     return $entity;
+  }
+
+  /**
+   * Process the content array.
+   *
+   * @param array $content_array
+   *   The content array.
+   */
+  public function process($content_array) {
+    return $this->generateAlias($content_array);
+  }
+
+  /**
+   * Remove the alias so Drupal can generate one.
+   *
+   * @param array $content_array
+   *   The content array.
+   *
+   * @return array
+   *   The content array without an alias.
+   */
+  protected function generateAlias($content_array) {
+    if (isset($content_array['base_fields']['url'])) {
+      $content_array['base_fields']['url'] = '';
+    }
+
+    return $content_array;
   }
 
 }

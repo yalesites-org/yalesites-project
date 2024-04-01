@@ -64,7 +64,7 @@ class TemplateModifier {
     $newUuid = $this->uuidService->generate();
     $content_array['base_fields']['created'] = time();
     $content_array = $this->replaceBrokenImages($content_array);
-    $content_array = $this->generateAlias($content_array);
+    $content_array = $this->removeAlias($content_array);
     $content_array = $this->replaceUuids($content_array, $originalUuid, $newUuid);
 
     return $content_array;
@@ -134,21 +134,17 @@ class TemplateModifier {
   }
 
   /**
-   * Generate a unique alias if the alias already exists.
+   * Remove the alias so Drupal can generate one.
    *
    * @param array $content_array
    *   The content array.
    *
    * @return array
-   *   The content array with a unique alias.
+   *   The content array without an alias.
    */
-  protected function generateAlias($content_array) {
+  protected function removeAlias($content_array) {
     if (isset($content_array['base_fields']['url'])) {
-      $alias = $content_array['base_fields']['url'];
-
-      if ($this->pathAliasRepository->lookupByAlias($alias, 'en')) {
-        $content_array['base_fields']['url'] = '';
-      }
+      $content_array['base_fields']['url'] = '';
     }
 
     return $content_array;
