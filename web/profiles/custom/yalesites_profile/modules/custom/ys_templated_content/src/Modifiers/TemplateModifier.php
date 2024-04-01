@@ -134,27 +134,6 @@ class TemplateModifier {
   }
 
   /**
-   * Generate a unique alias with a sequential number.
-   *
-   * @param string $alias
-   *   The alias.
-   *
-   * @return string
-   *   The unique alias (original alias with sequential number).
-   */
-  protected function generateUniqueAliasWithSequentialNumber($alias) {
-    $aliasNumber = 1;
-    $newAlias = $alias . '-' . $aliasNumber;
-
-    while ($this->pathAliasRepository->lookupByAlias($newAlias, 'en')) {
-      $aliasNumber++;
-      $newAlias = $alias . '-' . $aliasNumber;
-    }
-
-    return $newAlias;
-  }
-
-  /**
    * Generate a unique alias if the alias already exists.
    *
    * @param array $content_array
