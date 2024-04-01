@@ -71,6 +71,7 @@ dependencies:
     - ys_alert
     - ys_core
     - ys_localist
+    - ys_templated_content
 id: platform_admin
 label: 'Platform administrator'
 weight: -5
@@ -359,3 +360,4 @@ permissions:
   - 'yalesites manage alerts'
   - 'yalesites manage localist'
   - 'yalesites manage settings'
+  - 'yalesites manage template usage'
