@@ -134,22 +134,6 @@ class TemplateModifier {
   }
 
   /**
-   * Generate a unique alias using the current date/time.
-   *
-   * @param string $alias
-   *   The alias.
-   *
-   * @return string
-   *   The unique alias (original alias with date/time).
-   */
-  protected function generateUniqueAliasWithDate($alias) {
-    $date = date('Y-m-d-H-i-s');
-    $alias .= '-' . $date;
-
-    return $alias;
-  }
-
-  /**
    * Generate a unique alias with a sequential number.
    *
    * @param string $alias
