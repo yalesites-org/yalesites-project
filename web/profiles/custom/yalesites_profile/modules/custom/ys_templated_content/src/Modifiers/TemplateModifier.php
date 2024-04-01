@@ -155,20 +155,6 @@ class TemplateModifier {
   }
 
   /**
-   * Generate a unique alias.
-   *
-   * @param string $alias
-   *   The alias.
-   *
-   * @return string
-   *   The unique alias.
-   */
-  protected function generateUniqueAlias($alias) {
-    return $this->generateUniqueAliasWithSequentialNumber($alias);
-    /* return $this->generateUniqueAliasWithDate($alias); */
-  }
-
-  /**
    * Generate a unique alias if the alias already exists.
    *
    * @param array $content_array
@@ -182,7 +168,7 @@ class TemplateModifier {
       $alias = $content_array['base_fields']['url'];
 
       if ($this->pathAliasRepository->lookupByAlias($alias, 'en')) {
-        $content_array['base_fields']['url'] = $this->generateUniqueAlias($alias);
+        $content_array['base_fields']['url'] = '';
       }
     }
 
