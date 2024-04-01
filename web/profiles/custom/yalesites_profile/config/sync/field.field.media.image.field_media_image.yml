@@ -15,7 +15,7 @@ field_name: field_media_image
 entity_type: media
 bundle: image
 label: Image
-description: ''
+description: 'Select the area of your image to keep in focus for all image ratios supported by the YaleSites platform. After positioning the plus icon on your desired focal point, Blocks will adjust to display that part within the image area.'
 required: true
 translatable: true
 default_value: {  }
