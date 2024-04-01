@@ -56,7 +56,7 @@ class ZipFileImporter {
    *   The entity created.
    */
   public function import($filename) {
-    $zipFile = new ZipFile($filename, $this);
+    $zipFile = new ZipFile($filename);
 
     $tempDir = $zipFile->extractToTemp();
     $yamlFiles = $this->findYamlFiles($tempDir);
