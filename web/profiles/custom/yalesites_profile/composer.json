@@ -97,7 +97,7 @@
     "drupal/search_api_exclude": "2.0.2",
     "drupal/search_api_html_element_filter": "1.0.4",
     "drupal/section_library": "1.1.1",
-    "drupal/selective_better_exposed_filters": "3.0.0-beta1",
+    "drupal/selective_better_exposed_filters": "3.0.2",
     "drupal/simple_sitemap": "4.1.6",
     "drupal/single_content_sync": "1.4.4",
     "drupal/smart_date": "4.0.3",
@@ -184,6 +184,9 @@
       },
       "drupal/focal_point": {
         "Limit image styles on preview page": "https://www.drupal.org/files/issues/2021-08-13/2830678-29.patch"
+      },
+      "drupal/selective_better_exposed_filters": {
+        "Hide form when no options are available:": "patches/selective_better_exposed_filters/selective_better_exposed_filters-3432551.patch"
       }
     }
   }
