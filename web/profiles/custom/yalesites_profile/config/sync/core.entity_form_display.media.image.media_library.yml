@@ -1,18 +1,19 @@
-uuid: 52025afe-ca80-4605-b214-33a89b412974
+uuid: fa01d336-c86d-42b9-9a00-9b20e027f868
 langcode: en
 status: true
 dependencies:
   config:
+    - core.entity_form_mode.media.media_library
     - field.field.media.image.field_media_image
     - image.style.crop_thumbnail
     - media.type.image
   module:
     - focal_point
     - hide_revision_field
-id: media.image.default
+id: media.image.media_library
 targetEntityType: media
 bundle: image
-mode: default
+mode: media_library
 content:
   field_media_image:
     type: image_focal_point
