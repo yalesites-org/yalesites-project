@@ -14,6 +14,13 @@
   font-weight: 600;
 }
 
+/* embed headers need gin's color text to look good in dark mode */
+html.gin--dark-mode #ajax-embed-instructions,
+/* Any configure block should be using this as well */
+html.gin--dark-mode form.layout-builder-configure-block.glb-form {
+  --color-heading: var(--gin-color-text);
+}
+
 /* Make the secondary toolbar fixes */
 .gin-secondary-toolbar--frontend {
   position: fixed;
@@ -163,13 +170,13 @@
 
 /* In light mode, gin is displaying a mustard background with a black 
 foreground. This causes contrast issues.  */
-html:not(.gin--dark-mode)
-  #drupal-off-canvas:not(.drupal-off-canvas-reset).ui-dialog-content
-  div:not([data-drupal-ck-style-fence] *),
 #drupal-off-canvas-wrapper
   .ui-dialog-content
+  div:not([data-drupal-ck-style-fence] *),
+html:not(.gin--dark-mode)
+  #drupal-off-canvas:not(.drupal-off-canvas-reset).ui-dialog-content
   div:not([data-drupal-ck-style-fence] *) {
-  color: var(--color-basic-white);
+  color: var(--gin-color-text);
 }
 
 /*
