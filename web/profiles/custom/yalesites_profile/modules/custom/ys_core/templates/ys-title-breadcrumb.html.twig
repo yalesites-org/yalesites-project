@@ -1,3 +1,8 @@
+{# If page_title_display is not visible #}
+{% if 'visible' not in [page_title__display] %}
+  {{ attach_library('atomic/page-title') }}
+{% endif %}
+
 {% if not breadcrumbs_placeholder %}
   {{ drupal_entity('block', 'yalesitesbreadcrumbs', check_access=false) }}
 {% else %}
