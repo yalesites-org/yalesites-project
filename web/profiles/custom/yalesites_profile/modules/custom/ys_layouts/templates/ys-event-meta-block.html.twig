@@ -1,6 +1,7 @@
 {#
   Available variables
 
+  event_title__heading - The title of the event
   event_dates - array of dates for this event which contains the following keys:
     formatted_start_date
     formatted_start_time
@@ -8,6 +9,22 @@
     formatted_end_time
     is_all_day
   ics_url - Localist ICS includes all dates. Calculated only includes the first date.
+  ticket_url - the URL to purchace tickets.
+  ticket_cost - A string with information about ticket cost.
+  place - An array of place information with the following keys:
+    address
+    city
+    state
+    postal_code
+    latitude
+    longitude
+  event_types - an array of event types with the following keys:
+    name
+    url - this links to the Drupal taxonomy URL which we may or may not use in v1.
+  description - a WYSIWYG description
+  event_meta__cta_primary__href - An external event URL
+  event_meta__cta_primary__content - External event URL text
+
 #}
 
 {% if not ics_url and event_dates %}
