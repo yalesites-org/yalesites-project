@@ -166,6 +166,7 @@ destination:
     - field_ticket_cost
     - field_ticket_registration_url
     - field_event_status
+    - field_event_date
 migration_dependencies:
   required:
     - localist_experiences

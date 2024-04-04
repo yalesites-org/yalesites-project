@@ -1,12 +1,84 @@
-{% if event_meta__date_start %}
+{#
+  Available variables
 
-  {% set start_datetime = date(event_meta__date_start|date_modify('+0 hour')) %}
-  {% set end_datetime = date(event_meta__date_end|date_modify('+0 hour')) %}
+  event_dates - array of dates for this event which contains the following keys:
+    formatted_start_date
+    formatted_start_time
+    formatted_end_date
+    formatted_end_time
+    is_all_day
+  ics_url - Localist ICS includes all dates. Calculated only includes the first date.
+#}
 
-  {% set event_meta__cta_secondary__href = calendar_link('ics', event_title__heading, start_datetime, end_datetime, event_meta__all_day, 'description', calendar_location_text) %}
-  {% set event_meta__cta_secondary__content = 'Add to Calendar' %}
+{% if not ics_url and event_dates %}
+  {% set start_datetime = date(event_dates.0.value|date_modify('+0 hour')) %}
+  {% set end_datetime = date(event_dates.0.end_value|date_modify('+0 hour')) %}
+
+  {% set ics_url = calendar_link('ics', event_title__heading, start_datetime, end_datetime, event_dates.0.is_all_day, 'description', calendar_location_text) %}
 
 {% endif %}
 
+{% set event_meta__cta_secondary__content = 'Add to Calendar' %}
+
 {# All TWIG variables are named appropriately and pass through to this template #}
 {% include '@molecules/meta/event-meta/yds-event-meta.twig' %}
+
+{# Below is temporary for front end to see usage of variables. #}
+
+<h2>Dates</h2>
+
+{% if event_dates %}
+  <ul>
+    {% for event_date in event_dates %}
+      <li>{{ event_date.formatted_start_date }} {{ event_date.formatted_start_time }} to {{ event_date.formatted_end_date }} {{ event_date.formatted_end_time }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<h2>ICS URL</h2>
+
+{% if ics_url %}
+  <a href="{{ ics_url }}">{{ event_meta__cta_secondary__content }}</a>
+{% endif %}
+
+<h2>Ticket Info</h2>
+
+{% if ticket_url %}
+  <a href="{{ ticket_url }}">Buy Tickets</a>
+{% endif %}
+
+{% if ticket_cost %}
+  Cost: {{ ticket_cost }}
+{% endif %}
+
+<h2>Place</h2>
+{% if place %}
+  <ul>
+    <li>Address: {{ place.address }}</li>
+    <li>City: {{ place.city }}</li>
+    <li>State: {{ place.state }}</li>
+    <li>Zip: {{ place.postal_code }}</li>
+    <li>Lat: {{ place.latitude }}</li>
+    <li>Long: {{ place.longitude }}</li>
+  </ul>
+
+<a href="https://www.google.com/maps/dir/Current+Location/{{ place.latitude }},{{ place.longitude }}">Get Directions</a>
+<iframe src="https://www.google.com/maps/embed?pb=!1m10!1m8!1m3!1d12355.08068326396!2d{{ place.longitude }}!3d{{ place.latitude }}!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sus!4v1712273181159!5m2!1sen!2sus" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+
+{% endif %}
+
+<h2>Event Types</h2>
+
+{% if event_types %}
+  <ul>
+    {% for event_type in event_types %}
+      <li><a href="{{ event_type.url }}">{{ event_type.name }}</a></li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<h2>Description</h2>
+
+{% if description %}
+  {{ description }}
+{% endif %}
