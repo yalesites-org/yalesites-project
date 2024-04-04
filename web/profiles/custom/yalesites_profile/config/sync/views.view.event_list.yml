@@ -128,9 +128,10 @@ display:
                     filter_rewrite_values: ''
                   collapsible: false
                   is_secondary: false
-                options_show_only_used: 1
-                options_show_only_used_filtered: 0
-                options_hide_when_empty: 0
+                options_show_only_used: true
+                options_show_only_used_filtered: false
+                options_hide_when_empty: true
+                options_show_items_count: 0
       access:
         type: perm
         options:
