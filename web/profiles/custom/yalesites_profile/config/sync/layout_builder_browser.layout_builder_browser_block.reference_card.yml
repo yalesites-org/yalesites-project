@@ -6,6 +6,6 @@ id: reference_card
 block_id: 'inline_block:reference_card'
 category: basic
 label: 'Reference card'
-image_path: ''
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/reference-card.svg
 image_alt: ''
-weight: null
+weight: -2
