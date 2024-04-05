@@ -8,6 +8,7 @@ dependencies:
     - field.field.block_content.cta_banner.field_heading_level
     - field.field.block_content.cta_banner.field_instructions
     - field.field.block_content.cta_banner.field_link
+    - field.field.block_content.cta_banner.field_link_two
     - field.field.block_content.cta_banner.field_media
     - field.field.block_content.cta_banner.field_style_color
     - field.field.block_content.cta_banner.field_style_position
@@ -55,6 +56,16 @@ content:
   field_link:
     type: linkit
     weight: 11
+    region: content
+    settings:
+      placeholder_url: ''
+      placeholder_title: ''
+      linkit_profile: default
+      linkit_auto_link_text: false
+    third_party_settings: {  }
+  field_link_two:
+    type: linkit
+    weight: 12
     region: content
     settings:
       placeholder_url: ''
