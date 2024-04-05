@@ -1,4 +1,4 @@
-uuid: 1cefeb42-bc40-4168-a483-238896f41bcd
+uuid: db0091cb-c8f3-4d75-b6ce-1739ea6fec00
 langcode: en
 status: true
 dependencies:
@@ -61,16 +61,15 @@ dependencies:
     - path
     - quick_node_clone
     - redirect
-    - role_delegation
     - system
     - taxonomy
     - toolbar
     - webform
     - ys_alert
     - ys_core
-id: site_admin
-label: 'Site administrator'
-weight: -6
+id: editor
+label: Editor
+weight: -7
 is_admin: null
 permissions:
   - 'access block library'
@@ -87,9 +86,6 @@ permissions:
   - 'administer redirects'
   - 'administer users'
   - 'administer utility-navigation menu items'
-  - 'assign contributor role'
-  - 'assign editor role'
-  - 'assign site_admin role'
   - 'clone event content'
   - 'clone page content'
   - 'clone post content'
@@ -203,7 +199,6 @@ permissions:
   - 'delete own document media'
   - 'delete own embed media'
   - 'delete own event content'
-  - 'delete own files'
   - 'delete own image media'
   - 'delete own page content'
   - 'delete own post content'
