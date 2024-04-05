@@ -135,6 +135,8 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
     $ticketLink = $node->field_ticket_registration_url->first() ? $node->field_ticket_registration_url->first()->getValue()['uri'] : NULL;
     $ticketCost = $node->field_ticket_cost->first() ? $node->field_ticket_cost->first()->getValue()['value'] : NULL;
     $eventDescription = $node->field_event_description->first() ? $node->field_event_description->first()->getValue()['value'] : NULL;
+    $eventWebsite = ($node->field_event_cta->first()) ? Url::fromUri($node->field_event_cta->first()->getValue()['uri'])->toString() : NULL;
+    $urlTitle = ($node->field_event_cta->first()) ? $node->field_event_cta->first()->getValue()['title'] : NULL;
 
     // Dates.
     $dates = $node->field_event_date->getValue();
@@ -185,8 +187,11 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
 
     }
 
-    $eventWebsite = ($node->field_event_cta->first()) ? Url::fromUri($node->field_event_cta->first()->getValue()['uri'])->toString() : NULL;
-    $urlTitle = ($node->field_event_cta->first()) ? $node->field_event_cta->first()->getValue()['title'] : NULL;
+    // Event experience.
+    $eventExperienceId = $node->field_localist_event_experience->first() ? $node->field_localist_event_experience->first()->getValue()['target_id'] : NULL;
+    /** @var \Drupal\taxonomy\Entity\Term $eventExperienceInfo */
+    $eventExperienceInfo = $this->entityTypeManager->getStorage('taxonomy_term')->load($eventExperienceId);
+    $eventExperienceName = $eventExperienceInfo ? $eventExperienceInfo->getName() : NULL;
 
     return [
       '#theme' => 'ys_event_meta_block',
@@ -200,6 +205,7 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
       '#description' => $eventDescription,
       '#event_meta__cta_primary__href' => $eventWebsite,
       '#event_meta__cta_primary__content' => $urlTitle,
+      '#event_experience' => $eventExperienceName,
     ];
   }
 
