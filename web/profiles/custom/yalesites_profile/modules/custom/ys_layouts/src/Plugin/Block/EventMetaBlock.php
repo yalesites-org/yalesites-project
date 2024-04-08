@@ -138,51 +138,53 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
 
     // Dates.
     $dates = $node->field_event_date->getValue();
-    foreach ($dates as $key => $date) {
-      $dates[$key]['formatted_start_date'] = $this->dateFormatter->format($date['value'], 'event_date_only');
-      $dates[$key]['formatted_start_time'] = $this->dateFormatter->format($date['value'], 'event_time_only');
-      $dates[$key]['formatted_end_date'] = $this->dateFormatter->format($date['end_value'], 'event_date_only');
-      $dates[$key]['formatted_end_time'] = $this->dateFormatter->format($date['end_value'], 'event_time_only');
-      $dates[$key]['is_all_day'] = $this->isAllDay($date['value'], $date['end_value']);
-      // Remove older dates.
-      if ($date['end_value'] < time()) {
-        unset($dates[$key]);
+    if ($dates) {
+      foreach ($dates as $key => $date) {
+        $dates[$key]['formatted_start_date'] = $this->dateFormatter->format($date['value'], 'event_date_only');
+        $dates[$key]['formatted_start_time'] = $this->dateFormatter->format($date['value'], 'event_time_only');
+        $dates[$key]['formatted_end_date'] = $this->dateFormatter->format($date['end_value'], 'event_date_only');
+        $dates[$key]['formatted_end_time'] = $this->dateFormatter->format($date['end_value'], 'event_time_only');
+        $dates[$key]['is_all_day'] = $this->isAllDay($date['value'], $date['end_value']);
+        // Remove older dates.
+        if ($date['end_value'] < time()) {
+          unset($dates[$key]);
+        }
       }
+      // Sort dates - first date is next upcoming date.
+      asort($dates);
     }
-    // Sort dates - first date is next upcoming date.
-    asort($dates);
-
     // Place info.
     $place = [];
     if ($placeRef = $node->field_event_place->first()) {
       /** @var \Drupal\taxonomy\Entity\Term $placeInfo */
       $placeInfo = $this->entityTypeManager->getStorage('taxonomy_term')->load($placeRef->getValue()['target_id']);
-
-      $place = [
-        'name' => $placeInfo->getName(),
-        'address' => $placeInfo->field_address->address_line1 ?? NULL,
-        'city' => $placeInfo->field_address->locality ?? NULL,
-        'state' => $placeInfo->field_address->administrative_area ?? NULL,
-        'postal_code' => $placeInfo->field_address->postal_code ?? NULL,
-        'country_code' => $placeInfo->field_address->country_code ?? NULL,
-        'latitude' => $placeInfo->field_latitude->first() ? $placeInfo->field_latitude->first()->getValue()['value'] : NULL,
-        'longitude' => $placeInfo->field_longitude->first() ? $placeInfo->field_longitude->first()->getValue()['value'] : NULL,
-      ];
+      if ($placeInfo) {
+        $place = [
+          'name' => $placeInfo->getName(),
+          'address' => $placeInfo->field_address->address_line1 ?? NULL,
+          'city' => $placeInfo->field_address->locality ?? NULL,
+          'state' => $placeInfo->field_address->administrative_area ?? NULL,
+          'postal_code' => $placeInfo->field_address->postal_code ?? NULL,
+          'country_code' => $placeInfo->field_address->country_code ?? NULL,
+          'latitude' => $placeInfo->field_latitude->first() ? $placeInfo->field_latitude->first()->getValue()['value'] : NULL,
+          'longitude' => $placeInfo->field_longitude->first() ? $placeInfo->field_longitude->first()->getValue()['value'] : NULL,
+        ];
+      }
     }
-
     // Event types.
     $eventTypes = [];
     if ($node->field_localist_event_type) {
       $types = $node->field_localist_event_type->getValue();
-      foreach ($types as $type) {
-        /** @var \Drupal\taxonomy\Entity\Term $typeInfo */
-        $typeInfo = $this->entityTypeManager->getStorage('taxonomy_term')->load($type['target_id']);
-        $eventTypes[] = [
-          'name' => $typeInfo->getName(),
-          'url' => $typeInfo->toUrl()->toString(),
-        ];
+      if ($types) {
+        foreach ($types as $type) {
+          /** @var \Drupal\taxonomy\Entity\Term $typeInfo */
+          $typeInfo = $this->entityTypeManager->getStorage('taxonomy_term')->load($type['target_id']);
+          $eventTypes[] = [
+            'name' => $typeInfo->getName(),
+            'url' => $typeInfo->toUrl()->toString(),
+          ];
+        }
       }
-
     }
 
     $eventWebsite = ($node->field_event_cta->first()) ? Url::fromUri($node->field_event_cta->first()->getValue()['uri'])->toString() : NULL;

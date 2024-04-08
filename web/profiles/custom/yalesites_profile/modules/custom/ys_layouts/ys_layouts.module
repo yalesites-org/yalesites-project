@@ -15,7 +15,7 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
     'ys_event_meta_block' => [
       'variables' => [
         'event_title__heading' => NULL,
-        'event_dates' => NULL,
+        'event_dates' => [],
         'ics_url' => NULL,
         'ticket_url' => NULL,
         'ticket_cost' => NULL,
