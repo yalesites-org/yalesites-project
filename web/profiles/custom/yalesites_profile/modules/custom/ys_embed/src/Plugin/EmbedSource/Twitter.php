@@ -10,9 +10,9 @@ use Drupal\ys_embed\Plugin\EmbedSourceInterface;
  *
  * @EmbedSource(
  *   id = "twitter",
- *   label = @Translation("Twitter Tweet"),
- *   description = @Translation("Twitter post embed source."),
- *   thumbnail = "twitter.png",
+ *   label = @Translation("X Tweet"),
+ *   description = @Translation("X post embed source."),
+ *   thumbnail = "x-twitter.png",
  *   active = TRUE,
  * )
  */
