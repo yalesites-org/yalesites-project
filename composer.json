@@ -126,7 +126,8 @@
       "oomphinc/composer-installers-extender": true,
       "drupal/core-project-message": true,
       "phpstan/extension-installer": true,
-      "drupal/console-extend-plugin": true
+      "drupal/console-extend-plugin": true,
+      "php-http/discovery": true
     }
   },
   "scripts": {
