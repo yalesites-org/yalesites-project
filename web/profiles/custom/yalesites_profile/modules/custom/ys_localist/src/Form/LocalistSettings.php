@@ -106,7 +106,7 @@ class LocalistSettings extends ConfigFormBase {
     ];
 
     // Only show the group picker if the group migration has been run.
-    if ($groupsImported) {
+    if ($config->get('enable_localist_sync') && $groupsImported) {
       $term = $config->get('localist_group') ? $this->entityTypeManager->getStorage('taxonomy_term')->load($config->get('localist_group')) : NULL;
 
       $form['localist_group'] = [
@@ -122,10 +122,12 @@ class LocalistSettings extends ConfigFormBase {
         '#required' => TRUE,
       ];
     }
-    else {
+    elseif ($config->get('enable_localist_sync') && !$groupsImported) {
       $form['no_group_sync_message'] = [
         '#type' => 'markup',
-        '#markup' => '<p>Groups have no yet been synchronized. Save this form to create groups.',
+        '#markup' => '
+          <p>Groups have not yet created. A selected group is required before synchronizing events.</p>
+          <a class="button" href="/admin/yalesites/localist/sync-groups">Create Groups</a>',
       ];
     }
 
@@ -166,9 +168,6 @@ class LocalistSettings extends ConfigFormBase {
       ->set('localist_endpoint', rtrim($form_state->getValue('localist_endpoint'), "/"))
       ->set('localist_group', $form_state->getValue('localist_group'))
       ->save();
-
-    // Generate groups if not already done.
-    $this->localistManager->generateGroups();
 
     parent::submitForm($form, $form_state);
   }

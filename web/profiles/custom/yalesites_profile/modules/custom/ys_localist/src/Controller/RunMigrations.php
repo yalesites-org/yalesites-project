@@ -86,4 +86,30 @@ class RunMigrations extends ControllerBase implements ContainerInjectionInterfac
 
   }
 
+  /**
+   * Runs the group migration.
+   */
+  public function syncGroups() {
+
+    if ($this->localistConfig->get('enable_localist_sync')) {
+      // Check endpoint before running migration.
+      if ($this->localistManager->checkGroupsEndpoint()) {
+        $this->localistManager->runMigration('localist_groups');
+        $this->messenger()->addStatus('Successfully imported Localist groups.');
+      }
+      else {
+        $this->messenger()->addError('Error getting groups. Check that the endpoint is correct.');
+      }
+    }
+    else {
+      $message = "Localist sync is not enabled. No sync was performed.";
+      $this->messenger()->addError($message);
+    }
+
+    $redirectUrl = Url::fromRoute('ys_localist.settings')->toString();
+    $response = new RedirectResponse($redirectUrl);
+    return $response;
+
+  }
+
 }

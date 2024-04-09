@@ -12,3 +12,10 @@ ys_localist.run_migrations:
     _title: 'Import Localist events now'
   requirements:
     _permission: 'yalesites manage localist'
+ys_localist.sync_groups:
+  path: '/admin/yalesites/localist/sync-groups'
+  defaults:
+    _controller: '\Drupal\ys_localist\Controller\RunMigrations::syncGroups'
+    _title: 'Sync Localist groups'
+  requirements:
+    _permission: 'yalesites manage localist'

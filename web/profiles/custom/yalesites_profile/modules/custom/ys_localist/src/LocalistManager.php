@@ -301,30 +301,9 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
   }
 
   /**
-   * Imports groups, if specific criteria are met.
-   */
-  public function generateGroups() {
-    if ($this->localistConfig->get('enable_localist_sync')) {
-      if (
-        $this->localistConfig->get('localist_endpoint') &&
-        $this->getMigrationStatus('localist_groups') == 0 &&
-        $this->checkGroupsEndpoint()
-      ) {
-        $this->runMigration('localist_groups');
-        if ($this->getMigrationStatus('localist_groups') == 0) {
-          $this->messenger()->addError($this->t("Error getting groups. Check that the endpoint is correct."));
-        }
-        else {
-          $this->messenger()->addStatus($this->t("Localist groups successfully imported."));
-        }
-      }
-    }
-  }
-
-  /**
    * Checks the group endpoint to make sure we are receiving a JSON feed.
    */
-  private function checkGroupsEndpoint() {
+  public function checkGroupsEndpoint() {
     $returnVal = FALSE;
     if ($endpoint = $this->localistConfig->get('localist_endpoint')) {
       $endpointUrl = $endpoint . "/api/2/groups";
