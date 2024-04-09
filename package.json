@@ -93,7 +93,7 @@
         "@saithodev/semantic-release-backmerge",
         {
           "backmergeBranches": ["develop"],
-          "backmergeStrategy": "merge",
+          "backmergeStrategy": "merge"
         }
       ],
       "@semantic-release/github"
