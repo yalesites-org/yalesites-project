@@ -1,31 +1,29 @@
-uuid: 701bffbf-95af-4890-bebc-6314ebe60d1f
+uuid: 331f8328-8309-4676-a3b6-788912533997
 langcode: en
 status: true
 dependencies:
   config:
-    - node.type.page
-    - node.type.post
-    - node.type.profile
+    - node.type.event
   module:
     - content_moderation
-id: editorial
-label: Editorial
+id: events
+label: Events
 type: content_moderation
 type_settings:
   states:
     archived:
       label: Archived
-      weight: 5
+      weight: 2
       published: false
       default_revision: true
     draft:
       label: Draft
-      weight: -5
+      weight: 0
       published: false
       default_revision: false
     published:
       label: Published
-      weight: 0
+      weight: 1
       published: true
       default_revision: true
   transitions:
@@ -35,18 +33,6 @@ type_settings:
         - published
       to: archived
       weight: 2
-    archived_draft:
-      label: 'Restore to Draft'
-      from:
-        - archived
-      to: draft
-      weight: 3
-    archived_published:
-      label: Restore
-      from:
-        - archived
-      to: published
-      weight: 4
     create_new_draft:
       label: 'Create New Draft'
       from:
@@ -61,9 +47,19 @@ type_settings:
         - published
       to: published
       weight: 1
+    restore:
+      label: Restore
+      from:
+        - archived
+      to: published
+      weight: 4
+    restore_to_draft:
+      label: 'Restore to Draft'
+      from:
+        - archived
+      to: draft
+      weight: 3
   entity_types:
     node:
-      - page
-      - post
-      - profile
-  default_moderation_state: draft
+      - event
+  default_moderation_state: published
