@@ -197,16 +197,3 @@ function ys_core_update_9007() {
   }
 
 }
-
-/**
- * Implements hook_update().
- *
- * Updates all twitter social media links to use the x config item.
- */
-function ys_core_update_9008() {
-  $config = \Drupal::configFactory()->getEditable('ys_core.social_links');
-  $config->set('x-twitter', $config->get('twitter'));
-  $config->clear('twitter');
-  $config->save();
-
-}
