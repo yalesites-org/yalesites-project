@@ -44,6 +44,38 @@ class ThemeSettingsManager {
           'label' => 'Shoreline Summer',
           'color_theme' => 'three',
         ],
+        'four' => [
+          'label' => 'Monochrome',
+          'color_theme' => 'four',
+        ],
+        'five' => [
+          'label' => 'New Green',
+          'color_theme' => 'five',
+        ],
+        'six' => [
+          'label' => 'New Green Option A',
+          'color_theme' => 'six',
+        ],
+        'seven' => [
+          'label' => 'New Green Option B',
+          'color_theme' => 'seven',
+        ],
+        'eight' => [
+          'label' => 'New Green Option C',
+          'color_theme' => 'eight',
+        ],
+        'nine' => [
+          'label' => 'Yale Heraldry Option A',
+          'color_theme' => 'nine',
+        ],
+        'ten' => [
+          'label' => 'Yale Heraldry Option B',
+          'color_theme' => 'ten',
+        ],
+        'eleven' => [
+          'label' => 'Yale Heraldry Option C',
+          'color_theme' => 'eleven',
+        ],
       ],
     ],
     'button_theme' => [
