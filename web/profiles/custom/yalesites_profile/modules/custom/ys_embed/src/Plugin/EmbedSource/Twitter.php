@@ -31,7 +31,7 @@ class Twitter extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $instructions = 'On the Twitter website, click the triangular (...) icon on the upper-right corner of a tweet and select the \'Embed Tweet\' item from the contextual menu. The embed code will appear in an input-box on this interface.';
+  protected static $instructions = 'On the X website, click the triangular (...) icon on the upper-right corner of a tweet and select the \'Embed Tweet\' item from the contextual menu. The embed code will appear in an input-box on this interface.';
 
   /**
    * {@inheritdoc}
