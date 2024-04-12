@@ -27,19 +27,15 @@
 
 #}
 
-{% if not ics_url and event_dates %}
-  {% set start_datetime = date(event_dates.0.value|date_modify('+0 hour')) %}
-  {% set end_datetime = date(event_dates.0.end_value|date_modify('+0 hour')) %}
-
-  {% set ics_url = calendar_link('ics', event_title__heading, start_datetime, end_datetime, event_dates.0.is_all_day, 'description', calendar_location_text) %}
-
-{% endif %}
-
 {% set event_meta__cta_secondary__content = 'Add to Calendar' %}
 
 {# All TWIG variables are named appropriately and pass through to this template #}
+{% if event_dates %}
+  {{ attach_library('atomic/event-localist') }}
+  {% include '@molecules/meta/event-meta/yds-event-meta-localist.twig' %}
+{% else %}
 {% include '@molecules/meta/event-meta/yds-event-meta.twig' %}
-
+{% endif %}
 {# Below is temporary for front end to see usage of variables. #}
 
 <h2>Dates</h2>
