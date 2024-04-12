@@ -25,6 +25,8 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'event_meta__cta_primary__href' => NULL,
         'event_meta__cta_primary__content' => NULL,
         'event_experience' => NULL,
+        'localist_image_url' => NULL,
+        'teaser_media' => [],
       ],
     ],
     'ys_page_meta_block' => [
