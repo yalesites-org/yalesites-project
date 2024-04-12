@@ -137,6 +137,28 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
     $eventDescription = $node->field_event_description->first() ? $node->field_event_description->first()->getValue()['value'] : NULL;
     $eventWebsite = ($node->field_event_cta->first()) ? Url::fromUri($node->field_event_cta->first()->getValue()['uri'])->toString() : NULL;
     $urlTitle = ($node->field_event_cta->first()) ? $node->field_event_cta->first()->getValue()['title'] : NULL;
+    $localistImageUrl = ($node->field_localist_event_image_url->first()) ? Url::fromUri($node->field_localist_event_image_url->first()->getValue()['uri'])->toString() : NULL;
+
+    // Teaser responsive image.
+    $teaserMediaRender = [];
+    $teaserMediaId = ($node->field_teaser_media->first()) ? $node->field_teaser_media->getValue()[0]['target_id'] : NULL;
+    if ($teaserMediaId) {
+      /** @var Drupal\media\Entity\Media $teaserMedia */
+      if ($teaserMedia = $this->entityTypeManager->getStorage('media')->load($teaserMediaId)) {
+        /** @var Drupal\file\FileStorage $fileEntity */
+        $fileEntity = $this->entityTypeManager->getStorage('file');
+        $teaserImageFileUri = $fileEntity->load($teaserMedia->field_media_image->target_id)->getFileUri();
+
+        $teaserMediaRender = [
+          '#type' => 'responsive_image',
+          '#responsive_image_style_id' => 'card_featured_3_2',
+          '#uri' => $teaserImageFileUri,
+          '#attributes' => [
+            'alt' => $teaserMedia->get('field_media_image')->first()->get('alt')->getValue(),
+          ],
+        ];
+      }
+    }
 
     // Dates.
     $dates = $node->field_event_date->getValue();
@@ -208,6 +230,8 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
       '#event_meta__cta_primary__href' => $eventWebsite,
       '#event_meta__cta_primary__content' => $urlTitle,
       '#event_experience' => $eventExperienceName,
+      '#localist_image_url' => $localistImageUrl,
+      '#teaser_media' => $teaserMediaRender,
     ];
   }
 
