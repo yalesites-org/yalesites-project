@@ -4,6 +4,7 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.node.search_result
+    - field.field.node.page.field_external_source
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
     - field.field.node.page.field_tags
@@ -20,6 +21,18 @@ targetEntityType: node
 bundle: page
 mode: search_result
 content:
+  field_external_source:
+    type: link_separate
+    label: hidden
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 2
+    region: content
   field_teaser_text:
     type: text_default
     label: hidden

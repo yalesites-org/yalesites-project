@@ -7,6 +7,7 @@ dependencies:
     - block_content.type.button_link
     - block_content.type.callout
     - block_content.type.content_spotlight
+    - block_content.type.content_spotlight_portrait
     - block_content.type.cta_banner
     - block_content.type.custom_cards
     - block_content.type.directory
@@ -43,19 +44,21 @@ dependencies:
     - taxonomy.vocabulary.event_category
     - taxonomy.vocabulary.post_category
     - taxonomy.vocabulary.tags
+    - workflows.workflow.editorial
   module:
     - block_content
+    - content_moderation
     - contextual
     - editoria11y
     - file
     - layout_builder
     - media
     - menu_admin_per_menu
+    - moderation_sidebar
     - node
     - override_node_options
     - paragraphs
     - path
-    - publishcontent
     - quick_node_clone
     - redirect
     - role_delegation
@@ -67,7 +70,7 @@ dependencies:
     - ys_core
 id: site_admin
 label: 'Site administrator'
-weight: 3
+weight: -6
 is_admin: null
 permissions:
   - 'access block library'
@@ -84,10 +87,13 @@ permissions:
   - 'administer redirects'
   - 'administer users'
   - 'administer utility-navigation menu items'
+  - 'assign contributor role'
+  - 'assign editor role'
   - 'assign site_admin role'
   - 'clone event content'
   - 'clone page content'
   - 'clone post content'
+  - 'clone profile content'
   - 'configure editable event node layout overrides'
   - 'configure editable page node layout overrides'
   - 'configure editable post node layout overrides'
@@ -98,8 +104,10 @@ permissions:
   - 'create button_link block content'
   - 'create callout block content'
   - 'create content_spotlight block content'
+  - 'create content_spotlight_portrait block content'
   - 'create cta_banner block content'
   - 'create custom_cards block content'
+  - 'create directory block content'
   - 'create divider block content'
   - 'create document media'
   - 'create embed block content'
@@ -118,6 +126,7 @@ permissions:
   - 'create profile content'
   - 'create pull_quote block content'
   - 'create quick_links block content'
+  - 'create reusable blocks'
   - 'create tabs block content'
   - 'create terms in affiliation'
   - 'create terms in event_category'
@@ -139,10 +148,14 @@ permissions:
   - 'delete any callout block content revisions'
   - 'delete any content_spotlight block content'
   - 'delete any content_spotlight block content revisions'
+  - 'delete any content_spotlight_portrait block content'
+  - 'delete any content_spotlight_portrait block content revisions'
   - 'delete any cta_banner block content'
   - 'delete any cta_banner block content revisions'
   - 'delete any custom_cards block content'
   - 'delete any custom_cards block content revisions'
+  - 'delete any directory block content'
+  - 'delete any directory block content revisions'
   - 'delete any divider block content'
   - 'delete any divider block content revisions'
   - 'delete any document media'
@@ -205,6 +218,7 @@ permissions:
   - 'edit any button_link block content'
   - 'edit any callout block content'
   - 'edit any content_spotlight block content'
+  - 'edit any content_spotlight_portrait block content'
   - 'edit any cta_banner block content'
   - 'edit any custom_cards block content'
   - 'edit any directory block content'
@@ -250,13 +264,12 @@ permissions:
   - 'mark as hidden in editoria11y'
   - 'override all sticky option'
   - 'override post authored on option'
-  - 'publish any content'
-  - 'publish editable content'
   - 'revert all revisions'
   - 'revert any accordion block content revisions'
   - 'revert any button_link block content revisions'
   - 'revert any callout block content revisions'
   - 'revert any content_spotlight block content revisions'
+  - 'revert any content_spotlight_portrait block content revisions'
   - 'revert any cta_banner block content revisions'
   - 'revert any custom_cards block content revisions'
   - 'revert any directory block content revisions'
@@ -280,16 +293,21 @@ permissions:
   - 'revert page revisions'
   - 'revert post revisions'
   - 'revert profile revisions'
-  - 'unpublish any content'
-  - 'unpublish editable content'
   - 'update any media'
   - 'update media'
+  - 'use editorial transition archive'
+  - 'use editorial transition archived_draft'
+  - 'use editorial transition archived_published'
+  - 'use editorial transition create_new_draft'
+  - 'use editorial transition publish'
+  - 'use moderation sidebar'
   - 'view all media revisions'
   - 'view all revisions'
   - 'view any accordion block content history'
   - 'view any button_link block content history'
   - 'view any callout block content history'
   - 'view any content_spotlight block content history'
+  - 'view any content_spotlight_portrait block content history'
   - 'view any cta_banner block content history'
   - 'view any custom_cards block content history'
   - 'view any directory block content history'
@@ -305,6 +323,7 @@ permissions:
   - 'view any quick_links block content history'
   - 'view any tabs block content history'
   - 'view any text block content history'
+  - 'view any unpublished content'
   - 'view any video block content history'
   - 'view any view block content history'
   - 'view any webform block content history'
@@ -312,6 +331,7 @@ permissions:
   - 'view any wrapped_image block content history'
   - 'view editoria11y checker'
   - 'view event revisions'
+  - 'view latest version'
   - 'view own unpublished content'
   - 'view own unpublished media'
   - 'view own webform submission'

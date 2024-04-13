@@ -7,19 +7,21 @@ dependencies:
     - field.field.block_content.button_link.field_button_link
   module:
     - hide_revision_field
-    - link
+    - linkit
 id: block_content.button_link.default
 targetEntityType: block_content
 bundle: button_link
 mode: default
 content:
   field_button_link:
-    type: link_default
+    type: linkit
     weight: 82
     region: content
     settings:
       placeholder_url: ''
       placeholder_title: ''
+      linkit_profile: default
+      linkit_auto_link_text: false
     third_party_settings: {  }
   info:
     type: string_textfield

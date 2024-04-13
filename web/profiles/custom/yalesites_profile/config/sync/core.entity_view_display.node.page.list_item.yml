@@ -4,6 +4,7 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.node.list_item
+    - field.field.node.page.field_external_source
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
     - field.field.node.page.field_tags
@@ -14,6 +15,7 @@ dependencies:
     - node.type.page
   module:
     - layout_builder
+    - link
     - text
     - user
 third_party_settings:
@@ -25,6 +27,18 @@ targetEntityType: node
 bundle: page
 mode: list_item
 content:
+  field_external_source:
+    type: link_separate
+    label: hidden
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 5
+    region: content
   field_teaser_media:
     type: entity_reference_entity_view
     label: hidden

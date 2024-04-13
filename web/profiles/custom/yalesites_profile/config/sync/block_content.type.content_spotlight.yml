@@ -1,8 +1,33 @@
 uuid: 045c7b01-536a-4ecb-a54e-6c328ce91888
 langcode: en
 status: true
-dependencies: {  }
+dependencies:
+  module:
+    - entity_redirect
+third_party_settings:
+  entity_redirect:
+    redirect:
+      add:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      edit:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      delete:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      anonymous:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
 id: content_spotlight
-label: 'Content Spotlight'
+label: 'Spotlight - Landscape'
 revision: 1
-description: 'Content spotlight allows you to display an image adjacent to text. This component has optional content, varying sizes, and different orientations.'
+description: 'Spotlight - Landscape allows you to display a landscape 3x2 image adjacent to text. This component has optional content, varying sizes, and different orientations.'

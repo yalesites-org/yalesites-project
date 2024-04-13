@@ -5,7 +5,7 @@ dependencies: {  }
 id: content_spotlight
 block_id: 'inline_block:content_spotlight'
 category: basic
-label: 'Content Spotlight'
-image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/content-spotlight.svg
+label: 'Spotlight - Landscape'
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/spotlight-landscape.svg
 image_alt: ''
-weight: -3
+weight: -4

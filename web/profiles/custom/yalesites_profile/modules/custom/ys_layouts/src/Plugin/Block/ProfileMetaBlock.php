@@ -121,10 +121,10 @@ class ProfileMetaBlock extends BlockBase implements ContainerFactoryPluginInterf
     if ($route && $node) {
       // Profile fields.
       $title = $node->getTitle();
-      $position = ($node->field_position->first()) ? $node->field_position->first()->getValue()['value'] : NULL;
-      $subtitle = ($node->field_subtitle->first()) ? $node->field_subtitle->first()->getValue()['value'] : NULL;
-      $department = ($node->field_department->first()) ? $node->field_department->first()->getValue()['value'] : NULL;
-      $mediaId = ($node->field_media->first()) ? $node->field_media->first()->getValue()['target_id'] : NULL;
+      $position = $node->get('field_position')->getValue()[0]['value'] ?? NULL;
+      $subtitle = $node->get('field_subtitle')->getValue()[0]['value'] ?? NULL;
+      $department = $node->get('field_department')->getValue()[0]['value'] ?? NULL;
+      $mediaId = $node->get('field_media')->getValue()[0]['target_id'] ?? NULL;
     }
 
     return [

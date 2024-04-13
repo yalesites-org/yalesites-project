@@ -7,6 +7,7 @@ dependencies:
     - field.field.node.profile.field_affiliation
     - field.field.node.profile.field_department
     - field.field.node.profile.field_email
+    - field.field.node.profile.field_external_source
     - field.field.node.profile.field_first_name
     - field.field.node.profile.field_honorific_prefix
     - field.field.node.profile.field_last_name
@@ -26,6 +27,7 @@ dependencies:
     - allowed_formats
     - chosen_field
     - field_group
+    - link
     - maxlength
     - media_library
     - metatag
@@ -139,6 +141,14 @@ content:
       placeholder: ''
       size: 60
     third_party_settings: {  }
+  field_external_source:
+    type: link_default
+    weight: 3
+    region: content
+    settings:
+      placeholder_url: ''
+      placeholder_title: ''
+    third_party_settings: {  }
   field_first_name:
     type: string_textfield
     weight: 28
@@ -176,7 +186,9 @@ content:
     region: content
     settings:
       media_types: {  }
-    third_party_settings: {  }
+    third_party_settings:
+      media_library_edit:
+        show_edit: '1'
   field_metatags:
     type: metatag_firehose
     weight: 6

@@ -38,10 +38,24 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   const ALLOWED_ENTITIES = [
     'post' => [
       'label' => 'Posts',
+      'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/content-type-post.svg',
+      'img_alt' => 'Speech bubble icon',
       'view_modes' => [
-        'card' => 'Post Card Grid',
-        'list_item' => 'Post List',
-        'condensed' => 'Condensed',
+        'card' => [
+          'label' => 'Post Card Grid',
+          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-card-grid.svg',
+          'img_alt' => 'Icon showing 3 generic cards next to each other. Image placement is on the top of each card.',
+        ],
+        'list_item' => [
+          'label' => 'Post List',
+          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-list-view.svg',
+          'img_alt' => 'Icon showing 3 generic list items one on top of the other. Image placement is on the left of each list item.',
+        ],
+        'condensed' => [
+          'label' => 'Condensed',
+          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-condensed.svg',
+          'img_alt' => 'Icon showing 3 generic list items one on top of the other with no images on the items.',
+        ],
       ],
       'sort_by' => [
         'field_publish_date:DESC' => 'Publish Date - newer first',
@@ -50,10 +64,24 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     ],
     'event' => [
       'label' => 'Events',
+      'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/content-type-event.svg',
+      'img_alt' => 'Calendar icon',
       'view_modes' => [
-        'card' => 'Event Card Grid',
-        'list_item' => 'Event List',
-        'condensed' => 'Condensed',
+        'card' => [
+          'label' => 'Event Card Grid',
+          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-card-grid.svg',
+          'img_alt' => 'Icon showing 3 generic cards next to each other. Image placement is on the top of each card.',
+        ],
+        'list_item' => [
+          'label' => 'Event List',
+          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-list-view.svg',
+          'img_alt' => 'Icon showing 3 generic list items one on top of the other. Image placement is on the left of each list item.',
+        ],
+        'condensed' => [
+          'label' => 'Condensed',
+          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-condensed.svg',
+          'img_alt' => 'Icon showing 3 generic list items one on top of the other with no images on the items.',
+        ],
       ],
       'sort_by' => [
         'field_event_date:DESC' => 'Event Date - newer first',
@@ -62,10 +90,24 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     ],
     'page' => [
       'label' => 'Pages',
+      'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/content-type-page.svg',
+      'img_alt' => 'Blank page icon',
       'view_modes' => [
-        'card' => 'Page Grid',
-        'list_item' => 'Page List',
-        'condensed' => 'Condensed',
+        'card' => [
+          'label' => 'Page Grid',
+          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-card-grid.svg',
+          'img_alt' => 'Icon showing 3 generic cards next to each other. Image placement is on the top of each card.',
+        ],
+        'list_item' => [
+          'label' => 'Page List',
+          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-list-view.svg',
+          'img_alt' => 'Icon showing 3 generic list items one on top of the other. Image placement is on the left of each list item.',
+        ],
+        'condensed' => [
+          'label' => 'Condensed',
+          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-condensed.svg',
+          'img_alt' => 'Icon showing 3 generic list items one on top of the other with no images on the items.',
+        ],
       ],
       'sort_by' => [
         'title:ASC' => 'Title - A-Z',
@@ -74,11 +116,29 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     ],
     'profile' => [
       'label' => 'Profiles',
+      'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/content-type-profile.svg',
+      'img_alt' => 'Generic person head icon',
       'view_modes' => [
-        'card' => 'Profile Grid',
-        'list_item' => 'Profile List',
-        'directory' => 'Directory Grid',
-        'condensed' => 'Condensed',
+        'card' => [
+          'label' => 'Profile Grid',
+          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-card-grid.svg',
+          'img_alt' => 'Icon showing 3 generic cards next to each other. Image placement is on the top of each card.',
+        ],
+        'list_item' => [
+          'label' => 'Profile List',
+          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-list-view.svg',
+          'img_alt' => 'Icon showing 3 generic list items one on top of the other. Image placement is on the left of each list item.',
+        ],
+        'directory' => [
+          'label' => 'Directory Grid',
+          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-directory.svg',
+          'img_alt' => 'Icon showing 3 cards next to each other with a generic person image on the top of each card.',
+        ],
+        'condensed' => [
+          'label' => 'Condensed',
+          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-condensed.svg',
+          'img_alt' => 'Icon showing 3 generic list items one on top of the other with no images on the items.',
+        ],
       ],
       'sort_by' => [
         'field_last_name:ASC' => 'Last Name - A-Z',
@@ -274,7 +334,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    */
   public function entityTypeList() {
     foreach (self::ALLOWED_ENTITIES as $machine_name => $type) {
-      $entityTypes[$machine_name] = $type['label'];
+      $entityTypes[$machine_name] = $type['label'] . "<img src='{$type['img']}' alt='{$type['img_alt']}'>";
     }
 
     return $entityTypes;
@@ -290,7 +350,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   An array of human readable view modes, with machine name as the key.
    */
   public function viewModeList($content_type) {
-    $viewModes = self::ALLOWED_ENTITIES[$content_type]['view_modes'];
+    foreach (self::ALLOWED_ENTITIES[$content_type]['view_modes'] as $machine_name => $viewMode) {
+      $viewModes[$machine_name] = $viewMode['label'] . "<img src='{$viewMode['img']}' alt='{$viewMode['img_alt']}'>";
+    }
+
     return $viewModes;
   }
 
@@ -474,6 +537,145 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    */
   private function getTermId($term) : int {
     return (int) is_array($term) ? $term['target_id'] : $term;
+  }
+
+  /**
+   * Gets views widget form selectors based on which form is being loaded.
+   *
+   * Checks if the form is loaded via layout builder and, if so, is the
+   * block reusable. This aids in setting the correct arrays and Ajax calls
+   * below as the selectors are different depending on what form is being
+   * loaded.
+   *
+   * @see https://www.drupal.org/project/drupal/issues/2758631
+   */
+  public function getFormSelectors($formState, $form = NULL, $entityValue = NULL) {
+    $formSelectors = [];
+
+    $rebuildValues = ($formState->isRebuilding()) ? $formState->getValues() : NULL;
+
+    if ($formState->getCompleteForm() && str_starts_with($formState->getCompleteForm()['#form_id'], 'layout_builder_')) {
+      if (isset($formState->getCompleteForm()['block_form']['#block']) && $formState->getCompleteForm()['block_form']['#block']->isReusable()) {
+        // Reusable block Layout Builder form.
+        $formSelectors = [
+          'entity_types' => ($rebuildValues) ? $rebuildValues['block_form']['group_user_selection']['entity_and_view_mode']['entity_types'] : $entityValue,
+          'entity_types_ajax' => ':input[name="block_form[group_user_selection][entity_and_view_mode][entity_types]"]',
+          'view_mode_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
+          'massage_terms_include_array' => [
+            'block_form',
+            'group_user_selection',
+            'filter_and_sort',
+            'terms_include',
+          ],
+          'massage_terms_exclude_array' => [
+            'block_form',
+            'group_user_selection',
+            'filter_and_sort',
+            'terms_exclude',
+          ],
+          'sort_by_array' => [
+            'block_form',
+            'group_user_selection',
+            'filter_and_sort',
+            'sort_by',
+          ],
+          'sort_by_ajax' => ($form) ? $form['block_form']['group_user_selection']['filter_and_sort']['sort_by'] : NULL,
+          'display_array' => [
+            'block_form',
+            'group_user_selection',
+            'options',
+            'display',
+          ],
+          'display_ajax' => ':input[name="block_form[group_user_selection][options][display]"]',
+          'display_value_ajax' => $formState->getValue(
+            ['block_form', 'group_user_selection', 'options', 'display']
+          ),
+          'limit_array' => [
+            'block_form',
+            'group_user_selection',
+            'options',
+            'limit',
+          ],
+          'limit_ajax' => ($form) ? $form['block_form']['group_user_selection']['options']['limit'] : NULL,
+        ];
+      }
+      else {
+        // Regular block Layout Builder form.
+        $formSelectors = [
+          'entity_types' => ($rebuildValues) ? $rebuildValues['settings']['block_form']['group_user_selection']['entity_and_view_mode']['entity_types'] : $entityValue,
+          'entity_types_ajax' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][entity_types]"]',
+          'view_mode_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
+          'massage_terms_include_array' => [
+            'settings',
+            'block_form',
+            'group_user_selection',
+            'filter_and_sort',
+            'terms_include',
+          ],
+          'massage_terms_exclude_array' => [
+            'settings',
+            'block_form',
+            'group_user_selection',
+            'filter_and_sort',
+            'terms_exclude',
+          ],
+          'sort_by_array' => [
+            'settings',
+            'block_form',
+            'group_user_selection',
+            'filter_and_sort',
+            'sort_by',
+          ],
+          'sort_by_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['filter_and_sort']['sort_by'] : NULL,
+          'display_array' => [
+            'settings',
+            'block_form',
+            'group_user_selection',
+            'options',
+            'display',
+          ],
+          'display_ajax' => ':input[name="settings[block_form][group_user_selection][options][display]"]',
+          'display_value_ajax' => $formState->getValue(
+            [
+              'settings',
+              'block_form',
+              'group_user_selection',
+              'options',
+              'display',
+            ]
+          ),
+          'limit_array' => [
+            'settings',
+            'block_form',
+            'group_user_selection',
+            'options',
+            'limit',
+          ],
+          'limit_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['options']['limit'] : NULL,
+        ];
+      }
+    }
+    else {
+      // Drupal core block form.
+      $formSelectors = [
+        'entity_types' => ($rebuildValues) ? $rebuildValues['entity_types'] : $entityValue,
+        'entity_types_ajax' => ':input[name="entity_types"]',
+        'view_mode_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
+        'massage_terms_include_array' => ['terms_include'],
+        'massage_terms_exclude_array' => ['terms_exclude'],
+        'sort_by_array' => ['sort_by'],
+        'sort_by_ajax' => ($form) ? $form['group_user_selection']['filter_and_sort']['sort_by'] : NULL,
+        'display_array' => ['display'],
+        'display_ajax' => ':input[name="display"]',
+        'display_value_ajax' => $formState->getValue(
+          ['group_user_selection', 'options', 'display']
+        ),
+        'limit_array' => ['limit'],
+        'limit_ajax' => ($form) ? $form['group_user_selection']['options']['limit'] : NULL,
+      ];
+    }
+
+    return $formSelectors;
   }
 
 }
