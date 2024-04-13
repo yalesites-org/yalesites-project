@@ -5,13 +5,9 @@ dependencies:
   config:
     - block_content.type.quick_links
     - field.storage.block_content.field_text
+    - filter.format.restricted_html
   module:
-    - allowed_formats
     - text
-third_party_settings:
-  allowed_formats:
-    allowed_formats:
-      - heading_html
 id: block_content.quick_links.field_text
 field_name: field_text
 entity_type: block_content
@@ -22,5 +18,7 @@ required: false
 translatable: true
 default_value: {  }
 default_value_callback: ''
-settings: {  }
+settings:
+  allowed_formats:
+    - heading_html
 field_type: text_long

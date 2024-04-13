@@ -20,7 +20,7 @@ mode: default
 content:
   field_heading:
     type: text_textfield
-    weight: 1
+    weight: 2
     region: content
     settings:
       size: 60
@@ -31,7 +31,7 @@ content:
         hide_guidelines: '1'
       maxlength:
         maxlength_js: 50
-        maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
+        maxlength_js_label: 'Content recommended length set to @limit characters, remaining: <strong>@remaining</strong>'
         maxlength_js_enforce: false
   field_instructions:
     type: markup
@@ -41,10 +41,17 @@ content:
     third_party_settings: {  }
   field_view_params:
     type: views_basic_default_widget
-    weight: 2
+    weight: 3
     region: content
     settings: {  }
     third_party_settings: {  }
+  info:
+    type: string_textfield
+    weight: 1
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
 hidden:
-  info: true
   revision_log: true

@@ -52,14 +52,12 @@ behind the a.toolbar-icon element. */
 .toolbar .toolbar-bar .toolbar-tab > .toolbar-icon-edit.toolbar-icon.unpublish::before {
   -webkit-mask-image: url('../images/unpublish.svg');
   mask-image: url('../images/unpublish.svg');
-  background: #f9d4d4 !important;
 }
 
 /* Publish link */
 .toolbar .toolbar-bar .toolbar-tab > .toolbar-icon-edit.toolbar-icon.publish::before {
   -webkit-mask-image: url('../images/publish.svg');
   mask-image: url('../images/publish.svg');
-  background: #d6f9d4 !important;
 }
 
 /* Local tasks - more actions */
@@ -68,8 +66,32 @@ behind the a.toolbar-icon element. */
   mask-image: url('../images/more_actions.svg');
 }
 
-/* YaleSites Settings Admin Link */
-.toolbar .toolbar-bar .toolbar-icon.toolbar-icon-ys-core-admin-yalesites::before {
-  -webkit-mask-image: url('../images/icons.svg#config-view');
-  mask-image: url('../images/icons.svg#config-view');
+/*
+//
+// Toolbar //
+//
+*/
+
+/* Fix active toggle color in dark mode */
+.gin--dark-mode :not(.glb-form-checkboxes):not(td):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .glb-form-type--checkbox input:checked ~ .glb-checkbox-toggle .glb-checkbox-toggle__inner {
+  background-color: var(--gin-color-primary) !important;
+}
+
+/* Make the secondary toolbar the same color as the primary toolbar */
+.gin-secondary-toolbar--frontend {
+  background: rgba(255, 255, 255, 1) !important;
+}
+
+.gin--dark-mode .gin-secondary-toolbar--frontend {
+  background: rgba(42, 42, 45, 1) !important;
+}
+
+@supports ((-webkit-backdrop-filter: blur()) or (backdrop-filter: blur())) {
+  .gin-secondary-toolbar--frontend {
+    background: rgba(255, 255, 255, 1) !important;
+  }
+
+  .gin--dark-mode .gin-secondary-toolbar--frontend {
+    background: rgba(42, 42, 45, 1) !important;
+  }
 }

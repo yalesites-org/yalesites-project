@@ -9,9 +9,15 @@ services:
   # Twig functions for passing core settings to templates.
   ys_core.core_twig_extension:
     class: Drupal\ys_core\CoreTwigExtension
-    arguments: ['@config.factory']
+    arguments: ['@config.factory', '@ys_core.media_manager', '@request_stack']
     tags:
       - { name: twig.extension }
-  ys_core.favicon_manager:
-    class: Drupal\ys_core\FaviconManager
+  ys_core.media_manager:
+    class: Drupal\ys_core\YaleSitesMediaManager
     arguments: ['@config.factory', '@entity_type.manager', '@file_url_generator']
+  # Redirect visitors to external source if set on the node.
+  ys_core.external_source_redirect_subscriber:
+    class: Drupal\ys_core\EventSubscriber\ExternalSourceRedirectSubscriber
+    arguments: ['@current_route_match']
+    tags:
+      - { name: 'event_subscriber' }

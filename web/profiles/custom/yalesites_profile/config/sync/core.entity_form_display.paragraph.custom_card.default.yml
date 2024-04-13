@@ -10,7 +10,7 @@ dependencies:
     - paragraphs.paragraphs_type.custom_card
   module:
     - allowed_formats
-    - link
+    - linkit
     - maxlength
     - media_library
     - media_library_edit
@@ -33,7 +33,8 @@ content:
         hide_guidelines: '1'
       maxlength:
         maxlength_js: 80
-        maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
+        maxlength_js_label: 'Content recommended length set to @limit characters, remaining: <strong>@remaining</strong>'
+        maxlength_js_enforce: false
   field_image:
     type: media_library_widget
     weight: 0
@@ -44,12 +45,14 @@ content:
       media_library_edit:
         show_edit: '1'
   field_link:
-    type: link_default
+    type: linkit
     weight: 3
     region: content
     settings:
       placeholder_url: ''
       placeholder_title: ''
+      linkit_profile: default
+      linkit_auto_link_text: false
     third_party_settings:
       maxlength:
         maxlength_js: null

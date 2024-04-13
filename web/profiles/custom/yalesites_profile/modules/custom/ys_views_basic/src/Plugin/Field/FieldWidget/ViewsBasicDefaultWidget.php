@@ -104,12 +104,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       $entityValue = $decodedParams['filters']['types'][0];
     }
 
-    // Gets the value of the selected entity for Ajax callbacks.
-    // Via: https://www.drupal.org/project/drupal/issues/2758631
-    if ($formState->isRebuilding()) {
-      $allValues = $formState->getValues();
-      $entityValue = $allValues['settings']['block_form']['group_user_selection']['entity_and_view_mode']['entity_types'];
-    }
+    $formSelectors = $this->viewsBasicManager->getFormSelectors($formState, NULL, $entityValue);
+    $form['#form_selectors'] = $formSelectors;
 
     $element['group_params'] = [
       '#type' => 'container',
@@ -126,6 +122,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         'class' => [
           'views-basic--group-user-selection',
         ],
+        'data-drupal-ck-style-fence' => '',
       ],
       '#weight' => 10,
     ];
@@ -135,6 +132,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#attributes' => [
         'class' => [
           'grouped-items',
+          'views-basic--entity-view-mode',
         ],
       ],
     ];
@@ -198,7 +196,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     ];
 
     // Gets the view mode options based on Ajax callbacks or initial load.
-    $viewModeOptions = $this->viewsBasicManager->viewModeList($entityValue);
+    $viewModeOptions = $this->viewsBasicManager->viewModeList($formSelectors['entity_types']);
 
     $form['group_user_selection']['entity_and_view_mode']['view_mode'] = [
       '#type' => 'radios',
@@ -261,7 +259,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     ];
 
     // Gets the view mode options based on Ajax callbacks or initial load.
-    $sortOptions = $this->viewsBasicManager->sortByList($entityValue);
+    $sortOptions = $this->viewsBasicManager->sortByList($formSelectors['entity_types']);
 
     $form['group_user_selection']['filter_and_sort']['sort_by'] = [
       '#type' => 'select',
@@ -286,7 +284,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('event_time_period', $items[$delta]->params) : 'future',
       '#states' => [
         'visible' => [
-          ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][entity_types]"]' => [
+          $formSelectors['entity_types_ajax'] => [
             'value' => 'event',
           ],
         ],
@@ -302,15 +300,6 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         'all' => $this->t('Display all items'),
         'limit' => $this->t('Limit to'),
         'pager' => $this->t('Pagination after'),
-      ],
-      '#ajax' => [
-        'callback' => [$this, 'updateLimitField'],
-        'disable-refocus' => FALSE,
-        'event' => 'change',
-        'progress' => [
-          'type' => 'throbber',
-          'message' => $this->t('Updating limit field...'),
-        ],
       ],
     ];
 
@@ -335,7 +324,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#required' => TRUE,
       '#states' => [
         'invisible' => [
-          ':input[name="settings[block_form][group_user_selection][options][display]"]' => [
+          $formSelectors['display_ajax'] => [
             'value' => 'all',
           ],
         ],
@@ -365,44 +354,12 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
    * Get data from user selection and save into params field.
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
-    $terms_include = ($form_state->getValue(
-        [
-          'settings',
-          'block_form',
-          'group_user_selection',
-          'filter_and_sort',
-          'terms_include',
-        ]
-      ))
-      ? $form_state->getValue(
-          [
-            'settings',
-            'block_form',
-            'group_user_selection',
-            'filter_and_sort',
-            'terms_include',
-          ]
-        )
-      : NULL;
-    $terms_exclude = ($form_state->getValue(
-        [
-          'settings',
-          'block_form',
-          'group_user_selection',
-          'filter_and_sort',
-          'terms_exclude',
-        ]
-      ))
-      ? $form_state->getValue(
-          [
-            'settings',
-            'block_form',
-            'group_user_selection',
-            'filter_and_sort',
-            'terms_exclude',
-          ]
-        )
-      : NULL;
+
+    $formSelectors = $this->viewsBasicManager->getFormSelectors($form_state);
+
+    $terms_include = ($form_state->getValue($formSelectors['massage_terms_include_array'])) ?? NULL;
+    $terms_exclude = ($form_state->getValue($formSelectors['massage_terms_exclude_array'])) ?? NULL;
+
     foreach ($values as &$value) {
       $paramData = [
         "view_mode" => $form['group_user_selection']['entity_and_view_mode']['view_mode']['#value'],
@@ -415,27 +372,9 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
           "event_time_period" => $form['group_user_selection']['entity_specific']['event_time_period']['#value'],
         ],
         "operator" => $form['group_user_selection']['filter_and_sort']['term_operator']['#value'],
-        "sort_by" => $form_state->getValue(
-          [
-            'settings',
-            'block_form',
-            'group_user_selection',
-            'filter_and_sort',
-            'sort_by',
-          ]
-        ),
-        "display" => $form_state->getValue(
-          [
-            'settings',
-            'block_form',
-            'group_user_selection',
-            'options',
-            'display',
-          ]
-        ),
-        "limit" => (int) $form_state->getValue(
-          ['settings', 'block_form', 'group_user_selection', 'options', 'limit']
-        ),
+        "sort_by" => $form_state->getValue($formSelectors['sort_by_array']),
+        "display" => $form_state->getValue($formSelectors['display_array']),
+        "limit" => (int) $form_state->getValue($formSelectors['limit_array']),
       ];
       $value['params'] = json_encode($paramData);
     }
@@ -446,25 +385,13 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
    * Ajax callback to return only view modes for the specified content type.
    */
   public function updateOtherSettings(array &$form, FormStateInterface $form_state) {
+    $formSelectors = $this->viewsBasicManager->getFormSelectors($form_state, $form);
+
     $response = new AjaxResponse();
-    $response->addCommand(new ReplaceCommand('#edit-view-mode', $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['view_mode']));
+    $response->addCommand(new ReplaceCommand('#edit-view-mode', $formSelectors['view_mode_ajax']));
     $selector = '.views-basic--view-mode[name="group_user_selection[entity_and_view_mode][view_mode]"]:first';
     $response->addCommand(new InvokeCommand($selector, 'prop', [['checked' => TRUE]]));
-    $response->addCommand(new ReplaceCommand('#edit-sort-by', $form['settings']['block_form']['group_user_selection']['filter_and_sort']['sort_by']));
-    return $response;
-  }
-
-  /**
-   * Ajax callback to update the limit field.
-   */
-  public function updateLimitField(array &$form, FormStateInterface $form_state) {
-    $displayValue = $form_state->getValue(
-      ['settings', 'block_form', 'group_user_selection', 'options', 'display']
-    );
-    $response = new AjaxResponse();
-    if ($displayValue != 'all') {
-      $response->addCommand(new ReplaceCommand('#edit-limit', $form['settings']['block_form']['group_user_selection']['options']['limit']));
-    }
+    $response->addCommand(new ReplaceCommand('#edit-sort-by', $formSelectors['sort_by_ajax']));
     return $response;
   }
 

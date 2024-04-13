@@ -6,6 +6,7 @@ dependencies:
     - block_content.type.callout
     - field.field.block_content.callout.field_callout
     - field.field.block_content.callout.field_instructions
+    - field.field.block_content.callout.field_style_alignment
     - field.field.block_content.callout.field_style_color
   module:
     - markup
@@ -18,7 +19,7 @@ mode: default
 content:
   field_callout:
     type: paragraphs
-    weight: 1
+    weight: 2
     region: content
     settings:
       title: callout
@@ -46,12 +47,25 @@ content:
     region: content
     settings: {  }
     third_party_settings: {  }
-  field_style_color:
+  field_style_alignment:
     type: options_select
-    weight: 2
+    weight: 3
     region: content
     settings: {  }
     third_party_settings: {  }
+  field_style_color:
+    type: options_select
+    weight: 3
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  info:
+    type: string_textfield
+    weight: 1
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
 hidden:
-  info: true
   revision_log: true

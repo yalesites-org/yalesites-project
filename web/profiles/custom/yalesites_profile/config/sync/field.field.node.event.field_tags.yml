@@ -11,7 +11,7 @@ field_name: field_tags
 entity_type: node
 bundle: event
 label: Tags
-description: 'Tags will autocomplete as you type.  Choose from pre-created options only.  To add a new tag, go to ''Content->Manage Taxonomy->Tags''.'
+description: "Tags will autocomplete as you type.  Choose from pre-created options only.  To add a new tag, go to 'Content->Manage Taxonomy->Tags'."
 required: false
 translatable: true
 default_value: {  }

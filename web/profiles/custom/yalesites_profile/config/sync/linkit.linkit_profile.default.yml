@@ -20,8 +20,8 @@ matchers:
       group_by_bundle: false
       substitution_type: canonical
       limit: 100
-      include_unpublished: false
-    weight: 0
+      include_unpublished: true
+    weight: -7
   9a7ef5fd-456e-45c4-b6be-7b2f60f82084:
     id: 'entity:file'
     uuid: 9a7ef5fd-456e-45c4-b6be-7b2f60f82084
@@ -37,4 +37,29 @@ matchers:
         show_dimensions: false
         show_thumbnail: false
         thumbnail_image_style: null
-    weight: 0
+    weight: -5
+  90c3f3be-adc6-4ba4-93cc-24915c7aa69d:
+    id: email
+    uuid: 90c3f3be-adc6-4ba4-93cc-24915c7aa69d
+    settings: {  }
+    weight: -9
+  5d407f45-1ebb-45c7-8659-fa367cc55944:
+    id: phone
+    uuid: 5d407f45-1ebb-45c7-8659-fa367cc55944
+    settings: {  }
+    weight: -8
+  fc376fae-0029-4b92-9905-c5a021f32fc5:
+    id: front_page
+    uuid: fc376fae-0029-4b92-9905-c5a021f32fc5
+    settings: {  }
+    weight: -10
+  7a6406c1-fb96-416d-bfe4-31dca268bb26:
+    id: 'entity:media'
+    uuid: 7a6406c1-fb96-416d-bfe4-31dca268bb26
+    settings:
+      metadata: ''
+      bundles: {  }
+      group_by_bundle: false
+      substitution_type: media_download_inline
+      limit: 100
+    weight: -6

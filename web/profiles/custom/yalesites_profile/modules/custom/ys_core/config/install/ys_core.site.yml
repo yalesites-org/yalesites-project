@@ -1,8 +1,6 @@
 page:
   posts: ''
   events: ''
-search:
-  enable_search_form: 1
 seo:
   google_site_verification: ''
   google_analytics_id: ''

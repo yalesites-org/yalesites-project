@@ -15,6 +15,7 @@ use Drupal\Component\Utility\Xss;
  */
 function ys_core_update_9001() {
   $query = \Drupal::entityQuery('block_content')
+    ->accessCheck(FALSE)
     ->condition('type', 'quick_links')
     ->allRevisions();
 
@@ -36,6 +37,86 @@ function ys_core_update_9001() {
       }
       $block->set('field_text', $body);
       $block->save();
+    }
+  }
+}
+
+/**
+ * Implements hook_update().
+ *
+ * This update will migrate old theme settings to the new header settings.
+ */
+function ys_core_update_9002() {
+  $ysCoreConfig = \Drupal::config('ys_core.site');
+  $themeConfig = \Drupal::config('ys_themes.theme_settings');
+  $headerConfig = \Drupal::service('config.factory')->getEditable('ys_core.header_settings');
+
+  // Migrate search setting from core to header.
+  if ($ysCoreConfig->get('search')) {
+    $oldSearchSetting = $ysCoreConfig->get('search')['enable_search_form'];
+    $headerConfig->set('search.enable_search_form', $oldSearchSetting)->save();
+  }
+
+  // Migrate nav_position setting from themes to header settings.
+  $oldNavPosition = $themeConfig->get('nav_position');
+  if ($oldNavPosition) {
+    $headerConfig->set('nav_position', $oldNavPosition)->save();
+  }
+
+  // Migrate nav_type setting from themes to header settings header_variation.
+  $oldNavType = $themeConfig->get('nav_type');
+  if ($oldNavType) {
+    $headerConfig->set('header_variation', $oldNavType)->save();
+  }
+
+}
+
+/**
+ * Implements hook_update().
+ *
+ * This update will set a default field_style_variation for text blocks.
+ */
+function ys_core_update_9003() {
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+  $query = $block_storage->getQuery();
+  $query->accessCheck(FALSE)
+    ->condition('type', 'text');
+
+  $ids = $query->execute();
+
+  foreach ($ids as $id) {
+    $block = $block_storage->load($id);
+    $latestRevisionId = $block_storage->getLatestRevisionId($id);
+
+    if (!$latestRevisionId) {
+      $latestRevision = $block_storage->createRevision($block);
+    }
+    else {
+      $latestRevision = $block_storage->loadRevision($latestRevisionId);
+    }
+
+    if ($latestRevision->get('field_style_variation')->isEmpty()) {
+      $latestRevision->set('field_style_variation', 'default');
+      $latestRevision->save();
+    }
+
+  }
+
+}
+
+/**
+ * Implements hook_update().
+ *
+ * This update will convert an alias'd front page to a node based one.
+ */
+function ys_core_update_9004() {
+  $frontPage = \Drupal::config('system.site')->get('page.front');
+
+  if ($frontPage && strpos($frontPage, '/node') === FALSE) {
+    // Path should be already the form we need: /node/<number>.
+    $path = \Drupal::service('path_alias.manager')->getPathByAlias($frontPage);
+    if ($path) {
+      \Drupal::configFactory()->getEditable('system.site')->set('page.front', $path)->save();
     }
   }
 }
@@ -81,4 +162,37 @@ function ys_core_set_format($content_array, $new_format = 'heading_html') {
   $content_array['format'] = $new_format;
 
   return $content_array;
+}
+
+/**
+ * Implements hook_update().
+ *
+ * Updates all crops to focal point.
+ */
+function ys_core_update_9007() {
+  $crops = \Drupal::entityTypeManager()->getStorage('crop')->loadMultiple();
+
+  // To translate from iwc crops to focal point, the x and y stay
+  // the same, we need to set the image dimensions to those of the
+  // original file.
+  /** @var \Drupal\crop\Entity\Crop $crop */
+  foreach ($crops as $crop) {
+
+    $image = \Drupal::service('image.factory')->get($crop->uri->value);
+
+    // Get the original image dimensions.
+    $image_width = $image->getWidth() ?? 0;
+    $image_height = $image->getHeight() ?? 0;
+
+    // Update the type.
+    $crop->type = 'focal_point';
+
+    // Update the dimensions and save.
+    $crop->setSize($image_width, $image_height);
+    $crop->save();
+
+    // Flush to refresh image styles.
+    image_path_flush($image->getSource());
+
+  }
 }

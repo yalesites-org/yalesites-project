@@ -14,6 +14,14 @@ ys_core.admin_site_settings:
     _title: 'Site Settings'
   requirements:
     _permission: 'yalesites manage settings'
+# Header settings form.
+ys_core.admin_header_settings:
+  path: '/admin/yalesites/header'
+  defaults:
+    _form: 'Drupal\ys_core\Form\HeaderSettingsForm'
+    _title: 'Header Settings'
+  requirements:
+    _permission: 'yalesites manage settings'
 # Footer settings form.
 ys_core.admin_footer_settings:
   path: '/admin/yalesites/footer'

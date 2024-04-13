@@ -9,6 +9,7 @@ dependencies:
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_format
     - field.field.node.event.field_event_type
+    - field.field.node.event.field_external_source
     - field.field.node.event.field_login_required
     - field.field.node.event.field_metatags
     - field.field.node.event.field_tags
@@ -20,6 +21,7 @@ dependencies:
   module:
     - layout_builder
     - layout_builder_restrictions
+    - link
     - smart_date
     - user
 third_party_settings:
@@ -69,6 +71,18 @@ content:
       link: false
     third_party_settings: {  }
     weight: 1
+    region: content
+  field_external_source:
+    type: link_separate
+    label: hidden
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: '0'
+      target: '0'
+    third_party_settings: {  }
+    weight: 2
     region: content
 hidden:
   field_category: true

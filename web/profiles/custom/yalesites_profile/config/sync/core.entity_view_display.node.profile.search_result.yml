@@ -8,6 +8,7 @@ dependencies:
     - field.field.node.profile.field_affiliation
     - field.field.node.profile.field_department
     - field.field.node.profile.field_email
+    - field.field.node.profile.field_external_source
     - field.field.node.profile.field_first_name
     - field.field.node.profile.field_honorific_prefix
     - field.field.node.profile.field_last_name
@@ -36,6 +37,18 @@ targetEntityType: node
 bundle: profile
 mode: search_result
 content:
+  field_external_source:
+    type: link_separate
+    label: hidden
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 2
+    region: content
   field_teaser_text:
     type: text_default
     label: hidden

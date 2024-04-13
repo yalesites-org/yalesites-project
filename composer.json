@@ -10,25 +10,37 @@
     "drupal": {
       "type": "composer",
       "url": "https://packages.drupal.org/8"
+    },
+    "ckeditor5-anchor-drupal": {
+      "type": "package",
+      "package": {
+        "name": "northernco/ckeditor5-anchor-drupal",
+        "version": "0.4.0",
+        "type": "drupal-library",
+        "dist": {
+          "url": "https://registry.npmjs.org/@northernco/ckeditor5-anchor-drupal/-/ckeditor5-anchor-drupal-0.4.0.tgz",
+          "type": "tar"
+        }
+      }
     }
   },
   "require": {
     "composer/installers": "^1.9",
     "cweagans/composer-patches": "^1.7",
-    "drupal/core-composer-scaffold": "^9.2",
-    "drupal/core-recommended": "^9.2",
+    "drupal/core-composer-scaffold": "10.1.7",
+    "drupal/core-project-message": "10.1.7",
+    "drupal/core-recommended": "10.1.7",
     "drush/drush": "^11 || ^12",
     "oomphinc/composer-installers-extender": "^2.0",
-    "pantheon-systems/drupal-integrations": "^9",
+    "pantheon-systems/drupal-integrations": "^10",
     "yalesites-org/yalesites_profile": "*"
   },
   "require-dev": {
     "dealerdirect/phpcodesniffer-composer-installer": "^0.7.2",
     "drupal/coder": "^8.3",
-    "drupal/console": "~1.0",
-    "drupal/core-dev": "^9.2",
+    "drupal/core-dev": "^10",
     "drupal/drupal-driver": "^2.1",
-    "drupal/drupal-extension": "^4.1",
+    "drupal/drupal-extension": "^5.0",
     "mikey179/vfsstream": "^1.6",
     "phpspec/prophecy-phpunit": "^2",
     "phpunit/phpunit": "^9.5",
@@ -111,8 +123,10 @@
       "composer/installers": true,
       "cweagans/composer-patches": true,
       "drupal/core-composer-scaffold": true,
-      "drupal/console-extend-plugin": true,
-      "oomphinc/composer-installers-extender": true
+      "oomphinc/composer-installers-extender": true,
+      "drupal/core-project-message": true,
+      "phpstan/extension-installer": true,
+      "drupal/console-extend-plugin": true
     }
   },
   "scripts": {

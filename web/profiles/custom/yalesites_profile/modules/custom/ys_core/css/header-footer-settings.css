@@ -1,0 +1,92 @@
+@media screen and (min-width: 1380px) {
+  .ys-footer-links .details-wrapper,
+  .ys-footer-links .claro-details__content {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+  }
+}
+
+.ys-core-header-footer-settings
+  .claro-details.form-disabled
+  .claro-details__summary {
+  background-color: #6f6f6f !important;
+}
+
+.ys-core-header-footer-settings .form-element {
+  width: 100%;
+}
+
+.ys-core-header-footer-settings .preview-icon {
+  width: 190px;
+  height: 137px;
+}
+
+.ys-core-header-footer-settings .claro-details.form-disabled {
+  pointer-events: none;
+  user-select: none;
+}
+
+.ys-core-header-footer-settings
+  .claro-details.form-disabled
+  .claro-details__summary::after {
+  background-image: url("../images/icons/disabled-details.svg");
+  background-repeat: no-repeat;
+  background-size: contain;
+  box-shadow: none;
+  content: "";
+  display: inline-block;
+  height: 2rem;
+  left: 17rem;
+  opacity: 1;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2rem;
+}
+
+.variation-radios .form-radios {
+  display: flex;
+  margin-top: 1rem;
+}
+
+.variation-radios .form-type--radio:first-child {
+  margin-left: 0;
+}
+
+.variation-radios .form-type--radio input {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+.variation-radios .form-type--radio label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--gin-color-bg-layer);
+  border: 2px solid var(--gin-color-text);
+  border-radius: 0.25rem;
+  padding: 0.5rem;
+}
+
+.variation-radios .form-type--radio input:focus + label {
+  outline: 2px solid var(--gin-color-primary);
+}
+
+.variation-radios .form-type--radio input[checked="checked"] + label,
+.variation-radios .form-type--radio input[checked="checked"] + label:hover,
+.variation-radios
+  .form-type--radio
+  .form-boolean--type-radio:hover
+  input[checked="checked"]
+  + label {
+  background-color: var(--gin-color-bg-layer2);
+  color: var(--gin-color-primary) !important;
+  border-color: var(--gin-color-primary);
+}

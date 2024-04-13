@@ -8,7 +8,7 @@ dependencies:
 _core:
   default_config_hash: jvd5Pu6jy-lra4oMr-mR7zuY6CVDv9CaNeoj0Y70gV4
 id: block_content
-label: 'Custom block library'
+label: 'Content blocks'
 module: views
 description: 'Find and manage custom blocks.'
 tag: default
@@ -21,7 +21,7 @@ display:
     display_plugin: default
     position: 0
     display_options:
-      title: 'Custom block library'
+      title: 'Reusable Blocks'
       fields:
         info:
           id: info
@@ -33,7 +33,7 @@ display:
           entity_type: null
           entity_field: info
           plugin_id: field
-          label: 'Block description'
+          label: 'Reusable Block title'
           exclude: false
           alter:
             alter_text: false
@@ -209,6 +209,15 @@ display:
             date_format: short
             custom_date_format: ''
             timezone: ''
+            tooltip:
+              date_format: ''
+              custom_date_format: ''
+            time_diff:
+              enabled: false
+              future_format: '@interval hence'
+              past_format: '@interval ago'
+              granularity: 2
+              refresh: 60
         operations:
           id: operations
           table: block_content
@@ -291,7 +300,7 @@ display:
       access:
         type: perm
         options:
-          perm: 'administer blocks'
+          perm: 'access block library'
       cache:
         type: tag
         options: {  }
@@ -305,19 +314,8 @@ display:
           admin_label: ''
           plugin_id: text_custom
           empty: true
-          content: 'There are no custom blocks available.'
+          content: 'There are no reusable blocks available. You may add using the link above.'
           tokenize: false
-        block_content_listing_empty:
-          id: block_content_listing_empty
-          table: block_content
-          field: block_content_listing_empty
-          relationship: none
-          group_type: group
-          admin_label: ''
-          entity_type: block_content
-          plugin_id: block_content_listing_empty
-          label: ''
-          empty: true
       sorts: {  }
       arguments: {  }
       filters:
@@ -337,7 +335,7 @@ display:
           exposed: true
           expose:
             operator_id: info_op
-            label: 'Block description'
+            label: 'Reusable Block title'
             description: ''
             use_operator: false
             operator: info_op
@@ -350,7 +348,9 @@ display:
             remember_roles:
               authenticated: authenticated
               anonymous: '0'
-              administrator: '0'
+              platform_admin: '0'
+              site_admin: '0'
+            placeholder: ''
           is_grouped: false
           group_info:
             label: ''
@@ -522,15 +522,19 @@ display:
     display_plugin: page
     position: 1
     display_options:
-      display_extenders: {  }
-      path: admin/structure/block/block-content
+      display_extenders:
+        metatag_display_extender:
+          metatags: {  }
+          tokenize: false
+      path: admin/content/block
       menu:
         type: tab
-        title: 'Custom block library'
-        description: ''
+        title: Blocks
+        description: 'Create and edit block content.'
         weight: 0
+        expanded: false
         menu_name: admin
-        parent: block.admin_display
+        parent: system.admin_content
         context: '0'
     cache_metadata:
       max-age: -1

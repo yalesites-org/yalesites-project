@@ -9,6 +9,7 @@ dependencies:
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_format
     - field.field.node.event.field_event_type
+    - field.field.node.event.field_external_source
     - field.field.node.event.field_login_required
     - field.field.node.event.field_metatags
     - field.field.node.event.field_tags
@@ -35,6 +36,7 @@ hidden:
   field_event_date: true
   field_event_format: true
   field_event_type: true
+  field_external_source: true
   field_login_required: true
   field_metatags: true
   field_tags: true
