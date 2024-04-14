@@ -1,0 +1,10 @@
+/**
+ * @file
+ * Add styles to the Toolbar.
+ */
+
+/* Hide the ajax throbber when loading the theme settings dialog. */
+.ys-theme-settings-link + .ajax-progress-throbber,
+.ys-theme-settings-link + .ajax-progress--throbber {
+  display: none;
+}

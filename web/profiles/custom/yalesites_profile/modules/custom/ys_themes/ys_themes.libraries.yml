@@ -11,3 +11,7 @@ levers:
   dependencies:
     - core/drupal
     - core/once
+toolbar:
+  css:
+    theme:
+      css/toolbar.css : {}
