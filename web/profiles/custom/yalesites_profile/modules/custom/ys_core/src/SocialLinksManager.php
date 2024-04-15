@@ -17,7 +17,7 @@ class SocialLinksManager {
   const SITES = [
     'facebook' => 'Facebook',
     'instagram' => 'Instagram',
-    'x-twitter' => 'X',
+    'x-twitter' => 'X (formally Twitter)',
     'youtube' => 'YouTube',
     'weibo' => 'Weibo',
     'linkedin' => 'LinkedIn',
