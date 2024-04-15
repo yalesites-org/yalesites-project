@@ -6,6 +6,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 use Drupal\ys_templated_content\Managers\ImportManager;
 use Drupal\ys_templated_content\Managers\TemplateManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -91,6 +92,11 @@ class TemplatedContentForm extends FormBase implements FormInterface {
     $this->contentType = $form_state->get('content_types') ?? $content_type ?? 'page';
 
     $form['#title'] = $this->getTitle();
+
+    $form['local_tasks'] = [
+      '#theme' => 'menu_local_tasks',
+      '#primary' => $this->getContentTypeLocalMenu(),
+    ];
 
     $form['content_types'] = [
       '#type' => 'hidden',
@@ -321,6 +327,36 @@ class TemplatedContentForm extends FormBase implements FormInterface {
     }
 
     return 'Create from template';
+  }
+
+  /**
+   * Get the local menu for content types.
+   *
+   * @return array
+   *   The local menu array.
+   */
+  protected function getContentTypeLocalMenu() {
+    $content_types = $this->entityManager->getStorage('node_type')->loadMultiple();
+    uasort($content_types, function ($a, $b) {
+      return strcasecmp($a->label(), $b->label());
+    });
+
+    $menu = [];
+    foreach ($content_types as $content_type) {
+      $type = $content_type->id();
+      $menu[$type] = [
+        '#type' => 'link',
+        '#link' => [
+          'title' => $content_type->label(),
+          'url' => Url::fromRoute('ys_templated_content.selection', ['content_type' => $type]),
+        ],
+        '#level' => 'primary',
+        '#theme' => 'menu_local_task__navigation',
+        '#active' => $this->contentType == $type,
+      ];
+    }
+
+    return $menu;
   }
 
 }
