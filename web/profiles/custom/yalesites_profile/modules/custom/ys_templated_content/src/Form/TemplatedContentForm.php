@@ -81,10 +81,15 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, string $content_type = NULL) {
-    $currentContentType = $this->getCurrentContentType($form_state);
+    $currentContentType = $form_state->get('content_types') ?? $content_type ?? 'page';
+
+    $form['content_type'] = [
+      '#type' => 'markup',
+      '#markup' => '<h2>Create ' . $currentContentType . '</h2>',
+    ];
 
     $form['content_types'] = [
-      '#type' => 'select',
+      '#type' => 'hidden',
       '#title' => $this->t('Content Type'),
       '#options' => $this->getContentTypes(),
       '#required' => TRUE,
