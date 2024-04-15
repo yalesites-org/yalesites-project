@@ -40,6 +40,13 @@ class TemplatedContentForm extends FormBase implements FormInterface {
   protected $importManager;
 
   /**
+   * The content type.
+   *
+   * @var string
+   */
+  protected $contentType;
+
+  /**
    * Constructs the controller object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
@@ -81,12 +88,9 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, string $content_type = NULL) {
-    $currentContentType = $form_state->get('content_types') ?? $content_type ?? 'page';
+    $this->contentType = $form_state->get('content_types') ?? $content_type ?? 'page';
 
-    $form['content_type'] = [
-      '#type' => 'markup',
-      '#markup' => '<h2>Create ' . $currentContentType . '</h2>',
-    ];
+    $form['#title'] = $this->getTitle();
 
     $form['content_types'] = [
       '#type' => 'hidden',
@@ -108,7 +112,7 @@ class TemplatedContentForm extends FormBase implements FormInterface {
     $form['templates'] = [
       '#type' => 'select',
       '#title' => $this->t('Template'),
-      '#options' => $this->getCurrentTemplateOptions($currentContentType),
+      '#options' => $this->getCurrentTemplateOptions($this->contentType),
       '#required' => FALSE,
       '#prefix' => '<div id="template-update-wrapper">',
       '#suffix' => '</div>',
@@ -125,7 +129,7 @@ class TemplatedContentForm extends FormBase implements FormInterface {
 
     $form['template_description'] = [
       '#type' => 'item',
-      '#markup' => $this->templateManager->getTemplateDescription($currentContentType, ''),
+      '#markup' => $this->templateManager->getTemplateDescription($this->contentType, ''),
       '#prefix' => '<div id="template-description-wrapper">',
       '#suffix' => '</div>',
     ];
@@ -155,25 +159,25 @@ class TemplatedContentForm extends FormBase implements FormInterface {
       try {
         $entity = $this->importManager->createImport($content_type, $template);
         if ($entity) {
-          $this->messenger()->addMessage("Content generated successfully.  Please make any edits now as this has already been created for you.  Don't forget to change the URL alias.");
+        $this->messenger()->addMessage("Content generated successfully.  Please make any edits now as this has already been created for you.  Don't forget to change the URL alias.");
 
           // Noticed that when you update a node, a log is created.
           // Figured we need to also have a log showing it was imported.
-          $this->logger('ys_templated_content')->notice(
-          'Templated content created: @label (@type)',
-          [
-            '@label' => $entity->label(),
-            '@type' => $entity->getEntityTypeId(),
-          ]
+        $this->logger('ys_templated_content')->notice(
+            'Templated content created: @label (@type)',
+            [
+              '@label' => $entity->label(),
+              '@type' => $entity->getEntityTypeId(),
+            ]
           );
           $form_state->setRedirect(
-          $this->getEntityEditFormPath($entity),
-          [$entity->getEntityTypeId() => $entity->id()]
+            $this->getEntityEditFormPath($entity),
+            [$entity->getEntityTypeId() => $entity->id()]
           );
         }
       }
       catch (\Exception $e) {
-        $this->messenger()->addError($e->getMessage());
+      $this->messenger()->addError($e->getMessage());
         return;
       }
     }
@@ -291,6 +295,32 @@ class TemplatedContentForm extends FormBase implements FormInterface {
     }
 
     return $keyValuePairs;
+  }
+
+  /**
+   * Get the template options for the currrent content type.
+   *
+   * @param string $content_type
+   *   The content type to get templates for.
+   * @param string $template
+   *   The template name.
+   *
+   * @return array
+   *   The template options.
+   */
+  public function getTemplateTitle($content_type, $template) {
+    return $this->templates[$content_type][$template]['title'];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTitle() {
+    if ($this->contentType) {
+      return 'Create a ' . $this->contentType;
+    }
+
+    return 'Create from template';
   }
 
 }
