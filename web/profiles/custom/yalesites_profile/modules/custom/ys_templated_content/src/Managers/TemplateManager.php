@@ -239,19 +239,4 @@ class TemplateManager {
     return $this->templates;
   }
 
-  /**
-   * Get the template options for the currrent content type.
-   *
-   * @param string $content_type
-   *   The content type to get templates for.
-   * @param string $template
-   *   The template name.
-   *
-   * @return array
-   *   The template options.
-   */
-  public function getTemplateTitle($content_type, $template) {
-    return $this->templates[$content_type][$template]['title'];
-  }
-
 }
