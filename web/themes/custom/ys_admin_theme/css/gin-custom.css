@@ -38,6 +38,11 @@
   max-width: 485px;
 }
 
+a.focal-point-preview-link {
+  /* color: var(--gin-color-primary); */
+  background-color: var(--gin-bg-layer2);
+}
+
 /* stylelint-enable */
 
 /*# sourceMappingURL=gin-custom.css.map */
