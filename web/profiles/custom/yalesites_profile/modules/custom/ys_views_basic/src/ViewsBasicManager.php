@@ -213,9 +213,33 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     $running = TRUE;
 
     // Set up the view and initial decoded parameters.
-    $view = Views::getView('views_basic_scaffold');
-    $view->setDisplay('block_1');
     $paramsDecoded = json_decode($params, TRUE);
+
+    /* Events need to have aggregation turned on in the view. Therefore, we
+     * retrieve a special event scaffold view and apply sorting here instead of
+     * the custom sort plugin.
+     */
+
+    if (in_array('event', $paramsDecoded['filters']['types'])) {
+      $view = Views::getView('views_basic_scaffold_events');
+      $sortDirection = explode(":", $paramsDecoded['sort_by']);
+      $view->getDisplay()->setOption('sorts', [
+        [
+          'id' => 'field_event_date_value',
+          'table' => "node__field_event_date",
+          'field' => 'field_event_date_value',
+          'group_type' => 'min',
+          'order' => $sortDirection[1],
+        ],
+      ]);
+
+    }
+    else {
+      // All other views get the original scaffold view.
+      $view = Views::getView('views_basic_scaffold');
+    }
+
+    $view->setDisplay('block_1');
 
     /*
      * Sets the arguments that will get passed to contextual filters as well
