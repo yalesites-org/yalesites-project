@@ -1,7 +1,8 @@
 ys_templated_content.selection:
-  path: '/admin/node/add/from_template'
+  path: '/admin/node/add/from_template/{content_type}'
   defaults:
     _form: '\Drupal\ys_templated_content\Form\TemplatedContentForm'
     _title: 'Create content from a template'
+    content_type: page
   requirements:
     _permission: 'yalesites manage template usage'
