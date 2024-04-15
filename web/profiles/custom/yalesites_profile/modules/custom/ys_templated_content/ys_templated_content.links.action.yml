@@ -1,32 +1,32 @@
 # Adds an action link to the manage page interface
-ys_core.link_add_page:
-  route_name: node.add
+ys_templated_content.link_add_page:
+  route_name: ys_templated_content.selection
   route_parameters:
-    node_type: 'page'
+    content_type: 'page'
   title: 'Add page'
   appears_on:
     - view.manage_pages.page_1
 # Adds an action link to the manage posts interface
-ys_core.link_add_posts:
-  route_name: node.add
+ys_templated_content.link_add_posts:
+  route_name: ys_templated_content.selection
   route_parameters:
-    node_type: 'post'
+    content_type: 'post'
   title: 'Add post'
   appears_on:
     - view.manage_posts.page_1
 # Adds an action link to the manage events interface
-ys_core.link_add_events:
-  route_name: node.add
+ys_templated_content.link_add_events:
+  route_name: ys_templated_content.selection
   route_parameters:
-    node_type: 'event'
+    content_type: 'event'
   title: 'Add events'
   appears_on:
     - view.manage_events.page_1
 # Adds an action link to the manage profiles interface
-ys_core.link_add_profile:
-  route_name: node.add
+ys_templated_content.link_add_profile:
+  route_name: ys_templated_content.selection
   route_parameters:
-    node_type: 'profile'
+    content_type: 'profile'
   title: 'Add profile'
   appears_on:
     - view.manage_profiles.page_1
