@@ -221,6 +221,10 @@ class TemplateManager {
    *   The template options.
    */
   public function getTemplateDescription($content_type, $template_name) {
+    if (!isset($this->templates[$content_type][$template_name])) {
+      $template_name = array_key_first($this->templates[$content_type]);
+    }
+
     return $this->templates[$content_type][$template_name]['description'] ?? "";
   }
 
