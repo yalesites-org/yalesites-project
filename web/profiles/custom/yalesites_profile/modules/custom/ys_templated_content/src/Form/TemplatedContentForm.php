@@ -165,11 +165,11 @@ class TemplatedContentForm extends FormBase implements FormInterface {
       try {
         $entity = $this->importManager->createImport($content_type, $template);
         if ($entity) {
-        $this->messenger()->addMessage("Content generated successfully.  Please make any edits now as this has already been created for you.  Don't forget to change the URL alias.");
+          $this->messenger()->addMessage("Content generated successfully.  Please make any edits now as this has already been created for you.  Don't forget to change the URL alias.");
 
           // Noticed that when you update a node, a log is created.
           // Figured we need to also have a log showing it was imported.
-        $this->logger('ys_templated_content')->notice(
+          $this->logger('ys_templated_content')->notice(
             'Templated content created: @label (@type)',
             [
               '@label' => $entity->label(),
@@ -183,7 +183,7 @@ class TemplatedContentForm extends FormBase implements FormInterface {
         }
       }
       catch (\Exception $e) {
-      $this->messenger()->addError($e->getMessage());
+        $this->messenger()->addError($e->getMessage());
         return;
       }
     }
@@ -301,21 +301,6 @@ class TemplatedContentForm extends FormBase implements FormInterface {
     }
 
     return $keyValuePairs;
-  }
-
-  /**
-   * Get the template options for the currrent content type.
-   *
-   * @param string $content_type
-   *   The content type to get templates for.
-   * @param string $template
-   *   The template name.
-   *
-   * @return array
-   *   The template options.
-   */
-  public function getTemplateTitle($content_type, $template) {
-    return $this->templates[$content_type][$template]['title'];
   }
 
   /**
