@@ -80,7 +80,7 @@ class TemplatedContentForm extends FormBase implements FormInterface {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state, string $content_type = NULL) {
     $currentContentType = $this->getCurrentContentType($form_state);
 
     $form['content_types'] = [
@@ -88,7 +88,7 @@ class TemplatedContentForm extends FormBase implements FormInterface {
       '#title' => $this->t('Content Type'),
       '#options' => $this->getContentTypes(),
       '#required' => TRUE,
-      '#default_value' => 'page',
+      '#default_value' => $content_type ?? 'page',
       '#ajax' => [
         'callback' => [$this, 'updateTemplates'],
         'wrapper' => 'template-update-wrapper',
