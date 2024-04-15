@@ -44,95 +44,101 @@ class TemplateManager {
    */
   public $templates = [
     'page' => [
+      '' => [
+        'title' => 'Blank',
+        'description' => 'A blank page.',
+        'filename' => '',
+      ],
       'faq' => [
         'title' => 'FAQ',
         'description' => 'A template for a FAQ page.',
         'filename' => 'page__faq.yml',
-        'preview_image' => '',
       ],
       'landing_page' => [
         'title' => 'Landing Page',
         'description' => 'A template for a landing page.',
         'filename' => 'page__landing_page.yml',
-        'preview_image' => '',
       ],
       'remote_zip_file' => [
         'title' => 'Remote Zip',
         'description' => 'A template for a remote zip file.',
         'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/page__zip_file.zip',
-        'preview_image' => '',
       ],
       'local_zip_file' => [
         'title' => 'Local Zip',
         'description' => 'A template for a local zip file.',
         'filename' => 'page__zip_file.zip',
-        'preview_image' => '',
       ],
       'remote_zip_file_dne' => [
         'title' => 'Remote Zip Does Not Exist',
         'description' => 'A template for a remote zip file.',
         'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/page__zip_files.zip',
-        'preview_image' => '',
       ],
       'landing_page_dne' => [
         'title' => 'Landing Page Does Not Exist',
         'description' => 'A template for a landing page.',
         'filename' => 'page__landing_pages.yml',
-        'preview_image' => '',
       ],
     ],
     'post' => [
+      '' => [
+        'title' => 'Blank',
+        'description' => 'A blank post.',
+        'filename' => '',
+      ],
       'blog' => [
         'title' => 'Blog',
         'description' => 'A template for a blog post.',
         'filename' => 'post__blog.yml',
-        'preview_image' => '',
       ],
       'news' => [
         'title' => 'News',
         'description' => 'A template for a news post.',
         'filename' => 'post__news.yml',
-        'preview_image' => '',
       ],
       'press_release' => [
         'title' => 'Press Release',
         'description' => 'A template for a press release.',
         'filename' => 'post__press_release.yml',
-        'preview_image' => '',
       ],
     ],
     'event' => [
+      '' => [
+        'title' => 'Blank',
+        'description' => 'A blank event.',
+        'filename' => '',
+      ],
       'in_person' => [
         'title' => 'In Person',
         'description' => 'A template for an in person event.',
         'filename' => 'event__in_person.yml',
-        'preview_image' => '',
       ],
       'online' => [
         'title' => 'Online',
         'description' => 'A template for an online event.',
         'filename' => 'event__online.yml',
-        'preview_image' => '',
       ],
     ],
     'profile' => [
+      '' => [
+        'title' => 'Blank',
+        'description' => 'A blank profile.',
+        'filename' => '',
+      ],
       'faculty' => [
         'title' => 'Faculty',
         'description' => 'A template for a faculty profile.',
         'filename' => 'profile__faculty.yml',
-        'preview_image' => '',
       ],
       'student' => [
         'title' => 'Student',
         'description' => 'A template for a student profile.',
         'filename' => 'profile__student.yml',
-        'preview_image' => '',
       ],
       'staff' => [
         'title' => 'Staff',
         'description' => 'A template for a staff profile.',
         'filename' => 'profile__staff.yml',
-        'preview_image' => '',
       ],
     ],
   ];
