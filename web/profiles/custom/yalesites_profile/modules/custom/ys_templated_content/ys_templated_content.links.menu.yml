@@ -1,6 +1,39 @@
-ys_templated_content.from_template:
-  title: 'From Template'
-  description: 'Add a node from a list of available templates'
+ys_templated_content.from_template_event:
+  title: 'Event'
+  description: 'Add an event'
   parent: admin_toolbar_tools.extra_links:node.add
   route_name: ys_templated_content.selection
-  weight: 10
+  route_parameters:
+    content_type: 'event'
+  weight: 0
+ys_templated_content.from_template_page:
+  title: 'Page'
+  description: 'Add a page'
+  parent: admin_toolbar_tools.extra_links:node.add
+  route_name: ys_templated_content.selection
+  route_parameters:
+    content_type: 'page'
+  weight: 0
+ys_templated_content.from_template_post:
+  title: 'Post'
+  description: 'Add a post'
+  parent: admin_toolbar_tools.extra_links:node.add
+  route_name: ys_templated_content.selection
+  route_parameters:
+    content_type: 'post'
+  weight: 0
+ys_templated_content.from_template_profile:
+  title: 'Profile'
+  description: 'Add a profile'
+  parent: admin_toolbar_tools.extra_links:node.add
+  route_name: ys_templated_content.selection
+  route_parameters:
+    content_type: 'profile'
+  weight: 0
+'admin_toolbar_tools.extra_links:node.add':
+  title: 'Add content'
+  description: 'Add content'
+  parent: main
+  route_name: ys_templated_content.selection
+  route_parameters:
+    content_type: 'page'
