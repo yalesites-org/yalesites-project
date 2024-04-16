@@ -813,7 +813,6 @@ display:
         title: 'Manage Pages'
         description: ''
         weight: 4
-        enabled: false
         expanded: false
         menu_name: admin
         parent: system.admin_content

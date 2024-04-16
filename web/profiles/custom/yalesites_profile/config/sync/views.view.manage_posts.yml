@@ -976,7 +976,6 @@ display:
         title: 'Manage Posts'
         description: ''
         weight: 5
-        enabled: false
         expanded: false
         menu_name: admin
         parent: system.admin_content
