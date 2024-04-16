@@ -2,9 +2,9 @@ _core:
   default_config_hash: jdY7AU0tU-QsjmiOw3W8vwpYMb-By--_MSFgbqKUTYM
 definitions:
   'admin_toolbar_tools__extra_links:media_page':
-    weight: 9
     menu_name: admin
     parent: system.admin_content
+    weight: 8
     expanded: false
     enabled: true
   'admin_toolbar_tools__extra_links:view__files':
@@ -26,9 +26,9 @@ definitions:
     expanded: false
     enabled: true
   ys_core__admin_dashboard:
-    weight: 1
     menu_name: admin
     parent: system.admin_content
+    weight: 2
     expanded: false
     enabled: true
   'admin_toolbar_tools__extra_links:node__add':
@@ -56,21 +56,21 @@ definitions:
     weight: 4
     expanded: false
   ys_core__menu_main_edit:
-    parent: 'menu_link_content:04404fbf-08ca-41e6-b7a3-55a680a9ca6e'
     menu_name: admin
-    weight: 11
+    parent: system.admin_content
+    weight: 9
     expanded: false
     enabled: true
   ys_core__menu_utility_edit:
-    parent: 'menu_link_content:04404fbf-08ca-41e6-b7a3-55a680a9ca6e'
     menu_name: admin
-    weight: 12
+    parent: system.admin_content
+    weight: 10
     expanded: false
     enabled: true
   ys_core__taxonomy_interface:
-    weight: 13
     menu_name: admin
     parent: system.admin_content
+    weight: 11
     expanded: false
     enabled: true
   'admin_toolbar_tools__extra_links:node__add__profile':
@@ -79,15 +79,3 @@ definitions:
     parent: 'admin_toolbar_tools.extra_links:node.add'
     expanded: false
     weight: 0
-  single_content_sync__import:
-    weight: 2
-    menu_name: admin
-    parent: system.admin_content
-    enabled: true
-    expanded: false
-  ys_core__custom_block_library:
-    weight: 14
-    menu_name: admin
-    parent: system.admin_content
-    expanded: false
-    enabled: true

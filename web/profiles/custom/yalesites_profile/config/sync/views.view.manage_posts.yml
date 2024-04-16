@@ -973,7 +973,7 @@ display:
         type: normal
         title: 'Manage Posts'
         description: ''
-        weight: 6
+        weight: 5
         enabled: false
         expanded: false
         menu_name: admin
