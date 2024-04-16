@@ -44,20 +44,22 @@ dependencies:
     - taxonomy.vocabulary.event_category
     - taxonomy.vocabulary.post_category
     - taxonomy.vocabulary.tags
+    - workflows.workflow.editorial
   module:
     - block
     - block_content
+    - content_moderation
     - contextual
     - editoria11y
     - file
     - layout_builder
     - media
     - menu_admin_per_menu
+    - moderation_sidebar
     - node
     - override_node_options
     - paragraphs
     - path
-    - publishcontent
     - quick_node_clone
     - redirect
     - role_delegation
@@ -69,7 +71,7 @@ dependencies:
     - ys_core
 id: platform_admin
 label: 'Platform administrator'
-weight: 2
+weight: -5
 is_admin: null
 permissions:
   - 'access block library'
@@ -95,6 +97,7 @@ permissions:
   - 'clone event content'
   - 'clone page content'
   - 'clone post content'
+  - 'clone profile content'
   - 'configure editable event node layout overrides'
   - 'configure editable page node layout overrides'
   - 'configure editable post node layout overrides'
@@ -108,6 +111,7 @@ permissions:
   - 'create content_spotlight_portrait block content'
   - 'create cta_banner block content'
   - 'create custom_cards block content'
+  - 'create directory block content'
   - 'create divider block content'
   - 'create document media'
   - 'create embed block content'
@@ -154,6 +158,8 @@ permissions:
   - 'delete any cta_banner block content revisions'
   - 'delete any custom_cards block content'
   - 'delete any custom_cards block content revisions'
+  - 'delete any directory block content'
+  - 'delete any directory block content revisions'
   - 'delete any divider block content'
   - 'delete any divider block content revisions'
   - 'delete any document media'
@@ -265,8 +271,6 @@ permissions:
   - 'override all promote to front page option'
   - 'override all published option'
   - 'override all sticky option'
-  - 'publish any content'
-  - 'publish editable content'
   - 'revert all revisions'
   - 'revert any accordion block content revisions'
   - 'revert any button_link block content revisions'
@@ -296,10 +300,14 @@ permissions:
   - 'revert page revisions'
   - 'revert post revisions'
   - 'revert profile revisions'
-  - 'unpublish any content'
-  - 'unpublish editable content'
   - 'update any media'
   - 'update media'
+  - 'use editorial transition archive'
+  - 'use editorial transition archived_draft'
+  - 'use editorial transition archived_published'
+  - 'use editorial transition create_new_draft'
+  - 'use editorial transition publish'
+  - 'use moderation sidebar'
   - 'view all media revisions'
   - 'view all revisions'
   - 'view any accordion block content history'
@@ -322,6 +330,7 @@ permissions:
   - 'view any quick_links block content history'
   - 'view any tabs block content history'
   - 'view any text block content history'
+  - 'view any unpublished content'
   - 'view any video block content history'
   - 'view any view block content history'
   - 'view any webform block content history'
@@ -329,6 +338,7 @@ permissions:
   - 'view any wrapped_image block content history'
   - 'view editoria11y checker'
   - 'view event revisions'
+  - 'view latest version'
   - 'view own unpublished content'
   - 'view own unpublished media'
   - 'view own webform submission'

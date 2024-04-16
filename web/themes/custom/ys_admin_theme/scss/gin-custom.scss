@@ -41,4 +41,32 @@
   }
 }
 
+a.focal-point-preview-link {
+  background-color: var(--gin-bg-layer2);
+}
+
+/* Two column layout for profile add/edit form */
+.ys-gin-two-column-wrapper {
+  @media screen and (min-width: 1000px) {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
+
+    .form-element {
+      width: 100%;
+    }
+  }
+}
+
+// Override the trash icon color for the delete button
+.action-link--icon-trash.action-link--danger::before,
+.button.button--danger::before {
+  background-color: var(--gin-color-danger) !important;
+}
+
+.action-link--icon-trash.action-link--danger:hover::before,
+.button.button--danger:hover::before {
+  background-color: var(--gin-bg-layer) !important;
+}
+
 /* stylelint-enable */

@@ -1,0 +1,324 @@
+uuid: 252b4e88-53e7-414b-be3e-a68b19e2fe46
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.accordion
+    - block_content.type.button_link
+    - block_content.type.callout
+    - block_content.type.content_spotlight
+    - block_content.type.content_spotlight_portrait
+    - block_content.type.cta_banner
+    - block_content.type.custom_cards
+    - block_content.type.directory
+    - block_content.type.divider
+    - block_content.type.embed
+    - block_content.type.event_list
+    - block_content.type.gallery
+    - block_content.type.grand_hero
+    - block_content.type.image
+    - block_content.type.media_grid
+    - block_content.type.post_list
+    - block_content.type.pull_quote
+    - block_content.type.quick_links
+    - block_content.type.tabs
+    - block_content.type.text
+    - block_content.type.video
+    - block_content.type.view
+    - block_content.type.webform
+    - block_content.type.wrapped_image
+    - core.entity_view_display.node.event.default
+    - core.entity_view_display.node.page.default
+    - core.entity_view_display.node.post.default
+    - core.entity_view_display.node.profile.default
+    - media.type.background_video
+    - media.type.document
+    - media.type.embed
+    - media.type.image
+    - media.type.video
+    - node.type.event
+    - node.type.page
+    - node.type.post
+    - node.type.profile
+    - taxonomy.vocabulary.affiliation
+    - taxonomy.vocabulary.event_category
+    - taxonomy.vocabulary.post_category
+    - taxonomy.vocabulary.tags
+    - workflows.workflow.editorial
+  module:
+    - block_content
+    - content_moderation
+    - contextual
+    - editoria11y
+    - file
+    - layout_builder
+    - media
+    - menu_admin_per_menu
+    - moderation_sidebar
+    - node
+    - override_node_options
+    - paragraphs
+    - path
+    - quick_node_clone
+    - redirect
+    - system
+    - taxonomy
+    - toolbar
+    - webform
+    - ys_alert
+    - ys_core
+id: contributor
+label: Contributor
+weight: -8
+is_admin: null
+permissions:
+  - 'access block library'
+  - 'access content overview'
+  - 'access contextual links'
+  - 'access files overview'
+  - 'access media overview'
+  - 'access site in maintenance mode'
+  - 'access taxonomy overview'
+  - 'access toolbar'
+  - 'access user profiles'
+  - 'access webform overview'
+  - 'administer main menu items'
+  - 'administer redirects'
+  - 'administer users'
+  - 'administer utility-navigation menu items'
+  - 'clone event content'
+  - 'clone page content'
+  - 'clone post content'
+  - 'clone profile content'
+  - 'configure editable event node layout overrides'
+  - 'configure editable page node layout overrides'
+  - 'configure editable post node layout overrides'
+  - 'configure editable profile node layout overrides'
+  - 'create accordion block content'
+  - 'create and edit custom blocks'
+  - 'create background_video media'
+  - 'create button_link block content'
+  - 'create callout block content'
+  - 'create content_spotlight block content'
+  - 'create content_spotlight_portrait block content'
+  - 'create cta_banner block content'
+  - 'create custom_cards block content'
+  - 'create directory block content'
+  - 'create divider block content'
+  - 'create document media'
+  - 'create embed block content'
+  - 'create embed media'
+  - 'create event content'
+  - 'create event_list block content'
+  - 'create gallery block content'
+  - 'create grand_hero block content'
+  - 'create image block content'
+  - 'create image media'
+  - 'create media'
+  - 'create media_grid block content'
+  - 'create page content'
+  - 'create post content'
+  - 'create post_list block content'
+  - 'create profile content'
+  - 'create pull_quote block content'
+  - 'create quick_links block content'
+  - 'create reusable blocks'
+  - 'create tabs block content'
+  - 'create terms in affiliation'
+  - 'create terms in event_category'
+  - 'create terms in post_category'
+  - 'create terms in tags'
+  - 'create text block content'
+  - 'create url aliases'
+  - 'create video block content'
+  - 'create video media'
+  - 'create view block content'
+  - 'create webform block content'
+  - 'create wrapped_image block content'
+  - 'delete any accordion block content'
+  - 'delete any accordion block content revisions'
+  - 'delete any background_video media'
+  - 'delete any button_link block content'
+  - 'delete any button_link block content revisions'
+  - 'delete any callout block content'
+  - 'delete any callout block content revisions'
+  - 'delete any content_spotlight block content'
+  - 'delete any content_spotlight block content revisions'
+  - 'delete any content_spotlight_portrait block content'
+  - 'delete any content_spotlight_portrait block content revisions'
+  - 'delete any cta_banner block content'
+  - 'delete any cta_banner block content revisions'
+  - 'delete any custom_cards block content'
+  - 'delete any custom_cards block content revisions'
+  - 'delete any directory block content'
+  - 'delete any directory block content revisions'
+  - 'delete any divider block content'
+  - 'delete any divider block content revisions'
+  - 'delete any embed block content'
+  - 'delete any embed block content revisions'
+  - 'delete any event content'
+  - 'delete any event_list block content'
+  - 'delete any event_list block content revisions'
+  - 'delete any gallery block content'
+  - 'delete any gallery block content revisions'
+  - 'delete any grand_hero block content'
+  - 'delete any grand_hero block content revisions'
+  - 'delete any image block content'
+  - 'delete any image block content revisions'
+  - 'delete any media_grid block content'
+  - 'delete any media_grid block content revisions'
+  - 'delete any page content'
+  - 'delete any post content'
+  - 'delete any post_list block content'
+  - 'delete any post_list block content revisions'
+  - 'delete any profile content'
+  - 'delete any pull_quote block content'
+  - 'delete any pull_quote block content revisions'
+  - 'delete any quick_links block content'
+  - 'delete any quick_links block content revisions'
+  - 'delete any tabs block content'
+  - 'delete any tabs block content revisions'
+  - 'delete any text block content'
+  - 'delete any text block content revisions'
+  - 'delete any video block content'
+  - 'delete any video block content revisions'
+  - 'delete any view block content'
+  - 'delete any view block content revisions'
+  - 'delete any webform block content'
+  - 'delete any webform block content revisions'
+  - 'delete any webform submission'
+  - 'delete any wrapped_image block content'
+  - 'delete any wrapped_image block content revisions'
+  - 'delete own event content'
+  - 'delete own page content'
+  - 'delete own post content'
+  - 'delete own profile content'
+  - 'delete terms in affiliation'
+  - 'delete terms in event_category'
+  - 'delete terms in post_category'
+  - 'delete terms in tags'
+  - 'edit any accordion block content'
+  - 'edit any background_video media'
+  - 'edit any button_link block content'
+  - 'edit any callout block content'
+  - 'edit any content_spotlight block content'
+  - 'edit any content_spotlight_portrait block content'
+  - 'edit any cta_banner block content'
+  - 'edit any custom_cards block content'
+  - 'edit any directory block content'
+  - 'edit any divider block content'
+  - 'edit any document media'
+  - 'edit any embed block content'
+  - 'edit any embed media'
+  - 'edit any event content'
+  - 'edit any event_list block content'
+  - 'edit any gallery block content'
+  - 'edit any grand_hero block content'
+  - 'edit any image block content'
+  - 'edit any image media'
+  - 'edit any media_grid block content'
+  - 'edit any page content'
+  - 'edit any post content'
+  - 'edit any post_list block content'
+  - 'edit any profile content'
+  - 'edit any pull_quote block content'
+  - 'edit any quick_links block content'
+  - 'edit any tabs block content'
+  - 'edit any text block content'
+  - 'edit any video block content'
+  - 'edit any video media'
+  - 'edit any view block content'
+  - 'edit any webform block content'
+  - 'edit any webform submission'
+  - 'edit any wrapped_image block content'
+  - 'edit own background_video media'
+  - 'edit own document media'
+  - 'edit own embed media'
+  - 'edit own event content'
+  - 'edit own image media'
+  - 'edit own page content'
+  - 'edit own post content'
+  - 'edit own profile content'
+  - 'edit own video media'
+  - 'edit own webform submission'
+  - 'edit terms in affiliation'
+  - 'edit terms in event_category'
+  - 'edit terms in post_category'
+  - 'edit terms in tags'
+  - 'mark as hidden in editoria11y'
+  - 'override all sticky option'
+  - 'override post authored on option'
+  - 'revert all revisions'
+  - 'revert any accordion block content revisions'
+  - 'revert any button_link block content revisions'
+  - 'revert any callout block content revisions'
+  - 'revert any content_spotlight block content revisions'
+  - 'revert any content_spotlight_portrait block content revisions'
+  - 'revert any cta_banner block content revisions'
+  - 'revert any custom_cards block content revisions'
+  - 'revert any directory block content revisions'
+  - 'revert any divider block content revisions'
+  - 'revert any embed block content revisions'
+  - 'revert any event_list block content revisions'
+  - 'revert any gallery block content revisions'
+  - 'revert any grand_hero block content revisions'
+  - 'revert any image block content revisions'
+  - 'revert any media_grid block content revisions'
+  - 'revert any post_list block content revisions'
+  - 'revert any pull_quote block content revisions'
+  - 'revert any quick_links block content revisions'
+  - 'revert any tabs block content revisions'
+  - 'revert any text block content revisions'
+  - 'revert any video block content revisions'
+  - 'revert any view block content revisions'
+  - 'revert any webform block content revisions'
+  - 'revert any wrapped_image block content revisions'
+  - 'revert event revisions'
+  - 'revert page revisions'
+  - 'revert post revisions'
+  - 'revert profile revisions'
+  - 'update any media'
+  - 'update media'
+  - 'use editorial transition create_new_draft'
+  - 'use moderation sidebar'
+  - 'view all media revisions'
+  - 'view all revisions'
+  - 'view any accordion block content history'
+  - 'view any button_link block content history'
+  - 'view any callout block content history'
+  - 'view any content_spotlight block content history'
+  - 'view any content_spotlight_portrait block content history'
+  - 'view any cta_banner block content history'
+  - 'view any custom_cards block content history'
+  - 'view any directory block content history'
+  - 'view any divider block content history'
+  - 'view any embed block content history'
+  - 'view any event_list block content history'
+  - 'view any gallery block content history'
+  - 'view any grand_hero block content history'
+  - 'view any image block content history'
+  - 'view any media_grid block content history'
+  - 'view any post_list block content history'
+  - 'view any pull_quote block content history'
+  - 'view any quick_links block content history'
+  - 'view any tabs block content history'
+  - 'view any text block content history'
+  - 'view any unpublished content'
+  - 'view any video block content history'
+  - 'view any view block content history'
+  - 'view any webform block content history'
+  - 'view any webform submission'
+  - 'view any wrapped_image block content history'
+  - 'view editoria11y checker'
+  - 'view event revisions'
+  - 'view latest version'
+  - 'view own unpublished content'
+  - 'view own unpublished media'
+  - 'view own webform submission'
+  - 'view page revisions'
+  - 'view post revisions'
+  - 'view profile revisions'
+  - 'view the administration theme'
+  - 'view unpublished paragraphs'
+  - 'yalesites manage alerts'
+  - 'yalesites manage settings'

@@ -6,6 +6,7 @@ dependencies:
     - core.entity_view_mode.node.search_result
     - field.field.node.post.field_author
     - field.field.node.post.field_category
+    - field.field.node.post.field_external_source
     - field.field.node.post.field_login_required
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
@@ -23,6 +24,18 @@ targetEntityType: node
 bundle: post
 mode: search_result
 content:
+  field_external_source:
+    type: link_separate
+    label: hidden
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 2
+    region: content
   field_teaser_text:
     type: text_default
     label: hidden

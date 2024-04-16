@@ -7,6 +7,7 @@ dependencies:
     - field.field.node.profile.field_affiliation
     - field.field.node.profile.field_department
     - field.field.node.profile.field_email
+    - field.field.node.profile.field_external_source
     - field.field.node.profile.field_first_name
     - field.field.node.profile.field_honorific_prefix
     - field.field.node.profile.field_last_name
@@ -25,6 +26,7 @@ dependencies:
   module:
     - layout_builder
     - layout_builder_restrictions
+    - link
     - metatag
     - text
     - user
@@ -50,6 +52,16 @@ third_party_settings:
               provider: ys_layouts
               context_mapping: {  }
             weight: 0
+            additional: {  }
+          0bf43bc3-4ba8-428b-8ec9-893e3e4fd7a3:
+            uuid: 0bf43bc3-4ba8-428b-8ec9-893e3e4fd7a3
+            region: content
+            configuration:
+              id: 'extra_field_block:node:profile:content_moderation_control'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+            weight: 1
             additional: {  }
         third_party_settings:
           layout_builder_lock:
@@ -211,6 +223,11 @@ targetEntityType: node
 bundle: profile
 mode: default
 content:
+  content_moderation_control:
+    settings: {  }
+    third_party_settings: {  }
+    weight: -20
+    region: content
   field_address:
     type: text_default
     label: above
@@ -240,6 +257,18 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 110
+    region: content
+  field_external_source:
+    type: link
+    label: above
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 4
     region: content
   field_first_name:
     type: string
@@ -353,3 +382,4 @@ content:
 hidden:
   layout_builder__layout: true
   search_api_excerpt: true
+  workflow_buttons: true
