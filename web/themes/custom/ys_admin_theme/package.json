@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
-    "@yalesites-org/tokens": "^1.17.4",
+    "@yalesites-org/tokens": "file:../../contrib/atomic/node_modules/@yalesites-org/tokens/build",
     "sass": "^1.51.0"
   }
 }

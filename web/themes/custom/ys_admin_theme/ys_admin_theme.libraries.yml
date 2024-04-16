@@ -2,11 +2,10 @@ global:
   css:
     theme:
       css/admin-ui.css: {}
-
 tokens:
   css:
     theme:
-      node_modules/@yalesites-org/tokens/build/tokens.css: {}
+      ../../contrib/atomic/node_modules/@yalesites-org/tokens/build/css/tokens.css: {}
       css/gin-custom.css: {}
 favicon_preview:
   css:
