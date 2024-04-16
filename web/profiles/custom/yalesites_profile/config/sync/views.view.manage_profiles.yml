@@ -1076,6 +1076,7 @@ display:
         type: normal
         title: 'Manage Profiles'
         weight: 7
+        enabled: false
         menu_name: admin
         parent: system.admin_content
     cache_metadata:
