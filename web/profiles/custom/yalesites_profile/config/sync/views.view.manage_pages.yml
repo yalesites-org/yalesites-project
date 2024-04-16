@@ -812,7 +812,7 @@ display:
         type: normal
         title: 'Manage Pages'
         description: ''
-        weight: 5
+        weight: 4
         enabled: false
         expanded: false
         menu_name: admin
