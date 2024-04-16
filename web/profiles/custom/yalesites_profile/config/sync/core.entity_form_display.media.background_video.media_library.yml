@@ -7,11 +7,27 @@ dependencies:
     - field.field.media.background_video.field_media_video_file
     - field.field.media.background_video.field_tags
     - media.type.background_video
+  module:
+    - chosen_field
+    - file
 id: media.background_video.media_library
 targetEntityType: media
 bundle: background_video
 mode: media_library
 content:
+  field_media_video_file:
+    type: file_generic
+    weight: 1
+    region: content
+    settings:
+      progress_indicator: throbber
+    third_party_settings: {  }
+  field_tags:
+    type: chosen_select
+    weight: 2
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   name:
     type: string_textfield
     weight: 0
@@ -22,8 +38,6 @@ content:
     third_party_settings: {  }
 hidden:
   created: true
-  field_media_video_file: true
-  field_tags: true
   path: true
   revision_log_message: true
   status: true
