@@ -1075,7 +1075,7 @@ display:
       menu:
         type: normal
         title: 'Manage Profiles'
-        weight: 8
+        weight: 7
         enabled: false
         menu_name: admin
         parent: system.admin_content
