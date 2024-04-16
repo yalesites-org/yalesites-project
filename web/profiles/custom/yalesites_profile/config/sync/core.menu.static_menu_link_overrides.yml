@@ -57,13 +57,13 @@ definitions:
     expanded: false
   ys_core__menu_main_edit:
     menu_name: admin
-    parent: system.admin_content
+    parent: ys_core.menu_menus
     weight: 9
     expanded: false
     enabled: true
   ys_core__menu_utility_edit:
     menu_name: admin
-    parent: system.admin_content
+    parent: ys_core.menu_menus
     weight: 10
     expanded: false
     enabled: true
