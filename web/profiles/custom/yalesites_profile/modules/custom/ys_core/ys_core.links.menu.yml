@@ -40,10 +40,22 @@ ys_core.admin_footer_settings:
   route_name: ys_core.admin_footer_settings
   title: "Footer Settings"
   weight: 20
+ys_core.manage_content_menu:
+  description: "Manage content"
+  parent: system.admin_content
+  url: "internal:/admin/content"
+  title: Manage content
+  weight: 5
 # main menu edit form.
+ys_core.menu_menus:
+  description: "Manage menus"
+  parent: system.admin_content
+  url: "internal:#"
+  title: Menus
+  weight: 8
 ys_core.menu_main_edit:
   description: "Manage main navigation"
-  parent: system.admin_content
+  parent: ys_core.menu_menus
   route_name: entity.menu.edit_form
   title: Manage Main Menu
   route_parameters:
@@ -51,7 +63,7 @@ ys_core.menu_main_edit:
   weight: 10
 ys_core.menu_utility_edit:
   description: "Manage utility navigation"
-  parent: system.admin_content
+  parent: ys_core.menu_menus
   route_name: entity.menu.edit_form
   title: Manage Utility Menu
   route_parameters:

@@ -125,7 +125,7 @@ display:
           settings:
             link_to_entity: true
           group_column: value
-          group_columns: {  }
+          group_columns: {}
           group_rows: true
           delta_limit: 0
           delta_offset: 0
@@ -188,7 +188,7 @@ display:
           settings:
             link_to_entity: false
           group_column: value
-          group_columns: {  }
+          group_columns: {}
           group_rows: true
           delta_limit: 0
           delta_offset: 0
@@ -251,7 +251,7 @@ display:
           settings:
             link: false
           group_column: target_id
-          group_columns: {  }
+          group_columns: {}
           group_rows: true
           delta_limit: 0
           delta_offset: 0
@@ -314,7 +314,7 @@ display:
           settings:
             link: false
           group_column: target_id
-          group_columns: {  }
+          group_columns: {}
           group_rows: true
           delta_limit: 0
           delta_offset: 0
@@ -381,7 +381,7 @@ display:
             format_custom_false: ''
             format_custom_true: ''
           group_column: value
-          group_columns: {  }
+          group_columns: {}
           group_rows: true
           delta_limit: 0
           delta_offset: 0
@@ -446,7 +446,7 @@ display:
           settings:
             link: false
           group_column: target_id
-          group_columns: {  }
+          group_columns: {}
           group_rows: true
           delta_limit: 0
           delta_offset: 0
@@ -522,7 +522,7 @@ display:
               granularity: 2
               refresh: 60
           group_column: value
-          group_columns: {  }
+          group_columns: {}
           group_rows: true
           delta_limit: 0
           delta_offset: 0
@@ -619,7 +619,7 @@ display:
           perm: 'yalesites manage settings'
       cache:
         type: tag
-        options: {  }
+        options: {}
       empty:
         area:
           id: area
@@ -651,7 +651,7 @@ display:
             field_identifier: ''
           exposed: false
           granularity: second
-      arguments: {  }
+      arguments: {}
       filters:
         type:
           id: type
@@ -665,7 +665,7 @@ display:
           group: 1
           expose:
             operator_limit_selection: false
-            operator_list: {  }
+            operator_list: {}
         title:
           id: title
           table: node_field_data
@@ -687,7 +687,7 @@ display:
             use_operator: false
             operator: title_op
             operator_limit_selection: false
-            operator_list: {  }
+            operator_list: {}
             identifier: title
             required: false
             remember: false
@@ -708,8 +708,8 @@ display:
             multiple: false
             remember: false
             default_group: All
-            default_group_multiple: {  }
-            group_items: {  }
+            default_group_multiple: {}
+            group_items: {}
         field_tags_target_id:
           id: field_tags_target_id
           table: node__field_tags
@@ -719,7 +719,7 @@ display:
           admin_label: ''
           plugin_id: taxonomy_index_tid
           operator: or
-          value: {  }
+          value: {}
           group: 1
           exposed: true
           expose:
@@ -729,7 +729,7 @@ display:
             use_operator: false
             operator: field_tags_target_id_op
             operator_limit_selection: false
-            operator_list: {  }
+            operator_list: {}
             identifier: field_tags_target_id
             required: false
             remember: false
@@ -750,8 +750,8 @@ display:
             multiple: false
             remember: false
             default_group: All
-            default_group_multiple: {  }
-            group_items: {  }
+            default_group_multiple: {}
+            group_items: {}
           reduce_duplicates: false
           vid: tags
           type: select
@@ -767,7 +767,7 @@ display:
           admin_label: ''
           plugin_id: taxonomy_index_tid
           operator: or
-          value: {  }
+          value: {}
           group: 1
           exposed: true
           expose:
@@ -777,7 +777,7 @@ display:
             use_operator: false
             operator: field_category_target_id_op
             operator_limit_selection: false
-            operator_list: {  }
+            operator_list: {}
             identifier: field_category_target_id
             required: false
             remember: false
@@ -798,8 +798,8 @@ display:
             multiple: false
             remember: false
             default_group: All
-            default_group_multiple: {  }
-            group_items: {  }
+            default_group_multiple: {}
+            group_items: {}
           reduce_duplicates: false
           vid: post_category
           type: select
@@ -827,7 +827,7 @@ display:
             use_operator: false
             operator: status_op
             operator_limit_selection: false
-            operator_list: {  }
+            operator_list: {}
             identifier: status
             required: true
             remember: false
@@ -844,7 +844,7 @@ display:
             multiple: false
             remember: false
             default_group: All
-            default_group_multiple: {  }
+            default_group_multiple: {}
             group_items:
               1:
                 title: Published
@@ -861,7 +861,7 @@ display:
       style:
         type: table
         options:
-          grouping: {  }
+          grouping: {}
           row_class: ''
           default_row_class: true
           columns:
@@ -928,8 +928,8 @@ display:
           disable_sql_rewrite: false
           distinct: false
           replica: false
-          query_tags: {  }
-      relationships: {  }
+          query_tags: {}
+      relationships: {}
       header:
         area:
           id: area
@@ -944,8 +944,8 @@ display:
             value: 'The post content type is useful for posted articles, posts, and stories, about your organization as featured content or in a reverse-chronological content feed. '
             format: basic_html
           tokenize: false
-      footer: {  }
-      display_extenders: {  }
+      footer: {}
+      display_extenders: {}
     cache_metadata:
       max-age: 0
       contexts:
@@ -968,17 +968,17 @@ display:
     display_options:
       display_extenders:
         metatag_display_extender:
-          metatags: {  }
+          metatags: {}
           tokenize: false
       path: admin/content/manage-posts
       menu:
         type: normal
-        title: 'Manage Posts'
+        title: 'Posts'
         description: ''
         weight: 5
         expanded: false
         menu_name: admin
-        parent: system.admin_content
+        parent: ys_core.manage_content_menu
         context: '0'
     cache_metadata:
       max-age: 0
