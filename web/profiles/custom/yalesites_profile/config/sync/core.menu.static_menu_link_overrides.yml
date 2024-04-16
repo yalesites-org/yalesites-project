@@ -38,23 +38,23 @@ definitions:
     expanded: false
     enabled: true
   'admin_toolbar_tools__extra_links:node__add__event':
+    enabled: false
     menu_name: admin
     parent: 'admin_toolbar_tools.extra_links:node.add'
     weight: 2
     expanded: false
-    enabled: true
   'admin_toolbar_tools__extra_links:node__add__post':
+    enabled: false
     menu_name: admin
     parent: 'admin_toolbar_tools.extra_links:node.add'
     weight: 3
     expanded: false
-    enabled: true
   'admin_toolbar_tools__extra_links:node__add__page':
+    enabled: false
     menu_name: admin
     parent: 'admin_toolbar_tools.extra_links:node.add'
     weight: 4
     expanded: false
-    enabled: true
   ys_core__menu_main_edit:
     menu_name: admin
     parent: system.admin_content
@@ -73,3 +73,9 @@ definitions:
     weight: 11
     expanded: false
     enabled: true
+  'admin_toolbar_tools__extra_links:node__add__profile':
+    enabled: false
+    menu_name: admin
+    parent: 'admin_toolbar_tools.extra_links:node.add'
+    expanded: false
+    weight: 0
