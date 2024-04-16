@@ -1066,7 +1066,6 @@ display:
         title: 'Manage Events'
         description: ''
         weight: 6
-        enabled: false
         expanded: false
         menu_name: admin
         parent: system.admin_content
