@@ -1075,7 +1075,7 @@ display:
       menu:
         type: normal
         title: 'Profiles'
-        weight: 7
+        weight: 9
         menu_name: admin
         parent: ys_core.manage_content_menu
     cache_metadata:
