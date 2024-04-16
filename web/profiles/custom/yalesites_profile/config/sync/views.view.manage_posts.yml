@@ -973,7 +973,7 @@ display:
         type: normal
         title: 'Posts'
         description: ''
-        weight: 5
+        weight: 8
         expanded: false
         menu_name: admin
         parent: ys_core.manage_content_menu
