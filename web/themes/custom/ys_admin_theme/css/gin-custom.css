@@ -39,8 +39,29 @@
 }
 
 a.focal-point-preview-link {
-  /* color: var(--gin-color-primary); */
   background-color: var(--gin-bg-layer2);
+}
+
+/* Two column layout for profile add/edit form */
+@media screen and (min-width: 1000px) {
+  .ys-gin-two-column-wrapper {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .ys-gin-two-column-wrapper .form-element {
+    width: 100%;
+  }
+}
+
+.action-link--icon-trash.action-link--danger::before,
+.button.button--danger::before {
+  background-color: var(--gin-color-danger) !important;
+}
+
+.action-link--icon-trash.action-link--danger:hover::before,
+.button.button--danger:hover::before {
+  background-color: var(--gin-bg-layer) !important;
 }
 
 /* stylelint-enable */
