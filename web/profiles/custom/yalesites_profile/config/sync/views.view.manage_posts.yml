@@ -975,7 +975,7 @@ display:
         type: normal
         title: 'Manage Posts'
         description: ''
-        weight: 5
+        weight: 6
         enabled: false
         expanded: false
         menu_name: admin

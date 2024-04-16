@@ -1057,7 +1057,7 @@ display:
         type: normal
         title: 'Manage Events'
         description: ''
-        weight: 6
+        weight: 7
         enabled: false
         expanded: false
         menu_name: admin
