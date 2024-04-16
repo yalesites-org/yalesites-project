@@ -516,7 +516,10 @@ function ys_core_preprocess_views_view_unformatted(&$variables) {
    */
   $request = \Drupal::request();
   if ($route = $request->attributes->get(RouteObjectInterface::ROUTE_OBJECT)) {
-    $title = \Drupal::service('title_resolver')->getTitle($request, $route);
-    $variables['title'] = $title['#markup'];
+    $routeName = \Drupal::service('current_route_match')->getRouteName();
+    if ($routeName == 'entity.taxonomy_term.canonical') {
+      $title = \Drupal::service('title_resolver')->getTitle($request, $route);
+      $variables['title'] = $title['#markup'] ?? NULL;
+    }
   }
 }
