@@ -81,7 +81,6 @@ class ManageMenusController extends ControllerBase {
 
     // Apply manipulators to the tree.
     $manipulators = [
-      ['callable' => 'menu.default_tree_manipulators:checkAccess'],
       ['callable' => 'menu.default_tree_manipulators:generateIndexAndSort'],
     ];
     $tree = $this->linkTree->transform($tree, $manipulators);
