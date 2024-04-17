@@ -17,18 +17,6 @@ class ManageMenusController extends ControllerBase {
   use StringTranslationTrait;
 
   /**
-   * {@inheritdoc}
-   */
-  protected $renderer;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * The menu link tree service.
    *
    * @var \Drupal\Core\Menu\MenuLinkTreeInterface
@@ -39,8 +27,6 @@ class ManageMenusController extends ControllerBase {
    * {@inheritdoc}
    */
   public function __construct(ContainerInterface $container) {
-    $this->renderer = $container->get('renderer');
-    $this->entityTypeManager = $container->get('entity_type.manager');
     $this->linkTree = $container->get('menu.link_tree');
   }
 
@@ -70,7 +56,7 @@ class ManageMenusController extends ControllerBase {
     $content = [
       '#theme' => 'entity_add_list',
       '#title' => 'Manage menus',
-      '#description' => t('Manage different menus for YaleSites'),
+      '#description' => $this->t('Manage different menus for YaleSites'),
       '#bundles' => $links,
     ];
 

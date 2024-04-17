@@ -62,7 +62,7 @@ class CreateContentMenuController extends ControllerBase {
     $content = [
       '#theme' => 'entity_add_list',
       '#title' => 'Add content',
-      '#description' => t('Add content to your site'),
+      '#description' => $this->t('Add content to your site'),
       '#bundles' => $links,
     ];
 
