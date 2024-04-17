@@ -34,6 +34,4 @@ ys_templated_content.from_template_profile:
   title: 'Add content'
   description: 'Add content'
   parent: main
-  route_name: ys_templated_content.selection
-  route_parameters:
-    content_type: 'page'
+  route_name: ys_templated_content.admin_menu
