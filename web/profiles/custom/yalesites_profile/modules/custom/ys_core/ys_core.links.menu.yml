@@ -50,7 +50,7 @@ ys_core.manage_content_menu:
 ys_core.menu_menus:
   description: "Manage menus"
   parent: system.admin_content
-  url: "internal:#"
+  route_name: ys_core.menus_admin_menu
   title: Menus
   weight: 8
 ys_core.menu_main_edit:

@@ -38,3 +38,11 @@ ys_core.admin_dashboard:
     _title: 'Dashboard'
   requirements:
     _permission: 'yalesites manage settings'
+ys_core.menus_admin_menu:
+  path: '/admin/menus/manage'
+  defaults:
+    _title: 'Manage Menus'
+    _controller: '\Drupal\ys_core\Controller\ManageMenusController::menusPage'
+    _arguments: ['@container']
+  requirements:
+    _permission: 'yalesites manage settings'
