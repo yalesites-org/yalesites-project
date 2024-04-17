@@ -5,6 +5,7 @@ global:
       node_modules/@yalesites-org/component-library-twig/dist/style.css: {}
       components/_settings/_config.css: {}
       css/admin-theme.css: {}
+      css/localist.css: {}
   js:
     node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/menu/menu-toggle/yds-menu-toggle.js:
       {}
