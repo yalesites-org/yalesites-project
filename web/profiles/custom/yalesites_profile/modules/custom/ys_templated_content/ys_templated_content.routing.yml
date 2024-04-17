@@ -2,6 +2,13 @@ ys_templated_content.selection:
   path: '/admin/node/add/from_template/{content_type}'
   defaults:
     _form: '\Drupal\ys_templated_content\Form\TemplatedContentForm'
-    content_type: page
   requirements:
     _permission: 'yalesites manage template usage'
+ys_templated_content.admin_menu:
+  path: '/admin/node/add/from_template'
+  defaults:
+    _title: "Add content"
+    _controller: '\Drupal\ys_templated_content\Controller\CreateContentMenuController::menusPage'
+    _arguments: ['@container']
+  requirements:
+    _permission: "administer site configuration"
