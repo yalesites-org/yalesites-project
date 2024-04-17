@@ -4,6 +4,7 @@ status: true
 dependencies:
   config:
     - field.field.node.event.field_category
+    - field.field.node.event.field_event_audience
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_description
@@ -43,6 +44,7 @@ dependencies:
     - path
     - smart_date
     - text
+    - workflow_buttons
 third_party_settings:
   field_group:
     group_teaser:
@@ -141,6 +143,7 @@ third_party_settings:
         - field_category
         - field_localist_event_type
         - field_localist_group
+        - field_event_audience
       label: Classifications
       region: content
       parent_name: group_event_tabs
@@ -212,6 +215,12 @@ content:
   field_category:
     type: chosen_select
     weight: 23
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_event_audience:
+    type: chosen_select
+    weight: 26
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -403,6 +412,13 @@ content:
     settings:
       placeholder_url: ''
       placeholder_title: ''
+    third_party_settings: {  }
+  moderation_state:
+    type: workflow_buttons
+    weight: 5
+    region: content
+    settings:
+      show_current_state: false
     third_party_settings: {  }
   path:
     type: path

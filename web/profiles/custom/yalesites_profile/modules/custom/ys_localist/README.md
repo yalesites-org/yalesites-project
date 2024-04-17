@@ -54,9 +54,9 @@ Most of the migrations require a dynamic URL for accessing the Localist API. The
 ### Source Plugin
 The Localist API is structured in a way that events repeat at the top level, using the same event ID. Event instances (each date that is attached to a single event) are located in a sub-key and also reference the top-level event ID. Therefore, to split out each instance and return only one event with many instances to the migration, a custom `migrate_plus` data parser plugin called `localist_json` was written. This parser handles the paging and combination of data. It returns a keyed array with the eventID as the key, and two sub arrays: `localist_data` and `instances`. `localist_data` is simply a copy of all of the data from the original event. And `instances` is an array of all date instances.
 
-### Extract Filter Process Plugin
+### Localist Filters
 
-Filters in Localist have an extra key in the data that is returned, so a custom process plugin called `extract_localist_filter` was built to handle the Event Type filter as well as any future filters that may be created. For example, eventually there will be an Audience filter and this field would utilize this same process plugin but with a different filter value. To use, see the event type process:
+Filters in Localist have an extra key in the data that is returned, so a custom process plugin called `extract_localist_filter` was built to handle the Event Type filter as well as any future filters that may be created. At the moment, there is an event type filter and an audience filter. Any future filters can use this same process plugin but with a different filter value. To use, see the event type process:
 
 ```
 field_localist_event_type:
@@ -70,9 +70,36 @@ field_localist_event_type:
       no_stub: true
 ```
 
-The `filter` is the name of the key on the filter from the Localist API. Note that an additional taxonomy vocabulary and accompanying migration will also need to be build for any subsequent filters.
+The `filter` is the name of the key on the filter from the Localist API. Note that an additional taxonomy vocabulary and accompanying migration will also need to be build for any subsequent filters. Then, there is a secondary step to use the ID that was extracted with a migration lookup to lookup the correct ID to connect to a taxonomy term.
 
-Then, there is a secondary step to use the ID that was extracted with a migration lookup to lookup the correct ID to connect to a taxonomy term.
+### Adding a new filter
+
+To add a new filter from Localist to Drupal, follow these steps. (Note the audience filter is used here as an example, change the name appropriately for any new filters):
+
+1. Create a new taxonomy vocabulary in Drupal called "Event Audience" (`event_audience`)
+2. On the Event content type, add a new taxonomy term reference field called "Event audience" (`field_event_audience`) that references this new vocabulary. Since filters in Localist can accept many items, this field should be set to allow unlimited values.
+3. On the form display, move the field to the "Classifications" section and set the widget to use "Chosen"
+4. In `web/profiles/custom/yalesites_profile/modules/custom/ys_localist/migrations` add a new migration called `localist_audience.yml` to retrieve the new filters. Feel free to copy the existing `localist_audience.yml` file and modify as it will be very similar.
+5. Note the endpoint to check on Localist machine names is: `https://yale.enterprise.localist.com/api/2/events/filters`
+6. Change the `id` to `localist_audience`.
+7. Change the `label` to `Localist audience filter`.
+8. Change the `item_selector` to `event_audience`.
+9. For each of the 3 fields, note the machine `name` is set to a generic `filter_id`, `filter_name` and `filter_parent_id`. Therefore the only field you should change is the `label` field to describe the kind of filter this is. For example `Event audience ID`
+10. In the `process` -> `parent` -> `migration` change to reference this same migration `localist_audience`.
+11. In the `destination` -> `default_bundle` change to the machine name of the taxonomy vocabulary created in step 1 (`event_audience`).
+12. Next, edit the `localist_events.yml` migration file and add in the new field:
+13. Copy the entire `field_event_audience` section and copy below and edit the following parts:
+14. Change the top level field name to match the new field crearted in step 2 (`field_event_audience`)
+15. Change `filter` to `event_audience`
+16. Change `migration` to `localist_audience`
+17. At the bottom under `migration_dependencies` -> `required` add the `localist_audience` migration to the list
+18. Edit `web/profiles/custom/yalesites_profile/modules/custom/ys_localist/src/LocalistManager.php` and add the `localist_audience` migration to the `LOCALIST_MIGRATIONS` array before `localist_events`
+19. Clear Drupal caches.
+20. Test the migration by going to `/admin/yalesites/localist` and clicking "Sync now"
+21. If all worked well, new taxonomy terms should appear in the new vocabulary (given they are already entered into Localist), and if any events are tagged with those filters, they will also show in the event itself.
+22. Note that Layout Builder by default will add these fields to the layout. To remove, visit `/admin/structure/types/manage/event/display`, click "Manage layout" and remove the newly added block "Event audience" and then save.
+23. To add the field to the Event Meta BLock that appears above all Layout Builder content, edit the `web/profiles/custom/yalesites_profile/modules/custom/ys_layouts/src/Plugin/Block/EventMetaBlock.php`, `web/profiles/custom/yalesites_profile/modules/custom/ys_layouts/templates/ys-event-meta-block.html.twig` and `web/profiles/custom/yalesites_profile/modules/custom/ys_layouts/ys_layouts.module` (Specifically the `ys_layouts_theme` function) to add the new field.
+24. Note a few of these changes require exporting config before committing to the repo: `lando drush cex`
 
 ### Extract Groups Process Plugin
 Similar to the extra filters but without the extra key, there is also a specific `extract_localist_groups` process plugin that is used in a similar way to first extract, and then it will use a migration lookup to lookup the correct ID to connect to a taxonomy term.

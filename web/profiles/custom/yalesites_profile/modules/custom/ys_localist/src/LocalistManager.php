@@ -26,6 +26,7 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
    */
   const LOCALIST_MIGRATIONS = [
     'localist_event_types',
+    'localist_audience',
     'localist_experiences',
     'localist_groups',
     'localist_places',

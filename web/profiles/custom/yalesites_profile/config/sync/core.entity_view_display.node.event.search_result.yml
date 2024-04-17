@@ -5,6 +5,7 @@ dependencies:
   config:
     - core.entity_view_mode.node.search_result
     - field.field.node.event.field_category
+    - field.field.node.event.field_event_audience
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_description
@@ -41,6 +42,11 @@ targetEntityType: node
 bundle: event
 mode: search_result
 content:
+  content_moderation_control:
+    settings: {  }
+    third_party_settings: {  }
+    weight: -20
+    region: content
   field_external_source:
     type: link_separate
     label: hidden
@@ -67,6 +73,7 @@ content:
     region: content
 hidden:
   field_category: true
+  field_event_audience: true
   field_event_cta: true
   field_event_date: true
   field_event_description: true
@@ -92,3 +99,4 @@ hidden:
   field_ticket_registration_url: true
   layout_builder__layout: true
   links: true
+  workflow_buttons: true

@@ -130,6 +130,15 @@ process:
       plugin: migration_lookup
       migration: localist_event_types
       no_stub: true
+  field_event_audience:
+    -
+      plugin: extract_localist_filter
+      source: filters
+      filter: event_audience
+    -
+      plugin: migration_lookup
+      migration: localist_audience
+      no_stub: true
   field_ticket_cost: ticket_cost
   field_ticket_registration_url/uri: ticket_registration_url
   field_event_status:
@@ -172,6 +181,7 @@ migration_dependencies:
     - localist_experiences
     - localist_places
     - localist_event_types
+    - localist_audience
     - localist_status
     - localist_groups
   optional: []
