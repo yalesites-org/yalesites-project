@@ -211,6 +211,22 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
       }
     }
 
+    // Event audience.
+    $eventAudience = [];
+    if ($node->field_event_audience) {
+      $audiences = $node->field_event_audience->getValue();
+      if ($audiences) {
+        foreach ($audiences as $audience) {
+          /** @var \Drupal\taxonomy\Entity\Term $typeInfo */
+          $typeInfo = $this->entityTypeManager->getStorage('taxonomy_term')->load($audience['target_id']);
+          $eventAudience[] = [
+            'name' => $typeInfo->getName(),
+            'url' => $typeInfo->toUrl()->toString(),
+          ];
+        }
+      }
+    }
+
     // Event experience.
     $eventExperienceId = $node->field_localist_event_experience->first() ? $node->field_localist_event_experience->first()->getValue()['target_id'] : NULL;
     /** @var \Drupal\taxonomy\Entity\Term $eventExperienceInfo */
@@ -226,6 +242,7 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
       '#ticket_cost' => $ticketCost,
       '#place' => $place,
       '#event_types' => $eventTypes,
+      '#event_audience' => $eventAudience,
       '#description' => $eventDescription,
       '#event_meta__cta_primary__href' => $eventWebsite,
       '#event_meta__cta_primary__content' => $urlTitle,

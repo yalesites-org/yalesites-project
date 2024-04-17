@@ -21,6 +21,7 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'ticket_cost' => NULL,
         'place' => [],
         'event_types' => [],
+        'event_audience' => [],
         'description' => NULL,
         'event_meta__cta_primary__href' => NULL,
         'event_meta__cta_primary__content' => NULL,

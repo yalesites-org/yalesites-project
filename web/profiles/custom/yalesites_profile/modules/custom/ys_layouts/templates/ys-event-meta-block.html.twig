@@ -94,6 +94,16 @@
   </ul>
 {% endif %}
 
+<h2>Event Audience</h2>
+
+{% if event_audience %}
+  <ul>
+    {% for audience in event_audience %}
+      <li><a href="{{ audience.url }}">{{ audience.name }}</a></li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
 <h2>Description</h2>
 
 {% if description %}
