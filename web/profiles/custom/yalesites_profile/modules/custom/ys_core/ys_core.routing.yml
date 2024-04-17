@@ -44,5 +44,11 @@ ys_core.admin_views_settings:
   defaults:
     _form: '\Drupal\ys_core\Form\ViewsSettingsForm'
     _title: 'Views Settings'
+ys_core.menus_admin_menu:
+  path: '/admin/menus/manage'
+  defaults:
+    _title: 'Manage Menus'
+    _controller: '\Drupal\ys_core\Controller\ManageMenusController::menusPage'
+    _arguments: ['@container']
   requirements:
     _permission: 'yalesites manage settings'
