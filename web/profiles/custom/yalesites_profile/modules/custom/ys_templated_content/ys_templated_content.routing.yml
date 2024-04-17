@@ -11,4 +11,4 @@ ys_templated_content.admin_menu:
     _controller: '\Drupal\ys_templated_content\Controller\CreateContentMenuController::menusPage'
     _arguments: ['@container']
   requirements:
-    _permission: "administer site configuration"
+    _permission: "yalesites manage template usage"
