@@ -17,3 +17,14 @@
 .localist_widget_container .lw_event_item_title a:hover {
   text-decoration: none !important;
 }
+
+.localist_widget_container .action_button a:hover {
+  /* stylelint-disable hue-degree-notation, color-function-notation */
+
+  /* Color taken from inline styles brought in with localist.
+   * This matches the background color that is the button when hovered.
+   * Stylelint placed to exactly match what is coming from localist.
+   */
+  --color-text-shadow: hsl(0, 0%, 25%);
+  /* stylelint-enable hue-degree-notation, color-function-notation */
+}
