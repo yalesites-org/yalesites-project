@@ -1,0 +1,23 @@
+uuid: f7133d77-0df7-4324-95a4-9bbf20ddd47c
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.cta_banner
+    - field.storage.block_content.field_link_two
+  module:
+    - link
+id: block_content.cta_banner.field_link_two
+field_name: field_link_two
+entity_type: block_content
+bundle: cta_banner
+label: 'Call-to-action Two'
+description: 'For more information about linking content, view our resource <a href="https://yalesites.yale.edu/resource-library/linking-content-on-yalesites" target="_blank">Linking Content on YaleSites</a>.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  title: 2
+  link_type: 17
+field_type: link
