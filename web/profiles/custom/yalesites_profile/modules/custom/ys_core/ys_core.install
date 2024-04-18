@@ -5,6 +5,7 @@
  * Install, uninstall and update hooks for ys_core module.
  */
 
+use Drupal\block_content\Entity\BlockContent;
 use Drupal\Component\Utility\Xss;
 
 /**
@@ -194,5 +195,49 @@ function ys_core_update_9007() {
     // Flush to refresh image styles.
     image_path_flush($image->getSource());
 
+  }
+}
+
+/**
+ * Update block fields to use new text format.
+ */
+function ys_core_update_9008() {
+  // Change existing content spotlight landscape blocks.
+  $query = \Drupal::entityQuery('block_content')
+    ->condition('type', 'content_spotlight')
+    ->accessCheck(TRUE);
+  $blockIds = $query->execute();
+  ys_core_set_block_formatted_text($blockIds);
+
+  // Change existing content spotlight portrait blocks.
+  $query = \Drupal::entityQuery('block_content')
+    ->condition('type', 'content_spotlight_portrait')
+    ->accessCheck(TRUE);
+  $blockIds = $query->execute();
+  ys_core_set_block_formatted_text($blockIds);
+}
+
+/**
+ * Sets block text fields to use a new formatter.
+ *
+ * @param array $blockIds
+ *   The array of blockIds to update.
+ * @param string $textField
+ *   The machine name of the text field to update.
+ * @param string $formattedText
+ *   The machine name of the text format to set the field to use.
+ */
+function ys_core_set_block_formatted_text($blockIds, $textField = 'field_text', $formattedText = 'basic_html') {
+  // Load and update each block.
+  foreach ($blockIds as $blockId) {
+    $block = BlockContent::load($blockId);
+    if ($block) {
+      // Update the text field to use the new text format.
+      $block->set($textField, [
+        'value' => $block->get($textField)->value,
+        'format' => $formattedText,
+      ]);
+      $block->save();
+    }
   }
 }

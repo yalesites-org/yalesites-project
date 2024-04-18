@@ -1,0 +1,14 @@
+diff --git a/src/Plugin/Field/FieldWidget/LinkitWidget.php b/src/Plugin/Field/FieldWidget/LinkitWidget.php
+index c9e4620..0585d09 100644
+--- a/src/Plugin/Field/FieldWidget/LinkitWidget.php
++++ b/src/Plugin/Field/FieldWidget/LinkitWidget.php
+@@ -216,7 +216,8 @@ class LinkitWidget extends LinkWidget {
+    */
+   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+     foreach ($values as &$value) {
+-      $value['uri'] = LinkitHelper::uriFromUserInput($value['uri']);
++      $uri = LinkitHelper::uriFromUserInput($value['uri']);
++      $value['uri'] = !empty($uri) ? urldecode($uri) : NULL;
+       $value += ['options' => $value['attributes']];
+     }
+     return $values;
