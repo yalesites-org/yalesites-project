@@ -1,31 +1,30 @@
-uuid: 50469c2a-a84b-433e-bef3-727c08f41f78
+uuid: 557918b8-f456-48cc-8230-670ba974bad1
 langcode: en
 status: true
 dependencies:
   config:
-    - core.entity_view_mode.media.content_spotlight_portrait_2_3
+    - core.entity_view_mode.media.media_library
     - field.field.media.image.field_media_image
-    - field.field.media.image.field_tags
+    - image.style.media_library
     - media.type.image
-    - responsive_image.styles.content_spotlight_portrait
   module:
+    - image
     - layout_builder
-    - responsive_image
 third_party_settings:
   layout_builder:
     enabled: false
     allow_custom: false
-id: media.image.content_spotlight_portrait_2_3
+id: media.image.media_library
 targetEntityType: media
 bundle: image
-mode: content_spotlight_portrait_2_3
+mode: media_library
 content:
   field_media_image:
-    type: responsive_image
+    type: image
     label: hidden
     settings:
-      responsive_image_style: content_spotlight_portrait
       image_link: ''
+      image_style: media_library
       image_loading:
         attribute: lazy
     third_party_settings: {  }
@@ -33,7 +32,6 @@ content:
     region: content
 hidden:
   created: true
-  field_tags: true
   name: true
   search_api_excerpt: true
   thumbnail: true
