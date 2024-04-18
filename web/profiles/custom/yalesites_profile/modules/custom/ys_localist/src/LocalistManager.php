@@ -27,6 +27,7 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
   const LOCALIST_MIGRATIONS = [
     'localist_event_types',
     'localist_audience',
+    'localist_topics',
     'localist_experiences',
     'localist_groups',
     'localist_places',
@@ -172,6 +173,11 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
       case 'groups':
         $groupsURL = "$this->endpointBase/api/2/groups?pp=100";
         $endpointsWithParams = $this->getMultiPageUrls($groupsURL);
+
+        break;
+
+      case 'photos':
+        $endpointsWithParams[] = "$this->endpointBase/api/2/photos";
 
         break;
 

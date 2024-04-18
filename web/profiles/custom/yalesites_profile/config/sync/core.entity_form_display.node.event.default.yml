@@ -13,9 +13,11 @@ dependencies:
     - field.field.node.event.field_event_recurring
     - field.field.node.event.field_event_room
     - field.field.node.event.field_event_status
+    - field.field.node.event.field_event_topics
     - field.field.node.event.field_event_type
     - field.field.node.event.field_external_source
     - field.field.node.event.field_localist_event_experience
+    - field.field.node.event.field_localist_event_image_alt
     - field.field.node.event.field_localist_event_image_url
     - field.field.node.event.field_localist_event_type
     - field.field.node.event.field_localist_event_url
@@ -144,6 +146,7 @@ third_party_settings:
         - field_localist_event_type
         - field_localist_group
         - field_event_audience
+        - field_event_topics
       label: Classifications
       region: content
       parent_name: group_event_tabs
@@ -162,6 +165,7 @@ third_party_settings:
         - field_event_status
         - field_localist_event_url
         - field_localist_event_image_url
+        - field_localist_event_image_alt
         - field_localist_ics_url
       label: 'Localist data'
       region: content
@@ -288,6 +292,12 @@ content:
     region: content
     settings: {  }
     third_party_settings: {  }
+  field_event_topics:
+    type: chosen_select
+    weight: 27
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_external_source:
     type: link_default
     weight: 12
@@ -301,6 +311,14 @@ content:
     weight: 5
     region: content
     settings: {  }
+    third_party_settings: {  }
+  field_localist_event_image_alt:
+    type: string_textfield
+    weight: 17
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
     third_party_settings: {  }
   field_localist_event_image_url:
     type: link_default
@@ -332,7 +350,7 @@ content:
     third_party_settings: {  }
   field_localist_ics_url:
     type: link_default
-    weight: 17
+    weight: 18
     region: content
     settings:
       placeholder_url: ''

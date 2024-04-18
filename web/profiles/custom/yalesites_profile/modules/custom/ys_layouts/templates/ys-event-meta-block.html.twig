@@ -104,6 +104,16 @@
   </ul>
 {% endif %}
 
+<h2>Event Topics</h2>
+
+{% if event_topics %}
+  <ul>
+    {% for topic in event_topics %}
+      <li><a href="{{ topic.url }}">{{ topic.name }}</a></li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
 <h2>Description</h2>
 
 {% if description %}
@@ -120,6 +130,11 @@
 {% if localist_image_url %}
   {{ localist_image_url }}
 {% endif %}
+<br>
+{% if localist_image_alt %}
+  Alt: {{ localist_image_alt }}
+{% endif %}
+
 
 <h2>Teaser Media</h2>
 {% if teaser_media %}

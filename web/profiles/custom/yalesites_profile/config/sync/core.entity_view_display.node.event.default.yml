@@ -13,9 +13,11 @@ dependencies:
     - field.field.node.event.field_event_recurring
     - field.field.node.event.field_event_room
     - field.field.node.event.field_event_status
+    - field.field.node.event.field_event_topics
     - field.field.node.event.field_event_type
     - field.field.node.event.field_external_source
     - field.field.node.event.field_localist_event_experience
+    - field.field.node.event.field_localist_event_image_alt
     - field.field.node.event.field_localist_event_image_url
     - field.field.node.event.field_localist_event_type
     - field.field.node.event.field_localist_event_url
@@ -207,6 +209,14 @@ content:
     third_party_settings: {  }
     weight: 20
     region: content
+  field_event_topics:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 25
+    region: content
   field_event_type:
     type: entity_reference_label
     label: hidden
@@ -234,6 +244,14 @@ content:
       link: true
     third_party_settings: {  }
     weight: 23
+    region: content
+  field_localist_event_image_alt:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 26
     region: content
   field_localist_event_image_url:
     type: link
