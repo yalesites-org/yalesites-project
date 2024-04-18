@@ -39,6 +39,7 @@ class ThemesSettingsForm extends ConfigFormBase {
    * @var \Drupal\Core\Routing\RouteMatchInterface
    */
   protected $routeMatch;
+
   /**
    * {@inheritdoc}
    */
@@ -184,7 +185,7 @@ class ThemesSettingsForm extends ConfigFormBase {
     $this->themeSettingsManager = $theme_settings_manager;
   }
 
-    /**
+  /**
    * Check if the current page is a node-view route.
    *
    * This is not normally a complex task, but things are tricky with this theme
