@@ -1,8 +1,3 @@
-{# If page_title_display is not visible #}
-{% if 'visible' not in [page_title__display] %}
-  {{ attach_library('atomic/page-title') }}
-{% endif %}
-
 {% include "@molecules/page-title/yds-page-title.twig" with {
   page_title__heading: page_title,
   page_title__display: page_title_display,
