@@ -42,7 +42,6 @@ ys_core.menus_admin_menu:
   path: '/admin/menus/manage'
   defaults:
     _title: 'Manage Menus'
-    _controller: '\Drupal\ys_core\Controller\ManageMenusController::menusPage'
-    _arguments: ['@container']
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
   requirements:
     _permission: 'yalesites manage settings'
