@@ -8,6 +8,7 @@ dependencies:
     - field.field.block_content.grand_hero.field_heading_level
     - field.field.block_content.grand_hero.field_instructions
     - field.field.block_content.grand_hero.field_link
+    - field.field.block_content.grand_hero.field_link_two
     - field.field.block_content.grand_hero.field_media
     - field.field.block_content.grand_hero.field_style_position
     - field.field.block_content.grand_hero.field_style_variation
@@ -42,7 +43,7 @@ content:
         maxlength_js_enforce: false
   field_heading_level:
     type: options_select
-    weight: 8
+    weight: 9
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -53,6 +54,16 @@ content:
     settings: {  }
     third_party_settings: {  }
   field_link:
+    type: linkit
+    weight: 6
+    region: content
+    settings:
+      placeholder_url: ''
+      placeholder_title: ''
+      linkit_profile: default
+      linkit_auto_link_text: false
+    third_party_settings: {  }
+  field_link_two:
     type: linkit
     weight: 7
     region: content
@@ -75,13 +86,13 @@ content:
         show_edit: '1'
   field_style_position:
     type: options_select
-    weight: 7
+    weight: 8
     region: content
     settings: {  }
     third_party_settings: {  }
   field_style_variation:
     type: options_select
-    weight: 6
+    weight: 5
     region: content
     settings: {  }
     third_party_settings: {  }
