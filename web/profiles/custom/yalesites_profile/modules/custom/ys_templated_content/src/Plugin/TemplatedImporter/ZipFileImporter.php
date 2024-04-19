@@ -1,16 +1,25 @@
 <?php
 
-namespace Drupal\ys_templated_content\Importers;
+namespace Drupal\ys_templated_content\Plugin\TemplatedImporter;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\ys_templated_content\FileTypes\ZipFile;
+use Drupal\ys_templated_content\TemplateImporterBase;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
- * Takes a zip file and modifies it for new import.
+ * Provides a zip file template importer.
+ *
+ * @TemplatedImporter(
+ *  id = "zip_file_importer",
+ *  label = @Translation("Zip file importer"),
+ *  description = @Translation("For loading a set of YAML imports from a zip file"),
+ *  extension = "zip"
+ * )
  */
-class ZipFileImporter {
+class ZipFileImporter extends TemplateImporterBase {
   use StringTranslationTrait;
 
   /**
@@ -35,15 +44,14 @@ class ZipFileImporter {
   protected $templateModifier;
 
   /**
-   * ZipFileImporter constructor.
-   *
-   * @param \Drupal\ys_templated_content\Managers\ImportManager $importManager
-   *   The import manager.
+   * {@inheritdoc}
    */
-  public function __construct($importManager) {
-    $this->importManager = $importManager;
-    $this->contentSyncHelper = $importManager->getContentSyncHelper();
-    $this->templateModifier = $importManager->getTemplateModifier();
+  public function __construct(array $configuration, $plugin_id, $plugin_definition) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+
+    $this->importManager = $configuration['importManager'] ?? $configuration[0];
+    $this->contentSyncHelper = $this->importManager->getContentSyncHelper();
+    $this->templateModifier = $this->importManager->getTemplateModifier();
   }
 
   /**
@@ -55,7 +63,7 @@ class ZipFileImporter {
    * @return \Drupal\Core\Entity\EntityInterface
    *   The entity created.
    */
-  public function import($filename) {
+  public function import(string $filename): EntityInterface | NULL {
     $zipFile = new ZipFile($filename);
 
     $tempDir = $zipFile->extractToTemp();
@@ -81,7 +89,7 @@ class ZipFileImporter {
       'title' => $this->t('Importing template'),
       'operations' => [],
       'file' => '\Drupal\single_content_sync\ContentBatchImporter',
-      'finished' => '\Drupal\ys_templated_content\Importers\ZipFileImporter::importFinished',
+      'finished' => '\Drupal\ys_templated_content\Plugin\TemplatedImporter\ZipFileImporter::importFinished',
     ];
 
     // Always import assets first, even if they're at the end of ZIP archive.
