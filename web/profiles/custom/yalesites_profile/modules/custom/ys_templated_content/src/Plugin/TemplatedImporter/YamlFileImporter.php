@@ -1,13 +1,21 @@
 <?php
 
-namespace Drupal\ys_templated_content\Importers;
+namespace Drupal\ys_templated_content\Plugin\TemplatedImporter;
 
-use Drupal\ys_templated_content\Managers\ImportManager;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\ys_templated_content\TemplateImporterBase;
 
 /**
- * Import content from a yaml file.
+ * Provides a yaml file template importer.
+ *
+ * @TemplatedImporter(
+ *  id = "yaml_file_importer",
+ *  label = @Translation("YAML file importer"),
+ *  description = @Translation("For loading a YAML file"),
+ *  extension = "yml"
+ * )
  */
-class YamlFileImporter {
+class YamlFileImporter extends TemplateImporterBase {
   /**
    * The content importer.
    *
@@ -23,14 +31,13 @@ class YamlFileImporter {
   protected $importManager;
 
   /**
-   * YamlFileImporter constructor.
-   *
-   * @param \Drupal\ys_templated_content\Managers\ImportManager $importManager
-   *   The import manager.
+   * {@inheritdoc}
    */
-  public function __construct(ImportManager $importManager) {
-    $this->contentImporter = $importManager->getContentImporter();
-    $this->importManager = $importManager;
+  public function __construct(array $configuration, $plugin_id, $plugin_definition) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+
+    $this->importManager = $configuration['importManager'];
+    $this->contentImporter = $this->importManager->getContentImporter();
   }
 
   /**
@@ -42,7 +49,7 @@ class YamlFileImporter {
    * @return \Drupal\Core\Entity\EntityInterface
    *   The entity created.
    */
-  public function import($filename) {
+  public function import(string $filename): EntityInterface | NULL {
     $content_array = $this->importManager->getContentFromFile($filename);
 
     $content_array = $this->process($content_array);

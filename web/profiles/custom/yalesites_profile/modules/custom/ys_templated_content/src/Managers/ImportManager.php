@@ -5,8 +5,7 @@ namespace Drupal\ys_templated_content\Managers;
 use Drupal\Core\Serialization\Yaml;
 use Drupal\single_content_sync\ContentImporterInterface;
 use Drupal\single_content_sync\ContentSyncHelperInterface;
-use Drupal\ys_templated_content\Importers\YamlFileImporter;
-use Drupal\ys_templated_content\Importers\ZipFileImporter;
+use Drupal\ys_templated_content\ImportPluginManager;
 use Drupal\ys_templated_content\Modifiers\TemplateModifier;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -45,6 +44,13 @@ class ImportManager {
   protected $contentSyncHelper;
 
   /**
+   * The import plugin manager.
+   *
+   * @var \Drupal\ys_templated_content\Managers\ImportPluginManager
+   */
+  protected $importPluginManager;
+
+  /**
    * Constructs the controller object.
    *
    * @param \Drupal\single_content_sync\ContentImporterInterface $contentImporter
@@ -55,17 +61,21 @@ class ImportManager {
    *   The template manager.
    * @param \Drupal\ys_templated_content\Modifiers\TemplateModifier $templateModifier
    *   The template modifier.
+   * @param \Drupal\ys_templated_content\ImportPluginManager $importPluginManager
+   *   The import plugin manager.
    */
   public function __construct(
     ContentImporterInterface $contentImporter,
     ContentSyncHelperInterface $contentSyncHelper,
     TemplateManager $templateManager,
     TemplateModifier $templateModifier,
+    ImportPluginManager $importPluginManager,
   ) {
     $this->contentImporter = $contentImporter;
     $this->contentSyncHelper = $contentSyncHelper;
     $this->templateManager = $templateManager;
     $this->templateModifier = $templateModifier;
+    $this->importPluginManager = $importPluginManager;
   }
 
   /**
@@ -77,6 +87,7 @@ class ImportManager {
       $container->get('single_content_sync.helper'),
       $container->get('ys_templated_content.template_manager'),
       $container->get('ys_templated_content.template_modifier'),
+      $container->get('plugin.manager.templated_importer'),
     );
   }
 
@@ -101,22 +112,13 @@ class ImportManager {
 
     $extension = pathinfo($filename, PATHINFO_EXTENSION);
     $importResult = NULL;
-    switch ($extension) {
-      case 'zip':
-        $importResult = (new ZipFileImporter($this))->import($filename);
-        break;
-
-      case 'yml':
-        try {
-          $importResult = (new YamlFileImporter($this))->import($filename);
-        }
-        catch (\Exception $e) {
-          throw new \Exception('The file could not be imported at this time: ' . $templateTitle);
-        }
-        break;
-
-      default:
-        throw new \Exception("Unknown extension: $extension");
+    $plugin_id = $this->importPluginManager->getPluginIdFromExtension($extension);
+    try {
+      $importer = $this->importPluginManager->createInstance($plugin_id, ['importManager' => $this]);
+      $importResult = $importer->import($filename);
+    }
+    catch (\Exception $e) {
+      throw new \Exception('The file could not be imported at this time: ' . $templateTitle);
     }
 
     return $importResult;

@@ -1,17 +1,13 @@
 services:
   ys_templated_content.template_manager:
     class: Drupal\ys_templated_content\Managers\TemplateManager
-    arguments:
-      ["@module_handler", "@file.repository", "@file_system"]
+    arguments: ["@module_handler", "@file.repository", "@file_system"]
   ys_templated_content.import_manager:
     class: Drupal\ys_templated_content\Managers\ImportManager
-    arguments:
-      [
-        "@single_content_sync.importer",
-        "@single_content_sync.helper",
-        "@ys_templated_content.template_manager",
-        "@ys_templated_content.template_modifier",
-      ]
+    arguments: ["@single_content_sync.importer", "@single_content_sync.helper", "@ys_templated_content.template_manager", "@ys_templated_content.template_modifier", "@plugin.manager.ys_templated_content.importer_processor"]
   ys_templated_content.template_modifier:
     class: Drupal\ys_templated_content\Modifiers\TemplateModifier
     arguments: ["@uuid", "@path_alias.repository"]
+  plugin.manager.ys_templated_content.importer_processor:
+    class: Drupal\ys_templated_content\ImportPluginManager
+    parent: default_plugin_manager
