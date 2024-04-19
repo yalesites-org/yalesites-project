@@ -11,9 +11,14 @@
     media_grid__heading: content.field_heading.0,
     media_grid__width: media_grid__width,
   } %}
-
     {% block media_grid__items %}
-      {{ content.field_media_grid_items }}
+      {% for item in content.field_media_grid_items['#items'] %}
+        {% embed "@organisms/galleries/media-grid/_yds-media-grid-item.twig" %}
+          {% block media_grid_item__media %}
+            {{ drupal_entity('media', item.entity.field_media.0.entity.mid.value, 'card_secondary_3_2') }}
+          {% endblock %}
+        {% endembed %}
+      {% endfor %}
     {% endblock %}
 
   {% endembed %}
