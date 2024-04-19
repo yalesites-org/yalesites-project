@@ -7,6 +7,7 @@
 
 use Drupal\Core\File\Exception\FileException;
 use Drupal\Core\File\FileSystemInterface;
+use Drupal\file\Entity\File;
 
 /**
  * Implements hook_install().
@@ -63,6 +64,59 @@ function ys_embed_update_9001() {
     }
     catch (FileException $e) {
       // Ignore and continue.
+    }
+  }
+}
+
+/**
+ * Implements hook_update().
+ *
+ * Updates all twitter social media links to use the x config item.
+ */
+function ys_embed_update_9002() {
+  // Update footer twitter link to use x-twitter.
+  $config = \Drupal::configFactory()->getEditable('ys_core.social_links');
+  $config->set('x-twitter', $config->get('twitter'));
+  $config->clear('twitter');
+  $config->save();
+
+  $source = \Drupal::service('extension.list.module')->getPath('ys_embed') . '/images/icons';
+  // @todo Debug why the destination can not be loaded dynamically on install.
+  // $destination = \Drupal::config('media.settings')->get('icon_base_uri');
+  $destination = "public://media-icons/generic";
+  /** @var \Drupal\Core\File\FileSystemInterface $file_system */
+  $file_system = \Drupal::service('file_system');
+  $file_system->prepareDirectory($destination, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+
+  $files = $file_system->scanDirectory($source, '/.*\.(svg|png|jpg|jpeg|gif)$/');
+  foreach ($files as $file) {
+    // Usually we would check if the file exists, however we want to refresh
+    // all of the icons, so we're attempting the copy on all files found.
+    try {
+      $file_system->copy($file->uri, $destination, FileSystemInterface::EXISTS_REPLACE);
+    }
+    catch (FileException $e) {
+      // Ignore and continue.
+    }
+
+  }
+
+  // Update all media that are using twitter.png to use x-twitter.png.
+  $config = \Drupal::configFactory()->getEditable('media.settings');
+  $icon_base_uri = $config->get('icon_base_uri');
+
+  // Update the file_managed twitter.png file to x-twitter.png.
+  $query = \Drupal::entityQuery('file')
+    ->accessCheck(FALSE)
+    ->condition('filename', 'twitter.png');
+  $fids = $query->execute();
+
+  if ($fids) {
+    foreach ($fids as $fid) {
+      $file = File::load($fid);
+      $file->setFilename('x-twitter.png');
+      $file->setFileUri($icon_base_uri . '/x-twitter.png');
+      $file->save();
     }
   }
 }

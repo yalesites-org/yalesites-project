@@ -195,4 +195,5 @@ function ys_core_update_9007() {
     image_path_flush($image->getSource());
 
   }
+
 }

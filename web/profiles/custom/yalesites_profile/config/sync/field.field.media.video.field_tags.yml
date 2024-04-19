@@ -1,0 +1,29 @@
+uuid: d8147934-920f-4dca-a689-71ffcc78fda5
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.media.field_tags
+    - media.type.video
+    - taxonomy.vocabulary.tags
+id: media.video.field_tags
+field_name: field_tags
+entity_type: media
+bundle: video
+label: Tags
+description: "Tags will autocomplete as you type.  Choose from pre-created options only.  To add a new tag, go to 'Content->Manage Taxonomy->Tags'."
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:taxonomy_term'
+  handler_settings:
+    target_bundles:
+      tags: tags
+    sort:
+      field: name
+      direction: asc
+    auto_create: true
+    auto_create_bundle: ''
+field_type: entity_reference
