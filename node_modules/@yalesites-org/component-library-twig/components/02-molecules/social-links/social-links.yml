@@ -1,6 +1,6 @@
 icons:
-  - name: Twitter
-    icon: twitter
+  - name: X (formally Twitter)
+    icon: x-twitter
     url: 'https://www.twitter.com'
   - name: Facebook
     icon: facebook

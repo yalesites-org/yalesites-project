@@ -232,11 +232,11 @@ $modal-speed: var(--animation-speed-slow);
     gap: var(--size-spacing-5);
   }
 
-  &[aria-expanded] {
+  &[is-expanded] {
     background-color: var(--color-gray-800);
   }
 
-  &[aria-expanded='true'] {
+  &[is-expanded='true'] {
     @include tokens.animate(max-height, var(--animation-speed-slow));
 
     overflow: auto;
@@ -261,7 +261,7 @@ $modal-speed: var(--animation-speed-slow);
   @include tokens.body-l;
 
   // if the toggle is present, truncate the heading to 1 line
-  [aria-expanded='false'] & {
+  [is-expanded='false'] & {
     @include typography.truncate-text;
   }
 
@@ -281,7 +281,7 @@ $modal-speed: var(--animation-speed-slow);
     margin-top: 0;
   }
 
-  [aria-expanded='false'] & {
+  [is-expanded='false'] & {
     @include typography.truncate-text;
   }
 
@@ -299,7 +299,7 @@ $modal-speed: var(--animation-speed-slow);
   }
 
   &--has-heading {
-    [aria-expanded='false'] & {
+    [is-expanded='false'] & {
       display: none;
     }
   }
@@ -377,7 +377,7 @@ $modal-speed: var(--animation-speed-slow);
     display: none;
   }
 
-  [aria-expanded='true'] & {
+  [is-expanded='true'] & {
     svg.media-grid-modal__icon--expand-content {
       display: none;
     }

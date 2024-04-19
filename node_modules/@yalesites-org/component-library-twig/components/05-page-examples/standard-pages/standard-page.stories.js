@@ -67,8 +67,8 @@ export default {
     pageTitleDisplay: {
       name: 'Page Title Display',
       type: 'select',
-      options: ['display', 'hidden', 'visually-hidden'],
-      defaultValue: 'display',
+      options: ['visible', 'hidden', 'visually-hidden'],
+      defaultValue: 'visible',
     },
   },
 };

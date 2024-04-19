@@ -1,0 +1,86 @@
+{#
+ # Available Variables:
+ # - infographic__group__heading
+ # - infographic__group__bg_image: (boolean) false by default
+
+ # Available Blocks:
+ # - infographic__group__cards
+ #}
+
+{% set infographic__group__base_class = 'infographic__group' %}
+
+{% set infographic__group__width = infographic__group__width|default('site') %}
+
+{% if infographic__collection__type %}
+  {% set infographic__group__attributes = infographic__group__attributes|merge({
+    'data-stat-collection-type': infographic__collection__type,
+  }) %}
+{% endif %}
+
+{% set infographic__group__attributes = {
+  'data-component-width': infographic__group__width,
+  'data-stat-style': infographic__group__presentation_style|default('basic'),
+  'data-stat-font-style': infographic__group__font_style|default('normal'),
+  'data-stat-has-icon': infographic__group__has_icon == 'true' ? 'true' : 'false',
+  'data-component-alignment': infographic__group__alignment|default('center'),
+	'data-component-theme': infographic__group__theme|default('one'),
+  'class': bem(infographic__group__base_class),
+} %}
+
+<div {{ add_attributes(infographic__group__attributes) }}>
+  {% block prefix_suffix %}
+  {% endblock %}
+  <div {{ bem('inner', [], infographic__group__base_class) }}>
+    {% if infographic__group__heading is not empty or infographic__group__content is not empty or infographic__group__link__url is not empty %}
+      <div {{ bem('content-wrap', [], infographic__group__base_class) }}>
+        {% if infographic__group__heading is not empty %}
+          {% include "@atoms/typography/headings/yds-heading.twig" with {
+            heading__level: '2',
+            heading__blockname: infographic__group__base_class,
+            heading: infographic__group__heading,
+          } %}
+        {% endif %}
+        {% if infographic__group__content is not empty %}
+          {% include "@atoms/typography/text/yds-text.twig" with {
+            text__blockname: infographic__group__base_class,
+            text__content: infographic__group__content,
+            text__base_class: 'content',
+          } %}
+        {% endif %}
+        {% if infographic__group__link__url %}
+          {% include "@atoms/controls/cta/yds-cta.twig" with {
+            cta__content: infographic__group__link__content|default(infographic__group__link__content),
+            cta__href: infographic__group__link__url|default(infographic__group__link__url),
+            cta__blockname: infographic__group__base_class,
+            cta__style: 'outline',
+          } %}
+        {% endif %}
+      </div>
+    {% endif %}
+      <ul {{ bem('wrap', [], infographic__group__base_class) }}>
+        {% block infographic__group__items %}
+          {% for stat in infographic__group %}
+          {# Set stat attributes based on infographic__group attributes so all stat items within that infographic__group group are consistent #}
+          {# infographic__theme: 'default' is set to default as the theme is set on the infographic__group component, we don't want the individual stat to have a bg color #}
+            {% include "@molecules/infographic/yds-infographic.twig" with {
+              infographic__stat: stat.infographic__group__stat,
+              infographic__content: stat.infographic__group__content,
+              infographic__has_icon: infographic__group__has_icon,
+              infographic__font_style: infographic__group__font_style,
+              infographic__alignment: infographic__group__alignment,
+              infographic__presentation_style: infographic__group__presentation_style,
+              infographic__theme: 'default',
+              }
+            %}
+          {% endfor %}
+        {% endblock %}
+      </ul>
+    {% if infographic__group__bg_image %}
+      <div {{ bem('image', [], infographic__group__base_class) }}>
+        {% block infographic__group__image %}
+          {% include "@atoms/images/image/_responsive-image.twig" %}
+        {% endblock %}
+      </div>
+    {% endif %}
+  </div>
+</div>

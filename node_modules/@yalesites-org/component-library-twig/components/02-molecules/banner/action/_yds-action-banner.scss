@@ -76,6 +76,8 @@ $break-cta-banner-max: $break-cta-banner - 0.05;
     --color-banner-action-secondary: var(--color-slot-one);
     --color-link-base: var(--color-banner-heading);
     --color-link-hover: var(--color-banner-heading);
+    --color-link-visited-base: var(--color-link-visited-light);
+    --color-link-visited-hover: var(--color-link-visited-light-hover);
   }
 
   &[data-component-theme='two'] {
@@ -86,24 +88,6 @@ $break-cta-banner-max: $break-cta-banner - 0.05;
     --color-banner-action-secondary: var(--color-slot-eight);
     --color-link-base: var(--color-banner-heading);
     --color-link-hover: var(--color-banner-heading);
-
-    // component theme two has a white background when in global theme one, four, and five.
-    // add border between the bottom of the banner and any content after it.
-    [data-global-theme='one'] &,
-    [data-global-theme='four'] &,
-    [data-global-theme='five'] & {
-      @media (max-width: $break-cta-banner-max) {
-        &::after {
-          content: '';
-          position: absolute;
-          bottom: 0;
-          left: var(--size-spacing-site-gutter);
-          right: var(--size-spacing-site-gutter);
-          height: var(--border-thickness-1);
-          background-color: var(--color-gray-300);
-        }
-      }
-    }
   }
 
   &[data-component-theme='three'] {
@@ -114,6 +98,8 @@ $break-cta-banner-max: $break-cta-banner - 0.05;
     --color-banner-action-secondary: var(--color-slot-one);
     --color-link-base: var(--color-banner-heading);
     --color-link-hover: var(--color-banner-heading);
+    --color-link-visited-base: var(--color-link-visited-light);
+    --color-link-visited-hover: var(--color-link-visited-light-hover);
   }
 }
 
@@ -357,4 +343,10 @@ $break-cta-banner-max: $break-cta-banner - 0.05;
   @include atoms.link;
 
   flex: 0 0 auto;
+}
+
+.cta-banner__button-group {
+  display: flex;
+  flex-flow: row wrap;
+  gap: var(--size-spacing-5);
 }

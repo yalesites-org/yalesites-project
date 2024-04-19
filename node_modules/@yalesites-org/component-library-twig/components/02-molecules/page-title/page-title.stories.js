@@ -5,6 +5,8 @@ import dateTimeTwig from '../../01-atoms/date-time/yds-date-time.twig';
 // Data files
 // import textData from './text/text.yml';
 
+import './page-title';
+
 /**
  * Storybook Definition.
  */

@@ -271,3 +271,9 @@ $break-grand-hero-banner: tokens.$break-m;
     --color-link-hover: var(--color-grand-hero-text);
   }
 }
+
+.grand-hero-banner__button-group {
+  display: flex;
+  flex-flow: row wrap;
+  gap: var(--size-spacing-7);
+}

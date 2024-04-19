@@ -2,11 +2,11 @@ import tokens from '@yalesites-org/tokens/build/json/tokens.json';
 // get global themes as `label` : `key` values to pass into options as array.
 import getGlobalThemes from '../../00-tokens/colors/color-global-themes';
 
-// stats twig
-import statsTwig from './yds-stats.twig';
+// infographic__group twig
+import infographicGroupTwig from './yds-infographic-group.twig';
 
 // Stat default data
-import statsData from './stats.yml';
+import infographicGroupData from './infographic-group.yml';
 
 // Image atom component - generic images for demo
 import imageData from '../../01-atoms/images/image/image.yml';
@@ -18,7 +18,7 @@ const siteGlobalThemeOptions = getGlobalThemes(tokens['global-themes']);
  * Storybook Definition.
  */
 export default {
-  title: 'Organisms/Stats',
+  title: 'Organisms/Infographic Group',
   parameters: {
     layout: 'fullscreen',
   },
@@ -35,28 +35,28 @@ export default {
       type: 'select',
       defaultValue: 'one',
     },
-    statsHeading: {
-      name: 'Stats Heading',
+    infographicGroupHeading: {
+      name: 'Infographic Group Heading',
       type: 'string',
-      defaultValue: statsData.stats__heading,
+      defaultValue: infographicGroupData.infographic__group__heading,
     },
-    statsContent: {
-      name: 'Stats Content',
+    infographicGroupContent: {
+      name: 'Infographic Group Content',
       type: 'string',
-      defaultValue: statsData.stats__content,
+      defaultValue: infographicGroupData.infographic__group__content,
     },
-    statsLink: {
-      name: 'Stats Link',
+    infographicGroupLink: {
+      name: 'Infographic Group Link',
       type: 'string',
-      defaultValue: statsData.stats__link__content,
+      defaultValue: infographicGroupData.infographic__group__link__content,
     },
     image: {
       name: 'With image',
       type: 'boolean',
       defaultValue: true,
     },
-    statsIcons: {
-      name: 'Stats Icons',
+    infographicGroupIcons: {
+      name: 'Infographic Group Icons',
       type: 'boolean',
       defaultValue: false,
     },
@@ -81,10 +81,10 @@ export default {
   },
 };
 
-export const Stats = ({
-  statsHeading,
-  statsContent,
-  statsIcons,
+export const InfographicGroup = ({
+  infographicGroupHeading,
+  infographicGroupContent,
+  infographicGroupIcons,
   globalTheme,
   presentationStyle,
   fontStyle,
@@ -94,17 +94,17 @@ export const Stats = ({
 }) => {
   return `
     <div class="wrap-for-global-theme" data-global-theme="${globalTheme}">
-      ${statsTwig({
+      ${infographicGroupTwig({
         site_global__theme: globalTheme,
-        stats__heading: statsHeading,
-        stats__content: statsContent,
-        stats__has_icon: statsIcons ? 'true' : 'false',
-        stats__alignment: alignment,
-        stats__presentation_style: presentationStyle,
-        stats__font_style: fontStyle,
-        stats__theme: themeColor,
-        stats__bg_image: image,
-        ...statsData,
+        infographic__group__heading: infographicGroupHeading,
+        infographic__group__content: infographicGroupContent,
+        infographic__group__has_icon: infographicGroupIcons ? 'true' : 'false',
+        infographic__group__alignment: alignment,
+        infographic__group__presentation_style: presentationStyle,
+        infographic__group__font_style: fontStyle,
+        infographic__group__theme: themeColor,
+        infographic__group__bg_image: image,
+        ...infographicGroupData,
         ...imageData.responsive_images['16x9'],
       })}
     </div>

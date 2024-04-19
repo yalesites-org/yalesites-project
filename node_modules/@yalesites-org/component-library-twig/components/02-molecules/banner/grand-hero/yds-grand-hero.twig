@@ -70,6 +70,10 @@
                 text__content: grand_hero__snippet,
               } %}
             {% endif %}
+            {# Add wrapping opening div if there are two links #}
+            {% if grand_hero__link__content and grand_hero__link__url and grand_hero__link__content_two and grand_hero__link__url_two %}
+            <div {{ bem('button-group', [], grand_hero__base_class) }}>
+            {% endif %}
             {% if grand_hero__link__content and grand_hero__link__url %}
               {% include "@atoms/controls/text-link/yds-text-link.twig" with {
                 link__content: grand_hero__link__content,
@@ -79,6 +83,19 @@
                 link__style: grand_hero__link__style|default('no-underline-animation'),
                 link__url_type: 'chevron',
               } %}
+            {% endif %}
+            {% if grand_hero__link__content_two and grand_hero__link__url_two %}
+              {% include "@atoms/controls/text-link/yds-text-link.twig" with {
+                link__content: grand_hero__link__content_two,
+                link__url: grand_hero__link__url_two,
+                link__blockname: grand_hero__base_class,
+                link__type: 'with-chevron',
+                link__style: grand_hero__link__style|default('no-underline-animation'),
+                link__url_type: 'chevron',
+              } %}
+            {% endif %}
+            {% if grand_hero__link__content and grand_hero__link__url and grand_hero__link__content_two and grand_hero__link__url_two %}
+            </div>
             {% endif %}
           </div>
         </div>

@@ -28,7 +28,7 @@ export default {
     collectionType: {
       name: 'Collection Type',
       type: 'select',
-      options: ['grid', 'list', 'condensed'],
+      options: ['grid', 'list', 'condensed', 'single'],
       defaultValue: 'grid',
     },
     featured: {
@@ -113,7 +113,7 @@ EventCard.argTypes = {
   },
 };
 
-export const ProfileCard = ({ collectionType, featured }) => `
+export const ProfileCard = ({ collectionType, featured, withImage }) => `
 <div class='card-collection' data-component-width='site' data-collection-source='profile' data-collection-type='${collectionType}' data-collection-featured="${featured}">
   <div class='card-collection__inner'>
     <ul class='card-collection__cards'>
@@ -121,6 +121,8 @@ export const ProfileCard = ({ collectionType, featured }) => `
         card_collection__source_type: 'profile',
         card_collection__type: collectionType,
         ...imageData.responsive_images['1x1'],
+        reference_card__featured: featured ? 'true' : 'false',
+        reference_card__image: withImage ? 'true' : 'false',
         reference_card__heading:
           referenceProfileCardData.reference_card__heading,
         reference_card__subheading:

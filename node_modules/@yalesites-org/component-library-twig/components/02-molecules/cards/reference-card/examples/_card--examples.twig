@@ -23,7 +23,7 @@
   {# If post, and condensed, hide snippet and set image to false. #}
   {% if card_collection__type == 'condensed' %}
     {% set reference_card__snippet = null %}
-    {% set reference_card__image = false %}
+    {% set reference_card__image = 'false' %}
   {% endif %}
 
 {# Profile Card #}
@@ -33,9 +33,9 @@
     {% set reference_card__subheading = null %}
   {% endif %}
 
-  {# If post, and condensed, hide snippet and set image to false. #}
+  {# If profile, and condensed, hide snippet and set image to false. #}
   {% if card_collection__type == 'condensed' %}
-    {% set reference_card__image = false %}
+    {% set reference_card__image = 'false' %}
     {% set reference_card__snippet = null %}
   {% endif %}
 
@@ -60,7 +60,7 @@
   {% elseif card_collection__type == 'condensed' %}
     {% set reference_card__overline = null %}
     {% set reference_card__snippet = null %}
-    {% set reference_card__image = false %}
+    {% set reference_card__image = 'false' %}
     {% set format %}
       <span class="format-inline">{{ format }}</span>
     {% endset %}

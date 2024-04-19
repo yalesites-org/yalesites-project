@@ -1,10 +1,10 @@
 @use '../../00-tokens/tokens';
 @use '../../00-tokens/functions/map';
 
-$global-stat-themes: map.deep-get(tokens.$tokens, 'global-themes');
-$stat-component-themes: map.deep-get(tokens.$tokens, 'component-themes');
+$global-infographic-themes: map.deep-get(tokens.$tokens, 'global-themes');
+$infographic-component-themes: map.deep-get(tokens.$tokens, 'component-themes');
 
-.stat {
+.infographic {
   display: flex;
   flex-flow: column nowrap;
   align-items: center;
@@ -14,7 +14,7 @@ $stat-component-themes: map.deep-get(tokens.$tokens, 'component-themes');
 
   // Component themes defaults: iterate over each component theme to establish
   // default variables.
-  @each $theme, $value in $stat-component-themes {
+  @each $theme, $value in $infographic-component-themes {
     &[data-component-theme='#{$theme}'] {
       // prettier-ignore
       --color-slot-one: var(--component-themes-#{$theme}-slot-one);
@@ -25,11 +25,11 @@ $stat-component-themes: map.deep-get(tokens.$tokens, 'component-themes');
       --color-slot-six: var(--component-themes-#{$theme}-slot-six);
       --color-slot-seven: var(--component-themes-#{$theme}-slot-seven);
       --color-slot-eight: var(--component-themes-#{$theme}-slot-eight);
-      --color-stat-theme: var(--color-slot-one);
-      --color-stat-content: var(--color-slot-eight);
+      --color-infographic-theme: var(--color-slot-one);
+      --color-infographic-content: var(--color-slot-eight);
 
-      background-color: var(--color-stat-theme);
-      color: var(--color-stat-content);
+      background-color: var(--color-infographic-theme);
+      color: var(--color-infographic-content);
     }
   }
 
@@ -37,7 +37,7 @@ $stat-component-themes: map.deep-get(tokens.$tokens, 'component-themes');
   // This establishes `--color-slot-` variables name-spaced to the selector
   // in which it is used. We can map component-level variables to global-level
   // `--color-slot-` variables.
-  @each $globalTheme, $value in $global-stat-themes {
+  @each $globalTheme, $value in $global-infographic-themes {
     [data-global-theme='#{$globalTheme}'] & {
       --color-slot-one: var(--global-themes-#{$globalTheme}-colors-slot-one);
       --color-slot-two: var(--global-themes-#{$globalTheme}-colors-slot-two);
@@ -59,18 +59,18 @@ $stat-component-themes: map.deep-get(tokens.$tokens, 'component-themes');
   // Component theme overrides: set specific component themes overrides
   /// define component name spaced variables and map them to global theme slots.
   &[data-component-theme='one'] {
-    --color-stat-theme: var(--color-slot-one);
-    --color-stat-content: var(--color-slot-eight);
+    --color-infographic-theme: var(--color-slot-one);
+    --color-infographic-content: var(--color-slot-eight);
   }
 
   &[data-component-theme='two'] {
-    --color-stat-theme: var(--color-slot-two);
-    --color-stat-content: var(--color-slot-eight);
+    --color-infographic-theme: var(--color-slot-two);
+    --color-infographic-content: var(--color-slot-eight);
   }
 
   &[data-component-theme='three'] {
-    --color-stat-theme: var(--color-slot-three);
-    --color-stat-content: var(--color-slot-seven);
+    --color-infographic-theme: var(--color-slot-three);
+    --color-infographic-content: var(--color-slot-seven);
   }
 
   &__inner {
@@ -90,43 +90,44 @@ $stat-component-themes: map.deep-get(tokens.$tokens, 'component-themes');
       text-align: center;
     }
 
-    // if we're using a single stat, add padding to the stat item inner
-    [data-stat-collection-type='single'] & {
+    // if we're using a single infographic, add padding to the infographic item inner
+    [data-infographic-collection-type='single'] & {
       padding: var(--size-spacing-8);
     }
   }
 }
 
-.stat__stat {
+.infographic__stat {
   @include tokens.h3-yale-new;
 
   width: 100%;
   position: relative;
 
   // change font-variant-numeric to normal from the default of oldstyle-nums in the h3-yale-new mixin
-  [data-stat-font-style='normal'] & {
+  [data-infographic-font-style='normal'] & {
     font-variant-numeric: normal;
   }
 
-  // add eyebrow above stat
-  [data-stat-style='basic'] & {
+  // add eyebrow above infographic
+  [data-infographic-style='basic'] & {
     &::before {
       content: '';
       display: block;
       position: relative;
       width: var(--eyebrow-width);
-      border-bottom: var(--size-spacing-1) solid var(--color-stat-content);
+      border-bottom: var(--size-spacing-1) solid
+        var(--color-infographic-content);
       margin-bottom: var(--size-spacing-4);
     }
   }
 
-  // set eyebrow width var to 100% if stat is centered
+  // set eyebrow width var to 100% if infographic is centered
   [data-component-alignment='center'] & {
     --eyebrow-width: 100%;
   }
 }
 
-.stat__icon {
+.infographic__icon {
   align-self: flex-start;
   margin-bottom: var(--size-spacing-2);
 
@@ -136,13 +137,13 @@ $stat-component-themes: map.deep-get(tokens.$tokens, 'component-themes');
 }
 
 // svg
-.stat__stat-icon {
+.infographic__infographic-icon {
   max-width: var(--size-spacing-9); // max-width 48px
   max-height: var(--size-spacing-9); // max-height 48px
-  fill: var(--color-stat-content);
+  fill: var(--color-infographic-content);
 }
 
-.stat__content {
+.infographic__content {
   @include tokens.body-default;
 
   width: 100%;

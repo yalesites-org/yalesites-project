@@ -186,7 +186,7 @@ Drupal.behaviors.mediaGridInteractive = {
             toggleCaption.style.setProperty('display', 'inline');
 
             // imageCaption: set default attributes
-            imageCaption.setAttribute('aria-expanded', 'false');
+            imageCaption.setAttribute('is-expanded', 'false');
             imageCaption.style.setProperty(
               '--modal-content-item-height',
               `${imageCaption.offsetHeight}px`,
@@ -200,7 +200,7 @@ Drupal.behaviors.mediaGridInteractive = {
                   toggleCaption.setAttribute('aria-expanded', 'true');
                   toggleCaption.setAttribute('aria-label', 'collapse');
                   captionContent.textContent = fullCaption;
-                  imageCaption.setAttribute('aria-expanded', 'true');
+                  imageCaption.setAttribute('is-expanded', 'true');
                   imageCaption.style.setProperty(
                     '--modal-content-item-height',
                     `${imageCaption.scrollHeight}px`,
@@ -209,7 +209,7 @@ Drupal.behaviors.mediaGridInteractive = {
                   toggleCaption.setAttribute('aria-expanded', 'false');
                   toggleCaption.setAttribute('aria-label', 'expand');
                   captionContent.textContent = `${truncatedCaption}...`;
-                  imageCaption.setAttribute('aria-expanded', 'false');
+                  imageCaption.setAttribute('is-expanded', 'false');
                   imageCaption.style.setProperty(
                     '--modal-content-item-height',
                     `${imageCaption.offsetHeight}px`,

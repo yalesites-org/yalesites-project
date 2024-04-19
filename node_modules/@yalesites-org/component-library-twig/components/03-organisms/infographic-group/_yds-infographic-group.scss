@@ -3,10 +3,13 @@
 @use '../../01-atoms/atoms';
 @use '../grid-mixins' as grid;
 
-$global-stats-themes: map.deep-get(tokens.$tokens, 'global-themes');
-$stats-component-themes: map.deep-get(tokens.$tokens, 'component-themes');
+$global-infographic-group-themes: map.deep-get(tokens.$tokens, 'global-themes');
+$infographic-group-component-themes: map.deep-get(
+  tokens.$tokens,
+  'component-themes'
+);
 
-.stats {
+.infographic__group {
   @include tokens.spacing-page-section($banner-spacing: true);
 
   padding-block: var(--size-spacing-11);
@@ -15,7 +18,7 @@ $stats-component-themes: map.deep-get(tokens.$tokens, 'component-themes');
 
   // Component themes defaults: iterate over each component theme to establish
   // default variables.
-  @each $theme, $value in $stats-component-themes {
+  @each $theme, $value in $infographic-group-component-themes {
     &[data-component-theme='#{$theme}'] {
       // prettier-ignore
       --color-slot-one: var(--component-themes-#{$theme}-slot-one);
@@ -26,11 +29,11 @@ $stats-component-themes: map.deep-get(tokens.$tokens, 'component-themes');
       --color-slot-six: var(--component-themes-#{$theme}-slot-six);
       --color-slot-seven: var(--component-themes-#{$theme}-slot-seven);
       --color-slot-eight: var(--component-themes-#{$theme}-slot-eight);
-      --color-stat-theme: var(--color-slot-one);
-      --color-stat-content: var(--color-slot-eight);
+      --color-infographic-theme: var(--color-slot-one);
+      --color-infographic-content: var(--color-slot-eight);
 
-      background-color: var(--color-stat-theme);
-      color: var(--color-stat-content);
+      background-color: var(--color-infographic-theme);
+      color: var(--color-infographic-content);
     }
   }
 
@@ -38,7 +41,7 @@ $stats-component-themes: map.deep-get(tokens.$tokens, 'component-themes');
   // This establishes `--color-slot-` variables name-spaced to the selector
   // in which it is used. We can map component-level variables to global-level
   // `--color-slot-` variables.
-  @each $globalTheme, $value in $global-stats-themes {
+  @each $globalTheme, $value in $global-infographic-group-themes {
     [data-global-theme='#{$globalTheme}'] & {
       --color-slot-one: var(--global-themes-#{$globalTheme}-colors-slot-one);
       --color-slot-two: var(--global-themes-#{$globalTheme}-colors-slot-two);
@@ -60,31 +63,31 @@ $stats-component-themes: map.deep-get(tokens.$tokens, 'component-themes');
   // Component theme overrides: set specific component themes overrides
   /// define component name spaced variables and map them to global theme slots.
   &[data-component-theme='one'] {
-    --color-stat-theme: var(--color-slot-one);
-    --color-stat-content: var(--color-slot-eight);
+    --color-infographic-theme: var(--color-slot-one);
+    --color-infographic-content: var(--color-slot-eight);
     --color-link-visited-base: var(--color-link-visited-light);
     --color-link-visited-hover: var(--color-link-visited-light-hover);
   }
 
   &[data-component-theme='two'] {
-    --color-stat-theme: var(--color-slot-four);
-    --color-stat-content: var(--color-slot-seven);
+    --color-infographic-theme: var(--color-slot-four);
+    --color-infographic-content: var(--color-slot-seven);
   }
 
   &[data-component-theme='three'] {
-    --color-stat-theme: var(--color-slot-five);
-    --color-stat-content: var(--color-slot-eight);
+    --color-infographic-theme: var(--color-slot-five);
+    --color-infographic-content: var(--color-slot-eight);
     --color-link-visited-base: var(--color-link-visited-light);
     --color-link-visited-hover: var(--color-link-visited-light-hover);
   }
 }
 
-.stats__inner {
+.infographic__group__inner {
   width: 100%;
   max-width: var(--component-width);
 }
 
-.stats__stats {
+.infographic__group__wrap {
   @include grid.base;
 
   // position relative added to use z-index and make sure the image is behind the content
@@ -108,14 +111,14 @@ $stats-component-themes: map.deep-get(tokens.$tokens, 'component-themes');
   }
 }
 
-.stats__image {
+.infographic__group__image {
   position: absolute;
   top: 0;
   left: 0;
   height: 100%;
   width: 100%;
   background-blend-mode: multiply;
-  background-color: var(--color-stat-theme);
+  background-color: var(--color-infographic-theme);
   opacity: 0.15;
 
   img {
@@ -125,30 +128,30 @@ $stats-component-themes: map.deep-get(tokens.$tokens, 'component-themes');
   }
 }
 
-.stats__content-wrap {
+.infographic__group__content-wrap {
   position: relative;
   z-index: 1;
   margin-bottom: var(--size-spacing-8);
 }
 
-.stats__heading {
+.infographic__group__heading {
   @include tokens.h2-yale-new;
 
-  color: var(--color-stat-content);
+  color: var(--color-infographic-content);
 }
 
-.stats__content {
+.infographic__group__content {
   @include tokens.body-default;
 
-  color: var(--color-stat-content);
+  color: var(--color-infographic-content);
 }
 
-.stats__cta {
+.infographic__group__cta {
   @include atoms.plain-link;
 
-  color: var(--color-stat-content);
+  color: var(--color-infographic-content);
 
   &:hover {
-    color: var(--color-stat-content);
+    color: var(--color-infographic-content);
   }
 }

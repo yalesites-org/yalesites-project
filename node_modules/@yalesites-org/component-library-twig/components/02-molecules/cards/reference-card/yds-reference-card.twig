@@ -16,7 +16,13 @@
 {% set reference_card__base_class = 'reference-card' %}
 {% set reference_card__image = reference_card__image|default('true') %}
 
-<li {{ bem(reference_card__base_class) }}>
+{# If stats__item__attributes is not defined, set it to an empty object by default #}
+{% set reference_card__attributes = {
+  'data-component-has-image': reference_card__image,
+  class: bem(reference_card__base_class, reference_card__modifiers),
+} %}
+
+<li {{ add_attributes(reference_card__attributes) }}>
   <div {{ bem('content', [], reference_card__base_class) }}>
     {% if reference_card__overline %}
       {% include "@atoms/typography/text/yds-text.twig" with {

@@ -10,6 +10,27 @@
   [data-embedded-components] & {
     margin-bottom: 0;
   }
+
+  /* Breadcrumb spacing issue */
+
+  /* https://yaleits.atlassian.net/browse/YSP-427 */
+  // Add margin to the following page-title display types:
+  //   - visually-hidden
+  //   - hidden (when no page-title div exists after the breadcrumbs__wrapper
+  // Margins borrowed from
+  // components/04-page-layouts/page-layouts.scss:page_layouts.scss:31-39
+  // See 02-molecules/page-title/page-title.js for JS logic (adds page-title-hidden).
+  [page-title-hidden='true'] .main-content & {
+    margin-bottom: var(--size-spacing-10); // 4rem
+
+    @media (max-width: tokens.$break-l) {
+      margin-bottom: var(--size-spacing-8); // 2.5rem large breakpoints
+    }
+
+    @media (max-width: tokens.$break-s) {
+      margin-bottom: var(--size-spacing-7); // 2rem small breakpoints
+    }
+  }
 }
 
 .breadcrumbs__button {
