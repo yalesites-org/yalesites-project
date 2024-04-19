@@ -117,9 +117,9 @@ class ProfileContactBlock extends BlockBase implements ContainerFactoryPluginInt
 
     if ($route && $node) {
       // Profile fields.
-      $email = $node->get('field_email')->getValue()[0]['value'] ?? NULL;
-      $phone = $node->get('field_telephone')->getValue()[0]['value'] ?? NULL;
-      $address = $node->get('field_address')->getValue()[0]['value'] ?? NULL;
+      $email = $this->getValueFor($node, 'field_email');
+      $phone = $this->getValueFor($node, 'field_telephone');
+      $address = $this->getValueFor($node, 'field_address');
     }
 
     return [
@@ -128,6 +128,36 @@ class ProfileContactBlock extends BlockBase implements ContainerFactoryPluginInt
       '#phone' => $phone,
       '#address' => $address,
     ];
+  }
+
+  /**
+   * Get the value for a specific field.
+   *
+   * @param object $node
+   *   The node object.
+   * @param string $name
+   *   The field name.
+   *
+   * @return mixed
+   *   The field value.
+   */
+  protected function getValueFor($node, $name) {
+    try {
+      $fieldObject = $node->get($name);
+    }
+    catch (\Exception $e) {
+      return NULL;
+    }
+
+    $valueObject = $fieldObject->getValue();
+    if ($valueObject) {
+      $firstElement = $valueObject[0];
+      if ($firstElement) {
+        return $firstElement['value'];
+      }
+    }
+
+    return NULL;
   }
 
 }
