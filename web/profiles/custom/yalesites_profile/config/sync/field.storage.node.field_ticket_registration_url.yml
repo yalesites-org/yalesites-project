@@ -1,0 +1,19 @@
+uuid: 83a63d27-0db8-43cf-8ba8-49d53f4d3cc3
+langcode: en
+status: true
+dependencies:
+  module:
+    - link
+    - node
+id: node.field_ticket_registration_url
+field_name: field_ticket_registration_url
+entity_type: node
+type: link
+settings: {  }
+module: link
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

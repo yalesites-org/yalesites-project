@@ -1,0 +1,19 @@
+uuid: c5d7adcc-4476-472f-b661-b653950bc0fa
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.taxonomy_term.field_localist_group_id
+    - taxonomy.vocabulary.event_groups
+id: taxonomy_term.event_groups.field_localist_group_id
+field_name: field_localist_group_id
+entity_type: taxonomy_term
+bundle: event_groups
+label: 'Localist Group ID'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string
