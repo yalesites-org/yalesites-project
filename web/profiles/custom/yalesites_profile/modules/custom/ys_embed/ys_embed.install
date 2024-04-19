@@ -70,7 +70,7 @@ function ys_embed_update_9001() {
 /**
  * Implements hook_update().
  */
-function ys_embed_update_9002() {
+function ys_embed_update_9003() {
   // Copy the localist.png file to the media-icons/generic folder.
   $source = \Drupal::service('extension.list.module')->getPath('ys_embed') . '/images/icons/localist.png';
   $destination = "public://styles/media_library/public/media-icons/generic";
