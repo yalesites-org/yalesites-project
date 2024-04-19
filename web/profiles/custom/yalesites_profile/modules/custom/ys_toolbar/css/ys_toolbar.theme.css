@@ -1,14 +1,30 @@
+/**
+ * Styles for the Site Administration Toolbar.
+ *
+ * This toolbar appears at the top of the screen and inherits most of its styles
+ * from the Gin Toolbar project. Most site and platform administrators will see
+ * a limited number of the menu links as 'Appearance', 'Configuration', 'Extend'
+ * and other settings are not accessible to platform owners. A custom 'Settings'
+ * section contains Yale-specific interfaces for customizing the site settings
+ * and appearance.
+ */
+
 /* Swap Drupal drop for Yale logo */
 .toolbar .toolbar-bar #toolbar-item-administration-tray .toolbar-icon-admin-toolbar-tools-help.toolbar-icon-default::before {
   -webkit-mask-image: url('../images/yale-university-press-1985-2010.svg') !important;
   mask-image: url('../images/yale-university-press-1985-2010.svg') !important;
 }
 
+/* Use the gear-icon for the custom Settings menu item */
+.toolbar .toolbar-bar .toolbar-icon.toolbar-icon-ys-core-admin-yalesites:before {
+  -webkit-mask-image: url(../images/settings.svg#config-view);
+  mask-image: url(../images/settings.svg#config-view);
+}
+
 /* Hide yalesiites tools help menu as it has no text associated */
 .toolbar .toolbar-bar #toolbar-item-administration-tray.toolbar-tray-vertical ul.toolbar-menu.root li.menu-item.menu-item--expanded.menu-item__admin_toolbar_tools-help.level-1 {
   display: none;
 }
-
 .gin--horizontal-toolbar #toolbar-administration .toolbar-icon-admin-toolbar-tools-help::before {
   width: 28px !important;
 }
@@ -18,7 +34,6 @@ behind the a.toolbar-icon element. */
 .toolbar-menu-administration > .toolbar-menu > .menu-item > .toolbar-icon {
   z-index: 0;
 }
-
 .toolbar-menu-administration
   > .toolbar-menu
   > .menu-item
@@ -31,7 +46,13 @@ behind the a.toolbar-icon element. */
   padding-top: calc(var(--gin-toolbar-secondary-height) + var(--gin-toolbar-y-offset)) !important;
 }
 
-/* Update toolbar icons */
+/**
+ * Styles for the Secondary Toolbar.
+ *
+ * This toolbar appears below the site administration toolbar and inherits
+ * styles from the Gin Toolbars project. This section includes several custom
+ * links to act as quick links for managing nodes.
+ */
 
 /* Manage Settings */
 .toolbar .toolbar-bar .toolbar-tab > .toolbar-icon-edit.toolbar-icon.manage-settings::before {
@@ -51,7 +72,6 @@ behind the a.toolbar-icon element. */
   mask-image: url('../images/unpublish.svg');
 }
 
-
 /* Publish */
 .toolbar .toolbar-bar .toolbar-tab > .toolbar-icon-edit.toolbar-icon.publish::before {
   -webkit-mask-image: url('../images/publish.svg');
@@ -64,11 +84,9 @@ behind the a.toolbar-icon element. */
   mask-image: url('../images/more_actions.svg');
 }
 
-/*
-//
-// Toolbar //
-//
-*/
+/**
+ * Additional toolbar overrides.
+ */
 
 /* Fix active toggle color in dark mode */
 .gin--dark-mode :not(.glb-form-checkboxes):not(td):not(.media-library-item__click-to-select-checkbox):not(.field-content) > .glb-form-type--checkbox input:checked ~ .glb-checkbox-toggle .glb-checkbox-toggle__inner {
@@ -79,16 +97,13 @@ behind the a.toolbar-icon element. */
 .gin-secondary-toolbar--frontend {
   background: rgba(255, 255, 255, 1) !important;
 }
-
 .gin--dark-mode .gin-secondary-toolbar--frontend {
   background: rgba(42, 42, 45, 1) !important;
 }
-
 @supports ((-webkit-backdrop-filter: blur()) or (backdrop-filter: blur())) {
   .gin-secondary-toolbar--frontend {
     background: rgba(255, 255, 255, 1) !important;
   }
-
   .gin--dark-mode .gin-secondary-toolbar--frontend {
     background: rgba(42, 42, 45, 1) !important;
   }
