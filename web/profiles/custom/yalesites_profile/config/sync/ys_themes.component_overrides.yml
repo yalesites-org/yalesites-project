@@ -142,3 +142,9 @@ text:
       default: Default
       emphasized: Emphasized
     default: default
+reference_card:
+  field_style_variation:
+    values:
+      featured: Featured
+      non-featured: Non-featured
+    default: featured
