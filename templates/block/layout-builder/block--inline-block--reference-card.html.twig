@@ -1,0 +1,21 @@
+{% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
+
+{% block content %}
+
+  {% set style = content.field_style_variation[0]['#markup'] == 'featured' ? 'true' : 'false' %}
+  {% set type = content.field_content_ref[0]['#node'].getType() %}
+
+  {% embed "@organisms/card-collection/yds-card-collection.twig" with {
+    card_collection__source_type: type,
+    card_collection__type: 'single',
+    card_collection__width: 'site',
+    card_collection__featured: style,
+    animate__item: 'enabled',
+  } %}
+    {% block card_collection__cards %}
+      {{ content.field_content_ref }}
+    {% endblock %}
+  {% endembed %}
+
+{% endblock %}
+

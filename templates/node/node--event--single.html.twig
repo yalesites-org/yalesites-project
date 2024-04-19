@@ -1,0 +1,37 @@
+{{ attach_library('atomic/reference-card') }}
+
+{% set date__formatted %}
+  {% include "@atoms/date-time/yds-date-time.twig" with {
+    date_time__start: content.field_event_date.0.start_time['#markup'],
+  } %}
+{% endset %}
+
+{% if content.field_event_type.0 %}
+  {% set reference_card__overline -%}
+    {% include "@molecules/cards/reference-card/event/_yds-event-format.twig" with {
+      format: content.field_event_type,
+    } %}
+  {%- endset %}
+{% endif %}
+
+{% set heading = content.field_teaser_title.0 ? content.field_teaser_title : label %}
+
+{% set url = content.field_external_source[0]['#url']|render ? content.field_external_source[0]['#url']|render : url %}
+
+{% embed "@molecules/cards/reference-card/yds-reference-card.twig" with {
+  reference_card__heading: heading,
+  reference_card__subheading: date__formatted,
+  reference_card__url: url,
+  reference_card__snippet: content.field_teaser_text,
+  reference_card__image: 'true',
+} %}
+  {% block reference_card__image %}
+
+    {% if content.field_teaser_media[0] %}
+      {{ content.field_teaser_media }}
+    {% elseif getCoreSetting('image_fallback.teaser') %}
+      {{ drupal_entity('media', getCoreSetting('image_fallback.teaser'), 'card_secondary_3_2') }}
+    {% endif %}
+
+  {% endblock %}
+{% endembed %}
