@@ -1,0 +1,33 @@
+uuid: 521a7371-b9a2-4eb6-9a27-7416629fed19
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.reference_card
+    - field.storage.block_content.field_content_ref
+    - node.type.event
+    - node.type.post
+    - node.type.profile
+id: block_content.reference_card.field_content_ref
+field_name: field_content_ref
+entity_type: block_content
+bundle: reference_card
+label: Content
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:node'
+  handler_settings:
+    target_bundles:
+      event: event
+      post: post
+      profile: profile
+    sort:
+      field: _none
+      direction: ASC
+    auto_create: false
+    auto_create_bundle: event
+field_type: entity_reference
