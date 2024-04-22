@@ -202,7 +202,7 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    */
   public function updateTemplates(
     array &$form,
-    FormStateInterface $form_state
+    FormStateInterface $form_state,
   ) : array {
     $currentContentType = $this->getCurrentContentType($form_state);
     $form['templates']['#options'] = $this
@@ -225,7 +225,7 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    */
   public function updateDescription(
     array &$form,
-    FormStateInterface $form_state
+    FormStateInterface $form_state,
   ) : array {
     $currentContentType = $this->getCurrentContentType($form_state);
     $currentTemplate = $form_state->getValue('templates');
@@ -244,7 +244,7 @@ class TemplatedContentForm extends FormBase implements FormInterface {
    *   The content type.
    */
   protected function getCurrentContentType(
-    FormStateInterface $form_state
+    FormStateInterface $form_state,
   ) : String {
     return $form_state->getValue('content_types') ?? 'page';
   }
