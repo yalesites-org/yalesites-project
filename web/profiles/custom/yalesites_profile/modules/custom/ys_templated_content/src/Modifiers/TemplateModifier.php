@@ -2,6 +2,8 @@
 
 namespace Drupal\ys_templated_content\Modifiers;
 
+use Drupal\taxonomy\Entity\Term;
+
 /**
  * Modifies a content import for a unique insertion.
  */
@@ -26,6 +28,7 @@ class TemplateModifier extends TemplateModiferBase implements TemplateModifierIn
     $content_array = $this->replaceBrokenImages($content_array);
     $content_array = $this->removeAlias($content_array);
     $content_array = $this->replaceUuids($content_array, $originalUuid, $newUuid);
+    $content_array = $this->reuseTaxonomyTerms($content_array);
 
     return $content_array;
   }
@@ -120,20 +123,63 @@ class TemplateModifier extends TemplateModiferBase implements TemplateModifierIn
     return $this->uuidService->generate();
   }
 
-  protected function UuidForEventTypeName($name) {
-    // Find all possible values for field_event_type taxonomy_term
+  /**
+   * Reuse taxonomy terms.
+   *
+   * @param array $content_array
+   *   The content array.
+   *
+   * @return array
+   *   The content array with reused taxonomy terms.
+   */
+  public function reuseTaxonomyTerms($content_array) {
+    foreach ($content_array as $key => $value) {
+      if (
+        is_array($value)
+          && isset($value[0]['entity_type'])
+          && $value[0]['entity_type'] === 'taxonomy_term'
+      ) {
+        $name = $value[0]['base_fields']['name'];
+        $event_type = $value[0]['bundle'];
+        $storedUuid = $this->uuidForEntityType($name, $event_type);
+        if ($storedUuid) {
+          $content_array[$key][0]['uuid'] = $storedUuid;
+        }
+      }
+      elseif (is_array($value)) {
+        $content_array[$key] = $this->reuseTaxonomyTerms($value);
+      }
+    }
+    return $content_array;
+  }
+
+  /**
+   * Find the UUID for a given entity type name.
+   *
+   * @param string $name
+   *   The name of the event type.
+   * @param string $bundle
+   *   The bundle name.
+   *
+   * @return string
+   *   The UUID for the taxnonomy name or NULL (create a new one).
+   */
+  protected function uuidForEntityType($name, $bundle) {
+    // Find all possible values for field_event_type taxonomy_term.
     $query = \Drupal::entityQuery('taxonomy_term');
-    $query->condition('vid', 'event_type')
+    $query->condition('vid', $bundle)
       ->accessCheck(TRUE);
     $tids = $query->execute();
 
     // Return the UUID for the tid that has the same name.
     foreach ($tids as $tid) {
-      $term = \Drupal\taxonomy\Entity\Term::load($tid);
+      $term = Term::load($tid);
       if ($term->getName() == $name) {
         return $term->uuid();
       }
     }
+
+    return NULL;
   }
 
 }
