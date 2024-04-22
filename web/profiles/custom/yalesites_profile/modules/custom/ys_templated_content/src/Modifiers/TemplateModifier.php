@@ -2,7 +2,11 @@
 
 namespace Drupal\ys_templated_content\Modifiers;
 
-use Drupal\taxonomy\Entity\Term;
+use Drupal\Component\DependencyInjection\ContainerInterface;
+use Drupal\Component\Uuid\UuidInterface;
+use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\path_alias\AliasRepositoryInterface;
+use Drupal\taxonomy\TermStorageInterface;
 
 /**
  * Modifies a content import for a unique insertion.
@@ -11,9 +15,42 @@ class TemplateModifier extends TemplateModiferBase implements TemplateModifierIn
 
   const PLACEHOLDER = 'public://templated-content-images/placeholder.png';
 
-  const UUID_IGNORE_LIST = [
-    'field_event_type' => 'findUuidForEventTypeName',
-  ];
+  /**
+   * The term storage.
+   *
+   * @var \Drupal\taxonomy\TermStorageInterface
+   */
+  protected TermStorageInterface $termStorage;
+
+  /**
+   * TemplateModifier constructor.
+   *
+   * @param \Drupal\Component\Uuid\UuidInterface $uuidService
+   *   The UUID service.
+   * @param \Drupal\path_alias\AliasRepositoryInterface $pathAliasRepository
+   *   The path alias repository.
+   * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
+   *   The entity type manager to get the taxonoomy term storage.
+   */
+  public function __construct(
+    UuidInterface $uuidService,
+    AliasRepositoryInterface $pathAliasRepository,
+    EntityTypeManager $entityTypeManager,
+  ) {
+    parent::__construct($uuidService, $pathAliasRepository);
+    $this->termStorage = $entityTypeManager->getStorage('taxonomy_term');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function create(ContainerInterface $container) {
+    return new static(
+      $container->get('uuid'),
+      $container->get('path_alias.repository'),
+      $container->get('entity_type.manager'),
+    );
+  }
 
   /**
    * Process the content array.
@@ -165,21 +202,13 @@ class TemplateModifier extends TemplateModiferBase implements TemplateModifierIn
    *   The UUID for the taxnonomy name or NULL (create a new one).
    */
   protected function uuidForEntityType($name, $bundle) {
-    // Find all possible values for field_event_type taxonomy_term.
-    $query = \Drupal::entityQuery('taxonomy_term');
-    $query->condition('vid', $bundle)
-      ->accessCheck(TRUE);
-    $tids = $query->execute();
+    $tid = $this->termStorage->loadByProperties(['vid' => $bundle, 'name' => $name]);
 
-    // Return the UUID for the tid that has the same name.
-    foreach ($tids as $tid) {
-      $term = Term::load($tid);
-      if ($term->getName() == $name) {
-        return $term->uuid();
-      }
+    if (empty($tid)) {
+      return NULL;
     }
 
-    return NULL;
+    return $tid[key($tid)]->uuid();
   }
 
 }
