@@ -101,7 +101,7 @@ class ImportManager {
    */
   public function createImport(
     String $content_type,
-    String $template
+    String $template,
   ) {
     $filename = $this->templateManager->getFilenameForTemplate($content_type, $template);
     $templateTitle = $this->templateManager->getTemplateTitle($content_type, $template);
