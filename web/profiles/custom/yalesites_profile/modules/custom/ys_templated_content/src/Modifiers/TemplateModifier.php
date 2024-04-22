@@ -2,56 +2,16 @@
 
 namespace Drupal\ys_templated_content\Modifiers;
 
-use Drupal\Component\Uuid\UuidInterface;
-use Drupal\path_alias\AliasRepositoryInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-
 /**
  * Modifies a content import for a unique insertion.
  */
-class TemplateModifier {
+class TemplateModifier extends TemplateModiferBase implements TemplateModifierInterface {
 
   const PLACEHOLDER = 'public://templated-content-images/placeholder.png';
 
-  /**
-   * The path alias repository.
-   *
-   * @var \Drupal\path_alias\AliasRepositoryInterface
-   */
-  protected $pathAliasRepository;
-
-  /**
-   * The UUID service.
-   *
-   * @var \Drupal\Core\Uuid\UuidInterface
-   */
-  protected $uuidService;
-
-  /**
-   * TemplateModifier constructor.
-   *
-   * @param \Drupal\Component\Uuid\UuidInterface $uuidService
-   *   The UUID service.
-   * @param \Drupal\path_alias\AliasRepositoryInterface $pathAliasRepository
-   *   The path alias repository.
-   */
-  public function __construct(
-    UuidInterface $uuidService,
-    AliasRepositoryInterface $pathAliasRepository,
-  ) {
-    $this->uuidService = $uuidService;
-    $this->pathAliasRepository = $pathAliasRepository;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function create(ContainerInterface $container) {
-    return new static(
-      $container->get('uuid'),
-      $container->get('path_alias.repository'),
-    );
-  }
+  const UUID_IGNORE_LIST = [
+    'field_event_type' => 'findUuidForEventTypeName',
+  ];
 
   /**
    * Process the content array.
@@ -158,6 +118,22 @@ class TemplateModifier {
    */
   public function generateUuid() {
     return $this->uuidService->generate();
+  }
+
+  protected function UuidForEventTypeName($name) {
+    // Find all possible values for field_event_type taxonomy_term
+    $query = \Drupal::entityQuery('taxonomy_term');
+    $query->condition('vid', 'event_type')
+      ->accessCheck(TRUE);
+    $tids = $query->execute();
+
+    // Return the UUID for the tid that has the same name.
+    foreach ($tids as $tid) {
+      $term = \Drupal\taxonomy\Entity\Term::load($tid);
+      if ($term->getName() == $name) {
+        return $term->uuid();
+      }
+    }
   }
 
 }
