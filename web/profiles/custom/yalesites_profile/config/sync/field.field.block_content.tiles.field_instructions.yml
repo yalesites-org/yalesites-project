@@ -1,0 +1,25 @@
+uuid: 6903a77f-794c-437b-8f0c-10872cddda18
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.tiles
+    - field.storage.block_content.field_instructions
+  module:
+    - markup
+id: block_content.tiles.field_instructions
+field_name: field_instructions
+entity_type: block_content
+bundle: tiles
+label: Instructions
+description: ''
+required: false
+translatable: false
+default_value:
+  - {  }
+default_value_callback: ''
+settings:
+  markup:
+    value: '<p>TBD.</p>'
+    format: basic_html
+field_type: markup

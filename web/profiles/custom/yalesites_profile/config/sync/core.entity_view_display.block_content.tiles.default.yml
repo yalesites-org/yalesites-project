@@ -1,0 +1,52 @@
+uuid: 13a1f05c-eb1b-4b20-97fe-57b0b62e7c0a
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.tiles
+    - field.field.block_content.tiles.field_instructions
+    - field.field.block_content.tiles.field_style_alignment
+    - field.field.block_content.tiles.field_style_position
+    - field.field.block_content.tiles.field_style_width
+    - field.field.block_content.tiles.field_tiles
+  module:
+    - entity_reference_revisions
+    - options
+id: block_content.tiles.default
+targetEntityType: block_content
+bundle: tiles
+mode: default
+content:
+  field_style_alignment:
+    type: list_key
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_style_position:
+    type: list_key
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  field_style_width:
+    type: list_key
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 3
+    region: content
+  field_tiles:
+    type: entity_reference_revisions_entity_view
+    label: hidden
+    settings:
+      view_mode: default
+      link: ''
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  field_instructions: true
+  search_api_excerpt: true

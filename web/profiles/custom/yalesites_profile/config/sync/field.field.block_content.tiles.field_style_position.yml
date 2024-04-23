@@ -1,0 +1,21 @@
+uuid: 0b132c3f-cf9b-4a5b-83bc-a8d4520bc9cf
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.tiles
+    - field.storage.block_content.field_style_position
+  module:
+    - options
+id: block_content.tiles.field_style_position
+field_name: field_style_position
+entity_type: block_content
+bundle: tiles
+label: Position
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ys_themes_default_value_function
+settings: {  }
+field_type: list_string
