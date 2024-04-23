@@ -161,6 +161,10 @@ html.gin--dark-mode form.layout-builder-configure-block.glb-form {
   color: var(--menu-link-color) !important;
 }
 
+.gin--dark-mode #drupal-off-canvas-wrapper a:not(.button) {
+  color: var(--color-blue-light) !important;
+}
+
 /*
 Moderation sidebar
 */
@@ -181,6 +185,10 @@ Moderation sidebar
 
 .entity-moderation-form input[type="submit"] {
   margin-bottom: 0;
+}
+
+.moderation-sidebar-container .moderation-sidebar-revision-log {
+  border: 1px solid var(--color-text) !important;
 }
 
 /*
