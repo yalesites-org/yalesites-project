@@ -90,7 +90,7 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
     ContainerInterface $container,
     array $configuration,
     $plugin_id,
-    $plugin_definition
+    $plugin_definition,
   ) {
     return new static(
       $plugin_id,

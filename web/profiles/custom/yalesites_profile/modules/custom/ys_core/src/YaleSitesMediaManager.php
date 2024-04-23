@@ -56,7 +56,7 @@ class YaleSitesMediaManager extends ControllerBase implements ContainerInjection
     ConfigFactoryInterface $config_factory,
     EntityTypeManager $entity_type_manager,
     FileUrlGenerator $file_url_generator,
-    ) {
+  ) {
     $this->yaleSettings = $config_factory->get('ys_core.site');
     $this->siteSettings = $config_factory->get('system.site');
     $this->entityTypeManager = $entity_type_manager;

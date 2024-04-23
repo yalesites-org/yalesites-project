@@ -42,7 +42,7 @@ class LocalistSettings extends ConfigFormBase {
     ConfigFactoryInterface $config_factory,
     EntityTypeManagerInterface $entity_type_manager,
     LocalistManager $localist_manager,
-    ) {
+  ) {
     parent::__construct($config_factory);
     $this->entityTypeManager = $entity_type_manager;
     $this->localistManager = $localist_manager;

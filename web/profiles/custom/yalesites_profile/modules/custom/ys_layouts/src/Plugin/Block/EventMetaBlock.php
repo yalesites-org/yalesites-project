@@ -66,7 +66,7 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
     RouteMatchInterface $route_match,
     DateFormatter $date_formatter,
     EntityTypeManager $entity_type_manager,
-    ) {
+  ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->routeMatch = $route_match;
