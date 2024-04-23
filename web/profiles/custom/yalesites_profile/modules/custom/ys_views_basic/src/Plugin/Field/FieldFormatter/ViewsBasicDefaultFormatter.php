@@ -1,3 +1,4 @@
+
 <?php
 
 namespace Drupal\ys_views_basic\Plugin\Field\FieldFormatter;
@@ -68,7 +69,7 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
     string $view_mode,
     array $third_party_settings,
     ViewsBasicManager $viewsBasicManager,
-    Renderer $renderer_service
+    Renderer $renderer_service,
   ) {
     parent::__construct(
       $plugin_id,

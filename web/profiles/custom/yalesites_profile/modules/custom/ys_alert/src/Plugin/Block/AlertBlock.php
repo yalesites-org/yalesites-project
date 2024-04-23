@@ -42,7 +42,7 @@ class AlertBlock extends BlockBase implements ContainerFactoryPluginInterface {
     array $configuration,
     $plugin_id,
     $plugin_definition,
-    AlertManager $alert_manager
+    AlertManager $alert_manager,
     ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->alertManager = $alert_manager;
@@ -55,7 +55,7 @@ class AlertBlock extends BlockBase implements ContainerFactoryPluginInterface {
     ContainerInterface $container,
     array $configuration,
     $plugin_id,
-    $plugin_definition
+    $plugin_definition,
     ) {
     return new static(
       $configuration,

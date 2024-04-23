@@ -1,3 +1,4 @@
+
 <?php
 
 namespace Drupal\ys_views_basic\Plugin\Field\FieldFormatter;
@@ -57,7 +58,7 @@ class ViewsBasicPreviewFormatter extends FormatterBase implements ContainerFacto
     string $label,
     string $view_mode,
     array $third_party_settings,
-    ViewsBasicManager $viewsBasicManager
+    ViewsBasicManager $viewsBasicManager,
   ) {
     parent::__construct(
       $plugin_id,
@@ -66,7 +67,7 @@ class ViewsBasicPreviewFormatter extends FormatterBase implements ContainerFacto
       $settings,
       $label,
       $view_mode,
-      $third_party_settings
+      $third_party_settings,
     );
     $this->viewsBasicManager = $viewsBasicManager;
   }
@@ -78,7 +79,7 @@ class ViewsBasicPreviewFormatter extends FormatterBase implements ContainerFacto
     ContainerInterface $container,
     array $configuration,
     $plugin_id,
-    $plugin_definition
+    $plugin_definition,
   ) {
     return new static(
       $plugin_id,
