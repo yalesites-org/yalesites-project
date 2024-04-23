@@ -173,7 +173,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
-    EntityDisplayRepository $entity_display_repository
+    EntityDisplayRepository $entity_display_repository,
     ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityDisplayRepository = $entity_display_repository;
