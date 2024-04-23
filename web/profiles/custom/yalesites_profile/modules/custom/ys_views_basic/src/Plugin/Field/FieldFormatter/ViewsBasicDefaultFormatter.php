@@ -1,4 +1,3 @@
-
 <?php
 
 namespace Drupal\ys_views_basic\Plugin\Field\FieldFormatter;
