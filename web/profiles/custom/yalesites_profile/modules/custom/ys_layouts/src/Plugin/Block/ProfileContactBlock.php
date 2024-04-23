@@ -63,7 +63,7 @@ class ProfileContactBlock extends BlockBase implements ContainerFactoryPluginInt
     $plugin_definition,
     RouteMatchInterface $route_match,
     RequestStack $request_stack,
-    EntityTypeManagerInterface $entity_type_manager
+    EntityTypeManagerInterface $entity_type_manager,
     ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
@@ -79,7 +79,7 @@ class ProfileContactBlock extends BlockBase implements ContainerFactoryPluginInt
     ContainerInterface $container,
     array $configuration,
     $plugin_id,
-    $plugin_definition
+    $plugin_definition,
     ) {
     return new static(
       $configuration,
