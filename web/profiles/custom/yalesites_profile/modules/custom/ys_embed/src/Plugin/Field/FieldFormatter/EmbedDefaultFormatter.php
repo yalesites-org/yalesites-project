@@ -66,7 +66,7 @@ class EmbedDefaultFormatter extends FormatterBase implements ContainerFactoryPlu
     string $view_mode,
     array $third_party_settings,
     EmbedSourceManager $embed_manager,
-    LoggerChannelFactoryInterface $logger
+    LoggerChannelFactoryInterface $logger,
   ) {
     parent::__construct(
       $plugin_id,
@@ -88,7 +88,7 @@ class EmbedDefaultFormatter extends FormatterBase implements ContainerFactoryPlu
     ContainerInterface $container,
     array $configuration,
     $plugin_id,
-    $plugin_definition
+    $plugin_definition,
   ) {
     return new static(
       $plugin_id,
