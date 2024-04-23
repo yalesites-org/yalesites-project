@@ -174,7 +174,7 @@ Moderation sidebar
   margin: 1.5rem 0 !important;
 }
 
-.moderation-sidebar-container .moderation-sidebar-revision-item:last-child {
+.moderation-sidebar-container .moderation-sidebar-revision-item:last-of-type {
   border-bottom: 0 !important;
 }
 
