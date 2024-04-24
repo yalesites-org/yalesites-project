@@ -138,6 +138,7 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
     $eventWebsite = ($node->field_event_cta->first()) ? Url::fromUri($node->field_event_cta->first()->getValue()['uri'])->toString() : NULL;
     $urlTitle = ($node->field_event_cta->first()) ? $node->field_event_cta->first()->getValue()['title'] : NULL;
     $localistImageUrl = ($node->field_localist_event_image_url->first()) ? Url::fromUri($node->field_localist_event_image_url->first()->getValue()['uri'])->toString() : NULL;
+    $localistImageAlt = $node->field_localist_event_image_alt->first() ? $node->field_localist_event_image_alt->first()->getValue()['value'] : NULL;
 
     // Teaser responsive image.
     $teaserMediaRender = [];
@@ -195,21 +196,6 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
         ];
       }
     }
-    // Event types.
-    $eventTypes = [];
-    if ($node->field_localist_event_type) {
-      $types = $node->field_localist_event_type->getValue();
-      if ($types) {
-        foreach ($types as $type) {
-          /** @var \Drupal\taxonomy\Entity\Term $typeInfo */
-          $typeInfo = $this->entityTypeManager->getStorage('taxonomy_term')->load($type['target_id']);
-          $eventTypes[] = [
-            'name' => $typeInfo->getName(),
-            'url' => $typeInfo->toUrl()->toString(),
-          ];
-        }
-      }
-    }
 
     // Event experience.
     $eventExperienceId = $node->field_localist_event_experience->first() ? $node->field_localist_event_experience->first()->getValue()['target_id'] : NULL;
@@ -225,14 +211,46 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
       '#ticket_url' => $ticketLink,
       '#ticket_cost' => $ticketCost,
       '#place' => $place,
-      '#event_types' => $eventTypes,
+      '#event_types' => $this->getFilterValues($node, 'field_localist_event_type'),
+      '#event_audience' => $this->getFilterValues($node, 'field_event_audience'),
+      '#event_topics' => $this->getFilterValues($node, 'field_event_topics'),
       '#description' => $eventDescription,
       '#event_meta__cta_primary__href' => $eventWebsite,
       '#event_meta__cta_primary__content' => $urlTitle,
       '#event_experience' => $eventExperienceName,
       '#localist_image_url' => $localistImageUrl,
+      '#localist_image_alt' => $localistImageAlt,
       '#teaser_media' => $teaserMediaRender,
     ];
+  }
+
+  /**
+   * Returns filter values for a given filter field.
+   *
+   * @param \Drupal\node\NodeInterface $node
+   *   The node object.
+   * @param string $filterField
+   *   The field machine name.
+   *
+   * @return array
+   *   An array of filter names and URL to visit the taxonomy term view page.
+   */
+  private function getFilterValues($node, $filterField) {
+    $filterValues = [];
+    if ($node->$filterField) {
+      $values = $node->$filterField->getValue();
+      if ($values) {
+        foreach ($values as $value) {
+          /** @var \Drupal\taxonomy\Entity\Term $typeInfo */
+          $typeInfo = $this->entityTypeManager->getStorage('taxonomy_term')->load($value['target_id']);
+          $filterValues[] = [
+            'name' => $typeInfo->getName(),
+            'url' => $typeInfo->toUrl()->toString(),
+          ];
+        }
+      }
+    }
+    return $filterValues;
   }
 
 }

@@ -33,6 +33,10 @@ source:
       label: 'Localist image URL'
       selector: localist_data/photo_url
     -
+      name: localist_image_id
+      label: 'Localist image ID'
+      selector: localist_data/photo_id
+    -
       name: localist_event_url
       label: 'Localist event URL'
       selector: localist_data/localist_url
@@ -100,6 +104,9 @@ process:
   field_event_room: localist_room
   field_localist_event_url/uri: localist_event_url
   field_localist_event_image_url/uri: localist_image_url
+  field_localist_event_image_alt:
+    plugin: get_localist_image_desc
+    source: localist_image_id
   field_localist_ics_url/uri: localist_ics_url
   field_event_date: event_instances
   field_event_recurring: recurring
@@ -130,6 +137,24 @@ process:
       plugin: migration_lookup
       migration: localist_event_types
       no_stub: true
+  field_event_audience:
+    -
+      plugin: extract_localist_filter
+      source: filters
+      filter: event_audience
+    -
+      plugin: migration_lookup
+      migration: localist_audience
+      no_stub: true
+  field_event_topics:
+    -
+      plugin: extract_localist_filter
+      source: filters
+      filter: event_topics
+    -
+      plugin: migration_lookup
+      migration: localist_topics
+      no_stub: true
   field_ticket_cost: ticket_cost
   field_ticket_registration_url/uri: ticket_registration_url
   field_event_status:
@@ -157,6 +182,7 @@ destination:
     - field_event_room
     - field_localist_event_url
     - field_localist_event_image_url
+    - field_localist_event_image_alt
     - field_localist_ics_url
     - field_localist_event_experience
     - field_event_type
@@ -167,11 +193,16 @@ destination:
     - field_ticket_registration_url
     - field_event_status
     - field_event_date
+    - field_event_topics
+    - field_localist_event_type
+    - field_event_audience
+
 migration_dependencies:
   required:
     - localist_experiences
     - localist_places
     - localist_event_types
+    - localist_audience
     - localist_status
     - localist_groups
   optional: []
