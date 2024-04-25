@@ -68,7 +68,7 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
     string $view_mode,
     array $third_party_settings,
     ViewsBasicManager $viewsBasicManager,
-    Renderer $renderer_service
+    Renderer $renderer_service,
   ) {
     parent::__construct(
       $plugin_id,
@@ -90,7 +90,7 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
     ContainerInterface $container,
     array $configuration,
     $plugin_id,
-    $plugin_definition
+    $plugin_definition,
   ) {
     return new static(
       $plugin_id,
