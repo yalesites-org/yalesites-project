@@ -5,6 +5,7 @@ namespace Drupal\ys_layouts;
 use Drupal\Core\Datetime\DateFormatter;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Url;
 use Drupal\node\NodeInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -127,6 +128,16 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     // Event basic fields.
     $icsUrl = $node->field_localist_ics_url->first() ? $node->field_localist_ics_url->first()->getValue()['uri'] : NULL;
     $experience = $this->getFilterValues($node, 'field_localist_event_experience');
+    $eventTypes = $this->getFilterValues($node, 'field_localist_event_type');
+    $eventAudience = $this->getFilterValues($node, 'field_event_audience');
+    $eventTopics = $this->getFilterValues($node, 'field_event_topics');
+    $ticketLink = $node->field_ticket_registration_url->first() ? $node->field_ticket_registration_url->first()->getValue()['uri'] : NULL;
+    $ticketCost = $node->field_ticket_cost->first() ? $node->field_ticket_cost->first()->getValue()['value'] : NULL;
+    $description = $node->field_event_description->first() ? $node->field_event_description->first()->getValue()['value'] : NULL;
+    $externalEventWebiteUrl = ($node->field_event_cta->first()) ? Url::fromUri($node->field_event_cta->first()->getValue()['uri'])->toString() : NULL;
+    $externalEventWebsiteTitle = ($node->field_event_cta->first()) ? $node->field_event_cta->first()->getValue()['title'] : NULL;
+    $localistImageUrl = ($node->field_localist_event_image_url->first()) ? Url::fromUri($node->field_localist_event_image_url->first()->getValue()['uri'])->toString() : NULL;
+    $localistImageAlt = $node->field_localist_event_image_alt->first() ? $node->field_localist_event_image_alt->first()->getValue()['value'] : NULL;
 
     // Dates.
     $dates = $node->field_event_date->getValue();
@@ -146,11 +157,65 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       asort($dates);
     }
 
+    // Teaser responsive image.
+    $teaserMediaRender = [];
+    $teaserMediaId = ($node->field_teaser_media->first()) ? $node->field_teaser_media->getValue()[0]['target_id'] : NULL;
+    if ($teaserMediaId) {
+      /** @var Drupal\media\Entity\Media $teaserMedia */
+      if ($teaserMedia = $this->entityTypeManager->getStorage('media')->load($teaserMediaId)) {
+        /** @var Drupal\file\FileStorage $fileEntity */
+        $fileEntity = $this->entityTypeManager->getStorage('file');
+        $teaserImageFileUri = $fileEntity->load($teaserMedia->field_media_image->target_id)->getFileUri();
+
+        $teaserMediaRender = [
+          '#type' => 'responsive_image',
+          '#responsive_image_style_id' => 'card_featured_3_2',
+          '#uri' => $teaserImageFileUri,
+          '#attributes' => [
+            'alt' => $teaserMedia->get('field_media_image')->first()->get('alt')->getValue(),
+          ],
+        ];
+      }
+    }
+
+    // Place info.
+    $place = [];
+    if ($placeRef = $node->field_event_place->first()) {
+      /** @var \Drupal\taxonomy\Entity\Term $placeInfo */
+      $placeInfo = $this->entityTypeManager->getStorage('taxonomy_term')->load($placeRef->getValue()['target_id']);
+      if ($placeInfo) {
+        $place = [
+          'name' => $placeInfo->getName(),
+          'address' => $placeInfo->field_address->address_line1 ?? NULL,
+          'city' => $placeInfo->field_address->locality ?? NULL,
+          'state' => $placeInfo->field_address->administrative_area ?? NULL,
+          'postal_code' => $placeInfo->field_address->postal_code ?? NULL,
+          'country_code' => $placeInfo->field_address->country_code ?? NULL,
+          'latitude' => $placeInfo->field_latitude->first() ? $placeInfo->field_latitude->first()->getValue()['value'] : NULL,
+          'longitude' => $placeInfo->field_longitude->first() ? $placeInfo->field_longitude->first()->getValue()['value'] : NULL,
+        ];
+      }
+    }
+
     return [
       'title' => $node->getTitle(),
       'dates' => $dates,
       'ics' => $icsUrl,
+      'canonical_url' => $node->toUrl()->setAbsolute()->toString(),
       'experience' => $experience,
+      'ticket_url' => $ticketLink,
+      'ticket_cost' => $ticketCost,
+      'description' => $description,
+      'external_website_url' => $externalEventWebiteUrl,
+      'external_website_title' => $externalEventWebsiteTitle,
+      'localist_image_url' => $localistImageUrl,
+      'localist_image_alt' => $localistImageAlt,
+      'teaser_media' => $teaserMediaRender,
+      'place_info' => $place,
+      'event_types' => $eventTypes,
+      'event_audience' => $eventAudience,
+      'event_topics' => $eventTopics,
+
     ];
   }
 
