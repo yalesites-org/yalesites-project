@@ -61,7 +61,7 @@ class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginIn
     ConfigFactoryInterface $config_factory,
     EntityTypeManager $entity_type_manager,
     Messenger $messenger,
-    ) {
+  ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->socialLinks = $social_links_manager;
     $this->footerSettings = $config_factory->getEditable('ys_core.footer_settings');
