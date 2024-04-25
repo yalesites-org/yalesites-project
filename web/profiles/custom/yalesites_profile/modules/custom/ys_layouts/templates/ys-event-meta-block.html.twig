@@ -31,16 +31,6 @@
 
 {% if event_dates %}
   {{ attach_library('atomic/event-localist') }}
-
-  {% if not ics_url %}
-
-    {% set start_datetime = date(event_dates.0.value|date_modify('+0 hour')) %}
-    {% set end_datetime = date(event_dates.0.end_value|date_modify('+0 hour')) %}
-    {% set description = canonical_url %}
-    {% set ics_url = calendar_link('ics', event_title__heading, start_datetime, end_datetime, event_dates.0.is_all_day, description, event_experience.0.name) %}
-
-  {% endif %}
-
   {% include '@molecules/meta/event-meta/yds-event-meta-localist.twig' %}
 {% else %}
   {% include '@molecules/meta/event-meta/yds-event-meta.twig' %}

@@ -118,14 +118,11 @@ function ys_layouts_preprocess_node(&$variables) {
     $node = $variables['node'];
     $eventFieldData = \Drupal::service('ys_layouts.meta_fields_manager')->getEventData($node);
 
+    /* These fields are dynamically calculated. Other fields
+     * can be referenced in the regular way with content.field_name
+     */
     $variables['event_dates'] = $eventFieldData['dates'];
     $variables['ics_url'] = $eventFieldData['ics'];
-    $variables['ticket_url'] = $eventFieldData['ticket_url'];
-    $variables['event_meta__cta_primary__href'] = $eventFieldData['external_website_url'];
-    $variables['event_meta__cta_primary__content'] = $eventFieldData['external_website_title'];
-    $variables['event_experience'] = $eventFieldData['experience'];
-    $variables['localist_image_url'] = $eventFieldData['localist_image_url'];
-    $variables['localist_image_alt'] = $eventFieldData['localist_image_alt'];
 
   }
 }
