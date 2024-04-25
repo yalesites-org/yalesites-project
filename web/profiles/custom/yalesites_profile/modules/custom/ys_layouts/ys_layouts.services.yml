@@ -1,0 +1,5 @@
+services:
+  # Service for retrieving event field data.
+  ys_layouts.meta_fields_manager:
+    class: Drupal\ys_layouts\MetaFieldsManager
+    arguments: ['@date.formatter', '@entity_type.manager']

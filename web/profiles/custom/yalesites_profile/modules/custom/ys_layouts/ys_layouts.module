@@ -106,3 +106,11 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
   }
 
 }
+
+function ys_layouts_preprocess_node(&$variables) {
+
+  if ($variables['node']->getType() == 'event' && $variables['view_mode'] != 'full') {
+    $node = $variables['node'];
+    $eventFields = \Drupal::service('ys_layouts.meta_fields_manager')->getEventData($node);
+  }
+}
