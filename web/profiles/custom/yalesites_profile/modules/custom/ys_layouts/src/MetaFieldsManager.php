@@ -12,7 +12,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Retrieves field data from nodes for meta block and all view modes.
  *
- * Currently, this class is used to retrieve event data as there is a lot of
+ * Currently, this class is used to retrieve event data as there is some
  * manipulation of event data. Eventually, this class can also be used to
  * retrieve profile, post, or other content type data.
  */

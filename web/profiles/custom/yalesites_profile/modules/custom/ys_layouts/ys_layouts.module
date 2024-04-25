@@ -108,8 +108,12 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
 
 }
 
+/**
+ * Implements hook_preprocess_node().
+ */
 function ys_layouts_preprocess_node(&$variables) {
 
+  // Processed event fields for other view modes.
   if ($variables['node']->getType() == 'event' && $variables['view_mode'] != 'full') {
     $node = $variables['node'];
     $eventFieldData = \Drupal::service('ys_layouts.meta_fields_manager')->getEventData($node);
