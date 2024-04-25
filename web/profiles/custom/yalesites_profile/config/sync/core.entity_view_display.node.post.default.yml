@@ -92,6 +92,7 @@ third_party_settings:
         - System
         - Webform
         - 'YaleSites Core'
+        - 'YaleSites Layouts'
         - 'YaleSites alert'
         - core
     entity_view_mode_restriction_by_region:
