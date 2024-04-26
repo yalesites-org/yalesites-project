@@ -173,3 +173,15 @@ tiles:
       top: 'Top'
       bottom: 'Bottom'
     default: bottom
+infographic:
+  field_style_color:
+    values:
+      one: 'One'
+      two: 'Two'
+      three: 'Three'
+    default: one
+  field_style_alignment:
+    values:
+      left: 'Left'
+      center: 'Center'
+    default: left
