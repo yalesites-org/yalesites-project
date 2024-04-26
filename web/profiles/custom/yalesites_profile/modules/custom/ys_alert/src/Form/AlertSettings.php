@@ -65,7 +65,7 @@ class AlertSettings extends ConfigFormBase {
     CachedDiscoveryClearerInterface $plugin_cache_clearer,
     AlertManager $alert_manager,
     AliasManager $path_alias_manager,
-    ) {
+  ) {
     parent::__construct($config_factory);
     $this->cacheRender = $cacheRender;
     $this->pluginCacheClearer = $plugin_cache_clearer;

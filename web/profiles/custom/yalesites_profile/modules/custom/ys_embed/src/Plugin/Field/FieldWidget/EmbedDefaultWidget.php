@@ -51,7 +51,7 @@ class EmbedDefaultWidget extends WidgetBase implements ContainerFactoryPluginInt
     FieldDefinitionInterface $field_definition,
     array $settings,
     array $third_party_settings,
-    EmbedSourceManager $embed_manager
+    EmbedSourceManager $embed_manager,
   ) {
     parent::__construct(
       $plugin_id,
@@ -70,7 +70,7 @@ class EmbedDefaultWidget extends WidgetBase implements ContainerFactoryPluginInt
     ContainerInterface $container,
     array $configuration,
     $plugin_id,
-    $plugin_definition
+    $plugin_definition,
   ) {
     return new static(
       $plugin_id,
