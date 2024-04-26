@@ -1,0 +1,21 @@
+uuid: 5b0e9a01-02a6-4738-b987-d3ca0cd5fdd9
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.infographic
+    - field.storage.block_content.field_style_alignment
+  module:
+    - options
+id: block_content.infographic.field_style_alignment
+field_name: field_style_alignment
+entity_type: block_content
+bundle: infographic
+label: Alignment
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ys_themes_default_value_function
+settings: {  }
+field_type: list_string

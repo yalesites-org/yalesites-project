@@ -44,7 +44,10 @@ content:
       placeholder_title: ''
       linkit_profile: default
       linkit_auto_link_text: false
-    third_party_settings: {  }
+    third_party_settings:
+      maxlength:
+        maxlength_js: null
+        maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
   field_media:
     type: media_library_widget
     weight: 2

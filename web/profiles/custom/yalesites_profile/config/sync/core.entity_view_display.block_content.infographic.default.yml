@@ -1,0 +1,71 @@
+uuid: ecccc9fa-2c88-48ad-b9d9-4fb15f4875e3
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.infographic
+    - field.field.block_content.infographic.field_heading
+    - field.field.block_content.infographic.field_infographic_items
+    - field.field.block_content.infographic.field_instructions
+    - field.field.block_content.infographic.field_media
+    - field.field.block_content.infographic.field_style_alignment
+    - field.field.block_content.infographic.field_style_color
+    - field.field.block_content.infographic.field_text
+  module:
+    - entity_reference_revisions
+    - options
+    - text
+id: block_content.infographic.default
+targetEntityType: block_content
+bundle: infographic
+mode: default
+content:
+  field_heading:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_infographic_items:
+    type: entity_reference_revisions_entity_view
+    label: hidden
+    settings:
+      view_mode: default
+      link: ''
+    third_party_settings: {  }
+    weight: 5
+    region: content
+  field_media:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: banner_16_5
+      link: false
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_style_alignment:
+    type: list_key
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 3
+    region: content
+  field_style_color:
+    type: list_key
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  field_text:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 4
+    region: content
+hidden:
+  field_instructions: true
+  search_api_excerpt: true

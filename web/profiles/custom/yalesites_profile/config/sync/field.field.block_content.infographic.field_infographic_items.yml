@@ -1,0 +1,55 @@
+uuid: 30cac509-2491-4d39-a712-522e9ecdbedb
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.infographic
+    - field.storage.block_content.field_infographic_items
+    - paragraphs.paragraphs_type.infographic_item
+  module:
+    - entity_reference_revisions
+id: block_content.infographic.field_infographic_items
+field_name: field_infographic_items
+entity_type: block_content
+bundle: infographic
+label: 'Infographic Items'
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:paragraph'
+  handler_settings:
+    target_bundles:
+      infographic_item: infographic_item
+    negate: 0
+    target_bundles_drag_drop:
+      accordion_item:
+        weight: 10
+        enabled: false
+      callout_item:
+        weight: 11
+        enabled: false
+      custom_card:
+        weight: 12
+        enabled: false
+      gallery_item:
+        weight: 13
+        enabled: false
+      infographic_item:
+        weight: 14
+        enabled: true
+      media_grid_item:
+        weight: 15
+        enabled: false
+      tab:
+        weight: 16
+        enabled: false
+      text:
+        weight: 17
+        enabled: false
+      tile:
+        weight: 18
+        enabled: false
+field_type: entity_reference_revisions

@@ -1,0 +1,24 @@
+uuid: 8518d344-49d0-4d80-b632-87688ac41f84
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.infographic
+    - field.storage.block_content.field_heading
+    - filter.format.heading_html
+  module:
+    - text
+id: block_content.infographic.field_heading
+field_name: field_heading
+entity_type: block_content
+bundle: infographic
+label: 'Infographic Block Title'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - heading_html
+field_type: text

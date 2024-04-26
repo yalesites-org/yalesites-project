@@ -1,0 +1,11 @@
+uuid: 95e52aef-ea85-4bd2-89f2-f78a76d3a24d
+langcode: en
+status: true
+dependencies: {  }
+id: infographic
+block_id: 'inline_block:infographic'
+category: advanced
+label: Infographic
+image_path: ''
+image_alt: ''
+weight: -3
