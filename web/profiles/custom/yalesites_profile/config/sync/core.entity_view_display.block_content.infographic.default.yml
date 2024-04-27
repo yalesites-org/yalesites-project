@@ -10,6 +10,7 @@ dependencies:
     - field.field.block_content.infographic.field_media
     - field.field.block_content.infographic.field_style_alignment
     - field.field.block_content.infographic.field_style_color
+    - field.field.block_content.infographic.field_style_width
     - field.field.block_content.infographic.field_text
   module:
     - entity_reference_revisions
@@ -58,6 +59,13 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 2
+    region: content
+  field_style_width:
+    type: list_key
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 7
     region: content
   field_text:
     type: text_default
