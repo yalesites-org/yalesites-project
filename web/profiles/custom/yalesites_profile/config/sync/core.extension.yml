@@ -69,7 +69,6 @@ module:
   libraries: 0
   link: 0
   linkit: 0
-  linkpurpose: 0
   mailchimp_transactional: 0
   mailsystem: 0
   markup: 0
