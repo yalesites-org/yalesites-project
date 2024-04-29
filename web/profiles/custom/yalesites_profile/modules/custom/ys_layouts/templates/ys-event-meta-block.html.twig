@@ -28,10 +28,6 @@
 #}
 
 {# All TWIG variables are named appropriately and pass through to this template #}
+{{ attach_library('atomic/event-localist') }}
+{% include '@molecules/meta/event-meta/yds-event-meta-localist.twig' %}
 
-{% if event_dates %}
-  {{ attach_library('atomic/event-localist') }}
-  {% include '@molecules/meta/event-meta/yds-event-meta-localist.twig' %}
-{% else %}
-  {% include '@molecules/meta/event-meta/yds-event-meta.twig' %}
-{% endif %}
