@@ -4,6 +4,7 @@ status: true
 dependencies:
   config:
     - field.field.media.background_video.field_media_video_file
+    - field.field.media.background_video.field_tags
     - media.type.background_video
   module:
     - file
@@ -21,6 +22,7 @@ content:
     region: content
 hidden:
   created: true
+  field_tags: true
   name: true
   search_api_excerpt: true
   thumbnail: true

@@ -1,0 +1,23 @@
+uuid: ecbfe710-7aa8-40cc-b4cc-e89127ff77c4
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.grand_hero
+    - field.storage.block_content.field_link_two
+  module:
+    - link
+id: block_content.grand_hero.field_link_two
+field_name: field_link_two
+entity_type: block_content
+bundle: grand_hero
+label: 'Link Two'
+description: 'For more information about linking content, view our resource <a href="https://yalesites.yale.edu/resource-library/linking-content-on-yalesites" target="_blank">Linking Content on YaleSites</a>.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  title: 2
+  link_type: 17
+field_type: link
