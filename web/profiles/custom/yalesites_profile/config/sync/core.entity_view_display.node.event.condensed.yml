@@ -77,18 +77,6 @@ content:
     third_party_settings: {  }
     weight: 0
     region: content
-  field_event_cta:
-    type: link_separate
-    label: above
-    settings:
-      trim_length: 80
-      url_only: false
-      url_plain: false
-      rel: ''
-      target: ''
-    third_party_settings: {  }
-    weight: 6
-    region: content
   field_event_date:
     type: smartdate_plain
     label: hidden
@@ -120,27 +108,16 @@ content:
     region: content
   field_localist_event_experience:
     type: entity_reference_label
-    label: above
+    label: hidden
     settings:
-      link: true
-    third_party_settings: {  }
-    weight: 5
-    region: content
-  field_ticket_registration_url:
-    type: link_separate
-    label: above
-    settings:
-      trim_length: 80
-      url_only: false
-      url_plain: false
-      rel: ''
-      target: ''
+      link: false
     third_party_settings: {  }
     weight: 4
     region: content
 hidden:
   field_category: true
   field_event_audience: true
+  field_event_cta: true
   field_event_description: true
   field_event_format: true
   field_event_place: true
@@ -162,6 +139,7 @@ hidden:
   field_teaser_text: true
   field_teaser_title: true
   field_ticket_cost: true
+  field_ticket_registration_url: true
   layout_builder__layout: true
   links: true
   search_api_excerpt: true
