@@ -4,9 +4,9 @@ services:
     arguments: ["@module_handler", "@file.repository", "@file_system"]
   ys_templated_content.import_manager:
     class: Drupal\ys_templated_content\Managers\ImportManager
-    arguments: ["@single_content_sync.importer", "@single_content_sync.helper", "@ys_templated_content.template_manager", "@ys_templated_content.template_modifier", "@plugin.manager.ys_templated_content.importer_processor"]
-  ys_templated_content.template_modifier:
-    class: Drupal\ys_templated_content\Modifiers\TemplateModifier
+    arguments: ["@single_content_sync.importer", "@single_content_sync.helper", "@ys_templated_content.template_manager", "@ys_templated_content.template_modifier_factory", "@plugin.manager.ys_templated_content.importer_processor"]
+  ys_templated_content.template_modifier_factory:
+    class: Drupal\ys_templated_content\Modifiers\TemplateModifierFactory
     arguments: ["@uuid", "@path_alias.repository", "@entity_type.manager"]
   plugin.manager.ys_templated_content.importer_processor:
     class: Drupal\ys_templated_content\ImportPluginManager

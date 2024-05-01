@@ -140,6 +140,16 @@ class TemplateManager {
         'description' => 'A template for a staff profile.',
         'filename' => 'profile__staff.yml',
       ],
+      [
+        'title' => 'Keynote speaker profile',
+        'description' => 'A template for a keynote speaker profile.',
+        'filename' => 'profile__keynote_speaker_profile.zip',
+      ],
+      [
+        'title' => 'Keynote speaker profile YAML',
+        'description' => 'A template for a keynote speaker profile YAML.',
+        'filename' => 'profile__keynote_speaker_profile.yml',
+      ],
     ],
   ];
 
