@@ -27,9 +27,9 @@
   "require": {
     "composer/installers": "^1.9",
     "cweagans/composer-patches": "^1.7",
-    "drupal/core-composer-scaffold": "10.1.7",
-    "drupal/core-project-message": "10.1.7",
-    "drupal/core-recommended": "10.1.7",
+    "drupal/core-composer-scaffold": "10.2.5",
+    "drupal/core-project-message": "10.2.5",
+    "drupal/core-recommended": "10.2.5",
     "drush/drush": "^11 || ^12",
     "oomphinc/composer-installers-extender": "^2.0",
     "pantheon-systems/drupal-integrations": "^10",
