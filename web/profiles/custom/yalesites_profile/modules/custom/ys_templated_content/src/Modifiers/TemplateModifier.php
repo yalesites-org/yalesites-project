@@ -12,9 +12,6 @@ use Drupal\taxonomy\TermStorageInterface;
  * Modifies a content import for a unique insertion.
  */
 class TemplateModifier extends TemplateModiferBase implements TemplateModifierInterface {
-
-  const PLACEHOLDER = 'public://templated-content-images/placeholder.png';
-
   /**
    * The term storage.
    *
@@ -62,36 +59,9 @@ class TemplateModifier extends TemplateModiferBase implements TemplateModifierIn
     $originalUuid = $content_array['uuid'];
     $newUuid = $this->uuidService->generate();
     $content_array['base_fields']['created'] = time();
-    $content_array = $this->replaceBrokenImages($content_array);
     $content_array = $this->removeAlias($content_array);
     $content_array = $this->replaceUuids($content_array, $originalUuid, $newUuid);
     $content_array = $this->reuseTaxonomyTerms($content_array);
-
-    return $content_array;
-  }
-
-  /**
-   * Replace broken images with a placeholder.
-   *
-   * @param array $content_array
-   *   The content array.
-   *
-   * @return array
-   *   The content array with images fixed with placeholder.
-   */
-  protected function replaceBrokenImages(array $content_array) : array {
-    foreach ($content_array as $key => $value) {
-      if (is_array($value)) {
-        $content_array[$key] = $this->replaceBrokenImages($value);
-      }
-      elseif ($key == 'uri' && strpos($value, 'public://') !== FALSE) {
-        $path = $value;
-        $path = str_replace('public://', 'sites/default/files/', $path);
-        if (!file_exists($path)) {
-          $content_array[$key] = $this::PLACEHOLDER;
-        }
-      }
-    }
 
     return $content_array;
   }

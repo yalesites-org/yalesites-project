@@ -8,6 +8,7 @@ use Drupal\single_content_sync\ContentSyncHelperInterface;
 use Drupal\ys_templated_content\ImportPluginManager;
 use Drupal\ys_templated_content\Modifiers\TemplateModifier;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\ys_templated_content\Modifiers\TemplateModifierFactory;
 
 /**
  * Manager for importing templated content.
@@ -28,6 +29,13 @@ class ImportManager {
    * @var \Drupal\ys_templated_content\Managers\TemplateManager
    */
   protected $templateManager;
+
+  /**
+   * Template Modifier Factory
+   *
+   * @var \Drupal\ys_templated_content\Modifiers\TemplateModifierFactory
+   */
+  protected $templateModifierFactory;
 
   /**
    * The content importer.
@@ -68,13 +76,13 @@ class ImportManager {
     ContentImporterInterface $contentImporter,
     ContentSyncHelperInterface $contentSyncHelper,
     TemplateManager $templateManager,
-    TemplateModifier $templateModifier,
+    TemplateModifierFactory $templateModifierFactory,
     ImportPluginManager $importPluginManager,
   ) {
     $this->contentImporter = $contentImporter;
     $this->contentSyncHelper = $contentSyncHelper;
     $this->templateManager = $templateManager;
-    $this->templateModifier = $templateModifier;
+    $this->templateModifierFactory = $templateModifierFactory;
     $this->importPluginManager = $importPluginManager;
   }
 
@@ -86,7 +94,7 @@ class ImportManager {
       $container->get('single_content_sync.importer'),
       $container->get('single_content_sync.helper'),
       $container->get('ys_templated_content.template_manager'),
-      $container->get('ys_templated_content.template_modifier'),
+      $container->get('ys_templated_content.template_modifier_factory'),
       $container->get('plugin.manager.templated_importer'),
     );
   }
@@ -111,6 +119,7 @@ class ImportManager {
     }
 
     $extension = pathinfo($filename, PATHINFO_EXTENSION);
+    $this->templateModifier = $this->templateModifierFactory->getTemplateModifier($extension);
     $importResult = NULL;
     $plugin_id = $this->importPluginManager->getPluginIdFromExtension($extension);
     try {
