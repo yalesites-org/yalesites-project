@@ -55,7 +55,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     FieldDefinitionInterface $field_definition,
     array $settings,
     array $third_party_settings,
-    ViewsBasicManager $views_basic_manager
+    ViewsBasicManager $views_basic_manager,
   ) {
     parent::__construct(
       $plugin_id,
@@ -74,7 +74,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     ContainerInterface $container,
     array $configuration,
     $plugin_id,
-    $plugin_definition
+    $plugin_definition,
   ) {
     return new static(
       $plugin_id,
@@ -94,7 +94,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     $delta,
     Array $element,
     Array &$form,
-    FormStateInterface $formState
+    FormStateInterface $formState,
   ) {
 
     $entity_list = $this->viewsBasicManager->entityTypeList();
