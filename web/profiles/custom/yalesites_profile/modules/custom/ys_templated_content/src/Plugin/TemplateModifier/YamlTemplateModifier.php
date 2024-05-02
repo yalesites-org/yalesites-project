@@ -1,15 +1,23 @@
 <?php
 
-namespace Drupal\ys_templated_content\Modifiers;
+namespace Drupal\ys_templated_content\Plugin\TemplateModifier;
 
 /**
- * Modifies a content import for a unique insertion for YAML files.
+ * Provides a Yaml template modifier.
  *
- * In particular, this adds one more item assuming that if the image is not
- * already present on the system, it cannot be included since this is a yaml
- * file, so it uses the placeholder image.
+ * @TemplateModifier(
+ *   id = "yaml",
+ *   label = @Translation("YAML Template Modifier"),
+ *   description = @Translation("Modifier for YAML content."),
+ *   extension = "yml",
+ * )
  */
-class YamlTemplateModifier extends TemplateModifier implements TemplateModifierInterface {
+class YamlTemplateModifier extends ZipTemplateModifier {
+
+  /**
+   * The placeholder image.
+   * @var string
+   */
   const PLACEHOLDER = 'public://templated-content-images/placeholder.png';
 
   /**
@@ -50,5 +58,4 @@ class YamlTemplateModifier extends TemplateModifier implements TemplateModifierI
 
     return $content_array;
   }
-
 }

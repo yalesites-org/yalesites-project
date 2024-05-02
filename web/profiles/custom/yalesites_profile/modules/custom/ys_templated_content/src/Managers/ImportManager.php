@@ -6,7 +6,7 @@ use Drupal\Core\Serialization\Yaml;
 use Drupal\single_content_sync\ContentImporterInterface;
 use Drupal\single_content_sync\ContentSyncHelperInterface;
 use Drupal\ys_templated_content\ImportPluginManager;
-use Drupal\ys_templated_content\Modifiers\TemplateModifierFactory;
+use Drupal\ys_templated_content\ModifierPluginManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -30,11 +30,11 @@ class ImportManager {
   protected $templateManager;
 
   /**
-   * Template Modifier Factory.
+   * Template Modifier Manager.
    *
-   * @var \Drupal\ys_templated_content\Modifiers\TemplateModifierFactory
+   * @var \Drupal\ys_templated_content\TemplateModifierManager
    */
-  protected $templateModifierFactory;
+  protected $templateModifierManager;
 
   /**
    * The content importer.
@@ -66,7 +66,7 @@ class ImportManager {
    *   The content sync helper.
    * @param \Drupal\ys_templated_content\Managers\TemplateManager $templateManager
    *   The template manager.
-   * @param \Drupal\ys_templated_content\Modifiers\TemplateModifierFactory $templateModifierFactory
+   * @param \Drupal\ys_templated_content\ModifierPluginManager $templateModifierManager
    *   The template modifier factory.
    * @param \Drupal\ys_templated_content\ImportPluginManager $importPluginManager
    *   The import plugin manager.
@@ -75,13 +75,13 @@ class ImportManager {
     ContentImporterInterface $contentImporter,
     ContentSyncHelperInterface $contentSyncHelper,
     TemplateManager $templateManager,
-    TemplateModifierFactory $templateModifierFactory,
+    ModifierPluginManager $templateModifierManager,
     ImportPluginManager $importPluginManager,
   ) {
     $this->contentImporter = $contentImporter;
     $this->contentSyncHelper = $contentSyncHelper;
     $this->templateManager = $templateManager;
-    $this->templateModifierFactory = $templateModifierFactory;
+    $this->templateModifierManager = $templateModifierManager;
     $this->importPluginManager = $importPluginManager;
   }
 
@@ -118,11 +118,12 @@ class ImportManager {
     }
 
     $extension = pathinfo($filename, PATHINFO_EXTENSION);
-    $this->templateModifier = $this->templateModifierFactory->getTemplateModifier($extension);
+    $templateModifierPluginId = $this->templateModifierManager->getPluginIdFromExtension($extension);
+    $import_plugin_id = $this->importPluginManager->getPluginIdFromExtension($extension);
     $importResult = NULL;
-    $plugin_id = $this->importPluginManager->getPluginIdFromExtension($extension);
     try {
-      $importer = $this->importPluginManager->createInstance($plugin_id, ['importManager' => $this]);
+      $this->templateModifier = $this->templateModifierManager->createInstance($templateModifierPluginId, ['container' => \Drupal::getContainer()]);
+      $importer = $this->importPluginManager->createInstance($import_plugin_id, ['importManager' => $this]);
       $importResult = $importer->import($filename);
     }
     catch (\Exception $e) {
