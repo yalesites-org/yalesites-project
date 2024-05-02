@@ -6,9 +6,8 @@ use Drupal\Core\Serialization\Yaml;
 use Drupal\single_content_sync\ContentImporterInterface;
 use Drupal\single_content_sync\ContentSyncHelperInterface;
 use Drupal\ys_templated_content\ImportPluginManager;
-use Drupal\ys_templated_content\Modifiers\TemplateModifier;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ys_templated_content\Modifiers\TemplateModifierFactory;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Manager for importing templated content.
@@ -31,7 +30,7 @@ class ImportManager {
   protected $templateManager;
 
   /**
-   * Template Modifier Factory
+   * Template Modifier Factory.
    *
    * @var \Drupal\ys_templated_content\Modifiers\TemplateModifierFactory
    */
@@ -67,8 +66,8 @@ class ImportManager {
    *   The content sync helper.
    * @param \Drupal\ys_templated_content\Managers\TemplateManager $templateManager
    *   The template manager.
-   * @param \Drupal\ys_templated_content\Modifiers\TemplateModifier $templateModifier
-   *   The template modifier.
+   * @param \Drupal\ys_templated_content\Modifiers\TemplateModifierFactory $templateModifierFactory
+   *   The template modifier factory.
    * @param \Drupal\ys_templated_content\ImportPluginManager $importPluginManager
    *   The import plugin manager.
    */

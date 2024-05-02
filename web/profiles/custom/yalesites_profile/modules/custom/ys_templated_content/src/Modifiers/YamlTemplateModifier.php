@@ -5,7 +5,7 @@ namespace Drupal\ys_templated_content\Modifiers;
 /**
  * Modifies a content import for a unique insertion for YAML files.
  *
- * In particular, this adds one more item assuming that if the image is not 
+ * In particular, this adds one more item assuming that if the image is not
  * already present on the system, it cannot be included since this is a yaml
  * file, so it uses the placeholder image.
  */
@@ -50,4 +50,5 @@ class YamlTemplateModifier extends TemplateModifier implements TemplateModifierI
 
     return $content_array;
   }
+
 }

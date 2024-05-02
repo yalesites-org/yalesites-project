@@ -63,16 +63,34 @@ class TemplateModifierFactory {
     );
   }
 
+  /**
+   * Get the template modifier based on the extension.
+   *
+   * @param string $extension
+   *   The extension.
+   *
+   * @return \Drupal\ys_templated_content\Modifiers\TemplateModifierInterface
+   *   The template modifier.
+   */
   public function getTemplateModifier($extension) {
+    $templateModifier = NULL;
+
     switch ($extension) {
       case 'yml':
-        return new YamlTemplateModifier($this->uuidService, $this->pathAliasRepository, $this->entityTypeManager);
+        $templateModifier = new YamlTemplateModifier($this->uuidService, $this->pathAliasRepository, $this->entityTypeManager);
+
         break;
+
       case 'zip':
-        return new TemplateModifier($this->uuidService, $this->pathAliasRepository, $this->entityTypeManager);
+        $templateModifier = new TemplateModifier($this->uuidService, $this->pathAliasRepository, $this->entityTypeManager);
+
         break;
+
       default:
-      return new TemplateModifier($this->uuidService, $this->pathAliasRepository, $this->entityTypeManager);
+        $templateModifier = new TemplateModifier($this->uuidService, $this->pathAliasRepository, $this->entityTypeManager);
     }
+
+    return $templateModifier;
   }
+
 }
