@@ -54,11 +54,6 @@ class TemplateManager {
         'description' => 'A template for a FAQ page.',
         'filename' => 'page__faq.yml',
       ],
-      'landing_page' => [
-        'title' => 'Comprehensive Landing Page 02',
-        'description' => 'A template for a landing page.',
-        'filename' => 'page__comprehensive_landing_page_2.zip',
-      ],
       'remote_zip_file' => [
         'title' => 'Remote Zip',
         'description' => 'A template for a remote zip file.',
@@ -78,6 +73,26 @@ class TemplateManager {
         'title' => 'Landing Page Does Not Exist',
         'description' => 'A template for a landing page.',
         'filename' => 'page__landing_pages.yml',
+      ],
+      'conference' => [
+        'title' => 'Conference site homepage',
+        'description' => 'A template for a conference site homepage.',
+        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/page__conference_site_homepage.zip',
+      ],
+      'landing_page' => [
+        'title' => 'Epic landing page',
+        'description' => 'A template for a landing page.',
+        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/page__epic_landing_page.zip',
+      ],
+      'lab1' => [
+        'title' => 'Laboratory homepage 1',
+        'description' => 'A template for a lab page.',
+        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/page__laboratory_homepage_1.zip',
+      ],
+      'lab2' => [
+        'title' => 'Laboratory homepage 2',
+        'description' => 'A template for a lab page.',
+        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/page__laboratory_homepage_2.zip',
       ],
     ],
     'post' => [
@@ -101,6 +116,31 @@ class TemplateManager {
         'description' => 'A template for a press release.',
         'filename' => 'post__press_release.yml',
       ],
+      'announcement' => [
+        'title' => 'Announcement',
+        'description' => 'A template for an announcement.',
+        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/post__announcement.zip',
+      ],
+      'blog1' => [
+        'title' => 'Blog 1',
+        'description' => 'A template for a blog page.',
+        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/post__blog_post_1.zip',
+      ],
+      'blog2' => [
+        'title' => 'Blog 2',
+        'description' => 'A template for a blog page.',
+        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/post__blog_2.zip',
+      ],
+      'news_article_1' => [
+        'title' => 'News article 1',
+        'description' => 'A template for a news article.',
+        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/post__news_article_1.zip',
+      ],
+      'news_article_2' => [
+        'title' => 'News article 2',
+        'description' => 'A template for a news article.',
+        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/post__news_article_2.zip',
+      ],
     ],
     'event' => [
       '' => [
@@ -111,12 +151,17 @@ class TemplateManager {
       'in_person' => [
         'title' => 'In Person',
         'description' => 'A template for an in person event.',
-        'filename' => 'event__in_person.yml',
+        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/event__in_person.zip',
       ],
       'online' => [
         'title' => 'Online',
         'description' => 'A template for an online event.',
-        'filename' => 'event__online.yml',
+        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/event__online.zip',
+      ],
+      'hybrid' => [
+        'title' => 'Hybrid',
+        'description' => 'A template for a hybrid event.',
+        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/event__hybrid.zip',
       ],
     ],
     'profile' => [
@@ -140,15 +185,15 @@ class TemplateManager {
         'description' => 'A template for a staff profile.',
         'filename' => 'profile__staff.yml',
       ],
-      [
+      'keynote_speaker' => [
         'title' => 'Keynote speaker profile',
         'description' => 'A template for a keynote speaker profile.',
         'filename' => 'profile__keynote_speaker_profile.zip',
       ],
-      [
-        'title' => 'Keynote speaker profile YAML',
-        'description' => 'A template for a keynote speaker profile YAML.',
-        'filename' => 'profile__keynote_speaker_profile.yml',
+      'organization' => [
+        'title' => 'Organization profile',
+        'description' => 'A template for an organization profile.',
+        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/profile__organization.zip',
       ],
     ],
   ];
