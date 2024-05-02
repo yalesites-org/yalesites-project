@@ -1,17 +1,22 @@
 <?php
 
-namespace Drupal\ys_templated_content\Modifiers;
+namespace Drupal\ys_templated_content\Plugin\TemplateModifier;
 
-use Drupal\Component\DependencyInjection\ContainerInterface;
-use Drupal\Component\Uuid\UuidInterface;
-use Drupal\Core\Entity\EntityTypeManager;
-use Drupal\path_alias\AliasRepositoryInterface;
+use Drupal\ys_templated_content\TemplateModifierBase;
+use Drupal\ys_templated_content\TemplateModifierInterface;
 use Drupal\taxonomy\TermStorageInterface;
 
 /**
- * Modifies a content import for a unique insertion.
+ * Provides a Zip template modifier.
+ *
+ * @TemplateModifier(
+ *   id = "zip_template_modifier",
+ *   label = @Translation("Zip Template Modifier"),
+ *   description = @Translation("Modifier for Zip templates."),
+ *   extension = "zip",
+ * )
  */
-class TemplateModifier extends TemplateModiferBase implements TemplateModifierInterface {
+class ZipTemplateModifier extends TemplateModifierBase implements TemplateModifierInterface {
   /**
    * The term storage.
    *
@@ -20,33 +25,11 @@ class TemplateModifier extends TemplateModiferBase implements TemplateModifierIn
   protected TermStorageInterface $termStorage;
 
   /**
-   * TemplateModifier constructor.
-   *
-   * @param \Drupal\Component\Uuid\UuidInterface $uuidService
-   *   The UUID service.
-   * @param \Drupal\path_alias\AliasRepositoryInterface $pathAliasRepository
-   *   The path alias repository.
-   * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
-   *   The entity type manager to get the taxonoomy term storage.
-   */
-  public function __construct(
-    UuidInterface $uuidService,
-    AliasRepositoryInterface $pathAliasRepository,
-    EntityTypeManager $entityTypeManager,
-  ) {
-    parent::__construct($uuidService, $pathAliasRepository);
-    $this->termStorage = $entityTypeManager->getStorage('taxonomy_term');
-  }
-
-  /**
    * {@inheritdoc}
    */
-  public function create(ContainerInterface $container) {
-    return new static(
-      $container->get('uuid'),
-      $container->get('path_alias.repository'),
-      $container->get('entity_type.manager'),
-    );
+  public function __construct(array $configuration, $plugin_id, $plugin_definition) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->termStorage = $configuration['container']->get('entity_type.manager')->getStorage('taxonomy_term');
   }
 
   /**

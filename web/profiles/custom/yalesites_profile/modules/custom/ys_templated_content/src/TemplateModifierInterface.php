@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\ys_templated_content\Modifiers;
+namespace Drupal\ys_templated_content;
 
 /**
  * Interface to modify content arrays for template processing.
