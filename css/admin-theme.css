@@ -132,6 +132,8 @@ html.gin--dark-mode form.layout-builder-configure-block.glb-form {
 // Offcanvas toolbar styles
 */
 #drupal-off-canvas-wrapper {
+  --off-canvas-button-background-color: #555;
+
   color: var(--gin-color-text) !important;
   background-color: var(--gin-bg-layer) !important;
   font-family: var(--gin-font);
