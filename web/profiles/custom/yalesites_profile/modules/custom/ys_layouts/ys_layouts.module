@@ -123,6 +123,8 @@ function ys_layouts_preprocess_node(&$variables) {
      */
     $variables['event_dates'] = $eventFieldData['dates'];
     $variables['ics_url'] = $eventFieldData['ics'];
+    $variables['localist_image_url'] = $eventFieldData['localist_image_url'];
+
 
   }
 }
