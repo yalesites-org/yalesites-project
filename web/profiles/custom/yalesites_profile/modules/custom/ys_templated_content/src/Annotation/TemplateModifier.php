@@ -44,4 +44,3 @@ class TemplateModifier extends Plugin {
   public $extension;
 
 }
-

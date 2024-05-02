@@ -2,9 +2,9 @@
 
 namespace Drupal\ys_templated_content\Plugin\TemplateModifier;
 
+use Drupal\taxonomy\TermStorageInterface;
 use Drupal\ys_templated_content\TemplateModifierBase;
 use Drupal\ys_templated_content\TemplateModifierInterface;
-use Drupal\taxonomy\TermStorageInterface;
 
 /**
  * Provides a Zip template modifier.

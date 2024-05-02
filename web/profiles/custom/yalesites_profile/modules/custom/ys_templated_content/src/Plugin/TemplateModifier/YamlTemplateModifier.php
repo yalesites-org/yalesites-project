@@ -16,6 +16,7 @@ class YamlTemplateModifier extends ZipTemplateModifier {
 
   /**
    * The placeholder image.
+   *
    * @var string
    */
   const PLACEHOLDER = 'public://templated-content-images/placeholder.png';
@@ -58,4 +59,5 @@ class YamlTemplateModifier extends ZipTemplateModifier {
 
     return $content_array;
   }
+
 }
