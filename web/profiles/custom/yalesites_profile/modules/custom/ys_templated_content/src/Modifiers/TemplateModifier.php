@@ -62,6 +62,7 @@ class TemplateModifier extends TemplateModiferBase implements TemplateModifierIn
     $content_array = $this->removeAlias($content_array);
     $content_array = $this->replaceUuids($content_array, $originalUuid, $newUuid);
     $content_array = $this->reuseTaxonomyTerms($content_array);
+    $content_array = $this->makeUnpublished($content_array);
 
     return $content_array;
   }
@@ -179,6 +180,18 @@ class TemplateModifier extends TemplateModiferBase implements TemplateModifierIn
     }
 
     return $tid[key($tid)]->uuid();
+  }
+
+  /**
+   * Make the content unpublished.
+   *
+   * @param array $content_array
+   *   The content array.
+   */
+  protected function makeUnpublished($content_array) {
+    $content_array['base_fields']['status'] = 0;
+
+    return $content_array;
   }
 
 }
