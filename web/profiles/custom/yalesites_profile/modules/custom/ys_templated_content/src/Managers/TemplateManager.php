@@ -55,9 +55,9 @@ class TemplateManager {
         'filename' => 'page__faq.yml',
       ],
       'landing_page' => [
-        'title' => 'Landing Page',
+        'title' => 'Comprehensive Landing Page 02',
         'description' => 'A template for a landing page.',
-        'filename' => 'page__landing_page.yml',
+        'filename' => 'page__comprehensive_landing_page_2.zip',
       ],
       'remote_zip_file' => [
         'title' => 'Remote Zip',
