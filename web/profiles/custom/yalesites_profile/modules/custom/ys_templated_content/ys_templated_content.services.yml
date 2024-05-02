@@ -4,7 +4,7 @@ services:
     arguments: ["@module_handler", "@file.repository", "@file_system"]
   ys_templated_content.import_manager:
     class: Drupal\ys_templated_content\Managers\ImportManager
-    arguments: ["@single_content_sync.importer", "@single_content_sync.helper", "@ys_templated_content.template_manager", "@plugin.manager.ys_templated_content.modifier_processor", "@plugin.manager.ys_templated_content.importer_processor"]
+    arguments: ["@service_container"]
   plugin.manager.ys_templated_content.importer_processor:
     class: Drupal\ys_templated_content\ImportPluginManager
     parent: default_plugin_manager

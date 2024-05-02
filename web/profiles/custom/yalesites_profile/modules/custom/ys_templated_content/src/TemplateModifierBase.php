@@ -77,4 +77,3 @@ class TemplateModifierBase extends PluginBase implements TemplateModifierInterfa
   }
 
 }
-

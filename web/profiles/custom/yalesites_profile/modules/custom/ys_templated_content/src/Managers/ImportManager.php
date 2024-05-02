@@ -3,10 +3,6 @@
 namespace Drupal\ys_templated_content\Managers;
 
 use Drupal\Core\Serialization\Yaml;
-use Drupal\single_content_sync\ContentImporterInterface;
-use Drupal\single_content_sync\ContentSyncHelperInterface;
-use Drupal\ys_templated_content\ImportPluginManager;
-use Drupal\ys_templated_content\ModifierPluginManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -58,44 +54,32 @@ class ImportManager {
   protected $importPluginManager;
 
   /**
+   * The container.
+   *
+   * @var \Symfony\Component\DependencyInjection\ContainerInterface
+   */
+  protected $container;
+
+  /**
    * Constructs the controller object.
    *
-   * @param \Drupal\single_content_sync\ContentImporterInterface $contentImporter
-   *   The content importer.
-   * @param \Drupal\single_content_sync\ContentSyncHelperInterface $contentSyncHelper
-   *   The content sync helper.
-   * @param \Drupal\ys_templated_content\Managers\TemplateManager $templateManager
-   *   The template manager.
-   * @param \Drupal\ys_templated_content\ModifierPluginManager $templateModifierManager
-   *   The template modifier factory.
-   * @param \Drupal\ys_templated_content\ImportPluginManager $importPluginManager
-   *   The import plugin manager.
+   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The container.
    */
-  public function __construct(
-    ContentImporterInterface $contentImporter,
-    ContentSyncHelperInterface $contentSyncHelper,
-    TemplateManager $templateManager,
-    ModifierPluginManager $templateModifierManager,
-    ImportPluginManager $importPluginManager,
-  ) {
-    $this->contentImporter = $contentImporter;
-    $this->contentSyncHelper = $contentSyncHelper;
-    $this->templateManager = $templateManager;
-    $this->templateModifierManager = $templateModifierManager;
-    $this->importPluginManager = $importPluginManager;
+  public function __construct(ContainerInterface $container) {
+    $this->container = $container;
+    $this->contentImporter = $container->get('single_content_sync.importer');
+    $this->contentSyncHelper = $container->get('single_content_sync.helper');
+    $this->templateManager = $container->get('ys_templated_content.template_manager');
+    $this->templateModifierManager = $container->get('plugin.manager.ys_templated_content.modifier_processor');
+    $this->importPluginManager = $container->get('plugin.manager.ys_templated_content.importer_processor');
   }
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('single_content_sync.importer'),
-      $container->get('single_content_sync.helper'),
-      $container->get('ys_templated_content.template_manager'),
-      $container->get('ys_templated_content.template_modifier_factory'),
-      $container->get('plugin.manager.templated_importer'),
-    );
+    return new static($container);
   }
 
   /**
@@ -122,7 +106,7 @@ class ImportManager {
     $import_plugin_id = $this->importPluginManager->getPluginIdFromExtension($extension);
     $importResult = NULL;
     try {
-      $this->templateModifier = $this->templateModifierManager->createInstance($templateModifierPluginId, ['container' => \Drupal::getContainer()]);
+      $this->templateModifier = $this->templateModifierManager->createInstance($templateModifierPluginId, ['container' => $this->container]);
       $importer = $this->importPluginManager->createInstance($import_plugin_id, ['importManager' => $this]);
       $importResult = $importer->import($filename);
     }
