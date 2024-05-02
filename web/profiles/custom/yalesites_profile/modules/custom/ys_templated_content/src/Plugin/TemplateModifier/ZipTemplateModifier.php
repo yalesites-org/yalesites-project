@@ -130,11 +130,17 @@ class ZipTemplateModifier extends TemplateModifierBase implements TemplateModifi
           && isset($value[0]['entity_type'])
           && $value[0]['entity_type'] === 'taxonomy_term'
       ) {
-        $name = $value[0]['base_fields']['name'];
-        $event_type = $value[0]['bundle'];
-        $storedUuid = $this->uuidForEntityType($name, $event_type);
-        if ($storedUuid) {
-          $content_array[$key][0]['uuid'] = $storedUuid;
+        foreach ($value as $item) {
+          if (!isset($item['base_fields']['name'])) {
+            continue;
+          }
+
+          $name = $item['base_fields']['name'];
+          $event_type = $item['bundle'];
+          $storedUuid = $this->uuidForEntityType($name, $event_type);
+          if ($storedUuid) {
+            $item['uuid'] = $storedUuid;
+          }
         }
       }
       elseif (is_array($value)) {
