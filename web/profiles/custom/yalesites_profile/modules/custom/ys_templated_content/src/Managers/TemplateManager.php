@@ -49,31 +49,6 @@ class TemplateManager {
         'description' => 'A blank page.',
         'filename' => '',
       ],
-      'faq' => [
-        'title' => 'FAQ',
-        'description' => 'A template for a FAQ page.',
-        'filename' => 'page__faq.yml',
-      ],
-      'remote_zip_file' => [
-        'title' => 'Remote Zip',
-        'description' => 'A template for a remote zip file.',
-        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/page__zip_file.zip',
-      ],
-      'local_zip_file' => [
-        'title' => 'Local Zip',
-        'description' => 'A template for a local zip file.',
-        'filename' => 'page__zip_file.zip',
-      ],
-      'remote_zip_file_dne' => [
-        'title' => 'Remote Zip Does Not Exist',
-        'description' => 'A template for a remote zip file.',
-        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/page__zip_files.zip',
-      ],
-      'landing_page_dne' => [
-        'title' => 'Landing Page Does Not Exist',
-        'description' => 'A template for a landing page.',
-        'filename' => 'page__landing_pages.yml',
-      ],
       'conference' => [
         'title' => 'Conference site homepage',
         'description' => 'A template for a conference site homepage.',
@@ -100,21 +75,6 @@ class TemplateManager {
         'title' => 'Blank',
         'description' => 'A blank post.',
         'filename' => '',
-      ],
-      'blog' => [
-        'title' => 'Blog',
-        'description' => 'A template for a blog post.',
-        'filename' => 'post__blog.yml',
-      ],
-      'news' => [
-        'title' => 'News',
-        'description' => 'A template for a news post.',
-        'filename' => 'post__news.yml',
-      ],
-      'press_release' => [
-        'title' => 'Press Release',
-        'description' => 'A template for a press release.',
-        'filename' => 'post__press_release.yml',
       ],
       'announcement' => [
         'title' => 'Announcement',
@@ -170,25 +130,10 @@ class TemplateManager {
         'description' => 'A blank profile.',
         'filename' => '',
       ],
-      'faculty' => [
-        'title' => 'Faculty',
-        'description' => 'A template for a faculty profile.',
-        'filename' => 'profile__faculty.yml',
-      ],
-      'student' => [
-        'title' => 'Student',
-        'description' => 'A template for a student profile.',
-        'filename' => 'profile__student.yml',
-      ],
-      'staff' => [
-        'title' => 'Staff',
-        'description' => 'A template for a staff profile.',
-        'filename' => 'profile__staff.yml',
-      ],
       'keynote_speaker' => [
         'title' => 'Keynote speaker profile',
         'description' => 'A template for a keynote speaker profile.',
-        'filename' => 'profile__keynote_speaker_profile.zip',
+        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/profile__keynote_speaker_profile.zip',
       ],
       'organization' => [
         'title' => 'Organization profile',
