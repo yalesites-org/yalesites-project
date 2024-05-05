@@ -1,0 +1,58 @@
+uuid: 2744dab7-dfb0-4247-bbf0-ffcf76e3bc02
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.link_grid
+    - field.storage.block_content.field_link_lists
+    - paragraphs.paragraphs_type.link_list
+  module:
+    - entity_reference_revisions
+id: block_content.link_grid.field_link_lists
+field_name: field_link_lists
+entity_type: block_content
+bundle: link_grid
+label: 'Link Lists'
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:paragraph'
+  handler_settings:
+    target_bundles:
+      link_list: link_list
+    negate: 0
+    target_bundles_drag_drop:
+      accordion_item:
+        weight: 11
+        enabled: false
+      callout_item:
+        weight: 12
+        enabled: false
+      custom_card:
+        weight: 13
+        enabled: false
+      gallery_item:
+        weight: 14
+        enabled: false
+      infographic_item:
+        weight: 15
+        enabled: false
+      link_list:
+        weight: 16
+        enabled: true
+      media_grid_item:
+        weight: 17
+        enabled: false
+      tab:
+        weight: 18
+        enabled: false
+      text:
+        weight: 19
+        enabled: false
+      tile:
+        weight: 20
+        enabled: false
+field_type: entity_reference_revisions

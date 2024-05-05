@@ -1,0 +1,36 @@
+uuid: f9ae5273-68ef-4bf0-9c5e-d5dbabb8b97c
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.link_grid
+    - field.field.block_content.link_grid.field_instructions
+    - field.field.block_content.link_grid.field_link_lists
+    - field.field.block_content.link_grid.field_style_color
+  module:
+    - entity_reference_revisions
+    - options
+id: block_content.link_grid.default
+targetEntityType: block_content
+bundle: link_grid
+mode: default
+content:
+  field_link_lists:
+    type: entity_reference_revisions_entity_view
+    label: hidden
+    settings:
+      view_mode: default
+      link: ''
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_style_color:
+    type: list_key
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
+hidden:
+  field_instructions: true
+  search_api_excerpt: true
