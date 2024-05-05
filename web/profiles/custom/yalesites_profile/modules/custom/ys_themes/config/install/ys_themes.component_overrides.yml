@@ -191,3 +191,16 @@ infographic:
       left: 'Left'
       center: 'Center'
     default: left
+quote_callout:
+  field_style_color:
+    values:
+      one: 'One'
+      two: 'Two'
+      three: 'Three'
+    default: one
+  field_style_variation:
+    values:
+      bar-left: 'Bar Left'
+      bar-right: 'Bar Right'
+      quote-left: 'Quote Left'
+    default: bar-left
