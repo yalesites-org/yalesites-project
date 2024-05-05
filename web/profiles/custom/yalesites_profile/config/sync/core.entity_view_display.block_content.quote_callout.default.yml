@@ -1,0 +1,60 @@
+uuid: 8ed2f0c7-aef2-44de-a58c-c43f3f0135fd
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.quote_callout
+    - field.field.block_content.quote_callout.field_caption
+    - field.field.block_content.quote_callout.field_instructions
+    - field.field.block_content.quote_callout.field_media
+    - field.field.block_content.quote_callout.field_style_color
+    - field.field.block_content.quote_callout.field_style_variation
+    - field.field.block_content.quote_callout.field_text
+  module:
+    - options
+    - text
+id: block_content.quote_callout.default
+targetEntityType: block_content
+bundle: quote_callout
+mode: default
+content:
+  field_caption:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_media:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: profile_directory_card_1_1_
+      link: false
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_style_color:
+    type: list_key
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  field_style_variation:
+    type: list_key
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 4
+    region: content
+  field_text:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 3
+    region: content
+hidden:
+  field_instructions: true
+  search_api_excerpt: true
