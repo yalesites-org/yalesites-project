@@ -173,7 +173,7 @@ tiles:
       top: 'Top'
       bottom: 'Bottom'
     default: bottom
-infographic:
+facts_figures:
   field_style_width:
     values:
       two: 'Two'

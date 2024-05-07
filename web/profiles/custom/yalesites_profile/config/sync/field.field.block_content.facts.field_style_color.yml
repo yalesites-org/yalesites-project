@@ -3,14 +3,14 @@ langcode: en
 status: true
 dependencies:
   config:
-    - block_content.type.infographic
+    - block_content.type.facts
     - field.storage.block_content.field_style_color
   module:
     - options
-id: block_content.infographic.field_style_color
+id: block_content.facts.field_style_color
 field_name: field_style_color
 entity_type: block_content
-bundle: infographic
+bundle: facts
 label: Theme
 description: ''
 required: true

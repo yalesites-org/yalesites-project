@@ -4,14 +4,14 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.paragraph.preview
-    - field.field.paragraph.infographic_item.field_heading
-    - field.field.paragraph.infographic_item.field_text
-    - paragraphs.paragraphs_type.infographic_item
+    - field.field.paragraph.facts_item.field_heading
+    - field.field.paragraph.facts_item.field_text
+    - paragraphs.paragraphs_type.facts_item
   module:
     - text
-id: paragraph.infographic_item.preview
+id: paragraph.facts_item.preview
 targetEntityType: paragraph
-bundle: infographic_item
+bundle: facts_item
 mode: preview
 content:
   field_heading:

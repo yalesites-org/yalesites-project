@@ -6,8 +6,8 @@ dependencies:
     - block_content
     - entity_reference_revisions
     - paragraphs
-id: block_content.field_infographic_items
-field_name: field_infographic_items
+id: block_content.field_facts_items
+field_name: field_facts_items
 entity_type: block_content
 type: entity_reference_revisions
 settings:

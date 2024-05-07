@@ -5,14 +5,14 @@ dependencies:
   config:
     - field.storage.paragraph.field_heading
     - filter.format.heading_html
-    - paragraphs.paragraphs_type.infographic_item
+    - paragraphs.paragraphs_type.facts_item
   module:
     - text
-id: paragraph.infographic_item.field_heading
+id: paragraph.facts_item.field_heading
 field_name: field_heading
 entity_type: paragraph
-bundle: infographic_item
-label: 'Infographic Item Heading'
+bundle: facts_item
+label: 'Facts and Figures Item Heading'
 description: ''
 required: true
 translatable: false

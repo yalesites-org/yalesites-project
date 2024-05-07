@@ -3,14 +3,14 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.field.paragraph.infographic_item.field_heading
-    - field.field.paragraph.infographic_item.field_text
-    - paragraphs.paragraphs_type.infographic_item
+    - field.field.paragraph.facts_item.field_heading
+    - field.field.paragraph.facts_item.field_text
+    - paragraphs.paragraphs_type.facts_item
   module:
     - text
-id: paragraph.infographic_item.default
+id: paragraph.facts_item.default
 targetEntityType: paragraph
-bundle: infographic_item
+bundle: facts_item
 mode: default
 content:
   field_heading:

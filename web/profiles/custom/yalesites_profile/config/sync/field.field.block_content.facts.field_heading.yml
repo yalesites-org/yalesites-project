@@ -3,16 +3,16 @@ langcode: en
 status: true
 dependencies:
   config:
-    - block_content.type.infographic
+    - block_content.type.facts
     - field.storage.block_content.field_heading
     - filter.format.heading_html
   module:
     - text
-id: block_content.infographic.field_heading
+id: block_content.facts.field_heading
 field_name: field_heading
 entity_type: block_content
-bundle: infographic
-label: 'Infographic Block Title'
+bundle: facts
+label: 'Facts and Figures Block Title'
 description: ''
 required: false
 translatable: false

@@ -3,22 +3,22 @@ langcode: en
 status: true
 dependencies:
   config:
-    - block_content.type.infographic
-    - field.field.block_content.infographic.field_heading
-    - field.field.block_content.infographic.field_infographic_items
-    - field.field.block_content.infographic.field_instructions
-    - field.field.block_content.infographic.field_media
-    - field.field.block_content.infographic.field_style_alignment
-    - field.field.block_content.infographic.field_style_color
-    - field.field.block_content.infographic.field_style_width
-    - field.field.block_content.infographic.field_text
+    - block_content.type.facts
+    - field.field.block_content.facts.field_heading
+    - field.field.block_content.facts.field_facts_items
+    - field.field.block_content.facts.field_instructions
+    - field.field.block_content.facts.field_media
+    - field.field.block_content.facts.field_style_alignment
+    - field.field.block_content.facts.field_style_color
+    - field.field.block_content.facts.field_style_width
+    - field.field.block_content.facts.field_text
   module:
     - entity_reference_revisions
     - options
     - text
-id: block_content.infographic.default
+id: block_content.facts.default
 targetEntityType: block_content
-bundle: infographic
+bundle: facts
 mode: default
 content:
   field_heading:
@@ -28,7 +28,7 @@ content:
     third_party_settings: {  }
     weight: 0
     region: content
-  field_infographic_items:
+  field_facts_items:
     type: entity_reference_revisions_entity_view
     label: hidden
     settings:

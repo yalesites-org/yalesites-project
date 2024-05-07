@@ -3,15 +3,15 @@ langcode: en
 status: true
 dependencies:
   config:
-    - block_content.type.infographic
-    - field.field.block_content.infographic.field_heading
-    - field.field.block_content.infographic.field_infographic_items
-    - field.field.block_content.infographic.field_instructions
-    - field.field.block_content.infographic.field_media
-    - field.field.block_content.infographic.field_style_alignment
-    - field.field.block_content.infographic.field_style_color
-    - field.field.block_content.infographic.field_style_width
-    - field.field.block_content.infographic.field_text
+    - block_content.type.facts
+    - field.field.block_content.facts.field_heading
+    - field.field.block_content.facts.field_facts_items
+    - field.field.block_content.facts.field_instructions
+    - field.field.block_content.facts.field_media
+    - field.field.block_content.facts.field_style_alignment
+    - field.field.block_content.facts.field_style_color
+    - field.field.block_content.facts.field_style_width
+    - field.field.block_content.facts.field_text
   module:
     - allowed_formats
     - markup
@@ -21,9 +21,9 @@ dependencies:
     - paragraphs
     - paragraphs_features
     - text
-id: block_content.infographic.default
+id: block_content.facts.default
 targetEntityType: block_content
-bundle: infographic
+bundle: facts
 mode: default
 content:
   field_heading:
@@ -41,7 +41,7 @@ content:
         maxlength_js: 80
         maxlength_js_label: 'Content recommended length set to @limit characters, remaining: <strong>@remaining</strong>'
         maxlength_js_enforce: false
-  field_infographic_items:
+  field_facts_items:
     type: paragraphs
     weight: 4
     region: content
@@ -54,7 +54,7 @@ content:
       closed_mode_threshold: 0
       add_mode: button
       form_display_mode: default
-      default_paragraph_type: infographic_item
+      default_paragraph_type: facts_item
       features:
         add_above: add_above
         collapse_edit_all: collapse_edit_all

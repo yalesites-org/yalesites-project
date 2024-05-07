@@ -1,4 +1,4 @@
-uuid: a0a6d7fc-b668-4717-87e1-b2c55ef5f5f2
+uuid: a6ed441c-1630-4dbc-9c23-fd77c7f55299
 langcode: en
 status: true
 dependencies:
@@ -7,29 +7,27 @@ dependencies:
 third_party_settings:
   entity_redirect:
     redirect:
-      anonymous:
-        active: false
-        destination: default
-        url: ''
-        external: ''
       add:
-        active: false
+        active: 0
         destination: default
         url: ''
         external: ''
       edit:
-        active: false
+        active: 0
         destination: default
         url: ''
         external: ''
       delete:
-        active: false
+        active: 0
         destination: default
         url: ''
         external: ''
-id: infographic_item
-label: 'Infographic Item'
-icon_uuid: null
-icon_default: null
+      anonymous:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+id: facts
+label: Facts and Figures
+revision: 1
 description: ''
-behavior_plugins: {  }

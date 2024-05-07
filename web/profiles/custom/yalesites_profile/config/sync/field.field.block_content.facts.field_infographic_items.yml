@@ -3,16 +3,16 @@ langcode: en
 status: true
 dependencies:
   config:
-    - block_content.type.infographic
-    - field.storage.block_content.field_infographic_items
-    - paragraphs.paragraphs_type.infographic_item
+    - block_content.type.facts
+    - field.storage.block_content.field_facts_items
+    - paragraphs.paragraphs_type.facts_item
   module:
     - entity_reference_revisions
-id: block_content.infographic.field_infographic_items
-field_name: field_infographic_items
+id: block_content.facts.field_facts_items
+field_name: field_facts_items
 entity_type: block_content
-bundle: infographic
-label: 'Infographic Items'
+bundle: facts
+label: 'Facts and Figures Items'
 description: ''
 required: true
 translatable: false
@@ -22,7 +22,7 @@ settings:
   handler: 'default:paragraph'
   handler_settings:
     target_bundles:
-      infographic_item: infographic_item
+      facts_item: facts_item
     negate: 0
     target_bundles_drag_drop:
       accordion_item:
@@ -37,7 +37,7 @@ settings:
       gallery_item:
         weight: 13
         enabled: false
-      infographic_item:
+      facts_item:
         weight: 14
         enabled: true
       media_grid_item:

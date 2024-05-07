@@ -3,15 +3,15 @@ langcode: en
 status: true
 dependencies:
   config:
-    - block_content.type.infographic
+    - block_content.type.facts
     - field.storage.block_content.field_text
     - filter.format.restricted_html
   module:
     - text
-id: block_content.infographic.field_text
+id: block_content.facts.field_text
 field_name: field_text
 entity_type: block_content
-bundle: infographic
+bundle: facts
 label: Content
 description: ''
 required: true

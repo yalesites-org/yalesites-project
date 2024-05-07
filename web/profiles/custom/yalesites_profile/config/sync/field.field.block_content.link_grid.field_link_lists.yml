@@ -37,7 +37,7 @@ settings:
       gallery_item:
         weight: 14
         enabled: false
-      infographic_item:
+      facts_item:
         weight: 15
         enabled: false
       link_list:
