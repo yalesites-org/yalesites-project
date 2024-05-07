@@ -222,20 +222,28 @@ function ys_themes_form_alter(&$form, $form_state, $form_id) {
   $buttonTheme = $config->get('button_theme');
 
   if (str_starts_with($form_id, 'webform') || $form_id == 'views_exposed_form') {
-    $form['actions']['submit']['#attributes']['data-cta-theme'] = $buttonTheme;
-    $form['actions']['submit']['#attributes']['data-cta-radius'] = 'none';
-    $form['actions']['submit']['#attributes']['data-cta-style'] = 'filled';
-    $form['actions']['submit']['#attributes']['data-cta-outline-weight'] = 2;
-    $form['actions']['submit']['#attributes']['data-cta-hover-style'] = 'fade';
-    $form['actions']['submit']['#attributes']['class'][] = 'cta';
+    $base = &$form['actions']['submit'];
+  }
+
+  if ($form_id == 'content_moderation_entity_moderation_form') {
+    $base = &$form['submit'];
+  }
+
+  if (str_starts_with($form_id, 'webform') || $form_id == 'views_exposed_form' || $form_id == 'content_moderation_entity_moderation_form') {
+
+    $base['#attributes']['data-cta-theme'] = $buttonTheme;
+    $base['#attributes']['data-cta-radius'] = 'none';
+    $base['#attributes']['data-cta-style'] = 'filled';
+    $base['#attributes']['data-cta-outline-weight'] = 2;
+    $base['#attributes']['data-cta-hover-style'] = 'fade';
+    $base['#attributes']['class'][] = 'cta';
 
     // Removes class that causes unnecessary styling.
-    $classes = &$form['actions']['submit']['#attributes'];
+    $classes = &$base['#attributes'];
     $classes = array_filter($classes, function ($e) {
       return $e != 'form-item__textfield';
     });
   }
-
 }
 
 /**
