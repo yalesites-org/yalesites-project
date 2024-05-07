@@ -204,10 +204,3 @@ quote_callout:
       bar-right: 'Bar Right'
       quote-left: 'Quote Left'
     default: bar-left
-link_grid:
-  field_style_color:
-    values:
-      one: 'One'
-      two: 'Two'
-      three: 'Three'
-    default: one
