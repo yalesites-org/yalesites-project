@@ -1,0 +1,22 @@
+{% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
+
+{% block content %}
+    {% if parentNode == 'post' or parentNode == 'event' %}
+      {% set quote_callout__width = "content" %}
+      {% set quote_callout__alignment = "center" %}
+    {% else %}
+      {% set quote_callout__width = "site" %}
+      {% set quote_callout__alignment = "left" %}
+  {% endif %}
+
+  {% include "@molecules/quote-callout/yds-quote-callout.twig" with {
+    quote_callout__quote: content.field_text,
+    quote_callout__attribution: content.field_caption.0,
+    quote_callout__style: content.field_style_variation.0['#markup'],
+    quote_callout__alignment: quote_callout__alignment,
+    quote_callout__quote_alignment: content.field_style_alignment.0['#markup'],
+    quote_callout__width: quote_callout__width,
+  } %}
+  {{dd(content)}}
+
+{% endblock %}
