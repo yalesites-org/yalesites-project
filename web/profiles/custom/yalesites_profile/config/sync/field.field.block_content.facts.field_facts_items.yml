@@ -34,12 +34,12 @@ settings:
       custom_card:
         weight: 12
         enabled: false
-      gallery_item:
-        weight: 13
-        enabled: false
       facts_item:
         weight: 14
         enabled: true
+      gallery_item:
+        weight: 13
+        enabled: false
       media_grid_item:
         weight: 15
         enabled: false

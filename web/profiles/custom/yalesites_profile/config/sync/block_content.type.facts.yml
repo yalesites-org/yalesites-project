@@ -28,6 +28,6 @@ third_party_settings:
         url: ''
         external: ''
 id: facts
-label: Facts and Figures
+label: 'Facts and Figures'
 revision: 1
 description: ''

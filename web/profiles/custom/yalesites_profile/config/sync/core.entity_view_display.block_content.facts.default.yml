@@ -21,13 +21,6 @@ targetEntityType: block_content
 bundle: facts
 mode: default
 content:
-  field_heading:
-    type: text_default
-    label: hidden
-    settings: {  }
-    third_party_settings: {  }
-    weight: 0
-    region: content
   field_facts_items:
     type: entity_reference_revisions_entity_view
     label: hidden
@@ -36,6 +29,13 @@ content:
       link: ''
     third_party_settings: {  }
     weight: 5
+    region: content
+  field_heading:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
     region: content
   field_media:
     type: entity_reference_entity_view

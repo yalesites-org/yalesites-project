@@ -34,11 +34,11 @@ settings:
       custom_card:
         weight: 13
         enabled: false
-      gallery_item:
-        weight: 14
-        enabled: false
       facts_item:
         weight: 15
+        enabled: false
+      gallery_item:
+        weight: 14
         enabled: false
       link_list:
         weight: 16

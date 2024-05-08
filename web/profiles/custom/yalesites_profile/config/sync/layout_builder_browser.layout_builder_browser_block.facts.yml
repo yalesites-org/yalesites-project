@@ -5,7 +5,7 @@ dependencies: {  }
 id: facts
 block_id: 'inline_block:facts'
 category: advanced
-label: Facts and Figures
+label: 'Facts and Figures'
 image_path: ''
 image_alt: ''
 weight: -3
