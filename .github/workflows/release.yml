@@ -21,6 +21,8 @@ jobs:
       - name: Commit Compiled Component Library
         uses: EndBug/add-and-commit@v9
         with:
+          author_name: github-actions[bot]
+          author_email: github-actions[bot]@users.noreply.github.com
           add: "node_modules/@yalesites-org/component-library-twig -f"
           message: "build: commit compiled component library"
       - name: Release
