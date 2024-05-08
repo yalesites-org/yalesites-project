@@ -173,7 +173,7 @@ tiles:
       top: 'Top'
       bottom: 'Bottom'
     default: bottom
-facts_figures:
+facts:
   field_style_width:
     values:
       two: 'Two'
