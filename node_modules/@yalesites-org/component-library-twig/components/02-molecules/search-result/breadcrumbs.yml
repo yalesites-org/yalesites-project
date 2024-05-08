@@ -1,0 +1,10 @@
+items:
+  - title: 'Home'
+    url: '#'
+    is_active: true
+  - title: 'Academic Programs'
+    url: '#'
+    is_active: true
+  - title: 'Undergraduate Chemistry'
+    url: '#'
+    is_active: true
