@@ -200,7 +200,11 @@ quote_callout:
     default: one
   field_style_variation:
     values:
-      bar-left: 'Bar Left'
-      bar-right: 'Bar Right'
-      quote-left: 'Quote Left'
-    default: bar-left
+      bar: 'Bar'
+      quote: 'Quote'
+    default: bar
+  field_style_alignment:
+    values:
+      left: 'Left'
+      right: 'Right'
+    default: left
