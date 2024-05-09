@@ -55,19 +55,14 @@ class TemplateManager {
         'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/page__conference_site_homepage.zip',
       ],
       'landing_page' => [
-        'title' => 'Epic landing page',
+        'title' => 'Landing page',
         'description' => 'A template for a landing page.',
         'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/page__epic_landing_page.zip',
       ],
       'lab1' => [
-        'title' => 'Laboratory homepage 1',
+        'title' => 'Laboratory homepage',
         'description' => 'A template for a lab page.',
         'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/page__laboratory_homepage_1.zip',
-      ],
-      'lab2' => [
-        'title' => 'Laboratory homepage 2',
-        'description' => 'A template for a lab page.',
-        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/page__laboratory_homepage_2.zip',
       ],
     ],
     'post' => [
@@ -82,24 +77,14 @@ class TemplateManager {
         'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/post__announcement.zip',
       ],
       'blog1' => [
-        'title' => 'Blog 1',
+        'title' => 'Blog',
         'description' => 'A template for a blog page.',
         'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/post__blog_post_1.zip',
       ],
-      'blog2' => [
-        'title' => 'Blog 2',
-        'description' => 'A template for a blog page.',
-        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/post__blog_2.zip',
-      ],
       'news_article_1' => [
-        'title' => 'News article 1',
+        'title' => 'News article',
         'description' => 'A template for a news article.',
         'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/post__news_article_1.zip',
-      ],
-      'news_article_2' => [
-        'title' => 'News article 2',
-        'description' => 'A template for a news article.',
-        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/post__news_article_2.zip',
       ],
     ],
     'event' => [
