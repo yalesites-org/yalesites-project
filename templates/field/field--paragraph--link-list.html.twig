@@ -1,0 +1,7 @@
+{% for item in items %}
+  {% include "@molecules/link-grid/_yds-link-grid--links.twig" with {
+    link_grid__link__content: item.content['#title'],
+    link_grid__link__url: item.content['#url_title'],
+    }
+  %}
+{% endfor %}

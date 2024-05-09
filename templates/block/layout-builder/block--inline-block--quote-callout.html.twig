@@ -9,7 +9,11 @@
       {% set quote_callout__alignment = "left" %}
   {% endif %}
 
-  {% include "@molecules/quote-callout/yds-quote-callout.twig" with {
+  {% if content.field_media.0 %}
+    {% set quote_callout__quote_image = 'with-image' %}
+  {% endif %}
+
+  {% embed "@molecules/quote-callout/yds-quote-callout.twig" with {
     quote_callout__quote: content.field_text,
     quote_callout__attribution: content.field_caption.0,
     quote_callout__style: content.field_style_variation.0['#markup'],
@@ -17,4 +21,9 @@
     quote_callout__quote_alignment: content.field_style_alignment.0['#markup'],
     quote_callout__width: quote_callout__width,
   } %}
+
+    {% block quote_callout__image %}
+      {{ content.field_media }}
+    {% endblock %}
+  {% endembed %}
 {% endblock %}
