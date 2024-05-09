@@ -88,7 +88,3 @@ spotlights:
   js:
     node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/content-spotlight-portrait/content-spotlights.js:
       {}
-tiles:
-  js:
-    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/tile-item/yds-tile-item.js:
-      {}

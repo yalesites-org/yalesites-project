@@ -1,8 +1,6 @@
 {% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
 
 {% block content %}
-  {{ attach_library('atomic/tiles') }}
-
   {% embed "@organisms/tiles/yds-tiles.twig" with {
     tiles__alignment: content.field_style_alignment.0['#markup'],
     tiles__grid_count: content.field_style_width.0['#markup'],
