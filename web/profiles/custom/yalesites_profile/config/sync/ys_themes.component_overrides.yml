@@ -208,3 +208,10 @@ quote_callout:
       left: 'Left'
       right: 'Right'
     default: left
+link_grid:
+  field_style_color:
+    values:
+      one: 'One'
+      two: 'Two'
+      three: 'Three'
+    default: one
