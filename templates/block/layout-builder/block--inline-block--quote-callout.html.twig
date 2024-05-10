@@ -1,6 +1,8 @@
 {% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
 
 {% block content %}
+  {{ attach_library('atomic/spotlights') }}
+
     {% if parentNode == 'post' or parentNode == 'event' %}
       {% set quote_callout__width = "content" %}
       {% set quote_callout__alignment = "center" %}
@@ -20,6 +22,7 @@
     quote_callout__alignment: quote_callout__alignment,
     quote_callout__quote_alignment: content.field_style_alignment.0['#markup'],
     quote_callout__width: quote_callout__width,
+    quote_callout__accent_theme: content.field_style_color.0['#markup'],
   } %}
 
     {% block quote_callout__image %}
