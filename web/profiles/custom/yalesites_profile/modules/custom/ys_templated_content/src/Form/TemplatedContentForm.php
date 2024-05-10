@@ -165,7 +165,7 @@ class TemplatedContentForm extends FormBase implements FormInterface {
       try {
         $entity = $this->importManager->createImport($content_type, $template);
         if ($entity) {
-          $this->messenger()->addMessage("Content generated successfully.  Please make any edits now as this has already been created for you.  Don't forget to change the URL alias.");
+          $this->messenger()->addMessage("Heads up! Your content template has been successfully generated. It's now time for you to tell your story! Go ahead and replace or create the content that has been outlined for you. Remember, it's your canvas now, so make it uniquely yours!");
 
           // Noticed that when you update a node, a log is created.
           // Figured we need to also have a log showing it was imported.
