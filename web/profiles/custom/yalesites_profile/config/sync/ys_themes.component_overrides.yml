@@ -200,18 +200,18 @@ quote_callout:
     default: one
   field_style_variation:
     values:
-      bar: 'Bar'
-      quote: 'Quote'
+      bar: Bar
+      quote: Quote
     default: bar
   field_style_alignment:
     values:
-      left: 'Left'
-      right: 'Right'
+      left: Left
+      right: Right
     default: left
 link_grid:
   field_style_color:
     values:
-      one: 'One'
-      two: 'Two'
-      three: 'Three'
+      one: One
+      two: Two
+      three: Three
     default: one
