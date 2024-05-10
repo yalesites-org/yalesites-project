@@ -31,6 +31,7 @@ dependencies:
     - core.entity_view_display.node.page.default
     - core.entity_view_display.node.post.default
     - core.entity_view_display.node.profile.default
+    - dashboard.dashboard.default_dashboard
     - media.type.background_video
     - media.type.document
     - media.type.embed
@@ -49,6 +50,7 @@ dependencies:
     - block_content
     - content_moderation
     - contextual
+    - dashboard
     - editoria11y
     - file
     - layout_builder
@@ -329,6 +331,7 @@ permissions:
   - 'view any webform block content history'
   - 'view any webform submission'
   - 'view any wrapped_image block content history'
+  - 'view default_dashboard dashboard'
   - 'view editoria11y checker'
   - 'view event revisions'
   - 'view latest version'
