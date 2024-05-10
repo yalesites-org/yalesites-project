@@ -3,14 +3,6 @@
 {% block content %}
   {{ attach_library('atomic/spotlights') }}
 
-    {% if parentNode == 'post' or parentNode == 'event' %}
-      {% set quote_callout__width = "content" %}
-      {% set quote_callout__alignment = "center" %}
-    {% else %}
-      {% set quote_callout__width = "site" %}
-      {% set quote_callout__alignment = "left" %}
-  {% endif %}
-
   {% if content.field_media.0 %}
     {% set quote_callout__quote_image = 'with-image' %}
   {% endif %}
@@ -21,7 +13,7 @@
     quote_callout__style: content.field_style_variation.0['#markup'],
     quote_callout__alignment: quote_callout__alignment,
     quote_callout__quote_alignment: content.field_style_alignment.0['#markup'],
-    quote_callout__width: quote_callout__width,
+    quote_callout__width: 'content',
     quote_callout__accent_theme: content.field_style_color.0['#markup'],
   } %}
 
