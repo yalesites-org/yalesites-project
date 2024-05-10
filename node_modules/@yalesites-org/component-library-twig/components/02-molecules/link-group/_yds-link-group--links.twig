@@ -1,0 +1,10 @@
+{% set link_group__base_class = 'link-group' %}
+
+<li {{ bem('list-item', [], link_group__base_class) }}>
+  {% include "@atoms/controls/text-link/yds-text-link.twig" with {
+    link__content:link_group__link__content|default(link.link_group__link__content),
+    link__url: link_group__link__url|default(link.link_group__link__url),
+    link__blockname: link_group__base_class,
+    link__style: 'no-underline',
+  }%}
+</li>

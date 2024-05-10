@@ -1,0 +1,17 @@
+{% set borders__base_class = "cl-borders" %}
+
+<div {{ bem(borders__base_class) }}>
+  <ul {{ bem('list', [], borders__base_class) }}>
+  {% for border, value in _context.borders %}
+    {% set variable = prefix ~ border|lower|replace({' ': '-'}) %}
+      <li {{ bem("item", [], borders__base_class) }} style="border: var({{ variable }}) solid">
+        <span {{ bem("title", [], borders__base_class) }}>Border {{ border }}</span><br />
+        <details class="cl-info">
+          <summary>Border Details</summary>
+          <strong>variable:</strong> <code>{{ variable }}</code><br />
+          <strong>value:</strong> {{ value }}
+        </details>
+      </li>
+    {% endfor %}
+  </ul>
+</div>

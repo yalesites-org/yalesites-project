@@ -1,0 +1,34 @@
+{#
+ # Available Props:
+ # - site_footer__theme
+ # - site_footer__border_thickness
+ #
+ # Available Blocks
+ # - site_footer__logo
+ # - site_footer__text
+ # - site_footer__columns
+ # - site_footer__social
+ #}
+
+{% set site_footer__base_class = 'site-footer' %}
+
+{% set site_footer__attributes = {
+  'data-component-width': 'site',
+  'data-site-footer-border-thickness': site_footer__border_thickness|default('0'),
+  'data-footer-theme': site_footer__theme|default('one'),
+  'data-footer-accent': site_footer__accent|default('one'),
+  'data-footer-variation': site_footer__variation|default('basic'),
+  class: bem(site_footer__base_class),
+} %}
+
+<footer {{ add_attributes(site_footer__attributes) }}>
+  <div {{ bem('inner', [], site_footer__base_class) }}>
+    {% block footer__inner %}
+      {% if site_footer__variation == 'mega' %}
+        {% include "@organisms/site-footer/_site-footer-mega.twig" %}
+      {% else %}
+        {% include "@organisms/site-footer/_site-footer-basic.twig" %}
+      {% endif %}
+    {% endblock %}
+  </div>
+</footer>
