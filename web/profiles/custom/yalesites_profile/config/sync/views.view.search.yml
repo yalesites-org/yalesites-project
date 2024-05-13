@@ -183,7 +183,6 @@ display:
             query_param: keywords
             fallback: ''
             multiple: and
-          default_argument_skip_url: true
           summary_options: {  }
           summary:
             sort_order: asc

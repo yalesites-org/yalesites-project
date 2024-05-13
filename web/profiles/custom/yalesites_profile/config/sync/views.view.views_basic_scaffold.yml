@@ -180,7 +180,6 @@ display:
             query_param: type
             fallback: ''
             multiple: and
-          default_argument_skip_url: false
           summary_options:
             base_path: ''
             count: true
@@ -225,7 +224,6 @@ display:
             query_param: terms_include
             fallback: ''
             multiple: or
-          default_argument_skip_url: false
           summary_options:
             base_path: ''
             count: true

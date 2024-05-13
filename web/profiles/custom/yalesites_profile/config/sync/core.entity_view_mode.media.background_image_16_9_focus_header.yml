@@ -6,5 +6,6 @@ dependencies:
     - media
 id: media.background_image_16_9_focus_header
 label: 'Background Image (16:9) | Focus Header'
+description: ''
 targetEntityType: media
 cache: true
