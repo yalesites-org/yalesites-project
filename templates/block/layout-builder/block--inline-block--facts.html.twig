@@ -5,6 +5,8 @@
   {% set facts_and_figures__group__bg_image = content.field_media.0 ? 'true' : 'false' %}
 
   {% embed "@organisms/facts-and-figures-group/yds-facts-and-figures-group.twig" with {
+    facts_and_figures__group__heading: content.field_heading.0['#text'],
+    facts_and_figures__group__content: content.field_text.0['#text'],
     facts_and_figures__group__alignment: content.field_style_alignment.0['#markup'],
     facts_and_figures__group__grid_count: content.field_style_width.0['#markup'],
     facts_and_figures__group__presentation_style: content.field_style_variation.0['#markup'],
