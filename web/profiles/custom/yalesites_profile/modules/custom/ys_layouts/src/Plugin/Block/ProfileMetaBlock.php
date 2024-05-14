@@ -152,7 +152,7 @@ class ProfileMetaBlock extends BlockBase implements ContainerFactoryPluginInterf
     $form['image_orientation'] = [
       '#type' => 'select',
       '#title' => $this->t('Image orientation'),
-      '#default_value' => $config['image_orientation'] ?? 'landscape',
+      '#default_value' => $config['image_orientation'] ?? 'portrait',
       '#options' => [
         'landscape' => $this->t('Landscape'),
         'portrait' => $this->t('Portrait'),
