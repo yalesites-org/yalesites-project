@@ -11,3 +11,7 @@ services:
   plugin.manager.ys_templated_content.modifier_processor:
     class: Drupal\ys_templated_content\ModifierPluginManager
     parent: default_plugin_manager
+  cache.ys_templated_content_cache_bin:
+    class: Drupal\Core\Cache\CacheBackendInterface
+    factory: cache_factory:get
+    arguments: ['ys_templated_content_cache_bin']
