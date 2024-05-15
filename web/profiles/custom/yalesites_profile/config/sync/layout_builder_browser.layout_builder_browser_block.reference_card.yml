@@ -1,0 +1,11 @@
+uuid: 64ea0f5f-94f0-40da-8385-895bc0255393
+langcode: en
+status: true
+dependencies: {  }
+id: reference_card
+block_id: 'inline_block:reference_card'
+category: basic
+label: 'Reference card'
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/reference-card.svg
+image_alt: ''
+weight: -2
