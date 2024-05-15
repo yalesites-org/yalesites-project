@@ -62,7 +62,7 @@ class HeaderSettingsForm extends ConfigFormBase {
     CacheBackendInterface $cache_render,
     AccountProxy $current_user_session,
     YaleSitesMediaManager $ys_media_manager,
-    ) {
+  ) {
     parent::__construct($config_factory);
     $this->cacheRender = $cache_render;
     $this->currentUserSession = $current_user_session;
