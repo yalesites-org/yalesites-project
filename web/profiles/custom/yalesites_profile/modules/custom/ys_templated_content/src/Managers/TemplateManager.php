@@ -2,10 +2,12 @@
 
 namespace Drupal\ys_templated_content\Managers;
 
+use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\file\FileRepositoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * Manager for templates.
@@ -13,6 +15,40 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class TemplateManager {
 
   const TEMPLATE_PATH = '/config/templates/';
+
+  const MANIFEST_URL = 'https://raw.githubusercontent.com/dblanken-yale/content-templates/main/manifest.yml';
+
+  const DEFAULT_TEMPLATES = [
+    'page' => [
+      '' => [
+        'title' => 'Blank',
+        'description' => 'An empty page, providing a clean slate for any type of content.',
+        'filename' => '',
+      ],
+    ],
+    'post' => [
+      '' => [
+        'title' => 'Blank',
+        'description' => 'An empty post, providing a clean slate for any type of content.',
+        'filename' => '',
+      ],
+    ],
+    'event' => [
+      '' => [
+        'title' => 'Blank',
+        'description' => 'An empty event, providing a clean slate for any type of content.',
+        'filename' => '',
+      ],
+    ],
+    'profile' => [
+      '' => [
+        'title' => 'Blank',
+        'description' => 'An empty profile, providing a clean slate for any type of content.',
+        'filename' => '',
+      ],
+    ],
+  ];
+
 
   /**
    * The module handler.
@@ -42,91 +78,7 @@ class TemplateManager {
    *
    * @var array
    */
-  public $templates = [
-    'page' => [
-      '' => [
-        'title' => 'Blank',
-        'description' => 'An empty page, providing a clean slate for any type of content.',
-        'filename' => '',
-      ],
-      'conference' => [
-        'title' => 'Conference site homepage',
-        'description' => 'Specifically designed for scheduling and providing detailed information about a conference.',
-        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/page__conference_site_homepage.zip',
-      ],
-      'landing_page' => [
-        'title' => 'Landing page',
-        'description' => 'An ideal choice for marketing or promoting a product or service, designed to grab attention and encourage action.',
-        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/page__epic_landing_page.zip',
-      ],
-      'lab1' => [
-        'title' => 'Laboratory homepage',
-        'description' => 'An excellent choice for showcasing research, experiments, or intricate project details.',
-        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/page__laboratory_homepage_1.zip',
-      ],
-    ],
-    'post' => [
-      '' => [
-        'title' => 'Blank',
-        'description' => 'An empty post, providing a clean slate for any type of content.',
-        'filename' => '',
-      ],
-      'announcement' => [
-        'title' => 'Announcement',
-        'description' => 'A perfect choice for making official announcements or updates, with a clear and concise layout.',
-        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/post__announcement.zip',
-      ],
-      'blog1' => [
-        'title' => 'Blog',
-        'description' => 'Tailored for personal or professional blog posts, featuring a layout that encourages narrative.',
-        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/post__blog_post_1.zip',
-      ],
-      'news_article_1' => [
-        'title' => 'News article',
-        'description' => 'Specifically designed for publishing news or press releases, with a focus on readability.',
-        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/post__news_article_1.zip',
-      ],
-    ],
-    'event' => [
-      '' => [
-        'title' => 'Blank',
-        'description' => 'An empty event, providing a clean slate for any type of content.',
-        'filename' => '',
-      ],
-      'in_person' => [
-        'title' => 'In Person',
-        'description' => 'Best suited for detailing in-person events, featuring sections for location and time specifics.',
-        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/event__in_person.zip',
-      ],
-      'online' => [
-        'title' => 'Online',
-        'description' => 'An ideal choice for online events, with dedicated sections for information on how to join.',
-        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/event__online.zip',
-      ],
-      'hybrid' => [
-        'title' => 'Hybrid',
-        'description' => 'A unique template suited for events that have both online and in-person participation, accommodating both types of information.',
-        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/event__hybrid.zip',
-      ],
-    ],
-    'profile' => [
-      '' => [
-        'title' => 'Blank',
-        'description' => 'An empty profile, providing a clean slate for any type of content.',
-        'filename' => '',
-      ],
-      'keynote_speaker' => [
-        'title' => 'Keynote speaker profile',
-        'description' => "A specialized template for highlighting a speaker's website and expertise, with a focus on personal journey.",
-        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/profile__keynote_speaker_profile.zip',
-      ],
-      'organization' => [
-        'title' => 'Organization profile',
-        'description' => "A comprehensive template perfect for showcasing an organization's profile, history, and activities.",
-        'filename' => 'https://github.com/dblanken-yale/content-templates/raw/main/profile__organization.zip',
-      ],
-    ],
-  ];
+  public $templates = [];
 
   /**
    * Constructs the controller object.
@@ -146,6 +98,7 @@ class TemplateManager {
     $this->moduleHandler = $module_handler;
     $this->fileRepository = $fileRepository;
     $this->fileSystem = $fileSystem;
+    $this->templates = $this->getTemplateManifest();
   }
 
   /**
@@ -243,6 +196,37 @@ class TemplateManager {
     }
 
     return $this->templates;
+  }
+
+  /**
+   * Get the template manifest from the GitHub repository.
+   *
+   * @return array
+   *   The template manifest.
+   */
+  public static function getTemplateManifest(): array {
+    $templates = [];
+    $cache = \Drupal::cache('ys_templated_content_cache_bin');
+
+    // If cached, return it.
+    if ($cache->get('ys_templated_content_templates')) {
+      return $cache->get('ys_templated_content_templates')->data;
+    }
+
+    try {
+      $content = @file_get_contents(static::MANIFEST_URL);
+      $manifest = Yaml::parse($content);
+      $templates = $manifest['templates'];
+    }
+    catch (\Exception) {
+      // If we can't get to github, at least offer blank configs.
+      $templates = static::DEFAULT_TEMPLATES;
+    }
+
+    // Cache the data.
+    $oneHourFromNow = time() + 3600;
+    $cache->set('ys_templated_content_cache_bin', $templates, $oneHourFromNow);
+    return $templates;
   }
 
 }
