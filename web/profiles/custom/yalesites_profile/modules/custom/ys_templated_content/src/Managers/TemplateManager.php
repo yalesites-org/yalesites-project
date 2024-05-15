@@ -2,7 +2,6 @@
 
 namespace Drupal\ys_templated_content\Managers;
 
-use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\file\FileRepositoryInterface;
