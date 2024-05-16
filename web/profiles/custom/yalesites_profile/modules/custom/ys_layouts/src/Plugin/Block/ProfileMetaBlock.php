@@ -135,7 +135,7 @@ class ProfileMetaBlock extends BlockBase implements ContainerFactoryPluginInterf
       '#profile_meta__subtitle_line' => $subtitle,
       '#profile_meta__department' => $department,
       '#media_id' => $mediaId,
-      '#profile_meta__image_orientation' => $this->configuration['image_orientation'] ?? 'landscape',
+      '#profile_meta__image_orientation' => $this->configuration['image_orientation'] ?? 'portrait',
       '#profile_meta__image_style' => $this->configuration['image_style'] ?? 'inline',
       '#profile_meta__image_alignment' => $this->configuration['image_alignment'] ?? 'left',
     ];
@@ -152,7 +152,7 @@ class ProfileMetaBlock extends BlockBase implements ContainerFactoryPluginInterf
     $form['image_orientation'] = [
       '#type' => 'select',
       '#title' => $this->t('Image orientation'),
-      '#default_value' => $config['image_orientation'] ?? 'landscape',
+      '#default_value' => $config['image_orientation'] ?? 'portrait',
       '#options' => [
         'landscape' => $this->t('Landscape'),
         'portrait' => $this->t('Portrait'),
