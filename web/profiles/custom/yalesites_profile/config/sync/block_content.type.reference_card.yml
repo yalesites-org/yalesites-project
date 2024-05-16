@@ -29,5 +29,5 @@ third_party_settings:
         external: ''
 id: reference_card
 label: 'Reference card'
-revision: 0
+revision: 1
 description: 'Select an existing Post, Event, or Profile to display a single card.'
