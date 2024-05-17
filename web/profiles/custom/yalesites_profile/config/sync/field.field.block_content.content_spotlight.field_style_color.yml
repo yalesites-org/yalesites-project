@@ -11,7 +11,7 @@ id: block_content.content_spotlight.field_style_color
 field_name: field_style_color
 entity_type: block_content
 bundle: content_spotlight
-label: 'Theme Color'
+label: Theme
 description: ''
 required: true
 translatable: false
