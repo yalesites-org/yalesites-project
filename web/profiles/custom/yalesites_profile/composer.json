@@ -128,9 +128,6 @@
       "drupal/core": "-p2"
     },
     "patches": {
-      "drupal/layout_paragraphs": {
-        "save close tweaks": "https://git.drupalcode.org/project/layout_paragraphs/-/merge_requests/80.patch"
-      },
       "drupal/paragraphs": {
         "hide remove button": "https://www.drupal.org/files/issues/2020-05-13/hide_field_required_paragraphs_remove_button_1.patch"
       },
@@ -141,12 +138,6 @@
       },
       "drupal/entity_redirect": {
         "fix layout route https://www.drupal.org/project/entity_redirect/issues/3352265": "https://git.drupalcode.org/project/entity_redirect/-/merge_requests/6.patch"
-      },
-      "drupal/layout_builder_restrictions_by_role": {
-        "Fix user 1 https://www.drupal.org/project/layout_builder_restrictions_by_role/issues/3298638": "https://www.drupal.org/files/issues/2022-07-28/3298638--layout_builder_restrictions_by_role--user-1-exception-8.patch"
-      },
-      "drupal/bugherd": {
-        "anonymous user unable to fill in email field https://www.drupal.org/project/bugherd/issues/3364305": "https://git.drupalcode.org/project/bugherd/-/merge_requests/4.diff"
       },
       "drupal/gin": {
         "fix description toggle for CKEditor fields https://www.drupal.org/project/gin/issues/3316265": "https://git.drupalcode.org/project/gin/-/merge_requests/227.patch",
