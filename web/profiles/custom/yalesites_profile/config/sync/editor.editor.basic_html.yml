@@ -15,6 +15,7 @@ settings:
       - italic
       - alignment
       - heading
+      - style
       - '|'
       - link
       - '|'
@@ -61,6 +62,11 @@ settings:
         - '<h5 id>'
         - '<h6 id>'
         - '<a hreflang title>'
+    ckeditor5_style:
+      styles:
+        -
+          label: 'Old-style numbers'
+          element: '<span class="oldstyle-nums">'
     editor_advanced_link_link:
       enabled_attributes:
         - target
