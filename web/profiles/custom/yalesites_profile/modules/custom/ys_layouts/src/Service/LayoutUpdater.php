@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_layouts\Service;
 
+use Drupal\block_content\Entity\BlockContent;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityStorageException;
@@ -245,6 +246,68 @@ class LayoutUpdater {
     $nodeStorage = $this->entityTypeManager->getStorage('node');
     $nids = $this->getTempStoreNids();
     return $nodeStorage->loadMultiple($nids);
+  }
+
+  public function getBlockTypes() {
+    $blockTypes = $this->entityTypeManager->getStorage('block_content_type')->loadMultiple();
+    $customBlockTypes = ['' => 'Select'];
+    foreach ($blockTypes as $blockType) {
+      $customBlockTypes[$blockType->id()] = $blockType->label();
+    }
+
+    return $customBlockTypes;
+  }
+
+  public function getBlockFields($blockType) {
+    $entityFieldManager = \Drupal::service('entity_field.manager');
+    $fieldDefinitions = $entityFieldManager->getFieldDefinitions('block_content', $blockType);
+    $blockFields = [];
+    foreach ($fieldDefinitions as $fieldName => $fieldDefinition) {
+      if (str_starts_with($fieldName, 'field_')) {
+        if (str_starts_with($fieldDefinition->getType(), 'text')) {
+          $blockFields[$fieldName] = $fieldDefinition->getLabel();
+        }
+      }
+    }
+
+    return $blockFields;
+  }
+
+  /**
+   * Executes the block field updates for all existing layout builder blocks.
+   */
+  public function updateBlockFields($form_state) {
+    $entityFieldManager = \Drupal::service('entity_field.manager');
+    $blockType = $form_state->getValue('block_type');
+    $fieldName = $form_state->getValue('field_name');
+    $fieldDefinitions = $entityFieldManager->getFieldDefinitions('block_content', $blockType);
+
+    //dpm($fieldDefinitions);
+    $blockIds = $this->getBlockIds($blockType);
+    foreach ($blockIds as $blockId) {
+      $block = BlockContent::load($blockId);
+      if ($block) {
+        //dpm($block->get($fieldName));
+        // Update the text field to use the new text format.
+        // $block->set($textField, [
+        //   'value' => $block->get($textField)->value,
+        //   'format' => $formattedText,
+        // ]);
+        // $block->save();
+      }
+    }
+    // dpm($form_state->getValue('block_type'));
+    // dpm($form_state->getValue('field_name'));
+  }
+
+  protected function getBlockIds($blockType) {
+    // Change existing content spotlight landscape blocks.
+    $query = \Drupal::entityQuery('block_content')
+      ->condition('type', $blockType)
+      ->accessCheck(TRUE);
+    $blockIds = $query->execute();
+
+    return $blockIds;
   }
 
 }

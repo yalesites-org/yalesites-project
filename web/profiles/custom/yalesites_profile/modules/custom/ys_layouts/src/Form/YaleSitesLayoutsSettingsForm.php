@@ -7,6 +7,8 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\ys_layouts\Service\LayoutUpdater;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\HtmlCommand;
 
 /**
  * Form class for managing YaleSites Layout settings.
@@ -61,6 +63,15 @@ class YaleSitesLayoutsSettingsForm extends FormBase {
       '#description' => $this->t('
       YaleSites uses Layout Builder to compose content, allowing each node to have unique configuration overrides. However, changes to the default display may not update existing content. This interface manually applies layout updates, currently supporting lock updates but can be extended for other configurations like sections or blocks in the future.'),
     ];
+
+    $form['layout_blocks'] = [
+      '#type' => 'details',
+      '#open' => TRUE,
+      '#title' => $this->t('Layout Blocks'),
+      '#description' => $this->t('
+      If field changes take place in a default layout block (ex: text format changes), this section can update fields on existing placed blocks.'),
+    ];
+
     $rows = [];
     foreach ($this->layoutUpdater->getContentTypes() as $type) {
       $rows[] = [
@@ -84,9 +95,54 @@ class YaleSitesLayoutsSettingsForm extends FormBase {
       '#submit' => ['::submitUpdateLocks'],
     ];
 
+    $form['layout_blocks']['block_type'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Block type'),
+      '#options' => $this->layoutUpdater->getBlockTypes(),
+      '#ajax' => [
+        'callback' => [$this, 'updateBlockFields'],
+        'disable-refocus' => FALSE,
+        'event' => 'change',
+        'wrapper' => 'edit-field-name-wrapper',
+      ],
+    ];
+
+    $form['layout_blocks']['field_name'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Field name'),
+      '#options' => [
+        '' => $this->t('No text fields found.'),
+      ],
+      '#states' => [
+        'invisible' => [
+          'select[id="edit-block-type"]' => ['value' => ''],
+        ],
+      ],
+      '#prefix' => '<div id="edit-field-name-wrapper">',
+      '#suffix' => '</div>',
+      '#validated' => TRUE,
+    ];
+
+    $form['layout_blocks']['action_update_block_field'] = [
+      '#type' => 'submit',
+      '#value' => 'Update Block Field',
+      '#submit' => ['::submitUpdateBlockField'],
+      '#states' => [
+        'invisible' => [
+          [
+            'select[id="edit-block-type"]' => ['value' => ''],
+          ],
+          'or',
+          [
+            'select[id="edit-field-name"]' => ['value' => ''],
+          ],
+        ],
+      ],
+    ];
+
     $form['tempstore'] = [
       '#type' => 'details',
-      '#title' => $this->t('Nodes that have not recieved layout updates'),
+      '#title' => $this->t('Nodes that have not received layout updates'),
       '#description' => $this->t('When editing a layout, modifications are automatically saved in the temporary storage table "key_value_expire". This table serves as a convenient repository for Drupal to monitor changes. However, the storage is a convoluted mix of content and settings. Due to its complexity, we have opted not to programmatically update nodes in this table. Instead, nodes can be manually updated by saving or discarding changes, followed by executing any update actions provided by this interface.'),
     ];
     $rows = [];
@@ -156,6 +212,28 @@ class YaleSitesLayoutsSettingsForm extends FormBase {
    */
   public function submitUpdateLocks() {
     $this->layoutUpdater->updateAllLocks();
+  }
+
+  public function submitUpdateBlockField(array &$form, FormStateInterface $form_state) {
+    $this->layoutUpdater->updateBlockFields($form_state);
+  }
+
+  /**
+   * Ajax callback to return only view modes for the specified content type.
+   */
+  public function updateBlockFields(array &$form, FormStateInterface $form_state) {
+    $response = new AjaxResponse();
+
+    $blockType = $form_state->getValue('block_type');
+    $fields = $this->layoutUpdater->getBlockFields($blockType);
+    if ($fields) {
+      $form['layout_blocks']['field_name']['#options'] = $fields;
+
+      $select_element_rendered = \Drupal::service('renderer')->render($form['layout_blocks']['field_name']);
+
+      $response->addCommand(new HtmlCommand('#edit-field-name-wrapper', $select_element_rendered));
+    }
+    return $response;
   }
 
 }
