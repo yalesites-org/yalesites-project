@@ -21,3 +21,8 @@ services:
     arguments: ['@current_route_match']
     tags:
       - { name: 'event_subscriber' }
+  ys_core.moderation_sidebar_controller_alter:
+    class: Drupal\ys_core\EventSubscriber\AlterModerationSidebarController
+    arguments: []
+    tags:
+      - { name: event_subscriber }

@@ -22,6 +22,7 @@ auto_added_reusable_block_content_bundles:
   post_list: post_list
   pull_quote: pull_quote
   quick_links: quick_links
+  reference_card: reference_card
   tabs: tabs
   text: text
   video: video
