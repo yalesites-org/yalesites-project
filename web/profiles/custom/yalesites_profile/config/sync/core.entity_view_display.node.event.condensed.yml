@@ -75,7 +75,7 @@ content:
   content_moderation_control:
     settings: {  }
     third_party_settings: {  }
-    weight: -20
+    weight: 0
     region: content
   field_event_date:
     type: smartdate_plain
@@ -84,7 +84,7 @@ content:
       timezone_override: ''
       separator: '-'
     third_party_settings: {  }
-    weight: 0
+    weight: 1
     region: content
   field_event_type:
     type: entity_reference_label
@@ -92,7 +92,7 @@ content:
     settings:
       link: false
     third_party_settings: {  }
-    weight: 1
+    weight: 2
     region: content
   field_external_source:
     type: link_separate
@@ -104,7 +104,15 @@ content:
       rel: '0'
       target: '0'
     third_party_settings: {  }
-    weight: 2
+    weight: 3
+    region: content
+  field_localist_event_experience:
+    type: entity_reference_label
+    label: hidden
+    settings:
+      link: false
+    third_party_settings: {  }
+    weight: 4
     region: content
 hidden:
   field_category: true
@@ -117,7 +125,6 @@ hidden:
   field_event_room: true
   field_event_status: true
   field_event_topics: true
-  field_localist_event_experience: true
   field_localist_event_image_alt: true
   field_localist_event_image_url: true
   field_localist_event_type: true
