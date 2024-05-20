@@ -20,6 +20,6 @@ default_value:
 default_value_callback: ''
 settings:
   markup:
-    value: '<p>TBD</p>'
+    value: '<p>Display a featured quote from a person or organization, accompanied by an image and banner-like background.</p>'
     format: basic_html
 field_type: markup
