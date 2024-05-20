@@ -6,6 +6,6 @@ id: quote_callout
 block_id: 'inline_block:quote_callout'
 category: basic
 label: 'Quote Callout'
-image_path: ''
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/quote-callout.svg
 image_alt: ''
 weight: -10
