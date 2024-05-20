@@ -30,4 +30,4 @@ third_party_settings:
 id: tiles
 label: Tiles
 revision: 1
-description: ''
+description: 'Create a grid of tiles, each with customizable background color and text options. Similar to cards, but offers a more uniform, grid-like presentation.'

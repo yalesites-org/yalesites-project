@@ -30,4 +30,4 @@ third_party_settings:
 id: link_grid
 label: 'Link Grid'
 revision: 1
-description: ''
+description: 'Organize and display a large collection of links in a grid layout.'
