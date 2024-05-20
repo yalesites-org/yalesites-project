@@ -17,6 +17,7 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'event_title__heading' => NULL,
         'event_dates' => [],
         'ics_url' => NULL,
+        'canonical_url' => NULL,
         'ticket_url' => NULL,
         'ticket_cost' => NULL,
         'place' => [],
@@ -105,4 +106,23 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
     }
   }
 
+}
+
+/**
+ * Implements hook_preprocess_node().
+ */
+function ys_layouts_preprocess_node(&$variables) {
+
+  // Processed event fields for other view modes.
+  if ($variables['node']->getType() == 'event' && $variables['view_mode'] != 'full') {
+    $node = $variables['node'];
+    $eventFieldData = \Drupal::service('ys_layouts.meta_fields_manager')->getEventData($node);
+
+    /* These fields are dynamically calculated. Other fields
+     * can be referenced in the regular way with content.field_name
+     */
+    $variables['event_dates'] = $eventFieldData['dates'];
+    $variables['ics_url'] = $eventFieldData['ics'];
+    $variables['localist_image_url'] = $eventFieldData['localist_image_url'];
+  }
 }

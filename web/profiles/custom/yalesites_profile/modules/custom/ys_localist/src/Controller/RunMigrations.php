@@ -44,7 +44,7 @@ class RunMigrations extends ControllerBase implements ContainerInjectionInterfac
     ConfigFactoryInterface $config_factory,
     LocalistManager $localist_manager,
     MessengerInterface $messenger,
-    ) {
+  ) {
     $this->localistConfig = $config_factory->get('ys_localist.settings');
     $this->localistManager = $localist_manager;
     $this->messenger = $messenger;

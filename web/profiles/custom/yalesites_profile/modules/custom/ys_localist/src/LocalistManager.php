@@ -102,7 +102,7 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
     ModuleHandler $module_handler,
     TimeInterface $time,
     MessengerInterface $messenger,
-    ) {
+  ) {
     $this->localistConfig = $config_factory->get('ys_localist.settings');
     $this->endpointBase = $this->localistConfig->get('localist_endpoint');
     $this->httpClient = $http_client;

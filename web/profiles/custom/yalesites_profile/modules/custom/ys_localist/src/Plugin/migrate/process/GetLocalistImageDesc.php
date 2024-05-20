@@ -62,7 +62,7 @@ class GetLocalistImageDesc extends ProcessPluginBase implements ContainerFactory
     $plugin_definition,
     LocalistManager $localist_manager,
     Client $http_client,
-    ) {
+  ) {
     $this->localistManager = $localist_manager;
     $this->httpClient = $http_client;
   }
