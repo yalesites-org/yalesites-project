@@ -2,13 +2,14 @@
 
 namespace Drupal\ys_layouts\Form;
 
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\HtmlCommand;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
+use Drupal\Core\Render\Renderer;
 use Drupal\ys_layouts\Service\LayoutUpdater;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\HtmlCommand;
 
 /**
  * Form class for managing YaleSites Layout settings.
@@ -29,6 +30,13 @@ class YaleSitesLayoutsSettingsForm extends FormBase {
   protected $layoutUpdater;
 
   /**
+   * The Drupal renderer service.
+   *
+   * @var \Drupal\Core\Render\Renderer
+   */
+  protected $renderer;
+
+  /**
    * {@inheritdoc}
    */
   public function getFormId() {
@@ -40,16 +48,19 @@ class YaleSitesLayoutsSettingsForm extends FormBase {
    *
    * @param \Drupal\ys_layouts\Service\LayoutUpdater $layout_updater
    *   The layout updater service.
+   * @param \Drupal\Core\Render\Renderer $renderer
+   *   The renderer service.
    */
-  public function __construct(LayoutUpdater $layout_updater) {
+  public function __construct(LayoutUpdater $layout_updater, Renderer $renderer) {
     $this->layoutUpdater = $layout_updater;
+    $this->renderer = $renderer;
   }
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static($container->get('ys_layouts.updater'));
+    return new static($container->get('ys_layouts.updater'), $container->get('renderer'));
   }
 
   /**
@@ -64,12 +75,12 @@ class YaleSitesLayoutsSettingsForm extends FormBase {
       YaleSites uses Layout Builder to compose content, allowing each node to have unique configuration overrides. However, changes to the default display may not update existing content. This interface manually applies layout updates, currently supporting lock updates but can be extended for other configurations like sections or blocks in the future.'),
     ];
 
-    $form['layout_blocks'] = [
+    $form['update_text_formats'] = [
       '#type' => 'details',
       '#open' => TRUE,
-      '#title' => $this->t('Layout Blocks'),
+      '#title' => $this->t('Update text formats'),
       '#description' => $this->t('
-      If field changes take place in a default layout block (ex: text format changes), this section can update fields on existing placed blocks.'),
+        If a default block field changes text formats, this will update the text format on existing placed blocks.'),
     ];
 
     $rows = [];
@@ -95,7 +106,7 @@ class YaleSitesLayoutsSettingsForm extends FormBase {
       '#submit' => ['::submitUpdateLocks'],
     ];
 
-    $form['layout_blocks']['block_type'] = [
+    $form['update_text_formats']['block_type'] = [
       '#type' => 'select',
       '#title' => $this->t('Block type'),
       '#options' => $this->layoutUpdater->getBlockTypes(),
@@ -107,7 +118,7 @@ class YaleSitesLayoutsSettingsForm extends FormBase {
       ],
     ];
 
-    $form['layout_blocks']['field_name'] = [
+    $form['update_text_formats']['field_name'] = [
       '#type' => 'select',
       '#title' => $this->t('Field name'),
       '#options' => [
@@ -123,21 +134,10 @@ class YaleSitesLayoutsSettingsForm extends FormBase {
       '#validated' => TRUE,
     ];
 
-    $form['layout_blocks']['action_update_block_field'] = [
+    $form['update_text_formats']['action_update_block_field'] = [
       '#type' => 'submit',
-      '#value' => 'Update Block Field',
-      '#submit' => ['::submitUpdateBlockField'],
-      '#states' => [
-        'invisible' => [
-          [
-            'select[id="edit-block-type"]' => ['value' => ''],
-          ],
-          'or',
-          [
-            'select[id="edit-field-name"]' => ['value' => ''],
-          ],
-        ],
-      ],
+      '#value' => 'Update text format',
+      '#submit' => ['::submitUpdateTextFormats'],
     ];
 
     $form['tempstore'] = [
@@ -214,22 +214,32 @@ class YaleSitesLayoutsSettingsForm extends FormBase {
     $this->layoutUpdater->updateAllLocks();
   }
 
-  public function submitUpdateBlockField(array &$form, FormStateInterface $form_state) {
-    $this->layoutUpdater->updateBlockFields($form_state);
+  /**
+   * Custom submit for updating text formats on existing blocks.
+   *
+   * @param array $form
+   *   The form array.
+   * @param Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   */
+  public function submitUpdateTextFormats(array &$form, FormStateInterface $form_state) {
+    $blockType = $form_state->getValue('block_type');
+    $fieldName = $form_state->getValue('field_name');
+    $this->layoutUpdater->updateTextFormats($blockType, $fieldName);
   }
 
   /**
-   * Ajax callback to return only view modes for the specified content type.
+   * Ajax callback to return only view modes for the specified block type.
    */
   public function updateBlockFields(array &$form, FormStateInterface $form_state) {
     $response = new AjaxResponse();
 
     $blockType = $form_state->getValue('block_type');
-    $fields = $this->layoutUpdater->getBlockFields($blockType);
+    $fields = $this->layoutUpdater->getTextBlockFields($blockType);
     if ($fields) {
-      $form['layout_blocks']['field_name']['#options'] = $fields;
+      $form['update_text_formats']['field_name']['#options'] = $fields;
 
-      $select_element_rendered = \Drupal::service('renderer')->render($form['layout_blocks']['field_name']);
+      $select_element_rendered = $this->renderer->render($form['update_text_formats']['field_name']);
 
       $response->addCommand(new HtmlCommand('#edit-field-name-wrapper', $select_element_rendered));
     }
