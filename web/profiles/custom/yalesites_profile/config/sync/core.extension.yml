@@ -133,7 +133,7 @@ module:
   views_ui: 0
   webform: 0
   webform_ui: 0
-  workflow_buttons: 0
+  workflow_buttons: -1
   workflows: 0
   yale_cas: 0
   ys_alert: 0
