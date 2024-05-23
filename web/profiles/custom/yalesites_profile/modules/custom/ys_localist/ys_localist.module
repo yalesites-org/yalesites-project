@@ -5,7 +5,6 @@
  * Primary module hooks for YS Localist module.
  */
 
-use Drupal\Core\Entity\Display\EntityFormDisplayInterface;
 use Drupal\migrate\Plugin\MigrationInterface;
 
 /**
