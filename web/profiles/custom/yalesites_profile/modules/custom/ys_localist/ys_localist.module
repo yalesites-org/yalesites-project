@@ -5,6 +5,7 @@
  * Primary module hooks for YS Localist module.
  */
 
+use Drupal\Core\Entity\Display\EntityFormDisplayInterface;
 use Drupal\migrate\Plugin\MigrationInterface;
 
 /**
@@ -37,5 +38,23 @@ function ys_localist_cron() {
       $localistManager = \Drupal::service('ys_localist.manager');
       $localistManager->runAllMigrations();
     }
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function ys_localist_form_node_event_edit_form_alter(&$form, &$form_state) {
+  // Disables fields that are imported from Localist.
+  $fieldsToDisable = [
+    'field_localist_id',
+    'field_event_status',
+    'field_localist_event_url',
+    'field_localist_event_image_url',
+    'field_localist_event_image_alt',
+    'field_localist_ics_url',
+  ];
+  foreach ($fieldsToDisable as $field) {
+    $form[$field]['#disabled'] = TRUE;
   }
 }

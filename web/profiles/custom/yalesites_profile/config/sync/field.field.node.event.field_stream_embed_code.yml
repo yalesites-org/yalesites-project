@@ -1,0 +1,19 @@
+uuid: 0d976d99-0a38-4e38-846b-5b86a6884dba
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_stream_embed_code
+    - node.type.event
+id: node.event.field_stream_embed_code
+field_name: field_stream_embed_code
+entity_type: node
+bundle: event
+label: 'Stream embed code'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

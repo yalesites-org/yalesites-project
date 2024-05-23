@@ -6,6 +6,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Session\AccountProxy;
 use Drupal\ys_localist\LocalistManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -29,6 +30,13 @@ class LocalistSettings extends ConfigFormBase {
   protected $localistManager;
 
   /**
+   * Current user session.
+   *
+   * @var \Drupal\Core\Session\AccountProxy
+   */
+  protected $currentUserSession;
+
+  /**
    * Constructs a SiteInformationForm object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -37,15 +45,19 @@ class LocalistSettings extends ConfigFormBase {
    *   The entity type manager.
    * @param \Drupal\ys_localist\LocalistManager $localist_manager
    *   The Localist manager.
+   * @param \Drupal\Core\Session\AccountProxy $current_user_session
+   *   The current user session.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
     EntityTypeManagerInterface $entity_type_manager,
     LocalistManager $localist_manager,
+    AccountProxy $current_user_session,
   ) {
     parent::__construct($config_factory);
     $this->entityTypeManager = $entity_type_manager;
     $this->localistManager = $localist_manager;
+    $this->currentUserSession = $current_user_session;
   }
 
   /**
@@ -56,6 +68,7 @@ class LocalistSettings extends ConfigFormBase {
       $container->get('config.factory'),
       $container->get('entity_type.manager'),
       $container->get('ys_localist.manager'),
+      $container->get('current_user'),
     );
   }
 
@@ -80,6 +93,8 @@ class LocalistSettings extends ConfigFormBase {
     $config = $this->config('ys_localist.settings');
     $groupsImported = $this->localistManager->getMigrationStatus('localist_groups') > 0;
 
+    $allowSecretItems = function_exists('ys_core_allow_secret_items') ? ys_core_allow_secret_items($this->currentUserSession) : FALSE;
+
     if (
       $config->get('enable_localist_sync') &&
       $config->get('localist_group') &&
@@ -96,6 +111,7 @@ class LocalistSettings extends ConfigFormBase {
       '#title' => $this->t('Enable Localist sync'),
       '#description' => $this->t('Once enabled, Localist data will sync events for the selected group roughly every hour.'),
       '#default_value' => $config->get('enable_localist_sync') ?: FALSE,
+      '#disabled' => !$allowSecretItems,
     ];
 
     $form['localist_endpoint'] = [
@@ -103,6 +119,7 @@ class LocalistSettings extends ConfigFormBase {
       '#title' => $this->t('Localist endpoint base URL'),
       '#description' => $this->t('Ex: https://yale.enterprise.localist.com'),
       '#default_value' => $config->get('localist_endpoint') ?: 'https://yale.enterprise.localist.com',
+      '#disabled' => !$allowSecretItems,
     ];
 
     // Only show the group picker if the group migration has been run.
@@ -120,6 +137,7 @@ class LocalistSettings extends ConfigFormBase {
           'target_bundles' => ['event_groups'],
         ],
         '#required' => TRUE,
+        '#disabled' => !$allowSecretItems,
       ];
     }
     elseif ($config->get('enable_localist_sync') && !$groupsImported) {

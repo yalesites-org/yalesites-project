@@ -10,6 +10,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Routing\RouteObjectInterface;
+use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Url;
 
 /**
@@ -522,4 +523,20 @@ function ys_core_preprocess_views_view_unformatted(&$variables) {
       $variables['title'] = $title['#markup'] ?? NULL;
     }
   }
+}
+
+/**
+ * If current user is platform admin or user 1, allow secret items.
+ *
+ * @return bool
+ *   Returns TRUE if current user is a platform admin or user 1.
+ */
+function ys_core_allow_secret_items(AccountProxy $currentUserSession) {
+  $allowSecretItems = FALSE;
+
+  if ($currentUserSession->getAccount()->id() == 1 || in_array('platform_admin', $currentUserSession->getAccount()->getRoles())) {
+    $allowSecretItems = TRUE;
+  }
+
+  return $allowSecretItems;
 }

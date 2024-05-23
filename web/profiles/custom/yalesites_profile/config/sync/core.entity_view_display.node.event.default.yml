@@ -24,8 +24,11 @@ dependencies:
     - field.field.node.event.field_localist_group
     - field.field.node.event.field_localist_ics_url
     - field.field.node.event.field_localist_id
+    - field.field.node.event.field_localist_info
     - field.field.node.event.field_login_required
     - field.field.node.event.field_metatags
+    - field.field.node.event.field_stream_embed_code
+    - field.field.node.event.field_stream_url
     - field.field.node.event.field_tags
     - field.field.node.event.field_teaser_media
     - field.field.node.event.field_teaser_text
@@ -39,6 +42,7 @@ dependencies:
     - layout_builder_restrictions
     - layout_discovery
     - link
+    - markup
     - smart_date
     - text
     - user
@@ -74,6 +78,57 @@ third_party_settings:
               context_mapping:
                 entity: layout_builder.entity
             weight: 1
+            additional: {  }
+          d5a49193-ff95-4a43-ba49-efeee6653e14:
+            uuid: d5a49193-ff95-4a43-ba49-efeee6653e14
+            region: content
+            configuration:
+              id: 'field_block:node:event:field_localist_info'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: markup
+                label: above
+                settings: {  }
+                third_party_settings: {  }
+            weight: 2
+            additional: {  }
+          d3804aa9-8b81-431a-a105-991a61603201:
+            uuid: d3804aa9-8b81-431a-a105-991a61603201
+            region: content
+            configuration:
+              id: 'field_block:node:event:field_stream_url'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: link
+                label: above
+                settings:
+                  trim_length: 80
+                  url_only: false
+                  url_plain: false
+                  rel: ''
+                  target: ''
+                third_party_settings: {  }
+            weight: 3
+            additional: {  }
+          4eb20cc6-f9dc-4de8-b6a9-cd62a9289ada:
+            uuid: 4eb20cc6-f9dc-4de8-b6a9-cd62a9289ada
+            region: content
+            configuration:
+              id: 'field_block:node:event:field_stream_embed_code'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: string
+                label: above
+                settings:
+                  link_to_entity: false
+                third_party_settings: {  }
+            weight: 4
             additional: {  }
         third_party_settings:
           layout_builder_lock:
@@ -305,6 +360,33 @@ content:
       target: ''
     third_party_settings: {  }
     weight: 15
+    region: content
+  field_localist_info:
+    type: markup
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 27
+    region: content
+  field_stream_embed_code:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 29
+    region: content
+  field_stream_url:
+    type: link
+    label: above
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 28
     region: content
   field_ticket_cost:
     type: string

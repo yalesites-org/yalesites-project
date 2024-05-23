@@ -328,4 +328,25 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
 
   }
 
+  /**
+   * When Localist is first installed, remove the old terms for experiences.
+   */
+  public function removeOldExperiences() {
+    $termsToRemove = [
+      'In-person',
+      'Online',
+    ];
+
+    foreach ($termsToRemove as $term) {
+      $terms = $this->entityTypeManager
+        ->getStorage('taxonomy_term')
+        ->loadByProperties(['name' => $term, 'vid' => 'event_type']);
+      if ($terms) {
+        foreach ($terms as $term) {
+          $term->delete();
+        }
+      }
+    }
+  }
+
 }

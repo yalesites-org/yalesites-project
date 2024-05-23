@@ -10,8 +10,8 @@ id: node.event.field_event_type
 field_name: field_event_type
 entity_type: node
 bundle: event
-label: Experience
-description: 'In-person, online, or hybrid'
+label: 'Experience (deprecated to be removed)'
+description: "In-person, online, or hybrid\r\nThis field was replaced by Event Experience (field_localist_event_experience) as Localist uses Event Type for categorization of events and experience to mean in-person, virtual, or hybrid. This field can be safely deleted after all of the Localist work has been released to live."
 required: false
 translatable: false
 default_value: {  }
