@@ -254,7 +254,7 @@ class HeaderSettingsForm extends ConfigFormBase {
       ],
     ];
 
-    $form['call_to_action_container']['cta_text'] = [
+    $form['call_to_action_container']['cta_content'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Link text'),
       '#description' => $this->t('Enter the text that should appear in the CTA button.'),
@@ -262,7 +262,7 @@ class HeaderSettingsForm extends ConfigFormBase {
       '#autocomplete_route_parameters' => [
         'linkit_profile_id' => 'default',
       ],
-      '#default_value' => ($headerConfig->get('cta_text')) ?? NULL,
+      '#default_value' => $headerConfig->get('cta_content') ?? NULL,
     ];
 
     $form['call_to_action_container']['cta_url'] = [
@@ -273,7 +273,7 @@ class HeaderSettingsForm extends ConfigFormBase {
       '#autocomplete_route_parameters' => [
         'linkit_profile_id' => 'default',
       ],
-      '#default_value' => ($headerConfig->get('cta_url')) ?? NULL,
+      '#default_value' => $headerConfig->get('cta_url') ?? NULL,
     ];
 
     $form['site_search_container']['enable_search_form'] = [
@@ -334,7 +334,7 @@ class HeaderSettingsForm extends ConfigFormBase {
     $headerConfig->set('header_variation', $form_state->getValue('header_variation'));
     $headerConfig->set('site_name_image', $form_state->getValue('site_name_image'));
     $headerConfig->set('nav_position', $form_state->getValue('nav_position'));
-    $headerConfig->set('cta_text', $form_state->getValue('cta_text'));
+    $headerConfig->set('cta_content', $form_state->getValue('cta_content'));
     $headerConfig->set('cta_url', $form_state->getValue('cta_url'));
     $headerConfig->set('search.enable_search_form', $form_state->getValue('enable_search_form'));
     $headerConfig->set('focus_header_image', $form_state->getValue('focus_header_image'));
