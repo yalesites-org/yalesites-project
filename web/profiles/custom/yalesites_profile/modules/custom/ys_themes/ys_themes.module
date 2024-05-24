@@ -137,7 +137,6 @@ function ys_themes_preprocess_block(&$variables) {
   // Via: https://drupal.stackexchange.com/questions/266379/how-to-clear-cache-for-config-entity-after-making-changes
   \Drupal::service('renderer')->addCacheableDependency($variables, $config);
 
-
   $block_content_ids = ['inline_block', 'block_content'];
 
   if (!empty($variables['base_plugin_id']) && in_array($variables['base_plugin_id'], $block_content_ids)) {
