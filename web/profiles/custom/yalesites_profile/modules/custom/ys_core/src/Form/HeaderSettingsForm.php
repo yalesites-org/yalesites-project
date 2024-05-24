@@ -267,7 +267,7 @@ class HeaderSettingsForm extends ConfigFormBase {
 
     $form['call_to_action_container']['cta_url'] = [
       '#type' => 'linkit',
-      '#title' => $this->t('Select link target'),
+      '#title' => $this->t('Link target'),
       '#description' => $this->t('Start typing to select internal content. You can also enter an external link.'),
       '#autocomplete_route_name' => 'linkit.autocomplete',
       '#autocomplete_route_parameters' => [
