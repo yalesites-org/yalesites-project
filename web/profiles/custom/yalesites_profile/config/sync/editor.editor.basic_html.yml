@@ -50,6 +50,9 @@ settings:
           label: HTML
           language: html
         -
+          label: Twig
+          language: twig
+        -
           label: JavaScript
           language: javascript
         -
