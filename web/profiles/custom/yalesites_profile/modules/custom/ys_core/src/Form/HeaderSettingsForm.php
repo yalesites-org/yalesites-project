@@ -165,6 +165,18 @@ class HeaderSettingsForm extends ConfigFormBase {
       ],
     ];
 
+    $form['call_to_action_container'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Call to Action'),
+      '#states' => [
+        'disabled' => [
+          ':input[name="header_variation"]' => [
+            'value' => 'focus',
+          ],
+        ],
+      ],
+    ];
+
     $form['site_search_container'] = [
       '#type' => 'details',
       '#title' => $this->t('Site Search'),
@@ -242,6 +254,28 @@ class HeaderSettingsForm extends ConfigFormBase {
       ],
     ];
 
+    $form['call_to_action_container']['cta_text'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Link text'),
+      '#description' => $this->t('Enter the text that should appear in the CTA button.'),
+      '#autocomplete_route_name' => 'linkit.autocomplete',
+      '#autocomplete_route_parameters' => [
+        'linkit_profile_id' => 'default',
+      ],
+      '#default_value' => ($headerConfig->get('cta_text')) ?? NULL,
+    ];
+
+    $form['call_to_action_container']['cta_url'] = [
+      '#type' => 'linkit',
+      '#title' => $this->t('Select link target'),
+      '#description' => $this->t('Start typing to select internal content. You can also enter an external link.'),
+      '#autocomplete_route_name' => 'linkit.autocomplete',
+      '#autocomplete_route_parameters' => [
+        'linkit_profile_id' => 'default',
+      ],
+      '#default_value' => ($headerConfig->get('cta_url')) ?? NULL,
+    ];
+
     $form['site_search_container']['enable_search_form'] = [
       '#type' => 'checkbox',
       '#description' => $this->t('When enabled, a site search form will be displayed in the Utility Menu.'),
@@ -300,6 +334,8 @@ class HeaderSettingsForm extends ConfigFormBase {
     $headerConfig->set('header_variation', $form_state->getValue('header_variation'));
     $headerConfig->set('site_name_image', $form_state->getValue('site_name_image'));
     $headerConfig->set('nav_position', $form_state->getValue('nav_position'));
+    $headerConfig->set('cta_text', $form_state->getValue('cta_text'));
+    $headerConfig->set('cta_url', $form_state->getValue('cta_url'));
     $headerConfig->set('search.enable_search_form', $form_state->getValue('enable_search_form'));
     $headerConfig->set('focus_header_image', $form_state->getValue('focus_header_image'));
 
