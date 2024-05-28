@@ -1,0 +1,11 @@
+uuid: 1f9ef109-a6d6-4d7b-9097-9fed1e784865
+langcode: en
+status: true
+dependencies: {  }
+id: book_navigation
+block_id: book_navigation
+category: advanced
+label: 'Book Navigation'
+image_path: ''
+image_alt: ''
+weight: -13
