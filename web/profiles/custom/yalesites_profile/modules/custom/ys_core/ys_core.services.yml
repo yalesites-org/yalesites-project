@@ -18,7 +18,7 @@ services:
   # Redirect visitors to external source if set on the node.
   ys_core.external_source_redirect_subscriber:
     class: Drupal\ys_core\EventSubscriber\ExternalSourceRedirectSubscriber
-    arguments: ['@current_route_match']
+    arguments: ['@current_route_match', '@messenger']
     tags:
       - { name: 'event_subscriber' }
   ys_core.moderation_sidebar_controller_alter:
