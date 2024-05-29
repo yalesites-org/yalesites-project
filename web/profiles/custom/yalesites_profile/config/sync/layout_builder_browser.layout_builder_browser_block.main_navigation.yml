@@ -1,0 +1,11 @@
+uuid: 2920fe76-52f9-46bb-8296-2bcb81b2ce7b
+langcode: en
+status: true
+dependencies: {  }
+id: main_navigation
+block_id: 'system_menu_block:main'
+category: advanced
+label: 'Main Navigation'
+image_path: ''
+image_alt: ''
+weight: -14

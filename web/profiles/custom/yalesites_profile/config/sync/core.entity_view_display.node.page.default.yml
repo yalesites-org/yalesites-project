@@ -98,6 +98,11 @@ third_party_settings:
         - layout_onecol
         - ys_layout_two_column
       allowlisted_blocks:
+        layout_onecol:
+          all_regions:
+            Menus:
+              - book_navigation
+              - 'system_menu_block:main'
         ys_layout_banner:
           all_regions:
             'Inline blocks':
@@ -171,7 +176,6 @@ third_party_settings:
             - Forms
             - Help
             - 'Lists (Views)'
-            - Menus
             - System
             - Webform
             - 'YaleSites Core'
