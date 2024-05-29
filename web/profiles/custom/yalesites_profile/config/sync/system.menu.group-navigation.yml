@@ -1,0 +1,8 @@
+uuid: 1a77a417-48ac-4472-af3d-164a1a2397c1
+langcode: en
+status: true
+dependencies: {  }
+id: group-navigation
+label: 'Group Navigation'
+description: 'Links for site groups.'
+locked: false

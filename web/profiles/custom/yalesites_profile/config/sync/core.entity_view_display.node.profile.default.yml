@@ -141,6 +141,7 @@ third_party_settings:
           all_regions:
             Menus:
               - book_navigation
+              - 'system_menu_block:group-navigation'
               - 'system_menu_block:main'
             'YaleSites Layouts':
               - profile_contact_block

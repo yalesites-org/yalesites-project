@@ -102,6 +102,7 @@ third_party_settings:
           all_regions:
             Menus:
               - book_navigation
+              - 'system_menu_block:group-navigation'
               - 'system_menu_block:main'
         ys_layout_banner:
           all_regions:

@@ -1,0 +1,11 @@
+uuid: 855cc83c-0af1-496e-a74e-29208052fc65
+langcode: en
+status: true
+dependencies: {  }
+id: group_navigation
+block_id: 'system_menu_block:group-navigation'
+category: advanced
+label: 'Group Navigation'
+image_path: ''
+image_alt: ''
+weight: -13
