@@ -1,0 +1,18 @@
+uuid: 21e6453a-7b09-4e22-bb94-a210aff461b1
+langcode: en
+status: true
+dependencies:
+  config:
+    - group.type.site
+id: group.site.label
+field_name: label
+entity_type: group
+bundle: site
+label: Title
+description: ''
+required: true
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

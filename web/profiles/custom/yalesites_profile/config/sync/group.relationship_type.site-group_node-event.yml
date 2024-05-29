@@ -1,0 +1,38 @@
+uuid: 0931da35-f997-40d6-9613-4410e29c0c41
+langcode: en
+status: true
+dependencies:
+  config:
+    - group.type.site
+    - node.type.event
+  module:
+    - gnode
+    - node
+id: site-group_node-event
+group_type: site
+content_plugin: 'group_node:event'
+plugin_config:
+  group_cardinality: 0
+  entity_cardinality: 1
+  use_creation_wizard: false
+  entity_redirect:
+    add:
+      active: 0
+      destination: default
+      url: ''
+      external: ''
+    edit:
+      active: 0
+      destination: default
+      url: ''
+      external: ''
+    delete:
+      active: 0
+      destination: default
+      url: ''
+      external: ''
+    anonymous:
+      active: 0
+      destination: default
+      url: ''
+      external: ''

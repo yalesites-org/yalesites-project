@@ -1,0 +1,36 @@
+uuid: 351b5b2d-3179-42a5-846b-d80e806a0e0d
+langcode: en
+status: true
+dependencies:
+  module:
+    - entity_redirect
+third_party_settings:
+  entity_redirect:
+    redirect:
+      add:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      edit:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      delete:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      anonymous:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+id: site
+label: Site
+description: 'It allows you to create sites and manage content, users and menus.'
+new_revision: true
+creator_membership: true
+creator_wizard: false
+creator_roles: {  }

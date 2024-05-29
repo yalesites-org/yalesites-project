@@ -1,0 +1,38 @@
+uuid: bc6de860-a783-4e3a-9e26-dfb911c702ab
+langcode: en
+status: true
+dependencies:
+  config:
+    - group.type.site
+    - node.type.page
+  module:
+    - gnode
+    - node
+id: site-group_node-page
+group_type: site
+content_plugin: 'group_node:page'
+plugin_config:
+  group_cardinality: 0
+  entity_cardinality: 1
+  use_creation_wizard: false
+  entity_redirect:
+    add:
+      active: 0
+      destination: default
+      url: ''
+      external: ''
+    edit:
+      active: 0
+      destination: default
+      url: ''
+      external: ''
+    delete:
+      active: 0
+      destination: default
+      url: ''
+      external: ''
+    anonymous:
+      active: 0
+      destination: default
+      url: ''
+      external: ''
