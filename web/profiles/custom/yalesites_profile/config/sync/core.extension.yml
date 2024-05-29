@@ -38,6 +38,7 @@ module:
   editor_advanced_link: 0
   editoria11y: 0
   emulsify_twig: 0
+  entity: 0
   entity_redirect: 0
   entity_reference_revisions: 0
   field: 0
@@ -46,11 +47,14 @@ module:
   file: 0
   file_mdm: 0
   filter: 0
+  flexible_permissions: 0
   focal_point: 0
   gin_lb: 0
   gin_moderation_sidebar: 0
   gin_toolbar: 0
+  gnode: 0
   google_analytics: 0
+  group: 0
   help: 0
   honeypot: 0
   image: 0
@@ -131,6 +135,7 @@ module:
   update: 0
   upgrade_status: 0
   user: 0
+  variationcache: 0
   views_ui: 0
   webform: 0
   webform_ui: 0
