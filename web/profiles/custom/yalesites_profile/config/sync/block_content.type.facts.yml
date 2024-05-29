@@ -30,4 +30,4 @@ third_party_settings:
 id: facts
 label: 'Facts and Figures'
 revision: 1
-description: ''
+description: 'Present key content in an organized grid with a visually appealing banner-like background.'

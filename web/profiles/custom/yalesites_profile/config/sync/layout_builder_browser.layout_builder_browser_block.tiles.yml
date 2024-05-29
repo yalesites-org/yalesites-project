@@ -1,11 +1,11 @@
 uuid: 274a9e5e-f0bf-4c1a-8c96-fd9af9b9e44d
 langcode: en
 status: true
-dependencies: {  }
+dependencies: {}
 id: tiles
 block_id: 'inline_block:tiles'
 category: advanced
 label: Tiles
-image_path: ''
+image_path: '/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/tiles.svg'
 image_alt: ''
 weight: -4
