@@ -96,6 +96,10 @@ source:
       name: stream_embed_code
       label: 'Event stream embed code'
       selector: localist_data/stream_embed_code
+    -
+      name: register_enabled
+      label: 'Localist Register enabled'
+      selector: localist_data/has_register
 
   ids:
     event_id:
@@ -181,6 +185,7 @@ process:
       no_stub: true
   field_stream_url/uri: stream_url
   field_stream_embed_code: stream_embed_code
+  field_localist_register_enabled: register_enabled
 
 destination:
   plugin: 'entity:node'
@@ -208,6 +213,7 @@ destination:
     - field_event_audience
     - field_stream_url
     - field_stream_embed_code
+    - field_localist_register_enabled
 
 migration_dependencies:
   required:

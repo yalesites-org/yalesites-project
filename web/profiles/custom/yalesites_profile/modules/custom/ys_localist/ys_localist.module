@@ -52,6 +52,7 @@ function ys_localist_form_node_event_edit_form_alter(&$form, &$form_state) {
     'field_localist_event_image_url',
     'field_localist_event_image_alt',
     'field_localist_ics_url',
+    'field_localist_register_enabled',
   ];
   foreach ($fieldsToDisable as $field) {
     $form[$field]['#disabled'] = TRUE;

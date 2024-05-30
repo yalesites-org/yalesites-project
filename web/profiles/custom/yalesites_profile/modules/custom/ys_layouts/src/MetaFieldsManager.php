@@ -146,6 +146,8 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     $externalEventWebsiteTitle = ($node->field_event_cta->first()) ? $node->field_event_cta->first()->getValue()['title'] : NULL;
     $localistImageUrl = ($node->field_localist_event_image_url->first()) ? Url::fromUri($node->field_localist_event_image_url->first()->getValue()['uri'])->toString() : NULL;
     $localistImageAlt = $node->field_localist_event_image_alt->first() ? $node->field_localist_event_image_alt->first()->getValue()['value'] : NULL;
+    $hasRegister = $node->field_localist_register_enabled->first() ? (bool) $node->field_localist_register_enabled->first()->getValue()['value'] : FALSE;
+    $localistUrl = ($node->field_localist_event_url->first()) ? Url::fromUri($node->field_localist_event_url->first()->getValue()['uri'])->toString() : NULL;
 
     // Dates.
     $dates = [];
@@ -249,6 +251,8 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       'event_types' => $eventTypes,
       'event_audience' => $eventAudience,
       'event_topics' => $eventTopics,
+      'has_register' => $hasRegister,
+      'localist_url' => $localistUrl,
 
     ];
   }
