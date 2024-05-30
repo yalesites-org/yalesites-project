@@ -26,6 +26,7 @@ dependencies:
     - field.field.node.event.field_localist_ics_url
     - field.field.node.event.field_localist_id
     - field.field.node.event.field_localist_info
+    - field.field.node.event.field_localist_register_enabled
     - field.field.node.event.field_login_required
     - field.field.node.event.field_metatags
     - field.field.node.event.field_stream_embed_code
@@ -98,6 +99,7 @@ hidden:
   field_localist_ics_url: true
   field_localist_id: true
   field_localist_info: true
+  field_localist_register_enabled: true
   field_login_required: true
   field_metatags: true
   field_stream_embed_code: true

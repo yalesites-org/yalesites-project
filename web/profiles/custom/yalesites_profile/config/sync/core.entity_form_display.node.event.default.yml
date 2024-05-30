@@ -25,6 +25,7 @@ dependencies:
     - field.field.node.event.field_localist_ics_url
     - field.field.node.event.field_localist_id
     - field.field.node.event.field_localist_info
+    - field.field.node.event.field_localist_register_enabled
     - field.field.node.event.field_login_required
     - field.field.node.event.field_metatags
     - field.field.node.event.field_stream_embed_code
@@ -174,6 +175,7 @@ third_party_settings:
         - field_localist_event_image_url
         - field_localist_event_image_alt
         - field_localist_ics_url
+        - field_localist_register_enabled
       label: 'Localist data'
       region: content
       parent_name: group_event_tabs
@@ -376,6 +378,13 @@ content:
     weight: 28
     region: content
     settings: {  }
+    third_party_settings: {  }
+  field_localist_register_enabled:
+    type: boolean_checkbox
+    weight: 35
+    region: content
+    settings:
+      display_label: true
     third_party_settings: {  }
   field_login_required:
     type: boolean_checkbox
