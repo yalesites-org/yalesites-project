@@ -97,7 +97,6 @@ third_party_settings:
       - 'Content fields'
       - 'Custom block types'
       - 'Custom blocks'
-      - Devel
       - Forms
       - Help
       - 'Inline blocks'
