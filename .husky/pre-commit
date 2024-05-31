@@ -1,4 +1,3 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
-npm run husky:pre-commit
+lando composer run-script code-sniff
+lando composer run-script code-fix
+lando composer run-script lint:php
