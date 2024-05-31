@@ -15,6 +15,7 @@ The YaleSites platform empowers the Yale community to create digital experiences
 - [Learn about the project architecture](/docs/upstream.md)
 - [Frontend review and development](/docs/theming.md)
 - [Working with component themes and global themes](/docs/color-theme.md)
+- [Husky and code linter](/docs/husky-linter.md)
 
 ## Common Scripts
 
