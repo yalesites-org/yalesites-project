@@ -45,6 +45,9 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'profile_meta__subtitle_line' => NULL,
         'profile_meta__department' => NULL,
         'media_id' => NULL,
+        'profile_meta__image_orientation' => NULL,
+        'profile_meta__image_style' => NULL,
+        'profile_meta__image_alignment' => NULL,
       ],
     ],
     'ys_profile_contact_block' => [
