@@ -20,6 +20,6 @@ default_value:
 default_value_callback: ''
 settings:
   markup:
-    value: '<p>TBD</p>'
+    value: '<p>Organize and display a large collection of links in a grid layout.</p>'
     format: basic_html
 field_type: markup
