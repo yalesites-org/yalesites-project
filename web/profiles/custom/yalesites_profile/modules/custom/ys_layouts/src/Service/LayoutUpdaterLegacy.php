@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\ys_layouts;
+namespace Drupal\ys_layouts\Service;
 
 /**
  * @file
@@ -12,9 +12,19 @@ use Drupal\layout_builder\Section;
 use Drupal\node\Entity\Node;
 
 /**
- * Updates existing nodes.
+ * Updates existing nodes to reflect layout builder configuration changes.
+ *
+ * This file documents the complex process of keeping existing content synced
+ * with configuration changes made in layout builder. Existing nodes, treated as
+ * 'overrides', do not receive updates from display mode YAML files. These
+ * methods forcefully update nodes and sections stored in the temporary table.
+ *
+ * Future plans involve generalizing these updates and migrating work to the
+ * LayoutUpdater service. Currently, this service supports only the updating of
+ * third-party lock settings. However, it can be expanded to handle other types
+ * of updates, such as adding or removing default sections or blocks.
  */
-class UpdateExistingNodes {
+class LayoutUpdaterLegacy {
 
   use LayoutEntityHelperTrait;
 

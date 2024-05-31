@@ -4,6 +4,7 @@ namespace Drupal\ys_layouts\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -134,7 +135,61 @@ class ProfileMetaBlock extends BlockBase implements ContainerFactoryPluginInterf
       '#profile_meta__subtitle_line' => $subtitle,
       '#profile_meta__department' => $department,
       '#media_id' => $mediaId,
+      '#profile_meta__image_orientation' => $this->configuration['image_orientation'] ?? 'portrait',
+      '#profile_meta__image_style' => $this->configuration['image_style'] ?? 'inline',
+      '#profile_meta__image_alignment' => $this->configuration['image_alignment'] ?? 'left',
     ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function blockForm($form, FormStateInterface $form_state) : array {
+    $form = parent::blockForm($form, $form_state);
+    $config = $this->getConfiguration();
+
+    // The form field is defined and added to the form array here.
+    $form['image_orientation'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Image orientation'),
+      '#default_value' => $config['image_orientation'] ?? 'portrait',
+      '#options' => [
+        'landscape' => $this->t('Landscape'),
+        'portrait' => $this->t('Portrait'),
+      ],
+    ];
+
+    $form['image_style'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Image style'),
+      '#default_value' => $config['image_style'] ?? 'inline',
+      '#options' => [
+        'inline' => $this->t('Inline'),
+        'outdent' => $this->t('Outdent'),
+      ],
+    ];
+
+    $form['image_alignment'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Image alignment'),
+      '#default_value' => $config['image_alignment'] ?? 'left',
+      '#options' => [
+        'left' => $this->t('Left'),
+        'right' => $this->t('Right'),
+      ],
+    ];
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function blockSubmit($form, FormStateInterface $form_state) : void {
+    parent::blockSubmit($form, $form_state);
+    $this->configuration['image_orientation'] = $form_state->getValue('image_orientation');
+    $this->configuration['image_style'] = $form_state->getValue('image_style');
+    $this->configuration['image_alignment'] = $form_state->getValue('image_alignment');
   }
 
 }
