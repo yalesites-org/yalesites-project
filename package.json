@@ -11,7 +11,6 @@
     "db:get": "./scripts/local/db-get.sh",
     "files:get": "./scripts/local/files-get.sh",
     "husky:commit-msg": "commitlint --edit $1",
-    "husky:pre-commit": "lint-staged",
     "lint": "npm run lint:js && npm run lint:php && npm run lint:styles",
     "lint:js": "eslint --color --no-error-on-unmatched-pattern --format stylish {web/modules/custom,web/themes/custom,web/profiles/custom}/**/*.js",
     "lint:php": "composer lint:php",

@@ -1,6 +1,11 @@
+# PHP Coding Standards.
 composer code-sniff
 composer code-fix
 composer lint:php
+
+# Theme Coding Standards.
 npm run lint:styles
+
+# TODO: Fix the coding standard errors shown by the following commands and uncomment them.
 #npm run lint:js
 #npm run prettier
