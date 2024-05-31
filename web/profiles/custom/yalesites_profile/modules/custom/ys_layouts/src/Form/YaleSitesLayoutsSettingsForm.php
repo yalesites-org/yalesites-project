@@ -60,7 +60,10 @@ class YaleSitesLayoutsSettingsForm extends FormBase {
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static($container->get('ys_layouts.updater'), $container->get('renderer'));
+    return new static(
+      $container->get('ys_layouts.updater'),
+      $container->get('renderer')
+    );
   }
 
   /**
