@@ -1,3 +1,6 @@
 composer code-sniff
 composer code-fix
 composer lint:php
+npm run lint:styles
+#npm run lint:js
+#npm run prettier
