@@ -1,11 +1,11 @@
 uuid: 95e52aef-ea85-4bd2-89f2-f78a76d3a24d
 langcode: en
 status: true
-dependencies: {  }
+dependencies: {}
 id: facts
 block_id: 'inline_block:facts'
 category: advanced
 label: 'Facts and Figures'
-image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/facts.svg
+image_path: '/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/facts-and-figures.svg'
 image_alt: ''
 weight: -3

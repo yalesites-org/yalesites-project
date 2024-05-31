@@ -1,11 +1,11 @@
 uuid: d4f3ae5c-89c9-4e9c-82db-ddb8d6667897
 langcode: en
 status: true
-dependencies: {  }
+dependencies: {}
 id: quote_callout
 block_id: 'inline_block:quote_callout'
 category: basic
 label: 'Quote Callout'
-image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/quote-callout.svg
+image_path: '/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/quote-callout.svg'
 image_alt: ''
 weight: -10

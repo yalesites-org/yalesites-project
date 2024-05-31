@@ -12,8 +12,8 @@ id: block_content.reference_card.field_content_ref
 field_name: field_content_ref
 entity_type: block_content
 bundle: reference_card
-label: Content
-description: ''
+label: 'Reference source'
+description: 'Type the name of the content you want to refer to in the Reference Source. As you type, an autocomplete feature will suggest matching content from your site.'
 required: true
 translatable: false
 default_value: {  }
