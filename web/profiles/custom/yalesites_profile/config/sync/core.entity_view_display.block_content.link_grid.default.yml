@@ -4,17 +4,26 @@ status: true
 dependencies:
   config:
     - block_content.type.link_grid
+    - field.field.block_content.link_grid.field_heading
     - field.field.block_content.link_grid.field_instructions
     - field.field.block_content.link_grid.field_link_lists
     - field.field.block_content.link_grid.field_style_color
   module:
     - entity_reference_revisions
     - options
+    - text
 id: block_content.link_grid.default
 targetEntityType: block_content
 bundle: link_grid
 mode: default
 content:
+  field_heading:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
   field_link_lists:
     type: entity_reference_revisions_entity_view
     label: hidden
