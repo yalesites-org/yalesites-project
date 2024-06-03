@@ -43,18 +43,20 @@ function ys_localist_cron() {
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function ys_localist_form_node_event_edit_form_alter(&$form, &$form_state) {
+function ys_localist_form_alter(&$form, &$form_state, $form_id) {
   // Disables fields that are imported from Localist.
-  $fieldsToDisable = [
-    'field_localist_id',
-    'field_event_status',
-    'field_localist_event_url',
-    'field_localist_event_image_url',
-    'field_localist_event_image_alt',
-    'field_localist_ics_url',
-    'field_localist_register_enabled',
-  ];
-  foreach ($fieldsToDisable as $field) {
-    $form[$field]['#disabled'] = TRUE;
+  if ($form_id == 'node_event_edit_form' || $form_id == 'node_event_form') {
+    $fieldsToDisable = [
+      'field_localist_id',
+      'field_event_status',
+      'field_localist_event_url',
+      'field_localist_event_image_url',
+      'field_localist_event_image_alt',
+      'field_localist_ics_url',
+      'field_localist_register_enabled',
+    ];
+    foreach ($fieldsToDisable as $field) {
+      $form[$field]['#disabled'] = TRUE;
+    }
   }
 }
