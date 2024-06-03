@@ -53,6 +53,14 @@ field_settings:
     dependencies:
       module:
         - node
+  type:
+    label: 'Content type'
+    datasource_id: 'entity:node'
+    property_path: type
+    type: string
+    dependencies:
+      module:
+        - node
   uid:
     label: uid
     datasource_id: 'entity:node'
@@ -125,6 +133,7 @@ processor_settings:
     fields:
       - field_teaser_text
       - rendered_item
+      - type
   language_with_fallback: {  }
   node_exclude: {  }
   rendered_item: {  }
@@ -159,6 +168,7 @@ processor_settings:
     fields:
       - field_teaser_text
       - rendered_item
+      - type
 tracker_settings:
   default:
     indexing_order: fifo

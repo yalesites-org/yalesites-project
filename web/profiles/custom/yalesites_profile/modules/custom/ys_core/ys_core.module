@@ -37,7 +37,10 @@ function ys_core_theme($existing, $type, $theme, $path): array {
       ],
     ],
     'ys_search_form' => [
-      'variables' => [],
+      'variables' => [
+        'show_content_type_filter' => NULL,
+        'content_type_list' => [],
+      ],
     ],
     'ys_title_breadcrumb' => [
       'variables' => [
