@@ -20,6 +20,6 @@ default_value:
 default_value_callback: ''
 settings:
   markup:
-    value: '<p>TBD.</p>'
+    value: '<p>Create a grid of tiles, each with customizable background color and text options. Similar to cards, but offers a more uniform, grid-like presentation.</p>'
     format: basic_html
 field_type: markup

@@ -1,16 +1,16 @@
-uuid: 95e3456a-c040-4182-96c1-c5454a84ee77
+uuid: d7d09b84-8b41-4cda-90af-6dd89e9f552a
 langcode: en
 status: true
 dependencies:
   config:
-    - block_content.type.quote_callout
+    - block_content.type.reference_card
     - field.storage.block_content.field_instructions
   module:
     - markup
-id: block_content.quote_callout.field_instructions
+id: block_content.reference_card.field_instructions
 field_name: field_instructions
 entity_type: block_content
-bundle: quote_callout
+bundle: reference_card
 label: Instructions
 description: ''
 required: false
@@ -20,6 +20,6 @@ default_value:
 default_value_callback: ''
 settings:
   markup:
-    value: '<p>Display a featured quote from a person or organization, accompanied by an image and banner-like background.</p>'
+    value: '<p>Select an existing Post, Event, or Profile to display a single card.</p>'
     format: basic_html
 field_type: markup
