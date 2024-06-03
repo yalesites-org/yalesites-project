@@ -15,7 +15,7 @@
 
   {% embed "@molecules/link-grid/yds-link-grid.twig" with {
     link_grid__theme: content.field_style_color.0['#markup'],
-    link_grid__heading: content.field_heading.0['#markup'],
+    link_grid__heading: content.field_heading.0,
   }%}
     {% block link_grid__links_one %}
       {{content.field_link_lists.0}}
