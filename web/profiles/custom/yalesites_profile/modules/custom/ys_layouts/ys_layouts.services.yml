@@ -1,0 +1,9 @@
+services:
+  # Custom channel for error logging.
+  logger.channel.ys_layouts:
+    parent: logger.channel_base
+    arguments: ['ys_layouts']
+  # Used to update layout builder configuration on existing entities.
+  ys_layouts.updater:
+    class: Drupal\ys_layouts\Service\LayoutUpdater
+    arguments: ['@config.factory', '@database', '@entity_type.manager', '@logger.channel.ys_layouts']
