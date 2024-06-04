@@ -339,7 +339,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('offset', $items[$delta]->params) : 0,
       '#min' => 0,
       '#attributes' => [
-         'placeholder' => 0,
+        'placeholder' => 0,
       ],
     ];
 
