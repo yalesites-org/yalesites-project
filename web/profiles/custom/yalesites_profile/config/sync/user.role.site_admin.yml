@@ -69,7 +69,6 @@ dependencies:
     - webform
     - ys_alert
     - ys_core
-    - ys_localist
 id: site_admin
 label: 'Site administrator'
 weight: -6
@@ -348,5 +347,4 @@ permissions:
   - 'view the administration theme'
   - 'view unpublished paragraphs'
   - 'yalesites manage alerts'
-  - 'yalesites manage localist'
   - 'yalesites manage settings'
