@@ -333,6 +333,16 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#suffix' => '</div>',
     ];
 
+    $form['group_user_selection']['options']['offset'] = [
+      '#title' => 'Offset',
+      '#type' => 'number',
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('offset', $items[$delta]->params) : 0,
+      '#min' => 0,
+      '#attributes' => [
+         'placeholder' => 0,
+      ],
+    ];
+
     $element['group_params']['params'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Params'),
@@ -375,6 +385,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         "sort_by" => $form_state->getValue($formSelectors['sort_by_array']),
         "display" => $form_state->getValue($formSelectors['display_array']),
         "limit" => (int) $form_state->getValue($formSelectors['limit_array']),
+        "offset" => (int) $form_state->getValue($formSelectors['offset_array']),
       ];
       $value['params'] = json_encode($paramData);
     }
