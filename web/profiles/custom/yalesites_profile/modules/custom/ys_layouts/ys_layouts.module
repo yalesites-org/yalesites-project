@@ -33,6 +33,8 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'teaser_media' => [],
         'has_register' => NULL,
         'localist_url' => NULL,
+        'stream_url' => NULL,
+        'stream_embed_code' => NULL,
       ],
     ],
     'ys_page_meta_block' => [

@@ -109,6 +109,8 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
       '#teaser_media' => $eventFieldData['teaser_media'],
       '#has_register' => $eventFieldData['has_register'],
       '#localist_url' => $eventFieldData['localist_url'],
+      '#stream_url' => $eventFieldData['stream_url'],
+      '#stream_embed_code' => $eventFieldData['stream_embed_code'],
     ];
   }
 
