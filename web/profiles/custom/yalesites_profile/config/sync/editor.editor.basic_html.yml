@@ -44,17 +44,32 @@ settings:
           label: 'Plain text'
           language: plaintext
         -
+          label: C
+          language: c
+        -
+          label: C++
+          language: cpp
+        -
+          label: 'C#'
+          language: csharp
+        -
           label: CSS
           language: css
         -
           label: HTML
           language: html
         -
-          label: Twig
-          language: twig
+          label: Java
+          language: java
         -
           label: JavaScript
           language: javascript
+        -
+          label: JSON
+          language: json
+        -
+          label: Matlab
+          language: matlab
         -
           label: PHP
           language: php
@@ -62,11 +77,26 @@ settings:
           label: Python
           language: python
         -
+          label: R
+          language: r
+        -
+          label: Twig
+          language: twig
+        -
           label: TypeScript
           language: typescript
         -
-          label: XML
-          language: xml
+          label: SCSS
+          language: scss
+        -
+          label: Shell/Bash
+          language: shell
+        -
+          label: SQL
+          language: sql
+        -
+          label: YAML
+          language: yaml
     ckeditor5_heading:
       enabled_headings:
         - heading2
