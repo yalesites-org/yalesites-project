@@ -10,7 +10,7 @@ id: node.event.field_event_place
 field_name: field_event_place
 entity_type: node
 bundle: event
-label: Place
+label: 'Yale Location'
 description: ''
 required: false
 translatable: false

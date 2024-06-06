@@ -181,6 +181,11 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
 
         break;
 
+      case 'tickets':
+        $endpointsWithParams[] = "$this->endpointBase/api/2/events";
+
+        break;
+
       default:
         $endpointsWithParams = [];
         break;
@@ -347,6 +352,35 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
         }
       }
     }
+  }
+
+  /**
+   * Returns ticket info for a given event ID.
+   */
+  public function getTicketInfo($eventId) {
+    $ticketData = [];
+    $response = NULL;
+    $ticketEndpoint = $this->getEndpointUrls('tickets');
+    $version = time();
+    $url = "$ticketEndpoint[0]/$eventId/tickets?v=$version";
+    try {
+      $response = $this->httpClient->get($url);
+    }
+    catch (\Throwable $th) {
+    }
+
+    if ($response) {
+      $data = json_decode($response->getBody()->getContents(), TRUE);
+      foreach ($data['tickets'] as $ticket) {
+        $ticketData[] = [
+          'name' => $ticket['ticket']['name'],
+          'desc' => $ticket['ticket']['description'],
+          'id' => $ticket['ticket']['id'],
+          'price' => $ticket['ticket']['price'],
+        ];
+      }
+    }
+    return $ticketData;
   }
 
 }

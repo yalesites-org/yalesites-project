@@ -32,6 +32,7 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'localist_image_alt' => NULL,
         'teaser_media' => [],
         'has_register' => NULL,
+        'cost_button_text' => 'Register',
         'localist_url' => NULL,
         'stream_url' => NULL,
         'stream_embed_code' => NULL,
@@ -134,6 +135,7 @@ function ys_layouts_preprocess_node(&$variables) {
     $variables['ticket_cost'] = $eventFieldData['ticket_cost'];
     $variables['ticket_url'] = $eventFieldData['ticket_url'];
     $variables['has_register'] = $eventFieldData['has_register'];
+    $variables['cost_button_text'] = $eventFieldData['cost_button_text'];
     $variables['localist_url'] = $eventFieldData['localist_url'];
   }
 }
