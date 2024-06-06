@@ -129,11 +129,10 @@ third_party_settings:
         - title
         - field_event_description
         - field_event_cta
-        - field_stream_url
-        - field_stream_embed_code
         - group_place
         - field_event_date
         - field_event_recurring
+        - group_stream_information
       label: 'Basic info'
       region: content
       parent_name: group_event_tabs
@@ -154,7 +153,7 @@ third_party_settings:
         - field_localist_group
         - field_event_audience
         - field_event_topics
-      label: Classifications
+      label: Taxonomies
       region: content
       parent_name: group_event_tabs
       weight: 4
@@ -209,10 +208,25 @@ third_party_settings:
         - field_localist_event_experience
         - field_event_place
         - field_event_room
-      label: Place
+      label: Location
       region: content
       parent_name: group_basic_info
       weight: 6
+      format_type: fieldset
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        description: ''
+        required_fields: true
+    group_stream_information:
+      children:
+        - field_stream_url
+        - field_stream_embed_code
+      label: 'Stream information'
+      region: content
+      parent_name: group_basic_info
+      weight: 9
       format_type: fieldset
       format_settings:
         classes: ''

@@ -108,6 +108,7 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
       '#localist_image_alt' => $eventFieldData['localist_image_alt'],
       '#teaser_media' => $eventFieldData['teaser_media'],
       '#has_register' => $eventFieldData['has_register'],
+      '#cost_button_text' => $eventFieldData['cost_button_text'],
       '#localist_url' => $eventFieldData['localist_url'],
     ];
   }

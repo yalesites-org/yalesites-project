@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Url;
 use Drupal\node\NodeInterface;
+use Drupal\ys_localist\LocalistManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -41,19 +42,30 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
   protected $calendarLink;
 
   /**
+   * Localist Manager.
+   *
+   * @var \Drupal\ys_localist\LocalistManager
+   */
+  protected $localistManager;
+
+  /**
    * Constructs a new EventMetaBlock instance.
    *
    * @param \Drupal\Core\Datetime\DateFormatter $date_formatter
    *   The date formatter service.
    * @param \Drupal\Core\Entity\EntityTypeManager $entity_type_manager
    *   The entity type manager service.
+   * @param \Drupal\ys_localist\LocalistManager $localist_manager
+   *   The Localist manager service.
    */
   public function __construct(
     DateFormatter $date_formatter,
     EntityTypeManager $entity_type_manager,
+    LocalistManager $localist_manager,
   ) {
     $this->dateFormatter = $date_formatter;
     $this->entityTypeManager = $entity_type_manager;
+    $this->localistManager = $localist_manager;
     $this->calendarLink = new CalendarLinkTwigExtension();
   }
 
@@ -64,6 +76,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     return new static(
       $container->get('date.formatter'),
       $container->get('entity_type.manager'),
+      $container->get('ys_localist.manager'),
     );
   }
 
@@ -135,12 +148,14 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     }
 
     // Event basic fields.
+    $localistId = $node->field_localist_id->first() ? $node->field_localist_id->first()->getValue()['value'] : NULL;
     $experience = $this->getFilterValues($node, 'field_localist_event_experience');
     $eventTypes = $this->getFilterValues($node, 'field_localist_event_type');
     $eventAudience = $this->getFilterValues($node, 'field_event_audience');
     $eventTopics = $this->getFilterValues($node, 'field_event_topics');
     $ticketLink = $node->field_ticket_registration_url->first() ? $node->field_ticket_registration_url->first()->getValue()['uri'] : NULL;
     $ticketCost = $node->field_ticket_cost->first() ? $node->field_ticket_cost->first()->getValue()['value'] : NULL;
+    $costButtonText = $ticketCost ? 'Buy Tickets' : 'Register';
     $description = $node->field_event_description->first() ? $node->field_event_description->first()->getValue()['value'] : NULL;
     $externalEventWebiteUrl = ($node->field_event_cta->first()) ? Url::fromUri($node->field_event_cta->first()->getValue()['uri'])->toString() : NULL;
     $externalEventWebsiteTitle = ($node->field_event_cta->first()) ? $node->field_event_cta->first()->getValue()['title'] : NULL;
@@ -148,6 +163,22 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     $localistImageAlt = $node->field_localist_event_image_alt->first() ? $node->field_localist_event_image_alt->first()->getValue()['value'] : NULL;
     $hasRegister = $node->field_localist_register_enabled->first() ? (bool) $node->field_localist_register_enabled->first()->getValue()['value'] : FALSE;
     $localistUrl = ($node->field_localist_event_url->first()) ? Url::fromUri($node->field_localist_event_url->first()->getValue()['uri'])->toString() : NULL;
+
+    // Localist register ticket changes.
+    $localistRegisterTickets = $hasRegister ? $this->localistManager->getTicketInfo($localistId) : NULL;
+    if ($localistRegisterTickets) {
+      $costButtonText = 'Register';
+      foreach ($localistRegisterTickets as $ticketInfo) {
+        if ($ticketInfo['price'] > 0) {
+          $costButtonText = 'Buy Tickets';
+        }
+        $ticketCost[] = $ticketInfo['name'] . ": $" . $ticketInfo['price'];
+      }
+      $ticketLink = $localistUrl . "#tickets=1";
+    }
+    else {
+      $hasRegister = FALSE;
+    }
 
     // Dates.
     $dates = [];
@@ -252,6 +283,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       'event_audience' => $eventAudience,
       'event_topics' => $eventTopics,
       'has_register' => $hasRegister,
+      'cost_button_text' => $costButtonText,
       'localist_url' => $localistUrl,
 
     ];

@@ -2,7 +2,7 @@ services:
   # Service for retrieving event field data.
   ys_layouts.meta_fields_manager:
     class: Drupal\ys_layouts\MetaFieldsManager
-    arguments: ['@date.formatter', '@entity_type.manager']
+    arguments: ['@date.formatter', '@entity_type.manager', '@ys_localist.manager']
   # Custom channel for error logging.
   logger.channel.ys_layouts:
     parent: logger.channel_base
