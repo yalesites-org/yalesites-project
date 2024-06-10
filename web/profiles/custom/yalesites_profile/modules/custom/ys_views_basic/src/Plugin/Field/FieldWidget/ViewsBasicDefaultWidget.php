@@ -220,7 +220,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     ];
 
     $form['group_user_selection']['filter_and_sort']['terms_include'] = [
-      '#title' => $this->t('Include content that uses the following terms'),
+      '#title' => $this->t('Include content that uses the following tags or categories'),
       '#type' => 'select',
       '#options' => $this->viewsBasicManager->getAllTags(),
       '#chosen' => TRUE,
@@ -231,7 +231,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     ];
 
     $form['group_user_selection']['filter_and_sort']['terms_exclude'] = [
-      '#title' => $this->t('Exclude content that uses the following terms'),
+      '#title' => $this->t('Exclude content that uses the following tags or categories'),
       '#type' => 'select',
       '#options' => $this->viewsBasicManager->getAllTags(),
       '#multiple' => TRUE,
