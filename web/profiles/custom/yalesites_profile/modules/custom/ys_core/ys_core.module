@@ -427,7 +427,7 @@ function ys_core_taxonomy_term_update() {
  * This is used to invalidate the render cache so that when selecting media
  * items it correctly corresponds to the image seen in the listing.
  */
-function ys_core_media_insert(EntityInterface $entity) {
+function ys_core_media_insert($entity) {
   _ys_core_invalidate_media_list();
 }
 
@@ -437,7 +437,7 @@ function ys_core_media_insert(EntityInterface $entity) {
  * This is used to invalidate the render cache so that when selecting media
  * items it correctly corresponds to the image seen in the listing.
  */
-function ys_core_media_delete(EntityInterface $entity) {
+function ys_core_media_delete($entity) {
   _ys_core_invalidate_media_list();
 }
 
