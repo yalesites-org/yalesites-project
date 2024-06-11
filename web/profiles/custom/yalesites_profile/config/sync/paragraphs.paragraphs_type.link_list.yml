@@ -1,0 +1,35 @@
+uuid: c8b13d2d-0fd2-4bdd-b817-75919293df3d
+langcode: en
+status: true
+dependencies:
+  module:
+    - entity_redirect
+third_party_settings:
+  entity_redirect:
+    redirect:
+      anonymous:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+      add:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+      edit:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+      delete:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+id: link_list
+label: 'Link List'
+icon_uuid: null
+icon_default: null
+description: ''
+behavior_plugins: {  }

@@ -1,0 +1,24 @@
+uuid: 9de48731-775e-4afc-b53c-72e0b1e78dd3
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.link_grid
+    - field.storage.block_content.field_heading
+    - filter.format.heading_html
+  module:
+    - text
+id: block_content.link_grid.field_heading
+field_name: field_heading
+entity_type: block_content
+bundle: link_grid
+label: 'Link Grid Component Title'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - heading_html
+field_type: text

@@ -1,0 +1,24 @@
+uuid: d763b7c6-1e82-4968-9fdb-83b1cadbaec0
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_text
+    - filter.format.heading_html
+    - paragraphs.paragraphs_type.facts_item
+  module:
+    - text
+id: paragraph.facts_item.field_text
+field_name: field_text
+entity_type: paragraph
+bundle: facts_item
+label: Content
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - heading_html
+field_type: text_long
