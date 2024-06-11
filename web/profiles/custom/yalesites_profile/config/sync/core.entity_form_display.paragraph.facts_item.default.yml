@@ -1,0 +1,50 @@
+uuid: edee07a0-b424-487e-84bf-460aa7ec1713
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.paragraph.facts_item.field_heading
+    - field.field.paragraph.facts_item.field_text
+    - paragraphs.paragraphs_type.facts_item
+  module:
+    - allowed_formats
+    - maxlength
+    - text
+id: paragraph.facts_item.default
+targetEntityType: paragraph
+bundle: facts_item
+mode: default
+content:
+  field_heading:
+    type: text_textfield
+    weight: 0
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings:
+      allowed_formats:
+        hide_help: '1'
+        hide_guidelines: '1'
+      maxlength:
+        maxlength_js: 80
+        maxlength_js_label: 'Content recommended length set to @limit characters, remaining: <strong>@remaining</strong>'
+        maxlength_js_enforce: false
+  field_text:
+    type: text_textarea
+    weight: 2
+    region: content
+    settings:
+      rows: 2
+      placeholder: ''
+    third_party_settings:
+      allowed_formats:
+        hide_help: '1'
+        hide_guidelines: '1'
+      maxlength:
+        maxlength_js: 120
+        maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
+        maxlength_js_enforce: false
+hidden:
+  created: true
+  status: true

@@ -1,0 +1,24 @@
+uuid: 680630fb-cb6c-43e3-9140-704790dcd82c
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.quote_callout
+    - field.storage.block_content.field_caption
+    - filter.format.heading_html
+  module:
+    - text
+id: block_content.quote_callout.field_caption
+field_name: field_caption
+entity_type: block_content
+bundle: quote_callout
+label: Attribution
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - heading_html
+field_type: text_long
