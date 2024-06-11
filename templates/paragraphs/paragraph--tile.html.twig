@@ -1,0 +1,18 @@
+{# Get values from parent to pass here #}
+{% set parent = paragraph._referringItem.parent.parent.entity %}
+{% set tile__item__bg_image = content.field_media.0 ? 'true' : 'false' %}
+
+{% embed "@molecules/tile-item/yds-tile-item.twig" with {
+  tile__item__heading: content.field_heading.0['#text'],
+  tile__item__content: content.field_text.0,
+  tile__item__content_link: content.field_link.0['#url_title'],
+  tile__item__alignment: parent.fields.field_style_alignment.0.value,
+  tile__item__vertical_alignment: parent.fields.field_style_position.0.value,
+  tile__item__presentation_style: content.field_heading.0['#text'] ? 'heading' : 'text-only',
+  tile__item__theme: content.field_style_color.0['#markup'],
+  }
+%}
+  {% block tile__item__image %}
+    {{ content.field_media }}
+  {% endblock %}
+{% endembed %}

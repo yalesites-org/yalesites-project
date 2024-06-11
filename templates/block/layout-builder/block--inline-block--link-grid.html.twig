@@ -1,0 +1,34 @@
+{% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
+
+{% block content %}
+  {% if parentNode == 'post' or parentNode == 'event' %}
+    {% set link_grid__width = "content" %}
+  {% else %}
+    {% set link_grid__width = "site" %}
+  {% endif %}
+
+  {# add checks for each link list #}
+  {% set link_grid__links_one = content.field_link_lists.0 %}
+  {% set link_grid__links_two = content.field_link_lists.1 %}
+  {% set link_grid__links_three = content.field_link_lists.2 %}
+  {% set link_grid__links_four = content.field_link_lists.3 %}
+
+  {% embed "@molecules/link-grid/yds-link-grid.twig" with {
+    link_grid__theme: content.field_style_color.0['#markup'],
+    link_grid__heading: content.field_heading.0,
+  }%}
+    {% block link_grid__links_one %}
+      {{content.field_link_lists.0}}
+    {% endblock %}
+    {% block link_grid__links_two %}
+      {{content.field_link_lists.1}}
+    {% endblock %}
+    {% block link_grid__links_three %}
+      {{content.field_link_lists.2}}
+    {% endblock %}
+    {% block link_grid__links_four %}
+      {{content.field_link_lists.3}}
+    {% endblock %}
+  {% endembed %}
+
+{% endblock %}
