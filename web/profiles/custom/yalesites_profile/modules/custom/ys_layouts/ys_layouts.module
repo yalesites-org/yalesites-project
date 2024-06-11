@@ -34,6 +34,8 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'has_register' => NULL,
         'cost_button_text' => 'Register',
         'localist_url' => NULL,
+        'stream_url' => NULL,
+        'stream_embed_code' => NULL,
       ],
     ],
     'ys_page_meta_block' => [
