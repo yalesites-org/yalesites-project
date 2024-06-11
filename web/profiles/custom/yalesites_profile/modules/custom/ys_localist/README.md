@@ -78,7 +78,7 @@ To add a new filter from Localist to Drupal, follow these steps. (Note the audie
 
 1. Create a new taxonomy vocabulary in Drupal called "Event Audience" (`event_audience`)
 2. On the Event content type, add a new taxonomy term reference field called "Event audience" (`field_event_audience`) that references this new vocabulary. Since filters in Localist can accept many items, this field should be set to allow unlimited values.
-3. On the form display, move the field to the "Classifications" section and set the widget to use "Chosen"
+3. On the form display, move the field to the "Taxonomies" section and set the widget to use "Chosen"
 4. In `web/profiles/custom/yalesites_profile/modules/custom/ys_localist/migrations` add a new migration called `localist_audience.yml` to retrieve the new filters. Feel free to copy the existing `localist_audience.yml` file and modify as it will be very similar.
 5. Note the endpoint to check on Localist machine names is: `https://yale.enterprise.localist.com/api/2/events/filters`
 6. Change the `id` to `localist_audience`.
@@ -98,7 +98,7 @@ To add a new filter from Localist to Drupal, follow these steps. (Note the audie
 20. Test the migration by going to `/admin/yalesites/localist` and clicking "Sync now"
 21. If all worked well, new taxonomy terms should appear in the new vocabulary (given they are already entered into Localist), and if any events are tagged with those filters, they will also show in the event itself.
 22. Note that Layout Builder by default will add these fields to the layout. To remove, visit `/admin/structure/types/manage/event/display`, click "Manage layout" and remove the newly added block "Event audience" and then save.
-23. To add the field to the Event Meta BLock that appears above all Layout Builder content, edit the `web/profiles/custom/yalesites_profile/modules/custom/ys_layouts/src/Plugin/Block/EventMetaBlock.php`, `web/profiles/custom/yalesites_profile/modules/custom/ys_layouts/templates/ys-event-meta-block.html.twig` and `web/profiles/custom/yalesites_profile/modules/custom/ys_layouts/ys_layouts.module` (Specifically the `ys_layouts_theme` function) to add the new field.
+23. To add the field to the Event Meta Block that appears above all Layout Builder content, edit the `web/profiles/custom/yalesites_profile/modules/custom/ys_layouts/src/Plugin/Block/EventMetaBlock.php`, `web/profiles/custom/yalesites_profile/modules/custom/ys_layouts/templates/ys-event-meta-block.html.twig` and `web/profiles/custom/yalesites_profile/modules/custom/ys_layouts/ys_layouts.module` (Specifically the `ys_layouts_theme` function) to add the new field.
 24. Note a few of these changes require exporting config before committing to the repo: `lando drush cex`
 
 ### Extract Groups Process Plugin
