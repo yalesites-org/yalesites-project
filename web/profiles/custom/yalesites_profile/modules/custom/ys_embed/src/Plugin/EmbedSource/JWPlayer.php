@@ -22,7 +22,7 @@ class JWPlayer extends EmbedSourceBase implements EmbedSourceInterface {
    * {@inheritdoc}
    */
   protected static $pattern = '/<iframe.+src="(?<url>https:\/\/content.jwplatform.com\/players\/[^"]+)"/';
-
+    protected static $pattern = '/<iframe.+src="(?<url>https:\/\/(content|cdn).(jwplatform|jwplayer).com\/players\/[^"]+)"/';
   /**
    * {@inheritdoc}
    */
