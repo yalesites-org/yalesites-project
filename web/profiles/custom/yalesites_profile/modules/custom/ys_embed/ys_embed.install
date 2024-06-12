@@ -149,7 +149,9 @@ function ys_embed_update_9003() {
 }
 
 /**
- * Implements hook_update(). Copy jwplayer icon.
+ * Implements hook_update().
+ *
+ * Copy jwplayer icon.
  */
 function ys_embed_update_9004() {
   // Copy the jwplayer.png file to the media-icons/generic folder.
