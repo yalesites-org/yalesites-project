@@ -21,8 +21,7 @@ class JWPlayer extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $pattern = '/<iframe.+src="(?<url>https:\/\/content.jwplatform.com\/players\/[^"]+)"/';
-    protected static $pattern = '/<iframe.+src="(?<url>https:\/\/(content|cdn).(jwplatform|jwplayer).com\/players\/[^"]+)"/';
+  protected static $pattern = '/<iframe.+src="(?<url>https:\/\/(content|cdn).(jwplatform|jwplayer).com\/players\/[^"]+)"/';
   /**
    * {@inheritdoc}
    */
@@ -31,7 +30,7 @@ class JWPlayer extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $instructions = 'Retrieve the jwplayer iframe embed code from jwplatform.';
+  protected static $instructions = 'From the jwplayer dashboard, click the "Embed" button on the right side of the row you wish to include.  Select the "iFrame" tab, and copy the markup shown.';
 
   /**
    * {@inheritdoc}
