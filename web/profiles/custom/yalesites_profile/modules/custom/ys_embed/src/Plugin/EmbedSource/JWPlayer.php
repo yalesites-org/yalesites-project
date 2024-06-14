@@ -55,6 +55,7 @@ EXAMPLE;
     'height' => '100%',
     'scrolling' => 'no',
     'frameborder' => 'no',
+    'allowfullscreen' => TRUE,
     'isIframe' => TRUE,
   ];
 
