@@ -45,7 +45,13 @@ function ys_localist_cron() {
  */
 function ys_localist_form_alter(&$form, &$form_state, $form_id) {
   // Disables fields that are imported from Localist.
-  if ($form_id == 'node_event_edit_form' || $form_id == 'node_event_form') {
+  $formsToCheck = [
+    'node_event_form',
+    'node_event_edit_form',
+    'node_event_quick_node_clone_form',
+  ];
+
+  if (in_array($form_id, $formsToCheck)) {
     $fieldsToDisable = [
       'field_localist_id',
       'field_event_status',
