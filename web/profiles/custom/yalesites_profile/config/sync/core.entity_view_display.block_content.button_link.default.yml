@@ -5,6 +5,7 @@ dependencies:
   config:
     - block_content.type.button_link
     - field.field.block_content.button_link.field_button_link
+    - field.field.block_content.button_link.field_instructions
   module:
     - link
 id: block_content.button_link.default
@@ -22,7 +23,8 @@ content:
       rel: '0'
       target: '0'
     third_party_settings: {  }
-    weight: 1
+    weight: 0
     region: content
 hidden:
+  field_instructions: true
   search_api_excerpt: true

@@ -1,0 +1,25 @@
+uuid: 825f83af-e29f-4f70-9925-f8e0eaaf1793
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.button_link
+    - field.storage.block_content.field_instructions
+  module:
+    - markup
+id: block_content.button_link.field_instructions
+field_name: field_instructions
+entity_type: block_content
+bundle: button_link
+label: Instructions
+description: ''
+required: false
+translatable: false
+default_value:
+  - {  }
+default_value_callback: ''
+settings:
+  markup:
+    value: '<p><span>Button link allows you to add a button link to your content.</span></p>'
+    format: basic_html
+field_type: markup

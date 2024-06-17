@@ -15,13 +15,13 @@ label: 'Video File'
 description: ''
 required: true
 translatable: true
-default_value: {  }
+default_value: {}
 default_value_callback: ''
 settings:
   handler: 'default:file'
-  handler_settings: {  }
+  handler_settings: {}
   file_directory: '[date:custom:Y]-[date:custom:m]'
   file_extensions: mp4
-  max_filesize: '12 MB'
+  max_filesize: '25 MB'
   description_field: true
 field_type: file

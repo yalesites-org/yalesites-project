@@ -5,6 +5,7 @@ dependencies:
   config:
     - block_content.type.reference_card
     - field.field.block_content.reference_card.field_content_ref
+    - field.field.block_content.reference_card.field_instructions
     - field.field.block_content.reference_card.field_style_variation
   module:
     - options
@@ -27,7 +28,8 @@ content:
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 5
+    weight: 1
     region: content
 hidden:
+  field_instructions: true
   search_api_excerpt: true
