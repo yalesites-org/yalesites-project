@@ -240,7 +240,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       }
     }
 
-    // Conferences
+    // Conferences.
     $isConference = FALSE;
     if ($kindRef = $node->field_event_kind->first()) {
       /** @var \Drupal\taxonomy\Entity\Term $kindInfo */
