@@ -100,6 +100,10 @@ source:
       name: register_enabled
       label: 'Localist Register enabled'
       selector: localist_data/has_register
+    -
+      name: event_kind
+      label: 'Event kind'
+      selector: localist_data/kind
 
   ids:
     event_id:
@@ -186,6 +190,10 @@ process:
   field_stream_url/uri: stream_url
   field_stream_embed_code: stream_embed_code
   field_localist_register_enabled: register_enabled
+  field_event_kind:
+    plugin: migration_lookup
+    migration: localist_kind
+    source: event_kind
 
 destination:
   plugin: 'entity:node'
@@ -214,6 +222,7 @@ destination:
     - field_stream_url
     - field_stream_embed_code
     - field_localist_register_enabled
+    - field_event_kind
 
 migration_dependencies:
   required:
@@ -223,4 +232,5 @@ migration_dependencies:
     - localist_audience
     - localist_status
     - localist_groups
+    - localist_kind
   optional: []

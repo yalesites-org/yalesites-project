@@ -10,6 +10,7 @@ dependencies:
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_description
     - field.field.node.event.field_event_format
+    - field.field.node.event.field_event_kind
     - field.field.node.event.field_event_place
     - field.field.node.event.field_event_recurring
     - field.field.node.event.field_event_room
@@ -177,6 +178,7 @@ content:
 hidden:
   field_event_audience: true
   field_event_description: true
+  field_event_kind: true
   field_event_place: true
   field_event_recurring: true
   field_event_room: true

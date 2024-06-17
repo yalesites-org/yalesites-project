@@ -9,6 +9,7 @@ dependencies:
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_description
     - field.field.node.event.field_event_format
+    - field.field.node.event.field_event_kind
     - field.field.node.event.field_event_place
     - field.field.node.event.field_event_recurring
     - field.field.node.event.field_event_room
@@ -153,6 +154,7 @@ third_party_settings:
         - field_localist_group
         - field_event_audience
         - field_event_topics
+        - field_event_kind
       label: Taxonomies
       region: content
       parent_name: group_event_tabs
@@ -287,6 +289,12 @@ content:
     settings:
       rows: 5
       placeholder: ''
+    third_party_settings: {  }
+  field_event_kind:
+    type: chosen_select
+    weight: 28
+    region: content
+    settings: {  }
     third_party_settings: {  }
   field_event_place:
     type: chosen_select

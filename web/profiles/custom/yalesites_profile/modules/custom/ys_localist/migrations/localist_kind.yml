@@ -1,0 +1,26 @@
+# Note: This is being done with embedded data because Localist does not have
+# an endpoint to fetch kinds.
+id: localist_kind
+label: 'Localist kind'
+source:
+  plugin: embedded_data
+  track_changes: true
+  data_rows:
+    - localist_name: 'standalone'
+      human_name: 'Standalone'
+    - localist_name: 'conference'
+      human_name: 'Conference'
+    - localist_name: 'session'
+      human_name: 'Session'
+  ids:
+    localist_name:
+      type: string
+
+process:
+  name: human_name
+
+destination:
+  plugin: 'entity:taxonomy_term'
+  default_bundle: event_kind
+  overwrite_properties:
+    - name

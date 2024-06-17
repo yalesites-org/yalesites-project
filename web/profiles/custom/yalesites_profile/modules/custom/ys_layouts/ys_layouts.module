@@ -36,6 +36,8 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'localist_url' => NULL,
         'stream_url' => NULL,
         'stream_embed_code' => NULL,
+        'is_conference' => NULL,
+        'nid' => NULL,
       ],
     ],
     'ys_page_meta_block' => [

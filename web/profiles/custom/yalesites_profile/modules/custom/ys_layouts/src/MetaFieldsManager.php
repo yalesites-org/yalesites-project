@@ -240,6 +240,16 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       }
     }
 
+    // Conferences
+    $isConference = FALSE;
+    if ($kindRef = $node->field_event_kind->first()) {
+      /** @var \Drupal\taxonomy\Entity\Term $kindInfo */
+      $kindInfo = $this->entityTypeManager->getStorage('taxonomy_term')->load($kindRef->getValue()['target_id']);
+      if ($kindInfo) {
+        $isConference = ($kindInfo->getName() == 'Conference');
+      }
+    }
+
     /*
      * ICS URL.
      *
@@ -267,6 +277,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     }
 
     return [
+      'id' => $node->id(),
       'title' => $node->getTitle(),
       'dates' => $dates,
       'ics' => $icsUrl,
@@ -289,6 +300,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       'localist_url' => $localistUrl,
       'stream_url' => $streamUrl,
       'stream_embed_code' => $streamEmbedCode,
+      'is_conference' => $isConference,
     ];
   }
 

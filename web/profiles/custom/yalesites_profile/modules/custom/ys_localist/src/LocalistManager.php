@@ -32,6 +32,7 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
     'localist_groups',
     'localist_places',
     'localist_status',
+    'localist_kind',
     'localist_events',
   ];
 
