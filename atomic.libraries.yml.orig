@@ -1,0 +1,77 @@
+global:
+  css:
+    theme:
+      "https://yale-webfonts.yalespace.org/fonts.min.css": {type: external}
+      node_modules/@yalesites-org/component-library-twig/dist/css/style.css: {}
+      components/_settings/_config.css: {}
+      css/admin-theme.css: {}
+      css/localist.css: {}
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/menu/menu-toggle/yds-menu-toggle.js: {}
+    node_modules/@yalesites-org/component-library-twig/dist/js/00-tokens/layout/yds-layout.js: {}
+    node_modules/@yalesites-org/component-library-twig/dist/js/ys-link.js: {}
+  dependencies:
+    - core/drupal
+accordion:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/accordion/yds-accordion.js: {}
+alert:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/alert/yds-alert.js: {}
+primary-nav:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/03-organisms/menu/primary-nav/yds-primary-nav.js: {}
+reference-card:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/cards/reference-card/yds-reference-card.js: {}
+custom-card:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/cards/custom-card/yds-custom-card.js: {}
+breadcrumbs:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/03-organisms/menu/breadcrumbs/yds-breadcrumbs.js: {}
+tabs:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/tabs/yds-tabs.js: {}
+gallery:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/03-organisms/galleries/media-grid/yds-media-grid-interactive.js: {}
+background-video:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/01-atoms/videos/video-background/yds-video-background.js: {}
+fontawesome:
+  css:
+    theme:
+      node_modules/@yalesites-org/component-library-twig/dist/fonts/fontawesome/css/fontawesome.css: {}
+      node_modules/@yalesites-org/component-library-twig/dist/fonts/fontawesome/css/regular.css: {}
+      node_modules/@yalesites-org/component-library-twig/dist/fonts/fontawesome/css/solid.css: {}
+layout-builder:
+  css:
+    theme:
+      css/layout-builder.css: {}
+text-link:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/01-atoms/controls/text-link/yds-text-link.js: {}
+text:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/01-atoms/typography/text/yds-text.js: {}
+text-copy-button:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/01-atoms/controls/text-copy-button/yds-text-copy-button.js: {}
+spotlights:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/content-spotlight-portrait/content-spotlights.js: {}
+event-localist:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/meta/event-meta/event-meta-localist.js: {}
+chosen-select:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/01-atoms/forms/select/yds-select.js: {}
+  dependencies:
+    - core/once
+    - libraries/chosen
+calendar:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/03-organisms/calendar/yds-calendar.js: {}
+  dependencies:
+    - core/drupal.ajax
