@@ -22,8 +22,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
-    "@yalesites-org/eslint-config-and-other-formatting": "^1.5.4",
-    "semantic-release": "^24.1.1"
+    "semantic-release": "^24.1.1",
+    "@yalesites-org/eslint-config-and-other-formatting": "^1.20.0",
   },
   "lint-staged": {
     "components/**/*.{js,scss,php}": [
