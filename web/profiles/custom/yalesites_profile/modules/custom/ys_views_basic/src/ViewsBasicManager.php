@@ -296,6 +296,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'view' => $paramsDecoded['view_mode'],
         'items' => $itemsLimit,
         'event_time_period' => str_contains($filterType, 'event') ? $eventTimePeriod : NULL,
+        'offset' => $paramsDecoded['offset'] ?? 0,
       ]
     );
 
@@ -446,8 +447,16 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         }
         break;
 
+      case 'operator':
+        $defaultParam = (empty($paramsDecoded['operator'])) ? '+' : (int) $paramsDecoded['operator'];
+        break;
+
       case 'limit':
         $defaultParam = (empty($paramsDecoded['limit'])) ? 10 : (int) $paramsDecoded['limit'];
+        break;
+
+      case 'offset':
+        $defaultParam = (empty($paramsDecoded['offset'])) ? 0 : (int) $paramsDecoded['offset'];
         break;
 
       case 'event_time_period':
@@ -597,6 +606,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
             'limit',
           ],
           'limit_ajax' => ($form) ? $form['block_form']['group_user_selection']['options']['limit'] : NULL,
+          'offset_array' => [
+            'block_form',
+            'group_user_selection',
+            'options',
+            'offset',
+          ],
         ];
       }
       else {
@@ -652,6 +667,13 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
             'limit',
           ],
           'limit_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['options']['limit'] : NULL,
+          'offset_array' => [
+            'settings',
+            'block_form',
+            'group_user_selection',
+            'options',
+            'offset',
+          ],
         ];
       }
     }
@@ -672,6 +694,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         ),
         'limit_array' => ['limit'],
         'limit_ajax' => ($form) ? $form['group_user_selection']['options']['limit'] : NULL,
+        'offset_array' => ['offset'],
       ];
     }
 
