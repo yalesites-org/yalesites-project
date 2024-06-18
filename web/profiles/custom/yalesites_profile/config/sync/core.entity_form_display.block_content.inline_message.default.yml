@@ -5,6 +5,7 @@ dependencies:
   config:
     - block_content.type.inline_message
     - field.field.block_content.inline_message.field_heading
+    - field.field.block_content.inline_message.field_style_color
     - field.field.block_content.inline_message.field_text
   module:
     - allowed_formats
@@ -31,6 +32,12 @@ content:
         maxlength_js: 50
         maxlength_js_label: 'Content recommended length set to @limit characters, remaining: <strong>@remaining</strong>'
         maxlength_js_enforce: false
+  field_style_color:
+    type: options_select
+    weight: 3
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_text:
     type: text_textarea
     weight: 4

@@ -1,0 +1,21 @@
+uuid: 1ca64dda-9397-4c21-800a-4f3732021700
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.inline_message
+    - field.storage.block_content.field_style_color
+  module:
+    - options
+id: block_content.inline_message.field_style_color
+field_name: field_style_color
+entity_type: block_content
+bundle: inline_message
+label: Theme
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ys_themes_default_value_function
+settings: {  }
+field_type: list_string
