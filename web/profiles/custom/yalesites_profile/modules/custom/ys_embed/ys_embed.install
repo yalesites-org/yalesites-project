@@ -131,8 +131,17 @@ function ys_embed_update_9003() {
 /**
  * Implements hook_update().
  */
-function ys_embed_update_9004() {
+function ys_embed_update_9005() {
   _copy_embed_file('msforms.png');
+}
+
+/**
+ * Implements hook_update().
+ *
+ * Copy jwplayer icon.
+ */
+function ys_embed_update_9004() {
+  _copy_embed_file('jwplayer.png');
 }
 
 /**
@@ -169,34 +178,4 @@ function _copy_embed_file($filename) {
   }
 
   return TRUE;
-}
-
-/**
- * Implements hook_update().
- *
- * Copy jwplayer icon.
- */
-function ys_embed_update_9004() {
-  // Copy the jwplayer.png file to the media-icons/generic folder.
-  $source = \Drupal::service('extension.list.module')->getPath('ys_embed') . '/images/icons/jwplayer.png';
-  $destination = "public://styles/media_library/public/media-icons/generic";
-  /** @var \Drupal\Core\File\FileSystemInterface $file_system */
-  $file_system = \Drupal::service('file_system');
-  $file_system->prepareDirectory($destination, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-
-  // When reinstalling the media module we don't want to copy the icons when
-  // they already exist. The icons could be replaced (by a contrib module or
-  // manually), so we don't want to replace the existing files. Removing the
-  // files when we uninstall could also be a problem if the files are
-  // referenced somewhere else. Since showing an error that it was not
-  // possible to copy the files is also confusing, we silently do nothing.
-  if (!file_exists($destination . DIRECTORY_SEPARATOR . 'jwplayer.png')) {
-    try {
-      $file_system->copy($source, $destination, FileSystemInterface::EXISTS_ERROR);
-    }
-    catch (FileException $e) {
-      // Ignore and continue.
-    }
-  }
-
 }
