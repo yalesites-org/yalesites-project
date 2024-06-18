@@ -1,0 +1,52 @@
+uuid: e273e542-fa9a-47c7-adfc-034d9e226fce
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.tiles
+    - field.storage.block_content.field_tiles
+    - paragraphs.paragraphs_type.tile
+  module:
+    - entity_reference_revisions
+id: block_content.tiles.field_tiles
+field_name: field_tiles
+entity_type: block_content
+bundle: tiles
+label: Tiles
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:paragraph'
+  handler_settings:
+    target_bundles:
+      tile: tile
+    negate: 0
+    target_bundles_drag_drop:
+      accordion_item:
+        weight: 9
+        enabled: false
+      callout_item:
+        weight: 10
+        enabled: false
+      custom_card:
+        weight: 11
+        enabled: false
+      gallery_item:
+        weight: 12
+        enabled: false
+      media_grid_item:
+        weight: 13
+        enabled: false
+      tab:
+        weight: 14
+        enabled: false
+      text:
+        weight: 15
+        enabled: false
+      tile:
+        weight: 16
+        enabled: true
+field_type: entity_reference_revisions

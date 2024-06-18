@@ -1,0 +1,24 @@
+uuid: a1d4a3be-0a70-40f1-a581-0bfe82e1785d
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_heading
+    - filter.format.heading_html
+    - paragraphs.paragraphs_type.tile
+  module:
+    - text
+id: paragraph.tile.field_heading
+field_name: field_heading
+entity_type: paragraph
+bundle: tile
+label: 'Tile Heading'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - heading_html
+field_type: text
