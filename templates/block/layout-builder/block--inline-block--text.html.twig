@@ -2,6 +2,8 @@
 
 {% block content %}
 
+  {{ attach_library('atomic/text') }}
+
   {% if parentNode == 'post' or parentNode == 'event' %}
     {% set text_field__width = "content" %}
     {% set text_field__alignment = "center" %}

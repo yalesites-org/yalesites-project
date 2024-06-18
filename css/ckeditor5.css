@@ -19,6 +19,11 @@ div[contenteditable="true"] #drupal-off-canvas [data-drupal-ck-style-fence] .ck-
   width: 100%;
 }
 
+/* Removes the border style in code blocks within ckeditor */
+ .ck-content pre code {
+   border: 0;
+ }
+
 .glb-table .ck-content * {
   padding: 0;
   height: unset;
