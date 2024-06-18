@@ -334,7 +334,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     ];
 
     $form['group_user_selection']['options']['offset'] = [
-      '#title' => 'Offset',
+      '#title' => 'Ignore Number of Results',
+      '#description' => $this->t('Specify the number of results you want to ignore. If you enter "2", your view will omit the first two results that match the overall parameters you\'ve set in the view interface.'),
       '#type' => 'number',
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('offset', $items[$delta]->params) : 0,
       '#min' => 0,
