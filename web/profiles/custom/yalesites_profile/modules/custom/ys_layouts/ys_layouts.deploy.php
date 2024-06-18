@@ -32,3 +32,11 @@ function ys_layouts_deploy_9002() {
 function ys_layouts_deploy_9003() {
   \Drupal::service('ys_layouts.updater')->updateAllLocks();
 }
+
+/**
+ * Updates all content spotlights to use new text formats.
+ */
+function ys_layouts_deploy_9004() {
+  \Drupal::service('ys_layouts.updater')->updateTextFormats('content_spotlight', 'field_text');
+  \Drupal::service('ys_layouts.updater')->updateTextFormats('content_spotlight_portrait', 'field_text');
+}

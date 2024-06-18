@@ -5,7 +5,7 @@ dependencies:
   config:
     - block_content.type.content_spotlight
     - field.storage.block_content.field_text
-    - filter.format.restricted_html
+    - filter.format.basic_html
   module:
     - text
 id: block_content.content_spotlight.field_text
@@ -20,5 +20,5 @@ default_value: {  }
 default_value_callback: ''
 settings:
   allowed_formats:
-    - restricted_html
+    - basic_html
 field_type: text_long

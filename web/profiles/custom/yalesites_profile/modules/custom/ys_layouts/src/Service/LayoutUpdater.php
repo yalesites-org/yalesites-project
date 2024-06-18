@@ -2,10 +2,14 @@
 
 namespace Drupal\ys_layouts\Service;
 
+use Drupal\block_content\Entity\BlockContent;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Connection;
+use Drupal\Core\Entity\EntityFieldManager;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Messenger\MessengerInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\node\NodeInterface;
 use Psr\Log\LoggerInterface;
 
@@ -25,6 +29,8 @@ use Psr\Log\LoggerInterface;
  * @todo Consider using the Batch API to execute updateLocks in smaller chunks.
  */
 class LayoutUpdater {
+
+  use StringTranslationTrait;
 
   /**
    * The config factory service.
@@ -48,11 +54,25 @@ class LayoutUpdater {
   protected $entityTypeManager;
 
   /**
+   * The entity field manager service.
+   *
+   * @var \Drupal\Core\Entity\EntityFieldManager
+   */
+  protected $entityFieldManager;
+
+  /**
    * The logger service.
    *
    * @var \Psr\Log\LoggerInterface
    */
   protected $logger;
+
+  /**
+   * Drupal messenger.
+   *
+   * @var \Drupal\Core\Messenger\MessengerInterface
+   */
+  protected $messenger;
 
   /**
    * Constructs a new LayoutUpdater object.
@@ -63,19 +83,27 @@ class LayoutUpdater {
    *   The database connection.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
+   * @param \Drupal\Core\Entity\EntityFieldManager $entity_field_manager
+   *   The entity field manager service.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger service.
+   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+   *   The messenger service.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
     Connection $database,
     EntityTypeManagerInterface $entity_type_manager,
+    EntityFieldManager $entity_field_manager,
     LoggerInterface $logger,
+    MessengerInterface $messenger,
   ) {
     $this->configFactory = $config_factory;
     $this->database = $database;
     $this->entityTypeManager = $entity_type_manager;
+    $this->entityFieldManager = $entity_field_manager;
     $this->logger = $logger;
+    $this->messenger = $messenger;
   }
 
   /**
@@ -245,6 +273,113 @@ class LayoutUpdater {
     $nodeStorage = $this->entityTypeManager->getStorage('node');
     $nids = $this->getTempStoreNids();
     return $nodeStorage->loadMultiple($nids);
+  }
+
+  /**
+   * Gets all custom block types to allow for updating placed blocks later.
+   *
+   * @return array
+   *   An array to use as options for a select list in the settings form.
+   */
+  public function getBlockTypes() {
+    $blockTypes = $this->entityTypeManager->getStorage('block_content_type')->loadMultiple();
+    $customBlockTypes = ['' => 'Select'];
+    foreach ($blockTypes as $blockType) {
+      $customBlockTypes[$blockType->id()] = $blockType->label();
+    }
+
+    return $customBlockTypes;
+  }
+
+  /**
+   * Gets all fields on a specified block type that are text-based.
+   *
+   * @return array
+   *   An array to use as options for a select list in the settings form.
+   */
+  public function getTextBlockFields($blockType) {
+    $fieldDefinitions = $this->entityFieldManager->getFieldDefinitions('block_content', $blockType);
+    $blockFields = [];
+    foreach ($fieldDefinitions as $fieldName => $fieldDefinition) {
+      // Only select the user-created fields.
+      if (str_starts_with($fieldName, 'field_')) {
+        // Only select text-based fields.
+        if (str_starts_with($fieldDefinition->getType(), 'text')) {
+          $blockFields[$fieldName] = $fieldDefinition->getLabel();
+        }
+      }
+    }
+
+    return $blockFields;
+  }
+
+  /**
+   * Executes text format updates for all existing layout builder blocks.
+   *
+   * @param string $blockType
+   *   The machine name of a custom block type.
+   * @param string $fieldName
+   *   The machine name of a field on the custom block.
+   */
+  public function updateTextFormats($blockType, $fieldName) {
+    if (!$blockType || !$fieldName) {
+      $this->messenger->addError('No block type or field name was specified. Block updates were not performed.');
+      return;
+    }
+    // Used to set a message at the end.
+    $updated = FALSE;
+
+    // Get full field definition for specified field.
+    $fieldDefinition = $this->entityFieldManager->getFieldDefinitions('block_content', $blockType)[$fieldName];
+
+    // Get all text formats for field. We will choose 1st one as default below.
+    $defaultTextFormat = $fieldDefinition->getSetting('allowed_formats');
+
+    $blockIds = $this->getBlockIds($blockType);
+    $numExistingBlocks = count($blockIds);
+    foreach ($blockIds as $blockId) {
+      /** @var Drupal\block_content\Entity\BlockContent $block */
+      $block = $this->entityTypeManager->getStorage('block_content')->load($blockId);
+      if ($block instanceof BlockContent) {
+        // Update the text field to use the new text format.
+        $block->set($fieldName, [
+          'value' => $block->get($fieldName)->value,
+          // Choose the 1st text format as the default can only be one of them.
+          'format' => $defaultTextFormat[0],
+        ]);
+        $block->save();
+        $updated = TRUE;
+      }
+    }
+    if ($updated) {
+      $this->messenger->addStatus(
+        $this->t('Successfully updated the field "%field" to use the %format text format on %numBlocks blocks of type "%block".',
+        [
+          '%numBlocks' => $numExistingBlocks,
+          '%block' => $blockType,
+          '%field' => $fieldName,
+          '%format' => $defaultTextFormat[0],
+        ]
+      ));
+    }
+    else {
+      $this->messenger->addStatus(
+        $this->t('Note: No blocks found to update.',
+      ));
+    }
+  }
+
+  /**
+   * Returns an array of Block IDs of currently existing blocks of a block type.
+   */
+  protected function getBlockIds($blockType) {
+    // Change existing content spotlight landscape blocks.
+    $query = $this->entityTypeManager->getStorage('block_content')->getQuery()
+      ->condition('type', $blockType)
+      ->accessCheck(TRUE);
+    $blockIds = $query->execute();
+
+    return $blockIds;
   }
 
 }
