@@ -1,0 +1,31 @@
+uuid: 69ecb1b1-12f7-4a55-b10e-1cbd689243f2
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.inline_message
+    - field.field.block_content.inline_message.field_heading
+    - field.field.block_content.inline_message.field_text
+  module:
+    - text
+id: block_content.inline_message.default
+targetEntityType: block_content
+bundle: inline_message
+mode: default
+content:
+  field_heading:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_text:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 3
+    region: content
+hidden:
+  search_api_excerpt: true

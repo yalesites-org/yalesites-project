@@ -1,0 +1,11 @@
+uuid: dcf44ccb-684d-4ddc-8d24-60f2a3042b62
+langcode: en
+status: true
+dependencies: {  }
+id: inline_message
+block_id: 'inline_block:inline_message'
+category: advanced
+label: 'Inline Message'
+image_path: ''
+image_alt: ''
+weight: -100
