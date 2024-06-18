@@ -1,0 +1,20 @@
+{% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
+
+{% block content %}
+
+  {% if parentNode == 'post' or parentNode == 'event' %}
+    {% set inline_message__width = "content" %}
+    {% set inline_message__alignment = "center" %}
+  {% else %}
+    {% set inline_message__width = "site" %}
+    {% set inline_message__alignment = "left" %}
+  {% endif %}
+
+  {% embed "@molecules/inline-message/yds-inline-message.twig" with {
+    inline_message__heading: content.field_heading.0,
+    inline_message__content: content.field_text.0,
+  } %}
+
+  {% endembed %}
+
+{% endblock %}
