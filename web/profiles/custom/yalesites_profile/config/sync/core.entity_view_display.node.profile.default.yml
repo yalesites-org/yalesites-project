@@ -121,7 +121,6 @@ third_party_settings:
         - 'Chaos Tools'
         - 'Content fields'
         - 'Custom blocks'
-        - Devel
         - Forms
         - Help
         - 'Lists (Views)'
@@ -178,7 +177,6 @@ third_party_settings:
             - 'Chaos Tools'
             - 'Content fields'
             - 'Custom blocks'
-            - Devel
             - Forms
             - Help
             - 'Lists (Views)'
@@ -206,7 +204,6 @@ third_party_settings:
             - 'Chaos Tools'
             - 'Content fields'
             - 'Custom blocks'
-            - Devel
             - Forms
             - Help
             - 'Lists (Views)'
