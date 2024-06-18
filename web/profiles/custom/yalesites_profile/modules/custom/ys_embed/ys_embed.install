@@ -130,18 +130,18 @@ function ys_embed_update_9003() {
 
 /**
  * Implements hook_update().
- */
-function ys_embed_update_9005() {
-  _copy_embed_file('msforms.png');
-}
-
-/**
- * Implements hook_update().
  *
  * Copy jwplayer icon.
  */
 function ys_embed_update_9004() {
   _copy_embed_file('jwplayer.png');
+}
+
+/**
+ * Implements hook_update().
+ */
+function ys_embed_update_9005() {
+  _copy_embed_file('msforms.png');
 }
 
 /**
