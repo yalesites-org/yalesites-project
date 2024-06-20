@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\ys_layouts;
+namespace Drupal\ys_localist;
 
 use Drupal\calendar_link\Twig\CalendarLinkTwigExtension;
 use Drupal\Core\Datetime\DateFormatter;
@@ -8,15 +8,10 @@ use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Url;
 use Drupal\node\NodeInterface;
-use Drupal\ys_localist\LocalistManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Retrieves field data from nodes for meta block and all view modes.
- *
- * Currently, this class is used to retrieve event data as there is some
- * manipulation of event data. Eventually, this class can also be used to
- * retrieve profile, post, or other content type data.
+ * Retrieves field data from nodes for event meta block and all view modes.
  */
 class MetaFieldsManager implements ContainerFactoryPluginInterface {
 
@@ -157,7 +152,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     $ticketCost = $node->field_ticket_cost->first() ? $node->field_ticket_cost->first()->getValue()['value'] : NULL;
     $costButtonText = $ticketCost ? 'Buy Tickets' : 'Register';
     $description = $node->field_event_description->first() ? $node->field_event_description->first()->getValue()['value'] : NULL;
-    $externalEventWebiteUrl = ($node->field_event_cta->first()) ? Url::fromUri($node->field_event_cta->first()->getValue()['uri'])->toString() : NULL;
+    $externalEventWebsiteUrl = ($node->field_event_cta->first()) ? Url::fromUri($node->field_event_cta->first()->getValue()['uri'])->toString() : NULL;
     $externalEventWebsiteTitle = ($node->field_event_cta->first()) ? $node->field_event_cta->first()->getValue()['title'] : NULL;
     $localistImageUrl = ($node->field_localist_event_image_url->first()) ? Url::fromUri($node->field_localist_event_image_url->first()->getValue()['uri'])->toString() : NULL;
     $localistImageAlt = $node->field_localist_event_image_alt->first() ? $node->field_localist_event_image_alt->first()->getValue()['value'] : NULL;
@@ -286,7 +281,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       'ticket_url' => $ticketLink,
       'ticket_cost' => $ticketCost,
       'description' => $description,
-      'external_website_url' => $externalEventWebiteUrl,
+      'external_website_url' => $externalEventWebsiteUrl,
       'external_website_title' => $externalEventWebsiteTitle,
       'localist_image_url' => $localistImageUrl,
       'localist_image_alt' => $localistImageAlt,

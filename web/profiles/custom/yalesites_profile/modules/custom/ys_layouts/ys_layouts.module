@@ -117,27 +117,3 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
   }
 
 }
-
-/**
- * Implements hook_preprocess_node().
- */
-function ys_layouts_preprocess_node(&$variables) {
-
-  // Processed event fields for other view modes.
-  if ($variables['node']->getType() == 'event' && $variables['view_mode'] != 'full') {
-    $node = $variables['node'];
-    $eventFieldData = \Drupal::service('ys_layouts.meta_fields_manager')->getEventData($node);
-
-    /* These fields are dynamically calculated. Other fields
-     * can be referenced in the regular way with content.field_name
-     */
-    $variables['event_dates'] = $eventFieldData['dates'];
-    $variables['ics_url'] = $eventFieldData['ics'];
-    $variables['localist_image_url'] = $eventFieldData['localist_image_url'];
-    $variables['ticket_cost'] = $eventFieldData['ticket_cost'];
-    $variables['ticket_url'] = $eventFieldData['ticket_url'];
-    $variables['has_register'] = $eventFieldData['has_register'];
-    $variables['cost_button_text'] = $eventFieldData['cost_button_text'];
-    $variables['localist_url'] = $eventFieldData['localist_url'];
-  }
-}
