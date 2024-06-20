@@ -6,7 +6,7 @@ use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\node\NodeInterface;
-use Drupal\ys_layouts\MetaFieldsManager;
+use Drupal\ys_localist\MetaFieldsManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -30,7 +30,7 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
   /**
    * The meta fields manager service.
    *
-   * @var \Drupal\ys_layouts\MetaFieldsManager
+   * @var \Drupal\ys_localist\MetaFieldsManager
    */
   protected $metaFieldsManager;
 
@@ -45,7 +45,7 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
    *   The plugin implementation definition.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The current route match.
-   * @param \Drupal\ys_layouts\MetaFieldsManager $meta_fields_manager
+   * @param \Drupal\ys_localist\MetaFieldsManager $meta_fields_manager
    *   The meta fields manager service.
    */
   public function __construct(
@@ -70,7 +70,7 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
       $plugin_id,
       $plugin_definition,
       $container->get('current_route_match'),
-      $container->get('ys_layouts.meta_fields_manager'),
+      $container->get('ys_localist.meta_fields_manager'),
     );
   }
 

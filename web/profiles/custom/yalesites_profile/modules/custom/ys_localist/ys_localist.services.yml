@@ -3,3 +3,7 @@ services:
   ys_localist.manager:
     class: Drupal\ys_localist\LocalistManager
     arguments: ['@config.factory', '@http_client', '@entity_type.manager', '@plugin.manager.migration', '@module_handler', '@datetime.time', '@messenger']
+  # Service for retrieving event field data.
+  ys_localist.meta_fields_manager:
+    class: Drupal\ys_localist\MetaFieldsManager
+    arguments: ['@date.formatter', '@entity_type.manager', '@ys_localist.manager']
