@@ -21,15 +21,18 @@ jobs:
       - name: Commit Compiled Component Library
         uses: EndBug/add-and-commit@v9
         with:
+          author_name: github-actions[bot]
+          author_email: github-actions[bot]@users.noreply.github.com
           add: "node_modules/@yalesites-org/component-library-twig -f"
           message: "build: commit compiled component library"
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
-        run: npm run semantic-release
-      - name: Remove Compiled Component Library
-        uses: EndBug/add-and-commit@v7
-        with:
-          remove: "--cached -r node_modules"
-          message: "build: removed compiled component library from git"
+        run: npx semantic-release
+      - name: Reset branch to prior commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git reset --hard $GITHUB_SHA
+          git push --force

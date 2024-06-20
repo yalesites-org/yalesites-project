@@ -19,7 +19,6 @@
     "husky:pre-commit": "lint-staged",
     "prepare": "husky install",
     "prettier": "prettier ./ --ignore-unknown --list-different",
-    "semantic-release": "semantic-release",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {

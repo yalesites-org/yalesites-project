@@ -132,8 +132,11 @@ html.gin--dark-mode form.layout-builder-configure-block.glb-form {
 // Offcanvas toolbar styles
 */
 #drupal-off-canvas-wrapper {
+  --off-canvas-button-background-color: #555;
+
   color: var(--gin-color-text) !important;
   background-color: var(--gin-bg-layer) !important;
+  font-family: var(--gin-font);
 }
 
 #drupal-off-canvas-wrapper .ui-dialog-titlebar {
@@ -141,7 +144,56 @@ html.gin--dark-mode form.layout-builder-configure-block.glb-form {
   color: var(--gin-color-text) !important;
 }
 
-/* 
+#drupal-off-canvas-wrapper .button--primary {
+  background-color: var(--color-blue-yale) !important;
+}
+
+#drupal-off-canvas-wrapper .button--primary:hover,
+#drupal-off-canvas-wrapper .button--primary:focus,
+#drupal-off-canvas-wrapper .button--primary:active {
+  color: var(--off-canvas-primary-button-text-color) !important;
+  background-color: var(--color-blue-royal) !important;
+}
+
+#drupal-off-canvas-wrapper .button--danger:hover {
+  background-color: var(--gin-color-danger) !important;
+}
+
+#drupal-off-canvas-wrapper a:not(.button) {
+  color: var(--menu-link-color) !important;
+}
+
+.gin--dark-mode #drupal-off-canvas-wrapper a:not(.button) {
+  color: var(--color-blue-light) !important;
+}
+
+/*
+Moderation sidebar
+*/
+
+.moderation-sidebar-container .moderation-sidebar-revision-item {
+  border-bottom: 1px solid var(--color-text) !important;
+  margin: 1.5rem 0 !important;
+}
+
+.moderation-sidebar-container .moderation-sidebar-revision-item:last-of-type {
+  border-bottom: 0 !important;
+}
+
+.entity-moderation-form {
+  padding: 1rem;
+  margin: 1rem auto;
+}
+
+.entity-moderation-form input[type="submit"] {
+  margin-bottom: 0;
+}
+
+.moderation-sidebar-container .moderation-sidebar-revision-log {
+  border: 1px solid var(--color-text) !important;
+}
+
+/*
 // Image crop vertical tabs override
 */
 
@@ -168,7 +220,7 @@ html.gin--dark-mode form.layout-builder-configure-block.glb-form {
   color: var(--gin-color-text) !important;
 }
 
-/* In light mode, gin is displaying a mustard background with a black 
+/* In light mode, gin is displaying a mustard background with a black
 foreground. This causes contrast issues.  */
 #drupal-off-canvas-wrapper
   .ui-dialog-content

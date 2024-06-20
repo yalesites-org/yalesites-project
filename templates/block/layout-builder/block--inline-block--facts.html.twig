@@ -1,0 +1,25 @@
+{% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
+
+{% block content %}
+
+  {% set facts_and_figures__group__bg_image = content.field_media.0 ? 'true' : 'false' %}
+
+  {% embed "@organisms/facts-and-figures-group/yds-facts-and-figures-group.twig" with {
+    facts_and_figures__group__heading: content.field_heading.0['#text'],
+    facts_and_figures__group__content: content.field_text.0['#text'],
+    facts_and_figures__group__alignment: content.field_style_alignment.0['#markup'],
+    facts_and_figures__group__grid_count: content.field_style_width.0['#markup'],
+    facts_and_figures__group__presentation_style: content.field_style_variation.0['#markup'],
+    facts_and_figured__group__width: 'site',
+    facts_and_figures__group__theme: content.field_style_color.0['#markup'],
+  }%}
+    {% block facts_and_figures__group__items %}
+      {{ content.field_facts_items }}
+    {% endblock %}
+
+    {% block facts_and_figures__group__image %}
+      {{ content.field_media }}
+    {% endblock %}
+  {% endembed %}
+
+{% endblock %}
