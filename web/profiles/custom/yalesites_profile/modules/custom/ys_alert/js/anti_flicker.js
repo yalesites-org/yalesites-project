@@ -1,13 +1,12 @@
 /**
  * @file
- * Prevents flicker of the toolbar on page load.
+ * Prevents flicker of dismissed alerts on page load.
  */
 
 (() => {
 
     // Function to get all alerts from localstorage.
     const setHtmlAlertStyle = () => {
-        const alertStyle = document.createElement('style');
         let styleContent = '';
         Object.keys(localStorage).forEach((key) => {
             if (key.substring(0, 12) === 'ys-alert-id-') {
@@ -21,8 +20,12 @@
                 }
             }
         });
-        alertStyle.textContent = styleContent;
-        document.querySelector('head').appendChild(alertStyle);
+        // If we have dismissed alerts, add style to hide them.
+        if (styleContent.length > 0) {
+            const alertStyle = document.createElement('style');
+            alertStyle.textContent = styleContent;
+            document.querySelector('head').appendChild(alertStyle);
+        }
     };
 
     setHtmlAlertStyle();
