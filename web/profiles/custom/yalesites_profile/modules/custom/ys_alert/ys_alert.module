@@ -37,3 +37,11 @@ function ys_alert_preprocess_page(&$variables) {
   // Also used: https://github.com/yalesites-org/yalesites-project/blob/4cd183c8f568b771d656478adb3b76985501c3a1/web/profiles/custom/yalesites_profile/modules/custom/ys_themes/ys_themes.module#LL144C1-L144C1
   \Drupal::service('renderer')->addCacheableDependency($variables, $config);
 }
+
+/**
+ * Implements hook_page_attachments().
+ */
+function ys_alert_page_attachments(array &$page) {
+  // Add anti-flicker JS
+  $page['#attached']['library'][] = 'ys_alert/anti_flicker';
+}

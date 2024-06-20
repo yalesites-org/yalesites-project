@@ -7,3 +7,8 @@ confirm_type_modal:
   dependencies:
     - core/drupal.ajax
     - core/drupal.dialog
+
+anti_flicker:
+  header: true
+  js:
+    js/anti_flicker.js : {}
