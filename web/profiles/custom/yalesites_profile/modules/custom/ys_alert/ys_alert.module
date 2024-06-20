@@ -42,6 +42,6 @@ function ys_alert_preprocess_page(&$variables) {
  * Implements hook_page_attachments().
  */
 function ys_alert_page_attachments(array &$page) {
-  // Add anti-flicker JS
+  // Add anti-flicker JS.
   $page['#attached']['library'][] = 'ys_alert/anti_flicker';
 }
