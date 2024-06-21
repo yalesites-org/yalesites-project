@@ -1,5 +1,9 @@
 _core:
   default_config_hash: 6XRelHPjACQVOo9yRQMmbXt-ysCA2Pt6l762bxQQbdw
+allowed_bundles:
+  - page
+  - post
+  - profile
 exclude:
   node: {  }
   paragraph: {  }
