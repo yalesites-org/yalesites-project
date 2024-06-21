@@ -10,7 +10,7 @@ id: node.event.field_category
 field_name: field_category
 entity_type: node
 bundle: event
-label: Category
+label: 'Event Category'
 description: "Categories will autocomplete as you type.  Choose from pre-created options only.  To add a new category, go to 'Content->Manage Taxonomy->Event Categories'."
 required: false
 translatable: false

@@ -1,0 +1,19 @@
+uuid: a5a4f70f-1684-41e0-aa9e-0812d71eb35a
+langcode: en
+status: true
+dependencies:
+  module:
+    - link
+    - node
+id: node.field_localist_event_image_url
+field_name: field_localist_event_image_url
+entity_type: node
+type: link
+settings: {  }
+module: link
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

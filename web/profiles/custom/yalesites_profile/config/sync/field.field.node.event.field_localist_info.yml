@@ -1,0 +1,24 @@
+uuid: 9e1df840-0f47-4f8b-b83e-8c22155f0415
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_localist_info
+    - node.type.event
+  module:
+    - markup
+id: node.event.field_localist_info
+field_name: field_localist_info
+entity_type: node
+bundle: event
+label: 'Localist info'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  markup:
+    value: '<p>These fields are disabled because they are synchronized from Localist.</p>'
+    format: basic_html
+field_type: markup

@@ -1,0 +1,9 @@
+name: 'YS Localist'
+type: module
+description: 'Provides integration with the Localist event platform'
+package: YaleSites
+core_version_requirement: ^10
+dependencies:
+  - drupal:migrate
+  - migrate_plus:migrate_plus
+  - migrate_tools:migrate_tools

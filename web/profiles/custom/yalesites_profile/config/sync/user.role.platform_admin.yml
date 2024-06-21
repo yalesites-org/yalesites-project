@@ -45,6 +45,7 @@ dependencies:
     - taxonomy.vocabulary.post_category
     - taxonomy.vocabulary.tags
     - workflows.workflow.editorial
+    - workflows.workflow.events
   module:
     - block
     - block_content
@@ -69,6 +70,7 @@ dependencies:
     - webform
     - ys_alert
     - ys_core
+    - ys_localist
 id: platform_admin
 label: 'Platform administrator'
 weight: -5
@@ -309,6 +311,11 @@ permissions:
   - 'use editorial transition archived_published'
   - 'use editorial transition create_new_draft'
   - 'use editorial transition publish'
+  - 'use events transition archive'
+  - 'use events transition create_new_draft'
+  - 'use events transition publish'
+  - 'use events transition restore'
+  - 'use events transition restore_to_draft'
   - 'use moderation sidebar'
   - 'view all media revisions'
   - 'view all revisions'
@@ -350,4 +357,5 @@ permissions:
   - 'view the administration theme'
   - 'view unpublished paragraphs'
   - 'yalesites manage alerts'
+  - 'yalesites manage localist'
   - 'yalesites manage settings'
