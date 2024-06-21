@@ -30,16 +30,6 @@ primary-nav:
     node_modules/@yalesites-org/component-library-twig/dist/js/03-organisms/menu/primary-nav/yds-primary-nav.js:
       {}
 
-reference-card:
-  js:
-    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/cards/reference-card/yds-reference-card.js:
-      {}
-
-custom-card:
-  js:
-    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/cards/custom-card/yds-custom-card.js:
-      {}
-
 breadcrumbs:
   js:
     node_modules/@yalesites-org/component-library-twig/dist/js/03-organisms/menu/breadcrumbs/yds-breadcrumbs.js:
@@ -92,4 +82,8 @@ text-copy-button:
 spotlights:
   js:
     node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/content-spotlight-portrait/content-spotlights.js:
+      {}
+event-localist:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/meta/event-meta/event-meta-localist.js:
       {}
