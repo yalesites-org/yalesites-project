@@ -31,6 +31,6 @@
     ]
   },
   "dependencies": {
-    "@yalesites-org/component-library-twig": "^1.41.0"
+    "@yalesites-org/component-library-twig": "^1.43.0"
   }
 }
