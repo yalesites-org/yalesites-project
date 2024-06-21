@@ -1,0 +1,41 @@
+{% set dom_id_class = dom_id ? 'js-view-dom-id-' ~ dom_id %}
+
+<div class={{ dom_id_class }}>
+
+  {% if header %}
+    <header>
+      {{ header }}
+    </header>
+  {% endif %}
+
+  {{ attachment_before }}
+
+  {% if rows -%}
+    {% embed "@organisms/card-collection/yds-card-collection.twig" with {
+      card_collection__heading: title,
+      card_collection__featured: 'true',
+      card_collection__type: 'list',
+      card_collection__width: 'site',
+    } %}
+      {% block card_collection__cards %}
+        {% for row in rows %}
+          {{- row.content -}}
+        {% endfor %}
+      {% endblock %}
+    {% endembed %}
+  {% elseif empty -%}
+    {{ empty }}
+  {% endif %}
+  {{ pager }}
+
+  {{ attachment_after }}
+  {{ more }}
+
+  {% if footer %}
+    <footer>
+      {{ footer }}
+    </footer>
+  {% endif %}
+
+  {{ feed_icons }}
+</div>

@@ -1,37 +1,59 @@
-{{ attach_library('atomic/reference-card') }}
+{% set event_has_passed = event_dates is empty %}
+
+{# Use event_dates array to print any event dates - look inside array for formatted options #}
+{% if event_dates|length > 1 %}
+  {% set multi_day_text %}
+    {% include "@atoms/typography/text/yds-text.twig" with {
+      text__base_class: 'multi-day-event',
+      text__content: '(multi-day event)',
+    } %}
+  {% endset %}
+{% endif %}
 
 {% set date__formatted %}
   {% include "@atoms/date-time/yds-date-time.twig" with {
     date_time__start: content.field_event_date.0.start_time['#markup'],
-  } %}
+  } %} {{ multi_day_text }}
 {% endset %}
 
-{% if content.field_event_type %}
+{% if content.field_localist_event_experience.0 %}
   {% set reference_card__overline -%}
     {% include "@molecules/cards/reference-card/event/_yds-event-format.twig" with {
-      format: content.field_event_type,
+      format: content.field_localist_event_experience,
     } %}
   {%- endset %}
 {% endif %}
 
 {% set heading = content.field_teaser_title.0 ? content.field_teaser_title : label %}
-
 {% set url = content.field_external_source[0]['#url']|render ? content.field_external_source[0]['#url']|render : url %}
 
+{# Set the event title prefix based on event status #}
+{% set event_title__prefix = event_has_passed ? 'Past Event: ' : '' %}
+
 {% embed "@molecules/cards/reference-card/yds-reference-card.twig" with {
+  reference_card__prefix: event_title__prefix,
   reference_card__heading: heading,
   reference_card__subheading: date__formatted,
   reference_card__url: url,
   reference_card__snippet: content.field_teaser_text,
   reference_card__image: 'true',
+  reference_card__cta_primary__href: ticket_url,
+  reference_card__cta_primary__content: cost_button_text,
+  reference_card__cta_secondary__content: 'Add to Calendar',
+  reference_card__cta_secondary__href: ics_url,
+  reference_card__image_aria: heading[0]['#context'].value,
 } %}
   {% block reference_card__image %}
-
-    {% if content.field_teaser_media[0] %}
-      {{ content.field_teaser_media }}
-    {% elseif getCoreSetting('image_fallback.teaser') %}
-      {{ drupal_entity('media', getCoreSetting('image_fallback.teaser'), 'card_list_3_2') }}
+    {% if localist_image_url %}
+      {% include "@atoms/images/image/_responsive-image.twig" with {
+        image__src: localist_image_url,
+        image__alt: localist_image_alt,
+        responsive_image__modifiers: ['localist-3-2'],
+      }%}
+      {% elseif content.field_teaser_media[0] %}
+        {{ content.field_teaser_media }}
+      {% elseif getCoreSetting('image_fallback.teaser') %}
+        {{ drupal_entity('media', getCoreSetting('image_fallback.teaser'), 'card_list_3_2') }}
     {% endif %}
-
   {% endblock %}
 {% endembed %}
