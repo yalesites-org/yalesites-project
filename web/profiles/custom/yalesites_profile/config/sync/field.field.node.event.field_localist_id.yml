@@ -1,0 +1,19 @@
+uuid: 685a59ca-5d1c-4d1c-8104-c400d1ae7c95
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_localist_id
+    - node.type.event
+id: node.event.field_localist_id
+field_name: field_localist_id
+entity_type: node
+bundle: event
+label: 'Localist ID'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string
