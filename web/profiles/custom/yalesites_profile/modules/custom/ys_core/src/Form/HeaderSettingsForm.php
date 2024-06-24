@@ -146,7 +146,7 @@ class HeaderSettingsForm extends ConfigFormBase {
       ],
     ];
 
-    if ($this->allowSecretItems()) {
+    if (ys_core_allow_secret_items($this->currentUserSession)) {
       $form['site_name_image_container'] = [
         '#type' => 'details',
         '#title' => $this->t('Site Name Image'),
@@ -219,7 +219,7 @@ class HeaderSettingsForm extends ConfigFormBase {
       '#markup' => '<p>' . $this->t('The focus nav combines a full image landing page with a single level of navigation.') . '</p>',
     ];
 
-    if ($this->allowSecretItems()) {
+    if (ys_core_allow_secret_items($this->currentUserSession)) {
       $form['site_name_image_container']['site_name_image'] = [
         '#type' => 'managed_file',
         '#upload_location' => 'public://site-name-images',
@@ -352,22 +352,6 @@ class HeaderSettingsForm extends ConfigFormBase {
     return [
       'ys_core.header_settings',
     ];
-  }
-
-  /**
-   * If current user is platform admin or user 1, allow secret items.
-   *
-   * @return bool
-   *   Returns TRUE if current user is a platform admin or user 1.
-   */
-  private function allowSecretItems() {
-    $allowSecretItems = FALSE;
-
-    if ($this->currentUserSession->getAccount()->id() == 1 || in_array('platform_admin', $this->currentUserSession->getAccount()->getRoles())) {
-      $allowSecretItems = TRUE;
-    }
-
-    return $allowSecretItems;
   }
 
 }

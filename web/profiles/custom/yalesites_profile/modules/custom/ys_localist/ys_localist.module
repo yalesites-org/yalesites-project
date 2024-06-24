@@ -1,0 +1,92 @@
+<?php
+
+/**
+ * @file
+ * Primary module hooks for YS Localist module.
+ */
+
+use Drupal\migrate\Plugin\MigrationInterface;
+
+/**
+ * Returns dynamic URLs for Localist event migrations.
+ *
+ * @see migrations/localist_events.yml
+ */
+function ys_localist_migrate_url(MigrationInterface $migration) {
+  $endpointType = $migration->getPluginDefinition()['source']['localist_endpoint'] ?? 'events';
+  $localistManager = \Drupal::service('ys_localist.manager');
+
+  $endpointURLs = $localistManager->getEndpointUrls($endpointType);
+
+  return $endpointURLs;
+}
+
+/**
+ * Implements hook_cron().
+ */
+function ys_localist_cron() {
+  $config = \Drupal::config('ys_localist.settings');
+  if ($config->get('enable_localist_sync')) {
+
+    $state = \Drupal::state();
+
+    $next_execution_time = $state->get("localist_migrations", 0);
+    $current_time = \Drupal::time()->getRequestTime();
+    if ($current_time > $next_execution_time) {
+      $state->set("localist_migrations", $current_time + 3600);
+      $localistManager = \Drupal::service('ys_localist.manager');
+      $localistManager->runAllMigrations();
+    }
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function ys_localist_form_alter(&$form, &$form_state, $form_id) {
+  // Disables fields that are imported from Localist.
+  $formsToCheck = [
+    'node_event_form',
+    'node_event_edit_form',
+    'node_event_quick_node_clone_form',
+  ];
+
+  if (in_array($form_id, $formsToCheck)) {
+    $fieldsToDisable = [
+      'field_localist_id',
+      'field_event_status',
+      'field_localist_event_url',
+      'field_localist_event_image_url',
+      'field_localist_event_image_alt',
+      'field_localist_ics_url',
+      'field_localist_register_enabled',
+    ];
+    foreach ($fieldsToDisable as $field) {
+      $form[$field]['#disabled'] = TRUE;
+    }
+  }
+}
+
+/**
+ * Implements hook_preprocess_node().
+ */
+function ys_localist_preprocess_node(&$variables) {
+
+  // Processed event fields for other view modes.
+  if ($variables['node']->getType() == 'event' && $variables['view_mode'] != 'full') {
+    $node = $variables['node'];
+    $eventFieldData = \Drupal::service('ys_localist.meta_fields_manager')->getEventData($node);
+
+    /* These fields are dynamically calculated. Other fields
+     * can be referenced in the regular way with content.field_name
+     */
+    $variables['event_dates'] = $eventFieldData['dates'];
+    $variables['ics_url'] = $eventFieldData['ics'];
+    $variables['localist_image_url'] = $eventFieldData['localist_image_url'];
+    $variables['ticket_cost'] = $eventFieldData['ticket_cost'];
+    $variables['ticket_url'] = $eventFieldData['ticket_url'];
+    $variables['has_register'] = $eventFieldData['has_register'];
+    $variables['cost_button_text'] = $eventFieldData['cost_button_text'];
+    $variables['localist_url'] = $eventFieldData['localist_url'];
+  }
+}

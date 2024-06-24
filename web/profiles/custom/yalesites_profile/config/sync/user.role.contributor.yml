@@ -45,6 +45,7 @@ dependencies:
     - taxonomy.vocabulary.post_category
     - taxonomy.vocabulary.tags
     - workflows.workflow.editorial
+    - workflows.workflow.events
   module:
     - block_content
     - content_moderation
@@ -280,6 +281,7 @@ permissions:
   - 'update any media'
   - 'update media'
   - 'use editorial transition create_new_draft'
+  - 'use events transition create_new_draft'
   - 'use moderation sidebar'
   - 'view all media revisions'
   - 'view all revisions'

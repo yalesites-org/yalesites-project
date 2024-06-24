@@ -1,0 +1,29 @@
+uuid: 1b570352-b7b2-478e-b4a9-956c25f3787c
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_event_place
+    - node.type.event
+    - taxonomy.vocabulary.event_place
+id: node.event.field_event_place
+field_name: field_event_place
+entity_type: node
+bundle: event
+label: 'Yale Location'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:taxonomy_term'
+  handler_settings:
+    target_bundles:
+      event_place: event_place
+    sort:
+      field: name
+      direction: asc
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference

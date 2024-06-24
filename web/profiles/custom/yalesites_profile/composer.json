@@ -71,7 +71,7 @@
     "drupal/menu_breadcrumb": "2.0.0-alpha0",
     "drupal/menu_item_extras": "3.0.2",
     "drupal/metatag": "2.0.0",
-    "drupal/migrate_plus": "6.0.1",
+    "drupal/migrate_plus": "6.0.2",
     "drupal/migrate_tools": "6.0.2",
     "drupal/moderation_sidebar": "1.7",
     "drupal/multiple_fields_remove_button": "2.2",
@@ -164,9 +164,13 @@
         "Add grouping of reusable blocks (3409153) and add fallback images (3408935) - can't use both patches from d.o would cause merge conflict, combined patch": "patches/layout_builder_browser/3408935-and-3409153-8.patch"
       },
       "drupal/smart_date": {
-        "Fix deprecation:": "https://git.drupalcode.org/project/smart_date/-/merge_requests/63.diff"
+        "Fix deprecation:": "https://git.drupalcode.org/project/smart_date/-/merge_requests/63.diff",
+        "Warning: Trying to access array offset on value of type null https://www.drupal.org/project/smart_date/issues/3354858": "patches/smart_date/107.patch"
       },
-      "drupal/focal_point": {
+      "drupal/migrate_plus": {
+        "Allow callback for Url source, and single item Json plugin https://www.drupal.org/project/migrate_plus/issues/3040427": "https://www.drupal.org/files/issues/2023-02-15/3040427-42-migrate_plus_multiple_urls.patch"
+      },
+        "drupal/focal_point": {
         "Limit image styles on preview page": "https://www.drupal.org/files/issues/2021-08-13/2830678-29.patch"
       },
       "drupal/selective_better_exposed_filters": {
