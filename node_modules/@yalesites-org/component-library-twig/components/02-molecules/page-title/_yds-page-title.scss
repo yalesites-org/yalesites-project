@@ -22,3 +22,43 @@
 .prefix {
   margin-top: var(--size-spacing-7);
 }
+
+.page-title__top {
+  [data-component-variation='event'] & {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--size-spacing-6);
+
+    @media (min-width: tokens.$break-l) {
+      flex-direction: row;
+    }
+  }
+}
+
+.page-title__title-wrap {
+  [data-component-variation='event'] & {
+    @media (min-width: tokens.$break-l) {
+      flex: 1 0 50%;
+    }
+  }
+}
+
+// Add margin to the following page-title display types:
+//   - visually-hidden
+//   - hidden (when no page-title div exists after the breadcrumbs__wrapper
+// Margins borrowed from
+// components/04-page-layouts/page-layouts.scss:page_layouts.scss:31-39
+div.page-title.visually-hidden + div,
+div.breadcrumbs__wrapper + :not(.page-title) {
+  margin-top: var(--size-spacing-10); // 4rem
+
+  @media (max-width: tokens.$break-l) {
+    margin-top: var(--size-spacing-8); // 2.5rem large breakpoints
+  }
+
+  @media (max-width: tokens.$break-s) {
+    margin-top: var(--size-spacing-7); // 2rem small breakpoints
+  }
+}

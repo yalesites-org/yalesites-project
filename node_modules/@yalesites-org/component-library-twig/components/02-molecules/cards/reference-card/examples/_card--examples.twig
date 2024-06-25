@@ -1,3 +1,12 @@
+{% if multi_day_event == true %}
+  {% set multi_day_text %}
+    {% include "@atoms/typography/text/yds-text.twig" with {
+      text__base_class: 'multi-day-event',
+      text__content: '(multi-day event)',
+    } %}
+  {% endset %}
+{% endif %}
+
 {% set reference_card__date__formatted %}
   {% set date_time__format = card_collection__source_type == 'post' ? 'date' %}
   {% include "@atoms/date-time/yds-date-time.twig" with {
@@ -37,6 +46,10 @@
   {% if card_collection__type == 'condensed' %}
     {% set reference_card__image = 'false' %}
     {% set reference_card__snippet = null %}
+    {% set reference_card__cta_primary__href = null %}
+    {% set reference_card__cta_primary__content = null %}
+    {% set reference_card__cta_secondary__href = null %}
+    {% set reference_card__cta_secondary__content = null %}
   {% endif %}
 
 {# Event Card #}
@@ -61,13 +74,17 @@
     {% set reference_card__overline = null %}
     {% set reference_card__snippet = null %}
     {% set reference_card__image = 'false' %}
+    {% set reference_card__cta_primary__href = null %}
+    {% set reference_card__cta_primary__content = null %}
+    {% set reference_card__cta_secondary__href = null %}
+    {% set reference_card__cta_secondary__content = null %}
     {% set format %}
       <span class="format-inline">{{ format }}</span>
     {% endset %}
-    {% set reference_card__subheading = reference_card__date__formatted ~ reference_card__time__formatted ~ format %}
+    {% set reference_card__subheading = reference_card__date__formatted ~ multi_day_text ~ reference_card__time__formatted ~ format %}
   {% else %}
     {# If event and list put the date and time in the subheading. #}
-    {% set reference_card__subheading = reference_card__date__formatted ~ reference_card__time__formatted %}
+    {% set reference_card__subheading = reference_card__date__formatted ~ multi_day_text ~ reference_card__time__formatted %}
   {% endif %}
 {% endif %}
 

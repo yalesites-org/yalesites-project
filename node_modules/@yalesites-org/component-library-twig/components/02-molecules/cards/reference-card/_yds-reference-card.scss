@@ -220,6 +220,29 @@ $break-single-card-collection-max: tokens.$break-xl - 0.05;
       flex: 1 0 calc(48% - var(--size-spacing-4));
     }
   }
+
+  // Localist default image - enforce 3x2 ratio
+  .image--localist-3-2 {
+    > * {
+      aspect-ratio: 3/2;
+      object-fit: cover;
+
+      // Safari 14 fix for aspect-ratio
+      @supports not (aspect-ratio: 3 / 2) {
+        &::before {
+          float: left;
+          padding-top: 66.66%;
+          content: '';
+        }
+
+        &::after {
+          display: block;
+          content: '';
+          clear: both;
+        }
+      }
+    }
+  }
 }
 
 .reference-card__content {
@@ -336,6 +359,13 @@ $break-single-card-collection-max: tokens.$break-xl - 0.05;
   }
 }
 
+.reference-card__prefix {
+  @include tokens.h3-mallory-compact-book;
+
+  color: var(--color-basic-brown-gray);
+  text-transform: uppercase;
+}
+
 .reference-card__heading {
   [data-collection-featured='false'] & {
     @include tokens.h5-yale-new;
@@ -386,7 +416,7 @@ $break-single-card-collection-max: tokens.$break-xl - 0.05;
   flex-wrap: wrap;
   margin-top: var(--size-spacing-3);
 
-  > *:not(:first-child) {
+  > *:not(:first-child):not(.multi-day-event) {
     margin-left: var(--size-spacing-5);
     padding-left: var(--size-spacing-5);
     position: relative;
@@ -397,6 +427,11 @@ $break-single-card-collection-max: tokens.$break-xl - 0.05;
       left: -0.225rem;
     }
   }
+
+  .multi-day-event {
+    padding-left: var(--size-spacing-3);
+    font-style: italic;
+  }
 }
 
 .reference-card__snippet {
@@ -404,5 +439,41 @@ $break-single-card-collection-max: tokens.$break-xl - 0.05;
 
   [data-collection-featured='false'] & {
     @include tokens.body-default-condensed;
+  }
+}
+
+.reference-card__ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-spacing-4);
+  margin-top: var(--size-spacing-6);
+
+  // Component theme overrides: set specific component themes overrides
+  /// define component name spaced variables and map them to global theme slots.
+  /// Set these to white and blue for the single card collection.
+  /// If we include themes for reference cards, we should refactor this
+  /// and maybe move it to /01-atoms/controls/cta/_yds-cta.scss
+  [data-collection-type='single'] & {
+    .cta[data-cta-theme='one'][data-cta-style='filled'] {
+      --color-cta-bg: var(--color-basic-white);
+      --color-cta-bg-hover: transparent;
+      --color-cta-border: var(--color-basic-white);
+      --color-cta-text: var(--color-slot-one);
+
+      &:hover {
+        --color-cta-text-hover: var(--color-basic-white);
+      }
+    }
+
+    .cta[data-cta-theme='one'][data-cta-style='outline'] {
+      --color-cta-action: var(--color-basic-white);
+      --color-cta-action-secondary: var(--color-slot-one);
+      --color-link-base: var(--color-basic-white);
+      --color-link-hover: var(--color-basic-white);
+
+      &:hover {
+        --color-cta-text-hover: var(--color-cta-action-secondary);
+      }
+    }
   }
 }

@@ -14,6 +14,10 @@
 
 {% set unique_name = icon__name ~ '-' ~ random() %}
 
+{% if icon__visual_title %}
+<div {{ bem(icon__base_class, icon__visual_title__modifiers, icon__blockname) }}>
+{% endif %}
+
 <svg {{ bem(icon__base_class, icon__modifiers, icon__blockname, icon__extra_class) }}
 
   {% if icon__decorative %}
@@ -38,3 +42,10 @@
   {% endif %}
   <use xlink:href="{{ icon__url }}icons.svg#{{ icon__name }}"></use>
 </svg>
+
+{% if icon__visual_title %}
+  <span {{ bem(icon__base_class, icon__visual_title__modifiers, icon__blockname) }}>{{ icon__visual_title }}</span>
+{% endif %}
+{% if icon__visual_title %}
+</div>
+{% endif %}

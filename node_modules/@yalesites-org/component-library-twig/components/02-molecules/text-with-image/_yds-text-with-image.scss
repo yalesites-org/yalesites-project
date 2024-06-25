@@ -112,6 +112,28 @@ $component-content-spotlight-themes: map.deep-get(
     --color-link-visited-base: var(--color-link-visited-light);
     --color-link-visited-hover: var(--color-link-visited-light-hover);
   }
+
+  // spotlights inside of the banner should behave slightly different in that
+  // first-and-last and first should have zero top margin to allow it to bump up to
+  // the header.
+  .layout--banner & {
+    &[data-component-theme='default'],
+    &[data-spotlights-position='first-and-last'] {
+      @include tokens.spacing-page-section;
+
+      margin-top: 0;
+      margin-bottom: var(--size-spacing-10);
+    }
+
+    // We're using JavaScript to evaluate the last and first spotlights in a group of spotlights
+    &[data-spotlights-position='first'] {
+      margin-top: 0;
+    }
+
+    &[data-spotlights-position='last'] {
+      margin-bottom: var(--size-spacing-10);
+    }
+  }
 }
 
 .text-with-image__inner {

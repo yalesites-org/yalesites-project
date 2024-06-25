@@ -7,9 +7,6 @@ import customCardData from './custom-card.yml';
 // Image atom component - generic images for demo
 import imageData from '../../../01-atoms/images/image/image.yml';
 
-// JavaScript to handle full-card linking
-import './yds-custom-card';
-
 /**
  * Storybook Definition.
  */
