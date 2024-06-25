@@ -146,7 +146,7 @@ class HeaderSettingsForm extends ConfigFormBase {
       ],
     ];
 
-    if ($this->allowSecretItems()) {
+    if (ys_core_allow_secret_items($this->currentUserSession)) {
       $form['site_name_image_container'] = [
         '#type' => 'details',
         '#title' => $this->t('Site Name Image'),
@@ -156,6 +156,18 @@ class HeaderSettingsForm extends ConfigFormBase {
     $form['nav_position_container'] = [
       '#type' => 'details',
       '#title' => $this->t('Navigation Position'),
+      '#states' => [
+        'disabled' => [
+          ':input[name="header_variation"]' => [
+            'value' => 'focus',
+          ],
+        ],
+      ],
+    ];
+
+    $form['call_to_action_container'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Call to Action'),
       '#states' => [
         'disabled' => [
           ':input[name="header_variation"]' => [
@@ -207,7 +219,7 @@ class HeaderSettingsForm extends ConfigFormBase {
       '#markup' => '<p>' . $this->t('The focus nav combines a full image landing page with a single level of navigation.') . '</p>',
     ];
 
-    if ($this->allowSecretItems()) {
+    if (ys_core_allow_secret_items($this->currentUserSession)) {
       $form['site_name_image_container']['site_name_image'] = [
         '#type' => 'managed_file',
         '#upload_location' => 'public://site-name-images',
@@ -240,6 +252,28 @@ class HeaderSettingsForm extends ConfigFormBase {
           'variation-radios',
         ],
       ],
+    ];
+
+    $form['call_to_action_container']['cta_content'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Link text'),
+      '#description' => $this->t('Enter the text that should appear in the CTA button.'),
+      '#autocomplete_route_name' => 'linkit.autocomplete',
+      '#autocomplete_route_parameters' => [
+        'linkit_profile_id' => 'default',
+      ],
+      '#default_value' => $headerConfig->get('cta_content') ?? NULL,
+    ];
+
+    $form['call_to_action_container']['cta_url'] = [
+      '#type' => 'linkit',
+      '#title' => $this->t('Link target'),
+      '#description' => $this->t('Start typing to select internal content. You can also enter an external link.'),
+      '#autocomplete_route_name' => 'linkit.autocomplete',
+      '#autocomplete_route_parameters' => [
+        'linkit_profile_id' => 'default',
+      ],
+      '#default_value' => $headerConfig->get('cta_url') ?? NULL,
     ];
 
     $form['site_search_container']['enable_search_form'] = [
@@ -300,6 +334,8 @@ class HeaderSettingsForm extends ConfigFormBase {
     $headerConfig->set('header_variation', $form_state->getValue('header_variation'));
     $headerConfig->set('site_name_image', $form_state->getValue('site_name_image'));
     $headerConfig->set('nav_position', $form_state->getValue('nav_position'));
+    $headerConfig->set('cta_content', $form_state->getValue('cta_content'));
+    $headerConfig->set('cta_url', $form_state->getValue('cta_url'));
     $headerConfig->set('search.enable_search_form', $form_state->getValue('enable_search_form'));
     $headerConfig->set('focus_header_image', $form_state->getValue('focus_header_image'));
 
@@ -316,22 +352,6 @@ class HeaderSettingsForm extends ConfigFormBase {
     return [
       'ys_core.header_settings',
     ];
-  }
-
-  /**
-   * If current user is platform admin or user 1, allow secret items.
-   *
-   * @return bool
-   *   Returns TRUE if current user is a platform admin or user 1.
-   */
-  private function allowSecretItems() {
-    $allowSecretItems = FALSE;
-
-    if ($this->currentUserSession->getAccount()->id() == 1 || in_array('platform_admin', $this->currentUserSession->getAccount()->getRoles())) {
-      $allowSecretItems = TRUE;
-    }
-
-    return $allowSecretItems;
   }
 
 }

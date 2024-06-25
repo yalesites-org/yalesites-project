@@ -1,0 +1,24 @@
+uuid: badec223-8e7c-45e3-b329-ba2c75b65fe4
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_text
+    - filter.format.heading_html
+    - paragraphs.paragraphs_type.tile
+  module:
+    - text
+id: paragraph.tile.field_text
+field_name: field_text
+entity_type: paragraph
+bundle: tile
+label: Content
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - heading_html
+field_type: text_long

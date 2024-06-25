@@ -3,7 +3,6 @@ langcode: en
 status: true
 dependencies:
   config:
-    - node.type.event
     - node.type.page
     - node.type.post
     - node.type.profile
@@ -64,7 +63,6 @@ type_settings:
       weight: 1
   entity_types:
     node:
-      - event
       - page
       - post
       - profile
