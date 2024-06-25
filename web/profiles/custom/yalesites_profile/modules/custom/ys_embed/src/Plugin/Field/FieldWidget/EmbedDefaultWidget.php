@@ -78,7 +78,7 @@ class EmbedDefaultWidget extends WidgetBase implements ContainerFactoryPluginInt
       $configuration['field_definition'],
       $configuration['settings'],
       $configuration['third_party_settings'],
-      $container->get('plugin.manager.embed_source')
+      $container->get('plugin.manager.embed_source'),
     );
   }
 

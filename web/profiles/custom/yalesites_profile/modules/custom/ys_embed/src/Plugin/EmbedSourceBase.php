@@ -104,7 +104,7 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('config.factory')
+      $container->get('config.factory'),
     );
   }
 

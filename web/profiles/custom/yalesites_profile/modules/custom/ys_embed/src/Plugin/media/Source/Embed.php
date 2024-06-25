@@ -72,7 +72,7 @@ class Embed extends MediaSourceBase implements MediaSourceFieldConstraintsInterf
       $entity_type_manager,
       $entity_field_manager,
       $field_type_manager,
-      $config_factory
+      $config_factory,
     );
     $this->embedManager = $embed_manager;
   }

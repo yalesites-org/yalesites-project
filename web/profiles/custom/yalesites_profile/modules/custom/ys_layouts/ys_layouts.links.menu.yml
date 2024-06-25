@@ -1,0 +1,6 @@
+ys_layouts.settings:
+  title: 'YaleSites Layout Builder'
+  description: 'Configure settings for the YaleSites Layouts module.'
+  parent: system.admin_config_system
+  route_name: ys_layouts.settings_form
+  weight: 100

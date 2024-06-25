@@ -142,3 +142,76 @@ text:
       default: 'Default'
       emphasized: 'Emphasized'
     default: default
+reference_card:
+  field_style_variation:
+    values:
+      featured: 'Featured'
+      non-featured: 'Non-featured'
+    default: featured
+tile:
+  field_style_color:
+    values:
+      one: 'One'
+      two: 'Two'
+      three: 'Three'
+    default: one
+tiles:
+  field_style_width:
+    values:
+      two: 'Two'
+      three: 'Three'
+      four: 'Four'
+    default: four
+  field_style_alignment:
+    values:
+      left: 'Left'
+      center: 'Center'
+      right: 'Right'
+    default: left
+  field_style_position:
+    values:
+      top: 'Top'
+      bottom: 'Bottom'
+    default: bottom
+facts:
+  field_style_width:
+    values:
+      two: 'Two'
+      three: 'Three'
+      four: 'Four'
+    default: four
+  field_style_color:
+    values:
+      one: 'One'
+      two: 'Two'
+      three: 'Three'
+    default: one
+  field_style_alignment:
+    values:
+      left: 'Left'
+      center: 'Center'
+    default: left
+quote_callout:
+  field_style_color:
+    values:
+      one: 'One'
+      two: 'Two'
+      three: 'Three'
+    default: one
+  field_style_variation:
+    values:
+      bar: 'Bar'
+      quote: 'Quote'
+    default: bar
+  field_style_alignment:
+    values:
+      left: 'Left'
+      right: 'Right'
+    default: left
+link_grid:
+  field_style_color:
+    values:
+      one: 'One'
+      two: 'Two'
+      three: 'Three'
+    default: one

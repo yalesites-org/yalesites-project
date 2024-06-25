@@ -1,0 +1,31 @@
+uuid: ec44742a-9ddf-417d-b7ad-26f50684a541
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.taxonomy_term.event_groups.field_localist_group_id
+    - taxonomy.vocabulary.event_groups
+  module:
+    - text
+id: taxonomy_term.event_groups.default
+targetEntityType: taxonomy_term
+bundle: event_groups
+mode: default
+content:
+  description:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_localist_group_id:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 1
+    region: content
+hidden:
+  search_api_excerpt: true

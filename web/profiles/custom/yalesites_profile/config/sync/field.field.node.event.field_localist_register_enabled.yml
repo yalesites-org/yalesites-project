@@ -1,0 +1,21 @@
+uuid: b5531856-5641-4292-bfd5-666f38ebb108
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_localist_register_enabled
+    - node.type.event
+id: node.event.field_localist_register_enabled
+field_name: field_localist_register_enabled
+entity_type: node
+bundle: event
+label: 'Localist Register enabled'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'Yes'
+  off_label: 'No'
+field_type: boolean
