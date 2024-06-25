@@ -1,0 +1,64 @@
+From e18f75aba6227456af86b71ae9c5e8d97749c6c9 Mon Sep 17 00:00:00 2001
+From: Martin Anderson-Clutz <mandclu@gmail.com>
+Date: Mon, 22 Apr 2024 18:23:43 -0400
+Subject: [PATCH 1/2] Disable Smart Date format validation if deduplication is
+ off
+
+---
+ src/SmartDateTrait.php | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/src/SmartDateTrait.php b/src/SmartDateTrait.php
+index 3e00852..c3496be 100644
+--- a/src/SmartDateTrait.php
++++ b/src/SmartDateTrait.php
+@@ -589,16 +589,16 @@ trait SmartDateTrait {
+    */
+   protected static function rangeDateReduce(array $range, mixed $settings, $start_ts, $end_ts, $timezone = NULL) {
+     $settings = static::normalizeSettings($settings);
++    // If an empty date format or no deduplication, nothing to do.
++    if (empty($settings['date_format']) || $settings['ampm_reduce'] === '0') {
++      return $range;
++    }
+     // First attempt has the following limitations, to reduce complexity:
+     // * Day ranges only work either d or j, and no other day tokens.
+     // * Not able to handle S token unless adjacent to day.
+     // * Month, day ranges only work if year at start or end.
+     $start = getdate($start_ts);
+     $end = getdate($end_ts);
+-    // If an empty date format, nothing to do.
+-    if (empty($settings['date_format'])) {
+-      return $range;
+-    }
+     $range['start']['date']['#format'] = $settings['date_format'];
+     $range['end']['date']['#format'] = $settings['date_format'];
+     // If the years are different, no deduplication necessary.
+-- 
+GitLab
+
+
+From 21590c3537c54cde88463a48819c02635ed09aea Mon Sep 17 00:00:00 2001
+From: Martin Anderson-Clutz <46883-mandclu@users.noreply.drupalcode.org>
+Date: Wed, 24 Apr 2024 22:36:24 +0000
+Subject: [PATCH 2/2] Additional error check
+
+---
+ src/SmartDateTrait.php | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/SmartDateTrait.php b/src/SmartDateTrait.php
+index c3496be..7f98751 100644
+--- a/src/SmartDateTrait.php
++++ b/src/SmartDateTrait.php
+@@ -647,7 +647,7 @@ trait SmartDateTrait {
+       $valid_tokens = [];
+       // Check for workable day or month tokens.
+       preg_match_all('/(?<!\\\)[djDNlwzSFmMn]/', $settings['date_format'], $valid_tokens, PREG_OFFSET_CAPTURE);
+-      if (!$valid_tokens) {
++      if (!$valid_tokens || !$valid_tokens[0]) {
+         return $range;
+       }
+       if ($year_pos == 0) {
+-- 
+GitLab
+

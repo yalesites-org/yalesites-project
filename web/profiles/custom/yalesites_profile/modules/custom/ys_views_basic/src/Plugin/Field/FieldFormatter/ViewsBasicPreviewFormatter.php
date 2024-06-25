@@ -66,7 +66,7 @@ class ViewsBasicPreviewFormatter extends FormatterBase implements ContainerFacto
       $settings,
       $label,
       $view_mode,
-      $third_party_settings
+      $third_party_settings,
     );
     $this->viewsBasicManager = $viewsBasicManager;
   }

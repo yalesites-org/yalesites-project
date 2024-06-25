@@ -333,6 +333,17 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#suffix' => '</div>',
     ];
 
+    $form['group_user_selection']['options']['offset'] = [
+      '#title' => 'Ignore Number of Results',
+      '#description' => $this->t('Specify the number of results you want to ignore. If you enter "2", your view will omit the first two results that match the overall parameters you\'ve set in the view interface.'),
+      '#type' => 'number',
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('offset', $items[$delta]->params) : 0,
+      '#min' => 0,
+      '#attributes' => [
+        'placeholder' => 0,
+      ],
+    ];
+
     $element['group_params']['params'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Params'),
@@ -375,6 +386,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         "sort_by" => $form_state->getValue($formSelectors['sort_by_array']),
         "display" => $form_state->getValue($formSelectors['display_array']),
         "limit" => (int) $form_state->getValue($formSelectors['limit_array']),
+        "offset" => (int) $form_state->getValue($formSelectors['offset_array']),
       ];
       $value['params'] = json_encode($paramData);
     }

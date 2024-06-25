@@ -6,6 +6,7 @@ dependencies:
     - core.entity_view_mode.node.list_item
     - node.type.event
     - taxonomy.vocabulary.event_category
+    - taxonomy.vocabulary.localist_event_type
   module:
     - better_exposed_filters
     - node
@@ -132,6 +133,18 @@ display:
                 options_show_only_used_filtered: false
                 options_hide_when_empty: true
                 options_show_items_count: 0
+              field_localist_event_type_target_id:
+                plugin_id: default
+                advanced:
+                  sort_options: false
+                  rewrite:
+                    filter_rewrite_values: ''
+                  collapsible: false
+                  is_secondary: false
+                options_show_only_used: true
+                options_show_only_used_filtered: false
+                options_hide_when_empty: true
+                options_show_items_count: 0
       access:
         type: perm
         options:
@@ -161,7 +174,7 @@ display:
           table: node__field_event_date
           field: field_event_date_value
           relationship: none
-          group_type: group
+          group_type: min
           admin_label: ''
           plugin_id: date
           order: ASC
@@ -354,6 +367,56 @@ display:
           hierarchy: false
           limit: true
           error_message: true
+        field_localist_event_type_target_id:
+          id: field_localist_event_type_target_id
+          table: node__field_localist_event_type
+          field: field_localist_event_type_target_id
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: taxonomy_index_tid
+          operator: or
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: field_localist_event_type_target_id_op
+            label: 'Event Type'
+            description: ''
+            use_operator: false
+            operator: field_localist_event_type_target_id_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: field_localist_event_type_target_id
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+              anonymous: '0'
+              contributor: '0'
+              editor: '0'
+              site_admin: '0'
+              platform_admin: '0'
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          reduce_duplicates: false
+          vid: localist_event_type
+          type: select
+          hierarchy: false
+          limit: true
+          error_message: true
       style:
         type: default
         options:
@@ -376,6 +439,7 @@ display:
           query_tags: {  }
       relationships: {  }
       use_ajax: true
+      group_by: true
       header: {  }
       footer: {  }
       display_extenders: {  }
