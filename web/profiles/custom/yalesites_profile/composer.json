@@ -106,7 +106,7 @@
     "laminas/laminas-escaper": "2.12",
     "northernco/ckeditor5-anchor-drupal": "0.4.0",
     "yalesites-org/ai_engine": "1.2.2",
-    "yalesites-org/atomic": "1.32.0",
+    "yalesites-org/atomic": "1.33.0",
     "yalesites-org/yale_cas": "1.0.4"
   },
   "minimum-stability": "dev",
@@ -170,7 +170,7 @@
       "drupal/migrate_plus": {
         "Allow callback for Url source, and single item Json plugin https://www.drupal.org/project/migrate_plus/issues/3040427": "https://www.drupal.org/files/issues/2023-02-15/3040427-42-migrate_plus_multiple_urls.patch"
       },
-        "drupal/focal_point": {
+      "drupal/focal_point": {
         "Limit image styles on preview page": "https://www.drupal.org/files/issues/2021-08-13/2830678-29.patch"
       },
       "drupal/selective_better_exposed_filters": {
