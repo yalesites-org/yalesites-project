@@ -1,11 +1,11 @@
 uuid: dcf44ccb-684d-4ddc-8d24-60f2a3042b62
 langcode: en
 status: true
-dependencies: {  }
+dependencies: {}
 id: inline_message
 block_id: 'inline_block:inline_message'
 category: advanced
-label: 'Inline Message'
-image_path: ''
+label: 'In-Line Message'
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/in-line-message.svg
 image_alt: ''
 weight: -100
