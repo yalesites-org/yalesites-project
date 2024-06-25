@@ -1,11 +1,18 @@
 import tokens from '@yalesites-org/tokens/build/json/tokens.json';
-import { eventArgTypes } from '../../04-page-layouts/cl-page-args';
+import {
+  eventArgTypes,
+  eventLocalistArgTypes,
+} from '../../04-page-layouts/cl-page-args';
 
+import eventLocalistData from './event-meta/event-localist.yml';
 import basicMetaTwig from './basic-meta/yds-basic-meta.twig';
 import eventMetaTwig from './event-meta/yds-event-meta.twig';
+import eventLocalistMetaTwig from './event-meta/yds-event-meta-localist.twig';
 import dateTimeTwig from '../../01-atoms/date-time/yds-date-time.twig';
 import profileMetaTwig from './profile-meta/yds-profile-meta.twig';
 import imageData from '../../01-atoms/images/image/image.yml';
+
+import './event-meta/event-meta-localist';
 
 const colorPairingsData = Object.keys(tokens['component-themes']);
 
@@ -56,6 +63,34 @@ export const Event = ({
   });
 Event.argTypes = {
   ...eventArgTypes,
+};
+
+export const EventLocalist = ({
+  pageTitle,
+  format,
+  address,
+  ctaText,
+  allDay,
+  withImage,
+}) =>
+  eventLocalistMetaTwig({
+    ...imageData.responsive_images['3x2'],
+    event_title__heading: pageTitle,
+    event_dates: eventLocalistData.event_dates,
+    formatted_start_date: eventLocalistData.formatted_start_date,
+    formatted_end_date: eventLocalistData.formatted_end_date,
+    event_meta__format: format,
+    event_meta__address: address,
+    event_meta__cta_primary__content: ctaText,
+    event_meta__cta_primary__href: '#',
+    event_meta__cta_secondary__content: 'Add to calendar',
+    event_meta__cta_secondary__href: '#',
+    event_meta__image: withImage ? 'true' : 'false',
+    event_meta__all_day: allDay,
+    ...eventLocalistData,
+  });
+EventLocalist.argTypes = {
+  ...eventLocalistArgTypes,
 };
 
 export const Profile = ({

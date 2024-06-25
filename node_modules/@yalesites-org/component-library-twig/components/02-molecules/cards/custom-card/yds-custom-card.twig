@@ -35,11 +35,13 @@
       } %}
     {% endif %}
   </div>
-  <div {{ bem('image', [], custom_card__base_class) }}>
-    {% if custom_card__image == 'true' %}
-      {% block custom_card__image %}
-        {% include "@atoms/images/image/_responsive-image.twig" %}
-      {% endblock %}
-    {% endif %}
-  </div>
+  {% if custom_card__image == 'true' %}
+    <a {{ bem('image-link', [], custom_card__base_class) }} href="{{custom_card__url}}" aria-label="{{custom_card__heading}}" aria-hidden="true">
+      <div {{ bem('image', [], custom_card__base_class) }}>
+        {% block custom_card__image %}
+          {% include "@atoms/images/image/_responsive-image.twig" %}
+        {% endblock %}
+      </div>
+    </a>
+  {% endif %}
 </li>

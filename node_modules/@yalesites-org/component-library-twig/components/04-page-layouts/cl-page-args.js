@@ -66,4 +66,39 @@ export const eventArgTypes = {
   },
 };
 
+export const eventLocalistArgTypes = {
+  withImage: {
+    name: 'With Image',
+    type: 'boolean',
+    defaultValue: true,
+  },
+  format: {
+    name: 'Format',
+    control: 'check',
+    options: ['In-person', 'Online'],
+    defaultValue: 'In-person',
+  },
+  address: {
+    name: 'Address',
+    type: 'string',
+    defaultValue:
+      'Address 1 (Building name)<br />Address 2<br />City, ST ZIP | Map',
+  },
+  ctaText: {
+    name: 'CTA Text',
+    type: 'string',
+    defaultValue: 'CTA for event',
+  },
+  allDay: {
+    name: 'All Day',
+    type: 'boolean',
+    defaultValue: true,
+  },
+  pageTitle: {
+    name: 'Page Title',
+    type: 'string',
+    defaultValue: 'Davis Team Project Wins Award for Research',
+  },
+};
+
 export default argTypes;

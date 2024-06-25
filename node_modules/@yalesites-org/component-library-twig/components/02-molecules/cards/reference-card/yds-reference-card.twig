@@ -15,6 +15,7 @@
 
 {% set reference_card__base_class = 'reference-card' %}
 {% set reference_card__image = reference_card__image|default('true') %}
+{% set reference_card__image_aria = reference_card__image_aria|default(reference_card__heading) %}
 
 {# If stats__item__attributes is not defined, set it to an empty object by default #}
 {% set reference_card__attributes = {
@@ -32,6 +33,8 @@
       } %}
     {% endif %}
     {% include "@atoms/typography/headings/yds-heading.twig" with {
+      heading__prefix__base_class: reference_card__base_class,
+      heading__prefix: reference_card__prefix,
       heading__level: reference_card__heading_level|default('3'),
       heading__blockname: reference_card__base_class,
       heading: reference_card__heading,
@@ -51,12 +54,36 @@
         text__content: reference_card__snippet,
       } %}
     {% endif %}
+    {% if reference_card__cta_primary__content and reference_card__cta_primary__href or reference_card__cta_secondary__content and reference_card__cta_secondary__href %}
+      {# CTAs #}
+      <div {{ bem('ctas', [], reference_card__base_class) }}>
+        {# Primary CTA #}
+        {% if reference_card__cta_primary__content and reference_card__cta_primary__href %}
+          {% include "@atoms/controls/cta/yds-cta.twig" with {
+            cta__content: reference_card__cta_primary__content,
+            cta__href: reference_card__cta_primary__href,
+            cta__component_theme: cta__component_theme|default('one'),
+          } %}
+        {% endif %}
+        {# Add to calendar #}
+        {% if reference_card__cta_secondary__content and reference_card__cta_secondary__href and not event_has_passed %}
+          {% include "@atoms/controls/cta/yds-cta.twig" with {
+            cta__content: reference_card__cta_secondary__content,
+            cta__href: reference_card__cta_secondary__href,
+            cta__style: 'outline',
+            cta__component_theme: cta__component_theme|default('one'),
+          } %}
+        {% endif %}
+      </div>
+    {% endif %}
   </div>
   {% if reference_card__image == 'true' %}
     <div {{ bem('image', [], reference_card__base_class) }}>
-      {% block reference_card__image %}
-        {% include "@atoms/images/image/_responsive-image.twig" %}
-      {% endblock %}
+      <a {{ bem('image-link', [], reference_card__base_class) }} href="{{reference_card__url}}" aria-label="{{reference_card__image_aria}}" tabindex="-1" aria-hidden="true">
+        {% block reference_card__image %}
+          {% include "@atoms/images/image/_responsive-image.twig" %}
+        {% endblock %}
+      </a>
     </div>
   {% endif %}
 </li>

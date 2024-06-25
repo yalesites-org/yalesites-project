@@ -16,16 +16,29 @@
   class: bem(page_title__base_class, [], page_title__blockname, page_title__additional_classes),
 } %}
 
+{% if page_title__variation %}
+  {% set page_title__attributes = page_title__attributes|merge({
+    'data-component-variation': page_title__variation,
+  }) %}
+{% endif %}
+
 {% if 'hidden' not in [page_title__display] %}
   <div {{ add_attributes(page_title__attributes) }}>
     <div {{ bem('inner', [], page_title__base_class) }}>
-      {% include "@atoms/typography/headings/yds-heading.twig" with {
-        heading__level: '1',
-        heading: page_title__heading,
-        heading__blockname: page_title__base_class,
-        heading__prefix: page_title__prefix,
-        heading__prefix__base_class: page_title__base_class,
-      } %}
+      <div {{ bem('top', [], page_title__base_class) }}>
+        <div {{ bem('title-wrap', [], page_title__base_class) }}>
+          {% block page_title__overline %}{% endblock %}
+          {% include "@atoms/typography/headings/yds-heading.twig" with {
+            heading__level: '1',
+            heading: page_title__heading,
+            heading__blockname: page_title__base_class,
+            heading__prefix: page_title__prefix,
+            heading__prefix__base_class: page_title__base_class,
+          } %}
+          {% block page_title__extra %}{% endblock %}
+        </div>
+        {% block page_title__image %}{% endblock %}
+      </div>
       {% block page_title__meta %}
         {% if page_title__meta %}
           {% include "@molecules/meta/basic-meta/yds-basic-meta.twig" with {
