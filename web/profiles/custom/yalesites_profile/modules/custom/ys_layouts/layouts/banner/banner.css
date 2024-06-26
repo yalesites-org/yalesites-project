@@ -5,17 +5,3 @@
 .layout--banner .layout__region {
   width: 100%;
 }
-
-/*
- * Content moderation places an empty div which causes
- * items not to become flush with the header. This 
- * attempt to target the item underneat that 
- * div in order to let it not have a margin to but up 
- * to the header.
- */
-.layout--banner
-  .layout__region
-  > div:not([class], [id], [name], [style])
-  + .cta-banner {
-  margin-block-start: 0;
-}
