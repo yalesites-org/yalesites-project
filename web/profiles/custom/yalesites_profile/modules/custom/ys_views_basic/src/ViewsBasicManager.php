@@ -173,8 +173,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
-    EntityDisplayRepository $entity_display_repository
-    ) {
+    EntityDisplayRepository $entity_display_repository,
+  ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityDisplayRepository = $entity_display_repository;
     $this->termStorage = $this->entityTypeManager->getStorage('taxonomy_term');
@@ -213,9 +213,33 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     $running = TRUE;
 
     // Set up the view and initial decoded parameters.
-    $view = Views::getView('views_basic_scaffold');
-    $view->setDisplay('block_1');
     $paramsDecoded = json_decode($params, TRUE);
+
+    /* Events need to have aggregation turned on in the view. Therefore, we
+     * retrieve a special event scaffold view and apply sorting here instead of
+     * the custom sort plugin.
+     */
+
+    if (in_array('event', $paramsDecoded['filters']['types'])) {
+      $view = Views::getView('views_basic_scaffold_events');
+      $sortDirection = explode(":", $paramsDecoded['sort_by']);
+      $view->getDisplay()->setOption('sorts', [
+        [
+          'id' => 'field_event_date_value',
+          'table' => "node__field_event_date",
+          'field' => 'field_event_date_value',
+          'group_type' => 'min',
+          'order' => $sortDirection[1],
+        ],
+      ]);
+
+    }
+    else {
+      // All other views get the original scaffold view.
+      $view = Views::getView('views_basic_scaffold');
+    }
+
+    $view->setDisplay('block_1');
 
     /*
      * Sets the arguments that will get passed to contextual filters as well
@@ -296,6 +320,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'view' => $paramsDecoded['view_mode'],
         'items' => $itemsLimit,
         'event_time_period' => str_contains($filterType, 'event') ? $eventTimePeriod : NULL,
+        'offset' => $paramsDecoded['offset'] ?? 0,
       ]
     );
 
@@ -446,8 +471,16 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         }
         break;
 
+      case 'operator':
+        $defaultParam = (empty($paramsDecoded['operator'])) ? '+' : (int) $paramsDecoded['operator'];
+        break;
+
       case 'limit':
         $defaultParam = (empty($paramsDecoded['limit'])) ? 10 : (int) $paramsDecoded['limit'];
+        break;
+
+      case 'offset':
+        $defaultParam = (empty($paramsDecoded['offset'])) ? 0 : (int) $paramsDecoded['offset'];
         break;
 
       case 'event_time_period':
@@ -597,6 +630,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
             'limit',
           ],
           'limit_ajax' => ($form) ? $form['block_form']['group_user_selection']['options']['limit'] : NULL,
+          'offset_array' => [
+            'block_form',
+            'group_user_selection',
+            'options',
+            'offset',
+          ],
         ];
       }
       else {
@@ -652,6 +691,13 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
             'limit',
           ],
           'limit_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['options']['limit'] : NULL,
+          'offset_array' => [
+            'settings',
+            'block_form',
+            'group_user_selection',
+            'options',
+            'offset',
+          ],
         ];
       }
     }
@@ -672,6 +718,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         ),
         'limit_array' => ['limit'],
         'limit_ajax' => ($form) ? $form['group_user_selection']['options']['limit'] : NULL,
+        'offset_array' => ['offset'],
       ];
     }
 

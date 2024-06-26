@@ -1,0 +1,41 @@
+id: localist_topics
+label: 'Localist topics filter'
+source:
+  plugin: url
+  data_fetcher_plugin: http
+  data_parser_plugin: json
+  track_changes: true
+  urls:
+    # @see ys_localist.module
+    callback: ys_localist_migrate_url
+  localist_endpoint: 'filters'
+  item_selector: event_topics
+  fields:
+    -
+      name: filter_id
+      label: 'Event audience ID'
+      selector: id
+    -
+      name: filter_name
+      label: 'Event audience name'
+      selector: name
+    -
+      name: filter_parent_id
+      label: 'Event audience parent ID'
+      selector: parent_id
+  ids:
+    filter_id:
+      # This would be an int, but it is too long for the DB
+      type: string
+process:
+  name: filter_name
+  parent:
+    plugin: migration_lookup
+    migration: localist_topics
+    source: filter_parent_id
+
+destination:
+  plugin: 'entity:taxonomy_term'
+  default_bundle: event_topics
+  overwrite_properties:
+    - name

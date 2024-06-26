@@ -11,7 +11,7 @@ id: block_content.callout.field_style_color
 field_name: field_style_color
 entity_type: block_content
 bundle: callout
-label: 'Background Color'
+label: Theme
 description: ''
 required: true
 translatable: true

@@ -28,6 +28,7 @@ class ViewsBasicFullPager extends Full {
       return;
     }
     $this->setItemsPerPage((int) $this->view->args[5]);
+    $this->setOffset($this->view->args[7]);
     $limit = $this->options['items_per_page'];
     $offset = $this->current_page * $this->options['items_per_page'] + $this->options['offset'];
     if (!empty($this->options['total_pages'])) {

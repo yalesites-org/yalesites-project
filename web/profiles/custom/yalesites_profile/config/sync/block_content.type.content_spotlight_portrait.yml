@@ -29,5 +29,5 @@ third_party_settings:
         external: ''
 id: content_spotlight_portrait
 label: 'Spotlight - Portrait'
-revision: 0
+revision: 1
 description: 'Spotlight - Portrait allows you to display a portrait 2x3 image adjacent to text. This component has optional content, an image offset option, and different orientations.'

@@ -1,0 +1,21 @@
+ys_localist.settings:
+  path: '/admin/yalesites/localist'
+  defaults:
+    _form: '\Drupal\ys_localist\Form\LocalistSettings'
+    _title: 'Localist Settings'
+  requirements:
+    _permission: 'yalesites manage localist'
+ys_localist.run_migrations:
+  path: '/admin/yalesites/localist/sync'
+  defaults:
+    _controller: '\Drupal\ys_localist\Controller\RunMigrations::runAllMigrations'
+    _title: 'Import Localist events now'
+  requirements:
+    _permission: 'yalesites manage localist'
+ys_localist.sync_groups:
+  path: '/admin/yalesites/localist/sync-groups'
+  defaults:
+    _controller: '\Drupal\ys_localist\Controller\RunMigrations::syncGroups'
+    _title: 'Sync Localist groups'
+  requirements:
+    _permission: 'yalesites manage localist'

@@ -85,7 +85,7 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
     array $configuration,
     $plugin_id,
     $plugin_definition,
-    ConfigFactoryInterface $config_factory
+    ConfigFactoryInterface $config_factory,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->config = $config_factory->get('media.settings');
@@ -98,13 +98,13 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
     ContainerInterface $container,
     array $configuration,
     $plugin_id,
-    $plugin_definition
+    $plugin_definition,
   ) {
     return new static(
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('config.factory')
+      $container->get('config.factory'),
     );
   }
 

@@ -87,8 +87,6 @@ display:
           include_exclude: include
           selected_actions:
             - node_delete_action
-            - node_publish_action
-            - node_unpublish_action
             - pathauto_update_alias_node
         title:
           id: title
@@ -145,7 +143,7 @@ display:
           group_type: group
           admin_label: ''
           plugin_id: field
-          label: Date
+          label: 'Date (First and last only)'
           exclude: false
           alter:
             alter_text: false
@@ -194,13 +192,23 @@ display:
             force_chronological: false
             add_classes: false
             time_wrapper: true
+            localize: false
+            parts:
+              start: start
+              end: end
+              duration: '0'
+            duration:
+              separator: ' | '
+              unit: ''
+              decimals: 2
+              suffix: h
           group_column: value
           group_columns: {  }
           group_rows: true
           delta_limit: 0
           delta_offset: 0
           delta_reversed: false
-          delta_first_last: false
+          delta_first_last: true
           multi_type: separator
           separator: ', '
           field_api_classes: false
