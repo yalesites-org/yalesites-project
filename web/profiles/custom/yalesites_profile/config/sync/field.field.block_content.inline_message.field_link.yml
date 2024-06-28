@@ -1,0 +1,23 @@
+uuid: 0512509f-d16a-4d0c-b210-583c4ef81115
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.inline_message
+    - field.storage.block_content.field_link
+  module:
+    - link
+id: block_content.inline_message.field_link
+field_name: field_link
+entity_type: block_content
+bundle: inline_message
+label: Link
+description: 'For more information about linking content, view our resource <a href="https://yalesites.yale.edu/resource-library/linking-content-on-yalesites" target="_blank">Linking Content on YaleSites</a>.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  title: 2
+  link_type: 17
+field_type: link

@@ -5,11 +5,13 @@ dependencies:
   config:
     - block_content.type.inline_message
     - field.field.block_content.inline_message.field_heading
+    - field.field.block_content.inline_message.field_link
     - field.field.block_content.inline_message.field_style_color
     - field.field.block_content.inline_message.field_text
   module:
     - allowed_formats
     - hide_revision_field
+    - linkit
     - maxlength
     - text
 id: block_content.inline_message.default
@@ -31,6 +33,20 @@ content:
       maxlength:
         maxlength_js: 50
         maxlength_js_label: 'Content recommended length set to @limit characters, remaining: <strong>@remaining</strong>'
+        maxlength_js_enforce: false
+  field_link:
+    type: linkit
+    weight: 6
+    region: content
+    settings:
+      placeholder_url: ''
+      placeholder_title: ''
+      linkit_profile: default
+      linkit_auto_link_text: false
+    third_party_settings:
+      maxlength:
+        maxlength_js: null
+        maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
         maxlength_js_enforce: false
   field_style_color:
     type: options_select
