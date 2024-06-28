@@ -4,18 +4,17 @@
 
   {% if parentNode == 'post' or parentNode == 'event' %}
     {% set inline_message__width = "content" %}
-    {% set inline_message__alignment = "center" %}
+    {% set inline_message__alignment = "center" %}()
   {% else %}
     {% set inline_message__width = "site" %}
     {% set inline_message__alignment = "left" %}
   {% endif %}
 
-  {% embed "@molecules/inline-message/yds-inline-message.twig" with {
+  {% include "@molecules/inline-message/yds-inline-message.twig" with {
     inline_message__heading: content.field_heading.0,
     inline_message__content: content.field_text.0,
-    inline_message__link__content: content.field_link_text.0,
-    inline_message__link__url: content.field_link_url.0,
+    inline_message__link__content: content.field_link.0['#title'],
+    inline_message__link__url: content.field_link.0['#url_title'],
     inline_message__theme: content.field_style_color.0['#markup'],
   } %}
-  {% endembed %}
 {% endblock %}
