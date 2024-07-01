@@ -14,15 +14,20 @@ dependencies:
     - block_content.type.divider
     - block_content.type.embed
     - block_content.type.event_list
+    - block_content.type.facts
     - block_content.type.gallery
     - block_content.type.grand_hero
     - block_content.type.image
+    - block_content.type.link_grid
     - block_content.type.media_grid
     - block_content.type.post_list
     - block_content.type.pull_quote
     - block_content.type.quick_links
+    - block_content.type.quote_callout
+    - block_content.type.reference_card
     - block_content.type.tabs
     - block_content.type.text
+    - block_content.type.tiles
     - block_content.type.video
     - block_content.type.view
     - block_content.type.webform
@@ -111,10 +116,12 @@ permissions:
   - 'create embed media'
   - 'create event content'
   - 'create event_list block content'
+  - 'create facts block content'
   - 'create gallery block content'
   - 'create grand_hero block content'
   - 'create image block content'
   - 'create image media'
+  - 'create link_grid block content'
   - 'create media'
   - 'create media_grid block content'
   - 'create page content'
@@ -123,6 +130,8 @@ permissions:
   - 'create profile content'
   - 'create pull_quote block content'
   - 'create quick_links block content'
+  - 'create quote_callout block content'
+  - 'create reference_card block content'
   - 'create reusable blocks'
   - 'create tabs block content'
   - 'create terms in affiliation'
@@ -130,6 +139,7 @@ permissions:
   - 'create terms in post_category'
   - 'create terms in tags'
   - 'create text block content'
+  - 'create tiles block content'
   - 'create url aliases'
   - 'create video block content'
   - 'create video media'
@@ -162,6 +172,8 @@ permissions:
   - 'delete any event content'
   - 'delete any event_list block content'
   - 'delete any event_list block content revisions'
+  - 'delete any facts block content'
+  - 'delete any facts block content revisions'
   - 'delete any gallery block content'
   - 'delete any gallery block content revisions'
   - 'delete any grand_hero block content'
@@ -169,6 +181,8 @@ permissions:
   - 'delete any image block content'
   - 'delete any image block content revisions'
   - 'delete any image media'
+  - 'delete any link_grid block content'
+  - 'delete any link_grid block content revisions'
   - 'delete any media'
   - 'delete any media_grid block content'
   - 'delete any media_grid block content revisions'
@@ -181,10 +195,16 @@ permissions:
   - 'delete any pull_quote block content revisions'
   - 'delete any quick_links block content'
   - 'delete any quick_links block content revisions'
+  - 'delete any quote_callout block content'
+  - 'delete any quote_callout block content revisions'
+  - 'delete any reference_card block content'
+  - 'delete any reference_card block content revisions'
   - 'delete any tabs block content'
   - 'delete any tabs block content revisions'
   - 'delete any text block content'
   - 'delete any text block content revisions'
+  - 'delete any tiles block content'
+  - 'delete any tiles block content revisions'
   - 'delete any video block content'
   - 'delete any video block content revisions'
   - 'delete any video media'
@@ -224,10 +244,12 @@ permissions:
   - 'edit any embed media'
   - 'edit any event content'
   - 'edit any event_list block content'
+  - 'edit any facts block content'
   - 'edit any gallery block content'
   - 'edit any grand_hero block content'
   - 'edit any image block content'
   - 'edit any image media'
+  - 'edit any link_grid block content'
   - 'edit any media_grid block content'
   - 'edit any page content'
   - 'edit any post content'
@@ -235,8 +257,11 @@ permissions:
   - 'edit any profile content'
   - 'edit any pull_quote block content'
   - 'edit any quick_links block content'
+  - 'edit any quote_callout block content'
+  - 'edit any reference_card block content'
   - 'edit any tabs block content'
   - 'edit any text block content'
+  - 'edit any tiles block content'
   - 'edit any video block content'
   - 'edit any video media'
   - 'edit any view block content'
@@ -272,15 +297,20 @@ permissions:
   - 'revert any divider block content revisions'
   - 'revert any embed block content revisions'
   - 'revert any event_list block content revisions'
+  - 'revert any facts block content revisions'
   - 'revert any gallery block content revisions'
   - 'revert any grand_hero block content revisions'
   - 'revert any image block content revisions'
+  - 'revert any link_grid block content revisions'
   - 'revert any media_grid block content revisions'
   - 'revert any post_list block content revisions'
   - 'revert any pull_quote block content revisions'
   - 'revert any quick_links block content revisions'
+  - 'revert any quote_callout block content revisions'
+  - 'revert any reference_card block content revisions'
   - 'revert any tabs block content revisions'
   - 'revert any text block content revisions'
+  - 'revert any tiles block content revisions'
   - 'revert any video block content revisions'
   - 'revert any view block content revisions'
   - 'revert any webform block content revisions'
@@ -315,15 +345,20 @@ permissions:
   - 'view any divider block content history'
   - 'view any embed block content history'
   - 'view any event_list block content history'
+  - 'view any facts block content history'
   - 'view any gallery block content history'
   - 'view any grand_hero block content history'
   - 'view any image block content history'
+  - 'view any link_grid block content history'
   - 'view any media_grid block content history'
   - 'view any post_list block content history'
   - 'view any pull_quote block content history'
   - 'view any quick_links block content history'
+  - 'view any quote_callout block content history'
+  - 'view any reference_card block content history'
   - 'view any tabs block content history'
   - 'view any text block content history'
+  - 'view any tiles block content history'
   - 'view any unpublished content'
   - 'view any video block content history'
   - 'view any view block content history'
