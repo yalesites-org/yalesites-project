@@ -5,14 +5,34 @@ dependencies:
   config:
     - block_content.type.view
     - field.field.block_content.view.field_heading
+    - field.field.block_content.view.field_heading_links
     - field.field.block_content.view.field_instructions
     - field.field.block_content.view.field_view_params
   module:
     - allowed_formats
+    - field_group
     - markup
     - maxlength
+    - paragraphs
     - text
     - ys_views_basic
+third_party_settings:
+  field_group:
+    group_heading_links:
+      children:
+        - field_heading_links
+      label: 'Heading Link(s)'
+      region: content
+      parent_name: ''
+      weight: 3
+      format_type: details
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        open: false
+        required_fields: true
+        formatter: closed
 id: block_content.view.default
 targetEntityType: block_content
 bundle: view
@@ -33,6 +53,18 @@ content:
         maxlength_js: 50
         maxlength_js_label: 'Content recommended length set to @limit characters, remaining: <strong>@remaining</strong>'
         maxlength_js_enforce: false
+  field_heading_links:
+    type: entity_reference_paragraphs
+    weight: 4
+    region: content
+    settings:
+      title: Paragraph
+      title_plural: Paragraphs
+      edit_mode: open
+      add_mode: button
+      form_display_mode: default
+      default_paragraph_type: _none
+    third_party_settings: {  }
   field_instructions:
     type: markup
     weight: 0
@@ -41,7 +73,7 @@ content:
     third_party_settings: {  }
   field_view_params:
     type: views_basic_default_widget
-    weight: 3
+    weight: 5
     region: content
     settings: {  }
     third_party_settings: {  }

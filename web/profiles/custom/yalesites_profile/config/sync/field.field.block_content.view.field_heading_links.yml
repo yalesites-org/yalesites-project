@@ -1,0 +1,64 @@
+uuid: 50dcc9c5-8991-456d-b9b6-5118a051d9a5
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.view
+    - field.storage.block_content.field_heading_links
+    - paragraphs.paragraphs_type.cta_link
+  module:
+    - entity_reference_revisions
+id: block_content.view.field_heading_links
+field_name: field_heading_links
+entity_type: block_content
+bundle: view
+label: Link
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:paragraph'
+  handler_settings:
+    target_bundles:
+      cta_link: cta_link
+    negate: 0
+    target_bundles_drag_drop:
+      accordion_item:
+        weight: 11
+        enabled: false
+      callout_item:
+        weight: 12
+        enabled: false
+      cta_link:
+        weight: 15
+        enabled: true
+      custom_card:
+        weight: 13
+        enabled: false
+      facts_item:
+        weight: 14
+        enabled: false
+      gallery_item:
+        weight: 15
+        enabled: false
+      link:
+        weight: 17
+        enabled: false
+      link_list:
+        weight: 16
+        enabled: false
+      media_grid_item:
+        weight: 17
+        enabled: false
+      tab:
+        weight: 18
+        enabled: false
+      text:
+        weight: 19
+        enabled: false
+      tile:
+        weight: 20
+        enabled: false
+field_type: entity_reference_revisions
