@@ -591,7 +591,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       if (isset($formState->getCompleteForm()['block_form']['#block']) && $formState->getCompleteForm()['block_form']['#block']->isReusable()) {
         // Reusable block Layout Builder form.
         $formSelectors = [
-          'entity_types' => ($rebuildValues) ? $rebuildValues['block_form']['group_user_selection']['entity_and_view_mode']['entity_types'] : $entityValue,
+          'entity_types' => $rebuildValues['block_form']['group_user_selection']['entity_and_view_mode']['entity_types'] ?? $entityValue,
           'entity_types_ajax' => ':input[name="block_form[group_user_selection][entity_and_view_mode][entity_types]"]',
           'view_mode_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
           'massage_terms_include_array' => [
@@ -641,7 +641,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       else {
         // Regular block Layout Builder form.
         $formSelectors = [
-          'entity_types' => ($rebuildValues) ? $rebuildValues['settings']['block_form']['group_user_selection']['entity_and_view_mode']['entity_types'] : $entityValue,
+          'entity_types' => $rebuildValues['settings']['block_form']['group_user_selection']['entity_and_view_mode']['entity_types'] ?? $entityValue,
           'entity_types_ajax' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][entity_types]"]',
           'view_mode_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
           'massage_terms_include_array' => [
@@ -704,7 +704,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     else {
       // Drupal core block form.
       $formSelectors = [
-        'entity_types' => ($rebuildValues) ? $rebuildValues['entity_types'] : $entityValue,
+        'entity_types' => $rebuildValues['entity_types'] ?? $entityValue,
         'entity_types_ajax' => ':input[name="entity_types"]',
         'view_mode_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
         'massage_terms_include_array' => ['terms_include'],
