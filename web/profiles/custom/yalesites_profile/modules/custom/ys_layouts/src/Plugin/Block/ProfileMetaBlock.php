@@ -103,8 +103,6 @@ class ProfileMetaBlock extends BlockBase implements ContainerFactoryPluginInterf
     $department = NULL;
     $mediaId = NULL;
 
-    $default_image_orientation = 'portrait';
-
     $request = $this->requestStack->getCurrentRequest();
     $route = $this->routeMatch->getRouteObject();
     $node = $request->attributes->get('node');
@@ -130,17 +128,6 @@ class ProfileMetaBlock extends BlockBase implements ContainerFactoryPluginInterf
       $mediaId = $node->get('field_media')->getValue()[0]['target_id'] ?? NULL;
     }
 
-    // Get the last updated date of the node this block is on.
-    $lastUpdated = $node->getChangedTime();
-
-    // If lastUpdated is before June 25th, 2024, change the default orientation.
-    // This fixes issues where original profiles were using the new portrait,
-    // but no one opted in.  New profiles will use the portrait, and old ones
-    // that aren't defined will use the non-portrait.
-    if ($lastUpdated < 1719360000) {
-      $default_image_orientation = 'landscape';
-    }
-
     return [
       '#theme' => 'ys_profile_meta_block',
       '#profile_meta__heading' => $title,
@@ -148,7 +135,7 @@ class ProfileMetaBlock extends BlockBase implements ContainerFactoryPluginInterf
       '#profile_meta__subtitle_line' => $subtitle,
       '#profile_meta__department' => $department,
       '#media_id' => $mediaId,
-      '#profile_meta__image_orientation' => $this->configuration['image_orientation'] ?? $default_image_orientation,
+      '#profile_meta__image_orientation' => $this->configuration['image_orientation'] ?? 'portrait',
       '#profile_meta__image_style' => $this->configuration['image_style'] ?? 'inline',
       '#profile_meta__image_alignment' => $this->configuration['image_alignment'] ?? 'left',
     ];
