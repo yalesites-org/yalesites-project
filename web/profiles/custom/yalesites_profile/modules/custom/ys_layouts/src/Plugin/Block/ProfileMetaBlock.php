@@ -104,7 +104,6 @@ class ProfileMetaBlock extends BlockBase implements ContainerFactoryPluginInterf
     $mediaId = NULL;
 
     $default_image_orientation = 'portrait';
-    $default_image_alignment = 'left';
 
     $request = $this->requestStack->getCurrentRequest();
     $route = $this->routeMatch->getRouteObject();
@@ -140,7 +139,6 @@ class ProfileMetaBlock extends BlockBase implements ContainerFactoryPluginInterf
     // that aren't defined will use the non-portrait.
     if ($lastUpdated < 1719360000) {
       $default_image_orientation = 'landscape';
-      $default_image_alignment = 'right';
     }
 
     return [
@@ -152,7 +150,7 @@ class ProfileMetaBlock extends BlockBase implements ContainerFactoryPluginInterf
       '#media_id' => $mediaId,
       '#profile_meta__image_orientation' => $this->configuration['image_orientation'] ?? $default_image_orientation,
       '#profile_meta__image_style' => $this->configuration['image_style'] ?? 'inline',
-      '#profile_meta__image_alignment' => $this->configuration['image_alignment'] ?? $default_image_alignment,
+      '#profile_meta__image_alignment' => $this->configuration['image_alignment'] ?? 'left',
     ];
   }
 
