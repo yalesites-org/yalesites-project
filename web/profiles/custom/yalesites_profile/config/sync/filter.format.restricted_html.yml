@@ -43,7 +43,7 @@ filters:
     status: true
     weight: 50
     settings:
-      remove_empty_paragraphs: '1'
+      remove_empty_paragraphs: true
   typogrify:
     id: typogrify
     provider: typogrify
