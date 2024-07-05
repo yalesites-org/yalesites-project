@@ -47,7 +47,7 @@ third_party_settings:
 name: Profile
 type: profile
 description: 'Manage and present profiles and directories on your website.'
-help: ''
+help: null
 new_revision: true
 preview_mode: 0
 display_submitted: false

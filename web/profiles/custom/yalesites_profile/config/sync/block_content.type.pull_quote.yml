@@ -29,5 +29,5 @@ third_party_settings:
         external: ''
 id: pull_quote
 label: Quote
-revision: 1
+revision: true
 description: 'Quotes allow you to highlight text from, or in reference to, a larger body of work. For instance, you can highlight from a blog, a post, or a personal phrase on a profile.'

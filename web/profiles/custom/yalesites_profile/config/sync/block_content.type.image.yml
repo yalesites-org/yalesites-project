@@ -4,5 +4,5 @@ status: true
 dependencies: {  }
 id: image
 label: Image
-revision: 1
+revision: true
 description: 'Image allows you to upload an image to your page. The Image component supports varying aspect ratios.'

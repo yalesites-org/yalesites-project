@@ -31,3 +31,4 @@ name: 'Event Place'
 vid: event_place
 description: 'A vocabulary that connects an event to a place which can contain address, map, contact, and other specific information about that place.'
 weight: 0
+new_revision: false

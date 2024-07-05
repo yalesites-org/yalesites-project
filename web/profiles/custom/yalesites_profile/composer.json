@@ -127,7 +127,7 @@
         "hide remove button": "https://www.drupal.org/files/issues/2020-05-13/hide_field_required_paragraphs_remove_button_1.patch"
       },
       "drupal/core": {
-        "plural results summary https://www.drupal.org/project/drupal/issues/2888320": "https://www.drupal.org/files/issues/2021-12-15/2888320-78.patch",
+        "plural results summary https://www.drupal.org/project/drupal/issues/2888320": "https://www.drupal.org/files/issues/2024-06-21/2888320-92.patch",
         "Add reusable option to inline block creation https://www.drupal.org/project/drupal/issues/2999491": "https://www.drupal.org/files/issues/2024-01-23/add_reusable_option_to_inline_block_creation-2999491-141.patch"
       },
       "drupal/entity_redirect": {

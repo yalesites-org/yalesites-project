@@ -4,5 +4,5 @@ status: true
 dependencies: {  }
 id: embed
 label: Embed
-revision: 1
+revision: true
 description: "Embed allows you to integrate external supported websites into your content. \_"
