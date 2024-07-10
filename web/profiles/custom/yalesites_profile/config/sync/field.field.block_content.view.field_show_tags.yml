@@ -1,0 +1,21 @@
+uuid: 804e6c0d-acca-4201-8832-a1a42be859ec
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.view
+    - field.storage.block_content.field_show_tags
+id: block_content.view.field_show_tags
+field_name: field_show_tags
+entity_type: block_content
+bundle: view
+label: 'Show Tags'
+description: 'Enable this option to display tags.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'Yes'
+  off_label: 'No'
+field_type: boolean

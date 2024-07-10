@@ -1,0 +1,21 @@
+uuid: 8db41808-be2f-456b-be30-1f4a49bb74c5
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.view
+    - field.storage.block_content.field_show_thumbnails
+id: block_content.view.field_show_thumbnails
+field_name: field_show_thumbnails
+entity_type: block_content
+bundle: view
+label: 'Show Thumbnails'
+description: 'Enable this option to display thumbnails if the selected display type supports images.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'Yes'
+  off_label: 'No'
+field_type: boolean

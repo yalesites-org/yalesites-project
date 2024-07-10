@@ -344,6 +344,24 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
     ];
 
+    $form['field_show_thumbnails']['widget']['value']['#states'] = [
+      'invisible' => [
+        $formSelectors['view_mode_input_selector'] => ['value' => 'calendar']
+      ],
+    ];
+
+    $form['field_show_categories']['widget']['value']['#states'] = [
+      'invisible' => [
+        $formSelectors['view_mode_input_selector'] => ['value' => 'condensed']
+      ],
+    ];
+
+    $form['field_show_tags']['widget']['value']['#states'] = [
+      'invisible' => [
+        $formSelectors['view_mode_input_selector'] => ['value' => 'condensed']
+      ],
+    ];
+
     $element['group_params']['params'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Params'),

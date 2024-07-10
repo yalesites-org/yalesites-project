@@ -82,6 +82,11 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-condensed.svg',
           'img_alt' => 'Icon showing 3 generic list items one on top of the other with no images on the items.',
         ],
+        'calendar' => [
+          'label' => 'Calendar',
+          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/content-type-event.svg',
+          'img_alt' => 'Calendar icon',
+        ],
       ],
       'sort_by' => [
         'field_event_date:DESC' => 'Event Date - newer first',
@@ -593,6 +598,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         $formSelectors = [
           'entity_types' => ($rebuildValues) ? $rebuildValues['block_form']['group_user_selection']['entity_and_view_mode']['entity_types'] : $entityValue,
           'entity_types_ajax' => ':input[name="block_form[group_user_selection][entity_and_view_mode][entity_types]"]',
+          'view_mode_input_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][view_mode]"]',
           'view_mode_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
           'massage_terms_include_array' => [
             'block_form',
@@ -643,6 +649,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         $formSelectors = [
           'entity_types' => ($rebuildValues) ? $rebuildValues['settings']['block_form']['group_user_selection']['entity_and_view_mode']['entity_types'] : $entityValue,
           'entity_types_ajax' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][entity_types]"]',
+          'view_mode_input_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][view_mode]"]',
           'view_mode_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
           'massage_terms_include_array' => [
             'settings',
@@ -706,6 +713,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       $formSelectors = [
         'entity_types' => ($rebuildValues) ? $rebuildValues['entity_types'] : $entityValue,
         'entity_types_ajax' => ':input[name="entity_types"]',
+        'view_mode_input_selector' => ':input[name="view_mode"]',
         'view_mode_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
         'massage_terms_include_array' => ['terms_include'],
         'massage_terms_exclude_array' => ['terms_exclude'],
