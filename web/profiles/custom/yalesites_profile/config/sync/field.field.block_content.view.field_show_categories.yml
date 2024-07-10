@@ -1,0 +1,21 @@
+uuid: e94c687b-3184-4279-bb3b-24dad05bcca2
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.view
+    - field.storage.block_content.field_show_categories
+id: block_content.view.field_show_categories
+field_name: field_show_categories
+entity_type: block_content
+bundle: view
+label: 'Show Categories/Affiliations'
+description: 'Enable this option to display categories and affiliations.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'Yes'
+  off_label: 'No'
+field_type: boolean

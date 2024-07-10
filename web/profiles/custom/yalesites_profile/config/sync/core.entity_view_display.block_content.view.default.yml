@@ -6,6 +6,9 @@ dependencies:
     - block_content.type.view
     - field.field.block_content.view.field_heading
     - field.field.block_content.view.field_instructions
+    - field.field.block_content.view.field_show_categories
+    - field.field.block_content.view.field_show_tags
+    - field.field.block_content.view.field_show_thumbnails
     - field.field.block_content.view.field_view_params
   module:
     - text
@@ -31,4 +34,7 @@ content:
     region: content
 hidden:
   field_instructions: true
+  field_show_categories: true
+  field_show_tags: true
+  field_show_thumbnails: true
   search_api_excerpt: true
