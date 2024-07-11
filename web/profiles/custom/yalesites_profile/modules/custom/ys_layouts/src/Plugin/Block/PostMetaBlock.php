@@ -128,9 +128,8 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
     if (!($node instanceof NodeInterface)) {
       return [];
     }
-    else {
-      $title = $node->getTitle();
-    }
+
+    $title = $node->getTitle();
 
     if ($route) {
       // Post fields.

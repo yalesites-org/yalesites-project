@@ -2,6 +2,8 @@
 
 namespace Drupal\ys_layouts\Traits;
 
+use Drupal\node\Entity\Node;
+
 /**
  * Provides methods to handle UUID and node retrieval.
  */
@@ -58,9 +60,9 @@ trait UuidTitleTrait {
    *
    */
   protected function getEntityNode($title, $entityTypeManager, $request) {
-    /** @var \Drupal\node\NodeInterface $node */
+    /** @var \Drupal\node\Entity\Node $node */
     $node = $request->attributes->get('node');
-    if (!($node instanceof NodeInterface)) {
+    if (!($node instanceof Node)) {
       $node = $this->getNodeForUuid($title, $entityTypeManager);
     }
 
