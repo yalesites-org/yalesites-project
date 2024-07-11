@@ -1,9 +1,9 @@
-uuid: 90f89cee-5f03-41a0-bbf4-da97cdae20f1
+uuid: b5c984b3-d42e-43a1-9e99-e7fadb07f966
 langcode: en
 status: true
 dependencies:
   config:
-    - core.entity_view_mode.node.teaser
+    - core.entity_view_mode.node.single
     - field.field.node.page.field_category
     - field.field.node.page.field_external_source
     - field.field.node.page.field_login_required
@@ -16,20 +16,20 @@ dependencies:
     - node.type.page
   module:
     - user
-id: node.page.teaser
+id: node.page.single
 targetEntityType: node
 bundle: page
-mode: teaser
+mode: single
 content:
   content_moderation_control:
     settings: {  }
     third_party_settings: {  }
-    weight: -20
+    weight: 0
     region: content
   links:
     settings: {  }
     third_party_settings: {  }
-    weight: 0
+    weight: 1
     region: content
 hidden:
   field_category: true
