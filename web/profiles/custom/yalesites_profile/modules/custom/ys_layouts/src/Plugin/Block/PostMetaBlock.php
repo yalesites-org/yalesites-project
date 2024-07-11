@@ -51,6 +51,13 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
   protected $dateFormatter;
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * Constructs a new PostMetaBlock object.
    *
    * @param array $configuration
@@ -67,13 +74,16 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
    *   The request stack.
    * @param \Drupal\Core\Datetime\DateFormatter $date_formatter
    *   The date formatter.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   The entity manager.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $route_match, TitleResolver $title_resolver, RequestStack $request_stack, DateFormatter $date_formatter) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $route_match, TitleResolver $title_resolver, RequestStack $request_stack, DateFormatter $date_formatter, $entity_type_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->routeMatch = $route_match;
     $this->titleResolver = $title_resolver;
     $this->requestStack = $request_stack;
     $this->dateFormatter = $date_formatter;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -88,6 +98,7 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
       $container->get('title_resolver'),
       $container->get('request_stack'),
       $container->get('date.formatter'),
+      $container->get('entity_type.manager'),
     );
   }
 
@@ -95,23 +106,31 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
    * {@inheritdoc}
    */
   public function build() {
+    $route = $this->routeMatch->getRouteObject();
+    $request = $this->requestStack->getCurrentRequest();
 
-    /** @var \Drupal\node\NodeInterface $node */
-    $node = $this->requestStack->getCurrentRequest()->attributes->get('node');
-    if (!($node instanceof NodeInterface)) {
-      return [];
-    }
-
+    $title = '';
+    $node = NULL;
     $title = NULL;
     $author = NULL;
     $publishDate = NULL;
     $dateFormatted = NULL;
 
-    $route = $this->routeMatch->getRouteObject();
+    if ($route) {
+      $title = $this->titleResolver->getTitle($request, $route);
+      /** @var \Drupal\node\NodeInterface $node */
+      $node = $this->getEntityNode($title, $this->entityTypeManager, $request);
+    }
+
+    if (!($node instanceof NodeInterface)) {
+      return [];
+    }
+    else {
+      $title = $node->getTitle();
+    }
 
     if ($route) {
       // Post fields.
-      $title = $node->getTitle();
       $author = ($node->field_author->first()) ? $node->field_author->first()->getValue()['value'] : NULL;
       $publishDate = strtotime($node->field_publish_date->first()->getValue()['value']);
       $dateFormatted = $this->dateFormatter->format($publishDate, '', 'c');
@@ -123,6 +142,66 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
       '#author' => $author,
       '#date_formatted' => $dateFormatted,
     ];
+  }
+
+  /**
+   * Checks if the given title is a UUID.
+   *
+   * @param string $title
+   *   The title to check.
+   *
+   * @return bool
+   *   TRUE if the title is a UUID, FALSE otherwise.
+   */
+  protected function isUuid(string $title): bool {
+    if (preg_match('/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/', $title)) {
+      return TRUE;
+    }
+
+    return FALSE;
+  }
+
+  /**
+   *
+   */
+  protected function isId(string $title): bool {
+    if (is_numeric($title)) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  /**
+   * Gets the node for the given UUID.
+   *
+   * @return \Drupal\node\NodeInterface|null
+   *   The node entity if found, NULL otherwise.
+   */
+  protected function getNodeForUuid(string $uuid, $entityTypeManager) {
+    if ($this->isId($uuid)) {
+      $nodeStorage = $entityTypeManager->getStorage('node');
+      /*$node = $nodeStorage->loadByProperties(['uuid' => $uuid]);*/
+      $node = $nodeStorage->load($uuid);
+      if ($node) {
+        return $node;
+        /*return reset($node);*/
+      }
+    }
+
+    return NULL;
+  }
+
+  /**
+   *
+   */
+  protected function getEntityNode($title, $entityTypeManager, $request) {
+    /** @var \Drupal\node\NodeInterface $node */
+    $node = $request->attributes->get('node');
+    if (!($node instanceof NodeInterface)) {
+      $node = $this->getNodeForUuid($title, $entityTypeManager);
+    }
+
+    return $node;
   }
 
 }

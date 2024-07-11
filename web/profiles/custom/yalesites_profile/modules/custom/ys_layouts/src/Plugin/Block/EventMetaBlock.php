@@ -35,6 +35,27 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
   protected $metaFieldsManager;
 
   /**
+   * The current route match.
+   *
+   * @var \Drupal\Core\Controller\TitleResolver
+   */
+  protected $titleResolver;
+
+  /**
+   * The request stack.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  protected $requestStack;
+
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * Constructs a new EventMetaBlock instance.
    *
    * @param array $configuration
@@ -59,6 +80,10 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
 
     $this->routeMatch = $route_match;
     $this->metaFieldsManager = $meta_fields_manager;
+    $this->requestStack = \Drupal::service('request_stack');
+    $this->titleResolver = \Drupal::service('title_resolver');
+    $this->entityTypeManager = \Drupal::service('entity_type.manager');
+
   }
 
   /**
@@ -78,9 +103,18 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
    * {@inheritdoc}
    */
   public function build() {
+    $route = $this->routeMatch->getRouteObject();
+    $request = $this->requestStack->getCurrentRequest();
 
-    /** @var \Drupal\node\NodeInterface $node */
-    $node = $this->routeMatch->getParameter('node');
+    $title = '';
+    $node = NULL;
+
+    if ($route) {
+      $title = $this->titleResolver->getTitle($request, $route);
+      /** @var \Drupal\node\NodeInterface $node */
+      $node = $this->getEntityNode($title, $this->entityTypeManager, $request);
+    }
+
     if (!($node instanceof NodeInterface)) {
       return [];
     }
@@ -113,6 +147,70 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
       '#stream_url' => $eventFieldData['stream_url'],
       '#stream_embed_code' => $eventFieldData['stream_embed_code'],
     ];
+  }
+
+  /**
+   * Checks if the given title is a UUID.
+   *
+   * @param string $title
+   *   The title to check.
+   *
+   * @return bool
+   *   TRUE if the title is a UUID, FALSE otherwise.
+   */
+  protected function isUuid(string $title): bool {
+    if (preg_match('/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/', $title)) {
+      return TRUE;
+    }
+
+    return FALSE;
+  }
+
+  /**
+   *
+   */
+  protected function isId(string $title): bool {
+    if (is_numeric($title)) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  /**
+   * Gets the node for the given UUID.
+   *
+   * @return \Drupal\node\NodeInterface|null
+   *   The node entity if found, NULL otherwise.
+   */
+  protected function getNodeForUuid(string $uuid, $entityTypeManager) {
+    if ($this->isId($uuid)) {
+      $nodeStorage = $entityTypeManager->getStorage('node');
+      /*$node = $nodeStorage->loadByProperties(['uuid' => $uuid]);*/
+      $node = $nodeStorage->load($uuid);
+      if ($node) {
+        return $node;
+        /*return reset($node);*/
+      }
+    }
+
+    return NULL;
+  }
+
+  /**
+   *
+   */
+  protected function getEntityNode($title, $entityTypeManager, $request) {
+    /** @var \Drupal\node\NodeInterface $node */
+    $node = $this->routeMatch->getParameter('node');
+    if (!($node instanceof NodeInterface)) {
+      /** @var \Drupal\node\NodeInterface $node */
+      $node = $request->attributes->get('node');
+      if (!($node instanceof NodeInterface)) {
+        $node = $this->getNodeForUuid($title, $entityTypeManager);
+      }
+    }
+
+    return $node;
   }
 
 }

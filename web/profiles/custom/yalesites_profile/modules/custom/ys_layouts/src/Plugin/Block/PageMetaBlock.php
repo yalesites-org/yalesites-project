@@ -7,6 +7,7 @@ use Drupal\Core\Controller\TitleResolver;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\node\NodeInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -42,6 +43,8 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
    */
   protected $requestStack;
 
+  protected $entityTypeManager;
+
   /**
    * Constructs a new PageMetaBlock object.
    *
@@ -63,6 +66,7 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
     $this->routeMatch = $route_match;
     $this->titleResolver = $title_resolver;
     $this->requestStack = $request_stack;
+    $this->entityTypeManager = \Drupal::service('entity_type.manager');
   }
 
   /**
@@ -87,11 +91,16 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
     $route = $this->routeMatch->getRouteObject();
     $request = $this->requestStack->getCurrentRequest();
     $page_title = '';
+    $node = NULL;
 
     // Get the page title.
     if ($route) {
       $page_title = $this->titleResolver->getTitle($request, $route);
-    };
+      $node = $this->getEntityNode($page_title, $this->entityTypeManager, $request);
+      if ($node instanceof NodeInterface) {
+        $page_title = $node->getTitle();
+      }
+    }
 
     return [
       '#theme' => 'ys_page_meta_block',
@@ -129,6 +138,70 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
   public function blockSubmit($form, FormStateInterface $form_state) : void {
     parent::blockSubmit($form, $form_state);
     $this->configuration['page_title_display'] = $form_state->getValue('page_title_display');
+  }
+
+  /**
+   * Checks if the given title is a UUID.
+   *
+   * @param string $title
+   *   The title to check.
+   *
+   * @return bool
+   *   TRUE if the title is a UUID, FALSE otherwise.
+   */
+  protected function isUuid(string $title): bool {
+    if (preg_match('/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/', $title)) {
+      return TRUE;
+    }
+
+    return FALSE;
+  }
+
+  /**
+   *
+   */
+  protected function isId(string $title): bool {
+    if (is_numeric($title)) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  /**
+   * Gets the node for the given UUID.
+   *
+   * @return \Drupal\node\NodeInterface|null
+   *   The node entity if found, NULL otherwise.
+   */
+  protected function getNodeForUuid(string $uuid, $entityTypeManager) {
+    if ($this->isId($uuid)) {
+      $nodeStorage = $entityTypeManager->getStorage('node');
+      /*$node = $nodeStorage->loadByProperties(['uuid' => $uuid]);*/
+      $node = $nodeStorage->load($uuid);
+      if ($node) {
+        return $node;
+        /*return reset($node);*/
+      }
+    }
+
+    return NULL;
+  }
+
+  /**
+   *
+   */
+  protected function getEntityNode($title, $entityTypeManager, $request) {
+    /** @var \Drupal\node\NodeInterface $node */
+    $node = $this->routeMatch->getParameter('node');
+    if (!($node instanceof NodeInterface)) {
+      /** @var \Drupal\node\NodeInterface $node */
+      $node = $request->attributes->get('node');
+      if (!($node instanceof NodeInterface)) {
+        $node = $this->getNodeForUuid($title, $entityTypeManager);
+      }
+    }
+
+    return $node;
   }
 
 }
