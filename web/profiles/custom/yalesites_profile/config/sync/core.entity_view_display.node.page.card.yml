@@ -4,6 +4,7 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.node.card
+    - field.field.node.page.field_category
     - field.field.node.page.field_external_source
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
@@ -27,6 +28,11 @@ targetEntityType: node
 bundle: page
 mode: card
 content:
+  content_moderation_control:
+    settings: {  }
+    third_party_settings: {  }
+    weight: -20
+    region: content
   field_external_source:
     type: link_separate
     label: hidden
@@ -64,9 +70,11 @@ content:
     weight: 0
     region: content
 hidden:
+  field_category: true
   field_login_required: true
   field_metatags: true
   field_tags: true
   layout_builder__layout: true
   links: true
   search_api_excerpt: true
+  workflow_buttons: true
