@@ -173,6 +173,17 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
     ];
 
+    $form['group_user_selection']['exposed_filter_options'] = [
+      '#type' => 'details',
+      '#open' => TRUE,
+      '#title' => $this->t('Exposed Filter Options'),
+      '#attributes' => [
+        'class' => [
+          'grouped-items',
+        ],
+      ],
+    ];
+
     $form['group_user_selection']['entity_and_view_mode']['entity_types'] = [
       '#type' => 'radios',
       '#options' => $this->viewsBasicManager->entityTypeList(),
@@ -344,6 +355,51 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
     ];
 
+    $form['group_user_selection']['exposed_filter_options']['show_search'] = [
+      '#title' => $this->t('Show Search Field'),
+      '#type' => 'checkbox',
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('show_search', $items[$delta]->params) : FALSE,
+      '#states' => [
+        'invisible' => [
+          $formSelectors['view_mode_input_selector'] => ['value' => 'calendar']
+        ],
+      ],
+    ];
+
+    $form['group_user_selection']['exposed_filter_options']['show_year'] = [
+      '#title' => $this->t('Show Year Filter'),
+      '#type' => 'checkbox',
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('show_year', $items[$delta]->params) : FALSE,
+      '#states' => [
+        'visible' => [
+          [$formSelectors['entity_types_ajax'] => ['value' => "event"]],
+          [$formSelectors['entity_types_ajax'] => ['value' => "post"]],
+        ],
+      ],
+    ];
+
+    $form['group_user_selection']['exposed_filter_options']['show_category'] = [
+      '#title' => $this->t('Show Category Filter'),
+      '#type' => 'checkbox',
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('show_category', $items[$delta]->params) : FALSE,
+    ];
+
+    $form['group_user_selection']['exposed_filter_options']['category_included_terms'] = [
+      '#title' => $this->t('Category Filter - Included Terms'),
+      '#type' => 'select',
+      '#options' => [],
+      '#chosen' => TRUE,
+      '#multiple' => TRUE,
+      '#tags' => TRUE,
+      '#target_type' => 'taxonomy_term',
+      '#default_value' => [],
+      '#states' => [
+        'visible' => [
+          $formSelectors['show_category_input_selector'] => ['checked' => TRUE]
+        ],
+      ],
+    ];
+
     $element['group_params']['params'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Params'),
@@ -387,6 +443,9 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         "display" => $form_state->getValue($formSelectors['display_array']),
         "limit" => (int) $form_state->getValue($formSelectors['limit_array']),
         "offset" => (int) $form_state->getValue($formSelectors['offset_array']),
+        "show_search" => $form['group_user_selection']['exposed_filter_options']['show_search']['#value'],
+        "show_year" => $form['group_user_selection']['exposed_filter_options']['show_year']['#value'],
+        "show_category" => $form['group_user_selection']['exposed_filter_options']['show_category']['#value'],
       ];
       $value['params'] = json_encode($paramData);
     }
