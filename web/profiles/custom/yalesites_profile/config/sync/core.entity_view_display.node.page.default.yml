@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.node.page.field_category
     - field.field.node.page.field_external_source
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
@@ -235,6 +236,7 @@ content:
     weight: 1
     region: content
 hidden:
+  field_category: true
   field_login_required: true
   field_metatags: true
   field_tags: true
