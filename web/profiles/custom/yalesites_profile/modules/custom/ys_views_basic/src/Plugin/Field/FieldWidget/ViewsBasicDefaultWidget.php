@@ -346,7 +346,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     $form['field_show_thumbnails']['widget']['value']['#states'] = [
       'invisible' => [
-        $formSelectors['view_mode_input_selector'] => ['value' => 'calendar']
+        $formSelectors['view_mode_input_selector'] => ['value' => 'condensed']
       ],
     ];
 

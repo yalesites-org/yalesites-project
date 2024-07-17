@@ -33,7 +33,7 @@ third_party_settings:
         classes: views-basic--field-display-options
         show_empty_fields: false
         id: ''
-        open: true
+        open: false
         description: ''
         required_fields: true
 id: block_content.view.default
