@@ -121,7 +121,6 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
       'card' => 'grid',
       'list_item' => 'list',
       'condensed' => 'condensed',
-      'calendar' => 'calendar',
       'directory' => 'profile-directory',
     ];
 
