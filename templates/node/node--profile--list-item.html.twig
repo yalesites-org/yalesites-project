@@ -8,7 +8,7 @@
   reference_card__url: url,
   reference_card__snippet: content.field_subtitle,
   reference_card__image_aria: heading[0]['#context'].value,
-  show_categories: show_categories,
+  show_categories: 1,
   show_tags: show_tags,
 } %}
 
@@ -16,7 +16,7 @@
     {{ content.field_tags }}
   {% endblock %}
   {% block reference_card__categories %}
-    {{ content.field_category }}
+    {{ content.field_affiliation }}
   {% endblock %}
   {% block reference_card__image %}
     {% if content.field_teaser_media[0] %}
