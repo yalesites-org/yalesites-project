@@ -4,6 +4,7 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.node.card
+    - field.field.node.page.field_category
     - field.field.node.page.field_external_source
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
@@ -31,6 +32,14 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 0
+    region: content
+  field_category:
+    type: entity_reference_label
+    label: hidden
+    settings:
+      link: false
+    third_party_settings: {  }
+    weight: 6
     region: content
   field_external_source:
     type: link_separate
