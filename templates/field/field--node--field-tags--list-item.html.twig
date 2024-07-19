@@ -1,1 +1,3 @@
-{% include "@atoms/lists/taxonomy/yds-tags-list.twig" %}
+{% include "@atoms/lists/taxonomy/yds-tags-list.twig" with {
+  url: url('entity.node.canonical', {'node': element['#object'].id}),
+}%}
