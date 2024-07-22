@@ -1,0 +1,20 @@
+{% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
+
+{% block content %}
+
+  {% if parentNode == 'post' or parentNode == 'event' %}
+    {% set inline_message__width = "content" %}
+    {% set inline_message__alignment = "center" %}()
+  {% else %}
+    {% set inline_message__width = "site" %}
+    {% set inline_message__alignment = "left" %}
+  {% endif %}
+
+  {% include "@molecules/inline-message/yds-inline-message.twig" with {
+    inline_message__heading: content.field_heading.0,
+    inline_message__content: content.field_text.0,
+    inline_message__link__content: content.field_link.0['#title'],
+    inline_message__link__url: content.field_link.0['#url_title'],
+    inline_message__theme: content.field_style_color.0['#markup'],
+  } %}
+{% endblock %}
