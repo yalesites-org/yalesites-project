@@ -1,0 +1,585 @@
+From e8e088aa19f199d39524749725bf86fc77af07b0 Mon Sep 17 00:00:00 2001
+From: David Blankenship <david.blankenship@yale.edu>
+Date: Mon, 22 Jul 2024 16:45:55 -0400
+Subject: [PATCH] Applied original patch with fix
+
+---
+ .../layout_builder.permissions.yml            |   3 +
+ .../layout_builder.services.yml               |   3 +
+ .../src/Form/ConfigureBlockFormBase.php       | 166 +++++++++++++++++-
+ .../src/Form/DefaultsEntityForm.php           |  18 +-
+ .../src/Form/DiscardLayoutChangesForm.php     |  19 +-
+ .../src/Form/OverridesEntityForm.php          |  18 +-
+ .../src/LayoutReusableBlockDiscardChanges.php | 100 +++++++++++
+ 7 files changed, 318 insertions(+), 9 deletions(-)
+ create mode 100644 core/modules/layout_builder/src/LayoutReusableBlockDiscardChanges.php
+
+diff --git a/core/modules/layout_builder/layout_builder.permissions.yml b/core/modules/layout_builder/layout_builder.permissions.yml
+index 5799cb652b..4a356da83e 100644
+--- a/core/modules/layout_builder/layout_builder.permissions.yml
++++ b/core/modules/layout_builder/layout_builder.permissions.yml
+@@ -4,6 +4,9 @@ configure any layout:
+ create and edit custom blocks:
+   title: 'Create and edit content blocks'
+   description: 'Manage the single-use blocks within the Layout Builder'
++create reusable blocks:
++  title: 'Create reusable blocks'
++  description: 'Create reusable blocks which can be used in different layouts'
+ 
+ permission_callbacks:
+   - \Drupal\layout_builder\LayoutBuilderOverridesPermissions::permissions
+diff --git a/core/modules/layout_builder/layout_builder.services.yml b/core/modules/layout_builder/layout_builder.services.yml
+index 4e9fc3acda..90f76c93c9 100644
+--- a/core/modules/layout_builder/layout_builder.services.yml
++++ b/core/modules/layout_builder/layout_builder.services.yml
+@@ -2,6 +2,9 @@ services:
+   layout_builder.tempstore_repository:
+     class: Drupal\layout_builder\LayoutTempstoreRepository
+     arguments: ['@tempstore.shared']
++  layout_builder.reusable_block_discard_changes:
++    class: Drupal\layout_builder\LayoutReusableBlockDiscardChanges
++    arguments: ['@tempstore.shared', '@entity.repository']
+   access_check.entity.layout_builder_access:
+     class: Drupal\layout_builder\Access\LayoutBuilderAccessCheck
+     tags:
+diff --git a/core/modules/layout_builder/src/Form/ConfigureBlockFormBase.php b/core/modules/layout_builder/src/Form/ConfigureBlockFormBase.php
+index 76f2526d04..a28fed47fe 100644
+--- a/core/modules/layout_builder/src/Form/ConfigureBlockFormBase.php
++++ b/core/modules/layout_builder/src/Form/ConfigureBlockFormBase.php
+@@ -3,25 +3,32 @@
+ namespace Drupal\layout_builder\Form;
+ 
+ use Drupal\Component\Utility\Html;
++use Drupal\Component\Utility\NestedArray;
+ use Drupal\Component\Uuid\UuidInterface;
+ use Drupal\Core\Ajax\AjaxFormHelperTrait;
+ use Drupal\Core\Block\BlockManagerInterface;
+ use Drupal\Core\Block\BlockPluginInterface;
++use Drupal\Core\Entity\Entity\EntityFormDisplay;
++use Drupal\Core\Entity\EntityTypeManagerInterface;
+ use Drupal\Core\Form\BaseFormIdInterface;
+ use Drupal\Core\Form\FormBase;
+ use Drupal\Core\Form\FormStateInterface;
+ use Drupal\Core\Form\SubformState;
++use Drupal\Core\Form\SubformStateInterface;
+ use Drupal\Core\Plugin\Context\ContextRepositoryInterface;
+ use Drupal\Core\Plugin\ContextAwarePluginAssignmentTrait;
+ use Drupal\Core\Plugin\ContextAwarePluginInterface;
+ use Drupal\Core\Plugin\PluginFormFactoryInterface;
+ use Drupal\Core\Plugin\PluginWithFormsInterface;
++use Drupal\Core\Session\AccountInterface;
+ use Drupal\layout_builder\Context\LayoutBuilderContextTrait;
+ use Drupal\layout_builder\Controller\LayoutRebuildTrait;
+ use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
+ use Drupal\layout_builder\SectionComponent;
+ use Drupal\layout_builder\SectionStorageInterface;
+ use Symfony\Component\DependencyInjection\ContainerInterface;
++use Drupal\Core\TempStore\SharedTempStoreFactory;
++use Drupal\block_content\Entity\BlockContent;
+ 
+ /**
+  * Provides a base form for configuring a block.
+@@ -99,6 +106,27 @@ abstract class ConfigureBlockFormBase extends FormBase implements BaseFormIdInte
+    */
+   protected $sectionStorage;
+ 
++  /**
++   * The entity type manager service.
++   *
++   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
++   */
++  protected $entityTypeManager;
++
++  /**
++   * The current user.
++   *
++   * @var \Drupal\Core\Session\AccountInterface
++   */
++  protected $currentUser;
++
++  /**
++   * The shared tempstore factory.
++   *
++   * @var \Drupal\Core\TempStore\SharedTempStoreFactory
++   */
++  protected $tempStoreFactory;
++
+   /**
+    * Constructs a new block form.
+    *
+@@ -112,13 +140,22 @@ abstract class ConfigureBlockFormBase extends FormBase implements BaseFormIdInte
+    *   The UUID generator.
+    * @param \Drupal\Core\Plugin\PluginFormFactoryInterface $plugin_form_manager
+    *   The plugin form manager.
++   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
++   *   The entity type manager service.
++   * @param \Drupal\Core\Session\AccountInterface $current_user
++   *   The current user.
++   * @param \Drupal\Core\TempStore\SharedTempStoreFactory $temp_store_factory
++   *   The shared tempstore factory.
+    */
+-  public function __construct(LayoutTempstoreRepositoryInterface $layout_tempstore_repository, ContextRepositoryInterface $context_repository, BlockManagerInterface $block_manager, UuidInterface $uuid, PluginFormFactoryInterface $plugin_form_manager) {
++  public function __construct(LayoutTempstoreRepositoryInterface $layout_tempstore_repository, ContextRepositoryInterface $context_repository, BlockManagerInterface $block_manager, UuidInterface $uuid, PluginFormFactoryInterface $plugin_form_manager, EntityTypeManagerInterface $entity_type_manager, AccountInterface $current_user, SharedTempStoreFactory $temp_store_factory) {
+     $this->layoutTempstoreRepository = $layout_tempstore_repository;
+     $this->contextRepository = $context_repository;
+     $this->blockManager = $block_manager;
+     $this->uuidGenerator = $uuid;
+     $this->pluginFormFactory = $plugin_form_manager;
++    $this->entityTypeManager = $entity_type_manager;
++    $this->currentUser = $current_user;
++    $this->tempStoreFactory = $temp_store_factory;
+   }
+ 
+   /**
+@@ -130,7 +167,10 @@ public static function create(ContainerInterface $container) {
+       $container->get('context.repository'),
+       $container->get('plugin.manager.block'),
+       $container->get('uuid'),
+-      $container->get('plugin_form.factory')
++      $container->get('plugin_form.factory'),
++      $container->get('entity_type.manager'),
++      $container->get('current_user'),
++      $container->get('tempstore.shared')
+     );
+   }
+ 
+@@ -171,6 +211,48 @@ public function doBuildForm(array $form, FormStateInterface $form_state, Section
+     $subform_state = SubformState::createForSubform($form['settings'], $form, $form_state);
+     $form['settings'] = $this->getPluginForm($this->block)->buildConfigurationForm($form['settings'], $subform_state);
+ 
++    if ($this->block->getBaseId() === 'block_content') {
++      // Show the block content form here.
++      /** @var \Drupal\block_content\Plugin\Derivative\BlockContent[] $block_contents */
++      $block_contents = $this->entityTypeManager->getStorage('block_content')->loadByProperties(['uuid' => $this->block->getDerivativeId()]);
++      if (count($block_contents) === 1) {
++        $form['messages'] = [
++          '#theme' => 'status_messages',
++          '#message_list' => [
++            'warning' => [$this->t("This block is reusable! Any changes made will be applied globally.")],
++          ],
++        ];
++        $form['block_form'] = [
++          '#type' => 'container',
++          '#process' => [[static::class, 'processBlockContentForm']],
++          '#block' => reset($block_contents),
++          '#access' => $this->currentUser->hasPermission('create and edit custom blocks'),
++        ];
++      }
++    }
++    elseif ($this->block->getBaseId() === 'inline_block') {
++      /** @var \Drupal\block_content\BlockContentInterface $block_content */
++      $block_content = $form['settings']['block_form']['#block'];
++      $form['reusable'] = [
++        '#type' => 'checkbox',
++        '#title' => $this->t('Reusable'),
++        '#description' => $this->t('Would you like to be able to reuse this block? This option can not be changed after saving.'),
++        '#default_value' => $block_content->isReusable(),
++        '#access' => $this->currentUser->hasPermission('create reusable blocks'),
++      ];
++      $form['info'] = [
++        '#type' => 'textfield',
++        '#title' => $this->t('Admin title'),
++        '#description' => $this->t('The title used to find and reuse this block later.'),
++        '#access' => $this->currentUser->hasPermission('create reusable blocks'),
++        '#states' => [
++          'visible' => [
++            ':input[name="reusable"]' => ['checked' => TRUE],
++          ],
++        ],
++      ];
++    }
++
+     $form['actions']['submit'] = [
+       '#type' => 'submit',
+       '#value' => $this->submitLabel(),
+@@ -194,6 +276,26 @@ public function doBuildForm(array $form, FormStateInterface $form_state, Section
+     return $form;
+   }
+ 
++  /**
++   * Process callback to insert a Custom Block form.
++   *
++   * @param array $element
++   *   The containing element.
++   * @param \Drupal\Core\Form\FormStateInterface $form_state
++   *   The form state.
++   *
++   * @return array
++   *   The containing element, with the Custom Block form inserted.
++   */
++  public static function processBlockContentForm(array $element, FormStateInterface $form_state) {
++    /** @var \Drupal\block_content\BlockContentInterface $block */
++    $block = $element['#block'];
++    EntityFormDisplay::collectRenderDisplay($block, 'edit')->buildForm($block, $element, $form_state);
++    $element['revision_log']['#access'] = FALSE;
++    $element['info']['#access'] = FALSE;
++    return $element;
++  }
++
+   /**
+    * Returns the label for the submit button.
+    *
+@@ -208,6 +310,18 @@ abstract protected function submitLabel();
+   public function validateForm(array &$form, FormStateInterface $form_state) {
+     $subform_state = SubformState::createForSubform($form['settings'], $form, $form_state);
+     $this->getPluginForm($this->block)->validateConfigurationForm($form['settings'], $subform_state);
++
++    if ($this->block->getBaseId() === 'block_content') {
++      $block_form = $form['block_form'];
++      /** @var \Drupal\block_content\BlockContentInterface $block_content */
++      $block_content = $block_form['#block'];
++      $form_display = EntityFormDisplay::collectRenderDisplay($block_content, 'edit');
++      $complete_form_state = $form_state instanceof SubformStateInterface ? $form_state->getCompleteFormState() : $form_state;
++      $form_display->extractFormValues($block_content, $block_form, $complete_form_state);
++      $form_display->validateFormValues($block_content, $block_form, $complete_form_state);
++      // @todo Remove when https://www.drupal.org/project/drupal/issues/2948549 is closed.
++      $form_state->setTemporaryValue('block_form_parents', $block_form['#parents']);
++    }
+   }
+ 
+   /**
+@@ -224,7 +338,53 @@ public function submitForm(array &$form, FormStateInterface $form_state) {
+     }
+ 
+     $configuration = $this->block->getConfiguration();
+-
++    if ($this->block->getBaseId() === 'block_content' && isset($form['block_form'])) {
++      // @todo Remove when https://www.drupal.org/project/drupal/issues/2948549 is closed.
++      $block_form = NestedArray::getValue($form, $form_state->getTemporaryValue('block_form_parents'));
++      /** @var \Drupal\block_content\BlockContentInterface $block_content */
++      $block_content = $block_form['#block'];
++      // Add block to temp store.
++      $routeParams = $this->sectionStorage->getLayoutBuilderUrl()->getRouteParameters();
++      $nid = $routeParams['node'];
++      $tempStore = $this->tempStoreFactory->get('inline_reusable_block');
++      $tempBlock = BlockContent::load($block_content->id());
++      $tempStore->set($tempBlock->bundle() . '--' . $tempBlock->uuid() . '--' . $nid, $tempBlock);
++      $form_display = EntityFormDisplay::collectRenderDisplay($block_content, 'edit');
++      $complete_form_state = $form_state instanceof SubformStateInterface ? $form_state->getCompleteFormState() : $form_state;
++      $form_display->extractFormValues($block_content, $block_form, $complete_form_state);
++      $block_content->save();
++    }
++    // If the block got marked as reusable, then convert the inline_block plugin
++    // to a block_content plugin.
++    elseif ($this->block->getBaseId() === 'inline_block' && $form_state->getValue('reusable')) {
++      $block_info = $form_state->getValue('info');
++      if (empty($block_info)) {
++        $block_info = $form_state->getValue('settings')['label'];
++      }
++      /** @var \Drupal\block_content\BlockContentInterface $block_content */
++      $block_content = $form['settings']['block_form']['#block'];
++      $block_content->setReusable();
++      $block_content->setInfo($block_info);
++      $block_content->save();
++
++      // If it didn't save, it's probably because we're using the same cloned
++      // item somewhere else with different revisions. So, we'll create a new
++      // block_content item to make sure it's fresh and won't interfere.
++      if (!$saved) {
++        $block_content = $block_content->createDuplicate();
++        $block_content->save();
++      }
++
++      $block_label_display = $form_state->getValue('settings')['label_display'];
++      $this->block = $this->blockManager->createInstance('block_content:' . $block_content->uuid(), [
++        'view_mode' => $configuration['view_mode'],
++        'label' => $configuration['label'],
++        'type' => $block_content->bundle(),
++        'uuid' => $block_content->uuid(),
++        'label_display' => $block_label_display,
++      ]);
++      $configuration = $this->block->getConfiguration();
++    }
+     $section = $this->sectionStorage->getSection($this->delta);
+     $section->getComponent($this->uuid)->setConfiguration($configuration);
+ 
+diff --git a/core/modules/layout_builder/src/Form/DefaultsEntityForm.php b/core/modules/layout_builder/src/Form/DefaultsEntityForm.php
+index b254e3424d..7e47eb71c1 100644
+--- a/core/modules/layout_builder/src/Form/DefaultsEntityForm.php
++++ b/core/modules/layout_builder/src/Form/DefaultsEntityForm.php
+@@ -7,6 +7,7 @@
+ use Drupal\Core\Form\FormStateInterface;
+ use Drupal\Core\Routing\RouteMatchInterface;
+ use Drupal\layout_builder\Entity\LayoutEntityDisplayInterface;
++use Drupal\layout_builder\LayoutReusableBlockDiscardChanges;
+ use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
+ use Drupal\layout_builder\SectionStorageInterface;
+ use Symfony\Component\DependencyInjection\ContainerInterface;
+@@ -42,6 +43,13 @@ class DefaultsEntityForm extends EntityForm {
+    */
+   protected $sectionStorage;
+ 
++  /**
++   * The shared tempstore factory.
++   *
++   * @var \Drupal\layout_builder\LayoutReusableBlockDiscardChanges
++   */
++  protected $layoutReusableBlockDiscardChanges;
++
+   /**
+    * Constructs a new DefaultsEntityForm.
+    *
+@@ -49,10 +57,13 @@ class DefaultsEntityForm extends EntityForm {
+    *   The layout tempstore repository.
+    * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+    *   The entity type bundle info service.
++   * @param \Drupal\layout_builder\LayoutReusableBlockDiscardChanges $layout_reusable_block_discard_changes
++   *   The layout reusable block discard change service.
+    */
+-  public function __construct(LayoutTempstoreRepositoryInterface $layout_tempstore_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info) {
++  public function __construct(LayoutTempstoreRepositoryInterface $layout_tempstore_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info, LayoutReusableBlockDiscardChanges $layout_reusable_block_discard_changes) {
+     $this->layoutTempstoreRepository = $layout_tempstore_repository;
+     $this->entityTypeBundleInfo = $entity_type_bundle_info;
++    $this->layoutReusableBlockDiscardChanges = $layout_reusable_block_discard_changes;
+   }
+ 
+   /**
+@@ -61,7 +72,8 @@ public function __construct(LayoutTempstoreRepositoryInterface $layout_tempstore
+   public static function create(ContainerInterface $container) {
+     return new static(
+       $container->get('layout_builder.tempstore_repository'),
+-      $container->get('entity_type.bundle.info')
++      $container->get('entity_type.bundle.info'),
++      $container->get('layout_builder.reusable_block_discard_changes')
+     );
+   }
+ 
+@@ -197,6 +209,8 @@ public function redirectOnSubmit(array $form, FormStateInterface $form_state) {
+    * {@inheritdoc}
+    */
+   public function save(array $form, FormStateInterface $form_state) {
++    // Delete all reusable block tempStorage for this node.
++    $this->layoutReusableBlockDiscardChanges->deleteReusableBlockTemporaryStorage($this->sectionStorage);
+     $return = $this->sectionStorage->save();
+     $this->layoutTempstoreRepository->delete($this->sectionStorage);
+     $this->messenger()->addMessage($this->t('The layout has been saved.'));
+diff --git a/core/modules/layout_builder/src/Form/DiscardLayoutChangesForm.php b/core/modules/layout_builder/src/Form/DiscardLayoutChangesForm.php
+index 5f49f298a8..71cb00b201 100644
+--- a/core/modules/layout_builder/src/Form/DiscardLayoutChangesForm.php
++++ b/core/modules/layout_builder/src/Form/DiscardLayoutChangesForm.php
+@@ -8,6 +8,7 @@
+ use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
+ use Drupal\layout_builder\SectionStorageInterface;
+ use Symfony\Component\DependencyInjection\ContainerInterface;
++use Drupal\layout_builder\LayoutReusableBlockDiscardChanges;
+ 
+ /**
+  * Discards any pending changes to the layout.
+@@ -38,6 +39,13 @@ class DiscardLayoutChangesForm extends ConfirmFormBase {
+    */
+   protected $sectionStorage;
+ 
++  /**
++   * The shared tempstore factory.
++   *
++   * @var \Drupal\layout_builder\LayoutReusableBlockDiscardChanges
++   */
++  protected $layoutReusableBlockDiscardChanges;
++
+   /**
+    * Constructs a new DiscardLayoutChangesForm.
+    *
+@@ -45,10 +53,13 @@ class DiscardLayoutChangesForm extends ConfirmFormBase {
+    *   The layout tempstore repository.
+    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+    *   The messenger service.
++   * @param \Drupal\layout_builder\LayoutReusableBlockDiscardChanges $layout_reusable_block_discard_changes
++   *   The layout reusable block discard change service.
+    */
+-  public function __construct(LayoutTempstoreRepositoryInterface $layout_tempstore_repository, MessengerInterface $messenger) {
++  public function __construct(LayoutTempstoreRepositoryInterface $layout_tempstore_repository, MessengerInterface $messenger, LayoutReusableBlockDiscardChanges $layout_reusable_block_discard_changes) {
+     $this->layoutTempstoreRepository = $layout_tempstore_repository;
+     $this->messenger = $messenger;
++    $this->layoutReusableBlockDiscardChanges = $layout_reusable_block_discard_changes;
+   }
+ 
+   /**
+@@ -57,7 +68,8 @@ public function __construct(LayoutTempstoreRepositoryInterface $layout_tempstore
+   public static function create(ContainerInterface $container) {
+     return new static(
+       $container->get('layout_builder.tempstore_repository'),
+-      $container->get('messenger')
++      $container->get('messenger'),
++      $container->get('layout_builder.reusable_block_discard_changes')
+     );
+   }
+ 
+@@ -96,6 +108,9 @@ public function buildForm(array $form, FormStateInterface $form_state, SectionSt
+    * {@inheritdoc}
+    */
+   public function submitForm(array &$form, FormStateInterface $form_state) {
++    // Revert reusable block to previously stored if discarded.
++    $this->layoutReusableBlockDiscardChanges->revertReusableBlock($this->sectionStorage);
++
+     $this->layoutTempstoreRepository->delete($this->sectionStorage);
+ 
+     $this->messenger->addMessage($this->t('The changes to the layout have been discarded.'));
+diff --git a/core/modules/layout_builder/src/Form/OverridesEntityForm.php b/core/modules/layout_builder/src/Form/OverridesEntityForm.php
+index 789778fc8f..3bcac44b8a 100644
+--- a/core/modules/layout_builder/src/Form/OverridesEntityForm.php
++++ b/core/modules/layout_builder/src/Form/OverridesEntityForm.php
+@@ -14,6 +14,7 @@
+ use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
+ use Drupal\layout_builder\SectionStorageInterface;
+ use Symfony\Component\DependencyInjection\ContainerInterface;
++use Drupal\layout_builder\LayoutReusableBlockDiscardChanges;
+ 
+ /**
+  * Provides a form containing the Layout Builder UI for overrides.
+@@ -39,6 +40,13 @@ class OverridesEntityForm extends ContentEntityForm {
+    */
+   protected $sectionStorage;
+ 
++  /**
++   * The shared tempstore factory.
++   *
++   * @var \Drupal\layout_builder\LayoutReusableBlockDiscardChanges
++   */
++  protected $layoutReusableBlockDiscardChanges;
++
+   /**
+    * Constructs a new OverridesEntityForm.
+    *
+@@ -50,10 +58,13 @@ class OverridesEntityForm extends ContentEntityForm {
+    *   The time service.
+    * @param \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layout_tempstore_repository
+    *   The layout tempstore repository.
++   * @param \Drupal\layout_builder\LayoutReusableBlockDiscardChanges $layout_reusable_block_discard_changes
++   *   The layout The layout reusable block discard change service.
+    */
+-  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time, LayoutTempstoreRepositoryInterface $layout_tempstore_repository) {
++  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time, LayoutTempstoreRepositoryInterface $layout_tempstore_repository, LayoutReusableBlockDiscardChanges $layout_reusable_block_discard_changes) {
+     parent::__construct($entity_repository, $entity_type_bundle_info, $time);
+     $this->layoutTempstoreRepository = $layout_tempstore_repository;
++    $this->layoutReusableBlockDiscardChanges = $layout_reusable_block_discard_changes;
+   }
+ 
+   /**
+@@ -64,7 +75,8 @@ public static function create(ContainerInterface $container) {
+       $container->get('entity.repository'),
+       $container->get('entity_type.bundle.info'),
+       $container->get('datetime.time'),
+-      $container->get('layout_builder.tempstore_repository')
++      $container->get('layout_builder.tempstore_repository'),
++      $container->get('layout_builder.reusable_block_discard_changes')
+     );
+   }
+ 
+@@ -176,6 +188,8 @@ protected function buildMessage(EntityInterface $entity, OverridesSectionStorage
+   public function save(array $form, FormStateInterface $form_state) {
+     $return = parent::save($form, $form_state);
+ 
++    // Delete all reusable block tempStorage for this node.
++    $this->layoutReusableBlockDiscardChanges->deleteReusableBlockTemporaryStorage($this->sectionStorage);
+     $this->layoutTempstoreRepository->delete($this->sectionStorage);
+     $this->messenger()->addStatus($this->t('The layout override has been saved.'));
+     $form_state->setRedirectUrl($this->sectionStorage->getRedirectUrl());
+diff --git a/core/modules/layout_builder/src/LayoutReusableBlockDiscardChanges.php b/core/modules/layout_builder/src/LayoutReusableBlockDiscardChanges.php
+new file mode 100644
+index 0000000000..a567c0fa9b
+--- /dev/null
++++ b/core/modules/layout_builder/src/LayoutReusableBlockDiscardChanges.php
+@@ -0,0 +1,100 @@
++<?php
++
++namespace Drupal\layout_builder;
++
++use Drupal\Core\Entity\EntityRepository;
++use Drupal\Core\TempStore\SharedTempStoreFactory;
++
++/**
++ * Provides a mechanism for loading layouts from tempstore.
++ */
++class LayoutReusableBlockDiscardChanges {
++
++  /**
++   * The shared tempstore factory.
++   *
++   * @var \Drupal\Core\TempStore\SharedTempStoreFactory
++   */
++  protected $tempStoreFactory;
++
++  /**
++   * The shared tempstore factory.
++   *
++   * @var \Drupal\Core\Entity\EntityRepository
++   */
++  protected $entityRepository;
++
++  /**
++   * LayoutTempstoreRepository constructor.
++   *
++   * @param \Drupal\Core\TempStore\SharedTempStoreFactory $temp_store_factory
++   *   The shared tempstore factory.
++   * @param \Drupal\Core\Entity\EntityRepository $entity_repository
++   *   The entity repository service object.
++   */
++  public function __construct(SharedTempStoreFactory $temp_store_factory, EntityRepository $entity_repository) {
++    $this->tempStoreFactory = $temp_store_factory;
++    $this->entityRepository = $entity_repository;
++  }
++
++  /**
++   * Revert reusable block on discard changes to
++   * previously stored version.
++   */
++  public function revertReusableBlock(SectionStorageInterface $section_storage) {
++    $tempStore = $this->tempStoreFactory->get('inline_reusable_block');
++    $routeParams = $section_storage->getLayoutBuilderUrl()->getRouteParameters();
++    if (isset($routeParams['node'])) {
++      $nid = $routeParams['node'];
++    }
++    else {
++      return;
++    }
++    foreach ($section_storage->getSections() as $section) {
++      foreach ($section->getComponents() as $component) {
++        if ($component->getPlugin()
++          ->getPluginDefinition()['id'] === 'block_content') {
++          $explode = explode(':', $component->getPlugin()
++            ->getPluginDefinition()['config_dependencies']['content'][0]);
++          $block_content = $this->entityRepository->loadEntityByUuid('block_content', $explode[2]);
++          $newBlock = $tempStore->get($block_content->bundle() . '--' . $block_content->uuid() . '--' . $nid);
++          if ($newBlock) {
++            $newBlock->setNewRevision();
++            $newBlock->save();
++            $tempStore->delete($block_content->bundle() . '--' . $block_content->uuid() . '--' . $nid);
++          }
++        }
++
++      }
++    }
++  }
++
++  /**
++   * Revert reusable block on discard changes to
++   * previously stored version.
++   */
++  public function deleteReusableBlockTemporaryStorage(SectionStorageInterface $section_storage) {
++    $tempStore = $this->tempStoreFactory->get('inline_reusable_block');
++    $routeParams = $section_storage->getLayoutBuilderUrl()->getRouteParameters();
++    if (isset($routeParams['node'])) {
++      $nid = $routeParams['node'];
++    }
++    else {
++      return;
++    }
++    foreach ($section_storage->getSections() as $section) {
++      foreach ($section->getComponents() as $component) {
++        if ($component->getPlugin()
++          ->getPluginDefinition()['id'] === 'block_content') {
++          $explode = explode(':', $component->getPlugin()
++            ->getPluginDefinition()['config_dependencies']['content'][0]);
++          $block_content = $this->entityRepository->loadEntityByUuid('block_content', $explode[2]);
++          // Delete temp storage.
++          $tempStore->delete($block_content->bundle() . '--' . $block_content->uuid() . '--' . $nid);
++        }
++
++      }
++    }
++  }
++
++}
+-- 
+2.45.2
+
