@@ -18,6 +18,7 @@ dependencies:
     - block_content.type.gallery
     - block_content.type.grand_hero
     - block_content.type.image
+    - block_content.type.inline_message
     - block_content.type.link_grid
     - block_content.type.media_grid
     - block_content.type.post_list
@@ -121,6 +122,7 @@ permissions:
   - 'create grand_hero block content'
   - 'create image block content'
   - 'create image media'
+  - 'create inline_message block content'
   - 'create link_grid block content'
   - 'create media'
   - 'create media_grid block content'
@@ -181,6 +183,8 @@ permissions:
   - 'delete any image block content'
   - 'delete any image block content revisions'
   - 'delete any image media'
+  - 'delete any inline_message block content'
+  - 'delete any inline_message block content revisions'
   - 'delete any link_grid block content'
   - 'delete any link_grid block content revisions'
   - 'delete any media'
@@ -249,6 +253,7 @@ permissions:
   - 'edit any grand_hero block content'
   - 'edit any image block content'
   - 'edit any image media'
+  - 'edit any inline_message block content'
   - 'edit any link_grid block content'
   - 'edit any media_grid block content'
   - 'edit any page content'
@@ -301,6 +306,7 @@ permissions:
   - 'revert any gallery block content revisions'
   - 'revert any grand_hero block content revisions'
   - 'revert any image block content revisions'
+  - 'revert any inline_message block content revisions'
   - 'revert any link_grid block content revisions'
   - 'revert any media_grid block content revisions'
   - 'revert any post_list block content revisions'
@@ -349,6 +355,7 @@ permissions:
   - 'view any gallery block content history'
   - 'view any grand_hero block content history'
   - 'view any image block content history'
+  - 'view any inline_message block content history'
   - 'view any link_grid block content history'
   - 'view any media_grid block content history'
   - 'view any post_list block content history'
