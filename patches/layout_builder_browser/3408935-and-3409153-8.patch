@@ -16,28 +16,32 @@ index b05fa2f..4b5c9b8 100644
 +      type: string
 +      label: 'Fallback image alt'
 diff --git a/src/Controller/BrowserController.php b/src/Controller/BrowserController.php
-index 9331cae..376d953 100644
+index 34310e2..02bb6c3 100644
 --- a/src/Controller/BrowserController.php
 +++ b/src/Controller/BrowserController.php
 @@ -146,6 +146,9 @@ class BrowserController extends ControllerBase {
        ->loadByProperties(['status' => TRUE]);
      uasort($blockcats, ['Drupal\Core\Config\Entity\ConfigEntityBase', 'sort']);
-
+ 
 +    // For use with reusable images.
 +    $allBlockImages = [];
 +
      /** @var \Drupal\layout_builder_browser\Entity\LayoutBuilderBrowserBlockCategory $blockcat */
      foreach ($blockcats as $blockcat) {
        $blocks = [];
-@@ -168,6 +171,27 @@ class BrowserController extends ControllerBase {
+@@ -169,6 +172,31 @@ class BrowserController extends ControllerBase {
        }
-
+ 
        $block_categories[$blockcat->id()]['links'] = $this->getBlocks($section_storage, $delta, $region, $blocks);
 +
 +      // Sets the images for each block into an array for reusable blocks.
 +      foreach ($block_categories[$blockcat->id()] as $lbbCategories) {
 +        foreach ($lbbCategories as $blockLinks) {
-+          $plugin_id = str_replace('inline_block:', '', $blockLinks['#url']->getRouteParameters()['plugin_id']);
++          if (array_key_exists('#url', $blockLinks)) {
++            $plugin_id = str_replace('inline_block:', '', $blockLinks['#url']->getRouteParameters()['plugin_id']);
++          } else {
++            $plugin_id = str_replace('inline_block:', '', $blockLinks['link']['#url']->getRouteParameters()['plugin_id']);
++          }
 +          if (isset($blockLinks['#title']['image'])) {
 +            $allBlockImages[$plugin_id] = [
 +              'uri' => $blockLinks['#title']['image']['#uri'],
@@ -57,7 +61,7 @@ index 9331cae..376d953 100644
        if ($block_categories[$blockcat->id()]['links']) {
          // Only add the information if the category has links.
          $block_categories[$blockcat->id()]['#type'] = 'details';
-@@ -187,6 +211,12 @@ class BrowserController extends ControllerBase {
+@@ -188,6 +216,12 @@ class BrowserController extends ControllerBase {
      $existing_blocks = $this->entityTypeManager->getStorage('layout_builder_browser_block')
        ->loadMultiple();
      $existing_blocks_ids = array_column($existing_blocks, 'block_id');
@@ -70,7 +74,7 @@ index 9331cae..376d953 100644
      foreach ($auto_added_reusable_bundles as $machine_name) {
        $blocks = [];
        $content_blocks = $this->entityTypeManager->getStorage('block_content')
-@@ -203,19 +233,62 @@ class BrowserController extends ControllerBase {
+@@ -207,19 +241,62 @@ class BrowserController extends ControllerBase {
          }
        }
        if ($blocks) {
@@ -131,15 +135,15 @@ index 9331cae..376d953 100644
          }
        }
      }
-
+ 
 +    usort($block_categories['reusable_blocks']['links'], function($a, $b) {
 +      return $b['#changed'] <=> $a['#changed'];
 +    });
 +
      $build['block_categories'] = $block_categories;
      $build['#attached']['library'][] = 'layout_builder_browser/browser';
-
-@@ -266,6 +339,16 @@ class BrowserController extends ControllerBase {
+ 
+@@ -270,6 +347,16 @@ class BrowserController extends ControllerBase {
            '#alt' => $block['layout_builder_browser_data']->image_alt,
          ];
        }
@@ -153,17 +157,17 @@ index 9331cae..376d953 100644
 +        ];
 +      }
 +
-       $block_render_array['label'] = ['#markup' => (empty($block["layout_builder_browser_data"])) ? $block['admin_label'] : $block["layout_builder_browser_data"]->label()];
-       $link = [
-         '#type' => 'link',
-@@ -280,6 +363,7 @@ class BrowserController extends ControllerBase {
+       // Use category image when available.
+       elseif (!empty($block["layout_builder_browser_category_data"]) && isset($block["layout_builder_browser_category_data"]->image_path) && trim($block["layout_builder_browser_category_data"]->image_path) != '') {
+         $block_render_array['image'] = [
+@@ -292,6 +379,7 @@ class BrowserController extends ControllerBase {
            ]
          ),
          '#attributes' => $attributes,
 +        '#changed' => $block['#changed'],
        ];
-
-       $links[] = $link;
+ 
+       $links[] = [
 diff --git a/src/Form/SettingsForm.php b/src/Form/SettingsForm.php
 index 90253f0..b1c5ff2 100644
 --- a/src/Form/SettingsForm.php
@@ -171,7 +175,7 @@ index 90253f0..b1c5ff2 100644
 @@ -83,6 +83,27 @@ class SettingsForm extends ConfigFormBase {
        '#default_value' => $config->get('auto_added_reusable_block_content_bundles') ?? [],
      ];
-
+ 
 +    $form['group_reusable_blocks_together'] = [
 +      '#title' => $this->t('Group reusable blocks together'),
 +      '#description' => $this->t('By default, reusable blocks are grouped according to their bundle type. Checking this box will group all reusable blocks together in one group.'),
@@ -195,7 +199,7 @@ index 90253f0..b1c5ff2 100644
 +
      return parent::buildForm($form, $form_state);
    }
-
+ 
 @@ -95,6 +116,9 @@ class SettingsForm extends ConfigFormBase {
      $config->set('enabled_section_storages', array_filter($form_state->getValue('enabled_section_storages')));
      $config->set('use_modal', $form_state->getValue('use_modal'));
@@ -204,5 +208,5 @@ index 90253f0..b1c5ff2 100644
 +    $config->set('reusable_image_fallback', $form_state->getValue('reusable_image_fallback'));
 +    $config->set('reusable_image_fallback_alt', $form_state->getValue('reusable_image_fallback_alt'));
      $config->save();
-
+ 
      parent::submitForm($form, $form_state);
