@@ -9,7 +9,18 @@
   reference_card__snippet: content.field_teaser_text,
   reference_card__image: 'true',
   reference_card__image_aria: heading[0]['#context'].value,
+  show_categories: node.show_categories,
+  show_tags: node.show_tags,
 } %}
+
+  {% block reference_card__tags %}
+    {{ content.field_tags }}
+  {% endblock %}
+
+  {% block reference_card__categories %}
+    {{ content.field_category }}
+  {% endblock %}
+
   {% block reference_card__image %}
 
     {% if content.field_teaser_media[0] %}
