@@ -1,0 +1,24 @@
+uuid: e0182b01-e1be-4396-be2b-573e171a1c45
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.inline_message
+    - field.storage.block_content.field_heading
+    - filter.format.heading_html
+  module:
+    - text
+id: block_content.inline_message.field_heading
+field_name: field_heading
+entity_type: block_content
+bundle: inline_message
+label: Heading
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - heading_html
+field_type: text
