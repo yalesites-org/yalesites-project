@@ -1,6 +1,6 @@
 ((Drupal) => {
   Drupal.behaviors.ysViewsBasic = {
-    attach: function() { // eslint-disable-line
+    attach: function () { // eslint-disable-line
       // Function to handle radio input checked behavior based on radio element selection.
       function handleRadioInputs(radioGroup) {
         // Get references to the radio input elements within the specified group
@@ -42,6 +42,39 @@
       radioGroups.forEach((group) => {
         handleRadioInputs(group);
       });
+
+      // Handle limit display
+      const editLimitWrapperElement = document.querySelector('#edit-limit');
+      const displayElement = document.querySelector('select[name="settings[block_form][group_user_selection][options][display]"');
+
+      // If they're ever gone from the form, don't deal with this.
+      if (editLimitWrapperElement && displayElement) {
+        const limitLabel = editLimitWrapperElement.querySelector('label');
+
+        const updateLimitElement = () => {
+          const value = displayElement.value;
+
+          // First evaluate whether to hide/show the limit
+          const newLimitDisplayValue = value === 'all' ? 'display: none' : '';
+          editLimitWrapperElement.setAttribute('style', newLimitDisplayValue);
+
+          // Change the title
+          switch (value) {
+            case 'all':
+              break;
+            case 'limit':
+              limitLabel.textContent = 'Items';
+              break;
+            case 'pager':
+              limitLabel.textContent = 'Items Per Page';
+            default:
+              break;
+          }
+        }
+
+        displayElement.addEventListener('change', updateLimitElement);
+        updateLimitElement();
+      }
     },
   };
 })(Drupal);
