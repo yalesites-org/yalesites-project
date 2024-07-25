@@ -6,4 +6,4 @@ services:
   # Service for retrieving event field data.
   ys_localist.meta_fields_manager:
     class: Drupal\ys_localist\MetaFieldsManager
-    arguments: ['@date.formatter', '@entity_type.manager', '@ys_localist.manager', '@logger.factory']
+    arguments: ['@date.formatter', '@entity_type.manager', '@ys_localist.manager']
