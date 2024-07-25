@@ -5,6 +5,7 @@ namespace Drupal\ys_localist;
 use Drupal\calendar_link\Twig\CalendarLinkTwigExtension;
 use Drupal\Core\Datetime\DateFormatter;
 use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Url;
 use Drupal\node\NodeInterface;
@@ -44,6 +45,13 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
   protected $localistManager;
 
   /**
+   * Logger channel.
+   *
+   * @var \Drupal\Core\Logger\LoggerChannelInterface
+   */
+  protected $logger;
+
+  /**
    * Constructs a new EventMetaBlock instance.
    *
    * @param \Drupal\Core\Datetime\DateFormatter $date_formatter
@@ -52,16 +60,20 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
    *   The entity type manager service.
    * @param \Drupal\ys_localist\LocalistManager $localist_manager
    *   The Localist manager service.
+   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger
+   *   The logger channel.
    */
   public function __construct(
     DateFormatter $date_formatter,
     EntityTypeManager $entity_type_manager,
     LocalistManager $localist_manager,
+    LoggerChannelFactoryInterface $logger,
   ) {
     $this->dateFormatter = $date_formatter;
     $this->entityTypeManager = $entity_type_manager;
     $this->localistManager = $localist_manager;
     $this->calendarLink = new CalendarLinkTwigExtension();
+    $this->logger = $logger->get('ys_localist');
   }
 
   /**
@@ -72,6 +84,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       $container->get('date.formatter'),
       $container->get('entity_type.manager'),
       $container->get('ys_localist.manager'),
+      $container->get('logger.factory'),
     );
   }
 
