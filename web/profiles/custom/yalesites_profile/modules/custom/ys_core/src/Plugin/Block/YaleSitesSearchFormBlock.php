@@ -3,6 +3,7 @@
 namespace Drupal\ys_core\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -65,6 +66,13 @@ class YaleSitesSearchFormBlock extends BlockBase implements ContainerFactoryPlug
       '#show_content_type_filter' => $config->get('show_content_type_filter'),
       '#content_type_list' => $config->get('content_type_list'),
     ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheTags(): array {
+    return Cache::mergeTags(['config:ys_core.views_settings'], parent::getCacheTags());
   }
 
 }

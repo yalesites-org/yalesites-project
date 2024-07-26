@@ -228,7 +228,7 @@ display:
           specify_validation: true
           validate:
             type: none
-            fail: empty
+            fail: ignore
           validate_options: {  }
           break_phrase: false
           not: false

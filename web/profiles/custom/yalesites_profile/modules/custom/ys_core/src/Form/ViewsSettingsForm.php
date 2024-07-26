@@ -66,10 +66,8 @@ class ViewsSettingsForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('ys_core.views_settings');
 
-    $form['#attached']['library'][] = 'core/drupal.vertical-tabs';
     $form['vertical_tabs'] = [
       '#type' => 'vertical_tabs',
-      '#default_tab' => 'edit-first',
     ];
 
     // Search views settings group.
