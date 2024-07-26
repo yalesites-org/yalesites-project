@@ -9,7 +9,7 @@
         icon__decorative: true,
       } %}
     </label>
-    <input placeholder="Start new search" type="text" id="edit-keywords--page-search-form" name="keywords" value=""
+    <input placeholder="Start new search" type="text" id="edit-keywords--page-search-form" name="keywords" value="{{ getQueryParam('keywords') }}"
            size="30" maxlength="128" class="form-text form-item__textfield">
   </div>
   {% if show_content_type_filter %}
@@ -20,7 +20,7 @@
                 class="form-select form-item__select">
           <option value="all" selected="selected">{{'- All -'|t}}</option>
           {% for key, value in content_type_list %}
-            <option value="{{ key }}">{{ value|capitalize }}</option>
+            <option value="{{ key }}" {% if key == getQueryParam('type') %}selected{% endif %}>{{ value|capitalize }}</option>
           {% endfor %}
         </select>
       </div>
