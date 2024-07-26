@@ -73,6 +73,7 @@ class CoreTwigExtension extends AbstractExtension {
       new TwigFunction('getCoreSetting', [$this, 'getCoreSetting']),
       new TwigFunction('getHeaderSetting', [$this, 'getHeaderSetting']),
       new TwigFunction('getUrlType', [$this, 'getUrlType']),
+      new TwigFunction('getQueryParam', [$this, 'getQueryParam']),
     ];
   }
 
@@ -288,6 +289,19 @@ class CoreTwigExtension extends AbstractExtension {
    */
   private function isMailTo($url) {
     return str_starts_with($url, 'mailto:');
+  }
+
+  /**
+   * Retrieve a query parameter from the current request.
+   *
+   * @param string $parameter_name
+   *   The name of the query parameter to retrieve.
+   *
+   * @return mixed
+   *   The value of the query parameter, or null if it does not exist.
+   */
+  public function getQueryParam($parameter_name) {
+    return $this->requestStack->getCurrentRequest()->query->get($parameter_name);
   }
 
 }
