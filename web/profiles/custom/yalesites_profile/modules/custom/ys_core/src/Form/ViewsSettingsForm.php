@@ -25,12 +25,14 @@ class ViewsSettingsForm extends ConfigFormBase {
   /**
    * Constructs the object.
    *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The factory for configuration objects.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    */
   final public function __construct(
     ConfigFactoryInterface $config_factory,
-    EntityTypeManagerInterface $entity_type_manager
+    EntityTypeManagerInterface $entity_type_manager,
   ) {
     parent::__construct($config_factory);
     $this->entityTypeManager = $entity_type_manager;
@@ -79,7 +81,7 @@ class ViewsSettingsForm extends ConfigFormBase {
 
     $form['search']['show_content_type_filter'] = [
       '#type' => 'checkbox',
-      '#title' => $this->t('Show the <strong>Content Type</strong> filter '),
+      '#title' => $this->t('Show the <strong>Content Type</strong> filter'),
       '#default_value' => $config->get('show_content_type_filter'),
       '#description' => $this->t('Enable to display the <em>Content Type</em> filter that will be shown on the <em>Search</em> page.'),
     ];
