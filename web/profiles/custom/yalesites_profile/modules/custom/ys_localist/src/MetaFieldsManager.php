@@ -124,9 +124,14 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
         foreach ($values as $value) {
           /** @var \Drupal\taxonomy\Entity\Term $typeInfo */
           $typeInfo = $this->entityTypeManager->getStorage('taxonomy_term')->load($value['target_id']);
+          $name = $url = "";
+          if ($typeInfo) {
+            $name = $typeInfo->getName();
+            $url = $typeInfo->toUrl()->toString();
+          }
           $filterValues[] = [
-            'name' => $typeInfo->getName(),
-            'url' => $typeInfo->toUrl()->toString(),
+            'name' => $name,
+            'url' => $url,
           ];
         }
       }
