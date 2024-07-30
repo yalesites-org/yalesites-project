@@ -11,7 +11,7 @@ use Drupal\ys_embed\Plugin\EmbedSourceInterface;
  * @EmbedSource(
  *   id = "qualtrics",
  *   label = @Translation("Qualtrics"),
- *   description = @Translation("Qualtrics survey embed source."),
+ *   description = @Translation("Qualtrics survey embed source (deprecated)."),
  *   thumbnail = "qualtrics.png",
  *   active = TRUE,
  * )
@@ -26,7 +26,7 @@ class Qualtrics extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $template = '<iframe class="iframe" title="{{ title }}" src="https://yalesurvey.ca1.qualtrics.com/jfe/form/{{ form_id }}" height="100%" width="100%" loading="lazy"></iframe>';
+  protected static $template = '<p>Qualtrics has been removed.  Please recreate your form in Microsoft Forms</p>';
 
   /**
    * {@inheritdoc}
