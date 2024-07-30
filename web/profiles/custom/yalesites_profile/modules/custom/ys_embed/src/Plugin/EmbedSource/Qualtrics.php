@@ -31,7 +31,7 @@ class Qualtrics extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $instructions = 'Visit your Qualtrics form and copy the survey\'s URL. This web address will be used to create an iframe within Drupal.';
+  protected static $instructions = 'Please Note: This is being deprecated.  Please try not to use this.  Visit your Qualtrics form and copy the survey\'s URL. This web address will be used to create an iframe within Drupal.';
 
   /**
    * {@inheritdoc}
@@ -47,7 +47,7 @@ class Qualtrics extends EmbedSourceBase implements EmbedSourceInterface {
     'scrolling' => 'yes',
     'frameborder' => 'no',
     'embedType' => 'form',
-    'isIframe' => TRUE,
+    'isIframe' => FALSE,
   ];
 
   /**
