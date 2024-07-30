@@ -230,6 +230,16 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('field_options', $items[$delta]->params) : [],
     ];
 
+    $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options'] = [
+      '#type' => 'checkboxes',
+      '#options' => [
+        'show_search_filter' => $this->t('Show Search Filter'),
+      ],
+      '#title' => $this->t('Exposed Filter Options'),
+      '#tree' => TRUE,
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('exposed_filter_options', $items[$delta]->params) : [],
+    ];
+
     $form['group_user_selection']['filter_and_sort']['terms_include'] = [
       '#title' => $this->t('Include content that uses the following tags or categories'),
       '#type' => 'select',
@@ -412,6 +422,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
           "event_time_period" => $form['group_user_selection']['entity_specific']['event_time_period']['#value'],
         ],
         "field_options" => $form['group_user_selection']['entity_and_view_mode']['field_options']['#value'],
+        "exposed_filter_options" => $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options']['#value'],
         "operator" => $form['group_user_selection']['filter_and_sort']['term_operator']['#value'],
         "sort_by" => $form_state->getValue($formSelectors['sort_by_array']),
         "display" => $form_state->getValue($formSelectors['display_array']),

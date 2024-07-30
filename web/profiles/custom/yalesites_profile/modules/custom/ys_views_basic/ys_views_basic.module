@@ -14,6 +14,7 @@ function ys_views_basic_theme($existing, $type, $theme, $path): array {
     'views_basic_formatter_default' => [
       'variables' => [
         'view' => [],
+        'exposed' => [],
       ],
     ],
     'views_basic_formatter_preview' => [
