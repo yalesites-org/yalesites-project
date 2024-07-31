@@ -75,4 +75,14 @@ class YaleSitesSearchFormBlock extends BlockBase implements ContainerFactoryPlug
     return Cache::mergeTags(['config:ys_core.views_settings'], parent::getCacheTags());
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheContexts(): array {
+    // The search form must be rebuilt whenever URL query arguments change.
+    // This ensures that the default values of the form fields
+    // are updated accordingly.
+    return Cache::mergeContexts(parent::getCacheContexts(), ['url.query_args']);
+  }
+
 }
