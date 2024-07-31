@@ -215,3 +215,10 @@ link_grid:
       two: 'Two'
       three: 'Three'
     default: one
+inline_message:
+  field_style_color:
+    values:
+      one: One
+      two: Two
+      three: Three
+    default: one
