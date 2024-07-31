@@ -58,6 +58,13 @@ function ys_views_basic_views_data_alter(array &$data) {
       'id' => 'event_time_period',
     ],
   ];
+  $data['node_field_data']['news_year_filter'] = [
+    'title' => t('News by Year'),
+    'filter' => [
+      'help' => t('Filter news by year based on publish date.'),
+      'id' => 'news_year_filter',
+    ],
+  ];
 
 }
 

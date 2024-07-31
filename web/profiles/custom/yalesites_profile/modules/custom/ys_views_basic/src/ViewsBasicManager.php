@@ -249,6 +249,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       // Set the modified filters back to the view display options.
       $view->getDisplay()->setOption('filters', $filters);
     }
+    if (!isset($paramsDecoded['exposed_filter_options']['show_year_filter'])) {
+      // Remove the 'News by Year' filter if the 'show_year_filter' is not set.
+      unset($filters['news_year_filter']);
+      // Set the modified filters back to the view display options.
+      $view->getDisplay()->setOption('filters', $filters);
+    }
 
     /*
      * Sets the arguments that will get passed to contextual filters as well
@@ -348,8 +354,9 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       case "rendered":
         $view = $view->preview();
 
-        // Loop through each row in the view's results and update the node's properties
-        // based on show_categories and show_tags configuration, and add the corresponding cache metadata.
+        // Loop through each row in the view's results and update the node's
+        // properties based on show_categories and show_tags configuration,
+        // and add the corresponding cache metadata.
         $show_categories = (int) !empty($paramsDecoded['field_options']['show_categories']);
         $show_tags = (int) !empty($paramsDecoded['field_options']['show_tags']);
         foreach ($view['#rows']['#rows'] as &$resultRow) {
