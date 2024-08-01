@@ -13,7 +13,7 @@ use Drupal\ys_embed\Plugin\EmbedSourceInterface;
  *   label = @Translation("Qualtrics"),
  *   description = @Translation("Qualtrics survey embed source."),
  *   thumbnail = "qualtrics.png",
- *   active = TRUE,
+ *   active = FALSE,
  * )
  */
 class Qualtrics extends EmbedSourceBase implements EmbedSourceInterface {
