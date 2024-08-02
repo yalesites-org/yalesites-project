@@ -12,6 +12,8 @@
   site_header__accent: getThemeSetting('header_accent'),
   site_header__menu__variation: getHeaderSetting('header_variation'),
   site_header__nav_position: getHeaderSetting('nav_position'),
+  site_header__branding_name: getHeaderSetting('site_wide_branding_name')|default('Yale University'),
+  site_header__branding_link: getHeaderSetting('site_wide_branding_link')|default('https://www.yale.edu'),
   drupal_utility_nav: elements.utility_navigation,
 } %}
   {% block site_header__primary_nav %}
