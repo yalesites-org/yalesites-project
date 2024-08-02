@@ -6,6 +6,7 @@
  */
 
 use Drupal\Component\Utility\Xss;
+use Drupal\taxonomy\Entity\Term;
 
 /**
  * Implements hook_update().
