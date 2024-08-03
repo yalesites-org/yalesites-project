@@ -232,7 +232,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'order' => $sortDirection[1],
         ],
       ]);
-
     }
     else {
       // All other views get the original scaffold view.
@@ -240,6 +239,46 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     }
 
     $view->setDisplay('block_1');
+    $filterType = implode('+', $paramsDecoded['filters']['types']);
+
+    // Retrieve the current filter options from the view's display settings.
+    $filters = $view->getDisplay()->getOption('filters');
+
+    // Show the 'Category' filter only for Post, Event, and Page types.
+    if (!empty($paramsDecoded['exposed_filter_options']['show_category_filter'])) {
+
+      // Only modify the 'Category' filter if 'profile' is not in the
+      // filter type.
+      if (!str_contains($filterType, 'profile')) {
+
+        // Set a custom label for the 'Category' filter if provided.
+        if (!empty($paramsDecoded['category_filter_label'])) {
+          $filters['field_category_target_id']['expose']['label'] = $paramsDecoded['category_filter_label'];
+        }
+
+        // Determine the vocabulary ID based on the selected filter type.
+        $vid = $filterType . '_category';
+        $filters['field_category_target_id']['vid'] = $vid;
+
+        // Limit the filter to specific terms if provided.
+        if (!empty($paramsDecoded['category_included_terms'])) {
+          $filters['field_category_target_id']['value'] = $this->getChildTermsByParentId($paramsDecoded['category_included_terms'], $vid);
+          $filters['field_category_target_id']['limit'] = TRUE;
+          $filters['field_category_target_id']['expose']['reduce'] = TRUE;
+        }
+
+        // Remove the 'Affiliation' filter if the filter type is not 'Profile'.
+        unset($filters['field_affiliation_target_id']);
+      }
+    }
+    else {
+      // Remove the 'Category' and 'Affiliation' filters if
+      // 'show_category_filter' is not set.
+      unset($filters['field_category_target_id'], $filters['field_affiliation_target_id']);
+    }
+
+    // Set the modified filters back to the view display options.
+    $view->getDisplay()->setOption('filters', $filters);
 
     $filters = $view->getDisplay()->getOption('filters');
     if (!isset($paramsDecoded['exposed_filter_options']['show_search_filter'])) {
@@ -277,7 +316,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
      * 6) Event time period (future, past, all)
      */
 
-    $filterType = implode('+', $paramsDecoded['filters']['types']);
     $termsIncludeArray = [];
     $termsExcludeArray = [];
 
@@ -583,6 +621,56 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   }
 
   /**
+   * Get taxonomy parent terms by vocabulary ID.
+   *
+   * @param string $vid
+   *   The machine name of the vocabulary.
+   *
+   * @return array
+   *   An array of parent terms where the key is the term ID and
+   *   the value is the term name.
+   */
+  public function getTaxonomyParents(string $vid) : array {
+    $list = ['' => '-- All Items --'];
+    // Load all top-level (parent) terms for the given vocabulary ID.
+    /** @var \Drupal\taxonomy\TermInterface[] $terms */
+    $terms = $this->termStorage
+      ->loadTree($vid, 0, 1, TRUE);
+
+    foreach ($terms as $term) {
+      $list[$term->id()] = $term->getName();
+    }
+
+    return $list;
+  }
+
+  /**
+   * Get child taxonomy terms by parent ID.
+   *
+   * @param int $parentId
+   *   The ID of the parent term.
+   * @param string $vid
+   *   The machine name of the vocabulary.
+   *
+   * @return array
+   *   An associative array of child terms where the key is the term ID and
+   *   the value is the term ID.
+   */
+  public function getChildTermsByParentId(int $parentId, string $vid) : array {
+    $list = [];
+    // Load all child terms for the given parent term ID and vocabulary ID.
+    $terms = $this->termStorage
+      ->loadTree($vid, $parentId, NULL, TRUE);
+
+    /** @var \Drupal\taxonomy\TermInterface $term */
+    foreach ($terms as $term) {
+      $list[$term->id()] = (int) $term->id();
+    }
+
+    return $list;
+  }
+
+  /**
    * Returns an integer representation of the term.
    *
    * The term could be either the old Drupal way of an array with a
@@ -623,6 +711,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'entity_types_ajax' => ':input[name="block_form[group_user_selection][entity_and_view_mode][entity_types]"]',
           'view_mode_input_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][view_mode]"]',
           'view_mode_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
+          'category_included_terms_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
+          'show_category_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_category_filter]"]',
           'massage_terms_include_array' => [
             'block_form',
             'group_user_selection',
@@ -674,6 +764,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'entity_types_ajax' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][entity_types]"]',
           'view_mode_input_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][view_mode]"]',
           'view_mode_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
+          'category_included_terms_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
+          'show_category_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_category_filter]"]',
           'massage_terms_include_array' => [
             'settings',
             'block_form',
@@ -738,6 +830,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'entity_types_ajax' => ':input[name="entity_types"]',
         'view_mode_input_selector' => ':input[name="view_mode"]',
         'view_mode_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
+        'category_included_terms_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
+        'show_category_filter_selector' => ':input[name="show_category_filter"]',
         'massage_terms_include_array' => ['terms_include'],
         'massage_terms_exclude_array' => ['terms_exclude'],
         'sort_by_array' => ['sort_by'],
