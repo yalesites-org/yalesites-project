@@ -1,0 +1,33 @@
+From f046b109bdaa308f3063980026c0b63227469012 Mon Sep 17 00:00:00 2001
+From: David Blankenship <david.blankenship@yale.edu>
+Date: Mon, 29 Jul 2024 11:15:16 -0400
+Subject: [PATCH] apply saved
+
+---
+ .../layout_builder/src/Form/ConfigureBlockFormBase.php | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/core/modules/layout_builder/src/Form/ConfigureBlockFormBase.php b/core/modules/layout_builder/src/Form/ConfigureBlockFormBase.php
+index 8dd6333269..16b0a8cd70 100644
+--- a/core/modules/layout_builder/src/Form/ConfigureBlockFormBase.php
++++ b/core/modules/layout_builder/src/Form/ConfigureBlockFormBase.php
+@@ -365,7 +365,15 @@ public function submitForm(array &$form, FormStateInterface $form_state) {
+       $block_content = $form['settings']['block_form']['#block'];
+       $block_content->setReusable();
+       $block_content->setInfo($block_info);
+-      $block_content->save();
++      $saved = $block_content->save();
++
++      // If it didn't save, it's probably because we're using the same cloned
++      // item somewhere else with different revisions. So, we'll create a new
++      // block_content item to make sure it's fresh and won't interfere.
++      if (!$saved) {
++        $block_content = $block_content->createDuplicate();
++        $block_content->save();
++      }
+ 
+       $block_label_display = $form_state->getValue('settings')['label_display'];
+       $this->block = $this->blockManager->createInstance('block_content:' . $block_content->uuid(), [
+-- 
+2.45.2
+

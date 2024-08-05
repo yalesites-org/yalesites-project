@@ -340,6 +340,7 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
     $termsToRemove = [
       'In-person',
       'Online',
+      'Hybrid',
     ];
 
     foreach ($termsToRemove as $term) {
