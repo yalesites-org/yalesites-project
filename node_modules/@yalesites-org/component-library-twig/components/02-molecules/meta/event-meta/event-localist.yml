@@ -1,0 +1,38 @@
+event_dates:
+  - formatted_start_date: Friday, May 3rd, 2024
+    formatted_end_date: Friday, May 3rd, 2024
+    formatted_start_time: 8:30 am EDT
+    formatted_end_time: 9:30 am EDT
+  - formatted_start_date: Saturday, May 4th, 2024
+    formatted_end_date: Saturday, May 4th, 2024
+    formatted_start_time: 8:30 am EDT
+    formatted_end_time: 9:30 am EDT
+  - formatted_start_date: Sunday, May 5th, 2024
+    formatted_end_date: Sunday, May 5th, 2024
+    formatted_start_time: 8:30 am EDT
+    formatted_end_time: 9:30 am EDT
+ticket_cost: $40 pre registration, $60 at the door
+ticket_url: https://www.yale.edu
+event_meta__cta_primary__content: Event Name Website
+event_meta__cta_primary__href: https://www.example.com
+event_types:
+  - name: Music
+  - name: Lecture
+place:
+  address: 1120 East Fort Avenue
+  city: Baltimore
+  state: MD
+  postal_code: 21230
+  latitude: 39.2704
+  longitude: -76.6122
+event_audience:
+  - name: Audience Name one
+  - name: Audience Name two
+  - name: Audience Name three
+  - name: Audience Name four
+event_topics:
+  - name: Topic One
+  - name: Topic Two
+description: '<p>Vel quasi dicta ut fugit molestiae ea sint voluptatem soluta repellendus quod qui fugit dolores illo. Tempora exercitationem laboriosam rerum dolores quisquam. Quasi vero error atque quisquam sed consectetur qui blanditiis aliquam.</p><p>Ipsam eligendi nam nisi facilis et sit fugiat sint eius ut dolorem sunt. Ut ut aliquid est dolorem nihil sunt debitis ad saepe. Asperiores voluptatem inventore sint doloremque nam.</p>'
+stream_url: https://www.example.com
+stream_embed_code: Watch the event

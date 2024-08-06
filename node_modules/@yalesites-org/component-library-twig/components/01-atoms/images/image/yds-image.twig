@@ -1,0 +1,27 @@
+{# Set this block in a variable so that we can implement it in multiple places below. #}
+{% set image__image %}
+  {% block image__image %}
+    {% include "@atoms/images/image/_responsive-image.twig" %}
+  {% endblock %}
+{% endset %}
+
+{# Render the image in a <figure> if there is a caption provided. #}
+{% if figure__caption %}
+  {% set figure__attributes = {
+    'class': bem('figure'),
+  } %}
+
+  <figure {{ add_attributes(figure__attributes) }}>
+    {{ image__image }}
+
+    {% if figure__caption %}
+      <figcaption {{ bem('caption') }}>
+        {# We use `|raw` here to accomodate WYSIWYG content #}
+        {{- figure__caption|raw -}}
+      </figcaption>
+    {% endif %}
+  </figure>
+{# Render a standard <img> or <picture> directly if there is no caption. #}
+{% else %}
+  {{ image__image}}
+{% endif %}
