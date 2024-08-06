@@ -11,7 +11,7 @@ id: block_content.content_spotlight_portrait.field_link_two
 field_name: field_link_two
 entity_type: block_content
 bundle: content_spotlight_portrait
-label: 'Call-to-action Two'
+label: 'Secondary Link'
 description: 'For more information about linking content, view our resource <a href="https://yalesites.yale.edu/resource-library/linking-content-on-yalesites" target="_blank">Linking Content on YaleSites</a>.'
 required: false
 translatable: false
