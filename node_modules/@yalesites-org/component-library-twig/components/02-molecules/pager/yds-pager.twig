@@ -1,0 +1,79 @@
+{% set pager__base_class = 'pager' %}
+
+{% if items %}
+  <nav {{ bem(pager__base_class) }} role="navigation" aria-label="Pagination">
+    <ul {{ bem('items', [], pager__base_class, ['js-pager__items']) }}>
+      {# Print previous item if we are not on the first page. #}
+      {% if items.previous %}
+        <li {{ bem('item', ['previous'], pager__base_class) }}>
+          <a {{ bem('link', ['previous'], pager__base_class) }} href="{{ items.previous.href }}" title="{{ 'Go to previous page'|t }}" rel="prev"{{ items.previous.attributes|without('href', 'title', 'rel') }}>
+            <span {{ bem('visually-hidden') }}>{{ 'Previous page'|t }}</span>
+            {% include "@atoms/images/icons/_yds-icon.twig" with {
+              icon__name: 'angle-down',
+              icon__decorative: true,
+              icon__blockname: pager__base_class,
+              icon__modifiers: ['previous'],
+            } %}
+            <span aria-hidden="true">{{ 'Back'|t }}</span>
+          </a>
+        </li>
+      {% endif %}
+      {# Print first item if we are not on the first page. #}
+      {% if items.first %}
+        <li {{ bem('item', ['desktop', 'first'], pager__base_class) }}>
+          <a {{ bem('link', ['first'], pager__base_class) }} href="{{ items.first.href }}" title="{{ 'Go to first page'|t }}"{{ items.first.attributes|without('href', 'title') }}>
+            <span {{ bem('visually-hidden') }}>{{ 'First page'|t }}</span>
+            <span aria-hidden="true">{{ '1 …' }}</span>
+          </a>
+        </li>
+      {% endif %}
+      {# Now generate the actual pager piece. #}
+      {% for key, item in items.pages %}
+        {% if current == key %}
+          <li {{ bem('item', ['desktop'], pager__base_class, ['is-active']) }}>
+            <span {{ bem('link', ['current'], pager__base_class, ['is-active']) }} {{ item.attributes|without('href', 'title') }}>
+              <span {{ bem('visually-hidden') }}>{{- 'Current page' -}}</span>
+              {{- key -}}
+            </span>
+          </li>
+        {% else %}
+          {% if item.href %}
+            <li {{ bem('item', ['desktop'], pager__base_class) }}>
+              <a {{ bem('link', [], pager__base_class) }} href="{{ item.href }}" aria-label="{{ 'Page '|t ~ key }}" {{ item.attributes|without('href', 'title') }}>
+                {{- key -}}
+              </a>
+            </li>
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+      {# Print last item if we are not on the last page. #}
+      {% if items.last %}
+        <li {{ bem('item', ['desktop', 'last'], pager__base_class) }}>
+          <a {{ bem('link', ['last'], pager__base_class) }} href="{{ items.last.href }}" title="{{ 'Go to last page'|t }}"{{ items.last.attributes|without('href', 'title') }}>
+            <span {{ bem('visually-hidden') }}>{{ 'Last page'|t }}</span>
+            <span aria-hidden="true">{{ '… ' ~ items.pages|length }}</span>
+          </a>
+        </li>
+      {% endif %}
+      {# Mobile Pager. #}
+      <li {{ bem('item', ['mobile'], pager__base_class) }}>
+        {{- current }} / {{ items.pages|length -}}
+      </li>
+      {# Print next item if we are not on the last page. #}
+      {% if items.next %}
+        <li {{ bem('item', ['next'], pager__base_class) }}>
+          <a {{ bem('link', ['next'], pager__base_class) }} href="{{ items.next.href }}" title="{{ 'Go to next page'|t }}" rel="next"{{ items.next.attributes|without('href', 'title', 'rel') }}>
+            <span {{ bem('visually-hidden') }}>{{ 'Next page'|t }}</span>
+            <span aria-hidden="true">{{ 'Next'|t }}</span>
+            {% include "@atoms/images/icons/_yds-icon.twig" with {
+              icon__name: 'angle-down',
+              icon__decorative: true,
+              icon__blockname: pager__base_class,
+              icon__modifiers: ['next'],
+            } %}
+          </a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+{% endif %}
