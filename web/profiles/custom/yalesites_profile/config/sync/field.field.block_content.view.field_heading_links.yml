@@ -12,7 +12,7 @@ id: block_content.view.field_heading_links
 field_name: field_heading_links
 entity_type: block_content
 bundle: view
-label: Link
+label: Links
 description: ''
 required: false
 translatable: false
@@ -42,9 +42,6 @@ settings:
         enabled: false
       gallery_item:
         weight: 15
-        enabled: false
-      link:
-        weight: 17
         enabled: false
       link_list:
         weight: 16

@@ -14,6 +14,7 @@ dependencies:
     - markup
     - maxlength
     - paragraphs
+    - paragraphs_features
     - text
     - ys_views_basic
 third_party_settings:
@@ -54,17 +55,29 @@ content:
         maxlength_js_label: 'Content recommended length set to @limit characters, remaining: <strong>@remaining</strong>'
         maxlength_js_enforce: false
   field_heading_links:
-    type: entity_reference_paragraphs
+    type: paragraphs
     weight: 4
     region: content
     settings:
       title: Paragraph
       title_plural: Paragraphs
-      edit_mode: open
+      edit_mode: closed
+      closed_mode: summary
+      autocollapse: all
+      closed_mode_threshold: 0
       add_mode: button
       form_display_mode: default
       default_paragraph_type: _none
-    third_party_settings: {  }
+      features:
+        add_above: '0'
+        collapse_edit_all: collapse_edit_all
+        duplicate: duplicate
+    third_party_settings:
+      paragraphs_features:
+        add_in_between: false
+        add_in_between_link_count: 3
+        delete_confirmation: true
+        show_drag_and_drop: true
   field_instructions:
     type: markup
     weight: 0
