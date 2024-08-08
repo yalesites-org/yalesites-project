@@ -234,6 +234,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#type' => 'checkboxes',
       '#options' => [
         'show_search_filter' => $this->t('Show Search Filter'),
+        'show_year_filter' => $this->t('Show Year Filter'),
       ],
       '#title' => $this->t('Exposed Filter Options'),
       '#tree' => TRUE,
@@ -359,19 +360,19 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     $form['field_show_thumbnails']['widget']['value']['#states'] = [
       'invisible' => [
-        $formSelectors['view_mode_input_selector'] => ['value' => 'condensed']
+        $formSelectors['view_mode_input_selector'] => ['value' => 'condensed'],
       ],
     ];
 
     $form['field_show_categories']['widget']['value']['#states'] = [
       'invisible' => [
-        $formSelectors['view_mode_input_selector'] => ['value' => 'condensed']
+        $formSelectors['view_mode_input_selector'] => ['value' => 'condensed'],
       ],
     ];
 
     $form['field_show_tags']['widget']['value']['#states'] = [
       'invisible' => [
-        $formSelectors['view_mode_input_selector'] => ['value' => 'condensed']
+        $formSelectors['view_mode_input_selector'] => ['value' => 'condensed'],
       ],
     ];
 
