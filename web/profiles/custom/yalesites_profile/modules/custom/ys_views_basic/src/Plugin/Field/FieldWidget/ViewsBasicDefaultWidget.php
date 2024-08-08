@@ -219,6 +219,17 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#suffix' => '</div>',
     ];
 
+    $form['group_user_selection']['entity_and_view_mode']['field_options'] = [
+      '#type' => 'checkboxes',
+      '#options' => [
+        'show_categories' => $this->t('Show Categories'),
+        'show_tags' => $this->t('Show Tags'),
+      ],
+      '#title' => $this->t('Field Display Options'),
+      '#tree' => TRUE,
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('field_options', $items[$delta]->params) : [],
+    ];
+
     $form['group_user_selection']['filter_and_sort']['terms_include'] = [
       '#title' => $this->t('Include content that uses the following tags or categories'),
       '#type' => 'select',
@@ -336,6 +347,24 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
     ];
 
+    $form['field_show_thumbnails']['widget']['value']['#states'] = [
+      'invisible' => [
+        $formSelectors['view_mode_input_selector'] => ['value' => 'condensed']
+      ],
+    ];
+
+    $form['field_show_categories']['widget']['value']['#states'] = [
+      'invisible' => [
+        $formSelectors['view_mode_input_selector'] => ['value' => 'condensed']
+      ],
+    ];
+
+    $form['field_show_tags']['widget']['value']['#states'] = [
+      'invisible' => [
+        $formSelectors['view_mode_input_selector'] => ['value' => 'condensed']
+      ],
+    ];
+
     $element['group_params']['params'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Params'),
@@ -374,6 +403,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
           "terms_exclude" => $terms_exclude,
           "event_time_period" => $form['group_user_selection']['entity_specific']['event_time_period']['#value'],
         ],
+        "field_options" => $form['group_user_selection']['entity_and_view_mode']['field_options']['#value'],
         "operator" => $form['group_user_selection']['filter_and_sort']['term_operator']['#value'],
         "sort_by" => $form_state->getValue($formSelectors['sort_by_array']),
         "display" => $form_state->getValue($formSelectors['display_array']),

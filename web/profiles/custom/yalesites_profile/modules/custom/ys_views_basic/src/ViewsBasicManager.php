@@ -338,6 +338,18 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     switch ($type) {
       case "rendered":
         $view = $view->preview();
+
+        // Loop through each row in the view's results and update the node's properties
+        // based on show_categories and show_tags configuration, and add the corresponding cache metadata.
+        $show_categories = (int) !empty($paramsDecoded['field_options']['show_categories']);
+        $show_tags = (int) !empty($paramsDecoded['field_options']['show_tags']);
+        foreach ($view['#rows']['#rows'] as &$resultRow) {
+          $node = $resultRow['#node'];
+          $node->show_categories = $show_categories;
+          $resultRow['#cache']['keys'][] = $show_categories;
+          $node->show_tags = $show_tags;
+          $resultRow['#cache']['keys'][] = $show_tags;
+        }
         break;
 
       case "count":
@@ -593,6 +605,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         $formSelectors = [
           'entity_types' => $rebuildValues['block_form']['group_user_selection']['entity_and_view_mode']['entity_types'] ?? $entityValue,
           'entity_types_ajax' => ':input[name="block_form[group_user_selection][entity_and_view_mode][entity_types]"]',
+          'view_mode_input_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][view_mode]"]',
           'view_mode_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
           'massage_terms_include_array' => [
             'block_form',
@@ -643,6 +656,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         $formSelectors = [
           'entity_types' => $rebuildValues['settings']['block_form']['group_user_selection']['entity_and_view_mode']['entity_types'] ?? $entityValue,
           'entity_types_ajax' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][entity_types]"]',
+          'view_mode_input_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][view_mode]"]',
           'view_mode_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
           'massage_terms_include_array' => [
             'settings',
@@ -706,6 +720,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       $formSelectors = [
         'entity_types' => $rebuildValues['entity_types'] ?? $entityValue,
         'entity_types_ajax' => ':input[name="entity_types"]',
+        'view_mode_input_selector' => ':input[name="view_mode"]',
         'view_mode_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
         'massage_terms_include_array' => ['terms_include'],
         'massage_terms_exclude_array' => ['terms_exclude'],
