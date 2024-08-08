@@ -241,6 +241,15 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
     $view->setDisplay('block_1');
 
+    $filters = $view->getDisplay()->getOption('filters');
+    if (!isset($paramsDecoded['exposed_filter_options']['show_search_filter'])) {
+      // If the 'show_search_filter' option is not set, remove the 'combine' filter.
+      // The 'combine' filter is used for full-text search across multiple fields.
+      unset($filters['combine']);
+      // Set the modified filters back to the view display options.
+      $view->getDisplay()->setOption('filters', $filters);
+    }
+
     /*
      * Sets the arguments that will get passed to contextual filters as well
      * as to the custom sort plugin (ViewsBasicSort), custom style
