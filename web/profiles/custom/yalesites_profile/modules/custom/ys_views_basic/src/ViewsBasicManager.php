@@ -246,11 +246,9 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
     // Show the 'Category' filter only for Post, Event, and Page types.
     if (!empty($paramsDecoded['exposed_filter_options']['show_category_filter'])) {
-
       // Only modify the 'Category' filter if 'profile' is not in the
       // filter type.
-      if (!str_contains($filterType, 'profile')) {
-
+      if ($filterType !== 'profile') {
         // Set a custom label for the 'Category' filter if provided.
         if (!empty($paramsDecoded['category_filter_label'])) {
           $filters['field_category_target_id']['expose']['label'] = $paramsDecoded['category_filter_label'];
@@ -277,23 +275,21 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       unset($filters['field_category_target_id'], $filters['field_affiliation_target_id']);
     }
 
-    // Set the modified filters back to the view display options.
-    $view->getDisplay()->setOption('filters', $filters);
-
-    $filters = $view->getDisplay()->getOption('filters');
     if (!isset($paramsDecoded['exposed_filter_options']['show_search_filter'])) {
-      // If the 'show_search_filter' option is not set, remove the 'combine' filter.
-      // The 'combine' filter is used for full-text search across multiple fields.
+      // If the 'show_search_filter' option is not set,
+      // remove the 'combine' filter.
+      // The 'combine' filter is used for full-text search
+      // across multiple fields.
       unset($filters['combine']);
-      // Set the modified filters back to the view display options.
-      $view->getDisplay()->setOption('filters', $filters);
     }
-    if (!isset($paramsDecoded['exposed_filter_options']['show_year_filter'])) {
+
+    if (!isset($paramsDecoded['exposed_filter_options']['show_year_filter']) || $filterType !== 'post') {
       // Remove the 'News by Year' filter if the 'show_year_filter' is not set.
       unset($filters['news_year_filter']);
-      // Set the modified filters back to the view display options.
-      $view->getDisplay()->setOption('filters', $filters);
     }
+
+    // Set the modified filters back to the view display options.
+    $view->getDisplay()->setOption('filters', $filters);
 
     /*
      * Sets the arguments that will get passed to contextual filters as well
@@ -630,15 +626,13 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   An array of parent terms where the key is the term ID and
    *   the value is the term name.
    */
-  public function getTaxonomyParents(string $vid) : array {
+  public function getTaxonomyParents(string $vid): array {
     $list = ['' => '-- All Items --'];
     // Load all top-level (parent) terms for the given vocabulary ID.
-    /** @var \Drupal\taxonomy\TermInterface[] $terms */
-    $terms = $this->termStorage
-      ->loadTree($vid, 0, 1, TRUE);
+    $terms = $this->termStorage->loadTree($vid, 0, 1);
 
     foreach ($terms as $term) {
-      $list[$term->id()] = $term->getName();
+      $list[$term->tid] = $term->name;
     }
 
     return $list;
@@ -656,15 +650,13 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   An associative array of child terms where the key is the term ID and
    *   the value is the term ID.
    */
-  public function getChildTermsByParentId(int $parentId, string $vid) : array {
+  public function getChildTermsByParentId(int $parentId, string $vid): array {
     $list = [];
     // Load all child terms for the given parent term ID and vocabulary ID.
-    $terms = $this->termStorage
-      ->loadTree($vid, $parentId, NULL, TRUE);
+    $terms = $this->termStorage->loadTree($vid, $parentId, NULL);
 
-    /** @var \Drupal\taxonomy\TermInterface $term */
     foreach ($terms as $term) {
-      $list[$term->id()] = (int) $term->id();
+      $list[$term->tid] = (int) $term->tid;
     }
 
     return $list;

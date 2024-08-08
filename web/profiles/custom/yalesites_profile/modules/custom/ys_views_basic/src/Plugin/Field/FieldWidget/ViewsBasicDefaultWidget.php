@@ -234,7 +234,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#type' => 'checkboxes',
       '#options' => [
         'show_search_filter' => $this->t('Show Search Filter'),
-        'show_year_filter' => $this->t('Show Year Filter'),
+        'show_year_filter' => $this->t('Show Year Filter (works only for Posts view)'),
         'show_category_filter' => $this->t('Show Category Filter'),
       ],
       '#title' => $this->t('Exposed Filter Options'),
@@ -254,10 +254,13 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
     ];
 
+    $vocabulary_id = $formSelectors['entity_types'] === 'profile'
+      ? 'affiliation'
+      : $formSelectors['entity_types'] . '_category';
     $form['group_user_selection']['entity_and_view_mode']['category_included_terms'] = [
       '#type' => 'select',
       '#title' => $this->t('Category Filter - Included Terms'),
-      '#options' => $this->viewsBasicManager->getTaxonomyParents($formSelectors['entity_types'] . '_category'),
+      '#options' => $this->viewsBasicManager->getTaxonomyParents($vocabulary_id),
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('category_included_terms', $items[$delta]->params) : NULL,
       '#validated' => 'true',
       '#prefix' => '<div id="edit-category-included-terms">',
