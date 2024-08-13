@@ -12,8 +12,8 @@
   float: none;
 }
 
-.field--widget-smartdate-inline {
-  --gin-spacing-m: 0;
+.field--widget-smartdate-inline .field-multiple-table tr .form-item:not(:last-of-type) {
+  margin-bottom: auto !important;
 }
 
 /*# sourceMappingURL=admin-ui.css.map */
