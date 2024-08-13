@@ -12,3 +12,7 @@
 .toolbar-horizontal .local-tasks-toolbar-tab .toolbar-menu {
   float: none;
 }
+
+.field--widget-smartdate-inline .field-multiple-table tr .form-item:not(:last-of-type) {
+  margin-bottom: auto !important;
+}
