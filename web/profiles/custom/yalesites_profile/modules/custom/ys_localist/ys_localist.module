@@ -5,6 +5,7 @@
  * Primary module hooks for YS Localist module.
  */
 
+use Drupal\Component\Utility\UrlHelper;
 use Drupal\migrate\Plugin\MigrationInterface;
 
 /**
@@ -119,8 +120,7 @@ function ys_localist_migrate_prepare_row($row, $source, $migration) {
  */
 function _ys_localist_create_valid_uri($currentUrl) {
   if (!empty($currentUrl) &&
-    !filter_var($currentUrl,
-      FILTER_VALIDATE_URL) &&
+    !UrlHelper::isValid($currentUrl, TRUE) &&
       strpos($currentUrl, 'http') === FALSE) {
     $currentUrl = 'https://' . $currentUrl;
   }
