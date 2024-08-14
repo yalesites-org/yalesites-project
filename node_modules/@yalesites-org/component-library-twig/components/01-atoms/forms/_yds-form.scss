@@ -36,6 +36,14 @@
 
 .webform-submission-form {
   max-width: 80rem;
+
+  // Mimic the opposite of "Deep" (five) for the "Subtle" (four) button theme
+  & input.cta[data-cta-theme='four'][type='submit'] {
+    --color-button-text: var(--color-cta-text);
+    --color-button-border: var(--color-cta-text);
+    --color-button-bg-hover: var(--color-cta-text);
+    --color-button-text-hover: var(--color-button-bg);
+  }
 }
 
 // Used for exposed filter forms
