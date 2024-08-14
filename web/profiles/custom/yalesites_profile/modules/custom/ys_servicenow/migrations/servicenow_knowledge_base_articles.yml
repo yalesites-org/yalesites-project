@@ -1,0 +1,52 @@
+id: servicenow_knowledge_base_articles
+label: 'ServiceNow knowledge base articles'
+source:
+  plugin: url
+  data_fetcher_plugin: http
+  data_parser_plugin: json
+  headers:
+    Accept: 'application/json; charset=utf-8'
+    Content-Type: application/json
+  authentication:
+    plugin: basic
+    username: USERNAME
+    password: PASSWORD
+  track_changes: true
+  urls: https://yaledevelopment.service-now.com/api/now/table/kb_knowledge?sysparm_query=workflow_state%3Dpublished%5Ekb_category.label!%3DNews%5Ecan_read_user_criteriaLIKEfd81a4dadbb6030043565bc0cf961905%5Eu_kb_ai_ready%3Dtrue&sysparm_display_value=true&sysparm_fields=sys_name%2Ctext%2Ctopic%2Cu_service_offering%2Cnumber%2Csys_created_on%2Ccan_read_user_criteria%2Cpublished%2Ckb_knowledge_base%2Cdescription%2Cvalid_to%2Csys_view_count%2Cshort_description%2Ckb_category&sysparm_limit=10
+  item_selector: result
+  fields:
+    - name: servicenow_number
+      label: 'ServiceNow number'
+      selector: number
+    - name: servicenow_title
+      label: 'ServiceNow title'
+      selector: short_description
+    - name: servicenow_text
+      label: 'ServiceNow text'
+      selector: text
+  ids:
+    servicenow_number:
+      type: string
+process:
+  title: servicenow_title
+  block_id:
+    plugin: migration_lookup
+    migration: servicenow_knowledge_base_article_block
+    source: servicenow_number
+  layout_builder__layout:
+    source: servicenow_title
+    plugin: layout_builder_sections
+destination:
+  plugin: 'entity:node'
+  default_bundle: page
+  overwrite_properties:
+    - title
+migration_dependencies:
+  required:
+    - servicenow_knowledge_base_article_block
+dependencies:
+  enforced:
+    module:
+      - migrate_plus
+      - migrate_tools
+      - layout_builder
