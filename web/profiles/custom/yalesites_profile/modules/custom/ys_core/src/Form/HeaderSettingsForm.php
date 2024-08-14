@@ -151,6 +151,11 @@ class HeaderSettingsForm extends ConfigFormBase {
         '#type' => 'details',
         '#title' => $this->t('Site Name Image'),
       ];
+
+      $form['site_wide_container'] = [
+        '#type' => 'details',
+        '#title' => $this->t('Sitewide Branding'),
+      ];
     }
 
     $form['nav_position_container'] = [
@@ -235,6 +240,27 @@ class HeaderSettingsForm extends ConfigFormBase {
         '#use_preview' => TRUE,
         '#use_svg_preview' => TRUE,
       ];
+
+      $form['site_wide_container']['site_wide_branding_name'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('Site-wide branding name'),
+        '#description' => $this->t('Enter the name of the site to be displayed in the header.'),
+        '#default_value' => $headerConfig->get('site_wide_branding_name') ?? 'Yale University',
+        '#required' => TRUE,
+      ];
+
+      $form['site_wide_container']['site_wide_branding_link'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('Site-wide branding link'),
+        '#description' => $this->t('Enter the URL that the site-wide branding name should link to.'),
+        '#default_value' => $headerConfig->get('site_wide_branding_link') ?? 'https://www.yale.edu',
+        '#autocomplete_route_name' => 'linkit.autocomplete',
+        '#autocomplete_route_parameters' => [
+          'linkit_profile_id' => 'default',
+        ],
+        '#required' => TRUE,
+      ];
+
     }
 
     $form['nav_position_container']['nav_position'] = [
@@ -333,6 +359,8 @@ class HeaderSettingsForm extends ConfigFormBase {
 
     $headerConfig->set('header_variation', $form_state->getValue('header_variation'));
     $headerConfig->set('site_name_image', $form_state->getValue('site_name_image'));
+    $headerConfig->set('site_wide_branding_name', $form_state->getValue('site_wide_branding_name'));
+    $headerConfig->set('site_wide_branding_link', $form_state->getValue('site_wide_branding_link'));
     $headerConfig->set('nav_position', $form_state->getValue('nav_position'));
     $headerConfig->set('cta_content', $form_state->getValue('cta_content'));
     $headerConfig->set('cta_url', $form_state->getValue('cta_url'));

@@ -291,11 +291,13 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
     ];
 
+    $displayValue = ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('display', $items[$delta]->params) : 'all';
+
     $form['group_user_selection']['options']['display'] = [
       '#type' => 'select',
       '#title' => $this
         ->t('Number of Items to Display'),
-      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('display', $items[$delta]->params) : 'all',
+      '#default_value' => $displayValue,
       '#options' => [
         'all' => $this->t('Display all items'),
         'limit' => $this->t('Limit to'),
@@ -303,32 +305,22 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
     ];
 
-    // This section calculates the title for the limit field based on display.
-    $numItemsValue = $formState->getValue(
-      ['group_user_selection', 'options', 'display']
-    );
-
     $limitTitle = $this->t('Items');
 
-    if ($numItemsValue) {
-      if ($numItemsValue == 'pager') {
-        $limitTitle = $this->t('Items per Page');
-      }
+    if ($displayValue && $displayValue == 'pager') {
+      $limitTitle = $this->t('Items per Page');
     }
 
+    /*
+     * Dynamic changes to this is handled in javascript due to issues with
+     * callbacks and #states.
+     */
     $form['group_user_selection']['options']['limit'] = [
       '#title' => $limitTitle,
       '#type' => 'number',
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('limit', $items[$delta]->params) : 10,
       '#min' => 1,
       '#required' => TRUE,
-      '#states' => [
-        'invisible' => [
-          $formSelectors['display_ajax'] => [
-            'value' => 'all',
-          ],
-        ],
-      ],
       '#prefix' => '<div id="edit-limit">',
       '#suffix' => '</div>',
     ];
