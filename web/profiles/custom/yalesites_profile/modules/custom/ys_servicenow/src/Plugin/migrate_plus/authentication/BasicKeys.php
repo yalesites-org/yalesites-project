@@ -8,7 +8,7 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\migrate_plus\AuthenticationPluginBase;
 
 /**
- * Provides basic authentication for the HTTP resource.
+ * Provides basic authentication using keys module for the HTTP resource.
  *
  * @Authentication(
  *   id = "basic_keys",
