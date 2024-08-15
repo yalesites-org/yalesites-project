@@ -120,6 +120,12 @@ class ServiceNowSettings extends ConfigFormBase {
       '#disabled' => !$allowSecretItems,
     ];
 
+    $form['servicenow_auth_key'] = [
+      '#type' => 'key_select',
+      '#title' => $this->t('ServiceNow Authentication Credentials'),
+      '#default_value' => $config->get('servicenow_auth_key') ?: '',
+    ];
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -155,6 +161,7 @@ class ServiceNowSettings extends ConfigFormBase {
       // Set the submitted configuration setting.
       ->set('enable_servicenow_sync', $form_state->getValue('enable_servicenow_sync'))
       ->set('servicenow_endpoint', rtrim($form_state->getValue('servicenow_endpoint'), "/"))
+      ->set('servicenow_auth_key', $form_state->getValue('servicenow_auth_key'))
       ->save();
 
     parent::submitForm($form, $form_state);

@@ -21,7 +21,14 @@ class BasicKeys extends AuthenticationPluginBase implements ContainerFactoryPlug
    * {@inheritdoc}
    */
   public function getAuthenticationOptions(): array {
-    $key = $this->getKey('servicenow');
+    $servicenow_config = \Drupal::config('ys_servicenow.settings');
+    $servicenow_key_id = $servicenow_config->get('servicenow_auth_key');
+
+    if (!$servicenow_key_id) {
+      throw new \Exception("ServiceNow key not set");
+    }
+
+    $key = $this->getKey($servicenow_key_id);
 
     $key_object = $this->getKeyValues($key);
 
