@@ -1,39 +1,34 @@
 <?php
 
-use Drupal\migrate_plus\Plugin\migrate_plus\authentication\Basic;
-
 declare(strict_types=1);
 
 namespace Drupal\ys_servicenow\Plugin\migrate_plus\authentication;
 
-use Drupal\migrate_plus\Plugin\migrate_plus\authentication\Basic;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\migrate_plus\AuthenticationPluginBase;
 
 /**
- * Provides basic authentication using keys module as username and password.
+ * Provides basic authentication for the HTTP resource.
  *
  * @Authentication(
- *   id = 'basic_keys',
+ *   id = "basic_keys",
  *   title = @Translation("Basic Keys")
  * )
  */
-class BasicKeys extends Basic {
+class BasicKeys extends AuthenticationPluginBase implements ContainerFactoryPluginInterface {
 
   /**
    * {@inheritdoc}
    */
   public function getAuthenticationOptions(): array {
-    $key = $this->getKey('ServiceNow');
+    $key = $this->getKey('servicenow');
 
     $key_object = $this->getKeyValues($key);
 
-    $username = $key_object->username;
-    $password = $key_object->password;
-
-    // Get the key from keys module called "ServiceNow".
     return [
       'auth' => [
-        $username,
-        $password,
+        $key_object->username,
+        $key_object->password,
       ],
     ];
   }
