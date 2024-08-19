@@ -148,6 +148,7 @@ class ServiceNowManager extends ControllerBase implements ContainerInjectionInte
        * $migrationInstance->set('syncSource', TRUE);
        */
 
+      $migrationInstance->set('syncSource', TRUE);
       $message = new MigrateMessage();
       $executable = new MigrateExecutable($migrationInstance, $message);
       $executable->import();
