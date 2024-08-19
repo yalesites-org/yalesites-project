@@ -11,6 +11,10 @@ use Drupal\migrate\Row;
 /**
  * Process plugin to migrate a source field into a Layout Builder Section.
  *
+ * Inspiration/references:
+ *   https://github.com/dsasser/d8-migrate-paragraphs-layout-builder/blob/master/web/modules/custom/d8_migrations/src/LayoutBase.php
+ *   https://github.com/chrisfromredfin/dcon21-milb/blob/main/web/modules/custom/my_migrations/src/Plugin/migrate/process/LayoutBuilderSectionsPages.php.
+ *
  * @MigrateProcessPlugin(
  *   id = "layout_builder_sections",
  * )
