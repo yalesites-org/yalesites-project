@@ -112,14 +112,6 @@ class ServiceNowSettings extends ConfigFormBase {
       '#disabled' => !$allowSecretItems,
     ];
 
-    $form['servicenow_endpoint'] = [
-      '#type' => 'url',
-      '#title' => $this->t('ServiceNow endpoint base URL'),
-      '#description' => $this->t('Ex: https://apiendpoint'),
-      '#default_value' => $config->get('servicenow_endpoint') ?: '',
-      '#disabled' => !$allowSecretItems,
-    ];
-
     $form['servicenow_auth_key'] = [
       '#type' => 'key_select',
       '#title' => $this->t('ServiceNow Authentication Credentials'),
@@ -160,7 +152,6 @@ class ServiceNowSettings extends ConfigFormBase {
     $this->configFactory->getEditable('ys_servicenow.settings')
       // Set the submitted configuration setting.
       ->set('enable_servicenow_sync', $form_state->getValue('enable_servicenow_sync'))
-      ->set('servicenow_endpoint', rtrim($form_state->getValue('servicenow_endpoint'), "/"))
       ->set('servicenow_auth_key', $form_state->getValue('servicenow_auth_key'))
       ->save();
 
