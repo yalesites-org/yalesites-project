@@ -96,7 +96,7 @@ class ServiceNowSettings extends ConfigFormBase {
 
     if (
       $config->get('enable_servicenow_sync') &&
-      $config->get('servicenow_endpoint')
+      $config->get('servicenow_auth_key')
       ) {
       $form['sync_now_button'] = [
         '#type' => 'markup',
