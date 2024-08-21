@@ -34,11 +34,15 @@ process:
   layout_builder__layout:
     source: servicenow_title
     plugin: layout_builder_sections
+  moderation_state:
+    plugin: default_value
+    default_value: 'published'
 destination:
   plugin: 'entity:node'
   default_bundle: page
   overwrite_properties:
     - title
+    - moderation_state
 migration_dependencies:
   required:
     - servicenow_knowledge_base_article_block
