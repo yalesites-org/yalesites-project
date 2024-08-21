@@ -127,9 +127,7 @@ class ServiceNowSettings extends ConfigFormBase {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     $enabled = $form_state->getValue('enable_servicenow_sync');
     if ($enabled) {
-      $requiredFields = [
-        'servicenow_endpoint',
-      ];
+      $requiredFields = [];
 
       foreach ($requiredFields as $field) {
         if (!$form_state->getValue($field)) {
