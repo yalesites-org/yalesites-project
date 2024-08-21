@@ -148,7 +148,8 @@ class ServiceNowManager extends ControllerBase implements ContainerInjectionInte
        * $migrationInstance->set('syncSource', TRUE);
        */
 
-      // We choose to use syncSource since we want to recreate the block for update.
+      // We choose to use syncSource since we want to recreate the block for
+      // update.
       if ($migration === 'servicenow_knowledge_base_article_block') {
         $migrationInstance->set('syncSource', TRUE);
         $migration_update = $migrationInstance->getIdMap();
