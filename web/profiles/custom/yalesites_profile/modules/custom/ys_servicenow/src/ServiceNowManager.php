@@ -197,18 +197,6 @@ class ServiceNowManager extends ControllerBase implements ContainerInjectionInte
       ];
     }
 
-    $articleMigration = 'servicenow_knowledge_base_articles';
-
-    $migration = $this->migrationManager->createInstance($articleMigration);
-    $map = $migration->getIdMap();
-
-    // Get each node from the map.
-    $ids = $map->lookupDestinationIds();
-    foreach ($ids as $id) {
-      $entity = $this->entityTypeManager->getStorage('node')->load($id);
-      \Drupal::service('ai_engine_embedding.entity_update')->update($entity);
-    }
-
     return $messageData;
   }
 
