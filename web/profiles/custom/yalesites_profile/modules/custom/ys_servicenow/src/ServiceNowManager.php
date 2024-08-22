@@ -196,6 +196,17 @@ class ServiceNowManager extends ControllerBase implements ContainerInjectionInte
         'imported' => $this->getMigrationStatus($migration),
       ];
     }
+
+    $articleMigration = 'servicenow_knowledge_base_articles';
+
+    $migration = $this->migrationManager->createInstance($articleMigration);
+    $map = $migration->getIdMap();
+    foreach ($map->fetchLastImported() as $id) {
+      $node = $this->entityTypeManager->getStorage('node')->load($id);
+      // Save the node so that proper hooks can be called on resulting data.
+      $node->save();
+    }
+
     return $messageData;
   }
 
