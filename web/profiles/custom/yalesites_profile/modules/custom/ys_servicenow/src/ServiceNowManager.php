@@ -201,10 +201,12 @@ class ServiceNowManager extends ControllerBase implements ContainerInjectionInte
 
     $migration = $this->migrationManager->createInstance($articleMigration);
     $map = $migration->getIdMap();
-    foreach ($map->fetchLastImported() as $id) {
-      $node = $this->entityTypeManager->getStorage('node')->load($id);
-      // Save the node so that proper hooks can be called on resulting data.
-      $node->save();
+
+    // Get each node from the map.
+    $ids = $map->lookupDestinationIds();
+    foreach ($ids as $id) {
+      $entity = $this->entityTypeManager->getStorage('node')->load($id);
+      \Drupal::service('ai_engine_embedding.entity_update')->update($entity);
     }
 
     return $messageData;
