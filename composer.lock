@@ -1995,7 +1995,7 @@
                     "homepage": "https://www.drupal.org/user/3326031"
                 },
                 {
-                    "name": "VladimirAus",
+                    "name": "vladimiraus",
                     "homepage": "https://www.drupal.org/user/673120"
                 }
             ],
@@ -2104,7 +2104,7 @@
                     "homepage": "https://www.drupal.org/user/192273"
                 },
                 {
-                    "name": "Neslee Canil Pinto",
+                    "name": "neslee canil pinto",
                     "homepage": "https://www.drupal.org/user/3580850"
                 },
                 {
@@ -2588,7 +2588,7 @@
                     "email": "virtually.johnalbin@gmail.com"
                 },
                 {
-                    "name": "RobLoach",
+                    "name": "robloach",
                     "homepage": "https://www.drupal.org/user/61114"
                 }
             ],
@@ -3625,7 +3625,7 @@
                     "homepage": "https://www.drupal.org/user/3673677"
                 },
                 {
-                    "name": "NickDickinsonWilde",
+                    "name": "nickdickinsonwilde",
                     "homepage": "https://www.drupal.org/user/3094661"
                 }
             ],
@@ -4037,6 +4037,10 @@
                     "name": "JohnAlbin",
                     "homepage": "https://www.drupal.org/user/32095",
                     "email": "virtually.johnalbin@gmail.com"
+                },
+                {
+                    "name": "smustgrave",
+                    "homepage": "https://www.drupal.org/user/3252890"
                 }
             ],
             "description": "Provides a set of utilities that make form theming easier.",
@@ -5547,7 +5551,7 @@
             ],
             "authors": [
                 {
-                    "name": "Anybody",
+                    "name": "anybody",
                     "homepage": "https://www.drupal.org/user/291091"
                 },
                 {
@@ -5555,7 +5559,7 @@
                     "homepage": "https://www.drupal.org/user/1340686"
                 },
                 {
-                    "name": "cYu",
+                    "name": "cyu",
                     "homepage": "https://www.drupal.org/user/202205"
                 },
                 {
@@ -5567,7 +5571,7 @@
                     "homepage": "https://www.drupal.org/user/23897"
                 },
                 {
-                    "name": "Grevil",
+                    "name": "grevil",
                     "homepage": "https://www.drupal.org/user/3668491"
                 },
                 {
@@ -6264,6 +6268,10 @@
                 "GPL-2.0-or-later"
             ],
             "authors": [
+                {
+                    "name": "japerry",
+                    "homepage": "https://www.drupal.org/user/45640"
+                },
                 {
                     "name": "joelpittet",
                     "homepage": "https://www.drupal.org/user/160302"
@@ -7569,7 +7577,7 @@
                     "role": "Maintainer"
                 },
                 {
-                    "name": "WalkingDexter",
+                    "name": "walkingdexter",
                     "homepage": "https://www.drupal.org/user/3251330"
                 }
             ],
@@ -10264,16 +10272,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.11.10",
+            "version": "1.11.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "640410b32995914bde3eed26fa89552f9c2c082f"
+                "reference": "707c2aed5d8d0075666e673a5e71440c1d01a5a3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/640410b32995914bde3eed26fa89552f9c2c082f",
-                "reference": "640410b32995914bde3eed26fa89552f9c2c082f",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/707c2aed5d8d0075666e673a5e71440c1d01a5a3",
+                "reference": "707c2aed5d8d0075666e673a5e71440c1d01a5a3",
                 "shasum": ""
             },
             "require": {
@@ -10318,7 +10326,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-08-08T09:02:50+00:00"
+            "time": "2024-08-19T14:37:29+00:00"
         },
         {
             "name": "phpstan/phpstan-deprecation-rules",
@@ -10719,16 +10727,16 @@
         },
         {
             "name": "psr/log",
-            "version": "3.0.0",
+            "version": "3.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-fig/log.git",
-                "reference": "fe5ea303b0887d5caefd3d431c3e61ad47037001"
+                "reference": "79dff0b268932c640297f5208d6298f71855c03e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/log/zipball/fe5ea303b0887d5caefd3d431c3e61ad47037001",
-                "reference": "fe5ea303b0887d5caefd3d431c3e61ad47037001",
+                "url": "https://api.github.com/repos/php-fig/log/zipball/79dff0b268932c640297f5208d6298f71855c03e",
+                "reference": "79dff0b268932c640297f5208d6298f71855c03e",
                 "shasum": ""
             },
             "require": {
@@ -10763,9 +10771,9 @@
                 "psr-3"
             ],
             "support": {
-                "source": "https://github.com/php-fig/log/tree/3.0.0"
+                "source": "https://github.com/php-fig/log/tree/3.0.1"
             },
-            "time": "2021-07-14T16:46:02+00:00"
+            "time": "2024-08-21T13:31:24+00:00"
         },
         {
             "name": "psy/psysh",
@@ -13901,16 +13909,16 @@
         },
         {
             "name": "yalesites-org/ai_engine",
-            "version": "v1.2.3",
+            "version": "v1.2.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/yalesites-org/ai_engine.git",
-                "reference": "4632ea531b28e5c9801b0bed219afd8d56bed974"
+                "reference": "ef390e815cc8943ffa99b6d36441290e4a4b59d0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/yalesites-org/ai_engine/zipball/4632ea531b28e5c9801b0bed219afd8d56bed974",
-                "reference": "4632ea531b28e5c9801b0bed219afd8d56bed974",
+                "url": "https://api.github.com/repos/yalesites-org/ai_engine/zipball/ef390e815cc8943ffa99b6d36441290e4a4b59d0",
+                "reference": "ef390e815cc8943ffa99b6d36441290e4a4b59d0",
                 "shasum": ""
             },
             "require": {
@@ -13922,9 +13930,9 @@
             "description": "Transform Drupal websites into AI-powered platforms",
             "support": {
                 "issues": "https://github.com/yalesites-org/ai_engine/issues",
-                "source": "https://github.com/yalesites-org/ai_engine/tree/v1.2.3"
+                "source": "https://github.com/yalesites-org/ai_engine/tree/v1.2.4"
             },
-            "time": "2024-07-29T12:57:32+00:00"
+            "time": "2024-08-24T11:10:40+00:00"
         },
         {
             "name": "yalesites-org/atomic",
@@ -13981,7 +13989,7 @@
             "dist": {
                 "type": "path",
                 "url": "web/profiles/custom/yalesites_profile",
-                "reference": "87ec63978f2e1a9a3343659504e843a5d7c0563c"
+                "reference": "651c0fb633f56de0f3318b062a40e7df18decdda"
             },
             "require": {
                 "drupal/address": "1.12",
@@ -14069,7 +14077,7 @@
                 "jjj/chosen": "2.2.1",
                 "laminas/laminas-escaper": "2.12",
                 "northernco/ckeditor5-anchor-drupal": "0.4.0",
-                "yalesites-org/ai_engine": "1.2.3",
+                "yalesites-org/ai_engine": "1.2.4",
                 "yalesites-org/atomic": "1.34.1",
                 "yalesites-org/yale_cas": "1.0.4"
             },
@@ -15006,48 +15014,48 @@
         },
         {
             "name": "composer/composer",
-            "version": "2.7.7",
+            "version": "2.7.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/composer.git",
-                "reference": "291942978f39435cf904d33739f98d7d4eca7b23"
+                "reference": "a2edd4e4414c17008ab585e0c62574fdb644ebfc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/composer/zipball/291942978f39435cf904d33739f98d7d4eca7b23",
-                "reference": "291942978f39435cf904d33739f98d7d4eca7b23",
+                "url": "https://api.github.com/repos/composer/composer/zipball/a2edd4e4414c17008ab585e0c62574fdb644ebfc",
+                "reference": "a2edd4e4414c17008ab585e0c62574fdb644ebfc",
                 "shasum": ""
             },
             "require": {
-                "composer/ca-bundle": "^1.0",
+                "composer/ca-bundle": "^1.5",
                 "composer/class-map-generator": "^1.3.3",
                 "composer/metadata-minifier": "^1.0",
-                "composer/pcre": "^2.1 || ^3.1",
+                "composer/pcre": "^2.2 || ^3.2",
                 "composer/semver": "^3.3",
                 "composer/spdx-licenses": "^1.5.7",
                 "composer/xdebug-handler": "^2.0.2 || ^3.0.3",
-                "justinrainbow/json-schema": "^5.2.11",
+                "justinrainbow/json-schema": "^5.3",
                 "php": "^7.2.5 || ^8.0",
                 "psr/log": "^1.0 || ^2.0 || ^3.0",
-                "react/promise": "^2.8 || ^3",
+                "react/promise": "^3.2",
                 "seld/jsonlint": "^1.4",
                 "seld/phar-utils": "^1.2",
                 "seld/signal-handler": "^2.0",
-                "symfony/console": "^5.4.11 || ^6.0.11 || ^7",
-                "symfony/filesystem": "^5.4 || ^6.0 || ^7",
-                "symfony/finder": "^5.4 || ^6.0 || ^7",
+                "symfony/console": "^5.4.35 || ^6.3.12 || ^7.0.3",
+                "symfony/filesystem": "^5.4.35 || ^6.3.12 || ^7.0.3",
+                "symfony/finder": "^5.4.35 || ^6.3.12 || ^7.0.3",
                 "symfony/polyfill-php73": "^1.24",
                 "symfony/polyfill-php80": "^1.24",
                 "symfony/polyfill-php81": "^1.24",
-                "symfony/process": "^5.4 || ^6.0 || ^7"
+                "symfony/process": "^5.4.35 || ^6.3.12 || ^7.0.3"
             },
             "require-dev": {
-                "phpstan/phpstan": "^1.11.0",
+                "phpstan/phpstan": "^1.11.8",
                 "phpstan/phpstan-deprecation-rules": "^1.2.0",
                 "phpstan/phpstan-phpunit": "^1.4.0",
                 "phpstan/phpstan-strict-rules": "^1.6.0",
                 "phpstan/phpstan-symfony": "^1.4.0",
-                "symfony/phpunit-bridge": "^6.4.1 || ^7.0.1"
+                "symfony/phpunit-bridge": "^6.4.3 || ^7.0.1"
             },
             "suggest": {
                 "ext-openssl": "Enabling the openssl extension allows you to access https URLs for repositories and packages",
@@ -15100,7 +15108,7 @@
                 "irc": "ircs://irc.libera.chat:6697/composer",
                 "issues": "https://github.com/composer/composer/issues",
                 "security": "https://github.com/composer/composer/security/policy",
-                "source": "https://github.com/composer/composer/tree/2.7.7"
+                "source": "https://github.com/composer/composer/tree/2.7.8"
             },
             "funding": [
                 {
@@ -15116,7 +15124,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-06-10T20:11:12+00:00"
+            "time": "2024-08-22T13:28:36+00:00"
         },
         {
             "name": "composer/metadata-minifier",
@@ -15189,26 +15197,26 @@
         },
         {
             "name": "composer/pcre",
-            "version": "3.2.0",
+            "version": "3.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/pcre.git",
-                "reference": "ea4ab6f9580a4fd221e0418f2c357cdd39102a90"
+                "reference": "1637e067347a0c40bbb1e3cd786b20dcab556a81"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/pcre/zipball/ea4ab6f9580a4fd221e0418f2c357cdd39102a90",
-                "reference": "ea4ab6f9580a4fd221e0418f2c357cdd39102a90",
+                "url": "https://api.github.com/repos/composer/pcre/zipball/1637e067347a0c40bbb1e3cd786b20dcab556a81",
+                "reference": "1637e067347a0c40bbb1e3cd786b20dcab556a81",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.4 || ^8.0"
             },
             "conflict": {
-                "phpstan/phpstan": "<1.11.8"
+                "phpstan/phpstan": "<1.11.10"
             },
             "require-dev": {
-                "phpstan/phpstan": "^1.11.8",
+                "phpstan/phpstan": "^1.11.10",
                 "phpstan/phpstan-strict-rules": "^1.1",
                 "phpunit/phpunit": "^8 || ^9"
             },
@@ -15248,7 +15256,7 @@
             ],
             "support": {
                 "issues": "https://github.com/composer/pcre/issues",
-                "source": "https://github.com/composer/pcre/tree/3.2.0"
+                "source": "https://github.com/composer/pcre/tree/3.3.0"
             },
             "funding": [
                 {
@@ -15264,7 +15272,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-07-25T09:36:02+00:00"
+            "time": "2024-08-19T19:43:53+00:00"
         },
         {
             "name": "composer/spdx-licenses",
@@ -16563,16 +16571,16 @@
         },
         {
             "name": "phpstan/extension-installer",
-            "version": "1.4.1",
+            "version": "1.4.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/extension-installer.git",
-                "reference": "f6b87faf9fc7978eab2f7919a8760bc9f58f9203"
+                "reference": "46c8219b3fb0deb3fc08301e8f0797d321d17dcd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/extension-installer/zipball/f6b87faf9fc7978eab2f7919a8760bc9f58f9203",
-                "reference": "f6b87faf9fc7978eab2f7919a8760bc9f58f9203",
+                "url": "https://api.github.com/repos/phpstan/extension-installer/zipball/46c8219b3fb0deb3fc08301e8f0797d321d17dcd",
+                "reference": "46c8219b3fb0deb3fc08301e8f0797d321d17dcd",
                 "shasum": ""
             },
             "require": {
@@ -16599,11 +16607,15 @@
                 "MIT"
             ],
             "description": "Composer plugin for automatic installation of PHPStan extensions",
+            "keywords": [
+                "dev",
+                "static analysis"
+            ],
             "support": {
                 "issues": "https://github.com/phpstan/extension-installer/issues",
-                "source": "https://github.com/phpstan/extension-installer/tree/1.4.1"
+                "source": "https://github.com/phpstan/extension-installer/tree/1.4.2"
             },
-            "time": "2024-06-10T08:20:49+00:00"
+            "time": "2024-08-26T07:38:00+00:00"
         },
         {
             "name": "phpstan/phpdoc-parser",
@@ -16706,35 +16718,35 @@
         },
         {
             "name": "phpunit/php-code-coverage",
-            "version": "9.2.31",
+            "version": "9.2.32",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
-                "reference": "48c34b5d8d983006bd2adc2d0de92963b9155965"
+                "reference": "85402a822d1ecf1db1096959413d35e1c37cf1a5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/48c34b5d8d983006bd2adc2d0de92963b9155965",
-                "reference": "48c34b5d8d983006bd2adc2d0de92963b9155965",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/85402a822d1ecf1db1096959413d35e1c37cf1a5",
+                "reference": "85402a822d1ecf1db1096959413d35e1c37cf1a5",
                 "shasum": ""
             },
             "require": {
                 "ext-dom": "*",
                 "ext-libxml": "*",
                 "ext-xmlwriter": "*",
-                "nikic/php-parser": "^4.18 || ^5.0",
+                "nikic/php-parser": "^4.19.1 || ^5.1.0",
                 "php": ">=7.3",
-                "phpunit/php-file-iterator": "^3.0.3",
-                "phpunit/php-text-template": "^2.0.2",
-                "sebastian/code-unit-reverse-lookup": "^2.0.2",
-                "sebastian/complexity": "^2.0",
-                "sebastian/environment": "^5.1.2",
-                "sebastian/lines-of-code": "^1.0.3",
-                "sebastian/version": "^3.0.1",
-                "theseer/tokenizer": "^1.2.0"
+                "phpunit/php-file-iterator": "^3.0.6",
+                "phpunit/php-text-template": "^2.0.4",
+                "sebastian/code-unit-reverse-lookup": "^2.0.3",
+                "sebastian/complexity": "^2.0.3",
+                "sebastian/environment": "^5.1.5",
+                "sebastian/lines-of-code": "^1.0.4",
+                "sebastian/version": "^3.0.2",
+                "theseer/tokenizer": "^1.2.3"
             },
             "require-dev": {
-                "phpunit/phpunit": "^9.3"
+                "phpunit/phpunit": "^9.6"
             },
             "suggest": {
                 "ext-pcov": "PHP extension that provides line coverage",
@@ -16743,7 +16755,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "9.2-dev"
+                    "dev-main": "9.2.x-dev"
                 }
             },
             "autoload": {
@@ -16772,7 +16784,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/php-code-coverage/issues",
                 "security": "https://github.com/sebastianbergmann/php-code-coverage/security/policy",
-                "source": "https://github.com/sebastianbergmann/php-code-coverage/tree/9.2.31"
+                "source": "https://github.com/sebastianbergmann/php-code-coverage/tree/9.2.32"
             },
             "funding": [
                 {
@@ -16780,7 +16792,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-03-02T06:37:42+00:00"
+            "time": "2024-08-22T04:23:01+00:00"
         },
         {
             "name": "phpunit/php-file-iterator",
