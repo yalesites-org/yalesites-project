@@ -15,16 +15,21 @@ auto_added_reusable_block_content_bundles:
   divider: divider
   embed: embed
   event_list: event_list
+  facts: facts
   gallery: gallery
   grand_hero: grand_hero
   image: image
+  inline_message: inline_message
+  link_grid: link_grid
   media_grid: media_grid
   post_list: post_list
   pull_quote: pull_quote
   quick_links: quick_links
+  quote_callout: quote_callout
   reference_card: reference_card
   tabs: tabs
   text: text
+  tiles: tiles
   video: video
   view: view
   webform: webform
