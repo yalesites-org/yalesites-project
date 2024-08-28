@@ -545,28 +545,28 @@ display:
             title: title
             field_teaser_text: field_teaser_text
             field_teaser_title: field_teaser_title
-        news_year_filter:
-          id: news_year_filter
+        post_year_filter:
+          id: post_year_filter
           table: node_field_data
-          field: news_year_filter
+          field: post_year_filter
           relationship: none
           group_type: group
           admin_label: ''
           entity_type: node
-          plugin_id: news_year_filter
+          plugin_id: post_year_filter
           operator: in
           value: {  }
           group: 1
           exposed: true
           expose:
-            operator_id: news_year_filter_op
+            operator_id: post_year_filter_op
             label: 'News by Year'
             description: ''
             use_operator: false
-            operator: news_year_filter_op
+            operator: post_year_filter_op
             operator_limit_selection: false
             operator_list: {  }
-            identifier: news_year_filter
+            identifier: post_year_filter
             required: false
             remember: false
             multiple: true
