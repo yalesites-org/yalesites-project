@@ -96,7 +96,7 @@
     "drupal/selective_better_exposed_filters": "3.0.2",
     "drupal/simple_sitemap": "4.1.6",
     "drupal/single_content_sync": "1.4.4",
-    "drupal/smart_date": "4.0.3",
+    "drupal/smart_date": "4.1.4",
     "drupal/twig_tweak": "3.2.1",
     "drupal/typogrify": "1.2",
     "drupal/upgrade_status": "4.0.0",
@@ -105,8 +105,8 @@
     "jjj/chosen": "2.2.1",
     "laminas/laminas-escaper": "2.12",
     "northernco/ckeditor5-anchor-drupal": "0.4.0",
-    "yalesites-org/ai_engine": "1.2.3",
-    "yalesites-org/atomic": "1.34.0",
+    "yalesites-org/ai_engine": "1.2.4",
+    "yalesites-org/atomic": "1.34.1",
     "yalesites-org/yale_cas": "1.0.4"
   },
   "minimum-stability": "dev",
@@ -164,10 +164,6 @@
       },
       "drupal/layout_builder_browser": {
         "Add grouping of reusable blocks (3409153) and add fallback images (3408935) - can't use both patches from d.o would cause merge conflict, combined patch": "patches/layout_builder_browser/3408935-and-3409153-8.patch"
-      },
-      "drupal/smart_date": {
-        "Fix deprecation:": "https://git.drupalcode.org/project/smart_date/-/merge_requests/63.diff",
-        "Warning: Trying to access array offset on value of type null https://www.drupal.org/project/smart_date/issues/3354858": "patches/smart_date/107.patch"
       },
       "drupal/migrate_plus": {
         "Allow callback for Url source, and single item Json plugin https://www.drupal.org/project/migrate_plus/issues/3040427": "https://www.drupal.org/files/issues/2023-02-15/3040427-42-migrate_plus_multiple_urls.patch"
