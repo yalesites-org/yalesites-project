@@ -1,0 +1,25 @@
+{#
+/**
+ * @file
+ * Theme override for a 'form' element.
+ *
+ * Available variables
+ * - attributes: A list of HTML attributes for the wrapper element.
+ * - children: The child elements of the form.
+ *
+ * @see template_preprocess_form()
+ */
+#}
+
+{{ attach_library('atomic/chosen-select') }}
+
+{%
+  set classes = [
+  'ys-filter-form',
+  'ys-filter-form--scaffold',
+]
+%}
+
+<form{{ attributes.addClass(classes) }}>
+  {{ children }}
+</form>
