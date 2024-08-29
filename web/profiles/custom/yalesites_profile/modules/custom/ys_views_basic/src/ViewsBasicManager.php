@@ -284,8 +284,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     }
 
     if (!isset($paramsDecoded['exposed_filter_options']['show_year_filter']) || $filterType !== 'post') {
-      // Remove the 'News by Year' filter if the 'show_year_filter' is not set.
-      unset($filters['news_year_filter']);
+      // Remove the 'Year' filter if the 'show_year_filter' is not set.
+      unset($filters['post_year_filter']);
     }
 
     // Set the modified filters back to the view display options.

@@ -9,13 +9,13 @@ use Drupal\views\ViewExecutable;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Filter news by year.
+ * Filter posts by year.
  *
  * @ingroup views_filter_handlers
  *
- * @ViewsFilter("news_year_filter")
+ * @ViewsFilter("post_year_filter")
  */
-class NewsYearFilter extends InOperator {
+class PostYearFilter extends InOperator {
 
   /**
    * The database connection.
@@ -59,7 +59,7 @@ class NewsYearFilter extends InOperator {
   public function init(ViewExecutable $view, DisplayPluginBase $display, array &$options = NULL) {
     parent::init($view, $display, $options);
 
-    $this->valueTitle = $this->t('News Year Filter');
+    $this->valueTitle = $this->t('Post Year Filter');
     $this->definition['options callback'] = [$this, 'generateYearOptions'];
   }
 
