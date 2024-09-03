@@ -14,6 +14,7 @@ function ys_views_basic_theme($existing, $type, $theme, $path): array {
     'views_basic_formatter_default' => [
       'variables' => [
         'view' => [],
+        'exposed' => [],
       ],
     ],
     'views_basic_formatter_preview' => [
@@ -55,6 +56,13 @@ function ys_views_basic_views_data_alter(array &$data) {
     'filter' => [
       'help' => t('Show future, past, or all events'),
       'id' => 'event_time_period',
+    ],
+  ];
+  $data['node_field_data']['post_year_filter'] = [
+    'title' => t('Year'),
+    'filter' => [
+      'help' => t('Filter posts by year based on publish date.'),
+      'id' => 'post_year_filter',
     ],
   ];
 
