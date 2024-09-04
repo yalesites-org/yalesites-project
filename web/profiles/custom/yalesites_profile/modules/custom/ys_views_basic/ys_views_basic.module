@@ -30,6 +30,11 @@ function ys_views_basic_theme($existing, $type, $theme, $path): array {
         'contentType' => NULL,
       ],
     ],
+    'views_basic_events_calendar' => [
+      'variables' => [
+        'month_data' => [],
+      ],
+    ],
   ];
 }
 
