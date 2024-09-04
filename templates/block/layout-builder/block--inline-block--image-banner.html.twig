@@ -1,0 +1,22 @@
+{% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
+
+{% block content %}
+
+  {% embed "@molecules/banner/image/yds-image.twig" with {
+    grand_hero__content__background: content.field_style_color.0['#markup'],
+    grand_hero__width: 'site',
+  } %}
+    {% block grand_hero__video %}
+      {% if paragraph.field_media.entity.field_media_video_file.entity.uri.value is not empty %}
+        {% set grand_hero__video = true %}
+        {{ content.field_media }}
+      {% endif %}
+    {% endblock %}
+
+    {% block grand_hero__image %}
+      {% if paragraph.field_media.entity.field_media_video_file.entity.uri.value is empty %}
+        {{ content.field_media }}
+      {% endif %}
+    {% endblock %}
+  {% endembed %}
+{% endblock %}
