@@ -6,7 +6,6 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Render\Renderer;
 use Drupal\ys_views_basic\Service\EventsCalendarInterface;
 use Drupal\ys_views_basic\ViewsBasicManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -29,14 +28,7 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
    *
    * @var \Drupal\ys_views_basic\ViewsBasicManager
    */
-  protected $viewsBasicManager;
-
-  /**
-   * The renderer service.
-   *
-   * @var \Drupal\Core\Render\Renderer
-   */
-  protected $rendererService;
+  protected ViewsBasicManager $viewsBasicManager;
 
   /**
    * The Events Calendar service.
@@ -64,21 +56,18 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
    *   Any third party settings.
    * @param \Drupal\ys_views_basic\ViewsBasicManager $viewsBasicManager
    *   The views basic manager service.
-   * @param \Drupal\Core\Render\Renderer $renderer_service
-   *   Drupal Core renderer service.
    * @param \Drupal\ys_views_basic\Service\EventsCalendarInterface $eventsCalendar
    *   The Events Calendar service.
    */
   public function __construct(
     string $plugin_id,
-           $plugin_definition,
+    $plugin_definition,
     FieldDefinitionInterface $field_definition,
     array $settings,
     string $label,
     string $view_mode,
     array $third_party_settings,
     ViewsBasicManager $viewsBasicManager,
-    Renderer $renderer_service,
     EventsCalendarInterface $eventsCalendar,
   ) {
     parent::__construct(
@@ -89,7 +78,6 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
       $label,
       $view_mode,
       $third_party_settings,
-      $this->rendererService = $renderer_service,
     );
     $this->viewsBasicManager = $viewsBasicManager;
     $this->eventsCalendar = $eventsCalendar;
@@ -108,7 +96,6 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
       $configuration['view_mode'],
       $configuration['third_party_settings'],
       $container->get('ys_views_basic.views_basic_manager'),
-      $container->get('renderer'),
       $container->get('ys_views_basic.events_calendar')
     );
   }
@@ -116,7 +103,7 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
   /**
    * Define how the field type is showed.
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
 
     $elements = [];
 
