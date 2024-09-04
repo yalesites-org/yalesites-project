@@ -1,0 +1,11 @@
+uuid: 2cc602b8-ca8d-4b63-9845-e6ffd72e4cc0
+langcode: en
+status: true
+dependencies: {  }
+id: image_banner
+block_id: 'inline_block:image_banner'
+category: basic
+label: 'Image Banner'
+image_path: ''
+image_alt: 'Image Banner'
+weight: -100
