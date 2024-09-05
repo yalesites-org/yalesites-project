@@ -147,6 +147,14 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     ],
   ];
 
+  /*
+   * Define constants for content types.
+   */
+  const CONTENT_TYPE_POST = 'post';
+  const CONTENT_TYPE_EVENT = 'event';
+  const CONTENT_TYPE_PAGE = 'page';
+  const CONTENT_TYPE_PROFILE = 'profile';
+
   /**
    * The entity type manager.
    *
@@ -244,39 +252,66 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     // Retrieve the current filter options from the view's display settings.
     $filters = $view->getDisplay()->getOption('filters');
 
-    // Show the 'Category' filter only for Post, Event, and Page types.
-    if (!empty($paramsDecoded['exposed_filter_options']['show_category_filter'])) {
-      // Only modify the 'Category' filter if 'profile' is not in the
-      // filter type.
-      if ($filterType == 'profile') {
-        // Remove the 'Categories' filter if the filter type is 'Profile'.
-        unset($filters['field_category_target_id']);
-      }
-      else {
-        // Set a custom label for the 'Category' filter if provided.
-        if (!empty($paramsDecoded['category_filter_label'])) {
-          $filters['field_category_target_id']['expose']['label'] = $paramsDecoded['category_filter_label'];
-        }
+    // Mapping content types to their respective category filters.
+    $category_filters = [
+      self::CONTENT_TYPE_POST => 'field_category_target_id',
+      self::CONTENT_TYPE_EVENT => 'field_category_target_id',
+      self::CONTENT_TYPE_PAGE => 'field_category_target_id_1',
+      self::CONTENT_TYPE_PROFILE => 'field_affiliation_target_id',
+    ];
 
+    // Determine the category filter name based on the filter type.
+    $category_filter_name = $category_filters[$filterType] ?? NULL;
+
+    // Show the exposed filter 'Category' or 'Affiliation'.
+    if (!empty($paramsDecoded['exposed_filter_options']['show_category_filter']) && $category_filter_name) {
+      // Determine which filters to unset based on the current filter type.
+      $filters_to_unset = match ($filterType) {
+        self::CONTENT_TYPE_POST, self::CONTENT_TYPE_EVENT => [
+          'field_category_target_id_1',
+          'field_affiliation_target_id',
+        ],
+        self::CONTENT_TYPE_PROFILE => [
+          'field_category_target_id',
+          'field_category_target_id_1',
+        ],
+        self::CONTENT_TYPE_PAGE => [
+          'field_category_target_id',
+          'field_affiliation_target_id',
+        ],
+        default => [],
+      };
+
+      // Remove the filters that are not relevant to the current type.
+      foreach ($filters_to_unset as $filter) {
+        unset($filters[$filter]);
+      }
+
+      // Check if 'category_included_terms' is provided for the current
+      // filter type.
+      if (!empty($paramsDecoded['category_included_terms'])) {
         // Determine the vocabulary ID based on the selected filter type.
-        $vid = $filterType . '_category';
-        $filters['field_category_target_id']['vid'] = $vid;
+        $vid = $filterType == self::CONTENT_TYPE_PROFILE
+          ? 'affiliation'
+          : "{$filterType}_category";
 
         // Limit the filter to specific terms if provided.
-        if (!empty($paramsDecoded['category_included_terms'])) {
-          $filters['field_category_target_id']['value'] = $this->getChildTermsByParentId($paramsDecoded['category_included_terms'], $vid);
-          $filters['field_category_target_id']['limit'] = TRUE;
-          $filters['field_category_target_id']['expose']['reduce'] = TRUE;
-        }
+        $filters[$category_filter_name]['value'] = $this->getChildTermsByParentId($paramsDecoded['category_included_terms'], $vid);
+        $filters[$category_filter_name]['limit'] = TRUE;
+        $filters[$category_filter_name]['expose']['reduce'] = TRUE;
+      }
 
-        // Remove the 'Affiliation' filter if the filter type is not 'Profile'.
-        unset($filters['field_affiliation_target_id']);
+      // Set a custom label for the 'Category' filter if provided.
+      if (!empty($paramsDecoded['category_filter_label'])) {
+        $filters[$category_filter_name]['expose']['label'] = $paramsDecoded['category_filter_label'];
       }
     }
     else {
-      // Remove the 'Category' and 'Affiliation' filters if
-      // 'show_category_filter' is not set.
-      unset($filters['field_category_target_id'], $filters['field_affiliation_target_id']);
+      // Remove all category and affiliation filters if 'show_category_filter'
+      // is not set or category filter name is not defined.
+      foreach ($category_filters as $filter_name) {
+        unset($filters[$filter_name]);
+      }
     }
 
     if (!isset($paramsDecoded['exposed_filter_options']['show_search_filter'])) {
@@ -287,7 +322,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       unset($filters['combine']);
     }
 
-    if (!isset($paramsDecoded['exposed_filter_options']['show_year_filter']) || $filterType !== 'post') {
+    if (!isset($paramsDecoded['exposed_filter_options']['show_year_filter']) || $filterType !== self::CONTENT_TYPE_POST) {
       // Remove the 'Year' filter if the 'show_year_filter' is not set.
       unset($filters['post_year_filter']);
     }
