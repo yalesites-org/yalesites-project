@@ -10,7 +10,7 @@ source:
   authentication:
     plugin: servicenow_auth
   track_changes: true
-  urls: https://yaledevelopment.service-now.com/api/now/table/kb_knowledge?sysparm_query=workflow_state%3Dpublished%5Ekb_category.label!%3DNews%5Ecan_read_user_criteriaLIKEfd81a4dadbb6030043565bc0cf961905%5Eu_kb_ai_ready%3Dtrue&sysparm_display_value=true&sysparm_fields=sys_name%2Ctext%2Ctopic%2Cu_service_offering%2Cnumber%2Csys_created_on%2Ccan_read_user_criteria%2Cpublished%2Ckb_knowledge_base%2Cdescription%2Cvalid_to%2Csys_view_count%2Cshort_description%2Ckb_category&sysparm_limit=10
+  urls: https://yaledevelopment.service-now.com/api/now/table/kb_knowledge?sysparm_query=workflow_state%3Dpublished%5Ekb_category.label!%3DNews%5Ecan_read_user_criteriaLIKEfd81a4dadbb6030043565bc0cf961905%5Eu_kb_ai_ready%3Dtrue&sysparm_display_value=true&sysparm_fields=sys_name%2Ctext%2Ctopic%2Cu_service_offering%2Cnumber%2Csys_created_on%2Ccan_read_user_criteria%2Cpublished%2Ckb_knowledge_base%2Cdescription%2Cvalid_to%2Csys_view_count%2Cshort_description%2Ckb_category
   item_selector: result
   fields:
     - name: servicenow_number
