@@ -248,7 +248,11 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     if (!empty($paramsDecoded['exposed_filter_options']['show_category_filter'])) {
       // Only modify the 'Category' filter if 'profile' is not in the
       // filter type.
-      if ($filterType !== 'profile') {
+      if ($filterType == 'profile') {
+        // Remove the 'Categories' filter if the filter type is 'Profile'.
+        unset($filters['field_category_target_id']);
+      }
+      else {
         // Set a custom label for the 'Category' filter if provided.
         if (!empty($paramsDecoded['category_filter_label'])) {
           $filters['field_category_target_id']['expose']['label'] = $paramsDecoded['category_filter_label'];
