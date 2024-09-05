@@ -510,7 +510,7 @@ display:
           exposed: true
           expose:
             operator_id: combine_op
-            label: 'Search'
+            label: Search
             description: ''
             use_operator: false
             operator: combine_op
