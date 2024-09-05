@@ -116,6 +116,8 @@ grand_hero:
       one: One
       two: Two
       three: Three
+      four: Four
+      five: Five
     default: one
 divider:
   field_style_position:
