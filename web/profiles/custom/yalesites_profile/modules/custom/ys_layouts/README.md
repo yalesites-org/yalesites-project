@@ -1,6 +1,7 @@
 # YaleSites Layouts
 
 ## Description
+
 The layouts module organizes work related to YaleSite's implementation of Layout Builder. This includes the definition of custom layouts including the banner, page meta, and two column sections.
 
 ## Meta Fields Manager
@@ -17,6 +18,8 @@ This module includes a service called `MetaFieldsManager` that was specifically 
 * formatted_start_time - Formatted as: 1:30 pm EDT
 * formatted_end_date - Formatted as: Friday, May 3rd, 2024
 * formatted_end_time - Formatted as: 2:30 pm EDT
+* original_start - The unformatted UTC start datetime
+* original_end - The unformatted UTC end datetime
 * is_all_day - Boolean for all day events (i.e. false)
 
 The `ics_url` is auto-calculated if there is an ICS URL provided from Localist, then use it. If not, calculate an ICS URL dynamically from the first date in the series.
