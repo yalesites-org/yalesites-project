@@ -211,9 +211,7 @@ class EventsCalendar implements EventsCalendarInterface {
     }, $node->get('field_category')->referencedEntities()));
 
     // Extract the event's tags.
-    $tags = implode(' | ', array_map(function ($term) {
-      return $term->label();
-    }, $node->get('field_tags')->referencedEntities()));
+    $tags = array_map(fn($term) => $term->label(), $node->get('field_tags')->referencedEntities());
 
     // Build and return the event array.
     return [
