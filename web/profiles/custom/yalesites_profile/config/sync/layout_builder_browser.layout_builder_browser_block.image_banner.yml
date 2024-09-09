@@ -1,7 +1,7 @@
 uuid: 2cc602b8-ca8d-4b63-9845-e6ffd72e4cc0
 langcode: en
 status: true
-dependencies: {}
+dependencies: {  }
 id: image_banner
 block_id: 'inline_block:image_banner'
 category: basic
