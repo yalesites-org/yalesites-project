@@ -399,6 +399,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
     $eventTimePeriod = $paramsDecoded['filters']['event_time_period'] ?? NULL;
 
+    $field_display_options = [
+      'show_categories' => (int) !empty($paramsDecoded['field_options']['show_categories']),
+      'show_tags' => (int) !empty($paramsDecoded['field_options']['show_tags']),
+      'show_thumbnail' => (int) ($paramsDecoded['field_options']['show_thumbnail'] ?? 1)
+    ];
+
     $view->setArguments(
       [
         'type' => $filterType,
@@ -409,6 +415,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'items' => $itemsLimit,
         'event_time_period' => str_contains($filterType, 'event') ? $eventTimePeriod : NULL,
         'offset' => $paramsDecoded['offset'] ?? 0,
+        'field_display_options' =>  json_encode($field_display_options),
       ]
     );
 
@@ -426,19 +433,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     switch ($type) {
       case "rendered":
         $view = $view->preview();
-
-        // Loop through each row in the view's results and update the node's
-        // properties based on show_categories and show_tags configuration,
-        // and add the corresponding cache metadata.
-        $show_categories = (int) !empty($paramsDecoded['field_options']['show_categories']);
-        $show_tags = (int) !empty($paramsDecoded['field_options']['show_tags']);
-        foreach ($view['#rows']['#rows'] as &$resultRow) {
-          $node = $resultRow['#node'];
-          $node->show_categories = $show_categories;
-          $resultRow['#cache']['keys'][] = $show_categories;
-          $node->show_tags = $show_tags;
-          $resultRow['#cache']['keys'][] = $show_tags;
-        }
         break;
 
       case "count":
