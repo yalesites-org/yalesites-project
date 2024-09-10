@@ -240,6 +240,15 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#title' => $this->t('Exposed Filter Options'),
       '#tree' => TRUE,
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('exposed_filter_options', $items[$delta]->params) : [],
+      'show_year_filter' => [
+        '#states' => [
+          'visible' => [
+            $formSelectors['entity_types_ajax'] => [
+              'value' => 'post',
+            ],
+          ],
+        ],
+      ],
     ];
 
     $form['group_user_selection']['entity_and_view_mode']['category_filter_label'] = [
