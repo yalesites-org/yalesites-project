@@ -6,7 +6,7 @@ use Drupal\Core\Action\Plugin\Action\PublishAction;
 use Drupal\Core\Session\AccountInterface;
 
 /**
- * Unpublishes an entity.
+ * Publishes an entity.
  *
  * @Action(
  *   id = "entity:publish_moderated_action",
@@ -28,8 +28,6 @@ class ModeratedPublish extends PublishAction {
    * {@inheritdoc}
    */
   public function access($object, AccountInterface $account = NULL, $return_as_object = FALSE) {
-    $key = $object->getEntityType()->getKey('published');
-
     /** @var \Drupal\Core\Entity\EntityInterface $object */
     $result = $object->access('update', $account, TRUE);
 

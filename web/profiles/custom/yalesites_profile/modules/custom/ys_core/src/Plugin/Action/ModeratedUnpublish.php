@@ -28,8 +28,6 @@ class ModeratedUnpublish extends UnpublishAction {
    * {@inheritdoc}
    */
   public function access($object, AccountInterface $account = NULL, $return_as_object = FALSE) {
-    $key = $object->getEntityType()->getKey('published');
-
     /** @var \Drupal\Core\Entity\EntityInterface $object */
     $result = $object->access('update', $account, TRUE);
 
