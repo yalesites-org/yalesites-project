@@ -402,7 +402,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     $field_display_options = [
       'show_categories' => (int) !empty($paramsDecoded['field_options']['show_categories']),
       'show_tags' => (int) !empty($paramsDecoded['field_options']['show_tags']),
-      'show_thumbnail' => (int) ($paramsDecoded['field_options']['show_thumbnail'] ?? 1)
+      'show_thumbnail' => (int) ($paramsDecoded['field_options']['show_thumbnail'] ?? 1),
     ];
 
     $view->setArguments(
@@ -415,7 +415,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'items' => $itemsLimit,
         'event_time_period' => str_contains($filterType, 'event') ? $eventTimePeriod : NULL,
         'offset' => $paramsDecoded['offset'] ?? 0,
-        'field_display_options' =>  json_encode($field_display_options),
+        'field_display_options' => json_encode($field_display_options),
       ]
     );
 
