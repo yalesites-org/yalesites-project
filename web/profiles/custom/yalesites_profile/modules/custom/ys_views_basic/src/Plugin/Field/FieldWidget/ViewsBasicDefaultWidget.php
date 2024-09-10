@@ -219,22 +219,34 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#suffix' => '</div>',
     ];
 
+    $fieldOptionValue = ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('field_options', $items[$delta]->params) : [];
     $form['group_user_selection']['entity_and_view_mode']['field_options'] = [
       '#type' => 'checkboxes',
       '#options' => [
         'show_categories' => $this->t('Show Categories'),
         'show_tags' => $this->t('Show Tags'),
+        'show_thumbnail' => $this->t('Show Thumbnail'),
       ],
       '#title' => $this->t('Field Display Options'),
       '#tree' => TRUE,
-      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('field_options', $items[$delta]->params) : [],
+      '#default_value' => empty($fieldOptionValue) ? ['show_thumbnail'] : $fieldOptionValue,
+      'show_thumbnail' => [
+        '#states' => [
+          'visible' => [
+            $formSelectors['view_mode_input_selector'] => [
+              ['value' => 'card'],
+              ['value' => 'list_item'],
+            ],
+          ],
+        ],
+      ],
     ];
 
     $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options'] = [
       '#type' => 'checkboxes',
       '#options' => [
         'show_search_filter' => $this->t('Show Search Filter'),
-        'show_year_filter' => $this->t('Show Year Filter (works only for Posts view)'),
+        'show_year_filter' => $this->t('Show Year Filter'),
         'show_category_filter' => $this->t('Show Category Filter'),
       ],
       '#title' => $this->t('Exposed Filter Options'),
