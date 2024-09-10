@@ -6,6 +6,11 @@ module:
   address: 0
   admin_toolbar: 0
   admin_toolbar_tools: 0
+  ai_engine: 0
+  ai_engine_chat: 0
+  ai_engine_embedding: 0
+  ai_engine_feed: 0
+  ai_engine_metadata: 0
   allowed_formats: 0
   anchor_link: 0
   auto_entitylabel: 0
