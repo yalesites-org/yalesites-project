@@ -5,6 +5,8 @@
  * Contains ys_views_basic.module functions.
  */
 
+use Drupal\views\ViewExecutable;
+
 /**
  * Implements hook_theme().
  */
@@ -76,5 +78,30 @@ function ys_views_basic_views_pre_build($view) {
 
   if (empty($view->dom_id)) {
     $view->dom_id = "view_" . $counter++;
+  }
+}
+
+/**
+ * Implements hook_views_pre_render().
+ */
+function ys_views_basic_views_pre_render(ViewExecutable $view): void {
+  $view_id = $view->id();
+  if (in_array($view_id, ['views_basic_scaffold', 'views_basic_scaffold_events'])) {
+    $field_display_options = json_decode($view->args[8]);
+    foreach ($view->result as $row) {
+      $node = $row->_entity;
+
+      // Loop through each row in the view's results and update the node's
+      // properties based on show_categories and show_tags configuration,
+      // and add the corresponding cache metadata.
+      $node->show_categories = $field_display_options->show_categories;
+      $node->show_tags = $field_display_options->show_tags;
+      $node->show_thumbnail = $field_display_options->show_thumbnail;
+
+      // Ensure that the cache keys are set for the view.
+      $view->element['#cache']['keys'][] = 'show_categories:' . $field_display_options->show_categories;
+      $view->element['#cache']['keys'][] = 'show_tags:' . $field_display_options->show_tags;
+      $view->element['#cache']['keys'][] = 'show_thumbnail:' . $field_display_options->show_thumbnail;
+    }
   }
 }
