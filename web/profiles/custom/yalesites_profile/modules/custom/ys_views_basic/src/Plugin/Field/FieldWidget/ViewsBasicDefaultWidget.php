@@ -234,7 +234,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#type' => 'checkboxes',
       '#options' => [
         'show_search_filter' => $this->t('Show Search Filter'),
-        'show_year_filter' => $this->t('Show Year Filter (works only for Posts view)'),
+        'show_year_filter' => $this->t('Show Year Filter'),
         'show_category_filter' => $this->t('Show Category Filter'),
       ],
       '#title' => $this->t('Exposed Filter Options'),
