@@ -40,6 +40,13 @@ ys_core.admin_footer_settings:
   route_name: ys_core.admin_footer_settings
   title: "Footer Settings"
   weight: 20
+# Views settings form.
+ys_core.admin_views_settings:
+  description: "Views settings."
+  parent: ys_core.admin_yalesites
+  route_name: ys_core.admin_views_settings
+  title: "Views Settings"
+  weight: 25
 # main menu edit form.
 ys_core.menu_main_edit:
   description: "Manage main navigation"
