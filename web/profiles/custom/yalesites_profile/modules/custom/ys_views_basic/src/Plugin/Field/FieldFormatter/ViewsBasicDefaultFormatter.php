@@ -6,7 +6,7 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Render\Renderer;
+use Drupal\ys_views_basic\Service\EventsCalendarInterface;
 use Drupal\ys_views_basic\ViewsBasicManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -28,14 +28,14 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
    *
    * @var \Drupal\ys_views_basic\ViewsBasicManager
    */
-  protected $viewsBasicManager;
+  protected ViewsBasicManager $viewsBasicManager;
 
   /**
-   * The renderer service.
+   * The Events Calendar service.
    *
-   * @var \Drupal\Core\Render\Renderer
+   * @var \Drupal\ys_views_basic\Service\EventsCalendarInterface
    */
-  protected $rendererService;
+  protected EventsCalendarInterface $eventsCalendar;
 
   /**
    * Constructs an views basic default formatter object.
@@ -54,10 +54,10 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
    *   The view mode.
    * @param array $third_party_settings
    *   Any third party settings.
-   * @param \Drupal\ys_views_basic\Plugin\ViewsBasicManager $viewsBasicManager
+   * @param \Drupal\ys_views_basic\ViewsBasicManager $viewsBasicManager
    *   The views basic manager service.
-   * @param \Drupal\Core\Render\Renderer $renderer_service
-   *   Drupal Core renderer service.
+   * @param \Drupal\ys_views_basic\Service\EventsCalendarInterface $eventsCalendar
+   *   The Events Calendar service.
    */
   public function __construct(
     string $plugin_id,
@@ -68,7 +68,7 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
     string $view_mode,
     array $third_party_settings,
     ViewsBasicManager $viewsBasicManager,
-    Renderer $renderer_service,
+    EventsCalendarInterface $eventsCalendar,
   ) {
     parent::__construct(
       $plugin_id,
@@ -78,20 +78,15 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
       $label,
       $view_mode,
       $third_party_settings,
-      $this->rendererService = $renderer_service,
     );
     $this->viewsBasicManager = $viewsBasicManager;
+    $this->eventsCalendar = $eventsCalendar;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(
-    ContainerInterface $container,
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-  ) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     return new static(
       $plugin_id,
       $plugin_definition,
@@ -101,33 +96,57 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
       $configuration['view_mode'],
       $configuration['third_party_settings'],
       $container->get('ys_views_basic.views_basic_manager'),
-      $container->get('renderer'),
+      $container->get('ys_views_basic.events_calendar')
     );
   }
 
   /**
    * Define how the field type is showed.
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
 
     $elements = [];
+
     foreach ($items as $delta => $item) {
+      // Get decoded parameters.
+      $paramsDecoded = json_decode($item->getValue()['params'], TRUE);
 
-      $view = $this->viewsBasicManager->getView('rendered', $item->getValue()['params']);
+      if ($paramsDecoded['filters']['types'][0] === 'event' && $paramsDecoded['view_mode'] === 'calendar') {
+        // Calculate the remaining time until the end of the current month.
+        $now = new \DateTime();
+        $end_of_month = new \DateTime('last day of this month 23:59:59');
+        $remaining_time_in_seconds = $end_of_month->getTimestamp() - $now->getTimestamp();
 
-      $elements[$delta] = [
-        '#theme' => 'views_basic_formatter_default',
-        '#view' => $view,
-        // Extract exposed filters from the view and place them separately.
-        // This is necessary because we are conditionally displaying
-        // specific exposed filters based on field configuration.
-        // By placing the exposed filters outside of the view rendering
-        // context, we ensure that they do not get re-rendered
-        // when AJAX operations are performed on the view,
-        // allowing for better control over which filters are displayed
-        // and maintaining the expected user interface behavior.
-        '#exposed' => $view['#view']->exposed_widgets,
-      ];
+        $events_calendar = $this->eventsCalendar
+          ->getCalendar(date('m'), date('Y'));
+
+        $elements[$delta] = [
+          '#theme' => 'views_basic_events_calendar',
+          '#month_data' => $events_calendar,
+          '#cache' => [
+            'tags' => ['node_list:event'],
+            // Set max-age to the remaining time until the end of the month.
+            'max-age' => $remaining_time_in_seconds,
+            'contexts' => ['timezone'],
+          ],
+        ];
+      }
+      else {
+        $view = $this->viewsBasicManager->getView('rendered', $item->getValue()['params']);
+        $elements[$delta] = [
+          '#theme' => 'views_basic_formatter_default',
+          '#view' => $view,
+          // Extract exposed filters from the view and place them separately.
+          // This is necessary because we are conditionally displaying
+          // specific exposed filters based on field configuration.
+          // By placing the exposed filters outside of the view rendering
+          // context, we ensure that they do not get re-rendered
+          // when AJAX operations are performed on the view,
+          // allowing for better control over which filters are displayed
+          // and maintaining the expected user interface behavior.
+          '#exposed' => $view['#view']->exposed_widgets,
+        ];
+      }
     }
 
     return $elements;
