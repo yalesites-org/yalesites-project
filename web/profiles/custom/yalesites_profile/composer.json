@@ -53,7 +53,7 @@
     "drupal/gin_moderation_sidebar": "1.0.0",
     "drupal/google_analytics": "4.0.2",
     "drupal/hide_revision_field": "2.5.0",
-    "drupal/honeypot": "2.2.0",
+    "drupal/honeypot": "2.1.4",
     "drupal/imagemagick": "4.0.2",
     "drupal/improve_line_breaks_filter": "1.6",
     "drupal/layout_builder_browser": "1.7",
