@@ -24,7 +24,7 @@ filters:
     status: false
     weight: 50
     settings:
-      remove_empty_paragraphs: false
+      remove_empty_paragraphs: '0'
   typogrify:
     id: typogrify
     provider: typogrify
