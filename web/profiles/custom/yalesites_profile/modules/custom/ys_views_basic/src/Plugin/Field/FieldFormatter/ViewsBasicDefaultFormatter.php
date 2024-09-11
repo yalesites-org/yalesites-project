@@ -112,12 +112,23 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
       $paramsDecoded = json_decode($item->getValue()['params'], TRUE);
 
       if ($paramsDecoded['filters']['types'][0] === 'event' && $paramsDecoded['view_mode'] === 'calendar') {
+        // Calculate the remaining time until the end of the current month.
+        $now = new \DateTime();
+        $end_of_month = new \DateTime('last day of this month 23:59:59');
+        $remaining_time_in_seconds = $end_of_month->getTimestamp() - $now->getTimestamp();
+
         $events_calendar = $this->eventsCalendar
           ->getCalendar(date('m'), date('Y'));
 
         $elements[$delta] = [
           '#theme' => 'views_basic_events_calendar',
           '#month_data' => $events_calendar,
+          '#cache' => [
+            'tags' => ['node_list:event'],
+            // Set max-age to the remaining time until the end of the month.
+            'max-age' => $remaining_time_in_seconds,
+            'contexts' => ['timezone'],
+          ],
         ];
       }
       else {
