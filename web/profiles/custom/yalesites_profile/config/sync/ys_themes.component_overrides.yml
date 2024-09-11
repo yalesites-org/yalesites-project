@@ -4,6 +4,8 @@ callout:
       one: One
       two: Two
       three: Three
+      four: Four
+      five: Five
     default: one
   field_style_alignment:
     values:
@@ -16,6 +18,8 @@ cta_banner:
       one: One
       two: Two
       three: Three
+      four: Four
+      five: Five
     default: one
   field_style_position:
     values:
@@ -52,6 +56,8 @@ content_spotlight:
       one: One
       two: Two
       three: Three
+      four: Four
+      five: Five
     default: default
 quick_links:
   field_style_variation:
@@ -143,6 +149,8 @@ content_spotlight_portrait:
       one: One
       two: Two
       three: Three
+      four: Four
+      five: Five
     default: default
 text:
   field_style_variation:
@@ -162,6 +170,8 @@ tile:
       one: One
       two: Two
       three: Three
+      four: Four
+      five: Five
     default: one
 tiles:
   field_style_width:
@@ -193,6 +203,8 @@ facts:
       one: One
       two: Two
       three: Three
+      four: Four
+      five: Five
     default: one
   field_style_alignment:
     values:
@@ -205,6 +217,8 @@ quote_callout:
       one: One
       two: Two
       three: Three
+      four: Four
+      five: Five
     default: one
   field_style_variation:
     values:
@@ -222,6 +236,8 @@ link_grid:
       one: One
       two: Two
       three: Three
+      four: Four
+      five: Five
     default: one
 inline_message:
   field_style_color:
@@ -229,4 +245,6 @@ inline_message:
       one: One
       two: Two
       three: Three
+      four: Four
+      five: Five
     default: one

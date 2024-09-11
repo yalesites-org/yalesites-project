@@ -190,6 +190,8 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
         $dates[$key]['formatted_start_time'] = $this->dateFormatter->format($date['value'], 'event_time_only');
         $dates[$key]['formatted_end_date'] = $this->dateFormatter->format($date['end_value'], 'event_date_only');
         $dates[$key]['formatted_end_time'] = $this->dateFormatter->format($date['end_value'], 'event_time_only');
+        $dates[$key]['original_start'] = $date['value'];
+        $dates[$key]['original_end'] = $date['end_value'];
         $dates[$key]['is_all_day'] = $this->isAllDay($date['value'], $date['end_value']);
         // Remove older dates.
         if ($date['end_value'] < time()) {
