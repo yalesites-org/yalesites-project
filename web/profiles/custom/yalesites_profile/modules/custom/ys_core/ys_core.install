@@ -6,6 +6,7 @@
  */
 
 use Drupal\Component\Utility\Xss;
+use Drupal\taxonomy\Entity\Term;
 
 /**
  * Implements hook_update().
@@ -196,4 +197,23 @@ function ys_core_update_9007() {
 
   }
 
+}
+
+/**
+ * Implements hook_update().
+ *
+ * Add "Hybrid" event type taxonomy if it does not exist.
+ */
+function ys_core_update_9008() {
+  $term = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadByProperties([
+    'vid' => 'event_type',
+    'name' => 'Hybrid',
+  ]);
+  if (empty($term)) {
+    $term = Term::create([
+      'vid' => 'event_type',
+      'name' => 'Hybrid',
+    ]);
+    $term->save();
+  }
 }

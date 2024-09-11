@@ -124,9 +124,14 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
         foreach ($values as $value) {
           /** @var \Drupal\taxonomy\Entity\Term $typeInfo */
           $typeInfo = $this->entityTypeManager->getStorage('taxonomy_term')->load($value['target_id']);
+          $name = $url = "";
+          if ($typeInfo) {
+            $name = $typeInfo->getName();
+            $url = $typeInfo->toUrl()->toString();
+          }
           $filterValues[] = [
-            'name' => $typeInfo->getName(),
-            'url' => $typeInfo->toUrl()->toString(),
+            'name' => $name,
+            'url' => $url,
           ];
         }
       }
@@ -185,6 +190,8 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
         $dates[$key]['formatted_start_time'] = $this->dateFormatter->format($date['value'], 'event_time_only');
         $dates[$key]['formatted_end_date'] = $this->dateFormatter->format($date['end_value'], 'event_date_only');
         $dates[$key]['formatted_end_time'] = $this->dateFormatter->format($date['end_value'], 'event_time_only');
+        $dates[$key]['original_start'] = $date['value'];
+        $dates[$key]['original_end'] = $date['end_value'];
         $dates[$key]['is_all_day'] = $this->isAllDay($date['value'], $date['end_value']);
         // Remove older dates.
         if ($date['end_value'] < time()) {
@@ -242,10 +249,12 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
      */
     $icsUrl = $node->field_localist_ics_url->first() ? $node->field_localist_ics_url->first()->getValue()['uri'] : NULL;
     if (!$icsUrl && $dates) {
+      // Dates might not be 0-based.
+      $firstDate = reset($dates);
       $tz = new \DateTimeZone('America/New_York');
       $date = new \DateTime();
-      $start = $date->createFromFormat('U', $dates[0]['value'], $tz);
-      $end = $date->createFromFormat('U', $dates[0]['end_value'], $tz);
+      $start = $date->createFromFormat('U', $firstDate['value'], $tz);
+      $end = $date->createFromFormat('U', $firstDate['end_value'], $tz);
 
       /* Note one additional argument at the end of this function can create an
        * address in the ICS file.
@@ -256,7 +265,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
         $node->getTitle(),
         $start,
         $end,
-        $dates[0]['is_all_day'],
+        $firstDate['is_all_day'],
         $node->toUrl()->setAbsolute()->toString()
       );
     }
