@@ -127,7 +127,7 @@
         "hide remove button https://www.drupal.org/project/paragraphs/issues/2919186": "https://www.drupal.org/files/issues/2020-05-13/hide_field_required_paragraphs_remove_button_1.patch"
       },
       "drupal/core": {
-        "plural results summary https://www.drupal.org/project/drupal/issues/2888320": "https://www.drupal.org/files/issues/2021-12-15/2888320-78.patch",
+        "plural results summary https://www.drupal.org/project/drupal/issues/2888320": "https://www.drupal.org/files/issues/2024-06-21/2888320-92.patch",
         "Add reusable option to inline block creation https://www.drupal.org/project/drupal/issues/2999491": "https://git.drupalcode.org/issue/drupal-2999491/-/commit/1330eff91b1234979cf697a66a48e34eb116b441.patch",
         "Update \"Add reusable option to inline block creation\" patch with local changes to save block if it didn't save": "patches/layout_builder/1330eff91b1234979cf697a66a48e34eb116b441-1.patch",
         "Prevent empty block_content info fields from causing php deprecation notices": "https://www.drupal.org/files/issues/2023-07-21/3340159-empty-block-label_0.patch",
