@@ -26,10 +26,7 @@ class LayoutBuilderSections extends ProcessPluginBase {
    */
   public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
 
-    \Drupal::messenger()->addMessage("Value: " . $value, 'status', TRUE);
-
     if ($value == NULL) {
-      \Drupal::messenger()->addError("value is NULL", 'status', TRUE);
       return NULL;
     }
 
@@ -54,8 +51,6 @@ class LayoutBuilderSections extends ProcessPluginBase {
       return NULL;
     }
 
-    \Drupal::messenger()->addMessage("Got a block content");
-
     $config = [
       'id' => 'inline_block:text',
       'label' => $block_content->label(),
@@ -69,14 +64,10 @@ class LayoutBuilderSections extends ProcessPluginBase {
 
     $components[] = new SectionComponent($generator->generate(), 'content', $config);
 
-    \Drupal::messenger()->addMessage("Made a section component");
-
     // If you were doing multiple sections, you'd want this to be an array
     // somehow. @TODO figure out how to do that ;)
     // PARAMS: $layout_id, $layout_settings, $components.
     $sections = new Section('layout_onecol', [], $components);
-
-    \Drupal::messenger()->addMessage("Made a section");
 
     return $sections;
   }
