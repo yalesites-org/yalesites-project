@@ -96,6 +96,7 @@ class ServiceNowSettings extends ConfigFormBase {
 
     if (
       $config->get('enable_servicenow_sync') &&
+      $config->get('servicenow_endpoint') &&
       $config->get('servicenow_auth_key')
       ) {
       $form['sync_now_button'] = [
@@ -110,6 +111,12 @@ class ServiceNowSettings extends ConfigFormBase {
       '#description' => $this->t('Once enabled, ServiceNow data will sync knowledge base articles roughly every hour.'),
       '#default_value' => $config->get('enable_servicenow_sync') ?: FALSE,
       '#disabled' => !$allowSecretItems,
+    ];
+
+    $form['servicenow_endpoint'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('ServiceNow Endpoint'),
+      '#default_value' => $config->get('servicenow_endpoint') ?: '',
     ];
 
     $form['servicenow_auth_key'] = [
@@ -127,7 +134,10 @@ class ServiceNowSettings extends ConfigFormBase {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     $enabled = $form_state->getValue('enable_servicenow_sync');
     if ($enabled) {
-      $requiredFields = [];
+      $requiredFields = [
+        'servicenow_auth_key',
+        'servicenow_endpoint',
+      ];
 
       foreach ($requiredFields as $field) {
         if (!$form_state->getValue($field)) {
@@ -151,6 +161,7 @@ class ServiceNowSettings extends ConfigFormBase {
       // Set the submitted configuration setting.
       ->set('enable_servicenow_sync', $form_state->getValue('enable_servicenow_sync'))
       ->set('servicenow_auth_key', $form_state->getValue('servicenow_auth_key'))
+      ->set('servicenow_endpoint', $form_state->getValue('servicenow_endpoint'))
       ->save();
 
     parent::submitForm($form, $form_state);

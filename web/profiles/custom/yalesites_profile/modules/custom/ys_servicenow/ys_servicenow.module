@@ -5,6 +5,8 @@
  * Primary module hooks for YS ServiceNow module.
  */
 
+use Drupal\migrate\Plugin\MigrationInterface;
+
 /**
  * Implements hook_cron().
  */
@@ -22,4 +24,20 @@ function ys_servicenow_cron() {
       $servicenowManager->runAllMigrations();
     }
   }
+}
+
+/**
+ * Provide the URL endpoint for migrations in servicenow from config.
+ */
+function ys_servicenow_url_endpoint(MigrationInterface $migration): array {
+  // Get the servicenow configuration.
+  $servicenow_config = \Drupal::config('ys_servicenow.settings');
+  // Get the endpoint type from the migration.
+  $endpoint = $servicenow_config->get('servicenow_endpoint');
+
+  if ($endpoint) {
+    return [$endpoint];
+  }
+
+  return [];
 }
