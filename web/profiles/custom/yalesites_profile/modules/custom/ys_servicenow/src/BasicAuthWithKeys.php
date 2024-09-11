@@ -96,7 +96,13 @@ class BasicAuthWithKeys {
       throw new \Exception("Key has no value");
     }
 
-    return json_decode($json_key);
+    $decoded_object = json_decode($json_key);
+
+    if (!$decoded_object) {
+      throw new \Exception("Key value is not valid JSON.  Could you have accidentally used single quotes vs double?");
+    }
+
+    return $decoded_object;
   }
 
 }
