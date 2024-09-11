@@ -1,7 +1,31 @@
 <form action="/search" method="get" class="search-form--page form--inline" id="page-search-form" accept-charset="UTF-8">
-  <div class="form-item form-item-keywords">
-    <input placeholder="Start new search" type="text" id="edit-keywords--page-search-form" name="keywords" value="" size="30" maxlength="128" class="form-text form-item__textfield">
+  <div class="form-item form-item--search form-item-keywords">
+    <label for="edit-keywords--page-search-form" class="form-item__label">
+      <span>{{ 'Search:'|t }}</span>
+      {% include "@atoms/images/icons/_yds-icon.twig" with {
+        icon__name: 'magnifying-glass',
+        icon__blockname: 'form-item',
+        icon__modifiers: ['search'],
+        icon__decorative: true,
+      } %}
+    </label>
+    <input placeholder="Start new search" type="text" id="edit-keywords--page-search-form" name="keywords" value="{{ getQueryParam('keywords') }}"
+           size="30" maxlength="128" class="form-text form-item__textfield">
   </div>
+  {% if show_content_type_filter %}
+    <div class="form-item">
+      <label for="edit-type--page-search-form" class="form-item__label">{{ 'Show:'|t }}</label>
+      <div class="form-item__dropdown">
+        <select data-drupal-selector="edit-type" id="edit-type--page-search-form" name="type"
+                class="form-select form-item__select">
+          <option value="all" selected="selected">{{'- All -'|t}}</option>
+          {% for key, value in content_type_list %}
+            <option value="{{ key }}" {% if key == getQueryParam('type') %}selected{% endif %}>{{ value|capitalize }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  {% endif %}
   <div class="form-actions form-wrapper" id="edit-actions--page-search-form">
     {% include '@atoms/controls/cta/yds-cta.twig' with {
       control__element: 'input',
