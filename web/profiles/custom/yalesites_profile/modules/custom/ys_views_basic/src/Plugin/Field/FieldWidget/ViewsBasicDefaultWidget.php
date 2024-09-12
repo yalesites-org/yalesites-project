@@ -219,6 +219,11 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#suffix' => '</div>',
     ];
 
+    // Define the state for when the view mode is 'calendar' once.
+    $calendarViewInvisibleState = [
+      $formSelectors['view_mode_input_selector'] => ['value' => 'calendar'],
+    ];
+
     $fieldOptionValue = ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('field_options', $items[$delta]->params) : [];
     $form['group_user_selection']['entity_and_view_mode']['field_options'] = [
       '#type' => 'checkboxes',
@@ -230,6 +235,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#title' => $this->t('Field Display Options'),
       '#tree' => TRUE,
       '#default_value' => empty($fieldOptionValue) ? ['show_thumbnail'] : $fieldOptionValue,
+      '#states' => ['invisible' => $calendarViewInvisibleState],
       'show_thumbnail' => [
         '#states' => [
           'visible' => [
@@ -252,14 +258,9 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#title' => $this->t('Exposed Filter Options'),
       '#tree' => TRUE,
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('exposed_filter_options', $items[$delta]->params) : [],
+      '#states' => ['invisible' => $calendarViewInvisibleState],
       'show_year_filter' => [
-        '#states' => [
-          'visible' => [
-            $formSelectors['entity_types_ajax'] => [
-              'value' => 'post',
-            ],
-          ],
-        ],
+        '#states' => ['visible' => [$formSelectors['entity_types_ajax'] => ['value' => 'post']]],
       ],
     ];
 
@@ -269,9 +270,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#description' => $this->t("Enter a custom label for the <strong>Category Filter</strong>. This label will be displayed to users as the filter's name. If left blank, the default label <strong>Category</strong> will be used."),
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('category_filter_label', $items[$delta]->params) : NULL,
       '#states' => [
-        'visible' => [
-          $formSelectors['show_category_filter_selector'] => ['checked' => TRUE],
-        ],
+        'visible' => [$formSelectors['show_category_filter_selector'] => ['checked' => TRUE]],
+        'invisible' => $calendarViewInvisibleState,
       ],
     ];
 
@@ -287,9 +287,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#prefix' => '<div id="edit-category-included-terms">',
       '#suffix' => '</div>',
       '#states' => [
-        'visible' => [
-          $formSelectors['show_category_filter_selector'] => ['checked' => TRUE],
-        ],
+        'visible' => [$formSelectors['show_category_filter_selector'] => ['checked' => TRUE]],
+        'invisible' => $calendarViewInvisibleState,
       ],
     ];
 
@@ -302,6 +301,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#tags' => TRUE,
       '#target_type' => 'taxonomy_term',
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('terms_include', $items[$delta]->params) : [],
+      '#states' => ['invisible' => $calendarViewInvisibleState],
     ];
 
     $form['group_user_selection']['filter_and_sort']['terms_exclude'] = [
@@ -313,6 +313,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#tags' => TRUE,
       '#target_type' => 'taxonomy_term',
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('terms_exclude', $items[$delta]->params) : [],
+      '#states' => ['invisible' => $calendarViewInvisibleState],
     ];
 
     $form['group_user_selection']['filter_and_sort']['term_operator'] = [
@@ -329,7 +330,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
           'term-operator-item',
         ],
       ],
-
+      '#states' => ['invisible' => $calendarViewInvisibleState],
     ];
 
     // Gets the view mode options based on Ajax callbacks or initial load.
@@ -345,6 +346,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#validated' => 'true',
       '#prefix' => '<div id="edit-sort-by">',
       '#suffix' => '</div>',
+      '#states' => ['invisible' => $calendarViewInvisibleState],
     ];
 
     $form['group_user_selection']['entity_specific']['event_time_period'] = [
@@ -357,11 +359,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('event_time_period', $items[$delta]->params) : 'future',
       '#states' => [
-        'visible' => [
-          $formSelectors['entity_types_ajax'] => [
-            'value' => 'event',
-          ],
-        ],
+        'visible' => [$formSelectors['entity_types_ajax'] => ['value' => 'event']],
+        'invisible' => $calendarViewInvisibleState,
       ],
     ];
 
@@ -377,6 +376,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         'limit' => $this->t('Limit to'),
         'pager' => $this->t('Pagination after'),
       ],
+      '#states' => ['invisible' => $calendarViewInvisibleState],
     ];
 
     $limitTitle = $this->t('Items');
@@ -397,6 +397,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#required' => TRUE,
       '#prefix' => '<div id="edit-limit">',
       '#suffix' => '</div>',
+      '#states' => ['invisible' => $calendarViewInvisibleState],
     ];
 
     $form['group_user_selection']['options']['offset'] = [
@@ -408,6 +409,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#attributes' => [
         'placeholder' => 0,
       ],
+      '#states' => ['invisible' => $calendarViewInvisibleState],
     ];
 
     $element['group_params']['params'] = [
@@ -420,6 +422,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
           'views-basic--params',
         ],
       ],
+      '#states' => ['invisible' => $calendarViewInvisibleState],
     ];
 
     $form['#attached']['library'][] = 'ys_views_basic/ys_views_basic';
