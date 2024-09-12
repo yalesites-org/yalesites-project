@@ -5,6 +5,7 @@ dependencies:
   config:
     - block_content.type.content_spotlight
     - field.field.block_content.content_spotlight.field_heading
+    - field.field.block_content.content_spotlight.field_heading_level
     - field.field.block_content.content_spotlight.field_instructions
     - field.field.block_content.content_spotlight.field_link
     - field.field.block_content.content_spotlight.field_link_two
@@ -30,6 +31,13 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 1
+    region: content
+  field_heading_level:
+    type: list_key
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 7
     region: content
   field_link:
     type: link_separate
