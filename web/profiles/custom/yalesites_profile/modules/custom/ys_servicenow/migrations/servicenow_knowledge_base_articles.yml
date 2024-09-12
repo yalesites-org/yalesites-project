@@ -23,6 +23,9 @@ source:
     - name: servicenow_text
       label: 'ServiceNow text'
       selector: text
+    - name: servicenow_workflow_state
+      label: 'ServiceNow workflow state'
+      selector: workflow_state
   ids:
     servicenow_number:
       type: string
@@ -36,8 +39,9 @@ process:
     source: servicenow_title
     plugin: layout_builder_sections
   moderation_state:
-    plugin: default_value
-    default_value: 'published'
+    plugin: callback
+    callable: ys_servicenow_moderation_state_transformation
+    source: servicenow_workflow_state
 destination:
   plugin: 'entity:node'
   default_bundle: page

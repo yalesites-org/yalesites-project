@@ -41,3 +41,16 @@ function ys_servicenow_url_endpoint(MigrationInterface $migration): array {
 
   return [];
 }
+
+/**
+ * Any state other than "Published" is unpublished.
+ */
+function ys_servicenow_moderation_state_transformation($value) {
+  $unpublished_state = 'archive';
+
+  $published_states = [
+    'Published' => 'published',
+  ];
+
+  return $published_states[$value] ?? $unpublished_state;
+}
