@@ -5,6 +5,7 @@
 
   {% embed "@molecules/content-spotlight-portrait/yds-content-spotlight-portrait.twig" with {
       content_spotlight_portrait__heading: content.field_heading.0,
+      content_spotlight_portrait__heading_level: content.field_heading_level.0['#markup'],
       content_spotlight_portrait__subheading: content.field_subheading.0,
       content_spotlight_portrait__text: content.field_text,
       content_spotlight_portrait__link__content: content.field_link.0['#title'],
