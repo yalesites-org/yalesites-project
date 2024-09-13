@@ -82,6 +82,8 @@ display:
           selected_actions:
             - node_delete_action
             - pathauto_update_alias_node
+            - publish_moderated_content
+            - unpublish_moderated_content
         title:
           id: title
           table: node_field_data
