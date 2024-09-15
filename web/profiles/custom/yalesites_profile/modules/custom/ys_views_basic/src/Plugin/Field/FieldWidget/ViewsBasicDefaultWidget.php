@@ -358,10 +358,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         'all' => $this->t('All Events') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/event-time-all.svg" alt="All Events icon showing a calendar.">',
       ],
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('event_time_period', $items[$delta]->params) : 'future',
-      '#states' => [
-        'visible' => [$formSelectors['entity_types_ajax'] => ['value' => 'event']],
-        'invisible' => $calendarViewInvisibleState,
-      ],
+      '#prefix' => '<div id="edit-event-time-period">',
+      '#suffix' => '</div>',
     ];
 
     $displayValue = ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('display', $items[$delta]->params) : 'all';
