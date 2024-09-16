@@ -1,0 +1,29 @@
+uuid: db5284fd-d783-4392-a576-5a77f45a0684
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_category
+    - node.type.page
+    - taxonomy.vocabulary.page_category
+id: node.page.field_category
+field_name: field_category
+entity_type: node
+bundle: page
+label: Category
+description: "Categories will autocomplete as you type.  Choose from pre-created options only.  To add a new category, go to 'Content->Manage Taxonomy->Page Category'."
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:taxonomy_term'
+  handler_settings:
+    target_bundles:
+      page_category: page_category
+    sort:
+      field: name
+      direction: asc
+    auto_create: true
+    auto_create_bundle: event_category
+field_type: entity_reference

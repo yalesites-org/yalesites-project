@@ -219,6 +219,83 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#suffix' => '</div>',
     ];
 
+    $fieldOptionValue = ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('field_options', $items[$delta]->params) : [];
+    $isNewForm = str_contains($formState->getCompleteForm()['#id'], 'layout-builder-add-block');
+    // Set the default value for 'field_options' to 'show_thumbnail'
+    // when creating a new block.
+    $form['group_user_selection']['entity_and_view_mode']['field_options'] = [
+      '#type' => 'checkboxes',
+      '#options' => [
+        'show_categories' => $this->t('Show Categories'),
+        'show_tags' => $this->t('Show Tags'),
+        'show_thumbnail' => $this->t('Show Thumbnail'),
+      ],
+      '#title' => $this->t('Field Display Options'),
+      '#tree' => TRUE,
+      '#default_value' => ($isNewForm && empty($fieldOptionValue)) ? ['show_thumbnail'] : $fieldOptionValue,
+      'show_thumbnail' => [
+        '#states' => [
+          'visible' => [
+            $formSelectors['view_mode_input_selector'] => [
+              ['value' => 'card'],
+              ['value' => 'list_item'],
+            ],
+          ],
+        ],
+      ],
+    ];
+
+    $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options'] = [
+      '#type' => 'checkboxes',
+      '#options' => [
+        'show_search_filter' => $this->t('Show Search Filter'),
+        'show_year_filter' => $this->t('Show Year Filter'),
+        'show_category_filter' => $this->t('Show Category Filter'),
+      ],
+      '#title' => $this->t('Exposed Filter Options'),
+      '#tree' => TRUE,
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('exposed_filter_options', $items[$delta]->params) : [],
+      'show_year_filter' => [
+        '#states' => [
+          'visible' => [
+            $formSelectors['entity_types_ajax'] => [
+              'value' => 'post',
+            ],
+          ],
+        ],
+      ],
+    ];
+
+    $form['group_user_selection']['entity_and_view_mode']['category_filter_label'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Category Filter Label'),
+      '#description' => $this->t("Enter a custom label for the <strong>Category Filter</strong>. This label will be displayed to users as the filter's name. If left blank, the default label <strong>Category</strong> will be used."),
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('category_filter_label', $items[$delta]->params) : NULL,
+      '#states' => [
+        'visible' => [
+          $formSelectors['show_category_filter_selector'] => ['checked' => TRUE],
+        ],
+      ],
+    ];
+
+    $vocabulary_id = $formSelectors['entity_types'] === 'profile'
+      ? 'affiliation'
+      : $formSelectors['entity_types'] . '_category';
+    $form['group_user_selection']['entity_and_view_mode']['category_included_terms'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Category Filter - Included Terms'),
+      '#options' => $this->viewsBasicManager->getTaxonomyParents($vocabulary_id),
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('category_included_terms', $items[$delta]->params) : NULL,
+      '#validated' => 'true',
+      '#prefix' => '<div id="edit-category-included-terms">',
+      '#suffix' => '</div>',
+      '#states' => [
+        'visible' => [
+          $formSelectors['show_category_filter_selector'] => ['checked' => TRUE],
+        ],
+      ],
+    ];
+
     $form['group_user_selection']['filter_and_sort']['terms_include'] = [
       '#title' => $this->t('Include content that uses the following tags or categories'),
       '#type' => 'select',
@@ -374,6 +451,10 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
           "terms_exclude" => $terms_exclude,
           "event_time_period" => $form['group_user_selection']['entity_specific']['event_time_period']['#value'],
         ],
+        "field_options" => $form['group_user_selection']['entity_and_view_mode']['field_options']['#value'],
+        "exposed_filter_options" => $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options']['#value'],
+        "category_filter_label" => $form['group_user_selection']['entity_and_view_mode']['category_filter_label']['#value'],
+        "category_included_terms" => $form['group_user_selection']['entity_and_view_mode']['category_included_terms']['#value'],
         "operator" => $form['group_user_selection']['filter_and_sort']['term_operator']['#value'],
         "sort_by" => $form_state->getValue($formSelectors['sort_by_array']),
         "display" => $form_state->getValue($formSelectors['display_array']),
@@ -388,7 +469,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
   /**
    * Ajax callback to return only view modes for the specified content type.
    */
-  public function updateOtherSettings(array &$form, FormStateInterface $form_state) {
+  public function updateOtherSettings(array &$form, FormStateInterface $form_state): AjaxResponse {
     $formSelectors = $this->viewsBasicManager->getFormSelectors($form_state, $form);
 
     $response = new AjaxResponse();
@@ -396,6 +477,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     $selector = '.views-basic--view-mode[name="group_user_selection[entity_and_view_mode][view_mode]"]:first';
     $response->addCommand(new InvokeCommand($selector, 'prop', [['checked' => TRUE]]));
     $response->addCommand(new ReplaceCommand('#edit-sort-by', $formSelectors['sort_by_ajax']));
+    $response->addCommand(new ReplaceCommand('#edit-category-included-terms', $formSelectors['category_included_terms_ajax']));
+
     return $response;
   }
 

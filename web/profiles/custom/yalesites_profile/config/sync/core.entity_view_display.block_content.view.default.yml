@@ -5,9 +5,11 @@ dependencies:
   config:
     - block_content.type.view
     - field.field.block_content.view.field_heading
+    - field.field.block_content.view.field_heading_links
     - field.field.block_content.view.field_instructions
     - field.field.block_content.view.field_view_params
   module:
+    - entity_reference_revisions
     - text
     - ys_views_basic
 id: block_content.view.default
@@ -22,12 +24,21 @@ content:
     third_party_settings: {  }
     weight: 0
     region: content
+  field_heading_links:
+    type: entity_reference_revisions_entity_view
+    label: hidden
+    settings:
+      view_mode: default
+      link: ''
+    third_party_settings: {  }
+    weight: 1
+    region: content
   field_view_params:
     type: views_basic_default_formatter
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 1
+    weight: 2
     region: content
 hidden:
   field_instructions: true

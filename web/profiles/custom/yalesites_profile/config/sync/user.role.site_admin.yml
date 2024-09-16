@@ -49,6 +49,7 @@ dependencies:
     - node.type.profile
     - taxonomy.vocabulary.affiliation
     - taxonomy.vocabulary.event_category
+    - taxonomy.vocabulary.page_category
     - taxonomy.vocabulary.post_category
     - taxonomy.vocabulary.tags
     - workflows.workflow.editorial
@@ -144,6 +145,7 @@ permissions:
   - 'create tabs block content'
   - 'create terms in affiliation'
   - 'create terms in event_category'
+  - 'create terms in page_category'
   - 'create terms in post_category'
   - 'create terms in tags'
   - 'create text block content'
@@ -240,6 +242,7 @@ permissions:
   - 'delete own video media'
   - 'delete terms in affiliation'
   - 'delete terms in event_category'
+  - 'delete terms in page_category'
   - 'delete terms in post_category'
   - 'delete terms in tags'
   - 'edit any accordion block content'
@@ -295,6 +298,7 @@ permissions:
   - 'edit own webform submission'
   - 'edit terms in affiliation'
   - 'edit terms in event_category'
+  - 'edit terms in page_category'
   - 'edit terms in post_category'
   - 'edit terms in tags'
   - 'mark as hidden in editoria11y'
