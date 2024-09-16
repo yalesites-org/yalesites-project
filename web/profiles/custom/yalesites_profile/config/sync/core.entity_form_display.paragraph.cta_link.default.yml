@@ -1,0 +1,27 @@
+uuid: b3a11376-0019-4623-b759-7568ada12a31
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.paragraph.cta_link.field_link
+    - paragraphs.paragraphs_type.cta_link
+  module:
+    - linkit
+id: paragraph.cta_link.default
+targetEntityType: paragraph
+bundle: cta_link
+mode: default
+content:
+  field_link:
+    type: linkit
+    weight: 3
+    region: content
+    settings:
+      placeholder_url: ''
+      placeholder_title: ''
+      linkit_profile: default
+      linkit_auto_link_text: false
+    third_party_settings: {  }
+hidden:
+  created: true
+  status: true

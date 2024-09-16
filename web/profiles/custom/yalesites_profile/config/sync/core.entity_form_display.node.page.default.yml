@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.node.page.field_category
     - field.field.node.page.field_external_source
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
@@ -22,6 +23,7 @@ dependencies:
     - metatag
     - path
     - text
+    - workflow_buttons
 third_party_settings:
   field_group:
     group_teaser:
@@ -46,7 +48,7 @@ third_party_settings:
       label: 'Publishing Settings'
       region: content
       parent_name: ''
-      weight: 7
+      weight: 8
       format_type: details_sidebar
       format_settings:
         classes: ''
@@ -62,7 +64,7 @@ third_party_settings:
       label: 'External Link'
       region: content
       parent_name: ''
-      weight: 9
+      weight: 10
       format_type: details_sidebar
       format_settings:
         classes: ''
@@ -77,6 +79,12 @@ targetEntityType: node
 bundle: page
 mode: default
 content:
+  field_category:
+    type: chosen_select
+    weight: 1
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_external_source:
     type: link_default
     weight: 2
@@ -94,7 +102,7 @@ content:
     third_party_settings: {  }
   field_metatags:
     type: metatag_firehose
-    weight: 6
+    weight: 7
     region: content
     settings:
       sidebar: true
@@ -102,7 +110,7 @@ content:
     third_party_settings: {  }
   field_tags:
     type: chosen_select
-    weight: 1
+    weight: 2
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -136,6 +144,13 @@ content:
       size: 60
       placeholder: ''
     third_party_settings: {  }
+  moderation_state:
+    type: workflow_buttons
+    weight: 5
+    region: content
+    settings:
+      show_current_state: false
+    third_party_settings: {  }
   path:
     type: path
     weight: 4
@@ -143,13 +158,13 @@ content:
     settings: {  }
     third_party_settings: {  }
   simple_sitemap:
-    weight: 10
+    weight: 11
     region: content
     settings: {  }
     third_party_settings: {  }
   status:
     type: boolean_checkbox
-    weight: 8
+    weight: 9
     region: content
     settings:
       display_label: true
@@ -163,7 +178,7 @@ content:
       placeholder: ''
     third_party_settings: {  }
   url_redirects:
-    weight: 5
+    weight: 6
     region: content
     settings: {  }
     third_party_settings: {  }
