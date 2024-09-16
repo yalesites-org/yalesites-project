@@ -472,7 +472,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         break;
 
       case 'operator':
-        $defaultParam = (empty($paramsDecoded['operator'])) ? '+' : (int) $paramsDecoded['operator'];
+        $defaultParam = (empty($paramsDecoded['operator'])) ? '+' : $paramsDecoded['operator'];
         break;
 
       case 'limit':
