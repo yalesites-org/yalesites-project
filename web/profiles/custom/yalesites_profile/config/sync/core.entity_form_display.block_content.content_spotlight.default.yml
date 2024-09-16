@@ -5,6 +5,7 @@ dependencies:
   config:
     - block_content.type.content_spotlight
     - field.field.block_content.content_spotlight.field_heading
+    - field.field.block_content.content_spotlight.field_heading_level
     - field.field.block_content.content_spotlight.field_instructions
     - field.field.block_content.content_spotlight.field_link
     - field.field.block_content.content_spotlight.field_link_two
@@ -43,6 +44,12 @@ content:
         maxlength_js: 80
         maxlength_js_label: 'Content recommended length set to @limit characters, remaining: <strong>@remaining</strong>'
         maxlength_js_enforce: false
+  field_heading_level:
+    type: options_select
+    weight: 8
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_instructions:
     type: markup
     weight: 0
