@@ -44,6 +44,10 @@ class ThemeSettingsManager {
           'label' => 'Shoreline Summer',
           'color_theme' => 'three',
         ],
+        'four' => [
+          'label' => 'Onha',
+          'color_theme' => 'four',
+        ],
       ],
     ],
     'button_theme' => [

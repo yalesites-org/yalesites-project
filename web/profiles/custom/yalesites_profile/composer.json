@@ -106,7 +106,7 @@
     "laminas/laminas-escaper": "2.12",
     "northernco/ckeditor5-anchor-drupal": "0.4.0",
     "yalesites-org/ai_engine": "1.2.4",
-    "yalesites-org/atomic": "1.34.1",
+    "yalesites-org/atomic": "1.35.0",
     "yalesites-org/yale_cas": "1.0.4"
   },
   "minimum-stability": "dev",
@@ -130,6 +130,7 @@
         "Update \"Add reusable option to inline block creation\" patch with local changes to save block if it didn't save": "patches/layout_builder/1330eff91b1234979cf697a66a48e34eb116b441-1.patch",
         "Prevent empty block_content info fields from causing php deprecation notices": "https://www.drupal.org/files/issues/2023-07-21/3340159-empty-block-label_0.patch",
         "Ajax exposed filters not working for multiple instances of the same Views block placed on one page" : "https://www.drupal.org/files/issues/2023-05-07/3163299-104-D10.patch"
+        "Fix checkboxes not being shown on media filter search https://www.drupal.org/project/drupal/issues/3388913": "https://git.drupalcode.org/project/drupal/-/commit/675d0495e64f20dbde06d78f8023b3c54d1c9401.patch"
       },
       "drupal/entity_redirect": {
         "fix layout route https://www.drupal.org/project/entity_redirect/issues/3352265": "https://git.drupalcode.org/project/entity_redirect/-/merge_requests/6.patch"
@@ -152,7 +153,8 @@
         "update deprecated php for v8.2 https://www.drupal.org/project/typogrify/issues/3398815": "https://git.drupalcode.org/project/typogrify/-/merge_requests/6.diff"
       },
       "drupal/google_analytics": {
-        "Cannot install from existing config https://www.drupal.org/project/google_analytics/issues/3373921": "https://www.drupal.org/files/issues/2023-08-07/google-analytics-issues-3373921-cannot-install-from-existing-config-11.patch"
+        "Cannot install from existing config https://www.drupal.org/project/google_analytics/issues/3373921": "https://www.drupal.org/files/issues/2023-08-07/google-analytics-issues-3373921-cannot-install-from-existing-config-11.patch",
+        "Guard against null account https://www.drupal.org/project/google_analytics/issues/3275926": "https://git.drupalcode.org/project/google_analytics/-/merge_requests/36.patch"
       },
       "drupal/linkit": {
         "Add phone number matcher https://www.drupal.org/project/linkit/issues/3273630": "https://git.drupalcode.org/project/linkit/-/merge_requests/36.diff",

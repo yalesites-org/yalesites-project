@@ -104,6 +104,7 @@ third_party_settings:
             'Inline blocks':
               - 'inline_block:cta_banner'
               - 'inline_block:grand_hero'
+              - 'inline_block:image_banner'
               - 'inline_block:content_spotlight'
               - 'inline_block:content_spotlight_portrait'
         ys_layout_page_meta:
