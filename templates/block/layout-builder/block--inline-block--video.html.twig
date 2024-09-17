@@ -1,13 +1,13 @@
 {% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
 
+{% set video__width = "site" %}
+{% set video__alignment = content.field_style_alignment.0['#markup']|default('left') %}
+
 {% block content %}
 
   {% if parentNode == 'post' or parentNode == 'event' %}
     {% set video__width = "content" %}
     {% set video__alignment = "center" %}
-  {% else %}
-    {% set video__width = "site" %}
-    {% set video__alignment = "left" %}
   {% endif %}
 
   {% embed "@molecules/video/yds-video.twig" with {

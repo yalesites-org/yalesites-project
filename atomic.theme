@@ -91,3 +91,17 @@ function atomic_preprocess_paragraph__accordion_item(&$variables) {
     }
   }
 }
+
+/**
+ * Implements hook_theme_suggestions_HOOK_alter() for field templates.
+ */
+function atomic_theme_suggestions_field_alter(array &$suggestions, array $variables) {
+  // Check if the field is attached to a node.
+  if ($variables['element']['#entity_type'] == 'node') {
+    $view_mode = $variables['element']['#view_mode'];
+    $field_name = $variables['element']['#field_name'];
+
+    // Add a theme suggestion for the field based on the parent node's view mode.
+    $suggestions[] = 'field__' . $variables['element']['#entity_type'] . '__' . $field_name . '__' . $view_mode;
+  }
+}

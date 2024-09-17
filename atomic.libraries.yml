@@ -87,3 +87,10 @@ event-localist:
   js:
     node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/meta/event-meta/event-meta-localist.js:
       {}
+chosen-select:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/01-atoms/forms/select/yds-select.js:
+      {}
+  dependencies:
+    - core/once
+    - libraries/chosen
