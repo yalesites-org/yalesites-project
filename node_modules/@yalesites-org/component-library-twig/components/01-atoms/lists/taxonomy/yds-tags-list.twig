@@ -1,0 +1,11 @@
+<ul {{ bem('taxonomy-list', ['tags'], '') }}>
+  {% for item in items|slice(0, 3) %}
+    <li {{ bem('item', [], 'taxonomy-list') }}>{{ item.content }}</li>
+    <li aria-hidden="true" {{ bem('divider', [], 'taxonomy-list') }}>{{ '|' }}</li>
+  {% endfor %}
+  {% if items|length > 3 %}
+    <li {{ bem('item', ['more'], 'taxonomy-list') }}>
+      <a href="{{ url }}">{{ '+' }}{{ items|length - 3 }}{{ " more"|t }}</a>
+    </li>
+  {% endif %}
+</ul>
