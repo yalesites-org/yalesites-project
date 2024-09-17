@@ -323,8 +323,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#title' => $this->t('Match Content That Has'),
       // Set operator: "+" is "OR" and "," is "AND".
       '#options' => [
-        '+' => $this->t('Can have any term listed in tags and categories'),
-        ',' => $this->t('Must have all terms listed in tags and categories'),
+        '+' => $this->t('Can have any term listed in include/exclude terms'),
+        ',' => $this->t('Must have all terms listed in include/exclude terms'),
       ],
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('operator', $items[$delta]->params) : '+',
       '#attributes' => [
