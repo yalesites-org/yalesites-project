@@ -407,7 +407,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     $field_display_options = [
       'show_categories' => (int) !empty($paramsDecoded['field_options']['show_categories']),
       'show_tags' => (int) !empty($paramsDecoded['field_options']['show_tags']),
-      'show_thumbnail' => (int) ($paramsDecoded['field_options']['show_thumbnail'] ?? 1),
+      'show_thumbnail' => (int) !empty($paramsDecoded['field_options']['show_thumbnail']),
     ];
 
     $view->setArguments(
@@ -581,7 +581,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         break;
 
       case 'operator':
-        $defaultParam = (empty($paramsDecoded['operator'])) ? '+' : (int) $paramsDecoded['operator'];
+        $defaultParam = (empty($paramsDecoded['operator'])) ? '+' : $paramsDecoded['operator'];
         break;
 
       case 'limit':

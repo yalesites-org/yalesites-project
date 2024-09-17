@@ -5,8 +5,10 @@ dependencies:
   config:
     - block_content.type.content_spotlight_portrait
     - field.field.block_content.content_spotlight_portrait.field_heading
+    - field.field.block_content.content_spotlight_portrait.field_heading_level
     - field.field.block_content.content_spotlight_portrait.field_instructions
     - field.field.block_content.content_spotlight_portrait.field_link
+    - field.field.block_content.content_spotlight_portrait.field_link_two
     - field.field.block_content.content_spotlight_portrait.field_media
     - field.field.block_content.content_spotlight_portrait.field_style_color
     - field.field.block_content.content_spotlight_portrait.field_style_position
@@ -29,7 +31,26 @@ content:
     third_party_settings: {  }
     weight: 1
     region: content
+  field_heading_level:
+    type: list_key
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 7
+    region: content
   field_link:
+    type: link_separate
+    label: hidden
+    settings:
+      trim_length: null
+      url_only: false
+      url_plain: false
+      rel: '0'
+      target: '0'
+    third_party_settings: {  }
+    weight: 4
+    region: content
+  field_link_two:
     type: link_separate
     label: hidden
     settings:
