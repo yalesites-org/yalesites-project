@@ -6,6 +6,7 @@ use Drupal\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\path_alias\AliasManagerInterface;
 use Drupal\smart_date_recur\Entity\SmartDateRule;
 
@@ -13,6 +14,8 @@ use Drupal\smart_date_recur\Entity\SmartDateRule;
  * Provides an Event Calendar service for generating calendar views.
  */
 class EventsCalendar implements EventsCalendarInterface {
+
+  use StringTranslationTrait;
 
   /**
    * The entity type manager service.
@@ -165,8 +168,11 @@ class EventsCalendar implements EventsCalendarInterface {
               // Check if the instance overlaps with the current day.
               if ($instanceStartTimestamp <= $endTimestamp && $instanceEndTimestamp >= $startTimestamp) {
                 $time = $this->isAllDay($instanceStartTimestamp, $instanceEndTimestamp)
-                  ? 'All Day'
-                  : date('g:iA', $instanceStartTimestamp) . ' to ' . date('g:iA', $instanceEndTimestamp);
+                  ? $this->t('All Day')
+                  : $this->t('@start to @end', [
+                    '@start' => date('g:iA', $instanceStartTimestamp),
+                    '@end' => date('g:iA', $instanceEndTimestamp),
+                  ]);
 
                 $events_data[] = $this->createEventArray($event, $time, $instanceStartTimestamp);
               }
@@ -181,9 +187,17 @@ class EventsCalendar implements EventsCalendarInterface {
 
             // Check if the event overlaps with the current day.
             if ($eventStartTimestamp <= $endTimestamp && $eventEndTimestamp >= $startTimestamp) {
-              $time = $this->isAllDay($eventStartTimestamp, $eventEndTimestamp)
-                ? 'All Day'
-                : date('g:iA', $eventStartTimestamp) . ' to ' . date('g:iA', $eventEndTimestamp);
+              if (date('Y-m-d', $eventStartTimestamp) !== date('Y-m-d', $eventEndTimestamp)) {
+                $time = $this->t('Multi-day Event');
+              }
+              else {
+                $time = $this->isAllDay($eventStartTimestamp, $eventEndTimestamp)
+                  ? $this->t('All Day')
+                  : $this->t('@start to @end', [
+                    '@start' => date('g:iA', $eventStartTimestamp),
+                    '@end' => date('g:iA', $eventEndTimestamp),
+                  ]);
+              }
 
               // Add event to the list if it overlaps with the current day.
               $events_data[] = $this->createEventArray($event, $time, $eventStartTimestamp);
