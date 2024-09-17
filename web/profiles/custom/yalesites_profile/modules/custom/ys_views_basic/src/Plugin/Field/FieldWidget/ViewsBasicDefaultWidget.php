@@ -226,8 +226,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     $fieldOptionValue = ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('field_options', $items[$delta]->params) : [];
     $isNewForm = str_contains($formState->getCompleteForm()['#id'], 'layout-builder-add-block');
-    // Set the default value for 'field_options' to '
-    nail'
+    // Set the default value for 'field_options' to 'show_thumbnnail'.
+
     // when creating a new block.
     $form['group_user_selection']['entity_and_view_mode']['field_options'] = [
       '#type' => 'checkboxes',
