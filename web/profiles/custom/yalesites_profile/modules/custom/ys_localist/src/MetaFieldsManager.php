@@ -193,6 +193,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
         $dates[$key]['original_start'] = $date['value'];
         $dates[$key]['original_end'] = $date['end_value'];
         $dates[$key]['is_all_day'] = $this->isAllDay($date['value'], $date['end_value']);
+        $dates[$key]['date_sorted_on'] = $node->date_sorted_on;
         // Remove older dates.
         if ($date['end_value'] < time()) {
           unset($dates[$key]);
