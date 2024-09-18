@@ -399,10 +399,13 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
     $eventTimePeriod = $paramsDecoded['filters']['event_time_period'] ?? NULL;
 
+    // Determine if we are in a state where field_options doesn't yet exist (pre-existing view)
+    $no_field_display_options_saved = !key_exists('field_options', $paramsDecoded) || !is_array($paramsDecoded['field_options']);
+
     $field_display_options = [
       'show_categories' => (int) !empty($paramsDecoded['field_options']['show_categories']),
       'show_tags' => (int) !empty($paramsDecoded['field_options']['show_tags']),
-      'show_thumbnail' => (int) !empty($paramsDecoded['field_options']['show_thumbnail']),
+      'show_thumbnail' => (int) $no_field_display_options_saved || !empty($paramsDecoded['field_options']['show_thumbnail']),
     ];
 
     $view->setArguments(
