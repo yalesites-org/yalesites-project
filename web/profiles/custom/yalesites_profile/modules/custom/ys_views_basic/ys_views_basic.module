@@ -106,7 +106,7 @@ function ys_views_basic_views_post_execute(ViewExecutable $view): void {
   $view_id = $view->id();
   if (in_array($view_id, ['views_basic_scaffold', 'views_basic_scaffold_events'])) {
     foreach ($view->result as &$row) {
-      $row->_entity->date_sorted_on = $row->node__field_event_date_field_event_date_value;
+      $row->_entity->date_sorted_on = $row->node__field_event_date_field_event_date_value ?? $row->views_basic_sort_1;
     }
   }
 }
