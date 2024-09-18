@@ -147,6 +147,14 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     ],
   ];
 
+  /*
+   * Define constants for content types.
+   */
+  const CONTENT_TYPE_POST = 'post';
+  const CONTENT_TYPE_EVENT = 'event';
+  const CONTENT_TYPE_PAGE = 'page';
+  const CONTENT_TYPE_PROFILE = 'profile';
+
   /**
    * The entity type manager.
    *
@@ -232,7 +240,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'order' => $sortDirection[1],
         ],
       ]);
-
     }
     else {
       // All other views get the original scaffold view.
@@ -240,6 +247,88 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     }
 
     $view->setDisplay('block_1');
+    $filterType = implode('+', $paramsDecoded['filters']['types']);
+
+    // Retrieve the current filter options from the view's display settings.
+    $filters = $view->getDisplay()->getOption('filters');
+
+    // Mapping content types to their respective category filters.
+    $category_filters = [
+      self::CONTENT_TYPE_POST => 'field_category_target_id',
+      self::CONTENT_TYPE_EVENT => 'field_category_target_id',
+      self::CONTENT_TYPE_PAGE => 'field_category_target_id_1',
+      self::CONTENT_TYPE_PROFILE => 'field_affiliation_target_id',
+    ];
+
+    // Determine the category filter name based on the filter type.
+    $category_filter_name = $category_filters[$filterType] ?? NULL;
+
+    // Show the exposed filter 'Category' or 'Affiliation'.
+    if (!empty($paramsDecoded['exposed_filter_options']['show_category_filter']) && $category_filter_name) {
+      // Determine which filters to unset based on the current filter type.
+      $filters_to_unset = match ($filterType) {
+        self::CONTENT_TYPE_POST, self::CONTENT_TYPE_EVENT => [
+          'field_category_target_id_1',
+          'field_affiliation_target_id',
+        ],
+        self::CONTENT_TYPE_PROFILE => [
+          'field_category_target_id',
+          'field_category_target_id_1',
+        ],
+        self::CONTENT_TYPE_PAGE => [
+          'field_category_target_id',
+          'field_affiliation_target_id',
+        ],
+        default => [],
+      };
+
+      // Remove the filters that are not relevant to the current type.
+      foreach ($filters_to_unset as $filter) {
+        unset($filters[$filter]);
+      }
+
+      // Check if 'category_included_terms' is provided for the current
+      // filter type.
+      if (!empty($paramsDecoded['category_included_terms'])) {
+        // Determine the vocabulary ID based on the selected filter type.
+        $vid = $filterType == self::CONTENT_TYPE_PROFILE
+          ? 'affiliation'
+          : "{$filterType}_category";
+
+        // Limit the filter to specific terms if provided.
+        $filters[$category_filter_name]['value'] = $this->getChildTermsByParentId($paramsDecoded['category_included_terms'], $vid);
+        $filters[$category_filter_name]['limit'] = TRUE;
+        $filters[$category_filter_name]['expose']['reduce'] = TRUE;
+      }
+
+      // Set a custom label for the 'Category' filter if provided.
+      if (!empty($paramsDecoded['category_filter_label'])) {
+        $filters[$category_filter_name]['expose']['label'] = $paramsDecoded['category_filter_label'];
+      }
+    }
+    else {
+      // Remove all category and affiliation filters if 'show_category_filter'
+      // is not set or category filter name is not defined.
+      foreach ($category_filters as $filter_name) {
+        unset($filters[$filter_name]);
+      }
+    }
+
+    if (!isset($paramsDecoded['exposed_filter_options']['show_search_filter'])) {
+      // If the 'show_search_filter' option is not set,
+      // remove the 'combine' filter.
+      // The 'combine' filter is used for full-text search
+      // across multiple fields.
+      unset($filters['combine']);
+    }
+
+    if (!isset($paramsDecoded['exposed_filter_options']['show_year_filter']) || $filterType !== self::CONTENT_TYPE_POST) {
+      // Remove the 'Year' filter if the 'show_year_filter' is not set.
+      unset($filters['post_year_filter']);
+    }
+
+    // Set the modified filters back to the view display options.
+    $view->getDisplay()->setOption('filters', $filters);
 
     /*
      * Sets the arguments that will get passed to contextual filters as well
@@ -262,7 +351,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
      * 6) Event time period (future, past, all)
      */
 
-    $filterType = implode('+', $paramsDecoded['filters']['types']);
     $termsIncludeArray = [];
     $termsExcludeArray = [];
 
@@ -311,6 +399,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
     $eventTimePeriod = $paramsDecoded['filters']['event_time_period'] ?? NULL;
 
+    $field_display_options = [
+      'show_categories' => (int) !empty($paramsDecoded['field_options']['show_categories']),
+      'show_tags' => (int) !empty($paramsDecoded['field_options']['show_tags']),
+      'show_thumbnail' => (int) !empty($paramsDecoded['field_options']['show_thumbnail']),
+    ];
+
     $view->setArguments(
       [
         'type' => $filterType,
@@ -321,6 +415,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'items' => $itemsLimit,
         'event_time_period' => str_contains($filterType, 'event') ? $eventTimePeriod : NULL,
         'offset' => $paramsDecoded['offset'] ?? 0,
+        'field_display_options' => json_encode($field_display_options),
       ]
     );
 
@@ -338,6 +433,15 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     switch ($type) {
       case "rendered":
         $view = $view->preview();
+        // Add cache keys for each display option.
+        // This ensures that if the options for showing categories, tags,
+        // or thumbnails change, the cache will be invalidated,
+        // and the view will be re-rendered with the new options.
+        foreach ($view['#rows']['#rows'] as &$resultRow) {
+          $resultRow['#cache']['keys'][] = $field_display_options['show_categories'];
+          $resultRow['#cache']['keys'][] = $field_display_options['show_tags'];
+          $resultRow['#cache']['keys'][] = $field_display_options['show_thumbnail'];
+        }
         break;
 
       case "count":
@@ -472,7 +576,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         break;
 
       case 'operator':
-        $defaultParam = (empty($paramsDecoded['operator'])) ? '+' : (int) $paramsDecoded['operator'];
+        $defaultParam = (empty($paramsDecoded['operator'])) ? '+' : $paramsDecoded['operator'];
         break;
 
       case 'limit':
@@ -555,6 +659,52 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   }
 
   /**
+   * Get taxonomy parent terms by vocabulary ID.
+   *
+   * @param string $vid
+   *   The machine name of the vocabulary.
+   *
+   * @return array
+   *   An array of parent terms where the key is the term ID and
+   *   the value is the term name.
+   */
+  public function getTaxonomyParents(string $vid): array {
+    $list = ['' => '-- All Items --'];
+    // Load all top-level (parent) terms for the given vocabulary ID.
+    $terms = $this->termStorage->loadTree($vid, 0, 1);
+
+    foreach ($terms as $term) {
+      $list[$term->tid] = $term->name;
+    }
+
+    return $list;
+  }
+
+  /**
+   * Get child taxonomy terms by parent ID.
+   *
+   * @param int $parentId
+   *   The ID of the parent term.
+   * @param string $vid
+   *   The machine name of the vocabulary.
+   *
+   * @return array
+   *   An associative array of child terms where the key is the term ID and
+   *   the value is the term ID.
+   */
+  public function getChildTermsByParentId(int $parentId, string $vid): array {
+    $list = [];
+    // Load all child terms for the given parent term ID and vocabulary ID.
+    $terms = $this->termStorage->loadTree($vid, $parentId, NULL);
+
+    foreach ($terms as $term) {
+      $list[$term->tid] = (int) $term->tid;
+    }
+
+    return $list;
+  }
+
+  /**
    * Returns an integer representation of the term.
    *
    * The term could be either the old Drupal way of an array with a
@@ -591,9 +741,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       if (isset($formState->getCompleteForm()['block_form']['#block']) && $formState->getCompleteForm()['block_form']['#block']->isReusable()) {
         // Reusable block Layout Builder form.
         $formSelectors = [
-          'entity_types' => ($rebuildValues) ? $rebuildValues['block_form']['group_user_selection']['entity_and_view_mode']['entity_types'] : $entityValue,
+          'entity_types' => $rebuildValues['block_form']['group_user_selection']['entity_and_view_mode']['entity_types'] ?? $entityValue,
           'entity_types_ajax' => ':input[name="block_form[group_user_selection][entity_and_view_mode][entity_types]"]',
+          'view_mode_input_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][view_mode]"]',
           'view_mode_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
+          'category_included_terms_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
+          'show_category_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_category_filter]"]',
           'massage_terms_include_array' => [
             'block_form',
             'group_user_selection',
@@ -641,9 +794,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       else {
         // Regular block Layout Builder form.
         $formSelectors = [
-          'entity_types' => ($rebuildValues) ? $rebuildValues['settings']['block_form']['group_user_selection']['entity_and_view_mode']['entity_types'] : $entityValue,
+          'entity_types' => $rebuildValues['settings']['block_form']['group_user_selection']['entity_and_view_mode']['entity_types'] ?? $entityValue,
           'entity_types_ajax' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][entity_types]"]',
+          'view_mode_input_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][view_mode]"]',
           'view_mode_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
+          'category_included_terms_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
+          'show_category_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_category_filter]"]',
           'massage_terms_include_array' => [
             'settings',
             'block_form',
@@ -704,9 +860,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     else {
       // Drupal core block form.
       $formSelectors = [
-        'entity_types' => ($rebuildValues) ? $rebuildValues['entity_types'] : $entityValue,
+        'entity_types' => $rebuildValues['entity_types'] ?? $entityValue,
         'entity_types_ajax' => ':input[name="entity_types"]',
+        'view_mode_input_selector' => ':input[name="view_mode"]',
         'view_mode_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
+        'category_included_terms_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
+        'show_category_filter_selector' => ':input[name="show_category_filter"]',
         'massage_terms_include_array' => ['terms_include'],
         'massage_terms_exclude_array' => ['terms_exclude'],
         'sort_by_array' => ['sort_by'],

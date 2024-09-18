@@ -18,6 +18,7 @@ dependencies:
     - block_content.type.gallery
     - block_content.type.grand_hero
     - block_content.type.image
+    - block_content.type.image_banner
     - block_content.type.inline_message
     - block_content.type.link_grid
     - block_content.type.media_grid
@@ -48,6 +49,7 @@ dependencies:
     - node.type.profile
     - taxonomy.vocabulary.affiliation
     - taxonomy.vocabulary.event_category
+    - taxonomy.vocabulary.page_category
     - taxonomy.vocabulary.post_category
     - taxonomy.vocabulary.tags
     - workflows.workflow.editorial
@@ -122,6 +124,7 @@ permissions:
   - 'create grand_hero block content'
   - 'create image block content'
   - 'create image media'
+  - 'create image_banner block content'
   - 'create inline_message block content'
   - 'create link_grid block content'
   - 'create media'
@@ -138,6 +141,7 @@ permissions:
   - 'create tabs block content'
   - 'create terms in affiliation'
   - 'create terms in event_category'
+  - 'create terms in page_category'
   - 'create terms in post_category'
   - 'create terms in tags'
   - 'create text block content'
@@ -180,6 +184,8 @@ permissions:
   - 'delete any grand_hero block content revisions'
   - 'delete any image block content'
   - 'delete any image block content revisions'
+  - 'delete any image_banner block content'
+  - 'delete any image_banner block content revisions'
   - 'delete any inline_message block content'
   - 'delete any inline_message block content revisions'
   - 'delete any link_grid block content'
@@ -220,6 +226,7 @@ permissions:
   - 'delete own profile content'
   - 'delete terms in affiliation'
   - 'delete terms in event_category'
+  - 'delete terms in page_category'
   - 'delete terms in post_category'
   - 'delete terms in tags'
   - 'edit any accordion block content'
@@ -242,6 +249,7 @@ permissions:
   - 'edit any grand_hero block content'
   - 'edit any image block content'
   - 'edit any image media'
+  - 'edit any image_banner block content'
   - 'edit any inline_message block content'
   - 'edit any link_grid block content'
   - 'edit any media_grid block content'
@@ -274,6 +282,7 @@ permissions:
   - 'edit own webform submission'
   - 'edit terms in affiliation'
   - 'edit terms in event_category'
+  - 'edit terms in page_category'
   - 'edit terms in post_category'
   - 'edit terms in tags'
   - 'mark as hidden in editoria11y'
@@ -295,6 +304,7 @@ permissions:
   - 'revert any gallery block content revisions'
   - 'revert any grand_hero block content revisions'
   - 'revert any image block content revisions'
+  - 'revert any image_banner block content revisions'
   - 'revert any inline_message block content revisions'
   - 'revert any link_grid block content revisions'
   - 'revert any media_grid block content revisions'
@@ -336,6 +346,7 @@ permissions:
   - 'view any gallery block content history'
   - 'view any grand_hero block content history'
   - 'view any image block content history'
+  - 'view any image_banner block content history'
   - 'view any inline_message block content history'
   - 'view any link_grid block content history'
   - 'view any media_grid block content history'

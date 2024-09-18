@@ -1,0 +1,23 @@
+uuid: f1507bf4-cb96-4ad3-b46f-e746d42b234d
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.image_banner
+    - field.field.block_content.image_banner.field_media
+id: block_content.image_banner.default
+targetEntityType: block_content
+bundle: image_banner
+mode: default
+content:
+  field_media:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: banner_16_5
+      link: false
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  search_api_excerpt: true

@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.node.page.field_category
     - field.field.node.page.field_external_source
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
@@ -103,6 +104,7 @@ third_party_settings:
             'Inline blocks':
               - 'inline_block:cta_banner'
               - 'inline_block:grand_hero'
+              - 'inline_block:image_banner'
               - 'inline_block:content_spotlight'
               - 'inline_block:content_spotlight_portrait'
         ys_layout_page_meta:
@@ -235,6 +237,7 @@ content:
     weight: 1
     region: content
 hidden:
+  field_category: true
   field_login_required: true
   field_metatags: true
   field_tags: true

@@ -1,0 +1,324 @@
+diff --git a/src/Plugin/Filter/TypogrifyFilter.php b/src/Plugin/Filter/TypogrifyFilter.php
+index 6a6136b..93dca43 100644
+--- a/src/Plugin/Filter/TypogrifyFilter.php
++++ b/src/Plugin/Filter/TypogrifyFilter.php
+@@ -45,7 +45,7 @@ class TypogrifyFilter extends FilterBase {
+    *
+    * @var string
+    */
+-  const TYPOGRIFY_VERSION = '1.0';
++  final public const TYPOGRIFY_VERSION = '1.0';
+ 
+   /**
+    * The keys in the settings array that are array-valued.
+diff --git a/src/SmartyPants.php b/src/SmartyPants.php
+index 586a95c..ccef37c 100644
+--- a/src/SmartyPants.php
++++ b/src/SmartyPants.php
+@@ -24,17 +24,17 @@ class SmartyPants {
+   /**
+    * Fri 9 Dec 2005.
+    */
+-  const SMARTYPANTS_PHP_VERSION = '1.5.1e';
++  final public const SMARTYPANTS_PHP_VERSION = '1.5.1e';
+ 
+   /**
+    * Fri 12 Mar 2004.
+    */
+-  const SMARTYPANTS_SYNTAX_VERSION = '1.5.1';
++  final public const SMARTYPANTS_SYNTAX_VERSION = '1.5.1';
+ 
+   /**
+    * Regex-pattern for tags we don't mess with.
+    */
+-  const SMARTYPANTS_TAGS_TO_SKIP
++  final public const SMARTYPANTS_TAGS_TO_SKIP
+     = '@<(/?)(?:pre|code|kbd|script|textarea|tt|math)[\s>]@';
+ 
+   /**
+@@ -155,10 +155,7 @@ class SmartyPants {
+     if ($langcode == 'all') {
+       return $quotes;
+     }
+-    if (isset($quotes[$langcode])) {
+-      return $quotes[$langcode];
+-    }
+-    return $quotes['en'];
++    return $quotes[$langcode] ?? $quotes['en'];
+   }
+ 
+   /**
+@@ -283,12 +280,12 @@ class SmartyPants {
+       if ($cur_token[0] == 'tag') {
+         // Don't mess with quotes inside tags.
+         $result .= $cur_token[1];
+-        if (preg_match(self::SMARTYPANTS_TAGS_TO_SKIP, $cur_token[1], $matches)) {
++        if (preg_match(self::SMARTYPANTS_TAGS_TO_SKIP, (string) $cur_token[1], $matches)) {
+           $in_pre = isset($matches[1]) && $matches[1] == '/' ? 0 : 1;
+         }
+         else {
+           // Reading language from span.
+-          if (preg_match('/<span .*(xml:)?lang="(..)"/', $cur_token[1], $matches)) {
++          if (preg_match('/<span .*(xml:)?lang="(..)"/', (string) $cur_token[1], $matches)) {
+             $span_lang = $matches[2];
+           }
+           elseif ($cur_token[1] == '</span>') {
+@@ -299,9 +296,9 @@ class SmartyPants {
+       else {
+         $t = $cur_token[1];
+         // Remember last char of this token before processing.
+-        $last_char = mb_substr($t, -1);
++        $last_char = mb_substr((string) $t, -1);
+         if (!$in_pre) {
+-          $quotes = self::i18nQuotes(isset($span_lang) ? $span_lang : $doc_lang);
++          $quotes = self::i18nQuotes($span_lang ?? $doc_lang);
+ 
+           $t = self::processEscapes($t);
+ 
+@@ -428,14 +425,14 @@ class SmartyPants {
+       if ($cur_token[0] == "tag") {
+         // Don't mess with quotes inside tags.
+         $result .= $cur_token[1];
+-        if (preg_match(self::SMARTYPANTS_TAGS_TO_SKIP, $cur_token[1], $matches)) {
++        if (preg_match(self::SMARTYPANTS_TAGS_TO_SKIP, (string) $cur_token[1], $matches)) {
+           $in_pre = isset($matches[1]) && $matches[1] == '/' ? 0 : 1;
+         }
+       }
+       else {
+         $t = $cur_token[1];
+         // Remember last char of this token before processing.
+-        $last_char = mb_substr($t, -1);
++        $last_char = mb_substr((string) $t, -1);
+         if (!$in_pre) {
+           $t = self::processEscapes($t);
+           if ($do_backticks) {
+@@ -523,7 +520,7 @@ class SmartyPants {
+       if ($cur_token[0] == "tag") {
+         // Don't mess with quotes inside tags.
+         $result .= $cur_token[1];
+-        if (preg_match(self::SMARTYPANTS_TAGS_TO_SKIP, $cur_token[1], $matches)) {
++        if (preg_match(self::SMARTYPANTS_TAGS_TO_SKIP, (string) $cur_token[1], $matches)) {
+           $in_pre = isset($matches[1]) && $matches[1] == '/' ? 0 : 1;
+         }
+       }
+@@ -572,7 +569,7 @@ class SmartyPants {
+       if ($cur_token[0] == "tag") {
+         // Don't mess with quotes inside tags.
+         $result .= $cur_token[1];
+-        if (preg_match(self::SMARTYPANTS_TAGS_TO_SKIP, $cur_token[1], $matches)) {
++        if (preg_match(self::SMARTYPANTS_TAGS_TO_SKIP, (string) $cur_token[1], $matches)) {
+           $in_pre = isset($matches[1]) && $matches[1] == '/' ? 0 : 1;
+         }
+       }
+@@ -609,14 +606,14 @@ class SmartyPants {
+       if ($cur_token[0] == "tag") {
+         // Don't mess with quotes inside tags.
+         $result .= $cur_token[1];
+-        if (preg_match(self::SMARTYPANTS_TAGS_TO_SKIP, $cur_token[1], $matches)) {
++        if (preg_match(self::SMARTYPANTS_TAGS_TO_SKIP, (string) $cur_token[1], $matches)) {
+           $in_pre = isset($matches[1]) && $matches[1] == '/' ? 0 : 1;
+         }
+       }
+       else {
+         $t = $cur_token[1];
+         if (!$in_pre) {
+-          $t = preg_replace($equal_finder, '\1&shy;\2', $t);
++          $t = preg_replace($equal_finder, '\1&shy;\2', (string) $t);
+         }
+         $result .= $t;
+       }
+@@ -665,10 +662,10 @@ class SmartyPants {
+       if ($cur_token[0] == "tag") {
+         // Don't mess with quotes inside tags.
+         $result .= $cur_token[1];
+-        if (preg_match(self::SMARTYPANTS_TAGS_TO_SKIP, $cur_token[1], $matches)) {
++        if (preg_match(self::SMARTYPANTS_TAGS_TO_SKIP, (string) $cur_token[1], $matches)) {
+           $in_pre = isset($matches[1]) && $matches[1] == '/' ? 0 : 1;
+         }
+-        elseif (preg_match('/<span .*class="[^"]*\b(number|phone|ignore)\b[^"]*"/', $cur_token[1], $matches)) {
++        elseif (preg_match('/<span .*class="[^"]*\b(number|phone|ignore)\b[^"]*"/', (string) $cur_token[1], $matches)) {
+           $span_stop = isset($matches[1]) && $matches[1] == '/' ? 0 : 1;
+         }
+         elseif ($cur_token[1] == '</span>') {
+@@ -681,7 +678,7 @@ class SmartyPants {
+           $number_finder = '@(?:(&#\d{2,4};|&(#x[0-9a-fA-F]{2,4}|frac\d\d);)|' .
+             '(\d{4}-\d\d-\d\d)|(\d\d\.\d\d\.\d{4})|' .
+             '(0[ \d\-/]+)|([+-]?\d+)([.,]\d+|))@';
+-          $t = preg_replace_callback($number_finder, [__CLASS__, $method], $t);
++          $t = preg_replace_callback($number_finder, [self::class, $method], (string) $t);
+         }
+         $result .= $t;
+       }
+@@ -722,13 +719,13 @@ class SmartyPants {
+       // Date -`dd.mm.yyyy don't touch.
+       return $hit[5];
+     }
+-    if (preg_match('/[+-]?\d{5,}/', $hit[6]) == 1) {
+-      $dec = preg_replace('/[+-]?\d{1,3}(?=(\d{3})+(?!\d))/', '\0' . $thbl, $hit[6]);
++    if (preg_match('/[+-]?\d{5,}/', (string) $hit[6]) == 1) {
++      $dec = preg_replace('/[+-]?\d{1,3}(?=(\d{3})+(?!\d))/', '\0' . $thbl, (string) $hit[6]);
+     }
+     else {
+       $dec = $hit[6];
+     }
+-    $frac = preg_replace('/\d{3}/', '\0' . $thbl, $hit[7]);
++    $frac = preg_replace('/\d{3}/', '\0' . $thbl, (string) $hit[7]);
+     return '<span class="number">' . $dec . $frac . '</span>';
+   }
+ 
+@@ -823,7 +820,7 @@ class SmartyPants {
+       if ($cur_token[0] == "tag") {
+         // Don't mess with quotes inside tags.
+         $result .= $cur_token[1];
+-        if (preg_match(self::SMARTYPANTS_TAGS_TO_SKIP, $cur_token[1], $matches)) {
++        if (preg_match(self::SMARTYPANTS_TAGS_TO_SKIP, (string) $cur_token[1], $matches)) {
+           $in_pre = isset($matches[1]) && $matches[1] == '/' ? 0 : 1;
+         }
+       }
+@@ -831,7 +828,7 @@ class SmartyPants {
+         $t = $cur_token[1];
+         if (!$in_pre) {
+           $abbr_finder = '/(?<=\s|)(\p{L}+\.)(\p{L}+\.)+(?=\s|)/u';
+-          $t = preg_replace_callback($abbr_finder, [__CLASS__, $replace_method], $t);
++          $t = preg_replace_callback($abbr_finder, [self::class, $replace_method], (string) $t);
+         }
+         $result .= $t;
+       }
+@@ -862,7 +859,7 @@ class SmartyPants {
+    *   The first element of the array, wrapped in a span.
+    */
+   protected static function abbrThinsp(array $hit) {
+-    $res = preg_replace('/\.(\p{L})/u', '.&#8201;\1', $hit[0]);
++    $res = preg_replace('/\.(\p{L})/u', '.&#8201;\1', (string) $hit[0]);
+     return '<span class="abbr">' . $res . '</span>';
+   }
+ 
+@@ -876,7 +873,7 @@ class SmartyPants {
+    *   The first element of the array, wrapped in a span.
+    */
+   protected static function abbrNarrownbsp(array $hit) {
+-    $res = preg_replace('/\.(\p{L})/u', '.&#8239;\1', $hit[0]);
++    $res = preg_replace('/\.(\p{L})/u', '.&#8239;\1', (string) $hit[0]);
+     return '<span class="abbr">' . $res . '</span>';
+   }
+ 
+@@ -891,7 +888,7 @@ class SmartyPants {
+    */
+   protected static function abbrSpan(array $hit) {
+     $thbl = '.<span style="margin-left:0.167em"><span style="display:none">&nbsp;</span></span>';
+-    $res = preg_replace('/\.(\p{L})/u', $thbl . '\1', $hit[0]);
++    $res = preg_replace('/\.(\p{L})/u', $thbl . '\1', (string) $hit[0]);
+     return '<span class="abbr">' . $res . '</span>';
+   }
+ 
+@@ -916,7 +913,7 @@ class SmartyPants {
+       if ($cur_token[0] == "tag") {
+         // Don't mess with quotes inside tags.
+         $result .= $cur_token[1];
+-        if (preg_match(self::SMARTYPANTS_TAGS_TO_SKIP, $cur_token[1], $matches)) {
++        if (preg_match(self::SMARTYPANTS_TAGS_TO_SKIP, (string) $cur_token[1], $matches)) {
+           $in_pre = isset($matches[1]) && $matches[1] == '/' ? 0 : 1;
+         }
+       }
+@@ -1259,14 +1256,14 @@ class SmartyPants {
+       if ($cur_token[0] == "tag") {
+         // Don't mess with quotes inside tags.
+         $result .= $cur_token[1];
+-        if (preg_match(self::SMARTYPANTS_TAGS_TO_SKIP, $cur_token[1], $matches)) {
++        if (preg_match(self::SMARTYPANTS_TAGS_TO_SKIP, (string) $cur_token[1], $matches)) {
+           $in_pre = isset($matches[1]) && $matches[1] == '/' ? 0 : 1;
+         }
+       }
+       else {
+         $t = $cur_token[1];
+         if (!$in_pre) {
+-          $t = preg_replace("/\s([\!\?\:;])/", '&nbsp;$1', $t);
++          $t = preg_replace("/\s([\!\?\:;])/", '&nbsp;$1', (string) $t);
+         }
+         $result .= $t;
+       }
+@@ -1296,14 +1293,14 @@ class SmartyPants {
+       if ($cur_token[0] == "tag") {
+         // Don't mess with quotes inside tags.
+         $result .= $cur_token[1];
+-        if (preg_match(self::SMARTYPANTS_TAGS_TO_SKIP, $cur_token[1], $matches)) {
++        if (preg_match(self::SMARTYPANTS_TAGS_TO_SKIP, (string) $cur_token[1], $matches)) {
+           $in_pre = isset($matches[1]) && $matches[1] == '/' ? 0 : 1;
+         }
+       }
+       else {
+         $t = $cur_token[1];
+         if (!$in_pre) {
+-          $t = preg_replace("/\s(-{1,3})\s/", '&#8239;—&thinsp;', $t);
++          $t = preg_replace("/\s(-{1,3})\s/", '&#8239;—&thinsp;', (string) $t);
+         }
+         $result .= $t;
+       }
+diff --git a/src/TwigExtension/Typogrify.php b/src/TwigExtension/Typogrify.php
+index e6efcba..fb06112 100644
+--- a/src/TwigExtension/Typogrify.php
++++ b/src/TwigExtension/Typogrify.php
+@@ -20,7 +20,7 @@ class Typogrify extends AbstractExtension {
+    */
+   public function getFilters() {
+     return [
+-      new TwigFilter('typogrify', [$this, 'filter'], ['is_safe' => ['html']]),
++      new TwigFilter('typogrify', $this->filter(...), ['is_safe' => ['html']]),
+     ];
+   }
+ 
+diff --git a/src/Typogrify.php b/src/Typogrify.php
+index 44855f0..9841c68 100644
+--- a/src/Typogrify.php
++++ b/src/Typogrify.php
+@@ -54,8 +54,8 @@ class Typogrify {
+     }
+     else {
+       $mthree = $matchobj[3];
+-      if (($mthree[strlen($mthree) - 1]) == ' ') {
+-        $caps = substr($mthree, 0, -1);
++      if (($mthree[strlen((string) $mthree) - 1]) == ' ') {
++        $caps = substr((string) $mthree, 0, -1);
+         $tail = ' ';
+       }
+       else {
+@@ -94,7 +94,7 @@ class Typogrify {
+       if ($token[0] == 'tag') {
+         // Don't mess with tags.
+         $result[] = $token[1];
+-        $close_match = preg_match(SmartyPants::SMARTYPANTS_TAGS_TO_SKIP, $token[1]);
++        $close_match = preg_match(SmartyPants::SMARTYPANTS_TAGS_TO_SKIP, (string) $token[1]);
+         if ($close_match) {
+           $in_skipped_tag = TRUE;
+         }
+@@ -107,7 +107,7 @@ class Typogrify {
+           $result[] = $token[1];
+         }
+         else {
+-          $result[] = preg_replace_callback($cap_finder, 'self::capWrapper', $token[1]);
++          $result[] = preg_replace_callback($cap_finder, [self::class, 'capWrapper'], (string) $token[1]);
+         }
+       }
+     }
+@@ -165,7 +165,7 @@ class Typogrify {
+                             /ix";
+     }
+ 
+-    return preg_replace_callback($quote_finder, 'self::quoteWrapper', $text);
++    return preg_replace_callback($quote_finder, [self::class, 'quoteWrapper'], $text);
+   }
+ 
+   /**
+diff --git a/src/UnicodeConversion.php b/src/UnicodeConversion.php
+index a58677c..40d4eed 100644
+--- a/src/UnicodeConversion.php
++++ b/src/UnicodeConversion.php
+@@ -121,7 +121,7 @@ class UnicodeConversion {
+         // Don't mess with text inside tags, <pre> blocks, or <code> blocks.
+         $result .= $cur_token[1];
+         // Get the tags to skip regex from SmartyPants.
+-        if (preg_match(SmartyPants::SMARTYPANTS_TAGS_TO_SKIP, $cur_token[1], $matches)) {
++        if (preg_match(SmartyPants::SMARTYPANTS_TAGS_TO_SKIP, (string) $cur_token[1], $matches)) {
+           $in_pre = isset($matches[1]) && $matches[1] == '/' ? 0 : 1;
+         }
+       }

@@ -19,6 +19,7 @@ auto_added_reusable_block_content_bundles:
   gallery: gallery
   grand_hero: grand_hero
   image: image
+  image_banner: image_banner
   inline_message: inline_message
   link_grid: link_grid
   media_grid: media_grid
