@@ -39,7 +39,10 @@ function ys_core_theme($existing, $type, $theme, $path): array {
       ],
     ],
     'ys_search_form' => [
-      'variables' => [],
+      'variables' => [
+        'show_content_type_filter' => NULL,
+        'content_type_list' => [],
+      ],
     ],
     'ys_title_breadcrumb' => [
       'variables' => [
@@ -571,4 +574,29 @@ function ys_core_allow_secret_items(AccountProxy $currentUserSession) {
  */
 function _ys_core_invalidate_media_list() {
   \Drupal::service('cache.render')->invalidateAll();
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter() for views_exposed_form.
+ */
+function ys_core_form_views_exposed_form_alter(&$form, FormStateInterface $form_state) {
+  /** @var \Drupal\views\ViewExecutable $view */
+  $view = $form_state->get('view');
+
+  if (in_array($view->id(), ['views_basic_scaffold', 'views_basic_scaffold_events'])) {
+    // List of form elements to which Chosen should be applied.
+    $chosen_filters = [
+      'field_category_target_id',
+      'field_category_target_id_1',
+      'field_affiliation_target_id',
+      'post_year_filter',
+    ];
+    // Loop through each specified field and apply Chosen settings if the field
+    // exists.
+    foreach ($chosen_filters as $filter_name) {
+      if (isset($form[$filter_name])) {
+        $form[$filter_name]['#chosen'] = TRUE;
+      }
+    }
+  }
 }

@@ -40,6 +40,13 @@ ys_core.admin_footer_settings:
   route_name: ys_core.admin_footer_settings
   title: "Footer Settings"
   weight: 20
+# Views settings form.
+ys_core.admin_views_settings:
+  description: "Views settings."
+  parent: ys_core.admin_yalesites
+  route_name: ys_core.admin_views_settings
+  title: "Views Settings"
+  weight: 25
 # main menu edit form.
 ys_core.menu_main_edit:
   description: "Manage main navigation"
@@ -80,6 +87,14 @@ ys_core.taxonomy_interface_post_category:
   title: Post Category
   route_parameters:
     taxonomy_vocabulary: "post_category"
+# Taxonomy interface - Page Category
+ys_core.taxonomy_interface_page_category:
+  description: "Manage page category taxonomy"
+  parent: ys_core.taxonomy_interface
+  route_name: entity.taxonomy_vocabulary.overview_form
+  title: Page Category
+  route_parameters:
+    taxonomy_vocabulary: "page_category"
 # Taxonomy interface - Profile Affiliation
 ys_core.taxonomy_interface_affiliation:
   description: "Manage profile affiliation taxonomy"

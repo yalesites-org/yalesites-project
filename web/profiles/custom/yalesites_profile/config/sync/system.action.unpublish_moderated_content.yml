@@ -1,0 +1,12 @@
+uuid: 9b6118fe-709b-4b7c-90d5-ae0819d23245
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+    - ys_core
+id: unpublish_moderated_content
+label: 'Unpublish content'
+type: node
+plugin: 'entity:unpublish_moderated_action:node'
+configuration: {  }

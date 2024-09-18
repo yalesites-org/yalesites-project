@@ -7,8 +7,10 @@ dependencies:
     - field.field.block_content.video.field_heading
     - field.field.block_content.video.field_instructions
     - field.field.block_content.video.field_media
+    - field.field.block_content.video.field_style_alignment
     - field.field.block_content.video.field_text
   module:
+    - options
     - text
 id: block_content.video.default
 targetEntityType: block_content
@@ -28,6 +30,13 @@ content:
     settings:
       view_mode: default
       link: false
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  field_style_alignment:
+    type: list_key
+    label: hidden
+    settings: {  }
     third_party_settings: {  }
     weight: 2
     region: content
