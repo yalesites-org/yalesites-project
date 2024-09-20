@@ -1,0 +1,23 @@
+uuid: 4cbb09a1-8aa7-47f4-8e63-618493563104
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_localist_ics_url
+    - node.type.event
+  module:
+    - link
+id: node.event.field_localist_ics_url
+field_name: field_localist_ics_url
+entity_type: node
+bundle: event
+label: 'Localist ICS URL'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  title: 0
+  link_type: 17
+field_type: link

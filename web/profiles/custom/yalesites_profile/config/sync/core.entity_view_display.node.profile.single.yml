@@ -1,0 +1,294 @@
+uuid: 0c81ecb6-9e8e-4c24-b03c-860838015f77
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.node.single
+    - field.field.node.profile.field_address
+    - field.field.node.profile.field_affiliation
+    - field.field.node.profile.field_department
+    - field.field.node.profile.field_email
+    - field.field.node.profile.field_external_source
+    - field.field.node.profile.field_first_name
+    - field.field.node.profile.field_honorific_prefix
+    - field.field.node.profile.field_last_name
+    - field.field.node.profile.field_login_required
+    - field.field.node.profile.field_media
+    - field.field.node.profile.field_metatags
+    - field.field.node.profile.field_position
+    - field.field.node.profile.field_subtitle
+    - field.field.node.profile.field_tags
+    - field.field.node.profile.field_teaser_media
+    - field.field.node.profile.field_teaser_text
+    - field.field.node.profile.field_teaser_title
+    - field.field.node.profile.field_telephone
+    - field.field.node.profile.layout_builder__layout
+    - node.type.profile
+  module:
+    - layout_builder
+    - layout_builder_restrictions
+    - link
+    - text
+    - user
+third_party_settings:
+  layout_builder:
+    enabled: false
+    allow_custom: false
+  layout_builder_restrictions:
+    allowed_block_categories:
+      - 'Chaos Tools'
+      - 'Content fields'
+      - 'Custom block types'
+      - 'Custom blocks'
+      - Forms
+      - Help
+      - 'Inline blocks'
+      - 'Lists (Views)'
+      - Menus
+      - System
+      - Webform
+      - 'YaleSites Core'
+      - 'YaleSites Layouts'
+      - 'YaleSites alert'
+      - core
+    entity_view_mode_restriction:
+      allowed_layouts:
+        - layout_onecol
+        - ys_layout_two_column
+      denylisted_blocks: {  }
+      allowlisted_blocks:
+        'YaleSites Layouts':
+          - profile_contact_block
+          - profile_meta_block
+      restricted_categories:
+        - 'Chaos Tools'
+        - 'Content fields'
+        - 'Custom blocks'
+        - Forms
+        - Help
+        - 'Lists (Views)'
+        - Menus
+        - System
+        - Webform
+        - 'YaleSites Core'
+        - 'YaleSites alert'
+        - core
+    entity_view_mode_restriction_by_region:
+      allowed_layouts:
+        - layout_onecol
+        - ys_layout_two_column
+      allowlisted_blocks:
+        layout_onecol:
+          all_regions:
+            'YaleSites Layouts':
+              - profile_contact_block
+        ys_layout_two_column:
+          content:
+            'Custom block types':
+              - accordion
+              - button_link
+              - divider
+              - image
+              - pull_quote
+              - reference_card
+              - tabs
+              - text
+              - video
+            'Inline blocks':
+              - 'inline_block:accordion'
+              - 'inline_block:button_link'
+              - 'inline_block:divider'
+              - 'inline_block:image'
+              - 'inline_block:pull_quote'
+              - 'inline_block:reference_card'
+              - 'inline_block:tabs'
+              - 'inline_block:text'
+              - 'inline_block:video'
+            'YaleSites Layouts':
+              - profile_contact_block
+          sidebar:
+            'Custom block types':
+              - text
+            'Inline blocks':
+              - 'inline_block:text'
+            'YaleSites Layouts':
+              - profile_contact_block
+      denylisted_blocks: {  }
+      restricted_categories:
+        ys_layout_two_column:
+          sidebar:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - 'Custom blocks'
+            - Devel
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites alert'
+            - core
+          content:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - 'Custom blocks'
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites alert'
+            - core
+        layout_onecol:
+          all_regions:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - 'Custom blocks'
+            - Devel
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites alert'
+            - core
+id: node.profile.single
+targetEntityType: node
+bundle: profile
+mode: single
+content:
+  field_address:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 11
+    region: content
+  field_affiliation:
+    type: entity_reference_label
+    label: hidden
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 8
+    region: content
+  field_department:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 9
+    region: content
+  field_email:
+    type: basic_string
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 6
+    region: content
+  field_external_source:
+    type: link_separate
+    label: above
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_first_name:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 12
+    region: content
+  field_honorific_prefix:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 14
+    region: content
+  field_last_name:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 13
+    region: content
+  field_media:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: default
+      link: false
+    third_party_settings: {  }
+    weight: 10
+    region: content
+  field_position:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 4
+    region: content
+  field_subtitle:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 5
+    region: content
+  field_teaser_media:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: profile_directory_card_1_1_
+      link: false
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_teaser_text:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  field_teaser_title:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 3
+    region: content
+  field_telephone:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 7
+    region: content
+hidden:
+  field_login_required: true
+  field_metatags: true
+  field_tags: true
+  layout_builder__layout: true
+  links: true
+  search_api_excerpt: true

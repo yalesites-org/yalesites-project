@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.node.page.field_category
     - field.field.node.page.field_external_source
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
@@ -29,10 +30,21 @@ third_party_settings:
         layout_settings:
           label: 'Banner Section'
           context_mapping: {  }
-        components: {  }
+        components:
+          f33cc6c5-c2a8-4326-8f27-2efb5f94f449:
+            uuid: f33cc6c5-c2a8-4326-8f27-2efb5f94f449
+            region: content
+            configuration:
+              id: 'extra_field_block:node:page:content_moderation_control'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+            weight: 0
+            additional: {  }
         third_party_settings:
           layout_builder_lock:
             lock:
+              2: 2
               5: 5
               6: 6
               7: 7
@@ -92,6 +104,9 @@ third_party_settings:
             'Inline blocks':
               - 'inline_block:cta_banner'
               - 'inline_block:grand_hero'
+              - 'inline_block:image_banner'
+              - 'inline_block:content_spotlight'
+              - 'inline_block:content_spotlight_portrait'
         ys_layout_page_meta:
           all_regions:
             'YaleSites Layouts':
@@ -104,6 +119,7 @@ third_party_settings:
               - divider
               - image
               - pull_quote
+              - reference_card
               - tabs
               - text
               - video
@@ -113,6 +129,7 @@ third_party_settings:
               - 'inline_block:divider'
               - 'inline_block:image'
               - 'inline_block:pull_quote'
+              - 'inline_block:reference_card'
               - 'inline_block:tabs'
               - 'inline_block:text'
               - 'inline_block:video'
@@ -123,7 +140,7 @@ third_party_settings:
               - 'inline_block:text'
       restricted_categories:
         ys_layout_two_column:
-          content:
+          sidebar:
             - 'Chaos Tools'
             - 'Content fields'
             - Devel
@@ -137,10 +154,9 @@ third_party_settings:
             - 'YaleSites Layouts'
             - 'YaleSites alert'
             - core
-          sidebar:
+          content:
             - 'Chaos Tools'
             - 'Content fields'
-            - Devel
             - Forms
             - Help
             - 'Lists (Views)'
@@ -203,6 +219,11 @@ targetEntityType: node
 bundle: page
 mode: default
 content:
+  content_moderation_control:
+    settings: {  }
+    third_party_settings: {  }
+    weight: -20
+    region: content
   field_external_source:
     type: link
     label: above
@@ -216,6 +237,7 @@ content:
     weight: 1
     region: content
 hidden:
+  field_category: true
   field_login_required: true
   field_metatags: true
   field_tags: true
@@ -225,3 +247,4 @@ hidden:
   layout_builder__layout: true
   links: true
   search_api_excerpt: true
+  workflow_buttons: true

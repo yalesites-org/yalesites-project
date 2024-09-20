@@ -1,0 +1,21 @@
+uuid: 03d8165f-7997-4d6d-a70b-2b5e781e7469
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.quote_callout
+    - field.storage.block_content.field_style_alignment
+  module:
+    - options
+id: block_content.quote_callout.field_style_alignment
+field_name: field_style_alignment
+entity_type: block_content
+bundle: quote_callout
+label: Alignment
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ys_themes_default_value_function
+settings: {  }
+field_type: list_string

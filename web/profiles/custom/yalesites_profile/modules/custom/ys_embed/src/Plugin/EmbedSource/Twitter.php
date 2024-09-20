@@ -10,9 +10,9 @@ use Drupal\ys_embed\Plugin\EmbedSourceInterface;
  *
  * @EmbedSource(
  *   id = "twitter",
- *   label = @Translation("Twitter Tweet"),
- *   description = @Translation("Twitter post embed source."),
- *   thumbnail = "twitter.png",
+ *   label = @Translation("X post (formally Twitter tweet)"),
+ *   description = @Translation("X post (formally Twitter tweet) embed source."),
+ *   thumbnail = "x-twitter.png",
  *   active = TRUE,
  * )
  */
@@ -31,7 +31,7 @@ class Twitter extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $instructions = 'On the Twitter website, click the triangular (...) icon on the upper-right corner of a tweet and select the \'Embed Tweet\' item from the contextual menu. The embed code will appear in an input-box on this interface.';
+  protected static $instructions = 'On the X website, click the (...) icon on the upper-right corner of a post and select the \'Embed Post\' item from the contextual menu. Select \'Embedded Post\'.  The embed code will appear in an input-box on this interface.';
 
   /**
    * {@inheritdoc}

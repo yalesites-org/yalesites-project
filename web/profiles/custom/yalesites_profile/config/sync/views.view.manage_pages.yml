@@ -81,9 +81,9 @@ display:
           include_exclude: include
           selected_actions:
             - node_delete_action
-            - node_publish_action
-            - node_unpublish_action
             - pathauto_update_alias_node
+            - publish_moderated_content
+            - unpublish_moderated_content
         title_1:
           id: title_1
           table: node_field_data

@@ -1,0 +1,19 @@
+uuid: d6dcadf1-e08e-4efa-bbb8-93204fb95bd3
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.taxonomy_term.field_longitude
+    - taxonomy.vocabulary.event_place
+id: taxonomy_term.event_place.field_longitude
+field_name: field_longitude
+entity_type: taxonomy_term
+bundle: event_place
+label: Longitude
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

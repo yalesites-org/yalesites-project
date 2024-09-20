@@ -5,6 +5,7 @@ dependencies:
   config:
     - core.entity_view_mode.media.banner_profile
     - field.field.media.image.field_media_image
+    - field.field.media.image.field_tags
     - media.type.image
     - responsive_image.styles.banner_profile
   module:
@@ -32,6 +33,7 @@ content:
     region: content
 hidden:
   created: true
+  field_tags: true
   name: true
   search_api_excerpt: true
   thumbnail: true

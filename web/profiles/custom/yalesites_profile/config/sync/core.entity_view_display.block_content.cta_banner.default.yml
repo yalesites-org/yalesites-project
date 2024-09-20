@@ -8,6 +8,7 @@ dependencies:
     - field.field.block_content.cta_banner.field_heading_level
     - field.field.block_content.cta_banner.field_instructions
     - field.field.block_content.cta_banner.field_link
+    - field.field.block_content.cta_banner.field_link_two
     - field.field.block_content.cta_banner.field_media
     - field.field.block_content.cta_banner.field_style_color
     - field.field.block_content.cta_banner.field_style_position
@@ -33,7 +34,7 @@ content:
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 6
+    weight: 7
     region: content
   field_link:
     type: link_separate
@@ -46,6 +47,18 @@ content:
       target: '0'
     third_party_settings: {  }
     weight: 3
+    region: content
+  field_link_two:
+    type: link_separate
+    label: hidden
+    settings:
+      trim_length: null
+      url_only: false
+      url_plain: false
+      rel: '0'
+      target: '0'
+    third_party_settings: {  }
+    weight: 4
     region: content
   field_media:
     type: entity_reference_entity_view
@@ -61,14 +74,14 @@ content:
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 4
+    weight: 5
     region: content
   field_style_position:
     type: list_key
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 5
+    weight: 6
     region: content
   field_text:
     type: text_default

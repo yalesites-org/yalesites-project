@@ -3,7 +3,7 @@ langcode: en
 status: true
 dependencies:
   config:
-    - core.entity_view_mode.node.teaser
+    - core.entity_view_mode.node.list_item
   module:
     - node
     - taxonomy
@@ -24,6 +24,7 @@ display:
     display_plugin: default
     position: 0
     display_options:
+      title: ''
       fields: {  }
       pager:
         type: mini
@@ -215,14 +216,14 @@ display:
       style:
         type: default
         options:
-          grouping: {  }
           row_class: ''
           default_row_class: true
           uses_fields: false
       row:
         type: 'entity:node'
         options:
-          view_mode: teaser
+          relationship: none
+          view_mode: list_item
       query:
         type: views_query
         options:
@@ -265,6 +266,7 @@ display:
     display_plugin: feed
     position: 2
     display_options:
+      enabled: false
       pager:
         type: some
         options:
@@ -306,7 +308,10 @@ display:
       query:
         type: views_query
         options: {  }
-      display_extenders: {  }
+      display_extenders:
+        metatag_display_extender:
+          metatags: {  }
+          tokenize: false
       path: taxonomy/term/%
     cache_metadata:
       max-age: -1

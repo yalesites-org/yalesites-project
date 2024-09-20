@@ -1,7 +1,13 @@
 {% embed '@molecules/meta/profile-meta/yds-profile-meta.twig' %}
   {% block profile__image %}
-    {% if media_id %}
-      {{ drupal_entity('media', media_id, 'banner_profile') }}
+    {% if profile_meta__image_orientation == 'portrait' %}
+        {% if media_id %}
+          {{ drupal_entity('media', media_id, 'content_spotlight_portrait_2_3') }}
+        {% endif %}
+    {% else %}
+      {% if media_id %}
+        {{ drupal_entity('media', media_id, 'banner_profile') }}
+      {% endif %}
     {% endif %}
   {% endblock %}
 {% endembed %}

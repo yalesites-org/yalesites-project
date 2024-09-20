@@ -387,7 +387,7 @@ class FooterSettingsForm extends ConfigFormBase {
     CacheBackendInterface $cache_render,
     SocialLinksManager $social_links_manager,
     AliasManager $path_alias_manager,
-    ) {
+  ) {
     parent::__construct($config_factory);
     $this->cacheRender = $cache_render;
     $this->socialLinks = $social_links_manager;

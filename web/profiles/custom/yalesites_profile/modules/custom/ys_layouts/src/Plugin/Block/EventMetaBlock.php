@@ -5,8 +5,8 @@ namespace Drupal\ys_layouts\Plugin\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Core\Url;
 use Drupal\node\NodeInterface;
+use Drupal\ys_localist\MetaFieldsManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -28,7 +28,14 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
   protected $routeMatch;
 
   /**
-   * Constructs a new BookNavigationBlock instance.
+   * The meta fields manager service.
+   *
+   * @var \Drupal\ys_localist\MetaFieldsManager
+   */
+  protected $metaFieldsManager;
+
+  /**
+   * Constructs a new EventMetaBlock instance.
    *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.
@@ -38,11 +45,20 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
    *   The plugin implementation definition.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The current route match.
+   * @param \Drupal\ys_localist\MetaFieldsManager $meta_fields_manager
+   *   The meta fields manager service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $route_match) {
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    RouteMatchInterface $route_match,
+    MetaFieldsManager $meta_fields_manager,
+  ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->routeMatch = $route_match;
+    $this->metaFieldsManager = $meta_fields_manager;
   }
 
   /**
@@ -53,38 +69,9 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('current_route_match')
+      $container->get('current_route_match'),
+      $container->get('ys_localist.meta_fields_manager'),
     );
-  }
-
-  /**
-   * Calculates if an event is set to all day.
-   *
-   * Code copied from contrib module smart_date/src/SmartDateTrait.php because
-   * with version 3.6 of smart_date and PHP 8.1, calling static traits
-   * in this way is deprecated. Patches to fix failed to apply.
-   */
-  private function isAllDay($start_ts, $end_ts, $timezone = NULL) {
-    if ($timezone) {
-      if ($timezone instanceof \DateTimeZone) {
-        // If provided as an object, convert to a string.
-        $timezone = $timezone->getName();
-      }
-      // Apply a specific timezone provided.
-      $default_tz = date_default_timezone_get();
-      date_default_timezone_set($timezone);
-    }
-    // Format timestamps to predictable format for comparison.
-    $temp_start = date('H:i', $start_ts);
-    $temp_end = date('H:i', $end_ts);
-    if ($timezone) {
-      // Revert to previous timezone.
-      date_default_timezone_set($default_tz);
-    }
-    if ($temp_start == '00:00' && $temp_end == '23:59') {
-      return TRUE;
-    }
-    return FALSE;
   }
 
   /**
@@ -98,40 +85,33 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
       return [];
     }
 
-    // Event fields.
-    $title = $node->getTitle();
-    $dateStart = ($node->field_event_date->first()) ? $node->field_event_date->first()->getValue()['value'] : NULL;
-    $dateEnd = ($node->field_event_date->first()) ? $node->field_event_date->first()->getValue()['end_value'] : NULL;
-    $dateDuration = ($node->field_event_date->first()) ? $node->field_event_date->first()->getValue()['duration'] : NULL;
-    $allDay = $this->isAllDay($dateStart, $dateEnd);
-    $url = ($node->field_event_cta->first()) ? Url::fromUri($node->field_event_cta->first()->getValue()['uri'])->toString() : NULL;
-    $urlTitle = ($node->field_event_cta->first()) ? $node->field_event_cta->first()->getValue()['title'] : NULL;
-
-    // Event format.
-    $eventFormats = [];
-    foreach ($node->field_event_type->referencedEntities() as $entity) {
-      $eventFormats[] = $entity->label();
-    }
-
-    // Add to calendar link.
-    if (!empty($eventFormats)) {
-      $calendarLocationText = (count($eventFormats) > 1) ? 'Hybrid' : $eventFormats[0];
-    }
-    else {
-      $calendarLocationText = NULL;
-    }
+    // Gets all event field data.
+    $eventFieldData = $this->metaFieldsManager->getEventData($node);
 
     return [
       '#theme' => 'ys_event_meta_block',
-      '#event_title__heading' => $title,
-      '#event_meta__date_start' => $dateStart,
-      '#event_meta__date_end' => $dateEnd,
-      '#event_meta__date_duration' => $dateDuration,
-      '#event_meta__all_day' => $allDay,
-      '#event_meta__format' => $eventFormats,
-      '#event_meta__cta_primary__href' => $url,
-      '#event_meta__cta_primary__content' => $urlTitle,
-      '#calendar_location_text' => $calendarLocationText,
+      '#event_title__heading' => $eventFieldData['title'],
+      '#event_dates' => $eventFieldData['dates'],
+      '#ics_url' => $eventFieldData['ics'],
+      '#canonical_url' => $eventFieldData['canonical_url'],
+      '#ticket_url' => $eventFieldData['ticket_url'],
+      '#ticket_cost' => $eventFieldData['ticket_cost'],
+      '#place' => $eventFieldData['place_info'],
+      '#event_types' => $eventFieldData['event_types'],
+      '#event_audience' => $eventFieldData['event_audience'],
+      '#event_topics' => $eventFieldData['event_topics'],
+      '#description' => $eventFieldData['description'],
+      '#event_meta__cta_primary__href' => $eventFieldData['external_website_url'],
+      '#event_meta__cta_primary__content' => $eventFieldData['external_website_title'],
+      '#event_experience' => $eventFieldData['experience'],
+      '#localist_image_url' => $eventFieldData['localist_image_url'],
+      '#localist_image_alt' => $eventFieldData['localist_image_alt'],
+      '#teaser_media' => $eventFieldData['teaser_media'],
+      '#has_register' => $eventFieldData['has_register'],
+      '#cost_button_text' => $eventFieldData['cost_button_text'],
+      '#localist_url' => $eventFieldData['localist_url'],
+      '#stream_url' => $eventFieldData['stream_url'],
+      '#stream_embed_code' => $eventFieldData['stream_embed_code'],
     ];
   }
 

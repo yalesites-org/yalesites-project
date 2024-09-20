@@ -1,0 +1,29 @@
+uuid: 821a1987-3a55-45c5-ae49-c110e27c269b
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.paragraph.preview
+    - field.field.paragraph.cta_link.field_link
+    - paragraphs.paragraphs_type.cta_link
+  module:
+    - link
+id: paragraph.cta_link.preview
+targetEntityType: paragraph
+bundle: cta_link
+mode: preview
+content:
+  field_link:
+    type: link
+    label: hidden
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: '0'
+      target: '0'
+    third_party_settings: {  }
+    weight: 3
+    region: content
+hidden:
+  search_api_excerpt: true

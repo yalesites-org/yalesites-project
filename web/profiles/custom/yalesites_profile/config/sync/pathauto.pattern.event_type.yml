@@ -1,0 +1,22 @@
+uuid: 8a91aeca-27a4-4ebe-abd6-2fc84049616a
+langcode: en
+status: true
+dependencies:
+  module:
+    - taxonomy
+id: event_type
+label: 'Event Type'
+type: 'canonical_entities:taxonomy_term'
+pattern: '[yale:event_landing_page_path]/event-type/[term:name]'
+selection_criteria:
+  2252c8cf-b550-461d-8749-896a20cc2c59:
+    id: 'entity_bundle:taxonomy_term'
+    negate: false
+    uuid: 2252c8cf-b550-461d-8749-896a20cc2c59
+    context_mapping:
+      taxonomy_term: taxonomy_term
+    bundles:
+      localist_event_type: localist_event_type
+selection_logic: and
+weight: -5
+relationships: {  }

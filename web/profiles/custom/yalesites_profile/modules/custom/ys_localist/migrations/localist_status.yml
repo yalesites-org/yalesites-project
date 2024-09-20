@@ -1,0 +1,28 @@
+# Note: This is being done with embedded data because Localist does not have
+# an endpoint to fetch statuses.
+id: localist_status
+label: 'Localist status'
+source:
+  plugin: embedded_data
+  track_changes: true
+  data_rows:
+    - localist_name: 'live'
+      human_name: 'Live'
+    - localist_name: 'canceled'
+      human_name: 'Canceled'
+    - localist_name: 'soldout'
+      human_name: 'Sold out'
+    - localist_name: 'postponed'
+      human_name: 'Postponed'
+  ids:
+    localist_name:
+      type: string
+
+process:
+  name: human_name
+
+destination:
+  plugin: 'entity:taxonomy_term'
+  default_bundle: event_status
+  overwrite_properties:
+    - name

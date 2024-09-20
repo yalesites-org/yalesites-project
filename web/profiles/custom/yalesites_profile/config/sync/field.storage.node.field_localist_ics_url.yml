@@ -1,0 +1,19 @@
+uuid: a657c1e8-8262-4da3-8ee0-cfcf0417117e
+langcode: en
+status: true
+dependencies:
+  module:
+    - link
+    - node
+id: node.field_localist_ics_url
+field_name: field_localist_ics_url
+entity_type: node
+type: link
+settings: {  }
+module: link
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

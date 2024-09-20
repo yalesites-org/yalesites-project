@@ -14,15 +14,22 @@ dependencies:
     - block_content.type.divider
     - block_content.type.embed
     - block_content.type.event_list
+    - block_content.type.facts
     - block_content.type.gallery
     - block_content.type.grand_hero
     - block_content.type.image
+    - block_content.type.image_banner
+    - block_content.type.inline_message
+    - block_content.type.link_grid
     - block_content.type.media_grid
     - block_content.type.post_list
     - block_content.type.pull_quote
     - block_content.type.quick_links
+    - block_content.type.quote_callout
+    - block_content.type.reference_card
     - block_content.type.tabs
     - block_content.type.text
+    - block_content.type.tiles
     - block_content.type.video
     - block_content.type.view
     - block_content.type.webform
@@ -42,21 +49,25 @@ dependencies:
     - node.type.profile
     - taxonomy.vocabulary.affiliation
     - taxonomy.vocabulary.event_category
+    - taxonomy.vocabulary.page_category
     - taxonomy.vocabulary.post_category
     - taxonomy.vocabulary.tags
+    - workflows.workflow.editorial
+    - workflows.workflow.events
   module:
     - block_content
+    - content_moderation
     - contextual
     - editoria11y
     - file
     - layout_builder
     - media
     - menu_admin_per_menu
+    - moderation_sidebar
     - node
     - override_node_options
     - paragraphs
     - path
-    - publishcontent
     - quick_node_clone
     - redirect
     - role_delegation
@@ -68,7 +79,7 @@ dependencies:
     - ys_core
 id: site_admin
 label: 'Site administrator'
-weight: 3
+weight: -6
 is_admin: null
 permissions:
   - 'access block library'
@@ -85,10 +96,13 @@ permissions:
   - 'administer redirects'
   - 'administer users'
   - 'administer utility-navigation menu items'
+  - 'assign contributor role'
+  - 'assign editor role'
   - 'assign site_admin role'
   - 'clone event content'
   - 'clone page content'
   - 'clone post content'
+  - 'clone profile content'
   - 'configure editable event node layout overrides'
   - 'configure editable page node layout overrides'
   - 'configure editable post node layout overrides'
@@ -102,16 +116,21 @@ permissions:
   - 'create content_spotlight_portrait block content'
   - 'create cta_banner block content'
   - 'create custom_cards block content'
+  - 'create directory block content'
   - 'create divider block content'
   - 'create document media'
   - 'create embed block content'
   - 'create embed media'
   - 'create event content'
   - 'create event_list block content'
+  - 'create facts block content'
   - 'create gallery block content'
   - 'create grand_hero block content'
   - 'create image block content'
   - 'create image media'
+  - 'create image_banner block content'
+  - 'create inline_message block content'
+  - 'create link_grid block content'
   - 'create media'
   - 'create media_grid block content'
   - 'create page content'
@@ -120,13 +139,17 @@ permissions:
   - 'create profile content'
   - 'create pull_quote block content'
   - 'create quick_links block content'
+  - 'create quote_callout block content'
+  - 'create reference_card block content'
   - 'create reusable blocks'
   - 'create tabs block content'
   - 'create terms in affiliation'
   - 'create terms in event_category'
+  - 'create terms in page_category'
   - 'create terms in post_category'
   - 'create terms in tags'
   - 'create text block content'
+  - 'create tiles block content'
   - 'create url aliases'
   - 'create video block content'
   - 'create video media'
@@ -148,6 +171,8 @@ permissions:
   - 'delete any cta_banner block content revisions'
   - 'delete any custom_cards block content'
   - 'delete any custom_cards block content revisions'
+  - 'delete any directory block content'
+  - 'delete any directory block content revisions'
   - 'delete any divider block content'
   - 'delete any divider block content revisions'
   - 'delete any document media'
@@ -157,6 +182,8 @@ permissions:
   - 'delete any event content'
   - 'delete any event_list block content'
   - 'delete any event_list block content revisions'
+  - 'delete any facts block content'
+  - 'delete any facts block content revisions'
   - 'delete any gallery block content'
   - 'delete any gallery block content revisions'
   - 'delete any grand_hero block content'
@@ -164,6 +191,12 @@ permissions:
   - 'delete any image block content'
   - 'delete any image block content revisions'
   - 'delete any image media'
+  - 'delete any image_banner block content'
+  - 'delete any image_banner block content revisions'
+  - 'delete any inline_message block content'
+  - 'delete any inline_message block content revisions'
+  - 'delete any link_grid block content'
+  - 'delete any link_grid block content revisions'
   - 'delete any media'
   - 'delete any media_grid block content'
   - 'delete any media_grid block content revisions'
@@ -176,10 +209,16 @@ permissions:
   - 'delete any pull_quote block content revisions'
   - 'delete any quick_links block content'
   - 'delete any quick_links block content revisions'
+  - 'delete any quote_callout block content'
+  - 'delete any quote_callout block content revisions'
+  - 'delete any reference_card block content'
+  - 'delete any reference_card block content revisions'
   - 'delete any tabs block content'
   - 'delete any tabs block content revisions'
   - 'delete any text block content'
   - 'delete any text block content revisions'
+  - 'delete any tiles block content'
+  - 'delete any tiles block content revisions'
   - 'delete any video block content'
   - 'delete any video block content revisions'
   - 'delete any video media'
@@ -203,6 +242,7 @@ permissions:
   - 'delete own video media'
   - 'delete terms in affiliation'
   - 'delete terms in event_category'
+  - 'delete terms in page_category'
   - 'delete terms in post_category'
   - 'delete terms in tags'
   - 'edit any accordion block content'
@@ -220,10 +260,14 @@ permissions:
   - 'edit any embed media'
   - 'edit any event content'
   - 'edit any event_list block content'
+  - 'edit any facts block content'
   - 'edit any gallery block content'
   - 'edit any grand_hero block content'
   - 'edit any image block content'
   - 'edit any image media'
+  - 'edit any image_banner block content'
+  - 'edit any inline_message block content'
+  - 'edit any link_grid block content'
   - 'edit any media_grid block content'
   - 'edit any page content'
   - 'edit any post content'
@@ -231,8 +275,11 @@ permissions:
   - 'edit any profile content'
   - 'edit any pull_quote block content'
   - 'edit any quick_links block content'
+  - 'edit any quote_callout block content'
+  - 'edit any reference_card block content'
   - 'edit any tabs block content'
   - 'edit any text block content'
+  - 'edit any tiles block content'
   - 'edit any video block content'
   - 'edit any video media'
   - 'edit any view block content'
@@ -251,13 +298,12 @@ permissions:
   - 'edit own webform submission'
   - 'edit terms in affiliation'
   - 'edit terms in event_category'
+  - 'edit terms in page_category'
   - 'edit terms in post_category'
   - 'edit terms in tags'
   - 'mark as hidden in editoria11y'
   - 'override all sticky option'
   - 'override post authored on option'
-  - 'publish any content'
-  - 'publish editable content'
   - 'revert all revisions'
   - 'revert any accordion block content revisions'
   - 'revert any button_link block content revisions'
@@ -270,15 +316,22 @@ permissions:
   - 'revert any divider block content revisions'
   - 'revert any embed block content revisions'
   - 'revert any event_list block content revisions'
+  - 'revert any facts block content revisions'
   - 'revert any gallery block content revisions'
   - 'revert any grand_hero block content revisions'
   - 'revert any image block content revisions'
+  - 'revert any image_banner block content revisions'
+  - 'revert any inline_message block content revisions'
+  - 'revert any link_grid block content revisions'
   - 'revert any media_grid block content revisions'
   - 'revert any post_list block content revisions'
   - 'revert any pull_quote block content revisions'
   - 'revert any quick_links block content revisions'
+  - 'revert any quote_callout block content revisions'
+  - 'revert any reference_card block content revisions'
   - 'revert any tabs block content revisions'
   - 'revert any text block content revisions'
+  - 'revert any tiles block content revisions'
   - 'revert any video block content revisions'
   - 'revert any view block content revisions'
   - 'revert any webform block content revisions'
@@ -287,10 +340,19 @@ permissions:
   - 'revert page revisions'
   - 'revert post revisions'
   - 'revert profile revisions'
-  - 'unpublish any content'
-  - 'unpublish editable content'
   - 'update any media'
   - 'update media'
+  - 'use editorial transition archive'
+  - 'use editorial transition archived_draft'
+  - 'use editorial transition archived_published'
+  - 'use editorial transition create_new_draft'
+  - 'use editorial transition publish'
+  - 'use events transition archive'
+  - 'use events transition create_new_draft'
+  - 'use events transition publish'
+  - 'use events transition restore'
+  - 'use events transition restore_to_draft'
+  - 'use moderation sidebar'
   - 'view all media revisions'
   - 'view all revisions'
   - 'view any accordion block content history'
@@ -304,15 +366,23 @@ permissions:
   - 'view any divider block content history'
   - 'view any embed block content history'
   - 'view any event_list block content history'
+  - 'view any facts block content history'
   - 'view any gallery block content history'
   - 'view any grand_hero block content history'
   - 'view any image block content history'
+  - 'view any image_banner block content history'
+  - 'view any inline_message block content history'
+  - 'view any link_grid block content history'
   - 'view any media_grid block content history'
   - 'view any post_list block content history'
   - 'view any pull_quote block content history'
   - 'view any quick_links block content history'
+  - 'view any quote_callout block content history'
+  - 'view any reference_card block content history'
   - 'view any tabs block content history'
   - 'view any text block content history'
+  - 'view any tiles block content history'
+  - 'view any unpublished content'
   - 'view any video block content history'
   - 'view any view block content history'
   - 'view any webform block content history'
@@ -320,6 +390,7 @@ permissions:
   - 'view any wrapped_image block content history'
   - 'view editoria11y checker'
   - 'view event revisions'
+  - 'view latest version'
   - 'view own unpublished content'
   - 'view own unpublished media'
   - 'view own webform submission'

@@ -1,0 +1,21 @@
+uuid: 45345380-e25e-4691-9695-561c50d013fa
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.link_grid
+    - field.storage.block_content.field_style_color
+  module:
+    - options
+id: block_content.link_grid.field_style_color
+field_name: field_style_color
+entity_type: block_content
+bundle: link_grid
+label: Theme
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ys_themes_default_value_function
+settings: {  }
+field_type: list_string

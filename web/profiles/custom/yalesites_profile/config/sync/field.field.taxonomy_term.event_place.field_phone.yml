@@ -1,0 +1,21 @@
+uuid: e80d9a59-c17d-45c0-9e2f-f80f25e43a5b
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.taxonomy_term.field_phone
+    - taxonomy.vocabulary.event_place
+  module:
+    - telephone
+id: taxonomy_term.event_place.field_phone
+field_name: field_phone
+entity_type: taxonomy_term
+bundle: event_place
+label: Phone
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: telephone

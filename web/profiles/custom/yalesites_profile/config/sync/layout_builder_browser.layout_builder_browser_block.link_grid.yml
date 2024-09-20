@@ -1,0 +1,11 @@
+uuid: 07861ddb-5cf1-46e3-94ef-0c5eb0f79e07
+langcode: en
+status: true
+dependencies: {  }
+id: link_grid
+block_id: 'inline_block:link_grid'
+category: basic
+label: 'Link Grid'
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/link-grid.svg
+image_alt: ''
+weight: -3

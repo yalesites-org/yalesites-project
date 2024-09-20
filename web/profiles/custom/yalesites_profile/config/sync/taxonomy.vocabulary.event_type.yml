@@ -27,7 +27,7 @@ third_party_settings:
         destination: default
         url: ''
         external: ''
-name: 'Event Type'
+name: 'Event Experience'
 vid: event_type
 description: 'Used to classify events based on their type, such as "Online" or "In-Person." This allows for easy categorization and organization of events on a website.'
 weight: 0

@@ -1,0 +1,33 @@
+uuid: 380c13fc-c735-4735-98cc-810a82ed5307
+langcode: en
+status: true
+dependencies:
+  module:
+    - entity_redirect
+third_party_settings:
+  entity_redirect:
+    redirect:
+      add:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      edit:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      delete:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      anonymous:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+id: link_grid
+label: 'Link Grid'
+revision: 1
+description: 'Organize and display a large collection of links in a grid layout.'

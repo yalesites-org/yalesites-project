@@ -1,0 +1,22 @@
+uuid: 32695ae6-aad3-4036-98c3-b6ba6a98de55
+langcode: en
+status: true
+dependencies:
+  module:
+    - taxonomy
+id: event_topic
+label: 'Event Topic'
+type: 'canonical_entities:taxonomy_term'
+pattern: '[yale:event_landing_page_path]/event-topic/[term:name]'
+selection_criteria:
+  734728d7-0942-44e6-8f13-df3c871d7811:
+    id: 'entity_bundle:taxonomy_term'
+    negate: false
+    uuid: 734728d7-0942-44e6-8f13-df3c871d7811
+    context_mapping:
+      taxonomy_term: taxonomy_term
+    bundles:
+      event_topics: event_topics
+selection_logic: and
+weight: -5
+relationships: {  }

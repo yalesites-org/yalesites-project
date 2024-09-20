@@ -1,3 +1,10 @@
+ys_layouts.settings_form:
+  path: '/admin/config/ys-layouts/settings'
+  defaults:
+    _form: '\Drupal\ys_layouts\Form\YaleSitesLayoutsSettingsForm'
+    _title: 'YaleSites Layout Builder'
+  requirements:
+    _permission: 'administer site configuration'
 block_content.add_page:
   path: '/block/add'
   defaults:

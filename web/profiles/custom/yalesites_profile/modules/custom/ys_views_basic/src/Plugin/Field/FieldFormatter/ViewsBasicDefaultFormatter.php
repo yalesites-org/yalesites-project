@@ -68,7 +68,7 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
     string $view_mode,
     array $third_party_settings,
     ViewsBasicManager $viewsBasicManager,
-    Renderer $renderer_service
+    Renderer $renderer_service,
   ) {
     parent::__construct(
       $plugin_id,
@@ -90,7 +90,7 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
     ContainerInterface $container,
     array $configuration,
     $plugin_id,
-    $plugin_definition
+    $plugin_definition,
   ) {
     return new static(
       $plugin_id,
@@ -118,6 +118,15 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
       $elements[$delta] = [
         '#theme' => 'views_basic_formatter_default',
         '#view' => $view,
+        // Extract exposed filters from the view and place them separately.
+        // This is necessary because we are conditionally displaying
+        // specific exposed filters based on field configuration.
+        // By placing the exposed filters outside of the view rendering
+        // context, we ensure that they do not get re-rendered
+        // when AJAX operations are performed on the view,
+        // allowing for better control over which filters are displayed
+        // and maintaining the expected user interface behavior.
+        '#exposed' => $view['#view']->exposed_widgets,
       ];
     }
 

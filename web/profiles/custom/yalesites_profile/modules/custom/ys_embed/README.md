@@ -19,7 +19,7 @@ This module defines a @MediaSource plugin for adding embedded content to the med
 
 ### @EmbedSource Plugin and Manager Service
 
-Plugins provide an object-oriented mechanism for organizing code in Drupal. The EmbedSource plugin created in this module helps to organize the storage, validatation, and rendering of embedded content. Plugins are created for each embed source, including Twitter, Instagram, Microsoft PowerBI, and Qualtrics. A 'Broken' source is added as a useful tool for ensuring code fails gracefully when encountering legacy/broken items in the future. A plugin manager allows developers to find and instantiate EmbedSource plugins.
+Plugins provide an object-oriented mechanism for organizing code in Drupal. The EmbedSource plugin created in this module helps to organize the storage, validatation, and rendering of embedded content. Plugins are created for each embed source, including X, Instagram, Microsoft PowerBI, and Qualtrics. A 'Broken' source is added as a useful tool for ensuring code fails gracefully when encountering legacy/broken items in the future. A plugin manager allows developers to find and instantiate EmbedSource plugins.
 
 - [Code: Plugin Interface](./src/Plugin/EmbedSourceInterface.php)
 - [Code: Plugin Annotation](./src/Annotation/EmbedSource.php)

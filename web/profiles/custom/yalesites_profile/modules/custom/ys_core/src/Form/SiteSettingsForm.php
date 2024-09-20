@@ -94,7 +94,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     YaleSitesMediaManager $ys_media_manager,
     EntityTypeManagerInterface $entity_type_manager,
     AccountProxy $account_interface,
-    ) {
+  ) {
     parent::__construct($config_factory);
     $this->aliasManager = $alias_manager;
     $this->pathValidator = $path_validator;

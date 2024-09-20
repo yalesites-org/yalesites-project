@@ -63,7 +63,7 @@ class Embed extends MediaSourceBase implements MediaSourceFieldConstraintsInterf
     EntityFieldManagerInterface $entity_field_manager,
     ConfigFactoryInterface $config_factory,
     FieldTypePluginManagerInterface $field_type_manager,
-    EmbedSourceManager $embed_manager
+    EmbedSourceManager $embed_manager,
   ) {
     parent::__construct(
       $configuration,
@@ -72,7 +72,7 @@ class Embed extends MediaSourceBase implements MediaSourceFieldConstraintsInterf
       $entity_type_manager,
       $entity_field_manager,
       $field_type_manager,
-      $config_factory
+      $config_factory,
     );
     $this->embedManager = $embed_manager;
   }
@@ -84,7 +84,7 @@ class Embed extends MediaSourceBase implements MediaSourceFieldConstraintsInterf
     ContainerInterface $container,
     array $configuration,
     $plugin_id,
-    $plugin_definition
+    $plugin_definition,
   ) {
     return new static(
       $configuration,

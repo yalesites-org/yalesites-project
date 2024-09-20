@@ -1,0 +1,18 @@
+uuid: abb74f87-a719-4adf-aa10-f55b7550062e
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+id: node.field_localist_register_enabled
+field_name: field_localist_register_enabled
+entity_type: node
+type: boolean
+settings: {  }
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

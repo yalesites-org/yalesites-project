@@ -2,19 +2,21 @@ uuid: 4e8a075a-fed8-4da4-bd16-78971503820a
 langcode: en
 status: true
 dependencies:
+  module:
+    - focal_point
   enforced:
     module:
       - media_library
 _core:
   default_config_hash: 7qJqToD1OQLAyeswpmg7M0LRxQlw1URQkJDWUJCnmR8
 name: media_library
-label: 'Media Library thumbnail (220×220)'
+label: 'Media Library thumbnail (350×350)'
 effects:
-  75b076a8-1234-4b42-85db-bf377c4d8d5f:
-    uuid: 75b076a8-1234-4b42-85db-bf377c4d8d5f
-    id: image_scale
-    weight: 0
+  66acf8b4-c9cf-449b-ab95-a1c52c917e6f:
+    uuid: 66acf8b4-c9cf-449b-ab95-a1c52c917e6f
+    id: focal_point_scale_and_crop
+    weight: 2
     data:
-      width: 220
-      height: 220
-      upscale: false
+      width: 350
+      height: 350
+      crop_type: focal_point

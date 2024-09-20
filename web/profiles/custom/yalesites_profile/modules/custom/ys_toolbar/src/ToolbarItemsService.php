@@ -88,7 +88,7 @@ class ToolbarItemsService {
     RouteMatchInterface $routeMatch,
     RedirectDestination $redirect_destination,
     AccountInterface $account,
-    LocalTaskManagerInterface $local_task_manager
+    LocalTaskManagerInterface $local_task_manager,
   ) {
     $this->accessManager = $access_manager;
     $this->routeMatch = $routeMatch;

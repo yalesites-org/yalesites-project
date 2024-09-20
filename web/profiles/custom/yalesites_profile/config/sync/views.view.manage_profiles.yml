@@ -85,8 +85,12 @@ display:
           empty_zero: false
           hide_alter_empty: true
           action_title: Action
-          include_exclude: exclude
-          selected_actions: {  }
+          include_exclude: include
+          selected_actions:
+            - node_delete_action
+            - pathauto_update_alias_node
+            - publish_moderated_content
+            - unpublish_moderated_content
         title:
           id: title
           table: node_field_data

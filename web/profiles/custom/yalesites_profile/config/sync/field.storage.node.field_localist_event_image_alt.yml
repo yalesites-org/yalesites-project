@@ -1,0 +1,21 @@
+uuid: 5dff04ed-8fde-41ea-95fc-f3149ea97520
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+id: node.field_localist_event_image_alt
+field_name: field_localist_event_image_alt
+entity_type: node
+type: string
+settings:
+  max_length: 255
+  case_sensitive: false
+  is_ascii: false
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false
