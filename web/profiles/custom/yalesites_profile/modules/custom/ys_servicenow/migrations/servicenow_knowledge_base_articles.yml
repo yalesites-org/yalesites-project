@@ -26,17 +26,26 @@ source:
     - name: servicenow_workflow_state
       label: 'ServiceNow workflow state'
       selector: workflow_state
+    - name: servicenow_keywords
+      label: 'ServiceNow keywords'
+      selector: description
   ids:
     servicenow_number:
       type: string
 process:
   title: servicenow_title
+  servicenow_body:
+    - plugin: concat
+      source:
+        - servicenow_title
+        - servicenow_keywords
+      delimiter: ' '
   block_id:
     plugin: migration_lookup
     migration: servicenow_knowledge_base_article_block
     source: servicenow_number
   layout_builder__layout:
-    source: servicenow_title
+    source: servicenow_body
     plugin: layout_builder_sections
   moderation_state:
     plugin: callback

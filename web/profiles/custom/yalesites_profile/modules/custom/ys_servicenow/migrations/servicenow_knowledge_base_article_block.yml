@@ -23,6 +23,9 @@ source:
     - name: servicenow_text
       label: 'ServiceNow text'
       selector: text
+    - name: servicenow_keywords
+      label: 'ServiceNow keywords'
+      selector: description
   ids:
     servicenow_number:
       type: string
