@@ -2,11 +2,11 @@
 
 namespace Drupal\ys_localist;
 
-use Drupal\calendar_link\Twig\CalendarLinkTwigExtension;
 use Drupal\Core\Datetime\DateFormatter;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Url;
+use Drupal\calendar_link\Twig\CalendarLinkTwigExtension;
 use Drupal\node\NodeInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 

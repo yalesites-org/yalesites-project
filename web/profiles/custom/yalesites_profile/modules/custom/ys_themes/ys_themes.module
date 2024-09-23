@@ -25,7 +25,7 @@ use Drupal\field\Entity\FieldStorageConfig;
  *
  * @see options_allowed_values()
  */
-function ys_themes_allowed_values_function(FieldStorageConfig $definition, ContentEntityInterface $entity = NULL, $cacheable) {
+function ys_themes_allowed_values_function(FieldStorageConfig $definition, ?ContentEntityInterface $entity = NULL, $cacheable) {
   $options = [];
   $config = \Drupal::config('ys_themes.component_overrides');
 
