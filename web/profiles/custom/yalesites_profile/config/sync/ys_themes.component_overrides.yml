@@ -257,6 +257,6 @@ video:
 image_banner:
   field_style_variation:
     values:
-      large: Large
-      small: Small
-    default: large
+      tall: Tall
+      short: Short
+    default: tall
