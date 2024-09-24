@@ -157,7 +157,7 @@ content:
       placeholder: ''
     third_party_settings: {  }
   field_affiliation:
-    type: options_select
+    type: chosen_select
     weight: 36
     region: content
     settings: {  }
