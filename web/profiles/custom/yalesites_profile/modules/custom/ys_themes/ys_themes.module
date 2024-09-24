@@ -15,17 +15,17 @@ use Drupal\field\Entity\FieldStorageConfig;
  *
  * @param \Drupal\field\Entity\FieldStorageConfig $definition
  *   The field definition.
- * @param \Drupal\Core\Entity\ContentEntityInterface|null $entity
- *   The entity being created, if applicable.
  * @param bool $cacheable
  *   Boolean indicating if the results are cache-able.
+ * @param \Drupal\Core\Entity\ContentEntityInterface|null $entity
+ *   The entity being created, if applicable.
  *
  * @return array
  *   An array of possible key and value options.
  *
  * @see options_allowed_values()
  */
-function ys_themes_allowed_values_function(FieldStorageConfig $definition, ?ContentEntityInterface $entity = NULL, $cacheable) {
+function ys_themes_allowed_values_function(FieldStorageConfig $definition, $cacheable, ?ContentEntityInterface $entity = NULL) {
   $options = [];
   $config = \Drupal::config('ys_themes.component_overrides');
 
