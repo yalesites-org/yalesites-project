@@ -1,7 +1,7 @@
 {% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
 
 {% set image_banner__video = paragraph.field_media.entity.field_media_video_file.entity.uri.value is not empty %}
-{% set image_banner__image_size = content.field_style_variation.0['#markup']|default('large') %}
+{% set image_banner__image_size = content.field_style_variation.0['#markup']|default('tall') %}
 
 {% block content %}
 
