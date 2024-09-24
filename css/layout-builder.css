@@ -104,6 +104,11 @@ display: flex;
   margin: 0;
 }
 
+/* Remove bottom margin from the image-banner so that it can be flush with other items */
+.layout--banner .image-banner {
+  margin-bottom: 0;
+}
+
 /* Wingsuit layout builder styles */
 
 .block-categories .layout-builder-browser-block-item img {
