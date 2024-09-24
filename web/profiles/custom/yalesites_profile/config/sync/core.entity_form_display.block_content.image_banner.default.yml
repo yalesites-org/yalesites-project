@@ -19,7 +19,9 @@ content:
     weight: 1
     region: content
     settings:
-      media_types: {  }
+      media_types:
+        - image
+        - background_video
     third_party_settings:
       media_library_edit:
         show_edit: '1'
