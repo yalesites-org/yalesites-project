@@ -38,6 +38,19 @@ targetEntityType: node
 bundle: profile
 mode: list_item
 content:
+  content_moderation_control:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_affiliation:
+    type: entity_reference_label
+    label: hidden
+    settings:
+      link: false
+    third_party_settings: {  }
+    weight: 8
+    region: content
   field_external_source:
     type: link_separate
     label: hidden
@@ -48,7 +61,7 @@ content:
       rel: ''
       target: ''
     third_party_settings: {  }
-    weight: 5
+    weight: 6
     region: content
   field_media:
     type: entity_reference_entity_view
@@ -57,7 +70,7 @@ content:
       view_mode: profile_directory_card_1_1_
       link: false
     third_party_settings: {  }
-    weight: 0
+    weight: 1
     region: content
   field_position:
     type: string
@@ -65,14 +78,22 @@ content:
     settings:
       link_to_entity: false
     third_party_settings: {  }
-    weight: 4
+    weight: 5
     region: content
   field_subtitle:
     type: text_default
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 5
+    weight: 7
+    region: content
+  field_tags:
+    type: entity_reference_label
+    label: hidden
+    settings:
+      link: false
+    third_party_settings: {  }
+    weight: 9
     region: content
   field_teaser_media:
     type: entity_reference_entity_view
@@ -81,14 +102,14 @@ content:
       view_mode: profile_directory_card_1_1_
       link: false
     third_party_settings: {  }
-    weight: 1
+    weight: 2
     region: content
   field_teaser_text:
     type: text_default
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 3
+    weight: 4
     region: content
   field_teaser_title:
     type: string
@@ -96,11 +117,10 @@ content:
     settings:
       link_to_entity: false
     third_party_settings: {  }
-    weight: 2
+    weight: 3
     region: content
 hidden:
   field_address: true
-  field_affiliation: true
   field_department: true
   field_email: true
   field_first_name: true
@@ -108,8 +128,8 @@ hidden:
   field_last_name: true
   field_login_required: true
   field_metatags: true
-  field_tags: true
   field_telephone: true
   layout_builder__layout: true
   links: true
   search_api_excerpt: true
+  workflow_buttons: true

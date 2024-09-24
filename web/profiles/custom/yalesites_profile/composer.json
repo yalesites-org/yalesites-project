@@ -108,7 +108,7 @@
     "laminas/laminas-escaper": "2.13.0",
     "northernco/ckeditor5-anchor-drupal": "0.4.0",
     "yalesites-org/ai_engine": "1.2.4",
-    "yalesites-org/atomic": "1.35.0",
+    "yalesites-org/atomic": "1.36.0",
     "yalesites-org/yale_cas": "v1.0.5"
   },
   "minimum-stability": "dev",
@@ -146,7 +146,7 @@
         "fix validation issue on adding url redirect": "https://www.drupal.org/files/issues/2024-08-11/redirect--2024-08-11--3057250-79.patch"
       },
       "drupal/typogrify": {
-        "update deprecated php for v8.2 https://www.drupal.org/project/typogrify/issues/3398815": "https://git.drupalcode.org/project/typogrify/-/merge_requests/6.diff"
+        "update deprecated php for v8.2 https://www.drupal.org/project/typogrify/issues/3398815": "patches/typogrify/3398815.patch"
       },
       "drupal/google_analytics": {
         "Cannot install from existing config https://www.drupal.org/project/google_analytics/issues/3373921": "https://www.drupal.org/files/issues/2023-08-07/google-analytics-issues-3373921-cannot-install-from-existing-config-11.patch",
