@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "@yalesites-org/eslint-config-and-other-formatting": "^1.5.4",
-    "semantic-release": "^23.0.8"
+    "semantic-release": "^24.1.1"
   },
   "lint-staged": {
     "components/**/*.{js,scss,php}": [
@@ -32,5 +32,8 @@
   },
   "dependencies": {
     "@yalesites-org/component-library-twig": "^1.44.0"
-  }
+  },
+  "bundleDependencies": [
+    "@yalesites-org/component-library-twig"
+  ]
 }
