@@ -2,7 +2,6 @@
 
 namespace Drupal\ys_layouts\Service;
 
-use Drupal\block_content\Entity\BlockContent;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityFieldManager;
@@ -10,6 +9,7 @@ use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\block_content\Entity\BlockContent;
 use Drupal\node\NodeInterface;
 use Psr\Log\LoggerInterface;
 
