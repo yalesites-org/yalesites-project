@@ -31,7 +31,8 @@
     ]
   },
   "dependencies": {
-    "@yalesites-org/component-library-twig": "^1.44.0"
+    "@yalesites-org/component-library-twig": "^1.44.0",
+    "linkpurpose": "github:itmaybejj/linkpurpose"
   },
   "bundleDependencies": [
     "@yalesites-org/component-library-twig"
