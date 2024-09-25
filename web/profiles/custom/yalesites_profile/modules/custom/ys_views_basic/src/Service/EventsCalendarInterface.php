@@ -84,7 +84,7 @@ interface EventsCalendarInterface {
    * @return bool
    *   TRUE if the event is all day, FALSE otherwise.
    */
-  public function isAllDay(int $start_ts, int $end_ts, string $timezone = NULL): bool;
+  public function isAllDay(int $start_ts, int $end_ts, ?string $timezone = NULL): bool;
 
   /**
    * Get monthly events nodes.

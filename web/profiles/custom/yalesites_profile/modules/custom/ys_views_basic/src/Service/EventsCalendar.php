@@ -241,7 +241,7 @@ class EventsCalendar implements EventsCalendarInterface {
   /**
    * {@inheritdoc}
    */
-  public function isAllDay(int $start_ts, int $end_ts, string $timezone = NULL): bool {
+  public function isAllDay(int $start_ts, int $end_ts, ?string $timezone = NULL): bool {
     if ($timezone) {
       $default_tz = date_default_timezone_get();
       date_default_timezone_set($timezone);
