@@ -1,0 +1,14 @@
+ys_servicenow.settings:
+  path: '/admin/yalesites/servicenow'
+  defaults:
+    _form: '\Drupal\ys_servicenow\Form\ServiceNowSettings'
+    _title: 'ServiceNow Settings'
+  requirements:
+    _permission: 'yalesites manage servicenow'
+ys_servicenow.run_migrations:
+  path: '/admin/yalesites/servicenow/sync'
+  defaults:
+    _controller: '\Drupal\ys_servicenow\Controller\RunMigrations::runAllMigrations'
+    _title: 'Import ServiceNow events now'
+  requirements:
+    _permission: 'yalesites manage servicenow'
