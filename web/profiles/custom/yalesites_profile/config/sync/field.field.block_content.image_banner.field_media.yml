@@ -27,5 +27,5 @@ settings:
       field: _none
       direction: ASC
     auto_create: true
-    auto_create_bundle: background_video
+    auto_create_bundle: image
 field_type: entity_reference
