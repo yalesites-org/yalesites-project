@@ -16,6 +16,7 @@ dependencies:
     - field.field.node.profile.field_media
     - field.field.node.profile.field_metatags
     - field.field.node.profile.field_position
+    - field.field.node.profile.field_pronouns
     - field.field.node.profile.field_subtitle
     - field.field.node.profile.field_tags
     - field.field.node.profile.field_teaser_media
@@ -47,6 +48,11 @@ targetEntityType: node
 bundle: profile
 mode: condensed
 content:
+  content_moderation_control:
+    settings: {  }
+    third_party_settings: {  }
+    weight: -20
+    region: content
   field_external_source:
     type: link_separate
     label: hidden
@@ -78,6 +84,7 @@ hidden:
   field_login_required: true
   field_media: true
   field_metatags: true
+  field_pronouns: true
   field_subtitle: true
   field_tags: true
   field_teaser_media: true
@@ -87,3 +94,4 @@ hidden:
   layout_builder__layout: true
   links: true
   search_api_excerpt: true
+  workflow_buttons: true

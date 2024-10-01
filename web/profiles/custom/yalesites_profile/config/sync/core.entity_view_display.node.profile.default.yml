@@ -15,6 +15,7 @@ dependencies:
     - field.field.node.profile.field_media
     - field.field.node.profile.field_metatags
     - field.field.node.profile.field_position
+    - field.field.node.profile.field_pronouns
     - field.field.node.profile.field_subtitle
     - field.field.node.profile.field_tags
     - field.field.node.profile.field_teaser_media
@@ -322,6 +323,14 @@ content:
       link_to_entity: false
     third_party_settings: {  }
     weight: 107
+    region: content
+  field_pronouns:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 119
     region: content
   field_subtitle:
     type: text_default
