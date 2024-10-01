@@ -441,10 +441,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         // This ensures that if the options for showing categories, tags,
         // or thumbnails change, the cache will be invalidated,
         // and the view will be re-rendered with the new options.
-        foreach ($view['#rows']['#rows'] as &$resultRow) {
-          $resultRow['#cache']['keys'][] = $field_display_options['show_categories'];
-          $resultRow['#cache']['keys'][] = $field_display_options['show_tags'];
-          $resultRow['#cache']['keys'][] = $field_display_options['show_thumbnail'];
+        if ($view['#rows'] && $view['#rows']['#rows']) {
+          foreach ($view['#rows']['#rows'] as &$resultRow) {
+            $resultRow['#cache']['keys'][] = $field_display_options['show_categories'];
+            $resultRow['#cache']['keys'][] = $field_display_options['show_tags'];
+            $resultRow['#cache']['keys'][] = $field_display_options['show_thumbnail'];
+          }
         }
         break;
 
