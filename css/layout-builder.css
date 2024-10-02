@@ -13,7 +13,6 @@ site header and site footer, respectively.
 ****************
 */
 
-
 /* This `layout-banner override, overrides the .main-content > *:first-child
 statement in web/themes/contrib/atomic/_yale-packages/component-library-twig/components/04-page-layouts/page-layouts.scss
 
@@ -59,6 +58,7 @@ need to have margin-bottom set to 0 */
 .main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .callouts:last-child,
 .main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .cta-banner:last-child,
 .main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .grand-hero-banner:last-child,
+.main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .image-banner:last-child,
 .main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .quick-links:last-child,
 .main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .text-with-image:not([data-component-theme='default']):last-child, 
 .main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .content-spotlight-portrait:not([data-component-theme='default']):last-child {
@@ -88,7 +88,6 @@ display: flex;
   margin-bottom: 0;
 }
 
-
 /* Fix for breadcrumb spacing on profile nodes */
 .ys-content-type-profile .main-content .breadcrumbs__wrapper {
   margin-bottom: var(--size-spacing-7);
@@ -103,6 +102,11 @@ display: flex;
 /* Remove margin from `p` element when used in sidebar */
 .block-wrapper .text p {
   margin: 0;
+}
+
+/* Remove bottom margin from the image-banner so that it can be flush with other items */
+.layout--banner .image-banner {
+  margin-bottom: 0;
 }
 
 /* Wingsuit layout builder styles */
