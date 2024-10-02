@@ -4,10 +4,12 @@ status: true
 dependencies:
   config:
     - field.field.media.document.field_media_file
+    - field.field.media.document.field_metatags
     - field.field.media.document.field_tags
     - media.type.document
   module:
     - file
+    - metatag
 id: media.document.default
 targetEntityType: media
 bundle: document
@@ -19,6 +21,13 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 0
+    region: content
+  field_metatags:
+    type: metatag_empty_formatter
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
     region: content
 hidden:
   created: true
