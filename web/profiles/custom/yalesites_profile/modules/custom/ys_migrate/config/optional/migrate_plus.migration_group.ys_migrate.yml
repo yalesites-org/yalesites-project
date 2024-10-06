@@ -1,0 +1,18 @@
+langcode: en
+status: true
+dependencies: {  }
+id: ys_migrate
+label: 'Yalesite D7 migrations'
+description: 'Migration group for Yalesites'
+source_type: ''
+module: null
+shared_configuration:
+  source:
+    constants:
+      one: 1
+      zero: 0
+      slash: /
+      langcode_en: 'en'
+      full_html: full_html
+      'true': true
+      'false': false
