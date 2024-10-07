@@ -1,0 +1,11 @@
+uuid: c4c1fe69-3658-4316-a349-fbb29416756e
+langcode: en
+status: true
+dependencies:
+  module:
+    - ai_engine_metadata
+id: disable_ai
+label: 'Disable AI'
+type: node
+plugin: ai_engine_disable_ai
+configuration: {  }

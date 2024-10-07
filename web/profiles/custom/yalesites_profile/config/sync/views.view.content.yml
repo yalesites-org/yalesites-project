@@ -80,6 +80,8 @@ display:
           action_title: Action
           include_exclude: include
           selected_actions:
+            - disable_ai
+            - enable_ai
             - node_delete_action
             - pathauto_update_alias_node
             - publish_moderated_content
