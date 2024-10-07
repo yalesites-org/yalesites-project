@@ -1,0 +1,20 @@
+pager__uid: 3
+current: 7
+items:
+  first:
+    href: '#'
+  previous:
+    href: '#'
+  pages:
+    1:
+    2:
+    3:
+      href: '#'
+    4:
+      href: '#'
+    5:
+      href: '#'
+    6:
+      href: '#'
+    7:
+      href: '#'

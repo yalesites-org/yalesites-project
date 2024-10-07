@@ -1,0 +1,121 @@
+<h2>Table with Column Headers</h2>
+
+{% set table_with_column_headers %}
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Phone Number</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Deanna Curtis</td>
+        <td>deanna.curtis@example.com</td>
+        <td>(316) 555-0116</td>
+      </tr>
+      <tr>
+        <td>Jessica Hanson</td>
+        <td>jessica.hanson@example.com</td>
+        <td>(208) 555-0112</td>
+      </tr>
+      <tr>
+        <td>Michelle Rivera</td>
+        <td>michelle.rivera@example.com</td>
+        <td>(219) 555-0114</td>
+      </tr>
+      <tr>
+        <td>Nathan Roberts</td>
+        <td>nathan.roberts@exxample.com</td>
+        <td>(229) 555-0109</td>
+      </tr>
+    </tbody>
+    <caption>Optional caption for the table here.</caption>
+  </table>
+{% endset %}
+
+{% include "@molecules/text/yds-text-field.twig" with {
+  text_field__content: table_with_column_headers,
+} %}
+
+<h2>Table with Column and Row Headers</h2>
+
+{% set table_with_column_and_row_headers %}
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <th>2020</th>
+        <th>2021</th>
+        <th>2022</th>
+        <th>2022</th>
+        <th>2022</th>
+        <th>2022</th>
+        <th>2022</th>
+        <th>2022</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th>Freshman</th>
+        <td>130</td>
+        <td>556</td>
+        <td>here's some long text, it's really long</td>
+        <td>here's some long text, it's really long</td>
+        <td>here's some long text, it's really long</td>
+        <td>here's some long text, it's really long</td>
+        <td>here's some long text, it's really long</td>
+        <td>here's some long text, it's really long</td>
+      </tr>
+      <tr>
+        <th>Sophomore</th>
+        <td>703</td>
+        <td>740</td>
+        <td>798</td>
+        <td>798</td>
+        <td>798</td>
+        <td>798</td>
+        <td>798</td>
+        <td>798</td>
+      </tr>
+      <tr>
+        <th>Junior</th>
+        <td>423</td>
+        <td>922</td>
+        <td>453</td>
+        <td>453</td>
+        <td>453</td>
+        <td>453</td>
+        <td>453</td>
+        <td>453</td>
+      </tr>
+      <tr>
+        <th>Senior</th>
+        <td>647</td>
+        <td>877</td>
+        <td>583</td>
+        <td>583</td>
+        <td>583</td>
+        <td>583</td>
+        <td>583</td>
+        <td>583</td>
+      </tr>
+      <tr>
+        <th>Graduate</th>
+        <td>357</td>
+        <td>826</td>
+        <td>492</td>
+        <td>492</td>
+        <td>492</td>
+        <td>492</td>
+        <td>492</td>
+        <td>492</td>
+      </tr>
+    </tbody>
+  </table>
+{% endset %}
+
+{% include "@molecules/text/yds-text-field.twig" with {
+  text_field__content: table_with_column_and_row_headers,
+} %}
