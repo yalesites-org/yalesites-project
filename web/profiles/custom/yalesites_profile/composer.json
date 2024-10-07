@@ -109,7 +109,7 @@
     "jjj/chosen": "2.2.1",
     "laminas/laminas-escaper": "2.12",
     "northernco/ckeditor5-anchor-drupal": "0.4.0",
-    "yalesites-org/ai_engine": "dev-main",
+    "yalesites-org/ai_engine": "dev-YSP-672-ai-add-media-payloads-and-pipelines",
     "yalesites-org/atomic": "1.38.0",
     "yalesites-org/yale_cas": "1.0.4"
   },
