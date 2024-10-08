@@ -4,8 +4,10 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.node.list_item
+    - field.field.node.page.field_audience
     - field.field.node.page.field_category
     - field.field.node.page.field_external_source
+    - field.field.node.page.field_flag
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
     - field.field.node.page.field_tags
@@ -86,6 +88,8 @@ content:
     weight: 1
     region: content
 hidden:
+  field_audience: true
+  field_flag: true
   field_login_required: true
   field_metatags: true
   layout_builder__layout: true
