@@ -7,5 +7,5 @@ ignored_config_entities:
   - 'ys_core*'
   - ys_themes.theme_settings
   - 'ys_localist*'
-  - 'ys_servicenow*'
   - 'ai_engine*'
+  - 'ys_servicenow*'
