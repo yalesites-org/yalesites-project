@@ -119,6 +119,7 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
     // Map the view mode in Drupal to the type attribute for the component.
     $viewModesMap = [
       'card' => 'grid',
+      'text_card' => 'grid',
       'list_item' => 'list',
       'condensed' => 'condensed',
       'directory' => 'profile-directory',
