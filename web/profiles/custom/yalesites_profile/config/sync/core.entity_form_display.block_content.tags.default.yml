@@ -1,0 +1,45 @@
+uuid: aec9487e-e4cf-4057-b324-99a12f9215f5
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.tags
+    - field.field.block_content.tags.field_selected_resource
+  module:
+    - hide_revision_field
+id: block_content.tags.default
+targetEntityType: block_content
+bundle: tags
+mode: default
+content:
+  field_selected_resource:
+    type: entity_reference_autocomplete
+    weight: 82
+    region: content
+    settings:
+      match_operator: CONTAINS
+      match_limit: 10
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  info:
+    type: string_textfield
+    weight: -5
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  revision_log:
+    type: hide_revision_field_log_widget
+    weight: 80
+    region: content
+    settings:
+      rows: 5
+      placeholder: ''
+      show: true
+      default: ''
+      permission_based: false
+      allow_user_settings: true
+    third_party_settings: {  }
+hidden: {  }
