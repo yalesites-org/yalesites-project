@@ -1,0 +1,7 @@
+ys_views_basic.events_calendar:
+  path: '/events-calendar'
+  defaults:
+    _title: 'Events Calendar'
+    _controller: '\Drupal\ys_views_basic\Controller\EventsCalendarController'
+  requirements:
+    _permission: 'access content'

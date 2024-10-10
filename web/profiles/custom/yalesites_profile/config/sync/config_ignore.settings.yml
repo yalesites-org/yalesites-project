@@ -9,3 +9,4 @@ ignored_config_entities:
   - 'ys_core*'
   - 'ys_localist*'
   - ys_themes.theme_settings
+  - 'ys_servicenow*'

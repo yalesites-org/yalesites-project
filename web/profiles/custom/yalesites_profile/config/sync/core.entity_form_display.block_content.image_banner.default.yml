@@ -5,6 +5,7 @@ dependencies:
   config:
     - block_content.type.image_banner
     - field.field.block_content.image_banner.field_media
+    - field.field.block_content.image_banner.field_style_variation
   module:
     - media_library
     - media_library_edit
@@ -18,10 +19,18 @@ content:
     weight: 1
     region: content
     settings:
-      media_types: {  }
+      media_types:
+        - image
+        - background_video
     third_party_settings:
       media_library_edit:
         show_edit: '1'
+  field_style_variation:
+    type: options_select
+    weight: 11
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   info:
     type: string_textfield
     weight: 0
