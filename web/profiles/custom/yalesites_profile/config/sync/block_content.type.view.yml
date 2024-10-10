@@ -4,5 +4,5 @@ status: true
 dependencies: {  }
 id: view
 label: View
-revision: 1
+revision: true
 description: 'View is a reference component that can pull from your content types to create a dynamic view on your webpage.'

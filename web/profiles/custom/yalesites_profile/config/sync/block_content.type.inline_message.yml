@@ -29,5 +29,5 @@ third_party_settings:
         external: ''
 id: inline_message
 label: 'In-Line Message'
-revision: 0
+revision: false
 description: 'Add a non-dismissible message box in your content to draw attention to important information or warnings.'

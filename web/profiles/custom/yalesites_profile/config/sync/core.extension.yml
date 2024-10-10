@@ -2,6 +2,7 @@ _core:
   default_config_hash: R4IF-ClDHXxblLcG0L7MgsLvfBIMAvi_skumNFQwkDc
 module:
   workflow_buttons: -1
+  auto_entitylabel: -100
   action: 0
   address: 0
   admin_toolbar: 0
@@ -13,7 +14,6 @@ module:
   ai_engine_metadata: 0
   allowed_formats: 0
   anchor_link: 0
-  auto_entitylabel: 0
   better_exposed_filters: 0
   block: 0
   block_content: 0
@@ -61,13 +61,10 @@ module:
   image: 0
   imagemagick: 0
   improve_line_breaks_filter: 0
-  jquery_ui: 0
-  jquery_ui_datepicker: 0
-  jquery_ui_slider: 0
-  jquery_ui_touch_punch: 0
   key: 0
   layout_builder: 0
   layout_builder_browser: 0
+  layout_builder_expose_all_field_blocks: 0
   layout_builder_lock: 0
   layout_builder_restrictions: 0
   layout_builder_restrictions_by_region: 0

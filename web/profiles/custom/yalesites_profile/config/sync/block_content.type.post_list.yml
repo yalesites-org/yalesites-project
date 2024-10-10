@@ -4,5 +4,5 @@ status: true
 dependencies: {  }
 id: post_list
 label: 'Post Feed'
-revision: 1
+revision: true
 description: 'Post feed pulls in your post content and dynamically references them on your webpage.'
