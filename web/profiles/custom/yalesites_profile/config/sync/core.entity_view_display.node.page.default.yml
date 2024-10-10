@@ -133,6 +133,10 @@ third_party_settings:
         - layout_onecol
         - ys_layout_two_column
       allowlisted_blocks:
+        layout_onecol:
+          all_regions:
+            'Lists (Views)':
+              - 'views_block:resource_tags-block_1'
         ys_layout_banner:
           all_regions:
             'Inline blocks':
@@ -208,7 +212,6 @@ third_party_settings:
             - Devel
             - Forms
             - Help
-            - 'Lists (Views)'
             - Menus
             - System
             - Webform
