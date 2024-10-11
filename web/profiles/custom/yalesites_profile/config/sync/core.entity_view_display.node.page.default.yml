@@ -13,6 +13,7 @@ dependencies:
     - field.field.node.page.field_teaser_media
     - field.field.node.page.field_teaser_text
     - field.field.node.page.field_teaser_title
+    - field.field.node.page.field_type
     - field.field.node.page.layout_builder__layout
     - node.type.page
   module:
@@ -74,6 +75,22 @@ third_party_settings:
                   link: true
                 third_party_settings: {  }
             weight: 2
+            additional: {  }
+          ec2bce73-9bae-46cb-9ee3-becb7dd5fa65:
+            uuid: ec2bce73-9bae-46cb-9ee3-becb7dd5fa65
+            region: content
+            configuration:
+              id: 'field_block:node:page:field_type'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: entity_reference_label
+                label: above
+                settings:
+                  link: true
+                third_party_settings: {  }
+            weight: 3
             additional: {  }
         third_party_settings:
           layout_builder_lock:
@@ -285,6 +302,14 @@ content:
       link: true
     third_party_settings: {  }
     weight: 2
+    region: content
+  field_type:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 4
     region: content
 hidden:
   field_category: true
