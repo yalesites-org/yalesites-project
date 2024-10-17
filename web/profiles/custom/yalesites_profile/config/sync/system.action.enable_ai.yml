@@ -1,0 +1,11 @@
+uuid: e9915862-ac04-4981-89a0-63858245e47a
+langcode: en
+status: true
+dependencies:
+  module:
+    - ai_engine_metadata
+id: enable_ai
+label: 'Enable AI'
+type: node
+plugin: ai_engine_enable_ai
+configuration: {  }
