@@ -129,7 +129,8 @@
       "drupal/core-project-message": true,
       "phpstan/extension-installer": true,
       "drupal/console-extend-plugin": true,
-      "php-http/discovery": true
+      "php-http/discovery": true,
+      "tbachert/spi": true
     }
   },
   "scripts": {
