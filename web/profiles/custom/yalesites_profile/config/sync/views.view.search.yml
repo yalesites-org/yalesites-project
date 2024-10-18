@@ -117,6 +117,7 @@ display:
             offset: false
             offset_label: Offset
           quantity: 9
+          pagination_heading_level: h4
       exposed_form:
         type: basic
         options:
@@ -183,7 +184,6 @@ display:
             query_param: keywords
             fallback: ''
             multiple: and
-          default_argument_skip_url: true
           summary_options: {  }
           summary:
             sort_order: asc
@@ -219,7 +219,6 @@ display:
             query_param: type
             fallback: ''
             multiple: and
-          default_argument_skip_url: false
           summary_options: {  }
           summary:
             sort_order: asc

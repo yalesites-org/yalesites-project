@@ -4,5 +4,5 @@ status: true
 dependencies: {  }
 id: media_grid
 label: 'Media Grid'
-revision: 1
+revision: true
 description: 'Media Grid allows you to display numerous images in a grid layout. The Media Grid component will display at full width when there are four or more images added.'

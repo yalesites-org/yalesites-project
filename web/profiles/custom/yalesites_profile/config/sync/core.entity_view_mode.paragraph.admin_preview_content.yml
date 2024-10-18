@@ -6,5 +6,6 @@ dependencies:
     - paragraphs
 id: paragraph.admin_preview_content
 label: 'Admin Preview - Content'
+description: ''
 targetEntityType: paragraph
 cache: true

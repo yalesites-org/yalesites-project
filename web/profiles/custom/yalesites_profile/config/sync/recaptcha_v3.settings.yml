@@ -1,5 +1,6 @@
 _core:
   default_config_hash: jv0PKCJEOq2bOwY9RspuPZCf67ifVJ4tfTk-BfZMw8k
+langcode: en
 site_key: HIDDEN
 secret_key: HIDDEN
 verify_hostname: true

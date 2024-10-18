@@ -6,5 +6,6 @@ dependencies:
     - media
 id: media.text_with_image_feature_equal
 label: 'Text with Image | Feature | Equal'
+description: ''
 targetEntityType: media
 cache: true

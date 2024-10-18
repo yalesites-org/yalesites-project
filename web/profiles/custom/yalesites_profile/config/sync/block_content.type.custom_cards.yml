@@ -4,5 +4,5 @@ status: true
 dependencies: {  }
 id: custom_cards
 label: 'Custom Cards'
-revision: 1
+revision: true
 description: 'Custom Cards allow you to create a group of related pieces of information. This container resembles a playing card in shape and size.'
