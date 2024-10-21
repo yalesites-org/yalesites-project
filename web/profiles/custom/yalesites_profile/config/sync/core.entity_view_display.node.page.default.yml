@@ -6,7 +6,6 @@ dependencies:
     - field.field.node.page.field_audience
     - field.field.node.page.field_category
     - field.field.node.page.field_external_source
-    - field.field.node.page.field_flag
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
     - field.field.node.page.field_tags
@@ -43,22 +42,6 @@ third_party_settings:
               context_mapping:
                 entity: layout_builder.entity
             weight: 0
-            additional: {  }
-          c94820ec-76cf-460b-a861-e32efed79f50:
-            uuid: c94820ec-76cf-460b-a861-e32efed79f50
-            region: content
-            configuration:
-              id: 'field_block:node:page:field_flag'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: entity_reference_label
-                label: above
-                settings:
-                  link: true
-                third_party_settings: {  }
-            weight: 1
             additional: {  }
           3a023761-75c3-4330-8d61-62826da7868a:
             uuid: 3a023761-75c3-4330-8d61-62826da7868a
@@ -153,6 +136,7 @@ third_party_settings:
         layout_onecol:
           all_regions:
             'Lists (Views)':
+              - 'views_block:popular_resources-block_1'
               - 'views_block:resource_tags-block_1'
         ys_layout_banner:
           all_regions:
@@ -297,14 +281,6 @@ content:
       target: ''
     third_party_settings: {  }
     weight: 1
-    region: content
-  field_flag:
-    type: entity_reference_label
-    label: above
-    settings:
-      link: true
-    third_party_settings: {  }
-    weight: 2
     region: content
   field_type:
     type: entity_reference_label
