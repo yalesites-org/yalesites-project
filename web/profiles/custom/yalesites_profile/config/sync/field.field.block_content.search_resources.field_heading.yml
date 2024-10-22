@@ -1,0 +1,24 @@
+uuid: be7465bc-5f09-4802-a851-54d0ea88eb7e
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.search_resources
+    - field.storage.block_content.field_heading
+    - filter.format.heading_html
+  module:
+    - text
+id: block_content.search_resources.field_heading
+field_name: field_heading
+entity_type: block_content
+bundle: search_resources
+label: Heading
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - heading_html
+field_type: text
