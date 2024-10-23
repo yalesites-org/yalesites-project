@@ -4,5 +4,5 @@ status: true
 dependencies: {  }
 id: quick_links
 label: 'Quick Links'
-revision: 1
+revision: true
 description: 'Quick Links allow you to create a grouped visual call-to-action for multiple external and internal links. '

@@ -4,5 +4,5 @@ status: true
 dependencies: {  }
 id: accordion
 label: Accordion
-revision: 1
+revision: true
 description: 'Accordions are used to hide and display on-page information. Tease your content with the Accordion Item Header with a few words or a phrase. Use accordions sparingly, as hiding content that users must interact with to reveal is not an optimal user experience.'

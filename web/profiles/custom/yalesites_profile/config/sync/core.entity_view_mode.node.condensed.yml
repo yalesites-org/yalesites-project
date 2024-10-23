@@ -6,5 +6,6 @@ dependencies:
     - node
 id: node.condensed
 label: Condensed
+description: ''
 targetEntityType: node
 cache: true
