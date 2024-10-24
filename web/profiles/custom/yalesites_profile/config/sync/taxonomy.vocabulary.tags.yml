@@ -31,3 +31,4 @@ name: Tags
 vid: tags
 description: 'A custom vocabulary that allows you to add any tag you want to classify and organize content on your website. Users can freely tag content with any term they like, making it easy to navigate and find related content.'
 weight: 0
+new_revision: false

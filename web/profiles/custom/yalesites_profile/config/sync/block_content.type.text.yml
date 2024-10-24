@@ -29,5 +29,5 @@ third_party_settings:
         external: ''
 id: text
 label: Text
-revision: 1
+revision: true
 description: 'Text is used as your main source of text content on your page.'
