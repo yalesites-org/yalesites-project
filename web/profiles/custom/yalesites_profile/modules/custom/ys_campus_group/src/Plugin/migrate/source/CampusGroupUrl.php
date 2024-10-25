@@ -34,7 +34,7 @@ class CampusGroupUrl extends Url {
     }
 
     $configuration['headers'] = $headers;
-    $configuration['urls'] = $url . '?future_day_range=' . $days .'&group_ids=' . $groups;
+    $configuration['urls'] = $url . '?future_day_range=' . $days . '&group_ids=' . $groups;
     // Run the parent constructor.
     parent::__construct($configuration, $plugin_id, $plugin_definition, $migration);
   }

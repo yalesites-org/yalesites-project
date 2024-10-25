@@ -5,7 +5,6 @@ namespace Drupal\ys_campus_group\Form;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 
-
 /**
  * Defines the manage Campus Group settings interface.
  */
