@@ -101,6 +101,7 @@ class ProfileMetaBlock extends BlockBase implements ContainerFactoryPluginInterf
     $position = NULL;
     $subtitle = NULL;
     $department = NULL;
+    $pronouns = NULL;
     $mediaId = NULL;
 
     $request = $this->requestStack->getCurrentRequest();
@@ -125,6 +126,7 @@ class ProfileMetaBlock extends BlockBase implements ContainerFactoryPluginInterf
       $position = $node->get('field_position')->getValue()[0]['value'] ?? NULL;
       $subtitle = $node->get('field_subtitle')->getValue()[0]['value'] ?? NULL;
       $department = $node->get('field_department')->getValue()[0]['value'] ?? NULL;
+      $pronouns = $node->get('field_pronouns')->getValue()[0]['value'] ?? NULL;
       $mediaId = $node->get('field_media')->getValue()[0]['target_id'] ?? NULL;
     }
 
@@ -134,10 +136,12 @@ class ProfileMetaBlock extends BlockBase implements ContainerFactoryPluginInterf
       '#profile_meta__title_line' => $position,
       '#profile_meta__subtitle_line' => $subtitle,
       '#profile_meta__department' => $department,
+      '#profile_meta__pronouns' => $pronouns,
       '#media_id' => $mediaId,
       '#profile_meta__image_orientation' => $this->configuration['image_orientation'] ?? 'portrait',
       '#profile_meta__image_style' => $this->configuration['image_style'] ?? 'inline',
       '#profile_meta__image_alignment' => $this->configuration['image_alignment'] ?? 'left',
+
     ];
   }
 

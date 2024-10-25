@@ -254,3 +254,9 @@ video:
       left: Left
       center: Center
     default: left
+image_banner:
+  field_style_variation:
+    values:
+      tall: Tall
+      short: Short
+    default: tall

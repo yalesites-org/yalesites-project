@@ -8,3 +8,4 @@ ignored_config_entities:
   - ys_themes.theme_settings
   - 'ys_localist*'
   - 'ai_engine*'
+  - 'ys_servicenow*'
