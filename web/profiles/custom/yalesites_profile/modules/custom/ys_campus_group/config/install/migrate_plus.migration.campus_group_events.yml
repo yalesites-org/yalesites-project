@@ -1,0 +1,196 @@
+uuid: 84aabb96-aabf-421e-a890-c69341363ab9
+langcode: en
+status: true
+dependencies: {  }
+id: campus_group_events
+class: null
+field_plugin_method: null
+cck_plugin_method: null
+migration_tags: null
+migration_group: null
+label: 'Campus Group Events'
+source:
+  plugin: campus_group_url
+  data_fetcher_plugin: http
+  data_parser_plugin: simple_xml
+  track_changes: true
+  urls: 'test.xml'
+  item_selector: /rss/channel/item
+  constants:
+    migration_user_name: event_import
+  fields:
+    -
+      name: event_id
+      label: 'Event ID'
+      selector: eventId
+    -
+      name: event_title
+      label: 'Event title'
+      selector: title
+    -
+      name: event_description
+      label: 'Description'
+      selector: fullDescription
+    -
+      name: event_teaser
+      label: 'Teaser'
+      selector: description
+    -
+      name: event_image_url
+      label: 'Event image URL'
+      selector: eventPhotoFullUrl
+    -
+      name: event_url
+      label: 'Event URL'
+      selector: eventLink
+    -
+      name: event_ics_url
+      label: Event ICS URL
+      selector: iCalLink
+    -
+      name: event_start_date
+      label: 'Event Start Date'
+      selector: eventStartDateTime
+    -
+      name: event_end_date
+      label: 'Event End Date'
+      selector: eventEndDateTime
+    -
+      name: event_tags
+      label: 'Event Tags'
+      selector: groupAcronym
+    -
+      name: event_category
+      label: 'Event Category'
+      selector: category
+    -
+      name: event_type
+      label: 'Event Type'
+      selector: eventType
+    -
+      name: ticket_cost
+      label: 'Ticket cost'
+      selector: eventLink
+    -
+      name: event_status
+      label: 'Event status'
+      selector: locationType
+    -
+      name: event_start_datetime
+      label: 'Event Start Date time'
+      selector: eventStartDateTime
+    -
+      name: event_end_datetime
+      label: 'Event End Date time'
+      selector: eventEndDateTime
+    -
+      name: event_topics
+      label: Event Topics
+      selector: eventTopics
+    -
+      name: event_group
+      label: Event Group
+      selector: group
+  ids:
+    event_id:
+      # This would be an int, but it is too long for the DB
+      type: string
+
+process:
+  title: event_title
+  field_event_description/value: event_description
+  field_event_description/format:
+    plugin: default_value
+    default_value: basic_html
+  field_teaser_text/value: event_teaser
+  field_teaser_text/format:
+    plugin: default_value
+    default_value: heading_html
+  field_localist_event_url/uri: event_url
+  field_localist_event_image_url/uri: event_image_url
+  field_localist_ics_url/uri: event_ics_url
+  field_event_cta/uri: event_url
+  field_event_date/value:
+     plugin: format_date
+     source: event_start_date
+     from_format: 'Y-m-d\TH:i:s.0000000P'
+     to_format: 'U'
+  field_event_date/end_value:
+     plugin: format_date
+     source: event_end_date
+     from_format: 'Y-m-d\TH:i:s.0000000P'
+     to_format: 'U'
+  field_event_cta/title:
+    plugin: default_value
+    default_value: "More details"
+  field_tags:
+    plugin: entity_generate
+    entity_type: taxonomy_term
+    value_key: name
+    bundle_key: vid
+    bundle: tags
+    source: event_tags
+  field_localist_event_type:
+    plugin: entity_generate
+    entity_type: taxonomy_term
+    value_key: name
+    bundle_key: vid
+    bundle: localist_event_type
+    source: event_type
+  field_category:
+    plugin: entity_generate
+    entity_type: taxonomy_term
+    value_key: name
+    bundle_key: vid
+    bundle: event_category
+    source: event_category
+  field_localist_group:
+    plugin: entity_generate
+    entity_type: taxonomy_term
+    value_key: name
+    bundle_key: vid
+    bundle: event_groups
+    source: event_group
+  field_event_status:
+    plugin: entity_generate
+    entity_type: taxonomy_term
+    value_key: name
+    bundle_key: vid
+    bundle: event_status
+    source: event_status  
+  field_event_topics:
+    -
+      plugin: explode
+      source: event_topics
+      delimiter: ','
+    -
+      plugin: callback
+      callable: trim
+    -
+      plugin: entity_generate
+      entity_type: taxonomy_term
+      bundle: event_topics
+      bundle_key: vid
+      value_key: name
+      ignore_case: true
+  field_ticket_cost: ticket_cost
+  uid:
+    plugin: entity_generate
+    source: constants/migration_user_name
+    value_key: name
+    entity_type: user
+    default_value:
+      mail: event_import@yalesites.edu
+destination:
+  plugin: 'entity:node'
+  default_bundle: event
+  overwrite_properties:
+    - title
+    - field_localist_id
+    - field_event_description
+    - field_event_room
+    - field_localist_event_url
+    - field_localist_event_image_url
+    - field_localist_event_image_alt
+    - field_localist_ics_url
+migration_dependencies: {  }

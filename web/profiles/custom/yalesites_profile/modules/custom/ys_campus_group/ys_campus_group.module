@@ -1,0 +1,31 @@
+<?php
+
+/**
+ * @file
+ * Primary module hooks for YS Campus Group module.
+ */
+
+use Drupal\Component\Utility\UrlHelper;
+use Drupal\migrate\Plugin\MigrationInterface;
+use Symfony\Component\Process\Process;
+
+/**
+ * Implements hook_cron().
+ */
+function ys_campus_group_cron() {
+  $config = \Drupal::config('ys_campus_group.settings');
+  if ($config->get('enable_campus_group_sync')) {
+
+    $state = \Drupal::state();
+
+    $next_execution_time = $state->get("campus_group_migrations", 0);
+    $current_time = \Drupal::time()->getRequestTime();
+    if ($current_time > $next_execution_time) {
+      $state->set("campus_group_migrations", $current_time + 3600);
+      $process = new Process('drush mrs campus_group_events');
+      $process->run();
+      $process = new Process('drush mim campus_group_events');
+      $process->run();
+    }
+  }
+}
