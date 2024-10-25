@@ -82,6 +82,11 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-condensed.svg',
           'img_alt' => 'Icon showing 3 generic list items one on top of the other with no images on the items.',
         ],
+        'calendar' => [
+          'label' => 'Calendar',
+          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/content-type-event.svg',
+          'img_alt' => 'Calendar',
+        ],
       ],
       'sort_by' => [
         'field_event_date:DESC' => 'Event Date - newer first',

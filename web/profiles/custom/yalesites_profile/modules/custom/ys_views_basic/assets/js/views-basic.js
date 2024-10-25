@@ -75,6 +75,28 @@
         displayElement.addEventListener('change', updateLimitElement);
         updateLimitElement();
       }
+
+      // Unified selectors to handle both cases
+      const entityTypesSelector = 'input[name="settings[block_form][group_user_selection][entity_and_view_mode][entity_types]"], input[name="block_form[group_user_selection][entity_and_view_mode][entity_types]"]';
+      const viewModeSelector = 'input[name="settings[block_form][group_user_selection][entity_and_view_mode][view_mode]"], input[name="block_form[group_user_selection][entity_and_view_mode][view_mode]"]';
+      const eventTimePeriod = document.querySelector('#edit-event-time-period');
+
+      const entityTypes = document.querySelectorAll(entityTypesSelector);
+      const viewModes = document.querySelectorAll(viewModeSelector);
+
+      // Function to handle visibility based on conditions
+      function updateVisibility() {
+        const entityType = Array.from(entityTypes).find(input => input.checked)?.value;
+        const viewMode = Array.from(viewModes).find(input => input.checked)?.value;
+
+        if (eventTimePeriod) {
+          eventTimePeriod.style.display = (entityType === 'event' && viewMode === 'calendar') ? 'none' : '';
+        }
+      }
+
+      entityTypes.forEach(input => input.addEventListener('change', updateVisibility));
+      viewModes.forEach(input => input.addEventListener('change', updateVisibility));
+      updateVisibility();
     },
   };
 })(Drupal);

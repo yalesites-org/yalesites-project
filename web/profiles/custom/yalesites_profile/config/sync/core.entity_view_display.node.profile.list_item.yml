@@ -16,6 +16,7 @@ dependencies:
     - field.field.node.profile.field_media
     - field.field.node.profile.field_metatags
     - field.field.node.profile.field_position
+    - field.field.node.profile.field_pronouns
     - field.field.node.profile.field_subtitle
     - field.field.node.profile.field_tags
     - field.field.node.profile.field_teaser_media
@@ -128,6 +129,7 @@ hidden:
   field_last_name: true
   field_login_required: true
   field_metatags: true
+  field_pronouns: true
   field_telephone: true
   layout_builder__layout: true
   links: true

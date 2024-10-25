@@ -1,0 +1,4 @@
+# Permission to manage YaleSites ServiceNow.
+yalesites manage servicenow:
+  title: 'Manage YaleSites ServiceNow'
+  description: 'Set and change YaleSites ServiceNow settings.'
