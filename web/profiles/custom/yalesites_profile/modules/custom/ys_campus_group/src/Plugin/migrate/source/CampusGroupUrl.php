@@ -18,7 +18,6 @@ class CampusGroupUrl extends Url {
    * {@inheritdoc}
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration) {
-//    $client = \Drupal::httpClient();
     $config = \Drupal::configFactory()->getEditable('ys_campus_group.settings');
     $url = $config->get('campus_group_endpoint');
     $groups = $config->get('campus_group_groupids');
