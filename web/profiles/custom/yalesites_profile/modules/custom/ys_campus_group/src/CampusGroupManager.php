@@ -19,10 +19,10 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Service for Localist functions.
  */
-class LocalistManager extends ControllerBase implements ContainerInjectionInterface {
+class CampusGroupManager extends ControllerBase implements ContainerInjectionInterface {
 
   /**
-   * List of migrations to run. Place migrations from first to last.
+   * List of migraxtions to run. Place migrations from first to last.
    */
   const LOCALIST_MIGRATIONS = [
     'localist_event_types',
