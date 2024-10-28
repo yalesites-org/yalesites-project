@@ -290,3 +290,11 @@ html:not(.gin--dark-mode)
 blockquote.pull-quote__quote:before {
   content: '';
 }
+
+/*
+ * Claro is modifying jquery-ui's handling of menu items.
+ * We need gin to take over.
+ */
+.ui-menu-item {
+  color: var(--gin-color-text);
+}
