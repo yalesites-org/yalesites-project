@@ -16,7 +16,7 @@ index b05fa2f..4b5c9b8 100644
 +      type: string
 +      label: 'Fallback image alt'
 diff --git a/src/Controller/BrowserController.php b/src/Controller/BrowserController.php
-index 34310e2..403647f 100644
+index 34310e2..8112fdd 100644
 --- a/src/Controller/BrowserController.php
 +++ b/src/Controller/BrowserController.php
 @@ -146,6 +146,9 @@ class BrowserController extends ControllerBase {
@@ -76,7 +76,7 @@ index 34310e2..403647f 100644
      foreach ($auto_added_reusable_bundles as $machine_name) {
        $blocks = [];
        $content_blocks = $this->entityTypeManager->getStorage('block_content')
-@@ -207,15 +243,48 @@ class BrowserController extends ControllerBase {
+@@ -207,19 +243,56 @@ class BrowserController extends ControllerBase {
          }
        }
        if ($blocks) {
@@ -131,7 +131,15 @@ index 34310e2..403647f 100644
          }
        }
      }
-@@ -278,6 +347,14 @@ class BrowserController extends ControllerBase {
+ 
++    usort($block_categories['reusable_blocks']['links'], function($a, $b) {
++      return $b['#changed'] <=> $a['#changed'];
++    });
++
+     $build['block_categories'] = $block_categories;
+     $build['#attached']['library'][] = 'layout_builder_browser/browser';
+ 
+@@ -278,6 +351,14 @@ class BrowserController extends ControllerBase {
            '#alt' => $block['layout_builder_browser_category_data']->image_alt,
          ];
        }
@@ -146,6 +154,14 @@ index 34310e2..403647f 100644
        $block_render_array['label'] = ['#markup' => (empty($block["layout_builder_browser_data"])) ? $block['admin_label'] : $block["layout_builder_browser_data"]->label()];
        $link = [
          '#type' => 'link',
+@@ -292,6 +373,7 @@ class BrowserController extends ControllerBase {
+           ]
+         ),
+         '#attributes' => $attributes,
++        '#changed' => $block['#changed'],
+       ];
+ 
+       $links[] = [
 diff --git a/src/Form/SettingsForm.php b/src/Form/SettingsForm.php
 index 90253f0..1ac6883 100644
 --- a/src/Form/SettingsForm.php
