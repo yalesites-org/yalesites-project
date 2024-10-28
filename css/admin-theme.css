@@ -282,3 +282,11 @@ html:not(.gin--dark-mode)
 .field--name-field-media .fieldset__prefix {
   color: var(--gin-color-text-light);
 }
+
+/*
+ * Claro was adding a pull quote in the blockquote's before.  We are
+ * handling that.
+ */
+blockquote.pull-quote__quote:before {
+  content: '';
+}
