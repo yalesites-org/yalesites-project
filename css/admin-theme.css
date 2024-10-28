@@ -274,3 +274,11 @@ html:not(.gin--dark-mode)
 .ajax-progress-throbber::before {
   right: 0;
 }
+
+/*
+ * Media text after 10.3 update was displaying messages that violated
+ * A11y guidelines. This is a fix to ensure that the text is readable.
+ */
+.field--name-field-media .fieldset__prefix {
+  color: var(--gin-color-text-light);
+}
