@@ -29,5 +29,5 @@ third_party_settings:
         external: ''
 id: image_banner
 label: 'Image Banner'
-revision: 1
+revision: true
 description: 'An image to display on your headers'
