@@ -299,3 +299,12 @@ blockquote.pull-quote__quote::before {
 .ui-menu-item {
   color: var(--gin-color-text);
 }
+
+/*
+ * Move table contrast fix for dark mode.
+ */
+html.gin--dark-mode .layout-builder-components-table .tabledrag-toggle-weight,
+html.gin--dark-mode .layout-builder-components-table tr:hover,
+html.gin--dark-mode .layout-builder-components-table tr:nth-child(even) {
+  color: var(--color-white);
+}
