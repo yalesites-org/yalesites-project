@@ -287,8 +287,9 @@ html:not(.gin--dark-mode)
  * Claro was adding a pull quote in the blockquote's before.  We are
  * handling that.
  */
-blockquote.pull-quote__quote:before {
-  content: '';
+blockquote.quote-callout__quote::before,
+blockquote.pull-quote__quote::before {
+  content: "";
 }
 
 /*
