@@ -308,3 +308,10 @@ html.gin--dark-mode .layout-builder-components-table tr:hover,
 html.gin--dark-mode .layout-builder-components-table tr:nth-child(even) {
   color: var(--color-white);
 }
+
+/*
+* Fix cancel button color in gin
+*/
+html.gin--dark-mode .button.dialog-cancel {
+  color: var(--gin-color-button-text);
+}
