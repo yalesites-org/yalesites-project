@@ -600,3 +600,17 @@ function ys_core_form_views_exposed_form_alter(&$form, FormStateInterface $form_
     }
   }
 }
+
+/**
+ * Implements hook_menu_local_tasks_alter().
+ *
+ * If the current user is not user 1, remove the single content sync tab.
+ */
+function ys_core_menu_local_tasks_alter(&$data, $route_name, $cachability) {
+  foreach ($data['tabs'][0] as $key => $tab) {
+    if (strpos($key, 'single_content_sync') === 0 &&
+      \Drupal::currentUser()->id() != 1) {
+      unset($data['tabs'][0][$key]);
+    }
+  }
+}
