@@ -14,6 +14,7 @@ use Drupal\migrate\MigrateMessage;
 use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\migrate\Plugin\MigrationPluginManager;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -204,7 +205,13 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
    */
   private function getMultiPageUrls($url) {
     $endpointUrls = [];
-    $response = $this->httpClient->get($url);
+
+    try {
+      $response = $this->httpClient->get($url);
+    }
+    catch (RequestException $e) {
+      return $endpointUrls;
+    }
     $data = json_decode($response->getBody(), TRUE);
 
     $i = 1;
