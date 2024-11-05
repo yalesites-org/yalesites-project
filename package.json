@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "semantic-release": "^24.1.1",
-    "@yalesites-org/eslint-config-and-other-formatting": "^1.20.0",
+    "@yalesites-org/eslint-config-and-other-formatting": "^1.20.0"
   },
   "lint-staged": {
     "components/**/*.{js,scss,php}": [
