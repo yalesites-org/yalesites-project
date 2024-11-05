@@ -1,6 +1,6 @@
 {
   "name": "@yalesites-org/atomic",
-  "version": "1.32.1",
+  "version": "1.34.1",
   "description": "Atomic theme for YaleSites projects.",
   "files": [
     "components",
@@ -22,8 +22,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
-    "@yalesites-org/eslint-config-and-other-formatting": "^1.5.4",
-    "semantic-release": "^24.1.1"
+    "semantic-release": "^24.1.1",
+    "@yalesites-org/eslint-config-and-other-formatting": "^1.20.0"
   },
   "lint-staged": {
     "components/**/*.{js,scss,php}": [
@@ -31,7 +31,8 @@
     ]
   },
   "dependencies": {
-    "@yalesites-org/component-library-twig": "^1.44.0"
+    "@yalesites-org/component-library-twig": "^1.44.0",
+    "linkpurpose": "github:itmaybejj/linkpurpose"
   },
   "bundleDependencies": [
     "@yalesites-org/component-library-twig"

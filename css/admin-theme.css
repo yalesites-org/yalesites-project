@@ -274,3 +274,44 @@ html:not(.gin--dark-mode)
 .ajax-progress-throbber::before {
   right: 0;
 }
+
+/*
+ * Media text after 10.3 update was displaying messages that violated
+ * A11y guidelines. This is a fix to ensure that the text is readable.
+ */
+.field--name-field-media .fieldset__prefix {
+  color: var(--gin-color-text-light);
+}
+
+/*
+ * Claro was adding a pull quote in the blockquote's before.  We are
+ * handling that.
+ */
+blockquote.quote-callout__quote::before,
+blockquote.pull-quote__quote::before {
+  content: "";
+}
+
+/*
+ * Claro is modifying jquery-ui's handling of menu items.
+ * We need gin to take over.
+ */
+.ui-menu-item {
+  color: var(--gin-color-text);
+}
+
+/*
+ * Move table contrast fix for dark mode.
+ */
+html.gin--dark-mode .layout-builder-components-table .tabledrag-toggle-weight,
+html.gin--dark-mode .layout-builder-components-table tr:hover,
+html.gin--dark-mode .layout-builder-components-table tr:nth-child(even) {
+  color: var(--color-white);
+}
+
+/*
+* Fix cancel button color in gin
+*/
+html.gin--dark-mode .button.dialog-cancel {
+  color: var(--gin-color-button-text);
+}
