@@ -2,14 +2,15 @@ global:
   css:
     theme:
       "https://yale-webfonts.yalespace.org/fonts.min.css": {type: external}
-      node_modules/@yalesites-org/component-library-twig/dist/style.css: {}
+      node_modules/@yalesites-org/component-library-twig/dist/css/style.css: {}
       components/_settings/_config.css: {}
       css/admin-theme.css: {}
       css/localist.css: {}
+      node_modules/@yalesites-org/component-library-twig/dist/css/link-treatment.css: {}
   js:
     node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/menu/menu-toggle/yds-menu-toggle.js: {}
     node_modules/@yalesites-org/component-library-twig/dist/js/00-tokens/layout/yds-layout.js: {}
-    node_modules/@yalesites-org/component-library-twig/dist/js/ys-link.js: {}
+    node_modules/@yalesites-org/component-library-twig/dist/js/link-treatment.js: {}
   dependencies:
     - core/drupal
 accordion:
@@ -21,6 +22,12 @@ alert:
 primary-nav:
   js:
     node_modules/@yalesites-org/component-library-twig/dist/js/03-organisms/menu/primary-nav/yds-primary-nav.js: {}
+reference-card:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/cards/reference-card/yds-reference-card.js: {}
+custom-card:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/cards/custom-card/yds-custom-card.js: {}
 breadcrumbs:
   js:
     node_modules/@yalesites-org/component-library-twig/dist/js/03-organisms/menu/breadcrumbs/yds-breadcrumbs.js: {}
