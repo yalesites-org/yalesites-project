@@ -15,6 +15,7 @@ dependencies:
     - field.field.node.profile.field_media
     - field.field.node.profile.field_metatags
     - field.field.node.profile.field_position
+    - field.field.node.profile.field_pronouns
     - field.field.node.profile.field_subtitle
     - field.field.node.profile.field_tags
     - field.field.node.profile.field_teaser_media
@@ -107,6 +108,7 @@ third_party_settings:
         - field_first_name
         - field_last_name
         - field_honorific_prefix
+        - field_pronouns
         - field_position
         - field_subtitle
         - field_department
@@ -164,7 +166,7 @@ content:
     third_party_settings: {  }
   field_department:
     type: string_textfield
-    weight: 33
+    weight: 34
     region: content
     settings:
       size: 60
@@ -236,6 +238,14 @@ content:
     third_party_settings: {  }
   field_position:
     type: string_textfield
+    weight: 32
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  field_pronouns:
+    type: string_textfield
     weight: 31
     region: content
     settings:
@@ -244,7 +254,7 @@ content:
     third_party_settings: {  }
   field_subtitle:
     type: text_textfield
-    weight: 32
+    weight: 33
     region: content
     settings:
       size: 60

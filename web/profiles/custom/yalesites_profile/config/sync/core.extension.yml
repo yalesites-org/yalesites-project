@@ -148,6 +148,7 @@ module:
   ys_localist: 0
   ys_mail: 0
   ys_node_access: 0
+  ys_servicenow: 0
   ys_starterkit: 0
   ys_toolbar: 0
   ys_views_basic: 0

@@ -1,0 +1,56 @@
+<?php
+
+/**
+ * @file
+ * Primary module hooks for YS ServiceNow module.
+ */
+
+use Drupal\migrate\Plugin\MigrationInterface;
+
+/**
+ * Implements hook_cron().
+ */
+function ys_servicenow_cron() {
+  $config = \Drupal::config('ys_servicenow.settings');
+  if ($config->get('enable_servicenow_sync')) {
+
+    $state = \Drupal::state();
+
+    $next_execution_time = $state->get("servicenow_migrations", 0);
+    $current_time = \Drupal::time()->getRequestTime();
+    if ($current_time > $next_execution_time) {
+      $state->set("servicenow_migrations", $current_time + 3600);
+      $servicenowManager = \Drupal::service('ys_servicenow.manager');
+      $servicenowManager->runAllMigrations();
+    }
+  }
+}
+
+/**
+ * Provide the URL endpoint for migrations in servicenow from config.
+ */
+function ys_servicenow_url_endpoint(MigrationInterface $migration): array {
+  // Get the servicenow configuration.
+  $servicenow_config = \Drupal::config('ys_servicenow.settings');
+  // Get the endpoint type from the migration.
+  $endpoint = $servicenow_config->get('servicenow_endpoint');
+
+  if ($endpoint) {
+    return [$endpoint];
+  }
+
+  return [];
+}
+
+/**
+ * Any state other than "Published" is unpublished.
+ */
+function ys_servicenow_moderation_state_transformation($value) {
+  $unpublished_state = 'archive';
+
+  $published_states = [
+    'Published' => 'published',
+  ];
+
+  return $published_states[$value] ?? $unpublished_state;
+}
