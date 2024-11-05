@@ -9,6 +9,7 @@ dependencies:
     - field.field.node.page.field_external_source
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
+    - field.field.node.page.field_page_type
     - field.field.node.page.field_series
     - field.field.node.page.field_series_member
     - field.field.node.page.field_tags
@@ -89,6 +90,7 @@ hidden:
   field_category: true
   field_login_required: true
   field_metatags: true
+  field_page_type: true
   field_series: true
   field_series_member: true
   field_tags: true
