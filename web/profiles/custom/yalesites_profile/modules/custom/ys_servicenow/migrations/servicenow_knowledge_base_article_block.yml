@@ -1,0 +1,49 @@
+id: servicenow_knowledge_base_article_block
+label: 'ServiceNow knowledge base article blocks'
+source:
+  plugin: url
+  data_fetcher_plugin: http
+  data_parser_plugin: json
+  headers:
+    Accept: 'application/json; charset=utf-8'
+    Content-Type: application/json
+  authentication:
+    plugin: servicenow_auth
+  track_changes: true
+  urls:
+    callback: ys_servicenow_url_endpoint
+  item_selector: result
+  fields:
+    - name: servicenow_number
+      label: 'ServiceNow number'
+      selector: number
+    - name: servicenow_title
+      label: 'ServiceNow title'
+      selector: short_description
+    - name: servicenow_text
+      label: 'ServiceNow text'
+      selector: text
+  ids:
+    servicenow_number:
+      type: string
+process:
+  field_text/value: servicenow_text
+  field_text/format:
+    plugin: default_value
+    default_value: basic_html
+  info: servicenow_title
+  reusable:
+    plugin: default_value
+    default_value: 0
+destination:
+  plugin: 'entity:block_content'
+  default_bundle: text
+  overwrite_properties:
+    - field_text
+    - info
+dependencies:
+  enforced:
+    module:
+      - migrate_plus
+      - migrate_tools
+      - layout_builder

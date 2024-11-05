@@ -9,6 +9,8 @@ dependencies:
     - field.field.node.page.field_external_source
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
+    - field.field.node.page.field_series
+    - field.field.node.page.field_series_member
     - field.field.node.page.field_tags
     - field.field.node.page.field_teaser_media
     - field.field.node.page.field_teaser_text
@@ -91,6 +93,8 @@ hidden:
   field_audience: true
   field_login_required: true
   field_metatags: true
+  field_series: true
+  field_series_member: true
   field_type: true
   layout_builder__layout: true
   links: true

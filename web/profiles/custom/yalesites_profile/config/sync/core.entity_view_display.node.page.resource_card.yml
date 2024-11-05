@@ -1,0 +1,229 @@
+uuid: c331275d-5f28-47c1-937b-bc381688a5df
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.node.resource_card
+    - field.field.node.page.field_audience
+    - field.field.node.page.field_category
+    - field.field.node.page.field_external_source
+    - field.field.node.page.field_login_required
+    - field.field.node.page.field_metatags
+    - field.field.node.page.field_series
+    - field.field.node.page.field_series_member
+    - field.field.node.page.field_tags
+    - field.field.node.page.field_teaser_media
+    - field.field.node.page.field_teaser_text
+    - field.field.node.page.field_teaser_title
+    - field.field.node.page.field_type
+    - field.field.node.page.layout_builder__layout
+    - node.type.page
+  module:
+    - layout_builder
+    - layout_builder_restrictions
+    - link
+    - text
+    - user
+third_party_settings:
+  layout_builder:
+    enabled: false
+    allow_custom: false
+  layout_builder_restrictions:
+    allowed_block_categories: {  }
+    entity_view_mode_restriction:
+      allowed_layouts:
+        - layout_onecol
+        - ys_layout_two_column
+      denylisted_blocks: {  }
+      allowlisted_blocks: {  }
+      restricted_categories: {  }
+    entity_view_mode_restriction_by_region:
+      allowed_layouts:
+        - layout_onecol
+        - ys_layout_two_column
+      allowlisted_blocks:
+        layout_onecol:
+          all_regions:
+            'Lists (Views)':
+              - 'views_block:resource_tags-block_1'
+        ys_layout_banner:
+          all_regions:
+            'Inline blocks':
+              - 'inline_block:cta_banner'
+              - 'inline_block:grand_hero'
+              - 'inline_block:image_banner'
+              - 'inline_block:content_spotlight'
+              - 'inline_block:content_spotlight_portrait'
+        ys_layout_page_meta:
+          all_regions:
+            'YaleSites Layouts':
+              - page_meta_block
+        ys_layout_two_column:
+          content:
+            'Custom block types':
+              - accordion
+              - button_link
+              - divider
+              - image
+              - pull_quote
+              - reference_card
+              - tabs
+              - text
+              - video
+            'Inline blocks':
+              - 'inline_block:accordion'
+              - 'inline_block:button_link'
+              - 'inline_block:divider'
+              - 'inline_block:image'
+              - 'inline_block:pull_quote'
+              - 'inline_block:reference_card'
+              - 'inline_block:tabs'
+              - 'inline_block:text'
+              - 'inline_block:video'
+          sidebar:
+            'Custom block types':
+              - text
+            'Inline blocks':
+              - 'inline_block:text'
+      restricted_categories:
+        ys_layout_two_column:
+          sidebar:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - Devel
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites Layouts'
+            - 'YaleSites alert'
+            - core
+          content:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites Layouts'
+            - 'YaleSites alert'
+            - core
+        layout_onecol:
+          all_regions:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - Devel
+            - Forms
+            - Help
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites Layouts'
+            - 'YaleSites alert'
+            - core
+        ys_layout_banner:
+          all_regions:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - 'Custom block types'
+            - Devel
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites Layouts'
+            - 'YaleSites alert'
+            - core
+        ys_layout_page_meta:
+          all_regions:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - 'Custom block types'
+            - Devel
+            - Forms
+            - Help
+            - 'Inline blocks'
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites alert'
+            - core
+id: node.page.resource_card
+targetEntityType: node
+bundle: page
+mode: resource_card
+content:
+  content_moderation_control:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_category:
+    type: entity_reference_label
+    label: hidden
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 4
+    region: content
+  field_external_source:
+    type: link
+    label: hidden
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 3
+    region: content
+  field_series:
+    type: boolean
+    label: hidden
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    weight: 5
+    region: content
+  field_teaser_text:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  field_teaser_title:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 1
+    region: content
+hidden:
+  field_audience: true
+  field_login_required: true
+  field_metatags: true
+  field_series_member: true
+  field_tags: true
+  field_teaser_media: true
+  field_type: true
+  layout_builder__layout: true
+  links: true
+  search_api_excerpt: true
+  workflow_buttons: true
