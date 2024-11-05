@@ -1,0 +1,24 @@
+uuid: a281e55c-834e-4497-898e-8bc346c7a416
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.search_resources
+    - field.storage.block_content.field_text
+    - filter.format.basic_html
+  module:
+    - text
+id: block_content.search_resources.field_text
+field_name: field_text
+entity_type: block_content
+bundle: search_resources
+label: Subheading
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - basic_html
+field_type: text_long

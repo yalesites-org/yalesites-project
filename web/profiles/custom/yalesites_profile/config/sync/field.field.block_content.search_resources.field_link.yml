@@ -1,0 +1,23 @@
+uuid: 3c1d0f44-3ec7-498c-8356-7a760d4311e4
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.search_resources
+    - field.storage.block_content.field_link
+  module:
+    - link
+id: block_content.search_resources.field_link
+field_name: field_link
+entity_type: block_content
+bundle: search_resources
+label: 'Full Page Destination Link'
+description: 'For more information about linking content, view our resource <a href="https://yalesites.yale.edu/resource-library/linking-content-on-yalesites" target="_blank">Linking Content on YaleSites</a>.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  title: 2
+  link_type: 1
+field_type: link
