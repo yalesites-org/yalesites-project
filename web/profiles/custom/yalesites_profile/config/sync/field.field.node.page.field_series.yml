@@ -1,0 +1,21 @@
+uuid: f5371f28-04bb-43f8-b1e9-485163115a9c
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_series
+    - node.type.page
+id: node.page.field_series
+field_name: field_series
+entity_type: node
+bundle: page
+label: 'Is this a series?'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

@@ -1,0 +1,28 @@
+uuid: 4c4cabda-a27f-47f4-8ece-c7b9452d225e
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_series_member
+    - node.type.page
+id: node.page.field_series_member
+field_name: field_series_member
+entity_type: node
+bundle: page
+label: 'Series Member'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:node'
+  handler_settings:
+    target_bundles:
+      page: page
+    sort:
+      field: _none
+      direction: ASC
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference
