@@ -1,0 +1,11 @@
+uuid: fec2e9de-f549-4b85-9206-9e0d7722bd1c
+langcode: en
+status: true
+dependencies: {  }
+id: explore_resources
+block_id: 'inline_block:search_resources'
+category: advanced
+label: 'Search Resources'
+image_path: ''
+image_alt: ''
+weight: -100
