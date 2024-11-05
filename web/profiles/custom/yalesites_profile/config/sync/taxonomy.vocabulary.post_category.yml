@@ -31,3 +31,4 @@ name: 'Post Category'
 vid: post_category
 description: 'A vocabulary used to classify posts based on their categories, such as "News," "Opinion," or "How-To." This helps users easily find and navigate posts based on their interests and preferences.'
 weight: 0
+new_revision: false

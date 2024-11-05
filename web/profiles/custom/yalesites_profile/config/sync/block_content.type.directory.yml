@@ -29,5 +29,5 @@ third_party_settings:
         external: ''
 id: directory
 label: Directory
-revision: 1
+revision: true
 description: 'Display a list of profiles as a directory list including detailed contact information.'

@@ -1,5 +1,6 @@
 _core:
   default_config_hash: W42TeamUFaYIcLMbvbx1hngcurDgrV8-Rh_iNsgeFJc
+langcode: en
 login_link_enabled: true
 login_link_label: 'Login with CAS'
 login_success_message: ''
@@ -29,6 +30,7 @@ forced_login:
 user_accounts:
   prevent_normal_login: true
   auto_register: true
+  auto_register_follow_registration_policy: false
   email_assignment_strategy: 0
   email_hostname: noreply.yale.edu
   email_attribute: mail

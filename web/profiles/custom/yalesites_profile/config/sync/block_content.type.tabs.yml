@@ -4,5 +4,5 @@ status: true
 dependencies: {  }
 id: tabs
 label: Tabs
-revision: 1
+revision: true
 description: 'Tabs allow you to create segmented content chunks on the same page. Tabs can be used for content that is related but not sequential or dependent information.'

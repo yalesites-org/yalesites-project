@@ -4,5 +4,5 @@ status: true
 dependencies: {  }
 id: divider
 label: Divider
-revision: 1
+revision: true
 description: 'Divider allows you to add a visual divider line to your page.'

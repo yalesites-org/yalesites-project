@@ -17,5 +17,3 @@ source_configuration:
   source_field: field_media_video_file
 field_map:
   name: name
-  mimetype: field_media_video_file
-  filesize: field_media_video_file

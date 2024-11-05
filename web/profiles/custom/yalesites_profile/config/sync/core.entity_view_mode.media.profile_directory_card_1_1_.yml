@@ -6,5 +6,6 @@ dependencies:
     - media
 id: media.profile_directory_card_1_1_
 label: 'Profile (1:1)'
+description: ''
 targetEntityType: media
 cache: true

@@ -29,5 +29,5 @@ third_party_settings:
         external: ''
 id: button_link
 label: 'Button Link'
-revision: 1
+revision: true
 description: 'Button link allows you to add a button link to your content.'

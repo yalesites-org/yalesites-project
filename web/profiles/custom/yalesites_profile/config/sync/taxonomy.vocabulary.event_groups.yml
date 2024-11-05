@@ -29,5 +29,6 @@ third_party_settings:
         external: ''
 name: 'Event Groups'
 vid: event_groups
-description: ''
+description: null
 weight: 0
+new_revision: false
