@@ -304,3 +304,9 @@ div[data-drupal-selector="edit-block-form"] {
 .layout-builder-browser-block-item:has(a[style*="display: none"]) {
   display: none;
 }
+
+/* For some reason text-within on tables in dark mode go wrong */
+.gin--dark-mode tr:hover, tr:focus-within {
+  color: var(--gin-color-text);
+  background: var(--gin-bg-secondary);
+}
