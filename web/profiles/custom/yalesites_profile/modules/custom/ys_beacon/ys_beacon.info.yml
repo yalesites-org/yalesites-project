@@ -1,0 +1,7 @@
+name: YaleSites Beacon AI
+type: module
+description: YaleSites Beacon AI Chatbot
+core_version_requirement: '^9 || ^10'
+package: YaleSites
+dependencies:
+  - ai_engine_chat
