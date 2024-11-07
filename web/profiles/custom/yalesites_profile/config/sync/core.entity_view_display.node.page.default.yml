@@ -282,6 +282,7 @@ hidden:
   field_category: true
   field_login_required: true
   field_metatags: true
+  field_page_type: true
   field_tags: true
   field_teaser_media: true
   field_teaser_text: true
