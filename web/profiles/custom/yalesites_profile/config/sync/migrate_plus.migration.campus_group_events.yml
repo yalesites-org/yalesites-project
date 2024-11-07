@@ -14,7 +14,7 @@ source:
   data_fetcher_plugin: http
   data_parser_plugin: simple_xml
   track_changes: true
-  urls: 'test.xml'
+  urls: test.xml
   item_selector: /rss/channel/item
   constants:
     migration_user_name: event_import
@@ -29,11 +29,11 @@ source:
       selector: title
     -
       name: event_description
-      label: 'Description'
+      label: Description
       selector: fullDescription
     -
       name: event_teaser
-      label: 'Teaser'
+      label: Teaser
       selector: description
     -
       name: event_image_url
@@ -45,7 +45,7 @@ source:
       selector: eventLink
     -
       name: event_ics_url
-      label: Event ICS URL
+      label: 'Event ICS URL'
       selector: iCalLink
     -
       name: event_start_date
@@ -85,17 +85,15 @@ source:
       selector: eventEndDateTime
     -
       name: event_topics
-      label: Event Topics
+      label: 'Event Topics'
       selector: eventTopics
     -
       name: event_group
-      label: Event Group
+      label: 'Event Group'
       selector: group
   ids:
     event_id:
-      # This would be an int, but it is too long for the DB
       type: string
-
 process:
   title: event_title
   field_event_description/value: event_description
@@ -111,18 +109,18 @@ process:
   field_localist_ics_url/uri: event_ics_url
   field_event_cta/uri: event_url
   field_event_date/value:
-     plugin: format_date
-     source: event_start_date
-     from_format: 'Y-m-d\TH:i:s.0000000P'
-     to_format: 'U'
+    plugin: format_date
+    source: event_start_date
+    from_format: 'Y-m-d\TH:i:s.0000000P'
+    to_format: U
   field_event_date/end_value:
-     plugin: format_date
-     source: event_end_date
-     from_format: 'Y-m-d\TH:i:s.0000000P'
-     to_format: 'U'
+    plugin: format_date
+    source: event_end_date
+    from_format: 'Y-m-d\TH:i:s.0000000P'
+    to_format: U
   field_event_cta/title:
     plugin: default_value
-    default_value: "More details"
+    default_value: 'More details'
   field_tags:
     plugin: entity_generate
     entity_type: taxonomy_term
@@ -157,7 +155,7 @@ process:
     value_key: name
     bundle_key: vid
     bundle: event_status
-    source: event_status  
+    source: event_status
   field_event_topics:
     -
       plugin: explode
