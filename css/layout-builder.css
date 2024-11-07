@@ -299,3 +299,8 @@ div[data-drupal-selector="edit-block-form"] {
 .layout-container {
   margin: 0;
 }
+
+/* On layout builder browser search, hide entries that are actually empty */
+.layout-builder-browser-block-item:has(a[style*="display: none"]) {
+  display: none;
+}
