@@ -1,6 +1,6 @@
 # Manage content settings for the chat app.
 ys_beacon.settings:
-  title: 'AI Chat Settings'
+  title: 'Beacon AI Chat Settings'
   description: 'Settings for Beacon AI chatbot'
   route_name: ys_beacon.settings
   parent: ys_core.admin_yalesites
