@@ -16,6 +16,7 @@ dependencies:
     - field.field.node.event.field_event_topics
     - field.field.node.event.field_event_type
     - field.field.node.event.field_external_source
+    - field.field.node.event.field_is_campus_groups
     - field.field.node.event.field_localist_event_experience
     - field.field.node.event.field_localist_event_image_alt
     - field.field.node.event.field_localist_event_image_url
@@ -133,6 +134,7 @@ third_party_settings:
         - field_event_date
         - field_event_recurring
         - group_stream_information
+        - field_is_campus_groups
       label: 'Basic info'
       region: content
       parent_name: group_event_tabs
@@ -211,7 +213,7 @@ third_party_settings:
       label: Location
       region: content
       parent_name: group_basic_info
-      weight: 6
+      weight: 4
       format_type: fieldset
       format_settings:
         classes: ''
@@ -226,7 +228,7 @@ third_party_settings:
       label: 'Stream information'
       region: content
       parent_name: group_basic_info
-      weight: 9
+      weight: 7
       format_type: fieldset
       format_settings:
         classes: ''
@@ -263,7 +265,7 @@ content:
     third_party_settings: {  }
   field_event_date:
     type: smartdate_inline
-    weight: 7
+    weight: 5
     region: content
     settings:
       modal: false
@@ -296,7 +298,7 @@ content:
     third_party_settings: {  }
   field_event_recurring:
     type: boolean_checkbox
-    weight: 8
+    weight: 6
     region: content
     settings:
       display_label: true
@@ -328,6 +330,13 @@ content:
     settings:
       placeholder_url: ''
       placeholder_title: ''
+    third_party_settings: {  }
+  field_is_campus_groups:
+    type: boolean_checkbox
+    weight: 8
+    region: content
+    settings:
+      display_label: true
     third_party_settings: {  }
   field_localist_event_experience:
     type: chosen_select

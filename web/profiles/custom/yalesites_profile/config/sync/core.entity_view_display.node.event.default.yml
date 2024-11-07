@@ -16,6 +16,7 @@ dependencies:
     - field.field.node.event.field_event_topics
     - field.field.node.event.field_event_type
     - field.field.node.event.field_external_source
+    - field.field.node.event.field_is_campus_groups
     - field.field.node.event.field_localist_event_experience
     - field.field.node.event.field_localist_event_image_alt
     - field.field.node.event.field_localist_event_image_url
@@ -242,6 +243,16 @@ content:
       target: ''
     third_party_settings: {  }
     weight: 4
+    region: content
+  field_is_campus_groups:
+    type: boolean
+    label: above
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    weight: 31
     region: content
   field_localist_event_experience:
     type: entity_reference_label
