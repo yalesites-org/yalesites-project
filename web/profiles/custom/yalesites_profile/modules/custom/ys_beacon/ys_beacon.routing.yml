@@ -1,0 +1,7 @@
+ys_beacon.settings:
+  path: '/admin/yalesites/ys_beacon'
+  defaults:
+    _form: '\Drupal\ys_beacon\Form\AiSettingsForm'
+    _title: "Beacon AI Chatbot Settings"
+  requirements:
+    _permission: 'yalesites manage ai'
