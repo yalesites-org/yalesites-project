@@ -295,3 +295,7 @@ div[data-drupal-selector="edit-block-form"] {
   margin-top: auto;
 }
 
+/* Layout containers now have a margin due to stable9 */
+.layout-container {
+  margin: 0;
+}
