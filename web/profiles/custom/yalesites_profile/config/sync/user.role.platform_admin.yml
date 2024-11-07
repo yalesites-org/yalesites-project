@@ -79,6 +79,7 @@ dependencies:
     - toolbar
     - webform
     - ys_alert
+    - ys_campus_group
     - ys_core
     - ys_localist
 id: platform_admin
@@ -102,6 +103,7 @@ permissions:
   - 'administer blocks'
   - 'administer main menu items'
   - 'administer redirects'
+  - 'administer site configuration'
   - 'administer users'
   - 'administer utility-navigation menu items'
   - 'assign contributor role'
@@ -414,5 +416,6 @@ permissions:
   - 'view the administration theme'
   - 'view unpublished paragraphs'
   - 'yalesites manage alerts'
+  - 'yalesites manage campus_group'
   - 'yalesites manage localist'
   - 'yalesites manage settings'
