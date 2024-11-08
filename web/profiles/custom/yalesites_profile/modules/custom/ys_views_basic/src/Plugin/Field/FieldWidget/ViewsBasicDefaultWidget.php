@@ -106,6 +106,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     $formSelectors = $this->viewsBasicManager->getFormSelectors($formState, NULL, $entityValue);
     $form['#form_selectors'] = $formSelectors;
+    $selectedEntityType = $formSelectors['entity_types'];
 
     $element['group_params'] = [
       '#type' => 'container',
@@ -227,14 +228,22 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     $fieldOptionValue = ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('field_options', $items[$delta]->params) : [];
     $fieldOptionDefaultValue = $fieldOptionValue ?? ['show_thumbnail' => 'show_thumbnail'];
     $isNewForm = str_contains($formState->getCompleteForm()['#id'], 'layout-builder-add-block');
+
+    // To be consistent in the output render, we name categories affiliation in
+    // the views form if they select profiles.
+    $showCategoriesLabel = $this->t("Show Categories");
+    if ($selectedEntityType === "profile") {
+      $showCategoriesLabel = $this->t("Show Affiliations");
+    }
+
     // Set the default value for 'field_options' to 'show_thumbnail'
     // when creating a new block.
     $form['group_user_selection']['entity_and_view_mode']['field_options'] = [
       '#type' => 'checkboxes',
       '#options' => [
-        'show_categories' => $this->t('Show Categories'),
+        'show_categories' => $showCategoriesLabel,
         'show_tags' => $this->t('Show Tags'),
-        'show_thumbnail' => $this->t('Show Thumbnail'),
+        'show_thumbnail' => $this->t('Show Teaser Image'),
       ],
       '#title' => $this->t('Field Display Options'),
       '#tree' => TRUE,
