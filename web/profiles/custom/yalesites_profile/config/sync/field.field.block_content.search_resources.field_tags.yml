@@ -5,12 +5,12 @@ dependencies:
   config:
     - block_content.type.search_resources
     - field.storage.block_content.field_tags
-    - taxonomy.vocabulary.tags
+    - taxonomy.vocabulary.page_type
 id: block_content.search_resources.field_tags
 field_name: field_tags
 entity_type: block_content
 bundle: search_resources
-label: 'Resource Tag'
+label: 'Page Type Resource'
 description: ''
 required: false
 translatable: false
@@ -20,7 +20,7 @@ settings:
   handler: 'default:taxonomy_term'
   handler_settings:
     target_bundles:
-      tags: tags
+      page_type: page_type
     sort:
       field: name
       direction: asc
