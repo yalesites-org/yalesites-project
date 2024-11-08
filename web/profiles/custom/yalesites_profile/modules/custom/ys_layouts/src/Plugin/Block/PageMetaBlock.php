@@ -94,7 +94,7 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
     if ($route) {
       $page_title = $this->titleResolver->getTitle($request, $route);
       $node = \Drupal::routeMatch()->getParameter('node');
-      if ($node instanceof  NodeInterface && $node->getType() == 'page') {
+      if ($node instanceof NodeInterface && $node->getType() == 'page') {
         if ($node->hasField('field_series') && $node->get('field_series')->value == 1) {
           $page_title = "<span class='page-title__prefix'><i class='fa-solid fa-files'></i></span>" . $page_title;
         }
