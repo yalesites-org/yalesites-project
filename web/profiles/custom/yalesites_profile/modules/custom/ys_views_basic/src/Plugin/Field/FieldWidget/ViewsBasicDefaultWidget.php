@@ -288,7 +288,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
     ];
 
-    $vocabulary_id = $formSelectors['entity_types'] === 'profile'
+    $vocabulary_id = $selectedEntityType === 'profile'
       ? 'affiliation'
       : $formSelectors['entity_types'] . '_category';
     $form['group_user_selection']['entity_and_view_mode']['category_included_terms'] = [
