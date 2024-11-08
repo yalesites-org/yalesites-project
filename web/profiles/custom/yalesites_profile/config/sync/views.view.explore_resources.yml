@@ -18,7 +18,6 @@ dependencies:
     - node
     - taxonomy
     - user
-    - ys_views_basic
 id: explore_resources
 label: 'Explore Resources'
 module: views
@@ -83,26 +82,26 @@ display:
           separator: ', '
           field_api_classes: false
       pager:
-        type: views_basic_full_pager
+        type: full
         options:
           offset: 0
           items_per_page: 15
-          id: '0'
-          total_pages: ''
+          total_pages: null
+          id: 0
           tags:
-            previous: '‹ Previous'
             next: 'Next ›'
+            previous: '‹ Previous'
             first: '« First'
             last: 'Last »'
           expose:
-            items_per_page: 0
+            items_per_page: false
             items_per_page_label: 'Items per page'
             items_per_page_options: '5, 10, 25, 50'
-            items_per_page_options_all: 0
+            items_per_page_options_all: false
             items_per_page_options_all_label: '- All -'
-            offset: 0
+            offset: false
             offset_label: Offset
-          quantity: '9'
+          quantity: 9
       exposed_form:
         type: bef
         options:
@@ -594,10 +593,10 @@ display:
             field_identifier: ''
           exposed: false
       arguments:
-        field_tags_target_id:
-          id: field_tags_target_id
-          table: node__field_tags
-          field: field_tags_target_id
+        field_page_type_target_id:
+          id: field_page_type_target_id
+          table: node__field_page_type
+          field: field_page_type_target_id
           relationship: none
           group_type: group
           admin_label: ''

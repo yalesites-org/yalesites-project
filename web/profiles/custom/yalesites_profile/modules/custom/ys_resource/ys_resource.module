@@ -4,3 +4,15 @@
  * @file
  * Implement various hooks and functionality.
  */
+
+/**
+ * Implements hook_preprocess_views_view().
+ */
+function ys_resource_preprocess_views_view(array &$variables) {
+  // Check the specific view and display you want to target.
+  if ($variables['view']->id() == 'resource_tags_overview' && $variables['view']->current_display == 'page_1') {
+    $config = \Drupal::config('ys_resource.resource_config');
+    // Pass the variable to the Twig template.
+    $variables['all_resources_link'] = $config->get('resource_full_page_link');
+  }
+}
