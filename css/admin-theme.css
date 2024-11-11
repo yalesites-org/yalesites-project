@@ -128,6 +128,14 @@ html.gin--dark-mode form.layout-builder-configure-block.glb-form {
   color: var(--gin-bg-layer3);
 }
 
+/* Dark mode was not passing contrast */
+.gin--dark-mode
+  .linkit-ui-autocomplete.ui-menu
+  .linkit-result-line-wrapper.ui-state-active {
+  color: var(--gin-color-primary);
+  background-color: var(--gin-bg-layer3);
+}
+
 /*
 // Offcanvas toolbar styles
 */
