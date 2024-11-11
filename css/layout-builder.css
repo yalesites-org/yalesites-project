@@ -319,3 +319,8 @@ div[data-drupal-selector="edit-block-form"] {
 th.field-label {
   z-index: 105;
 }
+
+/* A gradient was displaying on certain states.  This removes it. */
+.has-multiple-fields-remove-button .js .paragraphs-collapsed-description:after {
+  display: none;
+}
