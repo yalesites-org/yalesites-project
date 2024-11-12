@@ -90,7 +90,7 @@
     "drupal/paragraphs_features": "2.0.0",
     "drupal/pathauto": "1.13.0",
     "drupal/publishcontent": "1.6",
-    "drupal/quick_node_clone": "1.18.0",
+    "drupal/quick_node_clone": "1.19.0",
     "drupal/recaptcha": "3.4.0",
     "drupal/recaptcha_v3": "2.0.3",
     "drupal/redirect": "1.10.0",
@@ -112,7 +112,7 @@
     "laminas/laminas-escaper": "2.13.0",
     "northernco/ckeditor5-anchor-drupal": "0.4.0",
     "yalesites-org/ai_engine": "1.2.5",
-    "yalesites-org/atomic": "1.39.0",
+    "yalesites-org/atomic": "1.39.1",
     "yalesites-org/yale_cas": "v1.0.5"
   },
   "minimum-stability": "dev",
