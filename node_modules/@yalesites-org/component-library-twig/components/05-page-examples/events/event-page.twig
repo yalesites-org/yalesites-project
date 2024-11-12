@@ -1,0 +1,49 @@
+{% extends "@page-layouts/yds-full-width.twig" %}
+  {% block page__header %}
+    {% include "@organisms/site-header/yds-site-header.twig" %}
+  {% endblock %}
+  {% block page__content %}
+    {% if show_breadcrumbs %}
+      {% include "@organisms/menu/breadcrumbs/yds-breadcrumbs.twig" with {
+        breadcrumbs__items: [
+          {title: 'Home', url: '#'},
+          {title: 'Events', url: '#'},
+          {title: page_title__heading, url: '#', is_active: true},
+        ],
+      } %}
+    {% endif %}
+
+    {% include "@molecules/meta/event-meta/yds-event-meta.twig" %}
+
+    {% include "@molecules/text/yds-text-field.twig" with {
+      text_field__width: 'content',
+      text_field__alignment: 'center',
+      text_field__content: '<p>This documentary examines the status of women during the transformation of Afghanistan from a totalitarian Taliban theocracy to a democratic country. It tells a story of Suraya Parlika, an Afghan woman who dared to enter public politics, which is eminently a territory of men. It also contains “black chronicle” of crimes from different provinces of Afghanistan, which was perpetrated by men against not only activists but also against women in their family, wives and daughters. Often just because they were determined to acquire a basic education.</p>',
+    } %}
+    {% include "@molecules/image/yds-content-image.twig" %}
+    {% include "@molecules/text/yds-text-field.twig" with {
+      text_field__width: 'content',
+      text_field__alignment: 'center',
+      text_field__content: '<p>The political arena either on the local or national level is a territory where the presence of active women, despite constitutional guarantees, is considered an oddity. Especially when brave women with unveiled face don’t remain silent, but try to stimulate an open discussion in public space: a discussion on disproportions between the laws and the (in)compliance with them in terms of everyday life, on an open and latent discrimination of women, or on particular crimes of men against the women who try to live their life more dignified.</p><p>Part of a trilogy of documentaries by Afghan Director Sahraa Karimi screened from Tuesday 29th to Thursday 31st March, 2022.</p>',
+    } %}
+    {% include "@atoms/divider/yds-divider.twig" with {
+      divider__component_width: 'content',
+      animate__item: 'enabled',
+    }%}
+    {% include "@molecules/text/yds-text-field.twig" with {
+      text_field__width: 'content',
+      text_field__alignment: 'center',
+      text_field__content: '
+        <h2>Speaker</h2>
+        <h3>Dr. Sarhaa Karimi, filmmaker</h3>
+        <p>Sahraa Karimi is an Afghan film director and the first woman to head the Afghan Film Organization (Afghan Film). She has directed 30 short films, 3 documentary features and one fiction film “Hava, Maryam, Ayesha (2019), which had the world premiere at the 76th Venice Film Festival in the same year. Her documentary Afghan Women Behind the Wheel (2009) received some twenty awards from film festivals around the world. Karimi has a PhD from the Film and Television Faculty of the Academy of Music and Performing Arts in Bratislava, Slovakia. After graduating, she returned to Afghanistan and helped open Kapila Multimedia House to promote independent Afghan filmmakers. She fled Afghanistan during the 2021 fall of Kabul.</p>
+        <h2>Moderator</h2>
+        <p>Charlie Musser, Professor of American Studies, Film & Media Studies, and Theater Studies.</p>
+        <h2>Sponsors</h2>
+        <p>The Poynter Fellowship in Journalism; The Public Humanities Program at Yale, The Program on Refugees, Forced Displacement, and Humanitarian Responses (PRFDHR); The Council on Middle Eastern Studies (CMES), Timothy Dwight College, The Beinecke Library, The Center for Collaborative Arts and Media (CCAM); The Film and Media Studies Program, Yale University.</p>
+        <h2>Contact</h2>
+        <p><a href="#">Program on Refugees, Forced Displacement, and Humanitarian Responses</a></p>
+        <p>refugees@yale.edu</p>
+      ',
+    } %}
+  {% endblock %}
