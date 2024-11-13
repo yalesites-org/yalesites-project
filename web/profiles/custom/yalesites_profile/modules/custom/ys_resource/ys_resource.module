@@ -28,7 +28,6 @@ function ys_resource_form_alter(&$form, FormStateInterface &$form_state, $form_i
   // Get resource Config values.
   $resource_config = \Drupal::config('ys_resource.resource_config');
   $category_parent = $resource_config->get('category_parent_term');
-  $tags_parent = $resource_config->get('tags_parent_term');
   // Limit category terms in resource search exposed form.
   if ($form_id == 'views_exposed_form' && $form['#id'] == 'views-exposed-form-explore-resources-block-1') {
     $category_childs = [];
