@@ -4,3 +4,117 @@
  * @file
  * Implement various hooks and functionality.
  */
+
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_preprocess_views_view().
+ */
+function ys_resource_preprocess_views_view(array &$variables) {
+  // Check the specific view and display you want to target.
+  if ($variables['view']->id() == 'resource_tags_overview' && $variables['view']->current_display == 'page_1') {
+    $config = \Drupal::config('ys_resource.resource_config');
+    // Pass the variable to the Twig template.
+    $variables['all_resources_link'] = $config->get('resource_full_page_link');
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function ys_resource_form_alter(&$form, FormStateInterface &$form_state, $form_id) {
+  // Get resource Config values.
+  $resource_config = \Drupal::config('ys_resource.resource_config');
+  $category_parent = $resource_config->get('category_parent_term');
+  $tags_parent = $resource_config->get('tags_parent_term');
+  // Limit category terms in resource search exposed form.
+  if ($form_id == 'views_exposed_form' && $form['#id'] == 'views-exposed-form-explore-resources-block-1') {
+    $category_childs = [];
+    $cat_terms = \Drupal::service("entity_type.manager")->getStorage("taxonomy_term")->loadTree("page_category", $category_parent, 1, TRUE);
+    foreach ($cat_terms as $term) {
+      $category_childs[$term->id()] = $term->label();
+    }
+    $form['field_category_target_id']['#options'] = $category_childs;
+  }
+  $formsToCheck = [
+    'node_page_form',
+    'node_page_edit_form',
+  ];
+  if (in_array($form_id, $formsToCheck)) {
+    $form['field_tags']['#attributes']['id'] = 'tags-id-wrapper-1';
+    $form['field_category']['#attributes']['id'] = 'category-id-wrapper-1';
+    $form['field_page_type']['widget']['#ajax'] = [
+      'callback' => 'ys_resource_ajax_func',
+      'event' => 'change',
+      'progress' => [
+        'type' => 'throbber',
+        'message' => t('Generating list...'),
+      ],
+    ];
+  }
+}
+
+/**
+ * Helper function for ajax callback.
+ */
+function ys_resource_ajax_func(array &$form, FormStateInterface $form_state) {
+  $resource_config = \Drupal::config('ys_resource.resource_config');
+  $category_parent = $resource_config->get('category_parent_term');
+  $tags_parent = $resource_config->get('tags_parent_term');
+  $page_type = $resource_config->get('page_type_term');
+
+  if ($selectedValue = $form_state->getValue('field_page_type')) {
+    $resource_tid = $selectedValue[0]['target_id'];
+  }
+
+  if ($resource_tid == $page_type) {
+    // Update tags dropdown.
+    $resource_childs = [];
+    $terms = \Drupal::service("entity_type.manager")->getStorage("taxonomy_term")->loadTree("tags", $tags_parent, 1, TRUE);
+    foreach ($terms as $term) {
+      $resource_childs[$term->id()] = $term->label();
+    }
+    $form['field_tags']['widget']['#options'] = $resource_childs;
+    // Update category dropdown.
+    $category_childs = [];
+    $cat_terms = \Drupal::service("entity_type.manager")->getStorage("taxonomy_term")->loadTree("page_category", $category_parent, 1, TRUE);
+    foreach ($cat_terms as $term) {
+      $category_childs[$term->id()] = $term->label();
+    }
+    $form['field_category']['widget']['#options'] = $category_childs;
+  }
+  else {
+    $tag_options = [];
+    if ($terms = \Drupal::service("entity_type.manager")->getStorage('taxonomy_term')->loadTree('tags', 0, NULL, TRUE)) {
+      foreach ($terms as $term) {
+        if ((!$term->isPublished())) {
+          continue;
+        }
+        $tag_options[$term->id()] = str_repeat('-', $term->depth) . $term->label();
+      }
+      $form['field_tags']['widget']['#options'] = $tag_options;
+      $form['field_tags']['widget']['#value'] = '';
+    }
+
+    $cat_options = [];
+    if ($terms = \Drupal::service("entity_type.manager")->getStorage('taxonomy_term')->loadTree('page_category', 0, NULL, TRUE)) {
+      foreach ($terms as $term) {
+        if ((!$term->isPublished())) {
+          continue;
+        }
+        $cat_options[$term->id()] = str_repeat('-', $term->depth) . $term->label();
+      }
+      $form['field_category']['widget']['#options'] = $cat_options;
+      $form['field_category']['widget']['#value'] = '';
+    }
+  }
+
+  // If we want to execute AJAX commands our callback needs to return
+  // an AjaxResponse object. let's create it and add our commands.
+  $response = new AjaxResponse();
+  $response->addCommand(new ReplaceCommand('#tags-id-wrapper-1', $form['field_tags']));
+  $response->addCommand(new ReplaceCommand('#category-id-wrapper-1', $form['field_category']));
+  return $response;
+}

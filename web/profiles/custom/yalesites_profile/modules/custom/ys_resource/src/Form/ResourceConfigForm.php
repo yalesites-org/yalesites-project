@@ -91,6 +91,17 @@ class ResourceConfigForm extends ConfigFormBase {
       '#description' => $this->t('Select the parent term for Tags.'),
       '#required' => TRUE,
     ];
+    $form['resource_full_page_link'] = [
+      '#type' => 'linkit',
+      '#title' => $this->t('Resource Full page link'),
+      '#default_value' => $config->get('resource_full_page_link'),
+      '#description' => $this->t('Enter the resource full page link'),
+      '#required' => TRUE,
+      '#autocomplete_route_name' => 'linkit.autocomplete',
+      '#autocomplete_route_parameters' => [
+        'linkit_profile_id' => 'default',
+      ],
+    ];
 
     return parent::buildForm($form, $form_state);
   }
@@ -115,6 +126,7 @@ class ResourceConfigForm extends ConfigFormBase {
       ->set('category_parent_term', $form_state->getValue('category_parent_term'))
       ->set('tags_parent_term', $form_state->getValue('tags_parent_term'))
       ->set('page_type_term', $form_state->getValue('page_type_term'))
+      ->set('resource_full_page_link', $form_state->getValue('resource_full_page_link'))
       ->save();
 
     parent::submitForm($form, $form_state);

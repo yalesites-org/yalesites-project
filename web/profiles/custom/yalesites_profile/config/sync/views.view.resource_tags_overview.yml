@@ -1,15 +1,20 @@
-uuid: c420f5bf-1dbd-46b0-9901-5813cd5e3ad8
+uuid: 3d79cee5-89c6-4160-8673-4caac4426616
 langcode: en
 status: true
 dependencies:
   config:
     - core.entity_view_mode.node.resource_card
     - node.type.page
+    - taxonomy.vocabulary.page_type
+    - taxonomy.vocabulary.tags
+  content:
+    - 'taxonomy_term:page_type:6589a24c-359e-4d37-b902-62289bd8db3a'
   module:
     - node
+    - taxonomy
     - user
-id: popular_resources
-label: 'Popular Resources'
+id: resource_tags_overview
+label: 'Resource Tags Overview'
 module: views
 description: ''
 tag: ''
@@ -22,7 +27,7 @@ display:
     display_plugin: default
     position: 0
     display_options:
-      title: 'Popular Resources'
+      title: 'Resource Tags Overview'
       fields:
         title:
           id: title
@@ -31,35 +36,19 @@ display:
           relationship: none
           group_type: group
           admin_label: ''
+          entity_type: node
+          entity_field: title
           plugin_id: field
           label: ''
           exclude: false
           alter:
             alter_text: false
-            text: ''
             make_link: false
-            path: ''
             absolute: false
-            external: false
-            replace_spaces: false
-            path_case: none
-            trim_whitespace: false
-            alt: ''
-            rel: ''
-            link_class: ''
-            prefix: ''
-            suffix: ''
-            target: ''
-            nl2br: false
-            max_length: 0
-            word_boundary: true
-            ellipsis: true
-            more_link: false
-            more_link_text: ''
-            more_link_path: ''
+            word_boundary: false
+            ellipsis: false
             strip_tags: false
             trim: false
-            preserve_tags: ''
             html: false
           element_type: ''
           element_class: ''
@@ -88,10 +77,23 @@ display:
           separator: ', '
           field_api_classes: false
       pager:
-        type: some
+        type: mini
         options:
           offset: 0
-          items_per_page: 4
+          items_per_page: 10
+          total_pages: null
+          id: 0
+          tags:
+            next: ››
+            previous: ‹‹
+          expose:
+            items_per_page: false
+            items_per_page_label: 'Items per page'
+            items_per_page_options: '5, 10, 25, 50'
+            items_per_page_options_all: false
+            items_per_page_options_all_label: '- All -'
+            offset: false
+            offset_label: Offset
       exposed_form:
         type: basic
         options:
@@ -128,21 +130,21 @@ display:
           exposed: false
           granularity: second
       arguments:
-        field_page_type_target_id:
-          id: field_page_type_target_id
-          table: node__field_page_type
-          field: field_page_type_target_id
+        tid:
+          id: tid
+          table: taxonomy_index
+          field: tid
           relationship: none
           group_type: group
           admin_label: ''
-          plugin_id: numeric
+          plugin_id: taxonomy_index_tid
           default_action: default
           exception:
             value: all
             title_enable: false
             title: All
-          title_enable: false
-          title: ''
+          title_enable: true
+          title: 'Resources Tagged as {{ arguments.tid }}'
           default_argument_type: raw
           default_argument_options:
             index: 0
@@ -157,13 +159,20 @@ display:
             sort_order: asc
             number_of_records: 0
             format: default_summary
-          specify_validation: false
+          specify_validation: true
           validate:
-            type: none
+            type: 'entity:taxonomy_term'
             fail: 'not found'
-          validate_options: {  }
+          validate_options:
+            bundles:
+              tags: tags
+            access: false
+            operation: view
+            multiple: 0
           break_phrase: false
-          not: false
+          add_table: false
+          require_value: false
+          reduce_duplicates: false
       filters:
         status:
           id: status
@@ -185,19 +194,17 @@ display:
           plugin_id: bundle
           value:
             page: page
-          group: 1
-        sticky:
-          id: sticky
-          table: node_field_data
-          field: sticky
+        field_page_type_target_id:
+          id: field_page_type_target_id
+          table: node__field_page_type
+          field: field_page_type_target_id
           relationship: none
           group_type: group
           admin_label: ''
-          entity_type: node
-          entity_field: sticky
-          plugin_id: boolean
-          operator: '='
-          value: '1'
+          plugin_id: taxonomy_index_tid
+          operator: or
+          value:
+            131: 131
           group: 1
           exposed: false
           expose:
@@ -214,6 +221,7 @@ display:
             multiple: false
             remember_roles:
               authenticated: authenticated
+            reduce: false
           is_grouped: false
           group_info:
             label: ''
@@ -226,10 +234,12 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
-      filter_groups:
-        operator: AND
-        groups:
-          1: AND
+          reduce_duplicates: false
+          vid: page_type
+          type: select
+          hierarchy: true
+          limit: true
+          error_message: true
       style:
         type: default
       row:
@@ -255,25 +265,30 @@ display:
         - 'languages:language_content'
         - 'languages:language_interface'
         - url
+        - url.query_args
+        - user
         - 'user.node_grants:view'
         - user.permissions
       tags: {  }
-  block_1:
-    id: block_1
-    display_title: Block
-    display_plugin: block
+  page_1:
+    id: page_1
+    display_title: Page
+    display_plugin: page
     position: 1
     display_options:
       display_extenders:
         metatag_display_extender:
           metatags: {  }
           tokenize: false
+      path: resource-tags-overview
     cache_metadata:
       max-age: -1
       contexts:
         - 'languages:language_content'
         - 'languages:language_interface'
         - url
+        - url.query_args
+        - user
         - 'user.node_grants:view'
         - user.permissions
       tags: {  }
