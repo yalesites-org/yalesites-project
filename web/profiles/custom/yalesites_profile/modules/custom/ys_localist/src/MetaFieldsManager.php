@@ -165,6 +165,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     $localistUrl = ($node->field_localist_event_url->first()) ? Url::fromUri($node->field_localist_event_url->first()->getValue()['uri'])->toString() : NULL;
     $streamUrl = ($node->field_stream_url->first()) ? Url::fromUri($node->field_stream_url->first()->getValue()['uri'])->toString() : NULL;
     $streamEmbedCode = $node->field_stream_embed_code->first() ? $node->field_stream_embed_code->first()->getValue()['value'] : NULL;
+    $isCampusGroup = $node->field_is_campus_groups->value ? $node->field_is_campus_groups->value : 0;
 
     // Localist register ticket changes.
     $localistRegisterTickets = $hasRegister ? $this->localistManager->getTicketInfo($localistId) : NULL;
@@ -269,6 +270,14 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
         $node->toUrl()->setAbsolute()->toString()
       );
     }
+    $event_status = '';
+    if ($statusRef = $node->field_event_status->first()) {
+      /** @var \Drupal\taxonomy\Entity\Term $placeInfo */
+      $statusInfo = $this->entityTypeManager->getStorage('taxonomy_term')->load($statusRef->getValue()['target_id']);
+      if ($statusInfo) {
+        $event_status = $statusInfo->getName();
+      }
+    }
 
     return [
       'title' => $node->getTitle(),
@@ -293,6 +302,8 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       'localist_url' => $localistUrl,
       'stream_url' => $streamUrl,
       'stream_embed_code' => $streamEmbedCode,
+      'event_status' => $event_status,
+      'is_campus_group' => $isCampusGroup,
     ];
   }
 
