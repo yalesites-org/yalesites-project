@@ -44,6 +44,14 @@ Repositories used to make the platform:
 While the project can be cloned and run locally without it, one must setup an SSH key on their development machine if they wish to push code on any of the yalesites repositories.
 Luckily, [GitHub has an intuitive guide on how to setup an SSH key on your machine and register it with your GitHub Account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
 
+In some cases, git will complain about ownership issues when building packages.  If this happens to you you can execute the following to mark things like atomic as a safe directory.
+
+```bash
+git config --global --add safe.directory 'web/themes/contrib/atomic'
+```
+
+Keep in mind the above command is a global so it will stay in your `.gitconfig` for future builds.
+
 #### Package Personal Access Token
 
 Each environment that needs to pull @yalesites-org packages from GitHub needs to be authenticated using a "Personal Access Token". This only needs to be done once per-environment.
