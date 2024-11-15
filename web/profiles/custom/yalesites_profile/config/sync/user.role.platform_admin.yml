@@ -49,9 +49,7 @@ dependencies:
     - node.type.profile
     - taxonomy.vocabulary.affiliation
     - taxonomy.vocabulary.event_category
-    - taxonomy.vocabulary.page_audience
     - taxonomy.vocabulary.page_category
-    - taxonomy.vocabulary.page_type
     - taxonomy.vocabulary.post_category
     - taxonomy.vocabulary.tags
     - workflows.workflow.editorial
@@ -77,9 +75,9 @@ dependencies:
     - system
     - taxonomy
     - toolbar
+    - views_ui
     - webform
     - ys_alert
-    - ys_campus_group
     - ys_core
     - ys_localist
 id: platform_admin
@@ -103,9 +101,9 @@ permissions:
   - 'administer blocks'
   - 'administer main menu items'
   - 'administer redirects'
-  - 'administer site configuration'
   - 'administer users'
   - 'administer utility-navigation menu items'
+  - 'administer views'
   - 'assign contributor role'
   - 'assign editor role'
   - 'assign platform_admin role'
@@ -156,9 +154,7 @@ permissions:
   - 'create tabs block content'
   - 'create terms in affiliation'
   - 'create terms in event_category'
-  - 'create terms in page_audience'
   - 'create terms in page_category'
-  - 'create terms in page_type'
   - 'create terms in post_category'
   - 'create terms in tags'
   - 'create text block content'
@@ -416,6 +412,6 @@ permissions:
   - 'view the administration theme'
   - 'view unpublished paragraphs'
   - 'yalesites manage alerts'
-  - 'yalesites manage campus_group'
   - 'yalesites manage localist'
   - 'yalesites manage settings'
+
