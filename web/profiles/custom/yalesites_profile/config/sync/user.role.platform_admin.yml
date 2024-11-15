@@ -49,9 +49,13 @@ dependencies:
     - node.type.profile
     - taxonomy.vocabulary.affiliation
     - taxonomy.vocabulary.event_category
+    - taxonomy.vocabulary.localist_event_type
+    - taxonomy.vocabulary.page_audience
     - taxonomy.vocabulary.page_category
+    - taxonomy.vocabulary.page_type
     - taxonomy.vocabulary.post_category
     - taxonomy.vocabulary.tags
+    - taxonomy.vocabulary.type
     - workflows.workflow.editorial
     - workflows.workflow.events
   module:
@@ -154,9 +158,13 @@ permissions:
   - 'create tabs block content'
   - 'create terms in affiliation'
   - 'create terms in event_category'
+  - 'create terms in localist_event_type'
+  - 'create terms in page_audience'
   - 'create terms in page_category'
+  - 'create terms in page_type'
   - 'create terms in post_category'
   - 'create terms in tags'
+  - 'create terms in type'
   - 'create text block content'
   - 'create tiles block content'
   - 'create url aliases'
@@ -307,7 +315,9 @@ permissions:
   - 'edit own webform submission'
   - 'edit terms in affiliation'
   - 'edit terms in event_category'
+  - 'edit terms in page_audience'
   - 'edit terms in page_category'
+  - 'edit terms in page_type'
   - 'edit terms in post_category'
   - 'edit terms in tags'
   - 'mark as hidden in editoria11y'
