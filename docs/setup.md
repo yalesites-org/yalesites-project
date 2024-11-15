@@ -47,7 +47,7 @@ Luckily, [GitHub has an intuitive guide on how to setup an SSH key on your machi
 In some cases, git will complain about ownership issues when building packages.  If this happens to you you can execute the following to mark things like atomic as a safe directory.
 
 ```bash
-git config --global --add safe.directory 'web/themes/contrib/atomic'
+git config --global --add safe.directory /app/web/themes/contrib/atomic'
 ```
 
 Keep in mind the above command is a global so it will stay in your `.gitconfig` for future builds.
