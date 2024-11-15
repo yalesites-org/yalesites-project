@@ -8,6 +8,8 @@
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\views\Plugin\views\query\QueryPluginBase;
+use Drupal\views\ViewExecutable;
 
 /**
  * Implements hook_preprocess_views_view().
@@ -31,6 +33,7 @@ function ys_resource_form_alter(&$form, FormStateInterface &$form_state, $form_i
   // Limit category terms in resource search exposed form.
   if ($form_id == 'views_exposed_form' && $form['#id'] == 'views-exposed-form-explore-resources-block-1') {
     $category_childs = [];
+    $category_childs['All'] = "Any Category";
     $cat_terms = \Drupal::service("entity_type.manager")->getStorage("taxonomy_term")->loadTree("page_category", $category_parent, 1, TRUE);
     foreach ($cat_terms as $term) {
       $category_childs[$term->id()] = $term->label();
@@ -116,4 +119,30 @@ function ys_resource_ajax_func(array &$form, FormStateInterface $form_state) {
   $response->addCommand(new ReplaceCommand('#tags-id-wrapper-1', $form['field_tags']));
   $response->addCommand(new ReplaceCommand('#category-id-wrapper-1', $form['field_category']));
   return $response;
+}
+
+/**
+ * Implements hook_views_query_alter().
+ */
+function ys_resource_views_query_alter(ViewExecutable $view, QueryPluginBase $query) {
+  if (($view->id() == 'explore_resources') && $view->current_display == 'block_1') {
+    $args = \Drupal::request()->query->all();
+    if (empty($args) || (!empty($args) && $args['field_category_target_id'] == 'All')) {
+      $resource_config = \Drupal::config('ys_resource.resource_config');
+      $category_parent = $resource_config->get('category_parent_term');
+      $cat_terms = \Drupal::service("entity_type.manager")->getStorage("taxonomy_term")->loadTree("page_category", $category_parent, 1, TRUE);
+      $category_childs = [];
+      foreach ($cat_terms as $term) {
+        $category_childs[] = $term->id();
+      }
+      $query->addField('node__field_category', 'field_category_target_id', 'field_category_target_id', [
+        'function' => 'groupby',
+      ]);
+      $query->addWhere(0, 'node__field_category.field_category_target_id', $category_childs, 'IN');
+    }
+    $query->addField('node_field_data', 'nid', 'nid', [
+      'function' => 'groupby',
+    ]);
+    $query->groupby = ['node_field_data.nid'];
+  }
 }
