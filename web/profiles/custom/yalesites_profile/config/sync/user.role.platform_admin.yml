@@ -27,7 +27,9 @@ dependencies:
     - block_content.type.quick_links
     - block_content.type.quote_callout
     - block_content.type.reference_card
+    - block_content.type.search_resources
     - block_content.type.tabs
+    - block_content.type.tags
     - block_content.type.text
     - block_content.type.tiles
     - block_content.type.video
@@ -61,6 +63,7 @@ dependencies:
   module:
     - block
     - block_content
+    - config
     - content_moderation
     - contextual
     - editoria11y
@@ -89,6 +92,7 @@ label: 'Platform administrator'
 weight: -5
 is_admin: null
 permissions:
+  - 'access administration pages'
   - 'access block library'
   - 'access content overview'
   - 'access contextual links'
@@ -103,8 +107,11 @@ permissions:
   - 'administer block content'
   - 'administer block types'
   - 'administer blocks'
+  - 'administer content types'
   - 'administer main menu items'
+  - 'administer nodes'
   - 'administer redirects'
+  - 'administer site configuration'
   - 'administer users'
   - 'administer utility-navigation menu items'
   - 'administer views'
@@ -156,6 +163,7 @@ permissions:
   - 'create reference_card block content'
   - 'create reusable blocks'
   - 'create tabs block content'
+  - 'create tags block content'
   - 'create terms in affiliation'
   - 'create terms in event_category'
   - 'create terms in localist_event_type'
@@ -294,7 +302,9 @@ permissions:
   - 'edit any quick_links block content'
   - 'edit any quote_callout block content'
   - 'edit any reference_card block content'
+  - 'edit any search_resources block content'
   - 'edit any tabs block content'
+  - 'edit any tags block content'
   - 'edit any text block content'
   - 'edit any tiles block content'
   - 'edit any video block content'
@@ -320,6 +330,8 @@ permissions:
   - 'edit terms in page_type'
   - 'edit terms in post_category'
   - 'edit terms in tags'
+  - 'export configuration'
+  - 'import configuration'
   - 'mark as hidden in editoria11y'
   - 'override all authored by option'
   - 'override all authored on option'
@@ -362,6 +374,7 @@ permissions:
   - 'revert page revisions'
   - 'revert post revisions'
   - 'revert profile revisions'
+  - 'synchronize configuration'
   - 'update any media'
   - 'update media'
   - 'use editorial transition archive'
