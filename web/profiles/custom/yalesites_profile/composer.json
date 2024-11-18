@@ -26,6 +26,7 @@
   "require": {
     "drupal/address": "2.0.2",
     "drupal/admin_toolbar": "3.5.0",
+    "drupal/ai": "^1.0@beta",
     "drupal/allowed_formats": "3.0.1",
     "drupal/anchor_link": "3.0.0-beta1",
     "drupal/auto_entitylabel": "3.3.0",
