@@ -103,7 +103,7 @@ index 34310e2..fa855a6 100644
 +          if ($config->get('group_reusable_blocks_together')) {
 +
 +            foreach ($block_links as $key => $block_link) {
-+              $changed = date('m/d/Y - H:i', $block_link['#changed']);
++              $changed = date('m/d/Y - H:i', $block_link['link']['#changed']);
 +              $block_links[$key]['link']['#title']['label']['#markup'] = "
 +                <span class='underlined-title'>{$block_link['link']['#title']['label']['#markup']}</span>
 +                <br>

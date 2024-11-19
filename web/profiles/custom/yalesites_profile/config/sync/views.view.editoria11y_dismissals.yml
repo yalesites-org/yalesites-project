@@ -1,4 +1,4 @@
-uuid: null
+uuid: e102d13e-68ee-4f7f-94de-c8b8a6769f7a
 langcode: en
 status: true
 dependencies:
@@ -647,11 +647,11 @@ display:
           element_wrapper_type: ''
           element_wrapper_class: ''
           element_default_classes: true
-          separator: ''
           empty: ''
           hide_empty: false
           empty_zero: false
           hide_alter_empty: true
+          separator: ''
         nothing:
           id: nothing
           table: views
@@ -705,6 +705,7 @@ display:
         type: full
         options:
           offset: 0
+          pagination_heading_level: h4
           items_per_page: 50
           total_pages: null
           id: 0
@@ -722,7 +723,6 @@ display:
             offset: false
             offset_label: Offset
           quantity: 9
-          pagination_heading_level: h4
       sorts:
         created:
           id: created

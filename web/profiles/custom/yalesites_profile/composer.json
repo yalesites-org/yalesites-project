@@ -111,8 +111,8 @@
     "jjj/chosen": "2.2.1",
     "laminas/laminas-escaper": "2.13.0",
     "northernco/ckeditor5-anchor-drupal": "0.4.0",
-    "yalesites-org/ai_engine": "1.2.5",
-    "yalesites-org/atomic": "1.39.0",
+    "yalesites-org/ai_engine": "1.2.6",
+    "yalesites-org/atomic": "1.39.1",
     "yalesites-org/yale_cas": "v1.0.5"
   },
   "minimum-stability": "dev",
