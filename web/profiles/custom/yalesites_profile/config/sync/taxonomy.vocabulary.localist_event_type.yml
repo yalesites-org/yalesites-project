@@ -29,5 +29,6 @@ third_party_settings:
         external: ''
 name: 'Event Type'
 vid: localist_event_type
-description: ''
+description: null
 weight: 0
+new_revision: false

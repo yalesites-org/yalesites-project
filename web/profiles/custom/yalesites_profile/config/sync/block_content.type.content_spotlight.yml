@@ -29,5 +29,5 @@ third_party_settings:
         external: ''
 id: content_spotlight
 label: 'Spotlight - Landscape'
-revision: 1
+revision: true
 description: 'Spotlight - Landscape allows you to display a landscape 3x2 image adjacent to text. This component has optional content, varying sizes, and different orientations.'

@@ -6,5 +6,6 @@ dependencies:
     - paragraphs
 id: paragraph.gallery_modal_content
 label: 'Gallery - Modal Content'
+description: ''
 targetEntityType: paragraph
 cache: true

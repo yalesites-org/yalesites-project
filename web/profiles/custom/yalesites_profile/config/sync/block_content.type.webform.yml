@@ -29,5 +29,5 @@ third_party_settings:
         external: ''
 id: webform
 label: 'Pre-Built Form'
-revision: 1
+revision: true
 description: 'Add a pre-built Drupal form. Not intended for custom form creation.'

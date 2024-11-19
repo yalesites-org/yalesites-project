@@ -31,3 +31,4 @@ name: 'Event Experience'
 vid: event_type
 description: 'Used to classify events based on their type, such as "Online" or "In-Person." This allows for easy categorization and organization of events on a website.'
 weight: 0
+new_revision: false

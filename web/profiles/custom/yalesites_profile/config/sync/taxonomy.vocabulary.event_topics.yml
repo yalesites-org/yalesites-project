@@ -29,5 +29,6 @@ third_party_settings:
         external: ''
 name: 'Event Topics'
 vid: event_topics
-description: ''
+description: null
 weight: 0
+new_revision: false

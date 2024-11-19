@@ -6,6 +6,7 @@ dependencies:
     - filter.format.basic_html
     - filter.format.heading_html
     - filter.format.restricted_html
+    - filter.format.webform_default
   module:
     - file
     - filter
@@ -27,4 +28,5 @@ permissions:
   - 'use text format basic_html'
   - 'use text format heading_html'
   - 'use text format restricted_html'
+  - 'use text format webform_default'
   - 'view media'

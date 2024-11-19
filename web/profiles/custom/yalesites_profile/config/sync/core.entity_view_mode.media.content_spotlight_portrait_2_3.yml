@@ -6,5 +6,6 @@ dependencies:
     - media
 id: media.content_spotlight_portrait_2_3
 label: 'Content Spotlight - Portrait (2:3)'
+description: ''
 targetEntityType: media
 cache: true

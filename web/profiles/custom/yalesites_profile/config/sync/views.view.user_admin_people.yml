@@ -6,6 +6,7 @@ dependencies:
     - field.storage.user.field_first_name
     - field.storage.user.field_last_name
   module:
+    - role_delegation
     - user
 _core:
   default_config_hash: njaZigMvB4ap21Fg_tQcJhWgYJCGNi49Z5rRL_N6RI0
@@ -640,6 +641,7 @@ display:
         type: full
         options:
           offset: 0
+          pagination_heading_level: h4
           items_per_page: 50
           total_pages: 0
           id: 0

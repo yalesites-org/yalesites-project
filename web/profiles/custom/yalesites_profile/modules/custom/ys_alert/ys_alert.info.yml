@@ -7,3 +7,4 @@ configure: ys_alert.settings
 dependencies:
   - drupal:block
   - ys_core
+  - maxlength
