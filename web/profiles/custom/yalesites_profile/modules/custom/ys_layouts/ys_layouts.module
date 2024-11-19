@@ -44,6 +44,7 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
       'variables' => [
         'page_title' => NULL,
         'page_title_display' => 'visible',
+        'page_title_extra' => NULL,
       ],
     ],
     'ys_post_meta_block' => [

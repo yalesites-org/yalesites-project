@@ -89,6 +89,7 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
     $route = $this->routeMatch->getRouteObject();
     $request = $this->requestStack->getCurrentRequest();
     $page_title = '';
+    $page_title_extra = '';
 
     // Get the page title.
     if ($route) {
@@ -97,6 +98,12 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
       if ($node instanceof NodeInterface && $node->getType() == 'page') {
         if ($node->hasField('field_series') && $node->get('field_series')->value == 1) {
           $page_title = "<span class='page-title__prefix'><i class='fa-solid fa-files'></i></span>" . $page_title;
+          if ($node->hasField('field_series_member') && !empty($node->get('field_series_member')->target_id)) {
+            $series_member = $node->get('field_series_member')->entity->label();
+            $serires_url = $node->get('field_series_member')->entity->toUrl()->toString();
+            $series_link = '<a href="' . $serires_url . '">' . $series_member . '</a>';
+            $page_title_extra = "<span class='page-title__extra'>Part of series: " . $series_link . '</span>';
+          }
         }
       }
     }
@@ -105,6 +112,7 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
       '#theme' => 'ys_page_meta_block',
       '#page_title' => Markup::create($page_title),
       '#page_title_display' => $this->configuration['page_title_display'] ?? '',
+      '#page_title_extra' => Markup::create($page_title_extra),
     ];
   }
 
