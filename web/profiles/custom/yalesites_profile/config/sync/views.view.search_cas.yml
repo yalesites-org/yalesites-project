@@ -11,7 +11,7 @@ dependencies:
 id: search_cas
 label: 'Search CAS'
 module: views
-description: 'Shows CAS-only items (titles only)'
+description: 'Shows all items including CAS items (titles only via twig)'
 tag: ''
 base_table: search_api_index_secure_index
 base_field: search_api_id
