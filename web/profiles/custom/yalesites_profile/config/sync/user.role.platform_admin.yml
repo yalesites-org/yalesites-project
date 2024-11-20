@@ -71,6 +71,7 @@ dependencies:
     - layout_builder
     - media
     - menu_admin_per_menu
+    - migrate_tools
     - moderation_sidebar
     - node
     - override_node_options
@@ -109,6 +110,7 @@ permissions:
   - 'administer blocks'
   - 'administer content types'
   - 'administer main menu items'
+  - 'administer migrations'
   - 'administer nodes'
   - 'administer redirects'
   - 'administer site configuration'
