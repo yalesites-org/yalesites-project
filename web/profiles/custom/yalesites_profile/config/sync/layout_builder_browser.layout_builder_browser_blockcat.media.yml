@@ -6,3 +6,5 @@ id: media
 label: Media
 weight: -8
 opened: true
+image_path: null
+image_alt: null
