@@ -1,11 +1,15 @@
 {% set url = content.field_external_source[0]['#url']|render ? content.field_external_source[0]['#url']|render : url %}
+{% set search_result__prefix__icon = 'lock-solid' %}
 
 {% if content.field_login_required['#items'].value %}
+{{'CAS Content'}}
   {% include "@molecules/search-result/yds-search-result.twig" with {
     search_result__title: label,
     search_result__url: url,
-    search_result__content_type: node.bundle|clean_class
+    search_result__content_type: node.bundle|clean_class,
+    search_result__prefix__icon: search_result__prefix__icon,
   } %}
+  {{dd(search_result__prefix__icon)}}
 {% else %}
   {% include "@molecules/search-result/yds-search-result.twig" with {
     search_result__title: label,
