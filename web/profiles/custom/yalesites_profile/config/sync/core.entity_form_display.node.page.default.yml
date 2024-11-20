@@ -134,10 +134,14 @@ content:
       display_label: true
     third_party_settings: {  }
   field_series_member:
-    type: chosen_select
+    type: entity_reference_autocomplete
     weight: 7
     region: content
-    settings: {  }
+    settings:
+      match_operator: CONTAINS
+      match_limit: 10
+      size: 60
+      placeholder: ''
     third_party_settings: {  }
   field_tags:
     type: chosen_select
