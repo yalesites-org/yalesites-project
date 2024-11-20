@@ -50,6 +50,7 @@ ys_core.admin_views_settings:
 ys_core.search_page:
   path: '/search'
   defaults:
+    _title_callback: '\Drupal\ys_core\Controller\SearchController::getTitle'
     _controller: '\Drupal\ys_core\Controller\SearchController::searchPage'
   requirements:
-    _permission: 'TRUE'
+    _access: 'TRUE'

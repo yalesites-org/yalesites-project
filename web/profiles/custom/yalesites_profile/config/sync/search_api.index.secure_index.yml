@@ -1,0 +1,165 @@
+uuid: eaac8aa4-ebe9-48a6-8d40-2aefff92390f
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_teaser_text
+    - search_api.server.database_server
+  module:
+    - node
+    - search_api
+    - search_api_exclude
+    - search_api_html_element_filter
+id: secure_index
+name: 'Secure Index'
+description: ''
+read_only: false
+field_settings:
+  field_teaser_text:
+    label: 'Teaser Text'
+    datasource_id: 'entity:node'
+    property_path: field_teaser_text
+    type: text
+    dependencies:
+      config:
+        - field.storage.node.field_teaser_text
+  rendered_item:
+    label: 'Rendered HTML output'
+    property_path: rendered_item
+    type: text
+    configuration:
+      roles:
+        - authenticated
+      view_mode:
+        'entity:node':
+          event: default
+          page: default
+          post: default
+          profile: default
+  status:
+    label: Published
+    datasource_id: 'entity:node'
+    property_path: status
+    type: boolean
+    dependencies:
+      module:
+        - node
+  type:
+    label: 'Content type'
+    datasource_id: 'entity:node'
+    property_path: type
+    type: string
+    dependencies:
+      module:
+        - node
+  uid:
+    label: 'Authored by'
+    datasource_id: 'entity:node'
+    property_path: uid
+    type: integer
+    dependencies:
+      module:
+        - node
+datasource_settings:
+  'entity:node':
+    bundles:
+      default: true
+      selected: {  }
+    languages:
+      default: true
+      selected: {  }
+processor_settings:
+  add_url: {  }
+  aggregated_field: {  }
+  custom_value: {  }
+  entity_status: {  }
+  entity_type: {  }
+  highlight:
+    weights:
+      postprocess_query: 0
+    prefix: '<strong style="background-color: yellow;">'
+    suffix: '</strong>'
+    excerpt: true
+    excerpt_always: true
+    excerpt_length: 256
+    exclude_fields: {  }
+    highlight: always
+    highlight_partial: false
+  html_element_filter:
+    weights:
+      postprocess_query: -30
+      preprocess_index: -50
+    all_fields: 0
+    fields:
+      - field_teaser_text
+      - rendered_item
+      - type
+    css_selectors: .visually-hidden
+  html_filter:
+    weights:
+      preprocess_index: -49
+      preprocess_query: -48
+    all_fields: false
+    fields:
+      - field_teaser_text
+      - rendered_item
+    title: true
+    alt: true
+    tags:
+      b: 2
+      h1: 5
+      h2: 3
+      h3: 2
+      strong: 2
+  ignorecase:
+    weights:
+      preprocess_index: -48
+      preprocess_query: -47
+    all_fields: true
+    fields:
+      - field_teaser_text
+      - rendered_item
+      - type
+  language_with_fallback: {  }
+  node_exclude: {  }
+  rendered_item: {  }
+  stemmer:
+    weights:
+      preprocess_index: -42
+      preprocess_query: -42
+    all_fields: false
+    fields:
+      - field_teaser_text
+      - rendered_item
+    exceptions:
+      mexican: mexic
+      texan: texa
+  tokenizer:
+    weights:
+      preprocess_index: -45
+      preprocess_query: -44
+    all_fields: false
+    fields:
+      - field_teaser_text
+      - rendered_item
+    spaces: ''
+    ignored: ._-
+    overlap_cjk: 1
+    minimum_word_size: '3'
+  transliteration:
+    weights:
+      preprocess_index: -47
+      preprocess_query: -46
+    all_fields: true
+    fields:
+      - field_teaser_text
+      - rendered_item
+      - type
+tracker_settings:
+  default:
+    indexing_order: fifo
+options:
+  cron_limit: 50
+  index_directly: true
+  track_changes_in_references: true
+server: database_server

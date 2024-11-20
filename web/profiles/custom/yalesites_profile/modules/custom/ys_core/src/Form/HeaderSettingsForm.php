@@ -377,7 +377,12 @@ class HeaderSettingsForm extends ConfigFormBase {
     $headerConfig->set('cta_content', $form_state->getValue('cta_content'));
     $headerConfig->set('cta_url', $form_state->getValue('cta_url'));
     $headerConfig->set('search.enable_search_form', $form_state->getValue('enable_search_form'));
-    $headerConfig->set('search.enable_cas_search', $form_state->getValue('enable_cas_search'));
+    if ($form_state->getValue('enable_search_form') && $form_state->getValue('enable_cas_search')) {
+      $headerConfig->set('search.enable_cas_search', $form_state->getValue('enable_cas_search'));
+    }
+    else {
+      $headerConfig->set('search.enable_cas_search', 0);
+    }
     $headerConfig->set('focus_header_image', $form_state->getValue('focus_header_image'));
 
     $headerConfig->save();
