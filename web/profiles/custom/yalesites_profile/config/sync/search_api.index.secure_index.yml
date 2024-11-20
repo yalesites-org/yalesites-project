@@ -11,7 +11,7 @@ dependencies:
     - search_api_exclude
     - search_api_html_element_filter
 id: secure_index
-name: 'Secure Index'
+name: 'Node and CAS Index'
 description: ''
 read_only: false
 field_settings:
