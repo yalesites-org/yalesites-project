@@ -10,7 +10,7 @@ dependencies:
     - node.type.page
     - taxonomy.vocabulary.page_type
   content:
-    - 'taxonomy_term:page_type:6589a24c-359e-4d37-b902-62289bd8db3a'
+    - 'taxonomy_term:page_type:51f1bda3-ef6e-47f8-8f27-11a44fab989c'
   module:
     - node
     - taxonomy
@@ -343,7 +343,6 @@ display:
           title: ''
           default_argument_type: node
           default_argument_options: {  }
-          default_argument_skip_url: false
           summary_options:
             base_path: ''
             count: true
@@ -391,7 +390,7 @@ display:
           plugin_id: taxonomy_index_tid
           operator: or
           value:
-            131: 131
+            51: 51
           group: 1
           exposed: false
           expose:
@@ -462,7 +461,6 @@ display:
         - 'languages:language_content'
         - 'languages:language_interface'
         - url
-        - user
         - 'user.node_grants:view'
         - user.permissions
       tags:
@@ -486,7 +484,6 @@ display:
         - 'languages:language_content'
         - 'languages:language_interface'
         - url
-        - user
         - 'user.node_grants:view'
         - user.permissions
       tags:
@@ -494,3 +491,4 @@ display:
         - 'config:field.storage.node.field_category'
         - 'config:field.storage.node.field_tags'
         - 'config:field.storage.node.field_type'
+
