@@ -1,0 +1,21 @@
+uuid: 83050099-3d5e-4a57-8fd7-2de03f19c507
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.media.field_metatags
+    - media.type.document
+  module:
+    - metatag
+id: media.document.field_metatags
+field_name: field_metatags
+entity_type: media
+bundle: document
+label: Metadata
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: metatag
