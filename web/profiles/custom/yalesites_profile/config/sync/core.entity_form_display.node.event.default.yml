@@ -12,11 +12,11 @@ dependencies:
     - field.field.node.event.field_event_place
     - field.field.node.event.field_event_recurring
     - field.field.node.event.field_event_room
+    - field.field.node.event.field_event_source
     - field.field.node.event.field_event_status
     - field.field.node.event.field_event_topics
     - field.field.node.event.field_event_type
     - field.field.node.event.field_external_source
-    - field.field.node.event.field_is_campus_groups
     - field.field.node.event.field_localist_event_experience
     - field.field.node.event.field_localist_event_image_alt
     - field.field.node.event.field_localist_event_image_url
@@ -135,6 +135,7 @@ third_party_settings:
         - field_event_recurring
         - group_stream_information
         - field_is_campus_groups
+        - field_event_source
       label: 'Basic info'
       region: content
       parent_name: group_event_tabs
@@ -292,7 +293,7 @@ content:
     third_party_settings: {  }
   field_event_place:
     type: chosen_select
-    weight: 6
+    weight: 38
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -305,11 +306,17 @@ content:
     third_party_settings: {  }
   field_event_room:
     type: string_textfield
-    weight: 7
+    weight: 39
     region: content
     settings:
       size: 60
       placeholder: ''
+    third_party_settings: {  }
+  field_event_source:
+    type: chosen_select
+    weight: 9
+    region: content
+    settings: {  }
     third_party_settings: {  }
   field_event_status:
     type: options_select
@@ -331,16 +338,9 @@ content:
       placeholder_url: ''
       placeholder_title: ''
     third_party_settings: {  }
-  field_is_campus_groups:
-    type: boolean_checkbox
-    weight: 8
-    region: content
-    settings:
-      display_label: true
-    third_party_settings: {  }
   field_localist_event_experience:
     type: chosen_select
-    weight: 5
+    weight: 37
     region: content
     settings: {  }
     third_party_settings: {  }

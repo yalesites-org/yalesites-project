@@ -104,9 +104,6 @@ process:
   field_localist_ics_url/uri: event_ics_url
   field_event_cta/uri: event_url
   field_external_source/uri: event_url
-  field_is_campus_groups:
-    plugin: default_value
-    default_value: true
   field_event_date/value:
     plugin: format_date
     source: event_start_date
@@ -155,6 +152,16 @@ process:
     bundle_key: vid
     bundle: event_status
     source: event_status
+  field_event_source:
+    -
+      plugin: default_value
+      default_value: 'Campus Groups'
+    -
+      plugin: entity_generate
+      entity_type: taxonomy_term
+      value_key: name
+      bundle_key: vid
+      bundle: event_source
   field_event_topics:
     -
       plugin: explode

@@ -4,6 +4,7 @@ namespace Drupal\ys_core\EventSubscriber;
 
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Routing\TrustedRedirectResponse;
+use Drupal\ys_campus_group\CampusGroupConfig;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
@@ -25,6 +26,13 @@ class ExternalSourceRedirectSubscriber implements EventSubscriberInterface {
    * @var \Drupal\Core\Routing\RouteMatchInterface
    */
   protected $routeMatch;
+
+  /**
+   * The route match service.
+   *
+   * @var \Drupal\ys_campus_group\CampusGroupConfig
+   */
+  protected $campusGroupConfig;
 
   /**
    * {@inheritdoc}
@@ -49,10 +57,25 @@ class ExternalSourceRedirectSubscriber implements EventSubscriberInterface {
       $node = $this->routeMatch->getParameter('node');
       if (!empty($node) && $node->hasField(self::SOURCE_FIELD)) {
         if (!empty($node->get(self::SOURCE_FIELD)->first())) {
-          $link = $node->get(self::SOURCE_FIELD)->first()->getValue();
-          if (!empty($link['uri'])) {
-            $response = new TrustedRedirectResponse($link['uri']);
-            $event->setResponse($response);
+          if ($node->getType() == "event" && $node->hasField('field_event_source')) {
+            $event_source_name = $node->field_event_source->entity->label();
+            if ($event_source_name == "Campus Groups") {
+              $config = $this->campusGroupConfig->getConfig();
+              if ($config->get('enable_campus_group_redirect')) {
+                $link = $node->get(self::SOURCE_FIELD)->first()->getValue();
+                if (!empty($link['uri'])) {
+                  $response = new TrustedRedirectResponse($link['uri']);
+                  $event->setResponse($response);
+                }
+              }
+            }
+          }
+          else {
+            $link = $node->get(self::SOURCE_FIELD)->first()->getValue();
+            if (!empty($link['uri'])) {
+              $response = new TrustedRedirectResponse($link['uri']);
+              $event->setResponse($response);
+            }
           }
         }
       }
@@ -65,8 +88,9 @@ class ExternalSourceRedirectSubscriber implements EventSubscriberInterface {
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The route match service.
    */
-  public function __construct(RouteMatchInterface $route_match) {
+  public function __construct(RouteMatchInterface $route_match, CampusGroupConfig $campus_group_config) {
     $this->routeMatch = $route_match;
+    $this->campusGroupConfig = $campus_group_config;
   }
 
   /**
@@ -74,7 +98,8 @@ class ExternalSourceRedirectSubscriber implements EventSubscriberInterface {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('router.route_provider')
+      $container->get('router.route_provider'),
+      $container->get('ys_campus_group.config')
     );
   }
 

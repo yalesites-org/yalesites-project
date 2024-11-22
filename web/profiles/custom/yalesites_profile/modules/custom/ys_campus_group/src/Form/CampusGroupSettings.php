@@ -84,6 +84,11 @@ class CampusGroupSettings extends ConfigFormBase {
       '#default_value' => $config->get('campus_group_api_cookie'),
       '#description' => $this->t('Enter the API cookie'),
     ];
+    $form['enable_campus_group_redirect'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Automatically redirect users to Campus Groups when they click an event card'),
+      '#default_value' => $config->get('enable_campus_group_redirect') ?: FALSE,
+    ];
     return parent::buildForm($form, $form_state);
   }
 
@@ -101,6 +106,7 @@ class CampusGroupSettings extends ConfigFormBase {
       ->set('campus_group_api_useragent', $form_state->getValue('campus_group_api_useragent'))
       ->set('campus_group_api_secret', $form_state->getValue('campus_group_api_secret'))
       ->set('campus_group_api_cookie', $form_state->getValue('campus_group_api_cookie'))
+      ->set('enable_campus_group_redirect', $form_state->getValue('enable_campus_group_redirect'))
       ->save();
 
     parent::submitForm($form, $form_state);

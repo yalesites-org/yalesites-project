@@ -165,8 +165,10 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     $localistUrl = ($node->field_localist_event_url->first()) ? Url::fromUri($node->field_localist_event_url->first()->getValue()['uri'])->toString() : NULL;
     $streamUrl = ($node->field_stream_url->first()) ? Url::fromUri($node->field_stream_url->first()->getValue()['uri'])->toString() : NULL;
     $streamEmbedCode = $node->field_stream_embed_code->first() ? $node->field_stream_embed_code->first()->getValue()['value'] : NULL;
-    $isCampusGroup = $node->field_is_campus_groups->value ? $node->field_is_campus_groups->value : 0;
-
+    $isCampusGroup = 0;
+    if (!empty($node->field_event_source->target_id) && $node->field_event_source->entity->label() == "Campus Groups") {
+      $isCampusGroup = 1;
+    }
     // Localist register ticket changes.
     $localistRegisterTickets = $hasRegister ? $this->localistManager->getTicketInfo($localistId) : NULL;
     if ($localistRegisterTickets) {
