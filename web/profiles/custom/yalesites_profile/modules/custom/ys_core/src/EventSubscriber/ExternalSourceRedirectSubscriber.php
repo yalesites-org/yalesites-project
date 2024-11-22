@@ -88,7 +88,7 @@ class ExternalSourceRedirectSubscriber implements EventSubscriberInterface {
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The route match service.
    * @param \Drupal\ys_campus_group\CampusGroupConfig $campus_group_config
-   *   Whether event card clicks redirect to Campus Groups
+   *   Whether event card clicks redirect to Campus Groups.
    */
   public function __construct(RouteMatchInterface $route_match, CampusGroupConfig $campus_group_config) {
     $this->routeMatch = $route_match;
