@@ -5,3 +5,4 @@ campus_group_groupids: '32717,35946,36460,36461,36462,36463'
 campus_group_api_useragent: 'User-Agent: insomnia/8.6.1'
 campus_group_api_secret: 05F24TBchQgVaXp+sHkXraBtxPc0OVjXPAMk/BIggA3FYZVAXR/MB17SASizI5xAj5CDc4Vb7+HNfqwP8bt1CBG2a0PfA3OjCgU8lgpKKVUYqeTuQC7KhCA1zeiZzCw9vQ==
 campus_group_api_cookie: CG.SessionID=pebadrjsvcinqyn4kigr5s1q-0Egb5QwMCW%252fGoh2DzjjToEcyTVw%253d
+enable_campus_group_redirect: 0

@@ -1,14 +1,16 @@
-uuid: 78eb34a3-ef61-4891-84bf-23980eb2c17f
+uuid: 95136196-9171-409b-8ce1-91e6fc768aee
 langcode: en
 status: true
 dependencies:
   module:
     - node
-id: node.field_is_campus_groups
-field_name: field_is_campus_groups
+    - taxonomy
+id: node.field_event_source
+field_name: field_event_source
 entity_type: node
-type: boolean
-settings: {  }
+type: entity_reference
+settings:
+  target_type: taxonomy_term
 module: core
 locked: false
 cardinality: 1

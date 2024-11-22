@@ -1,0 +1,4 @@
+services:
+  ys_campus_group.config:
+    class: Drupal\ys_campus_group\CampusGroupConfig
+    arguments: ['@config.factory']
