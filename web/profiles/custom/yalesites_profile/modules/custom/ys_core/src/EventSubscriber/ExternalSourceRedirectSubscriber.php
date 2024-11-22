@@ -57,7 +57,8 @@ class ExternalSourceRedirectSubscriber implements EventSubscriberInterface {
       $node = $this->routeMatch->getParameter('node');
       if (!empty($node) && $node->hasField(self::SOURCE_FIELD)) {
         if (!empty($node->get(self::SOURCE_FIELD)->first())) {
-          if ($node->getType() == "event" && $node->hasField('field_event_source')) {
+          if ($node->getType() == "event" && $node->hasField('field_event_source')
+            && !empty($node->field_event_source->target_id)) {
             $event_source_name = $node->field_event_source->entity->label();
             if ($event_source_name == "Campus Groups") {
               $config = $this->campusGroupConfig->getConfig();
