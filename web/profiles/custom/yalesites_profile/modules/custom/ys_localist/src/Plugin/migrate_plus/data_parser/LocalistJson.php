@@ -28,6 +28,9 @@ class LocalistJson extends Json implements ContainerFactoryPluginInterface, Data
    *
    * @param string $url
    *   URL of a JSON feed.
+   * @param string|int $item_selector
+   *   (optional) If the JSON data is nested, this is a selector to the
+   *   specific data. Does nothing here.
    *
    * @throws \GuzzleHttp\Exception\RequestException
    */
