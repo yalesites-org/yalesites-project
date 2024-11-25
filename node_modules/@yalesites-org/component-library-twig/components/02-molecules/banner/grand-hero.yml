@@ -1,0 +1,6 @@
+grand_hero__heading: 'Heading for the Grand Hero'
+grand_hero__snippet: '<p>Text option, in case there is more that needs to be said.</p>'
+grand_hero__link__url: 'https://google.com'
+grand_hero__link__content: 'This is a link'
+grand_hero__link__url_two: 'https://yale.edu'
+grand_hero__link__content_two: 'This is another link'

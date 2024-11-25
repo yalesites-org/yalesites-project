@@ -1,0 +1,270 @@
+- - date:
+      day: 26
+      month: '05'
+      year: '2024'
+    events: []
+  - date:
+      day: 27
+      month: '05'
+      year: '2024'
+    events: []
+  - date:
+      day: 28
+      month: '05'
+      year: '2024'
+    events: []
+  - date:
+      day: 29
+      month: '05'
+      year: '2024'
+    events: []
+  - date:
+      day: 30
+      month: '05'
+      year: '2024'
+    events: []
+  - date:
+      day: 31
+      month: '05'
+      year: '2024'
+    events: []
+  - date:
+      day: 1
+      month: '06'
+      year: '2024'
+    events: []
+- - date:
+      day: 2
+      month: '06'
+      year: '2024'
+    events: []
+  - date:
+      day: 3
+      month: '06'
+      year: '2024'
+    events: []
+  - date:
+      day: 4
+      month: '06'
+      year: '2024'
+    events: []
+  - date:
+      day: 5
+      month: '06'
+      year: '2024'
+    events: []
+  - date:
+      day: 6
+      month: '06'
+      year: '2024'
+    events: []
+  - date:
+      day: 7
+      month: '06'
+      year: '2024'
+    events: []
+  - date:
+      day: 8
+      month: '06'
+      year: '2024'
+    events: []
+- - date:
+      day: 9
+      month: '06'
+      year: '2024'
+    events: []
+  - date:
+      day: 10
+      month: '06'
+      year: '2024'
+    events: []
+  - date:
+      day: 11
+      month: '06'
+      year: '2024'
+    events: []
+  - date:
+      day: 12
+      month: '06'
+      year: '2024'
+    events: []
+  - date:
+      day: 13
+      month: '06'
+      year: '2024'
+    events: []
+  - date:
+      day: 14
+      month: '06'
+      year: '2024'
+    events: []
+  - date:
+      day: 15
+      month: '06'
+      year: '2024'
+    events: []
+- - date:
+      day: 16
+      month: '06'
+      year: '2024'
+    events: []
+  - date:
+      day: 17
+      month: '06'
+      year: '2024'
+    events: []
+  - date:
+      day: 18
+      month: '06'
+      year: '2024'
+    events:
+      - category: 'computer science'
+        title: 'Yale Pathways to Science Summer Scholars 2024'
+        url: '/'
+        time: 09:00am to 9:45am
+        type:
+          - 'Public Event'
+        optional_link__content: 'Optional link'
+        optional_link__url: '/'
+  - date:
+      day: 19
+      month: '06'
+      year: '2024'
+    events: []
+  - date:
+      day: 20
+      month: '06'
+      year: '2024'
+    events: []
+  - date:
+      day: 21
+      month: '06'
+      year: '2024'
+    events: []
+  - date:
+      day: 22
+      month: '06'
+      year: '2024'
+    events: []
+- - date:
+      day: 23
+      month: '06'
+      year: '2024'
+    events: []
+  - date:
+      day: 24
+      month: '06'
+      year: '2024'
+    events: []
+  - date:
+      day: 25
+      month: '06'
+      year: '2024'
+    events:
+      - category: 'computer science'
+        title: 'Information for Citizens Thinkers Writers at Yale'
+        url: '/'
+        time: '09:00am to 9:45am'
+        type:
+          - 'Public Event'
+        optional_link__content: 'Optional link'
+        optional_link__url: 'https://britishart.yale.edu/exhibitions-programs/bridget-riley-perceptual-abstraction'
+      - category: 'computer science'
+        title: 'Application DUE: Ulysses S. Grant Summer Program'
+        url: '/'
+        time: '09:00am to 9:45am'
+        type:
+          - 'Public Event'
+  - date:
+      day: 26
+      month: '06'
+      year: '2024'
+    events: []
+  - date:
+      day: 27
+      month: '06'
+      year: '2024'
+    events: []
+  - date:
+      day: 28
+      month: '06'
+      year: '2024'
+    events: []
+  - date:
+      day: 29
+      month: '06'
+      year: '2024'
+    events:
+      - category: 'computer science'
+        title: 'Information for Citizens Thinkers Writers at Yale'
+        url: '/'
+        time: '09:00am to 9:45am'
+        type:
+          - 'Public Event'
+        optional_link__content: 'Optional link'
+        optional_link__url: 'https://britishart.yale.edu/exhibitions-programs/bridget-riley-perceptual-abstraction'
+      - category: 'computer science'
+        title: 'Application DUE: Ulysses S. Grant Summer Program'
+        url: '/'
+        time: '09:00am to 9:45am'
+        type:
+          - 'Public Event'
+- - date:
+      day: 30
+      month: '06'
+      year: '2024'
+    events:
+      - category: 'computer science'
+        title: 'Yale Pathways to Science Summer Scholars 2024'
+        url: '/'
+        time: '09:00am to 9:45am'
+        type:
+          - 'Public Event'
+        optional_link__content: 'Optional link'
+        optional_link__url: '/'
+      - category: 'computer science'
+        title: 'Ulysses S. Grant Summer Program'
+        url: '/'
+        time: '09:00am to 9:45am'
+        type:
+          - 'Public Event'
+          - 'Community Event'
+        description: 'Lin Zhong, professor of computer science, has been named a fellow of the Association for Computing Machinery (ACM).'
+      - category: 'computer science'
+        title: 'Music in Schools Initiative - Morse Summer Music Academy'
+        url: '/'
+        time: '09:00am to 9:45am'
+        type:
+          - 'Public Event'
+          - 'Art Event'
+        description: 'The Yale Collection of Musical Instruments acquires, preserves, and exhibits musical instruments from antiquity to the present'
+  - date:
+      day: 1
+      month: '07'
+      year: '2024'
+    events: []
+  - date:
+      day: 2
+      month: '07'
+      year: '2024'
+    events: []
+  - date:
+      day: 3
+      month: '07'
+      year: '2024'
+    events: []
+  - date:
+      day: 4
+      month: '07'
+      year: '2024'
+    events: []
+  - date:
+      day: 5
+      month: '07'
+      year: '2024'
+    events: []
+  - date:
+      day: 6
+      month: '07'
+      year: '2024'
+    events: []
