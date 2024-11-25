@@ -8,7 +8,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Service for managing YaleSites theme settings.
  */
-class ThemeSettingsManager {
+class ThemeSettingsManager
+{
 
   /**
    * Theme setting values and default value.
@@ -47,6 +48,10 @@ class ThemeSettingsManager {
         'four' => [
           'label' => 'Onha',
           'color_theme' => 'four',
+        ],
+        'five' => [
+          'label' => 'Coral',
+          'color_theme' => 'five',
         ],
       ],
     ],
@@ -227,14 +232,16 @@ class ThemeSettingsManager {
    * @param Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   Configuration factory.
    */
-  public function __construct(ConfigFactoryInterface $configFactory) {
+  public function __construct(ConfigFactoryInterface $configFactory)
+  {
     $this->yaleThemeSettings = $configFactory->getEditable('ys_themes.theme_settings');
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container)
+  {
     return new static(
       $container->get('config.factory'),
     );
@@ -246,14 +253,13 @@ class ThemeSettingsManager {
    * @param string $setting_name
    *   If passed, will return the options for that setting name only.
    */
-  public function getOptions($setting_name = NULL) {
+  public function getOptions($setting_name = NULL)
+  {
     if ($setting_name) {
       return self::THEME_SETTINGS[$setting_name]['values'];
-    }
-    else {
+    } else {
       return self::THEME_SETTINGS;
     }
-
   }
 
   /**
@@ -262,15 +268,17 @@ class ThemeSettingsManager {
    * @param string $setting_name
    *   Setting machine name.
    */
-  public function getSetting($setting_name) {
-    return($this->yaleThemeSettings->get($setting_name));
+  public function getSetting($setting_name)
+  {
+    return ($this->yaleThemeSettings->get($setting_name));
   }
 
   /**
    * Gets all theme settings from config.
    */
-  public function getAllSettings() {
-    return($this->yaleThemeSettings->get(''));
+  public function getAllSettings()
+  {
+    return ($this->yaleThemeSettings->get(''));
   }
 
   /**
@@ -281,9 +289,9 @@ class ThemeSettingsManager {
    * @param string $value
    *   Value to set.
    */
-  public function setSetting($setting_name, $value) {
+  public function setSetting($setting_name, $value)
+  {
     $this->yaleThemeSettings->set($setting_name, $value);
     $this->yaleThemeSettings->save(TRUE);
   }
-
 }
