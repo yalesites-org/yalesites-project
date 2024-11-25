@@ -57,23 +57,25 @@ class ExternalSourceRedirectSubscriber implements EventSubscriberInterface {
       $node = $this->routeMatch->getParameter('node');
       if (!empty($node) && $node->hasField(self::SOURCE_FIELD)) {
         if (!empty($node->get(self::SOURCE_FIELD)->first())) {
-          if ($node->getType() == "event" && $node->hasField('field_event_source')
-            && !empty($node->field_event_source->target_id)) {
-            $event_source_name = $node->field_event_source->entity->label();
-            if ($event_source_name == "Campus Groups") {
-              $config = $this->campusGroupConfig->getConfig();
-              if ($config->get('enable_campus_group_redirect')) {
-                $link = $node->get(self::SOURCE_FIELD)->first()->getValue();
-                if (!empty($link['uri'])) {
-                  $response = new TrustedRedirectResponse($link['uri']);
-                  $event->setResponse($response);
+          $link = $node->get(self::SOURCE_FIELD)->first()->getValue();
+          if (!empty($link['uri'])) {
+            if ($node->getType() == "event") {
+              if ($node->hasField('field_event_source') && !empty($node->field_event_source->target_id)) {
+                $event_source_name = $node->field_event_source->entity->label();
+                if ($event_source_name == "Campus Groups") {
+                  $config = $this->campusGroupConfig->getConfig();
+                  if ($config->get('enable_campus_group_redirect')) {
+                    $response = new TrustedRedirectResponse($link['uri']);
+                    $event->setResponse($response);
+                  }
                 }
               }
+              else {
+                $response = new TrustedRedirectResponse($link['uri']);
+                $event->setResponse($response);
+              }
             }
-          }
-          else {
-            $link = $node->get(self::SOURCE_FIELD)->first()->getValue();
-            if (!empty($link['uri'])) {
+            else {
               $response = new TrustedRedirectResponse($link['uri']);
               $event->setResponse($response);
             }
