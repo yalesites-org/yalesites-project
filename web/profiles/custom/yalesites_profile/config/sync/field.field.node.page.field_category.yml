@@ -11,7 +11,7 @@ field_name: field_category
 entity_type: node
 bundle: page
 label: Category
-description: "Categories will autocomplete as you type.  Choose from pre-created options only.  To add a new category, go to 'Content->Manage Taxonomy->Page Category'."
+description: "Categories will autocomplete as you type.  Choose from pre-created options only.  To add a new category, go to 'Content->Manage Taxonomy->Page Category'.\r\nPlease note that only 3 or less selections will display correctly."
 required: false
 translatable: false
 default_value: {  }

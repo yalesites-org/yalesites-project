@@ -1,6 +1,6 @@
 ys_resource.resource_config:
-  title: 'Resource settings'
-  description: 'Configure Resrouce settings'
+  title: 'Page Content Settings'
+  description: 'Configure Page content settings'
   route_name: ys_resource.resource_config
   parent: ys_core.admin_yalesites
   weight: 0

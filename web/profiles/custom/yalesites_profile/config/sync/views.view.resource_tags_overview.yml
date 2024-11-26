@@ -5,10 +5,9 @@ dependencies:
   config:
     - core.entity_view_mode.node.resource_card
     - node.type.page
-    - taxonomy.vocabulary.page_type
     - taxonomy.vocabulary.tags
   content:
-    - 'taxonomy_term:page_type:51f1bda3-ef6e-47f8-8f27-11a44fab989c'
+    - 'taxonomy_term:tags:010c498d-9337-46c6-8b43-790d5178b2ad'
   module:
     - node
     - taxonomy
@@ -80,7 +79,6 @@ display:
         type: mini
         options:
           offset: 0
-          pagination_heading_level: h4
           items_per_page: 10
           total_pages: null
           id: 0
@@ -150,6 +148,7 @@ display:
           default_argument_options:
             index: 0
             use_alias: false
+          default_argument_skip_url: false
           summary_options:
             base_path: ''
             count: true
@@ -194,17 +193,17 @@ display:
           plugin_id: bundle
           value:
             page: page
-        field_page_type_target_id:
-          id: field_page_type_target_id
-          table: node__field_page_type
-          field: field_page_type_target_id
+        field_tags_target_id:
+          id: field_tags_target_id
+          table: node__field_tags
+          field: field_tags_target_id
           relationship: none
           group_type: group
           admin_label: ''
           plugin_id: taxonomy_index_tid
           operator: or
           value:
-            51: 51
+            - 41
           group: 1
           exposed: false
           expose:
@@ -235,9 +234,9 @@ display:
             default_group_multiple: {  }
             group_items: {  }
           reduce_duplicates: false
-          vid: page_type
-          type: select
-          hierarchy: true
+          vid: tags
+          type: textfield
+          hierarchy: false
           limit: true
           error_message: true
       style:
@@ -266,6 +265,7 @@ display:
         - 'languages:language_interface'
         - url
         - url.query_args
+        - user
         - 'user.node_grants:view'
         - user.permissions
       tags: {  }
@@ -287,7 +287,7 @@ display:
         - 'languages:language_interface'
         - url
         - url.query_args
+        - user
         - 'user.node_grants:view'
         - user.permissions
       tags: {  }
-
