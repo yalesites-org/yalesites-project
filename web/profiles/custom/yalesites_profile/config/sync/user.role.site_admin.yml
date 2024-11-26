@@ -51,7 +51,6 @@ dependencies:
     - taxonomy.vocabulary.event_category
     - taxonomy.vocabulary.page_audience
     - taxonomy.vocabulary.page_category
-    - taxonomy.vocabulary.page_type
     - taxonomy.vocabulary.post_category
     - taxonomy.vocabulary.tags
     - workflows.workflow.editorial
@@ -150,7 +149,6 @@ permissions:
   - 'create terms in event_category'
   - 'create terms in page_audience'
   - 'create terms in page_category'
-  - 'create terms in page_type'
   - 'create terms in post_category'
   - 'create terms in tags'
   - 'create text block content'
