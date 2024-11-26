@@ -21,12 +21,12 @@ class PowerBI extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $pattern = '/^https:\/\/app.powerbi.com\/(?<form_params>.+)/';
+  protected static $pattern = '/^https:\/\/app.powerbi.com\/(?<type>view|reportEmbed)(?<query_params>\?.+)/';
 
   /**
    * {@inheritdoc}
    */
-  protected static $template = '<iframe class="iframe" title="{{ title }}" src="https://app.powerbi.com/{{ form_params }}" height="100%" width="100%" loading="lazy"></iframe>';
+  protected static $template = '<iframe class="iframe" title="{{ title }}" src="https://app.powerbi.com/{{ type }}{{ query_params }}" height="100%" width="100%" loading="lazy"></iframe>';
 
   /**
    * {@inheritdoc}
@@ -36,7 +36,7 @@ class PowerBI extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $example = 'https://app.powerbi.com/view?r=eyJrIjoiYzQ1ODA0ZjEtZjc5YS00OTgyLWIzOTItNmJmNDY2YmRiODQ2IiwidCI6ImRkOGNiZWJiLTIxMzktNGRmOC1iNDExLTRlM2U4N2FiZWI1YyIsImMiOjF9&pageName=ReportSection2ac2649f17189885d376';
+  protected static $example = 'https://app.powerbi.com/reportEmbed?reportId=66e25bd6-5e0a-4db8-ad0c-28bb31b0fd5e&autoAuth=true&ctid=dd8cbebb-2139-4df8-b411-4e3e87abeb5c';
 
   /**
    * {@inheritdoc}
@@ -54,8 +54,9 @@ class PowerBI extends EmbedSourceBase implements EmbedSourceInterface {
    * {@inheritdoc}
    */
   public function getUrl(array $params): string {
-    $form_params = $params['form_params'];
-    return 'https://app.powerbi.com/' . $form_params;
+    $type = $params['type'];
+    $query_params = $params['query_params'];
+    return 'https://app.powerbi.com/' . $type . $query_params;
   }
 
 }
