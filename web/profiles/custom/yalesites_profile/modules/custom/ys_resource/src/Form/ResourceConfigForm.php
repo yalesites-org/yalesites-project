@@ -61,17 +61,6 @@ class ResourceConfigForm extends ConfigFormBase {
     // Load available terms for Category and Tags vocabularies.
     $category_options = $this->getVocabularyTerms('page_category');
     $tags_options = $this->getVocabularyTerms('tags');
-    $page_type_options = $this->getVocabularyTerms('page_type');
-
-    // Category term reference field.
-    $form['page_type_term'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Page Type'),
-      '#options' => $page_type_options,
-      '#default_value' => $config->get('page_type_term'),
-      '#description' => $this->t('Select the Resource term for Page type.'),
-      '#required' => TRUE,
-    ];
 
     $form['category_parent_term'] = [
       '#type' => 'select',
@@ -91,6 +80,7 @@ class ResourceConfigForm extends ConfigFormBase {
       '#description' => $this->t('Select the parent term for Tags.'),
       '#required' => TRUE,
     ];
+
     $form['resource_full_page_link'] = [
       '#type' => 'linkit',
       '#title' => $this->t('Resource Full page link'),
@@ -101,6 +91,14 @@ class ResourceConfigForm extends ConfigFormBase {
       '#autocomplete_route_parameters' => [
         'linkit_profile_id' => 'default',
       ],
+    ];
+
+    $form['custom_vocabulary_label'] = [
+      '#type' => 'textfield',
+      '#required' => TRUE,
+      '#title' => $this->t('Custom vocabulary label'),
+      '#default_value' => $config->get('custom_vocabulary_label'),
+      '#description' => $this->t('Enter the custom vocabulary label'),
     ];
 
     return parent::buildForm($form, $form_state);
@@ -125,8 +123,8 @@ class ResourceConfigForm extends ConfigFormBase {
     $this->configFactory->getEditable('ys_resource.resource_config')
       ->set('category_parent_term', $form_state->getValue('category_parent_term'))
       ->set('tags_parent_term', $form_state->getValue('tags_parent_term'))
-      ->set('page_type_term', $form_state->getValue('page_type_term'))
       ->set('resource_full_page_link', $form_state->getValue('resource_full_page_link'))
+      ->set('custom_vocabulary_label', $form_state->getValue('custom_vocabulary_label'))
       ->save();
 
     parent::submitForm($form, $form_state);

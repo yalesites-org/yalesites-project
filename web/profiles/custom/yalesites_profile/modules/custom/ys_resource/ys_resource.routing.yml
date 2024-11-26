@@ -2,6 +2,6 @@ ys_resource.resource_config:
   path: '/admin/config/yalesites/resource-config'
   defaults:
     _form: '\Drupal\ys_resource\Form\ResourceConfigForm'
-    _title: 'Resource Configuration'
+    _title: 'Page Content Settings'
   requirements:
     _permission: 'administer site configuration'
