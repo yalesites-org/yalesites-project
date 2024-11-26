@@ -1,0 +1,4 @@
+services:
+  ys_resource.config:
+    class: Drupal\ys_resource\ResourceConfig
+    arguments: ['@config.factory']
