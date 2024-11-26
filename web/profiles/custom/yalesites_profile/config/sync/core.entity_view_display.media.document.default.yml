@@ -31,6 +31,7 @@ content:
     region: content
 hidden:
   created: true
+  field_metatags: true
   field_tags: true
   name: true
   search_api_excerpt: true

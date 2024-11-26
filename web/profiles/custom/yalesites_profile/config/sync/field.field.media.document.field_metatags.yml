@@ -1,4 +1,4 @@
-uuid: 04b2e049-3bb3-4f6d-bd72-0d6b20e50142
+uuid: 3c7d1cca-b0b1-4ee7-886b-ad6fa0400e92
 langcode: en
 status: true
 dependencies:
@@ -11,7 +11,7 @@ id: media.document.field_metatags
 field_name: field_metatags
 entity_type: media
 bundle: document
-label: Metatags
+label: Metadata
 description: ''
 required: false
 translatable: false
