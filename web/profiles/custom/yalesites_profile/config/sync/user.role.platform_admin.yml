@@ -54,7 +54,6 @@ dependencies:
     - taxonomy.vocabulary.event_source
     - taxonomy.vocabulary.page_audience
     - taxonomy.vocabulary.page_category
-    - taxonomy.vocabulary.page_type
     - taxonomy.vocabulary.post_category
     - taxonomy.vocabulary.tags
     - workflows.workflow.editorial
@@ -170,7 +169,6 @@ permissions:
   - 'create terms in event_source'
   - 'create terms in page_audience'
   - 'create terms in page_category'
-  - 'create terms in page_type'
   - 'create terms in post_category'
   - 'create terms in tags'
   - 'create text block content'
@@ -329,7 +327,6 @@ permissions:
   - 'edit terms in event_source'
   - 'edit terms in page_audience'
   - 'edit terms in page_category'
-  - 'edit terms in page_type'
   - 'edit terms in post_category'
   - 'edit terms in tags'
   - 'export configuration'
@@ -442,4 +439,3 @@ permissions:
   - 'yalesites manage campus_group'
   - 'yalesites manage localist'
   - 'yalesites manage settings'
-
