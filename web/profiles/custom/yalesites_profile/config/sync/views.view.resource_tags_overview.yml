@@ -5,10 +5,9 @@ dependencies:
   config:
     - core.entity_view_mode.node.resource_card
     - node.type.page
-    - taxonomy.vocabulary.page_type
     - taxonomy.vocabulary.tags
   content:
-    - 'taxonomy_term:page_type:6589a24c-359e-4d37-b902-62289bd8db3a'
+    - 'taxonomy_term:tags:010c498d-9337-46c6-8b43-790d5178b2ad'
   module:
     - node
     - taxonomy
@@ -194,17 +193,17 @@ display:
           plugin_id: bundle
           value:
             page: page
-        field_page_type_target_id:
-          id: field_page_type_target_id
-          table: node__field_page_type
-          field: field_page_type_target_id
+        field_tags_target_id:
+          id: field_tags_target_id
+          table: node__field_tags
+          field: field_tags_target_id
           relationship: none
           group_type: group
           admin_label: ''
           plugin_id: taxonomy_index_tid
           operator: or
           value:
-            131: 131
+            - 41
           group: 1
           exposed: false
           expose:
@@ -235,9 +234,9 @@ display:
             default_group_multiple: {  }
             group_items: {  }
           reduce_duplicates: false
-          vid: page_type
-          type: select
-          hierarchy: true
+          vid: tags
+          type: textfield
+          hierarchy: false
           limit: true
           error_message: true
       style:

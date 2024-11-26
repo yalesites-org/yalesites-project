@@ -5,12 +5,11 @@ dependencies:
   config:
     - field.storage.node.field_audience
     - field.storage.node.field_category
-    - field.storage.node.field_tags
     - field.storage.node.field_type
     - node.type.page
-    - taxonomy.vocabulary.page_type
+    - taxonomy.vocabulary.tags
   content:
-    - 'taxonomy_term:page_type:6589a24c-359e-4d37-b902-62289bd8db3a'
+    - 'taxonomy_term:tags:010c498d-9337-46c6-8b43-790d5178b2ad'
   module:
     - node
     - taxonomy
@@ -220,69 +219,6 @@ display:
           multi_type: separator
           separator: ', '
           field_api_classes: false
-        field_tags:
-          id: field_tags
-          table: node__field_tags
-          field: field_tags
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: field
-          label: Tags
-          exclude: false
-          alter:
-            alter_text: false
-            text: ''
-            make_link: true
-            path: '/resource-tags-overview/{{ field_tags__target_id }}'
-            absolute: false
-            external: false
-            replace_spaces: false
-            path_case: none
-            trim_whitespace: false
-            alt: ''
-            rel: ''
-            link_class: ''
-            prefix: ''
-            suffix: ''
-            target: ''
-            nl2br: false
-            max_length: 0
-            word_boundary: true
-            ellipsis: true
-            more_link: false
-            more_link_text: ''
-            more_link_path: ''
-            strip_tags: false
-            trim: false
-            preserve_tags: ''
-            html: false
-          element_type: ''
-          element_class: ''
-          element_label_type: ''
-          element_label_class: ''
-          element_label_colon: false
-          element_wrapper_type: ''
-          element_wrapper_class: ''
-          element_default_classes: true
-          empty: ''
-          hide_empty: false
-          empty_zero: false
-          hide_alter_empty: true
-          click_sort_column: target_id
-          type: entity_reference_label
-          settings:
-            link: false
-          group_column: target_id
-          group_columns: {  }
-          group_rows: true
-          delta_limit: 0
-          delta_offset: 0
-          delta_reversed: false
-          delta_first_last: false
-          multi_type: separator
-          separator: ', '
-          field_api_classes: false
       pager:
         type: some
         options:
@@ -381,17 +317,17 @@ display:
           plugin_id: bundle
           value:
             page: page
-        field_page_type_target_id:
-          id: field_page_type_target_id
-          table: node__field_page_type
-          field: field_page_type_target_id
+        field_tags_target_id:
+          id: field_tags_target_id
+          table: node__field_tags
+          field: field_tags_target_id
           relationship: none
           group_type: group
           admin_label: ''
           plugin_id: taxonomy_index_tid
           operator: or
           value:
-            131: 131
+            - 41
           group: 1
           exposed: false
           expose:
@@ -422,9 +358,9 @@ display:
             default_group_multiple: {  }
             group_items: {  }
           reduce_duplicates: false
-          vid: page_type
-          type: select
-          hierarchy: true
+          vid: tags
+          type: textfield
+          hierarchy: false
           limit: true
           error_message: true
       style:
@@ -468,7 +404,6 @@ display:
       tags:
         - 'config:field.storage.node.field_audience'
         - 'config:field.storage.node.field_category'
-        - 'config:field.storage.node.field_tags'
         - 'config:field.storage.node.field_type'
   block_1:
     id: block_1
@@ -492,5 +427,4 @@ display:
       tags:
         - 'config:field.storage.node.field_audience'
         - 'config:field.storage.node.field_category'
-        - 'config:field.storage.node.field_tags'
         - 'config:field.storage.node.field_type'
