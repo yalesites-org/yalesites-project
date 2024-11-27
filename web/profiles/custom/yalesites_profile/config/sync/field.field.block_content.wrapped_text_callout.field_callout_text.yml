@@ -1,0 +1,24 @@
+uuid: 6b6be9e0-a5e6-4df0-9e03-5b0a1437eb3f
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.wrapped_text_callout
+    - field.storage.block_content.field_callout_text
+    - filter.format.basic_html
+  module:
+    - text
+id: block_content.wrapped_text_callout.field_callout_text
+field_name: field_callout_text
+entity_type: block_content
+bundle: wrapped_text_callout
+label: Callout
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - basic_html
+field_type: text_long

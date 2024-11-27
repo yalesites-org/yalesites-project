@@ -1,0 +1,11 @@
+uuid: 30da63d6-ef14-4063-bd7d-46b611ebc97b
+langcode: en
+status: true
+dependencies: {  }
+id: wrapped_text_callout
+block_id: 'inline_block:wrapped_text_callout'
+category: basic
+label: 'Wrapped Text Callout'
+image_path: ''
+image_alt: ''
+weight: -12
