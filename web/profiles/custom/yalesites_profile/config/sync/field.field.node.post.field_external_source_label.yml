@@ -1,0 +1,19 @@
+uuid: d690a148-c4b3-4b0b-b0f4-6826c29bd6cf
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_external_source_label
+    - node.type.post
+id: node.post.field_external_source_label
+field_name: field_external_source_label
+entity_type: node
+bundle: post
+label: 'Post Source'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

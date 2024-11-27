@@ -7,6 +7,7 @@ dependencies:
     - field.field.node.post.field_author
     - field.field.node.post.field_category
     - field.field.node.post.field_external_source
+    - field.field.node.post.field_external_source_label
     - field.field.node.post.field_login_required
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
@@ -52,6 +53,11 @@ targetEntityType: node
 bundle: post
 mode: single
 content:
+  content_moderation_control:
+    settings: {  }
+    third_party_settings: {  }
+    weight: -20
+    region: content
   field_external_source:
     type: link
     label: hidden
@@ -100,9 +106,11 @@ content:
 hidden:
   field_author: true
   field_category: true
+  field_external_source_label: true
   field_login_required: true
   field_metatags: true
   field_tags: true
   layout_builder__layout: true
   links: true
   search_api_excerpt: true
+  workflow_buttons: true
