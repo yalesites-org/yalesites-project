@@ -37,7 +37,7 @@ content:
     settings:
       link: false
     third_party_settings: {  }
-    weight: 6
+    weight: 7
     region: content
   field_external_source:
     type: link_separate
@@ -51,13 +51,21 @@ content:
     third_party_settings: {  }
     weight: 4
     region: content
+  field_external_source_label:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 5
+    region: content
   field_tags:
     type: entity_reference_label
     label: hidden
     settings:
       link: false
     third_party_settings: {  }
-    weight: 5
+    weight: 6
     region: content
   field_teaser_media:
     type: entity_reference_entity_view
@@ -85,7 +93,6 @@ content:
     region: content
 hidden:
   field_author: true
-  field_external_source_label: true
   field_login_required: true
   field_metatags: true
   field_publish_date: true
