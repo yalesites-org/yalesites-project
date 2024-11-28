@@ -95,7 +95,7 @@ class ResourceConfigForm extends ConfigFormBase {
 
     $form['custom_vocabulary_label'] = [
       '#type' => 'textfield',
-      '#required' => TRUE,
+      '#required' => FALSE,
       '#title' => $this->t('Custom vocabulary label'),
       '#default_value' => $config->get('custom_vocabulary_label'),
       '#description' => $this->t('Enter the custom vocabulary label'),

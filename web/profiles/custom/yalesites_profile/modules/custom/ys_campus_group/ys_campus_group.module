@@ -30,6 +30,7 @@ function ys_campus_group_cron() {
         // Get the migration plugin (of type MigrationInterface)
         $migration_plugin = \Drupal::service('plugin.manager.migration')->createInstance($migration_id, ['migration_group' => $migration_group]);
         if ($migration_plugin instanceof MigrationInterface) {
+          $migration_plugin->getIdMap()->prepareUpdate();
           // Create a MigrateExecutable instance to execute the migration.
           $migrate_executable = new MigrateExecutable($migration_plugin, new MigrateMessage());
           try {

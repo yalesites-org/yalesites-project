@@ -174,7 +174,7 @@ content:
     type: entity_reference_label
     label: hidden
     settings:
-      link: true
+      link: false
     third_party_settings: {  }
     weight: 4
     region: content
@@ -201,9 +201,10 @@ content:
     weight: 5
     region: content
   field_teaser_text:
-    type: text_default
+    type: text_trimmed
     label: hidden
-    settings: {  }
+    settings:
+      trim_length: 120
     third_party_settings: {  }
     weight: 2
     region: content
