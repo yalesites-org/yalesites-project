@@ -119,6 +119,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     $formSelectors = $this->viewsBasicManager->getFormSelectors($formState, NULL, $entityValue);
     $form['#form_selectors'] = $formSelectors;
+    $selectedEntityType = $formSelectors['entity_types'];
 
     $element['group_params'] = [
       '#type' => 'container',
@@ -239,6 +240,15 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     $fieldOptionValue = ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('field_options', $items[$delta]->params) : [];
     $fieldOptionDefaultValue = $fieldOptionValue ?? ['show_thumbnail' => 'show_thumbnail'];
+    $isNewForm = str_contains($formState->getCompleteForm()['#id'], 'layout-builder-add-block');
+
+    // To be consistent in the output render, we name categories affiliation in
+    // the views form if they select profiles.
+    $showCategoriesLabel = $this->t("Show Categories");
+    if ($selectedEntityType === "profile") {
+      $showCategoriesLabel = $this->t("Show Affiliations");
+    }
+
     $isNewForm = FALSE;
     if (!empty($formState->getCompleteForm()['#id'])) {
       $isNewForm = str_contains($formState->getCompleteForm()['#id'], 'layout-builder-add-block');
@@ -248,7 +258,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     $form['group_user_selection']['entity_and_view_mode']['field_options'] = [
       '#type' => 'checkboxes',
       '#options' => [
-        'show_categories' => $this->t('Show Categories'),
+        'show_categories' => $showCategoriesLabel,
         'show_tags' => $this->t('Show Tags'),
         'show_thumbnail' => $this->t('Show Thumbnail'),
         'highlight_pinned_content' => $this->t('Show Highlight Pinned content'),
@@ -389,6 +399,10 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         'future' => $this->t('Future Events') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/event-time-future.svg" alt="Future Events icon showing a calendar with a future-pointing arrow to the right.">',
         'past' => $this->t('Past Events') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/event-time-past.svg" alt="Past Events icon showing a calendar with a past-pointing arrow to the left.">',
         'all' => $this->t('All Events') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/event-time-all.svg" alt="All Events icon showing a calendar.">',
+      ],
+      '#states' => [
+        'visible' => [$formSelectors['entity_types_ajax'] => ['value' => 'event']],
+        'invisible' => $calendarViewInvisibleState,
       ],
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('event_time_period', $items[$delta]->params) : 'future',
       '#prefix' => '<div id="edit-event-time-period">',
