@@ -4,6 +4,7 @@ namespace Drupal\ys_resource;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -14,6 +15,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class ResourceConfig implements ContainerInjectionInterface {
 
+  use StringTranslationTrait;
   /**
    * The config factory.
    *
@@ -48,6 +50,16 @@ class ResourceConfig implements ContainerInjectionInterface {
    */
   public function getConfig() {
     return $this->configFactory;
+  }
+
+  /**
+   * Gets the custom_vocabulary_label configuration for ys_resource.
+   *
+   * @return \Drupal\Core\Config\ImmutableConfig
+   *   The configuration object.
+   */
+  public function getCustomVocabularyLabel() {
+    return $this->configFactory->get('custom_vocabulary_label') ? $this->configFactory->get('custom_vocabulary_label') : $this->t('Type');
   }
 
 }
