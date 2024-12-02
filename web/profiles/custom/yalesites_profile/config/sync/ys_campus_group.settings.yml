@@ -1,7 +1,7 @@
 enable_campus_group_sync: 1
-campus_group_endpoint: 'https://yaleenterprise-sandbox.campusgroups.com/rss_events'
+campus_group_endpoint: 'https://yaleconnect.yale.edu/rss_events'
 campus_group_future_days: '120'
 campus_group_groupids: '32717,35946,36460,36461,36462,36463'
 campus_group_api_useragent: 'User-Agent: insomnia/8.6.1'
-campus_group_api_secret: GFz9MA2IkbjbjhrNxbl6IlkZg4oD4kxmQOrk0zIa1Y/O3Mc+Mx7KsRbze9rGFc8c9aUkgW9NdT7OfqhZmjp7DiW/yLPC/iIyjV8kLNMPwIYKcktfj0mcLWY3K/oE3bkuhA==
-campus_group_api_cookie: CG.SessionID=og0r5lvmojwuf3su4jnmbvgb-MOx5MzXId%252fl2pHGR4lK%252boZw4ku8%253d
+campus_group_api_secret: 05F24TBchQgVaXp+sHkXraBtxPc0OVjXPAMk/BIggA3FYZVAXR/MB17SASizI5xAj5CDc4Vb7+HNfqwP8bt1CBG2a0PfA3OjCgU8lgpKKVUYqeTuQC7KhCA1zeiZzCw9vQ==
+campus_group_api_cookie: CG.SessionID=pebadrjsvcinqyn4kigr5s1q-0Egb5QwMCW%252fGoh2DzjjToEcyTVw%253d
