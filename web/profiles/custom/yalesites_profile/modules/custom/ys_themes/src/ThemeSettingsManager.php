@@ -48,6 +48,10 @@ class ThemeSettingsManager {
           'label' => 'Onha',
           'color_theme' => 'four',
         ],
+        'five' => [
+          'label' => 'It’s Your Yale',
+          'color_theme' => 'five',
+        ],
       ],
     ],
     'button_theme' => [
