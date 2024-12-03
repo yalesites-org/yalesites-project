@@ -1,0 +1,33 @@
+uuid: a69bdfdd-d7d2-4c53-b531-54531018f15d
+langcode: en
+status: true
+dependencies:
+  module:
+    - entity_redirect
+third_party_settings:
+  entity_redirect:
+    redirect:
+      add:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      edit:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      delete:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      anonymous:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+id: tags
+label: Tags
+revision: 1
+description: 'Block to display tag information about a Resource '

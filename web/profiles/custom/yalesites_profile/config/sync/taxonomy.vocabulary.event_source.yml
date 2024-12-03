@@ -1,0 +1,33 @@
+uuid: 1013f53f-b0cb-4106-bb4e-e5e6a0dc7dd4
+langcode: en
+status: true
+dependencies:
+  module:
+    - entity_redirect
+third_party_settings:
+  entity_redirect:
+    redirect:
+      anonymous:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+      add:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+      edit:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+      delete:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+name: 'Event Source'
+vid: event_source
+description: 'Used to identify Event Source'
+weight: 0

@@ -7,6 +7,7 @@ use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityDisplayRepository;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\views\Views;
+use Drupal\ys_resource\ResourceConfig;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -113,6 +114,11 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-condensed.svg',
           'img_alt' => 'Icon showing 3 generic list items one on top of the other with no images on the items.',
         ],
+        'resource_card' => [
+          'label' => 'Resource Card',
+          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-condensed.svg',
+          'img_alt' => 'Icon showing 3 resource list items.',
+        ],
       ],
       'sort_by' => [
         'title:ASC' => 'Title - A-Z',
@@ -182,15 +188,24 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   protected $termStorage;
 
   /**
+   * The term storage.
+   *
+   * @var \Drupal\ys_resource\ResourceConfig
+   */
+  protected $resourceConfig;
+
+  /**
    * Constructs a new ViewsBasicManager object.
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
     EntityDisplayRepository $entity_display_repository,
+    ResourceConfig $resource_config,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityDisplayRepository = $entity_display_repository;
     $this->termStorage = $this->entityTypeManager->getStorage('taxonomy_term');
+    $this->resourceConfig = $resource_config;
   }
 
   /**
@@ -199,7 +214,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('entity_type.manager'),
-      $container->get('entity_display.repository')
+      $container->get('entity_display.repository'),
+      $container->get('ys_resource.config')
     );
   }
 
@@ -227,7 +243,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
     // Set up the view and initial decoded parameters.
     $paramsDecoded = json_decode($params, TRUE);
-
     /* Events need to have aggregation turned on in the view. Therefore, we
      * retrieve a special event scaffold view and apply sorting here instead of
      * the custom sort plugin.
@@ -275,10 +290,14 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         self::CONTENT_TYPE_POST, self::CONTENT_TYPE_EVENT => [
           'field_category_target_id_1',
           'field_affiliation_target_id',
+          'field_audience_target_id',
+          'field_type_target_id',
         ],
         self::CONTENT_TYPE_PROFILE => [
           'field_category_target_id',
           'field_category_target_id_1',
+          'field_audience_target_id',
+          'field_type_target_id',
         ],
         self::CONTENT_TYPE_PAGE => [
           'field_category_target_id',
@@ -310,6 +329,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       if (!empty($paramsDecoded['category_filter_label'])) {
         $filters[$category_filter_name]['expose']['label'] = $paramsDecoded['category_filter_label'];
       }
+      // Set a custom label for the 'Type' filter if provided.
+      $filters['field_type_target_id']['expose']['label'] = $this->resourceConfig->getCustomVocabularyLabel();
     }
     else {
       // Remove all category and affiliation filters if 'show_category_filter'
@@ -325,6 +346,18 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       // The 'combine' filter is used for full-text search
       // across multiple fields.
       unset($filters['combine']);
+    }
+
+    if (!isset($paramsDecoded['exposed_filter_options']['show_audience_filter'])) {
+      // If the 'show_audience_filter' option is not set,
+      // remove the 'field_audience_target_id' filter.
+      unset($filters['field_audience_target_id']);
+    }
+
+    if (!isset($paramsDecoded['exposed_filter_options']['show_type_filter'])) {
+      // If the 'show_type_filter' option is not set,
+      // remove the 'field_type_target_id' filter.
+      unset($filters['field_type_target_id']);
     }
 
     if (!isset($paramsDecoded['exposed_filter_options']['show_year_filter']) || $filterType !== self::CONTENT_TYPE_POST) {
@@ -412,6 +445,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'show_categories' => (int) !empty($paramsDecoded['field_options']['show_categories']),
       'show_tags' => (int) !empty($paramsDecoded['field_options']['show_tags']),
       'show_thumbnail' => (int) $no_field_display_options_saved || !empty($paramsDecoded['field_options']['show_thumbnail']),
+      'highlight_pinned_content' => (int) !empty($paramsDecoded['field_options']['highlight_pinned_content']),
+      'highlighted_content_label' => (string) !empty($paramsDecoded['highlighted_content_label']) ? strtolower($paramsDecoded['highlighted_content_label']) : 'popular',
     ];
 
     $view->setArguments(
@@ -446,12 +481,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         // This ensures that if the options for showing categories, tags,
         // or thumbnails change, the cache will be invalidated,
         // and the view will be re-rendered with the new options.
-        if ($view['#rows'] && $view['#rows']['#rows']) {
-          foreach ($view['#rows']['#rows'] as &$resultRow) {
-            $resultRow['#cache']['keys'][] = $field_display_options['show_categories'];
-            $resultRow['#cache']['keys'][] = $field_display_options['show_tags'];
-            $resultRow['#cache']['keys'][] = $field_display_options['show_thumbnail'];
-          }
+        foreach ($view['#rows']['#rows'] as &$resultRow) {
+          $resultRow['#cache']['keys'][] = $field_display_options['show_categories'];
+          $resultRow['#cache']['keys'][] = $field_display_options['show_tags'];
+          $resultRow['#cache']['keys'][] = $field_display_options['show_thumbnail'];
+          $resultRow['#cache']['keys'][] = $field_display_options['highlight_pinned_content'];
+          $resultRow['#cache']['keys'][] = $field_display_options['highlighted_content_label'];
         }
         break;
 
@@ -758,6 +793,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'view_mode_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
           'category_included_terms_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
           'show_category_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_category_filter]"]',
+          'show_highlight_pinned_content' => ':input[name="block_form[group_user_selection][entity_and_view_mode][field_options][highlight_pinned_content]"]',
           'massage_terms_include_array' => [
             'block_form',
             'group_user_selection',
@@ -811,6 +847,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'view_mode_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
           'category_included_terms_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
           'show_category_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_category_filter]"]',
+          'show_highlight_pinned_content' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][field_options][highlight_pinned_content]"]',
           'massage_terms_include_array' => [
             'settings',
             'block_form',
@@ -877,6 +914,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'view_mode_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
         'category_included_terms_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
         'show_category_filter_selector' => ':input[name="show_category_filter"]',
+        'show_highlight_pinned_content' => ':input[name="highlight_pinned_content"]',
         'massage_terms_include_array' => ['terms_include'],
         'massage_terms_exclude_array' => ['terms_exclude'],
         'sort_by_array' => ['sort_by'],
