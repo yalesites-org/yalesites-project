@@ -6,6 +6,7 @@ dependencies:
     - field.field.node.post.field_author
     - field.field.node.post.field_category
     - field.field.node.post.field_external_source
+    - field.field.node.post.field_external_source_label
     - field.field.node.post.field_login_required
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
@@ -26,6 +27,7 @@ dependencies:
     - metatag
     - path
     - text
+    - workflow_buttons
 third_party_settings:
   field_group:
     group_teaser:
@@ -64,6 +66,7 @@ third_party_settings:
     group_external_link:
       children:
         - field_external_source
+        - field_external_source_label
       label: 'External Link'
       region: content
       parent_name: ''
@@ -103,6 +106,14 @@ content:
     settings:
       placeholder_url: ''
       placeholder_title: ''
+    third_party_settings: {  }
+  field_external_source_label:
+    type: string_textfield
+    weight: 6
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
     third_party_settings: {  }
   field_login_required:
     type: boolean_checkbox
@@ -160,6 +171,13 @@ content:
     settings:
       size: 60
       placeholder: ''
+    third_party_settings: {  }
+  moderation_state:
+    type: workflow_buttons
+    weight: 5
+    region: content
+    settings:
+      show_current_state: false
     third_party_settings: {  }
   path:
     type: path
