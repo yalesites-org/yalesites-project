@@ -49,7 +49,7 @@ class ThemeSettingsManager {
           'color_theme' => 'four',
         ],
         'five' => [
-          'label' => 'Coral',
+          'label' => 'It’s Your Yale',
           'color_theme' => 'five',
         ],
       ],
