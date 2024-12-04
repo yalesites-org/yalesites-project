@@ -1,0 +1,4 @@
+# Permission to manage YaleSites Campus Group.
+yalesites manage campus_group:
+  title: 'Manage YaleSites Campus Group'
+  description: 'Set and change YaleSites Campus Group settings.'

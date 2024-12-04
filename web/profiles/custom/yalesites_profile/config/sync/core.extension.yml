@@ -144,6 +144,7 @@ module:
   workflows: 0
   yale_cas: 0
   ys_alert: 0
+  ys_campus_group: 0
   ys_captcha: 0
   ys_layouts: 0
   ys_localist: 0

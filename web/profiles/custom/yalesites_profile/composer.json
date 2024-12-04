@@ -166,9 +166,6 @@
       "drupal/migrate_plus": {
         "Allow callback for Url source, and single item Json plugin https://www.drupal.org/project/migrate_plus/issues/3040427": "https://www.drupal.org/files/issues/2023-02-15/3040427-42-migrate_plus_multiple_urls.patch"
       },
-      "drupal/focal_point": {
-        "Limit image styles on preview page": "https://git.drupalcode.org/project/focal_point/-/merge_requests/27.diff"
-      },
       "drupal/selective_better_exposed_filters": {
         "Hide form when no options are available:": "patches/selective_better_exposed_filters/selective_better_exposed_filters-3432551.patch"
       }

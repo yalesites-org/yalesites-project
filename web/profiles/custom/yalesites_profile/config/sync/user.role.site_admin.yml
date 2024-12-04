@@ -49,6 +49,7 @@ dependencies:
     - node.type.profile
     - taxonomy.vocabulary.affiliation
     - taxonomy.vocabulary.event_category
+    - taxonomy.vocabulary.page_audience
     - taxonomy.vocabulary.page_category
     - taxonomy.vocabulary.post_category
     - taxonomy.vocabulary.tags
@@ -76,6 +77,7 @@ dependencies:
     - toolbar
     - webform
     - ys_alert
+    - ys_campus_group
     - ys_core
 id: site_admin
 label: 'Site administrator'
@@ -145,6 +147,7 @@ permissions:
   - 'create tabs block content'
   - 'create terms in affiliation'
   - 'create terms in event_category'
+  - 'create terms in page_audience'
   - 'create terms in page_category'
   - 'create terms in post_category'
   - 'create terms in tags'
@@ -400,4 +403,5 @@ permissions:
   - 'view the administration theme'
   - 'view unpublished paragraphs'
   - 'yalesites manage alerts'
+  - 'yalesites manage campus_group'
   - 'yalesites manage settings'
