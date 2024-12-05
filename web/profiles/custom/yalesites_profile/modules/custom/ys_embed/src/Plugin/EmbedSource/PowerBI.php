@@ -31,12 +31,31 @@ class PowerBI extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $instructions = 'Open a report in the Power BI service. On the File menu, select Embed report > Website or portal. In the Secure embed code dialog, select the value under "Here\'s a link you can use to embed this content."';
+  protected static $instructions = '
+    <p>
+      For a Public Report: Open a report in the Power BI service. On the File menu, select Embed report > Publish to web (public). In the Embed Code dialog, select the value under "Link you can send in email".
+    </p>
+    <p>
+      For a Private (login required) Report: Open a report in the Power BI service. On the File menu, select Embed report > Website or portal. In the Secure embed code dialog, select the value under "Here\'s a link you can use to embed this content."
+    </p>
+    ';
 
   /**
    * {@inheritdoc}
    */
-  protected static $example = 'https://app.powerbi.com/reportEmbed?reportId=66e25bd6-5e0a-4db8-ad0c-28bb31b0fd5e&autoAuth=true&ctid=dd8cbebb-2139-4df8-b411-4e3e87abeb5c';
+  protected static $example = '
+  <p>
+    <strong>Public:</strong> https://app.powerbi.com/view?r=eyJrIjoiYzhkODFiMDUtZGU3Zi00ZDAzLWJlYTEtZmM1Mjg3MzMzZGE3IiwidCI6ImRkOGNiZWJiLTIxMzktNGRmOC1iNDExLTRlM2U4N2FiZWI1YyIsImMiOjF9
+  </p>
+  <p>
+    <strong>Private:</strong> https://app.powerbi.com/reportEmbed?reportId=66e25bd6-5e0a-4db8-ad0c-28bb31b0fd5e&autoAuth=true&ctid=dd8cbebb-2139-4df8-b411-4e3e87abeb5c
+  </p>
+  ';
+
+  /**
+   * {@inheritdoc}
+   */
+  protected static $exampleContainsMarkup = TRUE;
 
   /**
    * {@inheritdoc}
