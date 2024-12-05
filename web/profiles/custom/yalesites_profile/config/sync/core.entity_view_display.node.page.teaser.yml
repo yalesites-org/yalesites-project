@@ -4,6 +4,7 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.node.teaser
+    - field.field.node.page.field_audience
     - field.field.node.page.field_category
     - field.field.node.page.field_external_source
     - field.field.node.page.field_login_required
@@ -12,6 +13,7 @@ dependencies:
     - field.field.node.page.field_teaser_media
     - field.field.node.page.field_teaser_text
     - field.field.node.page.field_teaser_title
+    - field.field.node.page.field_type
     - field.field.node.page.layout_builder__layout
     - node.type.page
   module:
@@ -32,6 +34,7 @@ content:
     weight: 0
     region: content
 hidden:
+  field_audience: true
   field_category: true
   field_external_source: true
   field_login_required: true
@@ -40,6 +43,7 @@ hidden:
   field_teaser_media: true
   field_teaser_text: true
   field_teaser_title: true
+  field_type: true
   layout_builder__layout: true
   search_api_excerpt: true
   workflow_buttons: true
