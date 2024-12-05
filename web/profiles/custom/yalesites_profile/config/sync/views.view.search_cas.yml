@@ -1,20 +1,19 @@
-uuid: b4f36218-e053-4754-b5d0-0fccf46965c7
+uuid: 9fc73ca3-3fb4-486a-af60-ebc8213dc241
 langcode: en
 status: true
 dependencies:
   config:
     - field.storage.node.field_teaser_text
-    - search_api.index.node_index
+    - search_api.index.secure_index
   module:
     - search_api
     - text
-    - user
-id: search
-label: Search
+id: search_cas
+label: 'Search CAS'
 module: views
-description: 'Site search results page.'
+description: 'Shows all items including CAS items (titles only via twig)'
 tag: ''
-base_table: search_api_index_node_index
+base_table: search_api_index_secure_index
 base_field: search_api_id
 display:
   default:
@@ -23,11 +22,11 @@ display:
     display_plugin: default
     position: 0
     display_options:
-      title: Search
+      title: 'Search CAS'
       fields:
         field_teaser_text:
           id: field_teaser_text
-          table: search_api_index_node_index
+          table: search_api_index_secure_index
           field: field_teaser_text
           relationship: none
           group_type: group
@@ -129,9 +128,8 @@ display:
           sort_asc_label: Asc
           sort_desc_label: Desc
       access:
-        type: perm
-        options:
-          perm: 'access content'
+        type: none
+        options: {  }
       cache:
         type: search_api_tag
         options: {  }
@@ -152,7 +150,7 @@ display:
       sorts:
         search_api_relevance:
           id: search_api_relevance
-          table: search_api_index_node_index
+          table: search_api_index_secure_index
           field: search_api_relevance
           relationship: none
           group_type: group
@@ -166,7 +164,7 @@ display:
       arguments:
         search_api_fulltext:
           id: search_api_fulltext
-          table: search_api_index_node_index
+          table: search_api_index_secure_index
           field: search_api_fulltext
           relationship: none
           group_type: group
@@ -199,10 +197,10 @@ display:
           parse_mode: terms
           conjunction: AND
           fields: {  }
-        type:
-          id: type
-          table: search_api_index_node_index
-          field: type
+        search_api_datasource:
+          id: search_api_datasource
+          table: search_api_index_secure_index
+          field: search_api_datasource
           relationship: none
           group_type: group
           admin_label: ''
@@ -234,6 +232,10 @@ display:
       filters: {  }
       style:
         type: default
+        options:
+          row_class: ''
+          default_row_class: true
+          uses_fields: false
       row:
         type: search_api
         options:
@@ -246,8 +248,8 @@ display:
       query:
         type: search_api_query
         options:
-          bypass_access: false
-          skip_access: false
+          bypass_access: true
+          skip_access: true
           preserve_facet_query_args: false
           query_tags: {  }
       relationships: {  }
@@ -265,7 +267,10 @@ display:
           content_plural: '<div class="search-results--summary">@total search results</div>'
           plural_count_token: '@total'
       footer: {  }
-      display_extenders: {  }
+      display_extenders:
+        metatag_display_extender:
+          metatags: {  }
+          tokenize: false
     cache_metadata:
       max-age: -1
       contexts:
@@ -274,8 +279,7 @@ display:
         - url
         - url.query_args
         - 'user.node_grants:view'
-        - user.permissions
       tags:
         - 'config:field.storage.node.field_teaser_text'
-        - 'config:search_api.index.node_index'
-        - 'search_api_list:node_index'
+        - 'config:search_api.index.secure_index'
+        - 'search_api_list:secure_index'
