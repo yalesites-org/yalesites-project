@@ -27,7 +27,6 @@ dependencies:
     - block_content.type.quick_links
     - block_content.type.quote_callout
     - block_content.type.reference_card
-    - block_content.type.search_resources
     - block_content.type.tabs
     - block_content.type.tags
     - block_content.type.text
@@ -161,7 +160,6 @@ permissions:
   - 'create quote_callout block content'
   - 'create reference_card block content'
   - 'create reusable blocks'
-  - 'create search_resources block content'
   - 'create tabs block content'
   - 'create tags block content'
   - 'create terms in affiliation'
@@ -236,7 +234,6 @@ permissions:
   - 'delete any quote_callout block content revisions'
   - 'delete any reference_card block content'
   - 'delete any reference_card block content revisions'
-  - 'delete any search_resources block content'
   - 'delete any tabs block content'
   - 'delete any tabs block content revisions'
   - 'delete any tags block content'
@@ -362,7 +359,6 @@ permissions:
   - 'revert any quick_links block content revisions'
   - 'revert any quote_callout block content revisions'
   - 'revert any reference_card block content revisions'
-  - 'revert any search_resources block content revisions'
   - 'revert any tabs block content revisions'
   - 'revert any text block content revisions'
   - 'revert any tiles block content revisions'
