@@ -45,7 +45,7 @@ class PowerBI extends EmbedSourceBase implements EmbedSourceInterface {
    */
   protected static $example = '
   <p>
-    <strong>Public:</strong> https://app.powerbi.com/view?r=eyJrIjoiYzhkODFiMDUtZGU3Zi00ZDAzLWJlYTEtZmM1Mjg3MzMzZGE3IiwidCI6ImRkOGNiZWJiLTIxMzktNGRmOC1iNDExLTRlM2U4N2FiZWI1YyIsImMiOjF9
+    <strong>Public:</strong> https://app.powerbi.com/view?r=eyJrIjoiYzQ1ODA0ZjEtZjc5YS00OTgyLWIzOTItNmJmNDY2YmRiODQ2IiwidCI6ImRkOGNiZWJiLTIxMzktNGRmOC1iNDExLTRlM2U4N2FiZWI1YyIsImMiOjF9&pageName=ReportSection2ac2649f17189885d376
   </p>
   <p>
     <strong>Private:</strong> https://app.powerbi.com/reportEmbed?reportId=66e25bd6-5e0a-4db8-ad0c-28bb31b0fd5e&autoAuth=true&ctid=dd8cbebb-2139-4df8-b411-4e3e87abeb5c
