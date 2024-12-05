@@ -104,7 +104,7 @@ class ExternalSourceRedirectSubscriber implements EventSubscriberInterface {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('router.route_provider'),
-      $container->get('ys_campus_group.config')
+//      $container->get('ys_campus_group.config')
     );
   }
 
