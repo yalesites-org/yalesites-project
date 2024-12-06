@@ -4,8 +4,17 @@
   {% endset %}
 {% endif %}
 
+{% if external_source_label %}
+  {% set external_source_link %}
+    {% include "@atoms/controls/text-link/yds-text-link.twig" with {
+        link__content: external_source_label,
+        link__url: external_source_label_url,
+    } %}
+  {% endset %}
+{% endif %}
+
 {% include "@molecules/page-title/yds-page-title.twig" with {
   page_title__heading: label,
-  page_title__meta: author_markup ~ date_formatted|date("l, F j, Y"),
+  page_title__meta: external_source_link ~ '|' ~ author_markup ~ date_formatted|date("l, F j, Y"),
   page_title__width: 'content',
 } %}

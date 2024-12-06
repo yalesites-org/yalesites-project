@@ -81,13 +81,13 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('current_route_match'),
-      $container->get('title_resolver'),
-      $container->get('request_stack'),
-      $container->get('date.formatter'),
+    $configuration,
+    $plugin_id,
+    $plugin_definition,
+    $container->get('current_route_match'),
+    $container->get('title_resolver'),
+    $container->get('request_stack'),
+    $container->get('date.formatter'),
     );
   }
 
@@ -106,6 +106,8 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
     $author = NULL;
     $publishDate = NULL;
     $dateFormatted = NULL;
+    $externalSourceLabel = NULL;
+    $externalSourceLabelUrl = NULL;
 
     $route = $this->routeMatch->getRouteObject();
 
@@ -115,6 +117,14 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
       $author = ($node->field_author->first()) ? $node->field_author->first()->getValue()['value'] : NULL;
       $publishDate = strtotime($node->field_publish_date->first()->getValue()['value']);
       $dateFormatted = $this->dateFormatter->format($publishDate, '', 'c');
+      $taxId = ($node->field_external_source_label->first()) ? $node->field_external_source_label->first()->getValue()['target_id'] : NULL;
+      if ($taxId) {
+        $term = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->load($taxId);
+        if ($term) {
+          $externalSourceLabel = $term->getName();
+          $externalSourceLabelUrl = $term->field_link->first()->getValue()['uri'];
+        }
+      }
     }
 
     return [
@@ -122,6 +132,8 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
       '#label' => $title,
       '#author' => $author,
       '#date_formatted' => $dateFormatted,
+      '#external_source_label' => $externalSourceLabel,
+      '#external_source_label_url' => $externalSourceLabelUrl,
     ];
   }
 
