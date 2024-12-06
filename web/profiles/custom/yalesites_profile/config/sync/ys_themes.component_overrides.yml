@@ -100,6 +100,20 @@ wrapped_image:
       floated: Inline
       offset: Offset
     default: offset
+wrapped_text_callout:
+  field_style_position:
+    values:
+      left: Left
+      right: Right
+    default: left
+  field_style_color:
+    values:
+      one: One
+      two: Two
+      three: Three
+      four: Four
+      five: Five
+    default: one
 grand_hero:
   field_style_position:
     values:
@@ -179,7 +193,7 @@ tiles:
       two: Two
       three: Three
       four: Four
-    default: two
+    default: four
   field_style_alignment:
     values:
       left: Left
@@ -197,7 +211,7 @@ facts:
       two: Two
       three: Three
       four: Four
-    default: two
+    default: four
   field_style_color:
     values:
       one: One
@@ -248,15 +262,3 @@ inline_message:
       four: Four
       five: Five
     default: one
-video:
-  field_style_alignment:
-    values:
-      left: Left
-      center: Center
-    default: left
-image_banner:
-  field_style_variation:
-    values:
-      tall: Tall
-      short: Short
-    default: tall

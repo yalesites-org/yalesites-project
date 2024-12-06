@@ -1,0 +1,21 @@
+uuid: b77295d1-fe3c-4243-88ad-d18eebb8bb48
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.wrapped_text_callout
+    - field.storage.block_content.field_style_color
+  module:
+    - options
+id: block_content.wrapped_text_callout.field_style_color
+field_name: field_style_color
+entity_type: block_content
+bundle: wrapped_text_callout
+label: Theme
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ys_themes_default_value_function
+settings: {  }
+field_type: list_string
