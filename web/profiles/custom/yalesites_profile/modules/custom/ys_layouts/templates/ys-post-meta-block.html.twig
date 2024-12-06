@@ -1,8 +1,69 @@
-{% if author %}
-  {% set author_markup %}
-    By {{ author }} |
-  {% endset %}
+{#
+  Mimics Ruby on Rails to_sentence to provide an output of
+  Spiderman, Wolverine, and Deadpool
+#}
+{% macro to_sentence(array) %}
+    {% set count = array|length %}
+    {% if count == 0 %}
+        {{ '' }}
+    {% elseif count == 1 %}
+        {{ array[0]|raw }}
+    {% elseif count == 2 %}
+        {{ (array[0] ~ ' and ' ~ array[1])|raw }}
+    {% else %}
+        {{ ((array|slice(0, count - 1)|map(v => v)|join(', ')) ~ ', and ' ~ array[count - 1])|raw }}
+    {% endif %}
+{% endmacro %}
+
+{% set rendered_authors = [] %}
+
+{% if post_authors %}
+  {% for post_author in post_authors %}
+    {% if post_author.isLink %}
+      {% set rendered_authors = rendered_authors|merge([
+        include("@atoms/controls/text-link/yds-text-link.twig", {
+            link__content: post_author.title,
+            link__url: post_author.url,
+            link__attributes: {
+              'data-linked-author': 'true',
+            },
+        })
+      ]) %}
+    {% else %}
+      {% set rendered_authors = rendered_authors|merge([post_author.title]) %}
+    {% endif %}
+  {% endfor %}
 {% endif %}
+
+{% if post_authors %}
+  {% for post_author in post_authors %}
+    {% if post_author.isLink %}
+      {% set rendered_authors = rendered_authors|merge([
+        include("@atoms/controls/text-link/yds-text-link.twig", {
+            link__content: post_author.title,
+            link__url: post_author.url,
+            link__attributes: {
+              'data-linked-author': 'true',
+            },
+        })
+      ]) %}
+    {% else %}
+      {% set rendered_authors = rendered_authors|merge([post_author.title]) %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
+{% set author_markup %}
+  <span>{{ _self.to_sentence(rendered_authors) }}</span>
+{% endset %}
+
+{% set formatted_date %}
+  {% include "@atoms/date-time/yds-date-time.twig" with {
+    date_time__format: 'date',
+    date_time__start: date_formatted,
+    date_time__format_override: 'format__day__long',
+  } %}
+{% endset %}
 
 {% if show_read_time %}
   {% set read_time %}
@@ -14,9 +75,9 @@
 
 {{ attach_library('atomic/read-time') }}
 
-{% embed "@molecules/page-title/yds-page-title.twig" with {
+{% include "@molecules/page-title/yds-page-title.twig" with {
   page_title__heading: label,
-  page_title__meta: author_markup ~ date_formatted|date("l, F j, Y"),
+  page_title__meta: author_markup ~ formatted_date,
   page_title__width: 'content',
   page_title__show_social_media_sharing_links: show_social_media_sharing_links ? 'true' : 'false',
 } %}
