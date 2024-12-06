@@ -42,7 +42,7 @@ class YSLayoutOptions extends LayoutDefault {
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     parent::submitConfigurationForm($form, $form_state);
 
-    $this->configuration['divider'] = $form_state->getValue('divider') ? 'true' : 'false';
+    $this->configuration['divider'] = $form_state->getValue('divider');
   }
 
   /**

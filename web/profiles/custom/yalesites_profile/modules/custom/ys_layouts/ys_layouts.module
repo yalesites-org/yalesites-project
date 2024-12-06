@@ -97,6 +97,27 @@ function ys_layouts_preprocess_block(&$variables) {
       $variables['is_reusable'] = TRUE;
     }
   }
+
+  /*
+   * This checks what specific layout builder section the block is in and sets
+   * a variable to be used in twig to allow the components to change styling.
+   * For now this is only used with the link grid component:
+   * atomic/templates/block/layout-builder/block--inline-block--link-grid.html.twig
+   *
+   */
+  if (!empty($variables['elements']['#configuration']['provider']) && $variables['elements']['#configuration']['provider'] === 'layout_builder') {
+
+    if (isset($variables['elements']['#contextual_links'])) {
+      $delta = $variables['elements']['#contextual_links']['layout_builder_block']['route_parameters']['delta'];
+      $route_match = \Drupal::routeMatch();
+      $section_storage = $route_match->getParameter('section_storage');
+      $section = $section_storage->getSection($delta);
+
+      if ($section->getLayoutId() == 'ys_layout_two_column_50_50') {
+        $variables['in_specific_layout'] = TRUE;
+      }
+    }
+  }
 }
 
 /**

@@ -11,9 +11,10 @@
  * @ingroup themeable
  */
 #}
-
+{{ kint(settings.divider) }}
 {% embed "@organisms/layout/layout/yds-layout.twig" with {
-  layout__divider: 'true',
+  layout__divider: settings.divider,
+  component__theme: 'one',
 } %}
   {% block layout__primary %}
     <div {{ region_attributes.content_primary }}>
