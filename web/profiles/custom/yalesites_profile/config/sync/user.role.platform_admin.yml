@@ -51,7 +51,6 @@ dependencies:
     - node.type.profile
     - taxonomy.vocabulary.affiliation
     - taxonomy.vocabulary.event_category
-    - taxonomy.vocabulary.event_source
     - taxonomy.vocabulary.page_audience
     - taxonomy.vocabulary.page_category
     - taxonomy.vocabulary.post_category
