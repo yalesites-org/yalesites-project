@@ -1,0 +1,7 @@
+ys_campus_group.settings:
+  path: '/admin/yalesites/campus_group'
+  defaults:
+    _form: '\Drupal\ys_campus_group\Form\CampusGroupSettings'
+    _title: 'Campus Group Settings'
+  requirements:
+    _permission: 'yalesites manage campus_group'

@@ -165,7 +165,10 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     $localistUrl = ($node->field_localist_event_url->first()) ? Url::fromUri($node->field_localist_event_url->first()->getValue()['uri'])->toString() : NULL;
     $streamUrl = ($node->field_stream_url->first()) ? Url::fromUri($node->field_stream_url->first()->getValue()['uri'])->toString() : NULL;
     $streamEmbedCode = $node->field_stream_embed_code->first() ? $node->field_stream_embed_code->first()->getValue()['value'] : NULL;
-
+    $isCampusGroup = 0;
+    if (!empty($node->field_event_source->target_id) && $node->field_event_source->entity->label() == "Campus Groups") {
+      $isCampusGroup = 1;
+    }
     // Localist register ticket changes.
     $localistRegisterTickets = $hasRegister ? $this->localistManager->getTicketInfo($localistId) : NULL;
     if ($localistRegisterTickets) {
@@ -269,6 +272,14 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
         $node->toUrl()->setAbsolute()->toString()
       );
     }
+    $event_status = '';
+    if ($statusRef = $node->field_event_status->first()) {
+      /** @var \Drupal\taxonomy\Entity\Term $placeInfo */
+      $statusInfo = $this->entityTypeManager->getStorage('taxonomy_term')->load($statusRef->getValue()['target_id']);
+      if ($statusInfo) {
+        $event_status = $statusInfo->getName();
+      }
+    }
 
     return [
       'title' => $node->getTitle(),
@@ -293,6 +304,8 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       'localist_url' => $localistUrl,
       'stream_url' => $streamUrl,
       'stream_embed_code' => $streamEmbedCode,
+      'event_status' => $event_status,
+      'is_campus_group' => $isCampusGroup,
     ];
   }
 
