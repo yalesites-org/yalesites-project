@@ -5,6 +5,7 @@ dependencies:
   config:
     - field.field.node.post.field_audience
     - field.field.node.post.field_author
+    - field.field.node.post.field_authors
     - field.field.node.post.field_category
     - field.field.node.post.field_custom_vocab
     - field.field.node.post.field_external_source
@@ -106,9 +107,15 @@ content:
       size: 60
       placeholder: ''
     third_party_settings: {  }
+  field_authors:
+    type: chosen_select
+    weight: 2
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_category:
     type: chosen_select
-    weight: 3
+    weight: 4
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -143,7 +150,7 @@ content:
     third_party_settings: {  }
   field_publish_date:
     type: datetime_default
-    weight: 2
+    weight: 3
     region: content
     settings: {  }
     third_party_settings: {  }

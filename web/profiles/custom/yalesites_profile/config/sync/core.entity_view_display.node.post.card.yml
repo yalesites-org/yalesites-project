@@ -6,6 +6,7 @@ dependencies:
     - core.entity_view_mode.node.card
     - field.field.node.post.field_audience
     - field.field.node.post.field_author
+    - field.field.node.post.field_authors
     - field.field.node.post.field_category
     - field.field.node.post.field_custom_vocab
     - field.field.node.post.field_external_source
@@ -102,6 +103,7 @@ hidden:
   field_author: true
   field_custom_vocab: true
   field_hide_sharing_links: true
+  field_authors: true
   field_login_required: true
   field_metatags: true
   field_publish_date: true
