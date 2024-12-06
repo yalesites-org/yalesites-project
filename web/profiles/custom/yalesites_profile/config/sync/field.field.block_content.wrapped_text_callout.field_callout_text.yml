@@ -12,7 +12,7 @@ id: block_content.wrapped_text_callout.field_callout_text
 field_name: field_callout_text
 entity_type: block_content
 bundle: wrapped_text_callout
-label: Callout
+label: 'Callout Content'
 description: ''
 required: true
 translatable: false
