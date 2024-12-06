@@ -106,6 +106,7 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
     $author = NULL;
     $publishDate = NULL;
     $dateFormatted = NULL;
+    $post_authors = NULL;
 
     $route = $this->routeMatch->getRouteObject();
 
@@ -115,6 +116,8 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
       $author = ($node->field_author->first()) ? $node->field_author->first()->getValue()['value'] : NULL;
       $publishDate = strtotime($node->field_publish_date->first()->getValue()['value']);
       $dateFormatted = $this->dateFormatter->format($publishDate, '', 'c');
+      $post_authors = $this->getPostAuthorLinks($node->field_authors);
+      array_push($post_authors, ['title' => $author, 'url' => NULL, 'isLink' => FALSE]);
     }
 
     return [
@@ -122,7 +125,34 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
       '#label' => $title,
       '#author' => $author,
       '#date_formatted' => $dateFormatted,
+      '#post_authors' => $post_authors,
     ];
+  }
+
+  /**
+   * Get post author links to be rendered ourselves.
+   *
+   * @param array $authorReferences
+   *   The author references.
+   *
+   * @return array
+   *   The authors title and url.
+   */
+  protected function getPostAuthorLinks($authorReferences) {
+    $authors = [];
+
+    if ($authorReferences) {
+      foreach ($authorReferences as $authorReference) {
+        $author = $authorReference->entity;
+        $authors[] = [
+          'title' => $author->getTitle(),
+          'url' => $author->toUrl()->toString(),
+          'isLink' => TRUE,
+        ];
+      }
+    }
+    return $authors;
+
   }
 
 }
