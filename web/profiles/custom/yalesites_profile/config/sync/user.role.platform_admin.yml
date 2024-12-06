@@ -27,7 +27,9 @@ dependencies:
     - block_content.type.quick_links
     - block_content.type.quote_callout
     - block_content.type.reference_card
+    - block_content.type.search_resources
     - block_content.type.tabs
+    - block_content.type.tags
     - block_content.type.text
     - block_content.type.tiles
     - block_content.type.video
@@ -49,6 +51,8 @@ dependencies:
     - node.type.profile
     - taxonomy.vocabulary.affiliation
     - taxonomy.vocabulary.event_category
+    - taxonomy.vocabulary.event_source
+    - taxonomy.vocabulary.page_audience
     - taxonomy.vocabulary.page_category
     - taxonomy.vocabulary.post_category
     - taxonomy.vocabulary.tags
@@ -57,6 +61,7 @@ dependencies:
   module:
     - block
     - block_content
+    - config
     - content_moderation
     - contextual
     - editoria11y
@@ -64,6 +69,7 @@ dependencies:
     - layout_builder
     - media
     - menu_admin_per_menu
+    - migrate_tools
     - moderation_sidebar
     - node
     - override_node_options
@@ -79,12 +85,15 @@ dependencies:
     - ys_alert
     - ys_core
     - ys_localist
+    - ys_resource
 id: platform_admin
 label: 'Platform administrator'
 weight: -5
 is_admin: null
 permissions:
+  - 'access administration pages'
   - 'access block library'
+  - 'access content'
   - 'access content overview'
   - 'access contextual links'
   - 'access files overview'
@@ -99,7 +108,10 @@ permissions:
   - 'administer block types'
   - 'administer blocks'
   - 'administer main menu items'
+  - 'administer migrations'
+  - 'administer permissions'
   - 'administer redirects'
+  - 'administer site configuration'
   - 'administer users'
   - 'administer utility-navigation menu items'
   - 'assign contributor role'
@@ -149,9 +161,13 @@ permissions:
   - 'create quote_callout block content'
   - 'create reference_card block content'
   - 'create reusable blocks'
+  - 'create search_resources block content'
   - 'create tabs block content'
+  - 'create tags block content'
   - 'create terms in affiliation'
   - 'create terms in event_category'
+  - 'create terms in event_source'
+  - 'create terms in page_audience'
   - 'create terms in page_category'
   - 'create terms in post_category'
   - 'create terms in tags'
@@ -220,8 +236,10 @@ permissions:
   - 'delete any quote_callout block content revisions'
   - 'delete any reference_card block content'
   - 'delete any reference_card block content revisions'
+  - 'delete any search_resources block content'
   - 'delete any tabs block content'
   - 'delete any tabs block content revisions'
+  - 'delete any tags block content'
   - 'delete any text block content'
   - 'delete any text block content revisions'
   - 'delete any tiles block content'
@@ -285,6 +303,7 @@ permissions:
   - 'edit any quote_callout block content'
   - 'edit any reference_card block content'
   - 'edit any tabs block content'
+  - 'edit any tags block content'
   - 'edit any text block content'
   - 'edit any tiles block content'
   - 'edit any video block content'
@@ -305,9 +324,13 @@ permissions:
   - 'edit own webform submission'
   - 'edit terms in affiliation'
   - 'edit terms in event_category'
+  - 'edit terms in event_source'
+  - 'edit terms in page_audience'
   - 'edit terms in page_category'
   - 'edit terms in post_category'
   - 'edit terms in tags'
+  - 'export configuration'
+  - 'import configuration'
   - 'mark as hidden in editoria11y'
   - 'override all authored by option'
   - 'override all authored on option'
@@ -339,6 +362,7 @@ permissions:
   - 'revert any quick_links block content revisions'
   - 'revert any quote_callout block content revisions'
   - 'revert any reference_card block content revisions'
+  - 'revert any search_resources block content revisions'
   - 'revert any tabs block content revisions'
   - 'revert any text block content revisions'
   - 'revert any tiles block content revisions'
@@ -350,6 +374,7 @@ permissions:
   - 'revert page revisions'
   - 'revert post revisions'
   - 'revert profile revisions'
+  - 'synchronize configuration'
   - 'update any media'
   - 'update media'
   - 'use editorial transition archive'
@@ -401,6 +426,7 @@ permissions:
   - 'view editoria11y checker'
   - 'view event revisions'
   - 'view latest version'
+  - 'view media'
   - 'view own unpublished content'
   - 'view own unpublished media'
   - 'view own webform submission'
@@ -412,3 +438,4 @@ permissions:
   - 'yalesites manage alerts'
   - 'yalesites manage localist'
   - 'yalesites manage settings'
+
