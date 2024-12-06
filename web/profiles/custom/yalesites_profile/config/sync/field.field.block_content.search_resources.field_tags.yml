@@ -1,0 +1,29 @@
+uuid: ea547675-e1fe-4803-8a21-2067c4620412
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.search_resources
+    - field.storage.block_content.field_tags
+    - taxonomy.vocabulary.tags
+id: block_content.search_resources.field_tags
+field_name: field_tags
+entity_type: block_content
+bundle: search_resources
+label: 'Page Type Resource'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:taxonomy_term'
+  handler_settings:
+    target_bundles:
+      tags: tags
+    sort:
+      field: name
+      direction: asc
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference

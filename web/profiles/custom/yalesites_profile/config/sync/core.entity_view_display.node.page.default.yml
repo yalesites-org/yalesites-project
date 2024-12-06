@@ -3,14 +3,18 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.node.page.field_audience
     - field.field.node.page.field_category
     - field.field.node.page.field_external_source
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
+    - field.field.node.page.field_series
+    - field.field.node.page.field_series_member
     - field.field.node.page.field_tags
     - field.field.node.page.field_teaser_media
     - field.field.node.page.field_teaser_text
     - field.field.node.page.field_teaser_title
+    - field.field.node.page.field_type
     - field.field.node.page.layout_builder__layout
     - node.type.page
   module:
@@ -99,6 +103,11 @@ third_party_settings:
         - layout_onecol
         - ys_layout_two_column
       allowlisted_blocks:
+        layout_onecol:
+          all_regions:
+            'Lists (Views)':
+              - 'views_block:popular_resources-block_1'
+              - 'views_block:resource_tags-block_1'
         ys_layout_banner:
           all_regions:
             'Inline blocks':
@@ -174,7 +183,6 @@ third_party_settings:
             - Devel
             - Forms
             - Help
-            - 'Lists (Views)'
             - Menus
             - System
             - Webform
@@ -224,6 +232,14 @@ content:
     third_party_settings: {  }
     weight: -20
     region: content
+  field_audience:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 3
+    region: content
   field_external_source:
     type: link
     label: above
@@ -236,10 +252,37 @@ content:
     third_party_settings: {  }
     weight: 1
     region: content
+  field_series:
+    type: boolean
+    label: above
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    weight: 6
+    region: content
+  field_series_member:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 5
+    region: content
+  field_type:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 4
+    region: content
 hidden:
   field_category: true
   field_login_required: true
   field_metatags: true
+  field_page_type: true
   field_tags: true
   field_teaser_media: true
   field_teaser_text: true

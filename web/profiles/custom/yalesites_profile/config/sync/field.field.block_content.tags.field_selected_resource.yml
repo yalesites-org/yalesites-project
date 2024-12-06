@@ -1,0 +1,29 @@
+uuid: c855643b-6959-4864-9b52-9b21b0c92057
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.tags
+    - field.storage.block_content.field_selected_resource
+    - node.type.page
+id: block_content.tags.field_selected_resource
+field_name: field_selected_resource
+entity_type: block_content
+bundle: tags
+label: 'Selected Resource'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:node'
+  handler_settings:
+    target_bundles:
+      page: page
+    sort:
+      field: _none
+      direction: ASC
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference

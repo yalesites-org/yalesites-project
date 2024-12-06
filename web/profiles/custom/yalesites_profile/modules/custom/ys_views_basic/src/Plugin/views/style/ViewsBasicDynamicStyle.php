@@ -122,6 +122,7 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
       'list_item' => 'list',
       'condensed' => 'condensed',
       'directory' => 'profile-directory',
+      'resource_card' => 'grid',
     ];
 
     $type = $viewModesMap[$this->view->rowPlugin->options['view_mode']];

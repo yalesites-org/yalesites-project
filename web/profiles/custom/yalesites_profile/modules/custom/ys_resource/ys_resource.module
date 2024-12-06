@@ -1,0 +1,33 @@
+<?php
+
+/**
+ * @file
+ * Implement various hooks and functionality.
+ */
+
+use Drupal\views\Plugin\views\query\QueryPluginBase;
+use Drupal\views\ViewExecutable;
+
+/**
+ * Implements hook_preprocess_views_view().
+ */
+function ys_resource_preprocess_views_view(array &$variables) {
+  // Check the specific view and display you want to target.
+  if ($variables['view']->id() == 'resource_tags_overview' && $variables['view']->current_display == 'page_1') {
+    $config = \Drupal::config('ys_resource.resource_config');
+    // Pass the variable to the Twig template.
+    $variables['all_resources_link'] = $config->get('resource_full_page_link');
+  }
+}
+
+/**
+ * Implements hook_views_query_alter().
+ */
+function ys_resource_views_query_alter(ViewExecutable $view, QueryPluginBase $query) {
+  if (($view->id() == 'explore_resources') && $view->current_display == 'block_1') {
+    $query->addField('node_field_data', 'nid', 'nid', [
+      'function' => 'groupby',
+    ]);
+    $query->groupby = ['node_field_data.nid'];
+  }
+}
