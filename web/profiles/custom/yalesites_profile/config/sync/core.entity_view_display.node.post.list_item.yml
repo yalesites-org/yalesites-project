@@ -7,6 +7,7 @@ dependencies:
     - field.field.node.post.field_author
     - field.field.node.post.field_category
     - field.field.node.post.field_external_source
+    - field.field.node.post.field_external_source_label
     - field.field.node.post.field_login_required
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
@@ -84,6 +85,7 @@ content:
     region: content
 hidden:
   field_author: true
+  field_external_source_label: true
   field_login_required: true
   field_metatags: true
   field_publish_date: true

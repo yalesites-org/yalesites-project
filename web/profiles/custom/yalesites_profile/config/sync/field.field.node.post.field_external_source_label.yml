@@ -1,0 +1,29 @@
+uuid: a20a36e7-ccc0-40a2-a471-0dfe67a9f5df
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_external_source_label
+    - node.type.post
+    - taxonomy.vocabulary.sources
+id: node.post.field_external_source_label
+field_name: field_external_source_label
+entity_type: node
+bundle: post
+label: 'External Source Label'
+description: 'If an external source is used, you may link it to an overall source to show where it came from.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:taxonomy_term'
+  handler_settings:
+    target_bundles:
+      sources: sources
+    sort:
+      field: name
+      direction: asc
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference
