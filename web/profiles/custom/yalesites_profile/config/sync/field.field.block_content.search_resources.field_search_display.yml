@@ -1,0 +1,21 @@
+uuid: f519e910-3c04-46d1-8d89-0a7168486d23
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.search_resources
+    - field.storage.block_content.field_search_display
+  module:
+    - options
+id: block_content.search_resources.field_search_display
+field_name: field_search_display
+entity_type: block_content
+bundle: search_resources
+label: 'Search Display'
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_string

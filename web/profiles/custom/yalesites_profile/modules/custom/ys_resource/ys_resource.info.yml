@@ -1,0 +1,5 @@
+name: 'YS Resource'
+type: module
+description: 'Provides Resource Config and form and functionality'
+package: YaleSites
+core_version_requirement: ^10

@@ -1,0 +1,29 @@
+uuid: ecdb95bd-3c25-4264-9c11-666a5625eeec
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_type
+    - node.type.page
+    - taxonomy.vocabulary.type
+id: node.page.field_type
+field_name: field_type
+entity_type: node
+bundle: page
+label: Type
+description: 'Please note that only 3 or less selections will display correctly.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:taxonomy_term'
+  handler_settings:
+    target_bundles:
+      type: type
+    sort:
+      field: name
+      direction: asc
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference

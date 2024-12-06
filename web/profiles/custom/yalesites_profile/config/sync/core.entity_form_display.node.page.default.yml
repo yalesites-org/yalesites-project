@@ -3,14 +3,18 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.node.page.field_audience
     - field.field.node.page.field_category
     - field.field.node.page.field_external_source
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
+    - field.field.node.page.field_series
+    - field.field.node.page.field_series_member
     - field.field.node.page.field_tags
     - field.field.node.page.field_teaser_media
     - field.field.node.page.field_teaser_text
     - field.field.node.page.field_teaser_title
+    - field.field.node.page.field_type
     - field.field.node.page.layout_builder__layout
     - node.type.page
   module:
@@ -34,7 +38,7 @@ third_party_settings:
       label: Teaser
       region: content
       parent_name: ''
-      weight: 3
+      weight: 8
       format_type: fieldset
       format_settings:
         classes: ''
@@ -45,10 +49,11 @@ third_party_settings:
     group_publishing_settings:
       children:
         - field_login_required
+        - sticky
       label: 'Publishing Settings'
       region: content
       parent_name: ''
-      weight: 8
+      weight: 13
       format_type: details_sidebar
       format_settings:
         classes: ''
@@ -64,7 +69,7 @@ third_party_settings:
       label: 'External Link'
       region: content
       parent_name: ''
-      weight: 10
+      weight: 15
       format_type: details_sidebar
       format_settings:
         classes: ''
@@ -79,9 +84,15 @@ targetEntityType: node
 bundle: page
 mode: default
 content:
+  field_audience:
+    type: chosen_select
+    weight: 4
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_category:
     type: chosen_select
-    weight: 1
+    weight: 2
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -102,15 +113,32 @@ content:
     third_party_settings: {  }
   field_metatags:
     type: metatag_firehose
-    weight: 7
+    weight: 12
     region: content
     settings:
       sidebar: true
       use_details: true
     third_party_settings: {  }
+  field_series:
+    type: boolean_checkbox
+    weight: 6
+    region: content
+    settings:
+      display_label: true
+    third_party_settings: {  }
+  field_series_member:
+    type: entity_reference_autocomplete
+    weight: 7
+    region: content
+    settings:
+      match_operator: CONTAINS
+      match_limit: 10
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
   field_tags:
     type: chosen_select
-    weight: 2
+    weight: 3
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -144,27 +172,40 @@ content:
       size: 60
       placeholder: ''
     third_party_settings: {  }
+  field_type:
+    type: chosen_select
+    weight: 5
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   moderation_state:
     type: workflow_buttons
-    weight: 5
+    weight: 10
     region: content
     settings:
       show_current_state: false
     third_party_settings: {  }
   path:
     type: path
-    weight: 4
+    weight: 9
     region: content
     settings: {  }
     third_party_settings: {  }
   simple_sitemap:
-    weight: 11
+    weight: 16
     region: content
     settings: {  }
     third_party_settings: {  }
   status:
     type: boolean_checkbox
-    weight: 9
+    weight: 14
+    region: content
+    settings:
+      display_label: true
+    third_party_settings: {  }
+  sticky:
+    type: boolean_checkbox
+    weight: 8
     region: content
     settings:
       display_label: true
@@ -178,7 +219,7 @@ content:
       placeholder: ''
     third_party_settings: {  }
   url_redirects:
-    weight: 6
+    weight: 11
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -187,5 +228,4 @@ hidden:
   layout_builder__layout: true
   promote: true
   revision_log: true
-  sticky: true
   uid: true
