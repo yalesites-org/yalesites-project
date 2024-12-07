@@ -13,7 +13,7 @@
 #}
 
 {% embed "@organisms/layout/layout/yds-layout.twig" with {
-  component__layout: 'fifty-fifty',
+  component__layout: 'thirty-thirty-thirty',
   layout__divider: settings.divider ? 'true' : 'false',
   component__theme: settings.theme|default('default'),
 } %}
@@ -25,6 +25,11 @@
   {% block layout__secondary %}
     <div {{ region_attributes.content_secondary }}>
       {{ content.content_secondary }}
+    </div>
+  {% endblock %}
+  {% block layout__tertiary %}
+    <div {{ region_attributes.content_tertiary }}>
+      {{ content.content_tertiary }}
     </div>
   {% endblock %}
 {% endembed %}

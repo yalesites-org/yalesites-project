@@ -33,6 +33,19 @@ class YSLayoutOptions extends LayoutDefault {
       '#weight' => 10,
     ];
 
+    $form['theme'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Component theme'),
+      '#default_value' => $this->configuration['theme'],
+      '#options' => [
+        'one' => $this->t('One'),
+        'two' => $this->t('Two'),
+        'three' => $this->t('Three'),
+        'four' => $this->t('Four'),
+      ],
+      '#weight' => 10,
+    ];
+
     return parent::buildConfigurationForm($form, $form_state);
   }
 
@@ -43,17 +56,7 @@ class YSLayoutOptions extends LayoutDefault {
     parent::submitConfigurationForm($form, $form_state);
 
     $this->configuration['divider'] = $form_state->getValue('divider');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function build(array $regions): array {
-    $build = parent::build($regions);
-    //kint($build);
-    //$build['divider'] = $this->configuration['divider'];
-
-    return $build;
+    $this->configuration['theme'] = $form_state->getValue('theme');
   }
 
 }
