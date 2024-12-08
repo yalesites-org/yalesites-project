@@ -111,6 +111,13 @@ ys_core.taxonomy_interface_tags:
   title: Tags
   route_parameters:
     taxonomy_vocabulary: "tags"
+ys_core.taxonomy_interface_sources:
+  description: "Manage post sources taxonomy"
+  parent: ys_core.taxonomy_interface
+  route_name: entity.taxonomy_vocabulary.overview_form
+  title: Post Sources
+  route_parameters:
+    taxonomy_vocabulary: "sources"
 # Blocks interface
 ys_core.custom_block_library:
   description: "Manage reusable blocks"
