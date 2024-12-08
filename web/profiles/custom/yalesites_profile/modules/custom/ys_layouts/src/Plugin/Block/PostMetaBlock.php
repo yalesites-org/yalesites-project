@@ -122,7 +122,10 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
         $term = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->load($taxId);
         if ($term) {
           $externalSourceLabel = $term->getName();
-          $externalSourceLabelUrl = $term->field_link->first()->getValue()['uri'];
+          $externalSourceLabelUrlField = $term->field_link->first();
+          if ($externalSourceLabelUrlField) {
+            $externalSourceLabelUrl = $term->field_link->first()->getValue()['uri'];
+          }
         }
       }
     }
