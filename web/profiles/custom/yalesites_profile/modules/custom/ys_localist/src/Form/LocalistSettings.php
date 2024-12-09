@@ -8,6 +8,7 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Session\AccountProxy;
+use Drupal\Core\Render\RendererInterface;
 use Drupal\localist_drupal\Service\LocalistManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -38,6 +39,13 @@ class LocalistSettings extends ConfigFormBase {
   protected $currentUserSession;
 
   /**
+   * The renderer service.
+   *
+   * @var \Drupal\Core\Render\RendererInterface
+   */
+  protected $renderer;
+
+  /**
    * Constructs a SiteInformationForm object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -48,17 +56,21 @@ class LocalistSettings extends ConfigFormBase {
    *   The Localist manager.
    * @param \Drupal\Core\Session\AccountProxy $current_user_session
    *   The current user session.
+   * @param \Drupal\Core\Render\RendererInterface $renderer
+   *   The renderer.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
     EntityTypeManagerInterface $entity_type_manager,
     LocalistManager $localist_manager,
     AccountProxy $current_user_session,
+    RendererInterface $renderer,
   ) {
     parent::__construct($config_factory);
     $this->entityTypeManager = $entity_type_manager;
     $this->localistManager = $localist_manager;
     $this->currentUserSession = $current_user_session;
+    $this->renderer = $renderer;
   }
 
   /**
@@ -70,6 +82,7 @@ class LocalistSettings extends ConfigFormBase {
       $container->get('entity_type.manager'),
       $container->get('localist_drupal.manager'),
       $container->get('current_user'),
+      $container->get('renderer'),
     );
   }
 
@@ -128,7 +141,7 @@ class LocalistSettings extends ConfigFormBase {
         '#svg_xmark' => $this->localistManager->getIcon('circle-xmark.svg'),
       ];
 
-      $renderedStatus = \Drupal::service('renderer')->render($statusArea);
+      $renderedStatus = $this->renderer->render($statusArea);
 
       $form['status'] = [
         '#type' => 'item',
@@ -150,7 +163,7 @@ class LocalistSettings extends ConfigFormBase {
         '#examples_created' => $examplesCreated,
       ];
 
-      $renderedExample = \Drupal::service('renderer')->render($exampleArea);
+      $renderedExample = $this->renderer->render($exampleArea);
 
       $form['example_area_container']['example'] = [
         '#type' => 'item',
