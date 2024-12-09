@@ -49,6 +49,8 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'label' => NULL,
         'author' => NULL,
         'date_formatted' => NULL,
+        'external_source_label' => NULL,
+        'external_source_label_url' => NULL,
       ],
     ],
     'ys_profile_meta_block' => [

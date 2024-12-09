@@ -1,0 +1,36 @@
+uuid: 7220ec28-c9e6-4e99-bc3b-2499f434d0d2
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.taxonomy_term.sources.field_link
+    - taxonomy.vocabulary.sources
+  module:
+    - link
+    - text
+id: taxonomy_term.sources.default
+targetEntityType: taxonomy_term
+bundle: sources
+mode: default
+content:
+  description:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_link:
+    type: link
+    label: hidden
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 1
+    region: content
+hidden:
+  search_api_excerpt: true
