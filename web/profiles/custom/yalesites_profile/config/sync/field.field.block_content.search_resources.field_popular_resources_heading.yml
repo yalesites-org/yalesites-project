@@ -1,0 +1,19 @@
+uuid: 2b90fe61-9ceb-4874-a4a7-02c9f7219103
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.search_resources
+    - field.storage.block_content.field_popular_resources_heading
+id: block_content.search_resources.field_popular_resources_heading
+field_name: field_popular_resources_heading
+entity_type: block_content
+bundle: search_resources
+label: 'Popular Resources Heading'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

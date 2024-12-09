@@ -1,0 +1,11 @@
+uuid: b90cf842-ff4d-46b4-9e70-45468575d2bb
+langcode: en
+status: true
+dependencies: {  }
+id: resource_tags
+block_id: 'views_block:resource_tags-block_1'
+category: advanced
+label: 'Resource Tags'
+image_path: ''
+image_alt: ''
+weight: -100

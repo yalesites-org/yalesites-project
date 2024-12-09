@@ -1,0 +1,19 @@
+uuid: d497df1a-60a6-4154-b05c-cbf6fe86f337
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.search_resources
+    - field.storage.block_content.field_search_form_heading
+id: block_content.search_resources.field_search_form_heading
+field_name: field_search_form_heading
+entity_type: block_content
+bundle: search_resources
+label: 'Search Form Heading'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

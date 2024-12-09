@@ -1,0 +1,22 @@
+uuid: 3fd5878c-5140-4749-8fed-56048696b0d2
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.tags
+    - field.field.block_content.tags.field_selected_resource
+id: block_content.tags.default
+targetEntityType: block_content
+bundle: tags
+mode: default
+content:
+  field_selected_resource:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 1
+    region: content
+hidden:
+  search_api_excerpt: true

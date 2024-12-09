@@ -100,6 +100,8 @@ function ys_views_basic_views_pre_render(ViewExecutable $view): void {
       $row->_entity->show_categories = $field_display_options->show_categories;
       $row->_entity->show_tags = $field_display_options->show_tags;
       $row->_entity->show_thumbnail = $field_display_options->show_thumbnail;
+      $row->_entity->highlight_pinned_content = $field_display_options->highlight_pinned_content;
+      $row->_entity->highlighted_content_label = $field_display_options->highlighted_content_label;
     }
   }
 }

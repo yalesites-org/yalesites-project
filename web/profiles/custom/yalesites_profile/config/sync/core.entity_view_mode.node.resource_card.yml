@@ -1,0 +1,10 @@
+uuid: ccf54579-b48c-4c7a-8ff7-c42b837d63dc
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+id: node.resource_card
+label: 'Resource Card'
+targetEntityType: node
+cache: true

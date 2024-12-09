@@ -10,6 +10,7 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\ys_resource\ResourceConfig;
 use Drupal\ys_views_basic\ViewsBasicManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -34,6 +35,13 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
   protected $viewsBasicManager;
 
   /**
+   * The ys resource manager service.
+   *
+   * @var \Drupal\ys_resource\ResourceConfig
+   */
+  protected $resourceConfig;
+
+  /**
    * Constructs a ViewsBasicDefaultWidget object.
    *
    * @param string $plugin_id
@@ -48,6 +56,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
    *   Any third party settings.
    * @param \Drupal\ys_views_basic\ViewsBasicManager $views_basic_manager
    *   The ViewsBasic management service.
+   * @param \Drupal\ys_resource\ResourceConfig $resource_config
+   *   The Ys resource management service.
    */
   public function __construct(
     $plugin_id,
@@ -56,6 +66,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     array $settings,
     array $third_party_settings,
     ViewsBasicManager $views_basic_manager,
+    ResourceConfig $resource_config,
   ) {
     parent::__construct(
       $plugin_id,
@@ -65,6 +76,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       $third_party_settings
     );
     $this->viewsBasicManager = $views_basic_manager;
+    $this->resourceConfig = $resource_config;
   }
 
   /**
@@ -82,7 +94,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       $configuration['field_definition'],
       $configuration['settings'],
       $configuration['third_party_settings'],
-      $container->get('ys_views_basic.views_basic_manager')
+      $container->get('ys_views_basic.views_basic_manager'),
+      $container->get('ys_resource.config')
     );
   }
 
@@ -236,6 +249,10 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       $showCategoriesLabel = $this->t("Show Affiliations");
     }
 
+    $isNewForm = FALSE;
+    if (!empty($formState->getCompleteForm()['#id'])) {
+      $isNewForm = str_contains($formState->getCompleteForm()['#id'], 'layout-builder-add-block');
+    }
     // Set the default value for 'field_options' to 'show_thumbnail'
     // when creating a new block.
     $form['group_user_selection']['entity_and_view_mode']['field_options'] = [
@@ -243,7 +260,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#options' => [
         'show_categories' => $showCategoriesLabel,
         'show_tags' => $this->t('Show Tags'),
-        'show_thumbnail' => $this->t('Show Teaser Image'),
+        'show_thumbnail' => $this->t('Show Thumbnail'),
+        'highlight_pinned_content' => $this->t('Show Highlight Pinned content'),
       ],
       '#title' => $this->t('Field Display Options'),
       '#tree' => TRUE,
@@ -261,12 +279,24 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
     ];
 
+    $form['group_user_selection']['entity_and_view_mode']['highlighted_content_label'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Highlighted Content Label'),
+      '#description' => $this->t("Enter a custom label for the <strong>HIghlighted text on card</strong>."),
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('highlighted_content_label', $items[$delta]->params) : NULL,
+      '#states' => [
+        'visible' => [$formSelectors['show_highlight_pinned_content'] => ['checked' => TRUE]],
+      ],
+    ];
+
     $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options'] = [
       '#type' => 'checkboxes',
       '#options' => [
-        'show_search_filter' => $this->t('Show Search'),
-        'show_year_filter' => $this->t('Show Year'),
-        'show_category_filter' => $this->t('Show Category'),
+        'show_search_filter' => $this->t('Show Search Filter'),
+        'show_year_filter' => $this->t('Show Year Filter'),
+        'show_category_filter' => $this->t('Show Category Filter'),
+        'show_audience_filter' => $this->t('Show Audience Filter'),
+        'show_type_filter' => $this->t('Show @type Filter', ['@type' => $this->resourceConfig->getCustomVocabularyLabel()]),
       ],
       '#title' => $this->t('Exposed Filter Options'),
       '#tree' => TRUE,
@@ -288,7 +318,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
     ];
 
-    $vocabulary_id = $selectedEntityType === 'profile'
+    $vocabulary_id = $formSelectors['entity_types'] === 'profile'
       ? 'affiliation'
       : $formSelectors['entity_types'] . '_category';
     $form['group_user_selection']['entity_and_view_mode']['category_included_terms'] = [
@@ -467,6 +497,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
           "event_time_period" => $form['group_user_selection']['entity_specific']['event_time_period']['#value'],
         ],
         "field_options" => $form['group_user_selection']['entity_and_view_mode']['field_options']['#value'],
+        "highlighted_content_label" => $form['group_user_selection']['entity_and_view_mode']['highlighted_content_label']['#value'],
         "exposed_filter_options" => $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options']['#value'],
         "category_filter_label" => $form['group_user_selection']['entity_and_view_mode']['category_filter_label']['#value'],
         "category_included_terms" => $form['group_user_selection']['entity_and_view_mode']['category_included_terms']['#value'],
