@@ -5,6 +5,7 @@ namespace Drupal\ys_layouts\Plugin\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Controller\TitleResolver;
 use Drupal\Core\Datetime\DateFormatter;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\node\NodeInterface;
@@ -51,6 +52,13 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
   protected $dateFormatter;
 
   /**
+   * The taxonomy term storage.
+   *
+   * @var \Drupal\Core\Entity\EntityStorageInterface
+   */
+  protected $taxonomyTermStorage;
+
+  /**
    * Constructs a new PostMetaBlock object.
    *
    * @param array $configuration
@@ -67,13 +75,16 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
    *   The request stack.
    * @param \Drupal\Core\Datetime\DateFormatter $date_formatter
    *   The date formatter.
+   * @param \Drupal\Core\Entity\EntityStorageInterface $taxonomyTermStorage
+   *   The taxonomy term storage.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $route_match, TitleResolver $title_resolver, RequestStack $request_stack, DateFormatter $date_formatter) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $route_match, TitleResolver $title_resolver, RequestStack $request_stack, DateFormatter $date_formatter, EntityStorageInterface $taxonomyTermStorage) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->routeMatch = $route_match;
     $this->titleResolver = $title_resolver;
     $this->requestStack = $request_stack;
     $this->dateFormatter = $date_formatter;
+    $this->taxonomyTermStorage = $taxonomyTermStorage;
   }
 
   /**
@@ -88,6 +99,7 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
     $container->get('title_resolver'),
     $container->get('request_stack'),
     $container->get('date.formatter'),
+    $container->get('entity_type.manager')->getStorage('taxonomy_term'),
     );
   }
 
@@ -119,7 +131,7 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
       $dateFormatted = $this->dateFormatter->format($publishDate, '', 'c');
       $taxId = ($node->field_external_source_label->first()) ? $node->field_external_source_label->first()->getValue()['target_id'] : NULL;
       if ($taxId) {
-        $term = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->load($taxId);
+        $term = $this->taxonomyTermStorage->load($taxId);
         if ($term) {
           $externalSourceLabel = $term->getName();
           $externalSourceLabelUrlField = $term->field_link->first();
