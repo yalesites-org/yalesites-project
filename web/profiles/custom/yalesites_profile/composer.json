@@ -63,6 +63,7 @@
     "drupal/layout_builder_restrictions_by_role": "1.0.0-rc1",
     "drupal/libraries": "4.0.5",
     "drupal/linkit": "6.1.4",
+    "drupal/localist_drupal": "^1.0@beta",
     "drupal/mailchimp_transactional": "1.1.2",
     "drupal/mailsystem": "4.5.0",
     "drupal/markup": "2.0.0",
@@ -171,6 +172,9 @@
       },
       "drupal/selective_better_exposed_filters": {
         "Hide form when no options are available:": "patches/selective_better_exposed_filters/selective_better_exposed_filters-3432551.patch"
+      },
+      "drupal/localist_drupal": {
+        "fix checking beforehand": "https://git.drupalcode.org/project/localist_drupal/-/merge_requests/2.diff"
       }
     }
   }

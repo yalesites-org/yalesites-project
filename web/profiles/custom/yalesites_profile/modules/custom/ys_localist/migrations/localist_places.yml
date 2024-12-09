@@ -1,13 +1,10 @@
 id: localist_places
 label: 'Localist places'
 source:
-  plugin: url
+  plugin: localist_url
   data_fetcher_plugin: http
   data_parser_plugin: json
   track_changes: true
-  urls:
-    # @see ys_localist.module
-    callback: ys_localist_migrate_url
   localist_endpoint: 'places'
   item_selector: places
   fields:
