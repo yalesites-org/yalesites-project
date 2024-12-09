@@ -1,14 +1,10 @@
-id: localist_events
+id: ys_localist_events
 label: 'Localist events'
 source:
-  plugin: url
+  plugin: localist_url
   data_fetcher_plugin: http
   data_parser_plugin: localist_json
   track_changes: true
-  urls:
-    # @see ys_localist.module
-    callback: ys_localist_migrate_url
-  # To cut down on the number of functions in .module file
   localist_endpoint: 'events'
   item_selector: events
   fields:

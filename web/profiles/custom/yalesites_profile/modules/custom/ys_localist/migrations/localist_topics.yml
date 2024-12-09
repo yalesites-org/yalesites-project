@@ -1,13 +1,10 @@
 id: localist_topics
 label: 'Localist topics filter'
 source:
-  plugin: url
+  plugin: localist_url
   data_fetcher_plugin: http
   data_parser_plugin: json
   track_changes: true
-  urls:
-    # @see ys_localist.module
-    callback: ys_localist_migrate_url
   localist_endpoint: 'filters'
   item_selector: event_topics
   fields:
