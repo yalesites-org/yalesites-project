@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   config:
+    - core.entity_form_mode.node.profile_quick_add
     - field.field.node.post.field_author
     - field.field.node.post.field_authors
     - field.field.node.post.field_category
@@ -21,6 +22,7 @@ dependencies:
     - chosen_field
     - datetime
     - field_group
+    - inline_entity_form
     - link
     - maxlength
     - media_library
@@ -93,10 +95,22 @@ content:
       placeholder: ''
     third_party_settings: {  }
   field_authors:
-    type: chosen_select
+    type: inline_entity_form_complex
     weight: 2
     region: content
-    settings: {  }
+    settings:
+      form_mode: profile_quick_add
+      override_labels: false
+      label_singular: ''
+      label_plural: ''
+      allow_new: true
+      allow_existing: true
+      match_operator: CONTAINS
+      allow_duplicate: false
+      collapsible: false
+      collapsed: false
+      revision: false
+      removed_reference: keep
     third_party_settings: {  }
   field_category:
     type: chosen_select

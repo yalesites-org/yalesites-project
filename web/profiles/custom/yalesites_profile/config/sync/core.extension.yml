@@ -61,6 +61,7 @@ module:
   image: 0
   imagemagick: 0
   improve_line_breaks_filter: 0
+  inline_entity_form: 0
   jquery_ui: 0
   jquery_ui_datepicker: 0
   jquery_ui_slider: 0

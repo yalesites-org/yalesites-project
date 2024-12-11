@@ -1,0 +1,11 @@
+uuid: ebbce12a-cc83-4f3c-a78e-b13bc5673bee
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+id: node.profile_quick_add
+label: 'Profile Quick Add'
+description: ''
+targetEntityType: node
+cache: true
