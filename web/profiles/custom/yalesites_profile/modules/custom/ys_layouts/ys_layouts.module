@@ -154,7 +154,7 @@ function _ys_layouts_add_layout_section(&$variables) {
     $route_match = \Drupal::routeMatch();
     $entity = $route_match->getParameter('node') ?? $route_match->getParameter('entity');
 
-    // prevents errors during build.
+    // Prevents errors during build.
     if (!$entity || !$entity instanceof EntityInterface) {
       return;
     }
@@ -169,7 +169,7 @@ function _ys_layouts_add_layout_section(&$variables) {
         foreach ($section->getComponents() as $component) {
           if (isset($component->get('configuration')['block_id']) && $component->get('configuration')['block_id'] === $block_id) {
             $variables['layout_section'] = $section->getLayoutId();
-            break 2; // Exit both loops once the block is found.
+            break 2;
           }
         }
       }
