@@ -5,6 +5,7 @@
  * Contains ys_layouts.module functions.
  */
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\EntityContextDefinition;
 
@@ -152,6 +153,12 @@ function _ys_layouts_add_layout_section(&$variables) {
     // Because we can't seem to get layout builder section info via the block.
     $route_match = \Drupal::routeMatch();
     $entity = $route_match->getParameter('node') ?? $route_match->getParameter('entity');
+
+    // prevents errors during build.
+    if (!$entity || !$entity instanceof EntityInterface) {
+      return;
+    }
+
     $context = new Context(new EntityContextDefinition($entity->getEntityTypeId()), $entity);
     $section_storage_manager = \Drupal::service('plugin.manager.layout_builder.section_storage');
     $section_storage = $section_storage_manager->createInstance('overrides');
