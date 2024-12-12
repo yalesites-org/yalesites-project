@@ -279,3 +279,29 @@ display:
         - 'config:field.storage.node.field_teaser_text'
         - 'config:search_api.index.node_index'
         - 'search_api_list:node_index'
+  page_1:
+    id: page_1
+    display_title: Page
+    display_plugin: page
+    position: 1
+    display_options:
+      exposed_block: false
+      display_extenders:
+        metatag_display_extender:
+          metatags:
+            title: '[view:title] | [site:name]'
+          tokenize: true
+      path: search
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url
+        - url.query_args
+        - 'user.node_grants:view'
+        - user.permissions
+      tags:
+        - 'config:field.storage.node.field_teaser_text'
+        - 'config:search_api.index.node_index'
+        - 'search_api_list:node_index'
