@@ -59,6 +59,13 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
   protected static $example;
 
   /**
+   * Does the example contain markup. Defaults to false.
+   *
+   * @var bool
+   */
+  protected static $exampleContainsMarkup = FALSE;
+
+  /**
    * An array of attributes to add to the template.
    *
    * To support previous implementations, embed_type is set to 'form'.
@@ -143,6 +150,13 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
    */
   public static function getExample(): string {
     return static::$example;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function exampleContainsMarkup(): bool {
+    return static::$exampleContainsMarkup;
   }
 
   /**
