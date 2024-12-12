@@ -112,6 +112,8 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
       '#localist_url' => $eventFieldData['localist_url'],
       '#stream_url' => $eventFieldData['stream_url'],
       '#stream_embed_code' => $eventFieldData['stream_embed_code'],
+      '#event_status_field' => $eventFieldData['event_status'],
+      '#is_campus_group' => $eventFieldData['is_campus_group'],
     ];
   }
 
