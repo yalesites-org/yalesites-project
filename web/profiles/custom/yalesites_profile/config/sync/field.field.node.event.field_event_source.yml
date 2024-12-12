@@ -1,0 +1,29 @@
+uuid: 9d0cc136-ae5c-4d2a-b119-445597dc571c
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_event_source
+    - node.type.event
+    - taxonomy.vocabulary.event_source
+id: node.event.field_event_source
+field_name: field_event_source
+entity_type: node
+bundle: event
+label: 'Event Source'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:taxonomy_term'
+  handler_settings:
+    target_bundles:
+      event_source: event_source
+    sort:
+      field: name
+      direction: asc
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference

@@ -1,0 +1,57 @@
+<?php
+
+/**
+ * @file
+ * Primary module hooks for YS Campus Group module.
+ */
+
+use Drupal\migrate\MigrateExecutable;
+use Drupal\migrate\MigrateMessage;
+use Drupal\migrate\Plugin\MigrationInterface;
+use Drupal\migrate_plus\Entity\Migration;
+
+/**
+ * Implements hook_cron().
+ */
+function ys_campus_group_cron() {
+  $config = \Drupal::config('ys_campus_group.settings');
+  if ($config->get('enable_campus_group_sync')) {
+    $state = \Drupal::state();
+    $next_execution_time = $state->get("campus_group_migrations", 0);
+    $current_time = \Drupal::time()->getRequestTime();
+    if ($current_time > $next_execution_time) {
+      $state->set("campus_group_migrations", $current_time + 3600);
+      // Replace with your migration ID.
+      $migration_id = 'campus_group_events';
+      // Load the migration entity from migrate_plus.
+      $migration_entity = Migration::load($migration_id);
+      if ($migration_entity) {
+        $migration_group = $migration_entity->get('migration_group');
+        // Get the migration plugin (of type MigrationInterface)
+        $migration_plugin = \Drupal::service('plugin.manager.migration')->createInstance($migration_id, ['migration_group' => $migration_group]);
+        if ($migration_plugin instanceof MigrationInterface) {
+          $migration_plugin->getIdMap()->prepareUpdate();
+          // Create a MigrateExecutable instance to execute the migration.
+          $migrate_executable = new MigrateExecutable($migration_plugin, new MigrateMessage());
+          try {
+            // Run the migration.
+            $migrate_executable->import();
+            // Log success.
+            \Drupal::logger('ys_campus_group')->notice('Migration @migration_id completed successfully from cron job.', ['@migration_id' => $migration_id]);
+            if (\Drupal::service('module_handler')->moduleExists('migrate_plus')) {
+              $migrate_last_imported_store = \Drupal::keyValue('migrate_last_imported');
+              $migrate_last_imported_store->set($migration_plugin->id(), round(microtime(TRUE) * 1000));
+            }
+          }
+          catch (\Exception $e) {
+            // Log failure.
+            \Drupal::logger('ys_campus_group')->error('Migration @migration_id failed in cron job: @message', [
+              '@migration_id' => $migration_id,
+              '@message' => $e->getMessage(),
+            ]);
+          }
+        }
+      }
+    }
+  }
+}

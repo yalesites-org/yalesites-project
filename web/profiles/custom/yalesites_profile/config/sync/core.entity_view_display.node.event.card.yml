@@ -13,6 +13,7 @@ dependencies:
     - field.field.node.event.field_event_place
     - field.field.node.event.field_event_recurring
     - field.field.node.event.field_event_room
+    - field.field.node.event.field_event_source
     - field.field.node.event.field_event_status
     - field.field.node.event.field_event_topics
     - field.field.node.event.field_event_type
@@ -129,9 +130,10 @@ content:
     weight: 3
     region: content
   field_teaser_text:
-    type: text_default
+    type: text_trimmed
     label: hidden
-    settings: {  }
+    settings:
+      trim_length: 120
     third_party_settings: {  }
     weight: 2
     region: content
@@ -170,6 +172,7 @@ hidden:
   field_event_place: true
   field_event_recurring: true
   field_event_room: true
+  field_event_source: true
   field_event_status: true
   field_event_topics: true
   field_localist_event_image_alt: true
