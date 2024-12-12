@@ -56,6 +56,14 @@ interface EmbedSourceInterface extends PluginInspectionInterface {
   public static function getExample(): string;
 
   /**
+   * Does the example contain markup that should not be escaped.
+   *
+   * @return bool
+   *   If the example contains markup.
+   */
+  public static function exampleContainsMarkup(): bool;
+
+  /**
    * Get a render array for an embed code.
    *
    * @param array $params
