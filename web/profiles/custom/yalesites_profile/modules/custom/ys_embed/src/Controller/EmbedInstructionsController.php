@@ -6,6 +6,7 @@ use Drupal\Component\Utility\Html;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\OpenDialogCommand;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Render\Markup;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\ys_embed\Plugin\EmbedSourceManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -81,14 +82,14 @@ class EmbedInstructionsController extends ControllerBase {
     $sources = [];
     foreach ($this->embedManager->getSources() as $id => $source) {
       $sources[$id]['name'] = $source['label'];
-      $sources[$id]['instructions'] = $source['class']::getInstructions();
+      $sources[$id]['instructions'] = Markup::create($source['class']::getInstructions());
       $sources[$id]['example'] = [
         '#open' => FALSE,
         '#type' => 'details',
         '#title' => 'Example',
       ];
       $sources[$id]['example']['code'] = [
-        '#markup' => Html::escape($source['class']::getExample()),
+        '#markup' => $source['class']::exampleContainsMarkup() ? Markup::create($source['class']::getExample()) : Html::escape($source['class']::getExample()),
       ];
     }
     $content = [

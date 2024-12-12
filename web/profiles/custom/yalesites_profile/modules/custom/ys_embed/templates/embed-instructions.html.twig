@@ -8,6 +8,6 @@
 
 {% for source in sources %}
   <h2>{{ source.name }}</h2>
-  <p>{{ source.instructions }}</p>
+  {{ source.instructions }}
   {{ source.example }}
 {% endfor %}

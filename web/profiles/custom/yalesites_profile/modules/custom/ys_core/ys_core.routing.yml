@@ -46,3 +46,11 @@ ys_core.admin_views_settings:
     _title: 'Views Settings'
   requirements:
     _permission: 'yalesites manage settings'
+# Dynamic search page.
+ys_core.search_page:
+  path: '/search'
+  defaults:
+    _title_callback: '\Drupal\ys_core\Controller\SearchController::getTitle'
+    _controller: '\Drupal\ys_core\Controller\SearchController::searchPage'
+  requirements:
+    _access: 'TRUE'

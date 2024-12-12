@@ -4,3 +4,4 @@ focus_header_image: ''
 site_name_image: ''
 search:
   enable_search_form: 1
+  enable_cas_search: 0

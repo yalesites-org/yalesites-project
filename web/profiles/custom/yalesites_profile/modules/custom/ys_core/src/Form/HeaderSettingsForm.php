@@ -314,6 +314,18 @@ class HeaderSettingsForm extends ConfigFormBase {
       ],
     ];
 
+    $form['site_search_container']['enable_cas_search'] = [
+      '#type' => 'checkbox',
+      '#description' => $this->t('When enabled, anonymous users can see titles only of CAS-only content in search.'),
+      '#title' => $this->t('Enable CAS search'),
+      '#default_value' => $headerConfig->get('search.enable_cas_search'),
+      '#states' => [
+        'invisible' => [
+          ':input[name="enable_search_form"]' => ['checked' => FALSE],
+        ],
+      ],
+    ];
+
     $form['full_screen_homepage_image_container']['focus_header_image'] = [
       '#type' => 'media_library',
       '#allowed_bundles' => ['image'],
@@ -365,6 +377,12 @@ class HeaderSettingsForm extends ConfigFormBase {
     $headerConfig->set('cta_content', $form_state->getValue('cta_content'));
     $headerConfig->set('cta_url', $form_state->getValue('cta_url'));
     $headerConfig->set('search.enable_search_form', $form_state->getValue('enable_search_form'));
+    if ($form_state->getValue('enable_search_form') && $form_state->getValue('enable_cas_search')) {
+      $headerConfig->set('search.enable_cas_search', $form_state->getValue('enable_cas_search'));
+    }
+    else {
+      $headerConfig->set('search.enable_cas_search', 0);
+    }
     $headerConfig->set('focus_header_image', $form_state->getValue('focus_header_image'));
 
     $headerConfig->save();
