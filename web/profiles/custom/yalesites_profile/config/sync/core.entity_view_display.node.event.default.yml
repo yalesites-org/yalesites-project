@@ -13,6 +13,7 @@ dependencies:
     - field.field.node.event.field_event_place
     - field.field.node.event.field_event_recurring
     - field.field.node.event.field_event_room
+    - field.field.node.event.field_event_source
     - field.field.node.event.field_event_status
     - field.field.node.event.field_event_topics
     - field.field.node.event.field_event_type
@@ -96,6 +97,22 @@ third_party_settings:
                   link_to_entity: false
                 third_party_settings: {  }
             weight: 2
+            additional: {  }
+          ae6608d5-1e4b-4e6e-b442-bc309e0482ed:
+            uuid: ae6608d5-1e4b-4e6e-b442-bc309e0482ed
+            region: content
+            configuration:
+              id: 'field_block:node:event:field_event_source'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: entity_reference_label
+                label: above
+                settings:
+                  link: true
+                third_party_settings: {  }
+            weight: 3
             additional: {  }
         third_party_settings:
           layout_builder_lock:
@@ -231,6 +248,14 @@ content:
       link_to_entity: false
     third_party_settings: {  }
     weight: 11
+    region: content
+  field_event_source:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 32
     region: content
   field_event_status:
     type: entity_reference_label
