@@ -13,6 +13,7 @@ dependencies:
     - field.field.node.event.field_event_place
     - field.field.node.event.field_event_recurring
     - field.field.node.event.field_event_room
+    - field.field.node.event.field_event_source
     - field.field.node.event.field_event_status
     - field.field.node.event.field_event_topics
     - field.field.node.event.field_event_type
@@ -315,6 +316,16 @@ content:
     weight: 7
     region: content
     settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  field_event_source:
+    type: entity_reference_autocomplete
+    weight: 37
+    region: content
+    settings:
+      match_operator: CONTAINS
+      match_limit: 10
       size: 60
       placeholder: ''
     third_party_settings: {  }

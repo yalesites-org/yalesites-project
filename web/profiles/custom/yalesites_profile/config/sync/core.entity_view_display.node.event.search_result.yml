@@ -14,6 +14,7 @@ dependencies:
     - field.field.node.event.field_event_place
     - field.field.node.event.field_event_recurring
     - field.field.node.event.field_event_room
+    - field.field.node.event.field_event_source
     - field.field.node.event.field_event_status
     - field.field.node.event.field_event_topics
     - field.field.node.event.field_event_type
@@ -99,6 +100,7 @@ hidden:
   field_event_place: true
   field_event_recurring: true
   field_event_room: true
+  field_event_source: true
   field_event_status: true
   field_event_topics: true
   field_event_type: true
