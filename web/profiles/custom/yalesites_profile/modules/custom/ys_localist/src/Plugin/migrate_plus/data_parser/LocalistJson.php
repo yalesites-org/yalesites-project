@@ -28,10 +28,13 @@ class LocalistJson extends Json implements ContainerFactoryPluginInterface, Data
    *
    * @param string $url
    *   URL of a JSON feed.
+   * @param string|int $item_selector
+   *   (optional) If the JSON data is nested, this is a selector to the
+   *   specific data. Does nothing here.
    *
    * @throws \GuzzleHttp\Exception\RequestException
    */
-  protected function getSourceData(string $url): array {
+  protected function getSourceData(string $url, string|int $item_selector = ''): array {
     $response = $this->getDataFetcherPlugin()->getResponseContent($url);
     // Convert objects to associative arrays.
     $source_data = json_decode($response, TRUE, 512, JSON_THROW_ON_ERROR);
