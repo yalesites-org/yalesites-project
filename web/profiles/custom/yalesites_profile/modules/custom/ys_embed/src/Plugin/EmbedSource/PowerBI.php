@@ -21,12 +21,12 @@ class PowerBI extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $pattern = '/^https:\/\/app.powerbi.com\/(?<type>view|reportEmbed)(?<query_params>\?.+)/';
+  protected static $pattern = '/^https:\/\/app.powerbi.com\/(?<type>view|reportEmbed)(?<form_params>\?.+)/';
 
   /**
    * {@inheritdoc}
    */
-  protected static $template = '<iframe class="iframe" title="{{ title }}" src="https://app.powerbi.com/{{ type }}{{ query_params }}" height="100%" width="100%" loading="lazy"></iframe>';
+  protected static $template = '<iframe class="iframe" title="{{ title }}" src="https://app.powerbi.com/{{ type }}{{ form_params }}" height="100%" width="100%" loading="lazy"></iframe>';
 
   /**
    * {@inheritdoc}
@@ -74,8 +74,8 @@ class PowerBI extends EmbedSourceBase implements EmbedSourceInterface {
    */
   public function getUrl(array $params): string {
     $type = $params['type'];
-    $query_params = $params['query_params'];
-    return 'https://app.powerbi.com/' . $type . $query_params;
+    $form_params = $params['form_params'];
+    return 'https://app.powerbi.com/' . $type . $form_params;
   }
 
 }
