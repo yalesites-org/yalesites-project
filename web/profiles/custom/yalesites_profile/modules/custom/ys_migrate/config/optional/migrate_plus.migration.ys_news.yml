@@ -1,0 +1,47 @@
+langcode: en
+status: true
+dependencies: {  }
+id: ys_news
+label: Yale News
+class: Drupal\migrate\Plugin\Migration
+field_plugin_method: null
+cck_plugin_method: null
+migration_tags:
+  - Drupal 7
+  - Content
+migration_group: ys_migrate
+deriver: Drupal\node\Plugin\migrate\D7NodeDeriver
+source:
+  plugin: d7_node
+  node_type: news
+  constants:
+    uid1: 1
+    cc_term: 22
+process:
+
+  langcode:
+    plugin: default_value
+    source: language
+    default_value: "und"
+  title: title
+  uid: constants/uid1
+  status: status
+  created: created
+  changed: changed
+  promote: promote
+  sticky: sticky
+  field_author: field_byline
+  field_category: constants/cc_term
+  field_publish_date: field_date
+  field_teaser_title: title
+  field_teaser_text: body
+  field_external_source:
+    plugin: field_link
+    uri_scheme: 'https://'
+    source: field_link_to_external_story
+destination:
+  plugin: entity:node
+  default_bundle: post
+migration_dependencies:
+  required: {  }
+  optional: {  }
