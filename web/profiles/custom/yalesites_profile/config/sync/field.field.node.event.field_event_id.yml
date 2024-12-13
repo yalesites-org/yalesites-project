@@ -9,7 +9,7 @@ id: node.event.field_event_id
 field_name: field_event_id
 entity_type: node
 bundle: event
-label: event_id
+label: 'Event ID'
 description: 'The event id of an external source (usually imported by a migration)'
 required: false
 translatable: false
