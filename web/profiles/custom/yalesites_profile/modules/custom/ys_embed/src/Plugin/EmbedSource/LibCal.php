@@ -156,7 +156,7 @@ class LibCal extends EmbedSourceBase implements EmbedSourceInterface {
                 if (typeof jQuery !== 'undefined') {
                     callback(jQuery);
                 } else {
-                    console.error('jQuery not loaded. Embed code will not work.');
+                    console.error('jQuery not loaded. Embed code will not work.'); 
                 }
             });
         }
