@@ -206,6 +206,22 @@ div[data-drupal-selector="edit-block-form"] {
   background-color: var(--gin-bg-layer2);
 }
 
+
+/* Layout component layout-builder link overrides. */
+.yds-layout.layout-builder__layout[data-component-theme="one"] .layout-builder__link.layout-builder__link--add,
+.yds-layout.layout-builder__layout[data-component-theme="three"] .layout-builder__link.layout-builder__link--add,
+.yds-layout.layout-builder__layout[data-component-theme="four"] .layout-builder__link.layout-builder__link--add {
+  background-color: white !important;
+  border-color: transparent !important;
+}
+
+.yds-layout.layout-builder__layout[data-component-theme="one"] .layout-builder__link.layout-builder__link--add:hover,
+.yds-layout.layout-builder__layout[data-component-theme="three"] .layout-builder__link.layout-builder__link--add:hover,
+.yds-layout.layout-builder__layout[data-component-theme="four"] .layout-builder__link.layout-builder__link--add:hover {
+  background-color: var(--gin-color-primary-hover) !important;
+  border-color: white !important;
+} 
+
 /* Change layoutbuilder configure/UI element colors in dark mode because the defaults don't look good */
 .gin--dark-mode .layout-builder__link--configure:hover {
   background-color: var(--gin-bg-layer) !important;
@@ -324,3 +340,5 @@ th.field-label {
 .has-multiple-fields-remove-button .js .paragraphs-collapsed-description:after {
   display: none;
 }
+
+
