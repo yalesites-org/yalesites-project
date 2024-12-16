@@ -58,6 +58,19 @@ a.focal-point-preview-link {
   }
 }
 
+/* Three column layout for profile add/edit form */
+.ys-gin-three-column-wrapper {
+  @media screen and (min-width: 1000px) {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(3, 1fr);
+
+    .form-element {
+      width: 100%;
+    }
+  }
+}
+
 // Override the trash icon color for the delete button
 .action-link--icon-trash.action-link--danger::before,
 .button.button--danger::before {
