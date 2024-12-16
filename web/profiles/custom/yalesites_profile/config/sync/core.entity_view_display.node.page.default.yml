@@ -135,15 +135,16 @@ third_party_settings:
               - 'inline_block:video'
           sidebar:
             'Custom block types':
+              - embed
               - text
             'Inline blocks':
+              - 'inline_block:embed'
               - 'inline_block:text'
       restricted_categories:
         ys_layout_two_column:
-          sidebar:
+          content:
             - 'Chaos Tools'
             - 'Content fields'
-            - Devel
             - Forms
             - Help
             - 'Lists (Views)'
@@ -154,7 +155,7 @@ third_party_settings:
             - 'YaleSites Layouts'
             - 'YaleSites alert'
             - core
-          content:
+          sidebar:
             - 'Chaos Tools'
             - 'Content fields'
             - Forms

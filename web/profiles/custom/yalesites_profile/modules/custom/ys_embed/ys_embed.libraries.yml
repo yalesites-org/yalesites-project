@@ -1,0 +1,4 @@
+ys_embed.libcal:
+  version: 1.x
+  dependencies:
+    - core/jquery
