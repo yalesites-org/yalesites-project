@@ -10,7 +10,7 @@ id: node.post.field_authors
 field_name: field_authors
 entity_type: node
 bundle: post
-label: 'Other Authors'
+label: "Author's Profile"
 description: ''
 required: false
 translatable: false
