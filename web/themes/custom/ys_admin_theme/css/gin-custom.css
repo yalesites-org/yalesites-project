@@ -54,6 +54,18 @@ a.focal-point-preview-link {
   }
 }
 
+/* Three column layout for profile add/edit form */
+@media screen and (min-width: 1000px) {
+  .ys-gin-three-column-wrapper {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .ys-gin-three-column-wrapper .form-element {
+    width: 100%;
+  }
+}
+
 .action-link--icon-trash.action-link--danger::before,
 .button.button--danger::before {
   background-color: var(--gin-color-danger) !important;
