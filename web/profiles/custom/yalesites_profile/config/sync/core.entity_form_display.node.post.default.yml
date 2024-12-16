@@ -88,6 +88,51 @@ third_party_settings:
         description: ''
         required_fields: true
         weight: 0
+    group_three_column_wrapper:
+      children:
+        - field_authors
+        - field_author
+        - field_publish_date
+      label: 'Two Column Wrapper'
+      region: content
+      parent_name: ''
+      weight: 1
+      format_type: html_element
+      format_settings:
+        classes: ys-gin-three-column-wrapper
+        show_empty_fields: false
+        id: ''
+        label_as_html: false
+        element: div
+        show_label: false
+        label_element: h3
+        label_element_classes: ''
+        attributes: ''
+        effect: none
+        speed: fast
+        required_fields: true
+    group_two_column_wrapper:
+      children:
+        - field_category
+        - field_tags
+      label: 'Two Column Wrapper'
+      region: content
+      parent_name: ''
+      weight: 2
+      format_type: html_element
+      format_settings:
+        classes: ys-gin-two-column-wrapper
+        show_empty_fields: false
+        id: ''
+        label_as_html: false
+        element: div
+        show_label: false
+        label_element: h3
+        label_element_classes: ''
+        attributes: ''
+        effect: none
+        speed: fast
+        required_fields: true
 id: node.post.default
 targetEntityType: node
 bundle: post
@@ -101,7 +146,7 @@ content:
     third_party_settings: {  }
   field_author:
     type: string_textfield
-    weight: 2
+    weight: 3
     region: content
     settings:
       size: 60
@@ -109,13 +154,13 @@ content:
     third_party_settings: {  }
   field_authors:
     type: chosen_select
-    weight: 1
+    weight: 2
     region: content
     settings: {  }
     third_party_settings: {  }
   field_category:
     type: chosen_select
-    weight: 4
+    weight: 3
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -150,7 +195,7 @@ content:
     third_party_settings: {  }
   field_publish_date:
     type: datetime_default
-    weight: 3
+    weight: 4
     region: content
     settings: {  }
     third_party_settings: {  }
