@@ -1,0 +1,46 @@
+<?php
+
+/**
+ * @file
+ * Install, uninstall and update hooks for ys_localist module.
+ */
+
+/**
+ * Implements hook_update().
+ *
+ * This update will update the localist settings to the new localist settings.
+ */
+function ys_localist_update_10001() {
+  $config = \Drupal::configFactory()->get('ys_localist.settings');
+
+  if ($config) {
+    $localist_config = \Drupal::configFactory()->getEditable('localist_drupal.settings');
+
+    // Set commonly named settings.
+    $config_names = ['localist_endpoint', 'localist_group', 'enable_localist_sync'];
+
+    foreach ($config_names as $config_name) {
+      \Drupal::logger('ys_localist')->notice('Setting @name to @value', [
+        '@name' => $config_name,
+        '@value' => $config->get($config_name),
+      ]);
+      $localist_config->set($config_name, $config->get($config_name));
+    }
+
+    // Set new settings to our defaults.
+    $dependency_migrations = [
+      "localist_audience",
+      "localist_event_types",
+      "localist_experiences",
+      "localist_places",
+      "localist_status",
+      "localist_topics",
+    ];
+
+    $localist_config->set('localist_dependency_migrations', $dependency_migrations);
+    $localist_config->set('localist_group_migration', 'localist_groups');
+    $localist_config->set('localist_event_migration', 'ys_localist_events');
+
+    $localist_config->save();
+  }
+}
