@@ -6,6 +6,7 @@ dependencies:
     - field.field.node.post.field_author
     - field.field.node.post.field_category
     - field.field.node.post.field_external_source
+    - field.field.node.post.field_external_source_label
     - field.field.node.post.field_login_required
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
@@ -26,6 +27,7 @@ dependencies:
     - metatag
     - path
     - text
+    - workflow_buttons
 third_party_settings:
   field_group:
     group_teaser:
@@ -36,7 +38,7 @@ third_party_settings:
       label: Teaser
       region: content
       parent_name: ''
-      weight: 6
+      weight: 7
       format_type: fieldset
       format_settings:
         classes: ''
@@ -51,7 +53,7 @@ third_party_settings:
       label: 'Publishing Settings'
       region: content
       parent_name: ''
-      weight: 10
+      weight: 11
       format_type: details_sidebar
       format_settings:
         classes: ''
@@ -64,10 +66,11 @@ third_party_settings:
     group_external_link:
       children:
         - field_external_source
+        - field_external_source_label
       label: 'External Link'
       region: content
       parent_name: ''
-      weight: 12
+      weight: 13
       format_type: details_sidebar
       format_settings:
         classes: ''
@@ -104,6 +107,12 @@ content:
       placeholder_url: ''
       placeholder_title: ''
     third_party_settings: {  }
+  field_external_source_label:
+    type: chosen_select
+    weight: 6
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_login_required:
     type: boolean_checkbox
     weight: 12
@@ -113,7 +122,7 @@ content:
     third_party_settings: {  }
   field_metatags:
     type: metatag_firehose
-    weight: 9
+    weight: 10
     region: content
     settings:
       sidebar: true
@@ -127,7 +136,7 @@ content:
     third_party_settings: {  }
   field_tags:
     type: chosen_select
-    weight: 4
+    weight: 5
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -161,20 +170,27 @@ content:
       size: 60
       placeholder: ''
     third_party_settings: {  }
+  moderation_state:
+    type: workflow_buttons
+    weight: 6
+    region: content
+    settings:
+      show_current_state: false
+    third_party_settings: {  }
   path:
     type: path
-    weight: 7
+    weight: 8
     region: content
     settings: {  }
     third_party_settings: {  }
   simple_sitemap:
-    weight: 13
+    weight: 14
     region: content
     settings: {  }
     third_party_settings: {  }
   status:
     type: boolean_checkbox
-    weight: 11
+    weight: 12
     region: content
     settings:
       display_label: true
@@ -195,7 +211,7 @@ content:
       placeholder: ''
     third_party_settings: {  }
   url_redirects:
-    weight: 8
+    weight: 9
     region: content
     settings: {  }
     third_party_settings: {  }
