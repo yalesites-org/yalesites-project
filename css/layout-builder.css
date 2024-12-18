@@ -342,3 +342,9 @@ th.field-label {
 }
 
 
+/* Adjust bottom-margin if an element with [data-spotlights-position="first-and-last"] is the last element on the page */
+/* Or if it is the last element in the main-content area */
+.main-content [data-spotlights-position="first-and-last"]:last-child,
+.main-content [data-spotlights-position="last"]:last-child {
+  margin-bottom: 0;
+}
