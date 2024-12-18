@@ -15,7 +15,7 @@
     'layout--onecol',
   ]
 %}
-{% if content %}
+{% if content.page_meta %}
   <div{{ attributes.addClass(classes) }}>
     <div {{ region_attributes.content.addClass('layout__region', 'layout__region--content') }}>
       {{ drupal_entity('block', 'yalesitesbreadcrumbs', check_access=false) }}
