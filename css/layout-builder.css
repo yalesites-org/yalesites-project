@@ -343,8 +343,15 @@ th.field-label {
 
 
 /* Adjust bottom-margin if an element with [data-spotlights-position="first-and-last"] is the last element on the page */
-/* Or if it is the last element in the main-content area */
+/* Or if [data-spotlights-position="last"] is the last element in main content */
 .main-content [data-spotlights-position="first-and-last"]:last-child,
 .main-content [data-spotlights-position="last"]:last-child {
   margin-bottom: 0;
 }
+
+/* Adjust top-margin if an element with an [data-spotlights-position="first" or data-spotlights-position="first-and-last" 
+// is the first element in main content */
+.main-content [data-spotlights-position="first"]:first-child,
+.main-content [data-spotlights-position="first-and-last"]:first-child {
+  margin-top: 0;
+} 
