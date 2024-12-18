@@ -38,7 +38,7 @@ class YSLayoutOptions extends LayoutDefault {
       '#title' => $this->t('Component theme'),
       '#default_value' => $this->configuration['theme'],
       '#options' => [
-        'default' => $this->t('Default'),
+        'default' => $this->t('Default - no color'),
         'one' => $this->t('One'),
         'two' => $this->t('Two'),
         'three' => $this->t('Three'),
