@@ -5,6 +5,10 @@
  * Contains ys_layouts.module functions.
  */
 
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Plugin\Context\Context;
+use Drupal\Core\Plugin\Context\EntityContextDefinition;
+
 /**
  * Add template files.
  *
@@ -97,6 +101,11 @@ function ys_layouts_preprocess_block(&$variables) {
       $variables['is_reusable'] = TRUE;
     }
   }
+
+  // Add layout_section variable for styling.
+  if (!empty($variables['elements']['#configuration']['provider']) && $variables['elements']['#configuration']['provider'] === 'layout_builder') {
+    _ys_layouts_add_layout_section($variables);
+  }
 }
 
 /**
@@ -114,5 +123,56 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
       $form['info']['#description'] = t('Add a short, descriptive title to easily find and reuse the Reusable Block. Defaults to Administrative label if no title is provided.');
     }
   }
+}
 
+/**
+ * To aids in styling per section, set layout_section if using layout builder.
+ *
+ * For now this is only used with the link grid component:
+ * atomic/templates/block/layout-builder/block--inline-block--link-grid.html.twig.
+ */
+function _ys_layouts_add_layout_section(&$variables) {
+  $variables['layout_section'] = NULL;
+  $block_id = NULL;
+
+  // Different methods for in layout builder vs not.
+  if ($variables['in_preview']) {
+    if (isset($variables['elements']['#contextual_links'])) {
+      $delta = $variables['elements']['#contextual_links']['layout_builder_block']['route_parameters']['delta'];
+      $route_match = \Drupal::routeMatch();
+      $section_storage = $route_match->getParameter('section_storage');
+      $section = $section_storage->getSection($delta);
+      $variables['layout_section'] = $section->getLayoutId();
+      return;
+    }
+  }
+  else {
+    if (isset($variables['elements']['content']['#block_content'])) {
+      $block_id = $variables['configuration']['block_id'];
+    }
+    // Because we can't seem to get layout builder section info via the block.
+    $route_match = \Drupal::routeMatch();
+    $entity = $route_match->getParameter('node') ?? $route_match->getParameter('entity');
+
+    // Prevents errors during build.
+    if (!$entity || !$entity instanceof EntityInterface) {
+      return;
+    }
+
+    $context = new Context(new EntityContextDefinition($entity->getEntityTypeId()), $entity);
+    $section_storage_manager = \Drupal::service('plugin.manager.layout_builder.section_storage');
+    $section_storage = $section_storage_manager->createInstance('overrides');
+    $section_storage->setContext('entity', $context);
+
+    if ($section_storage && $block_id) {
+      foreach ($section_storage->getSections() as $delta => $section) {
+        foreach ($section->getComponents() as $component) {
+          if (isset($component->get('configuration')['block_id']) && $component->get('configuration')['block_id'] === $block_id) {
+            $variables['layout_section'] = $section->getLayoutId();
+            break 2;
+          }
+        }
+      }
+    }
+  }
 }
