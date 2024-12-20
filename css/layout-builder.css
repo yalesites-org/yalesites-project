@@ -352,6 +352,9 @@ th.field-label {
 /* Adjust top-margin if an element with an [data-spotlights-position="first" or data-spotlights-position="first-and-last" 
 // is the first element in main content */
 .main-content [data-spotlights-position="first"]:first-child,
-.main-content [data-spotlights-position="first-and-last"]:first-child {
+.main-content [data-spotlights-position="first-and-last"]:first-child,
+/* page-meta will almost always be the first element in main content, so we need a condition for it */
+.main-content > .page-meta + [data-spotlights-position="first-and-last"],
+.main-content > .page-meta + [data-spotlights-position="first"] {
   margin-top: 0;
 } 
