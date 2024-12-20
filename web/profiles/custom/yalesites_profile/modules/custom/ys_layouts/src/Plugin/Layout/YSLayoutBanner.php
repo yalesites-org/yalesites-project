@@ -13,7 +13,7 @@ class YSLayoutBanner extends LayoutDefault {
    * {@inheritdoc}
    */
   public function build(array $regions) {
-    /**
+    /*
      * Removes empty div from the banner section based on moderation control.
      * @see ys_layouts/layouts/banner/layout--banner.html.twig
      * */
@@ -37,7 +37,7 @@ class YSLayoutBanner extends LayoutDefault {
           $entity->get('moderation_state')->value == 'published' &&
           $block['#in_preview'] != TRUE
           ) {
-            $build['#show_region_content'] = FALSE;
+          $build['#show_region_content'] = FALSE;
         }
       }
     }
