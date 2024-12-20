@@ -3,6 +3,7 @@ ys_layout_banner:
   path: layouts/banner
   template: layout--banner
   library: ys_layouts/ys_layout_banner
+  class: '\Drupal\ys_layouts\Plugin\Layout\YSLayoutBanner'
   category: 'Columns: 1'
   default_region: content
   icon_map:
