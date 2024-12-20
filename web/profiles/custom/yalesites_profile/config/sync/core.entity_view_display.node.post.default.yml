@@ -104,6 +104,11 @@ third_party_settings:
       allowlisted_blocks:
         ys_layout_two_column_50_50:
           all_regions:
+            'Custom block types':
+              - accordion
+              - image
+              - link_grid
+              - text
             'Inline blocks':
               - 'inline_block:accordion'
               - 'inline_block:image'
@@ -114,7 +119,6 @@ third_party_settings:
           all_regions:
             - 'Chaos Tools'
             - 'Content fields'
-            - 'Custom block types'
             - Devel
             - Editoria11y
             - Forms

@@ -144,11 +144,19 @@ third_party_settings:
               - 'inline_block:text'
         ys_layout_two_column_33_33_33:
           all_regions:
+            'Custom block types':
+              - image
+              - text
             'Inline blocks':
               - 'inline_block:image'
               - 'inline_block:text'
         ys_layout_two_column_50_50:
           all_regions:
+            'Custom block types':
+              - accordion
+              - image
+              - link_grid
+              - text
             'Inline blocks':
               - 'inline_block:accordion'
               - 'inline_block:image'
@@ -235,7 +243,6 @@ third_party_settings:
           all_regions:
             - 'Chaos Tools'
             - 'Content fields'
-            - 'Custom block types'
             - Devel
             - Editoria11y
             - Forms
@@ -252,7 +259,6 @@ third_party_settings:
           all_regions:
             - 'Chaos Tools'
             - 'Content fields'
-            - 'Custom block types'
             - Devel
             - Editoria11y
             - Forms
