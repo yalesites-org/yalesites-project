@@ -59,6 +59,12 @@ content_spotlight:
       four: 'Four'
       five: 'Five'
     default: default
+  field_style_alignment:
+    values:
+      top: 'Top'
+      middle: 'Middle'
+      bottom: 'Bottom'
+    default: top
 quick_links:
   field_style_variation:
     values:
@@ -152,6 +158,12 @@ content_spotlight_portrait:
       four: 'Four'
       five: 'Five'
     default: default
+  field_style_alignment:
+    values:
+      top: 'Top'
+      middle: 'Middle'
+      bottom: 'Bottom'
+    default: middle
 text:
   field_style_variation:
     values:
