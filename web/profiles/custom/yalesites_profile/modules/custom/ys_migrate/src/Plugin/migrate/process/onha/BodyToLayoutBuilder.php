@@ -69,7 +69,7 @@ class BodyToLayoutBuilder extends ProcessPluginBase implements ContainerFactoryP
     $plugin_definition,
     UuidInterface $uuid,
     LoggerChannelFactoryInterface $logger_factory,
-    Connection $database
+    Connection $database,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->uuid = $uuid;
@@ -84,7 +84,7 @@ class BodyToLayoutBuilder extends ProcessPluginBase implements ContainerFactoryP
     ContainerInterface $container,
     array $configuration,
     $plugin_id,
-    $plugin_definition
+    $plugin_definition,
   ) {
     return new static(
       $configuration,
@@ -119,7 +119,7 @@ class BodyToLayoutBuilder extends ProcessPluginBase implements ContainerFactoryP
     $value,
     MigrateExecutableInterface $migrate_executable,
     Row $row,
-    $destination_property
+    $destination_property,
   ) {
     $components = [];
 
@@ -171,7 +171,7 @@ class BodyToLayoutBuilder extends ProcessPluginBase implements ContainerFactoryP
       ->condition('sourceid1', $nid)
       ->range(0, 1);
     $result = $query->execute()->fetchField();
-    return $result ?? null;
+    return $result ?? NULL;
   }
 
 }
