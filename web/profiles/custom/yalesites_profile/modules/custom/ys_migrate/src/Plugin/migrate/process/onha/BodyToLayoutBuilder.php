@@ -28,21 +28,29 @@ class BodyToLayoutBuilder extends ProcessPluginBase implements ContainerFactoryP
 
   /**
    * The UUID service.
+   *
+   * @var \Drupal\Component\Uuid\UuidInterface
    */
   protected $uuid;
 
   /**
    * The logger service.
+   *
+   * @var \Drupal\Core\Logger\LoggerChannelInterface
    */
   protected $logger;
 
   /**
    * The database connection.
+   *
+   * @var \Drupal\Core\Database\Connection
    */
   protected $database;
 
   /**
    * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
 
@@ -56,7 +64,7 @@ class BodyToLayoutBuilder extends ProcessPluginBase implements ContainerFactoryP
     UuidInterface $uuid,
     LoggerChannelFactoryInterface $logger_factory,
     Connection $database,
-    EntityTypeManagerInterface $entityTypeManager
+    EntityTypeManagerInterface $entityTypeManager,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->uuid = $uuid;
