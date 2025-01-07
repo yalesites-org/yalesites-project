@@ -14,7 +14,7 @@ entity_type: block_content
 bundle: image_banner
 label: 'Image Caption'
 description: ''
-required: true
+required: false
 translatable: false
 default_value: {  }
 default_value_callback: ''
