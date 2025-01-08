@@ -78,4 +78,4 @@ calendar:
     - core/drupal.ajax
 utility-nav-dropdown-menu:
   js:
-    node_modules/@yalesites-org/component-library-twig/components/03-organisms/menu/utility-nav/utility-nav-dropdown-menu.js: {}
+    node_modules/@yalesites-org/component-library-twig/dist/js/03-organisms/menu/utility-nav/utility-nav-dropdown-menu.js: {}
