@@ -5,6 +5,11 @@
   {% set site_header__site_name_is_image = getHeaderSetting('site_name_image') %}
 {% endif %}
 
+{{ attach_library('atomic/utility-nav-dropdown-menu') }}
+{% set utility_nav__dropdown_link__content = 'Atrus Menu Top' %}
+{% set utility_nav__dropdown_link__url = '#' %}
+{% set utility_nav__dropdown__items = [{'title': 'My First Title', 'url': '/about'}, {'title': 'My Second Title', 'url': '/about'}] %}
+
 {% embed "@organisms/site-header/yds-site-header.twig" with {
   site_name: site_name,
   site_header__border_thickness: '8',
