@@ -7,6 +7,8 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountProxy;
+use Drupal\multivalue_form_element\Element\MultiValue;
+use Drupal\path_alias\AliasManager;
 use Drupal\ys_core\YaleSitesMediaManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -16,6 +18,15 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @package Drupal\ys_core\Form
  */
 class HeaderSettingsForm extends ConfigFormBase {
+
+  use SettingsFormTrait;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getPathAliasManager(): AliasManager {
+    return $this->pathAliasManager;
+  }
 
   /**
    * {@inheritdoc}
@@ -46,6 +57,13 @@ class HeaderSettingsForm extends ConfigFormBase {
   protected $ysMediaManager;
 
   /**
+   * The path alias manager.
+   *
+   * @var \Drupal\path_alias\AliasManager
+   */
+  protected $pathAliasManager;
+
+  /**
    * Constructs the object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -56,17 +74,21 @@ class HeaderSettingsForm extends ConfigFormBase {
    *   The current user session.
    * @param \Drupal\ys_core\YaleSitesMediaManager $ys_media_manager
    *   The media manager.
+   * @param \Drupal\path_alias\AliasManager $path_alias_manager
+   *   The Path Alias Manager.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
     CacheBackendInterface $cache_render,
     AccountProxy $current_user_session,
     YaleSitesMediaManager $ys_media_manager,
+    AliasManager $path_alias_manager,
   ) {
     parent::__construct($config_factory);
     $this->cacheRender = $cache_render;
     $this->currentUserSession = $current_user_session;
     $this->ysMediaManager = $ys_media_manager;
+    $this->pathAliasManager = $path_alias_manager;
   }
 
   /**
@@ -78,6 +100,7 @@ class HeaderSettingsForm extends ConfigFormBase {
       $container->get('cache.render'),
       $container->get('current_user'),
       $container->get('ys_core.media_manager'),
+      $container->get('path_alias.manager'),
     );
   }
 
@@ -161,6 +184,18 @@ class HeaderSettingsForm extends ConfigFormBase {
     $form['nav_position_container'] = [
       '#type' => 'details',
       '#title' => $this->t('Navigation Position'),
+      '#states' => [
+        'disabled' => [
+          ':input[name="header_variation"]' => [
+            'value' => 'focus',
+          ],
+        ],
+      ],
+    ];
+
+    $form['utility_nav_dropdown_button'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Utility Navigation Dropdown'),
       '#states' => [
         'disabled' => [
           ':input[name="header_variation"]' => [
@@ -280,6 +315,34 @@ class HeaderSettingsForm extends ConfigFormBase {
       ],
     ];
 
+    $form['utility_nav_dropdown_button']['dropdown_button_title'] = [
+      '#title' => $this->t('Dropdown button title'),
+      '#type' => 'textfield',
+      '#default_value' => $headerConfig->get('dropdown_button_title') ?? NULL,
+    ];
+
+    $form['utility_nav_dropdown_button']['dropdown_button_links'] = [
+      '#type' => 'multivalue',
+      '#title' => $this->t('Dropdown button links'),
+      // This helps the UI look better by adding an "Add another item".
+      '#cardinality' => MultiValue::CARDINALITY_UNLIMITED,
+      '#default_value' => ($headerConfig->get('dropdown_button_links')) ?? [],
+
+      'link_url' => [
+        '#type' => 'linkit',
+        '#title' => $this->t('URL'),
+        '#description' => $this->t('Type the URL or autocomplete for internal paths.'),
+        '#autocomplete_route_name' => 'linkit.autocomplete',
+        '#autocomplete_route_parameters' => [
+          'linkit_profile_id' => 'default',
+        ],
+      ],
+      'link_title' => [
+        '#type' => 'textfield',
+        '#title' => $this->t('Link Title'),
+      ],
+    ];
+
     $form['call_to_action_container']['cta_content'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Link text'),
@@ -348,6 +411,19 @@ class HeaderSettingsForm extends ConfigFormBase {
         $this->t("The homepage header image is required when Focus nav is selected")
       );
     }
+
+    // Validate we only support 10 links maximum for the dropdown button.
+    $dropdownLinks = $form_state->getValue('dropdown_button_links');
+
+    if (count($dropdownLinks) > 10) {
+      $form_state->setErrorByName(
+        'dropdown_button_links',
+        $this->t("The dropdown links can only support 10 links maximum."),
+      );
+    }
+
+    // Validate links have both a link and title.
+    $this->validateLinks($form_state, 'dropdown_button_links');
   }
 
   /**
@@ -369,11 +445,23 @@ class HeaderSettingsForm extends ConfigFormBase {
       $headerConfig->get('site_name_image')
     );
 
+    // Translate node links.
+    $dropdownLinks = [];
+
+    foreach ($form_state->getValue('dropdown_button_links') as $key => $link) {
+      if ($link['link_url']) {
+        $dropdownLinks[$key]['link_url'] = $this->translateNodeLinks($link['link_url']);
+        $dropdownLinks[$key]['link_title'] = $link['link_title'];
+      }
+    }
+
     $headerConfig->set('header_variation', $form_state->getValue('header_variation'));
     $headerConfig->set('site_name_image', $form_state->getValue('site_name_image'));
     $headerConfig->set('site_wide_branding_name', $form_state->getValue('site_wide_branding_name'));
     $headerConfig->set('site_wide_branding_link', $form_state->getValue('site_wide_branding_link'));
     $headerConfig->set('nav_position', $form_state->getValue('nav_position'));
+    $headerConfig->set('dropdown_button_title', $form_state->getValue('dropdown_button_title'));
+    $headerConfig->set('dropdown_button_links', $dropdownLinks);
     $headerConfig->set('cta_content', $form_state->getValue('cta_content'));
     $headerConfig->set('cta_url', $form_state->getValue('cta_url'));
     $headerConfig->set('search.enable_search_form', $form_state->getValue('enable_search_form'));
