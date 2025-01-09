@@ -58,32 +58,6 @@ class CampusGroupsSettings extends ConfigFormBase {
       '#default_value' => $config->get('campus_group_groupids'),
       '#description' => $this->t('Enter the group ids comman seperated'),
     ];
-    $form['campus_group_header'] = [
-      '#type' => 'details',
-      '#title' => $this->t('API Header Info'),
-      '#open' => TRUE,
-    ];
-    $form['campus_group_header']['campus_group_api_useragent'] = [
-      '#type' => 'textfield',
-      '#required' => TRUE,
-      '#title' => $this->t('API User Agent'),
-      '#default_value' => $config->get('campus_group_api_useragent'),
-      '#description' => $this->t('Enter the user agent used in api.'),
-    ];
-    $form['campus_group_header']['campus_group_api_secret'] = [
-      '#type' => 'textarea',
-      '#required' => TRUE,
-      '#title' => $this->t('API Secret'),
-      '#default_value' => $config->get('campus_group_api_secret'),
-      '#description' => $this->t('Enter the API Secret'),
-    ];
-    $form['campus_group_header']['campus_group_api_cookie'] = [
-      '#type' => 'textarea',
-      '#required' => TRUE,
-      '#title' => $this->t('API Cookie'),
-      '#default_value' => $config->get('campus_group_api_cookie'),
-      '#description' => $this->t('Enter the API cookie'),
-    ];
     $form['enable_campus_group_redirect'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Automatically redirect users to Campus Groups when they click an event card'),
@@ -103,9 +77,6 @@ class CampusGroupsSettings extends ConfigFormBase {
       ->set('campus_group_endpoint', rtrim($form_state->getValue('campus_group_endpoint'), "/"))
       ->set('campus_group_future_days', $form_state->getValue('campus_group_future_days'))
       ->set('campus_group_groupids', $form_state->getValue('campus_group_groupids'))
-      ->set('campus_group_api_useragent', $form_state->getValue('campus_group_api_useragent'))
-      ->set('campus_group_api_secret', $form_state->getValue('campus_group_api_secret'))
-      ->set('campus_group_api_cookie', $form_state->getValue('campus_group_api_cookie'))
       ->set('enable_campus_group_redirect', $form_state->getValue('enable_campus_group_redirect'))
       ->save();
 
