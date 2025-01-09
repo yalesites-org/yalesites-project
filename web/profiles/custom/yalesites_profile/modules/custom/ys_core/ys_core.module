@@ -212,6 +212,24 @@ function ys_core_preprocess_region(&$variables) {
         _ys_core_clear_focus_header_image_config('ys_core.header_settings');
       }
     }
+
+    /*
+     * The component used for the dropdown button links is the same as what is
+     * used for the menu. These links are not a menu but instead stored in the
+     * header config. Therefore, we need to make dropdown links into a URL
+     * object to match what the menu system does and also change the keys that
+     * are needed.
+     * @see atomic/templates/layout/region--header.html.twig
+     */
+    if ($dropdownButtonLinks = $config->get('dropdown_button_links')) {
+      foreach ($dropdownButtonLinks as $key => $link) {
+        $dropdownButtonLinks[$key]['url'] = Url::fromUserInput($link['link_url']);
+        $dropdownButtonLinks[$key]['title'] = $link['link_title'];
+      }
+
+      $variables['dropdown_button_links'] = $dropdownButtonLinks;
+    }
+
   }
 }
 

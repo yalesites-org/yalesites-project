@@ -48,8 +48,8 @@ trait SettingsFormTrait {
   /**
    * Makes sure we are providing a pathAliasManager.
    *
-   * @return \Drupal\Core\Path\AliasManagerInterface
-   *   The AliasManagerInterface.
+   * @return \Drupal\path_alias\AliasManager
+   *   The AliasManager.
    */
   abstract protected function getPathAliasManager(): AliasManager;
 

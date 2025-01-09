@@ -315,10 +315,21 @@ class HeaderSettingsForm extends ConfigFormBase {
       ],
     ];
 
+    $form['utility_nav_dropdown_button']['dropdown_button_help'] = [
+      '#type' => 'markup',
+      '#markup' => '<p>' . $this->t('The utility navigation dropdown button allows for up to 10 links to be displayed after clicking on the button. To enable the menu, enter a title and add some links below.') . '</p>',
+    ];
+
+    $form['utility_nav_dropdown_button']['dropdown_button_example'] = [
+      '#type' => 'markup',
+      '#markup' => '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/util-nav-dropdown.svg" class="preview-icon" alt="Example of a dropdown list of links activated by a button in the utility navigation area.">',
+    ];
+
     $form['utility_nav_dropdown_button']['dropdown_button_title'] = [
       '#title' => $this->t('Dropdown button title'),
       '#type' => 'textfield',
       '#default_value' => $headerConfig->get('dropdown_button_title') ?? NULL,
+      '#description' => $this->t('Enter a title to enable menu. Remove the title to disable.'),
     ];
 
     $form['utility_nav_dropdown_button']['dropdown_button_links'] = [
