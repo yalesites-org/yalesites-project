@@ -297,7 +297,7 @@ class HeaderSettingsForm extends ConfigFormBase {
 
     $form['utility_nav_dropdown_button']['dropdown_button_help'] = [
       '#type' => 'markup',
-      '#markup' => $this->t('<p>The utility navigation dropdown button allows for up to 10 links to be displayed after clicking on the button. The button will be located after the regular utility navigation.</p></p>To enable the dropdown button, enter a title. <a href=":manage" target="_blank">Add links in the menu form</a>.</p>',
+      '#markup' => $this->t('<p>The utility navigation dropdown button allows for up to 10 links to be displayed after clicking on the button. The button will be located after the regular utility navigation.</p></p>To enable the dropdown button, enter a title and <a href=":manage" target="_blank">add links in the menu form</a>.</p>',
         [':manage' => $dropdownMenuManage]
       ),
     ];
