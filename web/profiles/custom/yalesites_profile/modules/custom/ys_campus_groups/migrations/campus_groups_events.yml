@@ -94,6 +94,7 @@ source:
 
 process:
   title: event_title
+  field_event_id: event_id
   field_event_description/value: event_description
   field_event_description/format:
     plugin: default_value
@@ -170,6 +171,9 @@ process:
       value_key: name
       ignore_case: true
   field_ticket_cost: ticket_cost
+  field_event_source:
+    plugin: default_value
+    default_value: 34
   uid:
     plugin: entity_generate
     source: constants/migration_user_name
@@ -182,11 +186,12 @@ destination:
   default_bundle: event
   overwrite_properties:
     - title
-    - field_localist_id
+    - field_event_id
     - field_event_description
     - field_event_room
     - field_localist_event_url
     - field_localist_event_image_url
     - field_localist_event_image_alt
     - field_localist_ics_url
+    - field_event_source
 migration_dependencies: {  }
