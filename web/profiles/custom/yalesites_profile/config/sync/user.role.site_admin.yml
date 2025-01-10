@@ -95,6 +95,7 @@ permissions:
   - 'administer main menu items'
   - 'administer redirects'
   - 'administer users'
+  - 'administer utility-drop-button-navigation menu items'
   - 'administer utility-navigation menu items'
   - 'assign contributor role'
   - 'assign editor role'

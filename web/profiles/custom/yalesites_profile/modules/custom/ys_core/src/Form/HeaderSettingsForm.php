@@ -7,7 +7,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountProxy;
-use Drupal\multivalue_form_element\Element\MultiValue;
+use Drupal\Core\Url;
 use Drupal\path_alias\AliasManager;
 use Drupal\ys_core\YaleSitesMediaManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -315,9 +315,13 @@ class HeaderSettingsForm extends ConfigFormBase {
       ],
     ];
 
+    $dropdownMenuManage = Url::fromRoute('entity.menu.edit_form', ['menu' => 'utility-drop-button-navigation'])->toString();
+
     $form['utility_nav_dropdown_button']['dropdown_button_help'] = [
       '#type' => 'markup',
-      '#markup' => '<p>' . $this->t('The utility navigation dropdown button allows for up to 10 links to be displayed after clicking on the button. To enable the menu, enter a title and add some links below.') . '</p>',
+      '#markup' => $this->t('<p>The utility navigation dropdown button allows for up to 10 links to be displayed after clicking on the button. The button will be located after the regular utility navigation.</p></p>To enable the dropdown button, enter a title. <a href=":manage" target="_blank">Add links in the menu form</a>.</p>',
+        [':manage' => $dropdownMenuManage]
+      ),
     ];
 
     $form['utility_nav_dropdown_button']['dropdown_button_example'] = [
@@ -330,28 +334,6 @@ class HeaderSettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#default_value' => $headerConfig->get('dropdown_button_title') ?? NULL,
       '#description' => $this->t('Enter a title to enable menu. Remove the title to disable.'),
-    ];
-
-    $form['utility_nav_dropdown_button']['dropdown_button_links'] = [
-      '#type' => 'multivalue',
-      '#title' => $this->t('Dropdown button links'),
-      // This helps the UI look better by adding an "Add another item".
-      '#cardinality' => MultiValue::CARDINALITY_UNLIMITED,
-      '#default_value' => ($headerConfig->get('dropdown_button_links')) ?? [],
-
-      'link_url' => [
-        '#type' => 'linkit',
-        '#title' => $this->t('URL'),
-        '#description' => $this->t('Type the URL or autocomplete for internal paths.'),
-        '#autocomplete_route_name' => 'linkit.autocomplete',
-        '#autocomplete_route_parameters' => [
-          'linkit_profile_id' => 'default',
-        ],
-      ],
-      'link_title' => [
-        '#type' => 'textfield',
-        '#title' => $this->t('Link Title'),
-      ],
     ];
 
     $form['call_to_action_container']['cta_content'] = [
@@ -422,19 +404,6 @@ class HeaderSettingsForm extends ConfigFormBase {
         $this->t("The homepage header image is required when Focus nav is selected")
       );
     }
-
-    // Validate we only support 10 links maximum for the dropdown button.
-    $dropdownLinks = $form_state->getValue('dropdown_button_links');
-
-    if (count($dropdownLinks) > 10) {
-      $form_state->setErrorByName(
-        'dropdown_button_links',
-        $this->t("The dropdown links can only support 10 links maximum."),
-      );
-    }
-
-    // Validate links have both a link and title.
-    $this->validateLinks($form_state, 'dropdown_button_links');
   }
 
   /**
@@ -456,23 +425,12 @@ class HeaderSettingsForm extends ConfigFormBase {
       $headerConfig->get('site_name_image')
     );
 
-    // Translate node links.
-    $dropdownLinks = [];
-
-    foreach ($form_state->getValue('dropdown_button_links') as $key => $link) {
-      if ($link['link_url']) {
-        $dropdownLinks[$key]['link_url'] = $this->translateNodeLinks($link['link_url']);
-        $dropdownLinks[$key]['link_title'] = $link['link_title'];
-      }
-    }
-
     $headerConfig->set('header_variation', $form_state->getValue('header_variation'));
     $headerConfig->set('site_name_image', $form_state->getValue('site_name_image'));
     $headerConfig->set('site_wide_branding_name', $form_state->getValue('site_wide_branding_name'));
     $headerConfig->set('site_wide_branding_link', $form_state->getValue('site_wide_branding_link'));
     $headerConfig->set('nav_position', $form_state->getValue('nav_position'));
     $headerConfig->set('dropdown_button_title', $form_state->getValue('dropdown_button_title'));
-    $headerConfig->set('dropdown_button_links', $dropdownLinks);
     $headerConfig->set('cta_content', $form_state->getValue('cta_content'));
     $headerConfig->set('cta_url', $form_state->getValue('cta_url'));
     $headerConfig->set('search.enable_search_form', $form_state->getValue('enable_search_form'));
