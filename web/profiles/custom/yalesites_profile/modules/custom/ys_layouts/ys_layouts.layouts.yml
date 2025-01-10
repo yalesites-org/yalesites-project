@@ -40,7 +40,7 @@ ys_layout_two_column_50_50:
       label: Content primary
     content_secondary:
       label: Content secondary
-ys_layout_two_column_33_33_33:
+ys_layout_three_column_33_33_33:
   label: 'Three column (33/33/33)'
   path: layouts/three_column_33_33_33
   template: layout--three-column--33-33-33
