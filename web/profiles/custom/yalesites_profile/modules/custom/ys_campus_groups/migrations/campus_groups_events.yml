@@ -6,7 +6,7 @@ id: campus_groups_events
 migration_group: campus_groups
 label: 'Campus Group Events'
 source:
-  plugin: campus_group_url
+  plugin: campus_groups_url
   data_fetcher_plugin: http
   data_parser_plugin: simple_xml
   track_changes: true

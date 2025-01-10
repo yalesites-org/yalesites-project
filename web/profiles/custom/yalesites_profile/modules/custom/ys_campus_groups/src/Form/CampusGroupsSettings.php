@@ -51,13 +51,6 @@ class CampusGroupsSettings extends ConfigFormBase {
       '#description' => $this->t('Ex: https://yaleconnect.yale.edu/rss_events'),
       '#default_value' => $config->get('campus_groups_endpoint') ?: 'https://yaleconnect.yale.edu/rss_events',
     ];
-    $form['campus_groups_future_days'] = [
-      '#type' => 'textfield',
-      '#required' => TRUE,
-      '#title' => $this->t('Future number of days'),
-      '#default_value' => $config->get('campus_groups_future_days') ?: 120,
-      '#description' => $this->t('Enter the number of future days'),
-    ];
     $form['campus_groups_groupids'] = [
       '#type' => 'textfield',
       '#required' => TRUE,
@@ -77,7 +70,6 @@ class CampusGroupsSettings extends ConfigFormBase {
     $this->configFactory->getEditable('ys_campus_groups.settings')
       ->set('enable_campus_groups_sync', $form_state->getValue('enable_campus_groups_sync'))
       ->set('campus_groups_endpoint', rtrim($form_state->getValue('campus_groups_endpoint'), "/"))
-      ->set('campus_groups_future_days', $form_state->getValue('campus_groups_future_days'))
       ->set('campus_groups_groupids', $form_state->getValue('campus_groups_groupids'))
       ->save();
 
