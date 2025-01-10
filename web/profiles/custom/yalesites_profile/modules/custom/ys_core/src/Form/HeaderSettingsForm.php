@@ -8,7 +8,6 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Url;
-use Drupal\path_alias\AliasManager;
 use Drupal\ys_core\YaleSitesMediaManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -18,15 +17,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @package Drupal\ys_core\Form
  */
 class HeaderSettingsForm extends ConfigFormBase {
-
-  use SettingsFormTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getPathAliasManager(): AliasManager {
-    return $this->pathAliasManager;
-  }
 
   /**
    * {@inheritdoc}
@@ -57,13 +47,6 @@ class HeaderSettingsForm extends ConfigFormBase {
   protected $ysMediaManager;
 
   /**
-   * The path alias manager.
-   *
-   * @var \Drupal\path_alias\AliasManager
-   */
-  protected $pathAliasManager;
-
-  /**
    * Constructs the object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -74,21 +57,17 @@ class HeaderSettingsForm extends ConfigFormBase {
    *   The current user session.
    * @param \Drupal\ys_core\YaleSitesMediaManager $ys_media_manager
    *   The media manager.
-   * @param \Drupal\path_alias\AliasManager $path_alias_manager
-   *   The Path Alias Manager.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
     CacheBackendInterface $cache_render,
     AccountProxy $current_user_session,
     YaleSitesMediaManager $ys_media_manager,
-    AliasManager $path_alias_manager,
   ) {
     parent::__construct($config_factory);
     $this->cacheRender = $cache_render;
     $this->currentUserSession = $current_user_session;
     $this->ysMediaManager = $ys_media_manager;
-    $this->pathAliasManager = $path_alias_manager;
   }
 
   /**
@@ -100,7 +79,6 @@ class HeaderSettingsForm extends ConfigFormBase {
       $container->get('cache.render'),
       $container->get('current_user'),
       $container->get('ys_core.media_manager'),
-      $container->get('path_alias.manager'),
     );
   }
 
