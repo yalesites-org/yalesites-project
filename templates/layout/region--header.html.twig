@@ -10,7 +10,7 @@
   {{ attach_library('atomic/utility-nav-dropdown-menu') }}
   {% set utility_nav__dropdown_link__content = getHeaderSetting('dropdown_button_title') %}
   {% set utility_nav__dropdown_link__url = '#' %}
-  {% set utility_nav__dropdown__items = dropdown_button_links %}
+  {% set utility_nav__dropdown__items = drupal_menu('utility-drop-button-navigation')['#items'] %}
 {% endif %}
 
 {% embed "@organisms/site-header/yds-site-header.twig" with {
