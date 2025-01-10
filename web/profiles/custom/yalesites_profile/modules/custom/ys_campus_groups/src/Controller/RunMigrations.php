@@ -93,7 +93,6 @@ class RunMigrations extends ControllerBase implements ContainerInjectionInterfac
    */
   public function runAllMigrations() {
     $migration = self::MIGRATION_NAME;
-    $messageData = [];
 
     if ($this->campusGroupsConfig->get('enable_campus_groups_sync')) {
       $this->runMigration($migration);
