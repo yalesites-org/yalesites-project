@@ -172,8 +172,15 @@ process:
       ignore_case: true
   field_ticket_cost: ticket_cost
   field_event_source:
-    plugin: default_value
-    default_value: 34
+    -
+      plugin: default_value
+      default_value: 'Campus Groups'
+    -
+      plugin: entity_lookup
+      value_key: name
+      entity_type: taxonomy_term
+      bundle: event_sources
+      bundle_key: vid
   uid:
     plugin: entity_generate
     source: constants/migration_user_name
