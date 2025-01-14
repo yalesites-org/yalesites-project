@@ -262,3 +262,13 @@ inline_message:
       four: Four
       five: Five
     default: one
+accordion:
+  field_style_color:
+    values:
+      default: 'Default - No Color'
+      one: One
+      two: Two
+      three: Three
+      four: Four
+      five: Five
+    default: default
