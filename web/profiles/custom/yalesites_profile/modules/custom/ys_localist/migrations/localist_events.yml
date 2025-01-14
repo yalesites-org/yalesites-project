@@ -108,6 +108,17 @@ source:
 
 process:
   title: localist_title
+  field_event_id: event_id
+  field_event_source:
+    -
+      plugin: default_value
+      default_value: 'Localist'
+    -
+      plugin: entity_lookup
+      value_key: name
+      entity_type: taxonomy_term
+      bundle: event_sources
+      bundle_key: vid
   field_localist_id: event_id
   field_event_description/value: localist_description
   field_event_description/format:
@@ -192,6 +203,8 @@ destination:
   default_bundle: event
   overwrite_properties:
     - title
+    - field_event_source
+    - field_event_id
     - field_localist_id
     - field_event_description
     - field_event_room
