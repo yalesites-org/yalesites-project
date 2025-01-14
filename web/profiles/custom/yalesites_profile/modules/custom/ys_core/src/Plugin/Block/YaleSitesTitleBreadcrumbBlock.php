@@ -124,7 +124,7 @@ class YaleSitesTitleBreadcrumbBlock extends BlockBase implements ContainerFactor
         ];
       }
 
-    };
+    }
 
     return [
       '#theme' => 'ys_title_breadcrumb',
