@@ -331,6 +331,44 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       }
     }
 
+    // Custom vocab and audience filters.
+    $term_filters = [
+      'field_custom_vocab_target_id' => [
+        'show' => 'show_custom_vocab_filter',
+        'included_terms' => 'custom_vocab_included_terms',
+        'filter_label' => 'custom_vocab_filter_label',
+      ],
+      'field_audience_target_id' => [
+        'show' => 'show_audience_filter',
+        'included_terms' => 'audience_included_terms',
+        'filter_label' => 'audience_filter_label',
+      ],
+    ];
+
+    foreach ($term_filters as $filter_name => $filter_data) {
+
+      if (!empty($paramsDecoded['exposed_filter_options'][$filter_data['show']])) {
+        // Check if 'custom__included_terms' is provided for the current
+        // filter type.
+        if (!empty($paramsDecoded[$filter_data['included_terms']])) {
+
+          // Limit the filter to specific terms if provided.
+          $filters[$filter_name]['value'] = $this->getChildTermsByParentId($paramsDecoded[$filter_data['included_terms']], $filter_name);
+          $filters[$filter_name]['limit'] = TRUE;
+          $filters[$filter_name]['expose']['reduce'] = TRUE;
+        }
+
+        // Set a custom label for the filter if provided.
+        if (!empty($paramsDecoded[$filter_data['filter_label']])) {
+          $filters[$filter_name]['expose']['label'] = $paramsDecoded[$filter_data['filter_label']];
+        }
+      }
+      else {
+        // Remove filter if 'show filter' field is not set.
+        unset($filters[$filter_name]);
+      }
+    }
+
     if (!isset($paramsDecoded['exposed_filter_options']['show_search_filter'])) {
       // If the 'show_search_filter' option is not set,
       // remove the 'combine' filter.
@@ -817,7 +855,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'view_mode_input_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][view_mode]"]',
           'view_mode_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
           'category_included_terms_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
+          'custom_vocab_included_terms_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] : NULL,
           'show_category_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_category_filter]"]',
+          'show_custom_vocab_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_custom_vocab_filter]"]',
+          'show_audience_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_audience_filter]"]',
           'massage_terms_include_array' => [
             'block_form',
             'group_user_selection',
@@ -871,6 +912,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'view_mode_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
           'category_included_terms_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
           'show_category_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_category_filter]"]',
+          'custom_vocab_included_terms_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] : NULL,
+          'show_custom_vocab_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_custom_vocab_filter]"]',
+          'audience_included_terms_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['audience_included_terms'] : NULL,
+          'show_audience_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_audience_filter]"]',
           'massage_terms_include_array' => [
             'settings',
             'block_form',
@@ -937,6 +982,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'view_mode_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
         'category_included_terms_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
         'show_category_filter_selector' => ':input[name="show_category_filter"]',
+        'show_custom_vocab_filter_selector' => ':input[name="show_custom_vocab_filter"]',
+        'show_audience_filter_selector' => ':input[name="show_audience_filter"]',
         'massage_terms_include_array' => ['terms_include'],
         'massage_terms_exclude_array' => ['terms_exclude'],
         'sort_by_array' => ['sort_by'],

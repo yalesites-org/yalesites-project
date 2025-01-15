@@ -3,7 +3,9 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.node.event.field_audience
     - field.field.node.event.field_category
+    - field.field.node.event.field_custom_vocab
     - field.field.node.event.field_event_audience
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
@@ -155,6 +157,8 @@ third_party_settings:
         - field_localist_group
         - field_event_audience
         - field_event_topics
+        - field_audience
+        - field_custom_vocab
       label: Taxonomies
       region: content
       parent_name: group_event_tabs
@@ -243,9 +247,21 @@ targetEntityType: node
 bundle: event
 mode: default
 content:
+  field_audience:
+    type: chosen_select
+    weight: 28
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_category:
     type: chosen_select
     weight: 23
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_custom_vocab:
+    type: chosen_select
+    weight: 29
     region: content
     settings: {  }
     third_party_settings: {  }
