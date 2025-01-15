@@ -11,21 +11,28 @@
  * @ingroup themeable
  */
 #}
-{{ attach_library('atomic/spotlights') }}
-
-{% embed "@organisms/layout/layout/yds-layout.twig" with {
-  component__layout: 'fifty-fifty',
-  layout__divider: settings.divider ? 'true' : 'false',
-  component__theme: settings.theme|default('default'),
-} %}
-  {% block layout__primary %}
-    <div {{ region_attributes.content_primary }}>
-      {{ content.content_primary }}
+{% if content %}
+  {{ attach_library('atomic/spotlights') }}
+  {% if in_preview %}
+    <div {{ attributes}}>
+  {% endif %}
+  {% embed "@organisms/layout/layout/yds-layout.twig" with {
+    component__layout: 'fifty-fifty',
+    layout__divider: settings.divider ? 'true' : 'false',
+    component__theme: settings.theme|default('default'),
+  } %}
+    {% block layout__primary %}
+      <div {{ region_attributes.content_primary }}>
+        {{ content.content_primary }}
+      </div>
+    {% endblock %}
+    {% block layout__secondary %}
+      <div {{ region_attributes.content_secondary }}>
+        {{ content.content_secondary }}
+      </div>
+    {% endblock %}
+  {% endembed %}
+  {% if in_preview %}
     </div>
-  {% endblock %}
-  {% block layout__secondary %}
-    <div {{ region_attributes.content_secondary }}>
-      {{ content.content_secondary }}
-    </div>
-  {% endblock %}
-{% endembed %}
+  {% endif %}
+{% endif %}

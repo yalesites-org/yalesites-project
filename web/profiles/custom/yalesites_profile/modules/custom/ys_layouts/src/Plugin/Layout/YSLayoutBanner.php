@@ -19,7 +19,11 @@ class YSLayoutBanner extends LayoutDefault {
      * */
     $build = parent::build($regions);
     $build['#show_region_content'] = TRUE;
-    $content = $build['content'];
+    $content = $build['content'] ?? NULL;
+
+    if (!$content) {
+      return $build;
+    }
 
     // Always show banner if there is other content in there as well.
     if (count($content) != 1) {
