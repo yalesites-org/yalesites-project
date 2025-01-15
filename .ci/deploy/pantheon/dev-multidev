@@ -11,6 +11,13 @@ set -eo pipefail
 # Authenticate with Terminus
 terminus -n auth:login --machine-token="$TERMINUS_TOKEN"
 
+# Ensure secrets are set
+terminus -n secrets:set "$TERMINUS_SITE.$TERMINUS_ENV" token "${GH_TOKEN:-$GITHUB_TOKEN}" --file='.build-secrets/tokens.json' --clear --skip-if-empty
+
+# Delete old multidev environments associated
+# with a PR that has been merged or closed.
+terminus -n build:env:delete:pr "$TERMINUS_SITE" --yes
+
 if [[ "$CI_BRANCH" != "$DEFAULT_BRANCH" ]]
 then
   # Create a new multidev environment (or push to an existing one)
@@ -28,9 +35,3 @@ terminus -n drush "$TERMINUS_SITE.$TERMINUS_ENV" -- deploy -v -y
 
 # Clear the environment cache
 terminus -n env:clear-cache "$TERMINUS_SITE.$TERMINUS_ENV"
-
-# Ensure secrets are set
-terminus -n secrets:set "$TERMINUS_SITE.$TERMINUS_ENV" token "${GH_TOKEN:-$GITHUB_TOKEN}" --file='.build-secrets/tokens.json' --clear --skip-if-empty
-# Delete old multidev environments associated
-# with a PR that has been merged or closed.
-terminus -n build:env:delete:pr "$TERMINUS_SITE" --yes
