@@ -414,6 +414,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'show_thumbnail' => (int) $no_field_display_options_saved || !empty($paramsDecoded['field_options']['show_thumbnail']),
     ];
 
+    $event_field_display_options = [
+      'hide_add_to_calendar' => (int) !empty($paramsDecoded['event_field_options']['hide_add_to_calendar']),
+    ];
+
     $view->setArguments(
       [
         'type' => $filterType,
@@ -425,6 +429,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'event_time_period' => str_contains($filterType, 'event') ? $eventTimePeriod : NULL,
         'offset' => $paramsDecoded['offset'] ?? 0,
         'field_display_options' => json_encode($field_display_options),
+        'event_field_display_options' => json_encode($event_field_display_options),
       ]
     );
 
