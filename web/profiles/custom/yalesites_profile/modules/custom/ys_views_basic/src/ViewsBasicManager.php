@@ -456,6 +456,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
             $resultRow['#cache']['keys'][] = $field_display_options['show_categories'];
             $resultRow['#cache']['keys'][] = $field_display_options['show_tags'];
             $resultRow['#cache']['keys'][] = $field_display_options['show_thumbnail'];
+            $resultRow['#cache']['keys'][] = $event_field_display_options['hide_add_to_calendar'];
           }
         }
         break;
