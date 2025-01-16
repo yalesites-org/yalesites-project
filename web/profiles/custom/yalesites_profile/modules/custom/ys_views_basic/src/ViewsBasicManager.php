@@ -426,6 +426,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'show_thumbnail' => (int) $no_field_display_options_saved || !empty($paramsDecoded['field_options']['show_thumbnail']),
     ];
 
+    $event_field_display_options = [
+      'hide_add_to_calendar' => (int) !empty($paramsDecoded['event_field_options']['hide_add_to_calendar']),
+    ];
+
     $view->setArguments(
       [
         'type' => $filterType,
@@ -437,6 +441,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'event_time_period' => str_contains($filterType, 'event') ? $eventTimePeriod : NULL,
         'offset' => $paramsDecoded['offset'] ?? 0,
         'field_display_options' => json_encode($field_display_options),
+        'event_field_display_options' => json_encode($event_field_display_options),
       ]
     );
 
@@ -481,6 +486,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
             $resultRow['#cache']['keys'][] = $field_display_options['show_categories'];
             $resultRow['#cache']['keys'][] = $field_display_options['show_tags'];
             $resultRow['#cache']['keys'][] = $field_display_options['show_thumbnail'];
+            $resultRow['#cache']['keys'][] = $event_field_display_options['hide_add_to_calendar'];
           }
         }
         break;
@@ -630,6 +636,26 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
       case 'event_time_period':
         $defaultParam = (empty($paramsDecoded['filters']['event_time_period'])) ? 'future' : $paramsDecoded['filters']['event_time_period'];
+        break;
+
+      case 'field_options':
+        $defaultParam = (empty($paramsDecoded['field_options'])) ? ['show_thumbnail' => 'show_thumbnail'] : $paramsDecoded['field_options'];
+        break;
+
+      case 'event_field_options':
+        $defaultParam = (empty($paramsDecoded['event_field_options'])) ? [] : $paramsDecoded['event_field_options'];
+        break;
+
+      case 'exposed_filter_options':
+        $defaultParam = (empty($paramsDecoded['exposed_filter_options'])) ? [] : $paramsDecoded['exposed_filter_options'];
+        break;
+
+      case 'category_filter_label':
+        $defaultParam = (empty($paramsDecoded['category_filter_label'])) ? NULL : $paramsDecoded['category_filter_label'];
+        break;
+
+      case 'category_included_terms':
+        $defaultParam = (empty($paramsDecoded['category_included_terms'])) ? NULL : $paramsDecoded['category_included_terms'];
         break;
 
       default:
