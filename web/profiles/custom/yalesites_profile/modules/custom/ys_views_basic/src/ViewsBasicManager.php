@@ -658,6 +658,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         $defaultParam = (empty($paramsDecoded['category_included_terms'])) ? NULL : $paramsDecoded['category_included_terms'];
         break;
 
+      case 'exclude_current_entity':
+        $defaultParam = (empty($paramsDecoded['exclude_current_entity'])) ? NULL : $paramsDecoded['exclude_current_entity'];
+        break;
+
       default:
         $defaultParam = $paramsDecoded[$type];
         break;
