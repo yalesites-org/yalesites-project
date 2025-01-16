@@ -61,9 +61,9 @@ content_spotlight:
     default: default
   field_style_alignment:
     values:
-      top: 'Top'
-      middle: 'Middle'
-      bottom: 'Bottom'
+      top: Top
+      middle: Middle
+      bottom: Bottom
     default: top
 quick_links:
   field_style_variation:
@@ -174,9 +174,9 @@ content_spotlight_portrait:
     default: default
   field_style_alignment:
     values:
-      top: 'Top'
-      middle: 'Middle'
-      bottom: 'Bottom'
+      top: Top
+      middle: Middle
+      bottom: Bottom
     default: middle
 text:
   field_style_variation:
@@ -274,3 +274,10 @@ inline_message:
       four: Four
       five: Five
     default: one
+image: 
+  field_style_width:
+    values:
+      site: Large
+      highlight: Medium
+      content: Small
+    default: content

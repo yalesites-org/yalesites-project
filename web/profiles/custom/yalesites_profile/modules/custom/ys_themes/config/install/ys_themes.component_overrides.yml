@@ -286,3 +286,10 @@ image_banner:
       tall: Tall
       short: Short
     default: tall
+image: 
+  field_style_width:
+    values:
+      site: Large
+      highlight: Medium
+      content: Small
+    default: content

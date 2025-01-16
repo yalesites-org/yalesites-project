@@ -6,6 +6,7 @@ dependencies:
     - block_content.type.image
     - field.field.block_content.image.field_instructions
     - field.field.block_content.image.field_media
+    - field.field.block_content.image.field_style_width
     - field.field.block_content.image.field_text
   module:
     - allowed_formats
@@ -34,6 +35,12 @@ content:
     third_party_settings:
       media_library_edit:
         show_edit: '1'
+  field_style_width:
+    type: options_select
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_text:
     type: text_textarea
     weight: 3
