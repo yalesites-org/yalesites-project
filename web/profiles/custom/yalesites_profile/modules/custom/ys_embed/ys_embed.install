@@ -145,6 +145,35 @@ function ys_embed_update_9005() {
 }
 
 /**
+ * Updates existing Power BI embeds to add new type parameter.
+ */
+function ys_embed_update_9006() {
+  $media_storage = \Drupal::entityTypeManager()->getStorage('media');
+
+  $power_bi_embeds = $media_storage->loadByProperties([
+    'bundle' => 'embed',
+    'field_media_embed.embed_source' => 'powerbi',
+  ]);
+
+  foreach ($power_bi_embeds as $embed) {
+    /** @var \Drupal\media\Entity\Media $embed */
+    $field_value = $embed->get('field_media_embed')->getValue();
+    if (!isset($field_value[0]['params']['type'])) {
+      $field_value[0]['params']['type'] = 'view';
+      $embed->set('field_media_embed', $field_value);
+      $embed->save();
+    }
+  }
+}
+
+/**
+ * Adds formassembly icon.
+ */
+function ys_embed_update_9007() {
+  _copy_embed_file('formassembly.png');
+}
+
+/**
  * Copies image from /images/icons to the media-icons/generic.
  *
  * @param string $filename
@@ -178,26 +207,4 @@ function _copy_embed_file($filename) {
   }
 
   return TRUE;
-}
-
-/**
- * Updates existing Power BI embeds to add new type parameter.
- */
-function ys_embed_update_9006() {
-  $media_storage = \Drupal::entityTypeManager()->getStorage('media');
-
-  $power_bi_embeds = $media_storage->loadByProperties([
-    'bundle' => 'embed',
-    'field_media_embed.embed_source' => 'powerbi',
-  ]);
-
-  foreach ($power_bi_embeds as $embed) {
-    /** @var \Drupal\media\Entity\Media $embed */
-    $field_value = $embed->get('field_media_embed')->getValue();
-    if (!isset($field_value[0]['params']['type'])) {
-      $field_value[0]['params']['type'] = 'view';
-      $embed->set('field_media_embed', $field_value);
-      $embed->save();
-    }
-  }
 }

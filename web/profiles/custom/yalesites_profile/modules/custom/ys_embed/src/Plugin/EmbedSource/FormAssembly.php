@@ -12,7 +12,7 @@ use Drupal\ys_embed\Plugin\EmbedSourceInterface;
  *  id = "formassembly",
  *  label = @Translation("FormAssembly"),
  *  description = @Translation("FormAssembly widget embed source."),
- *  thumbnail = "",
+ *  thumbnail = "formassembly.png",
  *  active = TRUE,
  *  )
  */
