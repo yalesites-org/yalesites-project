@@ -427,6 +427,12 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#states' => ['invisible' => $calendarViewInvisibleState],
     ];
 
+    $form['group_user_selection']['options']['exclude_current_entity'] = [
+      '#title' => $this->t('Exclude this content from view'),
+      '#type' => 'checkbox',
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('exclude_current_entity', $items[$delta]->params) : '',
+    ];
+
     $element['group_params']['params'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Params'),
@@ -475,6 +481,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         "display" => $form_state->getValue($formSelectors['display_array']),
         "limit" => (int) $form_state->getValue($formSelectors['limit_array']),
         "offset" => (int) $form_state->getValue($formSelectors['offset_array']),
+        "exclude_current_entity" => $form['group_user_selection']['options']['exclude_current_entity']['#value'],
       ];
       $value['params'] = json_encode($paramData);
     }

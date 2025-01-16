@@ -6,6 +6,8 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityDisplayRepository;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\node\NodeInterface;
 use Drupal\views\Views;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -182,15 +184,24 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   protected $termStorage;
 
   /**
+   * The route match service.
+   *
+   * @var \Drupal\Core\Routing\RouteMatchInterface
+   */
+  protected $routeMatch;
+
+  /**
    * Constructs a new ViewsBasicManager object.
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
     EntityDisplayRepository $entity_display_repository,
+    RouteMatchInterface $route_match,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityDisplayRepository = $entity_display_repository;
     $this->termStorage = $this->entityTypeManager->getStorage('taxonomy_term');
+    $this->routeMatch = $route_match;
   }
 
   /**
@@ -199,7 +210,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('entity_type.manager'),
-      $container->get('entity_display.repository')
+      $container->get('entity_display.repository'),
+      $container->get('current_route_match')
     );
   }
 
@@ -430,6 +442,24 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
     /*
      * End setting dynamic arguments.
+     */
+
+    /*
+     * Excludes current node, if specified in settings.
+     */
+    $excludeCurrent = $paramsDecoded['exclude_current_entity'] ?? 0;
+    if ($excludeCurrent) {
+      $node = $this->routeMatch->getParameter('node');
+      if ($node instanceof NodeInterface) {
+        $currentNid = $node->id();
+        /** @var Drupal\views\Plugin\views\query\Sql $query */
+        $query = $view->getQuery();
+        $query->addWhere(0, 'nid', $currentNid, '<>');
+      }
+    }
+
+    /*
+     * End exclude current node.
      */
 
     $view->execute();
