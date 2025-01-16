@@ -335,39 +335,11 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
     ];
 
-    $form['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Custom Vocabulary Filter - Included Terms'),
-      '#options' => $this->viewsBasicManager->getTaxonomyParents('custom_vocab'),
-      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('custom_vocab_included_terms', $items[$delta]->params) : NULL,
-      '#validated' => 'true',
-      '#prefix' => '<div id="edit-custom-vocab-included-terms">',
-      '#suffix' => '</div>',
-      '#states' => [
-        'visible' => [$formSelectors['show_custom_vocab_filter_selector'] => ['checked' => TRUE]],
-        'invisible' => $calendarViewInvisibleState,
-      ],
-    ];
-
     $form['group_user_selection']['entity_and_view_mode']['audience_filter_label'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Audience Filter Label'),
       '#description' => $this->t("Enter a custom label for the <strong>Audience Filter</strong>. This label will be displayed to users as the filter's name. If left blank, the default label <strong>Audience</strong> will be used."),
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('audience_filter_label', $items[$delta]->params) : NULL,
-      '#states' => [
-        'visible' => [$formSelectors['show_audience_filter_selector'] => ['checked' => TRUE]],
-        'invisible' => $calendarViewInvisibleState,
-      ],
-    ];
-
-    $form['group_user_selection']['entity_and_view_mode']['audience_included_terms'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Audience Filter - Included Terms'),
-      '#options' => $this->viewsBasicManager->getTaxonomyParents('audience'),
-      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('audience_included_terms', $items[$delta]->params) : NULL,
-      '#validated' => 'true',
-      '#prefix' => '<div id="edit-audience-included-terms">',
-      '#suffix' => '</div>',
       '#states' => [
         'visible' => [$formSelectors['show_audience_filter_selector'] => ['checked' => TRUE]],
         'invisible' => $calendarViewInvisibleState,
@@ -547,9 +519,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         "category_filter_label" => $form['group_user_selection']['entity_and_view_mode']['category_filter_label']['#value'],
         "category_included_terms" => $form['group_user_selection']['entity_and_view_mode']['category_included_terms']['#value'],
         "custom_vocab_filter_label" => $form['group_user_selection']['entity_and_view_mode']['custom_vocab_filter_label']['#value'],
-        "custom_vocab_included_terms" => $form['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms']['#value'],
         "audience_filter_label" => $form['group_user_selection']['entity_and_view_mode']['audience_filter_label']['#value'],
-        "audience_included_terms" => $form['group_user_selection']['entity_and_view_mode']['audience_included_terms']['#value'],
         "operator" => $form['group_user_selection']['filter_and_sort']['term_operator']['#value'],
         "sort_by" => $form_state->getValue($formSelectors['sort_by_array']),
         "display" => $form_state->getValue($formSelectors['display_array']),
