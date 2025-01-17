@@ -153,12 +153,9 @@ third_party_settings:
       children:
         - field_tags
         - field_category
-        - field_localist_event_type
-        - field_localist_group
-        - field_event_audience
-        - field_event_topics
         - field_audience
         - field_custom_vocab
+        - group_localist_taxonomies
       label: Taxonomies
       region: content
       parent_name: group_event_tabs
@@ -242,6 +239,24 @@ third_party_settings:
         id: ''
         description: ''
         required_fields: true
+    group_localist_taxonomies:
+      children:
+        - field_localist_event_type
+        - field_localist_group
+        - field_event_audience
+        - field_event_topics
+      label: 'Localist Taxonomies'
+      region: hidden
+      parent_name: group_classifications
+      weight: 26
+      format_type: fieldset
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        label_as_html: false
+        description: ''
+        required_fields: false
 id: node.event.default
 targetEntityType: node
 bundle: event
@@ -249,7 +264,7 @@ mode: default
 content:
   field_audience:
     type: chosen_select
-    weight: 28
+    weight: 24
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -261,13 +276,13 @@ content:
     third_party_settings: {  }
   field_custom_vocab:
     type: chosen_select
-    weight: 29
+    weight: 25
     region: content
     settings: {  }
     third_party_settings: {  }
   field_event_audience:
     type: chosen_select
-    weight: 26
+    weight: 29
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -351,7 +366,7 @@ content:
     third_party_settings: {  }
   field_event_topics:
     type: chosen_select
-    weight: 27
+    weight: 30
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -387,7 +402,7 @@ content:
     third_party_settings: {  }
   field_localist_event_type:
     type: chosen_select
-    weight: 24
+    weight: 27
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -401,7 +416,7 @@ content:
     third_party_settings: {  }
   field_localist_group:
     type: chosen_select
-    weight: 25
+    weight: 28
     region: content
     settings: {  }
     third_party_settings: {  }
