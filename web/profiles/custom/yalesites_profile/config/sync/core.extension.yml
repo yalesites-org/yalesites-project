@@ -5,6 +5,7 @@ module:
   auto_entitylabel: -100
   action: 0
   address: 0
+  addtoany: 0
   admin_toolbar: 0
   admin_toolbar_tools: 0
   ai_engine: 0

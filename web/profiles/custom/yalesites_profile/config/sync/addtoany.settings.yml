@@ -1,0 +1,28 @@
+_core:
+  default_config_hash: fMTQlRT4MXb9WtflmxsvPI0VnKTQNjOnlx9oCWO3vYo
+buttons_size: 32
+additional_html: "<a class=\"a2a_button_facebook\"></a>\r\n<a class=\"a2a_button_x\"></a>\r\n<a class=\"a2a_button_linkedin\"></a>\r\n<a class=\"a2a_button_email\"></a>\r\n"
+additional_css: ''
+additional_js: 'a2a_config.icon_color = "transparent, black";'
+universal_button: default
+custom_universal_button: ''
+universal_button_placement: before
+entities:
+  media: 1
+  node: 1
+  comment: 1
+  block_content: 0
+  content_moderation_state: 0
+  crop: 0
+  file: 0
+  menu_link_content: 0
+  path_alias: 0
+  redirect: 0
+  search_api_task: 0
+  section_library_template: 0
+  smart_date_override: 0
+  smart_date_rule: 0
+  taxonomy_term: 0
+  user: 0
+  webform_submission: 0
+  paragraph: 0
