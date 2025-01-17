@@ -217,3 +217,32 @@ function ys_core_update_9008() {
     $term->save();
   }
 }
+
+/**
+ * Implements hook_update().
+ *
+ * Add default audience taxonomies if they do not exist.
+ */
+function ys_core_update_10001() {
+
+  $default_terms = [
+    'Students',
+    'Faculty',
+    'Staff',
+    'Visitors',
+  ];
+
+  foreach ($default_terms as $term) {
+    $term = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadByProperties([
+      'vid' => 'audience',
+      'name' => $term,
+    ]);
+    if (empty($term)) {
+      $term = Term::create([
+        'vid' => 'audience',
+        'name' => $term,
+      ]);
+      $term->save();
+    }
+  }
+}
