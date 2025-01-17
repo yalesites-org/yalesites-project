@@ -26,8 +26,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPluginInterface {
 
-  const DEFAULT_VIEW_MODE = "card";
-
   /**
    * The views basic manager service.
    *
@@ -200,20 +198,13 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     // Gets the view mode options based on Ajax callbacks or initial load.
     $viewModeOptions = $this->viewsBasicManager->viewModeList($formSelectors['entity_types']);
-    $viewMode = ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('view_mode', $items[$delta]->params) : key($viewModeOptions);
-
-    // Set the default if the current view mode does not exist in
-    // the entity type.
-    if (!array_key_exists($viewMode, $viewModeOptions)) {
-      $viewMode = self::DEFAULT_VIEW_MODE;
-    }
 
     $form['group_user_selection']['entity_and_view_mode']['view_mode'] = [
       '#type' => 'radios',
       '#options' => $viewModeOptions,
       '#title' => $this->t('As'),
       '#tree' => TRUE,
-      '#default_value' => $viewMode,
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('view_mode', $items[$delta]->params) : key($viewModeOptions),
       '#attributes' => [
         'class' => [
           'views-basic--view-mode',
