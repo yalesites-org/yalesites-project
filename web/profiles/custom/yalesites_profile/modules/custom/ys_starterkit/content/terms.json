@@ -160,26 +160,6 @@
         "unique_id": 32,
         "vocabulary": "affiliation",
         "name": "Alumni"
-      },
-      {
-        "unique_id": 33,
-        "vocabulary": "audience",
-        "name": "Students"
-      },
-      {
-        "unique_id": 34,
-        "vocabulary": "audience",
-        "name": "Faculty"
-      },
-      {
-        "unique_id": 35,
-        "vocabulary": "audience",
-        "name": "Staff"
-      },
-      {
-        "unique_id": 36,
-        "vocabulary": "audience",
-        "name": "Visitors"
       }
     ]
   }
