@@ -4,7 +4,7 @@ buttons_size: 32
 additional_html: "<a class=\"a2a_button_facebook\"></a>\r\n<a class=\"a2a_button_x\"></a>\r\n<a class=\"a2a_button_linkedin\"></a>\r\n<a class=\"a2a_button_email\"></a>\r\n"
 additional_css: ''
 additional_js: 'a2a_config.icon_color = "transparent, black";'
-universal_button: default
+universal_button: none
 custom_universal_button: ''
 universal_button_placement: before
 entities:
