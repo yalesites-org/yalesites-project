@@ -48,6 +48,8 @@ dependencies:
     - node.type.post
     - node.type.profile
     - taxonomy.vocabulary.affiliation
+    - taxonomy.vocabulary.audience
+    - taxonomy.vocabulary.custom_vocab
     - taxonomy.vocabulary.event_category
     - taxonomy.vocabulary.page_category
     - taxonomy.vocabulary.post_category
@@ -145,6 +147,8 @@ permissions:
   - 'create reusable blocks'
   - 'create tabs block content'
   - 'create terms in affiliation'
+  - 'create terms in audience'
+  - 'create terms in custom_vocab'
   - 'create terms in event_category'
   - 'create terms in page_category'
   - 'create terms in post_category'
@@ -242,6 +246,8 @@ permissions:
   - 'delete own profile content'
   - 'delete own video media'
   - 'delete terms in affiliation'
+  - 'delete terms in audience'
+  - 'delete terms in custom_vocab'
   - 'delete terms in event_category'
   - 'delete terms in page_category'
   - 'delete terms in post_category'
@@ -298,6 +304,8 @@ permissions:
   - 'edit own video media'
   - 'edit own webform submission'
   - 'edit terms in affiliation'
+  - 'edit terms in audience'
+  - 'edit terms in custom_vocab'
   - 'edit terms in event_category'
   - 'edit terms in page_category'
   - 'edit terms in post_category'
@@ -400,6 +408,7 @@ permissions:
   - 'view profile revisions'
   - 'view the administration theme'
   - 'view unpublished paragraphs'
+  - 'view vocabulary labels'
   - 'yalesites manage alerts'
   - 'yalesites manage campus groups'
   - 'yalesites manage settings'

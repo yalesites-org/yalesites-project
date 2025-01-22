@@ -208,6 +208,13 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#default_value' => $yaleConfig->get('seo')['google_analytics_id'],
     ];
 
+    $form['custom_vocab_name'] = [
+      '#type' => 'textfield',
+      '#description' => $this->t('This field will update the name of the custom vocabulary for the site. By default, the name is "Custom Vocab".'),
+      '#title' => $this->t('Custom Vocabulary Name'),
+      '#default_value' => $yaleConfig->get('taxonomy')['custom_vocab_name'],
+    ];
+
     $form['teaser_image_fallback'] = [
       '#type' => 'media_library',
       '#allowed_bundles' => ['image'],
@@ -301,11 +308,15 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       ->set('page.events', $form_state->getValue('site_page_events'))
       ->set('seo.google_site_verification', $form_state->getValue('google_site_verification'))
       ->set('seo.google_analytics_id', $form_state->getValue('google_analytics_id'))
+      ->set('taxonomy.custom_vocab_name', $form_state->getValue('custom_vocab_name'))
       ->set('image_fallback.teaser', $form_state->getValue('teaser_image_fallback'))
       ->set('custom_favicon', $form_state->getValue('favicon'))
       ->save();
     $this->configFactory->getEditable('google_analytics.settings')
       ->set('account', $form_state->getValue('google_analytics_id'))
+      ->save();
+    $this->configFactory->getEditable('taxonomy.vocabulary.custom_vocab')
+      ->set('name', $form_state->getValue('custom_vocab_name'))
       ->save();
 
     parent::submitForm($form, $form_state);

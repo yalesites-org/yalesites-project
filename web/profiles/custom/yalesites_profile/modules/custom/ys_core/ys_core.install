@@ -225,6 +225,8 @@ function ys_core_update_9008() {
  */
 function ys_core_update_10001() {
 
+  $term_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
+
   $default_terms = [
     'Students',
     'Faculty',
@@ -232,15 +234,15 @@ function ys_core_update_10001() {
     'Visitors',
   ];
 
-  foreach ($default_terms as $term) {
-    $term = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadByProperties([
+  foreach ($default_terms as $term_name) {
+    $term = $term_storage->loadByProperties([
       'vid' => 'audience',
-      'name' => $term,
+      'name' => $term_name,
     ]);
     if (empty($term)) {
-      $term = Term::create([
+      $term = $term_storage->create([
         'vid' => 'audience',
-        'name' => $term,
+        'name' => $term_name,
       ]);
       $term->save();
     }
