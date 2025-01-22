@@ -3,10 +3,13 @@ on:
   pull_request:
     types:
       - synchronize
-      - closed
     branches:
       - v[0-9]+
   workflow_dispatch:
+  workflow_run:
+    workflows: [Create a release]
+    types:
+      - completed
 env:
   YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
   GH_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
@@ -178,7 +181,7 @@ jobs:
       run: ./.ci/github/deploy_release_sites
 
   clean_up_multidevs:
-    if: ${{ github.event.action == 'closed' }}
+    if: ${{ github.event.action == 'completed' }}
     needs: [setup]
     runs-on: ubuntu-latest
     env:

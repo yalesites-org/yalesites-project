@@ -88,7 +88,7 @@
     "drupal/paragraphs": "1.18.0",
     "drupal/paragraphs_features": "2.0.0",
     "drupal/pathauto": "1.13.0",
-    "drupal/quick_node_clone": "1.19.0",
+    "drupal/quick_node_clone": "1.20.0",
     "drupal/recaptcha": "3.4.0",
     "drupal/recaptcha_v3": "2.0.3",
     "drupal/redirect": "1.10.0",
@@ -173,6 +173,9 @@
       },
       "drupal/selective_better_exposed_filters": {
         "Hide form when no options are available:": "patches/selective_better_exposed_filters/selective_better_exposed_filters-3432551.patch"
+      },
+      "drupal/layout_builder_lock": {
+        "Show help text for only users who have permission https://www.drupal.org/project/layout_builder_lock/issues/3497055": "https://git.drupalcode.org/project/layout_builder_lock/-/merge_requests/26.patch"
       }
     }
   }
