@@ -1,0 +1,56 @@
+# Route name can be used in several places; e.g. links, redirects, and local
+# actions.
+entity.ys_asset.canonical:
+  path: '/ys_asset/{ys_asset}'
+  defaults:
+  # Calls the view controller, defined in the annotation of the asset entity
+    _entity_view: 'ys_asset'
+    _title: 'Asset Content'
+  requirements:
+  # Calls the access controller of the entity, $operation 'view'
+    _entity_access: 'ys_asset.view'
+
+entity.ys_asset.collection:
+  path: '/ys_asset/list'
+  defaults:
+  # Calls the list controller, defined in the annotation of the asset entity.
+    _entity_list: 'ys_asset'
+    _title: 'Asset List'
+  requirements:
+  # Checks for permission directly.
+    _permission: 'administer asset entity'
+
+ys_asset.asset_add:
+  path: '/ys_asset/add'
+  defaults:
+  # Calls the form.add controller, defined in the asset entity.
+    _entity_form: ys_asset.add
+    _title: 'Add Asset'
+  requirements:
+    _entity_create_access: 'ys_asset'
+
+entity.ys_asset.edit_form:
+  path: '/ys_asset/{ys_asset}/edit'
+  defaults:
+  # Calls the form.edit controller, defined in the asset entity.
+    _entity_form: ys_asset.edit
+    _title: 'Edit Asset'
+  requirements:
+    _entity_access: 'ys_asset.edit'
+
+entity.ys_asset.delete_form:
+  path: '/ys_asset/{ys_asset}/delete'
+  defaults:
+    # Calls the form.delete controller, defined in the asset entity.
+    _entity_form: ys_asset.delete
+    _title: 'Delete Asset'
+  requirements:
+    _entity_access: 'ys_asset.delete'
+
+ys_asset.asset_settings:
+  path: '/admin/structure/ys_asset_settings'
+  defaults:
+    _form: '\Drupal\ys_asset\Form\AssetSettingsForm'
+    _title: 'Asset Settings'
+  requirements:
+    _permission: 'administer asset entity'

@@ -1,0 +1,11 @@
+entity.ys_asset.collection:
+  title: 'Asset Listing'
+  route_name: entity.ys_asset.collection
+  description: 'List Assets'
+  parent: system.admin_structure
+  weight: 10
+ys_asset.admin.structure.settings:
+  title: Contact Settings
+  description: 'Configure Asset entity'
+  route_name:  ys_asset.ys_asset_settings
+  parent: system.admin_structure

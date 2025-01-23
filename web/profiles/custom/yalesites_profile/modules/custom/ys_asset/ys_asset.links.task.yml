@@ -1,0 +1,21 @@
+ys_asset.settings_tab:
+  route_name: content_entity_example.ys_asset_settings
+  title: Settings
+  base_route: content_entity_example.ys_asset_settings
+
+ys_asset.view:
+  route_name: entity.ys_asset.canonical
+  base_route: entity.ys_asset.canonical
+  title: View
+
+ys_asset.page_edit:
+  route_name: entity.ys_asset.edit_form
+  base_route: entity.ys_asset.canonical
+  title: Edit
+
+ys_asset.delete_confirm:
+  route_name: entity.ys_asset.delete_form
+  base_route: entity.ys_asset.canonical
+  title: Delete
+  weight: 10
+

@@ -1,0 +1,9 @@
+ys_asset.asset_add:
+  # Which route will be called by the link
+  route_name: ys_asset.asset_add
+  title: 'Add Asset'
+
+  # Where will the link appear, defined by route name.
+  appears_on:
+    - entity.ys_asset.collection
+    - entity.ys_asset.canonical

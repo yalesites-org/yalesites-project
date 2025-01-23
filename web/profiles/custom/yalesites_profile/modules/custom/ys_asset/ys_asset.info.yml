@@ -1,0 +1,8 @@
+name: YaleSites Asset Content Entity
+type: module
+description: 'Provides AssetContentEntity entity.'
+core_version_requirement: '^10'
+package: YaleSites
+
+dependencies:
+  - options

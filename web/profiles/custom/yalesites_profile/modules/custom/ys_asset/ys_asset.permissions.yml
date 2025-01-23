@@ -1,0 +1,11 @@
+view asset entity:
+  title: 'View asset entity'
+add asset entity:
+  title: 'Add asset entity'
+edit asset entity:
+  title: 'Edit asset entity'
+delete asset entity:
+  title: 'Delete asset entity'
+administer asset entity:
+  title: 'Administer asset entity'
+  restrict access: TRUE
