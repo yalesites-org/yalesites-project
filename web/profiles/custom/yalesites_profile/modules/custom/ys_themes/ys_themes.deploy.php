@@ -8,16 +8,14 @@
 /**
  * Updates existing accordions with default value for component theme.
  */
-function ys_themes_deploy_10301(&$sandbox) {
+function ys_themes_deploy_10301() {
   $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
   $query = $block_storage->getQuery();
   $query->accessCheck(FALSE)
     ->condition('type', 'accordion');
 
-  $sandbox['ids'] = $query->execute();
-  $sandbox['total'] = count($sandbox['ids']);
+  $block_ids = $query->execute();
 
-  $block_ids = array_splice($sandbox['ids'], 0, 10);
   foreach ($block_ids as $id) {
     $block = $block_storage->load($id);
     /** @var Drupal\Core\Entity\Sql\SqlContentEntityStorage $block_storage */
@@ -36,5 +34,4 @@ function ys_themes_deploy_10301(&$sandbox) {
       $latestRevision->save();
     }
   }
-  $sandbox['#finished'] = count($sandbox['ids']) ? 1 - count($sandbox['ids']) / $sandbox['total'] : 1;
 }
