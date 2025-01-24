@@ -184,7 +184,12 @@ class Asset extends ContentEntityBase implements AssetInterface {
     $entity_id = $this->get('entity_id');
     if ($entity_id) {
       $entity = $this->get('entity_id')->entity;
-      return $entity->label();
+
+      if ($entity) {
+        return $entity->label();
+      }
+
+      return '';
     }
 
     return '';
