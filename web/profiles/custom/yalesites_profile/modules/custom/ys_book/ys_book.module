@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * @file
+ * YaleSites Book overrides module.
+ *
+ * This module overrides default book module text.
+ */
+
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 
@@ -22,7 +29,11 @@ function ys_book_help($route_name, RouteMatchInterface $route_match) {
       return '<p>' . t('Content Collections provide a way to create secondary navigation on your webpage. When you organize content into Collections, they become navigation sections. Your content can appear in both the main navigation and Content Collections') . '</p>';
 
     case 'entity.node.book_outline_form':
-      return '<p>' . t('The outline feature allows you to include pages in the <a href=":book">Collection hierarchy</a>, as well as move them within the hierarchy or to <a href=":book-admin">reorder an entire collection</a>.', [':book' => Url::fromRoute('book.render')->toString(), ':book-admin' => Url::fromRoute('book.admin')->toString()]) . '</p>';
+      return '<p>' . t('The outline feature allows you to include pages in the <a href=":book">Collection hierarchy</a>, as well as move them within the hierarchy or to <a href=":book-admin">reorder an entire collection</a>.',
+        [
+          ':book' => Url::fromRoute('book.render')->toString(),
+          ':book-admin' => Url::fromRoute('book.admin')->toString(),
+        ]) . '</p>';
   }
 }
 
