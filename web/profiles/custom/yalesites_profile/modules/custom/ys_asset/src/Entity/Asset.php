@@ -317,6 +317,29 @@ class Asset extends ContentEntityBase implements AssetInterface {
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
+    $fields['media_id'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Media'))
+      ->setDescription(t('The media to link to.'))
+      ->setSetting('target_type', 'media')
+      ->setSetting('handler', 'default')
+      ->setDisplayOptions('view', [
+        'label' => 'above',
+        'type' => 'entity_reference_label',
+        'weight' => -3,
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'entity_reference_autocomplete',
+        'settings' => [
+          'match_operator' => 'CONTAINS',
+          'size' => 60,
+          'autocomplete_type' => 'tags',
+          'placeholder' => '',
+        ],
+        'weight' => -3,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE);
+
     $fields['source_url'] = BaseFieldDefinition::create('uri')
       ->setLabel(t('Source URL'))
       ->setDescription(t('The URL of the source.'))
