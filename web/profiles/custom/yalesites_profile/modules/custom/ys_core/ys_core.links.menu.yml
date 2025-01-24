@@ -120,10 +120,3 @@ ys_core.custom_block_library:
   route_parameters:
     menu: "main"
   weight: 20
-# Manage books
-ys_core.book_admin:
-  description: "Manage books"
-  parent: system.admin_content
-  route_name: book.admin
-  title: Manage Books
-  weight: 20

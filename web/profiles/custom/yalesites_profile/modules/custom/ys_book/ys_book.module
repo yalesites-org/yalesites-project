@@ -1,0 +1,86 @@
+<?php
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
+
+/**
+ * Implements hook_module_implements_alter().
+ */
+function ys_book_module_implements_alter(&$implementations, $hook) {
+  if ($hook === 'help') {
+    unset($implementations['book']);
+  }
+}
+
+/**
+ * Implements hook_help().
+ */
+function ys_book_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+
+    case 'book.admin':
+      return '<p>' . t('Content Collections provide a way to create secondary navigation on your webpage. When you organize content into Collections, they become navigation sections. Your content can appear in both the main navigation and Content Collections') . '</p>';
+
+    case 'entity.node.book_outline_form':
+      return '<p>' . t('The outline feature allows you to include pages in the <a href=":book">Collection hierarchy</a>, as well as move them within the hierarchy or to <a href=":book-admin">reorder an entire collection</a>.', [':book' => Url::fromRoute('book.render')->toString(), ':book-admin' => Url::fromRoute('book.admin')->toString()]) . '</p>';
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function ys_book_form_alter(&$form, &$form_state, $form_id) {
+
+  $formIds = [
+    'node_page_form',
+    'node_page_edit_form',
+  ];
+
+  if (!in_array($form_id, $formIds)) {
+    return;
+  }
+
+  $form['book']['#title'] = t('Content Collection');
+  $form['book']['bid']['#title'] = t('Collection');
+  $form['book']['bid']['#description'] = t('Your page will be a part of the selected collection');
+  $form['book']['help_text'] = [
+    '#type' => 'markup',
+    '#markup' => t('Content Collections provide a way to create secondary navigation on your webpage. When you organize content into Collections, they become navigation sections. Your content can appear in both the main navigation and Content Collections'),
+    '#weight' => -10,
+  ];
+
+}
+
+/**
+ * Implements hook_menu_links_discovered_alter().
+ */
+function ys_book_menu_links_discovered_alter(&$links) {
+  // Target the menu item with the route 'book.admin'.
+  if (isset($links['book.admin'])) {
+    $links['book.admin']['title'] = t('Content Collections');
+  }
+}
+
+/**
+ * Implements hook_library_info_alter().
+ */
+function ys_book_library_info_alter(&$libraries, $extension) {
+  // Replaces the book module JS with one from YS Core to change wording.
+  if ($extension == 'book') {
+    $new_path = '/' . \Drupal::service('extension.list.module')->getPath('ys_book') . '/js';
+    $new_js = [];
+    $replacements = [
+      'book.js' => $new_path . '/book.js',
+    ];
+    foreach ($libraries['drupal.book']['js'] as $source => $options) {
+      if (isset($replacements[$source])) {
+        $new_js[$replacements[$source]] = $options;
+      }
+      else {
+        $new_js[$source] = $options;
+      }
+    }
+    $libraries['drupal.book']['js'] = $new_js;
+
+  }
+}

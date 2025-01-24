@@ -1,0 +1,7 @@
+# Manage books
+ys_core.book_admin:
+  description: "Manage content collections"
+  parent: system.admin_content
+  route_name: book.admin
+  title: Manage Content Collections
+  weight: 20
