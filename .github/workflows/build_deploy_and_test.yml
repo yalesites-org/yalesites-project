@@ -211,6 +211,7 @@ jobs:
       - name: deploy to Pantheon
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          TERMINUS_BUILD_TOOLS_WORKFLOW_TIMEOUT: 600
         run: |
           echo "$SSH_PRIVATE_KEY" > ../private.key
           chmod 600 ../private.key
