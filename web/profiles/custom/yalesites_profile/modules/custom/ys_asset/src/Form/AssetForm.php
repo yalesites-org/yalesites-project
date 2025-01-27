@@ -21,8 +21,6 @@ class AssetForm extends ContentEntityForm {
     $form = parent::buildForm($form, $form_state);
     $entity = $this->entity;
 
-    $form['#attached']['library'][] = 'ys_asset/asset';
-
     $form['langcode'] = [
       '#title' => $this->t('Language'),
       '#type' => 'language_select',
