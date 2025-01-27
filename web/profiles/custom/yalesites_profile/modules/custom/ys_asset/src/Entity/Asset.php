@@ -90,10 +90,10 @@ use Drupal\Core\Url;
  *     "langcode" = "langcode"
  *   },
  *   links = {
- *     "canonical" = "/ys_asset/{ys_asset}",
- *     "edit-form" = "/ys_asset/{ys_asset}/edit",
- *     "delete-form" = "/ys_asset/{ys_asset}/delete",
- *     "collection" = "/ys_asset/list"
+ *     "canonical" = "/admin/ys_asset/{ys_asset}",
+ *     "edit-form" = "/admin/ys_asset/{ys_asset}/edit",
+ *     "delete-form" = "/admin/ys_asset/{ys_asset}/delete",
+ *     "collection" = "/admin/ys_asset/list"
  *   },
  *   field_ui_base_route = "ys_asset.asset_settings",
  * )
