@@ -337,20 +337,6 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
     ];
 
-    // The label of this field comes from the vocabulary config.
-    $label_title = "$custom_vocab_label Filter Label";
-    $label_description = "Enter a custom label for the <strong>$custom_vocab_label Filter</strong>. This label will be displayed to users as the filter's name. If left blank, the default label <strong>$custom_vocab_label</strong> will be used";
-    $form['group_user_selection']['entity_and_view_mode']['custom_vocab_filter_label'] = [
-      '#type' => 'textfield',
-      '#title' => $label_title,
-      '#description' => $label_description,
-      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('custom_vocab_filter_label', $items[$delta]->params) : NULL,
-      '#states' => [
-        'visible' => [$formSelectors['show_custom_vocab_filter_selector'] => ['checked' => TRUE]],
-        'invisible' => $calendarViewInvisibleState,
-      ],
-    ];
-
     $form['group_user_selection']['entity_and_view_mode']['audience_filter_label'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Audience Filter Label'),
@@ -534,7 +520,6 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         "exposed_filter_options" => $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options']['#value'],
         "category_filter_label" => $form['group_user_selection']['entity_and_view_mode']['category_filter_label']['#value'],
         "category_included_terms" => $form['group_user_selection']['entity_and_view_mode']['category_included_terms']['#value'],
-        "custom_vocab_filter_label" => $form['group_user_selection']['entity_and_view_mode']['custom_vocab_filter_label']['#value'],
         "audience_filter_label" => $form['group_user_selection']['entity_and_view_mode']['audience_filter_label']['#value'],
         "operator" => $form['group_user_selection']['filter_and_sort']['term_operator']['#value'],
         "sort_by" => $form_state->getValue($formSelectors['sort_by_array']),

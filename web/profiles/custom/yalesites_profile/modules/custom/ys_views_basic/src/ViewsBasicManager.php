@@ -333,11 +333,9 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
     // Custom vocab filter.
     if (!empty($paramsDecoded['exposed_filter_options']['show_custom_vocab_filter'])) {
-
-      // Set a custom label for the filter if provided.
-      if (!empty($paramsDecoded['custom_vocab_filter_label'])) {
-        $filters['field_custom_vocab_target_id']['expose']['label'] = $paramsDecoded['custom_vocab_filter_label'];
-      }
+      // Get the label of the custom vocab.
+      $custom_vocab_label = $this->entityTypeManager->getStorage('taxonomy_vocabulary')->load('custom_vocab')->label();
+      $filters['field_custom_vocab_target_id']['expose']['label'] = $custom_vocab_label;
     }
     else {
       // Remove filter if 'show filter' field is not set.
