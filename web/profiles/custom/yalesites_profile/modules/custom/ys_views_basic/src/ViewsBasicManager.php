@@ -450,10 +450,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
      */
 
     /*
-     * Excludes current node, if specified in settings.
+     * Includes current node, if specified in settings.
      */
-    $excludeCurrent = $paramsDecoded['exclude_current_entity'] ?? 0;
-    if ($excludeCurrent) {
+    $includeCurrent = $paramsDecoded['show_current_entity'] ?? 0;
+    if (!$includeCurrent) {
       $node = $this->routeMatch->getParameter('node');
       if ($node instanceof NodeInterface) {
         $currentNid = $node->id();
@@ -464,7 +464,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     }
 
     /*
-     * End exclude current node.
+     * End include current node.
      */
 
     $view->execute();
@@ -658,8 +658,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         $defaultParam = (empty($paramsDecoded['category_included_terms'])) ? NULL : $paramsDecoded['category_included_terms'];
         break;
 
-      case 'exclude_current_entity':
-        $defaultParam = (empty($paramsDecoded['exclude_current_entity'])) ? NULL : $paramsDecoded['exclude_current_entity'];
+      case 'show_current_entity':
+        $defaultParam = (empty($paramsDecoded['show_current_entity'])) ? 0 : $paramsDecoded['show_current_entity'];
         break;
 
       default:
