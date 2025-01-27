@@ -316,23 +316,6 @@ class Asset extends ContentEntityBase implements AssetInterface {
       ])
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
-      ->setDisplayOptions('view', [
-        'label' => 'above',
-        'type' => 'entity_reference_label',
-        'weight' => -3,
-      ])
-      ->setDisplayOptions('form', [
-        'type' => 'entity_reference_autocomplete',
-        // 'settings' => [
-        //   'match_operator' => 'CONTAINS',
-        //   'size' => 60,
-        //   'autocomplete_type' => 'tags',
-        //   'placeholder' => '',
-        // ],
-        'weight' => -3,
-      ])
-      ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayConfigurable('view', TRUE);
 
     $fields['media_id'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Media'))
