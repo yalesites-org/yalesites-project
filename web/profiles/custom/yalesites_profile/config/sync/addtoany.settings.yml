@@ -1,8 +1,8 @@
 _core:
   default_config_hash: fMTQlRT4MXb9WtflmxsvPI0VnKTQNjOnlx9oCWO3vYo
 buttons_size: 32
-additional_html: "<a class=\"a2a_button_facebook\"></a>\r\n<a class=\"a2a_button_x\"></a>\r\n<a class=\"a2a_button_linkedin\"></a>\r\n<a class=\"a2a_button_email\"></a>\r\n"
-additional_css: ''
+additional_html: "<a class=\"a2a_button_facebook share-links__link\">\r\n<svg class=\"share-links__icon\" aria-hidden=\"true\" role=\"img\">\r\n      <use xlink:href=\"/themes/contrib/atomic/node_modules/@yalesites-org/component-library-twig/dist/icons.svg#facebook\"></use>\r\n</svg>\r\n</a>\r\n<a class=\"a2a_button_x share-links__link\">\r\n<svg class=\"share-links__icon\" aria-hidden=\"true\" role=\"img\">\r\n      <use xlink:href=\"/themes/contrib/atomic/node_modules/@yalesites-org/component-library-twig/dist/icons.svg#x-twitter\"></use>\r\n</svg>\r\n</a>\r\n<a class=\"a2a_button_linkedin share-links__link\">\r\n<svg class=\"share-links__icon\" aria-hidden=\"true\" role=\"img\">\r\n      <use xlink:href=\"/themes/contrib/atomic/node_modules/@yalesites-org/component-library-twig/dist/icons.svg#linkedin\"></use>\r\n</svg>\r\n</a>\r\n<a class=\"a2a_button_email share-links__link\">\r\n<svg class=\"share-links__icon\" aria-hidden=\"true\" role=\"img\">\r\n      <use xlink:href=\"/themes/contrib/atomic/node_modules/@yalesites-org/component-library-twig/dist/icons.svg#envelope-solid\"></use>\r\n</svg>\r\n</a>\r\n"
+additional_css: ".page-title__social-links .addtoany_list {\r\n  display: flex;\r\n  gap: 1rem;\r\n}\r\n  \r\n.page-title__social-links .addtoany_list a.share-links__link {\r\n  padding:0;\r\n}\r\n\r\n.share-links__link  .share-links__icon {\r\n  fill: var(--color-gray-900);\r\n  width: 1.5rem;\r\n  height: 1.5rem;\r\n}\r\n\r\n.share-links__link:hover  .share-links__icon {\r\n  fill: var(--color-gray-600);\r\n}\r\n"
 additional_js: 'a2a_config.icon_color = "transparent, black";'
 universal_button: none
 custom_universal_button: ''
