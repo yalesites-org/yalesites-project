@@ -7,6 +7,25 @@
   display: block !important;
 }
 
+/* Make themes one, three, and four have white borders when system
+color theme is set to dark  */
+[data-component-theme="one"] .ys-layout-builder--drag-drop,
+[data-component-theme="three"] .ys-layout-builder--drag-drop,
+[data-component-theme="four"] .ys-layout-builder--drag-drop {
+  @media (prefers-color-scheme: dark) { 
+    --gin-pattern: white;
+  }
+}
+
+
+/* Make theme two borders dark when system color theme is set to light */
+[data-component-theme="two"] .ys-layout-builder--drag-drop {
+  @media (prefers-color-scheme: light) { 
+    --gin-pattern: black;
+  }
+}
+
+
 .ys-layout-builder--is-reusable {
   background-image: url('../icons/filled-globe.png');
   background-repeat: no-repeat;

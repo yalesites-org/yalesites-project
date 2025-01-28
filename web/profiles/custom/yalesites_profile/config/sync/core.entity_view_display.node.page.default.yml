@@ -91,6 +91,8 @@ third_party_settings:
       allowed_layouts:
         - layout_onecol
         - ys_layout_two_column
+        - ys_layout_two_column_50_50
+        - ys_layout_three_column_33_33_33
       denylisted_blocks: {  }
       allowlisted_blocks: {  }
       restricted_categories: {  }
@@ -98,6 +100,8 @@ third_party_settings:
       allowed_layouts:
         - layout_onecol
         - ys_layout_two_column
+        - ys_layout_two_column_50_50
+        - ys_layout_three_column_33_33_33
       allowlisted_blocks:
         ys_layout_banner:
           all_regions:
@@ -138,6 +142,27 @@ third_party_settings:
               - text
             'Inline blocks':
               - 'inline_block:text'
+        ys_layout_three_column_33_33_33:
+          all_regions:
+            'Custom block types':
+              - image
+              - text
+            'Inline blocks':
+              - 'inline_block:image'
+              - 'inline_block:text'
+        ys_layout_two_column_50_50:
+          all_regions:
+            'Custom block types':
+              - accordion
+              - image
+              - link_grid
+              - text
+            'Inline blocks':
+              - 'inline_block:accordion'
+              - 'inline_block:image'
+              - 'inline_block:link_grid'
+              - 'inline_block:text'
+      denylisted_blocks: {  }
       restricted_categories:
         ys_layout_two_column:
           sidebar:
@@ -212,6 +237,38 @@ third_party_settings:
             - System
             - Webform
             - 'YaleSites Core'
+            - 'YaleSites alert'
+            - core
+        ys_layout_two_column_50_50:
+          all_regions:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - Devel
+            - Editoria11y
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites Layouts'
+            - 'YaleSites alert'
+            - core
+        ys_layout_three_column_33_33_33:
+          all_regions:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - Devel
+            - Editoria11y
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites Layouts'
             - 'YaleSites alert'
             - core
 id: node.page.default
