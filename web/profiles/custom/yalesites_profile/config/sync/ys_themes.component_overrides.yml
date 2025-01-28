@@ -284,3 +284,15 @@ accordion:
       four: Four
       five: Five
     default: default
+video:
+  field_style_alignment:
+    values:
+      left: Left
+      center: Center
+    default: left
+image_banner:
+  field_style_variation:
+    values:
+      tall: Tall
+      short: Short
+    default: tall
