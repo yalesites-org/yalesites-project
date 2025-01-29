@@ -213,6 +213,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#description' => $this->t('This field will update the name of the custom vocabulary for the site. By default, the name is "Custom Vocab".'),
       '#title' => $this->t('Custom Vocabulary Name'),
       '#default_value' => $yaleConfig->get('taxonomy')['custom_vocab_name'] ?? 'Custom Vocab',
+      '#required' => TRUE,
     ];
 
     $form['teaser_image_fallback'] = [
