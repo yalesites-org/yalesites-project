@@ -20,7 +20,7 @@ class FormAssembly extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $pattern = '/<iframe.+src="(?<url>https:\/\/tfaforms.(com|net)\/[^"]+)"[^>]+>/';
+  protected static $pattern = '/<iframe.+src="(?<url>https:\/\/.+tfaforms.(com|net)\/[^"]+)"[^>]+>/';
   /**
    * {@inheritdoc}
    */
