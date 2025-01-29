@@ -1,3 +1,8 @@
+/* show media save button on ajax modal */
+#drupal-modal.media-library-edit__modal form > .form-actions {
+  display: flex;
+}
+
 .ys-layout-builder--drag-drop {
   border: 2px dashed var(--gin-pattern);
   position: absolute;
