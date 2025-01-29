@@ -7,6 +7,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountProxy;
+use Drupal\Core\Url;
 use Drupal\ys_core\YaleSitesMediaManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -170,6 +171,18 @@ class HeaderSettingsForm extends ConfigFormBase {
       ],
     ];
 
+    $form['utility_nav_dropdown_button'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Utility Navigation Dropdown'),
+      '#states' => [
+        'disabled' => [
+          ':input[name="header_variation"]' => [
+            'value' => 'focus',
+          ],
+        ],
+      ],
+    ];
+
     $form['call_to_action_container'] = [
       '#type' => 'details',
       '#title' => $this->t('Call to Action'),
@@ -280,6 +293,27 @@ class HeaderSettingsForm extends ConfigFormBase {
       ],
     ];
 
+    $dropdownMenuManage = Url::fromRoute('entity.menu.edit_form', ['menu' => 'utility-drop-button-navigation'])->toString();
+
+    $form['utility_nav_dropdown_button']['dropdown_button_help'] = [
+      '#type' => 'markup',
+      '#markup' => $this->t('<p>The utility navigation dropdown button allows for up to 10 links to be displayed after clicking on the button. The button will be located after the regular utility navigation.</p></p>To enable the dropdown button, enter a title and <a href=":manage" target="_blank">add links in the menu form</a>.</p>',
+        [':manage' => $dropdownMenuManage]
+      ),
+    ];
+
+    $form['utility_nav_dropdown_button']['dropdown_button_example'] = [
+      '#type' => 'markup',
+      '#markup' => '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/util-nav-dropdown.svg" class="preview-icon" alt="Example of a dropdown list of links activated by a button in the utility navigation area.">',
+    ];
+
+    $form['utility_nav_dropdown_button']['dropdown_button_title'] = [
+      '#title' => $this->t('Dropdown button title'),
+      '#type' => 'textfield',
+      '#default_value' => $headerConfig->get('dropdown_button_title') ?? NULL,
+      '#description' => $this->t('Enter a title to enable menu. Remove the title to disable.'),
+    ];
+
     $form['call_to_action_container']['cta_content'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Link text'),
@@ -374,6 +408,7 @@ class HeaderSettingsForm extends ConfigFormBase {
     $headerConfig->set('site_wide_branding_name', $form_state->getValue('site_wide_branding_name'));
     $headerConfig->set('site_wide_branding_link', $form_state->getValue('site_wide_branding_link'));
     $headerConfig->set('nav_position', $form_state->getValue('nav_position'));
+    $headerConfig->set('dropdown_button_title', $form_state->getValue('dropdown_button_title'));
     $headerConfig->set('cta_content', $form_state->getValue('cta_content'));
     $headerConfig->set('cta_url', $form_state->getValue('cta_url'));
     $headerConfig->set('search.enable_search_form', $form_state->getValue('enable_search_form'));
