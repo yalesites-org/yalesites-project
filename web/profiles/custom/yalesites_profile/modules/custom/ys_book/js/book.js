@@ -16,7 +16,10 @@
     attach(context) {
       const $select = $(context).find(".book-title-select");
       $select
-        .find('option[value="new"]')
+        .find("option")
+        .filter(function findCreateNewBookOption() {
+          return $(this).text().trim() === "- Create a new book -";
+        })
         .text(Drupal.t("- Create a new collection -"));
 
       const $messageWrapper = $("#edit-book-plid-wrapper", context);

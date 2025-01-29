@@ -42,12 +42,16 @@ function ys_book_help($route_name, RouteMatchInterface $route_match) {
  */
 function ys_book_form_alter(&$form, &$form_state, $form_id) {
 
-  $formIds = [
+  if ($form_id == 'book_admin_edit') {
+    $form['save']['#value'] = t('Save collection');
+  }
+
+  $nodeFormIds = [
     'node_page_form',
     'node_page_edit_form',
   ];
 
-  if (!in_array($form_id, $formIds)) {
+  if (!in_array($form_id, $nodeFormIds)) {
     return;
   }
 
