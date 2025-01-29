@@ -17,7 +17,8 @@
     'layout--banner',
   ]
 %}
-{% if content %}
+
+{% if content['#show_region_content'] %}
   <div{{ attributes.addClass(classes) }}>
     <div {{ region_attributes.content.addClass('layout__region', 'layout__region--content') }}>
       {{ content.content }}
