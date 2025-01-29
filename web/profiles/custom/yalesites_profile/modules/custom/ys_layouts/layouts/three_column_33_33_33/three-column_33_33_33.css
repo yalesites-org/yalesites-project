@@ -1,0 +1,8 @@
+/*
+ * @file
+ * Provides the layout styles for ys_layout_two_column.
+ */
+
+.layout-builder__add-block {
+  margin: 0 auto;
+}
