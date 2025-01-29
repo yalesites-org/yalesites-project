@@ -20,7 +20,7 @@ class FormAssembly extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $pattern = '/<iframe.+src="(?<url>https:\/\/.+tfaforms.(com|net)\/[^"]+)"[^>]+>/';
+  protected static $pattern = '/<iframe.+src="(?<url>https:\/\/.*tfaforms.(com|net)\/[^"]+)"[^>]+>/';
   /**
    * {@inheritdoc}
    */
@@ -32,7 +32,7 @@ class FormAssembly extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $example = '<iframe src="https://tfaforms.com/YOUR_FORM_ID" height="800" width="600" frameborder="0" ></iframe> <script src="//tfaforms.com/js/iframe_resize_helper.js"></script>';
+  protected static $example = '<iframe src="https://yaleuniversity.tfaforms.net/247" height="800" width="600" frameborder="0" ></iframe> <script src="//tfaforms.com/js/iframe_resize_helper.js"></script>';
 
   /**
    * {@inheritdoc}
