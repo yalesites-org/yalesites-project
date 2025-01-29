@@ -3,6 +3,10 @@
   display: flex;
 }
 
+#drupal-modal.media-library-edit__modal form [data-drupal-selector^='edit-field-media'][data-drupal-selector$='-remove-button'] {
+  display: none !important;
+}
+
 .ys-layout-builder--drag-drop {
   border: 2px dashed var(--gin-pattern);
   position: absolute;
