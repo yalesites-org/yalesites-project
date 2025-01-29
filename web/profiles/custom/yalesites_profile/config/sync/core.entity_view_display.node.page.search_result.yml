@@ -63,6 +63,7 @@ content:
     weight: 1
     region: content
 hidden:
+  addtoany: true
   field_category: true
   field_metatags: true
   field_tags: true

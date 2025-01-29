@@ -6,6 +6,7 @@ dependencies:
     - field.field.node.post.field_author
     - field.field.node.post.field_category
     - field.field.node.post.field_external_source
+    - field.field.node.post.field_hide_sharing_links
     - field.field.node.post.field_login_required
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
@@ -53,6 +54,24 @@ third_party_settings:
               context_mapping:
                 entity: layout_builder.entity
             weight: 1
+            additional: {  }
+          d74b970a-6f90-4cce-9aa7-674ae513ff57:
+            uuid: d74b970a-6f90-4cce-9aa7-674ae513ff57
+            region: content
+            configuration:
+              id: 'field_block:node:post:field_hide_sharing_links'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: boolean
+                label: above
+                settings:
+                  format: default
+                  format_custom_false: ''
+                  format_custom_true: ''
+                third_party_settings: {  }
+            weight: 2
             additional: {  }
         third_party_settings:
           layout_builder_lock:
@@ -135,7 +154,18 @@ content:
     third_party_settings: {  }
     weight: 2
     region: content
+  field_hide_sharing_links:
+    type: boolean
+    label: above
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    weight: 3
+    region: content
 hidden:
+  addtoany: true
   field_login_required: true
   field_metatags: true
   field_publish_date: true

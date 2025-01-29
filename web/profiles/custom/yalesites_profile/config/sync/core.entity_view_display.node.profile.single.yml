@@ -292,6 +292,7 @@ content:
     weight: 7
     region: content
 hidden:
+  addtoany: true
   field_login_required: true
   field_metatags: true
   field_pronouns: true

@@ -121,6 +121,7 @@ content:
     weight: 3
     region: content
 hidden:
+  addtoany: true
   field_address: true
   field_department: true
   field_email: true

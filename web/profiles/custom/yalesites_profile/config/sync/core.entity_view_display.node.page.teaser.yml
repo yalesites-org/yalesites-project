@@ -32,6 +32,7 @@ content:
     weight: 0
     region: content
 hidden:
+  addtoany: true
   field_category: true
   field_external_source: true
   field_login_required: true

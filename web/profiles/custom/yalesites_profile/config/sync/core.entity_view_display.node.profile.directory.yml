@@ -131,6 +131,7 @@ content:
     weight: 3
     region: content
 hidden:
+  addtoany: true
   field_address: true
   field_first_name: true
   field_honorific_prefix: true

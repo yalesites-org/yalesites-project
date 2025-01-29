@@ -164,6 +164,7 @@ content:
     weight: 7
     region: content
 hidden:
+  addtoany: true
   field_event_audience: true
   field_event_description: true
   field_event_format: true
