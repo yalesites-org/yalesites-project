@@ -436,8 +436,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'hide_add_to_calendar' => (int) !empty($paramsDecoded['event_field_options']['hide_add_to_calendar']),
     ];
 
-    $pinned_to_top = (bool) $paramsDecoded['pinned_to_top'] ?? FALSE;
-    $pin_label = $paramsDecoded['pin_label'] ?? self::DEFAULT_PIN_LABEL;
+    $pinned_to_top = isset($paramsDecoded['pinned_to_top']) ? (bool) $paramsDecoded['pinned_to_top'] : FALSE;
+    $pin_label = isset($paramsDecoded['pin_label']) ? (bool) $paramsDecoded['pin_label'] : self::DEFAULT_PIN_LABEL;
 
     if (!$pinned_to_top) {
       $pin_label = NULL;
