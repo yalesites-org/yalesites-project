@@ -380,6 +380,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     // Gets the view mode options based on Ajax callbacks or initial load.
     $sortOptions = $this->viewsBasicManager->sortByList($formSelectors['entity_types']);
+    $sortBy = ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('sort_by', $items[$delta]->params) : NULL;
 
     $form['group_user_selection']['filter_and_sort']['sort_by'] = [
       '#type' => 'select',
@@ -387,11 +388,31 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#options' => $sortOptions,
       '#title' => $this->t('Sorting by'),
       '#tree' => TRUE,
-      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('sort_by', $items[$delta]->params) : NULL,
+      '#default_value' => $sortBy,
       '#validated' => 'true',
       '#prefix' => '<div id="edit-sort-by">',
       '#suffix' => '</div>',
       '#states' => ['invisible' => $calendarViewInvisibleState],
+    ];
+
+    $form['group_user_selection']['filter_and_sort']['pinned_to_top'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Display pinned items at the top of the list'),
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('pinned_to_top', $items[$delta]->params) : FALSE,
+      '#states' => ['invisible' => $calendarViewInvisibleState],
+    ];
+
+    // If the saved value is NULL, still default it since it's required.
+    $pin_label = (($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('pin_label', $items[$delta]->params) : ViewsBasicManager::DEFAULT_PIN_LABEL) ?? ViewsBasicManager::DEFAULT_PIN_LABEL;
+
+    $form['group_user_selection']['filter_and_sort']['pin_label'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('The label to display for pinned items'),
+      '#default_value' => $pin_label,
+      '#states' => [
+        'visible' => [$formSelectors['pinned_to_top_selector'] => ['checked' => TRUE]],
+        'required' => [$formSelectors['pinned_to_top_selector'] => ['checked' => TRUE]],
+      ],
     ];
 
     $form['group_user_selection']['entity_specific']['event_time_period'] = [
@@ -515,6 +536,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         "limit" => (int) $form_state->getValue($formSelectors['limit_array']),
         "offset" => (int) $form_state->getValue($formSelectors['offset_array']),
         "show_current_entity" => $form['group_user_selection']['options']['show_current_entity']['#value'],
+        "pinned_to_top" => $form_state->getValue($formSelectors['pinned_to_top_array']),
+        "pin_label" => $form_state->getValue($formSelectors['pin_label_array']),
       ];
       $value['params'] = json_encode($paramData);
     }

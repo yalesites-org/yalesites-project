@@ -92,6 +92,11 @@ function ys_views_basic_views_pre_build($view) {
 function ys_views_basic_views_pre_render(ViewExecutable $view): void {
   $view_id = $view->id();
   if (in_array($view_id, ['views_basic_scaffold', 'views_basic_scaffold_events'])) {
+    $pin_options = json_decode($view->args[9]);
+    $pin_label = '';
+    if ($pin_options->pinned_to_top) {
+      $pin_label = $pin_options->pin_label;
+    }
     $field_display_options = json_decode($view->args[8]);
     $event_field_display_options = json_decode($view->args[9]);
     // Loop through each row in the view's results and update the node's
@@ -102,6 +107,11 @@ function ys_views_basic_views_pre_render(ViewExecutable $view): void {
       $row->_entity->show_tags = $field_display_options->show_tags;
       $row->_entity->show_thumbnail = $field_display_options->show_thumbnail;
       $row->_entity->hide_add_to_calendar = $event_field_display_options->hide_add_to_calendar;
+
+      $sticky = (bool) $row->_entity->get('sticky')->value;
+      if ($sticky) {
+        $row->_entity->pin_label = $pin_label;
+      }
     }
   }
 }

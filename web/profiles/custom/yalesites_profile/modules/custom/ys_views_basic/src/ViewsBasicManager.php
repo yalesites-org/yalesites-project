@@ -154,6 +154,11 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     ],
   ];
 
+  /**
+   * Default pin label.
+   */
+  const DEFAULT_PIN_LABEL = 'Popular';
+
   /*
    * Define constants for content types.
    */
@@ -255,6 +260,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'field' => 'field_event_date_value',
           'group_type' => 'min',
           'order' => $sortDirection[1],
+          'test' => 'hi',
         ],
       ]);
     }
@@ -446,6 +452,18 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'hide_add_to_calendar' => (int) !empty($paramsDecoded['event_field_options']['hide_add_to_calendar']),
     ];
 
+    $pinned_to_top = (bool) $paramsDecoded['pinned_to_top'] ?? FALSE;
+    $pin_label = $paramsDecoded['pin_label'] ?? self::DEFAULT_PIN_LABEL;
+
+    if (!$pinned_to_top) {
+      $pin_label = NULL;
+    }
+
+    $pin_options = [
+      'pinned_to_top' => $pinned_to_top,
+      'pin_label' => $pin_label,
+    ];
+
     $view->setArguments(
       [
         'type' => $filterType,
@@ -458,6 +476,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'offset' => $paramsDecoded['offset'] ?? 0,
         'field_display_options' => json_encode($field_display_options),
         'event_field_display_options' => json_encode($event_field_display_options),
+        'pin_settings' => json_encode($pin_options),
       ]
     );
 
@@ -880,6 +899,22 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
             'options',
             'offset',
           ],
+          'pinned_to_top' => ($form) ? $form['block_form']['group_user_selection']['filter_and_sort']['pinned_to_top'] : NULL,
+          'pinned_to_top_array' => [
+            'block_form',
+            'group_user_selection',
+            'filter_and_sort',
+            'pinned_to_top',
+          ],
+          'pinned_to_top_selector' => ':input[name="block_form[group_user_selection][filter_and_sort][pinned_to_top]"]',
+          'pin_label' => ($form) ? $form['block_form']['group_user_selection']['filter_and_sort']['pin_label'] : self::DEFAULT_PIN_LABEL,
+          'pin_label_array' => [
+            'settings',
+            'block_form',
+            'group_user_selection',
+            'filter_and_sort',
+            'pin_label',
+          ],
         ];
       }
       else {
@@ -946,6 +981,23 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
             'options',
             'offset',
           ],
+          'pinned_to_top_ajax' => ($form) ? $form['settings']['block_form']['filter_and_sort']['pinned_to_top'] : NULL,
+          'pinned_to_top_array' => [
+            'settings',
+            'block_form',
+            'group_user_selection',
+            'filter_and_sort',
+            'pinned_to_top',
+          ],
+          'pinned_to_top_selector' => ':input[name="settings[block_form][group_user_selection][filter_and_sort][pinned_to_top]"]',
+          'pin_label_ajax' => ($form) ? $form['settings']['block_form']['filter_and_sort']['pin_label'] : self::DEFAULT_PIN_LABEL,
+          'pin_label_array' => [
+            'settings',
+            'block_form',
+            'group_user_selection',
+            'filter_and_sort',
+            'pin_label',
+          ],
         ];
       }
     }
@@ -971,6 +1023,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'limit_array' => ['limit'],
         'limit_ajax' => ($form) ? $form['group_user_selection']['options']['limit'] : NULL,
         'offset_array' => ['offset'],
+        'pinned_to_top' => ['pinned_to_top'],
+        'pinned_to_top_selector' => ':input[name="settings[block_form][group_user_selection][filter_and_sort][pinned_to_top]"]',
+        'pinned_to_top_array' => ['pinned_to_top'],
+        'pinned_to_top_ajax' => ($form) ? $form['group_user_selection']['filter_and_sort']['pinned_to_top'] : NULL,
+        'pin_label_array' => ['pin_label'],
+        'pin_label_ajax' => ($form) ? $form['settings']['block_form']['filter_and_sort']['pin_label'] : self::DEFAULT_PIN_LABEL,
       ];
     }
 
