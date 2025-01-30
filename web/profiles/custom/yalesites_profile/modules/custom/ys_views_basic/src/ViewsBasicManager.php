@@ -157,7 +157,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   /**
    * Default pin label.
    */
-  const DEFAULT_PIN_LABEL = 'Popular';
+  const DEFAULT_PIN_LABEL = 'Pinned';
 
   /*
    * Define constants for content types.
