@@ -31,6 +31,7 @@ dependencies:
     - block_content.type.text
     - block_content.type.tiles
     - block_content.type.video
+    - block_content.type.video_banner
     - block_content.type.view
     - block_content.type.webform
     - block_content.type.wrapped_image
@@ -149,6 +150,7 @@ permissions:
   - 'create url aliases'
   - 'create video block content'
   - 'create video media'
+  - 'create video_banner block content'
   - 'create view block content'
   - 'create webform block content'
   - 'create wrapped_image block content'
@@ -213,6 +215,8 @@ permissions:
   - 'delete any tiles block content revisions'
   - 'delete any video block content'
   - 'delete any video block content revisions'
+  - 'delete any video_banner block content'
+  - 'delete any video_banner block content revisions'
   - 'delete any view block content'
   - 'delete any view block content revisions'
   - 'delete any webform block content'
@@ -266,6 +270,7 @@ permissions:
   - 'edit any tiles block content'
   - 'edit any video block content'
   - 'edit any video media'
+  - 'edit any video_banner block content'
   - 'edit any view block content'
   - 'edit any webform block content'
   - 'edit any webform submission'
@@ -317,6 +322,7 @@ permissions:
   - 'revert any text block content revisions'
   - 'revert any tiles block content revisions'
   - 'revert any video block content revisions'
+  - 'revert any video_banner block content revisions'
   - 'revert any view block content revisions'
   - 'revert any webform block content revisions'
   - 'revert any wrapped_image block content revisions'
@@ -360,6 +366,7 @@ permissions:
   - 'view any tiles block content history'
   - 'view any unpublished content'
   - 'view any video block content history'
+  - 'view any video_banner block content history'
   - 'view any view block content history'
   - 'view any webform block content history'
   - 'view any webform submission'
