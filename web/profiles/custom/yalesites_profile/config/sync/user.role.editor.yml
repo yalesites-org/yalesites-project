@@ -98,6 +98,7 @@ permissions:
   - 'administer main menu items'
   - 'administer redirects'
   - 'administer users'
+  - 'administer utility-drop-button-navigation menu items'
   - 'administer utility-navigation menu items'
   - 'clone event content'
   - 'clone page content'

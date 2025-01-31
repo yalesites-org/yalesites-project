@@ -75,6 +75,7 @@
     "drupal/menu_admin_per_menu": "1.5",
     "drupal/menu_breadcrumb": "2.0.0-alpha0",
     "drupal/menu_item_extras": "3.1.0",
+    "drupal/menu_item_limit": "2.1.0",
     "drupal/metatag": "2.0.2",
     "drupal/migrate_plus": "6.0.4",
     "drupal/migrate_tools": "6.0.4",
@@ -173,6 +174,9 @@
       },
       "drupal/selective_better_exposed_filters": {
         "Hide form when no options are available:": "patches/selective_better_exposed_filters/selective_better_exposed_filters-3432551.patch"
+      },
+      "drupal/menu_item_limit": {
+        "Can permissions be set for specific roles? https://www.drupal.org/project/menu_item_limit/issues/3458139": "https://git.drupalcode.org/project/menu_item_limit/-/merge_requests/12.patch"
       },
       "drupal/layout_builder_lock": {
         "Show help text for only users who have permission https://www.drupal.org/project/layout_builder_lock/issues/3497055": "https://git.drupalcode.org/project/layout_builder_lock/-/merge_requests/26.patch"
