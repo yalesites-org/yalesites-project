@@ -12,9 +12,9 @@ use Drupal\Core\Plugin\ContextAwarePluginAssignmentTrait;
 use Drupal\Core\Plugin\ContextAwarePluginInterface;
 use Drupal\Core\Plugin\ContextAwarePluginTrait;
 use Drupal\Core\Routing\CurrentRouteMatch;
-use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
 use Drupal\node\Entity\Node;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Provides a yalesites taxonomy display block block.
@@ -31,11 +31,11 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
   use ContextAwarePluginAssignmentTrait;
 
   /**
-   * The layout tempstore repository.
+   * The request stack.
    *
-   * @var \Drupal\layout_builder\LayoutTempstoreRepositoryInterface
+   * @var \Symfony\Component\HttpFoundation\RequestStack
    */
-  protected LayoutTempstoreRepositoryInterface $layoutTempstoreRepository;
+  protected $requestStack;
 
   /**
    * The route match service.
@@ -60,12 +60,12 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
     $plugin_definition,
     EntityTypeManagerInterface $entityTypeManager,
     CurrentRouteMatch $routeMatch,
-    LayoutTempstoreRepositoryInterface $layout_tempstore_repository,
+    RequestStack $requestStack,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->entityTypeManager = $entityTypeManager;
     $this->routeMatch = $routeMatch;
-    $this->layoutTempstoreRepository = $layout_tempstore_repository;
+    $this->requestStack = $requestStack;
   }
 
   /**
@@ -78,7 +78,7 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
       $plugin_definition,
       $container->get('entity_type.manager'),
       $container->get('current_route_match'),
-      $container->get('layout_builder.tempstore_repository')
+      $container->get('request_stack'),
     );
   }
 
@@ -215,25 +215,22 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
    */
   protected function getCurrentNode() {
 
-    // Try to get the node from the route.
-    $node = $this->routeMatch->getParameter('node');
+    $request = $this->requestStack->getCurrentRequest();
+    $node = $request->attributes->get('node');
 
-    if ($node instanceof Node) {
-      return $node;
-    }
-
-    // Try to get the node from Layout Builder tempstore.
-    $section_storage = $this->routeMatch->getParameter('section_storage');
-    if ($section_storage) {
-      $entity = $this->layoutTempstoreRepository->get($section_storage)->getContextValue('entity');
-      if ($entity instanceof Node) {
-        // Tempstore context returns a node object,
-        // but we need to load the node entity.
-        return $this->entityTypeManager->getStorage('node')->load($entity->id());
+    // When removing the contact block when one already exists,
+    // it no longer has access to the node object. Therefore, we must load it
+    // manually via the ajaxified path.
+    if (!$node) {
+      $layoutBuilderPath = $request->getPathInfo();
+      preg_match('/(node\.+(\d+))/', $layoutBuilderPath, $matches);
+      if (!empty($matches)) {
+        $nodeStorage = $this->entityTypeManager->getStorage('node');
+        $node = $nodeStorage->load($matches[2]);
       }
     }
 
-    return NULL;
+    return $node ?? NULL;
   }
 
 }
