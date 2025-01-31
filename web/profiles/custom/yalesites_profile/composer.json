@@ -26,6 +26,7 @@
     "drupal/anchor_link": "3.0.0-beta1",
     "drupal/auto_entitylabel": "3.3.0",
     "drupal/better_exposed_filters": "6.0.5",
+    "drupal/book": "1.0.0",
     "drupal/calendar_link": "3.0.3",
     "drupal/captcha": "2.0.6",
     "drupal/cas": "2.3.2",
@@ -35,12 +36,13 @@
     "drupal/config_ignore": "3.3.0",
     "drupal/config_split": "2.0.1",
     "drupal/ctools": "4.1.0",
+    "drupal/custom_book_block": "1.1.0",
     "drupal/devel": "5.3.1",
     "drupal/devel_kint_extras": "1.1.2",
     "drupal/editor_advanced_link": "2.2.6",
     "drupal/editoria11y": "2.1.19",
     "drupal/emulsify_twig": "5.0.0",
-    "drupal/entity_redirect": "2.3.0",
+    "drupal/entity_redirect": "2.x-dev",
     "drupal/fast_404": "3.3.0",
     "drupal/field_group": "3.6.0",
     "drupal/focal_point": "2.1.2",
@@ -134,7 +136,7 @@
         "renderPlain on a node render array causes RuntimeException if the node renders a view programmatically": "https://www.drupal.org/files/issues/2023-03-27/core-render-plain-runtime-exception-3350137-9.patch"
       },
       "drupal/entity_redirect": {
-        "fix layout route https://www.drupal.org/project/entity_redirect/issues/3352265": "https://git.drupalcode.org/project/entity_redirect/-/merge_requests/6.patch"
+        "fix layout route https://www.drupal.org/project/entity_redirect/issues/3352265": "https://git.drupalcode.org/project/entity_redirect/-/merge_requests/6.diff"
       },
       "drupal/gin": {
         "fix description toggle for CKEditor fields https://www.drupal.org/project/gin/issues/3316265": "https://git.drupalcode.org/project/gin/-/merge_requests/227.patch"

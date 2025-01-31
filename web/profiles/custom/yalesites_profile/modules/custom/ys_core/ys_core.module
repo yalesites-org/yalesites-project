@@ -166,6 +166,26 @@ function ys_core_preprocess_block(&$variables) {
   // when the config is saved.
   // Via: https://drupal.stackexchange.com/questions/266379/how-to-clear-cache-for-config-entity-after-making-changes
   \Drupal::service('renderer')->addCacheableDependency($variables, $config);
+
+  // Add top level book link to the book navigation sub-nav.
+  if ($variables['base_plugin_id'] == 'custom_book_navigation') {
+    if (isset($variables['content']['#items']) && is_array($variables['content']['#items'])) {
+
+      foreach ($variables['content']['#items'] as &$menuItem) {
+        if (empty($menuItem['below'])) {
+          continue;
+        }
+
+        // Clone top level menu item.
+        $clonedMenuItem = $menuItem;
+
+        // We don't want any other subitems, just the top level.
+        $clonedMenuItem['below'] = NULL;
+
+        array_unshift($menuItem['below'], $clonedMenuItem);
+      }
+    }
+  }
 }
 
 /**
