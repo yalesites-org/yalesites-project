@@ -1,0 +1,33 @@
+uuid: cb9f4239-4955-497a-973a-9fb99c6730f1
+langcode: en
+status: true
+dependencies:
+  module:
+    - entity_redirect
+third_party_settings:
+  entity_redirect:
+    redirect:
+      add:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      edit:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      delete:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      anonymous:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+id: video_banner
+label: 'Video Banner'
+revision: true
+description: 'A video to display on your headers.'

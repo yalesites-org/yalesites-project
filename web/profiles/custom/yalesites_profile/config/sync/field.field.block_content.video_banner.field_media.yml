@@ -1,0 +1,29 @@
+uuid: c5255d08-a525-4f95-a7c1-cb3fe7e99e9f
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.video_banner
+    - field.storage.block_content.field_media
+    - media.type.video
+id: block_content.video_banner.field_media
+field_name: field_media
+entity_type: block_content
+bundle: video_banner
+label: Video
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:media'
+  handler_settings:
+    target_bundles:
+      video: video
+    sort:
+      field: _none
+      direction: ASC
+    auto_create: true
+    auto_create_bundle: ''
+field_type: entity_reference

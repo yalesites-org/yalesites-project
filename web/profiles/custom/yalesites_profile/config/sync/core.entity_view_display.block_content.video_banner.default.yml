@@ -1,0 +1,33 @@
+uuid: 777db718-9b53-4703-a2a7-bbe6723155ec
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.video_banner
+    - field.field.block_content.video_banner.field_media
+    - field.field.block_content.video_banner.field_style_width
+  module:
+    - options
+id: block_content.video_banner.default
+targetEntityType: block_content
+bundle: video_banner
+mode: default
+content:
+  field_media:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: text_with_image_feature_equal
+      link: false
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_style_width:
+    type: list_key
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 7
+    region: content
+hidden:
+  search_api_excerpt: true

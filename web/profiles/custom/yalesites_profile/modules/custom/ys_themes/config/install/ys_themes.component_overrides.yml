@@ -296,3 +296,9 @@ accordion:
       four: 'Four'
       five: 'Five'
     default: default
+video_banner:
+  field_style_width:
+    values:
+      max: Large
+      full: Full
+    default: max
