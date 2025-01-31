@@ -274,3 +274,9 @@ inline_message:
       four: Four
       five: Five
     default: one
+video_banner:
+  field_style_width:
+    values:
+      max: Large
+      full: Full
+    default: max
