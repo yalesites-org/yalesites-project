@@ -93,12 +93,17 @@ third_party_settings:
         - ys_layout_two_column
       denylisted_blocks: {  }
       allowlisted_blocks: {  }
-      restricted_categories: {  }
+      restricted_categories:
+        - 'YaleSites Core'
     entity_view_mode_restriction_by_region:
       allowed_layouts:
         - layout_onecol
         - ys_layout_two_column
       allowlisted_blocks:
+        layout_onecol:
+          all_regions:
+            'YaleSites Layouts':
+              - ys_taxonomy_display_block
         ys_layout_banner:
           all_regions:
             'Inline blocks':
@@ -133,6 +138,8 @@ third_party_settings:
               - 'inline_block:tabs'
               - 'inline_block:text'
               - 'inline_block:video'
+            'YaleSites Layouts':
+              - ys_taxonomy_display_block
           sidebar:
             'Custom block types':
               - text
@@ -164,7 +171,6 @@ third_party_settings:
             - System
             - Webform
             - 'YaleSites Core'
-            - 'YaleSites Layouts'
             - 'YaleSites alert'
             - core
         layout_onecol:
@@ -179,7 +185,6 @@ third_party_settings:
             - System
             - Webform
             - 'YaleSites Core'
-            - 'YaleSites Layouts'
             - 'YaleSites alert'
             - core
         ys_layout_banner:

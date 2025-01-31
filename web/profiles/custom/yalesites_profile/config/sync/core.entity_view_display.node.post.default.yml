@@ -81,7 +81,9 @@ third_party_settings:
     entity_view_mode_restriction:
       allowed_layouts: {  }
       denylisted_blocks: {  }
-      allowlisted_blocks: {  }
+      allowlisted_blocks:
+        'YaleSites Layouts':
+          - ys_taxonomy_display_block
       restricted_categories:
         - 'Chaos Tools'
         - 'Content fields'
@@ -92,7 +94,6 @@ third_party_settings:
         - System
         - Webform
         - 'YaleSites Core'
-        - 'YaleSites Layouts'
         - 'YaleSites alert'
         - core
     entity_view_mode_restriction_by_region:

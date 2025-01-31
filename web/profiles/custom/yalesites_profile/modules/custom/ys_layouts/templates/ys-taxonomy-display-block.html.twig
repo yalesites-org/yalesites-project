@@ -1,0 +1,19 @@
+{#
+ # Available Variables:
+ # - items (array)
+ #   - title: Link title
+ #   - url: Link url
+ #   - is_active: (bool) is current page
+ #}
+ <div class="taxonomy-display-block-{{ theme_selection }}">
+  {% for item in items %}
+    {{ item.label }}
+    <ul>
+      {% for term in item.terms %}
+        <li>
+          {{ term }}
+          </li>
+        {% endfor %}
+      </ul>
+  {% endfor %}
+</div>

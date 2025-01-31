@@ -97,7 +97,8 @@ third_party_settings:
       - 'Chaos Tools'
       - 'Content fields'
       - 'Custom block types'
-      - 'Custom blocks'
+      - Devel
+      - Editoria11y
       - Forms
       - Help
       - 'Inline blocks'
@@ -118,10 +119,12 @@ third_party_settings:
         'YaleSites Layouts':
           - profile_contact_block
           - profile_meta_block
+          - ys_taxonomy_display_block
       restricted_categories:
         - 'Chaos Tools'
         - 'Content fields'
-        - 'Custom blocks'
+        - Devel
+        - Editoria11y
         - Forms
         - Help
         - 'Lists (Views)'
@@ -140,6 +143,7 @@ third_party_settings:
           all_regions:
             'YaleSites Layouts':
               - profile_contact_block
+              - ys_taxonomy_display_block
         ys_layout_two_column:
           content:
             'Custom block types':
@@ -164,6 +168,7 @@ third_party_settings:
               - 'inline_block:video'
             'YaleSites Layouts':
               - profile_contact_block
+              - ys_taxonomy_display_block
           sidebar:
             'Custom block types':
               - text
@@ -190,7 +195,6 @@ third_party_settings:
           content:
             - 'Chaos Tools'
             - 'Content fields'
-            - 'Custom blocks'
             - Forms
             - Help
             - 'Lists (Views)'
@@ -204,7 +208,6 @@ third_party_settings:
           all_regions:
             - 'Chaos Tools'
             - 'Content fields'
-            - 'Custom blocks'
             - Forms
             - Help
             - 'Lists (Views)'
