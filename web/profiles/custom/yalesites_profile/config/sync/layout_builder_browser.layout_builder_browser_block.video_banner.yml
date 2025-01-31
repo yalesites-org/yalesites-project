@@ -1,0 +1,11 @@
+uuid: efb6ef64-1ffc-4eba-a158-da07987b2fda
+langcode: en
+status: true
+dependencies: {  }
+id: video_banner
+block_id: 'inline_block:video_banner'
+category: basic
+label: 'Video Banner'
+image_path: ''
+image_alt: ''
+weight: -1
