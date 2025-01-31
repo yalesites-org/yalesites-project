@@ -1,0 +1,20 @@
+{% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
+
+{% block content %}
+
+  {% if parentNode == 'post' or parentNode == 'event' %}
+    {% set wrapped_callout__width = "content" %}
+  {% else %}
+    {% set wrapped_callout__width = "site" %}
+  {% endif %}
+
+  {% embed "@molecules/wrapped-callout/yds-wrapped-callout.twig" with {
+    wrapped_callout__width: wrapped_callout__width|default('content'),
+    wrapped_callout__callout: content.field_callout_text.0,
+    wrapped_callout__content: content.field_text.0,
+    wrapped_callout__alignment: content.field_style_position.0['#markup'],
+    wrapped_callout__theme: content.field_style_color.0['#markup'],
+  } %}
+  {% endembed %}
+
+{% endblock %}
