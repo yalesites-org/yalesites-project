@@ -83,3 +83,6 @@ in-this-section:
   js:
     node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/menu/menu-in-this-section-toggle/yds-menu-in-this-section-toggle.js: {}
     node_modules/@yalesites-org/component-library-twig/dist/js/03-organisms/site-in-this-section/yds-site-in-this-section.js: {}
+utility-nav-dropdown-menu:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/03-organisms/menu/utility-nav/utility-nav-dropdown-menu.js: {}
