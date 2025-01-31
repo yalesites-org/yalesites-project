@@ -56,6 +56,7 @@ dependencies:
     - workflows.workflow.events
   module:
     - block_content
+    - book
     - content_moderation
     - contextual
     - editoria11y
@@ -86,14 +87,17 @@ permissions:
   - 'access contextual links'
   - 'access files overview'
   - 'access media overview'
+  - 'access printer-friendly version'
   - 'access site in maintenance mode'
   - 'access taxonomy overview'
   - 'access toolbar'
   - 'access user profiles'
   - 'access webform overview'
+  - 'add content to books'
   - 'administer main menu items'
   - 'administer redirects'
   - 'administer users'
+  - 'administer utility-drop-button-navigation menu items'
   - 'administer utility-navigation menu items'
   - 'clone event content'
   - 'clone page content'

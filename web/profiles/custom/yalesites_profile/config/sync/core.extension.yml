@@ -18,6 +18,7 @@ module:
   better_exposed_filters: 0
   block: 0
   block_content: 0
+  book: 0
   breakpoint: 0
   calendar_link: 0
   captcha: 0
@@ -36,6 +37,7 @@ module:
   contextual: 0
   crop: 0
   ctools: 0
+  custom_book_block: 0
   datetime: 0
   datetime_range: 0
   dblog: 0
@@ -88,6 +90,7 @@ module:
   media_library_form_element: 0
   menu_breadcrumb: 0
   menu_item_extras: 0
+  menu_item_limit: 0
   menu_link_content: 0
   menu_ui: 0
   metatag: 0
@@ -145,6 +148,7 @@ module:
   workflows: 0
   yale_cas: 0
   ys_alert: 0
+  ys_book: 0
   ys_captcha: 0
   ys_layouts: 0
   ys_localist: 0

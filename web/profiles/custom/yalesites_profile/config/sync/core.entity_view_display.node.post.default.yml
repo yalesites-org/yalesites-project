@@ -98,7 +98,9 @@ third_party_settings:
   layout_builder_restrictions:
     allowed_block_categories: {  }
     entity_view_mode_restriction:
-      allowed_layouts: {  }
+      allowed_layouts:
+        - layout_onecol
+        - ys_layout_two_column_50_50
       denylisted_blocks: {  }
       allowlisted_blocks: {  }
       restricted_categories:
@@ -115,7 +117,39 @@ third_party_settings:
         - 'YaleSites alert'
         - core
     entity_view_mode_restriction_by_region:
-      allowed_layouts: {  }
+      allowed_layouts:
+        - layout_onecol
+        - ys_layout_two_column_50_50
+      allowlisted_blocks:
+        ys_layout_two_column_50_50:
+          all_regions:
+            'Custom block types':
+              - accordion
+              - image
+              - link_grid
+              - text
+            'Inline blocks':
+              - 'inline_block:accordion'
+              - 'inline_block:image'
+              - 'inline_block:link_grid'
+              - 'inline_block:text'
+      restricted_categories:
+        ys_layout_two_column_50_50:
+          all_regions:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - Devel
+            - Editoria11y
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites Layouts'
+            - 'YaleSites alert'
+            - core
 id: node.post.default
 targetEntityType: node
 bundle: post

@@ -35,6 +35,7 @@ auto_added_reusable_block_content_bundles:
   view: view
   webform: webform
   wrapped_image: wrapped_image
+  wrapped_text_callout: wrapped_text_callout
 group_reusable_blocks_together: true
 reusable_image_fallback: ''
 reusable_image_fallback_alt: ''
