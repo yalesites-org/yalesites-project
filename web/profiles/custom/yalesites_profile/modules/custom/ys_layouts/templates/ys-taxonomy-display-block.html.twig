@@ -6,14 +6,18 @@
  #   - is_active: (bool) is current page
  #}
  <div class="taxonomy-display-block-{{ theme_selection }}">
-  {% for item in items %}
-    {{ item.label }}
-    <ul>
+  {% if items is empty %}
+    <p>No terms found.</p>
+  {% else %}
+    {% for item in items %}
+      {{ item.label }}
+      <ul>
       {% for term in item.terms %}
         <li>
           {{ term }}
           </li>
         {% endfor %}
       </ul>
-  {% endfor %}
+    {% endfor %}
+  {% endif %}
 </div>
