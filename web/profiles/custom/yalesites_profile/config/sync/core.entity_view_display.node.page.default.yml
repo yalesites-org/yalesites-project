@@ -111,10 +111,19 @@ third_party_settings:
               - 'inline_block:image_banner'
               - 'inline_block:content_spotlight'
               - 'inline_block:content_spotlight_portrait'
+              - 'inline_block:video_banner'
         ys_layout_page_meta:
           all_regions:
             'YaleSites Layouts':
               - page_meta_block
+        ys_layout_three_column_33_33_33:
+          all_regions:
+            'Custom block types':
+              - image
+              - text
+            'Inline blocks':
+              - 'inline_block:image'
+              - 'inline_block:text'
         ys_layout_two_column:
           content:
             'Custom block types':
@@ -141,14 +150,6 @@ third_party_settings:
             'Custom block types':
               - text
             'Inline blocks':
-              - 'inline_block:text'
-        ys_layout_three_column_33_33_33:
-          all_regions:
-            'Custom block types':
-              - image
-              - text
-            'Inline blocks':
-              - 'inline_block:image'
               - 'inline_block:text'
         ys_layout_two_column_50_50:
           all_regions:
