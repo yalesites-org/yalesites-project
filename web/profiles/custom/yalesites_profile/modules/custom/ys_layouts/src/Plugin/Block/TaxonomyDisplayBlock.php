@@ -8,14 +8,13 @@ use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Routing\CurrentRouteMatch;
-use Drupal\Core\Plugin\ContextAwarePluginTrait;
 use Drupal\Core\Plugin\ContextAwarePluginAssignmentTrait;
 use Drupal\Core\Plugin\ContextAwarePluginInterface;
+use Drupal\Core\Plugin\ContextAwarePluginTrait;
+use Drupal\Core\Routing\CurrentRouteMatch;
 use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
-use Drupal\Core\Plugin\Context\ContextRepositoryInterface;
 use Drupal\node\Entity\Node;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a yalesites taxonomy display block block.
@@ -37,13 +36,6 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
    * @var \Drupal\layout_builder\LayoutTempstoreRepositoryInterface
    */
   protected LayoutTempstoreRepositoryInterface $layoutTempstoreRepository;
-
-  /**
-   * The context repository service.
-   *
-   * @var \Drupal\Core\Plugin\Context\ContextRepositoryInterface
-   */
-  protected $contextRepository;
 
   /**
    * The route match service.
@@ -68,13 +60,11 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
     $plugin_definition,
     EntityTypeManagerInterface $entityTypeManager,
     CurrentRouteMatch $routeMatch,
-    ContextRepositoryInterface $contextRepository,
     LayoutTempstoreRepositoryInterface $layout_tempstore_repository,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->entityTypeManager = $entityTypeManager;
     $this->routeMatch = $routeMatch;
-    $this->contextRepository = $contextRepository;
     $this->layoutTempstoreRepository = $layout_tempstore_repository;
   }
 
@@ -88,7 +78,6 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
       $plugin_definition,
       $container->get('entity_type.manager'),
       $container->get('current_route_match'),
-      $container->get('context.repository'),
       $container->get('layout_builder.tempstore_repository')
     );
   }
@@ -234,19 +223,14 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
     }
 
     // Try to get the node from Layout Builder tempstore.
-    try {
-      $section_storage = $this->routeMatch->getParameter('section_storage');
-      if ($section_storage) {
-        $entity = $this->layoutTempstoreRepository->get($section_storage)->getContextValue('entity');
-        if ($entity instanceof Node) {
-          // Tempstore context returns a node object,
-          // but we need to load the node entity.
-          return $this->entityTypeManager->getStorage('node')->load($entity->id());
-        }
+    $section_storage = $this->routeMatch->getParameter('section_storage');
+    if ($section_storage) {
+      $entity = $this->layoutTempstoreRepository->get($section_storage)->getContextValue('entity');
+      if ($entity instanceof Node) {
+        // Tempstore context returns a node object,
+        // but we need to load the node entity.
+        return $this->entityTypeManager->getStorage('node')->load($entity->id());
       }
-    }
-    catch (\Exception $e) {
-      // Tempstore or context not available.
     }
 
     return NULL;
