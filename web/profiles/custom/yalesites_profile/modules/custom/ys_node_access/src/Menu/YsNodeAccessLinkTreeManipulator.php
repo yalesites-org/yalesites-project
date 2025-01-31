@@ -55,15 +55,18 @@ class YsNodeAccessLinkTreeManipulator extends DefaultMenuLinkTreeManipulators {
 
     $menuName = $instance->getMenuName();
     if (in_array($menuName, $menusToCheck)) {
-      dpm($menuName);
+      dpm(get_class_methods($instance));
+      dpm($instance->getMetaData());
+      $metadata = $instance->getMetaData();
+      // todo - set metadata on this link item, then possibly use preprocess to add the data attribute there?
+
+      //If the user is anonymous, override access to always allow visibility.
+      if ($this->account->isAnonymous()) {
+        return AccessResult::allowed();
+      }
     }
 
     $access_result = parent::menuLinkCheckAccess($instance);
-
-    // If the user is anonymous, override access to always allow visibility.
-    // if ($this->account->isAnonymous()) {
-    //   return AccessResult::allowed();
-    // }
 
     return $access_result;
   }
