@@ -277,6 +277,6 @@ inline_message:
 video_banner:
   field_style_width:
     values:
-      max: Large
-      full: Full
+      max: Contained
+      full: Full Width
     default: max
