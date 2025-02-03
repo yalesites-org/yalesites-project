@@ -679,6 +679,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
       case 'show_current_entity':
         $defaultParam = (empty($paramsDecoded['show_current_entity'])) ? 0 : $paramsDecoded['show_current_entity'];
+      case 'pinned_to_top':
+        $defaultParam = (empty($paramsDecoded['pinned_to_top'])) ? FALSE : (bool) $paramsDecoded['pinned_to_top'];
+        break;
+
+      case 'pin_label':
+        $defaultParam = (empty($paramsDecoded['pin_label'])) ? self::DEFAULT_PIN_LABEL : $paramsDecoded['pin_label'];
         break;
 
       default:
