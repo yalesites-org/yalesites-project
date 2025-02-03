@@ -34,10 +34,42 @@ class ViewsBasicSort extends SortPluginBase {
         else {
           $field = $sortQueryOptions[0];
         }
-        $query->addOrderBy(NULL, "node_field_data.sticky", 'DESC', 'views_basic_sort');
+
+        if ($this->shouldFeaturePinToTop()) {
+          $query->addOrderBy(NULL, "node_field_data.sticky", 'DESC', 'views_basic_sort');
+        }
         $query->addOrderBy(NULL, "{$field}", $sortQueryOptions[1], 'views_basic_sort');
       }
     }
+  }
+
+  /**
+   * Determines if the view should feature a pin to top.
+   */
+  protected function shouldFeaturePinToTop() {
+    $pinOptions = $this->getPinOptions($this->view->args[9]);
+    if ($pinOptions && $pinOptions['pinned_to_top']) {
+      return TRUE;
+    }
+
+    return FALSE;
+  }
+
+  /**
+   * Decodes the pin option parameters.
+   *
+   * @param string $args
+   *   The arguments passed to the view.
+   *
+   * @return array
+   *   The decoded pin options.
+   */
+  protected function getPinOptions($args) {
+    if ($args) {
+      return json_decode($args, TRUE);
+    }
+
+    return [];
   }
 
 }
