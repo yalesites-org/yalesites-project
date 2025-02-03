@@ -36,13 +36,5 @@
       {{ drupal_entity('media', getCoreSetting('image_fallback.teaser'), 'card_secondary_3_2') }}
     {% endif %}
 
-    {% if node.pin_label %}
-      {% include "@atoms/typography/text/yds-text.twig" with {
-        text__base_class: 'overlay',
-        text__blockname: reference_card__base_class,
-        text__content: node.pin_label,
-      } %}
-    {% endif %}
-
   {% endblock %}
 {% endembed %}
