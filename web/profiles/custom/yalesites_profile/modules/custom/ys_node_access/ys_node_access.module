@@ -6,6 +6,8 @@
  */
 
 use Drupal\Core\Session\AccountInterface;
+use Drupal\menu_item_extras\Commands\MenuItemExtrasCommands;
+use Drupal\menu_item_extras\Entity\MenuItemExtrasMenuLinkContent;
 use Drupal\menu_link_content\MenuLinkContentInterface;
 use Drupal\ys_node_access\NodeAccessManager;
 
@@ -95,6 +97,11 @@ function ys_node_access_preprocess_menu(array &$variables) {
   if (in_array($menuName, $menusToCheck)) {
     $items = $variables['items'];
     foreach ($items as $item) {
+
+      if (isset($item['entity']) && $item['entity'] instanceof MenuItemExtrasMenuLinkContent && $item['entity']->data_restricted) {
+        dpm($item['entity']->getTitle() . ' is restricted');
+      }
+
       /** @var \Drupal\Core\Menu\MenuLinkInterface $menu_link */
       $menu_link = $item['original_link'] ?? NULL;
       if (!empty($menu_link)) {
