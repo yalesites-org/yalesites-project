@@ -27,14 +27,16 @@ class CampusGroupUrl extends Url {
     $groups = $config->get('campus_groups_groupids');
     $days = self::DAYS;
 
-    $queryParams = [
-      'future_day_range' => $days,
-      'group_ids' => $groups,
-    ];
+    if ($url) {
+      $queryParams = [
+        'future_day_range' => $days,
+        'group_ids' => $groups,
+      ];
 
-    $urlObject = UrlObject::fromUri($url, ['query' => $queryParams]);
+      $urlObject = UrlObject::fromUri($url, ['query' => $queryParams]);
 
-    $configuration['urls'] = $urlObject->toString();
+      $configuration['urls'] = $urlObject->toString();
+    }
 
     parent::__construct($configuration, $plugin_id, $plugin_definition, $migration);
   }
