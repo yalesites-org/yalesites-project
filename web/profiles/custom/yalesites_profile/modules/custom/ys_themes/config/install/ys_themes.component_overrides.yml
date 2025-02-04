@@ -59,6 +59,12 @@ content_spotlight:
       four: 'Four'
       five: 'Five'
     default: default
+  field_style_alignment:
+    values:
+      top: 'Top'
+      middle: 'Middle'
+      bottom: 'Bottom'
+    default: top
 quick_links:
   field_style_variation:
     values:
@@ -100,6 +106,20 @@ wrapped_image:
       floated: Inline
       offset: Offset
     default: offset
+wrapped_text_callout:
+  field_style_position:
+    values:
+      left: Left
+      right: Right
+    default: left
+  field_style_color:
+    values:
+      one: 'One'
+      two: 'Two'
+      three: 'Three'
+      four: 'Four'
+      five: 'Five'
+    default: one
 grand_hero:
   field_style_position:
     values:
@@ -152,6 +172,12 @@ content_spotlight_portrait:
       four: 'Four'
       five: 'Five'
     default: default
+  field_style_alignment:
+    values:
+      top: 'Top'
+      middle: 'Middle'
+      bottom: 'Bottom'
+    default: middle
 text:
   field_style_variation:
     values:
@@ -248,3 +274,15 @@ inline_message:
       four: 'Four'
       five: 'Five'
     default: one
+video:
+  field_style_alignment:
+    values:
+      left: Left
+      center: Center
+    default: left
+image_banner:
+  field_style_variation:
+    values:
+      tall: Tall
+      short: Short
+    default: tall
