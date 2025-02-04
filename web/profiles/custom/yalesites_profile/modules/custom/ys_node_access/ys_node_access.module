@@ -6,6 +6,7 @@
  */
 
 use Drupal\Core\Session\AccountInterface;
+use Drupal\menu_link_content\MenuLinkContentInterface;
 use Drupal\ys_node_access\NodeAccessManager;
 
 /**
@@ -76,4 +77,29 @@ function ys_node_access_node_access_records($node) {
   }
 
   return $grants;
+}
+
+/**
+ * Implements hook_preprocess_menu().
+ */
+function ys_node_access_preprocess_menu(array &$variables) {
+
+  $menusToCheck = [
+      'main',
+      'utility-navigation',
+      'utility-drop-button-navigation',
+      'footer',
+    ];
+
+  $menuName = $variables['menu_name'];
+  if (in_array($menuName, $menusToCheck)) {
+    $items = $variables['items'];
+    foreach ($items as $item) {
+      /** @var \Drupal\Core\Menu\MenuLinkInterface $menu_link */
+      $menu_link = $item['original_link'] ?? NULL;
+      if (!empty($menu_link)) {
+        $item['attributes']->setAttribute('atrus', 'woot');
+      }
+    }
+  }
 }

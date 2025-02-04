@@ -4,6 +4,7 @@ namespace Drupal\ys_node_access\Menu;
 
 use Drupal\Core\Access\AccessManagerInterface;
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Menu\DefaultMenuLinkTreeManipulators;
@@ -16,6 +17,13 @@ use Drupal\Core\Session\AccountInterface;
 class YsNodeAccessLinkTreeManipulator extends DefaultMenuLinkTreeManipulators {
 
   /**
+   * Configuration Factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $headerSettings;
+
+  /**
    * Constructs a CustomMenuLinkTreeManipulator object.
    *
    * @param \Drupal\Core\Access\AccessManagerInterface $access_manager
@@ -26,14 +34,18 @@ class YsNodeAccessLinkTreeManipulator extends DefaultMenuLinkTreeManipulators {
    *   The entity type manager.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface|null $module_handler
    *   The module handler.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The configuration factory.
    */
   public function __construct(
     AccessManagerInterface $access_manager,
     AccountInterface $account,
     EntityTypeManagerInterface $entity_type_manager,
-    ModuleHandlerInterface $module_handler = NULL
+    ModuleHandlerInterface $module_handler = NULL,
+    ConfigFactoryInterface $config_factory
   ) {
     parent::__construct($access_manager, $account, $entity_type_manager, $module_handler);
+    $this->headerSettings = $config_factory->get('ys_core.header_settings');
   }
 
   /**
@@ -46,6 +58,11 @@ class YsNodeAccessLinkTreeManipulator extends DefaultMenuLinkTreeManipulators {
    *   The access result.
    */
   protected function menuLinkCheckAccess(MenuLinkInterface $instance) {
+    $access_result = parent::menuLinkCheckAccess($instance);
+    if (!$this->headerSettings->get('enable_cas_menu_links')) {
+      return $access_result;
+    }
+
     $menusToCheck = [
       'main',
       'utility-navigation',
@@ -55,18 +72,16 @@ class YsNodeAccessLinkTreeManipulator extends DefaultMenuLinkTreeManipulators {
 
     $menuName = $instance->getMenuName();
     if (in_array($menuName, $menusToCheck)) {
-      dpm(get_class_methods($instance));
-      dpm($instance->getMetaData());
-      $metadata = $instance->getMetaData();
-      // todo - set metadata on this link item, then possibly use preprocess to add the data attribute there?
-
-      //If the user is anonymous, override access to always allow visibility.
       if ($this->account->isAnonymous()) {
-        return AccessResult::allowed();
+        if (!$access_result->isAllowed()) {
+          $metadata = $instance->getMetaData();
+          $menu_link_content_storage = $this->entityTypeManager->getStorage('menu_link_content');
+          $menu_entity = $menu_link_content_storage->load($metadata['entity_id']);
+          $menu_entity->data_restricted = TRUE;
+          return AccessResult::allowed();
+        }
       }
     }
-
-    $access_result = parent::menuLinkCheckAccess($instance);
 
     return $access_result;
   }
