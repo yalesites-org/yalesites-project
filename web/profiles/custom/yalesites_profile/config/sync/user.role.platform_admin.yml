@@ -77,6 +77,7 @@ dependencies:
     - toolbar
     - webform
     - ys_alert
+    - ys_campus_groups
     - ys_core
     - ys_localist
 id: platform_admin
@@ -410,5 +411,6 @@ permissions:
   - 'view the administration theme'
   - 'view unpublished paragraphs'
   - 'yalesites manage alerts'
+  - 'yalesites manage campus groups'
   - 'yalesites manage localist'
   - 'yalesites manage settings'

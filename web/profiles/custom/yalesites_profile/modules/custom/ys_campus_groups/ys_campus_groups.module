@@ -1,0 +1,26 @@
+<?php
+
+/**
+ * @file
+ * Primary module hooks for YS Campus Groups module.
+ */
+
+use Drupal\ys_campus_groups\Controller\RunMigrations;
+
+/**
+ * Implements hook_cron().
+ */
+function ys_campus_groups_cron() {
+  $config = \Drupal::config('ys_campus_groups.settings');
+  if ($config->get('enable_campus_groups_sync')) {
+
+    $state = \Drupal::state();
+
+    $next_execution_time = $state->get("campus_groups_migrations", 0);
+    $current_time = \Drupal::time()->getRequestTime();
+    if ($current_time > $next_execution_time) {
+      $state->set("campus_groups_migrations", $current_time + 3600);
+      RunMigrations::runAllMigrations();
+    }
+  }
+}

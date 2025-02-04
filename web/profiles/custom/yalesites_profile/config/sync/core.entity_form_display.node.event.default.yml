@@ -9,9 +9,11 @@ dependencies:
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_description
     - field.field.node.event.field_event_format
+    - field.field.node.event.field_event_id
     - field.field.node.event.field_event_place
     - field.field.node.event.field_event_recurring
     - field.field.node.event.field_event_room
+    - field.field.node.event.field_event_source
     - field.field.node.event.field_event_status
     - field.field.node.event.field_event_topics
     - field.field.node.event.field_event_type
@@ -169,6 +171,8 @@ third_party_settings:
       children:
         - field_localist_info
         - field_localist_id
+        - field_event_id
+        - field_event_source
         - field_event_status
         - field_localist_event_url
         - field_localist_event_image_url
@@ -288,6 +292,14 @@ content:
       rows: 5
       placeholder: ''
     third_party_settings: {  }
+  field_event_id:
+    type: string_textfield
+    weight: 30
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
   field_event_place:
     type: chosen_select
     weight: 6
@@ -309,9 +321,15 @@ content:
       size: 60
       placeholder: ''
     third_party_settings: {  }
+  field_event_source:
+    type: options_select
+    weight: 31
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_event_status:
     type: options_select
-    weight: 30
+    weight: 32
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -337,7 +355,7 @@ content:
     third_party_settings: {  }
   field_localist_event_image_alt:
     type: string_textfield
-    weight: 33
+    weight: 35
     region: content
     settings:
       size: 60
@@ -345,7 +363,7 @@ content:
     third_party_settings: {  }
   field_localist_event_image_url:
     type: link_default
-    weight: 32
+    weight: 34
     region: content
     settings:
       placeholder_url: ''
@@ -359,7 +377,7 @@ content:
     third_party_settings: {  }
   field_localist_event_url:
     type: link_default
-    weight: 31
+    weight: 33
     region: content
     settings:
       placeholder_url: ''
@@ -373,7 +391,7 @@ content:
     third_party_settings: {  }
   field_localist_ics_url:
     type: link_default
-    weight: 34
+    weight: 36
     region: content
     settings:
       placeholder_url: ''
@@ -395,7 +413,7 @@ content:
     third_party_settings: {  }
   field_localist_register_enabled:
     type: boolean_checkbox
-    weight: 35
+    weight: 37
     region: content
     settings:
       display_label: true

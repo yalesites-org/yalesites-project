@@ -47,6 +47,13 @@ ys_core.admin_views_settings:
   route_name: ys_core.admin_views_settings
   title: "Views Settings"
   weight: 25
+# Create a new section for integrations
+ys_core.admin_yalesites_integrations:
+  description: "YaleSites integrations with other systems."
+  parent: ys_core.admin_yalesites
+  route_name: ys_core.admin_yalesites_integrations
+  title: "Integrations"
+  weight: 30
 # main menu edit form.
 ys_core.menu_main_edit:
   description: "Manage main navigation"

@@ -1,0 +1,6 @@
+services:
+  # Service for interacting with Localist sync and configuration.
+  ys_campus_groups.manager:
+    class: Drupal\ys_campus_groups\CampusGroupsManager
+    arguments: ['@config.factory', '@plugin.manager.migration', '@module_handler', '@datetime.time', '@messenger']
+

@@ -9,9 +9,11 @@ dependencies:
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_description
     - field.field.node.event.field_event_format
+    - field.field.node.event.field_event_id
     - field.field.node.event.field_event_place
     - field.field.node.event.field_event_recurring
     - field.field.node.event.field_event_room
+    - field.field.node.event.field_event_source
     - field.field.node.event.field_event_status
     - field.field.node.event.field_event_topics
     - field.field.node.event.field_event_type
@@ -181,6 +183,14 @@ content:
     third_party_settings: {  }
     weight: 10
     region: content
+  field_event_id:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 31
+    region: content
   field_event_place:
     type: entity_reference_label
     label: above
@@ -206,6 +216,14 @@ content:
       link_to_entity: false
     third_party_settings: {  }
     weight: 11
+    region: content
+  field_event_source:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 32
     region: content
   field_event_status:
     type: entity_reference_label

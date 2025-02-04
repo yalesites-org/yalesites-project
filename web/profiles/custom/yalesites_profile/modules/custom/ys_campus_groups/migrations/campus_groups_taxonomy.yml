@@ -1,0 +1,33 @@
+langcode: en
+status: true
+dependencies: {  }
+id: campus_groups_taxonomy
+label: 'Campus Groups YaleSites Taxonomy'
+migration_group: campus_groups
+
+source:
+  plugin: embedded_data
+  track_changes: true
+  data_rows:
+    - name: Campus Groups
+  ids:
+    name:
+      type: string
+
+process:
+  vid:
+    plugin: default_value
+    default_value: event_sources
+
+  name: name
+
+  tid:
+    plugin: entity_lookup
+    value_key: name
+    entity_type: taxonomy_term
+    bundle_key: vid
+    bundle: event_sources
+
+destination:
+  plugin: entity:taxonomy_term
+  default_bundle: event_sources
