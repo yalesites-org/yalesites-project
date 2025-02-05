@@ -41,8 +41,8 @@ class YsNodeAccessLinkTreeManipulator extends DefaultMenuLinkTreeManipulators {
     AccessManagerInterface $access_manager,
     AccountInterface $account,
     EntityTypeManagerInterface $entity_type_manager,
-    ModuleHandlerInterface $module_handler = NULL,
-    ConfigFactoryInterface $config_factory
+    ModuleHandlerInterface $module_handler,
+    ConfigFactoryInterface $config_factory,
   ) {
     parent::__construct($access_manager, $account, $entity_type_manager, $module_handler);
     $this->headerSettings = $config_factory->get('ys_core.header_settings');
