@@ -30,7 +30,7 @@ class LibCal extends EmbedSourceBase implements EmbedSourceInterface {
   protected static $template = <<<EOT
   <div class="embed-libcal"></div>
   EOT;
-  
+
   /**
    * Builds the render array for the embed.
    */
@@ -42,7 +42,7 @@ class LibCal extends EmbedSourceBase implements EmbedSourceInterface {
         'library' => ['ys_embed/libcal'],
         'drupalSettings' => [
           'ysEmbed' => [
-            'libcalEmbedCode' => $embed_code, // ✅ Pass embed_code dynamically
+            'libcalEmbedCode' => $embed_code,
           ],
         ],
         'html_head' => [
@@ -83,4 +83,3 @@ class LibCal extends EmbedSourceBase implements EmbedSourceInterface {
 }
 
 Drupal::logger('ys_embed')->notice('Library attached: @library', ['@library' => 'ys_embed/libcal']);
-
