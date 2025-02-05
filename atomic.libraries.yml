@@ -76,3 +76,6 @@ calendar:
     node_modules/@yalesites-org/component-library-twig/dist/js/03-organisms/calendar/yds-calendar.js: {}
   dependencies:
     - core/drupal.ajax
+ys_embed:
+  dependencies:
+    - core/jquery
