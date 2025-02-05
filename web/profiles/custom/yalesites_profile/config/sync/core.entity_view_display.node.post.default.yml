@@ -10,6 +10,7 @@ dependencies:
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
     - field.field.node.post.field_tags
+    - field.field.node.post.field_teaser_lead_in
     - field.field.node.post.field_teaser_media
     - field.field.node.post.field_teaser_text
     - field.field.node.post.field_teaser_title
@@ -53,6 +54,22 @@ third_party_settings:
               context_mapping:
                 entity: layout_builder.entity
             weight: 1
+            additional: {  }
+          12eba6b2-ee54-4d04-9ae5-1d24bcac1989:
+            uuid: 12eba6b2-ee54-4d04-9ae5-1d24bcac1989
+            region: content
+            configuration:
+              id: 'field_block:node:post:field_teaser_lead_in'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: string
+                label: above
+                settings:
+                  link_to_entity: false
+                third_party_settings: {  }
+            weight: 2
             additional: {  }
         third_party_settings:
           layout_builder_lock:
@@ -168,6 +185,14 @@ content:
       target: ''
     third_party_settings: {  }
     weight: 2
+    region: content
+  field_teaser_lead_in:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 3
     region: content
 hidden:
   field_login_required: true
