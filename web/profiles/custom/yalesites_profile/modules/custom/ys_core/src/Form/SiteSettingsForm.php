@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_core\Form;
 
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -316,9 +317,27 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     $this->configFactory->getEditable('google_analytics.settings')
       ->set('account', $form_state->getValue('google_analytics_id'))
       ->save();
-    $this->configFactory->getEditable('taxonomy.vocabulary.custom_vocab')
-      ->set('name', $form_state->getValue('custom_vocab_name'))
-      ->save();
+
+    $custom_vocab_name = $this->configFactory->getEditable('taxonomy.vocabulary.custom_vocab')->get('name');
+    if ($custom_vocab_name !== $form_state->getValue('custom_vocab_name')) {
+      // Update the custom vocab vocabulary name.
+      $this->configFactory->getEditable('taxonomy.vocabulary.custom_vocab')
+        ->set('name', $form_state->getValue('custom_vocab_name'))
+        ->save();
+      // Update the custom vocab field label for each content type.
+      $this->configFactory->getEditable('field.field.node.event.field_custom_vocab')
+        ->set('label', $form_state->getValue('custom_vocab_name'))
+        ->save();
+      $this->configFactory->getEditable('field.field.node.page.field_custom_vocab')
+        ->set('label', $form_state->getValue('custom_vocab_name'))
+        ->save();
+      $this->configFactory->getEditable('field.field.node.post.field_custom_vocab')
+        ->set('label', $form_state->getValue('custom_vocab_name'))
+        ->save();
+      $this->configFactory->getEditable('field.field.node.profile.field_custom_vocab')
+        ->set('label', $form_state->getValue('custom_vocab_name'))
+        ->save();
+    }
 
     parent::submitForm($form, $form_state);
   }
