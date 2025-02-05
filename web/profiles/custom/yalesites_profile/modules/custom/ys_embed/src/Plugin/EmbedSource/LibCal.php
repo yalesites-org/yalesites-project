@@ -4,7 +4,6 @@ namespace Drupal\ys_embed\Plugin\EmbedSource;
 
 use Drupal\ys_embed\Plugin\EmbedSourceBase;
 use Drupal\ys_embed\Plugin\EmbedSourceInterface;
-use Drupal;
 
 /**
  * Instagram post embed source.
@@ -81,5 +80,3 @@ class LibCal extends EmbedSourceBase implements EmbedSourceInterface {
   protected static $example = '<div id="api_hours_today_iid457_lid4211"></div><script src="https://schedule.yale.edu/api_hours_today.php?iid=457&lid=4211&format=js&systemTime=0&context=object"> </script>';
 
 }
-
-Drupal::logger('ys_embed')->notice('Library attached: @library', ['@library' => 'ys_embed/libcal']);
