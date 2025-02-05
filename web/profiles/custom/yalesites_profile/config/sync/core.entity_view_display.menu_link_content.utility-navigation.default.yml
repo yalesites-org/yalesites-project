@@ -1,0 +1,27 @@
+uuid: eaeb0bc0-349e-4ca2-8460-33bb471cc756
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.menu_link_content.utility-navigation.field_placeholder
+    - system.menu.utility-navigation
+id: menu_link_content.utility-navigation.default
+targetEntityType: menu_link_content
+bundle: utility-navigation
+mode: default
+content:
+  children:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_placeholder:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 2
+    region: content
+hidden:
+  search_api_excerpt: true
