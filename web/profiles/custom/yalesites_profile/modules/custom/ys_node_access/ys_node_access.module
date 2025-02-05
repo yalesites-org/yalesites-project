@@ -85,28 +85,36 @@ function ys_node_access_node_access_records($node) {
  * Implements hook_preprocess_menu().
  */
 function ys_node_access_preprocess_menu(array &$variables) {
-
-  $menusToCheck = [
-      'main',
-      'utility-navigation',
-      'utility-drop-button-navigation',
-      'footer',
-    ];
+  /**
+   * Adds data attribute to menu links that are CAS only.
+   * @see ys_node_access/src/Menu/YsNodeAccessLinkTreeManipulator.php
+  */
+  $config = \Drupal::config('ys_core.header_settings');
+  if (!$config->get('enable_cas_menu_links')) {
+    return;
+  }
 
   $menuName = $variables['menu_name'];
-  if (in_array($menuName, $menusToCheck)) {
-    $items = $variables['items'];
-    foreach ($items as $item) {
-
-      if (isset($item['entity']) && $item['entity'] instanceof MenuItemExtrasMenuLinkContent && $item['entity']->data_restricted) {
-        dpm($item['entity']->getTitle() . ' is restricted');
-      }
-
-      /** @var \Drupal\Core\Menu\MenuLinkInterface $menu_link */
-      $menu_link = $item['original_link'] ?? NULL;
-      if (!empty($menu_link)) {
-        $item['attributes']->setAttribute('atrus', 'woot');
-      }
+  if (in_array($menuName, _ys_node_access_cas_menus())) {
+    foreach ($variables['items'] as $idx => $item) {
+      kint($variables['items'][$idx]);
+      //if (isset($item['entity']) && $item['entity'] instanceof MenuItemExtrasMenuLinkContent && $item['entity']->data_restricted) {
+        $variables['items'][$idx]['is_cas'] = TRUE;
+      //}
     }
   }
+}
+
+/**
+ * Returns a reusable array of menus to use to check CAS access to links.
+ */
+function _ys_node_access_cas_menus() {
+  $menusToCheck = [
+    'main',
+    'utility-navigation',
+    'utility-drop-button-navigation',
+    'footer',
+  ];
+
+  return $menusToCheck;
 }
