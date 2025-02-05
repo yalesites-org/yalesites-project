@@ -48,3 +48,11 @@ function ys_embed_preprocess_block(&$variables) {
     }
   }
 }
+
+/**
+ * Implements hook_page_attachments().
+ */
+function ys_embed_page_attachments(array &$attachments) {
+  \Drupal::logger('ys_embed')->notice('Force-attaching ys_embed.libcal.');
+  $attachments['#attached']['library'][] = 'ys_embed/libcal';
+}

@@ -1,4 +1,11 @@
 ys_embed.libcal:
   version: 1.x
+  css:
+    theme:
+      css/LibCal.css: {}
+  js:
+    js/LibCal.js: {}
   dependencies:
     - core/jquery
+    - core/drupal
+    - core/drupalSettings
