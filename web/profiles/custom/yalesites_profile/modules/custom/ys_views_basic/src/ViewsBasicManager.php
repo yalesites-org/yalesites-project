@@ -452,17 +452,21 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     /*
      * Includes current node, if specified in settings.
      */
+    /*
     $includeCurrent = $paramsDecoded['show_current_entity'] ?? 0;
     if (!$includeCurrent) {
       $node = $this->routeMatch->getParameter('node');
       if ($node instanceof NodeInterface) {
         $currentNid = $node->id();
         /** @var Drupal\views\Plugin\views\query\Sql $query */
+        /*
         $query = $view->getQuery();
         $query->addWhere(0, 'nid', $currentNid, '<>');
       }
     }
-
+    */
+    
+    
     /*
      * End include current node.
      */
