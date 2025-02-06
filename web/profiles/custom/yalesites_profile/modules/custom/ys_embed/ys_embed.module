@@ -45,14 +45,7 @@ function ys_embed_preprocess_block(&$variables) {
     $field_media_embed = $variables['content']['field_media'][0]['#media']->get('field_media_embed')->get(0)->get('embed_source')->getValue();
     if (isset($field_media_embed) && $field_media_embed == 'libcal') {
       $variables['#attached']['library'][] = 'core/jquery';
+      $variables['#attached']['library'][] = 'ys_embed/libcal';
     }
   }
-}
-
-/**
- * Implements hook_page_attachments().
- */
-function ys_embed_page_attachments(array &$attachments) {
-  \Drupal::logger('ys_embed')->notice('Force-attaching ys_embed.libcal.');
-  $attachments['#attached']['library'][] = 'ys_embed/libcal';
 }
