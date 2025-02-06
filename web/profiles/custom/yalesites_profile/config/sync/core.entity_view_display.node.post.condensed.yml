@@ -57,7 +57,7 @@ content:
   content_moderation_control:
     settings: {  }
     third_party_settings: {  }
-    weight: -20
+    weight: 0
     region: content
   field_external_source:
     type: link_separate
@@ -78,7 +78,15 @@ content:
       timezone_override: ''
       format_type: medium
     third_party_settings: {  }
-    weight: 0
+    weight: 1
+    region: content
+  field_teaser_lead_in:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 3
     region: content
 hidden:
   field_author: true
@@ -86,7 +94,6 @@ hidden:
   field_login_required: true
   field_metatags: true
   field_tags: true
-  field_teaser_lead_in: true
   field_teaser_media: true
   field_teaser_text: true
   field_teaser_title: true

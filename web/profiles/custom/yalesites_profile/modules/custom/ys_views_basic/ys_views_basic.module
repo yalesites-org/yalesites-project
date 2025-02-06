@@ -94,6 +94,7 @@ function ys_views_basic_views_pre_render(ViewExecutable $view): void {
   if (in_array($view_id, ['views_basic_scaffold', 'views_basic_scaffold_events'])) {
     $field_display_options = json_decode($view->args[8]);
     $event_field_display_options = json_decode($view->args[9]);
+    $post_field_display_options = json_decode($view->args[10]);
     // Loop through each row in the view's results and update the node's
     // properties based on show_categories, show_tags and show_thumbnail
     // configuration.
@@ -102,6 +103,7 @@ function ys_views_basic_views_pre_render(ViewExecutable $view): void {
       $row->_entity->show_tags = $field_display_options->show_tags;
       $row->_entity->show_thumbnail = $field_display_options->show_thumbnail;
       $row->_entity->hide_add_to_calendar = $event_field_display_options->hide_add_to_calendar;
+      $row->_entity->show_eyebrow = $post_field_display_options->show_eyebrow;
     }
   }
 }

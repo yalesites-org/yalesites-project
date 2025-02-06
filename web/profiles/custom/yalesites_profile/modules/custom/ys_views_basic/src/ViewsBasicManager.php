@@ -430,6 +430,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'hide_add_to_calendar' => (int) !empty($paramsDecoded['event_field_options']['hide_add_to_calendar']),
     ];
 
+    $post_field_display_options = [
+      'show_eyebrow' => (int) !empty($paramsDecoded['post_field_options']['show_eyebrow']),
+    ];
+
     $view->setArguments(
       [
         'type' => $filterType,
@@ -442,6 +446,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'offset' => $paramsDecoded['offset'] ?? 0,
         'field_display_options' => json_encode($field_display_options),
         'event_field_display_options' => json_encode($event_field_display_options),
+        'post_field_display_options' => json_encode($post_field_display_options),
       ]
     );
 
@@ -487,6 +492,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
             $resultRow['#cache']['keys'][] = $field_display_options['show_tags'];
             $resultRow['#cache']['keys'][] = $field_display_options['show_thumbnail'];
             $resultRow['#cache']['keys'][] = $event_field_display_options['hide_add_to_calendar'];
+            $resultRow['#cache']['keys'][] = $post_field_display_options['show_eyebrow'];
           }
         }
         break;
@@ -644,6 +650,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
       case 'event_field_options':
         $defaultParam = (empty($paramsDecoded['event_field_options'])) ? [] : $paramsDecoded['event_field_options'];
+        break;
+
+      case 'post_field_options':
+        $defaultParam = (empty($paramsDecoded['post_field_options'])) ? [] : $paramsDecoded['post_field_options'];
         break;
 
       case 'exposed_filter_options':

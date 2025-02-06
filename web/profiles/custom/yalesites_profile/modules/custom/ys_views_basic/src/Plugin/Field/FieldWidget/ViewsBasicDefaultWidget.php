@@ -278,6 +278,22 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
     ];
 
+    $postFieldOptionValue = ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('post_field_options', $items[$delta]->params) : [];
+    $postFieldOptionDefaultValue = $postFieldOptionValue ?? [];
+
+    $form['group_user_selection']['entity_and_view_mode']['post_field_options'] = [
+      '#type' => 'checkboxes',
+      '#options' => [
+        'show_eyebrow' => $this->t('Show post teaser lead-in'),
+      ],
+      '#title' => $this->t('Post Field Display Options'),
+      '#tree' => TRUE,
+      '#default_value' => ($isNewForm && empty($postFieldOptionValue)) ? [] : $postFieldOptionDefaultValue,
+      '#states' => [
+        'visible' => [$formSelectors['entity_types_ajax'] => ['value' => 'post']],
+      ],
+    ];
+
     $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options'] = [
       '#type' => 'checkboxes',
       '#options' => [
@@ -491,6 +507,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         ],
         "field_options" => $form['group_user_selection']['entity_and_view_mode']['field_options']['#value'],
         "event_field_options" => $form['group_user_selection']['entity_and_view_mode']['event_field_options']['#value'],
+        "post_field_options" => $form['group_user_selection']['entity_and_view_mode']['post_field_options']['#value'],
         "exposed_filter_options" => $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options']['#value'],
         "category_filter_label" => $form['group_user_selection']['entity_and_view_mode']['category_filter_label']['#value'],
         "category_included_terms" => $form['group_user_selection']['entity_and_view_mode']['category_included_terms']['#value'],
