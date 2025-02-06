@@ -12,6 +12,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\ys_views_basic\ViewsBasicManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 
 /**
  * Plugin implementation of the 'views_basic_default' widget.
@@ -34,6 +35,13 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
   protected $viewsBasicManager;
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * Constructs a ViewsBasicDefaultWidget object.
    *
    * @param string $plugin_id
@@ -48,6 +56,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
    *   Any third party settings.
    * @param \Drupal\ys_views_basic\ViewsBasicManager $views_basic_manager
    *   The ViewsBasic management service.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager service.
    */
   public function __construct(
     $plugin_id,
@@ -56,6 +66,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     array $settings,
     array $third_party_settings,
     ViewsBasicManager $views_basic_manager,
+    EntityTypeManagerInterface $entity_type_manager,
   ) {
     parent::__construct(
       $plugin_id,
@@ -65,6 +76,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       $third_party_settings
     );
     $this->viewsBasicManager = $views_basic_manager;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -82,7 +94,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       $configuration['field_definition'],
       $configuration['settings'],
       $configuration['third_party_settings'],
-      $container->get('ys_views_basic.views_basic_manager')
+      $container->get('ys_views_basic.views_basic_manager'),
+      $container->get('entity_type.manager')
     );
   }
 
@@ -263,7 +276,6 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     $eventFieldOptionValue = ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('event_field_options', $items[$delta]->params) : [];
     $eventFieldOptionDefaultValue = $eventFieldOptionValue ?? [];
-
     $form['group_user_selection']['entity_and_view_mode']['event_field_options'] = [
       '#type' => 'checkboxes',
       '#options' => [
@@ -278,13 +290,14 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
     ];
 
+    $custom_vocab_label = $this->entityTypeManager->getStorage('taxonomy_vocabulary')->load('custom_vocab')->label();
     $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options'] = [
       '#type' => 'checkboxes',
       '#options' => [
         'show_search_filter' => $this->t('Show Search'),
         'show_year_filter' => $this->t('Show Year'),
         'show_category_filter' => $this->t('Show Category'),
-        'show_custom_vocab_filter' => $this->t('Show Custom Vocabulary'),
+        'show_custom_vocab_filter' => $this->t('Show @vocab', ['@vocab' => $custom_vocab_label]),
         'show_audience_filter' => $this->t('Show Audience'),
       ],
       '#title' => $this->t('Exposed Filter Options'),
@@ -324,10 +337,13 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
     ];
 
+    // The label of this field comes from the vocabulary config.
+    $label_title = "$custom_vocab_label Filter Label";
+    $label_description = "Enter a custom label for the <strong>$custom_vocab_label Filter</strong>. This label will be displayed to users as the filter's name. If left blank, the default label <strong>$custom_vocab_label</strong> will be used";
     $form['group_user_selection']['entity_and_view_mode']['custom_vocab_filter_label'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Custom Vocabulary Filter Label'),
-      '#description' => $this->t("Enter a custom label for the <strong>Custom Vocabulary Filter</strong>. This label will be displayed to users as the filter's name. If left blank, the default label <strong>Custom Vocab</strong> will be used."),
+      '#title' => $label_title,
+      '#description' => $label_description,
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('custom_vocab_filter_label', $items[$delta]->params) : NULL,
       '#states' => [
         'visible' => [$formSelectors['show_custom_vocab_filter_selector'] => ['checked' => TRUE]],
