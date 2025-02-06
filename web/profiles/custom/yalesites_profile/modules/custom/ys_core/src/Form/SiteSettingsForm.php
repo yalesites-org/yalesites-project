@@ -70,6 +70,13 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
   protected $currentUser;
 
   /**
+   * The cache discovery service.
+   *
+   * @var \Drupal\Core\Cache\CacheBackendInterface
+   */
+  protected $cacheDiscovery;
+
+  /**
    * Constructs a SiteInformationForm object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -86,6 +93,8 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
    *   The entity type manager.
    * @param \Drupal\Core\Session\AccountProxy $account_interface
    *   The current user.
+   * @param \Drupal\Core\Cache\CacheBackendInterface $cache_discovery
+   *   The cache discovery service.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
@@ -95,6 +104,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     YaleSitesMediaManager $ys_media_manager,
     EntityTypeManagerInterface $entity_type_manager,
     AccountProxy $account_interface,
+    CacheBackendInterface $cache_discovery,
   ) {
     parent::__construct($config_factory);
     $this->aliasManager = $alias_manager;
@@ -103,6 +113,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     $this->ysMediaManager = $ys_media_manager;
     $this->entityTypeManager = $entity_type_manager;
     $this->currentUser = $account_interface;
+    $this->cacheDiscovery = $cache_discovery;
   }
 
   /**
@@ -117,6 +128,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       $container->get('ys_core.media_manager'),
       $container->get('entity_type.manager'),
       $container->get('current_user'),
+      $container->get('cache.discovery'),
     );
   }
 
@@ -214,7 +226,6 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#description' => $this->t('This field will update the name of the custom vocabulary for the site. By default, the name is "Custom Vocab".'),
       '#title' => $this->t('Custom Vocabulary Name'),
       '#default_value' => $yaleConfig->get('taxonomy')['custom_vocab_name'] ?? 'Custom Vocab',
-      '#required' => TRUE,
     ];
 
     $form['teaser_image_fallback'] = [
@@ -324,19 +335,16 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       $this->configFactory->getEditable('taxonomy.vocabulary.custom_vocab')
         ->set('name', $form_state->getValue('custom_vocab_name'))
         ->save();
+
+      $content_types = ['event', 'page', 'post', 'profile'];
       // Update the custom vocab field label for each content type.
-      $this->configFactory->getEditable('field.field.node.event.field_custom_vocab')
-        ->set('label', $form_state->getValue('custom_vocab_name'))
-        ->save();
-      $this->configFactory->getEditable('field.field.node.page.field_custom_vocab')
-        ->set('label', $form_state->getValue('custom_vocab_name'))
-        ->save();
-      $this->configFactory->getEditable('field.field.node.post.field_custom_vocab')
-        ->set('label', $form_state->getValue('custom_vocab_name'))
-        ->save();
-      $this->configFactory->getEditable('field.field.node.profile.field_custom_vocab')
-        ->set('label', $form_state->getValue('custom_vocab_name'))
-        ->save();
+      foreach ($content_types as $type) {
+        $this->configFactory->getEditable("field.field.node.{$type}.field_custom_vocab")
+          ->set('label', $form_state->getValue('custom_vocab_name'))
+          ->save();
+      }
+      // Clear cache.
+      $this->cacheDiscovery->invalidateAll();
     }
 
     parent::submitForm($form, $form_state);
