@@ -343,7 +343,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
           ->set('label', $form_state->getValue('custom_vocab_name'))
           ->save();
       }
-      // Clear cache.
+      // Clear cache so the new label is reflected in the node form.
       $this->cacheDiscovery->invalidateAll();
     }
 
