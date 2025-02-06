@@ -11,6 +11,7 @@ dependencies:
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
     - field.field.node.post.field_tags
+    - field.field.node.post.field_teaser_lead_in
     - field.field.node.post.field_teaser_media
     - field.field.node.post.field_teaser_text
     - field.field.node.post.field_teaser_title
@@ -36,7 +37,7 @@ content:
     settings:
       link: false
     third_party_settings: {  }
-    weight: 6
+    weight: 7
     region: content
   field_external_source:
     type: link_separate
@@ -48,7 +49,7 @@ content:
       rel: '0'
       target: '0'
     third_party_settings: {  }
-    weight: 4
+    weight: 5
     region: content
   field_tags:
     type: entity_reference_label
@@ -56,7 +57,15 @@ content:
     settings:
       link: false
     third_party_settings: {  }
-    weight: 5
+    weight: 6
+    region: content
+  field_teaser_lead_in:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 1
     region: content
   field_teaser_media:
     type: entity_reference_entity_view
@@ -65,14 +74,14 @@ content:
       view_mode: card_secondary_3_2
       link: false
     third_party_settings: {  }
-    weight: 3
+    weight: 4
     region: content
   field_teaser_text:
     type: text_default
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 2
+    weight: 3
     region: content
   field_teaser_title:
     type: string
@@ -80,7 +89,7 @@ content:
     settings:
       link_to_entity: false
     third_party_settings: {  }
-    weight: 1
+    weight: 2
     region: content
 hidden:
   field_author: true
