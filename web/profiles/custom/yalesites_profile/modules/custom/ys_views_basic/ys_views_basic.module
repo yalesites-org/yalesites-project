@@ -5,6 +5,7 @@
  * Contains ys_views_basic.module functions.
  */
 
+use Drupal\Core\Cache\Cache;
 use Drupal\views\ViewExecutable;
 
 /**
@@ -92,7 +93,7 @@ function ys_views_basic_views_pre_build($view) {
 function ys_views_basic_views_pre_render(ViewExecutable $view): void {
   $view_id = $view->id();
   if (in_array($view_id, ['views_basic_scaffold', 'views_basic_scaffold_events'])) {
-    $pin_options = json_decode($view->args[9]);
+    $pin_options = json_decode($view->args[10]);
     $pin_label = '';
     if ($pin_options->pinned_to_top) {
       $pin_label = $pin_options->pin_label;
@@ -114,4 +115,12 @@ function ys_views_basic_views_pre_render(ViewExecutable $view): void {
       }
     }
   }
+}
+
+/**
+ * Implements hook_save().
+ */
+function ys_views_basic_save($node) {
+  // Try just the node in question.
+  Cache::invalidateTags(['node:' . $node->id()]);
 }

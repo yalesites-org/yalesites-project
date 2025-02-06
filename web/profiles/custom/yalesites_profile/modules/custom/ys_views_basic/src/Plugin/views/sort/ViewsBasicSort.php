@@ -47,7 +47,7 @@ class ViewsBasicSort extends SortPluginBase {
    * Determines if the view should feature a pin to top.
    */
   protected function shouldFeaturePinToTop() {
-    $pinOptions = $this->getPinOptions($this->view->args[9]);
+    $pinOptions = $this->getPinOptions($this->view->args[10]);
     if ($pinOptions && $pinOptions['pinned_to_top']) {
       return TRUE;
     }
