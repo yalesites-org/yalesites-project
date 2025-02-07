@@ -154,6 +154,8 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
       $form['#attached']['library'][] = 'ys_core/block_form';
     }
   }
+
+  _ys_core_disable_event_fields($form, $form_id);
 }
 
 /**
@@ -429,26 +431,6 @@ function ys_core_taxonomy_term_update() {
 }
 
 /**
- * Implements hook_ENTITY_TYPE_insert().
- *
- * This is used to invalidate the render cache so that when selecting media
- * items it correctly corresponds to the image seen in the listing.
- */
-function ys_core_media_insert($entity) {
-  _ys_core_invalidate_media_list();
-}
-
-/**
- * Implements hook_ENTITY_TYPE_delete().
- *
- * This is used to invalidate the render cache so that when selecting media
- * items it correctly corresponds to the image seen in the listing.
- */
-function ys_core_media_delete($entity) {
-  _ys_core_invalidate_media_list();
-}
-
-/**
  * Implements hook_preprocess_page().
  */
 function ys_core_preprocess_page(&$variables) {
@@ -567,16 +549,6 @@ function ys_core_allow_secret_items(AccountProxy $currentUserSession) {
 }
 
 /**
- * Invalidate media_list/view on insert/delete.
- *
- * This is used to invalidate the media library pull so that when selecting
- * media items it correctly corresponds to the image seen in the listing.
- */
-function _ys_core_invalidate_media_list() {
-  \Drupal::service('cache.render')->invalidateAll();
-}
-
-/**
  * Implements hook_form_FORM_ID_alter() for views_exposed_form.
  */
 function ys_core_form_views_exposed_form_alter(&$form, FormStateInterface $form_state) {
@@ -613,6 +585,35 @@ function ys_core_menu_local_tasks_alter(&$data, $route_name, $cachability) {
         \Drupal::currentUser()->id() != 1) {
         unset($data['tabs'][0][$key]);
       }
+    }
+  }
+}
+
+/**
+ * Disabled event fields for imported data.
+ */
+function _ys_core_disable_event_fields(&$form, $form_id) {
+  // Disables fields that are imported from an integration.
+  $formsToCheck = [
+    'node_event_form',
+    'node_event_edit_form',
+    'node_event_quick_node_clone_form',
+  ];
+
+  if (in_array($form_id, $formsToCheck)) {
+    $fieldsToDisable = [
+      'field_localist_id',
+      'field_event_status',
+      'field_localist_event_url',
+      'field_localist_event_image_url',
+      'field_localist_event_image_alt',
+      'field_localist_ics_url',
+      'field_localist_register_enabled',
+      'field_event_source',
+      'field_event_id',
+    ];
+    foreach ($fieldsToDisable as $field) {
+      $form[$field]['#disabled'] = TRUE;
     }
   }
 }
