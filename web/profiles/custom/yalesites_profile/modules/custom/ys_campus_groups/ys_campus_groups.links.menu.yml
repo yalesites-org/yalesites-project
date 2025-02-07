@@ -1,0 +1,7 @@
+ys_campus_groups.settings:
+  title: 'Campus Groups settings'
+  description: 'Configure Campus Groups sync settings'
+  route_name: ys_campus_groups.settings
+  parent: ys_core.admin_yalesites_integrations
+  weight: 0
+

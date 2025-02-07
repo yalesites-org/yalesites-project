@@ -26,6 +26,7 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
    * List of migrations to run. Place migrations from first to last.
    */
   const LOCALIST_MIGRATIONS = [
+    'localist_source_taxonomy',
     'localist_event_types',
     'localist_audience',
     'localist_topics',
