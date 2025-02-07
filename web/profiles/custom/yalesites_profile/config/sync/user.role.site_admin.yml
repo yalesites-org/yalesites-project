@@ -4,6 +4,7 @@ status: true
 dependencies:
   config:
     - block_content.type.accordion
+    - block_content.type.audio
     - block_content.type.button_link
     - block_content.type.callout
     - block_content.type.content_spotlight
@@ -38,6 +39,7 @@ dependencies:
     - core.entity_view_display.node.page.default
     - core.entity_view_display.node.post.default
     - core.entity_view_display.node.profile.default
+    - media.type.audio
     - media.type.background_video
     - media.type.document
     - media.type.embed
@@ -110,6 +112,8 @@ permissions:
   - 'configure editable profile node layout overrides'
   - 'create accordion block content'
   - 'create and edit custom blocks'
+  - 'create audio block content'
+  - 'create audio media'
   - 'create background_video media'
   - 'create button_link block content'
   - 'create callout block content'
@@ -159,6 +163,10 @@ permissions:
   - 'create wrapped_image block content'
   - 'delete any accordion block content'
   - 'delete any accordion block content revisions'
+  - 'delete any audio block content'
+  - 'delete any audio block content revisions'
+  - 'delete any audio media'
+  - 'delete any audio media revisions'
   - 'delete any background_video media'
   - 'delete any button_link block content'
   - 'delete any button_link block content revisions'
@@ -231,6 +239,7 @@ permissions:
   - 'delete any wrapped_image block content'
   - 'delete any wrapped_image block content revisions'
   - 'delete media'
+  - 'delete own audio media'
   - 'delete own background_video media'
   - 'delete own document media'
   - 'delete own embed media'
@@ -247,6 +256,8 @@ permissions:
   - 'delete terms in post_category'
   - 'delete terms in tags'
   - 'edit any accordion block content'
+  - 'edit any audio block content'
+  - 'edit any audio media'
   - 'edit any background_video media'
   - 'edit any button_link block content'
   - 'edit any callout block content'
@@ -287,6 +298,7 @@ permissions:
   - 'edit any webform block content'
   - 'edit any webform submission'
   - 'edit any wrapped_image block content'
+  - 'edit own audio media'
   - 'edit own background_video media'
   - 'edit own document media'
   - 'edit own embed media'
@@ -307,6 +319,8 @@ permissions:
   - 'override post authored on option'
   - 'revert all revisions'
   - 'revert any accordion block content revisions'
+  - 'revert any audio block content revisions'
+  - 'revert any audio media revisions'
   - 'revert any button_link block content revisions'
   - 'revert any callout block content revisions'
   - 'revert any content_spotlight block content revisions'
@@ -357,6 +371,8 @@ permissions:
   - 'view all media revisions'
   - 'view all revisions'
   - 'view any accordion block content history'
+  - 'view any audio block content history'
+  - 'view any audio media revisions'
   - 'view any button_link block content history'
   - 'view any callout block content history'
   - 'view any content_spotlight block content history'

@@ -1,0 +1,27 @@
+uuid: da44a725-ba5c-4ace-a50a-4776515340eb
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.media.field_file_title
+    - filter.format.heading_html
+    - media.type.audio
+  module:
+    - text
+id: media.audio.field_file_title
+field_name: field_file_title
+entity_type: media
+bundle: audio
+label: 'Audio file title'
+description: 'The title appears above the audio player. The default value is set to "Listen to this article"'
+required: false
+translatable: false
+default_value:
+  -
+    value: 'Listen to this article'
+    format: heading_html
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - heading_html
+field_type: text

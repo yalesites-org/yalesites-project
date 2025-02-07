@@ -1,0 +1,30 @@
+uuid: 41ba7e6f-277f-4522-9429-e11918ee7a36
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_form_mode.media.media_library
+    - field.field.media.audio.field_file_title
+    - field.field.media.audio.field_media_audio_file
+    - media.type.audio
+id: media.audio.media_library
+targetEntityType: media
+bundle: audio
+mode: media_library
+content:
+  name:
+    type: string_textfield
+    weight: 0
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+hidden:
+  created: true
+  field_file_title: true
+  field_media_audio_file: true
+  path: true
+  revision_log_message: true
+  status: true
+  uid: true
