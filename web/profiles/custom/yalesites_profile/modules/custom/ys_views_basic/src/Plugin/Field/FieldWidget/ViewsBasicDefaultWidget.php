@@ -337,17 +337,6 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
     ];
 
-    $form['group_user_selection']['entity_and_view_mode']['audience_filter_label'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Audience Filter Label'),
-      '#description' => $this->t("Enter a custom label for the <strong>Audience Filter</strong>. This label will be displayed to users as the filter's name. If left blank, the default label <strong>Audience</strong> will be used."),
-      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('audience_filter_label', $items[$delta]->params) : NULL,
-      '#states' => [
-        'visible' => [$formSelectors['show_audience_filter_selector'] => ['checked' => TRUE]],
-        'invisible' => $calendarViewInvisibleState,
-      ],
-    ];
-
     $form['group_user_selection']['filter_and_sort']['terms_include'] = [
       '#title' => $this->t('Include content that uses the following tags or categories'),
       '#type' => 'select',
@@ -520,7 +509,6 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         "exposed_filter_options" => $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options']['#value'],
         "category_filter_label" => $form['group_user_selection']['entity_and_view_mode']['category_filter_label']['#value'],
         "category_included_terms" => $form['group_user_selection']['entity_and_view_mode']['category_included_terms']['#value'],
-        "audience_filter_label" => $form['group_user_selection']['entity_and_view_mode']['audience_filter_label']['#value'],
         "operator" => $form['group_user_selection']['filter_and_sort']['term_operator']['#value'],
         "sort_by" => $form_state->getValue($formSelectors['sort_by_array']),
         "display" => $form_state->getValue($formSelectors['display_array']),
