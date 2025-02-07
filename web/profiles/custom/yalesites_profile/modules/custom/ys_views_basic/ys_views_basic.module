@@ -5,7 +5,6 @@
  * Contains ys_views_basic.module functions.
  */
 
-use Drupal\Core\Cache\Cache;
 use Drupal\views\ViewExecutable;
 
 /**
@@ -115,12 +114,4 @@ function ys_views_basic_views_pre_render(ViewExecutable $view): void {
       }
     }
   }
-}
-
-/**
- * Implements hook_save().
- */
-function ys_views_basic_save($node) {
-  // Try just the node in question.
-  Cache::invalidateTags(['node:' . $node->id()]);
 }
