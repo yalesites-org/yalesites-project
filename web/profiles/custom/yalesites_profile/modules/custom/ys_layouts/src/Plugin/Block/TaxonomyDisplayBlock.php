@@ -98,6 +98,7 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
   public function blockForm($form, FormStateInterface $form_state): array {
 
     $node = $this->getCurrentNode();
+    $event_vocabularies = ['event_category', 'audience', 'custom_vocab'];
 
     if ($node instanceof Node) {
       // Get all fields on this node.
@@ -113,8 +114,11 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
           $handler_settings = $field->getFieldDefinition()->getSetting('handler_settings');
           if (!empty($handler_settings['target_bundles'])) {
             foreach ($handler_settings['target_bundles'] as $vid) {
-              // Skip the 'tags' vocabulary.
-              if ($vid !== 'tags') {
+              // Skip 'tags' and localist vocabularies for events.
+              if ($vid == 'tags' || ($node->bundle() == 'event' && !in_array($vid, $event_vocabularies))) {
+                continue;
+              }
+              else {
                 $vocabulary = $this->entityTypeManager->getStorage('taxonomy_vocabulary')->load($vid);
                 if ($vocabulary) {
                   $vocabulary_fields[$field->getName()] = $field->getFieldDefinition()->getLabel();
