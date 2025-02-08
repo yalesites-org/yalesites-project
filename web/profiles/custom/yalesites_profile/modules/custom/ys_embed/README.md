@@ -42,3 +42,7 @@ A custom formatter manages the field rendering logic. Instead of rendering the u
 
 - [Code: Embed Field Type](./src/Plugin/Field/FieldFormatter/EmbedDefaultFormatter.php)
 - [Community documentation](https://www.drupal.org/docs/creating-custom-modules/creating-custom-field-types-widgets-and-formatters/create-a-custom-field-formatter)
+
+### GitHub Applet Embed Instructions
+
+tbd
