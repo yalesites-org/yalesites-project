@@ -3,21 +3,9 @@
  # - items (array)
  #   - title: Link title
  #   - url: Link url
- #   - is_active: (bool) is current page
  #}
- <div class="taxonomy-display-block-{{ theme_selection }}">
-  {% if items is empty %}
-    <p>No terms found.</p>
-  {% else %}
-    {% for item in items %}
-      {{ item.label }}
-      <ul>
-      {% for term in item.terms %}
-        <li>
-          {{ term }}
-          </li>
-        {% endfor %}
-      </ul>
-    {% endfor %}
-  {% endif %}
-</div>
+ 
+{% include "@molecules/taxonomy-display/yds-taxonomy-display.twig" with {
+  taxonomy_display__theme: theme_selection,
+  taxonomy_display__items: items,
+} %}
