@@ -19,7 +19,10 @@
 
 {% if content.page_meta %}
   <div{{ attributes.addClass(classes) }}>
-    {{ drupal_entity('block', 'yalesitesbreadcrumbs', check_access=false) }}
-    {{ content.page_meta }}
+    <div {{ region_attributes.content.addClass('layout__region', 'layout__region--content') }}>
+      {{ drupal_entity('block', 'yalesitesbreadcrumbs', check_access=false) }}
+      {{ content.page_meta }}
+      {{ drupal_entity('block', 'atomic_custombooknavigation', check_access=false) }}
+    </div>
   </div>
 {% endif %}
