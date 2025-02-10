@@ -475,7 +475,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         $currentNid = $node->id();
         /** @var Drupal\views\Plugin\views\query\Sql $query */
         $query = $view->getQuery();
-        $query->addWhere(0, 'nid', $currentNid, '<>');
+        $baseTableAlias = $query->ensureTable('node_field_data');
+        if ($baseTableAlias) {
+          $query->addWhere(0, "$baseTableAlias.nid", $currentNid, '<>');
+        }
       }
     }
 
