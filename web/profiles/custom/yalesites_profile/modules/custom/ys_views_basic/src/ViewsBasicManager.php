@@ -6,6 +6,8 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityDisplayRepository;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\node\NodeInterface;
 use Drupal\views\Views;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -182,15 +184,24 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   protected $termStorage;
 
   /**
+   * The route match service.
+   *
+   * @var \Drupal\Core\Routing\RouteMatchInterface
+   */
+  protected $routeMatch;
+
+  /**
    * Constructs a new ViewsBasicManager object.
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
     EntityDisplayRepository $entity_display_repository,
+    RouteMatchInterface $route_match,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityDisplayRepository = $entity_display_repository;
     $this->termStorage = $this->entityTypeManager->getStorage('taxonomy_term');
+    $this->routeMatch = $route_match;
   }
 
   /**
@@ -199,7 +210,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('entity_type.manager'),
-      $container->get('entity_display.repository')
+      $container->get('entity_display.repository'),
+      $container->get('current_route_match')
     );
   }
 
@@ -319,6 +331,22 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       }
     }
 
+    // Custom vocab filter.
+    if (!empty($paramsDecoded['exposed_filter_options']['show_custom_vocab_filter'])) {
+      // Get the label of the custom vocab.
+      $custom_vocab_label = $this->entityTypeManager->getStorage('taxonomy_vocabulary')->load('custom_vocab')->label();
+      $filters['field_custom_vocab_target_id']['expose']['label'] = $custom_vocab_label;
+    }
+    else {
+      // Remove filter if 'show filter' field is not set.
+      unset($filters['field_custom_vocab_target_id']);
+    }
+
+    // Audience filter.
+    if (!isset($paramsDecoded['exposed_filter_options']['show_audience_filter'])) {
+      unset($filters['field_audience_target_id']);
+    }
+
     if (!isset($paramsDecoded['exposed_filter_options']['show_search_filter'])) {
       // If the 'show_search_filter' option is not set,
       // remove the 'combine' filter.
@@ -414,6 +442,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'show_thumbnail' => (int) $no_field_display_options_saved || !empty($paramsDecoded['field_options']['show_thumbnail']),
     ];
 
+    $event_field_display_options = [
+      'hide_add_to_calendar' => (int) !empty($paramsDecoded['event_field_options']['hide_add_to_calendar']),
+    ];
+
     $view->setArguments(
       [
         'type' => $filterType,
@@ -425,11 +457,33 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'event_time_period' => str_contains($filterType, 'event') ? $eventTimePeriod : NULL,
         'offset' => $paramsDecoded['offset'] ?? 0,
         'field_display_options' => json_encode($field_display_options),
+        'event_field_display_options' => json_encode($event_field_display_options),
       ]
     );
 
     /*
      * End setting dynamic arguments.
+     */
+
+    /*
+     * Includes current node, if specified in settings.
+     */
+    $includeCurrent = $paramsDecoded['show_current_entity'] ?? 0;
+    if (!$includeCurrent) {
+      $node = $this->routeMatch->getParameter('node');
+      if ($node instanceof NodeInterface) {
+        $currentNid = $node->id();
+        /** @var Drupal\views\Plugin\views\query\Sql $query */
+        $query = $view->getQuery();
+        $baseTableAlias = $query->ensureTable('node_field_data');
+        if ($baseTableAlias) {
+          $query->addWhere(0, "$baseTableAlias.nid", $currentNid, '<>');
+        }
+      }
+    }
+
+    /*
+     * End include current node.
      */
 
     $view->execute();
@@ -451,6 +505,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
             $resultRow['#cache']['keys'][] = $field_display_options['show_categories'];
             $resultRow['#cache']['keys'][] = $field_display_options['show_tags'];
             $resultRow['#cache']['keys'][] = $field_display_options['show_thumbnail'];
+            $resultRow['#cache']['keys'][] = $event_field_display_options['hide_add_to_calendar'];
           }
         }
         break;
@@ -600,6 +655,30 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
       case 'event_time_period':
         $defaultParam = (empty($paramsDecoded['filters']['event_time_period'])) ? 'future' : $paramsDecoded['filters']['event_time_period'];
+        break;
+
+      case 'field_options':
+        $defaultParam = (empty($paramsDecoded['field_options'])) ? ['show_thumbnail' => 'show_thumbnail'] : $paramsDecoded['field_options'];
+        break;
+
+      case 'event_field_options':
+        $defaultParam = (empty($paramsDecoded['event_field_options'])) ? [] : $paramsDecoded['event_field_options'];
+        break;
+
+      case 'exposed_filter_options':
+        $defaultParam = (empty($paramsDecoded['exposed_filter_options'])) ? [] : $paramsDecoded['exposed_filter_options'];
+        break;
+
+      case 'category_filter_label':
+        $defaultParam = (empty($paramsDecoded['category_filter_label'])) ? NULL : $paramsDecoded['category_filter_label'];
+        break;
+
+      case 'category_included_terms':
+        $defaultParam = (empty($paramsDecoded['category_included_terms'])) ? NULL : $paramsDecoded['category_included_terms'];
+        break;
+
+      case 'show_current_entity':
+        $defaultParam = (empty($paramsDecoded['show_current_entity'])) ? 0 : $paramsDecoded['show_current_entity'];
         break;
 
       default:
@@ -758,6 +837,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'view_mode_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
           'category_included_terms_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
           'show_category_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_category_filter]"]',
+          'show_custom_vocab_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_custom_vocab_filter]"]',
           'massage_terms_include_array' => [
             'block_form',
             'group_user_selection',
@@ -811,6 +891,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'view_mode_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
           'category_included_terms_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
           'show_category_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_category_filter]"]',
+          'show_custom_vocab_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_custom_vocab_filter]"]',
           'massage_terms_include_array' => [
             'settings',
             'block_form',
@@ -877,6 +958,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'view_mode_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
         'category_included_terms_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
         'show_category_filter_selector' => ':input[name="show_category_filter"]',
+        'show_custom_vocab_filter_selector' => ':input[name="show_custom_vocab_filter"]',
         'massage_terms_include_array' => ['terms_include'],
         'massage_terms_exclude_array' => ['terms_exclude'],
         'sort_by_array' => ['sort_by'],

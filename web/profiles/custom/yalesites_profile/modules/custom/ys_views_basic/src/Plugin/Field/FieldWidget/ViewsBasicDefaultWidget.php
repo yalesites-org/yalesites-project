@@ -12,6 +12,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\ys_views_basic\ViewsBasicManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 
 /**
  * Plugin implementation of the 'views_basic_default' widget.
@@ -34,6 +35,13 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
   protected $viewsBasicManager;
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * Constructs a ViewsBasicDefaultWidget object.
    *
    * @param string $plugin_id
@@ -48,6 +56,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
    *   Any third party settings.
    * @param \Drupal\ys_views_basic\ViewsBasicManager $views_basic_manager
    *   The ViewsBasic management service.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager service.
    */
   public function __construct(
     $plugin_id,
@@ -56,6 +66,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     array $settings,
     array $third_party_settings,
     ViewsBasicManager $views_basic_manager,
+    EntityTypeManagerInterface $entity_type_manager,
   ) {
     parent::__construct(
       $plugin_id,
@@ -65,6 +76,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       $third_party_settings
     );
     $this->viewsBasicManager = $views_basic_manager;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -82,7 +94,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       $configuration['field_definition'],
       $configuration['settings'],
       $configuration['third_party_settings'],
-      $container->get('ys_views_basic.views_basic_manager')
+      $container->get('ys_views_basic.views_basic_manager'),
+      $container->get('entity_type.manager')
     );
   }
 
@@ -261,12 +274,31 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       ],
     ];
 
+    $eventFieldOptionValue = ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('event_field_options', $items[$delta]->params) : [];
+    $eventFieldOptionDefaultValue = $eventFieldOptionValue ?? [];
+    $form['group_user_selection']['entity_and_view_mode']['event_field_options'] = [
+      '#type' => 'checkboxes',
+      '#options' => [
+        'hide_add_to_calendar' => $this->t('Hide Add to Calendar link'),
+      ],
+      '#title' => $this->t('Event Field Display Options'),
+      '#tree' => TRUE,
+      '#default_value' => ($isNewForm && empty($eventFieldOptionValue)) ? [] : $eventFieldOptionDefaultValue,
+      '#states' => [
+        'visible' => [$formSelectors['entity_types_ajax'] => ['value' => 'event']],
+        'invisible' => $calendarViewInvisibleState,
+      ],
+    ];
+
+    $custom_vocab_label = $this->entityTypeManager->getStorage('taxonomy_vocabulary')->load('custom_vocab')->label();
     $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options'] = [
       '#type' => 'checkboxes',
       '#options' => [
         'show_search_filter' => $this->t('Show Search'),
         'show_year_filter' => $this->t('Show Year'),
         'show_category_filter' => $this->t('Show Category'),
+        'show_custom_vocab_filter' => $this->t('Show @vocab', ['@vocab' => $custom_vocab_label]),
+        'show_audience_filter' => $this->t('Show Audience'),
       ],
       '#title' => $this->t('Exposed Filter Options'),
       '#tree' => TRUE,
@@ -427,6 +459,12 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#states' => ['invisible' => $calendarViewInvisibleState],
     ];
 
+    $form['group_user_selection']['options']['show_current_entity'] = [
+      '#title' => $this->t('Include this content in view'),
+      '#type' => 'checkbox',
+      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('show_current_entity', $items[$delta]->params) : 0,
+    ];
+
     $element['group_params']['params'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Params'),
@@ -467,6 +505,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
           "event_time_period" => $form['group_user_selection']['entity_specific']['event_time_period']['#value'],
         ],
         "field_options" => $form['group_user_selection']['entity_and_view_mode']['field_options']['#value'],
+        "event_field_options" => $form['group_user_selection']['entity_and_view_mode']['event_field_options']['#value'],
         "exposed_filter_options" => $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options']['#value'],
         "category_filter_label" => $form['group_user_selection']['entity_and_view_mode']['category_filter_label']['#value'],
         "category_included_terms" => $form['group_user_selection']['entity_and_view_mode']['category_included_terms']['#value'],
@@ -475,6 +514,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
         "display" => $form_state->getValue($formSelectors['display_array']),
         "limit" => (int) $form_state->getValue($formSelectors['limit_array']),
         "offset" => (int) $form_state->getValue($formSelectors['offset_array']),
+        "show_current_entity" => $form['group_user_selection']['options']['show_current_entity']['#value'],
       ];
       $value['params'] = json_encode($paramData);
     }
@@ -489,10 +529,10 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     $response = new AjaxResponse();
     $response->addCommand(new ReplaceCommand('#edit-view-mode', $formSelectors['view_mode_ajax']));
-    $selector = '.views-basic--view-mode[name="group_user_selection[entity_and_view_mode][view_mode]"]:first';
-    $response->addCommand(new InvokeCommand($selector, 'prop', [['checked' => TRUE]]));
     $response->addCommand(new ReplaceCommand('#edit-sort-by', $formSelectors['sort_by_ajax']));
     $response->addCommand(new ReplaceCommand('#edit-category-included-terms', $formSelectors['category_included_terms_ajax']));
+    $selector = '.views-basic--view-mode[name="group_user_selection[entity_and_view_mode][view_mode]"]:first';
+    $response->addCommand(new InvokeCommand($selector, 'prop', [['checked' => TRUE]]));
 
     return $response;
   }
