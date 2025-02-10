@@ -3,8 +3,13 @@ _core:
 mode: simple
 ignored_config_entities:
   - 'ai_engine*'
+  - 'field.field.node.event.field_custom_vocab:label'
+  - 'field.field.node.page.field_custom_vocab:label'
+  - 'field.field.node.post.field_custom_vocab:label'
+  - 'field.field.node.profile.field_custom_vocab:label'
   - 'google_analytics.settings:account'
   - 'system.site*'
+  - 'taxonomy.vocabulary.custom_vocab:name'
   - 'ys_alert.settings:alert'
   - 'ys_campus_groups*'
   - 'ys_core*'
