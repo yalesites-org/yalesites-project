@@ -1,0 +1,23 @@
+uuid: c3141b13-f76f-40d6-b3de-dc3e74396fdd
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.divider
+    - field.storage.block_content.field_line_color
+  module:
+    - options
+id: block_content.divider.field_line_color
+field_name: field_line_color
+entity_type: block_content
+bundle: divider
+label: 'Line Color'
+description: ''
+required: true
+translatable: false
+default_value:
+  -
+    value: gray_500
+default_value_callback: ''
+settings: {  }
+field_type: list_string

@@ -1,0 +1,23 @@
+uuid: 48392d70-422e-44e7-b2b6-f482f42010f0
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.divider
+    - field.storage.block_content.field_style_thickness
+  module:
+    - options
+id: block_content.divider.field_style_thickness
+field_name: field_style_thickness
+entity_type: block_content
+bundle: divider
+label: Thickness
+description: ''
+required: true
+translatable: false
+default_value:
+  -
+    value: '1'
+default_value_callback: ''
+settings: {  }
+field_type: list_float
