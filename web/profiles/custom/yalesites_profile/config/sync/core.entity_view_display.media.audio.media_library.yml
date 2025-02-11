@@ -4,8 +4,8 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.media.media_library
-    - field.field.media.audio.field_file_title
     - field.field.media.audio.field_media_audio_file
+    - field.field.media.audio.field_media_title
     - image.style.media_library
     - media.type.audio
   module:
@@ -28,8 +28,8 @@ content:
     region: content
 hidden:
   created: true
-  field_file_title: true
   field_media_audio_file: true
+  field_media_title: true
   name: true
   search_api_excerpt: true
   uid: true
