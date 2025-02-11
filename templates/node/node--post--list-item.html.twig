@@ -9,32 +9,37 @@
 {% set heading = content.field_teaser_title.0 ? content.field_teaser_title : label %}
 {% set url = content.field_external_source[0]['#url']|render ? content.field_external_source[0]['#url']|render : url %}
 
-{% embed "@molecules/cards/reference-card/yds-reference-card.twig" with {
-  reference_card__overline: date__formatted,
-  reference_card__heading: heading,
-  reference_card__url: url,
-  reference_card__snippet: content.field_teaser_text,
-  reference_card__image_aria: heading[0]['#context'].value,
-  show_categories: node.show_categories,
-  show_tags: node.show_tags,
-  show_thumbnail: node.show_thumbnail,
-} %}
+{% embed "@organisms/component-wrapper/yds-component-wrapper.twig" %}
+  {% block component_wrapper_inner %}
+    {% embed "@molecules/cards/reference-card/yds-reference-card.twig" with {
+      reference_card__overline: date__formatted,
+      reference_card__heading: heading,
+      reference_card__url: url,
+      reference_card__snippet: content.field_teaser_text,
+      reference_card__image_aria: heading[0]['#context'].value,
+      reference_card__overlay: node.pin_label,
+      show_categories: node.show_categories,
+      show_tags: node.show_tags,
+      show_thumbnail: node.show_thumbnail,
+    } %}
 
-  {% block reference_card__tags %}
-    {{ content.field_tags }}
-  {% endblock %}
+      {% block reference_card__tags %}
+        {{ content.field_tags }}
+      {% endblock %}
 
-  {% block reference_card__categories %}
-    {{ content.field_category }}
-  {% endblock %}
+      {% block reference_card__categories %}
+        {{ content.field_category }}
+      {% endblock %}
 
-  {% block reference_card__image %}
+      {% block reference_card__image %}
 
-    {% if content.field_teaser_media[0] %}
-      {{ content.field_teaser_media }}
-    {% elseif getCoreSetting('image_fallback.teaser') %}
-      {{ drupal_entity('media', getCoreSetting('image_fallback.teaser'), 'card_list_3_2') }}
-    {% endif %}
+        {% if content.field_teaser_media[0] %}
+          {{ content.field_teaser_media }}
+        {% elseif getCoreSetting('image_fallback.teaser') %}
+          {{ drupal_entity('media', getCoreSetting('image_fallback.teaser'), 'card_list_3_2') }}
+        {% endif %}
 
+      {% endblock %}
+    {% endembed %}
   {% endblock %}
 {% endembed %}

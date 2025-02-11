@@ -1,0 +1,48 @@
+{#
+ # Remove wrapping div from all containers by default.
+ # For the default template, see `web/core/themes/stabel9/templates/views/views-view.html.twig`.
+ #}
+
+{% embed "@organisms/component-wrapper/yds-component-wrapper.twig" with {
+  component_width: 'site',
+} %}
+  {% block component_wrapper_inner %}
+    {{ title_prefix }}
+      {{ title }}
+      {{ title_suffix }}
+
+      {% if header %}
+        <header>
+          {{ header }}
+        </header>
+      {% endif %}
+
+      {{ drupal_block('ys_search_form_block') }}
+
+      {{ exposed }}
+      {{ attachment_before }}
+
+      {% if rows -%}
+        {{ rows }}
+      {% elseif empty -%}
+        {% if view.args.0 %}
+          {{ empty }}
+        {% else %}
+          {{ "Enter some search terms and then click search."|trans }}
+        {% endif %}
+
+      {% endif %}
+      {{ pager }}
+
+      {{ attachment_after }}
+      {{ more }}
+
+      {% if footer %}
+        <footer>
+          {{ footer }}
+        </footer>
+      {% endif %}
+
+      {{ feed_icons }}
+  {% endblock %}
+{% endembed %}
