@@ -323,3 +323,13 @@ html.gin--dark-mode .layout-builder-components-table tr:nth-child(even) {
 html.gin--dark-mode .button.dialog-cancel {
   color: var(--gin-color-button-text);
 }
+
+/*
+ * Mimic glb-form-required in gin
+ */
+label.form-required::after, label.js-form-required::after {
+  content: "*" !important;
+  vertical-align: text-top !important;
+  color: var(--gin-color-danger) !important;
+  background: none !important;
+}
