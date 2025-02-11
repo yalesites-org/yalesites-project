@@ -4,7 +4,9 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.node.card
+    - field.field.node.page.field_audience
     - field.field.node.page.field_category
+    - field.field.node.page.field_custom_vocab
     - field.field.node.page.field_external_source
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
@@ -87,6 +89,8 @@ content:
     region: content
 hidden:
   addtoany: true
+  field_audience: true
+  field_custom_vocab: true
   field_login_required: true
   field_metatags: true
   layout_builder__layout: true

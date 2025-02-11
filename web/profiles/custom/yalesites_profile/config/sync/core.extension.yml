@@ -149,6 +149,7 @@ module:
   yale_cas: 0
   ys_alert: 0
   ys_book: 0
+  ys_campus_groups: 0
   ys_captcha: 0
   ys_layouts: 0
   ys_localist: 0

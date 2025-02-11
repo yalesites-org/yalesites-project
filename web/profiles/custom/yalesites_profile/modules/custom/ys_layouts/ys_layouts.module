@@ -76,6 +76,12 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'address' => [],
       ],
     ],
+    'ys_taxonomy_display_block' => [
+      'variables' => [
+        'items' => [],
+        'theme_selection' => NULL,
+      ],
+    ],
   ];
 }
 

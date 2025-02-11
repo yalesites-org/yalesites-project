@@ -3,8 +3,10 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.node.post.field_audience
     - field.field.node.post.field_author
     - field.field.node.post.field_category
+    - field.field.node.post.field_custom_vocab
     - field.field.node.post.field_external_source
     - field.field.node.post.field_hide_sharing_links
     - field.field.node.post.field_login_required
@@ -55,6 +57,38 @@ third_party_settings:
                 entity: layout_builder.entity
             weight: 1
             additional: {  }
+          7f02e533-466a-4916-8551-97cacf5b1329:
+            uuid: 7f02e533-466a-4916-8551-97cacf5b1329
+            region: content
+            configuration:
+              id: 'field_block:node:post:field_audience'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: entity_reference_label
+                label: above
+                settings:
+                  link: true
+                third_party_settings: {  }
+            weight: 2
+            additional: {  }
+          1c9fe26e-5139-4c69-97f0-36dc249676ca:
+            uuid: 1c9fe26e-5139-4c69-97f0-36dc249676ca
+            region: content
+            configuration:
+              id: 'field_block:node:post:field_custom_vocab'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: entity_reference_label
+                label: above
+                settings:
+                  link: true
+                third_party_settings: {  }
+            weight: 3
+            additional: {  }
         third_party_settings:
           layout_builder_lock:
             lock:
@@ -84,7 +118,9 @@ third_party_settings:
         - layout_onecol
         - ys_layout_two_column_50_50
       denylisted_blocks: {  }
-      allowlisted_blocks: {  }
+      allowlisted_blocks:
+        'YaleSites Layouts':
+          - ys_taxonomy_display_block
       restricted_categories:
         - 'Chaos Tools'
         - 'Content fields'
@@ -95,7 +131,6 @@ third_party_settings:
         - System
         - Webform
         - 'YaleSites Core'
-        - 'YaleSites Layouts'
         - 'YaleSites alert'
         - core
     entity_view_mode_restriction_by_region:
@@ -142,6 +177,14 @@ content:
     third_party_settings: {  }
     weight: -20
     region: content
+  field_audience:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 3
+    region: content
   field_author:
     type: string
     label: hidden
@@ -157,6 +200,14 @@ content:
       link: true
     third_party_settings: {  }
     weight: 1
+    region: content
+  field_custom_vocab:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 4
     region: content
   field_external_source:
     type: link
