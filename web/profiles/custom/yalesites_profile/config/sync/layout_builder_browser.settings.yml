@@ -33,6 +33,7 @@ auto_added_reusable_block_content_bundles:
   text: text
   tiles: tiles
   video: video
+  video_banner: video_banner
   view: view
   webform: webform
   wrapped_image: wrapped_image
