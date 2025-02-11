@@ -68,7 +68,6 @@ content:
     weight: 1
     region: content
 hidden:
-<<<<<<< HEAD
   addtoany: true
   field_author: true
   field_category: true
