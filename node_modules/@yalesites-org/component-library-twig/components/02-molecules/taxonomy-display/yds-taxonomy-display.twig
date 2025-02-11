@@ -1,0 +1,46 @@
+{#
+ # Available Props:
+ # - taxonomy_display__width: feature (default) or highlight
+ # - taxonomy_display__theme: default (no theme), one, two, three
+ #
+ # Available variables:
+ # - taxonomy_display__items: array
+ #   - taxonomy_display__item__label: string
+ #   - taxonomy_display__item__terms: (array)
+ #     - title: Link title
+ #     - url: Link url
+ #}
+
+{% set taxonomy_display__base_class = 'taxonomy-display' %}
+
+{% set taxonomy_display__attributes = {
+  'data-component-width': taxonomy_display__width|default('site'),
+  'data-component-theme': taxonomy_display__theme|default('default'),
+  class: bem(taxonomy_display__base_class)
+} %}
+
+{% set taxonomy_display %}
+  {% block taxonomy_display__items %}
+    {% embed "@atoms/lists/yds-list.twig" with {
+      list__modifiers: taxonomy_display__modifiers,
+      list__blockname: taxonomy_display__base_class,
+    } %}
+      {% block list__content %}
+        {% for item in taxonomy_display__items %}
+          {% include "@molecules/taxonomy-display/_yds-taxonomy-display--links.twig" with item %}
+        {% endfor %}
+      {% endblock %}
+    {% endembed %}
+  {% endblock %}
+{% endset %}
+
+{# Only show if there is more than 1 item. #}
+{% if taxonomy_display__items|length %}
+  <div {{ add_attributes(taxonomy_display__attributes) }}>
+    <div {{ bem('inner', [], taxonomy_display__base_class) }}>
+      <div {{ bem('content', [], taxonomy_display__base_class) }}>
+        {{ taxonomy_display }}
+      </div>
+    </div>
+  </div>
+{% endif %}

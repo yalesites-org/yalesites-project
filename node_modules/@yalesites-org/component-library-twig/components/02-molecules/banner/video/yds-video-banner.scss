@@ -1,0 +1,17 @@
+@use '../../../00-tokens/tokens';
+@use '../../../01-atoms/atoms';
+@use '../../../00-tokens/functions/map';
+
+$break-video-banner: tokens.$break-m;
+
+.video-banner {
+  @include tokens.spacing-page-section(
+    $flush-top: true,
+    $flush-bottom: true,
+    $banner-spacing: true
+  );
+
+  &[data-component-width='max'] {
+    --component-width: var(--size-component-layout-width-max);
+  }
+}
