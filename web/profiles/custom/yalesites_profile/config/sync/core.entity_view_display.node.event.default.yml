@@ -3,7 +3,9 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.node.event.field_audience
     - field.field.node.event.field_category
+    - field.field.node.event.field_custom_vocab
     - field.field.node.event.field_event_audience
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
@@ -82,6 +84,38 @@ third_party_settings:
                 entity: layout_builder.entity
             weight: 1
             additional: {  }
+          85c4af26-efa8-4a5a-8a89-62fd1347a03b:
+            uuid: 85c4af26-efa8-4a5a-8a89-62fd1347a03b
+            region: content
+            configuration:
+              id: 'field_block:node:event:field_audience'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: entity_reference_label
+                label: above
+                settings:
+                  link: true
+                third_party_settings: {  }
+            weight: 2
+            additional: {  }
+          0c9e723b-34cf-44b5-9271-7e09d3430ed5:
+            uuid: 0c9e723b-34cf-44b5-9271-7e09d3430ed5
+            region: content
+            configuration:
+              id: 'field_block:node:event:field_custom_vocab'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: entity_reference_label
+                label: above
+                settings:
+                  link: true
+                third_party_settings: {  }
+            weight: 3
+            additional: {  }
         third_party_settings:
           layout_builder_lock:
             lock:
@@ -109,7 +143,9 @@ third_party_settings:
     entity_view_mode_restriction:
       allowed_layouts: {  }
       denylisted_blocks: {  }
-      allowlisted_blocks: {  }
+      allowlisted_blocks:
+        'YaleSites Layouts':
+          - ys_taxonomy_display_block
       restricted_categories:
         - 'Chaos Tools'
         - 'Content fields'
@@ -120,7 +156,6 @@ third_party_settings:
         - System
         - Webform
         - 'YaleSites Core'
-        - 'YaleSites Layouts'
         - 'YaleSites alert'
         - core
     entity_view_mode_restriction_by_region:
@@ -135,6 +170,14 @@ content:
     third_party_settings: {  }
     weight: -20
     region: content
+  field_audience:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 31
+    region: content
   field_category:
     type: entity_reference_label
     label: above
@@ -142,6 +185,14 @@ content:
       link: true
     third_party_settings: {  }
     weight: 2
+    region: content
+  field_custom_vocab:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 32
     region: content
   field_event_audience:
     type: entity_reference_label
