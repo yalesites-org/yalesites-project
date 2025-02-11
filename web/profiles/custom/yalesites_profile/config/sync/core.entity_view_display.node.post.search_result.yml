@@ -9,6 +9,7 @@ dependencies:
     - field.field.node.post.field_category
     - field.field.node.post.field_custom_vocab
     - field.field.node.post.field_external_source
+    - field.field.node.post.field_hide_sharing_links
     - field.field.node.post.field_login_required
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
@@ -67,9 +68,11 @@ content:
     weight: 1
     region: content
 hidden:
-  field_audience: true
+  addtoany: true
   field_author: true
   field_category: true
+  field_hide_sharing_links: true
+  field_audience: true
   field_custom_vocab: true
   field_metatags: true
   field_publish_date: true

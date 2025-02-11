@@ -350,6 +350,7 @@ content:
     weight: 1
     region: content
 hidden:
+  addtoany: true
   field_category: true
   field_login_required: true
   field_metatags: true

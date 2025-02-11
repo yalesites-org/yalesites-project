@@ -8,6 +8,7 @@ dependencies:
     - field.field.node.post.field_category
     - field.field.node.post.field_custom_vocab
     - field.field.node.post.field_external_source
+    - field.field.node.post.field_hide_sharing_links
     - field.field.node.post.field_login_required
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
@@ -51,6 +52,7 @@ third_party_settings:
       children:
         - field_login_required
         - sticky
+        - field_hide_sharing_links
       label: 'Publishing Settings'
       region: content
       parent_name: ''
@@ -118,6 +120,13 @@ content:
     settings:
       placeholder_url: ''
       placeholder_title: ''
+    third_party_settings: {  }
+  field_hide_sharing_links:
+    type: boolean_checkbox
+    weight: 14
+    region: content
+    settings:
+      display_label: true
     third_party_settings: {  }
   field_login_required:
     type: boolean_checkbox
