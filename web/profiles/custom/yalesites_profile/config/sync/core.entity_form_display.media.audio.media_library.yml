@@ -12,6 +12,14 @@ targetEntityType: media
 bundle: audio
 mode: media_library
 content:
+  field_media_title:
+    type: string_textfield
+    weight: 1
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
   name:
     type: string_textfield
     weight: 0
@@ -23,7 +31,6 @@ content:
 hidden:
   created: true
   field_media_audio_file: true
-  field_media_title: true
   path: true
   revision_log_message: true
   status: true
