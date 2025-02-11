@@ -1,4 +1,3 @@
-
 {% set date__formatted %}
   {% include "@atoms/date-time/yds-date-time.twig" with {
     date_time__start: date_formatted,
@@ -15,6 +14,7 @@
   reference_card__url: url,
   reference_card__snippet: content.field_teaser_text,
   reference_card__image_aria: heading[0]['#context'].value,
+  reference_card__overlay: node.pin_label,
   show_categories: node.show_categories,
   show_tags: node.show_tags,
   show_thumbnail: node.show_thumbnail,
