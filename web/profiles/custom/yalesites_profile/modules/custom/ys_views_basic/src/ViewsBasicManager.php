@@ -154,6 +154,11 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     ],
   ];
 
+  /**
+   * Default pin label.
+   */
+  const DEFAULT_PIN_LABEL = 'Pinned';
+
   /*
    * Define constants for content types.
    */
@@ -255,6 +260,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'field' => 'field_event_date_value',
           'group_type' => 'min',
           'order' => $sortDirection[1],
+          'test' => 'hi',
         ],
       ]);
     }
@@ -329,6 +335,22 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       foreach ($category_filters as $filter_name) {
         unset($filters[$filter_name]);
       }
+    }
+
+    // Custom vocab filter.
+    if (!empty($paramsDecoded['exposed_filter_options']['show_custom_vocab_filter'])) {
+      // Get the label of the custom vocab.
+      $custom_vocab_label = $this->entityTypeManager->getStorage('taxonomy_vocabulary')->load('custom_vocab')->label();
+      $filters['field_custom_vocab_target_id']['expose']['label'] = $custom_vocab_label;
+    }
+    else {
+      // Remove filter if 'show filter' field is not set.
+      unset($filters['field_custom_vocab_target_id']);
+    }
+
+    // Audience filter.
+    if (!isset($paramsDecoded['exposed_filter_options']['show_audience_filter'])) {
+      unset($filters['field_audience_target_id']);
     }
 
     if (!isset($paramsDecoded['exposed_filter_options']['show_search_filter'])) {
@@ -430,6 +452,18 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'hide_add_to_calendar' => (int) !empty($paramsDecoded['event_field_options']['hide_add_to_calendar']),
     ];
 
+    $pinned_to_top = isset($paramsDecoded['pinned_to_top']) ? (bool) $paramsDecoded['pinned_to_top'] : FALSE;
+    $pin_label = $paramsDecoded['pin_label'] ?? self::DEFAULT_PIN_LABEL;
+
+    if (!$pinned_to_top) {
+      $pin_label = NULL;
+    }
+
+    $pin_options = [
+      'pinned_to_top' => $pinned_to_top,
+      'pin_label' => $pin_label,
+    ];
+
     $view->setArguments(
       [
         'type' => $filterType,
@@ -442,6 +476,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'offset' => $paramsDecoded['offset'] ?? 0,
         'field_display_options' => json_encode($field_display_options),
         'event_field_display_options' => json_encode($event_field_display_options),
+        'pin_settings' => json_encode($pin_options),
       ]
     );
 
@@ -490,6 +525,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
             $resultRow['#cache']['keys'][] = $field_display_options['show_tags'];
             $resultRow['#cache']['keys'][] = $field_display_options['show_thumbnail'];
             $resultRow['#cache']['keys'][] = $event_field_display_options['hide_add_to_calendar'];
+            $resultRow['#cache']['keys'][] = $pin_options['pinned_to_top'];
+            $resultRow['#cache']['keys'][] = $pin_options['pin_label'];
           }
         }
         break;
@@ -663,6 +700,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
       case 'show_current_entity':
         $defaultParam = (empty($paramsDecoded['show_current_entity'])) ? 0 : $paramsDecoded['show_current_entity'];
+      case 'pinned_to_top':
+        $defaultParam = (empty($paramsDecoded['pinned_to_top'])) ? FALSE : (bool) $paramsDecoded['pinned_to_top'];
+        break;
+
+      case 'pin_label':
+        $defaultParam = (empty($paramsDecoded['pin_label'])) ? self::DEFAULT_PIN_LABEL : $paramsDecoded['pin_label'];
         break;
 
       default:
@@ -821,6 +864,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'view_mode_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
           'category_included_terms_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
           'show_category_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_category_filter]"]',
+          'show_custom_vocab_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_custom_vocab_filter]"]',
           'massage_terms_include_array' => [
             'block_form',
             'group_user_selection',
@@ -863,6 +907,22 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
             'options',
             'offset',
           ],
+          'pinned_to_top' => ($form) ? $form['block_form']['group_user_selection']['filter_and_sort']['pinned_to_top'] : NULL,
+          'pinned_to_top_array' => [
+            'block_form',
+            'group_user_selection',
+            'filter_and_sort',
+            'pinned_to_top',
+          ],
+          'pinned_to_top_selector' => ':input[name="block_form[group_user_selection][filter_and_sort][pinned_to_top]"]',
+          'pin_label' => ($form) ? $form['block_form']['group_user_selection']['filter_and_sort']['pin_label'] : self::DEFAULT_PIN_LABEL,
+          'pin_label_array' => [
+            'settings',
+            'block_form',
+            'group_user_selection',
+            'filter_and_sort',
+            'pin_label',
+          ],
         ];
       }
       else {
@@ -874,6 +934,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'view_mode_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
           'category_included_terms_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
           'show_category_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_category_filter]"]',
+          'show_custom_vocab_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_custom_vocab_filter]"]',
           'massage_terms_include_array' => [
             'settings',
             'block_form',
@@ -928,6 +989,23 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
             'options',
             'offset',
           ],
+          'pinned_to_top_ajax' => ($form) ? $form['settings']['block_form']['filter_and_sort']['pinned_to_top'] : NULL,
+          'pinned_to_top_array' => [
+            'settings',
+            'block_form',
+            'group_user_selection',
+            'filter_and_sort',
+            'pinned_to_top',
+          ],
+          'pinned_to_top_selector' => ':input[name="settings[block_form][group_user_selection][filter_and_sort][pinned_to_top]"]',
+          'pin_label_ajax' => ($form) ? $form['settings']['block_form']['filter_and_sort']['pin_label'] : self::DEFAULT_PIN_LABEL,
+          'pin_label_array' => [
+            'settings',
+            'block_form',
+            'group_user_selection',
+            'filter_and_sort',
+            'pin_label',
+          ],
         ];
       }
     }
@@ -940,6 +1018,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'view_mode_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
         'category_included_terms_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
         'show_category_filter_selector' => ':input[name="show_category_filter"]',
+        'show_custom_vocab_filter_selector' => ':input[name="show_custom_vocab_filter"]',
         'massage_terms_include_array' => ['terms_include'],
         'massage_terms_exclude_array' => ['terms_exclude'],
         'sort_by_array' => ['sort_by'],
@@ -952,6 +1031,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'limit_array' => ['limit'],
         'limit_ajax' => ($form) ? $form['group_user_selection']['options']['limit'] : NULL,
         'offset_array' => ['offset'],
+        'pinned_to_top' => ['pinned_to_top'],
+        'pinned_to_top_selector' => ':input[name="settings[block_form][group_user_selection][filter_and_sort][pinned_to_top]"]',
+        'pinned_to_top_array' => ['pinned_to_top'],
+        'pinned_to_top_ajax' => ($form) ? $form['group_user_selection']['filter_and_sort']['pinned_to_top'] : NULL,
+        'pin_label_array' => ['pin_label'],
+        'pin_label_ajax' => ($form) ? $form['settings']['block_form']['filter_and_sort']['pin_label'] : self::DEFAULT_PIN_LABEL,
       ];
     }
 

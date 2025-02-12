@@ -31,6 +31,7 @@ dependencies:
     - block_content.type.text
     - block_content.type.tiles
     - block_content.type.video
+    - block_content.type.video_banner
     - block_content.type.view
     - block_content.type.webform
     - block_content.type.wrapped_image
@@ -48,6 +49,8 @@ dependencies:
     - node.type.post
     - node.type.profile
     - taxonomy.vocabulary.affiliation
+    - taxonomy.vocabulary.audience
+    - taxonomy.vocabulary.custom_vocab
     - taxonomy.vocabulary.event_category
     - taxonomy.vocabulary.page_category
     - taxonomy.vocabulary.post_category
@@ -145,6 +148,8 @@ permissions:
   - 'create reusable blocks'
   - 'create tabs block content'
   - 'create terms in affiliation'
+  - 'create terms in audience'
+  - 'create terms in custom_vocab'
   - 'create terms in event_category'
   - 'create terms in page_category'
   - 'create terms in post_category'
@@ -154,6 +159,7 @@ permissions:
   - 'create url aliases'
   - 'create video block content'
   - 'create video media'
+  - 'create video_banner block content'
   - 'create view block content'
   - 'create webform block content'
   - 'create wrapped_image block content'
@@ -223,6 +229,8 @@ permissions:
   - 'delete any video block content'
   - 'delete any video block content revisions'
   - 'delete any video media'
+  - 'delete any video_banner block content'
+  - 'delete any video_banner block content revisions'
   - 'delete any view block content'
   - 'delete any view block content revisions'
   - 'delete any webform block content'
@@ -242,6 +250,8 @@ permissions:
   - 'delete own profile content'
   - 'delete own video media'
   - 'delete terms in affiliation'
+  - 'delete terms in audience'
+  - 'delete terms in custom_vocab'
   - 'delete terms in event_category'
   - 'delete terms in page_category'
   - 'delete terms in post_category'
@@ -283,6 +293,7 @@ permissions:
   - 'edit any tiles block content'
   - 'edit any video block content'
   - 'edit any video media'
+  - 'edit any video_banner block content'
   - 'edit any view block content'
   - 'edit any webform block content'
   - 'edit any webform submission'
@@ -298,6 +309,8 @@ permissions:
   - 'edit own video media'
   - 'edit own webform submission'
   - 'edit terms in affiliation'
+  - 'edit terms in audience'
+  - 'edit terms in custom_vocab'
   - 'edit terms in event_category'
   - 'edit terms in page_category'
   - 'edit terms in post_category'
@@ -334,6 +347,7 @@ permissions:
   - 'revert any text block content revisions'
   - 'revert any tiles block content revisions'
   - 'revert any video block content revisions'
+  - 'revert any video_banner block content revisions'
   - 'revert any view block content revisions'
   - 'revert any webform block content revisions'
   - 'revert any wrapped_image block content revisions'
@@ -385,6 +399,7 @@ permissions:
   - 'view any tiles block content history'
   - 'view any unpublished content'
   - 'view any video block content history'
+  - 'view any video_banner block content history'
   - 'view any view block content history'
   - 'view any webform block content history'
   - 'view any webform submission'
@@ -400,6 +415,7 @@ permissions:
   - 'view profile revisions'
   - 'view the administration theme'
   - 'view unpublished paragraphs'
+  - 'view vocabulary labels'
   - 'yalesites manage alerts'
   - 'yalesites manage campus groups'
   - 'yalesites manage settings'
