@@ -197,12 +197,11 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
               '#url' => $term->toUrl(),
             ];
           }
-          if (!empty($terms)) {
-            $items[$field_name] = [
-              'label' => $field_label,
-              'terms' => $terms,
-            ];
-          }
+
+          $items[$field_name] = [
+            'label' => $field_label,
+            'terms' => $terms,
+          ];
         }
       }
     }
