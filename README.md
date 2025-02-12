@@ -1,5 +1,7 @@
 # YaleSites Project
 
+(DON'T MERGE: PR for CL divider update)
+
 The YaleSites platform empowers the Yale community to create digital experiences for the web in applications that are secure, cost-effective, accessible, and sustainable. This project repository contains the tooling, configuration, and scaffolding required to create sites on the platform. This project includes:
 
 - Pantheon custom upstream for Drupal 9
