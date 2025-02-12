@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_core\Form;
 
+use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -69,6 +70,13 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
   protected $currentUser;
 
   /**
+   * The cache discovery service.
+   *
+   * @var \Drupal\Core\Cache\CacheBackendInterface
+   */
+  protected $cacheDiscovery;
+
+  /**
    * Constructs a SiteInformationForm object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -85,6 +93,8 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
    *   The entity type manager.
    * @param \Drupal\Core\Session\AccountProxy $account_interface
    *   The current user.
+   * @param \Drupal\Core\Cache\CacheBackendInterface $cache_discovery
+   *   The cache discovery service.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
@@ -94,6 +104,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     YaleSitesMediaManager $ys_media_manager,
     EntityTypeManagerInterface $entity_type_manager,
     AccountProxy $account_interface,
+    CacheBackendInterface $cache_discovery,
   ) {
     parent::__construct($config_factory);
     $this->aliasManager = $alias_manager;
@@ -102,6 +113,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     $this->ysMediaManager = $ys_media_manager;
     $this->entityTypeManager = $entity_type_manager;
     $this->currentUser = $account_interface;
+    $this->cacheDiscovery = $cache_discovery;
   }
 
   /**
@@ -116,6 +128,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       $container->get('ys_core.media_manager'),
       $container->get('entity_type.manager'),
       $container->get('current_user'),
+      $container->get('cache.discovery'),
     );
   }
 
@@ -206,6 +219,13 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#description' => $this->t('This ID has the form of <code>UA-xxxxx-yy</code>, <code>G-xxxxxxxx</code>, <code>AW-xxxxxxxxx</code>, or <code>DC-xxxxxxxx</code>. To get a Web Property ID, register your site with Google Analytics, or if you already have registered your site, go to your Google Analytics Settings page to see the ID next to every site profile.'),
       '#title' => $this->t('Google Analytics Web Property ID'),
       '#default_value' => $yaleConfig->get('seo')['google_analytics_id'],
+    ];
+
+    $form['custom_vocab_name'] = [
+      '#type' => 'textfield',
+      '#description' => $this->t('This field will update the name of the custom vocabulary for the site. By default, the name is "Custom Vocab".'),
+      '#title' => $this->t('Custom Vocabulary Name'),
+      '#default_value' => $yaleConfig->get('taxonomy')['custom_vocab_name'] ?? 'Custom Vocab',
     ];
 
     $form['teaser_image_fallback'] = [
@@ -301,12 +321,31 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       ->set('page.events', $form_state->getValue('site_page_events'))
       ->set('seo.google_site_verification', $form_state->getValue('google_site_verification'))
       ->set('seo.google_analytics_id', $form_state->getValue('google_analytics_id'))
+      ->set('taxonomy.custom_vocab_name', $form_state->getValue('custom_vocab_name'))
       ->set('image_fallback.teaser', $form_state->getValue('teaser_image_fallback'))
       ->set('custom_favicon', $form_state->getValue('favicon'))
       ->save();
     $this->configFactory->getEditable('google_analytics.settings')
       ->set('account', $form_state->getValue('google_analytics_id'))
       ->save();
+
+    $custom_vocab_name = $this->configFactory->getEditable('taxonomy.vocabulary.custom_vocab')->get('name');
+    if ($custom_vocab_name !== $form_state->getValue('custom_vocab_name')) {
+      // Update the custom vocab vocabulary name.
+      $this->configFactory->getEditable('taxonomy.vocabulary.custom_vocab')
+        ->set('name', $form_state->getValue('custom_vocab_name'))
+        ->save();
+
+      $content_types = ['event', 'page', 'post', 'profile'];
+      // Update the custom vocab field label for each content type.
+      foreach ($content_types as $type) {
+        $this->configFactory->getEditable("field.field.node.{$type}.field_custom_vocab")
+          ->set('label', $form_state->getValue('custom_vocab_name'))
+          ->save();
+      }
+      // Clear cache so the new label is reflected in the node form.
+      $this->cacheDiscovery->invalidateAll();
+    }
 
     parent::submitForm($form, $form_state);
   }

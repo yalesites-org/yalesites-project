@@ -5,6 +5,8 @@ dependencies:
   config:
     - field.field.node.profile.field_address
     - field.field.node.profile.field_affiliation
+    - field.field.node.profile.field_audience
+    - field.field.node.profile.field_custom_vocab
     - field.field.node.profile.field_department
     - field.field.node.profile.field_email
     - field.field.node.profile.field_external_source
@@ -64,6 +66,38 @@ third_party_settings:
               context_mapping: {  }
             weight: 1
             additional: {  }
+          b8465f25-6560-4337-bfc2-7dddbce50ea7:
+            uuid: b8465f25-6560-4337-bfc2-7dddbce50ea7
+            region: content
+            configuration:
+              id: 'field_block:node:profile:field_audience'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: entity_reference_label
+                label: above
+                settings:
+                  link: true
+                third_party_settings: {  }
+            weight: 3
+            additional: {  }
+          10965745-2d1e-48b0-b7c0-e6d63ad8b453:
+            uuid: 10965745-2d1e-48b0-b7c0-e6d63ad8b453
+            region: content
+            configuration:
+              id: 'field_block:node:profile:field_custom_vocab'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: entity_reference_label
+                label: above
+                settings:
+                  link: true
+                third_party_settings: {  }
+            weight: 4
+            additional: {  }
         third_party_settings:
           layout_builder_lock:
             lock:
@@ -97,7 +131,8 @@ third_party_settings:
       - 'Chaos Tools'
       - 'Content fields'
       - 'Custom block types'
-      - 'Custom blocks'
+      - Devel
+      - Editoria11y
       - Forms
       - Help
       - 'Inline blocks'
@@ -118,10 +153,12 @@ third_party_settings:
         'YaleSites Layouts':
           - profile_contact_block
           - profile_meta_block
+          - ys_taxonomy_display_block
       restricted_categories:
         - 'Chaos Tools'
         - 'Content fields'
-        - 'Custom blocks'
+        - Devel
+        - Editoria11y
         - Forms
         - Help
         - 'Lists (Views)'
@@ -140,6 +177,7 @@ third_party_settings:
           all_regions:
             'YaleSites Layouts':
               - profile_contact_block
+              - ys_taxonomy_display_block
         ys_layout_two_column:
           content:
             'Custom block types':
@@ -164,6 +202,7 @@ third_party_settings:
               - 'inline_block:video'
             'YaleSites Layouts':
               - profile_contact_block
+              - ys_taxonomy_display_block
           sidebar:
             'Custom block types':
               - text
@@ -190,7 +229,6 @@ third_party_settings:
           content:
             - 'Chaos Tools'
             - 'Content fields'
-            - 'Custom blocks'
             - Forms
             - Help
             - 'Lists (Views)'
@@ -204,7 +242,6 @@ third_party_settings:
           all_regions:
             - 'Chaos Tools'
             - 'Content fields'
-            - 'Custom blocks'
             - Forms
             - Help
             - 'Lists (Views)'
@@ -238,6 +275,22 @@ content:
       link: true
     third_party_settings: {  }
     weight: 112
+    region: content
+  field_audience:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 120
+    region: content
+  field_custom_vocab:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 121
     region: content
   field_department:
     type: string
@@ -384,6 +437,7 @@ content:
     weight: 100
     region: content
 hidden:
+  addtoany: true
   layout_builder__layout: true
   search_api_excerpt: true
   workflow_buttons: true
