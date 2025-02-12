@@ -5,7 +5,6 @@
  * Install, uninstall and update hooks for ys_core module.
  */
 
-use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\Component\Utility\Xss;
 use Drupal\taxonomy\Entity\Term;
 
@@ -247,18 +246,5 @@ function ys_core_update_10001() {
       ]);
       $term->save();
     }
-  }
-}
-
-/**
- * Implements hook_update().
- *
- * Add default custom_vocab vocabulary name.
- */
-function ys_core_update_10002() {
-  $vocab = Vocabulary::load('custom_vocab');
-  if ($vocab) {
-    $vocab->set('name', 'Custom Vocab');
-    $vocab->save();
   }
 }
