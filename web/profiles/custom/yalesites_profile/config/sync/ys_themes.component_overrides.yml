@@ -274,6 +274,18 @@ inline_message:
       four: Four
       five: Five
     default: one
+video:
+  field_style_alignment:
+    values:
+      left: Left
+      center: Center
+    default: left
+image_banner:
+  field_style_variation:
+    values:
+      tall: Tall
+      short: Short
+    default: tall
 video_banner:
   field_style_width:
     values:
