@@ -93,7 +93,11 @@ third_party_settings:
       allowed_layouts:
         - layout_onecol
         - ys_layout_two_column
-      denylisted_blocks: {  }
+      denylisted_blocks:
+        'Custom block types':
+          - wrapped_text_callout
+        'Inline blocks':
+          - 'inline_block:wrapped_text_callout'
       allowlisted_blocks: {  }
       restricted_categories:
         - 'YaleSites Core'
@@ -141,15 +145,33 @@ third_party_settings:
               - 'inline_block:tabs'
               - 'inline_block:text'
               - 'inline_block:video'
-            'YaleSites Layouts':
-              - ys_taxonomy_display_block
+            'YaleSites Layouts': {  }
           sidebar:
             'Custom block types':
               - text
             'Inline blocks':
               - 'inline_block:text'
+      denylisted_blocks:
+        layout_onecol:
+          all_regions:
+            'Custom block types':
+              - wrapped_text_callout
+            'Inline blocks':
+              - 'inline_block:wrapped_text_callout'
       restricted_categories:
         ys_layout_two_column:
+          content:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites alert'
+            - core
           sidebar:
             - 'Chaos Tools'
             - 'Content fields'
@@ -162,18 +184,6 @@ third_party_settings:
             - Webform
             - 'YaleSites Core'
             - 'YaleSites Layouts'
-            - 'YaleSites alert'
-            - core
-          content:
-            - 'Chaos Tools'
-            - 'Content fields'
-            - Forms
-            - Help
-            - 'Lists (Views)'
-            - Menus
-            - System
-            - Webform
-            - 'YaleSites Core'
             - 'YaleSites alert'
             - core
         layout_onecol:

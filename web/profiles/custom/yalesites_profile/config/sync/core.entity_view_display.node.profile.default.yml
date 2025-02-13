@@ -117,7 +117,11 @@ third_party_settings:
       allowed_layouts:
         - layout_onecol
         - ys_layout_two_column
-      denylisted_blocks: {  }
+      denylisted_blocks:
+        'Custom block types':
+          - wrapped_text_callout
+        'Inline blocks':
+          - 'inline_block:wrapped_text_callout'
       allowlisted_blocks:
         'YaleSites Layouts':
           - profile_contact_block
@@ -172,7 +176,6 @@ third_party_settings:
               - 'inline_block:video'
             'YaleSites Layouts':
               - profile_contact_block
-              - ys_taxonomy_display_block
           sidebar:
             'Custom block types':
               - text
@@ -180,7 +183,13 @@ third_party_settings:
               - 'inline_block:text'
             'YaleSites Layouts':
               - profile_contact_block
-      denylisted_blocks: {  }
+      denylisted_blocks:
+        layout_onecol:
+          all_regions:
+            'Custom block types':
+              - wrapped_text_callout
+            'Inline blocks':
+              - 'inline_block:wrapped_text_callout'
       restricted_categories:
         ys_layout_two_column:
           sidebar:
