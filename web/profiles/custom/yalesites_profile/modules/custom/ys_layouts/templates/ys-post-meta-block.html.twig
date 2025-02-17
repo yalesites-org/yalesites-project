@@ -4,8 +4,13 @@
   {% endset %}
 {% endif %}
 
-{% include "@molecules/page-title/yds-page-title.twig" with {
+{% embed "@molecules/page-title/yds-page-title.twig" with {
   page_title__heading: label,
   page_title__meta: author_markup ~ date_formatted|date("l, F j, Y"),
   page_title__width: 'content',
+  page_title__show_social_links: hide_sharing ? 'false' : 'true',
 } %}
+  {% block page_title__social_links %}
+    {{ drupal_entity('block', 'atomic_addtoanysharebuttons', check_access=false) }}
+  {% endblock %}
+{% endembed %}

@@ -26,6 +26,7 @@ content:
     weight: 0
     region: content
 hidden:
+  addtoany: true
   created: true
   field_media_embed: true
   name: true

@@ -17,6 +17,15 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class FooterSettingsForm extends ConfigFormBase {
 
+  use SettingsFormTrait;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getPathAliasManager(): AliasManager {
+    return $this->pathAliasManager;
+  }
+
   /**
    * {@inheritdoc}
    */
@@ -281,8 +290,8 @@ class FooterSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    $this->validateFooterLinks($form_state, 'links_col_1');
-    $this->validateFooterLinks($form_state, 'links_col_2');
+    $this->validateLinks($form_state, 'links_col_1');
+    $this->validateLinks($form_state, 'links_col_2');
   }
 
   /**
@@ -392,40 +401,6 @@ class FooterSettingsForm extends ConfigFormBase {
     $this->cacheRender = $cache_render;
     $this->socialLinks = $social_links_manager;
     $this->pathAliasManager = $path_alias_manager;
-  }
-
-  /**
-   * Check that footer links have both a URL and a link title.
-   *
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state of the parent form.
-   * @param string $field_id
-   *   The id of a field on the config form.
-   */
-  protected function validateFooterLinks($form_state, $field_id) {
-    if (($value = $form_state->getValue($field_id))) {
-      foreach ($value as $link) {
-        if (empty($link['link_url']) || empty($link['link_title'])) {
-          $form_state->setErrorByName(
-            $field_id,
-            $this->t("Any link specified must have both a URL and a link title."),
-          );
-        }
-
-      }
-    }
-  }
-
-  /**
-   * Translate internal node links to path links.
-   *
-   * @param string $link
-   *   The path entered from the form.
-   */
-  protected function translateNodeLinks($link) {
-    // If link URL is an internal path, use the path alias instead.
-    $link = (str_starts_with($link, "/node/")) ? $this->pathAliasManager->getAliasByPath($link) : $link;
-    return $link;
   }
 
 }
