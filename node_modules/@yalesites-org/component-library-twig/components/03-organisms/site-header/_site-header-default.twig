@@ -1,0 +1,13 @@
+{# Secondary should come first on "desktop" sized screens #}
+<div {{ bem('menu-secondary', ['desktop'], site_header__base_class) }}>
+  {% include "@organisms/site-header/_site-header--secondary.twig" with {
+    screen_size: 'desktop'
+  }%}
+</div>
+  {{ site_header__primary }}
+{# Secondary should come second on "mobile" sized screens #}
+<div {{ bem('menu-secondary', ['mobile'], site_header__base_class) }}>
+  {% include "@organisms/site-header/_site-header--secondary.twig" with {
+    screen_size: 'mobile'
+  }%}
+</div>
