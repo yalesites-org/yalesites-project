@@ -1,6 +1,6 @@
 {
   "name": "@yalesites-org/atomic",
-  "version": "1.41.0",
+  "version": "1.41.1",
   "description": "Atomic theme for YaleSites projects.",
   "files": [
     "components",
