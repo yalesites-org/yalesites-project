@@ -79,7 +79,6 @@ dependencies:
     - toolbar
     - webform
     - ys_alert
-    - ys_campus_groups
     - ys_core
 id: site_admin
 label: 'Site administrator'
@@ -417,5 +416,4 @@ permissions:
   - 'view unpublished paragraphs'
   - 'view vocabulary labels'
   - 'yalesites manage alerts'
-  - 'yalesites manage campus groups'
   - 'yalesites manage settings'
