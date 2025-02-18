@@ -280,6 +280,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       '#type' => 'checkboxes',
       '#options' => [
         'hide_add_to_calendar' => $this->t('Hide Add to Calendar link'),
+        'hide_register' => $this->t('Hide Register link'),
       ],
       '#title' => $this->t('Event Field Display Options'),
       '#tree' => TRUE,

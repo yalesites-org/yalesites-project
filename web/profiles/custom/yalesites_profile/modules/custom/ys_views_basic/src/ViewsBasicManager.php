@@ -462,6 +462,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
     $event_field_display_options = [
       'hide_add_to_calendar' => (int) !empty($paramsDecoded['event_field_options']['hide_add_to_calendar']),
+      'hide_register' => (int) !empty($paramsDecoded['event_field_options']['hide_register']),
     ];
 
     $pin_label = $paramsDecoded['pin_label'] ?? self::DEFAULT_PIN_LABEL;
@@ -538,6 +539,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
             $resultRow['#cache']['keys'][] = $event_field_display_options['hide_add_to_calendar'];
             $resultRow['#cache']['keys'][] = $pin_options['pinned_to_top'];
             $resultRow['#cache']['keys'][] = $pin_options['pin_label'];
+            $resultRow['#cache']['keys'][] = $event_field_display_options['hide_register'];
           }
         }
         break;
