@@ -6,6 +6,8 @@ dependencies:
     - core.entity_view_mode.node.single
     - field.field.node.profile.field_address
     - field.field.node.profile.field_affiliation
+    - field.field.node.profile.field_audience
+    - field.field.node.profile.field_custom_vocab
     - field.field.node.profile.field_department
     - field.field.node.profile.field_email
     - field.field.node.profile.field_external_source
@@ -292,6 +294,8 @@ content:
     weight: 7
     region: content
 hidden:
+  field_audience: true
+  field_custom_vocab: true
   field_login_required: true
   field_metatags: true
   field_pronouns: true

@@ -1,0 +1,11 @@
+{#
+ # Available Variables:
+ # - items (array)
+ #   - title: Link title
+ #   - url: Link url
+ #}
+ 
+{% include "@molecules/taxonomy-display/yds-taxonomy-display.twig" with {
+  taxonomy_display__theme: theme_selection,
+  taxonomy_display__items: items,
+} %}

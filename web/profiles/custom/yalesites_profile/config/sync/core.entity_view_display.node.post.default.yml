@@ -3,8 +3,10 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.node.post.field_audience
     - field.field.node.post.field_author
     - field.field.node.post.field_category
+    - field.field.node.post.field_custom_vocab
     - field.field.node.post.field_external_source
     - field.field.node.post.field_login_required
     - field.field.node.post.field_metatags
@@ -80,8 +82,14 @@ third_party_settings:
     allowed_block_categories: {  }
     entity_view_mode_restriction:
       allowed_layouts: {  }
-      denylisted_blocks: {  }
-      allowlisted_blocks: {  }
+      denylisted_blocks:
+        'Custom block types':
+          - wrapped_text_callout
+        'Inline blocks':
+          - 'inline_block:wrapped_text_callout'
+      allowlisted_blocks:
+        'YaleSites Layouts':
+          - ys_taxonomy_display_block
       restricted_categories:
         - 'Chaos Tools'
         - 'Content fields'
@@ -92,7 +100,6 @@ third_party_settings:
         - System
         - Webform
         - 'YaleSites Core'
-        - 'YaleSites Layouts'
         - 'YaleSites alert'
         - core
     entity_view_mode_restriction_by_region:
@@ -106,6 +113,14 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: -20
+    region: content
+  field_audience:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 3
     region: content
   field_author:
     type: string
@@ -122,6 +137,14 @@ content:
       link: true
     third_party_settings: {  }
     weight: 1
+    region: content
+  field_custom_vocab:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 4
     region: content
   field_external_source:
     type: link

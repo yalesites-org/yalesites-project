@@ -1,13 +1,17 @@
 name: Create a release
 on:
-  push:
-    branches: master
+  pull_request:
+    types:
+      - closed
+    branches:
+      - master
 env:
   GH_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
   YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
     steps:
       - name: Checkout
         uses: actions/checkout@v4

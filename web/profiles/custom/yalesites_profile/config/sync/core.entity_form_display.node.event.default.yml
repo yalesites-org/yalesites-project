@@ -3,15 +3,19 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.node.event.field_audience
     - field.field.node.event.field_category
+    - field.field.node.event.field_custom_vocab
     - field.field.node.event.field_event_audience
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_description
     - field.field.node.event.field_event_format
+    - field.field.node.event.field_event_id
     - field.field.node.event.field_event_place
     - field.field.node.event.field_event_recurring
     - field.field.node.event.field_event_room
+    - field.field.node.event.field_event_source
     - field.field.node.event.field_event_status
     - field.field.node.event.field_event_topics
     - field.field.node.event.field_event_type
@@ -149,10 +153,9 @@ third_party_settings:
       children:
         - field_tags
         - field_category
-        - field_localist_event_type
-        - field_localist_group
-        - field_event_audience
-        - field_event_topics
+        - field_audience
+        - field_custom_vocab
+        - group_localist_taxonomies
       label: Taxonomies
       region: content
       parent_name: group_event_tabs
@@ -169,6 +172,8 @@ third_party_settings:
       children:
         - field_localist_info
         - field_localist_id
+        - field_event_id
+        - field_event_source
         - field_event_status
         - field_localist_event_url
         - field_localist_event_image_url
@@ -234,20 +239,50 @@ third_party_settings:
         id: ''
         description: ''
         required_fields: true
+    group_localist_taxonomies:
+      children:
+        - field_localist_event_type
+        - field_localist_group
+        - field_event_audience
+        - field_event_topics
+      label: 'Localist Taxonomies'
+      region: hidden
+      parent_name: group_classifications
+      weight: 26
+      format_type: fieldset
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        label_as_html: false
+        description: ''
+        required_fields: false
 id: node.event.default
 targetEntityType: node
 bundle: event
 mode: default
 content:
+  field_audience:
+    type: chosen_select
+    weight: 24
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_category:
     type: chosen_select
     weight: 23
     region: content
     settings: {  }
     third_party_settings: {  }
+  field_custom_vocab:
+    type: chosen_select
+    weight: 25
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_event_audience:
     type: chosen_select
-    weight: 26
+    weight: 29
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -288,6 +323,14 @@ content:
       rows: 5
       placeholder: ''
     third_party_settings: {  }
+  field_event_id:
+    type: string_textfield
+    weight: 30
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
   field_event_place:
     type: chosen_select
     weight: 6
@@ -309,15 +352,21 @@ content:
       size: 60
       placeholder: ''
     third_party_settings: {  }
+  field_event_source:
+    type: options_select
+    weight: 31
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_event_status:
     type: options_select
-    weight: 30
+    weight: 32
     region: content
     settings: {  }
     third_party_settings: {  }
   field_event_topics:
     type: chosen_select
-    weight: 27
+    weight: 30
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -337,7 +386,7 @@ content:
     third_party_settings: {  }
   field_localist_event_image_alt:
     type: string_textfield
-    weight: 33
+    weight: 35
     region: content
     settings:
       size: 60
@@ -345,7 +394,7 @@ content:
     third_party_settings: {  }
   field_localist_event_image_url:
     type: link_default
-    weight: 32
+    weight: 34
     region: content
     settings:
       placeholder_url: ''
@@ -353,13 +402,13 @@ content:
     third_party_settings: {  }
   field_localist_event_type:
     type: chosen_select
-    weight: 24
+    weight: 27
     region: content
     settings: {  }
     third_party_settings: {  }
   field_localist_event_url:
     type: link_default
-    weight: 31
+    weight: 33
     region: content
     settings:
       placeholder_url: ''
@@ -367,13 +416,13 @@ content:
     third_party_settings: {  }
   field_localist_group:
     type: chosen_select
-    weight: 25
+    weight: 28
     region: content
     settings: {  }
     third_party_settings: {  }
   field_localist_ics_url:
     type: link_default
-    weight: 34
+    weight: 36
     region: content
     settings:
       placeholder_url: ''
@@ -395,7 +444,7 @@ content:
     third_party_settings: {  }
   field_localist_register_enabled:
     type: boolean_checkbox
-    weight: 35
+    weight: 37
     region: content
     settings:
       display_label: true

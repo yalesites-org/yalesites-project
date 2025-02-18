@@ -1,0 +1,29 @@
+uuid: 1450519f-4db0-4f67-8ba2-ac76ee47ed5c
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_custom_vocab
+    - node.type.post
+    - taxonomy.vocabulary.custom_vocab
+id: node.post.field_custom_vocab
+field_name: field_custom_vocab
+entity_type: node
+bundle: post
+label: 'Custom Vocab'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:taxonomy_term'
+  handler_settings:
+    target_bundles:
+      custom_vocab: custom_vocab
+    sort:
+      field: name
+      direction: asc
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference

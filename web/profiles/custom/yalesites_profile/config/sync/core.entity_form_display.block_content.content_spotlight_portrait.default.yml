@@ -10,6 +10,7 @@ dependencies:
     - field.field.block_content.content_spotlight_portrait.field_link
     - field.field.block_content.content_spotlight_portrait.field_link_two
     - field.field.block_content.content_spotlight_portrait.field_media
+    - field.field.block_content.content_spotlight_portrait.field_style_alignment
     - field.field.block_content.content_spotlight_portrait.field_style_color
     - field.field.block_content.content_spotlight_portrait.field_style_position
     - field.field.block_content.content_spotlight_portrait.field_style_variation
@@ -47,7 +48,7 @@ content:
         maxlength_js_enforce: false
   field_heading_level:
     type: options_select
-    weight: 8
+    weight: 9
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -91,21 +92,27 @@ content:
     third_party_settings:
       media_library_edit:
         show_edit: '1'
-  field_style_color:
+  field_style_alignment:
     type: options_select
-    weight: 7
+    weight: 10
     region: content
     settings: {  }
     third_party_settings: {  }
-  field_style_position:
+  field_style_color:
     type: options_select
     weight: 8
     region: content
     settings: {  }
     third_party_settings: {  }
+  field_style_position:
+    type: options_select
+    weight: 11
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_style_variation:
     type: options_select
-    weight: 9
+    weight: 12
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -149,7 +156,7 @@ content:
     third_party_settings: {  }
   revision_log:
     type: hide_revision_field_log_widget
-    weight: 10
+    weight: 13
     region: content
     settings:
       rows: 5
@@ -158,5 +165,6 @@ content:
       default: ''
       permission_based: false
       allow_user_settings: true
+      hide_revision: false
     third_party_settings: {  }
 hidden: {  }

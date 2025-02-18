@@ -5,6 +5,8 @@ dependencies:
   config:
     - field.field.node.profile.field_address
     - field.field.node.profile.field_affiliation
+    - field.field.node.profile.field_audience
+    - field.field.node.profile.field_custom_vocab
     - field.field.node.profile.field_department
     - field.field.node.profile.field_email
     - field.field.node.profile.field_external_source
@@ -75,6 +77,8 @@ third_party_settings:
         - title
         - group_two_column
         - field_affiliation
+        - field_audience
+        - field_custom_vocab
         - field_tags
       label: 'General Information'
       region: content
@@ -160,7 +164,19 @@ content:
     third_party_settings: {  }
   field_affiliation:
     type: options_select
-    weight: 36
+    weight: 31
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_audience:
+    type: chosen_select
+    weight: 32
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_custom_vocab:
+    type: chosen_select
+    weight: 33
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -269,7 +285,7 @@ content:
         maxlength_js_enforce: false
   field_tags:
     type: chosen_select
-    weight: 37
+    weight: 34
     region: content
     settings: {  }
     third_party_settings: {  }
