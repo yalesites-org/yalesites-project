@@ -64,8 +64,8 @@ source:
       label: 'Event Type'
       selector: eventType
     -
-      name: ticket_cost
-      label: 'Ticket cost'
+      name: ticket_registration_url
+      label: 'Ticket Registration URL'
       selector: eventLink
     -
       name: event_status
@@ -170,7 +170,7 @@ process:
       bundle_key: vid
       value_key: name
       ignore_case: true
-  field_ticket_cost: ticket_cost
+  field_ticket_registration_url: ticket_registration_url
   field_event_source:
     -
       plugin: default_value
