@@ -1,0 +1,47 @@
+uuid: a45ad764-60ef-41a5-80b5-7101a33d2c2e
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.audio
+    - field.field.block_content.audio.field_media
+  module:
+    - hide_revision_field
+    - media_library
+    - media_library_edit
+id: block_content.audio.default
+targetEntityType: block_content
+bundle: audio
+mode: default
+content:
+  field_media:
+    type: media_library_widget
+    weight: 2
+    region: content
+    settings:
+      media_types: {  }
+    third_party_settings:
+      media_library_edit:
+        show_edit: '1'
+  info:
+    type: string_textfield
+    weight: -5
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  revision_log:
+    type: hide_revision_field_log_widget
+    weight: 80
+    region: content
+    settings:
+      rows: 5
+      placeholder: ''
+      show: true
+      default: ''
+      permission_based: false
+      allow_user_settings: true
+      hide_revision: false
+    third_party_settings: {  }
+hidden: {  }

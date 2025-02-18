@@ -1,0 +1,23 @@
+uuid: d8badc86-cd6b-437b-aaf3-e3204de66f91
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.audio
+    - field.field.block_content.audio.field_media
+id: block_content.audio.default
+targetEntityType: block_content
+bundle: audio
+mode: default
+content:
+  field_media:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: text_with_image_feature_equal
+      link: false
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  search_api_excerpt: true
