@@ -35,3 +35,17 @@ function ys_embed_theme($existing, $type, $theme, $path) {
     ],
   ];
 }
+
+/**
+ * Implements hook_preprocess_HOOK() for block templates.
+ */
+function ys_embed_preprocess_block(&$variables) {
+  // Add jquery ONLY for libcal embeds.
+  if ($variables['plugin_id'] == 'inline_block:embed') {
+    $field_media_embed = $variables['content']['field_media'][0]['#media']->get('field_media_embed')->get(0)->get('embed_source')->getValue();
+    if (isset($field_media_embed) && $field_media_embed == 'libcal') {
+      $variables['#attached']['library'][] = 'core/jquery';
+      $variables['#attached']['library'][] = 'ys_embed/libcal';
+    }
+  }
+}
