@@ -1,0 +1,34 @@
+uuid: 2cb18277-58f3-40ca-b9ba-a20644a89e87
+langcode: en
+status: true
+dependencies:
+  module:
+    - entity_redirect
+third_party_settings:
+  entity_redirect:
+    redirect:
+      anonymous:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+      add:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+      edit:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+      delete:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+name: 'Event Sources'
+vid: event_sources
+description: 'Approved integration sources'
+weight: 0
+new_revision: false

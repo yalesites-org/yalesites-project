@@ -48,8 +48,8 @@ error_handling:
   message_prevent_normal_login: 'This account must log in using <a href="[cas:login-url]">CAS</a>.'
   message_restrict_password_management: 'The requested account is associated with CAS and its password cannot be managed from this website.'
 logout:
-  cas_logout: false
-  logout_destination: ''
+  cas_logout: true
+  logout_destination: /
   enable_single_logout: false
   single_logout_session_lifetime: 25
 proxy:
