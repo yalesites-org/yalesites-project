@@ -111,7 +111,7 @@
     "jjj/chosen": "2.2.1",
     "laminas/laminas-escaper": "2.13.0",
     "northernco/ckeditor5-anchor-drupal": "0.4.0",
-    "yalesites-org/ai_engine": "1.2.7",
+    "yalesites-org/ai_engine": "dev-IYY-328--floating-chat",
     "yalesites-org/atomic": "1.40.0",
     "yalesites-org/yale_cas": "v1.0.5"
   },
