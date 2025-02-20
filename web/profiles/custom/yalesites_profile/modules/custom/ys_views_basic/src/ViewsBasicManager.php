@@ -226,7 +226,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * Views Basic Scaffold view is overridden with the data from the parameters.
    *
    * @param string $type
-   *   Can be either 'rendered' or 'count'.
+   *   'rendered' (used to allow 'count').
    * @param string $params
    *   JSON of the parameter settings.
    *
@@ -464,22 +464,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'pin_label' => $pin_label,
     ];
 
-    $view->setArguments(
-      [
-        'type' => $filterType,
-        'terms_include' => $termsInclude,
-        'terms_exclude' => $termsExclude,
-        'sort' => $paramsDecoded['sort_by'],
-        'view' => $paramsDecoded['view_mode'],
-        'items' => $itemsLimit,
-        'event_time_period' => str_contains($filterType, 'event') ? $eventTimePeriod : NULL,
-        'offset' => $paramsDecoded['offset'] ?? 0,
-        'field_display_options' => json_encode($field_display_options),
-        'event_field_display_options' => json_encode($event_field_display_options),
-        'pin_settings' => json_encode($pin_options),
-      ]
-    );
-
     /*
      * End setting dynamic arguments.
      */
@@ -505,7 +489,25 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
      * End include current node.
      */
 
+    $view_args = [
+      'type' => $filterType,
+      'terms_include' => $termsInclude,
+      'terms_exclude' => $termsExclude,
+      'sort' => $paramsDecoded['sort_by'],
+      'view' => $paramsDecoded['view_mode'],
+      'items' => $itemsLimit,
+      'event_time_period' => str_contains($filterType, 'event') ? $eventTimePeriod : NULL,
+      'offset' => $paramsDecoded['offset'] ?? 0,
+      'field_display_options' => json_encode($field_display_options),
+      'event_field_display_options' => json_encode($event_field_display_options),
+      'pin_settings' => json_encode($pin_options),
+    ];
+
+    $view->setArguments($view_args);
     $view->execute();
+
+    $view_args['items'] = 0;
+    $this->clearViewItemRenderCache($view, $view_args);
 
     // Unset the pager. Needs to be done after view->execute();
     if ($paramsDecoded['display'] != "pager") {
@@ -527,12 +529,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
             $resultRow['#cache']['keys'][] = $event_field_display_options['hide_add_to_calendar'];
             $resultRow['#cache']['keys'][] = $pin_options['pinned_to_top'];
             $resultRow['#cache']['keys'][] = $pin_options['pin_label'];
+
+            $resultRow['#cache']['contexts'][] = 'url.query_args:page';
           }
         }
-        break;
-
-      case "count":
-        $view = count($view->result);
         break;
     }
 
@@ -1041,6 +1041,54 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     }
 
     return $formSelectors;
+  }
+
+  /**
+   * Clears the render cache for the view items.
+   *
+   * This is needed in the case of having two views with some of the same node
+   * data. One would have something like hide calendar enabled, while the other
+   * would be disabled. The issue is that the render of that one item is cached,
+   * and so the options views_basic uses are not respected.  This function
+   * clears the cache for the view items so that the view is re-rendered with
+   * the new options.
+   *
+   * @param \Drupal\views\ViewExecutable $view
+   *   The view object.
+   * @param array $args
+   *   The arguments to pass to the view.
+   *
+   * @return void
+   *   No return value.
+   */
+  private function clearViewItemRenderCache($view, $args) {
+    $view->execute();
+
+    // Recreate the view with all results.
+    $view_all = Views::getView($view->id());
+    if ($view_all) {
+      $view_all->setDisplay($view->current_display);
+      // Disable pagination to fetch all results.
+      $view_all->setItemsPerPage(0);
+
+      // Copy arguments, exposed input (filters), sorts.
+      $view_all->exposed_data = $view->exposed_data;
+      $view_all->filter = $view->filter;
+      $view_all->sort = $view->sort;
+      $view_all->setArguments($args);
+
+      $view_all->execute();
+
+      // Get all node ids.
+      $node_ids = [];
+      foreach ($view_all->result as $row) {
+        if (isset($row->_entity) && $row->_entity instanceof NodeInterface) {
+          $node_ids[] = 'node:' . $row->_entity->id();
+        }
+      }
+
+      \Drupal::service('cache_tags.invalidator')->invalidateTags($node_ids);
+    }
   }
 
 }
