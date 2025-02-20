@@ -226,7 +226,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * Views Basic Scaffold view is overridden with the data from the parameters.
    *
    * @param string $type
-   *   'rendered' (used to allow 'count').
+   *   Type of view output: 'rendered' (used to allow 'count').
    * @param string $params
    *   JSON of the parameter settings.
    *
