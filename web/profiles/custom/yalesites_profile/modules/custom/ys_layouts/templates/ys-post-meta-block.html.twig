@@ -4,6 +4,14 @@
   {% endset %}
 {% endif %}
 
+{% if show_read_time %}
+  {% set read_time %}
+    {% include "@molecules/read-time/yds-read-time.twig" with {
+      read_time__label: 'Estimated read time',
+    } %}
+  {% endset %}
+{% endif %}
+
 {{ attach_library('atomic/read-time') }}
 
 {% embed "@molecules/page-title/yds-page-title.twig" with {
@@ -12,8 +20,6 @@
   page_title__width: 'content',
 } %}
   {% block page_title__meta__extra %}
-    {% include "@molecules/read-time/yds-read-time.twig" with {
-      read_time__label: 'Estimated read time',
-    } %}
+    {{ read_time }}
   {% endblock %}
 {% endembed %}
