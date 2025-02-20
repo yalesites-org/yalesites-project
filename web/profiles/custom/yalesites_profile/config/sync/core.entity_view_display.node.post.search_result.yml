@@ -12,6 +12,7 @@ dependencies:
     - field.field.node.post.field_login_required
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
+    - field.field.node.post.field_show_read_time
     - field.field.node.post.field_tags
     - field.field.node.post.field_teaser_media
     - field.field.node.post.field_teaser_text
@@ -73,6 +74,7 @@ hidden:
   field_custom_vocab: true
   field_metatags: true
   field_publish_date: true
+  field_show_read_time: true
   field_tags: true
   field_teaser_media: true
   field_teaser_title: true

@@ -11,6 +11,7 @@ dependencies:
     - field.field.node.post.field_login_required
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
+    - field.field.node.post.field_show_read_time
     - field.field.node.post.field_tags
     - field.field.node.post.field_teaser_media
     - field.field.node.post.field_teaser_text
@@ -87,6 +88,24 @@ third_party_settings:
                   link: true
                 third_party_settings: {  }
             weight: 3
+            additional: {  }
+          a379212f-cdc0-4be3-b890-e704ecb8e6a9:
+            uuid: a379212f-cdc0-4be3-b890-e704ecb8e6a9
+            region: content
+            configuration:
+              id: 'field_block:node:post:field_show_read_time'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: boolean
+                label: above
+                settings:
+                  format: default
+                  format_custom_false: ''
+                  format_custom_true: ''
+                third_party_settings: {  }
+            weight: 4
             additional: {  }
         third_party_settings:
           layout_builder_lock:
@@ -185,6 +204,16 @@ content:
       target: ''
     third_party_settings: {  }
     weight: 2
+    region: content
+  field_show_read_time:
+    type: boolean
+    label: above
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    weight: 5
     region: content
 hidden:
   field_login_required: true
