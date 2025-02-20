@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_views_basic;
 
+use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityDisplayRepository;
@@ -196,17 +197,26 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   protected $routeMatch;
 
   /**
+   * The cache tags invalidator.
+   *
+   * @var \Drupal\Core\Cache\CacheTagsInvalidatorInterface
+   */
+  protected $cacheTagsInvalidator;
+
+  /**
    * Constructs a new ViewsBasicManager object.
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
     EntityDisplayRepository $entity_display_repository,
     RouteMatchInterface $route_match,
+    CacheTagsInvalidatorInterface $cache_tags_invalidator,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityDisplayRepository = $entity_display_repository;
     $this->termStorage = $this->entityTypeManager->getStorage('taxonomy_term');
     $this->routeMatch = $route_match;
+    $this->cacheTagsInvalidator = $cache_tags_invalidator;
   }
 
   /**
@@ -216,7 +226,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     return new static(
       $container->get('entity_type.manager'),
       $container->get('entity_display.repository'),
-      $container->get('current_route_match')
+      $container->get('current_route_match'),
+      $container->get('cache_tags.invalidator'),
     );
   }
 
@@ -1087,7 +1098,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         }
       }
 
-      \Drupal::service('cache_tags.invalidator')->invalidateTags($node_ids);
+      $this->cacheTagsInvalidator->invalidateTags($node_ids);
     }
   }
 
