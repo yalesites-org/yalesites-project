@@ -255,6 +255,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
     // Set up the view and initial decoded parameters.
     $paramsDecoded = json_decode($params, TRUE);
+    $pinned_to_top = isset($paramsDecoded['pinned_to_top']) ? (bool) $paramsDecoded['pinned_to_top'] : FALSE;
 
     /* Events need to have aggregation turned on in the view. Therefore, we
      * retrieve a special event scaffold view and apply sorting here instead of
@@ -262,18 +263,29 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
      */
 
     if (in_array('event', $paramsDecoded['filters']['types'])) {
-      $view = Views::getView('views_basic_scaffold_events');
+      $sortArray = [];
       $sortDirection = explode(":", $paramsDecoded['sort_by']);
-      $view->getDisplay()->setOption('sorts', [
-        [
-          'id' => 'field_event_date_value',
-          'table' => "node__field_event_date",
-          'field' => 'field_event_date_value',
-          'group_type' => 'min',
-          'order' => $sortDirection[1],
-          'test' => 'hi',
-        ],
-      ]);
+
+      if ($pinned_to_top) {
+        $sortArray[] = [
+          'id' => 'sticky',
+          'table' => "node_field_data",
+          'field' => 'sticky',
+          'order' => 'desc',
+        ];
+      }
+
+      $sortArray[] =
+      [
+        'id' => 'field_event_date_value',
+        'table' => "node__field_event_date",
+        'field' => 'field_event_date_value',
+        'group_type' => 'min',
+        'order' => $sortDirection[1],
+      ];
+
+      $view = Views::getView('views_basic_scaffold_events');
+      $view->getDisplay()->setOption('sorts', $sortArray);
     }
     else {
       // All other views get the original scaffold view.
@@ -463,7 +475,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'hide_add_to_calendar' => (int) !empty($paramsDecoded['event_field_options']['hide_add_to_calendar']),
     ];
 
-    $pinned_to_top = isset($paramsDecoded['pinned_to_top']) ? (bool) $paramsDecoded['pinned_to_top'] : FALSE;
     $pin_label = $paramsDecoded['pin_label'] ?? self::DEFAULT_PIN_LABEL;
 
     if (!$pinned_to_top) {
