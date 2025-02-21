@@ -7,8 +7,33 @@
  * This module overrides default book module text.
  */
 
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function ys_book_form_node_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  /*
+   * Only allow the following content types to be part of a book. This is
+   * because the book module permissions tie the `administer book outlines`
+   * permission to show this option on node edit forms as well.
+   */
+  $config = \Drupal::config('book.settings');
+  $allowedTypes = $config->get('allowed_types');
+
+  /** @var Drupal\node\NodeForm $form_object */
+  $form_object = $form_state->getFormObject();
+  /** @var Drupal\node\Entity\Node $node */
+  $node = $form_object->getEntity();
+
+  if (!in_array($node->getType(), $allowedTypes)) {
+    $form['book'] = [
+      '#access' => FALSE,
+    ];
+  }
+}
 
 /**
  * Implements hook_module_implements_alter().
