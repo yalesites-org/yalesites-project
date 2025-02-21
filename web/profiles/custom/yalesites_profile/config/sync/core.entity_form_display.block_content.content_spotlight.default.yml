@@ -92,31 +92,31 @@ content:
         show_edit: '1'
   field_style_alignment:
     type: options_select
-    weight: 3
+    weight: 9
     region: content
     settings: {  }
     third_party_settings: {  }
   field_style_color:
     type: options_select
-    weight: 8
+    weight: 12
     region: content
     settings: {  }
     third_party_settings: {  }
   field_style_position:
     type: options_select
-    weight: 9
+    weight: 10
     region: content
     settings: {  }
     third_party_settings: {  }
   field_style_variation:
     type: options_select
-    weight: 11
+    weight: 13
     region: content
     settings: {  }
     third_party_settings: {  }
   field_style_width:
     type: options_select
-    weight: 10
+    weight: 11
     region: content
     settings: {  }
     third_party_settings: {  }

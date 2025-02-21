@@ -29,6 +29,6 @@ third_party_settings:
         external: ''
 name: 'Custom Vocab'
 vid: custom_vocab
-description: 'Custom Vocabulary lets you create and name groups of content relevant to your YaleSite. You can assign this vocabulary to any content type and use it as a dropdown filter in View blocks.'
+description: 'Custom Vocabulary lets you create and name groups of content relevant to your YaleSite to use in blocks like views. You can change this name in Settings->Site settings.'
 weight: 0
 new_revision: false
