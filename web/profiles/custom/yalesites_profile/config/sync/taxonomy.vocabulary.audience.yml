@@ -1,0 +1,34 @@
+uuid: f31d47f2-17a3-41dd-96b9-9d139792aa80
+langcode: en
+status: true
+dependencies:
+  module:
+    - entity_redirect
+third_party_settings:
+  entity_redirect:
+    redirect:
+      anonymous:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+      add:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+      edit:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+      delete:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+name: Audience
+vid: audience
+description: 'Audience Vocabulary allows you to categorize content based on your target user groups. You can tag content with specific audience types and use these tags as filters in View blocks, helping users quickly find content relevant to them.'
+weight: 0
+new_revision: false

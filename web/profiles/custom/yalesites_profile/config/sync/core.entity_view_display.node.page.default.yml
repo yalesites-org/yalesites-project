@@ -3,7 +3,9 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.node.page.field_audience
     - field.field.node.page.field_category
+    - field.field.node.page.field_custom_vocab
     - field.field.node.page.field_external_source
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
@@ -91,14 +93,23 @@ third_party_settings:
       allowed_layouts:
         - layout_onecol
         - ys_layout_two_column
-      denylisted_blocks: {  }
+      denylisted_blocks:
+        'Custom block types':
+          - wrapped_text_callout
+        'Inline blocks':
+          - 'inline_block:wrapped_text_callout'
       allowlisted_blocks: {  }
-      restricted_categories: {  }
+      restricted_categories:
+        - 'YaleSites Core'
     entity_view_mode_restriction_by_region:
       allowed_layouts:
         - layout_onecol
         - ys_layout_two_column
       allowlisted_blocks:
+        layout_onecol:
+          all_regions:
+            'YaleSites Layouts':
+              - ys_taxonomy_display_block
         ys_layout_banner:
           all_regions:
             'Inline blocks':
@@ -107,6 +118,7 @@ third_party_settings:
               - 'inline_block:image_banner'
               - 'inline_block:content_spotlight'
               - 'inline_block:content_spotlight_portrait'
+              - 'inline_block:video_banner'
         ys_layout_page_meta:
           all_regions:
             'YaleSites Layouts':
@@ -133,6 +145,7 @@ third_party_settings:
               - 'inline_block:tabs'
               - 'inline_block:text'
               - 'inline_block:video'
+            'YaleSites Layouts': {  }
           sidebar:
             'Custom block types':
               - embed
@@ -140,6 +153,13 @@ third_party_settings:
             'Inline blocks':
               - 'inline_block:embed'
               - 'inline_block:text'
+      denylisted_blocks:
+        layout_onecol:
+          all_regions:
+            'Custom block types':
+              - wrapped_text_callout
+            'Inline blocks':
+              - 'inline_block:wrapped_text_callout'
       restricted_categories:
         ys_layout_two_column:
           content:
@@ -152,12 +172,12 @@ third_party_settings:
             - System
             - Webform
             - 'YaleSites Core'
-            - 'YaleSites Layouts'
             - 'YaleSites alert'
             - core
           sidebar:
             - 'Chaos Tools'
             - 'Content fields'
+            - Devel
             - Forms
             - Help
             - 'Lists (Views)'
@@ -180,7 +200,6 @@ third_party_settings:
             - System
             - Webform
             - 'YaleSites Core'
-            - 'YaleSites Layouts'
             - 'YaleSites alert'
             - core
         ys_layout_banner:
@@ -224,6 +243,22 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: -20
+    region: content
+  field_audience:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  field_custom_vocab:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 3
     region: content
   field_external_source:
     type: link
