@@ -7,9 +7,11 @@
  * This module overrides default book module text.
  */
 
+use Drupal\Core\Block\BlockPluginInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
+use Drupal\node\NodeInterface;
 
 /**
  * Implements hook_form_FORM_ID_alter().
@@ -68,7 +70,18 @@ function ys_book_help($route_name, RouteMatchInterface $route_match) {
 function ys_book_form_alter(&$form, &$form_state, $form_id) {
 
   if ($form_id == 'book_admin_edit') {
+    $node = $form['#node'];
+    $dynamicNav = $node->hasField('field_dynamic_book_nav') ? $node->get('field_dynamic_book_nav')->value : 0;
+
     $form['save']['#value'] = t('Save collection');
+    $form['dynamic_navigation'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Dynamic Navigation'),
+      '#default_value' => $dynamicNav,
+    ];
+
+    $form['#submit'][] = 'ys_book_form_submit';
+
   }
 
   $nodeFormIds = [
@@ -89,6 +102,19 @@ function ys_book_form_alter(&$form, &$form_state, $form_id) {
     '#weight' => -10,
   ];
 
+}
+
+function ys_book_form_submit($form, FormStateInterface $form_state) {
+  if ($form['#form_id'] != 'book_admin_edit') {
+    return;
+  }
+
+  $node = \Drupal::routeMatch()->getParameter('node');
+  if ($node instanceof NodeInterface) {
+    $value = $form_state->getValue('dynamic_navigation');
+    $node->set('field_dynamic_book_nav', $value);
+    $node->save();
+  }
 }
 
 /**
@@ -121,6 +147,25 @@ function ys_book_library_info_alter(&$libraries, $extension) {
       }
     }
     $libraries['drupal.book']['js'] = $new_js;
+
+  }
+}
+
+function ys_book_block_view_alter(array &$build, BlockPluginInterface $block) {
+  if ($block->getBaseId() == 'custom_book_navigation') {
+    $node = \Drupal::routeMatch()->getParameter('node');
+    $topLevelBook = \Drupal\node\Entity\Node::load($node->book['bid']);
+    $dynamicNav = $topLevelBook->hasField('field_dynamic_book_nav') ? $topLevelBook->get('field_dynamic_book_nav')->value : 0;
+
+    if (!$dynamicNav) {
+      return;
+    }
+    $bookDepth = $node->book['depth'];
+
+    $config = $block->getConfiguration();
+    $config['start_level'] = $bookDepth;
+    $block->setConfiguration($config);
+    $build['#configuration']['start_level'] = $bookDepth;
 
   }
 }
