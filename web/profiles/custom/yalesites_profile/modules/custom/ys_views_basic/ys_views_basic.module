@@ -119,7 +119,7 @@ function ys_views_basic_views_pre_render(ViewExecutable $view): void {
 }
 
 /**
- *
+ * Implements hook_views_pre_view().
  */
 function ys_views_basic_views_pre_view(ViewExecutable $view, &$display_id, array &$args) {
   // Only target specific views.
@@ -134,8 +134,7 @@ function ys_views_basic_views_pre_view(ViewExecutable $view, &$display_id, array
     return;
   }
 
-  // Get the current page and items per page.
-  $pager = $view->pager;
+  // Get the next page and items per page.
   $next_page = \Drupal::service('request_stack')->getCurrentRequest()->query->get('page');
   $items_per_page = $view->getItemsPerPage();
 
