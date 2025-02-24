@@ -28,6 +28,7 @@ function ys_core_theme($existing, $type, $theme, $path): array {
     'ys_breadcrumb_block' => [
       'variables' => [
         'items' => [],
+        'always_show_breadcrumbs' => FALSE,
       ],
     ],
     'ys_dashboard' => [

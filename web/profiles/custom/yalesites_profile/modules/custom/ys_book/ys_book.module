@@ -11,6 +11,7 @@ use Drupal\Core\Block\BlockPluginInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
+use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 
 /**
@@ -68,7 +69,7 @@ function ys_book_help($route_name, RouteMatchInterface $route_match) {
  * Implements hook_form_alter().
  */
 function ys_book_form_alter(&$form, &$form_state, $form_id) {
-
+  // Allows for dynamic navigation to be set on a book.
   if ($form_id == 'book_admin_edit') {
     $node = $form['#node'];
     $dynamicNav = $node->hasField('field_dynamic_book_nav') ? $node->get('field_dynamic_book_nav')->value : 0;
@@ -77,10 +78,12 @@ function ys_book_form_alter(&$form, &$form_state, $form_id) {
     $form['dynamic_navigation'] = [
       '#type' => 'checkbox',
       '#title' => t('Dynamic Navigation'),
+      '#description' => t('Allow the collection navigation to change based on which page is being viewed.'),
       '#default_value' => $dynamicNav,
+      '#weight' => 0,
     ];
 
-    $form['#submit'][] = 'ys_book_form_submit';
+    $form['#submit'][] = 'ys_book_admin_form_submit';
 
   }
 
@@ -104,13 +107,16 @@ function ys_book_form_alter(&$form, &$form_state, $form_id) {
 
 }
 
-function ys_book_form_submit($form, FormStateInterface $form_state) {
+/**
+ * Custom submit handler for the book_admin_edit form.
+ */
+function ys_book_admin_form_submit($form, FormStateInterface $form_state) {
   if ($form['#form_id'] != 'book_admin_edit') {
     return;
   }
-
   $node = \Drupal::routeMatch()->getParameter('node');
-  if ($node instanceof NodeInterface) {
+
+  if ($node instanceof NodeInterface && $node->hasField('field_dynamic_book_nav')) {
     $value = $form_state->getValue('dynamic_navigation');
     $node->set('field_dynamic_book_nav', $value);
     $node->save();
@@ -151,10 +157,18 @@ function ys_book_library_info_alter(&$libraries, $extension) {
   }
 }
 
+/**
+ * Implements hook_block_view_alter().
+ */
 function ys_book_block_view_alter(array &$build, BlockPluginInterface $block) {
+  // Enables dynamic navigation for books if set in the book outline settings.
   if ($block->getBaseId() == 'custom_book_navigation') {
     $node = \Drupal::routeMatch()->getParameter('node');
-    $topLevelBook = \Drupal\node\Entity\Node::load($node->book['bid']);
+    if (!$node || !$node->book) {
+      return;
+    }
+
+    $topLevelBook = Node::load($node->book['bid']);
     $dynamicNav = $topLevelBook->hasField('field_dynamic_book_nav') ? $topLevelBook->get('field_dynamic_book_nav')->value : 0;
 
     if (!$dynamicNav) {
