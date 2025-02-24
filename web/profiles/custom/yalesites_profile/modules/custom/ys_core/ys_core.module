@@ -561,6 +561,8 @@ function ys_core_form_views_exposed_form_alter(&$form, FormStateInterface $form_
       'field_category_target_id',
       'field_category_target_id_1',
       'field_affiliation_target_id',
+      'field_custom_vocab_target_id',
+      'field_audience_target_id',
       'post_year_filter',
     ];
     // Loop through each specified field and apply Chosen settings if the field

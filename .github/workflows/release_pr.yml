@@ -1,10 +1,8 @@
 name: Release pull request
 on:
-  pull_request:
-    types:
-      - synchronize
+  push:
     branches:
-      - v[0-9]+
+      - 'v[0-9]+'
   workflow_dispatch:
   workflow_run:
     workflows: [Create a release]
