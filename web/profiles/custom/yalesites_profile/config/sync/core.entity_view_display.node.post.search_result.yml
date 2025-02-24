@@ -69,11 +69,11 @@ content:
     region: content
 hidden:
   addtoany: true
+  field_audience: true
   field_author: true
   field_category: true
-  field_hide_sharing_links: true
-  field_audience: true
   field_custom_vocab: true
+  field_hide_sharing_links: true
   field_metatags: true
   field_publish_date: true
   field_tags: true

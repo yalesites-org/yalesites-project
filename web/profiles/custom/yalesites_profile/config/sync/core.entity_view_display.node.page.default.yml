@@ -6,6 +6,7 @@ dependencies:
     - field.field.node.page.field_audience
     - field.field.node.page.field_category
     - field.field.node.page.field_custom_vocab
+    - field.field.node.page.field_dynamic_book_nav
     - field.field.node.page.field_external_source
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
@@ -42,6 +43,24 @@ third_party_settings:
               context_mapping:
                 entity: layout_builder.entity
             weight: 0
+            additional: {  }
+          2269cb39-628b-4fae-93f2-0d5ea249e8fd:
+            uuid: 2269cb39-628b-4fae-93f2-0d5ea249e8fd
+            region: content
+            configuration:
+              id: 'field_block:node:page:field_dynamic_book_nav'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: boolean
+                label: above
+                settings:
+                  format: default
+                  format_custom_false: ''
+                  format_custom_true: ''
+                third_party_settings: {  }
+            weight: 1
             additional: {  }
         third_party_settings:
           layout_builder_lock:
@@ -303,6 +322,16 @@ content:
       link: true
     third_party_settings: {  }
     weight: 3
+    region: content
+  field_dynamic_book_nav:
+    type: boolean
+    label: above
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    weight: 4
     region: content
   field_external_source:
     type: link
