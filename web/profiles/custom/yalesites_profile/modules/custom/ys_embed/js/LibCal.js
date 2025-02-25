@@ -138,6 +138,7 @@
               document.querySelectorAll(".embed-libcal a").forEach((link) => {
                 link.addEventListener("click", (event) => {
                   event.preventDefault();
+                  console.log('link stopped');
                 });
               });
             }

@@ -77,6 +77,9 @@ class LibCal extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $example = '<div id="api_hours_today_iid457_lid4211"></div><script src="https://schedule.yale.edu/api_hours_today.php?iid=457&lid=4211&format=js&systemTime=0&context=object"> </script>';
+  protected static $example = '<script src="https://schedule.yale.edu/js/hours_today.js"></script> 
+<div id="s_lc_tdh_457_4216"></div> 
+<script>$(function(){var s_lc_tdh_457_4216 = new $.LibCalTodayHours( $("#s_lc_tdh_457_4216"), { iid: 457, lid: 4216 }); 
+});</script>';
 
 }
