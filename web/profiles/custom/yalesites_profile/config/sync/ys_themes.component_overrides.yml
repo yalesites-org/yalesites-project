@@ -61,9 +61,9 @@ content_spotlight:
     default: default
   field_style_alignment:
     values:
-      top: 'Top'
-      middle: 'Middle'
-      bottom: 'Bottom'
+      top: Top
+      middle: Middle
+      bottom: Bottom
     default: top
 quick_links:
   field_style_variation:
@@ -174,9 +174,9 @@ content_spotlight_portrait:
     default: default
   field_style_alignment:
     values:
-      top: 'Top'
-      middle: 'Middle'
-      bottom: 'Bottom'
+      top: Top
+      middle: Middle
+      bottom: Bottom
     default: middle
 text:
   field_style_variation:
@@ -296,3 +296,9 @@ image_banner:
       tall: Tall
       short: Short
     default: tall
+video_banner:
+  field_style_width:
+    values:
+      max: Contained
+      full: 'Full Width'
+    default: max

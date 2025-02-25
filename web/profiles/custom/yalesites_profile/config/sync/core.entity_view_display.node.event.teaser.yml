@@ -4,7 +4,9 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.node.teaser
+    - field.field.node.event.field_audience
     - field.field.node.event.field_category
+    - field.field.node.event.field_custom_vocab
     - field.field.node.event.field_event_audience
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
@@ -59,7 +61,10 @@ content:
     weight: 100
     region: content
 hidden:
+  addtoany: true
+  field_audience: true
   field_category: true
+  field_custom_vocab: true
   field_event_audience: true
   field_event_cta: true
   field_event_date: true
