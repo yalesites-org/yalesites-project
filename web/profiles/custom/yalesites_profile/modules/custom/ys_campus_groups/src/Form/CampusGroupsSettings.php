@@ -59,6 +59,12 @@ class CampusGroupsSettings extends ConfigFormBase {
       '#description' => $this->t('Enter the group ids comma seperated'),
     ];
 
+    $form['campus_groups_api_key'] = [
+      '#type' => 'key_select',
+      '#title' => $this->t('Campus Groups Authentication Credentials'),
+      '#default_value' => $config->get('campus_groups_api_key') ?: '',
+    ];
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -71,6 +77,7 @@ class CampusGroupsSettings extends ConfigFormBase {
       ->set('enable_campus_groups_sync', $form_state->getValue('enable_campus_groups_sync'))
       ->set('campus_groups_endpoint', rtrim($form_state->getValue('campus_groups_endpoint'), "/"))
       ->set('campus_groups_groupids', $form_state->getValue('campus_groups_groupids'))
+      ->set('campus_groups_api_key', $form_state->getValue('campus_groups_api_key'))
       ->save();
 
     parent::submitForm($form, $form_state);

@@ -300,5 +300,5 @@ video_banner:
   field_style_width:
     values:
       max: Contained
-      full: Full Width
+      full: 'Full Width'
     default: max
