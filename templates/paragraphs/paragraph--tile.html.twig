@@ -10,6 +10,7 @@
   tile__item__vertical_alignment: parent.fields.field_style_position.0.value,
   tile__item__presentation_style: content.field_heading.0['#text'] ? 'heading' : 'text-only',
   tile__item__theme: content.field_style_color.0['#markup'],
+  tile__item__animation: parent.fields.field_enable_animation.0.value == '1' ? 'true' : 'false',
   }
 %}
   {% block tile__item__image %}
