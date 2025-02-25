@@ -8,6 +8,8 @@ label: 'Campus Group Events'
 source:
   plugin: campus_groups_url
   data_fetcher_plugin: http
+  headers:
+    Accept: '*/*'
   data_parser_plugin: simple_xml
   track_changes: true
   urls: 'test.xml'
