@@ -12,7 +12,7 @@ use Drupal\ys_embed\Plugin\EmbedSourceInterface;
  *   id = "libcal",
  *   label = @Translation("LibCal"),
  *   description = @Translation("LibCal embed source."),
- *   thumbnail = "",
+ *   thumbnail = "springshare-libcal.png",
  *   active = TRUE,
  * )
  */

@@ -201,3 +201,12 @@ function ys_embed_update_9006() {
     }
   }
 }
+
+/**
+ * Implements hook_update().
+ *
+ * Copy SpringShare LibCal icon.
+ */
+function ys_embed_update_10001() {
+  _copy_embed_file('springshare-libcal.png');
+}
