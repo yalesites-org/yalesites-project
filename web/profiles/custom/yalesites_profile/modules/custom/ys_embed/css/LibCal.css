@@ -156,3 +156,7 @@ button:is(.s-lc-w-previous, .s-lc-w-next):before {
 button:is(.s-lc-w-next):before {
   content: '→';
 }
+
+.gin--dark-mode .embed-libcal :hover, .gin--dark-mode .embed-libcal tr:focus-within {
+  color:inherit;
+}
