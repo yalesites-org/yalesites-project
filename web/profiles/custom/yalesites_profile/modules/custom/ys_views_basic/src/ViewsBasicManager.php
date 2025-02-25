@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_views_basic;
 
+use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityDisplayRepository;
@@ -196,17 +197,26 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   protected $routeMatch;
 
   /**
+   * The cache tags invalidator.
+   *
+   * @var \Drupal\Core\Cache\CacheTagsInvalidatorInterface
+   */
+  protected $cacheTagsInvalidator;
+
+  /**
    * Constructs a new ViewsBasicManager object.
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
     EntityDisplayRepository $entity_display_repository,
     RouteMatchInterface $route_match,
+    CacheTagsInvalidatorInterface $cache_tags_invalidator,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityDisplayRepository = $entity_display_repository;
     $this->termStorage = $this->entityTypeManager->getStorage('taxonomy_term');
     $this->routeMatch = $route_match;
+    $this->cacheTagsInvalidator = $cache_tags_invalidator;
   }
 
   /**
@@ -216,7 +226,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     return new static(
       $container->get('entity_type.manager'),
       $container->get('entity_display.repository'),
-      $container->get('current_route_match')
+      $container->get('current_route_match'),
+      $container->get('cache_tags.invalidator'),
     );
   }
 
@@ -226,7 +237,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * Views Basic Scaffold view is overridden with the data from the parameters.
    *
    * @param string $type
-   *   Can be either 'rendered' or 'count'.
+   *   Type of view output: 'rendered' (used to allow 'count').
    * @param string $params
    *   JSON of the parameter settings.
    *
@@ -475,22 +486,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'pin_label' => $pin_label,
     ];
 
-    $view->setArguments(
-      [
-        'type' => $filterType,
-        'terms_include' => $termsInclude,
-        'terms_exclude' => $termsExclude,
-        'sort' => $paramsDecoded['sort_by'],
-        'view' => $paramsDecoded['view_mode'],
-        'items' => $itemsLimit,
-        'event_time_period' => str_contains($filterType, 'event') ? $eventTimePeriod : NULL,
-        'offset' => $paramsDecoded['offset'] ?? 0,
-        'field_display_options' => json_encode($field_display_options),
-        'event_field_display_options' => json_encode($event_field_display_options),
-        'pin_settings' => json_encode($pin_options),
-      ]
-    );
-
     /*
      * End setting dynamic arguments.
      */
@@ -516,7 +511,32 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
      * End include current node.
      */
 
+    $view_args = [
+      'type' => $filterType,
+      'terms_include' => $termsInclude,
+      'terms_exclude' => $termsExclude,
+      'sort' => $paramsDecoded['sort_by'],
+      'view' => $paramsDecoded['view_mode'],
+      'items' => $itemsLimit,
+      'event_time_period' => str_contains($filterType, 'event') ? $eventTimePeriod : NULL,
+      'offset' => $paramsDecoded['offset'] ?? 0,
+      'field_display_options' => json_encode($field_display_options),
+      'event_field_display_options' => json_encode($event_field_display_options),
+      'pin_settings' => json_encode($pin_options),
+    ];
+
+    $view->setArguments($view_args);
     $view->execute();
+
+    // Get all node ids.
+    $node_ids = [];
+    foreach ($view->result as $row) {
+      if (isset($row->_entity) && $row->_entity instanceof NodeInterface) {
+        $node_ids[] = 'node:' . $row->_entity->id();
+      }
+    }
+
+    $this->cacheTagsInvalidator->invalidateTags($node_ids);
 
     // Unset the pager. Needs to be done after view->execute();
     if ($paramsDecoded['display'] != "pager") {
@@ -538,12 +558,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
             $resultRow['#cache']['keys'][] = $event_field_display_options['hide_add_to_calendar'];
             $resultRow['#cache']['keys'][] = $pin_options['pinned_to_top'];
             $resultRow['#cache']['keys'][] = $pin_options['pin_label'];
+
+            $resultRow['#cache']['contexts'][] = 'url.query_args:page';
           }
         }
-        break;
-
-      case "count":
-        $view = count($view->result);
         break;
     }
 
