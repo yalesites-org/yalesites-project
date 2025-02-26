@@ -45,14 +45,32 @@ html.gin--dark-mode form.layout-builder-configure-block.glb-form {
   .layout-builder-block.contextual-region .contextual {
     left: 15vw;
   }
+
+  [data-component-layout="fifty-fifty"] .layout-builder-block.contextual-region .contextual {
+    left: 1vw;
+  }
+
+  [data-component-layout="thirty-thirty-thirty"] .layout-builder-block.contextual-region .contextual {
+    left: 1vw;
+  }
 }
 
+/* 2500 */
 @media only screen and (min-width: 2500px) {
   .layout-builder-block.contextual-region .contextual {
     left: 20vw;
   }
+
+  [data-component-layout="fifty-fifty"] .layout-builder-block.contextual-region .contextual {
+    left: 1vw;
+  }
+
+  [data-component-layout="thirty-thirty-thirty"] .layout-builder-block.contextual-region .contextual {
+    left: 1vw;
+  }
 }
 
+/* Contextual links within contextual-region */
 .layout-builder-block.contextual-region .contextual .contextual-links {
   left: 0;
   right: 0;

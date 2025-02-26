@@ -5,6 +5,15 @@
   {% set site_header__site_name_is_image = getHeaderSetting('site_name_image') %}
 {% endif %}
 
+{# Dropdown button links in utility navigation #}
+{% set utility_nav_button_title = getHeaderSetting('dropdown_button_title') %}
+{% set utility_nav__dropdown__items = drupal_menu('utility-drop-button-navigation')['#items'] %}
+{% if utility_nav_button_title and utility_nav__dropdown__items %}
+  {{ attach_library('atomic/utility-nav-dropdown-menu') }}
+  {% set utility_nav__dropdown_link__content = utility_nav_button_title %}
+  {% set utility_nav__dropdown_link__url = '#' %}
+{% endif %}
+
 {% embed "@organisms/site-header/yds-site-header.twig" with {
   site_name: site_name,
   site_header__border_thickness: '8',
