@@ -110,9 +110,7 @@ function ys_views_basic_views_pre_render(ViewExecutable $view): void {
       $row->_entity->show_tags = $field_display_options->show_tags;
       $row->_entity->show_thumbnail = $field_display_options->show_thumbnail;
       $row->_entity->hide_add_to_calendar = $event_field_display_options->hide_add_to_calendar;
-<<<<<<< HEAD
       $row->_entity->show_eyebrow = $post_field_display_options->show_eyebrow;
-=======
 
       $sticky = (bool) $row->_entity->get('sticky')->value;
       if ($sticky) {
@@ -180,7 +178,6 @@ function _ys_views_basic_invalidate_view_nodes_before_render($view, array &$args
     // Invalidate cache **only for the nodes appearing on the next page**.
     if (!empty($node_ids)) {
       \Drupal::service('cache_tags.invalidator')->invalidateTags($node_ids);
->>>>>>> iyy
     }
   }
 }

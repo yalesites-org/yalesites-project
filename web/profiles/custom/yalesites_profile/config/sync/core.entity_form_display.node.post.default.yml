@@ -197,11 +197,7 @@ content:
     third_party_settings: {  }
   moderation_state:
     type: workflow_buttons
-<<<<<<< HEAD
-    weight: 5
-=======
     weight: 7
->>>>>>> iyy
     region: content
     settings:
       show_current_state: false
