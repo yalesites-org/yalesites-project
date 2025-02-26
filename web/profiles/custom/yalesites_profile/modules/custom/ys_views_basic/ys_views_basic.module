@@ -121,7 +121,7 @@ function ys_views_basic_views_pre_render(ViewExecutable $view): void {
 /**
  * Implements hook_views_pre_view().
  */
-function ys_views_basic_views_pre_view(ViewExecutable $view, &$display_id, array &$args) {
+function ys_views_basic_views_pre_view(ViewExecutable $view, $display_id, array &$args) {
   _ys_views_basic_invalidate_view_nodes_before_render($view, $args);
 }
 
