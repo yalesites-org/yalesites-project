@@ -94,7 +94,7 @@ function ys_views_basic_views_pre_build($view) {
 function ys_views_basic_views_pre_render(ViewExecutable $view): void {
   $view_id = $view->id();
   if (in_array($view_id, ['views_basic_scaffold', 'views_basic_scaffold_events'])) {
-    $pin_options = json_decode($view->args[10]);
+    $pin_options = json_decode($view->args[11]);
     $pin_label = '';
     if ($pin_options->pinned_to_top) {
       $pin_label = $pin_options->pin_label;
@@ -105,6 +105,7 @@ function ys_views_basic_views_pre_render(ViewExecutable $view): void {
     // Loop through each row in the view's results and update the node's
     // properties based on show_categories, show_tags and show_thumbnail
     // configuration.
+
     foreach ($view->result as $row) {
       $row->_entity->show_categories = $field_display_options->show_categories;
       $row->_entity->show_tags = $field_display_options->show_tags;

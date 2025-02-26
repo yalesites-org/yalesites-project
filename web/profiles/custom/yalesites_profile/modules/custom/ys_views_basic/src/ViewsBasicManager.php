@@ -479,21 +479,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'show_eyebrow' => (int) !empty($paramsDecoded['post_field_options']['show_eyebrow']),
     ];
 
-    $view->setArguments(
-      [
-        'type' => $filterType,
-        'terms_include' => $termsInclude,
-        'terms_exclude' => $termsExclude,
-        'sort' => $paramsDecoded['sort_by'],
-        'view' => $paramsDecoded['view_mode'],
-        'items' => $itemsLimit,
-        'event_time_period' => str_contains($filterType, 'event') ? $eventTimePeriod : NULL,
-        'offset' => $paramsDecoded['offset'] ?? 0,
-        'field_display_options' => json_encode($field_display_options),
-        'event_field_display_options' => json_encode($event_field_display_options),
-        'post_field_display_options' => json_encode($post_field_display_options),
-      ]
-    );
     $pin_label = $paramsDecoded['pin_label'] ?? self::DEFAULT_PIN_LABEL;
 
     if (!$pinned_to_top) {
@@ -541,6 +526,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'offset' => $paramsDecoded['offset'] ?? 0,
       'field_display_options' => json_encode($field_display_options),
       'event_field_display_options' => json_encode($event_field_display_options),
+      'post_field_display_options' => json_encode($post_field_display_options),
       'pin_settings' => json_encode($pin_options),
     ];
 
