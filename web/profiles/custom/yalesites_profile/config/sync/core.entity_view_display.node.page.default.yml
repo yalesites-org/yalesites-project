@@ -149,8 +149,10 @@ third_party_settings:
             'YaleSites Layouts': {  }
           sidebar:
             'Custom block types':
+              - embed
               - text
             'Inline blocks':
+              - 'inline_block:embed'
               - 'inline_block:text'
         ys_layout_three_column_33_33_33:
           all_regions:
