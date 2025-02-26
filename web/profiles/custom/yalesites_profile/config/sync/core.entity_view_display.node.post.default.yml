@@ -12,6 +12,7 @@ dependencies:
     - field.field.node.post.field_login_required
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
+    - field.field.node.post.field_show_read_time
     - field.field.node.post.field_tags
     - field.field.node.post.field_teaser_lead_in
     - field.field.node.post.field_teaser_media
@@ -57,6 +58,56 @@ third_party_settings:
               context_mapping:
                 entity: layout_builder.entity
             weight: 1
+            additional: {  }
+          7f02e533-466a-4916-8551-97cacf5b1329:
+            uuid: 7f02e533-466a-4916-8551-97cacf5b1329
+            region: content
+            configuration:
+              id: 'field_block:node:post:field_audience'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: entity_reference_label
+                label: above
+                settings:
+                  link: true
+                third_party_settings: {  }
+            weight: 2
+            additional: {  }
+          1c9fe26e-5139-4c69-97f0-36dc249676ca:
+            uuid: 1c9fe26e-5139-4c69-97f0-36dc249676ca
+            region: content
+            configuration:
+              id: 'field_block:node:post:field_custom_vocab'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: entity_reference_label
+                label: above
+                settings:
+                  link: true
+                third_party_settings: {  }
+            weight: 3
+            additional: {  }
+          a379212f-cdc0-4be3-b890-e704ecb8e6a9:
+            uuid: a379212f-cdc0-4be3-b890-e704ecb8e6a9
+            region: content
+            configuration:
+              id: 'field_block:node:post:field_show_read_time'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: boolean
+                label: above
+                settings:
+                  format: default
+                  format_custom_false: ''
+                  format_custom_true: ''
+                third_party_settings: {  }
+            weight: 4
             additional: {  }
           12eba6b2-ee54-4d04-9ae5-1d24bcac1989:
             uuid: 12eba6b2-ee54-4d04-9ae5-1d24bcac1989
@@ -205,6 +256,16 @@ content:
       target: ''
     third_party_settings: {  }
     weight: 2
+    region: content
+  field_show_read_time:
+    type: boolean
+    label: above
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    weight: 5
     region: content
   field_teaser_lead_in:
     type: string

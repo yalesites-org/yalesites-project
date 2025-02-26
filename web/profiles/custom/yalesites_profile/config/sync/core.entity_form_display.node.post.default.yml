@@ -12,6 +12,7 @@ dependencies:
     - field.field.node.post.field_login_required
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
+    - field.field.node.post.field_show_read_time
     - field.field.node.post.field_tags
     - field.field.node.post.field_teaser_lead_in
     - field.field.node.post.field_teaser_media
@@ -54,6 +55,7 @@ third_party_settings:
       children:
         - field_login_required
         - sticky
+        - field_show_read_time
         - field_hide_sharing_links
       label: 'Publishing Settings'
       region: content
@@ -150,6 +152,13 @@ content:
     weight: 2
     region: content
     settings: {  }
+    third_party_settings: {  }
+  field_show_read_time:
+    type: boolean_checkbox
+    weight: 14
+    region: content
+    settings:
+      display_label: true
     third_party_settings: {  }
   field_tags:
     type: chosen_select
