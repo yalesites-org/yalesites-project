@@ -89,3 +89,6 @@ utility-nav-dropdown-menu:
 ys_embed:
   dependencies:
     - core/jquery
+read-time:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/read-time/yds-read-time.js: {}
