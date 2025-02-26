@@ -143,7 +143,6 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
           '#type' => 'select',
           '#title' => $this->t('Theme'),
           '#options' => [
-            'default' => $this->t('Default - No color'),
             'one' => $this->t('One'),
             'two' => $this->t('Two'),
             'three' => $this->t('Three'),
@@ -197,12 +196,11 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
               '#url' => $term->toUrl(),
             ];
           }
-          if (!empty($terms)) {
-            $items[$field_name] = [
-              'label' => $field_label,
-              'terms' => $terms,
-            ];
-          }
+
+          $items[$field_name] = [
+            'label' => $field_label,
+            'terms' => $terms,
+          ];
         }
       }
     }
