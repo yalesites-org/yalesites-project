@@ -133,6 +133,7 @@
         'input[name="nav_position"]',
         'input[name="nav_type"]',
         'input[name="button_theme"]',
+        'input[name="book_navigation"]',
         'input[name="header_theme"]',
         'input[name="header_accent"]',
         'input[name="footer_theme"]',
