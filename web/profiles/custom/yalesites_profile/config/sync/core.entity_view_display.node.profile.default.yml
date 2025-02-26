@@ -5,6 +5,8 @@ dependencies:
   config:
     - field.field.node.profile.field_address
     - field.field.node.profile.field_affiliation
+    - field.field.node.profile.field_audience
+    - field.field.node.profile.field_custom_vocab
     - field.field.node.profile.field_department
     - field.field.node.profile.field_email
     - field.field.node.profile.field_external_source
@@ -98,6 +100,8 @@ third_party_settings:
       - 'Content fields'
       - 'Custom block types'
       - 'Custom blocks'
+      - Devel
+      - Editoria11y
       - Forms
       - Help
       - 'Inline blocks'
@@ -113,15 +117,22 @@ third_party_settings:
       allowed_layouts:
         - layout_onecol
         - ys_layout_two_column
-      denylisted_blocks: {  }
+      denylisted_blocks:
+        'Custom block types':
+          - wrapped_text_callout
+        'Inline blocks':
+          - 'inline_block:wrapped_text_callout'
       allowlisted_blocks:
         'YaleSites Layouts':
           - profile_contact_block
           - profile_meta_block
+          - ys_taxonomy_display_block
       restricted_categories:
         - 'Chaos Tools'
         - 'Content fields'
         - 'Custom blocks'
+        - Devel
+        - Editoria11y
         - Forms
         - Help
         - 'Lists (Views)'
@@ -140,6 +151,7 @@ third_party_settings:
           all_regions:
             'YaleSites Layouts':
               - profile_contact_block
+              - ys_taxonomy_display_block
         ys_layout_two_column:
           content:
             'Custom block types':
@@ -171,7 +183,13 @@ third_party_settings:
               - 'inline_block:text'
             'YaleSites Layouts':
               - profile_contact_block
-      denylisted_blocks: {  }
+      denylisted_blocks:
+        layout_onecol:
+          all_regions:
+            'Custom block types':
+              - wrapped_text_callout
+            'Inline blocks':
+              - 'inline_block:wrapped_text_callout'
       restricted_categories:
         ys_layout_two_column:
           sidebar:
@@ -190,7 +208,6 @@ third_party_settings:
           content:
             - 'Chaos Tools'
             - 'Content fields'
-            - 'Custom blocks'
             - Forms
             - Help
             - 'Lists (Views)'
@@ -204,7 +221,6 @@ third_party_settings:
           all_regions:
             - 'Chaos Tools'
             - 'Content fields'
-            - 'Custom blocks'
             - Forms
             - Help
             - 'Lists (Views)'
@@ -238,6 +254,22 @@ content:
       link: true
     third_party_settings: {  }
     weight: 112
+    region: content
+  field_audience:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 120
+    region: content
+  field_custom_vocab:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 121
     region: content
   field_department:
     type: string
@@ -384,6 +416,7 @@ content:
     weight: 100
     region: content
 hidden:
+  addtoany: true
   layout_builder__layout: true
   search_api_excerpt: true
   workflow_buttons: true

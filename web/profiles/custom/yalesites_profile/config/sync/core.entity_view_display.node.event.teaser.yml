@@ -4,15 +4,19 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.node.teaser
+    - field.field.node.event.field_audience
     - field.field.node.event.field_category
+    - field.field.node.event.field_custom_vocab
     - field.field.node.event.field_event_audience
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_description
     - field.field.node.event.field_event_format
+    - field.field.node.event.field_event_id
     - field.field.node.event.field_event_place
     - field.field.node.event.field_event_recurring
     - field.field.node.event.field_event_room
+    - field.field.node.event.field_event_source
     - field.field.node.event.field_event_status
     - field.field.node.event.field_event_topics
     - field.field.node.event.field_event_type
@@ -57,15 +61,20 @@ content:
     weight: 100
     region: content
 hidden:
+  addtoany: true
+  field_audience: true
   field_category: true
+  field_custom_vocab: true
   field_event_audience: true
   field_event_cta: true
   field_event_date: true
   field_event_description: true
   field_event_format: true
+  field_event_id: true
   field_event_place: true
   field_event_recurring: true
   field_event_room: true
+  field_event_source: true
   field_event_status: true
   field_event_topics: true
   field_event_type: true

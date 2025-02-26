@@ -5,6 +5,7 @@ module:
   auto_entitylabel: -100
   action: 0
   address: 0
+  addtoany: 0
   admin_toolbar: 0
   admin_toolbar_tools: 0
   ai_engine: 0
@@ -148,6 +149,7 @@ module:
   yale_cas: 0
   ys_alert: 0
   ys_book: 0
+  ys_campus_groups: 0
   ys_captcha: 0
   ys_layouts: 0
   ys_localist: 0

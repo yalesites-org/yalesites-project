@@ -296,3 +296,9 @@ image_banner:
       tall: Tall
       short: Short
     default: tall
+video_banner:
+  field_style_width:
+    values:
+      max: Contained
+      full: 'Full Width'
+    default: max

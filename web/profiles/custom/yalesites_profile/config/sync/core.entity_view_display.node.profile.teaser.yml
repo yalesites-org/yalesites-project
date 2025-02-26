@@ -6,6 +6,8 @@ dependencies:
     - core.entity_view_mode.node.teaser
     - field.field.node.profile.field_address
     - field.field.node.profile.field_affiliation
+    - field.field.node.profile.field_audience
+    - field.field.node.profile.field_custom_vocab
     - field.field.node.profile.field_department
     - field.field.node.profile.field_email
     - field.field.node.profile.field_external_source
@@ -43,8 +45,11 @@ content:
     weight: 100
     region: content
 hidden:
+  addtoany: true
   field_address: true
   field_affiliation: true
+  field_audience: true
+  field_custom_vocab: true
   field_department: true
   field_email: true
   field_external_source: true

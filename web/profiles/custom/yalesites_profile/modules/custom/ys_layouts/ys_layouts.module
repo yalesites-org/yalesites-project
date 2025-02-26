@@ -53,6 +53,7 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'label' => NULL,
         'author' => NULL,
         'date_formatted' => NULL,
+        'hide_sharing' => NULL,
       ],
     ],
     'ys_profile_meta_block' => [
@@ -73,6 +74,12 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'email' => NULL,
         'phone' => NULL,
         'address' => [],
+      ],
+    ],
+    'ys_taxonomy_display_block' => [
+      'variables' => [
+        'items' => [],
+        'theme_selection' => NULL,
       ],
     ],
   ];

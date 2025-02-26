@@ -6,3 +6,4 @@ search:
   enable_search_form: 1
   enable_cas_search: 0
 dropdown_button_title: ''
+enable_cas_menu_links: 0

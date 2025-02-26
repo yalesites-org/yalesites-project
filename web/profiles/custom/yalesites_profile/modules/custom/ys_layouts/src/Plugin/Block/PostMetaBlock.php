@@ -115,6 +115,7 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
       $author = ($node->field_author->first()) ? $node->field_author->first()->getValue()['value'] : NULL;
       $publishDate = strtotime($node->field_publish_date->first()->getValue()['value']);
       $dateFormatted = $this->dateFormatter->format($publishDate, '', 'c');
+      $hideSharing = ($node->field_hide_sharing_links->first()) ? $node->field_hide_sharing_links->first()->getValue()['value'] : NULL;
     }
 
     return [
@@ -122,6 +123,7 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
       '#label' => $title,
       '#author' => $author,
       '#date_formatted' => $dateFormatted,
+      '#hide_sharing' => $hideSharing,
     ];
   }
 

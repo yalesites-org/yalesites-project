@@ -54,6 +54,13 @@ ys_core.menu_interface:
   route_name: entity.menu.collection
   title: Manage Menus
   weight: 20
+# Create a new section for integrations
+ys_core.admin_yalesites_integrations:
+  description: "YaleSites integrations with other systems."
+  parent: ys_core.admin_yalesites
+  route_name: ys_core.admin_yalesites_integrations
+  title: "Integrations"
+  weight: 30
 # main menu edit form.
 ys_core.menu_main_edit:
   description: "Manage main navigation"
@@ -126,6 +133,23 @@ ys_core.taxonomy_interface_tags:
   title: Tags
   route_parameters:
     taxonomy_vocabulary: "tags"
+# Taxonomy interface - Audience
+ys_core.taxonomy_interface_audience:
+  description: "Manage audience taxonomy"
+  parent: ys_core.taxonomy_interface
+  route_name: entity.taxonomy_vocabulary.overview_form
+  title: Audience
+  route_parameters:
+    taxonomy_vocabulary: "audience"
+# Taxonomy interface - Custom Vocab
+ys_core.taxonomy_interface_custom_vocab:
+  description: "Manage custom vocabularoy taxonomy"
+  parent: ys_core.taxonomy_interface
+  route_name: entity.taxonomy_vocabulary.overview_form
+  title: "Custom Vocab"
+  class: Drupal\ys_core\Plugin\Menu\CustomTaxonomyMenuLink
+  route_parameters:
+    taxonomy_vocabulary: "custom_vocab"
 # Blocks interface
 ys_core.custom_block_library:
   description: "Manage reusable blocks"

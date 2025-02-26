@@ -3,9 +3,12 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.node.post.field_audience
     - field.field.node.post.field_author
     - field.field.node.post.field_category
+    - field.field.node.post.field_custom_vocab
     - field.field.node.post.field_external_source
+    - field.field.node.post.field_hide_sharing_links
     - field.field.node.post.field_login_required
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
@@ -39,7 +42,7 @@ third_party_settings:
       label: Teaser
       region: content
       parent_name: ''
-      weight: 6
+      weight: 8
       format_type: fieldset
       format_settings:
         classes: ''
@@ -51,10 +54,11 @@ third_party_settings:
       children:
         - field_login_required
         - sticky
+        - field_hide_sharing_links
       label: 'Publishing Settings'
       region: content
       parent_name: ''
-      weight: 10
+      weight: 12
       format_type: details_sidebar
       format_settings:
         classes: ''
@@ -70,7 +74,7 @@ third_party_settings:
       label: 'External Link'
       region: content
       parent_name: ''
-      weight: 12
+      weight: 14
       format_type: details_sidebar
       format_settings:
         classes: ''
@@ -85,6 +89,12 @@ targetEntityType: node
 bundle: post
 mode: default
 content:
+  field_audience:
+    type: chosen_select
+    weight: 4
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_author:
     type: string_textfield
     weight: 1
@@ -99,6 +109,12 @@ content:
     region: content
     settings: {  }
     third_party_settings: {  }
+  field_custom_vocab:
+    type: chosen_select
+    weight: 5
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_external_source:
     type: link_default
     weight: 5
@@ -106,6 +122,13 @@ content:
     settings:
       placeholder_url: ''
       placeholder_title: ''
+    third_party_settings: {  }
+  field_hide_sharing_links:
+    type: boolean_checkbox
+    weight: 14
+    region: content
+    settings:
+      display_label: true
     third_party_settings: {  }
   field_login_required:
     type: boolean_checkbox
@@ -116,7 +139,7 @@ content:
     third_party_settings: {  }
   field_metatags:
     type: metatag_firehose
-    weight: 9
+    weight: 11
     region: content
     settings:
       sidebar: true
@@ -130,7 +153,7 @@ content:
     third_party_settings: {  }
   field_tags:
     type: chosen_select
-    weight: 4
+    weight: 6
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -174,25 +197,29 @@ content:
     third_party_settings: {  }
   moderation_state:
     type: workflow_buttons
+<<<<<<< HEAD
     weight: 5
+=======
+    weight: 7
+>>>>>>> iyy
     region: content
     settings:
       show_current_state: false
     third_party_settings: {  }
   path:
     type: path
-    weight: 7
+    weight: 9
     region: content
     settings: {  }
     third_party_settings: {  }
   simple_sitemap:
-    weight: 13
+    weight: 15
     region: content
     settings: {  }
     third_party_settings: {  }
   status:
     type: boolean_checkbox
-    weight: 11
+    weight: 13
     region: content
     settings:
       display_label: true
@@ -213,7 +240,7 @@ content:
       placeholder: ''
     third_party_settings: {  }
   url_redirects:
-    weight: 8
+    weight: 10
     region: content
     settings: {  }
     third_party_settings: {  }
