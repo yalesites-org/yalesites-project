@@ -8,11 +8,13 @@ dependencies:
     - field.field.node.post.field_category
     - field.field.node.post.field_custom_vocab
     - field.field.node.post.field_external_source
+    - field.field.node.post.field_hide_sharing_links
     - field.field.node.post.field_login_required
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
     - field.field.node.post.field_show_read_time
     - field.field.node.post.field_tags
+    - field.field.node.post.field_teaser_lead_in
     - field.field.node.post.field_teaser_media
     - field.field.node.post.field_teaser_text
     - field.field.node.post.field_teaser_title
@@ -34,6 +36,7 @@ third_party_settings:
   field_group:
     group_teaser:
       children:
+        - field_teaser_lead_in
         - field_teaser_title
         - field_teaser_text
         - field_teaser_media
@@ -53,6 +56,7 @@ third_party_settings:
         - field_login_required
         - sticky
         - field_show_read_time
+        - field_hide_sharing_links
       label: 'Publishing Settings'
       region: content
       parent_name: ''
@@ -121,6 +125,13 @@ content:
       placeholder_url: ''
       placeholder_title: ''
     third_party_settings: {  }
+  field_hide_sharing_links:
+    type: boolean_checkbox
+    weight: 14
+    region: content
+    settings:
+      display_label: true
+    third_party_settings: {  }
   field_login_required:
     type: boolean_checkbox
     weight: 12
@@ -155,16 +166,24 @@ content:
     region: content
     settings: {  }
     third_party_settings: {  }
+  field_teaser_lead_in:
+    type: string_textfield
+    weight: 12
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
   field_teaser_media:
     type: media_library_widget
-    weight: 11
+    weight: 15
     region: content
     settings:
       media_types: {  }
     third_party_settings: {  }
   field_teaser_text:
     type: text_textarea
-    weight: 10
+    weight: 14
     region: content
     settings:
       rows: 5
@@ -179,7 +198,7 @@ content:
         maxlength_js_enforce: true
   field_teaser_title:
     type: string_textfield
-    weight: 9
+    weight: 13
     region: content
     settings:
       size: 60

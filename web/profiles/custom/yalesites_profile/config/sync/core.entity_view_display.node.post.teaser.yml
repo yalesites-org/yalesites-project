@@ -9,11 +9,13 @@ dependencies:
     - field.field.node.post.field_category
     - field.field.node.post.field_custom_vocab
     - field.field.node.post.field_external_source
+    - field.field.node.post.field_hide_sharing_links
     - field.field.node.post.field_login_required
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
     - field.field.node.post.field_show_read_time
     - field.field.node.post.field_tags
+    - field.field.node.post.field_teaser_lead_in
     - field.field.node.post.field_teaser_media
     - field.field.node.post.field_teaser_text
     - field.field.node.post.field_teaser_title
@@ -37,16 +39,19 @@ content:
     weight: 100
     region: content
 hidden:
+  addtoany: true
   field_audience: true
   field_author: true
   field_category: true
   field_custom_vocab: true
   field_external_source: true
+  field_hide_sharing_links: true
   field_login_required: true
   field_metatags: true
   field_publish_date: true
   field_show_read_time: true
   field_tags: true
+  field_teaser_lead_in: true
   field_teaser_media: true
   field_teaser_text: true
   field_teaser_title: true

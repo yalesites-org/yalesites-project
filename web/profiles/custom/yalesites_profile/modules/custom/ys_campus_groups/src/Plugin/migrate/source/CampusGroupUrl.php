@@ -24,6 +24,7 @@ class CampusGroupUrl extends Url {
     $config = \Drupal::configFactory()->getEditable('ys_campus_groups.settings');
 
     $url = $config->get('campus_groups_endpoint');
+    $api_key_name = $config->get('campus_groups_api_key');
     $groups = $config->get('campus_groups_groupids');
     $days = self::DAYS;
 
@@ -36,9 +37,34 @@ class CampusGroupUrl extends Url {
       $urlObject = UrlObject::fromUri($url, ['query' => $queryParams]);
 
       $configuration['urls'] = $urlObject->toString();
+      $headers = $configuration['headers'] ?? [];
+
+      $api_key = $this->getApiKeyFromKeysModule($api_key_name);
+
+      if ($api_key) {
+        $headers['x-cg-api-secret'] = $api_key;
+        $configuration['headers'] = $headers;
+      }
     }
 
     parent::__construct($configuration, $plugin_id, $plugin_definition, $migration);
+  }
+
+  /**
+   * Retrieves the API key from the keys module.
+   *
+   * @param string $key_name
+   *   The key name.
+   */
+  protected function getApiKeyFromKeysModule($key_name) {
+    $key = \Drupal::service('key.repository')->getKey($key_name);
+
+    if (!$key) {
+      return NULL;
+    }
+
+    $key_value = $key->getKeyValue();
+    return $key_value;
   }
 
 }
