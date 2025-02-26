@@ -14,6 +14,7 @@ dependencies:
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
     - field.field.node.post.field_tags
+    - field.field.node.post.field_teaser_lead_in
     - field.field.node.post.field_teaser_media
     - field.field.node.post.field_teaser_text
     - field.field.node.post.field_teaser_title
@@ -77,6 +78,7 @@ hidden:
   field_metatags: true
   field_publish_date: true
   field_tags: true
+  field_teaser_lead_in: true
   field_teaser_media: true
   field_teaser_title: true
   layout_builder__layout: true

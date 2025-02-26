@@ -14,6 +14,7 @@ dependencies:
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
     - field.field.node.post.field_tags
+    - field.field.node.post.field_teaser_lead_in
     - field.field.node.post.field_teaser_media
     - field.field.node.post.field_teaser_text
     - field.field.node.post.field_teaser_title
@@ -80,7 +81,15 @@ content:
       timezone_override: ''
       format_type: medium
     third_party_settings: {  }
-    weight: 0
+    weight: 1
+    region: content
+  field_teaser_lead_in:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 3
     region: content
 hidden:
   addtoany: true
