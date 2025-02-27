@@ -4,12 +4,21 @@ status: true
 dependencies:
   config:
     - block_content.type.audio
+    - field.field.block_content.audio.field_audio_label
     - field.field.block_content.audio.field_media
 id: block_content.audio.default
 targetEntityType: block_content
 bundle: audio
 mode: default
 content:
+  field_audio_label:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 1
+    region: content
   field_media:
     type: entity_reference_entity_view
     label: hidden

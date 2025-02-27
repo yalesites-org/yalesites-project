@@ -5,7 +5,6 @@ dependencies:
   config:
     - core.entity_view_mode.media.media_library
     - field.field.media.audio.field_media_audio_file
-    - field.field.media.audio.field_media_title
     - image.style.media_library
     - media.type.audio
   module:
@@ -15,14 +14,6 @@ targetEntityType: media
 bundle: audio
 mode: media_library
 content:
-  field_media_title:
-    type: string
-    label: inline
-    settings:
-      link_to_entity: false
-    third_party_settings: {  }
-    weight: 1
-    region: content
   thumbnail:
     type: image
     label: hidden
@@ -35,6 +26,7 @@ content:
     weight: 0
     region: content
 hidden:
+  addtoany: true
   created: true
   field_media_audio_file: true
   name: true

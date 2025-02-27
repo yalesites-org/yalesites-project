@@ -1,12 +1,12 @@
-uuid: 6e13db40-fac9-4a9e-a6f9-624c73dad324
+uuid: 28225144-ec9d-4475-b578-7d01ebc5f58f
 langcode: en
 status: true
 dependencies:
   module:
-    - media
-id: media.field_media_title
-field_name: field_media_title
-entity_type: media
+    - block_content
+id: block_content.field_audio_label
+field_name: field_audio_label
+entity_type: block_content
 type: string
 settings:
   max_length: 255

@@ -6,6 +6,6 @@ id: audio
 block_id: 'inline_block:audio'
 category: media
 label: Audio
-image_path: ''
-image_alt: ''
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/audio-player.svg
+image_alt: 'Preview icon showing a generic audio player with play button, progress slider, and time elapsed.'
 weight: -100

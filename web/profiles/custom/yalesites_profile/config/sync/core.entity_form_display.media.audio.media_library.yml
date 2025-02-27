@@ -5,21 +5,12 @@ dependencies:
   config:
     - core.entity_form_mode.media.media_library
     - field.field.media.audio.field_media_audio_file
-    - field.field.media.audio.field_media_title
     - media.type.audio
 id: media.audio.media_library
 targetEntityType: media
 bundle: audio
 mode: media_library
 content:
-  field_media_title:
-    type: string_textfield
-    weight: 1
-    region: content
-    settings:
-      size: 60
-      placeholder: ''
-    third_party_settings: {  }
   name:
     type: string_textfield
     weight: 0
