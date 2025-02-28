@@ -97,10 +97,10 @@ content:
     region: content
 hidden:
   addtoany: true
-  field_author: true
-  field_hide_sharing_links: true
   field_audience: true
+  field_author: true
   field_custom_vocab: true
+  field_hide_sharing_links: true
   field_login_required: true
   field_metatags: true
   field_publish_date: true
