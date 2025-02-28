@@ -1,0 +1,1 @@
+Drupal.behaviors.referenceCard={attach(e){e.querySelectorAll(".reference-card").forEach((e=>{const r=e,c=r.querySelector(".reference-card__heading-link");if(c){let e,n;r.style.cursor="pointer",r.onmousedown=()=>{e=+new Date},r.onmouseup=()=>{n=+new Date,n-e<200&&c.click()}}}))}};
