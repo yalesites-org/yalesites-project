@@ -22,6 +22,9 @@ alert:
 primary-nav:
   js:
     node_modules/@yalesites-org/component-library-twig/dist/js/03-organisms/menu/primary-nav/yds-primary-nav.js: {}
+secondary-nav:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/03-organisms/menu/secondary-nav/yds-secondary-nav.js: {}
 reference-card:
   js:
     node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/cards/reference-card/yds-reference-card.js: {}
@@ -76,3 +79,16 @@ calendar:
     node_modules/@yalesites-org/component-library-twig/dist/js/03-organisms/calendar/yds-calendar.js: {}
   dependencies:
     - core/drupal.ajax
+in-this-section:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/menu/menu-in-this-section-toggle/yds-menu-in-this-section-toggle.js: {}
+    node_modules/@yalesites-org/component-library-twig/dist/js/03-organisms/site-in-this-section/yds-site-in-this-section.js: {}
+utility-nav-dropdown-menu:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/03-organisms/menu/utility-nav/utility-nav-dropdown-menu.js: {}
+ys_embed:
+  dependencies:
+    - core/jquery
+read-time:
+  js:
+    node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/read-time/yds-read-time.js: {}

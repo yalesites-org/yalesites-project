@@ -1,0 +1,9 @@
+{{ attach_library('atomic/secondary-nav') }}
+{{ attach_library('atomic/in-this-section') }}
+
+{% set secondary_nav__base_class = 'secondary-nav' %}
+
+{# Menu #}
+{% include "@organisms/site-in-this-section/yds-site-in-this-section.twig" with {
+  site_section_wrap__theme: getThemeSetting('book_navigation')
+} %}
