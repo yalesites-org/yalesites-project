@@ -179,6 +179,7 @@ content:
     weight: 7
     region: content
 hidden:
+  addtoany: true
   field_audience: true
   field_custom_vocab: true
   field_event_audience: true
