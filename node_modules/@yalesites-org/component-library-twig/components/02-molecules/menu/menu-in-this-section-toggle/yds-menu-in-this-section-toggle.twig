@@ -1,0 +1,17 @@
+{% set secondary_menu_toggle__base_class = 'secondary-menu-toggle' %}
+
+{% set menu_toggle__content %}
+  {% include "@atoms/images/icons/_yds-icon.twig" with {
+    icon__name: 'circle-chevron-solid',
+    icon__modifiers: secondary_menu_toggle__icon__modifiers,
+    icon__blockname: secondary_menu_toggle__icon__blockname|default(secondary_menu_toggle__base_class),
+  } %}
+  <span {{ bem('text', [], secondary_menu_toggle__base_class) }}>In This Section</span>
+{% endset %}
+
+{% include "@atoms/controls/base/yds-control.twig" with {
+  control__base_class: secondary_menu_toggle__base_class,
+  control__blockname: secondary_menu_toggle__blockname,
+  aria_expanded: 'false',
+  control__content: menu_toggle__content
+} %}
