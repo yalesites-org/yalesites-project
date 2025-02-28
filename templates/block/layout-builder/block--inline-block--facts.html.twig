@@ -2,6 +2,7 @@
 
 {% block content %}
 
+  {{ attach_library('atomic/spotlights') }}
   {% set facts_and_figures__group__bg_image = content.field_media.0 ? 'true' : 'false' %}
 
   {% embed "@organisms/facts-and-figures-group/yds-facts-and-figures-group.twig" with {

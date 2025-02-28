@@ -1,10 +1,13 @@
 {% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
 
 {% block content %}
+  {{ attach_library('atomic/spotlights') }}
+
   {% embed "@organisms/tiles/yds-tiles.twig" with {
     tiles__alignment: content.field_style_alignment.0['#markup'],
     tiles__grid_count: content.field_style_width.0['#markup'],
     tiles__vertical_alignment: content.field_style_position.0['#markup'],
+    tiles__with__animation: content.field_enable_animation.0['#markup'] == 'On' ? 'true' : 'false',
   }%}
     {% block tiles__items %}
       {{ content.field_tiles }}

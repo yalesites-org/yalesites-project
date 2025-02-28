@@ -1,10 +1,17 @@
 {% extends "@atomic/block/layout-builder/_layout-builder-block-template.twig" %}
 
 {% block content %}
+
   {% if parentNode == 'post' or parentNode == 'event' %}
     {% set link_grid__width = "content" %}
   {% else %}
     {% set link_grid__width = "site" %}
+  {% endif %}
+
+  {% if layout_section == 'ys_layout_two_column_50_50' %}
+    {% set link_grid_theme = 'inherit' %}
+  {% else %}
+    {% set link_grid_theme = content.field_style_color.0['#markup'] %}
   {% endif %}
 
   {# add checks for each link list #}
@@ -14,7 +21,7 @@
   {% set link_grid__links_four = content.field_link_lists.3 %}
 
   {% embed "@molecules/link-grid/yds-link-grid.twig" with {
-    link_grid__theme: content.field_style_color.0['#markup'],
+    link_grid__theme: link_grid_theme,
     link_grid__heading: content.field_heading.0,
   }%}
     {% block link_grid__links_one %}
