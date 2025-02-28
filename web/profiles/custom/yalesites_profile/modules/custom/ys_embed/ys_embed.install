@@ -203,6 +203,13 @@ function ys_embed_update_9006() {
 }
 
 /**
+ * Copies the new GitHub Applet icon to the media-icons/generic.
+ */
+function ys_embed_update_9007() {
+  _copy_embed_file('github.png');
+}
+
+/**
  * Implements hook_update().
  *
  * Copy SpringShare LibCal icon.

@@ -42,3 +42,15 @@ A custom formatter manages the field rendering logic. Instead of rendering the u
 
 - [Code: Embed Field Type](./src/Plugin/Field/FieldFormatter/EmbedDefaultFormatter.php)
 - [Community documentation](https://www.drupal.org/docs/creating-custom-modules/creating-custom-field-types-widgets-and-formatters/create-a-custom-field-formatter)
+
+### GitHub Applet Embed Instructions
+
+To embed a GitHub Applet via the embed system, there are a few requirements that must first be met.
+
+1. A hosted version of a React app (or similar) on GitHub Pages that is located in the `yalesites-org` organization.
+2. Two specific assets are required: `app.js` and `app.css` in a directory of your choosing but must be the same directory. If there isn't any styling, the CSS file can be left empty.
+3. The ID of the entry point of the app, ex: `<div id=xxx></div>` must match the repo name. For example, if the repo name is `yale-po-filter-app` then the entry point div would look like this: `<div id='yale-po-filter-app'></div>`
+
+Once these requirements are in place, to use the embed, add the URL to "Embed Code or URL" in the format: `https://yalesites-org.github.io/yale-po-filter-app/assets` where `assets` is a directory where `app.js` and `app.css` reside.
+
+Here is a great tutorial on how to set up a repo with scripts that will deploy built assets to GitHub Pages: https://github.com/gitname/react-gh-pages
