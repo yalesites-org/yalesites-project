@@ -123,7 +123,6 @@ class YaleSitesTitleBreadcrumbBlock extends BlockBase implements ContainerFactor
           ],
         ];
       }
-
     }
 
     return [

@@ -6,6 +6,7 @@
  */
 
 use Drupal\Core\Session\AccountInterface;
+use Drupal\menu_item_extras\Entity\MenuItemExtrasMenuLinkContent;
 use Drupal\ys_node_access\NodeAccessManager;
 
 /**
@@ -76,4 +77,45 @@ function ys_node_access_node_access_records($node) {
   }
 
   return $grants;
+}
+
+/**
+ * Implements hook_preprocess_menu().
+ */
+function ys_node_access_preprocess_menu(array &$variables) {
+  /*
+   * Adds data attribute to menu links that are CAS only.
+   * @see ys_node_access/src/Menu/YsNodeAccessLinkTreeManipulator.php
+   */
+  $config = \Drupal::config('ys_core.header_settings');
+  if ($config->get('enable_cas_menu_links') && in_array($variables['menu_name'], _ys_node_access_cas_menus())) {
+    _ys_node_access_cas_menu_attribute($variables['items']);
+  }
+
+}
+
+/**
+ * Adds is_cas attribute to menu items and sub-menu items.
+ */
+function _ys_node_access_cas_menu_attribute(&$items) {
+  foreach ($items as &$item) {
+    if (isset($item['entity']) && $item['entity'] instanceof MenuItemExtrasMenuLinkContent && $item['entity']->data_restricted) {
+      $item['is_cas'] = TRUE;
+    }
+    if (!empty($item['below'])) {
+      _ys_node_access_cas_menu_attribute($item['below']);
+    }
+  }
+}
+
+/**
+ * Returns a reusable array of menu ids to check CAS access for links.
+ */
+function _ys_node_access_cas_menus() {
+  $menusToCheck = [
+    'main',
+    'utility-navigation',
+  ];
+
+  return $menusToCheck;
 }
