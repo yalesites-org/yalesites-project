@@ -28,6 +28,6 @@ third_party_settings:
         url: ''
         external: ''
 id: audio
-label: Audio
+label: Audio Player
 revision: false
 description: null
