@@ -312,6 +312,12 @@ div[data-drupal-selector="edit-block-form"] {
   background: var(--gin-bg-secondary);
 }
 
+/* To fix ckeditor's modification of paragraph action buttons */
+#drupal-off-canvas-wrapper .ui-dialog-content div:not([data-drupal-ck-style-fence] *) {
+  width: inherit !important;
+  max-width: inherit !important;
+}
+
 /**
  * The header for some reason was allowing the z-index of the table cells to
  * show above it.
