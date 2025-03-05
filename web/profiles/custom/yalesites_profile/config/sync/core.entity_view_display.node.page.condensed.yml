@@ -83,6 +83,7 @@ content:
     weight: 2
     region: content
 hidden:
+  addtoany: true
   field_audience: true
   field_category: true
   field_custom_vocab: true

@@ -6,6 +6,7 @@ dependencies:
     - block_content.type.reference_card
     - field.field.block_content.reference_card.field_content_ref
     - field.field.block_content.reference_card.field_instructions
+    - field.field.block_content.reference_card.field_show_teaser_lead_in
     - field.field.block_content.reference_card.field_style_variation
   module:
     - hide_revision_field
@@ -30,6 +31,13 @@ content:
     weight: 0
     region: content
     settings: {  }
+    third_party_settings: {  }
+  field_show_teaser_lead_in:
+    type: boolean_checkbox
+    weight: 5
+    region: content
+    settings:
+      display_label: true
     third_party_settings: {  }
   field_style_variation:
     type: options_select

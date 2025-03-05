@@ -45,6 +45,7 @@ content:
     weight: 100
     region: content
 hidden:
+  addtoany: true
   field_address: true
   field_affiliation: true
   field_audience: true

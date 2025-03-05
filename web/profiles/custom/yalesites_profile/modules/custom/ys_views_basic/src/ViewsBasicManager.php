@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_views_basic;
 
+use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityDisplayRepository;
@@ -196,17 +197,26 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   protected $routeMatch;
 
   /**
+   * The cache tags invalidator.
+   *
+   * @var \Drupal\Core\Cache\CacheTagsInvalidatorInterface
+   */
+  protected $cacheTagsInvalidator;
+
+  /**
    * Constructs a new ViewsBasicManager object.
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
     EntityDisplayRepository $entity_display_repository,
     RouteMatchInterface $route_match,
+    CacheTagsInvalidatorInterface $cache_tags_invalidator,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityDisplayRepository = $entity_display_repository;
     $this->termStorage = $this->entityTypeManager->getStorage('taxonomy_term');
     $this->routeMatch = $route_match;
+    $this->cacheTagsInvalidator = $cache_tags_invalidator;
   }
 
   /**
@@ -216,7 +226,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     return new static(
       $container->get('entity_type.manager'),
       $container->get('entity_display.repository'),
-      $container->get('current_route_match')
+      $container->get('current_route_match'),
+      $container->get('cache_tags.invalidator'),
     );
   }
 
@@ -226,7 +237,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * Views Basic Scaffold view is overridden with the data from the parameters.
    *
    * @param string $type
-   *   Can be either 'rendered' or 'count'.
+   *   Type of view output: 'rendered' (used to allow 'count').
    * @param string $params
    *   JSON of the parameter settings.
    *
@@ -244,6 +255,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
     // Set up the view and initial decoded parameters.
     $paramsDecoded = json_decode($params, TRUE);
+    $pinned_to_top = isset($paramsDecoded['pinned_to_top']) ? (bool) $paramsDecoded['pinned_to_top'] : FALSE;
 
     /* Events need to have aggregation turned on in the view. Therefore, we
      * retrieve a special event scaffold view and apply sorting here instead of
@@ -251,18 +263,29 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
      */
 
     if (in_array('event', $paramsDecoded['filters']['types'])) {
-      $view = Views::getView('views_basic_scaffold_events');
+      $sortArray = [];
       $sortDirection = explode(":", $paramsDecoded['sort_by']);
-      $view->getDisplay()->setOption('sorts', [
-        [
-          'id' => 'field_event_date_value',
-          'table' => "node__field_event_date",
-          'field' => 'field_event_date_value',
-          'group_type' => 'min',
-          'order' => $sortDirection[1],
-          'test' => 'hi',
-        ],
-      ]);
+
+      if ($pinned_to_top) {
+        $sortArray[] = [
+          'id' => 'sticky',
+          'table' => "node_field_data",
+          'field' => 'sticky',
+          'order' => 'desc',
+        ];
+      }
+
+      $sortArray[] =
+      [
+        'id' => 'field_event_date_value',
+        'table' => "node__field_event_date",
+        'field' => 'field_event_date_value',
+        'group_type' => 'min',
+        'order' => $sortDirection[1],
+      ];
+
+      $view = Views::getView('views_basic_scaffold_events');
+      $view->getDisplay()->setOption('sorts', $sortArray);
     }
     else {
       // All other views get the original scaffold view.
@@ -452,7 +475,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'hide_add_to_calendar' => (int) !empty($paramsDecoded['event_field_options']['hide_add_to_calendar']),
     ];
 
-    $pinned_to_top = isset($paramsDecoded['pinned_to_top']) ? (bool) $paramsDecoded['pinned_to_top'] : FALSE;
+    $post_field_display_options = [
+      'show_eyebrow' => (int) !empty($paramsDecoded['post_field_options']['show_eyebrow']),
+    ];
+
     $pin_label = $paramsDecoded['pin_label'] ?? self::DEFAULT_PIN_LABEL;
 
     if (!$pinned_to_top) {
@@ -463,22 +489,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'pinned_to_top' => $pinned_to_top,
       'pin_label' => $pin_label,
     ];
-
-    $view->setArguments(
-      [
-        'type' => $filterType,
-        'terms_include' => $termsInclude,
-        'terms_exclude' => $termsExclude,
-        'sort' => $paramsDecoded['sort_by'],
-        'view' => $paramsDecoded['view_mode'],
-        'items' => $itemsLimit,
-        'event_time_period' => str_contains($filterType, 'event') ? $eventTimePeriod : NULL,
-        'offset' => $paramsDecoded['offset'] ?? 0,
-        'field_display_options' => json_encode($field_display_options),
-        'event_field_display_options' => json_encode($event_field_display_options),
-        'pin_settings' => json_encode($pin_options),
-      ]
-    );
 
     /*
      * End setting dynamic arguments.
@@ -505,7 +515,33 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
      * End include current node.
      */
 
+    $view_args = [
+      'type' => $filterType,
+      'terms_include' => $termsInclude,
+      'terms_exclude' => $termsExclude,
+      'sort' => $paramsDecoded['sort_by'],
+      'view' => $paramsDecoded['view_mode'],
+      'items' => $itemsLimit,
+      'event_time_period' => str_contains($filterType, 'event') ? $eventTimePeriod : NULL,
+      'offset' => $paramsDecoded['offset'] ?? 0,
+      'field_display_options' => json_encode($field_display_options),
+      'event_field_display_options' => json_encode($event_field_display_options),
+      'post_field_display_options' => json_encode($post_field_display_options),
+      'pin_settings' => json_encode($pin_options),
+    ];
+
+    $view->setArguments($view_args);
     $view->execute();
+
+    // Get all node ids.
+    $node_ids = [];
+    foreach ($view->result as $row) {
+      if (isset($row->_entity) && $row->_entity instanceof NodeInterface) {
+        $node_ids[] = 'node:' . $row->_entity->id();
+      }
+    }
+
+    $this->cacheTagsInvalidator->invalidateTags($node_ids);
 
     // Unset the pager. Needs to be done after view->execute();
     if ($paramsDecoded['display'] != "pager") {
@@ -525,14 +561,13 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
             $resultRow['#cache']['keys'][] = $field_display_options['show_tags'];
             $resultRow['#cache']['keys'][] = $field_display_options['show_thumbnail'];
             $resultRow['#cache']['keys'][] = $event_field_display_options['hide_add_to_calendar'];
+            $resultRow['#cache']['keys'][] = $post_field_display_options['show_eyebrow'];
             $resultRow['#cache']['keys'][] = $pin_options['pinned_to_top'];
             $resultRow['#cache']['keys'][] = $pin_options['pin_label'];
+
+            $resultRow['#cache']['contexts'][] = 'url.query_args:page';
           }
         }
-        break;
-
-      case "count":
-        $view = count($view->result);
         break;
     }
 
@@ -684,6 +719,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
       case 'event_field_options':
         $defaultParam = (empty($paramsDecoded['event_field_options'])) ? [] : $paramsDecoded['event_field_options'];
+        break;
+
+      case 'post_field_options':
+        $defaultParam = (empty($paramsDecoded['post_field_options'])) ? [] : $paramsDecoded['post_field_options'];
         break;
 
       case 'exposed_filter_options':

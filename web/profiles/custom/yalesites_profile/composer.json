@@ -21,11 +21,13 @@
   },
   "require": {
     "drupal/address": "2.0.2",
+    "drupal/addtoany": "2.0.7",
     "drupal/admin_toolbar": "3.5.0",
     "drupal/allowed_formats": "3.0.1",
     "drupal/anchor_link": "3.0.0-beta1",
     "drupal/auto_entitylabel": "3.3.0",
     "drupal/better_exposed_filters": "6.0.5",
+    "drupal/book": "1.0.0",
     "drupal/calendar_link": "3.0.3",
     "drupal/captcha": "2.0.6",
     "drupal/cas": "2.3.2",
@@ -35,12 +37,13 @@
     "drupal/config_ignore": "3.3.0",
     "drupal/config_split": "2.0.1",
     "drupal/ctools": "4.1.0",
+    "drupal/custom_book_block": "1.1.0",
     "drupal/devel": "5.3.1",
     "drupal/devel_kint_extras": "1.1.2",
     "drupal/editor_advanced_link": "2.2.6",
     "drupal/editoria11y": "2.1.19",
     "drupal/emulsify_twig": "5.0.0",
-    "drupal/entity_redirect": "2.3.0",
+    "drupal/entity_redirect": "2.x-dev",
     "drupal/fast_404": "3.3.0",
     "drupal/field_group": "3.6.0",
     "drupal/focal_point": "2.1.2",
@@ -73,6 +76,7 @@
     "drupal/menu_admin_per_menu": "1.5",
     "drupal/menu_breadcrumb": "2.0.0-alpha0",
     "drupal/menu_item_extras": "3.1.0",
+    "drupal/menu_item_limit": "2.1.0",
     "drupal/metatag": "2.0.2",
     "drupal/migrate_plus": "6.0.4",
     "drupal/migrate_tools": "6.0.4",
@@ -86,7 +90,7 @@
     "drupal/paragraphs": "1.18.0",
     "drupal/paragraphs_features": "2.0.0",
     "drupal/pathauto": "1.13.0",
-    "drupal/quick_node_clone": "1.20.0",
+    "drupal/quick_node_clone": "1.22.0",
     "drupal/recaptcha": "3.4.0",
     "drupal/recaptcha_v3": "2.0.3",
     "drupal/redirect": "1.10.0",
@@ -108,7 +112,7 @@
     "laminas/laminas-escaper": "2.13.0",
     "northernco/ckeditor5-anchor-drupal": "0.4.0",
     "yalesites-org/ai_engine": "1.2.7",
-    "yalesites-org/atomic": "1.40.0",
+    "yalesites-org/atomic": "1.44.0",
     "yalesites-org/yale_cas": "v1.0.5"
   },
   "minimum-stability": "dev",
@@ -130,10 +134,11 @@
         "plural results summary https://www.drupal.org/project/drupal/issues/2888320": "https://www.drupal.org/files/issues/2024-06-21/2888320-92.patch",
         "Add reusable option to inline block creation https://www.drupal.org/project/drupal/issues/2999491": "https://www.drupal.org/files/issues/2024-07-17/drupal-2999491-162.patch",
         "Update \"Add reusable option to inline block creation\" patch with local changes to save block if it didn't save": "patches/layout_builder/1330eff91b1234979cf697a66a48e34eb116b441-1.patch",
-        "renderPlain on a node render array causes RuntimeException if the node renders a view programmatically": "https://www.drupal.org/files/issues/2023-03-27/core-render-plain-runtime-exception-3350137-9.patch"
+        "renderPlain on a node render array causes RuntimeException if the node renders a view programmatically": "https://www.drupal.org/files/issues/2023-03-27/core-render-plain-runtime-exception-3350137-9.patch",
+        "Ajax exposed filters not working for multiple instances": "https://www.drupal.org/files/issues/2025-02-13/3163299-126-ajax-exposed-filters-not-media-library.patch"
       },
       "drupal/entity_redirect": {
-        "fix layout route https://www.drupal.org/project/entity_redirect/issues/3352265": "https://git.drupalcode.org/project/entity_redirect/-/merge_requests/6.patch"
+        "fix layout route https://www.drupal.org/project/entity_redirect/issues/3352265": "https://git.drupalcode.org/project/entity_redirect/-/merge_requests/6.diff"
       },
       "drupal/gin": {
         "fix description toggle for CKEditor fields https://www.drupal.org/project/gin/issues/3316265": "https://git.drupalcode.org/project/gin/-/merge_requests/227.patch"
@@ -171,6 +176,9 @@
       },
       "drupal/selective_better_exposed_filters": {
         "Hide form when no options are available:": "patches/selective_better_exposed_filters/selective_better_exposed_filters-3432551.patch"
+      },
+      "drupal/menu_item_limit": {
+        "Can permissions be set for specific roles? https://www.drupal.org/project/menu_item_limit/issues/3458139": "https://git.drupalcode.org/project/menu_item_limit/-/merge_requests/12.patch"
       },
       "drupal/layout_builder_lock": {
         "Show help text for only users who have permission https://www.drupal.org/project/layout_builder_lock/issues/3497055": "https://git.drupalcode.org/project/layout_builder_lock/-/merge_requests/26.patch"
