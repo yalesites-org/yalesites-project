@@ -303,6 +303,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       'stream_url' => $streamUrl,
       'stream_embed_code' => $streamEmbedCode,
       'event_source' => $eventSource,
+      'event_featured_date' => reset($dates),
     ];
   }
 
