@@ -311,7 +311,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
         $dates[$key]['original_start'] = $date['value'];
         $dates[$key]['original_end'] = $date['end_value'];
         $dates[$key]['is_all_day'] = $this->isAllDay($date['value'], $date['end_value']);
-        $dates[$key]['is_passed_event'] = $date['end_value'] < time();
+        $dates[$key]['is_past_event'] = $date['end_value'] < time();
       }
       // Sort dates - first date is next upcoming date.
       asort($dates);
