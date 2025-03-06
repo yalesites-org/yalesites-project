@@ -307,4 +307,36 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     ];
   }
 
+  /**
+   * Get the first upcoming date from the list of dates.
+   *
+   * @param array $dates
+   *   An array of dates.
+   *
+   * @return array|NodeInterface
+   *   The first upcoming date or what was passed.
+   */
+  protected function getFeaturedDate($dates) {
+    $featuredDate = NULL;
+
+    if (!is_array($dates)) {
+      return $dates;
+    }
+
+    // Get the first date that is not in the past.
+    foreach ($dates as $date) {
+      if ($date['end_value'] >= time()) {
+        $featuredDate = $date;
+        break;
+      }
+    }
+
+    // If none were found, use the first element.
+    if (!$featuredDate) {
+      $featuredDate = reset($dates);
+    }
+
+    return $featuredDate;
+  }
+
 }
