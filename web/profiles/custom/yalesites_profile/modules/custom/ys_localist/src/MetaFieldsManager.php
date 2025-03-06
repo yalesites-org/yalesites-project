@@ -342,9 +342,9 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       }
     }
 
-    // If none were found, use the first element.
+    // If none were found, use the last element.
     if (!$featuredDate) {
-      $featuredDate = reset($dates);
+      $featuredDate = end($dates);
     }
 
     return $featuredDate;
