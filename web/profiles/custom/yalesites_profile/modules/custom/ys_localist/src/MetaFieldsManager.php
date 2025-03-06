@@ -192,24 +192,9 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     }
 
     // Dates.
-    $dates = [];
-    if ($dates = $node->field_event_date->getValue()) {
-      foreach ($dates as $key => $date) {
-        $dates[$key]['formatted_start_date'] = $this->dateFormatter->format($date['value'], 'event_date_only');
-        $dates[$key]['formatted_start_time'] = $this->dateFormatter->format($date['value'], 'event_time_only');
-        $dates[$key]['formatted_end_date'] = $this->dateFormatter->format($date['end_value'], 'event_date_only');
-        $dates[$key]['formatted_end_time'] = $this->dateFormatter->format($date['end_value'], 'event_time_only');
-        $dates[$key]['original_start'] = $date['value'];
-        $dates[$key]['original_end'] = $date['end_value'];
-        $dates[$key]['is_all_day'] = $this->isAllDay($date['value'], $date['end_value']);
-        // Remove older dates.
-        if ($date['end_value'] < time()) {
-          unset($dates[$key]);
-        }
-      }
-      // Sort dates - first date is next upcoming date.
-      asort($dates);
-    }
+    $dates = $node->field_event_date->getValue();
+    $this->orderEventDates($dates);
+    $featuredDate = $this->getFeaturedDate($dates);
 
     // Teaser responsive image.
     $teaserMediaRender = [];
@@ -305,6 +290,32 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       'event_source' => $eventSource,
       'event_featured_date' => reset($dates),
     ];
+  }
+
+  /**
+   * Orders event dates by start date.
+   *
+   * @param array $dates
+   *   An array of dates.
+   *
+   * @return void
+   *   The array is passed by reference.
+   */
+  protected function orderEventDates(&$dates) {
+    if ($dates) {
+      foreach ($dates as $key => $date) {
+        $dates[$key]['formatted_start_date'] = $this->dateFormatter->format($date['value'], 'event_date_only');
+        $dates[$key]['formatted_start_time'] = $this->dateFormatter->format($date['value'], 'event_time_only');
+        $dates[$key]['formatted_end_date'] = $this->dateFormatter->format($date['end_value'], 'event_date_only');
+        $dates[$key]['formatted_end_time'] = $this->dateFormatter->format($date['end_value'], 'event_time_only');
+        $dates[$key]['original_start'] = $date['value'];
+        $dates[$key]['original_end'] = $date['end_value'];
+        $dates[$key]['is_all_day'] = $this->isAllDay($date['value'], $date['end_value']);
+        $dates[$key]['is_passed_event'] = $date['end_value'] < time();
+      }
+      // Sort dates - first date is next upcoming date.
+      asort($dates);
+    }
   }
 
   /**
