@@ -62,6 +62,7 @@ function ys_localist_preprocess_node(&$variables) {
     $variables['has_register'] = $eventFieldData['has_register'];
     $variables['cost_button_text'] = $eventFieldData['cost_button_text'];
     $variables['localist_url'] = $eventFieldData['localist_url'];
+    $variables['event_source'] = $eventFieldData['event_source'];
   }
 }
 

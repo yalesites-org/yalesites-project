@@ -475,6 +475,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'hide_add_to_calendar' => (int) !empty($paramsDecoded['event_field_options']['hide_add_to_calendar']),
     ];
 
+    $post_field_display_options = [
+      'show_eyebrow' => (int) !empty($paramsDecoded['post_field_options']['show_eyebrow']),
+    ];
+
     $pin_label = $paramsDecoded['pin_label'] ?? self::DEFAULT_PIN_LABEL;
 
     if (!$pinned_to_top) {
@@ -522,6 +526,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'offset' => $paramsDecoded['offset'] ?? 0,
       'field_display_options' => json_encode($field_display_options),
       'event_field_display_options' => json_encode($event_field_display_options),
+      'post_field_display_options' => json_encode($post_field_display_options),
       'pin_settings' => json_encode($pin_options),
     ];
 
@@ -556,6 +561,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
             $resultRow['#cache']['keys'][] = $field_display_options['show_tags'];
             $resultRow['#cache']['keys'][] = $field_display_options['show_thumbnail'];
             $resultRow['#cache']['keys'][] = $event_field_display_options['hide_add_to_calendar'];
+            $resultRow['#cache']['keys'][] = $post_field_display_options['show_eyebrow'];
             $resultRow['#cache']['keys'][] = $pin_options['pinned_to_top'];
             $resultRow['#cache']['keys'][] = $pin_options['pin_label'];
 
@@ -713,6 +719,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
       case 'event_field_options':
         $defaultParam = (empty($paramsDecoded['event_field_options'])) ? [] : $paramsDecoded['event_field_options'];
+        break;
+
+      case 'post_field_options':
+        $defaultParam = (empty($paramsDecoded['post_field_options'])) ? [] : $paramsDecoded['post_field_options'];
         break;
 
       case 'exposed_filter_options':
