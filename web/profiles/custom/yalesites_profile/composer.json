@@ -103,7 +103,7 @@
     "drupal/simple_sitemap": "4.2.1",
     "drupal/single_content_sync": "1.4.6",
     "drupal/smart_date": "4.1.6",
-    "drupal/taxonomy_manager": "^2.0",
+    "drupal/taxonomy_manager": "2.0.19",
     "drupal/twig_tweak": "3.4.0",
     "drupal/typogrify": "1.4-rc1",
     "drupal/upgrade_status": "4.3.5",
