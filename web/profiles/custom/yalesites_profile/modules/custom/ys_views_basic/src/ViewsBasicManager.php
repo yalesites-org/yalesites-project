@@ -280,7 +280,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'id' => 'field_event_date_value',
         'table' => "node__field_event_date",
         'field' => 'field_event_date_value',
-        'group_type' => 'min',
         'order' => $sortDirection[1],
       ];
 
