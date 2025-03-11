@@ -12,6 +12,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Url;
+use Drupal\node\Entity\Node;
 
 /**
  * @file
@@ -187,6 +188,24 @@ function ys_core_preprocess_block(&$variables) {
 
         array_unshift($menuItem['below'], $clonedMenuItem);
       }
+    }
+  }
+
+  // Supports the post lead-in (field_teaser_lead_in) on reference cards.
+  if ($variables['plugin_id'] == 'inline_block:reference_card') {
+
+    if (!isset($variables['content']['field_show_teaser_lead_in']) && !isset($variables['content']['field_content_ref'])) {
+      return;
+    }
+
+    $showEyebrow = 0;
+    if (isset($variables['content']['field_show_teaser_lead_in'][0])) {
+      $showEyebrow = $variables['content']['field_show_teaser_lead_in'][0]['#markup'];
+    }
+
+    $node = ($variables['content']['field_content_ref'][0]) ?? NULL;
+    if ($node && $node['#node'] instanceof Node) {
+      $node['#node']->show_eyebrow = $showEyebrow;
     }
   }
 }
