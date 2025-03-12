@@ -94,7 +94,7 @@ class ThemeSettingsManager {
       'name' => 'Book Navigation theme',
       'prop_type' => 'element',
       'selector' => '.in-this-section[data-component-theme]',
-      'default' => 'two',
+      'default' => 'one',
       'values' => [
         'one' => [
           'label' => 'One',
