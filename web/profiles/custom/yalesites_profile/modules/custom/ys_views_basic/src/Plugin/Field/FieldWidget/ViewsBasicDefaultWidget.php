@@ -355,7 +355,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     $form['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] = [
       '#type' => 'select',
-      '#title' => $this->t('Custom Vocab Filter - Included Terms'),
+      '#title' => $this->t('@vocab Filter - Included Terms', ['@vocab' => $custom_vocab_label]),
       '#options' => $this->viewsBasicManager->getTaxonomyParents('custom_vocab'),
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('custom_vocab_included_terms', $items[$delta]->params) : NULL,
       '#validated' => 'true',
