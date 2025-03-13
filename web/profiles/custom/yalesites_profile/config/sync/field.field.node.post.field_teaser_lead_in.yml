@@ -1,0 +1,19 @@
+uuid: 08238192-22db-4afd-a5f2-e80f11e0db65
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_teaser_lead_in
+    - node.type.post
+id: node.post.field_teaser_lead_in
+field_name: field_teaser_lead_in
+entity_type: node
+bundle: post
+label: 'Teaser Lead-In'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

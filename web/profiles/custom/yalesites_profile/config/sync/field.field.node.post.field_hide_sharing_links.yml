@@ -1,0 +1,21 @@
+uuid: adf87f7a-4df6-486a-9d81-ea3f862de1ce
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_hide_sharing_links
+    - node.type.post
+id: node.post.field_hide_sharing_links
+field_name: field_hide_sharing_links
+entity_type: node
+bundle: post
+label: 'Hide sharing links'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

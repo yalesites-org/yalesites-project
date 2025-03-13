@@ -293,6 +293,50 @@
 }
 
 /*
+/* Book Navigation
+/*
+*/
+
+#drupal-off-canvas .form-item-book-navigation {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+#drupal-off-canvas .form-item-book-navigation label {
+  flex: 1 auto;
+}
+
+#drupal-off-canvas .ys-themes--global-settings .form-item-book-navigation:hover > label,
+#drupal-off-canvas .ys-themes--global-settings .form-item-book-navigation:focus > label {
+  color: var(--color-link-hover);
+  border-color: var(--color-border-hover);
+}
+
+#drupal-off-canvas .ys-themes--global-settings .form-item-book-navigation:hover input[checked="checked"] + label .colors > span,
+#drupal-off-canvas .ys-themes--global-settings .form-item-book-navigation:focus input[checked="checked"] + label .colors > span {
+  border-color: var(--color-border-lightest);
+}
+
+#drupal-off-canvas .ys-themes--global-settings .form-item-book-navigation:hover input[checked="checked"] + label,
+#drupal-off-canvas .ys-themes--global-settings .form-item-book-navigation:focus input[checked="checked"] + label {
+  color: var(--color-text-primary);
+  border-color: var(--color-border-hover);
+}
+
+#drupal-off-canvas .ys-themes--global-settings .form-item-book-navigation input[checked="checked"] + label {
+  background-color: var(--color-text-primary);
+  color: var(--color-link-active);
+}
+
+#drupal-off-canvas .ys-themes--global-settings .form-item-book-navigation input[checked="checked"] + label:hover,
+#drupal-off-canvas .ys-themes--global-settings .form-item-book-navigation:hover input[checked="checked"] + label,
+#drupal-off-canvas .ys-themes--global-settings .form-item-book-navigation:focus input[checked="checked"] + label {
+  color: var(--color-link-active);
+  border-color: var(--color-border-hover);
+}
+
+/*
 /* Header Theme
 /*
 */

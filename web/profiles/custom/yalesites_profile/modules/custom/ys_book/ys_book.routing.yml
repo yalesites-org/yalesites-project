@@ -1,0 +1,7 @@
+book.admin:
+  path: '/admin/structure/book'
+  defaults:
+    _controller: '\Drupal\ys_book\Controller\YSBookController::adminOverview'
+    _title: 'Content Collections'
+  requirements:
+    _permission: 'administer book outlines'

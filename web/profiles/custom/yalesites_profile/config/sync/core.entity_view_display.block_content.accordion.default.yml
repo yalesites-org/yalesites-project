@@ -7,8 +7,10 @@ dependencies:
     - field.field.block_content.accordion.field_accordion_items
     - field.field.block_content.accordion.field_heading
     - field.field.block_content.accordion.field_instructions
+    - field.field.block_content.accordion.field_style_color
   module:
     - entity_reference_revisions
+    - options
     - text
 id: block_content.accordion.default
 targetEntityType: block_content
@@ -30,6 +32,13 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 0
+    region: content
+  field_style_color:
+    type: list_key
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
     region: content
 hidden:
   field_instructions: true

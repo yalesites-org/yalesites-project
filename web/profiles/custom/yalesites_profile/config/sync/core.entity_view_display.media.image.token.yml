@@ -28,6 +28,7 @@ content:
     weight: 0
     region: content
 hidden:
+  addtoany: true
   created: true
   field_tags: true
   name: true

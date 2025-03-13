@@ -4,6 +4,7 @@ status: true
 dependencies:
   config:
     - block_content.type.tiles
+    - field.field.block_content.tiles.field_enable_animation
     - field.field.block_content.tiles.field_instructions
     - field.field.block_content.tiles.field_style_alignment
     - field.field.block_content.tiles.field_style_position
@@ -18,6 +19,13 @@ targetEntityType: block_content
 bundle: tiles
 mode: default
 content:
+  field_enable_animation:
+    type: boolean_checkbox
+    weight: 6
+    region: content
+    settings:
+      display_label: true
+    third_party_settings: {  }
   field_instructions:
     type: markup
     weight: 0

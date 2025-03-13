@@ -166,6 +166,15 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     $streamUrl = ($node->field_stream_url->first()) ? Url::fromUri($node->field_stream_url->first()->getValue()['uri'])->toString() : NULL;
     $streamEmbedCode = $node->field_stream_embed_code->first() ? $node->field_stream_embed_code->first()->getValue()['value'] : NULL;
 
+    // Retrieve the source taxonomy term name.
+    $sourceTaxonomyTermName = '';
+    if ($node->field_event_source->first()) {
+      $termId = $node->field_event_source->first()->getValue()['target_id'];
+      $term = $this->entityTypeManager->getStorage('taxonomy_term')->load($termId);
+      $sourceTaxonomyTermName = $term->getName();
+    }
+    $eventSource = $sourceTaxonomyTermName;
+
     // Localist register ticket changes.
     $localistRegisterTickets = $hasRegister ? $this->localistManager->getTicketInfo($localistId) : NULL;
     if ($localistRegisterTickets) {
@@ -293,6 +302,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       'localist_url' => $localistUrl,
       'stream_url' => $streamUrl,
       'stream_embed_code' => $streamEmbedCode,
+      'event_source' => $eventSource,
     ];
   }
 

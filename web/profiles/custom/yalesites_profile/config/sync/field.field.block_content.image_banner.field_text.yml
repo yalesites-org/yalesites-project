@@ -1,0 +1,24 @@
+uuid: 709e84a8-3eaf-4f29-81bf-a8b7a3848c4d
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.image_banner
+    - field.storage.block_content.field_text
+    - filter.format.basic_html
+  module:
+    - text
+id: block_content.image_banner.field_text
+field_name: field_text
+entity_type: block_content
+bundle: image_banner
+label: 'Image Caption'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - basic_html
+field_type: text_long
