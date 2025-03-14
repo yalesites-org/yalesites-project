@@ -232,7 +232,13 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   }
 
   /**
+   * Initializes the view based on the content type.
    *
+   * @param array $types
+   *   An array of content types.
+   *
+   * @return \Drupal\views\ViewExecutable
+   *   The view object.
    */
   public function initView($types) {
     if (in_array('event', $types)) {
@@ -245,7 +251,15 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   }
 
   /**
+   * Sets up the view with the parameters.
    *
+   * @param \Drupal\views\ViewExecutable $view
+   *   The view object.
+   * @param string $params
+   *   The JSON encoded string of parameters.
+   *
+   * @return void
+   *   No return value.
    */
   public function setupView(&$view, $params) {
     static $setupRunning;
