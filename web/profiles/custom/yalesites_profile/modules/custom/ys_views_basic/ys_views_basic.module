@@ -5,8 +5,6 @@
  * Contains ys_views_basic.module functions.
  */
 
-use Drupal\node\NodeInterface;
-use Drupal\views\Views;
 use Drupal\views\ViewExecutable;
 
 /**
@@ -124,24 +122,6 @@ function ys_views_basic_views_pre_render(ViewExecutable $view): void {
  * Implements hook_views_pre_view().
  */
 function ys_views_basic_views_pre_view(ViewExecutable $view, $display_id, array &$args) {
-  _ys_views_basic_invalidate_view_nodes_before_render($view, $args);
-}
-
-/**
- * Invalidate the nodes about to be ajax rendered on the views basic views.
- *
- * This helps in custom settings such as hiding add to calendar, and others.
- *
- * @param \Drupal\views\ViewExecutable $view
- *   The view object.
- * @param array $args
- *   The arguments passed to the view.
- *
- * @return void
- *   No return value.
- */
-function _ys_views_basic_invalidate_view_nodes_before_render($view, array &$args) {
-  // Only target specific views.
   if (!in_array($view->id(), ['views_basic_scaffold', 'views_basic_scaffold_events'])) {
     return;
 
@@ -153,31 +133,6 @@ function _ys_views_basic_invalidate_view_nodes_before_render($view, array &$args
     return;
   }
 
-  // Get the next page and items per page.
-  $next_page = \Drupal::service('request_stack')->getCurrentRequest()->query->get('page');
-  $items_per_page = $view->getItemsPerPage();
-
-  // Create a new instance of the view to fetch the next set of results.
-  $view_next = Views::getView($view->id());
-  if ($view_next) {
-    $view_next->setDisplay($view->current_display);
-    $view_next->setItemsPerPage($items_per_page);
-    $view_next->setCurrentPage($next_page);
-    $view_next->args = $view->args;
-    $view_next->exposed_data = $view->exposed_data;
-    $view_next->execute();
-
-    // Collect only the node IDs that will appear in the next page.
-    $node_ids = [];
-    foreach ($view_next->result as $row) {
-      if (isset($row->_entity) && $row->_entity instanceof NodeInterface) {
-        $node_ids[] = 'node:' . $row->_entity->id();
-      }
-    }
-
-    // Invalidate cache **only for the nodes appearing on the next page**.
-    if (!empty($node_ids)) {
-      \Drupal::service('cache_tags.invalidator')->invalidateTags($node_ids);
-    }
-  }
+  $viewsBasicManager = \Drupal::service('ys_views_basic.views_basic_manager');
+  $viewsBasicManager->setupView($view, end($args));
 }

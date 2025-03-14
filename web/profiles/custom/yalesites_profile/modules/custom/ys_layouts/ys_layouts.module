@@ -42,6 +42,7 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'stream_embed_code' => NULL,
         'event_source' => NULL,
         'event_id' => NULL,
+        'event_featured_date' => NULL,
       ],
     ],
     'ys_page_meta_block' => [
