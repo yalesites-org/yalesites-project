@@ -1,0 +1,28 @@
+# Migration Group: YaleSite ONHA Migrations
+# Description: Defines the migration group for transferring content and data
+# from Drupal 7 to Drupal 10 for the Office of New Haven Affairs (ONHA).
+# This migration assumes that the Drupal 7 data is accessible via a database
+# connection named 'd7', defined in the site's settings.php file.
+
+id: ys_onha
+label: 'YaleSite ONHA Migrations'
+description: 'Migration group for Office of New Haven Affairs D7 to D10.'
+langcode: en
+status: true
+dependencies: {  }
+
+# Source type is left blank because this group can handle various data types
+# (e.g., nodes, taxonomy terms, users).
+source_type: ''
+
+# Shared configuration provides common settings used across all migrations
+# within this group.
+shared_configuration:
+  source:
+    # Specifies the database key used to connect to the Drupal 7 database.
+    # This key must be defined in settings.php under the 'databases' array.
+    key: d7
+    # Constants provide reusable values that can be referenced in individual
+    # migrations within this group.
+    constants:
+      admin_uid: 1

@@ -1,0 +1,54 @@
+# Migration: YaleSite ONHA Program Body Fields to Blocks
+# Description: Migrates the "body" fields from Drupal 7 program nodes into
+# block_content entities in Drupal 10. These blocks are used in Layout Builder
+# to provide flexible content layouts.
+
+id: ys_onha_program_body
+label: YaleSites ONHA Program Body to Block
+status: true
+class: Drupal\migrate\Plugin\Migration
+migration_tags:
+  - 'Drupal 7'
+  - Content
+migration_group: ys_onha
+
+# Specifies the source is Drupal 7 nodes of the 'program' content type.
+source:
+  plugin: d7_node
+  node_type: program
+
+# Define how each field or property is mapped to the Drupal 10 platform.
+process:
+  # The block type is 'text'.
+  type:
+    plugin: default_value
+    default_value: text
+
+  # Use the Drupal 7 node title as the block's "info" (administrative label).
+  info:
+    plugin: get
+    source: title
+
+  # Indicates the block is not reusable by default (0 = non-reusable).
+  reusable:
+    plugin: default_value
+    default_value: 0
+
+  # Map the Drupal 7 body field into the block content field in Drupal 10.
+  # The "sub_process" plugin maps nested field values.
+  field_text:
+    plugin: sub_process
+    source: body
+    process:
+      value: value
+      format:
+        plugin: default_value
+        default_value: basic_html
+
+# Drupal 7 program content will be migrated into the block_content entity type.
+destination:
+  plugin: 'entity:block_content'
+  default_bundle: text
+
+migration_dependencies:
+  required: {}
