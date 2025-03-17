@@ -66,6 +66,9 @@ function ys_core_theme($existing, $type, $theme, $path): array {
         'footer_links_col_2' => [],
       ],
     ],
+    'ys_integrations_block' => [
+      'variables' => ['content' => NULL],
+    ],
   ];
 }
 
