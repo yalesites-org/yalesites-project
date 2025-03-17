@@ -49,12 +49,23 @@ class IntegrationsController extends SystemController {
   }
 
   /**
+   * Create a function that can take something named ys_localist or ys_campus_groups, and come up with a class name of LocalistIntegrationDisplay or CampusGroupsIntegrationDisplay.
+   */
+  protected function getIntegrationDisplayClassName($module_name) {
+    $class_name = $this->removeYsPrefix($module_name);
+    $class_name = ucwords($class_name);
+    $class_name = str_replace('_', '', $class_name);
+    return $class_name . 'IntegrationDisplay';
+  }
+
+  /**
    *
    */
   protected function isTurnedOn($module_name) {
-    $config = \Drupal::config($module_name . '.settings');
-    $settings_name = $this->removeYsPrefix($module_name);
-    return $config->get('enable_' . $settings_name . '_sync');
+    $class_name = $this->getIntegrationDisplayClassName($module_name);
+    $class = 'Drupal\\' . $module_name . '\\' . $class_name;
+    $instance = $class::create(\Drupal::getContainer());
+    return $instance->isTurnedOn();
   }
 
   /**
