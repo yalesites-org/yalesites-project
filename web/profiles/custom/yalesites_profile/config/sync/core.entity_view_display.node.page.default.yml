@@ -128,26 +128,22 @@ third_party_settings:
             'Custom block types':
               - accordion
               - button_link
-              - callout
               - divider
               - embed
               - image
               - link_grid
               - pull_quote
-              - reference_card
               - tabs
               - text
               - video
             'Inline blocks':
               - 'inline_block:accordion'
               - 'inline_block:button_link'
-              - 'inline_block:callout'
               - 'inline_block:divider'
               - 'inline_block:embed'
               - 'inline_block:image'
               - 'inline_block:link_grid'
               - 'inline_block:pull_quote'
-              - 'inline_block:reference_card'
               - 'inline_block:tabs'
               - 'inline_block:text'
               - 'inline_block:video'
@@ -156,7 +152,6 @@ third_party_settings:
             'Custom block types':
               - accordion
               - button_link
-              - callout
               - divider
               - embed
               - event_list
@@ -176,7 +171,6 @@ third_party_settings:
               - 'inline_block:accordion'
               - 'inline_block:button_link'
               - 'inline_block:event_list'
-              - 'inline_block:callout'
               - 'inline_block:divider'
               - 'inline_block:embed'
               - 'inline_block:gallery'
@@ -196,13 +190,10 @@ third_party_settings:
             'Custom block types':
               - accordion
               - button_link
-              - callout
               - divider
-              - embed
               - image
               - link_grid
               - pull_quote
-              - reference_card
               - tabs
               - text
               - video
@@ -210,14 +201,11 @@ third_party_settings:
             'Inline blocks':
               - 'inline_block:accordion'
               - 'inline_block:button_link'
-              - 'inline_block:callout'
               - 'inline_block:divider'
-              - 'inline_block:embed'
               - 'inline_block:image'
               - 'inline_block:link_grid'
               - 'inline_block:webform'
               - 'inline_block:pull_quote'
-              - 'inline_block:reference_card'
               - 'inline_block:tabs'
               - 'inline_block:text'
               - 'inline_block:video'
@@ -226,13 +214,11 @@ third_party_settings:
             'Custom block types':
               - accordion
               - button_link
-              - callout
               - divider
               - embed
               - image
               - link_grid
               - pull_quote
-              - reference_card
               - tabs
               - text
               - video
@@ -240,14 +226,12 @@ third_party_settings:
             'Inline blocks':
               - 'inline_block:accordion'
               - 'inline_block:button_link'
-              - 'inline_block:callout'
               - 'inline_block:divider'
               - 'inline_block:embed'
               - 'inline_block:image'
               - 'inline_block:link_grid'
               - 'inline_block:webform'
               - 'inline_block:pull_quote'
-              - 'inline_block:reference_card'
               - 'inline_block:tabs'
               - 'inline_block:text'
               - 'inline_block:video'
