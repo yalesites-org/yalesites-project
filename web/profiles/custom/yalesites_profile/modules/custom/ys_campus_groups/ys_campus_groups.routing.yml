@@ -5,7 +5,7 @@ ys_campus_groups.settings:
     _title: 'Campus Groups Settings'
   requirements:
     _permission: 'yalesites manage campus groups'
-ys_campus_group.run_migrations:
+ys_campus_groups.run_migrations:
   path: '/admin/yalesites/campus_groups/sync'
   defaults:
     _controller: '\Drupal\ys_campus_groups\Controller\RunMigrations::runAllMigrations'
