@@ -63,4 +63,11 @@ class IntegrationPluginBase implements IntegrationPluginInterface, ContainerFact
     return Url::fromRoute('ys_core.integrations_settings');
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function syncUrl() {
+    return Url::fromRoute('ys_core.integrations_settings');
+  }
+
 }
