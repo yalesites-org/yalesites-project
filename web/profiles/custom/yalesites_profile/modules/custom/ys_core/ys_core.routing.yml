@@ -62,3 +62,10 @@ ys_core.search_page:
     _controller: '\Drupal\ys_core\Controller\SearchController::searchPage'
   requirements:
     _access: 'TRUE'
+ys_core.integrations_settings:
+  path: '/admin/yalesites/integration-settings'
+  defaults:
+    _form: '\Drupal\ys_core\Form\IntegrationSettingsForm'
+    _title: 'Integration Settings'
+  requirements:
+    _permission: 'yalesites manage settings'

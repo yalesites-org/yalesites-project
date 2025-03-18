@@ -2,12 +2,13 @@
 
 namespace Drupal\ys_core;
 
+use Drupal\Core\Url;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 
 /**
- *
+ * Base class for integration plugins.
  */
 class IntegrationPluginBase implements IntegrationPluginInterface, ContainerFactoryPluginInterface {
   /**
@@ -53,6 +54,13 @@ class IntegrationPluginBase implements IntegrationPluginInterface, ContainerFact
    */
   public function isTurnedOn(): bool {
     return FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function configUrl() {
+    return Url::fromRoute('ys_core.integrations_settings');
   }
 
 }
