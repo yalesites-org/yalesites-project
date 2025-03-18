@@ -11,4 +11,4 @@ ys_campus_groups.run_migrations:
     _controller: '\Drupal\ys_campus_groups\Controller\RunMigrations::runAllMigrations'
     _title: 'Import Campus Groups events now'
   requirements:
-    _permission: 'yalesites manage campus groups'
+    _permission: 'yalesites manage campus groups+yalesites sync campus groups'

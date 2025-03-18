@@ -32,4 +32,11 @@ class CampusGroupsIntegrationPlugin extends IntegrationPluginBase {
     return Url::fromRoute('ys_campus_groups.settings');
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function syncUrl() {
+    return Url::fromRoute('ys_campus_groups.run_migrations');
+  }
+
 }

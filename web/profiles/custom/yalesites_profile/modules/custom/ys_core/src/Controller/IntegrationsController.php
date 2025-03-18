@@ -3,7 +3,6 @@
 namespace Drupal\ys_core\Controller;
 
 use Drupal\system\Controller\SystemController;
-use Drupal\Core\Url;
 use Psr\Container\ContainerInterface;
 use Drupal\system\SystemManager;
 use Drupal\Core\Theme\ThemeAccessCheck;
@@ -31,6 +30,13 @@ class IntegrationsController extends SystemController {
    */
   protected $integrationPluginManager;
 
+  /**
+   * The current user.
+   *
+   * @var \Drupal\Core\Session\AccountInterface
+   */
+  protected $currentUser;
+
   use \Drupal\Core\StringTranslation\StringTranslationTrait;
 
   /**
@@ -54,6 +60,7 @@ class IntegrationsController extends SystemController {
   public function __construct(SystemManager $systemManager, ThemeAccessCheck $theme_access, FormBuilderInterface $form_builder, MenuLinkTreeInterface $menu_link_tree, ModuleExtensionList $module_extension_list, ThemeExtensionList $theme_extension_list, ContainerInterface $container) {
     parent::__construct($systemManager, $theme_access, $form_builder, $menu_link_tree, $module_extension_list, $theme_extension_list);
     $this->container = $container;
+    $this->currentUser = $container->get('current_user');
     $this->integrationPluginManager = $container->get('ys_core.integration_plugin_manager');
   }
 
@@ -94,27 +101,30 @@ class IntegrationsController extends SystemController {
         $output['#content'][$id]['title'] = $definitions[$id]['label'];
         $output['#content'][$id]['description'] = $definitions[$id]['description'];
 
-        $output['#content'][$id]['#actions']['configure'] = [
-          '#type' => 'link',
-          '#title' => $this->t('Configure'),
-          '#url' => $plugin->configUrl(),
-          '#options' => [
-            'attributes' => [
-              'class' => ['button', 'button--primary'],
-            ],
-          ],
-        ];
+        $configUrl = $plugin->configUrl();
+        $configUrlAccess = $configUrl->access($this->currentUser);
+        $syncUrl = $plugin->syncUrl();
+        $syncUrlAccess = $syncUrl->access($this->currentUser);
+        $turnedOn = FALSE;
+
+        $output['#content'][$id]['#actions']['configure'] = $this->buildActionItem(
+          'Configure',
+          $configUrl,
+          $configUrlAccess,
+          ['button', 'button--primary']
+        );
 
         if ($plugin->isTurnedOn()) {
-          $output['#content'][$id]['#actions']['sync'] = [
-            '#type' => 'link',
-            '#title' => $this->t('Sync now'),
-            '#url' => Url::fromRoute($id . '.run_migrations'),
-            '#options' => [
-              'attributes' => [
-                'class' => ['button', 'button--primary'],
-              ],
-            ],
+          $output['#content'][$id]['#actions']['sync'] = $this->buildActionItem(
+          'Sync now',
+          $syncUrl,
+          $syncUrlAccess,
+          ['button', 'button--primary']
+          );
+        }
+        else {
+          $output['#content'][$id]['#actions']['not_configured'] = [
+            '#markup' => '<p>' . $this->t('This integration is not configured.') . '</p>',
           ];
         }
       }
@@ -122,6 +132,35 @@ class IntegrationsController extends SystemController {
 
     return $output;
 
+  }
+
+  /**
+   * Builds a single action item.
+   *
+   * @param string $title
+   *   The title of the action.
+   * @param \Drupal\Core\Url $url
+   *   The URL for the action.
+   * @param bool $access
+   *   Access status for the action.
+   * @param array $classes
+   *   CSS classes for the action.
+   *
+   * @return array
+   *   Render array for a single action.
+   */
+  protected function buildActionItem(string $title, $url, bool $access, array $classes): array {
+    return [
+      '#type' => 'link',
+      '#title' => $this->t($title),
+      '#url' => $url,
+      '#access' => $access,
+      '#options' => [
+        'attributes' => [
+          'class' => $classes,
+        ],
+      ],
+    ];
   }
 
 }

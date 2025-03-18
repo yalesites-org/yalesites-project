@@ -32,4 +32,11 @@ class LocalistIntegrationPlugin extends IntegrationPluginBase {
     return Url::fromRoute('ys_localist.settings');
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function syncUrl() {
+    return Url::fromRoute('ys_localist.run_migrations');
+  }
+
 }

@@ -17,4 +17,9 @@ interface IntegrationPluginInterface {
    */
   public function configUrl();
 
+  /**
+   * Get the sync url for the integration.
+   */
+  public function syncUrl();
+
 }
