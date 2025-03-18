@@ -22,7 +22,7 @@ class LocalistIntegrationPlugin extends IntegrationPluginBase {
    */
   public function isTurnedOn(): bool {
     $config = $this->configFactory->get('ys_localist.settings');
-    return $config->get('enable_localist_sync');
+    return $config->get('enable_localist_sync') ?? FALSE;
   }
 
   /**

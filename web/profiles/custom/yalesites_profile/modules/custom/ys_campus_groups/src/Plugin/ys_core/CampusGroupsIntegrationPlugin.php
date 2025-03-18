@@ -22,7 +22,7 @@ class CampusGroupsIntegrationPlugin extends IntegrationPluginBase {
    */
   public function isTurnedOn(): bool {
     $config = $this->configFactory->get('ys_campus_groups.settings');
-    return $config->get('enable_campus_groups_sync');
+    return $config->get('enable_campus_groups_sync') ?? FALSE;
   }
 
   /**
