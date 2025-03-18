@@ -24,6 +24,13 @@ class IntegrationsController extends SystemController {
    */
   protected $container;
 
+  /**
+   * The integration plugin manager.
+   *
+   * @var \Drupal\ys_core\IntegrationPluginManager
+   */
+  protected $integrationPluginManager;
+
   use \Drupal\Core\StringTranslation\StringTranslationTrait;
 
   /**
@@ -47,6 +54,7 @@ class IntegrationsController extends SystemController {
   public function __construct(SystemManager $systemManager, ThemeAccessCheck $theme_access, FormBuilderInterface $form_builder, MenuLinkTreeInterface $menu_link_tree, ModuleExtensionList $module_extension_list, ThemeExtensionList $theme_extension_list, ContainerInterface $container) {
     parent::__construct($systemManager, $theme_access, $form_builder, $menu_link_tree, $module_extension_list, $theme_extension_list);
     $this->container = $container;
+    $this->integrationPluginManager = $container->get('ys_core.integration_plugin_manager');
   }
 
   /**
@@ -84,7 +92,9 @@ class IntegrationsController extends SystemController {
         ];
 
         $module_name = $this->getModuleNameFromRouteName($output['#content'][$key]['url']->getRouteName());
-        if ($this->isTurnedOn($module_name)) {
+        $plugin = $this->integrationPluginManager->createInstance($module_name);
+
+        if ($plugin->isTurnedOn()) {
           $output['#content'][$key]['#actions']['sync'] = [
             '#type' => 'link',
             '#title' => $this->t('Sync now'),
