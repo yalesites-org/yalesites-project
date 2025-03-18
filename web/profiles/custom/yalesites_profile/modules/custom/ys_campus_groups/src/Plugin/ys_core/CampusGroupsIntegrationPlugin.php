@@ -5,6 +5,7 @@ namespace Drupal\ys_campus_groups\Plugin\ys_core;
 use Drupal\ys_core\IntegrationPluginBase;
 use Drupal\ys_core\Attribute\Integration;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Url;
 
 /**
 * Provides a campus groups integration plugin.
@@ -22,6 +23,13 @@ class CampusGroupsIntegrationPlugin extends IntegrationPluginBase {
   public function isTurnedOn(): bool {
     $config = $this->configFactory->get('ys_campus_groups.settings');
     return $config->get('enable_campus_groups_sync');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function configUrl() {
+    return Url::fromRoute('ys_campus_groups.settings');
   }
 
 }

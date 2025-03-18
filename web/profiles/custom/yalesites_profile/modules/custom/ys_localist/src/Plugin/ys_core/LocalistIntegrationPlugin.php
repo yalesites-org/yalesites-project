@@ -5,6 +5,7 @@ namespace Drupal\ys_localist\Plugin\ys_core;
 use Drupal\ys_core\IntegrationPluginBase;
 use Drupal\ys_core\Attribute\Integration;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Url;
 
 /**
 * Provides a localist integration plugin.
@@ -22,6 +23,13 @@ class LocalistIntegrationPlugin extends IntegrationPluginBase {
   public function isTurnedOn(): bool {
     $config = $this->configFactory->get('ys_localist.settings');
     return $config->get('enable_localist_sync');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function configUrl() {
+    return Url::fromRoute('ys_localist.settings');
   }
 
 }

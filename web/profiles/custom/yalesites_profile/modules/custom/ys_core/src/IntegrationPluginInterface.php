@@ -12,4 +12,9 @@ interface IntegrationPluginInterface {
    */
   public function isTurnedOn(): bool;
 
+  /**
+   * Get the configuration form for the integration.
+   */
+  public function configUrl();
+
 }

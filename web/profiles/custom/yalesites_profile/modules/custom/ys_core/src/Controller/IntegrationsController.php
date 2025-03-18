@@ -76,14 +76,28 @@ class IntegrationsController extends SystemController {
    * {@inheritdoc}
    */
   public function systemAdminMenuBlockPage(): array {
-    $output = parent::systemAdminMenuBlockPage();
+    $output = [
+      '#content' => [],
+      '#theme' => 'ys_integrations_block',
+    ];
 
-    if (isset($output['#content'])) {
-      foreach ($output['#content'] as $key => $value) {
-        $output['#content'][$key]['#actions']['configure'] = [
+    // Get the ys_core.integtration_settings.
+    $integrationsConfig = $this->config('ys_core.integration_settings');
+
+    $integrations = $integrationsConfig->getRawData();
+    foreach ($integrations as $id => $integration) {
+      if ($integration) {
+        $plugin = $this->integrationPluginManager->createInstance($id);
+        $definitions = $this->integrationPluginManager->getDefinitions();
+
+        // Convert the label from translatable markup to a string.
+        $output['#content'][$id]['title'] = $definitions[$id]['label'];
+        $output['#content'][$id]['description'] = $definitions[$id]['description'];
+
+        $output['#content'][$id]['#actions']['configure'] = [
           '#type' => 'link',
           '#title' => $this->t('Configure'),
-          '#url' => $output['#content'][$key]['url'],
+          '#url' => $plugin->configUrl(),
           '#options' => [
             'attributes' => [
               'class' => ['button', 'button--primary'],
@@ -91,14 +105,11 @@ class IntegrationsController extends SystemController {
           ],
         ];
 
-        $module_name = $this->getModuleNameFromRouteName($output['#content'][$key]['url']->getRouteName());
-        $plugin = $this->integrationPluginManager->createInstance($module_name);
-
         if ($plugin->isTurnedOn()) {
-          $output['#content'][$key]['#actions']['sync'] = [
+          $output['#content'][$id]['#actions']['sync'] = [
             '#type' => 'link',
             '#title' => $this->t('Sync now'),
-            '#url' => Url::fromRoute($module_name . '.run_migrations'),
+            '#url' => Url::fromRoute($id . '.run_migrations'),
             '#options' => [
               'attributes' => [
                 'class' => ['button', 'button--primary'],
@@ -109,7 +120,6 @@ class IntegrationsController extends SystemController {
       }
     }
 
-    $output['#theme'] = 'ys_integrations_block';
     return $output;
 
   }
