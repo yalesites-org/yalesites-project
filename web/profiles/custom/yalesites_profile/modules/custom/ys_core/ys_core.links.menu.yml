@@ -162,7 +162,7 @@ ys_core.custom_block_library:
 # Integration settings
 ys_core.integration_settings:
   description: "Manage integrations exposed to site admins"
-  parent: system.admin_content
+  parent: system.admin_config_services
   route_name: ys_core.integrations_settings
   title: "Integration Settings"
   weight: 20

@@ -2,3 +2,6 @@
 yalesites manage settings:
   title: 'Manage YaleSite Settings'
   description: 'Access the settings forms in the YaleSites section of the admin menu.'
+yalesites manage integrations:
+  title: "Manage YaleSite Integrations"
+  description: 'Access the integration settings to expose to YaleSites site admins.'

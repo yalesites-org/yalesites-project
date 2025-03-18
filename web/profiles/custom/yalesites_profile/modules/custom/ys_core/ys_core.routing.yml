@@ -68,4 +68,4 @@ ys_core.integrations_settings:
     _form: '\Drupal\ys_core\Form\IntegrationSettingsForm'
     _title: 'Integration Settings'
   requirements:
-    _permission: 'yalesites manage settings'
+    _permission: 'yalesites manage integrations'
