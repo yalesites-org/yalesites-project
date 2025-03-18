@@ -5,6 +5,7 @@ namespace Drupal\ys_core\Form;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\ys_core\IntegrationPluginManager;
 
 /**
  * Form for managing integrations for site admins+.
@@ -27,8 +28,8 @@ class IntegrationSettingsForm extends ConfigFormBase {
     return 'ys_core_integration_settings_form';
   }
 
-  public function __construct() {
-    $this->integrationPluginManager = \Drupal::service('ys_core.integration_plugin_manager');
+  public function __construct(IntegrationPluginManager $integrationPluginManager) {
+    $this->integrationPluginManager = $integrationPluginManager;
   }
 
   /**
