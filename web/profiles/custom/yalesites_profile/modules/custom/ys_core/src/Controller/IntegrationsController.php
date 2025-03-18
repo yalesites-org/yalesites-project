@@ -105,7 +105,6 @@ class IntegrationsController extends SystemController {
         $configUrlAccess = $configUrl->access($this->currentUser);
         $syncUrl = $plugin->syncUrl();
         $syncUrlAccess = $syncUrl->access($this->currentUser);
-        $turnedOn = FALSE;
 
         $output['#content'][$id]['#actions']['configure'] = $this->buildActionItem(
           'Configure',
@@ -152,7 +151,7 @@ class IntegrationsController extends SystemController {
   protected function buildActionItem(string $title, $url, bool $access, array $classes): array {
     return [
       '#type' => 'link',
-      '#title' => $this->t($title),
+      '#title' => $title,
       '#url' => $url,
       '#access' => $access,
       '#options' => [
