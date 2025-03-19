@@ -1,9 +1,9 @@
 <?php
 
-namespace Drupal\ys_campus_groups\Plugin\ys_core;
+namespace Drupal\ys_campus_groups\Plugin\ys_integrations;
 
-use Drupal\ys_core\IntegrationPluginBase;
-use Drupal\ys_core\Attribute\Integration;
+use Drupal\ys_integrations\IntegrationPluginBase;
+use Drupal\ys_integrations\Attribute\Integration;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 

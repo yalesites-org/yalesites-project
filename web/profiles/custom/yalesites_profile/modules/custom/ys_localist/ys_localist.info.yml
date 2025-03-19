@@ -8,3 +8,4 @@ dependencies:
   - migrate_plus:migrate_plus
   - migrate_tools:migrate_tools
   - ys_core
+  - ys_integrations

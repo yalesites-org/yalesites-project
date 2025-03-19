@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\ys_core\Attribute;
+namespace Drupal\ys_integrations\Attribute;
 
 use Drupal\Component\Plugin\Attribute\Plugin;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -13,7 +13,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Additional attribute keys for formatters can be defined in
  * hook_integration_info_alter().
  *
- * @ingroup ys_core
+ * @ingroup ys_integrations
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
 class Integration extends Plugin {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\ys_core;
+namespace Drupal\ys_integrations;
 
 use Drupal\Core\Url;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -60,14 +60,14 @@ class IntegrationPluginBase implements IntegrationPluginInterface, ContainerFact
    * {@inheritdoc}
    */
   public function configUrl() {
-    return Url::fromRoute('ys_core.integrations_settings');
+    return Url::fromRoute('ys_integrations.integrations_settings');
   }
 
   /**
    * {@inheritdoc}
    */
   public function syncUrl() {
-    return Url::fromRoute('ys_core.integrations_settings');
+    return Url::fromRoute('ys_integrations.integrations_settings');
   }
 
 }
