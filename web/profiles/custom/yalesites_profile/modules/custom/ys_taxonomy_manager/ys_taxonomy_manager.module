@@ -12,14 +12,17 @@ use Drupal\taxonomy_manager\Form\TaxonomyManagerForm;
  * Implements hook_form_FORM_ID_alter().
  */
 function ys_taxonomy_manager_form_taxonomy_manager_vocabulary_terms_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
-  $form['toolbar']['add_to_nodes'] = [
-    '#type' => 'submit',
-    '#name' => 'add_to_nodes',
-    '#value' => t('Add to Nodes'),
-    '#ajax' => [
-      'callback' => 'ys_taxonomy_manager_add_to_nodes_form_callback',
-    ],
-  ];
+
+  if (isset($form['toolbar'])) {
+    $form['toolbar']['add_to_nodes'] = [
+      '#type' => 'submit',
+      '#name' => 'add_to_nodes',
+      '#value' => t('Add to Nodes'),
+      '#ajax' => [
+        'callback' => 'ys_taxonomy_manager_add_to_nodes_form_callback',
+      ],
+    ];
+  }
 }
 
 /**
