@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\ys_core\Controller;
+namespace Drupal\ys_integrations\Controller;
 
 use Drupal\system\Controller\SystemController;
 use Psr\Container\ContainerInterface;
@@ -14,7 +14,7 @@ use Drupal\Core\Extension\ThemeExtensionList;
 /**
  * Controller routines for system integrations routes.
  */
-class IntegrationsController extends SystemController {
+class YsIntegrationsController extends SystemController {
 
   /**
    * The container.
@@ -26,7 +26,7 @@ class IntegrationsController extends SystemController {
   /**
    * The integration plugin manager.
    *
-   * @var \Drupal\ys_core\IntegrationPluginManager
+   * @var \Drupal\ys_integrations\IntegrationPluginManager
    */
   protected $integrationPluginManager;
 
@@ -61,7 +61,7 @@ class IntegrationsController extends SystemController {
     parent::__construct($systemManager, $theme_access, $form_builder, $menu_link_tree, $module_extension_list, $theme_extension_list);
     $this->container = $container;
     $this->currentUser = $container->get('current_user');
-    $this->integrationPluginManager = $container->get('ys_core.integration_plugin_manager');
+    $this->integrationPluginManager = $container->get('ys_integrations.integration_plugin_manager');
   }
 
   /**
@@ -88,8 +88,8 @@ class IntegrationsController extends SystemController {
       '#theme' => 'ys_integrations_block',
     ];
 
-    // Get the ys_core.integtration_settings.
-    $integrationsConfig = $this->config('ys_core.integration_settings');
+    // Get the ys_integrations.integtration_settings.
+    $integrationsConfig = $this->config('ys_integrations.integration_settings');
 
     $integrations = $integrationsConfig->getRawData();
     foreach ($integrations as $id => $integration) {

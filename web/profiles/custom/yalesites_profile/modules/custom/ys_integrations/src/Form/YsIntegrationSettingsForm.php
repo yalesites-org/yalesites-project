@@ -1,23 +1,23 @@
 <?php
 
-namespace Drupal\ys_core\Form;
+namespace Drupal\ys_integrations\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\ys_core\IntegrationPluginManager;
+use Drupal\ys_integrations\IntegrationPluginManager;
 
 /**
  * Form for managing integrations for site admins+.
  *
- * @package Drupal\ys_core\Form
+ * @package Drupal\ys_integrations\Form
  */
-class IntegrationSettingsForm extends ConfigFormBase {
+class YsIntegrationSettingsForm extends ConfigFormBase {
 
   /**
    * The integration plugin manager.
    *
-   * @var \Drupal\ys_core\IntegrationPluginManager
+   * @var \Drupal\ys_integrations\IntegrationPluginManager
    */
   protected $integrationPluginManager;
 
@@ -25,7 +25,7 @@ class IntegrationSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'ys_core_integration_settings_form';
+    return 'ys_integrations_integration_settings_form';
   }
 
   public function __construct(IntegrationPluginManager $integrationPluginManager) {
@@ -37,7 +37,7 @@ class IntegrationSettingsForm extends ConfigFormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('ys_core.integration_plugin_manager')
+      $container->get('ys_integrations.integration_plugin_manager')
     );
   }
 
@@ -54,7 +54,7 @@ class IntegrationSettingsForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildForm($form, $form_state);
-    $integrationsConfig = $this->config('ys_core.integration_settings');
+    $integrationsConfig = $this->config('ys_integrations.integration_settings');
 
     $form['integrations'] = [
       '#type' => 'fieldset',
@@ -77,7 +77,7 @@ class IntegrationSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $integrationConfig = $this->config('ys_core.integration_settings');
+    $integrationConfig = $this->config('ys_integrations.integration_settings');
 
     $integrations = $this->integrationPluginManager->getDefinitions();
     foreach ($integrations as $id => $integration) {
@@ -94,7 +94,7 @@ class IntegrationSettingsForm extends ConfigFormBase {
    */
   protected function getEditableConfigNames() {
     return [
-      'ys_core.integration_settings',
+      'ys_integrations.integration_settings',
     ];
   }
 

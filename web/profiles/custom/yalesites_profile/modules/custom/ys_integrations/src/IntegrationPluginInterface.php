@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\ys_core;
+namespace Drupal\ys_integrations;
 
 /**
  * Defines an interface for integration plugins.

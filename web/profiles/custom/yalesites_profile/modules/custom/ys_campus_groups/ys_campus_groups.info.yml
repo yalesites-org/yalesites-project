@@ -9,3 +9,4 @@ dependencies:
   - migrate_tools:migrate_tools
   - drupal:key
   - ys_core
+  - ys_integrations

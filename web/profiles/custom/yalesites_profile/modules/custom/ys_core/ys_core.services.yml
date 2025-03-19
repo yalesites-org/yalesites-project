@@ -26,8 +26,3 @@ services:
     arguments: []
     tags:
       - { name: event_subscriber }
-  ys_core.integration_plugin_manager:
-    class: Drupal\ys_core\IntegrationPluginManager
-    arguments: ['@container.namespaces', '@cache.default', '@module_handler']
-    tags:
-      - { name: 'default_plugin_manager' }
