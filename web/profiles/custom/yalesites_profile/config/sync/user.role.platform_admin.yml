@@ -434,5 +434,8 @@ permissions:
   - 'view vocabulary labels'
   - 'yalesites manage alerts'
   - 'yalesites manage campus groups'
+  - 'yalesites manage integrations'
   - 'yalesites manage localist'
   - 'yalesites manage settings'
+  - 'yalesites sync campus groups'
+  - 'yalesites sync localist'

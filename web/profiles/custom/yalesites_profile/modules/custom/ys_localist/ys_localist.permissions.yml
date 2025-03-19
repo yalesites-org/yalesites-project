@@ -2,3 +2,6 @@
 yalesites manage localist:
   title: 'Manage YaleSites Localist'
   description: 'Set and change YaleSites Localist settings.'
+yalesites sync localist:
+  title: 'Sync YaleSites Localist'
+  description: 'Manual syncing of Localist events with YaleSites.'

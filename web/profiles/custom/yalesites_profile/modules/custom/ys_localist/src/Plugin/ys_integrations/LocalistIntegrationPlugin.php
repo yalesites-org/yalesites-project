@@ -1,0 +1,42 @@
+<?php
+
+namespace Drupal\ys_localist\Plugin\ys_integrations;
+
+use Drupal\ys_integrations\IntegrationPluginBase;
+use Drupal\ys_integrations\Attribute\Integration;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Url;
+
+/**
+* Provides a localist integration plugin.
+*/
+#[Integration(
+  id: 'ys_localist',
+  label: new TranslatableMarkup('Localist'),
+  description: new TranslatableMarkup('Provides integration with the Localist API.'),
+)]
+class LocalistIntegrationPlugin extends IntegrationPluginBase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isTurnedOn(): bool {
+    $config = $this->configFactory->get('ys_localist.settings');
+    return $config->get('enable_localist_sync') ?? FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function configUrl() {
+    return Url::fromRoute('ys_localist.settings');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function syncUrl() {
+    return Url::fromRoute('ys_localist.run_migrations');
+  }
+
+}
