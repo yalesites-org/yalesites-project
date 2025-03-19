@@ -1,12 +1,12 @@
 <?php
 
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\taxonomy_manager\Form\TaxonomyManagerForm;
-
 /**
  * @file
  * Primary module hooks for ys_taxonomy_manager module.
  */
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\taxonomy_manager\Form\TaxonomyManagerForm;
 
 /**
  * Implements hook_form_FORM_ID_alter().
