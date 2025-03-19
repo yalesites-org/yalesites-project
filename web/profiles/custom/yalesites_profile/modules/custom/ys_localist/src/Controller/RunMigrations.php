@@ -107,10 +107,26 @@ class RunMigrations extends ControllerBase implements ContainerInjectionInterfac
       $this->messenger()->addError($message);
     }
 
-    $redirectUrl = Url::fromRoute('ys_localist.settings')->toString();
+    $redirectUrl = $this->getRedirectUrl();
     $response = new RedirectResponse($redirectUrl);
     return $response;
 
+  }
+
+  /**
+   * Retrieves the URL to redirect to after the migration is run.
+   *
+   * @return string
+   *   The URL to redirect to.
+   */
+  protected static function getRedirectUrl(): string {
+    $referer = \Drupal::request()->server->get('HTTP_REFERER');
+
+    if ($referer == NULL) {
+      $referer = Url::fromRoute('<front>')->toString();
+    }
+
+    return $referer;
   }
 
 }
