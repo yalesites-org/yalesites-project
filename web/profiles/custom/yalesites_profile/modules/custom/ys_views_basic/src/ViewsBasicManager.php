@@ -365,6 +365,18 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       // Get the label of the custom vocab.
       $custom_vocab_label = $this->entityTypeManager->getStorage('taxonomy_vocabulary')->load('custom_vocab')->label();
       $filters['field_custom_vocab_target_id']['expose']['label'] = $custom_vocab_label;
+
+      // Check if 'custom_vocab_included_terms' is provided for the current
+      // filter type.
+      if (!empty($paramsDecoded['custom_vocab_included_terms'])) {
+        // Determine the vocabulary ID based on the selected filter type.
+        $vid = 'custom_vocab';
+
+        // Limit the filter to specific terms if provided.
+        $filters['field_custom_vocab_target_id']['value'] = $this->getChildTermsByParentId($paramsDecoded['custom_vocab_included_terms'], $vid);
+        $filters['field_custom_vocab_target_id']['limit'] = TRUE;
+        $filters['field_custom_vocab_target_id']['expose']['reduce'] = TRUE;
+      }
     }
     else {
       // Remove filter if 'show filter' field is not set.
@@ -737,6 +749,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         $defaultParam = (empty($paramsDecoded['category_included_terms'])) ? NULL : $paramsDecoded['category_included_terms'];
         break;
 
+      case 'custom_vocab_included_terms':
+        $defaultParam = (empty($paramsDecoded['custom_vocab_included_terms'])) ? NULL : $paramsDecoded['custom_vocab_included_terms'];
+        break;
+
       case 'show_current_entity':
         $defaultParam = (empty($paramsDecoded['show_current_entity'])) ? 0 : $paramsDecoded['show_current_entity'];
       case 'pinned_to_top':
@@ -904,6 +920,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'category_included_terms_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
           'show_category_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_category_filter]"]',
           'show_custom_vocab_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_custom_vocab_filter]"]',
+          'custom_vocab_included_terms_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] : NULL,
           'massage_terms_include_array' => [
             'block_form',
             'group_user_selection',
@@ -974,6 +991,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'category_included_terms_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
           'show_category_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_category_filter]"]',
           'show_custom_vocab_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_custom_vocab_filter]"]',
+          'custom_vocab_included_terms_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] : NULL,
           'massage_terms_include_array' => [
             'settings',
             'block_form',
@@ -1058,6 +1076,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'category_included_terms_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
         'show_category_filter_selector' => ':input[name="show_category_filter"]',
         'show_custom_vocab_filter_selector' => ':input[name="show_custom_vocab_filter"]',
+        'custom_vocab_included_terms_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] : NULL,
         'massage_terms_include_array' => ['terms_include'],
         'massage_terms_exclude_array' => ['terms_exclude'],
         'sort_by_array' => ['sort_by'],
