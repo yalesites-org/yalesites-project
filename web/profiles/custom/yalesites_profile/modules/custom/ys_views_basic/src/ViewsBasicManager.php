@@ -232,28 +232,42 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   }
 
   /**
-   * Retrieves an overridden Views Basic Scaffold view.
+   * Initializes the view based on the content type.
    *
-   * Views Basic Scaffold view is overridden with the data from the parameters.
+   * @param array $types
+   *   An array of content types.
    *
-   * @param string $type
-   *   Type of view output: 'rendered' (used to allow 'count').
-   * @param string $params
-   *   JSON of the parameter settings.
-   *
-   * @return array|int
-   *   An array of a rendered view or a count of the number of results based
-   *   on the parameters specified.
+   * @return \Drupal\views\ViewExecutable
+   *   The view object.
    */
-  public function getView($type, $params) {
-    // Prevents views recursion.
-    static $running;
-    if ($running) {
-      return NULL;
+  public function initView($types) {
+    if (in_array('event', $types)) {
+      return Views::getView('views_basic_scaffold_events');
     }
-    $running = TRUE;
+    else {
+      return Views::getView('views_basic_scaffold');
+    }
 
-    // Set up the view and initial decoded parameters.
+  }
+
+  /**
+   * Sets up the view with the parameters.
+   *
+   * @param \Drupal\views\ViewExecutable $view
+   *   The view object.
+   * @param string $params
+   *   The JSON encoded string of parameters.
+   *
+   * @return void
+   *   No return value.
+   */
+  public function setupView(&$view, $params) {
+    static $setupRunning;
+    if ($setupRunning) {
+      return;
+    }
+    $setupRunning = TRUE;
+
     $paramsDecoded = json_decode($params, TRUE);
     $pinned_to_top = isset($paramsDecoded['pinned_to_top']) ? (bool) $paramsDecoded['pinned_to_top'] : FALSE;
 
@@ -280,16 +294,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'id' => 'field_event_date_value',
         'table' => "node__field_event_date",
         'field' => 'field_event_date_value',
-        'group_type' => 'min',
         'order' => $sortDirection[1],
       ];
 
-      $view = Views::getView('views_basic_scaffold_events');
       $view->getDisplay()->setOption('sorts', $sortArray);
-    }
-    else {
-      // All other views get the original scaffold view.
-      $view = Views::getView('views_basic_scaffold');
     }
 
     $view->setDisplay('block_1');
@@ -450,9 +458,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     $termsInclude = (count($termsIncludeArray) != 0) ? implode($operator, $termsIncludeArray) : 'all';
     $termsExclude = (count($termsExcludeArray) != 0) ? implode($operator, $termsExcludeArray) : NULL;
 
-    if (
-      ($type == 'count' && $paramsDecoded['display'] != 'limit') ||
-      ($type == 'rendered' && $paramsDecoded['display'] == 'all')) {
+    if ($paramsDecoded['display'] == 'all') {
       $itemsLimit = 0;
     }
     else {
@@ -528,48 +534,65 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'event_field_display_options' => json_encode($event_field_display_options),
       'post_field_display_options' => json_encode($post_field_display_options),
       'pin_settings' => json_encode($pin_options),
+      'original_settings' => $params,
     ];
 
     $view->setArguments($view_args);
     $view->execute();
-
-    // Get all node ids.
-    $node_ids = [];
-    foreach ($view->result as $row) {
-      if (isset($row->_entity) && $row->_entity instanceof NodeInterface) {
-        $node_ids[] = 'node:' . $row->_entity->id();
-      }
-    }
-
-    $this->cacheTagsInvalidator->invalidateTags($node_ids);
 
     // Unset the pager. Needs to be done after view->execute();
     if ($paramsDecoded['display'] != "pager") {
       unset($view->pager);
     }
 
-    switch ($type) {
-      case "rendered":
-        $view = $view->preview();
-        // Add cache keys for each display option.
-        // This ensures that if the options for showing categories, tags,
-        // or thumbnails change, the cache will be invalidated,
-        // and the view will be re-rendered with the new options.
-        if ($view['#rows'] && $view['#rows']['#rows']) {
-          foreach ($view['#rows']['#rows'] as &$resultRow) {
-            $resultRow['#cache']['keys'][] = $field_display_options['show_categories'];
-            $resultRow['#cache']['keys'][] = $field_display_options['show_tags'];
-            $resultRow['#cache']['keys'][] = $field_display_options['show_thumbnail'];
-            $resultRow['#cache']['keys'][] = $event_field_display_options['hide_add_to_calendar'];
-            $resultRow['#cache']['keys'][] = $post_field_display_options['show_eyebrow'];
-            $resultRow['#cache']['keys'][] = $pin_options['pinned_to_top'];
-            $resultRow['#cache']['keys'][] = $pin_options['pin_label'];
+    $view = $view->preview();
+    // Add cache keys for each display option.
+    // This ensures that if the options for showing categories, tags,
+    // or thumbnails change, the cache will be invalidated,
+    // and the view will be re-rendered with the new options.
+    if ($view['#rows'] && $view['#rows']['#rows']) {
+      foreach ($view['#rows']['#rows'] as &$resultRow) {
+        $resultRow['#cache']['keys'][] = $field_display_options['show_categories'];
+        $resultRow['#cache']['keys'][] = $field_display_options['show_tags'];
+        $resultRow['#cache']['keys'][] = $field_display_options['show_thumbnail'];
+        $resultRow['#cache']['keys'][] = $event_field_display_options['hide_add_to_calendar'];
+        $resultRow['#cache']['keys'][] = $post_field_display_options['show_eyebrow'];
+        $resultRow['#cache']['keys'][] = $pin_options['pinned_to_top'];
+        $resultRow['#cache']['keys'][] = $pin_options['pin_label'];
 
-            $resultRow['#cache']['contexts'][] = 'url.query_args:page';
-          }
-        }
-        break;
+        $resultRow['#cache']['contexts'][] = 'url.query_args:page';
+      }
     }
+
+    $setupRunning = FALSE;
+  }
+
+  /**
+   * Retrieves an overridden Views Basic Scaffold view.
+   *
+   * Views Basic Scaffold view is overridden with the data from the parameters.
+   *
+   * @param string $type
+   *   Type of view output: 'rendered' (used to allow 'count').
+   * @param string $params
+   *   JSON of the parameter settings.
+   *
+   * @return array|int
+   *   An array of a rendered view or a count of the number of results based
+   *   on the parameters specified.
+   */
+  public function getView($type, $params) {
+    // Prevents views recursion.
+    static $running;
+    if ($running) {
+      return NULL;
+    }
+    $running = TRUE;
+
+    // Set up the view and initial decoded parameters.
+    $paramsDecoded = json_decode($params, TRUE);
+    $view = $this->initView($paramsDecoded['filters']['types']);
+    $this->setupView($view, $params);
 
     // End current view run.
     $running = FALSE;
@@ -931,7 +954,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           ],
           'display_ajax' => ':input[name="block_form[group_user_selection][options][display]"]',
           'display_value_ajax' => $formState->getValue(
-            ['block_form', 'group_user_selection', 'options', 'display']
+          ['block_form', 'group_user_selection', 'options', 'display']
           ),
           'limit_array' => [
             'block_form',
@@ -1005,13 +1028,13 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           ],
           'display_ajax' => ':input[name="settings[block_form][group_user_selection][options][display]"]',
           'display_value_ajax' => $formState->getValue(
-            [
-              'settings',
-              'block_form',
-              'group_user_selection',
-              'options',
-              'display',
-            ]
+          [
+            'settings',
+            'block_form',
+            'group_user_selection',
+            'options',
+            'display',
+          ]
           ),
           'limit_array' => [
             'settings',
@@ -1065,7 +1088,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'display_array' => ['display'],
         'display_ajax' => ':input[name="display"]',
         'display_value_ajax' => $formState->getValue(
-          ['group_user_selection', 'options', 'display']
+        ['group_user_selection', 'options', 'display']
         ),
         'limit_array' => ['limit'],
         'limit_ajax' => ($form) ? $form['group_user_selection']['options']['limit'] : NULL,
