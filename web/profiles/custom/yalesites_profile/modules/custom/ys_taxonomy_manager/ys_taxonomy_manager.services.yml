@@ -1,5 +1,0 @@
-services:
-  ys_taxonomy_manager.access_checker:
-    class: Drupal\ys_taxonomy_manager\Access\TaxonomyManagerAccessCheck
-    tags:
-      - { name: access_check, applies_to: _ys_taxonomy_manager_access_check }
