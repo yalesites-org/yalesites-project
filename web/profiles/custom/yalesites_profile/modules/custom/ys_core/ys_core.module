@@ -450,7 +450,7 @@ function ys_core_preprocess_image_widget(&$variables) {
     }
 
     // Sets a twig variable to use the favicon preview.
-    // @see web/themes/custom/ys_admin_theme/templates/content-edit/image-widget.html.twig
+    // @see web/themes/custom/ys_admin_theme/templates/content-edit/image-widget.html.twig.
     $variables['use_favicon_preview'] = $element['#use_favicon_preview'] ?? NULL;
     $variables['use_svg_preview'] = $element['#use_svg_preview'] ?? NULL;
 
@@ -659,5 +659,3 @@ function _ys_core_disable_event_fields(&$form, $form_id) {
     }
   }
 }
-
-// Adding this to create a multidev.
