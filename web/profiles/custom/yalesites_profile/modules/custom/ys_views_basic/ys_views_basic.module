@@ -143,7 +143,13 @@ function ys_views_basic_views_pre_view(ViewExecutable $view, $display_id, array 
  * Implements hook_node_view().
  */
 function ys_views_basic_node_view(array &$build, NodeInterface $node, EntityViewDisplayInterface $display, $view_mode) {
-  if ($node->getType() === 'event' && $view_mode != 'full') {
+  $view_modes = [
+    "card",
+    "condensed",
+    "list_item",
+  ];
+
+  if (in_array($view_mode, $view_modes)) {
     $build['#cache']['max-age'] = 0;
   }
 }
