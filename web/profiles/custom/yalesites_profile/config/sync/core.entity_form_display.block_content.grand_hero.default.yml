@@ -10,6 +10,7 @@ dependencies:
     - field.field.block_content.grand_hero.field_link
     - field.field.block_content.grand_hero.field_link_two
     - field.field.block_content.grand_hero.field_media
+    - field.field.block_content.grand_hero.field_overlay_png
     - field.field.block_content.grand_hero.field_style_color
     - field.field.block_content.grand_hero.field_style_position
     - field.field.block_content.grand_hero.field_style_variation
@@ -29,7 +30,7 @@ mode: default
 content:
   field_heading:
     type: text_textfield
-    weight: 3
+    weight: 4
     region: content
     settings:
       size: 60
@@ -44,7 +45,7 @@ content:
         maxlength_js_enforce: false
   field_heading_level:
     type: options_select
-    weight: 9
+    weight: 11
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -56,7 +57,7 @@ content:
     third_party_settings: {  }
   field_link:
     type: linkit
-    weight: 6
+    weight: 8
     region: content
     settings:
       placeholder_url: ''
@@ -66,7 +67,7 @@ content:
     third_party_settings: {  }
   field_link_two:
     type: linkit
-    weight: 7
+    weight: 9
     region: content
     settings:
       placeholder_url: ''
@@ -85,27 +86,37 @@ content:
     third_party_settings:
       media_library_edit:
         show_edit: '1'
-  field_style_color:
-    type: options_select
+  field_overlay_png:
+    type: media_library_widget
     weight: 3
     region: content
-    settings: {  }
-    third_party_settings: {  }
-  field_style_position:
-    type: options_select
-    weight: 8
-    region: content
-    settings: {  }
-    third_party_settings: {  }
-  field_style_variation:
+    settings:
+      media_types: {  }
+    third_party_settings:
+      media_library_edit:
+        show_edit: '1'
+        edit_form_mode: default
+  field_style_color:
     type: options_select
     weight: 5
     region: content
     settings: {  }
     third_party_settings: {  }
+  field_style_position:
+    type: options_select
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_style_variation:
+    type: options_select
+    weight: 7
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_text:
     type: text_textarea
-    weight: 4
+    weight: 6
     region: content
     settings:
       rows: 3
