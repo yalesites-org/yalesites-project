@@ -540,16 +540,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     $view->setArguments($view_args);
     $view->execute();
 
-    // Get all node ids.
-    $node_ids = [];
-    foreach ($view->result as $row) {
-      if (isset($row->_entity) && $row->_entity instanceof NodeInterface) {
-        $node_ids[] = 'node:' . $row->_entity->id();
-      }
-    }
-
-    $this->cacheTagsInvalidator->invalidateTags($node_ids);
-
     // Unset the pager. Needs to be done after view->execute();
     if ($paramsDecoded['display'] != "pager") {
       unset($view->pager);
