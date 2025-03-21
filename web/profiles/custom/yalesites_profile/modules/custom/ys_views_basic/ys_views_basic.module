@@ -5,6 +5,8 @@
  * Contains ys_views_basic.module functions.
  */
 
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\node\NodeInterface;
 use Drupal\views\ViewExecutable;
 
 /**
@@ -135,4 +137,13 @@ function ys_views_basic_views_pre_view(ViewExecutable $view, $display_id, array 
 
   $viewsBasicManager = \Drupal::service('ys_views_basic.views_basic_manager');
   $viewsBasicManager->setupView($view, end($args));
+}
+
+/**
+ * Implements hook_node_view().
+ */
+function ys_views_basic_node_view(array &$build, NodeInterface $node, EntityViewDisplayInterface $display, $view_mode) {
+  if ($node->getType() === 'event' && $view_mode != 'full') {
+    $build['#cache']['max-age'] = 0;
+  }
 }
