@@ -9,3 +9,11 @@ ys_taxonomy_manager.admin_vocabulary.add_to_nodes:
     parameters:
       taxonomy_vocabulary:
         type: entity:taxonomy_vocabulary
+
+taxonomy_manager.term_form:
+  path: '/ajax/taxonomy_manager/term/{tid}/edit'
+  defaults:
+    _controller: '\Drupal\taxonomy_manager\Form\TaxonomyManagerForm::termDataCallback'
+    _title: 'AJAX term form'
+  requirements:
+    _ys_taxonomy_manager_access_check: 'TRUE'

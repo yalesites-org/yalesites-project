@@ -141,6 +141,7 @@ class AddTermsToNodesForm extends FormBase {
       '#prefix' => '<div id="export-wrapper">',
       '#suffix' => '</div>',
       '#description' => $desc,
+      '#required' => TRUE,
       '#default_value' => $selected_terms ?: [],
     ];
 
@@ -166,6 +167,7 @@ class AddTermsToNodesForm extends FormBase {
       '#empty_option' => $this->t('- Select -'),
       '#description' => $this->t('Select the nodes where you want to add the terms.'),
       '#chosen' => TRUE,
+      '#required' => TRUE,
       '#attributes' => [
         'class' => ['chosen-select'],
       ],

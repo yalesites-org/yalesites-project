@@ -51,7 +51,15 @@ dependencies:
     - taxonomy.vocabulary.affiliation
     - taxonomy.vocabulary.audience
     - taxonomy.vocabulary.custom_vocab
+    - taxonomy.vocabulary.event_audience
     - taxonomy.vocabulary.event_category
+    - taxonomy.vocabulary.event_groups
+    - taxonomy.vocabulary.event_place
+    - taxonomy.vocabulary.event_sources
+    - taxonomy.vocabulary.event_status
+    - taxonomy.vocabulary.event_topics
+    - taxonomy.vocabulary.event_type
+    - taxonomy.vocabulary.localist_event_type
     - taxonomy.vocabulary.page_category
     - taxonomy.vocabulary.post_category
     - taxonomy.vocabulary.tags
@@ -326,7 +334,15 @@ permissions:
   - 'edit terms in affiliation'
   - 'edit terms in audience'
   - 'edit terms in custom_vocab'
+  - 'edit terms in event_audience'
   - 'edit terms in event_category'
+  - 'edit terms in event_groups'
+  - 'edit terms in event_place'
+  - 'edit terms in event_sources'
+  - 'edit terms in event_status'
+  - 'edit terms in event_topics'
+  - 'edit terms in event_type'
+  - 'edit terms in localist_event_type'
   - 'edit terms in page_category'
   - 'edit terms in post_category'
   - 'edit terms in tags'
