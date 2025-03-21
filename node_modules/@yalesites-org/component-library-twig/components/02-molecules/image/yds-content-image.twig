@@ -1,0 +1,38 @@
+{#
+ # Available Props:
+ # - content_image__width
+ #
+ # Available Variables:
+ # - content_image__caption
+ #
+ # Available Blocks:
+ # - content_image__image
+ #}
+
+{% set content_image__base_class = 'content-image' %}
+
+{% set content_image__attributes = {
+  'data-component-width': content_image__width|default('content'),
+  'data-component-alignment': content_image__alignment|default('center'),
+  'class': bem(content_image__base_class, content_image__modifiers),
+} %}
+
+{% set content_image__image %}
+  {% block content_image__image %}
+    {% include "@atoms/images/image/_responsive-image.twig" %}
+  {% endblock %}
+{% endset %}
+
+<div {{ add_attributes(content_image__attributes) }}>
+  {% block prefix_suffix %}
+  {% endblock %}
+  <div {{ bem('inner', [], content_image__base_class) }}>
+    {% embed "@atoms/images/image/yds-image.twig" with {
+      figure__caption: content_image__caption,
+    } %}
+      {% block image__image %}
+        {{ content_image__image }}
+      {% endblock %}
+    {% endembed %}
+  </div>
+</div>

@@ -1,0 +1,1 @@
+Drupal.behaviors.customCard={attach(e){e.querySelectorAll(".custom-card").forEach((e=>{const o=e,c=o.querySelector(".custom-card__heading-link");if(c){let e,r;o.style.cursor="pointer",o.onmousedown=()=>{e=+new Date},o.onmouseup=()=>{r=+new Date,r-e<200&&c.click()}}}))}};
