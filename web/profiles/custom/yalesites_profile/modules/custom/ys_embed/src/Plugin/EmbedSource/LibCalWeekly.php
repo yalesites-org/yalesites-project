@@ -43,8 +43,8 @@ class LibCalWeekly extends EmbedSourceBase implements EmbedSourceInterface {
   public function build(array $params): array {
     $embed_code = $params['embed_code'] ?? '';
     $elements = [];
-    
-    // Only add navigation for the first weekly embed
+
+    // Only add navigation for the first weekly embed.
     if (!self::$navigationAdded) {
       $elements[] = [
         '#type' => 'html_tag',
@@ -75,7 +75,7 @@ class LibCalWeekly extends EmbedSourceBase implements EmbedSourceInterface {
       ];
       self::$navigationAdded = TRUE;
     }
-    
+
     $elements[] = [
       '#type' => 'html_tag',
       '#tag' => 'div',
@@ -84,7 +84,7 @@ class LibCalWeekly extends EmbedSourceBase implements EmbedSourceInterface {
         'data-embed-code' => $embed_code,
       ],
     ];
-    
+
     return [
       '#type' => 'container',
       '#attributes' => [
@@ -126,12 +126,12 @@ class LibCalWeekly extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $example = '<script src="https://schedule.yale.edu/js/hours_grid.js?002"></script> 
-<div id="s-lc-whw4213"></div> 
+  protected static $example = '<script src="https://schedule.yale.edu/js/hours_grid.js?002"></script>
+<div id="s-lc-whw4213"></div>
 <script>
-$(function(){ 
-var week4213 = new $.LibCalWeeklyGrid( $("#s-lc-whw4213"), { iid: 457, lid: 4213, systemTime: false }); 
+$(function(){
+var week4213 = new $.LibCalWeeklyGrid( $("#s-lc-whw4213"), { iid: 457, lid: 4213, systemTime: false });
 });
 </script>';
 
-} 
+}

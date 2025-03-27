@@ -27,11 +27,11 @@ class LibCalEmbedFormatter extends FormatterBase {
 
     foreach ($items as $delta => $item) {
       $embed_code = $item->get('input')->getValue();
-      \Drupal::logger('ys_embed')->notice('LibCalEmbedFormatter: Processing embed code: @code', ['@code' => $embed_code]);
+      \Drupal::logger('ys_embed')->notice('LibCalEmbedFormatter: Processing embed code: @code.', ['@code' => $embed_code]);
 
-      // Check for weekly grid embed
+      // Check for weekly grid embed.
       if (strpos($embed_code, 'hours_grid.js') !== FALSE || strpos($embed_code, 'LibCalWeeklyGrid') !== FALSE) {
-        \Drupal::logger('ys_embed')->notice('LibCalEmbedFormatter: Detected weekly grid embed');
+        \Drupal::logger('ys_embed')->notice('LibCalEmbedFormatter: Detected weekly grid embed.');
         $elements[$delta] = [
           '#type' => 'html_tag',
           '#tag' => 'div',
@@ -42,9 +42,9 @@ class LibCalEmbedFormatter extends FormatterBase {
           ],
         ];
       }
-      // Check for daily hours embed
+      // Check for daily hours embed.
       elseif (strpos($embed_code, 'hours_today.js') !== FALSE || strpos($embed_code, 'LibCalTodayHours') !== FALSE) {
-        \Drupal::logger('ys_embed')->notice('LibCalEmbedFormatter: Detected daily hours embed');
+        \Drupal::logger('ys_embed')->notice('LibCalEmbedFormatter: Detected daily hours embed.');
         $elements[$delta] = [
           '#type' => 'html_tag',
           '#tag' => 'div',
@@ -56,7 +56,7 @@ class LibCalEmbedFormatter extends FormatterBase {
         ];
       }
       else {
-        \Drupal::logger('ys_embed')->notice('LibCalEmbedFormatter: Unknown embed type');
+        \Drupal::logger('ys_embed')->notice('LibCalEmbedFormatter: Unknown embed type.');
         $elements[$delta] = [
           '#type' => 'html_tag',
           '#tag' => 'div',
