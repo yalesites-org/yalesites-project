@@ -2,118 +2,52 @@
 
 /**
  * @file
- * YaleSites Embed module.
- *
- * This modules functionality for managing embeddable content.
+ * Primary module hooks for ys_embed module.
  */
+
+use Drupal\Core\Render\Element;
+use Drupal\Core\Template\Attribute;
 
 /**
  * Implements hook_theme().
  */
-function ys_embed_theme($existing, $type, $theme, $path) {
+function ys_embed_theme() {
   return [
-    'embed_instructions' => [
-      'variables' => [
-        'sources' => [],
-      ],
-    ],
-    'embed_wrapper' => [
-      'variables' => [
-        'embedSource' => [],
-        'embedType' => 'unknown',
-        'title' => '',
-        'url' => '',
-        'displayAttributes' => [
-          'width' => 'site',
-          'height' => '100%',
-          'scrolling' => 'no',
-          'frameborder' => 'no',
-          'isIframe' => TRUE,
-          'isForm' => TRUE,
-        ],
-      ],
-    ],
     'field__media__field_media_embed' => [
       'variables' => [
-        'items' => [],
-        'element' => [
-          '#field_type' => 'embed',
-          '#field_name' => 'field_media_embed',
-          '#entity_type' => 'media',
-          '#bundle' => 'embed',
-          '#label_display' => 'hidden',
-          '#title' => '',
-          '#is_multiple' => FALSE,
-        ],
+        'element' => NULL,
+        'items' => NULL,
+        'label' => NULL,
+        'label_display' => NULL,
+        'attributes' => NULL,
       ],
       'template' => 'field--media--field-media-embed',
-      'path' => \Drupal::service('extension.list.module')->getPath('ys_embed') . '/templates',
       'render element' => 'element',
     ],
   ];
 }
 
 /**
- * Implements hook_preprocess_HOOK() for block templates.
+ * Implements hook_preprocess_block().
  */
 function ys_embed_preprocess_block(&$variables) {
-  if ($variables['plugin_id'] == 'inline_block:embed') {
-    // Get the embed code from the block content
-    $embed_code = '';
-    if (isset($variables['content']['field_media'][0]['#media'])) {
-      $media = $variables['content']['field_media'][0]['#media'];
-      
-      if ($media->hasField('field_media_embed')) {
-        $field = $media->get('field_media_embed');
-        
-        if (!$field->isEmpty()) {
-          $field_value = $field->getValue();
-          if (isset($field_value[0]['input'])) {
-            $embed_code = $field_value[0]['input'];
-          }
-        }
-      }
-    }
-    
-    if (!empty($embed_code)) {
-      // Add required field properties
-      $variables['content']['field_media'][0]['#field_type'] = 'embed';
-      $variables['content']['field_media'][0]['#field_name'] = 'field_media_embed';
-      $variables['content']['field_media'][0]['#entity_type'] = 'media';
-      $variables['content']['field_media'][0]['#bundle'] = 'embed';
-      $variables['content']['field_media'][0]['#label_display'] = 'hidden';
-      $variables['content']['field_media'][0]['#title'] = '';
-      $variables['content']['field_media'][0]['#is_multiple'] = FALSE;
-
-      // Check for weekly grid embed
-      if (strpos($embed_code, 'hours_grid.js') !== FALSE || strpos($embed_code, 'LibCalWeeklyGrid') !== FALSE) {
-        $variables['#attached']['library'][] = 'core/jquery';
-        $variables['#attached']['library'][] = 'ys_embed/libcal_weekly';
-        $variables['content']['field_media'][0]['#text'] = $embed_code;
-        $variables['content']['field_media'][0]['#embed_class'] = 'embed-libcal-weekly';
-      }
-      // Check for daily hours embed
-      elseif (strpos($embed_code, 'hours_today.js') !== FALSE || strpos($embed_code, 'LibCalTodayHours') !== FALSE) {
-        $variables['#attached']['library'][] = 'core/jquery';
-        $variables['#attached']['library'][] = 'ys_embed/libcal';
-        $variables['content']['field_media'][0]['#text'] = $embed_code;
-        $variables['content']['field_media'][0]['#embed_class'] = 'embed-libcal';
-      }
-      // Let other embed types use their default class
-      else {
-        $variables['content']['field_media'][0]['#text'] = $embed_code;
-      }
-    }
+  if ($variables['plugin_id'] === 'inline_block:embed') {
+    $variables['content']['field_media'][0]['#field_type'] = 'text';
+    $variables['content']['field_media'][0]['#field_name'] = 'field_media_embed';
+    $variables['content']['field_media'][0]['#entity_type'] = 'media';
+    $variables['content']['field_media'][0]['#bundle'] = 'embed';
+    $variables['content']['field_media'][0]['#label_display'] = 'hidden';
+    $variables['content']['field_media'][0]['#title'] = '';
+    $variables['content']['field_media'][0]['#is_multiple'] = FALSE;
   }
 }
 
 /**
- * Implements hook_preprocess_HOOK() for field templates.
+ * Implements hook_preprocess_field().
  */
 function ys_embed_preprocess_field(&$variables) {
-  if ($variables['element']['#field_name'] === 'field_media_embed') {
-    // Add required field properties
-    $variables['element']['#field_type'] = 'embed';
+  if ($variables['field_name'] === 'field_media_embed') {
+    $variables['element']['#field_type'] = 'text';
     $variables['element']['#field_name'] = 'field_media_embed';
     $variables['element']['#entity_type'] = 'media';
     $variables['element']['#bundle'] = 'embed';
@@ -121,43 +55,44 @@ function ys_embed_preprocess_field(&$variables) {
     $variables['element']['#title'] = '';
     $variables['element']['#is_multiple'] = FALSE;
 
-    // Initialize items array if it doesn't exist
-    if (!isset($variables['items'])) {
-      $variables['items'] = [];
+    $embed_code = $variables['element']['#items'][0]->getValue()['value'] ?? '';
+    if (empty($embed_code)) {
+      return;
     }
 
-    // Get the embed code from the element's value if available
-    $embed_code = '';
-    if (isset($variables['element']['#items']) && is_object($variables['element']['#items']) && !$variables['element']['#items']->isEmpty()) {
-      $field_value = $variables['element']['#items']->getValue();
-      if (!empty($field_value[0]['input'])) {
-        $embed_code = $field_value[0]['input'];
-      }
+    // Check if this is a weekly grid embed.
+    if (strpos($embed_code, 'hours_grid.js?002') !== FALSE) {
+      $variables['element']['#attributes']['class'][] = 'embed-libcal-weekly';
     }
-    // Fallback to checking if embed code is directly in the element
-    elseif (isset($variables['element']['#text'])) {
-      $embed_code = $variables['element']['#text'];
-    }
-    
-    if (!empty($embed_code)) {
-      // Check for weekly grid embed
-      if (strpos($embed_code, 'hours_grid.js') !== FALSE || strpos($embed_code, 'LibCalWeeklyGrid') !== FALSE) {
-        $variables['items'][0]['content']['#text'] = $embed_code;
-        $variables['items'][0]['content']['#embed_class'] = 'embed-libcal-weekly';
-        $variables['items'][0]['content']['#attached']['library'][] = 'core/jquery';
-        $variables['items'][0]['content']['#attached']['library'][] = 'ys_embed/libcal_weekly';
-      }
-      // Check for daily hours embed
-      elseif (strpos($embed_code, 'hours_today.js') !== FALSE || strpos($embed_code, 'LibCalTodayHours') !== FALSE) {
-        $variables['items'][0]['content']['#text'] = $embed_code;
-        $variables['items'][0]['content']['#embed_class'] = 'embed-libcal';
-        $variables['items'][0]['content']['#attached']['library'][] = 'core/jquery';
-        $variables['items'][0]['content']['#attached']['library'][] = 'ys_embed/libcal';
-      }
-      // Let other embed types use their default class
-      else {
-        $variables['items'][0]['content']['#text'] = $embed_code;
-      }
+    // Check if this is a daily hours embed.
+    elseif (strpos($embed_code, 'hours_today.js') !== FALSE) {
+      $variables['element']['#attributes']['class'][] = 'embed-libcal-daily';
     }
   }
+}
+
+/**
+ * Implements hook_page_attachments_alter().
+ */
+function ys_embed_page_attachments_alter(array &$attachments) {
+  // Add our custom CSS and JS files.
+  $attachments['#attached']['html_head'][] = [
+    [
+      '#tag' => 'link',
+      '#attributes' => [
+        'rel' => 'stylesheet',
+        'href' => '/profiles/custom/yalesites_profile/modules/custom/ys_embed/css/embed.css',
+      ],
+    ],
+    'ys_embed_embed_css',
+  ];
+  $attachments['#attached']['html_head'][] = [
+    [
+      '#tag' => 'script',
+      '#attributes' => [
+        'src' => '/profiles/custom/yalesites_profile/modules/custom/ys_embed/js/embed.js',
+      ],
+    ],
+    'ys_embed_embed_js',
+  ];
 }

@@ -44,7 +44,7 @@ class LibCalWeekly extends EmbedSourceBase implements EmbedSourceInterface {
     $embed_code = $params['embed_code'] ?? '';
     $elements = [];
     
-    // Only add navigation for the first weekly embed
+    // Only add navigation for the first weekly embed.
     if (!self::$navigationAdded) {
       $elements[] = [
         '#type' => 'html_tag',
