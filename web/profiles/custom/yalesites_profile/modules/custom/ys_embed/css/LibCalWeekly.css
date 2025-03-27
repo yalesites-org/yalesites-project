@@ -1,20 +1,20 @@
 #libcal-week-nav {
   width: 80vw;
-  margin: 1rem auto 2rem;
+  margin: 1em 0;
   padding: 1rem;
   text-align: center;
   margin-bottom: 1rem;
 }
 #libcal-week-nav nav {
   background: #eee;
-  display: inline-block;
-  padding: 1rem;
   display: flex;
-  gap: 1rem;
+  gap: 1em;
   justify-content: center;
 }
-.s-lc-whw-pr, 
-.s-lc-whw-ne {display:none;}
+.s-lc-whw-pr,
+.s-lc-whw-ne {
+  display: none;
+}
 
 .embed-libcal-weekly {
   position: relative;
@@ -22,6 +22,7 @@
   width: 100%;
   font-size: 20px;
   line-height: 1.4em;
+  margin: 1em 0;
 }
 .embed-libcal-weekly table {
   font: unset;
@@ -30,26 +31,32 @@
   width: 100%;
   display: block;
 }
-.embed-libcal-weekly :is(table, thead, tr, th, td) {
+.embed-libcal-weekly :is(table,
+thead,
+tr,
+th,
+td) {
   background: none !important;
   border: none !important;
 }
 
-
 /* -------- */
-.embed-libcal-weekly caption, 
-.s-lc-w-today-view-all, 
-.embed-libcal-weekly th > span.s-lc-w-head-pre br, 
-.embed-libcal-weekly a .link-purpose-icon, 
-.s-lc-w-time:has(.am ~ .am, .pm ~ .pm) :is(.am, .pm) {
+.embed-libcal-weekly caption,
+.s-lc-w-today-view-all,
+.embed-libcal-weekly th > span.s-lc-w-head-pre br,
+.embed-libcal-weekly a .link-purpose-icon,
+.s-lc-w-time:has(.am ~ .am,
+.pm ~ .pm) :is(.am,
+.pm) {
   display: none;
 }
-.s-lc-w-time :is(.am ~ .am, .pm ~ .pm) {
+.s-lc-w-time :is(.am ~ .am,
+.pm ~ .pm) {
   display: inline !important;
 }
 
 .embed__inner:has(.embed-libcal-weekly) {
-    margin-block-start: 0 !important;
+  margin-block-start: 0 !important;
 }
 
 .embed-libcal-weekly {
@@ -62,26 +69,33 @@
   font: unset;
   border-collapse: collapse;
 }
-.embed-libcal-weekly :is(table, thead, tbody, tr) {
+.embed-libcal-weekly :is(table,
+thead,
+tbody,
+tr) {
   width: 100%;
 }
-.embed-libcal-weekly :is(table, thead, tr, th, td) {
+.embed-libcal-weekly :is(table,
+thead,
+tr,
+th,
+td) {
   background: none !important;
   border: none;
 }
 .embed-libcal-weekly tr {
-    opacity: 0;
-    animation: reveal 0.3s forwards;
-    animation-delay: 0.4s;
+  opacity: 0;
+  animation: reveal 0.3s forwards;
+  animation-delay: 0.4s;
 }
 @keyframes reveal {
-    from { opacity: 0; }
-    to { opacity: 1; }
+  from {
+    opacity: 0;
 }
-
-
-
-
+  to {
+    opacity: 1;
+}
+}
 
 .embed-libcal-weekly .s-lc-whw-head-date {
   opacity: 0.3;
@@ -106,9 +120,9 @@
   flex: 0 0 100%;
 }
 .embed-libcal-weekly th > span.s-lc-w-head-pre::after {
-    content: ' and Info';
+  content: ' and Info';
 }
-.embed-libcal-weekly th > button:nth-of-type(2), 
+.embed-libcal-weekly th > button:nth-of-type(2),
 .embed-libcal-weekly th > button:nth-of-type(1):nth-last-of-type(1) {
   order: 4;
 }
@@ -139,8 +153,6 @@
   bottom: 22px;
   opacity: 0.6;
 }
-
-
 
 .embed-libcal-weekly td {
   padding: 0 !important;
@@ -180,11 +192,12 @@
   background: #00000011;
   cursor: pointer;
 }
-button.s-lc-w-previous, 
+button.s-lc-w-previous,
 button.s-lc-w-next {
   font-size: 0;
 }
-button:is(.s-lc-w-previous, .s-lc-w-next):before {
+button:is(.s-lc-w-previous,
+.s-lc-w-next):before {
   content: '←';
   font-size: 1rem;
   padding: 0.25rem;
@@ -193,25 +206,101 @@ button:is(.s-lc-w-next):before {
   content: '→';
 }
 
-.gin--dark-mode .embed-libcal-weekly :hover, .gin--dark-mode .embed-libcal-weekly tr:focus-within {
-  color:inherit;
+.gin--dark-mode .embed-libcal-weekly :hover,
+.gin--dark-mode .embed-libcal-weekly tr:focus-within {
+  color: inherit;
 }
 
 #libcal-week-nav button {
-  padding: 0.5rem 1rem;
-  border: 1px solid #ccc;
-  background-color: #fff;
+  background-color: #00356b;
+  border: none;
   border-radius: 4px;
+  color: white;
   cursor: pointer;
-  font-size: 1rem;
-  transition: all 0.2s ease;
+  font-size: 1em;
+  padding: 0.5em 1em;
+  transition: background-color 0.2s ease;
 }
 
-#libcal-week-nav button:hover {
-  background-color: #f5f5f5;
-  border-color: #999;
+#libcal-week-nav button:hover,
+#libcal-week-nav button:focus {
+  background-color: #002147;
 }
 
 #libcal-week-nav button:active {
   background-color: #e5e5e5;
+}
+
+.embed-libcal-weekly .s-lc-whw-head {
+  display: none;
+}
+
+.embed-libcal-weekly .s-lc-whw-scrolling {
+  display: none;
+}
+
+.embed-libcal-weekly .s-lc-whw-today {
+  display: none;
+}
+
+.embed-libcal-weekly .s-lc-whw-outputwrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+.embed-libcal-weekly .s-lc-whw-loc-name {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.embed-libcal-weekly .s-lc-whw-loc-hours {
+  font-size: 1em;
+}
+
+.embed-libcal-weekly .s-lc-whw-loc-hours.s-lc-whw-loc-closed {
+  color: #cc0000;
+}
+
+.embed-libcal-weekly .s-lc-whw-loc-hours.s-lc-whw-loc-open {
+  color: #006600;
+}
+
+.embed-libcal-weekly .s-lc-whw-loc-hours.s-lc-whw-loc-open::before {
+  content: "Open: ";
+}
+
+.embed-libcal-weekly .s-lc-whw-loc-hours.s-lc-whw-loc-closed::before {
+  content: "Closed";
+}
+
+.embed-libcal-weekly .s-lc-whw-loc-hours.s-lc-whw-loc-closed span {
+  display: none;
+}
+
+.embed-libcal-weekly .s-lc-whw-loc-desc {
+  font-size: 0.9em;
+  color: #666;
+}
+
+.embed-libcal-weekly .s-lc-whw-loc-desc p {
+  margin: 0;
+}
+
+.embed-libcal-weekly .s-lc-whw-loc-desc a {
+  color: #00356b;
+  text-decoration: none;
+}
+
+.embed-libcal-weekly .s-lc-whw-loc-desc a:hover,
+.embed-libcal-weekly .s-lc-whw-loc-desc a:focus {
+  text-decoration: underline;
+}
+
+.embed-libcal-weekly .s-lc-whw-loc-desc a:visited {
+  color: #00356b;
+}
+
+.embed-libcal-weekly .s-lc-whw-loc-desc a:active {
+  color: #cc0000;
 }

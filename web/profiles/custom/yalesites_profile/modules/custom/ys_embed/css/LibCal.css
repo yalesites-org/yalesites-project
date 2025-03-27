@@ -1,17 +1,19 @@
-
-.embed-libcal caption, 
-.s-lc-w-today-view-all, 
-.embed-libcal th > span.s-lc-w-head-pre br, 
-.embed-libcal a .link-purpose-icon, 
-.s-lc-w-time:has(.am ~ .am, .pm ~ .pm) :is(.am, .pm) {
+.embed-libcal caption,
+.s-lc-w-today-view-all,
+.embed-libcal th > span.s-lc-w-head-pre br,
+.embed-libcal a .link-purpose-icon,
+.s-lc-w-time:has(.am ~ .am,
+.pm ~ .pm) :is(.am,
+.pm) {
   display: none;
 }
-.s-lc-w-time :is(.am ~ .am, .pm ~ .pm) {
+.s-lc-w-time :is(.am ~ .am,
+.pm ~ .pm) {
   display: inline !important;
 }
 
 .embed__inner:has(.embed-libcal) {
-    margin-block-start: 0 !important;
+  margin-block-start: 0 !important;
 }
 
 .embed-libcal {
@@ -21,30 +23,39 @@
   max-width: 400px;
   font-size: 20px;
   line-height: 1.4em;
+  margin: 1em 0;
 }
 .embed-libcal table {
   font: unset;
 }
-.embed-libcal :is(table, thead, tbody, tr) {
+.embed-libcal :is(table,
+thead,
+tbody,
+tr) {
   width: 100%;
   display: block;
 }
-.embed-libcal :is(table, thead, tr, th, td) {
+.embed-libcal :is(table,
+thead,
+tr,
+th,
+td) {
   background: none !important;
   border: none !important;
 }
 .embed-libcal tr {
-    opacity: 0;
-    animation: reveal 0.3s forwards;
-    animation-delay: 0.4s;
+  opacity: 0;
+  animation: reveal 0.3s forwards;
+  animation-delay: 0.4s;
 }
 @keyframes reveal {
-    from { opacity: 0; }
-    to { opacity: 1; }
+  from {
+    opacity: 0;
 }
-
-
-
+  to {
+    opacity: 1;
+}
+}
 
 .embed-libcal th {
   display: flex;
@@ -81,9 +92,9 @@
   flex: 0 0 100%;
 }
 .embed-libcal th > span.s-lc-w-head-pre::after {
-    content: ' and Info';
+  content: ' and Info';
 }
-.embed-libcal th > button:nth-of-type(2), 
+.embed-libcal th > button:nth-of-type(2),
 .embed-libcal th > button:nth-of-type(1):nth-last-of-type(1) {
   order: 4;
 }
@@ -115,8 +126,6 @@
   opacity: 0.6;
 }
 
-
-
 .embed-libcal td {
   padding: 0 !important;
   background: none !important;
@@ -144,11 +153,12 @@
   background: #00000011;
   cursor: pointer;
 }
-button.s-lc-w-previous, 
+button.s-lc-w-previous,
 button.s-lc-w-next {
   font-size: 0;
 }
-button:is(.s-lc-w-previous, .s-lc-w-next):before {
+button:is(.s-lc-w-previous,
+.s-lc-w-next):before {
   content: '←';
   font-size: 1rem;
   padding: 0.25rem;
@@ -157,6 +167,85 @@ button:is(.s-lc-w-next):before {
   content: '→';
 }
 
-.gin--dark-mode .embed-libcal :hover, .gin--dark-mode .embed-libcal tr:focus-within {
-  color:inherit;
+.gin--dark-mode .embed-libcal :hover,
+.gin--dark-mode .embed-libcal tr:focus-within {
+  color: inherit;
+}
+
+.embed-libcal-daily {
+  margin: 1em 0;
+}
+
+.embed-libcal-daily .s-lc-tdh-head {
+  display: none;
+}
+
+.embed-libcal-daily .s-lc-tdh-scrolling {
+  display: none;
+}
+
+.embed-libcal-daily .s-lc-tdh-today {
+  display: none;
+}
+
+.embed-libcal-daily .s-lc-tdh-outputwrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+.embed-libcal-daily .s-lc-tdh-loc-name {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.embed-libcal-daily .s-lc-tdh-loc-hours {
+  font-size: 1em;
+}
+
+.embed-libcal-daily .s-lc-tdh-loc-hours.s-lc-tdh-loc-closed {
+  color: #cc0000;
+}
+
+.embed-libcal-daily .s-lc-tdh-loc-hours.s-lc-tdh-loc-open {
+  color: #006600;
+}
+
+.embed-libcal-daily .s-lc-tdh-loc-hours.s-lc-tdh-loc-open::before {
+  content: "Open: ";
+}
+
+.embed-libcal-daily .s-lc-tdh-loc-hours.s-lc-tdh-loc-closed::before {
+  content: "Closed";
+}
+
+.embed-libcal-daily .s-lc-tdh-loc-hours.s-lc-tdh-loc-closed span {
+  display: none;
+}
+
+.embed-libcal-daily .s-lc-tdh-loc-desc {
+  font-size: 0.9em;
+  color: #666;
+}
+
+.embed-libcal-daily .s-lc-tdh-loc-desc p {
+  margin: 0;
+}
+
+.embed-libcal-daily .s-lc-tdh-loc-desc a {
+  color: #00356b;
+  text-decoration: none;
+}
+
+.embed-libcal-daily .s-lc-tdh-loc-desc a:hover,
+.embed-libcal-daily .s-lc-tdh-loc-desc a:focus {
+  text-decoration: underline;
+}
+
+.embed-libcal-daily .s-lc-tdh-loc-desc a:visited {
+  color: #00356b;
+}
+
+.embed-libcal-daily .s-lc-tdh-loc-desc a:active {
+  color: #cc0000;
 }

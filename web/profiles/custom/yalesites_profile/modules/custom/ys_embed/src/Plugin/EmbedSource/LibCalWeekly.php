@@ -43,7 +43,7 @@ class LibCalWeekly extends EmbedSourceBase implements EmbedSourceInterface {
   public function build(array $params): array {
     $embed_code = $params['embed_code'] ?? '';
     $elements = [];
-    
+
     // Only add navigation for the first weekly embed.
     if (!self::$navigationAdded) {
       $elements[] = [
@@ -75,7 +75,7 @@ class LibCalWeekly extends EmbedSourceBase implements EmbedSourceInterface {
       ];
       self::$navigationAdded = TRUE;
     }
-    
+
     $elements[] = [
       '#type' => 'html_tag',
       '#tag' => 'div',
@@ -84,7 +84,7 @@ class LibCalWeekly extends EmbedSourceBase implements EmbedSourceInterface {
         'data-embed-code' => $embed_code,
       ],
     ];
-    
+
     return [
       '#type' => 'container',
       '#attributes' => [
@@ -134,4 +134,4 @@ var week4213 = new $.LibCalWeeklyGrid( $("#s-lc-whw4213"), { iid: 457, lid: 4213
 });
 </script>';
 
-} 
+}

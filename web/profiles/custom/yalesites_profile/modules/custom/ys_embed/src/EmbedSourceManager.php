@@ -48,4 +48,4 @@ class EmbedSourceManager extends DefaultPluginManager {
     return NULL;
   }
 
-} 
+}

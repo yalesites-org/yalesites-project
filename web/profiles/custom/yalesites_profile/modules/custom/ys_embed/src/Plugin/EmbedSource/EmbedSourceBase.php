@@ -6,6 +6,7 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\PluginBase;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\ys_embed\Plugin\EmbedSourceInterface;
 
 /**
  * Base class for embed source plugins.
@@ -20,24 +21,32 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
   protected $loggerFactory;
 
   /**
-   * {@inheritdoc}
+   * The pattern to match the embed code.
+   *
+   * @var string
    */
   protected static $pattern = '/(?<embed_code>.*)/s';
 
   /**
-   * {@inheritdoc}
+   * The template to use for rendering.
+   *
+   * @var string
    */
   protected static $template = <<<EOT
   <div class="embed"></div>
   EOT;
 
   /**
-   * {@inheritdoc}
+   * The instructions for using this embed source.
+   *
+   * @var string
    */
   protected static $instructions = 'Place embed code here.';
 
   /**
-   * {@inheritdoc}
+   * An example of the embed code.
+   *
+   * @var string
    */
   protected static $example = '';
 
@@ -77,16 +86,16 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
     $logger = $this->loggerFactory->get('ys_embed');
     $logger->notice('Checking matches for @class with pattern: @pattern', [
       '@class' => get_class($this),
-      '@pattern' => static::$pattern
+      '@pattern' => static::$pattern,
     ]);
-    
+
     $matches = preg_match(static::$pattern, $embed_code, $match);
-    
+
     $logger->notice('Match result for @class: @result', [
       '@class' => get_class($this),
-      '@result' => $matches ? 'true' : 'false'
+      '@result' => $matches ? 'TRUE' : 'FALSE',
     ]);
-    
+
     return $matches;
   }
 
@@ -159,4 +168,4 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
     return static::$example;
   }
 
-} 
+}
