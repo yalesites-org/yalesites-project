@@ -23,7 +23,6 @@
   max-width: 400px;
   font-size: 20px;
   line-height: 1.4em;
-  margin: 1em 0;
 }
 .embed-libcal table {
   font: unset;
@@ -56,6 +55,9 @@ td) {
     opacity: 1;
 }
 }
+
+
+
 
 .embed-libcal th {
   display: flex;
@@ -126,6 +128,8 @@ td) {
   opacity: 0.6;
 }
 
+
+
 .embed-libcal td {
   padding: 0 !important;
   background: none !important;
@@ -170,82 +174,4 @@ button:is(.s-lc-w-next):before {
 .gin--dark-mode .embed-libcal :hover,
 .gin--dark-mode .embed-libcal tr:focus-within {
   color: inherit;
-}
-
-.embed-libcal-daily {
-  margin: 1em 0;
-}
-
-.embed-libcal-daily .s-lc-tdh-head {
-  display: none;
-}
-
-.embed-libcal-daily .s-lc-tdh-scrolling {
-  display: none;
-}
-
-.embed-libcal-daily .s-lc-tdh-today {
-  display: none;
-}
-
-.embed-libcal-daily .s-lc-tdh-outputwrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 1em;
-}
-
-.embed-libcal-daily .s-lc-tdh-loc-name {
-  font-size: 1.2em;
-  font-weight: bold;
-}
-
-.embed-libcal-daily .s-lc-tdh-loc-hours {
-  font-size: 1em;
-}
-
-.embed-libcal-daily .s-lc-tdh-loc-hours.s-lc-tdh-loc-closed {
-  color: #cc0000;
-}
-
-.embed-libcal-daily .s-lc-tdh-loc-hours.s-lc-tdh-loc-open {
-  color: #006600;
-}
-
-.embed-libcal-daily .s-lc-tdh-loc-hours.s-lc-tdh-loc-open::before {
-  content: "Open: ";
-}
-
-.embed-libcal-daily .s-lc-tdh-loc-hours.s-lc-tdh-loc-closed::before {
-  content: "Closed";
-}
-
-.embed-libcal-daily .s-lc-tdh-loc-hours.s-lc-tdh-loc-closed span {
-  display: none;
-}
-
-.embed-libcal-daily .s-lc-tdh-loc-desc {
-  font-size: 0.9em;
-  color: #666;
-}
-
-.embed-libcal-daily .s-lc-tdh-loc-desc p {
-  margin: 0;
-}
-
-.embed-libcal-daily .s-lc-tdh-loc-desc a {
-  color: #00356b;
-  text-decoration: none;
-}
-
-.embed-libcal-daily .s-lc-tdh-loc-desc a:hover,
-.embed-libcal-daily .s-lc-tdh-loc-desc a:focus {
-  text-decoration: underline;
-}
-
-.embed-libcal-daily .s-lc-tdh-loc-desc a:visited {
-  color: #00356b;
-}
-
-.embed-libcal-daily .s-lc-tdh-loc-desc a:active {
-  color: #cc0000;
 }

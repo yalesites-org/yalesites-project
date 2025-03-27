@@ -1,6 +1,6 @@
 (function () {
-  let libcalScriptLoaded = FALSE;
-  let libcalScriptPromise = NULL;
+  let libcalScriptLoaded = false;
+  let libcalScriptPromise = null;
 
   function waitForJQuery(callback) {
     if (typeof window.jQuery !== "undefined" && typeof window.Drupal !== "undefined") {
@@ -31,7 +31,7 @@
       const script = document.createElement('script');
       script.src = 'https://schedule.yale.edu/js/hours_grid.js?002';
       script.onload = () => {
-        libcalScriptLoaded = TRUE;
+        libcalScriptLoaded = true;
         resolve();
       };
       script.onerror = reject;
@@ -59,7 +59,7 @@
         attach: function (context, settings) {
           const embedContainers = document.querySelectorAll(".embed-libcal-weekly");
           const navContainer = document.querySelector('#libcal-week-nav');
-
+          
           if (!navContainer) {
             console.warn('Navigation container not found for weekly embeds');
             return;
@@ -70,10 +70,10 @@
               if (container.hasAttribute('data-processed')) {
                 return;
               }
-
+              
               container.setAttribute('data-processed', 'true');
               const embedCode = container.getAttribute('data-embed-code') || '';
-
+              
               if (!embedCode) {
                 console.error('No embed code found for container:', container);
                 return;
@@ -82,23 +82,24 @@
               function injectEmbedCode(embedCode) {
                 const tempDiv = document.createElement("div");
                 tempDiv.innerHTML = embedCode;
-
+                
                 const embedDiv = tempDiv.querySelector('div[id^="s-lc-whw"]');
                 const scriptElements = tempDiv.querySelectorAll("script");
-
+                
                 if (embedDiv) {
                   container.innerHTML = '';
-                  const clonedEmbedDiv = embedDiv.cloneNode(TRUE);
+                  const clonedEmbedDiv = embedDiv.cloneNode(true);
                   container.appendChild(clonedEmbedDiv);
-
+                  
                   scriptElements.forEach((script) => {
                     if (!script.src) {
                       try {
                         const scriptContent = script.textContent.replace(/\$\(/g, "jQuery(");
                         const newScript = document.createElement("script");
                         newScript.type = "text/javascript";
-                        newScript.textContent = `(function ($) {
-                            $(document).ready(function () {
+                        newScript.textContent = `
+                          (function($){
+                            $(document).ready(function() {
                               ${scriptContent}
                             });
                           })(jQuery);
@@ -124,7 +125,7 @@
                   }
                 });
 
-                observer.observe(container, { childList: TRUE, subtree: TRUE });
+                observer.observe(container, { childList: true, subtree: true });
               }
 
               function monitorAjaxButtons(container) {
@@ -141,10 +142,10 @@
 
             // Add navigation button handlers
             navContainer.querySelectorAll('button').forEach(button => {
-              button.addEventListener('click', function () {
+              button.addEventListener('click', function() {
                 const isPrevious = this.classList.contains('previous');
                 const targetClass = isPrevious ? '.s-lc-whw-pr' : '.s-lc-whw-ne';
-
+                
                 // Find all navigation buttons in all weekly embeds
                 document.querySelectorAll('.embed-libcal-weekly').forEach(embed => {
                   const targetButton = embed.querySelector(targetClass);
@@ -164,4 +165,4 @@
 
     })(jQuery, Drupal);
   });
-})();
+})(); 

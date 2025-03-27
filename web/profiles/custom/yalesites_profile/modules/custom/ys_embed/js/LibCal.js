@@ -1,6 +1,6 @@
 (function () {
-  let libcalScriptLoaded = FALSE;
-  let libcalScriptPromise = NULL;
+  let libcalScriptLoaded = false;
+  let libcalScriptPromise = null;
 
   function waitForJQuery(callback) {
     if (typeof window.jQuery !== "undefined" && typeof window.Drupal !== "undefined") {
@@ -34,7 +34,7 @@
       const script = document.createElement('script');
       script.src = 'https://schedule.yale.edu/js/hours_today.js';
       script.onload = () => {
-        libcalScriptLoaded = TRUE;
+        libcalScriptLoaded = true;
         resolve();
       };
       script.onerror = reject;
@@ -62,7 +62,7 @@
         attach: function (context, settings) {
           // Find all LibCal embed containers
           const embedContainers = document.querySelectorAll(".embed-libcal");
-
+          
           // Load LibCal script once for all instances
           loadLibCalScript().then(() => {
             embedContainers.forEach((container, index) => {
@@ -70,13 +70,13 @@
               if (container.hasAttribute('data-processed')) {
                 return;
               }
-
+              
               // Mark this container as processed
               container.setAttribute('data-processed', 'true');
-
+              
               // Get the embed code from the data attribute
               const embedCode = container.getAttribute('data-embed-code') || '';
-
+              
               if (!embedCode) {
                 console.error('No embed code found for container:', container);
                 return;
@@ -88,21 +88,21 @@
                   textArea.innerHTML = html;
                   return textArea.value;
                 }
-
+              
                 var tempDiv = document.createElement("div");
                 tempDiv.innerHTML = decodeHtmlEntities(embedCode.trim());
-
+              
                 var embedDiv = tempDiv.querySelector('div[id^="s_lc_tdh_"]');
                 var scriptElements = tempDiv.querySelectorAll("script");
-
+              
                 if (embedDiv) {
                   // Clear any existing content
                   container.innerHTML = '';
-
+                  
                   // Clone the embed div to ensure unique IDs
-                  const clonedEmbedDiv = embedDiv.cloneNode(TRUE);
+                  const clonedEmbedDiv = embedDiv.cloneNode(true);
                   container.appendChild(clonedEmbedDiv);
-
+              
                   // Process inline scripts
                   scriptElements.forEach((script) => {
                     if (!script.src) {
@@ -110,13 +110,14 @@
                         const scriptContent = script.textContent.replace(/\$\(/g, "jQuery(");
                         const newScript = document.createElement("script");
                         newScript.type = "text/javascript";
-                        newScript.textContent = `(function ($) {
-                            $(document).ready(function () {
+                        newScript.textContent = `
+                          (function($){
+                            $(document).ready(function() {
                               ${scriptContent}
                             });
                           })(jQuery);
                         `;
-
+                        
                         document.body.appendChild(newScript);
                       } catch (e) {
                         console.error("🚨 Error injecting inline script:", e);
@@ -140,7 +141,7 @@
                 dateElements.forEach((el) => {
                   let dateText = el.textContent.trim();
                   dateText = dateText.replace(/^\w+,\s*/, "");
-                  dateText = dateText.replace(/\b(January|February|March|April|May|June|July|August|September|October|November|December)\b/g,
+                  dateText = dateText.replace(/\b(January|February|March|April|May|June|July|August|September|October|November|December)\b/g, 
                     (month) => month.substring(0, 3)
                   );
                   el.textContent = dateText;
@@ -173,7 +174,7 @@
                   }
                 });
 
-                observer.observe(container, { childList: TRUE, subtree: TRUE });
+                observer.observe(container, { childList: true, subtree: true });
               }
 
               function monitorAjaxButtons(container) {

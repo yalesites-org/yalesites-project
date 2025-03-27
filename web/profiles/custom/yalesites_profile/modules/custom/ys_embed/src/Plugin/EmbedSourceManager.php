@@ -86,14 +86,14 @@ class EmbedSourceManager extends DefaultPluginManager {
    */
   public function findEmbedSource($input): ?array {
     $sources = $this->getSources();
-
-    // Check each source in order of specificity.
+    
+    // Check each source in order of specificity
     foreach ($sources as $source) {
       if ($source['class']::isValid($input)) {
         return $source;
       }
     }
-
+    
     return NULL;
   }
 
