@@ -85,11 +85,15 @@ class EmbedSourceManager extends DefaultPluginManager {
    *   The plugin definition array for the first matching EmbedSource.
    */
   public function findEmbedSource($input): ?array {
-    foreach ($this->getSources() as $source) {
+    $sources = $this->getSources();
+    
+    // Check each source in order of specificity
+    foreach ($sources as $source) {
       if ($source['class']::isValid($input)) {
         return $source;
       }
     }
+    
     return NULL;
   }
 

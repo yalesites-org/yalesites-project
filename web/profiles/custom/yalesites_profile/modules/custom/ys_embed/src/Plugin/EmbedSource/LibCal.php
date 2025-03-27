@@ -21,7 +21,7 @@ class LibCal extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $pattern = '/(?<embed_code>\<script src="https:\/\/schedule\.yale\.edu\/.*?<\/script>\s*<div id="([^"]+)"\>\<\/div\>\s*<script>.*?<\/script>(?:\s*<style>.*?<\/style>)?)/s';
+  protected static $pattern = '/(?<embed_code>\<script src="https:\/\/schedule\.yale\.edu\/js\/hours_today\.js"\>\<\/script>\s*<div id="s_lc_tdh_\d+_\d+"\>\<\/div>\s*<script>\s*\$\(function\(\).*?var s_lc_tdh_\d+_\d+ = new \$\\.LibCalTodayHours\(\s*\$\s*\(\s*"#s_lc_tdh_\d+_\d+"\s*\),\s*\{[^}]+\}\s*\);.*?<\/script>)/s';
 
   /**
    * {@inheritdoc}
@@ -36,14 +36,9 @@ class LibCal extends EmbedSourceBase implements EmbedSourceInterface {
   public function build(array $params): array {
     $embed_code = $params['embed_code'] ?? '';
     return [
-      '#markup' => self::$template,
+      '#markup' => '<div class="embed-libcal" data-embed-code="' . htmlspecialchars($embed_code) . '"></div>',
       '#attached' => [
         'library' => ['ys_embed/libcal'],
-        'drupalSettings' => [
-          'ysEmbed' => [
-            'libcalEmbedCode' => $embed_code,
-          ],
-        ],
         'html_head' => [
           [
             [

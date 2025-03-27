@@ -9,3 +9,14 @@ ys_embed.libcal:
     - core/jquery
     - core/drupal
     - core/drupalSettings
+
+libcal_weekly:
+  version: 1.x
+  css:
+    theme:
+      css/LibCalWeekly.css: {}
+  js:
+    js/LibCalWeekly.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal

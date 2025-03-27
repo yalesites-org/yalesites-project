@@ -3,3 +3,7 @@ services:
   plugin.manager.embed_source:
     class: Drupal\ys_embed\Plugin\EmbedSourceManager
     parent: default_plugin_manager
+
+  ys_embed.embed_source_manager:
+    class: Drupal\ys_embed\EmbedSource\EmbedSourceManager
+    arguments: ['@service_container']

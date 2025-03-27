@@ -33,6 +33,23 @@ function ys_embed_theme($existing, $type, $theme, $path) {
         ],
       ],
     ],
+    'field__media__field_media_embed' => [
+      'variables' => [
+        'items' => [],
+        'element' => [
+          '#field_type' => 'embed',
+          '#field_name' => 'field_media_embed',
+          '#entity_type' => 'media',
+          '#bundle' => 'embed',
+          '#label_display' => 'hidden',
+          '#title' => '',
+          '#is_multiple' => FALSE,
+        ],
+      ],
+      'template' => 'field--media--field-media-embed',
+      'path' => \Drupal::service('extension.list.module')->getPath('ys_embed') . '/templates',
+      'render element' => 'element',
+    ],
   ];
 }
 
@@ -40,12 +57,107 @@ function ys_embed_theme($existing, $type, $theme, $path) {
  * Implements hook_preprocess_HOOK() for block templates.
  */
 function ys_embed_preprocess_block(&$variables) {
-  // Add jquery ONLY for libcal embeds.
   if ($variables['plugin_id'] == 'inline_block:embed') {
-    $field_media_embed = $variables['content']['field_media'][0]['#media']->get('field_media_embed')->get(0)->get('embed_source')->getValue();
-    if (isset($field_media_embed) && $field_media_embed == 'libcal') {
-      $variables['#attached']['library'][] = 'core/jquery';
-      $variables['#attached']['library'][] = 'ys_embed/libcal';
+    // Get the embed code from the block content
+    $embed_code = '';
+    if (isset($variables['content']['field_media'][0]['#media'])) {
+      $media = $variables['content']['field_media'][0]['#media'];
+      
+      if ($media->hasField('field_media_embed')) {
+        $field = $media->get('field_media_embed');
+        
+        if (!$field->isEmpty()) {
+          $field_value = $field->getValue();
+          if (isset($field_value[0]['input'])) {
+            $embed_code = $field_value[0]['input'];
+          }
+        }
+      }
+    }
+    
+    if (!empty($embed_code)) {
+      // Add required field properties
+      $variables['content']['field_media'][0]['#field_type'] = 'embed';
+      $variables['content']['field_media'][0]['#field_name'] = 'field_media_embed';
+      $variables['content']['field_media'][0]['#entity_type'] = 'media';
+      $variables['content']['field_media'][0]['#bundle'] = 'embed';
+      $variables['content']['field_media'][0]['#label_display'] = 'hidden';
+      $variables['content']['field_media'][0]['#title'] = '';
+      $variables['content']['field_media'][0]['#is_multiple'] = FALSE;
+
+      // Check for weekly grid embed
+      if (strpos($embed_code, 'hours_grid.js') !== FALSE || strpos($embed_code, 'LibCalWeeklyGrid') !== FALSE) {
+        $variables['#attached']['library'][] = 'core/jquery';
+        $variables['#attached']['library'][] = 'ys_embed/libcal_weekly';
+        $variables['content']['field_media'][0]['#text'] = $embed_code;
+        $variables['content']['field_media'][0]['#embed_class'] = 'embed-libcal-weekly';
+      }
+      // Check for daily hours embed
+      elseif (strpos($embed_code, 'hours_today.js') !== FALSE || strpos($embed_code, 'LibCalTodayHours') !== FALSE) {
+        $variables['#attached']['library'][] = 'core/jquery';
+        $variables['#attached']['library'][] = 'ys_embed/libcal';
+        $variables['content']['field_media'][0]['#text'] = $embed_code;
+        $variables['content']['field_media'][0]['#embed_class'] = 'embed-libcal';
+      }
+      // Let other embed types use their default class
+      else {
+        $variables['content']['field_media'][0]['#text'] = $embed_code;
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for field templates.
+ */
+function ys_embed_preprocess_field(&$variables) {
+  if ($variables['element']['#field_name'] === 'field_media_embed') {
+    // Add required field properties
+    $variables['element']['#field_type'] = 'embed';
+    $variables['element']['#field_name'] = 'field_media_embed';
+    $variables['element']['#entity_type'] = 'media';
+    $variables['element']['#bundle'] = 'embed';
+    $variables['element']['#label_display'] = 'hidden';
+    $variables['element']['#title'] = '';
+    $variables['element']['#is_multiple'] = FALSE;
+
+    // Initialize items array if it doesn't exist
+    if (!isset($variables['items'])) {
+      $variables['items'] = [];
+    }
+
+    // Get the embed code from the element's value if available
+    $embed_code = '';
+    if (isset($variables['element']['#items']) && is_object($variables['element']['#items']) && !$variables['element']['#items']->isEmpty()) {
+      $field_value = $variables['element']['#items']->getValue();
+      if (!empty($field_value[0]['input'])) {
+        $embed_code = $field_value[0]['input'];
+      }
+    }
+    // Fallback to checking if embed code is directly in the element
+    elseif (isset($variables['element']['#text'])) {
+      $embed_code = $variables['element']['#text'];
+    }
+    
+    if (!empty($embed_code)) {
+      // Check for weekly grid embed
+      if (strpos($embed_code, 'hours_grid.js') !== FALSE || strpos($embed_code, 'LibCalWeeklyGrid') !== FALSE) {
+        $variables['items'][0]['content']['#text'] = $embed_code;
+        $variables['items'][0]['content']['#embed_class'] = 'embed-libcal-weekly';
+        $variables['items'][0]['content']['#attached']['library'][] = 'core/jquery';
+        $variables['items'][0]['content']['#attached']['library'][] = 'ys_embed/libcal_weekly';
+      }
+      // Check for daily hours embed
+      elseif (strpos($embed_code, 'hours_today.js') !== FALSE || strpos($embed_code, 'LibCalTodayHours') !== FALSE) {
+        $variables['items'][0]['content']['#text'] = $embed_code;
+        $variables['items'][0]['content']['#embed_class'] = 'embed-libcal';
+        $variables['items'][0]['content']['#attached']['library'][] = 'core/jquery';
+        $variables['items'][0]['content']['#attached']['library'][] = 'ys_embed/libcal';
+      }
+      // Let other embed types use their default class
+      else {
+        $variables['items'][0]['content']['#text'] = $embed_code;
+      }
     }
   }
 }

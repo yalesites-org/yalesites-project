@@ -9,6 +9,7 @@ dependencies:
     - media.type.embed
   module:
     - image
+    - ys_embed
 id: media.embed.media_library
 targetEntityType: media
 bundle: embed
@@ -25,10 +26,16 @@ content:
     third_party_settings: {  }
     weight: 0
     region: content
+  field_media_embed:
+    type: libcal_embed
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
 hidden:
   addtoany: true
   created: true
-  field_media_embed: true
   name: true
   search_api_excerpt: true
   uid: true

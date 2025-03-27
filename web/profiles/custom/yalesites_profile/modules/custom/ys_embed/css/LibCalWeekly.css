@@ -1,0 +1,217 @@
+#libcal-week-nav {
+  width: 80vw;
+  margin: 1rem auto 2rem;
+  padding: 1rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+#libcal-week-nav nav {
+  background: #eee;
+  display: inline-block;
+  padding: 1rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+.s-lc-whw-pr, 
+.s-lc-whw-ne {display:none;}
+
+.embed-libcal-weekly {
+  position: relative;
+  display: block;
+  width: 100%;
+  font-size: 20px;
+  line-height: 1.4em;
+}
+.embed-libcal-weekly table {
+  font: unset;
+}
+.embed-libcal-weekly :is(table) {
+  width: 100%;
+  display: block;
+}
+.embed-libcal-weekly :is(table, thead, tr, th, td) {
+  background: none !important;
+  border: none !important;
+}
+
+
+/* -------- */
+.embed-libcal-weekly caption, 
+.s-lc-w-today-view-all, 
+.embed-libcal-weekly th > span.s-lc-w-head-pre br, 
+.embed-libcal-weekly a .link-purpose-icon, 
+.s-lc-w-time:has(.am ~ .am, .pm ~ .pm) :is(.am, .pm) {
+  display: none;
+}
+.s-lc-w-time :is(.am ~ .am, .pm ~ .pm) {
+  display: inline !important;
+}
+
+.embed__inner:has(.embed-libcal-weekly) {
+    margin-block-start: 0 !important;
+}
+
+.embed-libcal-weekly {
+  position: relative;
+  width: 100%;
+  font-size: 20px;
+  line-height: 1.4em;
+}
+.embed-libcal-weekly table {
+  font: unset;
+  border-collapse: collapse;
+}
+.embed-libcal-weekly :is(table, thead, tbody, tr) {
+  width: 100%;
+}
+.embed-libcal-weekly :is(table, thead, tr, th, td) {
+  background: none !important;
+  border: none;
+}
+.embed-libcal-weekly tr {
+    opacity: 0;
+    animation: reveal 0.3s forwards;
+    animation-delay: 0.4s;
+}
+@keyframes reveal {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+
+
+
+
+.embed-libcal-weekly .s-lc-whw-head-date {
+  opacity: 0.3;
+}
+.embed-libcal-weekly th {
+  text-align: center;
+}
+.embed-libcal-weekly th > button:nth-of-type(1) {
+  order: 2;
+}
+.embed-libcal-weekly th > span {
+  order: 3;
+}
+.embed-libcal-weekly th > span.s-lc-w-head-pre {
+  font-size: 30px;
+  font: var(--font-style-heading-h4-yale-new);
+  font-variant-numeric: oldstyle-nums;
+  color: #333333;
+  margin-block-end: 1.25rem;
+  text-align: left;
+  order: 1;
+  flex: 0 0 100%;
+}
+.embed-libcal-weekly th > span.s-lc-w-head-pre::after {
+    content: ' and Info';
+}
+.embed-libcal-weekly th > button:nth-of-type(2), 
+.embed-libcal-weekly th > button:nth-of-type(1):nth-last-of-type(1) {
+  order: 4;
+}
+.s-lc-w-head:has(button:nth-of-type(1):nth-last-of-type(1)) {
+  text-align: center;
+}
+.s-lc-w-head:has(button:nth-of-type(1):nth-last-of-type(1)) .s-lc-w-head-pre + span {
+  width: calc(100% - 72px);
+  margin-left: 36px;
+  text-align: center;
+  font-size: 0;
+}
+.s-lc-w-head:has(button:nth-of-type(1):nth-last-of-type(1)) .s-lc-w-head-pre + span::after {
+  content: 'Today';
+  font-size: 20px;
+}
+.s-lc-w-head:has(button:nth-of-type(1):nth-last-of-type(1)) .s-lc-w-head-pre + span::before {
+  content: '←';
+  display: inline-block;
+  font-size: 1rem;
+  border-radius: 1rem;
+  background: #00000011;
+  line-height: 1.15;
+  padding: 2px 10px 3px;
+  color: #999;
+  position: absolute;
+  left: 0;
+  bottom: 22px;
+  opacity: 0.6;
+}
+
+
+
+.embed-libcal-weekly td {
+  padding: 0 !important;
+  background: none !important;
+  font-size: 0.9em;
+}
+.embed-libcal-weekly thead th {
+  border-bottom: none !important;
+  padding-bottom: 1rem !important;
+}
+
+.embed-libcal-weekly tbody tr {
+  border-bottom: none;
+}
+.embed-libcal-weekly tbody td {
+  line-height: 1.4em;
+  padding: 0.6rem 0.25rem !important;
+}
+.embed-libcal-weekly tbody td:nth-child(1) {
+  font-weight: 700;
+  width: 14vw;
+  min-width: 14rem;
+}
+.embed-libcal-weekly tbody td:nth-child(n+2) {
+  border-bottom: dashed 2px #00000011 !important;
+  color: #444;
+}
+
+.embed-libcal-weekly a {
+  text-decoration: none;
+  color: inherit;
+}
+.embed-libcal-weekly button {
+  appearance: none;
+  border: none;
+  border-radius: 1rem;
+  background: #00000011;
+  cursor: pointer;
+}
+button.s-lc-w-previous, 
+button.s-lc-w-next {
+  font-size: 0;
+}
+button:is(.s-lc-w-previous, .s-lc-w-next):before {
+  content: '←';
+  font-size: 1rem;
+  padding: 0.25rem;
+}
+button:is(.s-lc-w-next):before {
+  content: '→';
+}
+
+.gin--dark-mode .embed-libcal-weekly :hover, .gin--dark-mode .embed-libcal-weekly tr:focus-within {
+  color:inherit;
+}
+
+#libcal-week-nav button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+#libcal-week-nav button:hover {
+  background-color: #f5f5f5;
+  border-color: #999;
+}
+
+#libcal-week-nav button:active {
+  background-color: #e5e5e5;
+}
