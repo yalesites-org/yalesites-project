@@ -171,7 +171,6 @@ third_party_settings:
               - reference_card
               - tabs
               - text
-              - tiles
               - video
               - wrapped_text_callout
             'Inline blocks':
@@ -189,7 +188,6 @@ third_party_settings:
               - 'inline_block:reference_card'
               - 'inline_block:tabs'
               - 'inline_block:text'
-              - 'inline_block:tiles'
               - 'inline_block:video'
               - 'inline_block:wrapped_text_callout'
             'YaleSites Layouts':
@@ -228,10 +226,11 @@ third_party_settings:
               - 'inline_block:wrapped_text_callout'
       restricted_categories:
         ys_layout_two_column:
-          content:
+          sidebar:
             - AddToAny
             - 'Chaos Tools'
             - 'Content fields'
+            - 'Custom blocks'
             - Forms
             - Help
             - 'Lists (Views)'
@@ -241,11 +240,10 @@ third_party_settings:
             - 'YaleSites Core'
             - 'YaleSites alert'
             - core
-          sidebar:
+          content:
             - AddToAny
             - 'Chaos Tools'
             - 'Content fields'
-            - 'Custom blocks'
             - Forms
             - Help
             - 'Lists (Views)'

@@ -164,7 +164,6 @@ third_party_settings:
               - reference_card
               - tabs
               - text
-              - tiles
               - video
               - wrapped_text_callout
             'Inline blocks':
@@ -182,7 +181,6 @@ third_party_settings:
               - 'inline_block:reference_card'
               - 'inline_block:tabs'
               - 'inline_block:text'
-              - 'inline_block:tiles'
               - 'inline_block:video'
               - 'inline_block:wrapped_text_callout'
             'YaleSites Layouts': {  }
@@ -238,18 +236,6 @@ third_party_settings:
       denylisted_blocks: {  }
       restricted_categories:
         ys_layout_two_column:
-          content:
-            - 'Chaos Tools'
-            - 'Content fields'
-            - Forms
-            - Help
-            - 'Lists (Views)'
-            - Menus
-            - System
-            - Webform
-            - 'YaleSites Core'
-            - 'YaleSites alert'
-            - core
           sidebar:
             - 'Chaos Tools'
             - 'Content fields'
@@ -262,6 +248,18 @@ third_party_settings:
             - Webform
             - 'YaleSites Core'
             - 'YaleSites Layouts'
+            - 'YaleSites alert'
+            - core
+          content:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
             - 'YaleSites alert'
             - core
         layout_onecol:
