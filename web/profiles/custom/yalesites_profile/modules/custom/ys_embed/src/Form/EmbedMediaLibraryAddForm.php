@@ -60,19 +60,21 @@ class EmbedMediaLibraryAddForm extends AddFormBase {
       '#ajax' => [
         'callback' => '::updateFormCallback',
         'wrapper' => 'media-library-wrapper',
-        // Add a fixed URL to post the form since AJAX forms are automatically
-        // posted to <current> instead of $form['#action'].
-        // @todo Remove when https://www.drupal.org/project/drupal/issues/2504115
-        // is fixed.
-        // Follow along with changes in \Drupal\media_library\Form\OEmbedForm.
         'url' => Url::fromRoute('media_library.ui'),
         'options' => [
           'query' => $this->getMediaLibraryState($form_state)->all() + [
             FormBuilderInterface::AJAX_FORM_REQUEST => TRUE,
           ],
+          'attributes' => [
+            'class' => ['media-library-add-form-submit'],
+          ],
         ],
       ],
     ];
+
+    // Add error handling for AJAX submissions.
+    $form['#attached']['library'][] = 'core/drupal.dialog.ajax';
+    $form['#attached']['library'][] = 'core/jquery.form';
 
     return $form;
   }
@@ -86,11 +88,30 @@ class EmbedMediaLibraryAddForm extends AddFormBase {
    *   The form state.
    */
   public function addButtonSubmit(array $form, FormStateInterface $form_state) {
-    $this->processInputValues(
-      [$form_state->getValue('input')],
-      $form,
-      $form_state
-    );
+    try {
+      $this->processInputValues(
+        [$form_state->getValue('input')],
+        $form,
+        $form_state
+      );
+    }
+    catch (\Exception $e) {
+      $form_state->setError($form['container']['input'], $this->t('Error processing embed code: @error', ['@error' => $e->getMessage()]));
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function updateFormCallback(array &$form, FormStateInterface $form_state) {
+    $triggering_element = $form_state->getTriggeringElement();
+    if ($triggering_element['#name'] === 'op' && $triggering_element['#value'] === $this->t('Add')) {
+      // If there are no errors, close the dialog.
+      if (!$form_state->getErrors()) {
+        $form_state->setRedirect('<none>');
+      }
+    }
+    return $form;
   }
 
   /**
