@@ -68,4 +68,4 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
     return $matches;
   }
 
-} 
+}
