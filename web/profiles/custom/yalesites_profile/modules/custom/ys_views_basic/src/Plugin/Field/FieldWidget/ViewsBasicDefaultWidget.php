@@ -341,7 +341,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       : $formSelectors['entity_types'] . '_category';
     $form['group_user_selection']['entity_and_view_mode']['category_included_terms'] = [
       '#type' => 'select',
-      '#title' => $this->t('Category Filter - Included Terms'),
+      '#title' => $this->t('Filter by Category Parent Term'),
+      '#description' => $this->t("Select a parent term to show content tagged with that terms sub-items. This ignores content tagged as the parent term and any other parent terms in the vocabulary."),
       '#options' => $this->viewsBasicManager->getTaxonomyParents($vocabulary_id),
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('category_included_terms', $items[$delta]->params) : NULL,
       '#validated' => 'true',
@@ -355,7 +356,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     $form['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] = [
       '#type' => 'select',
-      '#title' => $this->t('@vocab Filter - Included Terms', ['@vocab' => $custom_vocab_label]),
+      '#title' => $this->t('Filter by @vocab Parent Term', ['@vocab' => $custom_vocab_label]),
+      '#description' => $this->t("Select a parent term to show content tagged with that terms sub-items. This ignores content tagged as the parent term and any other parent terms in the vocabulary."),
       '#options' => $this->viewsBasicManager->getTaxonomyParents('custom_vocab'),
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('custom_vocab_included_terms', $items[$delta]->params) : NULL,
       '#validated' => 'true',
