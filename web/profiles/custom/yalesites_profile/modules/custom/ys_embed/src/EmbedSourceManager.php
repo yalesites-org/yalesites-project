@@ -5,6 +5,8 @@ namespace Drupal\ys_embed\EmbedSource;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
+use Drupal\Core\DependencyInjection\ContainerInterface;
 
 /**
  * Manages embed source plugins.
@@ -13,6 +15,13 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
  * plugins based on embed codes.
  */
 class EmbedSourceManager extends DefaultPluginManager {
+
+  /**
+   * The logger channel factory.
+   *
+   * @var \Drupal\Core\Logger\LoggerChannelFactoryInterface
+   */
+  protected $loggerFactory;
 
   /**
    * Constructs a new EmbedSourceManager.
@@ -24,12 +33,27 @@ class EmbedSourceManager extends DefaultPluginManager {
    *   Cache backend instance to use.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler to invoke the alter hook with.
+   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
+   *   The logger channel factory.
    */
-  public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler) {
+  public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, LoggerChannelFactoryInterface $logger_factory) {
     parent::__construct('Plugin/EmbedSource', $namespaces, $module_handler, 'Drupal\ys_embed\EmbedSource\EmbedSourceInterface', 'Drupal\ys_embed\Annotation\EmbedSource');
 
     $this->alterInfo('ys_embed_embed_source_info');
     $this->setCacheBackend($cache_backend, 'ys_embed_embed_source_plugins');
+    $this->loggerFactory = $logger_factory;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('service_container')->getParameter('container.namespaces'),
+      $container->get('cache.backend'),
+      $container->get('module_handler'),
+      $container->get('logger.factory')
+    );
   }
 
   /**
@@ -42,19 +66,19 @@ class EmbedSourceManager extends DefaultPluginManager {
    *   The embed source plugin if found, NULL otherwise.
    */
   public function findEmbedSource($embed_code) {
-    \Drupal::logger('ys_embed')->notice('Finding embed source for code: @code', ['@code' => $embed_code]);
+    $this->loggerFactory->get('ys_embed')->notice('Finding embed source for code: @code', ['@code' => $embed_code]);
 
     // First check for libcal_weekly.
     $libcal_weekly = $this->createInstance('libcal_weekly');
     if ($libcal_weekly->matches($embed_code)) {
-      \Drupal::logger('ys_embed')->notice('Found libcal_weekly match.');
+      $this->loggerFactory->get('ys_embed')->notice('Found libcal_weekly match.');
       return $libcal_weekly;
     }
 
     // Then check for libcal.
     $libcal = $this->createInstance('libcal');
     if ($libcal->matches($embed_code)) {
-      \Drupal::logger('ys_embed')->notice('Found libcal match.');
+      $this->loggerFactory->get('ys_embed')->notice('Found libcal match.');
       return $libcal;
     }
 
@@ -65,12 +89,12 @@ class EmbedSourceManager extends DefaultPluginManager {
       }
       $instance = $this->createInstance($id);
       if ($instance->matches($embed_code)) {
-        \Drupal::logger('ys_embed')->notice('Found match for source: @source.', ['@source' => $id]);
+        $this->loggerFactory->get('ys_embed')->notice('Found match for source: @source.', ['@source' => $id]);
         return $instance;
       }
     }
 
-    \Drupal::logger('ys_embed')->notice('No embed source found.');
+    $this->loggerFactory->get('ys_embed')->notice('No embed source found.');
     return NULL;
   }
 
