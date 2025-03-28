@@ -1,17 +1,19 @@
-
-.embed-libcal caption, 
-.s-lc-w-today-view-all, 
-.embed-libcal th > span.s-lc-w-head-pre br, 
-.embed-libcal a .link-purpose-icon, 
-.s-lc-w-time:has(.am ~ .am, .pm ~ .pm) :is(.am, .pm) {
+.embed-libcal caption,
+.s-lc-w-today-view-all,
+.embed-libcal th > span.s-lc-w-head-pre br,
+.embed-libcal a .link-purpose-icon,
+.s-lc-w-time:has(.am ~ .am,
+.pm ~ .pm) :is(.am,
+.pm) {
   display: none;
 }
-.s-lc-w-time :is(.am ~ .am, .pm ~ .pm) {
+.s-lc-w-time :is(.am ~ .am,
+.pm ~ .pm) {
   display: inline !important;
 }
 
 .embed__inner:has(.embed-libcal) {
-    margin-block-start: 0 !important;
+  margin-block-start: 0 !important;
 }
 
 .embed-libcal {
@@ -25,22 +27,33 @@
 .embed-libcal table {
   font: unset;
 }
-.embed-libcal :is(table, thead, tbody, tr) {
+.embed-libcal :is(table,
+thead,
+tbody,
+tr) {
   width: 100%;
   display: block;
 }
-.embed-libcal :is(table, thead, tr, th, td) {
+.embed-libcal :is(table,
+thead,
+tr,
+th,
+td) {
   background: none !important;
   border: none !important;
 }
 .embed-libcal tr {
-    opacity: 0;
-    animation: reveal 0.3s forwards;
-    animation-delay: 0.4s;
+  opacity: 0;
+  animation: reveal 0.3s forwards;
+  animation-delay: 0.4s;
 }
 @keyframes reveal {
-    from { opacity: 0; }
-    to { opacity: 1; }
+  from {
+    opacity: 0;
+}
+  to {
+    opacity: 1;
+}
 }
 
 
@@ -81,9 +94,9 @@
   flex: 0 0 100%;
 }
 .embed-libcal th > span.s-lc-w-head-pre::after {
-    content: ' and Info';
+  content: ' and Info';
 }
-.embed-libcal th > button:nth-of-type(2), 
+.embed-libcal th > button:nth-of-type(2),
 .embed-libcal th > button:nth-of-type(1):nth-last-of-type(1) {
   order: 4;
 }
@@ -144,11 +157,12 @@
   background: #00000011;
   cursor: pointer;
 }
-button.s-lc-w-previous, 
+button.s-lc-w-previous,
 button.s-lc-w-next {
   font-size: 0;
 }
-button:is(.s-lc-w-previous, .s-lc-w-next):before {
+button:is(.s-lc-w-previous,
+.s-lc-w-next):before {
   content: '←';
   font-size: 1rem;
   padding: 0.25rem;
@@ -157,6 +171,7 @@ button:is(.s-lc-w-next):before {
   content: '→';
 }
 
-.gin--dark-mode .embed-libcal :hover, .gin--dark-mode .embed-libcal tr:focus-within {
-  color:inherit;
+.gin--dark-mode .embed-libcal :hover,
+.gin--dark-mode .embed-libcal tr:focus-within {
+  color: inherit;
 }

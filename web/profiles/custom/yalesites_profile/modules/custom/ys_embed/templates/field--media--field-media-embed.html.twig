@@ -1,0 +1,11 @@
+{#
+/**
+ * @file
+ * Theme override for a media embed field.
+ */
+#}
+{%- for item in items -%}
+  {% set embed_code = item.content['#text'] %}
+  {% set embed_class = item.content['#embed_class'] ?? 'embed-default' %}
+  <div class="{{ embed_class }}" data-embed-code="{{ embed_code|raw }}" data-processed="true"></div>
+{%- endfor -%} 

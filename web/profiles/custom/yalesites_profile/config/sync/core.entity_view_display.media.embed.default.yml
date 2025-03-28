@@ -13,7 +13,7 @@ bundle: embed
 mode: default
 content:
   field_media_embed:
-    type: embed_formatter
+    type: libcal_embed
     label: hidden
     settings: {  }
     third_party_settings: {  }
