@@ -4,7 +4,6 @@ namespace Drupal\ys_embed\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
-use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Plugin implementation of the 'libcal_embed' formatter.
@@ -72,4 +71,4 @@ class LibCalEmbedFormatter extends FormatterBase {
     return $elements;
   }
 
-} 
+}

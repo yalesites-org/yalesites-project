@@ -55,17 +55,17 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
     $logger = $this->loggerFactory->get('ys_embed');
     $logger->notice('Checking matches for @class with pattern: @pattern', [
       '@class' => get_class($this),
-      '@pattern' => static::$pattern
+      '@pattern' => static::$pattern,
     ]);
-    
+
     $matches = preg_match(static::$pattern, $embed_code, $match);
-    
+
     $logger->notice('Match result for @class: @result', [
       '@class' => get_class($this),
-      '@result' => $matches ? 'true' : 'false'
+      '@result' => $matches ? 'true' : 'false',
     ]);
-    
+
     return $matches;
   }
 
-} 
+}

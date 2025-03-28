@@ -138,7 +138,7 @@ function ys_embed_preprocess_field(&$variables) {
     elseif (isset($variables['element']['#text'])) {
       $embed_code = $variables['element']['#text'];
     }
-    
+
     if (!empty($embed_code)) {
       // Check for weekly grid embed.
       if (strpos($embed_code, 'hours_grid.js') !== FALSE || strpos($embed_code, 'LibCalWeeklyGrid') !== FALSE) {

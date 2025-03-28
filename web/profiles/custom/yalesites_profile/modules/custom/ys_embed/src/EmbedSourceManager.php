@@ -43,21 +43,21 @@ class EmbedSourceManager extends DefaultPluginManager {
    */
   public function findEmbedSource($embed_code) {
     \Drupal::logger('ys_embed')->notice('Finding embed source for code: @code', ['@code' => $embed_code]);
-    
+
     // First check for libcal_weekly.
     $libcal_weekly = $this->createInstance('libcal_weekly');
     if ($libcal_weekly->matches($embed_code)) {
       \Drupal::logger('ys_embed')->notice('Found libcal_weekly match.');
       return $libcal_weekly;
     }
-    
+
     // Then check for libcal.
     $libcal = $this->createInstance('libcal');
     if ($libcal->matches($embed_code)) {
       \Drupal::logger('ys_embed')->notice('Found libcal match.');
       return $libcal;
     }
-    
+
     // Then check for other sources.
     foreach ($this->getDefinitions() as $id => $definition) {
       if ($id === 'libcal' || $id === 'libcal_weekly') {
@@ -69,8 +69,9 @@ class EmbedSourceManager extends DefaultPluginManager {
         return $instance;
       }
     }
-    
+
     \Drupal::logger('ys_embed')->notice('No embed source found.');
     return NULL;
   }
-} 
+
+}
