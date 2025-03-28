@@ -12,6 +12,7 @@ use Drupal\Core\Path\PathValidatorInterface;
 use Drupal\Core\Routing\RequestContext;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\google_analytics\Constants\GoogleAnalyticsPatterns;
+use Drupal\google_tag\Entity\TagContainer;
 use Drupal\path_alias\AliasManagerInterface;
 use Drupal\ys_core\YaleSitesMediaManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -214,11 +215,11 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#default_value' => $yaleConfig->get('seo')['google_site_verification'],
     ];
 
-    $form['google_analytics_id'] = [
+    $form['google_tag_id'] = [
       '#type' => 'textfield',
       '#description' => $this->t('This ID has the form of <code>UA-xxxxx-yy</code>, <code>G-xxxxxxxx</code>, <code>AW-xxxxxxxxx</code>, or <code>DC-xxxxxxxx</code>. To get a Web Property ID, register your site with Google Analytics, or if you already have registered your site, go to your Google Analytics Settings page to see the ID next to every site profile.'),
-      '#title' => $this->t('Google Analytics Web Property ID'),
-      '#default_value' => $yaleConfig->get('seo')['google_analytics_id'],
+      '#title' => $this->t('Google Tag ID'),
+      '#default_value' => $yaleConfig->get('seo')['google_tag_id'],
     ];
 
     $form['custom_vocab_name'] = [
@@ -292,8 +293,8 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     // Email validations.
     $this->validateEmail($form_state, 'site_mail');
 
-    // Ensure Google Analytics is a valid format.
-    $this->validateGoogleAnalyticsId($form_state, 'google_analytics_id');
+    // Ensure Google Tag ID is a valid format.
+    $this->validateGoogleTagId($form_state, 'google_tag_id');
 
     parent::validateForm($form, $form_state);
   }
@@ -320,13 +321,13 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       ->set('page.posts', $form_state->getValue('site_page_posts'))
       ->set('page.events', $form_state->getValue('site_page_events'))
       ->set('seo.google_site_verification', $form_state->getValue('google_site_verification'))
-      ->set('seo.google_analytics_id', $form_state->getValue('google_analytics_id'))
+      ->set('seo.google_tag_id', $form_state->getValue('google_tag_id'))
       ->set('taxonomy.custom_vocab_name', $form_state->getValue('custom_vocab_name'))
       ->set('image_fallback.teaser', $form_state->getValue('teaser_image_fallback'))
       ->set('custom_favicon', $form_state->getValue('favicon'))
       ->save();
-    $this->configFactory->getEditable('google_analytics.settings')
-      ->set('account', $form_state->getValue('google_analytics_id'))
+    $this->configFactory->getEditable('google_tag.settings')
+      ->set('account', $form_state->getValue('default_google_tag_entity'))
       ->save();
 
     $custom_vocab_name = $this->configFactory->getEditable('taxonomy.vocabulary.custom_vocab')->get('name');
@@ -438,14 +439,14 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
   }
 
   /**
-   * Check that a submitted GA value matches a valid Google Analytics format.
+   * Check that a submitted GA value matches a valid Google Tag format.
    *
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state passed by reference.
    * @param string $fieldId
    *   The id of a field on the cnnfig form.
    */
-  protected function validateGoogleAnalyticsId(FormStateInterface &$form_state, string $fieldId) {
+  protected function validateGoogleTagId(FormStateInterface &$form_state, string $fieldId) {
     // Exit early if the google_analytics module changed and no longer applies.
     if (!class_exists('Drupal\google_analytics\Constants\GoogleAnalyticsPatterns')) {
       return;
@@ -454,7 +455,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       if (!preg_match(GoogleAnalyticsPatterns::GOOGLE_ANALYTICS_GTAG_MATCH, $value)) {
         $form_state->setErrorByName(
           $fieldId,
-          $this->t('A valid Google Analytics Web Property ID is case sensitive and formatted like UA-xxxxx-yy, G-xxxxxxxx, AW-xxxxxxxxx, or DC-xxxxxxxx.')
+          $this->t('A valid Google Tag ID is case sensitive and formatted like UA-xxxxx-yy, G-xxxxxxxx, AW-xxxxxxxxx, or DC-xxxxxxxx.')
         );
       }
     }
