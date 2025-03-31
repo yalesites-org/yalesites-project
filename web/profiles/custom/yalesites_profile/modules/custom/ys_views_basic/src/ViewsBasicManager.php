@@ -251,22 +251,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   }
 
   /**
-   * Sets a unique pager ID for the given view.
-   *
-   * @param \Drupal\views\ViewExecutable $view
-   *   The view executable object.
-   */
-  public function setUniquePagerId(&$view) {
-    // Get the display for the view.
-    $display = $view->getDisplay();
-
-    // Set the pager id to be unique.
-    $display_options = $display->options;
-    $display_options['pager']['options']['id'] = uniqid();
-    $view->display_handler->overrideOption('pager', $display_options['pager']);
-  }
-
-  /**
    * Sets up the view with the parameters.
    *
    * @param \Drupal\views\ViewExecutable $view
@@ -283,13 +267,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       return;
     }
     $setupRunning = TRUE;
-
-    // Determine if this is an ajax call.
-    $is_ajax = \Drupal::request()->isXmlHttpRequest();
-
-    if (!$is_ajax) {
-      $this->setUniquePagerId($view);
-    }
 
     $paramsDecoded = json_decode($params, TRUE);
     $pinned_to_top = isset($paramsDecoded['pinned_to_top']) ? (bool) $paramsDecoded['pinned_to_top'] : FALSE;
