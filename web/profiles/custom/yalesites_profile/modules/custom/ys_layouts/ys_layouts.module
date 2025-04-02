@@ -40,6 +40,8 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'localist_url' => NULL,
         'stream_url' => NULL,
         'stream_embed_code' => NULL,
+        'event_source' => NULL,
+        'event_id' => NULL,
       ],
     ],
     'ys_page_meta_block' => [
@@ -53,6 +55,7 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'label' => NULL,
         'author' => NULL,
         'date_formatted' => NULL,
+        'show_read_time' => NULL,
         'hide_sharing' => NULL,
       ],
     ],

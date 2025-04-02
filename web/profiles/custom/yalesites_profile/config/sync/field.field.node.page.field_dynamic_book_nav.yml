@@ -1,0 +1,21 @@
+uuid: 706536af-eb73-45be-95e7-65302bf1064f
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_dynamic_book_nav
+    - node.type.page
+id: node.page.field_dynamic_book_nav
+field_name: field_dynamic_book_nav
+entity_type: node
+bundle: page
+label: 'Dynamic book navigation'
+description: 'This field is not to be shown on normal node edit forms. Instead, it is set via the top-level book edit form /admin/structure/book/<nid> to allow for dynamic book navigation per book.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean
