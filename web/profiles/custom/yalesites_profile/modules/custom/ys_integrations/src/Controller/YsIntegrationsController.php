@@ -95,71 +95,12 @@ class YsIntegrationsController extends SystemController {
     foreach ($integrations as $id => $integration) {
       if ($integration) {
         $plugin = $this->integrationPluginManager->createInstance($id);
-        $definitions = $this->integrationPluginManager->getDefinitions();
-
-        // Convert the label from translatable markup to a string.
-        $output['#content'][$id]['title'] = $definitions[$id]['label'];
-        $output['#content'][$id]['description'] = $definitions[$id]['description'];
-
-        $configUrl = $plugin->configUrl();
-        $configUrlAccess = $configUrl->access($this->currentUser);
-        $syncUrl = $plugin->syncUrl();
-        $syncUrlAccess = $syncUrl->access($this->currentUser);
-
-        $output['#content'][$id]['#actions']['configure'] = $this->buildActionItem(
-          'Configure',
-          $configUrl,
-          $configUrlAccess,
-          ['button', 'button--primary']
-        );
-
-        if ($plugin->isTurnedOn()) {
-          $output['#content'][$id]['#actions']['sync'] = $this->buildActionItem(
-          'Sync now',
-          $syncUrl,
-          $syncUrlAccess,
-          ['button', 'button--primary']
-          );
-        }
-        else {
-          $output['#content'][$id]['#actions']['not_configured'] = [
-            '#markup' => '<p>' . $this->t('This integration is not configured.') . '</p>',
-          ];
-        }
+        $output['#content'][$id] = $plugin->build();
       }
     }
 
     return $output;
 
-  }
-
-  /**
-   * Builds a single action item.
-   *
-   * @param string $title
-   *   The title of the action.
-   * @param \Drupal\Core\Url $url
-   *   The URL for the action.
-   * @param bool $access
-   *   Access status for the action.
-   * @param array $classes
-   *   CSS classes for the action.
-   *
-   * @return array
-   *   Render array for a single action.
-   */
-  protected function buildActionItem(string $title, $url, bool $access, array $classes): array {
-    return [
-      '#type' => 'link',
-      '#title' => $title,
-      '#url' => $url,
-      '#access' => $access,
-      '#options' => [
-        'attributes' => [
-          'class' => $classes,
-        ],
-      ],
-    ];
   }
 
 }

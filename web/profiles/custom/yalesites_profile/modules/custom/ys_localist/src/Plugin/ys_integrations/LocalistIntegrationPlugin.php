@@ -39,4 +39,51 @@ class LocalistIntegrationPlugin extends IntegrationPluginBase {
     return Url::fromRoute('ys_localist.run_migrations');
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function build(): array {
+    $form = [];
+
+    $form['title'] = $this->pluginDefinition['label'];
+    $form['description'] = $this->pluginDefinition['description'];
+
+    $configUrl = $this->configUrl();
+    $configUrlAccess = $configUrl->access($this->currentUser);
+
+    $syncUrl = $this->syncUrl();
+    $syncUrlAccess = $syncUrl->access($this->currentUser);
+
+    $form['#actions']['configure'] = [
+      '#type' => 'link',
+      '#title' => $this->t('Configure'),
+      '#url' => $configUrl,
+      '#access' => $configUrlAccess,
+      '#attributes' => ['class' => ['button', 'button--primary']],
+    ];
+
+    if ($this->isTurnedOn()) {
+      $form['#actions']['sync'] = [
+        '#type' => 'link',
+        '#title' => $this->t('Sync now'),
+        '#url' => $syncUrl,
+        '#access' => $syncUrlAccess,
+        '#attributes' => ['class' => ['button', 'button--primary']],
+      ];
+    }
+    else {
+      $form['#actions']['not_configured'] = [
+        '#markup' => '<p>' . $this->t('This integration is not configured.') . '</p>',
+      ];
+    }
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function save($form, $form_state): void {
+  }
+
 }
