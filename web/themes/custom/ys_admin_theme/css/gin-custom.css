@@ -51,6 +51,7 @@ a.focal-point-preview-link {
   }
   .ys-gin-two-column-wrapper .form-element {
     width: 100%;
+    min-width: 100%;
   }
 }
 
@@ -63,6 +64,7 @@ a.focal-point-preview-link {
   }
   .ys-gin-three-column-wrapper .form-element {
     width: 100%;
+    min-width: 100%;
   }
 }
 
