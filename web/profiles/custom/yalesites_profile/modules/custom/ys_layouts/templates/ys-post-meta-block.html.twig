@@ -35,24 +35,6 @@
   {% endfor %}
 {% endif %}
 
-{% if post_authors %}
-  {% for post_author in post_authors %}
-    {% if post_author.isLink %}
-      {% set rendered_authors = rendered_authors|merge([
-        include("@atoms/controls/text-link/yds-text-link.twig", {
-            link__content: post_author.title,
-            link__url: post_author.url,
-            link__attributes: {
-              'data-linked-author': 'true',
-            },
-        })
-      ]) %}
-    {% else %}
-      {% set rendered_authors = rendered_authors|merge([post_author.title]) %}
-    {% endif %}
-  {% endfor %}
-{% endif %}
-
 {% set author_markup %}
   <span>{{ _self.to_sentence(rendered_authors) }}</span>
 {% endset %}
