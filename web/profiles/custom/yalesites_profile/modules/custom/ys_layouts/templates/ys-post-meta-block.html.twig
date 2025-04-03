@@ -36,7 +36,9 @@
 {% endif %}
 
 {% set author_markup %}
-  <span>{{ _self.to_sentence(rendered_authors) }}</span>
+  {% if rendered_authors is not empty %}
+    <span>{{ _self.to_sentence(rendered_authors) }}</span>
+  {% endif %}
 {% endset %}
 
 {% set formatted_date %}
@@ -57,9 +59,14 @@
 
 {{ attach_library('atomic/read-time') }}
 
+{% set meta = NULL %}
+{% if author_markup is not empty %}
+  {% set meta = author_markup ~ formatted_date %}
+{% endif %}
+
 {% embed "@molecules/page-title/yds-page-title.twig" with {
   page_title__heading: label,
-  page_title__meta: author_markup ~ formatted_date,
+  page_title__meta: meta,
   page_title__width: 'content',
   page_title__show_social_media_sharing_links: show_social_media_sharing_links ? 'true' : 'false',
 } %}
