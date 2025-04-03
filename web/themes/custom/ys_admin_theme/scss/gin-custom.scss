@@ -94,4 +94,10 @@ a.focal-point-preview-link {
   background-color: var(--gin-bg-layer2);
 }
 
+// Form elements were not scaling to the larger height that 
+// other items adhere to, like chosen and the title of a
+// drupal form.  This allows it to closer match them.
+.form-element {
+  min-height: calc(var(--input-padding-vertical) * 3 + var(--input-line-height)) !important;
+}
 /* stylelint-enable */
