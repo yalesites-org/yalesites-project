@@ -40,7 +40,7 @@ class CampusGroupsIntegrationPlugin extends IntegrationPluginBase {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function build() {
     $form = [];
