@@ -22,6 +22,10 @@
           "type": "tar"
         }
       }
+    },
+    "ai_engine": {
+      "type": "vcs",
+      "url": "https://github.com/yalesites-org/ai_engine.git"
     }
   },
   "require": {

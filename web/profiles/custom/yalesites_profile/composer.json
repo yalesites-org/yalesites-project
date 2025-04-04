@@ -17,6 +17,10 @@
           "type": "tar"
         }
       }
+    },
+    "ai_engine": {
+      "type": "vcs",
+      "url": "https://github.com/yalesites-org/ai_engine.git"
     }
   },
   "require": {
@@ -111,7 +115,7 @@
     "jjj/chosen": "2.2.1",
     "laminas/laminas-escaper": "2.13.0",
     "northernco/ckeditor5-anchor-drupal": "0.4.0",
-    "yalesites-org/ai_engine": "1.2.8",
+    "yalesites-org/ai_engine": "dev-YSP-850-auto-chat-launch",
     "yalesites-org/atomic": "1.44.1",
     "yalesites-org/yale_cas": "v1.0.5"
   },
