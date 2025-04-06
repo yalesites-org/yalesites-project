@@ -586,8 +586,6 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     $response = new AjaxResponse();
     $response->addCommand(new ReplaceCommand('#edit-view-mode', $formSelectors['view_mode_ajax']));
     $response->addCommand(new ReplaceCommand('#edit-sort-by', $formSelectors['sort_by_ajax']));
-    $response->addCommand(new ReplaceCommand('#edit-category-included-terms', $formSelectors['category_included_terms_ajax']));
-    $response->addCommand(new ReplaceCommand('#edit-custom-vocab-included-terms', $formSelectors['custom_vocab_included_terms_ajax']));
     $selector = '.views-basic--view-mode[name="group_user_selection[entity_and_view_mode][view_mode]"]:first';
     $response->addCommand(new InvokeCommand($selector, 'prop', [['checked' => TRUE]]));
 
