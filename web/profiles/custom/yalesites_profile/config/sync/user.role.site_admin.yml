@@ -64,6 +64,7 @@ dependencies:
     - contextual
     - editoria11y
     - file
+    - google_tag
     - layout_builder
     - media
     - menu_admin_per_menu
@@ -99,6 +100,7 @@ permissions:
   - 'access webform overview'
   - 'add content to books'
   - 'administer book outlines'
+  - 'administer google_tag_container'
   - 'administer main menu items'
   - 'administer redirects'
   - 'administer users'
