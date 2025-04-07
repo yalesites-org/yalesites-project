@@ -126,10 +126,13 @@ settings:
         - '<h4 id>'
         - '<h5 id>'
         - '<h6 id>'
-        - '<a hreflang title>'
+        - '<a hreflang>'
     editor_advanced_link_link:
       enabled_attributes:
+        - class
+        - id
         - target
+        - title
     linkit_extension:
       linkit_enabled: true
       linkit_profile: default
