@@ -47,6 +47,11 @@ content_spotlight:
     default: site
   field_style_variation:
     values:
+      inline: Inline
+      offset: Offset
+    default: inline
+  field_focus:
+    values:
       equal: 'Equal Focus'
       image: 'Image Focus'
     default: equal
