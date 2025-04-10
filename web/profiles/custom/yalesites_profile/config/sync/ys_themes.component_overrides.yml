@@ -130,6 +130,7 @@ grand_hero:
     values:
       full: Full
       contained: 'Floating Box'
+      contained-narrow: 'Floating Box Narrow'
     default: full
   field_style_variation:
     values:

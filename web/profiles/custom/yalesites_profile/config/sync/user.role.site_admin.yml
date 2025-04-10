@@ -80,7 +80,9 @@ dependencies:
     - toolbar
     - webform
     - ys_alert
+    - ys_campus_groups
     - ys_core
+    - ys_localist
 id: site_admin
 label: 'Site administrator'
 weight: -6
@@ -423,3 +425,5 @@ permissions:
   - 'view vocabulary labels'
   - 'yalesites manage alerts'
   - 'yalesites manage settings'
+  - 'yalesites sync campus groups'
+  - 'yalesites sync localist'
