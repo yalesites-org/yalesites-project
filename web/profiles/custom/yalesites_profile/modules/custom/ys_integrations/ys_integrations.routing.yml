@@ -1,0 +1,16 @@
+# Creates a new section in the admin menu for integrations
+ys_integrations.admin_yalesites_integrations:
+  path: '/admin/yalesites/integrations'
+  defaults:
+    _controller: '\Drupal\ys_integrations\Controller\YsIntegrationsController::systemAdminMenuBlockPage'
+    _title: 'Integrations'
+  requirements:
+    _permission: 'yalesites manage settings'
+
+ys_integrations.integrations_settings:
+  path: '/admin/yalesites/integration-settings'
+  defaults:
+    _form: '\Drupal\ys_integrations\Form\YsIntegrationSettingsForm'
+    _title: 'Integration Settings'
+  requirements:
+    _permission: 'yalesites manage integrations'

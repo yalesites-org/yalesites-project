@@ -10,6 +10,7 @@ use Drupal\Core\Url;
 use Drupal\ys_campus_groups\CampusGroupsManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Runs Campus Groups migrations on request.
@@ -59,16 +60,25 @@ class RunMigrations extends ControllerBase implements ContainerInjectionInterfac
   protected $moduleHandler;
 
   /**
+   * The request stack.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  protected $requestStack;
+
+  /**
    * Constructs a new RunMigrations object.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
     CampusGroupsManager $campus_groups_manager,
     MessengerInterface $messenger,
+    RequestStack $request_stack,
   ) {
     $this->campusGroupsConfig = $config_factory->get('ys_campus_groups.settings');
     $this->campusGroupsManager = $campus_groups_manager;
     $this->messenger = $messenger;
+    $this->requestStack = $request_stack;
   }
 
   /**
@@ -79,6 +89,7 @@ class RunMigrations extends ControllerBase implements ContainerInjectionInterfac
       $container->get('config.factory'),
       $container->get('ys_campus_groups.manager'),
       $container->get('messenger'),
+      $container->get('request_stack'),
     );
   }
 
@@ -99,9 +110,25 @@ class RunMigrations extends ControllerBase implements ContainerInjectionInterfac
       $this->messenger()->addError($message);
     }
 
-    $redirectUrl = Url::fromRoute('ys_campus_groups.settings')->toString();
+    $redirectUrl = $this->getRedirectUrl();
     $response = new RedirectResponse($redirectUrl);
     return $response;
+  }
+
+  /**
+   * Retrieves the URL to redirect to after the migration is run.
+   *
+   * @return string
+   *   The URL to redirect to.
+   */
+  protected function getRedirectUrl(): string {
+    $referer = $this->requestStack->getCurrentRequest()->server->get('HTTP_REFERER');
+
+    if ($referer == NULL) {
+      $referer = Url::fromRoute('<front>')->toString();
+    }
+
+    return $referer;
   }
 
 }
