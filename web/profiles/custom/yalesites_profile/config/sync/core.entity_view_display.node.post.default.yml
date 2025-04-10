@@ -38,6 +38,16 @@ third_party_settings:
           label: 'Title and Metadata'
           context_mapping: {  }
         components:
+          26d18503-b171-4f60-80fb-647292da2a47:
+            uuid: 26d18503-b171-4f60-80fb-647292da2a47
+            region: content
+            configuration:
+              id: 'extra_field_block:node:post:content_moderation_control'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+            weight: 0
+            additional: {  }
           6abf6a0c-ae3d-47f8-bf30-08e382c90124:
             uuid: 6abf6a0c-ae3d-47f8-bf30-08e382c90124
             region: content
@@ -47,16 +57,30 @@ third_party_settings:
               label_display: ''
               provider: ys_layouts
               context_mapping: {  }
-            weight: 0
+            weight: 1
             additional: {  }
         third_party_settings:
           layout_builder_lock:
             lock:
+              1: 1
               2: 2
+              3: 3
+              4: 4
               5: 5
               6: 6
               7: 7
               8: 8
+      -
+        layout_id: layout_onecol
+        layout_settings:
+          label: 'Content Section'
+          context_mapping: {  }
+        components: {  }
+        third_party_settings:
+          layout_builder_lock:
+            lock:
+              6: 6
+              7: 7
   layout_builder_restrictions:
     allowed_block_categories: {  }
     entity_view_mode_restriction:
