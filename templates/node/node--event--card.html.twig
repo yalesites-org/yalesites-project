@@ -2,6 +2,12 @@
 
 {# Use event_dates array to print any event dates - look inside array for formatted options #}
 
+{% set delta = 0 %}
+
+{% if elements['#delta'] is not empty %}
+  {% set delta = elements['#delta'] %}
+{% endif %}
+
 {% if event_dates|length > 1 %}
   {% set multi_day_text %}
     {% include "@atoms/typography/text/yds-text.twig" with {
@@ -13,7 +19,7 @@
 
 {% set date__formatted %}
   {% include "@atoms/date-time/yds-date-time.twig" with {
-    date_time__start: content.field_event_date.0.start_time['#markup'],
+    date_time__start: content.field_event_date[delta].start_time['#markup'],
   } %} {{multi_day_text}}
 {% endset %}
 

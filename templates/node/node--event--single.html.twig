@@ -1,8 +1,14 @@
 {{ attach_library('atomic/reference-card') }}
 
+{% set delta = 0 %}
+
+{% if elements['#delta'] is not empty %}
+  {% set delta = elements['#delta'] %}
+{% endif %}
+
 {% set date__formatted %}
   {% include "@atoms/date-time/yds-date-time.twig" with {
-    date_time__start: content.field_event_date.0.start_time['#markup']|default(content.field_event_date.0['#value']),
+    date_time__start: content.field_event_date[delta].start_time['#markup']|default(content.field_event_date.0['#value']),
   } %}
 {% endset %}
 
