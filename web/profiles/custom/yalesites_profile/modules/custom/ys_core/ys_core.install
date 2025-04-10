@@ -248,37 +248,3 @@ function ys_core_update_10001() {
     }
   }
 }
-
-/**
- * Implements hook_update().
- *
- * Converts field_style_variation settings to field_focus.
- */
-function ys_core_update_10002() {
-  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
-  $query = $block_storage->getQuery();
-  $query->accessCheck(FALSE)
-    ->condition('type', 'content_spotlight');
-
-  $ids = $query->execute();
-
-  foreach ($ids as $id) {
-    $block = $block_storage->load($id);
-    $latestRevisionId = $block_storage->getLatestRevisionId($id);
-
-    if (!$latestRevisionId) {
-      $latestRevision = $block_storage->createRevision($block);
-    }
-    else {
-      $latestRevision = $block_storage->loadRevision($latestRevisionId);
-    }
-
-    $field_style_variation = $latestRevision->get('field_style_variation');
-
-    if ($field_style_variation) {
-      $latestRevision->set('field_focus', $field_style_variation->value);
-      $latestRevision->save();
-    }
-  }
-
-}
