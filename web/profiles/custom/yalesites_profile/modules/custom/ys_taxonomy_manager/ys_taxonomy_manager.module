@@ -1,0 +1,33 @@
+<?php
+
+/**
+ * @file
+ * Primary module hooks for ys_taxonomy_manager module.
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\taxonomy_manager\Form\TaxonomyManagerForm;
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function ys_taxonomy_manager_form_taxonomy_manager_vocabulary_terms_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
+
+  if (isset($form['toolbar'])) {
+    $form['toolbar']['add_to_nodes'] = [
+      '#type' => 'submit',
+      '#name' => 'add_to_nodes',
+      '#value' => t('Add to Nodes'),
+      '#ajax' => [
+        'callback' => 'ys_taxonomy_manager_add_to_nodes_form_callback',
+      ],
+    ];
+  }
+}
+
+/**
+ * AJAX callback handler for the add to nodes form.
+ */
+function ys_taxonomy_manager_add_to_nodes_form_callback(array $form, FormStateInterface $form_state) {
+  return TaxonomyManagerForm::modalHelperStatic($form_state, 'Drupal\ys_taxonomy_manager\Form\AddTermsToNodesForm', 'ys_taxonomy_manager.admin_vocabulary.add_to_nodes', 'Add to Nodes');
+}
