@@ -47,6 +47,11 @@ content_spotlight:
     default: site
   field_style_variation:
     values:
+      inline: Inline
+      offset: Offset
+    default: inline
+  field_focus:
+    values:
       equal: 'Equal Focus'
       image: 'Image Focus'
     default: equal
@@ -125,6 +130,7 @@ grand_hero:
     values:
       full: Full
       contained: 'Floating Box'
+      contained-narrow: 'Floating Box Narrow'
     default: full
   field_style_variation:
     values:

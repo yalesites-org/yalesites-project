@@ -133,6 +133,7 @@ module:
   sophron: 0
   system: 0
   taxonomy: 0
+  taxonomy_manager: 0
   telephone: 0
   text: 0
   token: 0
@@ -151,12 +152,14 @@ module:
   ys_book: 0
   ys_campus_groups: 0
   ys_captcha: 0
+  ys_integrations: 0
   ys_layouts: 0
   ys_localist: 0
   ys_mail: 0
   ys_node_access: 0
   ys_servicenow: 0
   ys_starterkit: 0
+  ys_taxonomy_manager: 0
   ys_toolbar: 0
   ys_views_basic: 0
   hide_revision_field: 1
