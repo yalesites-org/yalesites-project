@@ -2,4 +2,6 @@
 yalesites manage campus groups:
   title: 'Manage YaleSites Campus Groups'
   description: 'Set and change YaleSites Campus Groups settings.'
-
+yalesites sync campus groups:
+  title: 'Manually sync YaleSites Campus Groups'
+  description: 'Can manually sync Campus Group events with YaleSites.'

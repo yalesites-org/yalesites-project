@@ -113,7 +113,13 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
     $rows = [];
 
     foreach ($this->view->result as $row) {
-      $rows[] = $this->view->rowPlugin->render($row);
+      $rendered_row = $this->view->rowPlugin->render($row);
+      // If row has node__field_event_date_delta,
+      // inject it into the render array.
+      if (isset($row->node__field_event_date_delta)) {
+        $rendered_row['#delta'] = $row->node__field_event_date_delta;
+      }
+      $rows[] = $rendered_row;
     }
 
     // Map the view mode in Drupal to the type attribute for the component.
