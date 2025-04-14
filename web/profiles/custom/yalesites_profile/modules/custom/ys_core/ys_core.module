@@ -13,6 +13,7 @@ use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Url;
 use Drupal\node\Entity\Node;
+use Drupal\Core\Render\Element\NestedArray;
 
 /**
  * @file
@@ -71,7 +72,93 @@ function ys_core_theme($existing, $type, $theme, $path): array {
 /**
  * Implements hook_form_alter().
  */
-function ys_core_form_alter(&$form, $form_state, $form_id) {
+function ys_core_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  if ($form_id === 'layout_builder_update_block' || $form_id === 'layout_builder_add_block') {
+    $block_type = ys_core_get_block_type($form, $form_state);
+    
+    if ($block_type === 'grand_hero') {
+      // Add the display mode field if it doesn't exist
+      if (!isset($form['settings']['block_form']['field_display_mode'])) {
+        $form['settings']['block_form']['field_display_mode'] = [
+          '#type' => 'select',
+          '#title' => t('Display Mode'),
+          '#options' => [
+            'text' => t('Text'),
+            'image' => t('Image'),
+          ],
+          '#default_value' => 'text',
+          '#weight' => -1,
+          '#required' => TRUE,
+          '#ajax' => [
+            'callback' => 'ys_core_grand_hero_display_mode_callback',
+            'wrapper' => 'grand-hero-settings',
+          ],
+        ];
+      }
+
+      // Get the block entity
+      $block = $form['settings']['block_form']['#block'];
+      
+      // Handle field_heading
+      if ($block && $block->hasField('field_heading')) {
+        if (!isset($form['settings']['block_form']['field_heading'])) {
+          $form['settings']['block_form']['field_heading'] = [
+            '#type' => 'textfield',
+            '#title' => t('Heading'),
+            '#default_value' => $block->get('field_heading')->value,
+          ];
+        }
+        
+        // Apply states to the field_heading
+        $form['settings']['block_form']['field_heading']['#states'] = [
+          'visible' => [
+            ':input[name="settings[block_form][field_display_mode]"]' => ['value' => 'text'],
+          ],
+          'required' => [
+            ':input[name="settings[block_form][field_display_mode]"]' => ['value' => 'text'],
+          ],
+        ];
+      }
+
+      // Handle field_overlay_png
+      if ($block && $block->hasField('field_overlay_png')) {
+        if (!isset($form['settings']['block_form']['field_overlay_png'])) {
+          $form['settings']['block_form']['field_overlay_png'] = [
+            '#type' => 'managed_file',
+            '#title' => t('Overlay Image'),
+            '#default_value' => $block->get('field_overlay_png')->target_id,
+            '#upload_location' => 'public://overlay-images/',
+          ];
+        }
+        
+        // Apply states to the field_overlay_png
+        $form['settings']['block_form']['field_overlay_png']['#states'] = [
+          'visible' => [
+            ':input[name="settings[block_form][field_display_mode]"]' => ['value' => 'image'],
+          ],
+          'required' => [
+            ':input[name="settings[block_form][field_display_mode]"]' => ['value' => 'image'],
+          ],
+        ];
+      }
+
+      // Add JavaScript dependencies
+      $form['#attached']['library'][] = 'core/drupal';
+      $form['#attached']['library'][] = 'core/drupal.states';
+      $form['#attached']['library'][] = 'core/jquery';
+      $form['#attached']['library'][] = 'core/once';
+      
+      // Add a wrapper div for AJAX updates
+      $form['settings']['block_form']['#prefix'] = '<div id="grand-hero-settings">';
+      $form['settings']['block_form']['#suffix'] = '</div>';
+
+      // Add validation handler
+      $form['#validate'][] = 'ys_core_grand_hero_validate';
+      
+      // Add custom JavaScript to ensure states are properly initialized
+      $form['#attached']['library'][] = 'ys_core/grand_hero_form';
+    }
+  }
 
   // Ensure the CAS bulk add only allows roles that role_delegate will allow.
   if ($form_id == 'bulk_add_cas_users') {
@@ -352,7 +439,7 @@ function ys_core_help($route_name, RouteMatchInterface $route_match) {
 
     case 'entity.block_content.collection':
 
-      $output = '<p class="replacement-block-help">' . t('Reuse your content with Reusable Blocks. Once created, Reusable Blocks will be available in the Block Picker and can be added when editing content in Layout Builder. Changes made to a Reusable Block’s content are reflected anywhere the Block is used.') . '</p>';
+      $output = '<p class="replacement-block-help">' . t("Reuse your content with Reusable Blocks. Once created, Reusable Blocks will be available in the Block Picker and can be added when editing content in Layout Builder. Changes made to a Reusable Block's content are reflected anywhere the Block is used.") . '</p>';
       return $output;
   }
 }
@@ -499,6 +586,7 @@ function ys_core_get_block_type(&$form, &$form_state) {
   // inline_block:BLOCK_TYPE_NAME.
   if (strpos($inline_block_type_name, ':') !== FALSE) {
     $block_type_name = explode(':', $inline_block_type_name)[1];
+    
     // While global block adds have this kind of inline block type name,
     // it's by UUID.
     if (strlen($block_type_name) == 36) {
@@ -657,4 +745,70 @@ function _ys_core_disable_event_fields(&$form, $form_id) {
       $form[$field]['#disabled'] = TRUE;
     }
   }
+}
+
+/**
+ * AJAX callback for Grand Hero block display mode changes.
+ */
+function ys_core_grand_hero_display_mode_callback($form, FormStateInterface $form_state) {
+  $trigger = $form_state->getTriggeringElement();
+  $parents = $trigger['#array_parents'];
+  array_pop($parents);
+  $element = NestedArray::getValue($form, $parents);
+  
+  return $element['settings']['block_form'];
+}
+
+/**
+ * Validation handler for Grand Hero block form.
+ */
+function ys_core_grand_hero_validate($form, FormStateInterface $form_state) {
+  $display_mode = $form_state->getValue(['settings', 'block_form', 'field_display_mode']);
+  
+  if ($display_mode === 'text') {
+    if (empty($form_state->getValue(['settings', 'block_form', 'field_heading', 0, 'value']))) {
+      $form_state->setError($form['settings']['block_form']['field_heading'], t('Heading is required when using Text display mode.'));
+    }
+  }
+  elseif ($display_mode === 'image') {
+    if (empty($form_state->getValue(['settings', 'block_form', 'field_overlay_png', 'media_library_selection']))) {
+      $form_state->setError($form['settings']['block_form']['field_overlay_png'], t('Overlay PNG is required when using Image display mode.'));
+    }
+  }
+}
+
+/**
+ * Helper function to find a field in the form structure.
+ *
+ * @param array $form
+ *   The form array to search in.
+ * @param string $field_name
+ *   The name of the field to find.
+ *
+ * @return array|null
+ *   The path to the field in the form structure, or NULL if not found.
+ */
+function _ys_core_find_field_in_form($form, $field_name) {
+  // Check if the field exists at the current level
+  if (isset($form[$field_name])) {
+    return [$field_name];
+  }
+  
+  // Recursively search through the form structure
+  foreach ($form as $key => $value) {
+    // Skip non-array values and special keys
+    if (!is_array($value) || $key[0] === '#') {
+      continue;
+    }
+    
+    // Recursively search in the child
+    $result = _ys_core_find_field_in_form($value, $field_name);
+    if ($result) {
+      // Prepend the current key to the path
+      array_unshift($result, $key);
+      return $result;
+    }
+  }
+  
+  return NULL;
 }
