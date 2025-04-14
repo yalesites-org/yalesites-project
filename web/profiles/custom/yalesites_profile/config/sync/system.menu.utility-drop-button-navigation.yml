@@ -1,8 +1,0 @@
-uuid: daad97d7-eb66-4c7b-ae2f-1d5309177ae1
-langcode: en
-status: true
-dependencies: {  }
-id: utility-drop-button-navigation
-label: 'Utility drop-button navigation'
-description: 'Menu items for the utility navigation dropdown button'
-locked: false
