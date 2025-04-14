@@ -1,0 +1,22 @@
+{% if key == 0 %}
+  {% set active_class = 'is-active' %}
+{% endif %}
+{% set tabs__container__attributes = {
+  'class': bem('container', [], tabs__base_class, [active_class]),
+  'role': 'tabpanel',
+  'data-component-width': 'content',
+  'tabindex': '0',
+} %}
+<div {{ add_attributes(tabs__container__attributes) }} data-embedded-components>
+  <div {{ bem('inner', [], tabs__base_class) }}>
+    {% set tabs__content__attributes = {
+      'class': bem('content', [], tabs__base_class),
+      'id': 'tab-' ~ tabs__id ~ '-' ~ key,
+    } %}
+    <div {{ add_attributes(tabs__content__attributes) }}>
+      {% block tab__content %}
+        {{ tab__content|default(tab.tab__content) }}
+      {% endblock %}
+    </div>
+  </div>
+</div>

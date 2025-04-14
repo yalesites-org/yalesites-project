@@ -1,0 +1,56 @@
+{#
+ # Available props:
+ # - link__type: 
+ #   - normal (default), 
+ #   - download
+ #   - external (adds icon), 
+ #   - target-blank (adds icon + opens in new window/tab),
+ #   - with-chevron
+ # - link__style: underline (default), no-underline, no-animation
+ #
+ # Available variables:
+ # - link__content - the content of the link (typically text)
+ # - link__url - the url this link should poing to
+ # - link__attributes - array of attribute,value pairs
+ #
+ # Available blocks:
+ # - link__content - used to replace the content of the link
+ #     Example: to insert the image component
+ #}
+
+{% set link__base_class = link__base_class|default('link') %}
+{% set link__attributes = link__attributes|default({}) %}
+{% set link__modifiers = link__modifiers|default([]) %}
+
+{% if link__url is defined and link__url is not null and link__url|length > 0 %}
+  {% set link__url_type = link__url_type|default(getUrlType(link__url, link__attributes)) %}
+{% else %}
+  {% set link__url_type = "internal" %}
+{% endif %}
+
+{% set link__type = link__type|default(link__url_type) %}
+{% set link__style = link_style|default('underline') %}
+
+{% if link__type == 'external' or link__type == 'target-blank' or link__type == 'download' or link__type == 'with-chevron' %}
+  {% set link__modifiers = link__modifiers|merge(['with-icon']) %}
+  {% set link__style = link__style ~ "-with-icon" %}
+{% endif %}
+
+{% set link__attributes = link__attributes|merge({
+  'data-link-style': link__style|default('underline'),
+  'data-link-type': link__type|default('normal'),
+  class: bem(link__base_class, link__modifiers, link__blockname, link__extra_class),
+  href: link__url,
+}) %}
+
+{% if link__url_type == 'download' %}
+  {% set link__attributes = link__attributes|merge({
+    download: '',
+  }) %}
+{% endif %}
+
+<a {{ add_attributes(link__attributes) }}>
+  {% block link__content %}
+    {{- link__content -}}
+  {% endblock %}
+</a>
