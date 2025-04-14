@@ -1,0 +1,7 @@
+name: 'YaleSites Taxonomy Manager'
+type: module
+description: 'Additions to the taxonomy manager module for YaleSites'
+package: YaleSites
+core_version_requirement: ^10 || ^11
+dependencies:
+  - taxonomy_manager:taxonomy_manager
