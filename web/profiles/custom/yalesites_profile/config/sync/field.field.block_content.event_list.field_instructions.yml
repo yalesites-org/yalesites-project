@@ -1,0 +1,25 @@
+uuid: 6188e9af-3c60-43f6-83d2-58bccf3fac24
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.event_list
+    - field.storage.block_content.field_instructions
+  module:
+    - markup
+id: block_content.event_list.field_instructions
+field_name: field_instructions
+entity_type: block_content
+bundle: event_list
+label: Instructions
+description: ''
+required: false
+translatable: true
+default_value:
+  - {  }
+default_value_callback: ''
+settings:
+  markup:
+    value: "<p>Calendar pulls in your Events content types and dynamically references them on your webpage. You can select a List View or a Card View of your Events.</p>\r\n"
+    format: basic_html
+field_type: markup

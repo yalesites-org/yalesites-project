@@ -1,0 +1,29 @@
+uuid: 8633e66a-6963-48a4-ac37-f8c1f49a9833
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.embed
+    - field.storage.block_content.field_media
+    - media.type.embed
+id: block_content.embed.field_media
+field_name: field_media
+entity_type: block_content
+bundle: embed
+label: 'Embed external content'
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:media'
+  handler_settings:
+    target_bundles:
+      embed: embed
+    sort:
+      field: _none
+      direction: ASC
+    auto_create: true
+    auto_create_bundle: ''
+field_type: entity_reference

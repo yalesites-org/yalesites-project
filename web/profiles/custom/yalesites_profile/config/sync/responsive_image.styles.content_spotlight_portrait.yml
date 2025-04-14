@@ -1,0 +1,27 @@
+uuid: f900ac4e-4dd0-480b-8dc3-ba10227a2d2c
+langcode: en
+status: true
+dependencies:
+  config:
+    - image.style.2_3_175
+    - image.style.2_3_320
+    - image.style.2_3_480
+    - image.style.2_3_540
+    - image.style.2_3_640
+id: content_spotlight_portrait
+label: 'Content Spotlight - Portrait (2:3)'
+image_style_mappings:
+  -
+    image_mapping_type: sizes
+    image_mapping:
+      sizes: '(min-width: 1344px) 320px, (min-width: 992px) 320, 50vw'
+      sizes_image_styles:
+        - '2_3_175'
+        - '2_3_320'
+        - '2_3_480'
+        - '2_3_540'
+        - '2_3_640'
+    breakpoint_id: responsive_image.viewport_sizing
+    multiplier: 1x
+breakpoint_group: responsive_image
+fallback_image_style: '2_3_480'

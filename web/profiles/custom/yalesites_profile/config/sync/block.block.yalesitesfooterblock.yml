@@ -1,0 +1,20 @@
+uuid: 4d9a3d30-51e9-4057-9f6d-99b22f6e367b
+langcode: en
+status: true
+dependencies:
+  module:
+    - ys_core
+  theme:
+    - atomic
+id: yalesitesfooterblock
+theme: atomic
+region: footer
+weight: 0
+provider: null
+plugin: ys_footer_block
+settings:
+  id: ys_footer_block
+  label: 'YaleSites Footer Block'
+  label_display: '0'
+  provider: ys_core
+visibility: {  }

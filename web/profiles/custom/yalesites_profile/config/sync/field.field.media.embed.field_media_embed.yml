@@ -1,0 +1,21 @@
+uuid: 8ebbe85a-cc81-4f71-bfee-c48ae4115acf
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.media.field_media_embed
+    - media.type.embed
+  module:
+    - ys_embed
+id: media.embed.field_media_embed
+field_name: field_media_embed
+entity_type: media
+bundle: embed
+label: 'Embed external content'
+description: ''
+required: true
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: embed

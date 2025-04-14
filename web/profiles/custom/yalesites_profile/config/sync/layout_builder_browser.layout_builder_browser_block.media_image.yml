@@ -1,0 +1,11 @@
+uuid: fd92c1b0-66f6-4c00-92f7-0f21abce1167
+langcode: en
+status: true
+dependencies: {  }
+id: media_image
+block_id: 'inline_block:image'
+category: media
+label: Image
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/image.svg
+image_alt: ''
+weight: -12

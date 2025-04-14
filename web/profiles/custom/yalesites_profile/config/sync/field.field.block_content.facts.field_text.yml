@@ -1,0 +1,24 @@
+uuid: be5f9149-3533-4dd0-a7ce-c02388d5fb7b
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.facts
+    - field.storage.block_content.field_text
+    - filter.format.restricted_html
+  module:
+    - text
+id: block_content.facts.field_text
+field_name: field_text
+entity_type: block_content
+bundle: facts
+label: Content
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - restricted_html
+field_type: text_long

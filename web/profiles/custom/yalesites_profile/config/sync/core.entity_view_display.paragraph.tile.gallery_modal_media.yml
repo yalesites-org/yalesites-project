@@ -1,0 +1,32 @@
+uuid: 9c267fe3-f420-4684-889b-a2bbb17572bd
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.paragraph.gallery_modal_media
+    - field.field.paragraph.tile.field_heading
+    - field.field.paragraph.tile.field_link
+    - field.field.paragraph.tile.field_media
+    - field.field.paragraph.tile.field_style_color
+    - field.field.paragraph.tile.field_text
+    - paragraphs.paragraphs_type.tile
+id: paragraph.tile.gallery_modal_media
+targetEntityType: paragraph
+bundle: tile
+mode: gallery_modal_media
+content:
+  field_media:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: full
+      link: false
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  field_heading: true
+  field_link: true
+  field_style_color: true
+  field_text: true
+  search_api_excerpt: true

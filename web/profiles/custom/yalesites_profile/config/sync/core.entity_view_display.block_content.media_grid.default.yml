@@ -1,0 +1,36 @@
+uuid: fcb6340b-6be6-41cd-90a3-84d43a0e6c46
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.media_grid
+    - field.field.block_content.media_grid.field_heading
+    - field.field.block_content.media_grid.field_instructions
+    - field.field.block_content.media_grid.field_media_grid_items
+  module:
+    - entity_reference_revisions
+    - text
+id: block_content.media_grid.default
+targetEntityType: block_content
+bundle: media_grid
+mode: default
+content:
+  field_heading:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_media_grid_items:
+    type: entity_reference_revisions_entity_view
+    label: hidden
+    settings:
+      view_mode: default
+      link: ''
+    third_party_settings: {  }
+    weight: 1
+    region: content
+hidden:
+  field_instructions: true
+  search_api_excerpt: true

@@ -1,0 +1,19 @@
+uuid: 17efb23f-76a6-46dd-8f52-cdb197a9c75f
+langcode: en
+status: true
+dependencies:
+  module:
+    - markup
+    - node
+id: node.field_localist_info
+field_name: field_localist_info
+entity_type: node
+type: markup
+settings: {  }
+module: markup
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

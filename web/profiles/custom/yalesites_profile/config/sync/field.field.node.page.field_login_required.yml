@@ -1,0 +1,23 @@
+uuid: 38cef89f-39d1-4ea1-8a95-17cd2cf649dd
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_login_required
+    - node.type.page
+id: node.page.field_login_required
+field_name: field_login_required
+entity_type: node
+bundle: page
+label: 'CAS Login Required'
+description: ''
+required: false
+translatable: false
+default_value:
+  -
+    value: 0
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

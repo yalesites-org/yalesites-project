@@ -1,0 +1,25 @@
+uuid: 48990e8c-a617-48d0-af0d-fe5387a1b2bf
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.callout
+    - field.storage.block_content.field_instructions
+  module:
+    - markup
+id: block_content.callout.field_instructions
+field_name: field_instructions
+entity_type: block_content
+bundle: callout
+label: Instructions
+description: ''
+required: false
+translatable: true
+default_value:
+  - {  }
+default_value_callback: ''
+settings:
+  markup:
+    value: "<p>Callout allows you to highlight and feature specific information or actions that relate to other content on the page. The callout component is a great way to add a large call-to-action to your page while also visually breaking up some of your content.</p>\r\n"
+    format: basic_html
+field_type: markup

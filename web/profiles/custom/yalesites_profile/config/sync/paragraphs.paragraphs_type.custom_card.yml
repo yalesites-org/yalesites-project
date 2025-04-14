@@ -1,0 +1,10 @@
+uuid: 744e2081-7eb8-425b-969f-74c6651a2776
+langcode: en
+status: true
+dependencies: {  }
+id: custom_card
+label: 'Custom Card'
+icon_uuid: null
+icon_default: null
+description: 'Card item to be used within the Custom Cards paragraph type.'
+behavior_plugins: {  }

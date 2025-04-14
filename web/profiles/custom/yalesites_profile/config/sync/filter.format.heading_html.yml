@@ -1,0 +1,48 @@
+uuid: 994846f4-f8da-43ec-88c1-64e7c2cf6ae6
+langcode: en
+status: true
+dependencies:
+  module:
+    - improve_line_breaks_filter
+    - typogrify
+name: 'Heading HTML'
+format: heading_html
+weight: 0
+filters:
+  filter_html:
+    id: filter_html
+    provider: filter
+    status: true
+    weight: -10
+    settings:
+      allowed_html: '<em> <strong> <p>'
+      filter_html_help: false
+      filter_html_nofollow: false
+  improve_line_breaks_filter:
+    id: improve_line_breaks_filter
+    provider: improve_line_breaks_filter
+    status: false
+    weight: 50
+    settings:
+      remove_empty_paragraphs: false
+  typogrify:
+    id: typogrify
+    provider: typogrify
+    status: true
+    weight: 10
+    settings:
+      smartypants_enabled: 1
+      smartypants_hyphens: 2
+      space_hyphens: 0
+      wrap_ampersand: 0
+      widont_enabled: 0
+      space_to_nbsp: 1
+      hyphenate_shy: 0
+      wrap_abbr: 0
+      wrap_caps: 0
+      wrap_initial_quotes: 1
+      wrap_numbers: 0
+      ligatures: 'a:0:{}'
+      arrows: 'a:0:{}'
+      fractions: 'a:0:{}'
+      quotes: 'a:2:{s:2:",,";s:2:",,";s:2:"''''";s:2:"''''";}'

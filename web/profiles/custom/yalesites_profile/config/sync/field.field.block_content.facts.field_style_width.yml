@@ -1,0 +1,21 @@
+uuid: cb4303ec-f009-4692-b6ec-c1ed8151f81f
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.facts
+    - field.storage.block_content.field_style_width
+  module:
+    - options
+id: block_content.facts.field_style_width
+field_name: field_style_width
+entity_type: block_content
+bundle: facts
+label: Columns
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ys_themes_default_value_function
+settings: {  }
+field_type: list_string

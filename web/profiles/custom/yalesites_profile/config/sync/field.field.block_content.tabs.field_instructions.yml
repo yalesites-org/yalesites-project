@@ -1,0 +1,25 @@
+uuid: 11c24c91-590a-4934-b10e-b89194faf2f8
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.tabs
+    - field.storage.block_content.field_instructions
+  module:
+    - markup
+id: block_content.tabs.field_instructions
+field_name: field_instructions
+entity_type: block_content
+bundle: tabs
+label: Instructions
+description: ''
+required: false
+translatable: true
+default_value:
+  - {  }
+default_value_callback: ''
+settings:
+  markup:
+    value: "<p>Tabs allow you to create segmented content chunks on the same page. Tabs can be used for content that is related but not sequential or dependent information.</p>\r\n"
+    format: basic_html
+field_type: markup

@@ -1,0 +1,23 @@
+uuid: 5dccfa96-751b-4368-ba14-738d7eae1af6
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.taxonomy_term.field_place_localist_url
+    - taxonomy.vocabulary.event_place
+  module:
+    - link
+id: taxonomy_term.event_place.field_place_localist_url
+field_name: field_place_localist_url
+entity_type: taxonomy_term
+bundle: event_place
+label: 'Place Localist URL'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  title: 0
+  link_type: 16
+field_type: link

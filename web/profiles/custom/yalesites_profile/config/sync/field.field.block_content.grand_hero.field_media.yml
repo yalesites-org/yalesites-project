@@ -1,0 +1,31 @@
+uuid: cf5a0741-0f66-4dc8-8c21-0641fcd6b935
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.grand_hero
+    - field.storage.block_content.field_media
+    - media.type.background_video
+    - media.type.image
+id: block_content.grand_hero.field_media
+field_name: field_media
+entity_type: block_content
+bundle: grand_hero
+label: Media
+description: ''
+required: true
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:media'
+  handler_settings:
+    target_bundles:
+      background_video: background_video
+      image: image
+    sort:
+      field: _none
+      direction: ASC
+    auto_create: true
+    auto_create_bundle: background_video
+field_type: entity_reference

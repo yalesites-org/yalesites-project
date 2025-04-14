@@ -1,0 +1,7 @@
+_core:
+  default_config_hash: Q8ZrmO8RU36KGMcNEaWFQOqYYO3z5Q4IZoS-xYy8MlA
+metadata_cache:
+  enabled: true
+  expiration: 172800
+  disallowed_paths: {  }
+missing_file_log_level: 3

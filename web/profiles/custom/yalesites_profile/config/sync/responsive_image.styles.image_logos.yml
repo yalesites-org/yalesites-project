@@ -1,0 +1,29 @@
+uuid: 327ae514-8556-41e7-9fb1-2a0d2218b2fd
+langcode: en
+status: true
+dependencies:
+  config:
+    - image.style.1_1_150
+    - image.style.1_1_200
+    - image.style.1_1_250
+    - image.style.1_1_300_
+    - image.style.1_1_500
+    - image.style.1_1_600
+id: image_logos
+label: 'Image - Logos'
+image_style_mappings:
+  -
+    image_mapping_type: sizes
+    image_mapping:
+      sizes: '(min-width:556px) 200px, 50vw'
+      sizes_image_styles:
+        - '1_1_150'
+        - '1_1_200'
+        - '1_1_250'
+        - '1_1_300_'
+        - '1_1_500'
+        - '1_1_600'
+    breakpoint_id: responsive_image.viewport_sizing
+    multiplier: 1x
+breakpoint_group: responsive_image
+fallback_image_style: '1_1_200'

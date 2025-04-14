@@ -1,0 +1,21 @@
+uuid: b35c43c3-a5be-47f7-9792-9c61606024ec
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.content_spotlight
+    - field.storage.block_content.field_style_alignment
+  module:
+    - options
+id: block_content.content_spotlight.field_style_alignment
+field_name: field_style_alignment
+entity_type: block_content
+bundle: content_spotlight
+label: 'Vertical Alignment'
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ys_themes_default_value_function
+settings: {  }
+field_type: list_string

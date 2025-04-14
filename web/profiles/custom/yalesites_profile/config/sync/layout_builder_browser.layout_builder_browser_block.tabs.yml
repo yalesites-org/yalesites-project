@@ -1,0 +1,11 @@
+uuid: 8997f9c6-55b7-4bf1-a2b8-645701ff6074
+langcode: en
+status: true
+dependencies: {  }
+id: tabs
+block_id: 'inline_block:tabs'
+category: advanced
+label: Tabs
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/tabs.svg
+image_alt: ''
+weight: -5

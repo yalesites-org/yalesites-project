@@ -1,0 +1,15 @@
+uuid: aba5696c-4eaa-4099-8a4a-e517a4b2cebb
+langcode: en
+status: true
+dependencies: {  }
+name: max_width_1920
+label: 'Max-width (1920)'
+effects:
+  be3ef2c3-cca1-4fa3-ab6d-15ce25adc4ad:
+    uuid: be3ef2c3-cca1-4fa3-ab6d-15ce25adc4ad
+    id: image_scale
+    weight: 1
+    data:
+      width: 1920
+      height: null
+      upscale: false

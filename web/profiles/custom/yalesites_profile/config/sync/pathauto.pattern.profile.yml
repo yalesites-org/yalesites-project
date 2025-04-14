@@ -1,0 +1,22 @@
+uuid: b2fcd2c4-76e3-49c5-b551-f8166866cec1
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+id: profile
+label: Profile
+type: 'canonical_entities:node'
+pattern: 'profile/[node:title]'
+selection_criteria:
+  edb5c23c-e944-45e9-be99-aaf36f9871ad:
+    id: 'entity_bundle:node'
+    negate: false
+    uuid: edb5c23c-e944-45e9-be99-aaf36f9871ad
+    context_mapping:
+      node: node
+    bundles:
+      profile: profile
+selection_logic: and
+weight: -5
+relationships: {  }

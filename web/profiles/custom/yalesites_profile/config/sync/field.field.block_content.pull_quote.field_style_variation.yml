@@ -1,0 +1,21 @@
+uuid: 027d7ee5-73e9-4d12-81fd-b41892e8dd19
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.pull_quote
+    - field.storage.block_content.field_style_variation
+  module:
+    - options
+id: block_content.pull_quote.field_style_variation
+field_name: field_style_variation
+entity_type: block_content
+bundle: pull_quote
+label: Style
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ys_themes_default_value_function
+settings: {  }
+field_type: list_string

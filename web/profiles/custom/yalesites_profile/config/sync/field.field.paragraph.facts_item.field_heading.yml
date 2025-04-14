@@ -1,0 +1,24 @@
+uuid: 9bed6d58-35fe-4d93-aedc-1f1d5fee6ce5
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_heading
+    - filter.format.heading_html
+    - paragraphs.paragraphs_type.facts_item
+  module:
+    - text
+id: paragraph.facts_item.field_heading
+field_name: field_heading
+entity_type: paragraph
+bundle: facts_item
+label: 'Facts and Figures Item Heading'
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - heading_html
+field_type: text

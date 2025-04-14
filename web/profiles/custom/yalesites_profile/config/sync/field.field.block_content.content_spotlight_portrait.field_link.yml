@@ -1,0 +1,23 @@
+uuid: c048bfe6-6804-4b53-8733-82391ab95e53
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.content_spotlight_portrait
+    - field.storage.block_content.field_link
+  module:
+    - link
+id: block_content.content_spotlight_portrait.field_link
+field_name: field_link
+entity_type: block_content
+bundle: content_spotlight_portrait
+label: Link
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  title: 2
+  link_type: 17
+field_type: link

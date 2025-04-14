@@ -1,0 +1,21 @@
+uuid: 10c90cf6-3e45-4adf-9690-3be5a0fc9dc6
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_metatags
+    - node.type.profile
+  module:
+    - metatag
+id: node.profile.field_metatags
+field_name: field_metatags
+entity_type: node
+bundle: profile
+label: Metadata
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: metatag

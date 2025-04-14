@@ -1,0 +1,25 @@
+uuid: 0ab0393d-f21b-42f5-bf5f-767d089fdd5f
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.divider
+    - field.storage.block_content.field_instructions
+  module:
+    - markup
+id: block_content.divider.field_instructions
+field_name: field_instructions
+entity_type: block_content
+bundle: divider
+label: Instructions
+description: ''
+required: false
+translatable: true
+default_value:
+  - {  }
+default_value_callback: ''
+settings:
+  markup:
+    value: "<p>Divider allows you to add a visual divider line to your page.</p>\r\n"
+    format: basic_html
+field_type: markup

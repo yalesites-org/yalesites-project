@@ -1,0 +1,25 @@
+uuid: 0864da10-65b7-4ddd-9fa1-ffb5f7a19a6c
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.cta_banner
+    - field.storage.block_content.field_instructions
+  module:
+    - markup
+id: block_content.cta_banner.field_instructions
+field_name: field_instructions
+entity_type: block_content
+bundle: cta_banner
+label: Instructions
+description: ''
+required: false
+translatable: false
+default_value:
+  - {  }
+default_value_callback: ''
+settings:
+  markup:
+    value: "<p>Action Banner allows you to highlight major stories, resources, people, events, and any other significant topics through a large image banner. The Action Banner includes a heading, body text, and a call-to-action.</p>\r\n"
+    format: basic_html
+field_type: markup

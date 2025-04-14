@@ -1,0 +1,109 @@
+uuid: 89f3b98b-daf6-43d0-ad0c-077054162bd0
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_content
+    - paragraphs.paragraphs_type.tab
+    - paragraphs.paragraphs_type.text
+  module:
+    - entity_reference_revisions
+id: paragraph.tab.field_content
+field_name: field_content
+entity_type: paragraph
+bundle: tab
+label: 'Tab Content'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:paragraph'
+  handler_settings:
+    target_bundles:
+      text: text
+    negate: 0
+    target_bundles_drag_drop:
+      accordion:
+        weight: 20
+        enabled: false
+      accordion_item:
+        weight: 21
+        enabled: false
+      callout:
+        weight: 22
+        enabled: false
+      callout_item:
+        weight: 23
+        enabled: false
+      cta_banner:
+        weight: 24
+        enabled: false
+      custom_card:
+        weight: 33
+        enabled: false
+      custom_cards:
+        weight: 34
+        enabled: false
+      divider:
+        weight: 25
+        enabled: false
+      embed:
+        weight: 26
+        enabled: false
+      event_cards:
+        weight: 27
+        enabled: false
+      event_list:
+        weight: 28
+        enabled: false
+      gallery:
+        weight: 39
+        enabled: false
+      gallery_item:
+        weight: 40
+        enabled: false
+      image:
+        weight: 29
+        enabled: false
+      media_grid:
+        weight: 42
+        enabled: false
+      media_grid_item:
+        weight: 43
+        enabled: false
+      post_cards:
+        weight: 30
+        enabled: false
+      post_list:
+        weight: 31
+        enabled: false
+      pull_quote:
+        weight: 33
+        enabled: false
+      quick_links:
+        weight: 47
+        enabled: false
+      section:
+        weight: 34
+        enabled: false
+      tab:
+        weight: 35
+        enabled: false
+      tabs:
+        weight: 36
+        enabled: false
+      text:
+        weight: 37
+        enabled: true
+      text_with_image:
+        weight: 38
+        enabled: false
+      video:
+        weight: 53
+        enabled: false
+      wrapped_image:
+        weight: 32
+        enabled: false
+field_type: entity_reference_revisions

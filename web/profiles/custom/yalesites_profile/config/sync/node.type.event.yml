@@ -1,0 +1,53 @@
+uuid: c19e042c-ed72-4eac-a5c7-aec52bb5ec69
+langcode: en
+status: true
+dependencies:
+  module:
+    - entity_redirect
+    - menu_ui
+    - node_revision_delete
+    - search_api_exclude
+third_party_settings:
+  menu_ui:
+    available_menus: {  }
+    parent: ''
+  search_api_exclude:
+    enabled: 1
+  node_revision_delete:
+    amount:
+      status: true
+      settings:
+        amount: 1
+    created:
+      status: true
+      settings:
+        age: 12
+  entity_redirect:
+    redirect:
+      anonymous:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+      add:
+        active: true
+        destination: layout_builder
+        url: ''
+        external: ''
+      edit:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+      delete:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+name: Event
+type: event
+description: 'Display the details of an individual event, such as time, date, and location. Can be displayed on a calendar of events.'
+help: "The Event content type allows you to create a page for your event. When creating an event page, remember to include important information relating to your events, such as speaker information, ticket pricing, parking, and building/room information.\_Event content pages can be dynamically listed in your other web pages using the Event Cards or Event List components.\_"
+new_revision: true
+preview_mode: 0
+display_submitted: false

@@ -1,0 +1,25 @@
+uuid: 19eaff38-ccbd-4297-b72a-29d5a56ed218
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.directory
+    - field.field.block_content.directory.field_heading
+    - field.field.block_content.directory.field_instructions
+  module:
+    - text
+id: block_content.directory.default
+targetEntityType: block_content
+bundle: directory
+mode: default
+content:
+  field_heading:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  field_instructions: true
+  search_api_excerpt: true

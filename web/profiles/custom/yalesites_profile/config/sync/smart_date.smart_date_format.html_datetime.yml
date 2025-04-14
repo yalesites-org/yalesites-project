@@ -1,0 +1,15 @@
+uuid: 6410f42c-6c28-4ce8-ac76-153b39845c03
+langcode: en
+status: true
+dependencies: {  }
+id: html_datetime
+label: 'HTML Datetime'
+date_format: c
+time_format: 'g:i a'
+time_hour_format: 'g a'
+allday_label: 'All day'
+separator: ' - '
+join: ', '
+ampm_reduce: '1'
+date_first: '1'
+site_time_toggle: '1'

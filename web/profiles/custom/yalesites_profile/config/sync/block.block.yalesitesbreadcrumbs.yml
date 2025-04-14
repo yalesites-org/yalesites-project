@@ -1,0 +1,20 @@
+uuid: 7662db97-2e35-4f64-80c9-5180aee715db
+langcode: en
+status: false
+dependencies:
+  module:
+    - ys_core
+  theme:
+    - atomic
+id: yalesitesbreadcrumbs
+theme: atomic
+region: content
+weight: -2
+provider: null
+plugin: ys_breadcrumb_block
+settings:
+  id: ys_breadcrumb_block
+  label: 'YaleSites Breadcrumbs'
+  label_display: '0'
+  provider: ys_core
+visibility: {  }

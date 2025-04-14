@@ -1,0 +1,24 @@
+uuid: 78290051-b01d-4e13-90b3-e9f30432b98c
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_teaser_text
+    - filter.format.heading_html
+    - node.type.post
+  module:
+    - text
+id: node.post.field_teaser_text
+field_name: field_teaser_text
+entity_type: node
+bundle: post
+label: 'Teaser Text'
+description: 'Teaser details display in feeds, views, search engine result pages, and social sharing cards.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - heading_html
+field_type: text_long

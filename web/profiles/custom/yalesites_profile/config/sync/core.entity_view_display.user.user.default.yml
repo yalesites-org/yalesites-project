@@ -1,0 +1,19 @@
+uuid: 4bf69e9c-6a97-4f0e-bde6-a48dda2ecfb5
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.user.user.field_first_name
+    - field.field.user.user.field_last_name
+  module:
+    - user
+id: user.user.default
+targetEntityType: user
+bundle: user
+mode: default
+content: {  }
+hidden:
+  field_first_name: true
+  field_last_name: true
+  member_for: true
+  search_api_excerpt: true

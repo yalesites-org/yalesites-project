@@ -1,0 +1,18 @@
+uuid: 32ddcc8a-ab22-4e41-84c0-527d8cf64cc2
+langcode: en
+status: true
+dependencies:
+  theme:
+    - ys_admin_theme
+id: ys_admin_theme_page_title
+theme: ys_admin_theme
+region: header
+weight: -3
+provider: null
+plugin: page_title_block
+settings:
+  id: page_title_block
+  label: 'Page title'
+  label_display: '0'
+  provider: core
+visibility: {  }

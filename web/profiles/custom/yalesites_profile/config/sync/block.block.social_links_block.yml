@@ -1,0 +1,20 @@
+uuid: a349192a-9081-41c1-8662-83b576fbf15c
+langcode: en
+status: true
+dependencies:
+  module:
+    - ys_core
+  theme:
+    - atomic
+id: social_links_block
+theme: atomic
+region: footer
+weight: 0
+provider: null
+plugin: social_links_block
+settings:
+  id: social_links_block
+  label: 'Social Links Block'
+  label_display: '0'
+  provider: ys_core
+visibility: {  }

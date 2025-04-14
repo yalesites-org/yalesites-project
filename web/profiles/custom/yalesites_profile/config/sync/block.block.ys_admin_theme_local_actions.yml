@@ -1,0 +1,20 @@
+uuid: 4dfa1c06-dc6c-49e5-b9d4-c5ca6a2846cb
+langcode: en
+status: true
+dependencies:
+  theme:
+    - ys_admin_theme
+_core:
+  default_config_hash: ABoKnlk20KHqZRw_2Qr4EvaFvH4lnQ2nuhunHeE1JIU
+id: ys_admin_theme_local_actions
+theme: ys_admin_theme
+region: content
+weight: -2
+provider: null
+plugin: local_actions_block
+settings:
+  id: local_actions_block
+  label: 'Primary admin actions'
+  label_display: '0'
+  provider: core
+visibility: {  }

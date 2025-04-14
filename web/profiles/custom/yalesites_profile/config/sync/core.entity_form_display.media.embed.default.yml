@@ -1,0 +1,27 @@
+uuid: dfb13788-d5ee-42c1-81d7-4cbd931e837d
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.media.embed.field_media_embed
+    - media.type.embed
+  module:
+    - ys_embed
+id: media.embed.default
+targetEntityType: media
+bundle: embed
+mode: default
+content:
+  field_media_embed:
+    type: embed_default
+    weight: 0
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+hidden:
+  created: true
+  name: true
+  path: true
+  revision_log_message: true
+  status: true
+  uid: true

@@ -1,0 +1,9 @@
+uuid: 2585655c-bb62-427d-88a4-d5edde17b830
+langcode: en
+status: true
+dependencies: {  }
+id: node__post
+label: 'Content: Post'
+tags:
+  article_published_time: '[node:field_publish_date:date:html_datetime]'
+  og_type: article

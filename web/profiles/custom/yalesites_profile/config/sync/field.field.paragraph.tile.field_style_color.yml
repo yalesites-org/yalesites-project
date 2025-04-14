@@ -1,0 +1,21 @@
+uuid: 72dfd355-7b93-4185-a876-d6b468ff8c69
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_style_color
+    - paragraphs.paragraphs_type.tile
+  module:
+    - options
+id: paragraph.tile.field_style_color
+field_name: field_style_color
+entity_type: paragraph
+bundle: tile
+label: Theme
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ys_themes_default_value_function
+settings: {  }
+field_type: list_string
