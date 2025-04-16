@@ -13,7 +13,7 @@ use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Url;
 use Drupal\node\Entity\Node;
-use Drupal\Core\Render\Element\NestedArray;
+use Drupal\Component\Utility\NestedArray;
 
 /**
  * @file
