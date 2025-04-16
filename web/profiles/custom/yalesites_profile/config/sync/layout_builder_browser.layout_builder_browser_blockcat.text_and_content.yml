@@ -1,0 +1,10 @@
+uuid: e8e384fd-e841-4a6e-be0d-44bc3b61e77f
+langcode: en
+status: true
+dependencies: {  }
+id: text_and_content
+label: 'Text & Content'
+weight: -5
+opened: true
+image_path: ''
+image_alt: ''
