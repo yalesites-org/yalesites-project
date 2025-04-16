@@ -103,6 +103,7 @@
     "drupal/simple_sitemap": "4.2.1",
     "drupal/single_content_sync": "1.4.6",
     "drupal/smart_date": "4.1.6",
+    "drupal/taxonomy_manager": "2.0.19",
     "drupal/twig_tweak": "3.4.0",
     "drupal/typogrify": "1.4-rc1",
     "drupal/upgrade_status": "4.3.5",
@@ -111,8 +112,8 @@
     "jjj/chosen": "2.2.1",
     "laminas/laminas-escaper": "2.13.0",
     "northernco/ckeditor5-anchor-drupal": "0.4.0",
-    "yalesites-org/ai_engine": "1.2.8",
-    "yalesites-org/atomic": "1.44.1",
+    "yalesites-org/ai_engine": "1.2.9",
+    "yalesites-org/atomic": "1.45.0",
     "yalesites-org/yale_cas": "v1.0.5"
   },
   "minimum-stability": "dev",
@@ -176,6 +177,9 @@
       },
       "drupal/selective_better_exposed_filters": {
         "Hide form when no options are available:": "patches/selective_better_exposed_filters/selective_better_exposed_filters-3432551.patch"
+      },
+      "drupal/taxonomy_manager": {
+        "Access bug on edit terms form https://www.drupal.org/project/taxonomy_manager/issues/3514624": "https://git.drupalcode.org/project/taxonomy_manager/-/merge_requests/69.patch"
       },
       "drupal/menu_item_limit": {
         "Can permissions be set for specific roles? https://www.drupal.org/project/menu_item_limit/issues/3458139": "https://git.drupalcode.org/project/menu_item_limit/-/merge_requests/12.patch"

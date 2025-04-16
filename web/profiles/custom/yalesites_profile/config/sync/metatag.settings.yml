@@ -5,11 +5,16 @@ entity_type_groups:
   node:
     event:
       basic: basic
+      ai_engine: ai_engine
     page:
       basic: basic
+      ai_engine: ai_engine
     post:
       basic: basic
+      ai_engine: ai_engine
       open_graph: open_graph
+    profile:
+      ai_engine: ai_engine
 separator: ','
 tag_trim_method: beforeValue
 use_maxlength: true
