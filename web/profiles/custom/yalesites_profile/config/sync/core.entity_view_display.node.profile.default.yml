@@ -66,38 +66,6 @@ third_party_settings:
               context_mapping: {  }
             weight: 1
             additional: {  }
-          b8465f25-6560-4337-bfc2-7dddbce50ea7:
-            uuid: b8465f25-6560-4337-bfc2-7dddbce50ea7
-            region: content
-            configuration:
-              id: 'field_block:node:profile:field_audience'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: entity_reference_label
-                label: above
-                settings:
-                  link: true
-                third_party_settings: {  }
-            weight: 3
-            additional: {  }
-          10965745-2d1e-48b0-b7c0-e6d63ad8b453:
-            uuid: 10965745-2d1e-48b0-b7c0-e6d63ad8b453
-            region: content
-            configuration:
-              id: 'field_block:node:profile:field_custom_vocab'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: entity_reference_label
-                label: above
-                settings:
-                  link: true
-                third_party_settings: {  }
-            weight: 4
-            additional: {  }
         third_party_settings:
           layout_builder_lock:
             lock:
@@ -128,9 +96,11 @@ third_party_settings:
             lock: {  }
   layout_builder_restrictions:
     allowed_block_categories:
+      - AddToAny
       - 'Chaos Tools'
       - 'Content fields'
       - 'Custom block types'
+      - 'Custom blocks'
       - Devel
       - Editoria11y
       - Forms
@@ -148,15 +118,21 @@ third_party_settings:
       allowed_layouts:
         - layout_onecol
         - ys_layout_two_column
-      denylisted_blocks: {  }
+      denylisted_blocks:
+        'Custom block types':
+          - wrapped_text_callout
+        'Inline blocks':
+          - 'inline_block:wrapped_text_callout'
       allowlisted_blocks:
         'YaleSites Layouts':
           - profile_contact_block
           - profile_meta_block
           - ys_taxonomy_display_block
       restricted_categories:
+        - AddToAny
         - 'Chaos Tools'
         - 'Content fields'
+        - 'Custom blocks'
         - Devel
         - Editoria11y
         - Forms
@@ -184,36 +160,74 @@ third_party_settings:
               - accordion
               - button_link
               - divider
+              - embed
+              - event_list
+              - gallery
               - image
+              - link_grid
+              - media_grid
+              - post_list
               - pull_quote
               - reference_card
               - tabs
               - text
               - video
+              - wrapped_text_callout
             'Inline blocks':
               - 'inline_block:accordion'
               - 'inline_block:button_link'
+              - 'inline_block:event_list'
               - 'inline_block:divider'
+              - 'inline_block:embed'
+              - 'inline_block:gallery'
               - 'inline_block:image'
+              - 'inline_block:link_grid'
+              - 'inline_block:media_grid'
+              - 'inline_block:post_list'
               - 'inline_block:pull_quote'
               - 'inline_block:reference_card'
               - 'inline_block:tabs'
               - 'inline_block:text'
               - 'inline_block:video'
+              - 'inline_block:wrapped_text_callout'
             'YaleSites Layouts':
               - profile_contact_block
-              - ys_taxonomy_display_block
           sidebar:
             'Custom block types':
+              - accordion
+              - button_link
+              - divider
+              - image
+              - link_grid
+              - pull_quote
+              - tabs
               - text
+              - video
+              - webform
             'Inline blocks':
+              - 'inline_block:accordion'
+              - 'inline_block:button_link'
+              - 'inline_block:divider'
+              - 'inline_block:image'
+              - 'inline_block:link_grid'
+              - 'inline_block:webform'
+              - 'inline_block:pull_quote'
+              - 'inline_block:tabs'
               - 'inline_block:text'
+              - 'inline_block:video'
             'YaleSites Layouts':
               - profile_contact_block
-      denylisted_blocks: {  }
+      denylisted_blocks:
+        layout_onecol:
+          all_regions:
+            'Custom block types':
+              - wrapped_text_callout
+            'Inline blocks':
+              - 'inline_block:wrapped_text_callout'
       restricted_categories:
         ys_layout_two_column:
           sidebar:
+            - AddToAny
             - 'Chaos Tools'
             - 'Content fields'
             - 'Custom blocks'
@@ -227,6 +241,7 @@ third_party_settings:
             - 'YaleSites alert'
             - core
           content:
+            - AddToAny
             - 'Chaos Tools'
             - 'Content fields'
             - Forms
@@ -437,6 +452,7 @@ content:
     weight: 100
     region: content
 hidden:
+  addtoany: true
   layout_builder__layout: true
   search_api_excerpt: true
   workflow_buttons: true

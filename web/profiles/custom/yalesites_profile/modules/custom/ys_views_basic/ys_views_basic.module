@@ -5,6 +5,8 @@
  * Contains ys_views_basic.module functions.
  */
 
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\node\NodeInterface;
 use Drupal\views\ViewExecutable;
 
 /**
@@ -92,13 +94,14 @@ function ys_views_basic_views_pre_build($view) {
 function ys_views_basic_views_pre_render(ViewExecutable $view): void {
   $view_id = $view->id();
   if (in_array($view_id, ['views_basic_scaffold', 'views_basic_scaffold_events'])) {
-    $pin_options = json_decode($view->args[10]);
+    $pin_options = json_decode($view->args[11]);
     $pin_label = '';
     if ($pin_options->pinned_to_top) {
       $pin_label = $pin_options->pin_label;
     }
     $field_display_options = json_decode($view->args[8]);
     $event_field_display_options = json_decode($view->args[9]);
+    $post_field_display_options = json_decode($view->args[10]);
     // Loop through each row in the view's results and update the node's
     // properties based on show_categories, show_tags and show_thumbnail
     // configuration.
@@ -107,11 +110,46 @@ function ys_views_basic_views_pre_render(ViewExecutable $view): void {
       $row->_entity->show_tags = $field_display_options->show_tags;
       $row->_entity->show_thumbnail = $field_display_options->show_thumbnail;
       $row->_entity->hide_add_to_calendar = $event_field_display_options->hide_add_to_calendar;
+      $row->_entity->show_eyebrow = $post_field_display_options->show_eyebrow;
 
       $sticky = (bool) $row->_entity->get('sticky')->value;
       if ($sticky) {
         $row->_entity->pin_label = $pin_label;
       }
     }
+  }
+}
+
+/**
+ * Implements hook_views_pre_view().
+ */
+function ys_views_basic_views_pre_view(ViewExecutable $view, $display_id, array &$args) {
+  if (!in_array($view->id(), ['views_basic_scaffold', 'views_basic_scaffold_events'])) {
+    return;
+
+  }
+
+  // Detect if this is an AJAX request.
+  $is_ajax = \Drupal::request()->isXmlHttpRequest();
+  if (!$is_ajax) {
+    return;
+  }
+
+  $viewsBasicManager = \Drupal::service('ys_views_basic.views_basic_manager');
+  $viewsBasicManager->setupView($view, end($args));
+}
+
+/**
+ * Implements hook_node_view().
+ */
+function ys_views_basic_node_view(array &$build, NodeInterface $node, EntityViewDisplayInterface $display, $view_mode) {
+  $view_modes = [
+    "card",
+    "condensed",
+    "list_item",
+  ];
+
+  if (in_array($view_mode, $view_modes)) {
+    $build['#cache']['max-age'] = 0;
   }
 }

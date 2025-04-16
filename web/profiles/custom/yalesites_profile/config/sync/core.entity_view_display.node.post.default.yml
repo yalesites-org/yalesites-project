@@ -8,10 +8,13 @@ dependencies:
     - field.field.node.post.field_category
     - field.field.node.post.field_custom_vocab
     - field.field.node.post.field_external_source
+    - field.field.node.post.field_hide_sharing_links
     - field.field.node.post.field_login_required
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
+    - field.field.node.post.field_show_read_time
     - field.field.node.post.field_tags
+    - field.field.node.post.field_teaser_lead_in
     - field.field.node.post.field_teaser_media
     - field.field.node.post.field_teaser_text
     - field.field.node.post.field_teaser_title
@@ -35,6 +38,16 @@ third_party_settings:
           label: 'Title and Metadata'
           context_mapping: {  }
         components:
+          26d18503-b171-4f60-80fb-647292da2a47:
+            uuid: 26d18503-b171-4f60-80fb-647292da2a47
+            region: content
+            configuration:
+              id: 'extra_field_block:node:post:content_moderation_control'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+            weight: 0
+            additional: {  }
           6abf6a0c-ae3d-47f8-bf30-08e382c90124:
             uuid: 6abf6a0c-ae3d-47f8-bf30-08e382c90124
             region: content
@@ -44,49 +57,7 @@ third_party_settings:
               label_display: ''
               provider: ys_layouts
               context_mapping: {  }
-            weight: 0
-            additional: {  }
-          26d18503-b171-4f60-80fb-647292da2a47:
-            uuid: 26d18503-b171-4f60-80fb-647292da2a47
-            region: content
-            configuration:
-              id: 'extra_field_block:node:post:content_moderation_control'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
             weight: 1
-            additional: {  }
-          7f02e533-466a-4916-8551-97cacf5b1329:
-            uuid: 7f02e533-466a-4916-8551-97cacf5b1329
-            region: content
-            configuration:
-              id: 'field_block:node:post:field_audience'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: entity_reference_label
-                label: above
-                settings:
-                  link: true
-                third_party_settings: {  }
-            weight: 2
-            additional: {  }
-          1c9fe26e-5139-4c69-97f0-36dc249676ca:
-            uuid: 1c9fe26e-5139-4c69-97f0-36dc249676ca
-            region: content
-            configuration:
-              id: 'field_block:node:post:field_custom_vocab'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: entity_reference_label
-                label: above
-                settings:
-                  link: true
-                third_party_settings: {  }
-            weight: 3
             additional: {  }
         third_party_settings:
           layout_builder_lock:
@@ -113,7 +84,9 @@ third_party_settings:
   layout_builder_restrictions:
     allowed_block_categories: {  }
     entity_view_mode_restriction:
-      allowed_layouts: {  }
+      allowed_layouts:
+        - layout_onecol
+        - ys_layout_two_column_50_50
       denylisted_blocks: {  }
       allowlisted_blocks:
         'YaleSites Layouts':
@@ -131,7 +104,53 @@ third_party_settings:
         - 'YaleSites alert'
         - core
     entity_view_mode_restriction_by_region:
-      allowed_layouts: {  }
+      allowed_layouts:
+        - layout_onecol
+        - ys_layout_two_column_50_50
+      allowlisted_blocks:
+        ys_layout_two_column_50_50:
+          all_regions:
+            'Custom block types':
+              - accordion
+              - button_link
+              - divider
+              - embed
+              - image
+              - link_grid
+              - pull_quote
+              - tabs
+              - text
+              - video
+              - webform
+            'Inline blocks':
+              - 'inline_block:accordion'
+              - 'inline_block:button_link'
+              - 'inline_block:divider'
+              - 'inline_block:embed'
+              - 'inline_block:image'
+              - 'inline_block:link_grid'
+              - 'inline_block:webform'
+              - 'inline_block:pull_quote'
+              - 'inline_block:tabs'
+              - 'inline_block:text'
+              - 'inline_block:video'
+      restricted_categories:
+        ys_layout_two_column_50_50:
+          all_regions:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - Devel
+            - Editoria11y
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites Layouts'
+            - 'YaleSites alert'
+            - core
 id: node.post.default
 targetEntityType: node
 bundle: post
@@ -186,7 +205,35 @@ content:
     third_party_settings: {  }
     weight: 2
     region: content
+  field_hide_sharing_links:
+    type: boolean
+    label: above
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    weight: 3
+    region: content
+  field_show_read_time:
+    type: boolean
+    label: above
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    weight: 5
+    region: content
+  field_teaser_lead_in:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    region: content
 hidden:
+  addtoany: true
   field_login_required: true
   field_metatags: true
   field_publish_date: true

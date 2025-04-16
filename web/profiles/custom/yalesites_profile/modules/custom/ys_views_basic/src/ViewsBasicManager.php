@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_views_basic;
 
+use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityDisplayRepository;
@@ -196,17 +197,26 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   protected $routeMatch;
 
   /**
+   * The cache tags invalidator.
+   *
+   * @var \Drupal\Core\Cache\CacheTagsInvalidatorInterface
+   */
+  protected $cacheTagsInvalidator;
+
+  /**
    * Constructs a new ViewsBasicManager object.
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
     EntityDisplayRepository $entity_display_repository,
     RouteMatchInterface $route_match,
+    CacheTagsInvalidatorInterface $cache_tags_invalidator,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityDisplayRepository = $entity_display_repository;
     $this->termStorage = $this->entityTypeManager->getStorage('taxonomy_term');
     $this->routeMatch = $route_match;
+    $this->cacheTagsInvalidator = $cache_tags_invalidator;
   }
 
   /**
@@ -216,34 +226,50 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     return new static(
       $container->get('entity_type.manager'),
       $container->get('entity_display.repository'),
-      $container->get('current_route_match')
+      $container->get('current_route_match'),
+      $container->get('cache_tags.invalidator'),
     );
   }
 
   /**
-   * Retrieves an overridden Views Basic Scaffold view.
+   * Initializes the view based on the content type.
    *
-   * Views Basic Scaffold view is overridden with the data from the parameters.
+   * @param array $types
+   *   An array of content types.
    *
-   * @param string $type
-   *   Can be either 'rendered' or 'count'.
-   * @param string $params
-   *   JSON of the parameter settings.
-   *
-   * @return array|int
-   *   An array of a rendered view or a count of the number of results based
-   *   on the parameters specified.
+   * @return \Drupal\views\ViewExecutable
+   *   The view object.
    */
-  public function getView($type, $params) {
-    // Prevents views recursion.
-    static $running;
-    if ($running) {
-      return NULL;
+  public function initView($types) {
+    if (in_array('event', $types)) {
+      return Views::getView('views_basic_scaffold_events');
     }
-    $running = TRUE;
+    else {
+      return Views::getView('views_basic_scaffold');
+    }
 
-    // Set up the view and initial decoded parameters.
+  }
+
+  /**
+   * Sets up the view with the parameters.
+   *
+   * @param \Drupal\views\ViewExecutable $view
+   *   The view object.
+   * @param string $params
+   *   The JSON encoded string of parameters.
+   *
+   * @return void
+   *   No return value.
+   */
+  public function setupView(&$view, $params) {
+    static $setupRunning;
+    if ($setupRunning) {
+      return;
+    }
+    $setupRunning = TRUE;
+
     $paramsDecoded = json_decode($params, TRUE);
+    $pinned_to_top = isset($paramsDecoded['pinned_to_top']) ? (bool) $paramsDecoded['pinned_to_top'] : FALSE;
 
     /* Events need to have aggregation turned on in the view. Therefore, we
      * retrieve a special event scaffold view and apply sorting here instead of
@@ -251,22 +277,27 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
      */
 
     if (in_array('event', $paramsDecoded['filters']['types'])) {
-      $view = Views::getView('views_basic_scaffold_events');
+      $sortArray = [];
       $sortDirection = explode(":", $paramsDecoded['sort_by']);
-      $view->getDisplay()->setOption('sorts', [
-        [
-          'id' => 'field_event_date_value',
-          'table' => "node__field_event_date",
-          'field' => 'field_event_date_value',
-          'group_type' => 'min',
-          'order' => $sortDirection[1],
-          'test' => 'hi',
-        ],
-      ]);
-    }
-    else {
-      // All other views get the original scaffold view.
-      $view = Views::getView('views_basic_scaffold');
+
+      if ($pinned_to_top) {
+        $sortArray[] = [
+          'id' => 'sticky',
+          'table' => "node_field_data",
+          'field' => 'sticky',
+          'order' => 'desc',
+        ];
+      }
+
+      $sortArray[] =
+      [
+        'id' => 'field_event_date_value',
+        'table' => "node__field_event_date",
+        'field' => 'field_event_date_value',
+        'order' => $sortDirection[1],
+      ];
+
+      $view->getDisplay()->setOption('sorts', $sortArray);
     }
 
     $view->setDisplay('block_1');
@@ -427,9 +458,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     $termsInclude = (count($termsIncludeArray) != 0) ? implode($operator, $termsIncludeArray) : 'all';
     $termsExclude = (count($termsExcludeArray) != 0) ? implode($operator, $termsExcludeArray) : NULL;
 
-    if (
-      ($type == 'count' && $paramsDecoded['display'] != 'limit') ||
-      ($type == 'rendered' && $paramsDecoded['display'] == 'all')) {
+    if ($paramsDecoded['display'] == 'all') {
       $itemsLimit = 0;
     }
     else {
@@ -452,7 +481,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'hide_add_to_calendar' => (int) !empty($paramsDecoded['event_field_options']['hide_add_to_calendar']),
     ];
 
-    $pinned_to_top = isset($paramsDecoded['pinned_to_top']) ? (bool) $paramsDecoded['pinned_to_top'] : FALSE;
+    $post_field_display_options = [
+      'show_eyebrow' => (int) !empty($paramsDecoded['post_field_options']['show_eyebrow']),
+    ];
+
     $pin_label = $paramsDecoded['pin_label'] ?? self::DEFAULT_PIN_LABEL;
 
     if (!$pinned_to_top) {
@@ -463,22 +495,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'pinned_to_top' => $pinned_to_top,
       'pin_label' => $pin_label,
     ];
-
-    $view->setArguments(
-      [
-        'type' => $filterType,
-        'terms_include' => $termsInclude,
-        'terms_exclude' => $termsExclude,
-        'sort' => $paramsDecoded['sort_by'],
-        'view' => $paramsDecoded['view_mode'],
-        'items' => $itemsLimit,
-        'event_time_period' => str_contains($filterType, 'event') ? $eventTimePeriod : NULL,
-        'offset' => $paramsDecoded['offset'] ?? 0,
-        'field_display_options' => json_encode($field_display_options),
-        'event_field_display_options' => json_encode($event_field_display_options),
-        'pin_settings' => json_encode($pin_options),
-      ]
-    );
 
     /*
      * End setting dynamic arguments.
@@ -505,6 +521,23 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
      * End include current node.
      */
 
+    $view_args = [
+      'type' => $filterType,
+      'terms_include' => $termsInclude,
+      'terms_exclude' => $termsExclude,
+      'sort' => $paramsDecoded['sort_by'],
+      'view' => $paramsDecoded['view_mode'],
+      'items' => $itemsLimit,
+      'event_time_period' => str_contains($filterType, 'event') ? $eventTimePeriod : NULL,
+      'offset' => $paramsDecoded['offset'] ?? 0,
+      'field_display_options' => json_encode($field_display_options),
+      'event_field_display_options' => json_encode($event_field_display_options),
+      'post_field_display_options' => json_encode($post_field_display_options),
+      'pin_settings' => json_encode($pin_options),
+      'original_settings' => $params,
+    ];
+
+    $view->setArguments($view_args);
     $view->execute();
 
     // Unset the pager. Needs to be done after view->execute();
@@ -512,29 +545,54 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       unset($view->pager);
     }
 
-    switch ($type) {
-      case "rendered":
-        $view = $view->preview();
-        // Add cache keys for each display option.
-        // This ensures that if the options for showing categories, tags,
-        // or thumbnails change, the cache will be invalidated,
-        // and the view will be re-rendered with the new options.
-        if ($view['#rows'] && $view['#rows']['#rows']) {
-          foreach ($view['#rows']['#rows'] as &$resultRow) {
-            $resultRow['#cache']['keys'][] = $field_display_options['show_categories'];
-            $resultRow['#cache']['keys'][] = $field_display_options['show_tags'];
-            $resultRow['#cache']['keys'][] = $field_display_options['show_thumbnail'];
-            $resultRow['#cache']['keys'][] = $event_field_display_options['hide_add_to_calendar'];
-            $resultRow['#cache']['keys'][] = $pin_options['pinned_to_top'];
-            $resultRow['#cache']['keys'][] = $pin_options['pin_label'];
-          }
-        }
-        break;
+    $view = $view->preview();
+    // Add cache keys for each display option.
+    // This ensures that if the options for showing categories, tags,
+    // or thumbnails change, the cache will be invalidated,
+    // and the view will be re-rendered with the new options.
+    if ($view['#rows'] && $view['#rows']['#rows']) {
+      foreach ($view['#rows']['#rows'] as &$resultRow) {
+        $resultRow['#cache']['keys'][] = $field_display_options['show_categories'];
+        $resultRow['#cache']['keys'][] = $field_display_options['show_tags'];
+        $resultRow['#cache']['keys'][] = $field_display_options['show_thumbnail'];
+        $resultRow['#cache']['keys'][] = $event_field_display_options['hide_add_to_calendar'];
+        $resultRow['#cache']['keys'][] = $post_field_display_options['show_eyebrow'];
+        $resultRow['#cache']['keys'][] = $pin_options['pinned_to_top'];
+        $resultRow['#cache']['keys'][] = $pin_options['pin_label'];
 
-      case "count":
-        $view = count($view->result);
-        break;
+        $resultRow['#cache']['contexts'][] = 'url.query_args:page';
+      }
     }
+
+    $setupRunning = FALSE;
+  }
+
+  /**
+   * Retrieves an overridden Views Basic Scaffold view.
+   *
+   * Views Basic Scaffold view is overridden with the data from the parameters.
+   *
+   * @param string $type
+   *   Type of view output: 'rendered' (used to allow 'count').
+   * @param string $params
+   *   JSON of the parameter settings.
+   *
+   * @return array|int
+   *   An array of a rendered view or a count of the number of results based
+   *   on the parameters specified.
+   */
+  public function getView($type, $params) {
+    // Prevents views recursion.
+    static $running;
+    if ($running) {
+      return NULL;
+    }
+    $running = TRUE;
+
+    // Set up the view and initial decoded parameters.
+    $paramsDecoded = json_decode($params, TRUE);
+    $view = $this->initView($paramsDecoded['filters']['types']);
+    $this->setupView($view, $params);
 
     // End current view run.
     $running = FALSE;
@@ -684,6 +742,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
       case 'event_field_options':
         $defaultParam = (empty($paramsDecoded['event_field_options'])) ? [] : $paramsDecoded['event_field_options'];
+        break;
+
+      case 'post_field_options':
+        $defaultParam = (empty($paramsDecoded['post_field_options'])) ? [] : $paramsDecoded['post_field_options'];
         break;
 
       case 'exposed_filter_options':
@@ -892,7 +954,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           ],
           'display_ajax' => ':input[name="block_form[group_user_selection][options][display]"]',
           'display_value_ajax' => $formState->getValue(
-            ['block_form', 'group_user_selection', 'options', 'display']
+          ['block_form', 'group_user_selection', 'options', 'display']
           ),
           'limit_array' => [
             'block_form',
@@ -966,13 +1028,13 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           ],
           'display_ajax' => ':input[name="settings[block_form][group_user_selection][options][display]"]',
           'display_value_ajax' => $formState->getValue(
-            [
-              'settings',
-              'block_form',
-              'group_user_selection',
-              'options',
-              'display',
-            ]
+          [
+            'settings',
+            'block_form',
+            'group_user_selection',
+            'options',
+            'display',
+          ]
           ),
           'limit_array' => [
             'settings',
@@ -1026,7 +1088,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'display_array' => ['display'],
         'display_ajax' => ':input[name="display"]',
         'display_value_ajax' => $formState->getValue(
-          ['group_user_selection', 'options', 'display']
+        ['group_user_selection', 'options', 'display']
         ),
         'limit_array' => ['limit'],
         'limit_ajax' => ($form) ? $form['group_user_selection']['options']['limit'] : NULL,

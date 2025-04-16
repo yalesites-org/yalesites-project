@@ -1,0 +1,185 @@
+<?php
+
+/**
+ * @file
+ * YaleSites Book overrides module.
+ *
+ * This module overrides default book module text.
+ */
+
+use Drupal\Core\Block\BlockPluginInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
+use Drupal\node\Entity\Node;
+use Drupal\node\NodeInterface;
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function ys_book_form_node_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  /*
+   * Only allow the following content types to be part of a book. This is
+   * because the book module permissions tie the `administer book outlines`
+   * permission to show this option on node edit forms as well.
+   */
+  $config = \Drupal::config('book.settings');
+  $allowedTypes = $config->get('allowed_types');
+
+  /** @var Drupal\node\NodeForm $form_object */
+  $form_object = $form_state->getFormObject();
+  /** @var Drupal\node\Entity\Node $node */
+  $node = $form_object->getEntity();
+
+  if (!in_array($node->getType(), $allowedTypes)) {
+    $form['book'] = [
+      '#access' => FALSE,
+    ];
+  }
+}
+
+/**
+ * Implements hook_module_implements_alter().
+ */
+function ys_book_module_implements_alter(&$implementations, $hook) {
+  if ($hook === 'help') {
+    unset($implementations['book']);
+  }
+}
+
+/**
+ * Implements hook_help().
+ */
+function ys_book_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+
+    case 'book.admin':
+      return '<p>' . t('Content Collections provide a way to create secondary navigation on your webpage. When you organize content into Collections, they become navigation sections. Your content can appear in both the main navigation and Content Collections') . '</p>';
+
+    case 'entity.node.book_outline_form':
+      return '<p>' . t('The outline feature allows you to include pages in the <a href=":book">Collection hierarchy</a>, as well as move them within the hierarchy or to <a href=":book-admin">reorder an entire collection</a>.',
+        [
+          ':book' => Url::fromRoute('book.render')->toString(),
+          ':book-admin' => Url::fromRoute('book.admin')->toString(),
+        ]) . '</p>';
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function ys_book_form_alter(&$form, &$form_state, $form_id) {
+  // Allows for dynamic navigation to be set on a book.
+  if ($form_id == 'book_admin_edit') {
+    $node = $form['#node'];
+    $dynamicNav = $node->hasField('field_dynamic_book_nav') ? $node->get('field_dynamic_book_nav')->value : 0;
+
+    $form['save']['#value'] = t('Save collection');
+    $form['dynamic_navigation'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Dynamic Navigation'),
+      '#description' => t('Allow the collection navigation to change based on which page is being viewed.'),
+      '#default_value' => $dynamicNav,
+      '#weight' => 0,
+    ];
+
+    $form['#submit'][] = 'ys_book_admin_form_submit';
+
+  }
+
+  $nodeFormIds = [
+    'node_page_form',
+    'node_page_edit_form',
+  ];
+
+  if (!in_array($form_id, $nodeFormIds)) {
+    return;
+  }
+
+  $form['book']['#title'] = t('Content Collection');
+  $form['book']['bid']['#title'] = t('Collection');
+  $form['book']['bid']['#description'] = t('Your page will be a part of the selected collection');
+  $form['book']['help_text'] = [
+    '#type' => 'markup',
+    '#markup' => t('Content Collections provide a way to create secondary navigation on your webpage. When you organize content into Collections, they become navigation sections. Your content can appear in both the main navigation and Content Collections'),
+    '#weight' => -10,
+  ];
+
+}
+
+/**
+ * Custom submit handler for the book_admin_edit form.
+ */
+function ys_book_admin_form_submit($form, FormStateInterface $form_state) {
+  if ($form['#form_id'] != 'book_admin_edit') {
+    return;
+  }
+  $node = \Drupal::routeMatch()->getParameter('node');
+
+  if ($node instanceof NodeInterface && $node->hasField('field_dynamic_book_nav')) {
+    $value = $form_state->getValue('dynamic_navigation');
+    $node->set('field_dynamic_book_nav', $value);
+    $node->save();
+  }
+}
+
+/**
+ * Implements hook_menu_links_discovered_alter().
+ */
+function ys_book_menu_links_discovered_alter(&$links) {
+  // Target the menu item with the route 'book.admin'.
+  if (isset($links['book.admin'])) {
+    $links['book.admin']['title'] = t('Content Collections');
+  }
+}
+
+/**
+ * Implements hook_library_info_alter().
+ */
+function ys_book_library_info_alter(&$libraries, $extension) {
+  // Replaces the book module JS with one from YS Core to change wording.
+  if ($extension == 'book') {
+    $new_path = '/' . \Drupal::service('extension.list.module')->getPath('ys_book') . '/js';
+    $new_js = [];
+    $replacements = [
+      'book.js' => $new_path . '/book.js',
+    ];
+    foreach ($libraries['drupal.book']['js'] as $source => $options) {
+      if (isset($replacements[$source])) {
+        $new_js[$replacements[$source]] = $options;
+      }
+      else {
+        $new_js[$source] = $options;
+      }
+    }
+    $libraries['drupal.book']['js'] = $new_js;
+
+  }
+}
+
+/**
+ * Implements hook_block_view_alter().
+ */
+function ys_book_block_view_alter(array &$build, BlockPluginInterface $block) {
+  // Enables dynamic navigation for books if set in the book outline settings.
+  if ($block->getBaseId() == 'custom_book_navigation') {
+    $node = \Drupal::routeMatch()->getParameter('node');
+    if (!$node || !$node->book) {
+      return;
+    }
+
+    $topLevelBook = Node::load($node->book['bid']);
+    $dynamicNav = $topLevelBook->hasField('field_dynamic_book_nav') ? $topLevelBook->get('field_dynamic_book_nav')->value : 0;
+
+    if (!$dynamicNav) {
+      return;
+    }
+    $bookDepth = $node->book['depth'];
+
+    $config = $block->getConfiguration();
+    $config['start_level'] = $bookDepth;
+    $block->setConfiguration($config);
+    $build['#configuration']['start_level'] = $bookDepth;
+
+  }
+}

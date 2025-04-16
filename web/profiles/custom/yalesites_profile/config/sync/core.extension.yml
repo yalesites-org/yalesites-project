@@ -5,6 +5,7 @@ module:
   auto_entitylabel: -100
   action: 0
   address: 0
+  addtoany: 0
   admin_toolbar: 0
   admin_toolbar_tools: 0
   ai_engine: 0
@@ -17,6 +18,7 @@ module:
   better_exposed_filters: 0
   block: 0
   block_content: 0
+  book: 0
   breakpoint: 0
   calendar_link: 0
   captcha: 0
@@ -35,6 +37,7 @@ module:
   contextual: 0
   crop: 0
   ctools: 0
+  custom_book_block: 0
   datetime: 0
   datetime_range: 0
   dblog: 0
@@ -87,6 +90,7 @@ module:
   media_library_form_element: 0
   menu_breadcrumb: 0
   menu_item_extras: 0
+  menu_item_limit: 0
   menu_link_content: 0
   menu_ui: 0
   metatag: 0
@@ -129,6 +133,7 @@ module:
   sophron: 0
   system: 0
   taxonomy: 0
+  taxonomy_manager: 0
   telephone: 0
   text: 0
   token: 0
@@ -144,14 +149,17 @@ module:
   workflows: 0
   yale_cas: 0
   ys_alert: 0
+  ys_book: 0
   ys_campus_groups: 0
   ys_captcha: 0
+  ys_integrations: 0
   ys_layouts: 0
   ys_localist: 0
   ys_mail: 0
   ys_node_access: 0
   ys_servicenow: 0
   ys_starterkit: 0
+  ys_taxonomy_manager: 0
   ys_toolbar: 0
   ys_views_basic: 0
   hide_revision_field: 1

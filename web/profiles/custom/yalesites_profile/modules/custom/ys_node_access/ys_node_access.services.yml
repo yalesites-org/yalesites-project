@@ -4,3 +4,8 @@ services:
     arguments: ['@current_user']
     tags:
       - {name: event_subscriber}
+  ys_node_access.default_tree_manipulators:
+    class: Drupal\ys_node_access\Menu\YsNodeAccessLinkTreeManipulator
+    arguments: ['@access_manager', '@current_user', '@entity_type.manager', '@module_handler', '@config.factory']
+    decorates: menu.default_tree_manipulators
+    decoration_priority: 100

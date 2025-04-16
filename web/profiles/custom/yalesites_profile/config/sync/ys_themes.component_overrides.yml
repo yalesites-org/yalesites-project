@@ -47,6 +47,11 @@ content_spotlight:
     default: site
   field_style_variation:
     values:
+      inline: Inline
+      offset: Offset
+    default: inline
+  field_focus:
+    values:
       equal: 'Equal Focus'
       image: 'Image Focus'
     default: equal
@@ -125,6 +130,7 @@ grand_hero:
     values:
       full: Full
       contained: 'Floating Box'
+      contained-narrow: 'Floating Box Narrow'
     default: full
   field_style_variation:
     values:
@@ -274,9 +280,31 @@ inline_message:
       four: Four
       five: Five
     default: one
+accordion:
+  field_style_color:
+    values:
+      default: 'Default - No Color'
+      one: One
+      two: Two
+      three: Three
+      four: Four
+      five: Five
+    default: default
+video:
+  field_style_alignment:
+    values:
+      left: Left
+      center: Center
+    default: left
+image_banner:
+  field_style_variation:
+    values:
+      tall: Tall
+      short: Short
+    default: tall
 video_banner:
   field_style_width:
     values:
       max: Contained
-      full: Full Width
+      full: 'Full Width'
     default: max

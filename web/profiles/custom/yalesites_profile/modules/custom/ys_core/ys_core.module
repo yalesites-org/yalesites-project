@@ -12,6 +12,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Url;
+use Drupal\node\Entity\Node;
 
 /**
  * @file
@@ -28,6 +29,7 @@ function ys_core_theme($existing, $type, $theme, $path): array {
     'ys_breadcrumb_block' => [
       'variables' => [
         'items' => [],
+        'always_show_breadcrumbs' => FALSE,
       ],
     ],
     'ys_dashboard' => [
@@ -153,6 +155,18 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
     if (in_array($block_type_name, $limited_block_types)) {
       $form['#attached']['library'][] = 'ys_core/block_form';
     }
+
+    // Add default admin label to layout builder blocks.
+    $form_object = $form_state->getFormObject();
+    $component = $form_object->getCurrentComponent();
+    $plugin = $component->getPlugin();
+    if (isset($plugin)) {
+      // Get the default admin label from the block plugin label.
+      $plugin_definition = $plugin->getPluginDefinition();
+      $default_admin_label = $plugin_definition['admin_label'] ?? $plugin->getPluginId();
+      // Add the plugin label as default value.
+      $form['settings']['label']['#default_value'] = $default_admin_label;
+    }
   }
 
   _ys_core_disable_event_fields($form, $form_id);
@@ -168,6 +182,44 @@ function ys_core_preprocess_block(&$variables) {
   // when the config is saved.
   // Via: https://drupal.stackexchange.com/questions/266379/how-to-clear-cache-for-config-entity-after-making-changes
   \Drupal::service('renderer')->addCacheableDependency($variables, $config);
+
+  // Add top level book link to the book navigation sub-nav.
+  if ($variables['base_plugin_id'] == 'custom_book_navigation') {
+    if (isset($variables['content']['#items']) && is_array($variables['content']['#items'])) {
+
+      foreach ($variables['content']['#items'] as &$menuItem) {
+        if (empty($menuItem['below'])) {
+          continue;
+        }
+
+        // Clone top level menu item.
+        $clonedMenuItem = $menuItem;
+
+        // We don't want any other subitems, just the top level.
+        $clonedMenuItem['below'] = NULL;
+
+        array_unshift($menuItem['below'], $clonedMenuItem);
+      }
+    }
+  }
+
+  // Supports the post lead-in (field_teaser_lead_in) on reference cards.
+  if ($variables['plugin_id'] == 'inline_block:reference_card') {
+
+    if (!isset($variables['content']['field_show_teaser_lead_in']) && !isset($variables['content']['field_content_ref'])) {
+      return;
+    }
+
+    $showEyebrow = 0;
+    if (isset($variables['content']['field_show_teaser_lead_in'][0])) {
+      $showEyebrow = $variables['content']['field_show_teaser_lead_in'][0]['#markup'];
+    }
+
+    $node = ($variables['content']['field_content_ref'][0]) ?? NULL;
+    if ($node && $node['#node'] instanceof Node) {
+      $node['#node']->show_eyebrow = $showEyebrow;
+    }
+  }
 }
 
 /**

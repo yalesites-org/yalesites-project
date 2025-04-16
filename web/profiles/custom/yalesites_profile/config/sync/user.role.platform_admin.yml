@@ -51,7 +51,15 @@ dependencies:
     - taxonomy.vocabulary.affiliation
     - taxonomy.vocabulary.audience
     - taxonomy.vocabulary.custom_vocab
+    - taxonomy.vocabulary.event_audience
     - taxonomy.vocabulary.event_category
+    - taxonomy.vocabulary.event_groups
+    - taxonomy.vocabulary.event_place
+    - taxonomy.vocabulary.event_sources
+    - taxonomy.vocabulary.event_status
+    - taxonomy.vocabulary.event_topics
+    - taxonomy.vocabulary.event_type
+    - taxonomy.vocabulary.localist_event_type
     - taxonomy.vocabulary.page_category
     - taxonomy.vocabulary.post_category
     - taxonomy.vocabulary.tags
@@ -60,6 +68,7 @@ dependencies:
   module:
     - block
     - block_content
+    - book
     - content_moderation
     - contextual
     - editoria11y
@@ -77,6 +86,7 @@ dependencies:
     - role_delegation
     - system
     - taxonomy
+    - taxonomy_manager
     - toolbar
     - webform
     - ys_alert
@@ -93,18 +103,23 @@ permissions:
   - 'access contextual links'
   - 'access files overview'
   - 'access media overview'
+  - 'access printer-friendly version'
   - 'access site in maintenance mode'
   - 'access site reports'
+  - 'access taxonomy manager list'
   - 'access taxonomy overview'
   - 'access toolbar'
   - 'access user profiles'
   - 'access webform overview'
+  - 'add content to books'
   - 'administer block content'
   - 'administer block types'
   - 'administer blocks'
+  - 'administer book outlines'
   - 'administer main menu items'
   - 'administer redirects'
   - 'administer users'
+  - 'administer utility-drop-button-navigation menu items'
   - 'administer utility-navigation menu items'
   - 'assign contributor role'
   - 'assign editor role'
@@ -144,6 +159,7 @@ permissions:
   - 'create link_grid block content'
   - 'create media'
   - 'create media_grid block content'
+  - 'create new books'
   - 'create page content'
   - 'create post content'
   - 'create post_list block content'
@@ -318,7 +334,15 @@ permissions:
   - 'edit terms in affiliation'
   - 'edit terms in audience'
   - 'edit terms in custom_vocab'
+  - 'edit terms in event_audience'
   - 'edit terms in event_category'
+  - 'edit terms in event_groups'
+  - 'edit terms in event_place'
+  - 'edit terms in event_sources'
+  - 'edit terms in event_status'
+  - 'edit terms in event_topics'
+  - 'edit terms in event_type'
+  - 'edit terms in localist_event_type'
   - 'edit terms in page_category'
   - 'edit terms in post_category'
   - 'edit terms in tags'
@@ -428,5 +452,8 @@ permissions:
   - 'view vocabulary labels'
   - 'yalesites manage alerts'
   - 'yalesites manage campus groups'
+  - 'yalesites manage integrations'
   - 'yalesites manage localist'
   - 'yalesites manage settings'
+  - 'yalesites sync campus groups'
+  - 'yalesites sync localist'
