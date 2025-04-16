@@ -52,8 +52,23 @@ a.focal-point-preview-link {
     gap: 1rem;
     grid-template-columns: repeat(2, 1fr);
 
-    .form-element {
+    .form-element, .form-item {
       width: 100%;
+      min-width: 100%;
+    }
+  }
+}
+
+/* Three column layout for profile add/edit form */
+.ys-gin-three-column-wrapper {
+  @media screen and (min-width: 1000px) {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(3, 1fr);
+
+    .form-element, .form-item {
+      width: 100%;
+      min-width: 100%;
     }
   }
 }
@@ -79,4 +94,10 @@ a.focal-point-preview-link {
   background-color: var(--gin-bg-layer2);
 }
 
+// Form elements were not scaling to the larger height that 
+// other items adhere to, like chosen and the title of a
+// drupal form.  This allows it to closer match them.
+.form-element {
+  min-height: calc(var(--input-padding-vertical) * 3 + var(--input-line-height)) !important;
+}
 /* stylelint-enable */
