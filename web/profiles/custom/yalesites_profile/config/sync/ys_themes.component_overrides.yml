@@ -47,6 +47,11 @@ content_spotlight:
     default: site
   field_style_variation:
     values:
+      inline: Inline
+      offset: Offset
+    default: inline
+  field_focus:
+    values:
       equal: 'Equal Focus'
       image: 'Image Focus'
     default: equal
@@ -59,6 +64,12 @@ content_spotlight:
       four: Four
       five: Five
     default: default
+  field_style_alignment:
+    values:
+      top: Top
+      middle: Middle
+      bottom: Bottom
+    default: top
 quick_links:
   field_style_variation:
     values:
@@ -100,11 +111,26 @@ wrapped_image:
       floated: Inline
       offset: Offset
     default: offset
+wrapped_text_callout:
+  field_style_position:
+    values:
+      left: Left
+      right: Right
+    default: left
+  field_style_color:
+    values:
+      one: One
+      two: Two
+      three: Three
+      four: Four
+      five: Five
+    default: one
 grand_hero:
   field_style_position:
     values:
       full: Full
       contained: 'Floating Box'
+      contained-narrow: 'Floating Box Narrow'
     default: full
   field_style_variation:
     values:
@@ -152,6 +178,12 @@ content_spotlight_portrait:
       four: Four
       five: Five
     default: default
+  field_style_alignment:
+    values:
+      top: Top
+      middle: Middle
+      bottom: Bottom
+    default: middle
 text:
   field_style_variation:
     values:
@@ -179,7 +211,7 @@ tiles:
       two: Two
       three: Three
       four: Four
-    default: two
+    default: four
   field_style_alignment:
     values:
       left: Left
@@ -197,7 +229,7 @@ facts:
       two: Two
       three: Three
       four: Four
-    default: two
+    default: four
   field_style_color:
     values:
       one: One
@@ -248,6 +280,16 @@ inline_message:
       four: Four
       five: Five
     default: one
+accordion:
+  field_style_color:
+    values:
+      default: 'Default - No Color'
+      one: One
+      two: Two
+      three: Three
+      four: Four
+      five: Five
+    default: default
 video:
   field_style_alignment:
     values:
@@ -260,3 +302,9 @@ image_banner:
       tall: Tall
       short: Short
     default: tall
+video_banner:
+  field_style_width:
+    values:
+      max: Contained
+      full: 'Full Width'
+    default: max

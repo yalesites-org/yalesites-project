@@ -91,7 +91,7 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
     // Get the page title.
     if ($route) {
       $page_title = $this->titleResolver->getTitle($request, $route);
-    };
+    }
 
     return [
       '#theme' => 'ys_page_meta_block',

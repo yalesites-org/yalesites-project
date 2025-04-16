@@ -7,6 +7,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountProxy;
+use Drupal\Core\Url;
 use Drupal\ys_core\YaleSitesMediaManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -158,6 +159,23 @@ class HeaderSettingsForm extends ConfigFormBase {
       ];
     }
 
+    $form['site_search_container'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Site Search'),
+      '#states' => [
+        'disabled' => [
+          ':input[name="header_variation"]' => [
+            'value' => 'focus',
+          ],
+        ],
+      ],
+    ];
+
+    $form['protected_content_container'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Protected Content'),
+    ];
+
     $form['nav_position_container'] = [
       '#type' => 'details',
       '#title' => $this->t('Navigation Position'),
@@ -170,9 +188,9 @@ class HeaderSettingsForm extends ConfigFormBase {
       ],
     ];
 
-    $form['call_to_action_container'] = [
+    $form['utility_nav_dropdown_button'] = [
       '#type' => 'details',
-      '#title' => $this->t('Call to Action'),
+      '#title' => $this->t('Utility Navigation Dropdown'),
       '#states' => [
         'disabled' => [
           ':input[name="header_variation"]' => [
@@ -182,9 +200,9 @@ class HeaderSettingsForm extends ConfigFormBase {
       ],
     ];
 
-    $form['site_search_container'] = [
+    $form['call_to_action_container'] = [
       '#type' => 'details',
-      '#title' => $this->t('Site Search'),
+      '#title' => $this->t('Call to Action'),
       '#states' => [
         'disabled' => [
           ':input[name="header_variation"]' => [
@@ -263,6 +281,33 @@ class HeaderSettingsForm extends ConfigFormBase {
 
     }
 
+    $form['protected_content_container']['enable_cas_menu_links'] = [
+      '#type' => 'checkbox',
+      '#description' => $this->t('When enabled, anonymous users can see links that point to CAS-only content in the menus. The user will still have to login to view these items.'),
+      '#title' => $this->t('Enable CAS menu items'),
+      '#default_value' => $headerConfig->get('enable_cas_menu_links'),
+    ];
+
+    $form['protected_content_container']['enable_cas_search'] = [
+      '#type' => 'checkbox',
+      '#description' => $this->t('When enabled, anonymous users can see titles only of CAS-only content in search. The user will still have to login to view these items.'),
+      '#title' => $this->t('Enable CAS search'),
+      '#default_value' => $headerConfig->get('search.enable_cas_search'),
+      '#states' => [
+        'invisible' => [
+          [
+            ':input[name="enable_search_form"]' => ['checked' => FALSE],
+          ],
+          'or',
+          [
+            ':input[name="header_variation"]' => [
+              'value' => 'focus',
+            ],
+          ],
+        ],
+      ],
+    ];
+
     $form['nav_position_container']['nav_position'] = [
       '#type' => 'radios',
       '#options' => [
@@ -278,6 +323,27 @@ class HeaderSettingsForm extends ConfigFormBase {
           'variation-radios',
         ],
       ],
+    ];
+
+    $dropdownMenuManage = Url::fromRoute('entity.menu.edit_form', ['menu' => 'utility-drop-button-navigation'])->toString();
+
+    $form['utility_nav_dropdown_button']['dropdown_button_help'] = [
+      '#type' => 'markup',
+      '#markup' => $this->t('<p>The utility navigation dropdown button allows for up to 10 links to be displayed after clicking on the button. The button will be located after the regular utility navigation.</p></p>To enable the dropdown button, enter a title and <a href=":manage" target="_blank">add links in the menu form</a>.</p>',
+        [':manage' => $dropdownMenuManage]
+      ),
+    ];
+
+    $form['utility_nav_dropdown_button']['dropdown_button_example'] = [
+      '#type' => 'markup',
+      '#markup' => '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/util-nav-dropdown.svg" class="preview-icon" alt="Example of a dropdown list of links activated by a button in the utility navigation area.">',
+    ];
+
+    $form['utility_nav_dropdown_button']['dropdown_button_title'] = [
+      '#title' => $this->t('Dropdown button title'),
+      '#type' => 'textfield',
+      '#default_value' => $headerConfig->get('dropdown_button_title') ?? NULL,
+      '#description' => $this->t('Enter a title to enable menu. Remove the title to disable.'),
     ];
 
     $form['call_to_action_container']['cta_content'] = [
@@ -310,18 +376,6 @@ class HeaderSettingsForm extends ConfigFormBase {
       '#states' => [
         'invisible' => [
           ':input[name="header_variation"]' => ['value' => 'focus'],
-        ],
-      ],
-    ];
-
-    $form['site_search_container']['enable_cas_search'] = [
-      '#type' => 'checkbox',
-      '#description' => $this->t('When enabled, anonymous users can see titles only of CAS-only content in search.'),
-      '#title' => $this->t('Enable CAS search'),
-      '#default_value' => $headerConfig->get('search.enable_cas_search'),
-      '#states' => [
-        'invisible' => [
-          ':input[name="enable_search_form"]' => ['checked' => FALSE],
         ],
       ],
     ];
@@ -374,6 +428,7 @@ class HeaderSettingsForm extends ConfigFormBase {
     $headerConfig->set('site_wide_branding_name', $form_state->getValue('site_wide_branding_name'));
     $headerConfig->set('site_wide_branding_link', $form_state->getValue('site_wide_branding_link'));
     $headerConfig->set('nav_position', $form_state->getValue('nav_position'));
+    $headerConfig->set('dropdown_button_title', $form_state->getValue('dropdown_button_title'));
     $headerConfig->set('cta_content', $form_state->getValue('cta_content'));
     $headerConfig->set('cta_url', $form_state->getValue('cta_url'));
     $headerConfig->set('search.enable_search_form', $form_state->getValue('enable_search_form'));
@@ -383,6 +438,7 @@ class HeaderSettingsForm extends ConfigFormBase {
     else {
       $headerConfig->set('search.enable_cas_search', 0);
     }
+    $headerConfig->set('enable_cas_menu_links', $form_state->getValue('enable_cas_menu_links'));
     $headerConfig->set('focus_header_image', $form_state->getValue('focus_header_image'));
 
     $headerConfig->save();

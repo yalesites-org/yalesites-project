@@ -4,12 +4,14 @@ status: true
 dependencies:
   config:
     - block_content.type.content_spotlight
+    - field.field.block_content.content_spotlight.field_focus
     - field.field.block_content.content_spotlight.field_heading
     - field.field.block_content.content_spotlight.field_heading_level
     - field.field.block_content.content_spotlight.field_instructions
     - field.field.block_content.content_spotlight.field_link
     - field.field.block_content.content_spotlight.field_link_two
     - field.field.block_content.content_spotlight.field_media
+    - field.field.block_content.content_spotlight.field_style_alignment
     - field.field.block_content.content_spotlight.field_style_color
     - field.field.block_content.content_spotlight.field_style_position
     - field.field.block_content.content_spotlight.field_style_variation
@@ -25,6 +27,13 @@ targetEntityType: block_content
 bundle: content_spotlight
 mode: default
 content:
+  field_focus:
+    type: list_key
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 8
+    region: content
   field_heading:
     type: text_default
     label: hidden
@@ -71,6 +80,13 @@ content:
       link: false
     third_party_settings: {  }
     weight: 0
+    region: content
+  field_style_alignment:
+    type: list_key
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 2
     region: content
   field_style_color:
     type: list_key

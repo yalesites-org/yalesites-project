@@ -48,6 +48,10 @@ class ThemeSettingsManager {
           'label' => 'Onha',
           'color_theme' => 'four',
         ],
+        'five' => [
+          'label' => 'It’s Your Yale',
+          'color_theme' => 'five',
+        ],
       ],
     ],
     'button_theme' => [
@@ -83,6 +87,34 @@ class ThemeSettingsManager {
         'seven' => [
           'label' => 'Gray 800',
           'color_theme' => 'seven',
+        ],
+      ],
+    ],
+    'book_navigation' => [
+      'name' => 'Book Navigation theme',
+      'prop_type' => 'element',
+      'selector' => '.in-this-section[data-component-theme]',
+      'default' => 'one',
+      'values' => [
+        'one' => [
+          'label' => 'One',
+          'color_theme' => 'one',
+        ],
+        'two' => [
+          'label' => 'Two',
+          'color_theme' => 'two',
+        ],
+        'three' => [
+          'label' => 'Three',
+          'color_theme' => 'three',
+        ],
+        'four' => [
+          'label' => 'Four',
+          'color_theme' => 'four',
+        ],
+        'five' => [
+          'label' => 'Five',
+          'color_theme' => 'five',
         ],
       ],
     ],

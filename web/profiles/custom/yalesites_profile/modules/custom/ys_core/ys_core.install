@@ -217,3 +217,67 @@ function ys_core_update_9008() {
     $term->save();
   }
 }
+
+/**
+ * Implements hook_update().
+ *
+ * Add default audience taxonomies if they do not exist.
+ */
+function ys_core_update_10001() {
+
+  $term_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
+
+  $default_terms = [
+    'Students',
+    'Faculty',
+    'Staff',
+    'Visitors',
+  ];
+
+  foreach ($default_terms as $term_name) {
+    $term = $term_storage->loadByProperties([
+      'vid' => 'audience',
+      'name' => $term_name,
+    ]);
+    if (empty($term)) {
+      $term = $term_storage->create([
+        'vid' => 'audience',
+        'name' => $term_name,
+      ]);
+      $term->save();
+    }
+  }
+}
+
+/**
+ * Implements hook_update().
+ *
+ * This update will set a default field_style_color for content spotlights.
+ */
+function ys_core_update_10002() {
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+  $query = $block_storage->getQuery();
+  $query->accessCheck(FALSE)
+    ->condition('type', ['content_spotlight', 'content_spotlight_portrait'], 'IN');
+
+  $ids = $query->execute();
+
+  foreach ($ids as $id) {
+    $block = $block_storage->load($id);
+    $latestRevisionId = $block_storage->getLatestRevisionId($id);
+
+    if (!$latestRevisionId) {
+      $latestRevision = $block_storage->createRevision($block);
+    }
+    else {
+      $latestRevision = $block_storage->loadRevision($latestRevisionId);
+    }
+
+    if ($latestRevision->get('field_style_color')->isEmpty()) {
+      $latestRevision->set('field_style_color', 'default');
+      $latestRevision->save();
+    }
+
+  }
+
+}

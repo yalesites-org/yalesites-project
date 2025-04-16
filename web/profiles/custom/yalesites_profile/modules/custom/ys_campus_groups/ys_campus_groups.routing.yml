@@ -1,0 +1,14 @@
+ys_campus_groups.settings:
+  path: '/admin/yalesites/campus_groups'
+  defaults:
+    _form: '\Drupal\ys_campus_groups\Form\CampusGroupsSettings'
+    _title: 'Campus Groups Settings'
+  requirements:
+    _permission: 'yalesites manage campus groups'
+ys_campus_groups.run_migrations:
+  path: '/admin/yalesites/campus_groups/sync'
+  defaults:
+    _controller: '\Drupal\ys_campus_groups\Controller\RunMigrations::runAllMigrations'
+    _title: 'Import Campus Groups events now'
+  requirements:
+    _permission: 'yalesites manage campus groups+yalesites sync campus groups'

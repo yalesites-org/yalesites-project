@@ -166,6 +166,15 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     $streamUrl = ($node->field_stream_url->first()) ? Url::fromUri($node->field_stream_url->first()->getValue()['uri'])->toString() : NULL;
     $streamEmbedCode = $node->field_stream_embed_code->first() ? $node->field_stream_embed_code->first()->getValue()['value'] : NULL;
 
+    // Retrieve the source taxonomy term name.
+    $sourceTaxonomyTermName = '';
+    if ($node->field_event_source->first()) {
+      $termId = $node->field_event_source->first()->getValue()['target_id'];
+      $term = $this->entityTypeManager->getStorage('taxonomy_term')->load($termId);
+      $sourceTaxonomyTermName = $term->getName();
+    }
+    $eventSource = $sourceTaxonomyTermName;
+
     // Localist register ticket changes.
     $localistRegisterTickets = $hasRegister ? $this->localistManager->getTicketInfo($localistId) : NULL;
     if ($localistRegisterTickets) {
@@ -183,24 +192,9 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     }
 
     // Dates.
-    $dates = [];
-    if ($dates = $node->field_event_date->getValue()) {
-      foreach ($dates as $key => $date) {
-        $dates[$key]['formatted_start_date'] = $this->dateFormatter->format($date['value'], 'event_date_only');
-        $dates[$key]['formatted_start_time'] = $this->dateFormatter->format($date['value'], 'event_time_only');
-        $dates[$key]['formatted_end_date'] = $this->dateFormatter->format($date['end_value'], 'event_date_only');
-        $dates[$key]['formatted_end_time'] = $this->dateFormatter->format($date['end_value'], 'event_time_only');
-        $dates[$key]['original_start'] = $date['value'];
-        $dates[$key]['original_end'] = $date['end_value'];
-        $dates[$key]['is_all_day'] = $this->isAllDay($date['value'], $date['end_value']);
-        // Remove older dates.
-        if ($date['end_value'] < time()) {
-          unset($dates[$key]);
-        }
-      }
-      // Sort dates - first date is next upcoming date.
-      asort($dates);
-    }
+    $dates = $node->field_event_date->getValue();
+    $this->orderEventDates($dates);
+    $featuredDate = $this->getFeaturedDate($dates);
 
     // Teaser responsive image.
     $teaserMediaRender = [];
@@ -293,7 +287,67 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       'localist_url' => $localistUrl,
       'stream_url' => $streamUrl,
       'stream_embed_code' => $streamEmbedCode,
+      'event_source' => $eventSource,
+      'event_featured_date' => $featuredDate,
     ];
+  }
+
+  /**
+   * Orders event dates by start date.
+   *
+   * @param array $dates
+   *   An array of dates.
+   *
+   * @return void
+   *   The array is passed by reference.
+   */
+  protected function orderEventDates(&$dates) {
+    if ($dates) {
+      foreach ($dates as $key => $date) {
+        $dates[$key]['formatted_start_date'] = $this->dateFormatter->format($date['value'], 'event_date_only');
+        $dates[$key]['formatted_start_time'] = $this->dateFormatter->format($date['value'], 'event_time_only');
+        $dates[$key]['formatted_end_date'] = $this->dateFormatter->format($date['end_value'], 'event_date_only');
+        $dates[$key]['formatted_end_time'] = $this->dateFormatter->format($date['end_value'], 'event_time_only');
+        $dates[$key]['original_start'] = $date['value'];
+        $dates[$key]['original_end'] = $date['end_value'];
+        $dates[$key]['is_all_day'] = $this->isAllDay($date['value'], $date['end_value']);
+        $dates[$key]['is_past_event'] = $date['end_value'] < time();
+      }
+      // Sort dates - first date is next upcoming date.
+      asort($dates);
+    }
+  }
+
+  /**
+   * Get the first upcoming date from the list of dates.
+   *
+   * @param array $dates
+   *   An array of dates.
+   *
+   * @return array|NodeInterface
+   *   The first upcoming date or what was passed.
+   */
+  protected function getFeaturedDate($dates) {
+    $featuredDate = NULL;
+
+    if (!is_array($dates)) {
+      return $dates;
+    }
+
+    // Get the first date that is not in the past.
+    foreach ($dates as $date) {
+      if ($date['end_value'] >= time()) {
+        $featuredDate = $date;
+        break;
+      }
+    }
+
+    // If none were found, use the last element.
+    if (!$featuredDate) {
+      $featuredDate = end($dates);
+    }
+
+    return $featuredDate;
   }
 
 }

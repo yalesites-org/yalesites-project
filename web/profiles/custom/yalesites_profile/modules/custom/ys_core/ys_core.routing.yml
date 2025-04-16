@@ -54,3 +54,4 @@ ys_core.search_page:
     _controller: '\Drupal\ys_core\Controller\SearchController::searchPage'
   requirements:
     _access: 'TRUE'
+

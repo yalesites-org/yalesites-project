@@ -4,7 +4,10 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.node.condensed
+    - field.field.node.page.field_audience
     - field.field.node.page.field_category
+    - field.field.node.page.field_custom_vocab
+    - field.field.node.page.field_dynamic_book_nav
     - field.field.node.page.field_external_source
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
@@ -81,7 +84,11 @@ content:
     weight: 2
     region: content
 hidden:
+  addtoany: true
+  field_audience: true
   field_category: true
+  field_custom_vocab: true
+  field_dynamic_book_nav: true
   field_login_required: true
   field_metatags: true
   field_tags: true

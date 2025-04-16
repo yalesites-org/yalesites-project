@@ -1,0 +1,43 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display a one-column layout.
+ *
+ * Available variables:
+ * - in_preview: Whether the plugin is being rendered in preview mode.
+ * - content: The content for this layout.
+ * - attributes: HTML attributes for the layout <div>.
+ *
+ * @ingroup themeable
+ */
+#}
+{% if content %}
+  {{ attach_library('atomic/spotlights') }}
+  {% if in_preview %}
+    <div {{ attributes}}>
+  {% endif %}
+  {% embed "@organisms/layout/layout/yds-layout.twig" with {
+    component__layout: 'thirty-thirty-thirty',
+    layout__divider: settings.divider ? 'true' : 'false',
+    component__theme: settings.theme|default('default'),
+  } %}
+    {% block layout__primary %}
+      <div {{ region_attributes.content_primary }}>
+        {{ content.content_primary }}
+      </div>
+    {% endblock %}
+    {% block layout__secondary %}
+      <div {{ region_attributes.content_secondary }}>
+        {{ content.content_secondary }}
+      </div>
+    {% endblock %}
+    {% block layout__tertiary %}
+      <div {{ region_attributes.content_tertiary }}>
+        {{ content.content_tertiary }}
+      </div>
+    {% endblock %}
+  {% endembed %}
+  {% if in_preview %}
+    </div>
+  {% endif %}
+{% endif %}

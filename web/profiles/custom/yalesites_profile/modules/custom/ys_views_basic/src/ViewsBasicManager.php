@@ -2,10 +2,13 @@
 
 namespace Drupal\ys_views_basic;
 
+use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityDisplayRepository;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\node\NodeInterface;
 use Drupal\views\Views;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -152,6 +155,11 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     ],
   ];
 
+  /**
+   * Default pin label.
+   */
+  const DEFAULT_PIN_LABEL = 'Pinned';
+
   /*
    * Define constants for content types.
    */
@@ -182,15 +190,33 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   protected $termStorage;
 
   /**
+   * The route match service.
+   *
+   * @var \Drupal\Core\Routing\RouteMatchInterface
+   */
+  protected $routeMatch;
+
+  /**
+   * The cache tags invalidator.
+   *
+   * @var \Drupal\Core\Cache\CacheTagsInvalidatorInterface
+   */
+  protected $cacheTagsInvalidator;
+
+  /**
    * Constructs a new ViewsBasicManager object.
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
     EntityDisplayRepository $entity_display_repository,
+    RouteMatchInterface $route_match,
+    CacheTagsInvalidatorInterface $cache_tags_invalidator,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityDisplayRepository = $entity_display_repository;
     $this->termStorage = $this->entityTypeManager->getStorage('taxonomy_term');
+    $this->routeMatch = $route_match;
+    $this->cacheTagsInvalidator = $cache_tags_invalidator;
   }
 
   /**
@@ -199,34 +225,51 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('entity_type.manager'),
-      $container->get('entity_display.repository')
+      $container->get('entity_display.repository'),
+      $container->get('current_route_match'),
+      $container->get('cache_tags.invalidator'),
     );
   }
 
   /**
-   * Retrieves an overridden Views Basic Scaffold view.
+   * Initializes the view based on the content type.
    *
-   * Views Basic Scaffold view is overridden with the data from the parameters.
+   * @param array $types
+   *   An array of content types.
    *
-   * @param string $type
-   *   Can be either 'rendered' or 'count'.
-   * @param string $params
-   *   JSON of the parameter settings.
-   *
-   * @return array|int
-   *   An array of a rendered view or a count of the number of results based
-   *   on the parameters specified.
+   * @return \Drupal\views\ViewExecutable
+   *   The view object.
    */
-  public function getView($type, $params) {
-    // Prevents views recursion.
-    static $running;
-    if ($running) {
-      return NULL;
+  public function initView($types) {
+    if (in_array('event', $types)) {
+      return Views::getView('views_basic_scaffold_events');
     }
-    $running = TRUE;
+    else {
+      return Views::getView('views_basic_scaffold');
+    }
 
-    // Set up the view and initial decoded parameters.
+  }
+
+  /**
+   * Sets up the view with the parameters.
+   *
+   * @param \Drupal\views\ViewExecutable $view
+   *   The view object.
+   * @param string $params
+   *   The JSON encoded string of parameters.
+   *
+   * @return void
+   *   No return value.
+   */
+  public function setupView(&$view, $params) {
+    static $setupRunning;
+    if ($setupRunning) {
+      return;
+    }
+    $setupRunning = TRUE;
+
     $paramsDecoded = json_decode($params, TRUE);
+    $pinned_to_top = isset($paramsDecoded['pinned_to_top']) ? (bool) $paramsDecoded['pinned_to_top'] : FALSE;
 
     /* Events need to have aggregation turned on in the view. Therefore, we
      * retrieve a special event scaffold view and apply sorting here instead of
@@ -234,21 +277,27 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
      */
 
     if (in_array('event', $paramsDecoded['filters']['types'])) {
-      $view = Views::getView('views_basic_scaffold_events');
+      $sortArray = [];
       $sortDirection = explode(":", $paramsDecoded['sort_by']);
-      $view->getDisplay()->setOption('sorts', [
-        [
-          'id' => 'field_event_date_value',
-          'table' => "node__field_event_date",
-          'field' => 'field_event_date_value',
-          'group_type' => 'min',
-          'order' => $sortDirection[1],
-        ],
-      ]);
-    }
-    else {
-      // All other views get the original scaffold view.
-      $view = Views::getView('views_basic_scaffold');
+
+      if ($pinned_to_top) {
+        $sortArray[] = [
+          'id' => 'sticky',
+          'table' => "node_field_data",
+          'field' => 'sticky',
+          'order' => 'desc',
+        ];
+      }
+
+      $sortArray[] =
+      [
+        'id' => 'field_event_date_value',
+        'table' => "node__field_event_date",
+        'field' => 'field_event_date_value',
+        'order' => $sortDirection[1],
+      ];
+
+      $view->getDisplay()->setOption('sorts', $sortArray);
     }
 
     $view->setDisplay('block_1');
@@ -317,6 +366,22 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       foreach ($category_filters as $filter_name) {
         unset($filters[$filter_name]);
       }
+    }
+
+    // Custom vocab filter.
+    if (!empty($paramsDecoded['exposed_filter_options']['show_custom_vocab_filter'])) {
+      // Get the label of the custom vocab.
+      $custom_vocab_label = $this->entityTypeManager->getStorage('taxonomy_vocabulary')->load('custom_vocab')->label();
+      $filters['field_custom_vocab_target_id']['expose']['label'] = $custom_vocab_label;
+    }
+    else {
+      // Remove filter if 'show filter' field is not set.
+      unset($filters['field_custom_vocab_target_id']);
+    }
+
+    // Audience filter.
+    if (!isset($paramsDecoded['exposed_filter_options']['show_audience_filter'])) {
+      unset($filters['field_audience_target_id']);
     }
 
     if (!isset($paramsDecoded['exposed_filter_options']['show_search_filter'])) {
@@ -393,9 +458,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     $termsInclude = (count($termsIncludeArray) != 0) ? implode($operator, $termsIncludeArray) : 'all';
     $termsExclude = (count($termsExcludeArray) != 0) ? implode($operator, $termsExcludeArray) : NULL;
 
-    if (
-      ($type == 'count' && $paramsDecoded['display'] != 'limit') ||
-      ($type == 'rendered' && $paramsDecoded['display'] == 'all')) {
+    if ($paramsDecoded['display'] == 'all') {
       $itemsLimit = 0;
     }
     else {
@@ -414,24 +477,67 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'show_thumbnail' => (int) $no_field_display_options_saved || !empty($paramsDecoded['field_options']['show_thumbnail']),
     ];
 
-    $view->setArguments(
-      [
-        'type' => $filterType,
-        'terms_include' => $termsInclude,
-        'terms_exclude' => $termsExclude,
-        'sort' => $paramsDecoded['sort_by'],
-        'view' => $paramsDecoded['view_mode'],
-        'items' => $itemsLimit,
-        'event_time_period' => str_contains($filterType, 'event') ? $eventTimePeriod : NULL,
-        'offset' => $paramsDecoded['offset'] ?? 0,
-        'field_display_options' => json_encode($field_display_options),
-      ]
-    );
+    $event_field_display_options = [
+      'hide_add_to_calendar' => (int) !empty($paramsDecoded['event_field_options']['hide_add_to_calendar']),
+    ];
+
+    $post_field_display_options = [
+      'show_eyebrow' => (int) !empty($paramsDecoded['post_field_options']['show_eyebrow']),
+    ];
+
+    $pin_label = $paramsDecoded['pin_label'] ?? self::DEFAULT_PIN_LABEL;
+
+    if (!$pinned_to_top) {
+      $pin_label = NULL;
+    }
+
+    $pin_options = [
+      'pinned_to_top' => $pinned_to_top,
+      'pin_label' => $pin_label,
+    ];
 
     /*
      * End setting dynamic arguments.
      */
 
+    /*
+     * Includes current node, if specified in settings.
+     */
+    $includeCurrent = $paramsDecoded['show_current_entity'] ?? 0;
+    if (!$includeCurrent) {
+      $node = $this->routeMatch->getParameter('node');
+      if ($node instanceof NodeInterface) {
+        $currentNid = $node->id();
+        /** @var Drupal\views\Plugin\views\query\Sql $query */
+        $query = $view->getQuery();
+        $baseTableAlias = $query->ensureTable('node_field_data');
+        if ($baseTableAlias) {
+          $query->addWhere(0, "$baseTableAlias.nid", $currentNid, '<>');
+        }
+      }
+    }
+
+    /*
+     * End include current node.
+     */
+
+    $view_args = [
+      'type' => $filterType,
+      'terms_include' => $termsInclude,
+      'terms_exclude' => $termsExclude,
+      'sort' => $paramsDecoded['sort_by'],
+      'view' => $paramsDecoded['view_mode'],
+      'items' => $itemsLimit,
+      'event_time_period' => str_contains($filterType, 'event') ? $eventTimePeriod : NULL,
+      'offset' => $paramsDecoded['offset'] ?? 0,
+      'field_display_options' => json_encode($field_display_options),
+      'event_field_display_options' => json_encode($event_field_display_options),
+      'post_field_display_options' => json_encode($post_field_display_options),
+      'pin_settings' => json_encode($pin_options),
+      'original_settings' => $params,
+    ];
+
+    $view->setArguments($view_args);
     $view->execute();
 
     // Unset the pager. Needs to be done after view->execute();
@@ -439,26 +545,54 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       unset($view->pager);
     }
 
-    switch ($type) {
-      case "rendered":
-        $view = $view->preview();
-        // Add cache keys for each display option.
-        // This ensures that if the options for showing categories, tags,
-        // or thumbnails change, the cache will be invalidated,
-        // and the view will be re-rendered with the new options.
-        if ($view['#rows'] && $view['#rows']['#rows']) {
-          foreach ($view['#rows']['#rows'] as &$resultRow) {
-            $resultRow['#cache']['keys'][] = $field_display_options['show_categories'];
-            $resultRow['#cache']['keys'][] = $field_display_options['show_tags'];
-            $resultRow['#cache']['keys'][] = $field_display_options['show_thumbnail'];
-          }
-        }
-        break;
+    $view = $view->preview();
+    // Add cache keys for each display option.
+    // This ensures that if the options for showing categories, tags,
+    // or thumbnails change, the cache will be invalidated,
+    // and the view will be re-rendered with the new options.
+    if ($view['#rows'] && $view['#rows']['#rows']) {
+      foreach ($view['#rows']['#rows'] as &$resultRow) {
+        $resultRow['#cache']['keys'][] = $field_display_options['show_categories'];
+        $resultRow['#cache']['keys'][] = $field_display_options['show_tags'];
+        $resultRow['#cache']['keys'][] = $field_display_options['show_thumbnail'];
+        $resultRow['#cache']['keys'][] = $event_field_display_options['hide_add_to_calendar'];
+        $resultRow['#cache']['keys'][] = $post_field_display_options['show_eyebrow'];
+        $resultRow['#cache']['keys'][] = $pin_options['pinned_to_top'];
+        $resultRow['#cache']['keys'][] = $pin_options['pin_label'];
 
-      case "count":
-        $view = count($view->result);
-        break;
+        $resultRow['#cache']['contexts'][] = 'url.query_args:page';
+      }
     }
+
+    $setupRunning = FALSE;
+  }
+
+  /**
+   * Retrieves an overridden Views Basic Scaffold view.
+   *
+   * Views Basic Scaffold view is overridden with the data from the parameters.
+   *
+   * @param string $type
+   *   Type of view output: 'rendered' (used to allow 'count').
+   * @param string $params
+   *   JSON of the parameter settings.
+   *
+   * @return array|int
+   *   An array of a rendered view or a count of the number of results based
+   *   on the parameters specified.
+   */
+  public function getView($type, $params) {
+    // Prevents views recursion.
+    static $running;
+    if ($running) {
+      return NULL;
+    }
+    $running = TRUE;
+
+    // Set up the view and initial decoded parameters.
+    $paramsDecoded = json_decode($params, TRUE);
+    $view = $this->initView($paramsDecoded['filters']['types']);
+    $this->setupView($view, $params);
 
     // End current view run.
     $running = FALSE;
@@ -600,6 +734,40 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
       case 'event_time_period':
         $defaultParam = (empty($paramsDecoded['filters']['event_time_period'])) ? 'future' : $paramsDecoded['filters']['event_time_period'];
+        break;
+
+      case 'field_options':
+        $defaultParam = (empty($paramsDecoded['field_options'])) ? ['show_thumbnail' => 'show_thumbnail'] : $paramsDecoded['field_options'];
+        break;
+
+      case 'event_field_options':
+        $defaultParam = (empty($paramsDecoded['event_field_options'])) ? [] : $paramsDecoded['event_field_options'];
+        break;
+
+      case 'post_field_options':
+        $defaultParam = (empty($paramsDecoded['post_field_options'])) ? [] : $paramsDecoded['post_field_options'];
+        break;
+
+      case 'exposed_filter_options':
+        $defaultParam = (empty($paramsDecoded['exposed_filter_options'])) ? [] : $paramsDecoded['exposed_filter_options'];
+        break;
+
+      case 'category_filter_label':
+        $defaultParam = (empty($paramsDecoded['category_filter_label'])) ? NULL : $paramsDecoded['category_filter_label'];
+        break;
+
+      case 'category_included_terms':
+        $defaultParam = (empty($paramsDecoded['category_included_terms'])) ? NULL : $paramsDecoded['category_included_terms'];
+        break;
+
+      case 'show_current_entity':
+        $defaultParam = (empty($paramsDecoded['show_current_entity'])) ? 0 : $paramsDecoded['show_current_entity'];
+      case 'pinned_to_top':
+        $defaultParam = (empty($paramsDecoded['pinned_to_top'])) ? FALSE : (bool) $paramsDecoded['pinned_to_top'];
+        break;
+
+      case 'pin_label':
+        $defaultParam = (empty($paramsDecoded['pin_label'])) ? self::DEFAULT_PIN_LABEL : $paramsDecoded['pin_label'];
         break;
 
       default:
@@ -758,6 +926,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'view_mode_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
           'category_included_terms_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
           'show_category_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_category_filter]"]',
+          'show_custom_vocab_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_custom_vocab_filter]"]',
           'massage_terms_include_array' => [
             'block_form',
             'group_user_selection',
@@ -785,7 +954,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           ],
           'display_ajax' => ':input[name="block_form[group_user_selection][options][display]"]',
           'display_value_ajax' => $formState->getValue(
-            ['block_form', 'group_user_selection', 'options', 'display']
+          ['block_form', 'group_user_selection', 'options', 'display']
           ),
           'limit_array' => [
             'block_form',
@@ -800,6 +969,22 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
             'options',
             'offset',
           ],
+          'pinned_to_top' => ($form) ? $form['block_form']['group_user_selection']['filter_and_sort']['pinned_to_top'] : NULL,
+          'pinned_to_top_array' => [
+            'block_form',
+            'group_user_selection',
+            'filter_and_sort',
+            'pinned_to_top',
+          ],
+          'pinned_to_top_selector' => ':input[name="block_form[group_user_selection][filter_and_sort][pinned_to_top]"]',
+          'pin_label' => ($form) ? $form['block_form']['group_user_selection']['filter_and_sort']['pin_label'] : self::DEFAULT_PIN_LABEL,
+          'pin_label_array' => [
+            'settings',
+            'block_form',
+            'group_user_selection',
+            'filter_and_sort',
+            'pin_label',
+          ],
         ];
       }
       else {
@@ -811,6 +996,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'view_mode_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
           'category_included_terms_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
           'show_category_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_category_filter]"]',
+          'show_custom_vocab_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_custom_vocab_filter]"]',
           'massage_terms_include_array' => [
             'settings',
             'block_form',
@@ -842,13 +1028,13 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           ],
           'display_ajax' => ':input[name="settings[block_form][group_user_selection][options][display]"]',
           'display_value_ajax' => $formState->getValue(
-            [
-              'settings',
-              'block_form',
-              'group_user_selection',
-              'options',
-              'display',
-            ]
+          [
+            'settings',
+            'block_form',
+            'group_user_selection',
+            'options',
+            'display',
+          ]
           ),
           'limit_array' => [
             'settings',
@@ -865,6 +1051,23 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
             'options',
             'offset',
           ],
+          'pinned_to_top_ajax' => ($form) ? $form['settings']['block_form']['filter_and_sort']['pinned_to_top'] : NULL,
+          'pinned_to_top_array' => [
+            'settings',
+            'block_form',
+            'group_user_selection',
+            'filter_and_sort',
+            'pinned_to_top',
+          ],
+          'pinned_to_top_selector' => ':input[name="settings[block_form][group_user_selection][filter_and_sort][pinned_to_top]"]',
+          'pin_label_ajax' => ($form) ? $form['settings']['block_form']['filter_and_sort']['pin_label'] : self::DEFAULT_PIN_LABEL,
+          'pin_label_array' => [
+            'settings',
+            'block_form',
+            'group_user_selection',
+            'filter_and_sort',
+            'pin_label',
+          ],
         ];
       }
     }
@@ -877,6 +1080,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'view_mode_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
         'category_included_terms_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
         'show_category_filter_selector' => ':input[name="show_category_filter"]',
+        'show_custom_vocab_filter_selector' => ':input[name="show_custom_vocab_filter"]',
         'massage_terms_include_array' => ['terms_include'],
         'massage_terms_exclude_array' => ['terms_exclude'],
         'sort_by_array' => ['sort_by'],
@@ -884,11 +1088,17 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'display_array' => ['display'],
         'display_ajax' => ':input[name="display"]',
         'display_value_ajax' => $formState->getValue(
-          ['group_user_selection', 'options', 'display']
+        ['group_user_selection', 'options', 'display']
         ),
         'limit_array' => ['limit'],
         'limit_ajax' => ($form) ? $form['group_user_selection']['options']['limit'] : NULL,
         'offset_array' => ['offset'],
+        'pinned_to_top' => ['pinned_to_top'],
+        'pinned_to_top_selector' => ':input[name="settings[block_form][group_user_selection][filter_and_sort][pinned_to_top]"]',
+        'pinned_to_top_array' => ['pinned_to_top'],
+        'pinned_to_top_ajax' => ($form) ? $form['group_user_selection']['filter_and_sort']['pinned_to_top'] : NULL,
+        'pin_label_array' => ['pin_label'],
+        'pin_label_ajax' => ($form) ? $form['settings']['block_form']['filter_and_sort']['pin_label'] : self::DEFAULT_PIN_LABEL,
       ];
     }
 
