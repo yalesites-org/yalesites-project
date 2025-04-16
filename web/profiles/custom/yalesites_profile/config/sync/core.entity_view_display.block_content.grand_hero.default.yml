@@ -4,6 +4,7 @@ status: true
 dependencies:
   config:
     - block_content.type.grand_hero
+    - field.field.block_content.grand_hero.field_display_mode
     - field.field.block_content.grand_hero.field_heading
     - field.field.block_content.grand_hero.field_heading_level
     - field.field.block_content.grand_hero.field_instructions
@@ -24,6 +25,13 @@ targetEntityType: block_content
 bundle: grand_hero
 mode: default
 content:
+  field_display_mode:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 10
+    region: content
   field_heading:
     type: text_default
     label: hidden
