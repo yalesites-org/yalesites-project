@@ -1,0 +1,11 @@
+ys_taxonomy_manager.admin_vocabulary.add_to_nodes:
+  path: '/admin/structure/taxonomy_manager/voc/{taxonomy_vocabulary}/add_to_nodes'
+  defaults:
+    _form: '\Drupal\ys_taxonomy_manager\Form\AddTermsToNodesForm'
+    _title: 'Add terms to nodes'
+  requirements:
+    _entity_create_access: 'taxonomy_term:{taxonomy_vocabulary}'
+  options:
+    parameters:
+      taxonomy_vocabulary:
+        type: entity:taxonomy_vocabulary
