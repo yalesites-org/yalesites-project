@@ -4,8 +4,8 @@ status: true
 dependencies: {  }
 id: quote
 block_id: 'inline_block:pull_quote'
-category: basic
+category: text_and_content
 label: Quote
 image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/pull-quote.svg
 image_alt: ''
-weight: -10
+weight: -15

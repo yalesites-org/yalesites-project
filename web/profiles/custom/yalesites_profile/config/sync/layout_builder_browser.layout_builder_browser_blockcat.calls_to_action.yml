@@ -1,0 +1,10 @@
+uuid: 0fbcc8cf-9f95-462e-abe4-bcb9b4fc85a2
+langcode: en
+status: true
+dependencies: {  }
+id: calls_to_action
+label: 'Calls to Action'
+weight: -9
+opened: true
+image_path: ''
+image_alt: ''

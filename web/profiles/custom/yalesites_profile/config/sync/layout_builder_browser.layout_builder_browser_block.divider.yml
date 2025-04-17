@@ -4,8 +4,8 @@ status: true
 dependencies: {  }
 id: divider
 block_id: 'inline_block:divider'
-category: basic
+category: text_and_content
 label: Divider
 image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/divider.svg
 image_alt: ''
-weight: -6
+weight: -17

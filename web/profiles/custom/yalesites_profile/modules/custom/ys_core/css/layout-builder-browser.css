@@ -1,3 +1,9 @@
 .ws-lb .glb-claro-details__wrapper {
   grid-template-columns: 1fr 1fr 1fr;
 }
+
+@media screen and (min-width: 500px) {
+    .block-categories .details-wrapper .layout-builder-browser-block-item {
+        max-width: calc(25% - 1.50rem);
+    }
+}

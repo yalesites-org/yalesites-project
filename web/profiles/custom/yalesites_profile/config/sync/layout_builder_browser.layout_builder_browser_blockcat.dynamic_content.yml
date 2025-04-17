@@ -1,0 +1,10 @@
+uuid: 40080ab8-403b-4c3c-86d4-0a8c15ed3a79
+langcode: en
+status: true
+dependencies: {  }
+id: dynamic_content
+label: 'Dynamic Content'
+weight: -8
+opened: true
+image_path: ''
+image_alt: ''
