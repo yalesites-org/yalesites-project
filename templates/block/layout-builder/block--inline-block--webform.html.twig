@@ -8,6 +8,15 @@
   } %}
 
     {% block component_wrapper_inner %}
+      {% if content['#configuration_issue'] %}
+        {% include "@molecules/inline-message/yds-inline-message.twig" with {
+            inline_message__heading: "Configuration issue",
+            inline_message__content: content['#configuration_issue'],
+            inline_message__type: 'info',
+            inline_message__theme: 'two',
+          } %}
+      {% endif %}
+
       {{content.field_form}}
     {% endblock %}
 
