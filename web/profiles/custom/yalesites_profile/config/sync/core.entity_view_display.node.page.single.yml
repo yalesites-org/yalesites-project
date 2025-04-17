@@ -1,0 +1,331 @@
+uuid: efa53d3e-6a76-455c-8e80-8efec93af1eb
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.node.single
+    - field.field.node.page.field_audience
+    - field.field.node.page.field_category
+    - field.field.node.page.field_custom_vocab
+    - field.field.node.page.field_dynamic_book_nav
+    - field.field.node.page.field_external_source
+    - field.field.node.page.field_login_required
+    - field.field.node.page.field_metatags
+    - field.field.node.page.field_tags
+    - field.field.node.page.field_teaser_media
+    - field.field.node.page.field_teaser_text
+    - field.field.node.page.field_teaser_title
+    - field.field.node.page.layout_builder__layout
+    - node.type.page
+  module:
+    - layout_builder
+    - layout_builder_restrictions
+    - link
+    - text
+    - user
+third_party_settings:
+  layout_builder:
+    enabled: false
+    allow_custom: false
+  layout_builder_restrictions:
+    allowed_block_categories: {  }
+    entity_view_mode_restriction:
+      allowed_layouts:
+        - layout_onecol
+        - ys_layout_two_column
+        - ys_layout_two_column_50_50
+        - ys_layout_three_column_33_33_33
+      denylisted_blocks: {  }
+      allowlisted_blocks: {  }
+      restricted_categories:
+        - 'YaleSites Core'
+    entity_view_mode_restriction_by_region:
+      allowed_layouts:
+        - layout_onecol
+        - ys_layout_two_column
+        - ys_layout_two_column_50_50
+        - ys_layout_three_column_33_33_33
+      allowlisted_blocks:
+        layout_onecol:
+          all_regions:
+            'YaleSites Layouts':
+              - ys_taxonomy_display_block
+        ys_layout_banner:
+          all_regions:
+            'Inline blocks':
+              - 'inline_block:cta_banner'
+              - 'inline_block:grand_hero'
+              - 'inline_block:image_banner'
+              - 'inline_block:content_spotlight'
+              - 'inline_block:content_spotlight_portrait'
+              - 'inline_block:video_banner'
+        ys_layout_page_meta:
+          all_regions:
+            'YaleSites Layouts':
+              - page_meta_block
+        ys_layout_three_column_33_33_33:
+          all_regions:
+            'Custom block types':
+              - button_link
+              - divider
+              - embed
+              - image
+              - link_grid
+              - pull_quote
+              - text
+              - video
+            'Inline blocks':
+              - 'inline_block:button_link'
+              - 'inline_block:divider'
+              - 'inline_block:embed'
+              - 'inline_block:image'
+              - 'inline_block:link_grid'
+              - 'inline_block:pull_quote'
+              - 'inline_block:text'
+              - 'inline_block:video'
+        ys_layout_two_column:
+          content:
+            'Custom block types':
+              - accordion
+              - button_link
+              - directory
+              - divider
+              - embed
+              - event_list
+              - gallery
+              - image
+              - link_grid
+              - media_grid
+              - post_list
+              - pull_quote
+              - reference_card
+              - tabs
+              - text
+              - video
+              - wrapped_text_callout
+            'Inline blocks':
+              - 'inline_block:accordion'
+              - 'inline_block:button_link'
+              - 'inline_block:event_list'
+              - 'inline_block:directory'
+              - 'inline_block:divider'
+              - 'inline_block:embed'
+              - 'inline_block:gallery'
+              - 'inline_block:image'
+              - 'inline_block:link_grid'
+              - 'inline_block:media_grid'
+              - 'inline_block:post_list'
+              - 'inline_block:pull_quote'
+              - 'inline_block:reference_card'
+              - 'inline_block:tabs'
+              - 'inline_block:text'
+              - 'inline_block:video'
+              - 'inline_block:wrapped_text_callout'
+            'YaleSites Layouts': {  }
+          sidebar:
+            'Custom block types':
+              - button_link
+              - divider
+              - image
+              - link_grid
+              - pull_quote
+              - text
+              - video
+              - webform
+            'Inline blocks':
+              - 'inline_block:button_link'
+              - 'inline_block:divider'
+              - 'inline_block:image'
+              - 'inline_block:link_grid'
+              - 'inline_block:webform'
+              - 'inline_block:pull_quote'
+              - 'inline_block:text'
+              - 'inline_block:video'
+        ys_layout_two_column_50_50:
+          all_regions:
+            'Custom block types':
+              - accordion
+              - button_link
+              - divider
+              - embed
+              - image
+              - link_grid
+              - pull_quote
+              - tabs
+              - text
+              - video
+              - webform
+            'Inline blocks':
+              - 'inline_block:accordion'
+              - 'inline_block:button_link'
+              - 'inline_block:divider'
+              - 'inline_block:embed'
+              - 'inline_block:image'
+              - 'inline_block:link_grid'
+              - 'inline_block:webform'
+              - 'inline_block:pull_quote'
+              - 'inline_block:tabs'
+              - 'inline_block:text'
+              - 'inline_block:video'
+      denylisted_blocks: {  }
+      restricted_categories:
+        ys_layout_two_column:
+          sidebar:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - Devel
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites Layouts'
+            - 'YaleSites alert'
+            - core
+          content:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites alert'
+            - core
+        layout_onecol:
+          all_regions:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - Devel
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites alert'
+            - core
+        ys_layout_banner:
+          all_regions:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - 'Custom block types'
+            - Devel
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites Layouts'
+            - 'YaleSites alert'
+            - core
+        ys_layout_page_meta:
+          all_regions:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - 'Custom block types'
+            - Devel
+            - Forms
+            - Help
+            - 'Inline blocks'
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites alert'
+            - core
+        ys_layout_two_column_50_50:
+          all_regions:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - Devel
+            - Editoria11y
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites Layouts'
+            - 'YaleSites alert'
+            - core
+        ys_layout_three_column_33_33_33:
+          all_regions:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - Devel
+            - Editoria11y
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites Layouts'
+            - 'YaleSites alert'
+            - core
+id: node.page.single
+targetEntityType: node
+bundle: page
+mode: single
+content:
+  field_external_source:
+    type: link
+    label: hidden
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 3
+    region: content
+  field_teaser_media:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: default
+      link: true
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_teaser_text:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_teaser_title:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 2
+    region: content
+hidden:
+  addtoany: true
+  content_moderation_control: true
+  field_audience: true
+  field_category: true
+  field_custom_vocab: true
+  field_dynamic_book_nav: true
+  field_login_required: true
+  field_metatags: true
+  field_tags: true
+  layout_builder__layout: true
+  links: true
+  search_api_excerpt: true
+  workflow_buttons: true

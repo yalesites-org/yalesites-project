@@ -6,6 +6,7 @@ dependencies:
     - block_content.type.reference_card
     - field.storage.block_content.field_content_ref
     - node.type.event
+    - node.type.page
     - node.type.post
     - node.type.profile
 id: block_content.reference_card.field_content_ref
@@ -23,6 +24,7 @@ settings:
   handler_settings:
     target_bundles:
       event: event
+      page: page
       post: post
       profile: profile
     sort:
