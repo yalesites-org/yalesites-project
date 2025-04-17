@@ -281,3 +281,24 @@ function ys_core_update_10002() {
   }
 
 }
+
+/**
+ * Implements hook_update().
+ *
+ * Converts all site_mail fields that currently have
+ * noreply@yale.edu to noreply@noreply.yale.edu.
+ */
+function ys_core_update_10003() {
+  $config = \Drupal::configFactory()->getEditable('system.site');
+
+  $site_mail = $config->get('mail');
+  if ($site_mail == "noreply@yale.edu") {
+    $new_site_mail = "noreply@noreply.yale.edu";
+    $config->set('mail', $new_site_mail);
+    \Drupal::messenger()->addStatus("Site email updated from {$site_mail} to {$new_site_mail}.");
+  }
+  else {
+    // Log that the site email was skipped.
+    \Drupal::messenger()->addStatus("Site email not updated as it was set to {$site_mail}.");
+  }
+}
