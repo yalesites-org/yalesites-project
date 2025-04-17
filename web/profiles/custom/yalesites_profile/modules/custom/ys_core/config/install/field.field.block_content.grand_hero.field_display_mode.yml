@@ -1,0 +1,20 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.block_content.field_display_mode
+  module:
+    - block_content
+id: block_content.grand_hero.field_display_mode
+field_name: field_display_mode
+entity_type: block_content
+bundle: grand_hero
+label: 'Display Mode'
+description: ''
+required: true
+translatable: true
+default_value:
+  - value: text
+default_value_callback: ''
+settings: {  }
+field_type: list_string 

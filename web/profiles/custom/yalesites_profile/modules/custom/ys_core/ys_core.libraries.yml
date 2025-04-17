@@ -19,3 +19,12 @@ header_footer_settings:
 block_form:
   js:
     js/block-form.js: {}
+grand_hero_form:
+  version: 1.x
+  js:
+    js/grand-hero-form.js: {}
+  dependencies:
+    - core/drupal
+    - core/drupal.states
+    - core/jquery
+    - core/once

@@ -1,0 +1,23 @@
+uuid: ad82bc36-258c-4bd6-a889-88de0d14e996
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.grand_hero
+    - field.storage.block_content.field_display_mode
+  module:
+    - options
+id: block_content.grand_hero.field_display_mode
+field_name: field_display_mode
+entity_type: block_content
+bundle: grand_hero
+label: 'Display Mode'
+description: ''
+required: true
+translatable: false
+default_value:
+  -
+    value: text
+default_value_callback: ''
+settings: {  }
+field_type: list_string
