@@ -295,6 +295,7 @@ function ys_core_update_10003() {
   if ($site_mail == "noreply@yale.edu") {
     $new_site_mail = "noreply@noreply.yale.edu";
     $config->set('mail', $new_site_mail);
+    $config->save();
     \Drupal::messenger()->addStatus("Site email updated from {$site_mail} to {$new_site_mail}.");
   }
   else {
