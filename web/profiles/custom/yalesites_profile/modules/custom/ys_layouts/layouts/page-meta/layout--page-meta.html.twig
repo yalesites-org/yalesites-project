@@ -16,10 +16,25 @@
     'page-meta',
   ]
 %}
+{%
+  set region_classes = [
+    'layout__region',
+    'layout__region--content',
+  ]
+%}
+
+{% set hasContent = region_attributes.content %}
+{% set region_attribute_classes = add_attributes({
+  'class': region_classes
+}) %}
+
+{% if hasContent %}
+  {% set region_attribute_classes = region_attributes.content.addClass(region_classes) %}
+{% endif %}
 
 {% if content.page_meta %}
   <div{{ attributes.addClass(classes) }}>
-    <div {{ region_attributes.content.addClass('layout__region', 'layout__region--content') }}>
+    <div {{ region_attribute_classes }}>
       {{ drupal_entity('block', 'yalesitesbreadcrumbs', check_access=false) }}
       {{ content.page_meta }}
       {{ drupal_entity('block', 'atomic_custombooknavigation', check_access=false) }}
