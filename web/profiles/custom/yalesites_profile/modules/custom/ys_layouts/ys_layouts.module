@@ -6,6 +6,7 @@
  */
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\EntityContextDefinition;
 
@@ -184,5 +185,74 @@ function _ys_layouts_add_layout_section(&$variables) {
         }
       }
     }
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function ys_layouts_form_layout_builder_configure_section_alter(&$form, FormStateInterface $form_state, $form_id) {
+
+  // Add padding options to the section config form.
+  $form_object = $form_state->getFormObject();
+  $config = $form_object->getCurrentLayout()->getConfiguration();
+
+  $form['padding_options'] = [
+    '#type' => 'radios',
+    '#title' => t('Section padding options'),
+    '#options' => [
+      'default' => t('Default (current padding)'),
+      'no_top' => t('No top padding'),
+      'no_bottom' => t('No bottom padding'),
+      'no_padding' => t('No padding (top and bottom)'),
+    ],
+    '#default_value' => $config['ys_layouts_sections_config']['padding_options'] ?? 'default',
+    '#description' => t('Select the padding option for this section.'),
+    '#weight' => 0,
+  ];
+
+  // Add our submit handler to the form.
+  array_unshift($form['#submit'], '_ys_layouts_sections_config_submit_form');
+
+}
+
+/**
+ * Custom submit handler for submitting layout builder section config form.
+ *
+ * @param array $form
+ *   The form array.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state object.
+ */
+function _ys_layouts_sections_config_submit_form($form, FormStateInterface $form_state) {
+  $form_object = $form_state->getFormObject();
+  $config = $form_object->getCurrentLayout()->getConfiguration();
+  if (!$config) {
+    $config = [];
+  }
+  $config['ys_layouts_sections_config'] = [
+    'padding_options' => $form_state->getValue('padding_options'),
+  ];
+
+  $form_object
+    ->getCurrentLayout()
+    ->setConfiguration($config);
+
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function ys_layouts_preprocess_layout(&$variables) {
+  // Add the Layout Builder section configuration to the $variables.
+  if (isset($variables['settings']['ys_layouts_sections_config'])) {
+    $config = $variables['settings']['ys_layouts_sections_config'];
+
+    if (isset($config['padding_options']) && $config['padding_options']) {
+      // Replace underscores with hyphens.
+      $padding_options = str_replace('_', '-', $config['padding_options']);
+      $variables['attributes']['data-section-padding'] = $padding_options;
+    }
+
   }
 }
