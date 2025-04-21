@@ -60,7 +60,7 @@ need to have margin-bottom set to 0 */
 .main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .grand-hero-banner:last-child,
 .main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .image-banner:last-child,
 .main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .quick-links:last-child,
-.main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .text-with-image:not([data-component-theme='default']):last-child, 
+.main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .text-with-image:not([data-component-theme='default']):last-child,
 .main-content .layout.layout--onecol:last-of-type .layout__region--content:last-child .content-spotlight-portrait:not([data-component-theme='default']):last-child {
   margin-bottom: 0;
 }
@@ -201,7 +201,7 @@ div[data-drupal-selector="edit-block-form"] {
 }
 
 
-#drupal-off-canvas-wrapper .draggable:hover, 
+#drupal-off-canvas-wrapper .draggable:hover,
 #drupal-off-canvas-wrapper .draggable:focus-within {
   background-color: var(--gin-bg-layer2);
 }
@@ -220,7 +220,7 @@ div[data-drupal-selector="edit-block-form"] {
 .yds-layout.layout-builder__layout[data-component-theme="four"] .layout-builder__link.layout-builder__link--add:hover {
   background-color: var(--gin-color-primary-hover) !important;
   border-color: white !important;
-} 
+}
 
 /* Change layoutbuilder configure/UI element colors in dark mode because the defaults don't look good */
 .gin--dark-mode .layout-builder__link--configure:hover {
@@ -246,7 +246,7 @@ div[data-drupal-selector="edit-block-form"] {
 }
 
 /* Override layout builder block categories hover state in dark mode */
-.gin--dark-mode .glb-grid-item:hover, 
+.gin--dark-mode .glb-grid-item:hover,
 .gin--dark-mode .layout-builder-browser-block-item:hover {
   color: white;
   background-color: var(--gin-color-primary-light-rgb) !important;
@@ -322,8 +322,8 @@ div[data-drupal-selector="edit-block-form"] {
 }
 
 /* For some reason text-within on tables in dark mode go wrong */
-.gin--dark-mode tr:hover,
-.gin--dark-mode tr:focus-within {
+.gin--dark-mode tr:hover td,
+.gin--dark-mode tr:focus-within td {
   color: var(--gin-color-text);
   background: var(--gin-bg-secondary);
 }
@@ -360,7 +360,7 @@ th.field-label {
   margin-bottom: 0;
 }
 
-/* Adjust top-margin if an element with an [data-spotlights-position="first" or data-spotlights-position="first-and-last" 
+/* Adjust top-margin if an element with an [data-spotlights-position="first" or data-spotlights-position="first-and-last"
 // is the first element in main content */
 .main-content [data-spotlights-position="first"]:first-child,
 .main-content [data-spotlights-position="first-and-last"]:first-child,
@@ -368,4 +368,4 @@ th.field-label {
 .main-content > .page-meta + [data-spotlights-position="first-and-last"],
 .main-content > .page-meta + [data-spotlights-position="first"] {
   margin-top: 0;
-} 
+}
