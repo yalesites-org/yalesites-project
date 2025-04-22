@@ -1,4 +1,4 @@
-(function ($) {
+((Drupal) => {
   Drupal.behaviors.gcseSearchTab = {
     attach: function (context, settings) {
       gcseLoad();
@@ -15,4 +15,4 @@
       }
     }
   };
-})(jQuery);
+})(Drupal);
