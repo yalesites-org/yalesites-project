@@ -198,7 +198,7 @@ function ys_layouts_form_layout_builder_configure_section_alter(&$form, FormStat
   $config = $form_object->getCurrentLayout()->getConfiguration();
 
   $form['padding_options'] = [
-    '#type' => 'radios',
+    '#type' => 'select',
     '#title' => t('Section padding options'),
     '#options' => [
       'default' => t('Default (current padding)'),
@@ -209,6 +209,9 @@ function ys_layouts_form_layout_builder_configure_section_alter(&$form, FormStat
     '#default_value' => $config['ys_layouts_sections_config']['padding_options'] ?? 'default',
     '#description' => t('Select the padding option for this section.'),
     '#weight' => 0,
+    '#wrapper_attributes' => [
+      'class' => ['glb-canvas-form__settings'],
+    ],
   ];
 
   // Add our submit handler to the form.
