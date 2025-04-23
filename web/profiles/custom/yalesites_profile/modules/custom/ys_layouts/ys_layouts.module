@@ -240,7 +240,6 @@ function _ys_layouts_sections_config_submit_form($form, FormStateInterface $form
   $form_object
     ->getCurrentLayout()
     ->setConfiguration($config);
-
 }
 
 /**
@@ -254,8 +253,7 @@ function ys_layouts_preprocess_layout(&$variables) {
     if (isset($config['padding_options']) && $config['padding_options']) {
       // Replace underscores with hyphens.
       $padding_options = str_replace('_', '-', $config['padding_options']);
-      $variables['attributes']['data-section-padding'] = $padding_options;
+      $variables['settings']['padding'] = $padding_options;
     }
-
   }
 }

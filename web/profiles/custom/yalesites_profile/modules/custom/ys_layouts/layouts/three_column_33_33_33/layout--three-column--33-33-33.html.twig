@@ -18,6 +18,7 @@
   {% endif %}
   {% embed "@organisms/layout/layout/yds-layout.twig" with {
     component__layout: 'thirty-thirty-thirty',
+    layout__padding: settings.padding|default('default'),
     layout__divider: settings.divider ? 'true' : 'false',
     component__theme: settings.theme|default('default'),
   } %}
