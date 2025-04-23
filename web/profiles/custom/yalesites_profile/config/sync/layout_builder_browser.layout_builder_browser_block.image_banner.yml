@@ -4,8 +4,8 @@ status: true
 dependencies: {  }
 id: image_banner
 block_id: 'inline_block:image_banner'
-category: basic
+category: featured_content
 label: 'Image Banner'
 image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/image-banner.svg
 image_alt: 'Image Banner'
-weight: -12
+weight: -16
