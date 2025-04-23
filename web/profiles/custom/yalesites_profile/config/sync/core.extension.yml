@@ -3,7 +3,6 @@ _core:
 module:
   workflow_buttons: -1
   auto_entitylabel: -100
-  action: 0
   address: 0
   addtoany: 0
   admin_toolbar: 0
@@ -73,7 +72,6 @@ module:
   key: 0
   layout_builder: 0
   layout_builder_browser: 0
-  layout_builder_expose_all_field_blocks: 0
   layout_builder_lock: 0
   layout_builder_restrictions: 0
   layout_builder_restrictions_by_region: 0
