@@ -3,7 +3,7 @@
 	display: none;
 }
 
-.gsce-search .gsc-control-cse {
+.gsc-control-cse.gsc-control-cse-en {
 	padding: 0;
 }
 
@@ -79,7 +79,7 @@
 }
 
 /* Search pagination */
-.gsce-search .gsc-results .gsc-cursor-box {
+.gsc-control-cse.gsc-control-cse-en .gsc-results .gsc-cursor-box {
 	display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -88,7 +88,7 @@
   margin-block-end: var(--spacing-page-section);
 } 
 
-.gsce-search .gsc-results .gsc-cursor-box .gsc-cursor-page {
+.gsc-control-cse.gsc-control-cse-en .gsc-results .gsc-cursor-box .gsc-cursor-page {
 	width: 45px;
 	height: 45px;
 	border-radius: 100%;
@@ -99,11 +99,11 @@
 	font: var(--font-style-body-default);
 }
 
-.gsce-search .gsc-results .gsc-cursor-box .gsc-cursor-current-page {
+.gsc-control-cse.gsc-control-cse-en .gsc-results .gsc-cursor-box .gsc-cursor-current-page {
 	border: var(--size-thickness-2) solid var(--color-basic-brown-gray);
 }
 
-.gsce-search .gsc-results .gsc-cursor-box .gsc-cursor-page:not(.gsc-cursor-current-page):hover {
+.gsc-control-cse.gsc-control-cse-en .gsc-results .gsc-cursor-box .gsc-cursor-page:not(.gsc-cursor-current-page):hover {
 	background-color: var(--color-link-base);
   border-color: var(--color-link-base);
 	text-decoration: none;
