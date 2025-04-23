@@ -73,3 +73,7 @@ if (class_exists('Kint')) {
 // Config split for local environments.
 $config['config_split.config_split.local_config']['status'] = TRUE;
 $config['config_split.config_split.production_config']['status'] = FALSE;
+
+// Override CAS cert settings for local use.
+$config['cas.settings']['server']['verify'] = 0;
+$config['cas.settings']['server']['cert'] = '';
