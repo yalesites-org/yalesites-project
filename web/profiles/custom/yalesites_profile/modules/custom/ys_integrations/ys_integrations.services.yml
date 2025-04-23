@@ -1,0 +1,9 @@
+services:
+  ys_integrations.integration_plugin_manager:
+      class: Drupal\ys_integrations\IntegrationPluginManager
+      arguments: ['@container.namespaces', '@cache.default', '@module_handler']
+      tags:
+        - { name: 'default_plugin_manager' }
+  ys_integrations.integrations_settings:
+    class: Drupal\ys_integrations\Form\YsIntegrationSettingsForm
+    arguments: ['@ys_integrations.integration_plugin_manager']
