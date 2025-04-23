@@ -85,7 +85,7 @@
     "drupal/multivalue_form_element": "1.0-beta6",
     "drupal/node_revision_delete": "2.0.0-rc1",
     "drupal/override_node_options": "2.8.0",
-    "drupal/pantheon_advanced_page_cache": "2.2.0",
+    "drupal/pantheon_advanced_page_cache": "2.3.2",
     "drupal/pantheon_secrets": "1.0.5",
     "drupal/paragraphs": "1.18.0",
     "drupal/paragraphs_features": "2.0.0",
