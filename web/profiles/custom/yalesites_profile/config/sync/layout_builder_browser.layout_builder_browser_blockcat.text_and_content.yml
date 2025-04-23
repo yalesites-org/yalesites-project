@@ -4,7 +4,7 @@ status: true
 dependencies: {  }
 id: text_and_content
 label: 'Text & Content'
-weight: -5
+weight: -9
 opened: true
 image_path: ''
 image_alt: ''

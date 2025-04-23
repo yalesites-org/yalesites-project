@@ -4,7 +4,7 @@ status: true
 dependencies: {  }
 id: featured_content
 label: 'Featured Content'
-weight: -7
+weight: -8
 opened: true
 image_path: ''
 image_alt: ''

@@ -4,7 +4,7 @@ status: true
 dependencies: {  }
 id: calls_to_action
 label: 'Calls to Action'
-weight: -9
+weight: -5
 opened: true
 image_path: ''
 image_alt: ''

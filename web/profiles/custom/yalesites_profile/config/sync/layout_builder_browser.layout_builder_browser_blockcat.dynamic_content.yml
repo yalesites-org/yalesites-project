@@ -4,7 +4,7 @@ status: true
 dependencies: {  }
 id: dynamic_content
 label: 'Dynamic Content'
-weight: -8
+weight: -7
 opened: true
 image_path: ''
 image_alt: ''
