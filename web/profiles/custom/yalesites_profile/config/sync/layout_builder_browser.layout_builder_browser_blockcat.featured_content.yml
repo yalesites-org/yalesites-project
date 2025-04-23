@@ -1,0 +1,10 @@
+uuid: 2115ce51-61c8-40d7-b251-52f00fa49503
+langcode: en
+status: true
+dependencies: {  }
+id: featured_content
+label: 'Featured Content'
+weight: -8
+opened: true
+image_path: ''
+image_alt: ''
