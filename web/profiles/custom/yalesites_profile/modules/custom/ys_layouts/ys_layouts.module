@@ -202,13 +202,13 @@ function ys_layouts_form_layout_builder_configure_section_alter(&$form, FormStat
     '#type' => 'select',
     '#title' => t('Section padding options'),
     '#options' => [
-      'default' => t('Default (current padding)'),
+      'default' => t('Default'),
       'no_top' => t('No top padding'),
       'no_bottom' => t('No bottom padding'),
       'no_padding' => t('No padding (top and bottom)'),
     ],
     '#default_value' => $config['ys_layouts_sections_config']['padding_options'] ?? 'default',
-    '#description' => t('Select the padding option for this section.'),
+    '#description' => t("To create connected sections, use 'No bottom padding' on the first section and 'No top padding' on the section below it. Default padding maintains standard spacing for optimal readability."),
     '#weight' => 0,
     '#wrapper_attributes' => [
       'class' => ['glb-canvas-form__settings'],
