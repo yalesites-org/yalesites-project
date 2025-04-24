@@ -326,13 +326,6 @@ div[data-drupal-selector="edit-block-form"] {
   display: none;
 }
 
-/* For some reason text-within on tables in dark mode go wrong */
-.gin--dark-mode tr:hover,
-.gin--dark-mode tr:focus-within {
-  color: var(--gin-color-text);
-  background: var(--gin-bg-secondary);
-}
-
 /* To fix ckeditor's modification of paragraph action buttons */
 #drupal-off-canvas-wrapper .ui-dialog-content div:not([data-drupal-ck-style-fence] *) {
   width: inherit !important;
