@@ -81,7 +81,7 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
 
     /** @var \Drupal\node\NodeInterface $node */
     $node = $this->routeMatch->getParameter('node');
-    if (!($node instanceof NodeInterface)) {
+    if (!($node instanceof NodeInterface || $node->bundle() !== 'event')) {
       return [];
     }
 
