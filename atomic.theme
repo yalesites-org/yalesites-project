@@ -109,7 +109,10 @@ function atomic_theme_suggestions_field_alter(array &$suggestions, array $variab
 }
 
 /**
- * Implements hook_preprocess_HOOK() for html.html.twig.
+ * Implements hook_preprocess_HOOK().
+ *
+ * Attempt to pre-set the main content ID based on whether
+ * the node associated is in a content collection.
  */
 function atomic_preprocess_html(array &$variables) {
   $variables['main_content_id'] = '#main-content';
