@@ -45,3 +45,11 @@
 .breadcrumbs__wrapper + #block-atomic-custombooknavigation {
   margin-top: var(--size-spacing-4);
 }
+
+/*
+ * The secondary nav skip anchor does not fully stop at the right place.
+ * This helps nudge it in the right direction so that it visually looks better.
+ */
+#main-content-after-secondary-nav {
+  scroll-margin-top: var(--spacing-size-2);
+}
