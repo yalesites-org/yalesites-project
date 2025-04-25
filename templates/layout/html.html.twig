@@ -40,7 +40,7 @@
     #}
 
     {% set main_content_id = main_content_id|default('#main-content') %}
-    {% set secondary_nav_present = secondary_navigation|default(FALSE) %}
+    {% set secondary_nav_present = secondary_nav_present |default(FALSE) %}
 
     {% if secondary_nav_present %}
       {% include "@molecules/link-skip/yds-link-skip.twig" with {
