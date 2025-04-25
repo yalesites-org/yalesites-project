@@ -98,7 +98,7 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
 
     /** @var \Drupal\node\NodeInterface $node */
     $node = $this->requestStack->getCurrentRequest()->attributes->get('node');
-    if (!($node instanceof NodeInterface || $node->bundle() !== 'post')) {
+    if (!($node instanceof NodeInterface) || $node->bundle() !== 'post') {
       return [];
     }
 
