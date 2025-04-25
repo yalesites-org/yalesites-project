@@ -38,6 +38,11 @@
     #}
 
     {% include "@molecules/link-skip/yds-link-skip.twig" with {
+      link_skip__content: 'Skip to secondary menu'|t ,
+      link_skip__url: '#block-atomic-custombooknavigation',
+      link_skip__extra_class: 'visually-hidden focusable',
+    }%}
+    {% include "@molecules/link-skip/yds-link-skip.twig" with {
       link_skip__content: 'Skip to main content'|t ,
       link_skip__url: '#main-content',
       link_skip__extra_class: 'visually-hidden focusable',
