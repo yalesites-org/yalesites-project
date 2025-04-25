@@ -5,6 +5,8 @@
  * Functions to support theming.
  */
 
+use Drupal\node\Entity\Node;
+
 /**
  * Implements hook_preprocess_region().
  */
@@ -103,5 +105,22 @@ function atomic_theme_suggestions_field_alter(array &$suggestions, array $variab
 
     // Add a theme suggestion for the field based on the parent node's view mode.
     $suggestions[] = 'field__' . $variables['element']['#entity_type'] . '__' . $field_name . '__' . $view_mode;
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for html.html.twig.
+ */
+function atomic_preprocess_html(array &$variables) {
+  $variables['main_content_id'] = '#main-content';
+  $variables['secondary_nav_present'] = FALSE;
+  if ($node = \Drupal::routeMatch()->getParameter('node')) {
+    if ($node instanceof Node && $node->bundle() == 'page') {
+
+      if ($node->book) {
+        $variables['secondary_nav_present'] = TRUE;
+        $variables['main_content_id'] = '#main-content-after-secondary-nav';
+      }
+    }
   }
 }
