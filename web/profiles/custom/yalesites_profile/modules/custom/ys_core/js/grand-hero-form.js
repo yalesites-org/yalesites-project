@@ -25,8 +25,8 @@
      * Cache for jQuery selectors.
      */
     selectors: {
-      displayMode: 'select[name="settings[block_form][field_display_mode]"], #edit-settings-block-form-field-display-mode, .field--name-field-display-mode select, select[name*="field_display_mode"]',
-      headingField: 'input[name*="field_heading"], textarea[name*="field_heading"], .field--name-field-heading input, .field--name-field-heading textarea',
+      displayMode: 'select[name="settings[block_form][field_display_mode]"], #edit-settings-block-form-field-display-mode--56XmtUCqMuk, .field--name-field-display-mode select, select[name*="field_display_mode"]',
+      headingField: 'input[name="settings[block_form][field_heading][0][value]"], #edit-settings-block-form-field-heading-0-value--IQIppSCooA4, .field--name-field-heading input, .field--name-field-heading textarea',
       overlayField: 'input[name*="field_overlay"], textarea[name*="field_overlay"], .field--name-field-overlay input, .field--name-field-overlay textarea',
       overlayLegend: 'legend:contains("Banner Overlay PNG"), legend:contains("Overlay")',
       formWrapper: '.form-wrapper, .js-form-wrapper, .field--type-text, .field--type-text-long',
@@ -469,15 +469,24 @@
   // Attach the behavior
   Drupal.behaviors.grandHeroForm = {
     attach: function (context, settings) {
-      once('grandHeroForm', 'form', context).forEach(function (form) {
-        // Try to initialize immediately
-        if (!GrandHeroForm.attemptInit($(form))) {
-          // If immediate initialization fails, schedule a retry after DOM is fully loaded
-          $(document).ready(function() {
-            GrandHeroForm.attemptInit($(form));
-          });
-        }
-      });
+      // Use a flag to prevent multiple initializations
+      if (context === document) {
+        // Only initialize once per page load
+        once('grandHeroForm', 'form', context).forEach(function (form) {
+          // Try to initialize immediately
+          if (!GrandHeroForm.attemptInit($(form))) {
+            // If immediate initialization fails, schedule a retry after DOM is fully loaded
+            $(document).ready(function() {
+              GrandHeroForm.attemptInit($(form));
+            });
+          }
+        });
+      } else {
+        // For AJAX-loaded content, initialize directly
+        once('grandHeroForm', 'form', context).forEach(function (form) {
+          GrandHeroForm.attemptInit($(form));
+        });
+      }
     }
   };
   
