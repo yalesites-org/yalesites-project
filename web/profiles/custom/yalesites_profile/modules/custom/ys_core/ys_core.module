@@ -220,6 +220,8 @@ function ys_core_preprocess_block(&$variables) {
       $node['#node']->show_eyebrow = $showEyebrow;
     }
   }
+
+  _ys_core_webform_valid_email_check($variables);
 }
 
 /**
@@ -669,5 +671,28 @@ function _ys_core_disable_event_fields(&$form, $form_id) {
     foreach ($fieldsToDisable as $field) {
       $form[$field]['#disabled'] = TRUE;
     }
+  }
+}
+
+/**
+ * Validates the email address in the webform plugin.
+ *
+ * @param array $variables
+ *   The render variables array.
+ */
+function _ys_core_webform_valid_email_check(&$variables) {
+  $plugin_id = $variables['plugin_id'];
+  $in_layout_builder = $variables['in_preview'] ?? FALSE;
+  $validEmail = TRUE;
+
+  if ($in_layout_builder && $plugin_id == 'inline_block:webform') {
+    $config = \Drupal::config('system.site');
+    $siteMail = $config->get('mail');
+
+    $validEmail = ($siteMail != 'noreply@noreply.yale.edu');
+  }
+
+  if (!$validEmail) {
+    $variables['content']['#configuration_issue'] = t('Please go into Settings->Site Settings and update the site email to an email address that can receive this submission.');
   }
 }

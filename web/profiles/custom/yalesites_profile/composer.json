@@ -35,7 +35,7 @@
     "drupal/components": "3.1.0",
     "drupal/config_filter": "2.6.0",
     "drupal/config_ignore": "3.3.0",
-    "drupal/config_split": "2.0.1",
+    "drupal/config_split": "2.0.2",
     "drupal/ctools": "4.1.0",
     "drupal/custom_book_block": "1.1.0",
     "drupal/devel": "5.3.1",
@@ -113,7 +113,7 @@
     "laminas/laminas-escaper": "2.13.0",
     "northernco/ckeditor5-anchor-drupal": "0.4.0",
     "yalesites-org/ai_engine": "1.2.9",
-    "yalesites-org/atomic": "1.45.0",
+    "yalesites-org/atomic": "1.46.0",
     "yalesites-org/yale_cas": "v1.0.5"
   },
   "minimum-stability": "dev",
