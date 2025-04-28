@@ -16,7 +16,10 @@ label: Heading
 description: ''
 required: true
 translatable: true
-default_value: {  }
+default_value:
+  -
+    value: 'Heading text goes here'
+    format: heading_html
 default_value_callback: ''
 settings:
   allowed_formats:
