@@ -14,27 +14,39 @@
      * Configuration options.
      */
     config: {
-      maxRetries: 5,
-      retryDelay: 200,
+      maxRetries: 10,
+      retryDelay: 300,
       defaultDisplayMode: 'text',
-      defaultHeadingText: 'Heading text goes here'
+      defaultHeadingText: 'Heading text goes here',
+      debug: true
     },
 
     /**
      * Cache for jQuery selectors.
      */
     selectors: {
-      displayMode: 'select[name="settings[block_form][field_display_mode]"], #edit-settings-block-form-field-display-mode, .field--name-field-display-mode select',
-      headingField: 'input[name*="field_heading"], textarea[name*="field_heading"]',
-      overlayField: 'input[name*="field_overlay"], textarea[name*="field_overlay"]',
-      overlayLegend: 'legend:contains("Banner Overlay PNG")',
-      formWrapper: '.form-wrapper, .js-form-wrapper',
-      formItem: '.form-item',
+      displayMode: 'select[name="settings[block_form][field_display_mode]"], #edit-settings-block-form-field-display-mode, .field--name-field-display-mode select, select[name*="field_display_mode"]',
+      headingField: 'input[name*="field_heading"], textarea[name*="field_heading"], .field--name-field-heading input, .field--name-field-heading textarea',
+      overlayField: 'input[name*="field_overlay"], textarea[name*="field_overlay"], .field--name-field-overlay input, .field--name-field-overlay textarea',
+      overlayLegend: 'legend:contains("Banner Overlay PNG"), legend:contains("Overlay")',
+      formWrapper: '.form-wrapper, .js-form-wrapper, .field--type-text, .field--type-text-long',
+      formItem: '.form-item, .js-form-item',
       requiredClass: '.js-form-required, .form-required',
       textFormatWrapper: '.js-text-format-wrapper',
       requiredIndicator: '.form-required',
       errorClass: '.error, .has-error',
       errorMessage: '.error-message, .form-error-message'
+    },
+
+    /**
+     * Log a debug message if debugging is enabled.
+     *
+     * @param {string} message - The message to log.
+     */
+    log: function(message) {
+      if (this.config.debug) {
+        console.debug('Grand Hero Form: ' + message);
+      }
     },
 
     /**
@@ -44,24 +56,40 @@
      */
     init: function($context) {
       try {
+        this.log('Initializing form');
+        
         // Find the display mode select
         const $displayModeSelect = this.findDisplayModeSelect($context);
         if (!$displayModeSelect.length) {
-          console.debug('Grand Hero Form: Display mode select not found');
+          this.log('Display mode select not found');
           return;
         }
+        this.log('Display mode select found');
 
         // Set default value if not already set
         if (!$displayModeSelect.val()) {
           $displayModeSelect.val(this.config.defaultDisplayMode);
+          this.log('Set default display mode to: ' + this.config.defaultDisplayMode);
         }
 
         // Find the heading and overlay wrappers
         const $headingWrapper = this.findHeadingWrapper($context);
         const $overlayWrapper = this.findOverlayWrapper($context);
 
+        if (!$headingWrapper.length) {
+          this.log('Heading wrapper not found');
+        } else {
+          this.log('Heading wrapper found');
+        }
+
+        if (!$overlayWrapper.length) {
+          this.log('Overlay wrapper not found');
+        } else {
+          this.log('Overlay wrapper found');
+        }
+
         if (!$headingWrapper.length || !$overlayWrapper.length) {
-          console.debug('Grand Hero Form: Heading or overlay wrapper not found');
+          this.log('Cannot initialize: missing required wrappers');
           return;
         }
 
@@ -70,6 +98,18 @@
         const $headingFormItem = $headingInput.closest(this.selectors.formItem);
         const $overlayInput = $overlayWrapper.find(this.selectors.overlayField);
         const $overlayFormItem = $overlayInput.closest(this.selectors.formItem);
+
+        if (!$headingInput.length) {
+          this.log('Heading input not found');
+        } else {
+          this.log('Heading input found');
+        }
+
+        if (!$overlayInput.length) {
+          this.log('Overlay input not found');
+        } else {
+          this.log('Overlay input found');
+        }
 
         // Set up the form
         this.setupFormValidation($context, $displayModeSelect, $headingInput, $headingFormItem, $overlayInput, $overlayFormItem);
@@ -82,7 +122,7 @@
           this.updateFieldVisibility($displayModeSelect, $headingWrapper, $overlayWrapper, $headingInput, $headingFormItem, $overlayInput, $overlayFormItem);
         });
 
-        console.debug('Grand Hero Form: Initialized successfully');
+        this.log('Initialized successfully');
       } catch (error) {
         console.error('Grand Hero Form: Error during initialization', error);
       }
@@ -95,7 +135,27 @@
      * @return {jQuery} The display mode select element.
      */
     findDisplayModeSelect: function($context) {
-      return $context.find(this.selectors.displayMode);
+      // Try to find by our selectors
+      let $select = $context.find(this.selectors.displayMode);
+      
+      // If not found, try a more aggressive approach
+      if (!$select.length) {
+        this.log('Trying alternative methods to find display mode select');
+        
+        // Look for any select that might be the display mode
+        $select = $context.find('select').filter(function() {
+          const $this = $(this);
+          const name = $this.attr('name') || '';
+          const id = $this.attr('id') || '';
+          const label = $this.closest('.form-item').find('label').text() || '';
+          
+          return name.includes('display_mode') || 
+                 id.includes('display_mode') || 
+                 label.toLowerCase().includes('display mode');
+        });
+      }
+      
+      return $select;
     },
 
     /**
@@ -105,7 +165,26 @@
      * @return {jQuery} The heading wrapper element.
      */
     findHeadingWrapper: function($context) {
-      return $context.find(this.selectors.headingField).closest(this.selectors.formWrapper);
+      // Try to find by our selectors
+      let $wrapper = $context.find(this.selectors.headingField).closest(this.selectors.formWrapper);
+      
+      // If not found, try a more aggressive approach
+      if (!$wrapper.length) {
+        this.log('Trying alternative methods to find heading wrapper');
+        
+        // Look for any field that might be the heading
+        $wrapper = $context.find('.field--name-field-heading, .field--name-heading, [data-drupal-selector*="heading"]')
+          .closest(this.selectors.formWrapper);
+          
+        // If still not found, try to find by label text
+        if (!$wrapper.length) {
+          $wrapper = $context.find('label').filter(function() {
+            return $(this).text().toLowerCase().includes('heading');
+          }).closest(this.selectors.formWrapper);
+        }
+      }
+      
+      return $wrapper;
     },
 
     /**
@@ -115,10 +194,29 @@
      * @return {jQuery} The overlay wrapper element.
      */
     findOverlayWrapper: function($context) {
+      // Try to find by our selectors
       const $overlayByInput = $context.find(this.selectors.overlayField).closest(this.selectors.formWrapper);
       const $overlayByLegend = $context.find(this.selectors.overlayLegend).closest(this.selectors.formWrapper);
       
-      return $overlayByInput.length ? $overlayByInput : $overlayByLegend;
+      let $wrapper = $overlayByInput.length ? $overlayByInput : $overlayByLegend;
+      
+      // If not found, try a more aggressive approach
+      if (!$wrapper.length) {
+        this.log('Trying alternative methods to find overlay wrapper');
+        
+        // Look for any field that might be the overlay
+        $wrapper = $context.find('.field--name-field-overlay, .field--name-overlay, [data-drupal-selector*="overlay"]')
+          .closest(this.selectors.formWrapper);
+          
+        // If still not found, try to find by label text
+        if (!$wrapper.length) {
+          $wrapper = $context.find('label').filter(function() {
+            return $(this).text().toLowerCase().includes('overlay');
+          }).closest(this.selectors.formWrapper);
+        }
+      }
+      
+      return $wrapper;
     },
 
     /**
@@ -134,6 +232,7 @@
      */
     updateFieldVisibility: function($displayModeSelect, $headingWrapper, $overlayWrapper, $headingInput, $headingFormItem, $overlayInput, $overlayFormItem) {
       const selectedValue = $displayModeSelect.val();
+      this.log('Updating field visibility for mode: ' + selectedValue);
       
       if (selectedValue === 'text') {
         this.showTextMode($headingWrapper, $overlayWrapper, $headingInput, $headingFormItem, $overlayInput, $overlayFormItem);
@@ -153,6 +252,7 @@
      * @param {jQuery} $overlayFormItem - The overlay form item element.
      */
     showTextMode: function($headingWrapper, $overlayWrapper, $headingInput, $headingFormItem, $overlayInput, $overlayFormItem) {
+      this.log('Showing text mode');
       $headingWrapper.show();
       $overlayWrapper.hide();
       
@@ -187,6 +287,7 @@
      * @param {jQuery} $overlayFormItem - The overlay form item element.
      */
     showImageMode: function($headingWrapper, $overlayWrapper, $headingInput, $headingFormItem, $overlayInput, $overlayFormItem) {
+      this.log('Showing image mode');
       $headingWrapper.hide();
       $overlayWrapper.show();
       
@@ -282,8 +383,11 @@
     setupFormValidation: function($context, $displayModeSelect, $headingInput, $headingFormItem, $overlayInput, $overlayFormItem) {
       const $form = $context.closest('form');
       if (!$form.length) {
+        this.log('Form not found for validation setup');
         return;
       }
+
+      this.log('Setting up form validation');
 
       // Create a hidden field to override validation
       const $overrideField = $('<input>')
@@ -298,6 +402,7 @@
       // Handle form submission
       $form.on('submit', () => {
         const selectedValue = $displayModeSelect.val();
+        this.log('Form submitted with display mode: ' + selectedValue);
         
         // If in image mode, set the override field value
         if (selectedValue === 'image') {
@@ -327,10 +432,14 @@
      * @return {boolean} Whether initialization was successful.
      */
     attemptInit: function($element, retryCount = 0) {
+      this.log('Attempt ' + (retryCount + 1) + ' of ' + this.config.maxRetries);
+      
       // Check if we have the necessary elements
       const hasDisplayMode = $element.find(this.selectors.displayMode).length > 0;
       const hasHeadingField = $element.find(this.selectors.headingField).length > 0;
       const hasOverlayField = $element.find(this.selectors.overlayField).length > 0;
+      
+      this.log('Element check: displayMode=' + hasDisplayMode + ', headingField=' + hasHeadingField + ', overlayField=' + hasOverlayField);
       
       // If all required elements are present, initialize the form
       if (hasDisplayMode && hasHeadingField && hasOverlayField) {
@@ -345,7 +454,14 @@
         return false;
       }
       
-      console.debug('Grand Hero Form: Failed to initialize after ' + this.config.maxRetries + ' attempts');
+      this.log('Failed to initialize after ' + this.config.maxRetries + ' attempts');
+      
+      // As a last resort, try to initialize with whatever elements we can find
+      if (hasDisplayMode) {
+        this.log('Attempting fallback initialization with display mode only');
+        this.init($element);
+      }
+      
       return false;
     }
   };
