@@ -90,13 +90,16 @@
             // Remove any existing required indicators first
             headingLabel.find('.form-required').remove();
             // Then add a single required indicator
-            headingLabel.append('<span class="form-required" title="This field is required.">*</span>');
+            headingLabel.append('<span class="form-required" title="This field is required." style="display:none;">*</span>');
           }
           
           // If we have a stored value that's not the override text, restore it
           const storedValue = headingInput.data('stored-value');
-          if (storedValue && storedValue !== 'Image Mode - No Heading Required') {
+          if (storedValue && storedValue !== 'Heading text goes here') {
             headingInput.val(storedValue);
+          } else if (!headingInput.val()) {
+            // If no stored value and no current value, set the default
+            headingInput.val('Heading text goes here');
           }
         }
         
@@ -123,7 +126,7 @@
           const currentHeadingValue = headingInput.val();
           
           // Only store the value if it's not the override text
-          if (currentHeadingValue && currentHeadingValue !== 'Image Mode - No Heading Required') {
+          if (currentHeadingValue && currentHeadingValue !== 'Heading text goes here') {
             headingInput.data('stored-value', currentHeadingValue);
           }
           
@@ -145,8 +148,8 @@
           // Also remove any validation messages
           headingFormItem.find('.error-message, .form-error-message').remove();
           
-          // Clear the visible value but keep the stored value
-          headingInput.val('');
+          // Set the default value instead of clearing it
+          headingInput.val('Heading text goes here');
         }
         
         // Make overlay required when visible
@@ -170,7 +173,7 @@
             // Remove any existing required indicators first
             overlayLabel.find('.form-required').remove();
             // Then add a single required indicator
-            overlayLabel.append('<span class="form-required" title="This field is required.">*</span>');
+            overlayLabel.append('<span class="form-required" title="This field is required." style="display:none;">*</span>');
           }
         }
       }
@@ -204,7 +207,7 @@
         // If in image mode, set the override field value
         if (selectedValue === 'image') {
           // Set a default value for the override field
-          overrideField.val('Image Mode - No Heading Required');
+          overrideField.val('Heading text goes here');
           
           // Remove all possible required attributes and classes from the heading input
           if (headingInput.length) {
@@ -229,12 +232,8 @@
           // In text mode, copy the heading value to the override field
           if (headingInput.length) {
             const headingValue = headingInput.val();
-            // Only use the actual heading value, not the override text
-            if (headingValue && headingValue !== 'Image Mode - No Heading Required') {
-              overrideField.val(headingValue);
-            } else {
-              overrideField.val('');
-            }
+            // Always use the heading value, even if it's the default
+            overrideField.val(headingValue);
           }
         }
       });
