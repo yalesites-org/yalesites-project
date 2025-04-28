@@ -4,7 +4,7 @@ status: true
 dependencies: {  }
 id: media
 label: Media
-weight: -8
+weight: -6
 opened: true
 image_path: null
 image_alt: null

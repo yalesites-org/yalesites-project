@@ -1,0 +1,7 @@
+name: YaleSites migrate
+type: module
+description: Migrate support for YaleSites
+core_version_requirement: '^9 || ^10'
+package: YaleSites
+dependencies:
+  - migrate_drupal
