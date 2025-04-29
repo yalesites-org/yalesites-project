@@ -78,48 +78,9 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     $block_type = ys_core_get_block_type($form, $form_state);
 
     if ($block_type === 'grand_hero') {
-      // Add the display mode field if it doesn't exist.
-      if (!isset($form['settings']['block_form']['field_display_mode'])) {
-        $form['settings']['block_form']['field_display_mode'] = [
-          '#type' => 'select',
-          '#title' => t('Display Mode'),
-          '#options' => [
-            'text' => t('Text'),
-            'image' => t('Image'),
-          ],
-          '#default_value' => 'text',
-          '#weight' => -1,
-          '#required' => TRUE,
-          '#ajax' => [
-            'callback' => 'ys_core_grand_hero_display_mode_callback',
-            'wrapper' => 'grand-hero-settings',
-          ],
-        ];
-      }
 
       // Get the block entity.
       $block = $form['settings']['block_form']['#block'];
-
-      // Handle field_heading.
-      if ($block && $block->hasField('field_heading')) {
-        if (!isset($form['settings']['block_form']['field_heading'])) {
-          $form['settings']['block_form']['field_heading'] = [
-            '#type' => 'textfield',
-            '#title' => t('Heading'),
-            '#default_value' => $block->get('field_heading')->value,
-          ];
-        }
-
-        // Apply states to the field_heading.
-        $form['settings']['block_form']['field_heading']['#states'] = [
-          'visible' => [
-            ':input[name="settings[block_form][field_display_mode]"]' => ['value' => 'text'],
-          ],
-          'required' => [
-            ':input[name="settings[block_form][field_display_mode]"]' => ['value' => 'text'],
-          ],
-        ];
-      }
 
       // Handle field_overlay_png.
       if ($block && $block->hasField('field_overlay_png')) {

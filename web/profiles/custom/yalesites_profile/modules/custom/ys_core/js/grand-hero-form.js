@@ -8,14 +8,11 @@
   const GrandHeroForm = {
     config: {
       maxRetries: 10,
-      retryDelay: 300,
-      defaultDisplayMode: 'text',
-      defaultHeadingText: 'Heading text goes here'
+      retryDelay: 300
     },
 
     selectors: {
-      displayMode: 'select[name*="[field_display_mode]"]',
-      headingField: 'input[name*="[field_heading]"], textarea[name*="[field_heading]"]',
+      replaceHeadingCheckbox: 'input[name*="[field_replace_heading_with_image]"]',
       overlayField: 'input[name*="[field_overlay_png]"], button[data-drupal-selector*="field-overlay-png"]',
       formWrapper: '.form-wrapper, .js-form-wrapper',
       formItem: '.form-item, .js-form-item',
@@ -55,24 +52,20 @@
           return true;
         }
 
-        const $displayModeSelect = $context.find(this.selectors.displayMode);
-        const $headingField = $context.find(this.selectors.headingField);
+        const $replaceHeadingCheckbox = $context.find(this.selectors.replaceHeadingCheckbox);
         const $overlayField = $context.find(this.selectors.overlayField);
 
-        if (!$displayModeSelect.length || !$headingField.length || !$overlayField.length) {
+        if (!$replaceHeadingCheckbox.length || !$overlayField.length) {
           return false;
         }
 
-        const $headingWrapper = $headingField.closest(this.selectors.formWrapper);
         const $overlayWrapper = $overlayField.closest(this.selectors.formWrapper);
-        const $headingFormItem = $headingField.closest(this.selectors.formItem);
         const $overlayFormItem = $overlayField.closest(this.selectors.formItem);
 
-        this.setupFormValidation($context, $displayModeSelect, $headingField, $headingFormItem, $overlayField, $overlayFormItem);
-        this.updateFieldVisibility($displayModeSelect, $headingWrapper, $overlayWrapper, $headingField, $headingFormItem, $overlayField, $overlayFormItem);
+        this.updateFieldVisibility($replaceHeadingCheckbox, $overlayWrapper, $overlayField, $overlayFormItem);
 
-        $displayModeSelect.on('change', () => {
-          this.updateFieldVisibility($displayModeSelect, $headingWrapper, $overlayWrapper, $headingField, $headingFormItem, $overlayField, $overlayFormItem);
+        $replaceHeadingCheckbox.on('change', () => {
+          this.updateFieldVisibility($replaceHeadingCheckbox, $overlayWrapper, $overlayField, $overlayFormItem);
         });
 
         this.initializedForms[formId] = true;
@@ -104,41 +97,15 @@
       return success;
     },
 
-    setupFormValidation: function($context, $displayModeSelect, $headingInput, $headingFormItem, $overlayInput, $overlayFormItem) {
-      const $form = $context.closest('form');
-      if (!$form.length) return;
+    updateFieldVisibility: function($replaceHeadingCheckbox, $overlayWrapper, $overlayField, $overlayFormItem) {
+      const isChecked = $replaceHeadingCheckbox.is(':checked');
 
-      const $overrideField = $('<input>')
-        .attr('type', 'hidden')
-        .attr('name', 'settings[block_form][field_heading][0][value]')
-        .attr('id', 'heading-override-field');
-
-      $form.append($overrideField);
-
-      $form.on('submit', () => {
-        const selectedValue = $displayModeSelect.val();
-        if (selectedValue === 'image') {
-          $overrideField.val(this.config.defaultHeadingText);
-          this.makeFieldNotRequired($headingInput, $headingFormItem, $headingInput.closest(this.selectors.formWrapper));
-        } else {
-          $overrideField.val($headingInput.val());
-        }
-      });
-    },
-
-    updateFieldVisibility: function($displayModeSelect, $headingWrapper, $overlayWrapper, $headingInput, $headingFormItem, $overlayInput, $overlayFormItem) {
-      const selectedValue = $displayModeSelect.val();
-
-      if (selectedValue === 'text') {
-        $headingWrapper.show();
-        $overlayWrapper.hide();
-        this.makeFieldRequired($headingInput, $headingFormItem, $headingWrapper);
-        this.makeFieldNotRequired($overlayInput, $overlayFormItem, $overlayWrapper);
-      } else {
-        $headingWrapper.hide();
+      if (isChecked) {
         $overlayWrapper.show();
-        this.makeFieldRequired($overlayInput, $overlayFormItem, $overlayWrapper);
-        this.makeFieldNotRequired($headingInput, $headingFormItem, $headingWrapper);
+        this.makeFieldRequired($overlayField, $overlayFormItem, $overlayWrapper);
+        } else {
+        $overlayWrapper.hide();
+        this.makeFieldNotRequired($overlayField, $overlayFormItem, $overlayWrapper);
       }
     },
 
@@ -169,7 +136,7 @@
       });
     }
   };
-
+  
   $(document).on('dialog:aftercreate', function(event, dialog, $element, settings) {
     const $targetForm = $element.find('form.layout-builder-add-block, form.layout-builder-update-block').has('#grand-hero-settings');
     if ($targetForm.length) {
@@ -186,4 +153,4 @@
     }
   });
 
-})(jQuery, Drupal, once);
+})(jQuery, Drupal, once); 
