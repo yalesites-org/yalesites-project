@@ -60,6 +60,36 @@
     },
 
     /**
+     * Log detailed information about an element.
+     *
+     * @param {jQuery} $element - The element to log information about.
+     * @param {string} elementName - The name of the element for logging.
+     */
+    logElementDetails: function($element, elementName) {
+      if (!$element.length) {
+        this.log(elementName + ' not found');
+        return;
+      }
+
+      this.log(elementName + ' found:');
+      this.log('  - Tag: ' + $element.prop('tagName'));
+      this.log('  - ID: ' + $element.attr('id'));
+      this.log('  - Name: ' + $element.attr('name'));
+      this.log('  - Class: ' + $element.attr('class'));
+      this.log('  - Parent class: ' + $element.parent().attr('class'));
+      this.log('  - Parent ID: ' + $element.parent().attr('id'));
+      this.log('  - Parent name: ' + $element.parent().attr('name'));
+      
+      // Log the HTML structure around this element
+      const $parent = $element.closest(this.selectors.formWrapper);
+      if ($parent.length) {
+        this.log('  - Wrapper HTML: ' + $parent.prop('outerHTML').substring(0, 200) + '...');
+      } else {
+        this.log('  - No wrapper found');
+      }
+    },
+
+    /**
      * Initialize the Grand Hero form.
      *
      * @param {jQuery} $context - The context element.
@@ -75,6 +105,9 @@
         }
 
         this.log('Initializing form');
+        
+        // Log the context HTML to see what we're working with
+        this.log('Context HTML: ' + $context.prop('outerHTML').substring(0, 500) + '...');
         
         // Find the display mode select
         const $displayModeSelect = this.findDisplayModeSelect($context);
@@ -116,6 +149,10 @@
         const $headingFormItem = $headingInput.closest(this.selectors.formItem);
         const $overlayInput = $overlayWrapper.find(this.selectors.overlayField);
         const $overlayFormItem = $overlayInput.closest(this.selectors.formItem);
+
+        // Log detailed information about the elements
+        this.logElementDetails($headingInput, 'Heading input');
+        this.logElementDetails($overlayInput, 'Overlay input');
 
         if (!$headingInput.length) {
           this.log('Heading input not found');
@@ -527,6 +564,22 @@
       const hasOverlayField = $element.find(this.selectors.overlayField).length > 0;
       
       this.log('Element check: displayMode=' + hasDisplayMode + ', headingField=' + hasHeadingField + ', overlayField=' + hasOverlayField);
+      
+      // Log all elements that match our selectors
+      this.log('All display mode elements found:');
+      $element.find(this.selectors.displayMode).each((index, el) => {
+        this.log('  - ' + $(el).attr('name') + ' (id: ' + $(el).attr('id') + ')');
+      });
+      
+      this.log('All heading field elements found:');
+      $element.find(this.selectors.headingField).each((index, el) => {
+        this.log('  - ' + $(el).attr('name') + ' (id: ' + $(el).attr('id') + ')');
+      });
+      
+      this.log('All overlay field elements found:');
+      $element.find(this.selectors.overlayField).each((index, el) => {
+        this.log('  - ' + $(el).attr('name') + ' (id: ' + $(el).attr('id') + ')');
+      });
       
       // If all required elements are present, initialize the form
       if (hasDisplayMode && hasHeadingField && hasOverlayField) {
