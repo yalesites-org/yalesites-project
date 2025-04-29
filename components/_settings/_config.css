@@ -37,3 +37,11 @@
 #block-atomic-custombooknavigation + div:has(.page-title.visible) {
   margin-top: var(--size-spacing-4);
 }
+
+/*
+ * To add more space only between the situation where a breadcrumb
+ * appears above the custom navigation.
+ */
+.breadcrumbs__wrapper + #block-atomic-custombooknavigation {
+  margin-top: var(--size-spacing-4);
+}
