@@ -8,23 +8,16 @@
   const GrandHeroForm = {
     config: {
       maxRetries: 10,
-      retryDelay: 300,
-      debug: true,
+      retryDelay: 300
     },
 
     selectors: {
       replaceHeadingCheckbox: 'input[name*="[field_replace_heading_with_image]"]',
-      overlayField: 'fieldset.js-media-library-widget[data-drupal-selector*="field-overlay-png"]',
+      overlayField: 'fieldset.js-media-library-widget[data-drupal-selector*="field-overlay-png"]'
     },
 
     initializedForms: {},
     activeRetries: {},
-
-    log: function (message) {
-      if (this.config.debug) {
-        console.debug('Grand Hero Form: ' + message);
-      }
-    },
 
     getFormId: function ($context) {
       const $form = $context.is('form') ? $context : $context.closest('form');
@@ -36,13 +29,11 @@
       if (this.activeRetries[formId]) {
         clearTimeout(this.activeRetries[formId]);
         delete this.activeRetries[formId];
-        this.log('Cancelled retries for form: ' + formId);
       }
     },
 
     updateFieldVisibility: function ($replaceHeadingCheckbox, $overlayField) {
       const isChecked = $replaceHeadingCheckbox.is(':checked');
-      this.log('Updating overlay field visibility: ' + (isChecked ? 'show' : 'hide'));
       if (isChecked) {
         $overlayField.fadeIn(200);
       } else {
@@ -61,7 +52,6 @@
         const $overlayField = $context.find(this.selectors.overlayField);
 
         if (!$replaceHeadingCheckbox.length || !$overlayField.length) {
-          this.log('Required fields not found for form: ' + formId);
           return false;
         }
 
@@ -73,7 +63,6 @@
 
         this.initializedForms[formId] = true;
         this.cancelRetries(formId);
-        this.log('Initialized form: ' + formId);
         return true;
       } catch (error) {
         console.error('Grand Hero Form: Initialization error', error);
@@ -89,19 +78,17 @@
       }
 
       if (retryCount >= this.config.maxRetries) {
-        this.log('Max retries exceeded: ' + formId);
         return false;
       }
 
       const success = this.init($context);
       if (!success) {
-        this.log(`Retrying initialization (${retryCount + 1}/${this.config.maxRetries})`);
         this.activeRetries[formId] = setTimeout(() => {
           this.attemptInit($context, retryCount + 1);
         }, this.config.retryDelay);
       }
       return success;
-    },
+    }
   };
 
   Drupal.behaviors.grandHeroForm = {
@@ -110,8 +97,6 @@
         const $form = $(form);
         if ($form.find('#grand-hero-settings').length) {
           GrandHeroForm.attemptInit($form);
-        } else {
-          GrandHeroForm.log('Skipping form without grand-hero-settings: ' + GrandHeroForm.getFormId($form));
         }
       });
     }
