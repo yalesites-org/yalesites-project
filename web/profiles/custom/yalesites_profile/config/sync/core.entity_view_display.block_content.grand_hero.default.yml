@@ -4,7 +4,6 @@ status: true
 dependencies:
   config:
     - block_content.type.grand_hero
-    - field.field.block_content.grand_hero.field_display_mode
     - field.field.block_content.grand_hero.field_heading
     - field.field.block_content.grand_hero.field_heading_level
     - field.field.block_content.grand_hero.field_instructions
@@ -12,6 +11,7 @@ dependencies:
     - field.field.block_content.grand_hero.field_link_two
     - field.field.block_content.grand_hero.field_media
     - field.field.block_content.grand_hero.field_overlay_png
+    - field.field.block_content.grand_hero.field_replace_heading_with_image
     - field.field.block_content.grand_hero.field_style_color
     - field.field.block_content.grand_hero.field_style_position
     - field.field.block_content.grand_hero.field_style_variation
@@ -25,13 +25,6 @@ targetEntityType: block_content
 bundle: grand_hero
 mode: default
 content:
-  field_display_mode:
-    type: list_default
-    label: above
-    settings: {  }
-    third_party_settings: {  }
-    weight: 10
-    region: content
   field_heading:
     type: text_default
     label: hidden
@@ -87,6 +80,16 @@ content:
       link: false
     third_party_settings: {  }
     weight: 1
+    region: content
+  field_replace_heading_with_image:
+    type: boolean
+    label: hidden
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    weight: 11
     region: content
   field_style_color:
     type: list_key
