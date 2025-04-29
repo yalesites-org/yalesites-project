@@ -556,6 +556,12 @@
         return true;
       }
 
+      // Check if we've exceeded the maximum number of retries
+      if (retryCount >= this.config.maxRetries) {
+        this.log('Failed to initialize after ' + this.config.maxRetries + ' attempts');
+        return false;
+      }
+
       this.log('Attempt ' + (retryCount + 1) + ' of ' + this.config.maxRetries);
       
       // Check if we have the necessary elements
