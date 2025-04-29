@@ -10,8 +10,7 @@
       maxRetries: 10,
       retryDelay: 300,
       defaultDisplayMode: 'text',
-      defaultHeadingText: 'Heading text goes here',
-      debug: true
+      defaultHeadingText: 'Heading text goes here'
     },
 
     selectors: {
@@ -30,12 +29,6 @@
     initializedForms: {},
     activeRetries: {},
 
-    log: function(message) {
-      if (this.config.debug) {
-        console.debug('Grand Hero Form: ' + message);
-      }
-    },
-
     getFormId: function($context) {
       const $form = $context.is('form') ? $context : $context.closest('form');
       if (!$form.length) return 'unknown-form';
@@ -52,7 +45,6 @@
       if (this.activeRetries[formId]) {
         clearTimeout(this.activeRetries[formId]);
         delete this.activeRetries[formId];
-        this.log('Cancelled retries for form: ' + formId);
       }
     },
 
@@ -60,18 +52,14 @@
       try {
         const formId = this.getFormId($context);
         if (this.initializedForms[formId]) {
-          this.log('Form already initialized: ' + formId);
           return true;
         }
-
-        this.log('Initializing form: ' + formId);
 
         const $displayModeSelect = $context.find(this.selectors.displayMode);
         const $headingField = $context.find(this.selectors.headingField);
         const $overlayField = $context.find(this.selectors.overlayField);
 
         if (!$displayModeSelect.length || !$headingField.length || !$overlayField.length) {
-          this.log('Missing required fields for initialization.');
           return false;
         }
 
@@ -89,7 +77,6 @@
 
         this.initializedForms[formId] = true;
         this.cancelRetries(formId);
-        this.log('Initialized successfully: ' + formId);
         return true;
       } catch (error) {
         console.error('Grand Hero Form: Initialization error', error);
@@ -105,13 +92,11 @@
       }
 
       if (retryCount >= this.config.maxRetries) {
-        this.log('Max retries exceeded: ' + formId);
         return false;
       }
 
       const success = this.init($context);
       if (!success) {
-        this.log(`Retrying initialization (${retryCount + 1}/${this.config.maxRetries})`);
         this.activeRetries[formId] = setTimeout(() => {
           this.attemptInit($context, retryCount + 1);
         }, this.config.retryDelay);
@@ -122,8 +107,6 @@
     setupFormValidation: function($context, $displayModeSelect, $headingInput, $headingFormItem, $overlayInput, $overlayFormItem) {
       const $form = $context.closest('form');
       if (!$form.length) return;
-
-      this.log('Setting up form validation');
 
       const $overrideField = $('<input>')
         .attr('type', 'hidden')
@@ -145,7 +128,6 @@
 
     updateFieldVisibility: function($displayModeSelect, $headingWrapper, $overlayWrapper, $headingInput, $headingFormItem, $overlayInput, $overlayFormItem) {
       const selectedValue = $displayModeSelect.val();
-      this.log('Updating field visibility for mode: ' + selectedValue);
 
       if (selectedValue === 'text') {
         $headingWrapper.show();
@@ -183,8 +165,6 @@
         const $form = $(form);
         if ($form.find('#grand-hero-settings').length) {
           GrandHeroForm.attemptInit($form);
-        } else {
-          GrandHeroForm.log('Skipping form without grand-hero-settings: ' + GrandHeroForm.getFormId($form));
         }
       });
     }
