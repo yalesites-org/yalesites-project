@@ -25,8 +25,8 @@
      * Cache for jQuery selectors.
      */
     selectors: {
-      displayMode: 'select[name="settings[block_form][field_display_mode]"], #edit-settings-block-form-field-display-mode--56XmtUCqMuk, .field--name-field-display-mode select, select[name*="field_display_mode"]',
-      headingField: 'input[name="settings[block_form][field_heading][0][value]"], #edit-settings-block-form-field-heading-0-value--IQIppSCooA4, .field--name-field-heading input, .field--name-field-heading textarea',
+      displayMode: 'select[name="settings[block_form][field_display_mode]"], #edit-settings-block-form-field-display-mode--56XmtUCqMuk, .field--name-field-display-mode select, select[name*="field_display_mode"], select[name*="display_mode"]',
+      headingField: 'input[name="settings[block_form][field_heading][0][value]"], #edit-settings-block-form-field-heading-0-value--IQIppSCooA4, .field--name-field-heading input, .field--name-field-heading textarea, input[name*="field_heading"], textarea[name*="field_heading"]',
       overlayField: 'input[name*="field_overlay"], textarea[name*="field_overlay"], .field--name-field-overlay input, .field--name-field-overlay textarea',
       overlayLegend: 'legend:contains("Banner Overlay PNG"), legend:contains("Overlay")',
       formWrapper: '.form-wrapper, .js-form-wrapper, .field--type-text, .field--type-text-long',
@@ -37,6 +37,16 @@
       errorClass: '.error, .has-error',
       errorMessage: '.error-message, .form-error-message'
     },
+
+    /**
+     * Track initialized forms to prevent multiple initializations.
+     */
+    initializedForms: {},
+
+    /**
+     * Track active retry timeouts to allow cancellation.
+     */
+    activeRetries: {},
 
     /**
      * Log a debug message if debugging is enabled.
@@ -53,16 +63,24 @@
      * Initialize the Grand Hero form.
      *
      * @param {jQuery} $context - The context element.
+     * @return {boolean} Whether initialization was successful.
      */
     init: function($context) {
       try {
+        // Check if this form has already been initialized
+        const formId = this.getFormId($context);
+        if (this.initializedForms[formId]) {
+          this.log('Form already initialized, skipping: ' + formId);
+          return true;
+        }
+
         this.log('Initializing form');
         
         // Find the display mode select
         const $displayModeSelect = this.findDisplayModeSelect($context);
         if (!$displayModeSelect.length) {
           this.log('Display mode select not found');
-          return;
+          return false;
         }
         this.log('Display mode select found');
 
@@ -90,7 +108,7 @@
 
         if (!$headingWrapper.length || !$overlayWrapper.length) {
           this.log('Cannot initialize: missing required wrappers');
-          return;
+          return false;
         }
 
         // Find the input fields
@@ -122,10 +140,35 @@
           this.updateFieldVisibility($displayModeSelect, $headingWrapper, $overlayWrapper, $headingInput, $headingFormItem, $overlayInput, $overlayFormItem);
         });
 
+        // Mark this form as initialized
+        this.initializedForms[formId] = true;
         this.log('Initialized successfully');
+        return true;
       } catch (error) {
         console.error('Grand Hero Form: Error during initialization', error);
+        return false;
       }
+    },
+
+    /**
+     * Get a unique ID for a form.
+     *
+     * @param {jQuery} $context - The context element.
+     * @return {string} A unique ID for the form.
+     */
+    getFormId: function($context) {
+      const $form = $context.is('form') ? $context : $context.closest('form');
+      if (!$form.length) {
+        return 'unknown-form-' + Math.random().toString(36).substr(2, 9);
+      }
+      
+      // Try to get a stable ID from the form
+      const formId = $form.attr('id') || 
+                    $form.attr('name') || 
+                    $form.attr('class') || 
+                    'form-' + Math.random().toString(36).substr(2, 9);
+      
+      return formId;
     },
 
     /**
@@ -155,6 +198,14 @@
         });
       }
       
+      // Log what we found for debugging
+      if ($select.length) {
+        this.log('Found display mode select: ' + $select.attr('name') + ' (id: ' + $select.attr('id') + ')');
+      } else {
+        this.log('No display mode select found in context');
+        this.log('Context HTML: ' + $context.html().substring(0, 200) + '...');
+      }
+      
       return $select;
     },
 
@@ -182,6 +233,13 @@
             return $(this).text().toLowerCase().includes('heading');
           }).closest(this.selectors.formWrapper);
         }
+      }
+      
+      // Log what we found for debugging
+      if ($wrapper.length) {
+        this.log('Found heading wrapper with class: ' + $wrapper.attr('class'));
+      } else {
+        this.log('No heading wrapper found in context');
       }
       
       return $wrapper;
@@ -214,6 +272,13 @@
             return $(this).text().toLowerCase().includes('overlay');
           }).closest(this.selectors.formWrapper);
         }
+      }
+      
+      // Log what we found for debugging
+      if ($wrapper.length) {
+        this.log('Found overlay wrapper with class: ' + $wrapper.attr('class'));
+      } else {
+        this.log('No overlay wrapper found in context');
       }
       
       return $wrapper;
@@ -425,6 +490,19 @@
     },
 
     /**
+     * Cancel any active retries for a specific form.
+     *
+     * @param {string} formId - The form ID.
+     */
+    cancelRetries: function(formId) {
+      if (this.activeRetries[formId]) {
+        clearTimeout(this.activeRetries[formId]);
+        delete this.activeRetries[formId];
+        this.log('Cancelled retries for form: ' + formId);
+      }
+    },
+
+    /**
      * Attempt to initialize the Grand Hero form with retries if needed.
      * 
      * @param {jQuery} $element - The element to initialize.
@@ -432,6 +510,15 @@
      * @return {boolean} Whether initialization was successful.
      */
     attemptInit: function($element, retryCount = 0) {
+      // Check if this form has already been initialized
+      const formId = this.getFormId($element);
+      if (this.initializedForms[formId]) {
+        this.log('Form already initialized, skipping: ' + formId);
+        // Cancel any active retries for this form
+        this.cancelRetries(formId);
+        return true;
+      }
+
       this.log('Attempt ' + (retryCount + 1) + ' of ' + this.config.maxRetries);
       
       // Check if we have the necessary elements
@@ -443,12 +530,18 @@
       
       // If all required elements are present, initialize the form
       if (hasDisplayMode && hasHeadingField && hasOverlayField) {
-        this.init($element);
-        return true;
+        const success = this.init($element);
+        if (success) {
+          // Cancel any active retries for this form
+          this.cancelRetries(formId);
+          return true;
+        }
       } 
+      
       // If we haven't reached max retries, try again after a delay
-      else if (retryCount < this.config.maxRetries) {
-        setTimeout(() => {
+      if (retryCount < this.config.maxRetries) {
+        // Store the timeout ID so we can cancel it if needed
+        this.activeRetries[formId] = setTimeout(() => {
           this.attemptInit($element, retryCount + 1);
         }, this.config.retryDelay);
         return false;
@@ -459,7 +552,12 @@
       // As a last resort, try to initialize with whatever elements we can find
       if (hasDisplayMode) {
         this.log('Attempting fallback initialization with display mode only');
-        this.init($element);
+        const success = this.init($element);
+        if (success) {
+          // Cancel any active retries for this form
+          this.cancelRetries(formId);
+        }
+        return success;
       }
       
       return false;
@@ -533,6 +631,16 @@
       }
       GrandHeroForm.attemptInit($select.closest('form'));
     });
+  });
+
+  // Add a direct initialization for the specific form in the PR
+  $(document).ready(function() {
+    // Look for the specific form in the PR environment
+    const $prForm = $('#layout-builder-add-block');
+    if ($prForm.length) {
+      GrandHeroForm.log('Found PR form, attempting direct initialization');
+      GrandHeroForm.attemptInit($prForm);
+    }
   });
 
 })(jQuery, Drupal, once); 
