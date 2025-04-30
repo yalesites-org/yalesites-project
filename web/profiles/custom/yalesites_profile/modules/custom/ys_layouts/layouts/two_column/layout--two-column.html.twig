@@ -11,20 +11,19 @@
  * @ingroup themeable
  */
 #}
-{% 
-  set outerClasses = [
-    'yds-two-column'
-  ]
-%}
-{%
-  set classes = [
-    'yds-two-column__inner'
-  ]
-%}
-{% if content %}
-	<div{{attributes.addClass(outerClasses)}} data-component-width='site' data-embedded-components>
 
-		<div{{attributes.addClass(classes)}}>
+{% set layout__base_class = layout__base_class|default('yds-two-column') %}
+
+{% set layout__attributes = attributes|merge({
+	'class': bem(layout__base_class, layout__modifiers, layout__blockname),
+  'data-component-padding': settings['padding']|default('default'),
+  'data-component-width': layout__width|default('site'),
+	'data-embedded-components': 'true',
+}) %}
+
+{% if content %}
+	<div {{ add_attributes(layout__attributes) }}>
+		<div {{ bem('inner', [], layout__base_class)}}>
 			{% if content.content %}
 				<div {{ region_attributes.content.addClass('yds-two-column__primary') }}>
 					{{ content.content }}
