@@ -19,6 +19,8 @@
  * - db_offline: A flag indicating if the database is offline.
  * - placeholder_token: The token for generating head, css, js and js-bottom
  *   placeholders.
+ * - main_content_id: The ID of the main content area.
+ * - secondary_nav_present: A flag indicating if the secondary navigation is present.
  *
  * @see template_preprocess_html()
  */
@@ -37,9 +39,32 @@
       page.html.twig.
     #}
 
+    {% set main_content_id = main_content_id|default('#main-content') %}
+    {% set secondary_nav_present = secondary_nav_present |default(FALSE) %}
+
+    {% if secondary_nav_present %}
+      {% include "@molecules/link-skip/yds-link-skip.twig" with {
+        link_skip__content: 'Skip to secondary menu'|t ,
+        link_skip__url: '#block-atomic-custombooknavigation',
+        link_skip__extra_class: 'visually-hidden focusable',
+      }%}
+    {% endif %}
+
+    {#
+      We must dynamically set the link_skip__url based on whether the
+      secondar nav exists or not.
+
+      We default to it not being present, which at the time of this
+      writing is #main-content.  If a secondary nav is present, we
+      let the link skip to below the secondary nav.
+
+      See the following for more information:
+        components/_settings/config.css (for link jupming adjustments)
+        templates/navigation/book-tree.html.twig (for the secondary nav bypass div)
+    #}
     {% include "@molecules/link-skip/yds-link-skip.twig" with {
       link_skip__content: 'Skip to main content'|t ,
-      link_skip__url: '#main-content',
+      link_skip__url: main_content_id,
       link_skip__extra_class: 'visually-hidden focusable',
     }%}
 
