@@ -32,6 +32,11 @@ would be used instead resulting in top margin of size-spacing-6.  */
   margin-top: 0;
 }
 
+/* This applies margin-bottom: 0 to the last child inside of our nest divs */
+.main-content .layout--banner .layout__region > *:last-child {
+  margin-bottom: 0;
+}
+
 /* We allow spotlights in the banner now, but they appear a little to close to
  * the top of the page. This allows us to adjust the top margin to give a
  * little more space to just the first one.
