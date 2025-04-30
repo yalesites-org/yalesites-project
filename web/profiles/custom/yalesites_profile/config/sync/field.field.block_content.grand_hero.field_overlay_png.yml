@@ -11,7 +11,7 @@ field_name: field_overlay_png
 entity_type: block_content
 bundle: grand_hero
 label: 'Banner Overlay PNG'
-description: ''
+description: 'Suggested PNG image size: 1400x280'
 required: false
 translatable: false
 default_value: {  }
