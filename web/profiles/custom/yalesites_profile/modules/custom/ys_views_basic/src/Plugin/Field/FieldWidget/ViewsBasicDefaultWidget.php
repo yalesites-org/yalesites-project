@@ -210,14 +210,22 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     ];
 
     // Gets the view mode options based on Ajax callbacks or initial load.
+    // In situations where the currently selected view mode does not exist
+    // in the new content type, we default to the first item.
     $viewModeOptions = $this->viewsBasicManager->viewModeList($formSelectors['entity_types']);
+    $viewModeValue = ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('view_mode', $items[$delta]->params) : key($viewModeOptions);
+    $viewModeDefault = array_key_first($viewModeOptions);
+
+    if (!array_key_exists($viewModeValue, $viewModeOptions)) {
+      $viewModeValue = $viewModeDefault;
+    }
 
     $form['group_user_selection']['entity_and_view_mode']['view_mode'] = [
       '#type' => 'radios',
       '#options' => $viewModeOptions,
       '#title' => $this->t('As'),
       '#tree' => TRUE,
-      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('view_mode', $items[$delta]->params) : key($viewModeOptions),
+      '#default_value' => $viewModeValue,
       '#attributes' => [
         'class' => [
           'views-basic--view-mode',
