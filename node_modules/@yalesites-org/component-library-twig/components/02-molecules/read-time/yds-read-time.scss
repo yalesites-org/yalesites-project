@@ -1,0 +1,15 @@
+@use '../../00-tokens/tokens';
+
+.read-time {
+  @include tokens.body-s;
+
+  color: var(--color-gray-600);
+  margin-top: var(--size-spacing-4);
+  display: none;
+
+  // only show read time if there is a js or yds-storybook-cl class on the html element
+  html:has(.yds-storybook-cl) &,
+  html.js & {
+    display: block;
+  }
+}
