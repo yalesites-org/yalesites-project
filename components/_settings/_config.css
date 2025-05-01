@@ -28,3 +28,29 @@
 .toolbar-horizontal .local-tasks-toolbar-tab .toolbar-menu {
   float: none;
 }
+
+/*
+ * It was requested to add more space if the secondary nav was with
+ * a title.  This is a workaround to add more space if the title is
+ * visible.
+ */
+#block-atomic-custombooknavigation + div:has(.page-title.visible) {
+  margin-top: var(--size-spacing-4);
+}
+
+/*
+ * To add more space only between the situation where a breadcrumb
+ * appears above the custom navigation.
+ */
+.breadcrumbs__wrapper + #block-atomic-custombooknavigation {
+  margin-top: var(--size-spacing-4);
+}
+
+/*
+ * The secondary nav skip anchor does not fully stop at the right place.
+ * This helps nudge it in the right direction so that it visually looks better.
+ */
+#main-content-after-secondary-nav,
+#block-atomic-custombooknavigation {
+  scroll-margin-top: var(--spacing-size-2);
+}

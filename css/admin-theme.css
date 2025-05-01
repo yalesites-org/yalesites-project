@@ -329,9 +329,9 @@ blockquote.pull-quote__quote::before {
 /*
  * Move table contrast fix for dark mode.
  */
-html.gin--dark-mode .layout-builder-components-table .tabledrag-toggle-weight,
-html.gin--dark-mode .layout-builder-components-table tr:hover,
-html.gin--dark-mode .layout-builder-components-table tr:nth-child(even) {
+html.gin--dark-mode .layout-builder-components-table tr td .tabledrag-toggle-weight,
+html.gin--dark-mode .layout-builder-components-table tr:hover td,
+html.gin--dark-mode .layout-builder-components-table tr:nth-child(even) td {
   color: var(--color-white);
 }
 
