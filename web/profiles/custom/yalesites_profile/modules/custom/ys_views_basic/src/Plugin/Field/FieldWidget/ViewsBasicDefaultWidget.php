@@ -3,8 +3,8 @@
 namespace Drupal\ys_views_basic\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\WidgetBase;
@@ -618,8 +618,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     $response = new AjaxResponse();
     $response->addCommand(new ReplaceCommand('#edit-view-mode', $formSelectors['view_mode_ajax']));
     $response->addCommand(new ReplaceCommand('#edit-sort-by', $formSelectors['sort_by_ajax']));
-    $selector = '.views-basic--view-mode[name="group_user_selection[entity_and_view_mode][view_mode]"]:first';
-    $response->addCommand(new InvokeCommand($selector, 'prop', [['checked' => TRUE]]));
+    $firstViewModeItem = $formSelectors['view_mode_input_selector'] . ':first';
+    $response->addCommand(new InvokeCommand($firstViewModeItem, 'prop', [['checked' => TRUE]]));
 
     return $response;
   }
