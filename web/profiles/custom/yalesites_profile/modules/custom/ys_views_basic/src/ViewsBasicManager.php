@@ -732,6 +732,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         }
         break;
 
+      case 'view_mode':
+        $defaultParam = (empty($paramsDecoded['view_mode'])) ? 'card' : $paramsDecoded['view_mode'];
+        break;
+
       case 'operator':
         $defaultParam = (empty($paramsDecoded['operator'])) ? '+' : $paramsDecoded['operator'];
         break;
