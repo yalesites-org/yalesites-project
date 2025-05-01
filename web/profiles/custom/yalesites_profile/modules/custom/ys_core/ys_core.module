@@ -76,7 +76,8 @@ function ys_core_theme($existing, $type, $theme, $path): array {
 function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   // Existing entries would have a NULL entry for field_hide_sharing_links.
   // Upon a new save, they wouldn't realize that it was off by default.
-  // This ensure that in the case where it's null it has the appropriate default.
+  // This ensure that in the case where it's null it has the appropriate
+  // default.
   if ($form_id === 'node_post_edit_form') {
     $node = $form_state->getFormObject()->getEntity();
 
