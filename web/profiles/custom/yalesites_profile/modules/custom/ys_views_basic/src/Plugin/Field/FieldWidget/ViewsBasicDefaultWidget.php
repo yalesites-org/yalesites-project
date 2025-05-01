@@ -555,7 +555,10 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     foreach ($values as &$value) {
       $paramData = [
-        "view_mode" => $form['group_user_selection']['entity_and_view_mode']['view_mode']['#value'],
+        "view_mode" => $this->viewModeValue(
+          $form['group_user_selection']['entity_and_view_mode']['view_mode']['#value'],
+          $form['group_user_selection']['entity_and_view_mode']['entity_types']['#value']
+        ),
         "filters" => [
           "types" => [
             $form['group_user_selection']['entity_and_view_mode']['entity_types']['#value'],
@@ -583,6 +586,17 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
       $value['params'] = json_encode($paramData);
     }
     return $values;
+  }
+
+  /**
+   * Deals with an edge case where the value does not exist in the content type but is saved regardless.
+   */
+  protected function viewModeValue($value, $contentType) {
+    if ($contentType != 'event' && $value == 'calendar') {
+      return 'card';
+    }
+
+    return $value;
   }
 
   /**
