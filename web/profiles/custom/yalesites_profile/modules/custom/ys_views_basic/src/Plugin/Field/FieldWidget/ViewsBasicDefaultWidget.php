@@ -589,7 +589,17 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
   }
 
   /**
-   * Deals with an edge case where the value does not exist in the content type but is saved regardless.
+   * Get a valid value for the view mode.
+   *
+   * This is used to ensure that the view mode is valid for the content type.
+   *
+   * @param string $value
+   *   The view mode value.
+   * @param string $contentType
+   *   The content type.
+   *
+   * @return string
+   *   The view mode value.
    */
   protected function viewModeValue($value, $contentType) {
     if ($contentType != 'event' && $value == 'calendar') {
