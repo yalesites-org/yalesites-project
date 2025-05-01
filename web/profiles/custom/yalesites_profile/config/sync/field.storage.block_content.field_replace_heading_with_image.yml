@@ -1,12 +1,12 @@
-uuid: f03cde1b-9706-4ea5-857a-4bdafdccdd78
+uuid: 4334e767-3c05-4aca-a621-27cc7130e44d
 langcode: en
 status: true
 dependencies:
   module:
-    - node
-id: node.field_dynamic_book_nav
-field_name: field_dynamic_book_nav
-entity_type: node
+    - block_content
+id: block_content.field_replace_heading_with_image
+field_name: field_replace_heading_with_image
+entity_type: block_content
 type: boolean
 settings: {  }
 module: core

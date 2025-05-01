@@ -10,6 +10,8 @@ dependencies:
     - field.field.block_content.grand_hero.field_link
     - field.field.block_content.grand_hero.field_link_two
     - field.field.block_content.grand_hero.field_media
+    - field.field.block_content.grand_hero.field_overlay_png
+    - field.field.block_content.grand_hero.field_replace_heading_with_image
     - field.field.block_content.grand_hero.field_style_color
     - field.field.block_content.grand_hero.field_style_position
     - field.field.block_content.grand_hero.field_style_variation
@@ -28,14 +30,14 @@ content:
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 1
+    weight: 2
     region: content
   field_heading_level:
     type: list_key
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 6
+    weight: 9
     region: content
   field_link:
     type: link_separate
@@ -47,7 +49,7 @@ content:
       rel: '0'
       target: '0'
     third_party_settings: {  }
-    weight: 3
+    weight: 5
     region: content
   field_link_two:
     type: link_separate
@@ -59,7 +61,7 @@ content:
       rel: '0'
       target: '0'
     third_party_settings: {  }
-    weight: 4
+    weight: 6
     region: content
   field_media:
     type: entity_reference_entity_view
@@ -70,33 +72,52 @@ content:
     third_party_settings: {  }
     weight: 0
     region: content
+  field_overlay_png:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: default
+      link: false
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_replace_heading_with_image:
+    type: boolean
+    label: hidden
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    weight: 11
+    region: content
   field_style_color:
     type: list_key
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 1
+    weight: 3
     region: content
   field_style_position:
     type: list_key
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 5
+    weight: 8
     region: content
   field_style_variation:
     type: list_key
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 4
+    weight: 7
     region: content
   field_text:
     type: text_default
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 2
+    weight: 4
     region: content
 hidden:
   field_instructions: true
