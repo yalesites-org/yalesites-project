@@ -60,3 +60,33 @@ function ys_core_deploy_10002() {
   }
 
 }
+
+/**
+ * Implements hook_update().
+ *
+ * Transforms the values currently in field_hide_sharing_links
+ * to field_show_social_media_sharing for a post node.
+ *
+ * Remember to later remove the field_hide_sharing_links field.
+ */
+function ys_core_deploy_10003() {
+  $ids = \Drupal::entityQuery('node')
+    ->condition('type', 'post')
+    ->accessCheck(FALSE)
+    ->execute();
+
+  $nodes = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($ids);
+
+  foreach ($nodes as $node) {
+    if (!$node->hasField('field_hide_sharing_links')) {
+      continue;
+    }
+
+    $node->set(
+      'field_show_social_media_sharing',
+      $node->get('field_hide_sharing_links')->value == '0' ? '1' : '0'
+    );
+
+    $node->save();
+  }
+}
