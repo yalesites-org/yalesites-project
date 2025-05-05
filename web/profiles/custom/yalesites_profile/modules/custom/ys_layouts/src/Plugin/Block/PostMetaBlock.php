@@ -98,7 +98,7 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
 
     /** @var \Drupal\node\NodeInterface $node */
     $node = $this->requestStack->getCurrentRequest()->attributes->get('node');
-    if (!($node instanceof NodeInterface)) {
+    if (!($node instanceof NodeInterface) || $node->bundle() !== 'post') {
       return [];
     }
 
@@ -116,7 +116,7 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
       $publishDate = strtotime($node->field_publish_date->first()->getValue()['value']);
       $dateFormatted = $this->dateFormatter->format($publishDate, '', 'c');
       $showReadTime = ($node->field_show_read_time->first()) ? $node->field_show_read_time->first()->getValue()['value'] : NULL;
-      $hideSharing = ($node->field_hide_sharing_links->first()) ? $node->field_hide_sharing_links->first()->getValue()['value'] : NULL;
+      $showSocialMediaSharingLinks = ($node->field_show_social_media_sharing->first()) ? $node->field_show_social_media_sharing->first()->getValue()['value'] : NULL;
     }
 
     return [
@@ -125,7 +125,7 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
       '#author' => $author,
       '#date_formatted' => $dateFormatted,
       '#show_read_time' => $showReadTime,
-      '#hide_sharing' => $hideSharing,
+      '#show_social_media_sharing_links' => $showSocialMediaSharingLinks,
     ];
   }
 

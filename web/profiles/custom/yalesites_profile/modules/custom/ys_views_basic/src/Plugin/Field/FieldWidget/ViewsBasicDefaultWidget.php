@@ -3,8 +3,8 @@
 namespace Drupal\ys_views_basic\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\WidgetBase;
@@ -210,14 +210,22 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     ];
 
     // Gets the view mode options based on Ajax callbacks or initial load.
+    // In situations where the currently selected view mode does not exist
+    // in the new content type, we default to the first item.
     $viewModeOptions = $this->viewsBasicManager->viewModeList($formSelectors['entity_types']);
+    $viewModeValue = ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('view_mode', $items[$delta]->params) : key($viewModeOptions);
+    $viewModeDefault = array_key_first($viewModeOptions);
+
+    if (!array_key_exists($viewModeValue, $viewModeOptions)) {
+      $viewModeValue = $viewModeDefault;
+    }
 
     $form['group_user_selection']['entity_and_view_mode']['view_mode'] = [
       '#type' => 'radios',
       '#options' => $viewModeOptions,
       '#title' => $this->t('As'),
       '#tree' => TRUE,
-      '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('view_mode', $items[$delta]->params) : key($viewModeOptions),
+      '#default_value' => $viewModeValue,
       '#attributes' => [
         'class' => [
           'views-basic--view-mode',
@@ -547,7 +555,10 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     foreach ($values as &$value) {
       $paramData = [
-        "view_mode" => $form['group_user_selection']['entity_and_view_mode']['view_mode']['#value'],
+        "view_mode" => $this->viewModeValue(
+          $form['group_user_selection']['entity_and_view_mode']['view_mode']['#value'],
+          $form['group_user_selection']['entity_and_view_mode']['entity_types']['#value']
+        ),
         "filters" => [
           "types" => [
             $form['group_user_selection']['entity_and_view_mode']['entity_types']['#value'],
@@ -578,6 +589,27 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
   }
 
   /**
+   * Get a valid value for the view mode.
+   *
+   * This is used to ensure that the view mode is valid for the content type.
+   *
+   * @param string $value
+   *   The view mode value.
+   * @param string $contentType
+   *   The content type.
+   *
+   * @return string
+   *   The view mode value.
+   */
+  protected function viewModeValue($value, $contentType) {
+    if ($contentType != 'event' && $value == 'calendar') {
+      return 'card';
+    }
+
+    return $value;
+  }
+
+  /**
    * Ajax callback to return only view modes for the specified content type.
    */
   public function updateOtherSettings(array &$form, FormStateInterface $form_state): AjaxResponse {
@@ -586,8 +618,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     $response = new AjaxResponse();
     $response->addCommand(new ReplaceCommand('#edit-view-mode', $formSelectors['view_mode_ajax']));
     $response->addCommand(new ReplaceCommand('#edit-sort-by', $formSelectors['sort_by_ajax']));
-    $selector = '.views-basic--view-mode[name="group_user_selection[entity_and_view_mode][view_mode]"]:first';
-    $response->addCommand(new InvokeCommand($selector, 'prop', [['checked' => TRUE]]));
+    $firstViewModeItem = $formSelectors['view_mode_input_selector'] . ':first';
+    $response->addCommand(new InvokeCommand($firstViewModeItem, 'prop', [['checked' => TRUE]]));
 
     return $response;
   }
