@@ -6,14 +6,6 @@ ys_core.admin_yalesites:
     _title: 'YaleSites'
   requirements:
     _permission: 'yalesites manage settings'
-# Creates a new section in the admin menu for integrations
-ys_core.admin_yalesites_integrations:
-  path: '/admin/yalesites/integrations'
-  defaults:
-    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
-    _title: 'Integrations'
-  requirements:
-    _permission: 'yalesites manage settings'
 # Sitewide settings form.
 ys_core.admin_site_settings:
   path: '/admin/yalesites/settings'
@@ -62,3 +54,4 @@ ys_core.search_page:
     _controller: '\Drupal\ys_core\Controller\SearchController::searchPage'
   requirements:
     _access: 'TRUE'
+

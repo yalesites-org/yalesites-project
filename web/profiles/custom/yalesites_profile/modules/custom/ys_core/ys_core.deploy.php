@@ -26,3 +26,67 @@ function ys_core_deploy_10001() {
     \Drupal::cache('discovery')->invalidateAll();
   }
 }
+
+/**
+ * Implements hook_update().
+ *
+ * Converts field_style_variation settings to field_focus.
+ */
+function ys_core_deploy_10002() {
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+  $query = $block_storage->getQuery();
+  $query->accessCheck(FALSE)
+    ->condition('type', 'content_spotlight');
+
+  $ids = $query->execute();
+
+  foreach ($ids as $id) {
+    $block = $block_storage->load($id);
+    $latestRevisionId = $block_storage->getLatestRevisionId($id);
+
+    if (!$latestRevisionId) {
+      $latestRevision = $block_storage->createRevision($block);
+    }
+    else {
+      $latestRevision = $block_storage->loadRevision($latestRevisionId);
+    }
+
+    $field_style_variation = $latestRevision->get('field_style_variation');
+
+    if ($field_style_variation) {
+      $latestRevision->set('field_focus', $field_style_variation->value);
+      $latestRevision->save();
+    }
+  }
+
+}
+
+/**
+ * Implements hook_update().
+ *
+ * Transforms the values currently in field_hide_sharing_links
+ * to field_show_social_media_sharing for a post node.
+ *
+ * Remember to later remove the field_hide_sharing_links field.
+ */
+function ys_core_deploy_10003() {
+  $ids = \Drupal::entityQuery('node')
+    ->condition('type', 'post')
+    ->accessCheck(FALSE)
+    ->execute();
+
+  $nodes = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($ids);
+
+  foreach ($nodes as $node) {
+    if (!$node->hasField('field_hide_sharing_links')) {
+      continue;
+    }
+
+    $node->set(
+      'field_show_social_media_sharing',
+      $node->get('field_hide_sharing_links')->value == '0' ? '1' : '0'
+    );
+
+    $node->save();
+  }
+}
