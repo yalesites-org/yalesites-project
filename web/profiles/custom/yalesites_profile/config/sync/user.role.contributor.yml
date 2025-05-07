@@ -35,6 +35,7 @@ dependencies:
     - block_content.type.view
     - block_content.type.webform
     - block_content.type.wrapped_image
+    - block_content.type.wrapped_text_callout
     - core.entity_view_display.node.event.default
     - core.entity_view_display.node.page.default
     - core.entity_view_display.node.post.default
@@ -162,6 +163,7 @@ permissions:
   - 'create view block content'
   - 'create webform block content'
   - 'create wrapped_image block content'
+  - 'create wrapped_text_callout block content'
   - 'delete any accordion block content'
   - 'delete any accordion block content revisions'
   - 'delete any background_video media'
@@ -232,6 +234,8 @@ permissions:
   - 'delete any webform submission'
   - 'delete any wrapped_image block content'
   - 'delete any wrapped_image block content revisions'
+  - 'delete any wrapped_text_callout block content'
+  - 'delete any wrapped_text_callout block content revisions'
   - 'delete own event content'
   - 'delete own page content'
   - 'delete own post content'
@@ -285,6 +289,7 @@ permissions:
   - 'edit any webform block content'
   - 'edit any webform submission'
   - 'edit any wrapped_image block content'
+  - 'edit any wrapped_text_callout block content'
   - 'edit own background_video media'
   - 'edit own document media'
   - 'edit own embed media'
@@ -338,6 +343,7 @@ permissions:
   - 'revert any view block content revisions'
   - 'revert any webform block content revisions'
   - 'revert any wrapped_image block content revisions'
+  - 'revert any wrapped_text_callout block content revisions'
   - 'revert event revisions'
   - 'revert page revisions'
   - 'revert post revisions'
@@ -383,6 +389,7 @@ permissions:
   - 'view any webform block content history'
   - 'view any webform submission'
   - 'view any wrapped_image block content history'
+  - 'view any wrapped_text_callout block content history'
   - 'view editoria11y checker'
   - 'view event revisions'
   - 'view latest version'
