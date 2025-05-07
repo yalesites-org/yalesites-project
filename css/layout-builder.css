@@ -374,3 +374,8 @@ th.field-label {
 .main-content > .page-meta + [data-spotlights-position="first"] {
   margin-top: 0;
 }
+
+/* Fixes dark mode weight links to have better contrast. */
+.gin--dark-mode button.tabledrag-toggle-weight {
+  color: var(--gin-color-text);
+}
