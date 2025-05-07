@@ -8,20 +8,20 @@
 } %}
   {% block component_wrapper_inner %}
     {{ title_prefix }}
-      {{ title }}
-      {{ title_suffix }}
+    {{ title }}
+    {{ title_suffix }}
 
+    {{ drupal_block('ys_search_form_block') }}
+
+    {{ exposed }}
+    {{ attachment_before }}
+
+    {% set drupalsearch %}
       {% if header %}
         <header>
           {{ header }}
         </header>
       {% endif %}
-
-      {{ drupal_block('ys_search_form_block') }}
-
-      {{ exposed }}
-      {{ attachment_before }}
-
       {% if rows -%}
         {{ rows }}
       {% elseif empty -%}
@@ -44,5 +44,42 @@
       {% endif %}
 
       {{ feed_icons }}
+    {% endset %}
+
+    {% set enable_all_yale_search = drupal_config('ys_core.header_settings', 'search.enable_all_yale_search') %}
+
+    {% if enable_all_yale_search %}
+      {{ attach_library('atomic/tabs') }}
+      {{ attach_library('ys_core/gcse') }}
+      {% set sitename = drupal_config('system.site', 'name') %}
+
+      {% set gcse %}
+      <gcse:searchresults-only queryparametername="keywords"></gcse:searchresults-only>
+      {% endset %}
+
+      {% set tabs = [{
+          tab__label: sitename ~ ' Results',
+          tab__content: drupalsearch,
+        },
+        {
+          tab__label: 'All Yale Results',
+          tab__content: gcse,
+        }
+        ] %}
+
+      {% embed "@organisms/component-wrapper/yds-component-wrapper.twig" with {
+      component_wrapper__width: 'site',
+      component_wrapper__alignment: 'left',
+    } %}
+        {% block component_wrapper_inner %}
+          {% include "@molecules/tabs/yds-tabs.twig" with {
+            tabs__id: 'gsce-search',
+            tabs: tabs,
+        } %}
+        {% endblock %}
+      {% endembed %}
+    {% else %}
+      {{ drupalsearch }}
+    {% endif %}
   {% endblock %}
 {% endembed %}
