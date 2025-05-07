@@ -19,6 +19,12 @@ header_footer_settings:
 block_form:
   js:
     js/block-form.js: {}
+gcse:
+  css:
+    theme:
+      css/gcse.css: {}
+  js:
+    js/gcse.js: {}
 grand_hero_form:
   version: 1.x
   js:
