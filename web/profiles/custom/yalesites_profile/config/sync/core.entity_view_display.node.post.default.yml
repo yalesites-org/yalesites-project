@@ -13,6 +13,7 @@ dependencies:
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
     - field.field.node.post.field_show_read_time
+    - field.field.node.post.field_show_social_media_sharing
     - field.field.node.post.field_tags
     - field.field.node.post.field_teaser_lead_in
     - field.field.node.post.field_teaser_media
@@ -224,6 +225,16 @@ content:
       format_custom_true: ''
     third_party_settings: {  }
     weight: 5
+    region: content
+  field_show_social_media_sharing:
+    type: boolean
+    label: above
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    weight: 6
     region: content
   field_teaser_lead_in:
     type: string

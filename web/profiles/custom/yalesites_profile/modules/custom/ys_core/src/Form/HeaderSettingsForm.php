@@ -380,6 +380,26 @@ class HeaderSettingsForm extends ConfigFormBase {
       ],
     ];
 
+    $form['site_search_container']['enable_all_yale_search'] = [
+      '#type' => 'checkbox',
+      '#description' => $this->t('When enabled, users will see a tab on the search results page to view results across all Yale sites. Powered by Google Programmable Search Engine.'),
+      '#title' => $this->t('Enable All Yale Search'),
+      '#default_value' => $headerConfig->get('search.enable_all_yale_search'),
+      '#states' => [
+        'invisible' => [
+          [
+            ':input[name="enable_search_form"]' => ['checked' => FALSE],
+          ],
+          'or',
+          [
+            ':input[name="header_variation"]' => [
+              'value' => 'focus',
+            ],
+          ],
+        ],
+      ],
+    ];
+
     $form['full_screen_homepage_image_container']['focus_header_image'] = [
       '#type' => 'media_library',
       '#allowed_bundles' => ['image'],
@@ -437,6 +457,12 @@ class HeaderSettingsForm extends ConfigFormBase {
     }
     else {
       $headerConfig->set('search.enable_cas_search', 0);
+    }
+    if ($form_state->getValue('enable_search_form') && $form_state->getValue('enable_all_yale_search')) {
+      $headerConfig->set('search.enable_all_yale_search', $form_state->getValue('enable_all_yale_search'));
+    }
+    else {
+      $headerConfig->set('search.enable_all_yale_search', 0);
     }
     $headerConfig->set('enable_cas_menu_links', $form_state->getValue('enable_cas_menu_links'));
     $headerConfig->set('focus_header_image', $form_state->getValue('focus_header_image'));
