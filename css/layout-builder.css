@@ -326,11 +326,16 @@ div[data-drupal-selector="edit-block-form"] {
   display: none;
 }
 
-/* For some reason text-within on tables in dark mode go wrong */
-.gin--dark-mode tr:hover td,
-.gin--dark-mode tr:focus-within td {
-  color: var(--gin-color-text);
+/* Because we are now using global table styling, we need to override the
+ * default table styles for the dialog boxes that layout builder uses. */
+.gin--dark-mode .ui-dialog table tr:nth-child(odd) td {
   background: var(--gin-bg-secondary);
+  color: var(--gin-color-text);
+}
+
+.gin--dark-mode .ui-dialog table tr:nth-child(even) td {
+  background: var(--gin-bg-layer);
+  color: var(--gin-color-text);
 }
 
 /* To fix ckeditor's modification of paragraph action buttons */
