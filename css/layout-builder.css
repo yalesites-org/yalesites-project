@@ -384,3 +384,14 @@ th.field-label {
 .gin--dark-mode button.tabledrag-toggle-weight {
   color: var(--gin-color-text);
 }
+
+/*
+ * Claro tables.scss is overwriting our _table.css when in layout builder.
+ * This is a workaround to fix the issue.
+ */
+.gin--dark-mode #layout-builder .yds-layout th {
+  --header-row-bg: var(--color-gray-200);
+
+  background-color: var(--header-row-bg);
+  color: var(--color-gray-700);
+}
