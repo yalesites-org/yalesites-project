@@ -326,18 +326,6 @@ div[data-drupal-selector="edit-block-form"] {
   display: none;
 }
 
-/* Because we are now using global table styling, we need to override the
- * default table styles for the dialog boxes that layout builder uses. */
-.gin--dark-mode .ui-dialog table tr:nth-child(odd) td {
-  background: var(--gin-bg-secondary);
-  color: var(--gin-color-text);
-}
-
-.gin--dark-mode .ui-dialog table tr:nth-child(even) td {
-  background: var(--gin-bg-layer);
-  color: var(--gin-color-text);
-}
-
 /* To fix ckeditor's modification of paragraph action buttons */
 #drupal-off-canvas-wrapper .ui-dialog-content div:not([data-drupal-ck-style-fence] *) {
   width: inherit !important;
@@ -386,12 +374,17 @@ th.field-label {
 }
 
 /*
- * Claro tables.scss is overwriting our _table.css when in layout builder.
- * This is a workaround to fix the issue.
+ * For layout builder paragraph tables, we need to override the default in dark mode.
+ * This is due to otehr things overloading it in the wrong way, like our _table.css,
+ * gin, and ckeditor.
  */
-#layout-builder .yds-layout th {
-  --header-row-bg: var(--color-gray-200);
+.gin--dark-mode .field-multiple-table.glb-table tr.draggable > td {
+  background-color: var(--gin-bg-layer); 
+  color: var(--gin-color-text); 
+} 
 
-  background-color: var(--header-row-bg);
-  color: var(--color-gray-700);
-}
+.gin--dark-mode .field-multiple-table.glb-table tr.draggable:nth-child(odd) > td { 
+  background-color: var(--gin-bg-layer2); 
+  color: var(--gin-color-text); 
+} 
+
