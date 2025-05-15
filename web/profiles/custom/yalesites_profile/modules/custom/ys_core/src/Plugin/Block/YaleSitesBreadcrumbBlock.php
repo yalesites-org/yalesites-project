@@ -100,10 +100,6 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
     // Always show breadcrumbs for book pages.
     $alwaysShowBreadcrumbs = FALSE;
 
-    if ($entity && $entity->book) {
-      $alwaysShowBreadcrumbs = TRUE;
-    }
-
     // Adds the post or event title to the end of the breadcrumbs.
     if ($this->yaleSitesBreadcrumbsManager->hasLandingPage($this->routeMatch)) {
       array_push($links, [

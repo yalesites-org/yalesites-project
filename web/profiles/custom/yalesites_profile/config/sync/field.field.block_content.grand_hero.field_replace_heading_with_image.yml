@@ -1,0 +1,23 @@
+uuid: cadef1ca-c273-4935-81a2-761ee24144ae
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.grand_hero
+    - field.storage.block_content.field_replace_heading_with_image
+id: block_content.grand_hero.field_replace_heading_with_image
+field_name: field_replace_heading_with_image
+entity_type: block_content
+bundle: grand_hero
+label: 'Replace heading with image'
+description: ''
+required: false
+translatable: false
+default_value:
+  -
+    value: 0
+default_value_callback: ''
+settings:
+  on_label: 'Yes'
+  off_label: 'No'
+field_type: boolean
