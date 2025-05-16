@@ -326,13 +326,6 @@ div[data-drupal-selector="edit-block-form"] {
   display: none;
 }
 
-/* For some reason text-within on tables in dark mode go wrong */
-.gin--dark-mode tr:hover td,
-.gin--dark-mode tr:focus-within td {
-  color: var(--gin-color-text);
-  background: var(--gin-bg-secondary);
-}
-
 /* To fix ckeditor's modification of paragraph action buttons */
 #drupal-off-canvas-wrapper .ui-dialog-content div:not([data-drupal-ck-style-fence] *) {
   width: inherit !important;
@@ -379,3 +372,19 @@ th.field-label {
 .gin--dark-mode button.tabledrag-toggle-weight {
   color: var(--gin-color-text);
 }
+
+/*
+ * For layout builder paragraph tables, we need to override the default in dark mode.
+ * This is due to otehr things overloading it in the wrong way, like our _table.css,
+ * gin, and ckeditor.
+ */
+.gin--dark-mode .field-multiple-table.glb-table tr.draggable > td {
+  background-color: var(--gin-bg-layer); 
+  color: var(--gin-color-text); 
+} 
+
+.gin--dark-mode .field-multiple-table.glb-table tr.draggable:nth-child(odd) > td { 
+  background-color: var(--gin-bg-layer2); 
+  color: var(--gin-color-text); 
+} 
+
