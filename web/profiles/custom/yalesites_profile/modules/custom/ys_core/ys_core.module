@@ -573,7 +573,7 @@ function ys_core_get_block_type(&$form, &$form_state) {
     }
   }
   // Otherwise, attempt to get it the original way if it exists.
-  elseif (isset($form['settings']['block_form'])) {
+  elseif (isset($form['settings']['block_form']['#block'])) {
     $block_type_name = $form['settings']['block_form']['#block']->bundle();
   }
   // If we're using reusable blocks, this is how we can get the block type.

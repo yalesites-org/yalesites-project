@@ -12,6 +12,20 @@ Each migration within Yale is organized into specific migration groups. These gr
 
 All migrations use a shared database connection, typically named 'd7' for Drupal 7 sources. This connection is defined in the site’s `settings.php` file and is essential for accessing the source data.
 
+Below is a sample configuration for the `settings.php` file:
+```php
+$databases['d7']['default'] = [
+  'database'=>'pantheon',
+  'username'=>'pantheon',
+  'password'=>'pw',
+  'prefix'=>'',
+  'host'=>'host-from-pantheon',
+  'port'=>'port-from-pantheon',
+  'namespace'=>'Drupal\\Core\\Database\\Driver\\mysql',
+  'driver'=>'mysql'
+];
+```
+
 ## Running General Migrations
 
 Migrations are executed using Drush, Drupal's command-line interface. Ensure all dependencies, including essential modules like Migrate Plus and Migrate Tools, are installed before running any migrations. Use the following Drush commands:
