@@ -1,0 +1,8 @@
+uuid: 8e2efdf2-9f83-4b32-89d7-a8587491f41c
+langcode: en
+status: true
+dependencies: {  }
+id: unified_search
+label: 'Unified Search'
+description: 'A configurable search block with label and URL options.'
+revision: 1 

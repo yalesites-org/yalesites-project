@@ -1,0 +1,21 @@
+uuid: 8e2efdf2-9f83-4b32-89d7-a8587491f41e
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.block_content.field_search_settings
+    - block_content.type.unified_search
+  module:
+    - text
+id: block_content.unified_search.field_search_settings
+field_name: field_search_settings
+entity_type: block_content
+bundle: unified_search
+label: 'Search Settings'
+description: 'Configure the search label and URL options.'
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string 

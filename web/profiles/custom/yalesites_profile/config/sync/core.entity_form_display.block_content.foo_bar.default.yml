@@ -1,0 +1,23 @@
+uuid: 8e2efdf2-9f83-4b32-89d7-a8587491f41b
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.block_content.foo_bar.field_foo_bar
+    - block_content.type.foo_bar
+  module:
+    - text
+id: block_content.foo_bar.default
+targetEntityType: block_content
+bundle: foo_bar
+mode: default
+content:
+  field_foo_bar:
+    type: string_textfield
+    weight: 0
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+hidden: {  } 

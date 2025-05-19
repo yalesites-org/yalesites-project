@@ -1,0 +1,17 @@
+<?php
+
+/**
+ * @file
+ * Contains ys_unified_search.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_preprocess_block().
+ */
+function ys_unified_search_preprocess_block(&$variables) {
+  if ($variables['plugin_id'] === 'yale_unified_search_block') {
+    $variables['content'] = $variables['elements']['content'] ?? [];
+  }
+} 

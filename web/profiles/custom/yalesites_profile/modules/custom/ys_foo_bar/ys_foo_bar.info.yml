@@ -1,0 +1,7 @@
+name: YaleSites Foo Bar
+type: module
+description: 'Provides a simple Foo Bar block for testing.'
+package: YaleSites
+core_version_requirement: ^9 || ^10
+dependencies:
+  - drupal:block 
