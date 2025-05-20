@@ -6,10 +6,13 @@
       once('unified-search', '.inline-search-form', context).forEach(function (form) {
         form.addEventListener('submit', function (e) {
           e.preventDefault();
-          const query = form.querySelector('.search-input').value;
-          const url = form.querySelector('.search-dropdown').value;
+          const query = form.querySelector('.search-input').value.trim();
+          const select = form.querySelector('.search-dropdown');
+          let url = select.value;
+
           if (query && url) {
-            window.location.href = url.replace('{{query}}', encodeURIComponent(query));
+            url = url.replace('{{query}}', encodeURIComponent(query));
+            window.location.href = url;
           }
         });
       });

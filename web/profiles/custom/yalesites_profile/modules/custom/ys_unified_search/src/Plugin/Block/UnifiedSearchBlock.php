@@ -10,6 +10,10 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Provides a 'Unified Search' block.
  *
+ * This block requires the Atomic theme to be installed and enabled.
+ * The block uses the Atomic theme's template at:
+ * templates/block/block--unified-search-block.html.twig
+ *
  * @Block(
  *   id = "unified_search_block",
  *   admin_label = @Translation("Unified Search"),
@@ -83,32 +87,17 @@ class UnifiedSearchBlock extends BlockBase implements ContainerFactoryPluginInte
       ];
     }
 
-    // Debug output
-    \Drupal::messenger()->addMessage('Search options: ' . print_r($search_options, TRUE));
-    \Drupal::messenger()->addMessage('Valid options: ' . print_r($valid_options, TRUE));
-
     return [
-      '#theme' => 'block__unified_search_block',
+      '#theme' => 'block',
+      '#plugin_id' => 'unified_search_block',
+      '#base_plugin_id' => 'unified_search_block',
+      '#derivative_plugin_id' => NULL,
       '#settings' => [
         'search_options' => array_values($valid_options),
-      ],
-      '#attached' => [
-        'library' => [
-          'ys_unified_search/unified-search',
-        ],
       ],
       '#cache' => [
         'max-age' => 0,
       ],
-      '#configuration' => $this->configuration,
-      '#plugin_id' => $this->getPluginId(),
-      '#base_plugin_id' => $this->getBaseId(),
-      '#derivative_plugin_id' => NULL,
-      '#attributes' => [
-        'class' => ['block', 'block-unified-search'],
-      ],
-      '#title_prefix' => [],
-      '#title_suffix' => [],
     ];
   }
 

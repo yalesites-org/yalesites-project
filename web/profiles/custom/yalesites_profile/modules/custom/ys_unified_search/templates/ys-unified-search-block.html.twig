@@ -1,0 +1,27 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display a unified search block.
+ *
+ * Available variables:
+ * - settings: The block settings.
+ * - attributes: HTML attributes for the containing element.
+ */
+#}
+<div{{ attributes.addClass('unified-search-block') }}>
+  <div class="component-wrapper" data-component-width="site" data-component-alignment="center">
+    <div class="component-wrapper__inner">
+      <form class="inline-search-form">
+        <div class="search-wrapper">
+          <input type="text" class="search-input" placeholder="Search...">
+          <select class="search-dropdown">
+            {% for option in settings.search_options %}
+              <option value="{{ option.url }}" data-query-param="{{ option.query_param|default('query') }}">{{ option.label }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="search-submit">Search</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div> 
