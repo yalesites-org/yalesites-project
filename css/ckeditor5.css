@@ -56,3 +56,11 @@ div[contenteditable="true"] #drupal-off-canvas [data-drupal-ck-style-fence] .ck-
   width: 100%;
   max-width: 100%;
 }
+
+/*
+* CKeditor was overwriting how tables should look and somehow using the
+* incorrect gin text color.  This ensures that it passes contrast.
+*/
+.gin--dark-mode .ck-widget.table table td.ck-editor__nested-editable:focus {
+  color: black;
+}
