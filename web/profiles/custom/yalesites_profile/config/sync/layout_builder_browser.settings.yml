@@ -16,6 +16,7 @@ auto_added_reusable_block_content_bundles:
   embed: embed
   event_list: event_list
   facts: facts
+  foo_bar: foo_bar
   gallery: gallery
   grand_hero: grand_hero
   image: image
@@ -31,6 +32,7 @@ auto_added_reusable_block_content_bundles:
   tabs: tabs
   text: text
   tiles: tiles
+  unified_search: unified_search
   video: video
   video_banner: video_banner
   view: view

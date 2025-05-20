@@ -1,0 +1,8 @@
+uuid: 8e2efdf2-9f83-4b32-89d7-a8587491f41b
+langcode: en
+status: true
+dependencies: {  }
+id: foo_bar
+label: 'Foo Bar'
+description: 'A simple block that displays "foo bar".'
+revision: 1 

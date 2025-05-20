@@ -1,0 +1,23 @@
+uuid: 8e2efdf2-9f83-4b32-89d7-a8587491f41f
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.block_content.unified_search.field_search_settings
+    - block_content.type.unified_search
+  module:
+    - text
+id: block_content.unified_search.default
+targetEntityType: block_content
+bundle: unified_search
+mode: default
+content:
+  field_search_settings:
+    type: string_textfield
+    weight: 0
+    region: content
+    settings:
+      size: 60
+      placeholder: 'Enter search settings in JSON format'
+    third_party_settings: {  }
+hidden: {  } 

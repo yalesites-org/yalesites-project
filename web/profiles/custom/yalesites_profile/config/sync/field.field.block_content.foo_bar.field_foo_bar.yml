@@ -1,0 +1,21 @@
+uuid: 8e2efdf2-9f83-4b32-89d7-a8587491f41b
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.block_content.field_foo_bar
+    - block_content.type.foo_bar
+  module:
+    - text
+id: block_content.foo_bar.field_foo_bar
+field_name: field_foo_bar
+entity_type: block_content
+bundle: foo_bar
+label: 'Foo Bar'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string 

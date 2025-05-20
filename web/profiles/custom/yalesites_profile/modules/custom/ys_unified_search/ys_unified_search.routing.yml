@@ -1,0 +1,7 @@
+ys_unified_search.settings:
+  path: '/admin/config/search/unified-search'
+  defaults:
+    _form: '\Drupal\ys_unified_search\Form\UnifiedSearchSettingsForm'
+    _title: 'Unified Search Settings'
+  requirements:
+    _permission: 'administer site configuration' 

@@ -1,0 +1,11 @@
+uuid: 8e2efdf2-9f83-4b32-89d7-a8587491f422
+langcode: en
+status: true
+dependencies: {  }
+id: unified_search
+block_id: unified_search_block
+category: featured_content
+label: 'Unified Search'
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/fallback-global-block.jpg
+image_alt: 'Unified Search'
+weight: 0 
