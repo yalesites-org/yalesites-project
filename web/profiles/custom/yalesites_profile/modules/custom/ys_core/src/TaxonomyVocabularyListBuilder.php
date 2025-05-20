@@ -143,37 +143,4 @@ class TaxonomyVocabularyListBuilder extends ConfigEntityListBuilder {
     return $build;
   }
 
-  /**
-   * Gets the content types associated with a vocabulary.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $vocabulary
-   *   The vocabulary entity.
-   *
-   * @return array
-   *   An array of content type labels.
-   */
-  protected function getAssociatedContentTypes(EntityInterface $vocabulary) {
-    $content_types = [];
-    $node_types = $this->entityTypeManager->getStorage('node_type')->loadMultiple();
-
-    foreach ($node_types as $node_type) {
-      $fields = $this->entityFieldManager->getFieldDefinitions('node', $node_type->id());
-      foreach ($fields as $field) {
-        if ($field->getType() === 'entity_reference' &&
-            $field->getSetting('target_type') === 'taxonomy_term') {
-          // Get handler settings and check if this vocabulary is referenced.
-          $handler_settings = $field->getSetting('handler_settings');
-          $target_bundles = $handler_settings['target_bundles'] ?? [];
-
-          if (!empty($target_bundles) && array_key_exists($vocabulary->id(), $target_bundles)) {
-            $content_types[] = $node_type->label();
-            break;
-          }
-        }
-      }
-    }
-
-    return $content_types;
-  }
-
 }
