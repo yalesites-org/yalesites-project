@@ -7,8 +7,8 @@ use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\ys_core\TaxonomyVocabularyManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Custom controller for taxonomy manager routes.
@@ -30,19 +30,23 @@ class MainController extends TaxonomyManagerMainController {
   protected $entityTypeManager;
 
   /**
-   * Constructs a MainController object.
+   * The taxonomy vocabulary manager.
    *
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   The request object.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
-   *   The entity field manager.
+   * @var \Drupal\ys_core\TaxonomyVocabularyManager
    */
-  public function __construct(Request $request, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager) {
-    parent::__construct($request);
+  protected $taxonomyVocabularyManager;
+
+  /**
+   * Constructs a new MainController.
+   */
+  public function __construct(
+    EntityTypeManagerInterface $entity_type_manager,
+    EntityFieldManagerInterface $entity_field_manager,
+    TaxonomyVocabularyManager $taxonomy_vocabulary_manager,
+  ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityFieldManager = $entity_field_manager;
+    $this->taxonomyVocabularyManager = $taxonomy_vocabulary_manager;
   }
 
   /**
@@ -50,9 +54,9 @@ class MainController extends TaxonomyManagerMainController {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('request_stack')->getCurrentRequest(),
       $container->get('entity_type.manager'),
-      $container->get('entity_field.manager')
+      $container->get('entity_field.manager'),
+      $container->get('ys_core.taxonomy_vocabulary_manager')
     );
   }
 
@@ -63,17 +67,7 @@ class MainController extends TaxonomyManagerMainController {
     $build = [];
 
     // Define YaleSites vocabularies.
-    $yalesites_vocabs = [
-      'event_category',
-      'profile_affiliation',
-      'affiliation',
-      'audience',
-      'custom_vocab',
-      'post_category',
-      'page_category',
-      'event_category',
-      'tags',
-    ];
+    $yalesites_vocabs = $this->taxonomyVocabularyManager->getYaleSitesVocabularyIds();
 
     $yalesites_list = [];
     $localist_list = [];
@@ -89,7 +83,7 @@ class MainController extends TaxonomyManagerMainController {
         ['taxonomy_vocabulary' => $vocabulary->id()]);
 
       // Get content types using this vocabulary.
-      $content_types = $this->getContentTypesUsingVocabulary($vocabulary->id());
+      $content_types = $this->taxonomyVocabularyManager->getAssociatedContentTypes($vocabulary);
       $content_types_markup = !empty($content_types) ? implode(', ', $content_types) : 'None';
 
       $row = [
@@ -158,39 +152,6 @@ class MainController extends TaxonomyManagerMainController {
     }
 
     return $build;
-  }
-
-  /**
-   * Gets content types that use a specific vocabulary.
-   *
-   * @param string $vocabulary_id
-   *   The vocabulary ID.
-   *
-   * @return array
-   *   Array of content type labels that use this vocabulary.
-   */
-  protected function getContentTypesUsingVocabulary($vocabulary_id) {
-    $content_types = [];
-    $node_types = $this->entityTypeManager()->getStorage('node_type')->loadMultiple();
-
-    foreach ($node_types as $node_type) {
-      $fields = $this->entityFieldManager->getFieldDefinitions('node', $node_type->id());
-      foreach ($fields as $field) {
-        if ($field->getType() === 'entity_reference' &&
-            $field->getSetting('target_type') === 'taxonomy_term') {
-          // Get handler settings and check if this vocabulary is referenced.
-          $handler_settings = $field->getSetting('handler_settings');
-          $target_bundles = $handler_settings['target_bundles'] ?? [];
-
-          if (!empty($target_bundles) && array_key_exists($vocabulary_id, $target_bundles)) {
-            $content_types[] = $node_type->label();
-            break;
-          }
-        }
-      }
-    }
-
-    return $content_types;
   }
 
 }
