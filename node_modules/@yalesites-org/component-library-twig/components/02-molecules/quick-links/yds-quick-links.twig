@@ -1,0 +1,68 @@
+{#
+ # Available Props:
+ # - quick_links__variation: promotional (default), subtle
+ # - quick_links__image: (boolean) false by default
+ #
+ # Available Variables:
+ # - quick_links__heading
+ # - quick_links__description
+ # - quick_links__links: array of links that each have the following
+ #   - quick_links__link__url
+ #   - quick_links__link__content
+ #
+ # Available Blocks:
+ # - quick_links__image
+ #}
+
+{% set quick_links__base_class = 'quick-links' %}
+{% set quick_links__variation = quick_links__variation|default('promotional') %}
+
+{% if quick_links__description %}
+  {% set quick_links__layout = 'fluid' %}
+{% endif %}
+
+{% set quick_links__attributes = {
+  'data-quick-links-variation': quick_links__variation,
+  'class': bem(quick_links__base_class),
+} %}
+
+{% set quick_links__attributes = quick_links__attributes|merge({
+  'data-component-width': 'site',
+  'data-component-theme': quick_links__background_color|default('one'),
+  'data-quick-links-layout': quick_links__layout|default('stacked'),
+}) %}
+
+<div {{ add_attributes(quick_links__attributes) }}>
+  {% block prefix_suffix %}
+  {% endblock %}
+  <div {{ bem('inner', [], quick_links__base_class) }}>
+    <div {{ bem('text', [], quick_links__base_class) }}>
+      {% include "@atoms/typography/headings/yds-heading.twig"  with {
+        heading__level: '2',
+        heading__blockname: quick_links__base_class,
+        heading: quick_links__heading,
+      } %}
+      {% if quick_links__description %}
+        {% include "@atoms/typography/text/yds-text.twig" with {
+          text__base_class: 'description',
+          text__blockname: quick_links__base_class,
+          text__content: quick_links__description,
+        } %}
+      {% endif %}
+    </div>
+    {% if quick_links__image %}
+      <div {{ bem('image', [], quick_links__base_class) }}>
+        {% block quick_links__image %}
+          {% include "@atoms/images/image/_responsive-image.twig" %}
+        {% endblock %}
+      </div>
+    {% endif %}
+    <ul {{ bem('links', [], quick_links__base_class) }}>
+      {% block quick_links__links %}
+        {% for link in quick_links__links %}
+          {% include "@molecules/quick-links/_yds-quick-links--links.twig" %}
+        {% endfor %}
+      {% endblock %}
+    </ul>
+  </div>
+</div>
