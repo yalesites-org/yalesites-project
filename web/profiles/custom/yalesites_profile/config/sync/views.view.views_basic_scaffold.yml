@@ -561,7 +561,7 @@ display:
           exposed: true
           expose:
             operator_id: post_year_filter_op
-            label: 'News by Year'
+            label: 'View by Year'
             description: ''
             use_operator: false
             operator: post_year_filter_op
