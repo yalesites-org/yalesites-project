@@ -447,7 +447,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     $form['group_user_selection']['filter_and_sort']['pin_label'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('The label to display for pinned items'),
+      '#title' => $this->t('Label to display for pinned items'),
       '#default_value' => $pin_label,
       '#states' => [
         'visible' => [$formSelectors['pinned_to_top_selector'] => ['checked' => TRUE]],
