@@ -318,7 +318,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options'] = [
       '#type' => 'checkboxes',
       '#options' => [
-        'show_search_filter' => $this->t('Show Search'),
+        'show_search_filter' => $this->t('Show Search (results based on the content title only)'),
         'show_year_filter' => $this->t('Show Year'),
         'show_category_filter' => $this->t('Show Category'),
         'show_custom_vocab_filter' => $this->t('Show @vocab', ['@vocab' => $custom_vocab_label]),
