@@ -318,7 +318,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options'] = [
       '#type' => 'checkboxes',
       '#options' => [
-        'show_search_filter' => $this->t('Show Search'),
+        'show_search_filter' => $this->t('Show Search (results based on the content title only)'),
         'show_year_filter' => $this->t('Show Year'),
         'show_category_filter' => $this->t('Show Category'),
         'show_custom_vocab_filter' => $this->t('Show @vocab', ['@vocab' => $custom_vocab_label]),
@@ -436,7 +436,8 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     $form['group_user_selection']['filter_and_sort']['pinned_to_top'] = [
       '#type' => 'checkbox',
-      '#title' => $this->t('Display pinned items at the top of the list'),
+      '#title' => $this->t('Show pinned label'),
+      '#description' => $this->t('Display a custom label at the top of items.'),
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('pinned_to_top', $items[$delta]->params) : FALSE,
       '#states' => ['invisible' => $calendarViewInvisibleState],
     ];
@@ -446,7 +447,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
 
     $form['group_user_selection']['filter_and_sort']['pin_label'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('The label to display for pinned items'),
+      '#title' => $this->t('Label to display for pinned items'),
       '#default_value' => $pin_label,
       '#states' => [
         'visible' => [$formSelectors['pinned_to_top_selector'] => ['checked' => TRUE]],
