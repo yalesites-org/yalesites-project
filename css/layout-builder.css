@@ -388,3 +388,12 @@ th.field-label {
   color: var(--gin-color-text); 
 } 
 
+/*
+ * The footer is displaying the contextual menu for admins when it should not.
+ * This hides this from the users while giving us the flexibility to get to it
+ * should we ever need it.
+ */
+#block-yalesitesfooterblock .contextual,
+#block-yalesitesfooterblock .contextual-region {
+  display: none;
+}
