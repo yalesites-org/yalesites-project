@@ -6,7 +6,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\ai_engine_chat\Form\AiEngineChatSettings;
 
 /**
- *
+ * Form for configuring the AI chat settings.
  */
 class YsAiSettings extends AiEngineChatSettings {
 
@@ -60,7 +60,7 @@ class YsAiSettings extends AiEngineChatSettings {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->configFactory->getEditable('ai_engine_chat.settings')
