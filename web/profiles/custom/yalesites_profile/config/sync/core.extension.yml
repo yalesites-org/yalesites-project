@@ -152,6 +152,7 @@ module:
   webform_ui: 0
   workflows: 0
   yale_cas: 0
+  ys_ai: 0
   ys_alert: 0
   ys_book: 0
   ys_campus_groups: 0
