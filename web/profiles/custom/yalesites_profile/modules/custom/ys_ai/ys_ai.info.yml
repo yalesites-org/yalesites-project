@@ -7,3 +7,4 @@ configure: ys_ai.settings
 dependencies:
   - ai_engine
   - ys_core
+  - ys_integrations
