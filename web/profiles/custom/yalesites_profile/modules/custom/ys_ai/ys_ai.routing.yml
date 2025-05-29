@@ -1,7 +1,7 @@
 ys_ai.settings:
   path: '/admin/config/yalesites/ys_ai'
   defaults:
-    _form: '\Drupal\ys_ai\Form\YsAiForm'
+    _form: '\Drupal\ys_ai\Form\YsAiSettings'
     _title: 'YaleSites AI settings'
   requirements:
     _permission: 'configure ys ai user settings'
