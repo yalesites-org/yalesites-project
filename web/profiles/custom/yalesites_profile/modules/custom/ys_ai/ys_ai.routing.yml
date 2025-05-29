@@ -5,3 +5,4 @@ ys_ai.settings:
     _title: 'YaleSites AI settings'
   requirements:
     _permission: 'configure ys ai user settings'
+    _custom_access: 'ys_ai.settings_enabled_access_check::access'
