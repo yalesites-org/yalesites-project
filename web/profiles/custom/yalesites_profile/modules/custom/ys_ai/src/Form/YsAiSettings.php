@@ -3,26 +3,75 @@
 namespace Drupal\ys_ai\Form;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\ai_engine_chat\Form\AiEngineChatSettings;
 
 /**
  *
  */
-class YsAiSettings extends ConfigFormBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'ys_ai_settings';
-  }
+class YsAiSettings extends AiEngineChatSettings {
 
   /**
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $form = \Drupal::formBuilder()->getForm('Drupal\ai_engine_chat\Form\AiEngineChatSettingsForm');
+    $chat_config = $this->config('ai_engine_chat.settings');
+    $embedding_config = $this->config('ai_engine_embedding.settings');
+
+    if ($chat_config->get('azure_base_url') != NULL) {
+      $form['enable'] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Enable chat widget'),
+        '#default_value' => $chat_config->get('enable') ?? FALSE,
+        '#description' => $this->t('Enable or disable chat service across the site. Chat can be launched by using the href="#launch-chat" on any link.'),
+        '#weight' => -10,
+      ];
+      $form['floating_button'] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Enable floating chat button'),
+        '#default_value' => $chat_config->get('floating_button') ?? FALSE,
+        '#weight' => -10,
+      ];
+      $form['floating_button_text'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('Floating button text'),
+        '#default_value' => $chat_config->get('floating_button_text') ?? $this->t('Ask Yale Chat'),
+        '#required' => TRUE,
+        '#weight' => -10,
+      ];
+    }
+
+    if (
+      $embedding_config->get('azure_embedding_service_url') != NULL &&
+        $embedding_config->get('azure_search_service_name') != NULL &&
+        $embedding_config->get('azure_search_service_index') != NULL
+    ) {
+      $form['enable_embedding'] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Enable embedding services'),
+        '#default_value' => $embedding_config->get('enable') ?? FALSE,
+        '#description' => $this->t('Enable automatic updates of vector database.'),
+        '#weight' => -11,
+      ];
+    }
+
+    $form = parent::buildForm($form, $form_state);
 
     return $form;
+  }
+
+  /**
+   *
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    $this->configFactory->getEditable('ai_engine_chat.settings')
+      ->set('enable', $form_state->getValue('enable'))
+      ->set('floating_button', $form_state->getValue('floating_button'))
+      ->set('floating_button_text', $form_state->getValue('floating_button_text'))
+      ->save();
+    $this->configFactory->getEditable('ai_engine_embedding.settings')
+      ->set('enable', $form_state->getValue('enable_embedding'))
+      ->save();
+    parent::submitForm($form, $form_state);
   }
 
 }
