@@ -1,5 +1,6 @@
 ys_ai.settings:
-  title: 'Configure YaleSites AI'
-  description: 'Settings for the AI chatbot'
+  title: 'AI settings'
+  description: 'Configure Localist sync settings'
   route_name: ys_ai.settings
-  parent: ys_core.admin_yalesites
+  parent: ys_integrations.admin_yalesites_integrations
+  weight: 0
