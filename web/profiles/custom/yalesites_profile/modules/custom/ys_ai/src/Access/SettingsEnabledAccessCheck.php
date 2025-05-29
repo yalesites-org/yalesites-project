@@ -43,7 +43,8 @@ class SettingsEnabledAccessCheck {
   public function access(AccountInterface $account) {
     $enabled = $this->configFactory->get('ai_engine_chat.settings')->get('azure_base_url') ?? FALSE;
     $has_permission = $account->hasPermission('administer ys ai settings');
-    return AccessResult::allowedIf((bool) $enabled && $has_permission);
+    $integration_enabled = $this->configFactory->get('ys_integrations.integration_settings')->get('ys_ai') ?? FALSE;
+    return AccessResult::allowedIf((bool) $enabled && $has_permission && (bool) $integration_enabled);
   }
 
 }
