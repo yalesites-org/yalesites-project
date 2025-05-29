@@ -1,0 +1,9 @@
+name: YaleSites AI
+type: module
+description: 'YaleSites specific usage of the ai_engine module'
+package: YaleSites
+core_version_requirement: ^10 || ^11
+configure: ys_ai.settings
+dependencies:
+  - ai_engine
+  - ys_core

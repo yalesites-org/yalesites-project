@@ -1,0 +1,5 @@
+ys_ai.settings:
+  title: 'Configure YaleSites AI'
+  description: 'Settings for the AI chatbot'
+  route_name: ys_ai.settings
+  parent: ys_core.adamin_yalesites
