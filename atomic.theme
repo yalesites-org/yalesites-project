@@ -45,6 +45,18 @@ function atomic_preprocess_menu(&$variables, $hook) {
 }
 
 /**
+ * Implements hook_preprocess_pager().
+ *
+ * Adds total pages to the pager variables.
+ */
+function atomic_preprocess_pager(array &$variables) {
+  $element = $variables['pager']['#element'];
+  $pager_manager = \Drupal::service('pager.manager');
+  $pager = $pager_manager->getPager($element);
+  $variables['pager']['#total_pages'] = $pager->getTotalPages();
+}
+
+/**
  * Implements hook_theme_suggestions_hook_alter() for containers.
  */
 function atomic_theme_suggestions_container_alter(array &$suggestions, array &$variables) {
