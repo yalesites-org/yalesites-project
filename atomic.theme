@@ -57,6 +57,18 @@ function atomic_preprocess_pager(array &$variables) {
 }
 
 /**
+ * Implements hook_theme_suggestions_HOOK_alter() for pager.
+ */
+function atomic_theme_suggestions_pager_alter(array &$suggestions, array $variables) {
+  // Remove gin-lb suggestion(s).
+  foreach ($suggestions as $key => $suggestion) {
+    if ($suggestion === 'pager__gin_lb' || $suggestion === 'pager--gin-lb') {
+      unset($suggestions[$key]);
+    }
+  }
+}
+
+/**
  * Implements hook_theme_suggestions_hook_alter() for containers.
  */
 function atomic_theme_suggestions_container_alter(array &$suggestions, array &$variables) {
