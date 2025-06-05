@@ -2,25 +2,20 @@
 
 namespace Drupal\ys_core;
 
-use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
+use Drupal\taxonomy\VocabularyListBuilder;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Messenger\MessengerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Render\RendererInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a listing of taxonomy vocabularies.
  */
-class TaxonomyVocabularyListBuilder extends ConfigEntityListBuilder {
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
+class YaleSitesVocabularyListBuilder extends VocabularyListBuilder {
 
   /**
    * The entity field manager.
@@ -28,7 +23,6 @@ class TaxonomyVocabularyListBuilder extends ConfigEntityListBuilder {
    * @var \Drupal\Core\Entity\EntityFieldManagerInterface
    */
   protected $entityFieldManager;
-
 
   /**
    * The taxonomy vocabulary manager.
@@ -43,25 +37,43 @@ class TaxonomyVocabularyListBuilder extends ConfigEntityListBuilder {
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
     return new static(
       $entity_type,
-      $container->get('entity_type.manager')->getStorage($entity_type->id()),
+      $container->get('current_user'),
       $container->get('entity_type.manager'),
+      $container->get('renderer'),
+      $container->get('messenger'),
       $container->get('entity_field.manager'),
       $container->get('ys_core.taxonomy_vocabulary_manager')
     );
   }
 
   /**
-   * Constructs a new EntityListBuilder object.
+   * Constructs a new VocabularyListBuilder object.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type definition.
+   * @param \Drupal\Core\Session\AccountInterface $current_user
+   *   The current user.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param \Drupal\Core\Render\RendererInterface $renderer
+   *   The renderer service.
+   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+   *   The messenger.
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+   *   The entity field manager.
+   * @param \Drupal\ys_core\TaxonomyVocabularyManager $taxonomy_vocabulary_manager
+   *   The taxonomy vocabulary manager.
    */
   public function __construct(
     EntityTypeInterface $entity_type,
-    EntityStorageInterface $storage,
+    AccountInterface $current_user,
     EntityTypeManagerInterface $entity_type_manager,
+    RendererInterface $renderer,
+    MessengerInterface $messenger,
     EntityFieldManagerInterface $entity_field_manager,
     TaxonomyVocabularyManager $taxonomy_vocabulary_manager,
   ) {
-    parent::__construct($entity_type, $storage);
-    $this->entityTypeManager = $entity_type_manager;
+    parent::__construct($entity_type, $current_user, $entity_type_manager, $renderer, $messenger);
     $this->entityFieldManager = $entity_field_manager;
     $this->taxonomyVocabularyManager = $taxonomy_vocabulary_manager;
   }
