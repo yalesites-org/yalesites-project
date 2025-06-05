@@ -237,6 +237,57 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#description' => $this->t('This font pairing will apply site-wide and affect all heading levels (h1-h6)'),
       '#title' => $this->t('Font Pairing'),
       '#default_value' => $yaleConfig->get('font_pairing') ?? 'yalenew',
+      '#prefix' => '<div class="font-pairing-selector">',
+      '#suffix' => '</div>',
+    ];
+
+    // Add font preview section.
+    $form['font_preview'] = [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => ['font-preview-container'],
+      ],
+      '#attached' => [
+        'library' => ['ys_core/font_preview'],
+      ],
+      'yalenew' => [
+        '#type' => 'container',
+        '#attributes' => [
+          'class' => ['font-preview', 'font-preview-yalenew'],
+          'data-font-pairing' => 'yalenew',
+        ],
+        'heading' => [
+          '#type' => 'html_tag',
+          '#tag' => 'h2',
+          '#value' => $this->t('YaleNew Heading Sample'),
+          '#attributes' => ['class' => ['preview-heading']],
+        ],
+        'text' => [
+          '#type' => 'html_tag',
+          '#tag' => 'p',
+          '#value' => $this->t('This is a sample paragraph in Mallory.'),
+          '#attributes' => ['class' => ['preview-text']],
+        ],
+      ],
+      'mallory' => [
+        '#type' => 'container',
+        '#attributes' => [
+          'class' => ['font-preview', 'font-preview-mallory'],
+          'data-font-pairing' => 'mallory',
+        ],
+        'heading' => [
+          '#type' => 'html_tag',
+          '#tag' => 'h2',
+          '#value' => $this->t('Mallory Heading Sample'),
+          '#attributes' => ['class' => ['preview-heading']],
+        ],
+        'text' => [
+          '#type' => 'html_tag',
+          '#tag' => 'p',
+          '#value' => $this->t('This is a sample paragraph in Mallory.'),
+          '#attributes' => ['class' => ['preview-text']],
+        ],
+      ],
     ];
 
     $form['teaser_image_fallback'] = [
