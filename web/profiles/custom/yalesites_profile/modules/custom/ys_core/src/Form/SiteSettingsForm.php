@@ -228,6 +228,17 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#default_value' => $yaleConfig->get('taxonomy')['custom_vocab_name'] ?? 'Custom Vocab',
     ];
 
+    $form['font_pairing'] = [
+      '#type' => 'radios',
+      '#options' => [
+        'yalenew' => $this->t('YaleNew (YaleNew for headings, Mallory for paragraph text)'),
+        'mallory' => $this->t('Mallory (Mallory for headings, Mallory for paragraph text)'),
+      ],
+      '#description' => $this->t('This font pairing will apply site-wide and affect all heading levels (h1-h6)'),
+      '#title' => $this->t('Font Pairing'),
+      '#default_value' => $yaleConfig->get('font_pairing') ?? 'yalenew',
+    ];
+
     $form['teaser_image_fallback'] = [
       '#type' => 'media_library',
       '#allowed_bundles' => ['image'],
@@ -324,6 +335,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       ->set('taxonomy.custom_vocab_name', $form_state->getValue('custom_vocab_name'))
       ->set('image_fallback.teaser', $form_state->getValue('teaser_image_fallback'))
       ->set('custom_favicon', $form_state->getValue('favicon'))
+      ->set('font_pairing', $form_state->getValue('font_pairing'))
       ->save();
     $this->configFactory->getEditable('google_analytics.settings')
       ->set('account', $form_state->getValue('google_analytics_id'))
