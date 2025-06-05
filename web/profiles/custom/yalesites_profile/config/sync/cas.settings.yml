@@ -14,12 +14,12 @@ server:
   cert: /etc/pki/tls/certs/ca-bundle.crt
 gateway:
   enabled: false
-  recheck_time: -1
+  recheck_time: 720
   paths:
     id: request_path
     negate: false
-    pages: ''
-  method: null
+    pages: '<front>'
+  method: client_side
   check_frequency: -2
 forced_login:
   enabled: false
