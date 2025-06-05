@@ -110,7 +110,7 @@
     "drupal/typogrify": "1.4-rc1",
     "drupal/upgrade_status": "4.3.5",
     "drupal/webform": "6.3.0-beta2",
-    "drupal/workflow_buttons": "1.0.0-beta6",
+    "drupal/workflow_buttons": "1.0-beta7",
     "jjj/chosen": "2.2.1",
     "laminas/laminas-escaper": "2.13.0",
     "northernco/ckeditor5-anchor-drupal": "0.4.0",
