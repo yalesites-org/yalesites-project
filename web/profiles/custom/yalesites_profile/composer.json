@@ -30,7 +30,7 @@
     "drupal/book": "1.0.0",
     "drupal/calendar_link": "3.0.3",
     "drupal/captcha": "2.0.6",
-    "drupal/cas": "2.3.2",
+    "drupal/cas": "3.0.0-beta4",
     "drupal/chosen": "4.0.3",
     "drupal/components": "3.1.0",
     "drupal/config_filter": "2.6.0",
