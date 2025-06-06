@@ -322,6 +322,15 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#use_favicon_preview' => TRUE,
     ];
 
+    if (ys_core_allow_secret_items_user_1($this->currentUser)) {
+      $form['cas_app_name'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('CAS Application Name'),
+        '#description' => $this->t('The name of the application to be used in CAS login.'),
+        '#default_value' => ($yaleConfig->get('cas_app_name')) ? $yaleConfig->get('cas_app_name') : 'yalesites',
+      ];
+    }
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -388,6 +397,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       ->set('image_fallback.teaser', $form_state->getValue('teaser_image_fallback'))
       ->set('custom_favicon', $form_state->getValue('favicon'))
       ->set('font_pairing', $form_state->getValue('font_pairing'))
+      ->set('cas_app_name', $form_state->getValue('cas_app_name') ?? 'yalesites')
       ->save();
 
     $custom_vocab_name = $this->configFactory->getEditable('taxonomy.vocabulary.custom_vocab')->get('name');
