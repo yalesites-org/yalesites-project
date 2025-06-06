@@ -818,6 +818,13 @@ function _ys_core_find_field_in_form($form, $field_name) {
  * Disallow access to private files for non-CAS authenticated users.
  */
 function ys_core_file_download($uri) {
+  // Get the site config for ys_core.
+  $config = \Drupal::config('ys_core.site');
+  if (!$config->get('enable_private_files', FALSE)) {
+    // If private files are not enabled, allow access.
+    return NULL;
+  }
+
   if (!str_starts_with($uri, 'private://')) {
     return NULL;
   }
@@ -839,32 +846,12 @@ function _ys_core_is_cas_authenticated(AccountProxy $account) {
     return FALSE;
   }
 
-  // Method 1: Check if CAS service exists and account has CAS session.
   if (\Drupal::hasService('cas.user_manager')) {
     $cas_user_manager = \Drupal::service('cas.user_manager');
 
     // Check if there's an active CAS session.
     $session = \Drupal::request()->getSession();
     if ($session->has('cas_username')) {
-      return TRUE;
-    }
-  }
-
-  // Method 2: Check user data for CAS authentication marker.
-  $user_data = \Drupal::service('user.data');
-  $cas_username = $user_data->get('cas', $account->id(), 'cas_username');
-
-  if (!empty($cas_username)) {
-    return TRUE;
-  }
-
-  // Method 3: Check if user was created/authenticated by CAS module
-  // Look for CAS-specific patterns in username or authmap.
-  if (\Drupal::hasService('externalauth.authmap')) {
-    $authmap = \Drupal::service('externalauth.authmap');
-    $authname = $authmap->get($account->id(), 'cas');
-
-    if (!empty($authname)) {
       return TRUE;
     }
   }
