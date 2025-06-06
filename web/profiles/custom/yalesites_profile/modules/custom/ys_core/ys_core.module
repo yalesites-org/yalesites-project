@@ -827,17 +827,6 @@ function _ys_core_find_field_in_form($form, $field_name) {
 }
 
 /**
- * Implements hook_entity_type_alter().
- */
-function ys_core_entity_type_alter(array &$entity_types) {
-  if (isset($entity_types['taxonomy_vocabulary'])) {
-    // Override the collection route class for taxonomy vocabularies.
-    // @see /admin/structure/taxonomy
-    $entity_types['taxonomy_vocabulary']->setHandlerClass('list_builder', 'Drupal\ys_core\YaleSitesVocabularyListBuilder');
-  }
-}
-
-/**
  * Implements hook_yale_cas_pre_redirect_service_parameters_alter().
  *
  * Allows modules to alter CAS service parameters before redirect
@@ -853,4 +842,15 @@ function ys_core_yale_cas_pre_redirect_service_parameters_alter(
 
   // Set the app parameter to the configured value.
   $service_parameters['app'] = $app_name;
+}
+
+/**
+ * Implements hook_entity_type_alter().
+ */
+function ys_core_entity_type_alter(array &$entity_types) {
+  if (isset($entity_types['taxonomy_vocabulary'])) {
+    // Override the collection route class for taxonomy vocabularies.
+    // @see /admin/structure/taxonomy
+    $entity_types['taxonomy_vocabulary']->setHandlerClass('list_builder', 'Drupal\ys_core\YaleSitesVocabularyListBuilder');
+  }
 }
