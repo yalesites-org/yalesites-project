@@ -652,6 +652,20 @@ function ys_core_allow_secret_items(AccountProxy $currentUserSession) {
 }
 
 /**
+ * If current user is user 1, allow secret items.
+ *
+ * @return bool
+ *   Returns TRUE if current user is user 1.
+ */
+function ys_core_allow_secret_items_user_1(AccountProxy $currentUserSession) {
+  $allowSecretItems = FALSE;
+  if ($currentUserSession->getAccount()->id() == 1) {
+    $allowSecretItems = TRUE;
+  }
+  return $allowSecretItems;
+}
+
+/**
  * Implements hook_form_FORM_ID_alter() for views_exposed_form.
  */
 function ys_core_form_views_exposed_form_alter(&$form, FormStateInterface $form_state) {
@@ -810,4 +824,22 @@ function _ys_core_find_field_in_form($form, $field_name) {
   }
 
   return NULL;
+}
+
+/**
+ * Implements hook_yale_cas_pre_redirect_service_parameters_alter().
+ *
+ * Allows modules to alter CAS service parameters before redirect
+ * at the pre-redirect event.
+ */
+function ys_core_yale_cas_pre_redirect_service_parameters_alter(
+  array &$service_parameters,
+  $event,
+) {
+  // Retrieve the ys_core config.
+  $config = \Drupal::config('ys_core.site');
+  $app_name = $config->get('cas_app_name') ?: 'yalesites';
+
+  // Set the app parameter to the configured value.
+  $service_parameters['app'] = $app_name;
 }
