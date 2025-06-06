@@ -858,3 +858,29 @@ function _ys_core_is_cas_authenticated(AccountProxy $account) {
 
   return FALSE;
 }
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter() for node_form.
+ */
+function ys_core_form_node_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $node = $form_state->getFormObject()->getEntity();
+
+  // Only apply to new nodes.
+  if (!$node->isNew()) {
+    return;
+  }
+
+  // Check if the content type has the field_login_required field.
+  if (!isset($form['field_login_required'])) {
+    return;
+  }
+
+  // Check if private file storage is enabled.
+  $config = \Drupal::config('ys_core.site');
+  $private_files_enabled = $config->get('enable_private_files', FALSE);
+
+  if ($private_files_enabled) {
+    // Set default value to checked (login required)
+    $form['field_login_required']['widget']['value']['#default_value'] = TRUE;
+  }
+}
