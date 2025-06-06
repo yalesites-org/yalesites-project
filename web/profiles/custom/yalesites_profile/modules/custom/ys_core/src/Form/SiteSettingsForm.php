@@ -255,6 +255,15 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#use_favicon_preview' => TRUE,
     ];
 
+    if (ys_core_allow_secret_items_user_1($this->currentUser)) {
+      $form['cas_app_name'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('CAS Application Name'),
+        '#description' => $this->t('The name of the application to be used in CAS login.'),
+        '#default_value' => ($yaleConfig->get('cas_app_name')) ? $yaleConfig->get('cas_app_name') : 'yalesites',
+      ];
+    }
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -324,6 +333,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       ->set('taxonomy.custom_vocab_name', $form_state->getValue('custom_vocab_name'))
       ->set('image_fallback.teaser', $form_state->getValue('teaser_image_fallback'))
       ->set('custom_favicon', $form_state->getValue('favicon'))
+      ->set('cas_app_name', $form_state->getValue('cas_app_name') ?? 'yalesites')
       ->save();
     $this->configFactory->getEditable('google_analytics.settings')
       ->set('account', $form_state->getValue('google_analytics_id'))
