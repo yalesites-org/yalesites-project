@@ -255,6 +255,15 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#use_favicon_preview' => TRUE,
     ];
 
+    if (ys_core_allow_secret_items($this->currentUser)) {
+      $form['enable_private_files'] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Enable private files'),
+        '#default_value' => $yaleConfig->get('enable_private_files') ?? FALSE,
+        '#description' => $this->t('Check this box to enable private file storage. This will allow you to store files that are not publicly accessible except by CAS users, platform admins, and user 1.'),
+      ];
+    }
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -324,6 +333,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       ->set('taxonomy.custom_vocab_name', $form_state->getValue('custom_vocab_name'))
       ->set('image_fallback.teaser', $form_state->getValue('teaser_image_fallback'))
       ->set('custom_favicon', $form_state->getValue('favicon'))
+      ->set('enable_private_files', $form_state->getValue('enable_private_files') ?? FALSE)
       ->save();
     $this->configFactory->getEditable('google_analytics.settings')
       ->set('account', $form_state->getValue('google_analytics_id'))

@@ -811,3 +811,50 @@ function _ys_core_find_field_in_form($form, $field_name) {
 
   return NULL;
 }
+
+/**
+ * Implements hook_file_download().
+ *
+ * Disallow access to private files for non-CAS authenticated users.
+ */
+function ys_core_file_download($uri) {
+  // Get the site config for ys_core.
+  $config = \Drupal::config('ys_core.site');
+  if (!$config->get('enable_private_files', FALSE)) {
+    // If private files are not enabled, allow access.
+    return NULL;
+  }
+
+  if (!str_starts_with($uri, 'private://')) {
+    return NULL;
+  }
+
+  $current_user = \Drupal::currentUser();
+  if (!_ys_core_is_cas_authenticated($current_user) && !ys_core_allow_secret_items($current_user)) {
+    \Drupal::logger('mymodule')->notice('Non-CAS user denied private file access: @uri', ['@uri' => $uri]);
+    // Deny access.
+    return -1;
+  }
+}
+
+/**
+ * Checks if the user is CAS authenticated.
+ */
+function _ys_core_is_cas_authenticated(AccountProxy $account) {
+  // Check if account is anonymous.
+  if ($account->isAnonymous()) {
+    return FALSE;
+  }
+
+  if (\Drupal::hasService('cas.user_manager')) {
+    $cas_user_manager = \Drupal::service('cas.user_manager');
+
+    // Check if there's an active CAS session.
+    $session = \Drupal::request()->getSession();
+    if ($session->has('cas_username')) {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
