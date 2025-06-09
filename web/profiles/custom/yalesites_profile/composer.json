@@ -32,6 +32,7 @@
     "drupal/captcha": "2.0.6",
     "drupal/cas": "2.3.2",
     "drupal/chosen": "4.0.3",
+    "drupal/coffee": "^2.0",
     "drupal/components": "3.1.0",
     "drupal/config_filter": "2.6.0",
     "drupal/config_ignore": "3.3.0",
