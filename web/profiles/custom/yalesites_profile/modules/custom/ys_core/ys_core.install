@@ -303,3 +303,32 @@ function ys_core_update_10003() {
     \Drupal::messenger()->addStatus("Site email not updated as it was set to {$site_mail}.");
   }
 }
+
+/**
+ * Implements hook_update().
+ *
+ * This update will update paragraph Facts and Figure Item block's
+ * field_text format from Heading HTML to Restricted.  Doing so
+ * will allow links to be used.
+ */
+function ys_core_update_10004() {
+
+  $query = \Drupal::entityQuery('paragraph')
+    ->accessCheck(FALSE)
+    ->condition('type', 'facts_item')
+    ->condition('field_text.format', 'heading_html')
+    ->allRevisions();
+
+  $ids = $query->execute();
+  $paragraph_storage = \Drupal::entityTypeManager()->getStorage('paragraph');
+
+  foreach ($ids as $revision_id => $id) {
+    $paragraph = $paragraph_storage->loadRevision($revision_id);
+
+    if ($paragraph && $paragraph->id() == $id) {
+      $new_field_text = ['format' => 'restricted_html', 'value' => $paragraph->field_text->value];
+      $paragraph->set('field_text', $new_field_text);
+      $paragraph->save();
+    }
+  }
+}
