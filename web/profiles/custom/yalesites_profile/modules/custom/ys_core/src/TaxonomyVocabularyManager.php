@@ -56,7 +56,6 @@ class TaxonomyVocabularyManager {
       'custom_vocab',
       'post_category',
       'page_category',
-      'event_category',
       'tags',
     ];
   }

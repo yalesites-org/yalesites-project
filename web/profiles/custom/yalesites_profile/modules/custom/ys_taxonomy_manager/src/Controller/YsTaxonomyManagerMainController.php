@@ -13,7 +13,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Custom controller for taxonomy manager routes.
  */
-class MainController extends TaxonomyManagerMainController {
+class YsTaxonomyManagerMainController extends TaxonomyManagerMainController {
 
   /**
    * The entity field manager.
