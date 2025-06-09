@@ -13,6 +13,13 @@ use Drupal\Core\Url;
 function ys_core_coffee_commands() {
   $commands = [];
 
+  // Add content creation command.
+  $commands[] = [
+    'value' => Url::fromRoute('node.add_page')->toString(),
+    'label' => 'Add Content',
+    'command' => ':add_content',
+  ];
+
   $commands[] = [
     'value' => Url::fromRoute('view.manage_pages.page_1')->toString(),
     'label' => 'Manage Pages',
@@ -133,11 +140,24 @@ function ys_core_coffee_commands() {
     'command' => ':blocks',
   ];
 
+  $commands[] = [
+    'value' => Url::fromRoute('block_content.add_page')->toString(),
+    'label' => 'Add Reusable Block',
+    'command' => ':add_block',
+  ];
+
   // Add YaleSites settings commands.
   $commands[] = [
     'value' => Url::fromRoute('ys_core.admin_yalesites')->toString(),
     'label' => 'YaleSites Settings',
     'command' => ':yalesites',
+  ];
+
+  // Add YaleSites dashboard command.
+  $commands[] = [
+    'value' => Url::fromRoute('ys_core.admin_dashboard')->toString(),
+    'label' => 'YaleSites Dashboard',
+    'command' => ':dashboard',
   ];
 
   // Add YaleSites settings commands.
