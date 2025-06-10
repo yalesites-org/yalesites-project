@@ -12,13 +12,10 @@
     banner__content__background: content.field_style_color.0['#markup'],
     banner__content__layout: content.field_style_position.0['#markup'],
     banner__width: 'site',
-    banner__overlay_background_image: content.field_overlay_background_image.0,
+    banner__overlay_background_image: content.field_overlay_background_image.0['#media'].field_media_image.entity.fileuri|file_url,
   } %}
     {% block banner__image %}
       {{ content.field_media }}
-    {% endblock %}
-    {% block banner__overlay_background_image %}
-      {{ content.field_overlay_background_image }}
     {% endblock %}
   {% endembed %}
 

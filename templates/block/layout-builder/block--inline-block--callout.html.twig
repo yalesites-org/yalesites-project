@@ -4,13 +4,10 @@
   {% embed "@molecules/callout/yds-callout.twig" with {
       callout__background_color: content.field_style_color.0['#markup'],
       callout__alignment: content.field_style_alignment.0['#markup'],
-      callout__overlay_background_image: content.field_overlay_background_image.0,
+      callout__overlay_background_image: content.field_overlay_background_image.0['#media'].field_media_image.entity.fileuri|file_url,
   } %}
     {% block callout__items %}
       {{ content.field_callout }}
-    {% endblock %}
-    {% block callout__overlay_background_image %}
-      {{ content.field_overlay_background_image }}
     {% endblock %}
   {% endembed %}
 
