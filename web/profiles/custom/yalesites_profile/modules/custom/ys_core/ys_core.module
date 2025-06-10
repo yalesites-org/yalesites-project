@@ -811,3 +811,14 @@ function _ys_core_find_field_in_form($form, $field_name) {
 
   return NULL;
 }
+
+/**
+ * Implements hook_entity_type_alter().
+ */
+function ys_core_entity_type_alter(array &$entity_types) {
+  if (isset($entity_types['taxonomy_vocabulary'])) {
+    // Override the collection route class for taxonomy vocabularies.
+    // @see /admin/structure/taxonomy
+    $entity_types['taxonomy_vocabulary']->setHandlerClass('list_builder', 'Drupal\ys_core\YaleSitesVocabularyListBuilder');
+  }
+}
