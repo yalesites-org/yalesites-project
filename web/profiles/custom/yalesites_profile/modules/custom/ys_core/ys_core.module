@@ -1017,36 +1017,9 @@ function ys_core_yale_cas_pre_redirect_service_parameters_alter(
  * Implements hook_entity_type_alter().
  */
 function ys_core_entity_type_alter(array &$entity_types) {
-if (isset($entity_types['taxonomy_vocabulary'])) {
-  // Override the collection route class for taxonomy vocabularies.
-  // @see /admin/structure/taxonomy
-  $entity_types['taxonomy_vocabulary']->setHandlerClass('list_builder', 'Drupal\ys_core\YaleSitesVocabularyListBuilder');
-
-}
-
-/**
- * Implements hook_form_BASE_FORM_ID_alter() for node_form.
- *
- * This function alters the node form to set the default value
- * for the field_login_required field based on the
- * cas_protection_default setting.
- */
-function ys_core_form_node_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  $node = $form_state->getFormObject()->getEntity();
-
-  // Only apply to new nodes.
-  if (!$node->isNew()) {
-    return;
+  if (isset($entity_types['taxonomy_vocabulary'])) {
+    // Override the collection route class for taxonomy vocabularies.
+    // @see /admin/structure/taxonomy
+    $entity_types['taxonomy_vocabulary']->setHandlerClass('list_builder', 'Drupal\ys_core\YaleSitesVocabularyListBuilder');
   }
-
-  // Check if the content type has the field_login_required field.
-  if (!isset($form['field_login_required'])) {
-    return;
-  }
-
-  // Check if private file storage is enabled.
-  $config = \Drupal::config('ys_core.site');
-  $cas_protection_default = $config->get('cas_protection_default', FALSE);
-
-  $form['field_login_required']['widget']['value']['#default_value'] = $cas_protection_default;
 }
