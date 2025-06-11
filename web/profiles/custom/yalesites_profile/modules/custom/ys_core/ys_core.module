@@ -844,6 +844,7 @@ function ys_core_yale_cas_pre_redirect_service_parameters_alter(
   $service_parameters['app'] = $app_name;
 }
 
+/**
  * Implements hook_entity_type_alter().
  */
 function ys_core_entity_type_alter(array &$entity_types) {
