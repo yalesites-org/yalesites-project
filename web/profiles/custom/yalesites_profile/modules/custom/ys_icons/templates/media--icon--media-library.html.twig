@@ -1,0 +1,21 @@
+{#
+/**
+ * @file
+ * Theme override to display an icon media entity in the media library.
+ */
+#}
+<article class="contextual-region media-library-item__preview-wrapper">
+  <div class="media-library-item__preview js-media-library-item-preview">
+    <div class="field field--name-field-fontawesome-name field--type-string field--label-hidden field__item">
+      {# Simple SVG for media library preview - keeps YDS component intact for actual usage #}
+      <svg class="media-library-icon" width="120" height="120" viewBox="0 0 512 512" aria-hidden="true">
+        <use href="/themes/contrib/atomic/node_modules/@yalesites-org/component-library-twig/dist/icons.svg#{{ content.field_fontawesome_name.0['#context'].value }}"></use>
+      </svg>
+    </div>
+  </div>
+  <div class="media-library-item__attributes">
+    <div class="media-library-item__name">
+      {{ content.name }}
+    </div>
+  </div>
+</article>

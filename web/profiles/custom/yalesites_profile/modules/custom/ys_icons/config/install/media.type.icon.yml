@@ -1,0 +1,11 @@
+langcode: en
+status: true
+dependencies: {  }
+id: icon
+label: Icon
+description: 'FontAwesome icon references with accessibility information'
+source: ys_icon_source
+queue_thumbnail_downloads: false
+new_revision: false
+source_configuration:
+  source_field: field_fontawesome_name

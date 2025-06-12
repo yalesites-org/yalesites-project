@@ -1,0 +1,6 @@
+media_library:
+  css:
+    theme:
+      css/ys_icons.media_library.css: {}
+  dependencies:
+    - core/drupal

@@ -1,0 +1,18 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.media.field_icon_title
+    - media.type.icon
+id: media.icon.field_icon_title
+field_name: field_icon_title
+entity_type: media
+bundle: icon
+label: 'Icon Title'
+description: 'The title for accessibility (aria-label)'
+required: true
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

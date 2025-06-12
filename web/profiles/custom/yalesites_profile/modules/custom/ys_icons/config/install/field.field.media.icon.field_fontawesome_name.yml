@@ -1,0 +1,18 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.media.field_fontawesome_name
+    - media.type.icon
+id: media.icon.field_fontawesome_name
+field_name: field_fontawesome_name
+entity_type: media
+bundle: icon
+label: 'FontAwesome Name'
+description: 'The FontAwesome icon name (e.g., "home", "user", "star")'
+required: true
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

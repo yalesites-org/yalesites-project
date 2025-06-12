@@ -1,0 +1,20 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.media.field_icon_description
+    - media.type.icon
+  module:
+    - text
+id: media.icon.field_icon_description
+field_name: field_icon_description
+entity_type: media
+bundle: icon
+label: 'Icon Description'
+description: 'Detailed description for accessibility (aria-describedby)'
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: text_long

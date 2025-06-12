@@ -1,0 +1,7 @@
+name: YaleSites Icons
+type: module
+description: Manages FontAwesome icon references using media entities with YDS component integration
+core_version_requirement: '^9 || ^10'
+package: YaleSites
+dependencies:
+  - drupal:media

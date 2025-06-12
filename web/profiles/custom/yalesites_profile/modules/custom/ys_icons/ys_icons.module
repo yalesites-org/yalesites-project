@@ -1,0 +1,46 @@
+<?php
+
+/**
+ * @file
+ * Contains ys_icons.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function ys_icons_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.ys_icons':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('The YaleSites Icons module provides a way to manage FontAwesome icon references using media entities with accessibility support and YDS component integration.') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function ys_icons_theme() {
+  return [
+    'media__icon__media_library' => [
+      'base hook' => 'media',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_preprocess_media().
+ */
+function ys_icons_preprocess_media(&$variables) {
+  $media = $variables['media'];
+  
+  // Attach our media library CSS for icon media types
+  if ($media->bundle() === 'icon' && $variables['view_mode'] === 'media_library') {
+    $variables['#attached']['library'][] = 'ys_icons/media_library';
+  }
+}
