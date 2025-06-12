@@ -1,0 +1,46 @@
+{#
+/**
+ * @file
+ * Theme override for fontawesome name fields in icon media.
+ */
+#}
+<div{{ attributes.addClass(classes, 'field', 'field--name-' ~ field_name|clean_class, 'field--type-' ~ field_type|clean_class, 'field--label-' ~ label_display|clean_class) }}>
+  {% if label_hidden %}
+    {% if multiple %}
+      <div class="field__items">
+    {% endif %}
+    {% for item in items %}
+      <div class="field__item">
+        {# Render icon instead of just the fontawesome name text #}
+        <div class="media-icon-field-preview">
+          <svg class="icon-field-svg" width="60" height="60" viewBox="0 0 512 512" aria-hidden="true">
+            <use href="/themes/contrib/atomic/node_modules/@yalesites-org/component-library-twig/dist/icons.svg#{{ item.content['#context'].value }}"></use>
+          </svg>
+          <div class="icon-field-name">{{ item.content['#context'].value }}</div>
+        </div>
+      </div>
+    {% endfor %}
+    {% if multiple %}
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="field__label">{{ label }}</div>
+    {% if multiple %}
+      <div class="field__items">
+    {% endif %}
+    {% for item in items %}
+      <div class="field__item">
+        {# Render icon instead of just the fontawesome name text #}
+        <div class="media-icon-field-preview">
+          <svg class="icon-field-svg" width="60" height="60" viewBox="0 0 512 512" aria-hidden="true">
+            <use href="#{{ item.content['#context'].value }}"></use>
+          </svg>
+          <div class="icon-field-name">{{ item.content['#context'].value }}</div>
+        </div>
+      </div>
+    {% endfor %}
+    {% if multiple %}
+      </div>
+    {% endif %}
+  {% endif %}
+</div>

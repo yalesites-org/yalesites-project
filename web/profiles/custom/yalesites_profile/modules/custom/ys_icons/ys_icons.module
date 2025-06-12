@@ -30,6 +30,12 @@ function ys_icons_theme() {
     'media__icon__media_library' => [
       'base hook' => 'media',
     ],
+    'field__media__field_fontawesome_name__icon' => [
+      'base hook' => 'field',
+    ],
+    'field__media__icon' => [
+      'base hook' => 'field',
+    ],
   ];
 }
 

@@ -47,7 +47,10 @@ class IconMediaSource extends MediaSourceBase {
         return $media->get('field_icon_title')->value ?: $media->get('name')->value;
 
       case 'thumbnail_uri':
-        // For icons, we don't need a thumbnail file since we render the icon directly
+        $icon_name = $media->get('field_fontawesome_name')->value;
+        if ($icon_name) {
+          return '/themes/contrib/atomic/node_modules/@yalesites-org/component-library-twig/dist/icons.svg#' . $icon_name;
+        }
         return NULL;
 
       default:

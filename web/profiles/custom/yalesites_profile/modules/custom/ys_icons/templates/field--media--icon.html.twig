@@ -1,0 +1,59 @@
+{#
+/**
+ * @file
+ * Theme override for icon media fields.
+ * 
+ * This handles when icon media entities are displayed and their fields
+ * need to be rendered (like in form previews).
+ */
+#}
+<div{{ attributes.addClass(classes, 'field', 'field--name-' ~ field_name|clean_class, 'field--type-' ~ field_type|clean_class, 'field--label-' ~ label_display|clean_class) }}>
+  {% if label_hidden %}
+    {% if multiple %}
+      <div class="field__items">
+    {% endif %}
+    {% for item in items %}
+      <div class="field__item">
+        {% if field_name == 'field_fontawesome_name' %}
+          {# Render icon instead of text for fontawesome name field #}
+          <div class="media-icon-field-preview">
+            <svg class="icon-field-svg" width="60" height="60" viewBox="0 0 512 512" aria-hidden="true">
+              <use href="#{{ item.content['#context'].value }}"></use>
+            </svg>
+            <div class="icon-field-name">{{ item.content['#context'].value }}</div>
+          </div>
+        {% else %}
+          {# Normal field rendering for other fields #}
+          {{ item.content }}
+        {% endif %}
+      </div>
+    {% endfor %}
+    {% if multiple %}
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="field__label">{{ label }}</div>
+    {% if multiple %}
+      <div class="field__items">
+    {% endif %}
+    {% for item in items %}
+      <div class="field__item">
+        {% if field_name == 'field_fontawesome_name' %}
+          {# Render icon instead of text for fontawesome name field #}
+          <div class="media-icon-field-preview">
+            <svg class="icon-field-svg" width="60" height="60" viewBox="0 0 512 512" aria-hidden="true">
+              <use href="#{{ item.content['#context'].value }}"></use>
+            </svg>
+            <div class="icon-field-name">{{ item.content['#context'].value }}</div>
+          </div>
+        {% else %}
+          {# Normal field rendering for other fields #}
+          {{ item.content }}
+        {% endif %}
+      </div>
+    {% endfor %}
+    {% if multiple %}
+      </div>
+    {% endif %}
+  {% endif %}
+</div>
