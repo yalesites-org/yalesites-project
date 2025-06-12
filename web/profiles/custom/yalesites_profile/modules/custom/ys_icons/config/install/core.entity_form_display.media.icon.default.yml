@@ -1,0 +1,50 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.media.icon.field_fontawesome_name
+    - field.field.media.icon.field_icon_description
+    - field.field.media.icon.field_icon_title
+    - media.type.icon
+id: media.icon.default
+targetEntityType: media
+bundle: icon
+mode: default
+content:
+  field_fontawesome_name:
+    type: string_textfield
+    weight: 1
+    region: content
+    settings:
+      size: 60
+      placeholder: 'e.g., home, user, star'
+    third_party_settings: {  }
+  field_icon_description:
+    type: text_textarea
+    weight: 3
+    region: content
+    settings:
+      rows: 4
+      placeholder: 'Detailed description for screen readers'
+    third_party_settings: {  }
+  field_icon_title:
+    type: string_textfield
+    weight: 2
+    region: content
+    settings:
+      size: 60
+      placeholder: 'Short accessible title'
+    third_party_settings: {  }
+  name:
+    type: string_textfield
+    weight: 0
+    region: content
+    settings:
+      size: 60
+      placeholder: 'User-friendly name for the icon'
+    third_party_settings: {  }
+hidden:
+  created: true
+  path: true
+  status: true
+  uid: true

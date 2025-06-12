@@ -1,0 +1,16 @@
+administer icon media:
+  title: 'Administer icon media'
+  description: 'Create, edit, and delete icon media entities'
+  restrict access: true
+
+create icon media:
+  title: 'Create icon media'
+  description: 'Create new icon media entities'
+
+edit icon media:
+  title: 'Edit icon media'
+  description: 'Edit existing icon media entities'
+
+delete icon media:
+  title: 'Delete icon media'
+  description: 'Delete icon media entities'
