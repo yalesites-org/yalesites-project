@@ -228,6 +228,68 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#default_value' => $yaleConfig->get('taxonomy')['custom_vocab_name'] ?? 'Custom Vocab',
     ];
 
+    $form['font_pairing'] = [
+      '#type' => 'radios',
+      '#options' => [
+        'yalenew' => $this->t('YaleNew (YaleNew for headings, Mallory for paragraph text)'),
+        'mallory' => $this->t('Mallory (Mallory for headings, Mallory for paragraph text)'),
+      ],
+      '#description' => $this->t('This font pairing will apply site-wide and affect all heading levels (h1-h6)'),
+      '#title' => $this->t('Font Pairing'),
+      '#default_value' => $yaleConfig->get('font_pairing') ?? 'yalenew',
+      '#prefix' => '<div class="font-pairing-selector">',
+      '#suffix' => '</div>',
+    ];
+
+    // Add font preview section.
+    $form['font_preview'] = [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => ['font-preview-container'],
+      ],
+      '#attached' => [
+        'library' => ['ys_core/font_preview'],
+      ],
+      'yalenew' => [
+        '#type' => 'container',
+        '#attributes' => [
+          'class' => ['font-preview', 'font-preview-yalenew'],
+          'data-font-pairing' => 'yalenew',
+        ],
+        'heading' => [
+          '#type' => 'html_tag',
+          '#tag' => 'h2',
+          '#value' => $this->t('YaleNew Heading Sample'),
+          '#attributes' => ['class' => ['preview-heading']],
+        ],
+        'text' => [
+          '#type' => 'html_tag',
+          '#tag' => 'p',
+          '#value' => $this->t('This is a sample paragraph in Mallory.'),
+          '#attributes' => ['class' => ['preview-text']],
+        ],
+      ],
+      'mallory' => [
+        '#type' => 'container',
+        '#attributes' => [
+          'class' => ['font-preview', 'font-preview-mallory'],
+          'data-font-pairing' => 'mallory',
+        ],
+        'heading' => [
+          '#type' => 'html_tag',
+          '#tag' => 'h2',
+          '#value' => $this->t('Mallory Heading Sample'),
+          '#attributes' => ['class' => ['preview-heading']],
+        ],
+        'text' => [
+          '#type' => 'html_tag',
+          '#tag' => 'p',
+          '#value' => $this->t('This is a sample paragraph in Mallory.'),
+          '#attributes' => ['class' => ['preview-text']],
+        ],
+      ],
+    ];
+
     $form['teaser_image_fallback'] = [
       '#type' => 'media_library',
       '#allowed_bundles' => ['image'],
@@ -324,6 +386,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       ->set('taxonomy.custom_vocab_name', $form_state->getValue('custom_vocab_name'))
       ->set('image_fallback.teaser', $form_state->getValue('teaser_image_fallback'))
       ->set('custom_favicon', $form_state->getValue('favicon'))
+      ->set('font_pairing', $form_state->getValue('font_pairing'))
       ->save();
     $this->configFactory->getEditable('google_analytics.settings')
       ->set('account', $form_state->getValue('google_analytics_id'))
