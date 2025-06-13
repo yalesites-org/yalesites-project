@@ -61,6 +61,7 @@ dependencies:
   module:
     - block_content
     - book
+    - coffee
     - content_moderation
     - contextual
     - editoria11y
@@ -87,6 +88,7 @@ weight: -7
 is_admin: null
 permissions:
   - 'access block library'
+  - 'access coffee'
   - 'access content overview'
   - 'access contextual links'
   - 'access files overview'
