@@ -1,0 +1,11 @@
+uuid: 46861bbc-4067-4fa2-8fe1-9a6c3eade39c
+langcode: en
+status: true
+dependencies: {  }
+machine: live
+description: null
+name: Production
+weight: -10
+url: 'https://live-yalesites-platform.pantheonsite.io'
+fg_color: '#000000'
+bg_color: '#ff6161'

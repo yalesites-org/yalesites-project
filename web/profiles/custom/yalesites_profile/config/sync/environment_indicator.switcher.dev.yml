@@ -1,0 +1,11 @@
+uuid: 9d9b8eb3-67fe-4054-94cb-5e32a83c1e46
+langcode: en
+status: true
+dependencies: {  }
+machine: dev
+description: null
+name: Dev
+weight: -10
+url: 'https://dev-yalesites-platform.pantheonsite.io'
+fg_color: '#000000'
+bg_color: '#60d123'
