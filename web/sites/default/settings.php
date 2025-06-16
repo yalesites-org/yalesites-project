@@ -1,16 +1,14 @@
 <?php
 
 /**
- * @file
  * Load services definition file.
  */
-
 $settings['container_yamls'][] = __DIR__ . '/services.yml';
 
 /**
  * Include the Pantheon-specific settings file.
  *
- * N.b. The settings.pantheon.php file makes some changes
+ * n.b. The settings.pantheon.php file makes some changes
  *      that affect all environments that this site
  *      exists in.  Always include this file, even in
  *      a local development environment, to ensure that
@@ -23,7 +21,7 @@ include __DIR__ . "/settings.pantheon.php";
  * work better, but will also raise a warning when you
  * install Drupal.
  *
- * Https://www.drupal.org/project/drupal/issues/3091285
+ * https://www.drupal.org/project/drupal/issues/3091285
  */
 // $settings['skip_permissions_hardening'] = TRUE;
 // Config split for production environments.
