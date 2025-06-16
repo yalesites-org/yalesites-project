@@ -134,6 +134,11 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
 
     $delegatable_roles = $delegatable_roles->getAssignableRoles($account);
     $form['roles']['#options'] = $delegatable_roles;
+
+    // Hide the email field since CAS users get email from LDAP.
+    if (isset($form['email_hostname'])) {
+      $form['email_hostname']['#access'] = FALSE;
+    }
   }
 
   // Load custom library.
