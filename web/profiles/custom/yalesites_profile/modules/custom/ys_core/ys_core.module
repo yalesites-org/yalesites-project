@@ -904,7 +904,7 @@ function ys_core_menu_local_actions_alter(&$local_actions) {
 
   // Only affect the user admin page where the user creation actions appear.
   if ($route_name === 'entity.user.collection') {
-    // Disable caching for local actions on this page to prevent role-based caching issues.
+    // Disable caching for local actions on this page to prevent aching issues.
     \Drupal::service('plugin.manager.menu.local_action')->useCaches(FALSE);
 
     $current_user = \Drupal::currentUser();
