@@ -56,3 +56,8 @@
   line-height: 1.4;
   margin: 0;
 }
+
+/* Dark mode */
+.gin--dark-mode .font-preview {
+  background: var(--gin-bg-input);
+}
