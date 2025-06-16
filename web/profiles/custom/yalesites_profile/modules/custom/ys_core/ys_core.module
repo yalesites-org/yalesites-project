@@ -594,6 +594,11 @@ function ys_core_get_block_type(&$form, &$form_state) {
 function ys_core_preprocess_html(&$variables) {
   // Adds the content type in a class to support specific content type styling.
   $variables['attributes']['class'][] = isset($variables['node_type']) ? "ys-content-type-{$variables['node_type']}" : NULL;
+
+  // Add font pairing data attribute to body tag.
+  $config = \Drupal::config('ys_core.site');
+  $font_pairing = $config->get('font_pairing') ?? 'yalenew';
+  $variables['attributes']['data-font-pairing'] = $font_pairing;
 }
 
 /**

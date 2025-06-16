@@ -34,3 +34,13 @@ grand_hero_form:
     - core/drupal.states
     - core/jquery
     - core/once
+font_preview:
+  css:
+    theme:
+      css/font-preview.css: {}
+  js:
+    js/font-preview.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/once
