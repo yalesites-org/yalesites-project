@@ -256,13 +256,6 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     ];
 
     $is_user_1 = ($this->currentUser->id() == 1);
-    $form['cas_protection_default'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Enable CAS protection by default'),
-      '#description' => $this->t('Will default CAS protection option on all new content to enabled.'),
-      '#default_value' => $yaleConfig->get('cas_protection_default') ?? FALSE,
-      '#access' => $is_user_1,
-    ];
     $form['cas_app_name'] = [
       '#type' => 'textfield',
       '#title' => $this->t('CAS Application Name'),
@@ -340,7 +333,6 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       ->set('taxonomy.custom_vocab_name', $form_state->getValue('custom_vocab_name'))
       ->set('image_fallback.teaser', $form_state->getValue('teaser_image_fallback'))
       ->set('custom_favicon', $form_state->getValue('favicon'))
-      ->set('cas_protection_default', $form_state->getValue('cas_protection_default') ?? FALSE)
       ->set('cas_app_name', $form_state->getValue('cas_app_name') ?? 'yalesites')
       ->save();
     $this->configFactory->getEditable('google_analytics.settings')
