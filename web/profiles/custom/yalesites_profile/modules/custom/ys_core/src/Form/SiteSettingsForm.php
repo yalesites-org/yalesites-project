@@ -322,20 +322,21 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#use_favicon_preview' => TRUE,
     ];
 
-    if (ys_core_allow_secret_items_user_1($this->currentUser)) {
-      $form['cas_protection_default'] = [
-        '#type' => 'checkbox',
-        '#title' => $this->t('Enable CAS protection by default'),
-        '#description' => $this->t('Will default CAS protection option on all new content to enabled.'),
-        '#default_value' => $yaleConfig->get('cas_protection_default') ?? FALSE,
-      ];
-      $form['cas_app_name'] = [
-        '#type' => 'textfield',
-        '#title' => $this->t('CAS Application Name'),
-        '#description' => $this->t('The name of the application to be used in CAS login.'),
-        '#default_value' => ($yaleConfig->get('cas_app_name')) ? $yaleConfig->get('cas_app_name') : 'yalesites',
-      ];
-    }
+    $is_user_1 = ($this->currentUser->id() == 1);
+    $form['cas_protection_default'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Enable CAS protection by default'),
+      '#description' => $this->t('Will default CAS protection option on all new content to enabled.'),
+      '#default_value' => $yaleConfig->get('cas_protection_default') ?? FALSE,
+      '#access' => $is_user_1,
+    ];
+    $form['cas_app_name'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('CAS Application Name'),
+      '#description' => $this->t('The name of the application to be used in CAS login.'),
+      '#default_value' => ($yaleConfig->get('cas_app_name')) ? $yaleConfig->get('cas_app_name') : 'yalesites',
+      '#access' => $is_user_1,
+    ];
 
     return parent::buildForm($form, $form_state);
   }
