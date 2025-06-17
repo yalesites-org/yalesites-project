@@ -323,13 +323,6 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     ];
 
     $is_user_1 = ($this->currentUser->id() == 1);
-    $form['cas_protection_default'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Enable CAS protection by default'),
-      '#description' => $this->t('Will default CAS protection option on all new content to enabled.'),
-      '#default_value' => $yaleConfig->get('cas_protection_default') ?? FALSE,
-      '#access' => $is_user_1,
-    ];
     $form['cas_app_name'] = [
       '#type' => 'textfield',
       '#title' => $this->t('CAS Application Name'),
