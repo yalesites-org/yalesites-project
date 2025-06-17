@@ -14,6 +14,9 @@ global:
     node_modules/@yalesites-org/component-library-twig/dist/js/link-treatment.js: {}
   dependencies:
     - core/drupal
+disable-menu:
+  js:
+    js/disable-menu.js: {}
 accordion:
   js:
     node_modules/@yalesites-org/component-library-twig/dist/js/02-molecules/accordion/yds-accordion.js: {}

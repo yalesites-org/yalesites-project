@@ -8,6 +8,7 @@ libraries:
   - atomic/global
   - atomic/layout-builder
   - atomic/fontawesome
+  - atomic/disable-menu
 
 ckeditor5-stylesheets:
   - css/ckeditor5.css
