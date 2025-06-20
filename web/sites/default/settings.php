@@ -3,6 +3,7 @@
 /**
  * Load services definition file.
  */
+
 $settings['container_yamls'][] = __DIR__ . '/services.yml';
 
 /**
@@ -50,3 +51,44 @@ if (isset($_ENV['PANTHEON_SITE_NAME'])) {
 
 // Set the install profile as the source of site config.
 $settings['config_sync_directory'] = 'profiles/custom/yalesites_profile/config/sync';
+
+/**
+ * Environment Indicator.
+ */
+$env = $_ENV['PANTHEON_ENVIRONMENT'] ?? 'lando';
+$env_options = [
+  'lando' => [
+    'bg_color' => '#94bdff',
+    'fg_color' => '#000000',
+    'name' => 'Local Environment',
+  ],
+  'dev' => [
+    'bg_color' => '#3b82f6',
+    'fg_color' => '#ffffff',
+    'name' => 'Development - Build & Test. Make big changes here, then request go-live.',
+  ],
+  'test' => [
+    'bg_color' => '#8b5cf6',
+    'fg_color' => '#ffffff',
+    'name' => 'YaleSites Team Testing Only.',
+  ],
+  'live' => [
+    'bg_color' => '#22c55e',
+    'fg_color' => '#000000',
+    'name' => 'Live Site - Published. Make small edits and add content here.',
+  ],
+  'multidev' => [
+    'bg_color' => '#e1821f',
+    'fg_color' => '#000000',
+    'name' => 'Multidev - ' . $env,
+  ],
+];
+$env_key = isset($env_options[$env]) ? $env : 'multidev';
+$config['environment_indicator.indicator'] = $env_options[$env_key];
+if ($env_key === 'lando') {
+  $git_head = file(DRUPAL_ROOT . '/../.git/HEAD');
+  $ref = explode('/', $git_head[0]);
+  $branch_parts = array_slice($ref, 2);
+  $branch_name = implode('/', $branch_parts);
+  $config['environment_indicator.indicator']['name'] .= " - $branch_name";
+}
