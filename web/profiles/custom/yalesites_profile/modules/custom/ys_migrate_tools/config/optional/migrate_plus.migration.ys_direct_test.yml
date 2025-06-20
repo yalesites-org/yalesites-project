@@ -1,0 +1,34 @@
+id: ys_direct_test
+label: 'Direct Field Processing Test'
+migration_group: ys_field_tests
+
+source:
+  plugin: embedded_data
+  data_rows:
+    - id: test_1
+      type: text
+      info: 'Direct Test Block'
+      fields:
+        field_text:
+          value: '<p>Direct test content</p>'
+          format: 'basic_html'
+        field_style_variation: 'default'
+  ids:
+    id:
+      type: string
+
+process:
+  type: type
+  info: info
+  # Use ProcessBlockFields with embedded data format
+  '@processed_fields':
+    plugin: process_block_fields
+    source: fields
+  field_text:
+    plugin: extract
+    source: '@processed_fields'
+    index:
+      - field_text
+
+destination:
+  plugin: 'entity:block_content'

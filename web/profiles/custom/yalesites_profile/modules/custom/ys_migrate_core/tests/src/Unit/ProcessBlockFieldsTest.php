@@ -300,7 +300,20 @@ class ProcessBlockFieldsTest extends UnitTestCase {
 
     $migrate_executable = $this->createMock(MigrateExecutableInterface::class);
 
-    $result = $this->plugin->transform([], $migrate_executable, $row, 'test_property');
+    // Pass the field data as the value parameter
+    $field_data = [
+      'field_heading' => 'Test Accordion',
+      'field_accordion_items' => [
+        [
+          'type' => 'accordion_item',
+          'fields' => [
+            'field_heading' => 'Test Item',
+          ],
+        ],
+      ],
+    ];
+    
+    $result = $this->plugin->transform($field_data, $migrate_executable, $row, 'test_property');
 
     $this->assertIsArray($result);
     $this->assertArrayHasKey('field_heading', $result);

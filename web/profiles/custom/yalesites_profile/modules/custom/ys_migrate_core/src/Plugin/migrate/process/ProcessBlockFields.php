@@ -80,11 +80,29 @@ class ProcessBlockFields extends ProcessPluginBase implements ContainerFactoryPl
    */
   public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
     $block_type = $row->getSourceProperty('type');
-    $fields = $row->getSourceProperty('fields');
+    
+    
+    // Handle different input formats:
+    // 1. Full block data: {field_text: {...}, field_style_variation: "..."}
+    // 2. Nested fields array: {fields: {field_name: value}}
+    // 3. Single field value: {value: "...", format: "..."}
+    
+    if (is_array($value) && isset($value['fields'])) {
+      // Embedded data format: {fields: {field_name: value}}
+      $fields = $value['fields'];
+    } elseif (is_array($value) && isset($value['value'])) {
+      // Single field value format - this shouldn't happen but handle gracefully
+      \Drupal::logger('ys_migrate_core')->warning('ProcessBlockFields received single field value instead of field array');
+      return $value;
+    } else {
+      // Direct format: {field_name: value} 
+      $fields = $value;
+    }
 
     if (empty($block_type) || empty($fields)) {
       return $value;
     }
+    
 
     // Get field definitions for this block type
     $field_definitions = $this->entityFieldManager->getFieldDefinitions('block_content', $block_type);

@@ -88,7 +88,11 @@ class D10BlockContent extends SqlBase {
     if ($block) {
       // Convert the block entity to an array representation
       $block_data = $this->entityToArray($block);
+      
+      
       $row->setSourceProperty('block_data', $block_data);
+    } else {
+      \Drupal::logger('ys_migrate_tools')->error('Could not load block @id', ['@id' => $block_id]);
     }
     
     return parent::prepareRow($row);
@@ -115,7 +119,11 @@ class D10BlockContent extends SqlBase {
       
       $field_value = $block->get($field_name);
       if (!$field_value->isEmpty()) {
-        $data[$field_name] = $this->extractFieldValue($field_value);
+        $extracted_value = $this->extractFieldValue($field_value);
+        // Only include non-empty extracted values
+        if (!empty($extracted_value) && $extracted_value !== ['markup' => '']) {
+          $data[$field_name] = $extracted_value;
+        }
       }
     }
     

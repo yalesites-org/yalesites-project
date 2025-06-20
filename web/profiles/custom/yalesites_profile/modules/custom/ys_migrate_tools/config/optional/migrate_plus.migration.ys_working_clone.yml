@@ -1,5 +1,5 @@
-id: ys_clone_existing_blocks
-label: 'Clone Existing Blocks with Field Processing'
+id: ys_working_clone
+label: 'Working Clone Test'
 migration_group: ys_field_tests
 
 source:
@@ -7,7 +7,7 @@ source:
   block_types:
     - text
   constants:
-    clone_prefix: '[CLONED]'
+    clone_prefix: '[WORKING]'
 
 process:
   # Basic properties
@@ -21,7 +21,7 @@ process:
     delimiter: ' '
   reusable: reusable
   
-  # Direct field mapping for testing
+  # Direct field mapping without ProcessBlockFields
   field_text: block_data/field_text
   field_style_variation: block_data/field_style_variation
 
