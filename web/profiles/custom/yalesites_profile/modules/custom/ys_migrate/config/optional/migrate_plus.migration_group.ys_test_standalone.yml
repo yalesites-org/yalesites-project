@@ -1,0 +1,12 @@
+id: ys_test_standalone
+label: 'YaleSite Test Migrations (Standalone)'
+description: 'Migration group for testing block creation functionality without external database requirements.'
+langcode: en
+status: true
+dependencies: {  }
+
+# No source type needed for embedded data migrations
+source_type: ''
+
+# No shared configuration needed for test migrations
+shared_configuration: {}

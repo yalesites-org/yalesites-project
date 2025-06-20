@@ -1,0 +1,28 @@
+id: ys_test_text_block
+label: 'Test Text Block Creation'
+migration_group: ys_field_tests
+
+source:
+  plugin: embedded_data
+  data_rows:
+    - id: 'test_text_1'
+      type: 'text'
+      info: 'Test Text Block 1'
+      reusable: 0
+      field_text_value: '<p>This is a test text block created via embedded data migration.</p>'
+      field_text_format: 'basic_html'
+      field_style_variation: 'default'
+  ids:
+    id:
+      type: string
+
+process:
+  type: type
+  info: info
+  reusable: reusable
+  field_text/value: field_text_value
+  field_text/format: field_text_format
+  field_style_variation: field_style_variation
+
+destination:
+  plugin: 'entity:block_content'

@@ -170,6 +170,71 @@ process:
   type: type
   info: info
   reusable: reusable
+  # Use the ProcessBlockFields plugin to handle all field processing
+  '@fields_processed':
+    plugin: process_block_fields
+    source: fields
+  # Extract individual fields from the processed result
+  field_text:
+    plugin: extract
+    source: '@fields_processed'
+    index:
+      - field_text
+  field_heading:
+    plugin: extract
+    source: '@fields_processed'
+    index:
+      - field_heading
+  field_style_variation:
+    plugin: extract
+    source: '@fields_processed'
+    index:
+      - field_style_variation
+  field_style_color:
+    plugin: extract
+    source: '@fields_processed'
+    index:
+      - field_style_color
+  field_style_alignment:
+    plugin: extract
+    source: '@fields_processed'
+    index:
+      - field_style_alignment
+  field_accordion_items:
+    plugin: extract
+    source: '@fields_processed'
+    index:
+      - field_accordion_items
+  field_cards:
+    plugin: extract
+    source: '@fields_processed'
+    index:
+      - field_cards
+  field_gallery_items:
+    plugin: extract
+    source: '@fields_processed'
+    index:
+      - field_gallery_items
+  field_facts_items:
+    plugin: extract
+    source: '@fields_processed'
+    index:
+      - field_facts_items
+  field_tiles:
+    plugin: extract
+    source: '@fields_processed'
+    index:
+      - field_tiles
+  field_callout:
+    plugin: extract
+    source: '@fields_processed'
+    index:
+      - field_callout
+  field_button_link:
+    plugin: extract
+    source: '@fields_processed'
+    index:
+      - field_button_link
 
 destination:
-  plugin: 'block_content_with_fields'
+  plugin: 'entity:block_content'

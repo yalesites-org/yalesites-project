@@ -1,0 +1,27 @@
+id: ys_simple_clone_test
+label: 'Simple Clone Test (No Field Processing)'
+migration_group: ys_field_tests
+
+source:
+  plugin: d10_block_content
+  block_types:
+    - text
+  constants:
+    clone_prefix: '[SIMPLE CLONE]'
+
+process:
+  # Basic properties only
+  original_id: id
+  type: type
+  info:
+    plugin: concat
+    source:
+      - constants/clone_prefix
+      - info
+    delimiter: ' '
+  reusable: reusable
+
+destination:
+  plugin: 'entity:block_content'
+
+migration_dependencies: {}

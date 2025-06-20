@@ -1,0 +1,10 @@
+name: YaleSites Migrate Core
+type: module
+description: Core migration utilities for block and content processing, independent of source system.
+core_version_requirement: '^9 || ^10'
+package: YaleSites
+dependencies:
+  - migrate
+  - migrate_plus
+  - block_content
+  - paragraphs

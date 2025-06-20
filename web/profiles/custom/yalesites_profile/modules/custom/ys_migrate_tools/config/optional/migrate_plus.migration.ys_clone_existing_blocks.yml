@@ -1,0 +1,54 @@
+id: ys_clone_existing_blocks
+label: 'Clone Existing Blocks with Field Processing'
+migration_group: ys_field_tests
+
+source:
+  plugin: d10_block_content
+  block_types:
+    - text
+  constants:
+    clone_prefix: '[CLONED]'
+
+process:
+  # Basic properties
+  original_id: id
+  type: type
+  info:
+    plugin: concat
+    source:
+      - constants/clone_prefix
+      - info
+    delimiter: ' '
+  reusable: reusable
+  
+  # Process fields using our plugin
+  '@processed_fields':
+    plugin: process_block_fields
+    source: block_data
+  
+  # Extract processed fields
+  field_text:
+    plugin: extract
+    source: '@processed_fields'
+    index:
+      - field_text
+  field_heading:
+    plugin: extract
+    source: '@processed_fields'
+    index:
+      - field_heading
+  field_cards:
+    plugin: extract
+    source: '@processed_fields'
+    index:
+      - field_cards
+  field_cta_banner:
+    plugin: extract
+    source: '@processed_fields'
+    index:
+      - field_cta_banner
+
+destination:
+  plugin: 'entity:block_content'
+
+migration_dependencies: {}

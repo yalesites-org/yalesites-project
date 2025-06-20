@@ -1,0 +1,29 @@
+id: ys_simple_blocks
+label: 'Simple Block Field Testing Migration'
+migration_group: ys_test_standalone
+
+source:
+  plugin: embedded_data
+  data_rows:
+    # Simple text block only
+    - id: simple_text_test
+      type: text
+      info: 'Simple Text Test Block'
+      reusable: 0
+      fields:
+        field_text:
+          value: '<p>This is a simple test to validate basic field processing works.</p>'
+          format: 'basic_html'
+        field_style_variation: 'default'
+
+process:
+  type: type
+  info: info
+  reusable: reusable
+  # Direct field mapping without complex processing
+  field_text/value: fields/field_text/value
+  field_text/format: fields/field_text/format
+  field_style_variation: fields/field_style_variation
+
+destination:
+  plugin: 'entity:block_content'

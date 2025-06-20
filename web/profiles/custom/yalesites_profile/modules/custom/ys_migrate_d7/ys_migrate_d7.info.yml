@@ -1,0 +1,8 @@
+name: YaleSites Migrate D7
+type: module
+description: Drupal 7 to Drupal 10 migration implementations for YaleSites.
+core_version_requirement: '^9 || ^10'
+package: YaleSites
+dependencies:
+  - migrate_drupal
+  - ys_migrate_core

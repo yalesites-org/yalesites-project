@@ -1,0 +1,12 @@
+id: ys_field_tests
+label: 'YaleSite Field Processing Tests'
+description: 'Test migrations for validating field processing functionality using embedded data.'
+langcode: en
+status: true
+dependencies: {  }
+
+# No source type needed for embedded data
+source_type: ''
+
+# No shared configuration - each migration is self-contained
+shared_configuration: {}

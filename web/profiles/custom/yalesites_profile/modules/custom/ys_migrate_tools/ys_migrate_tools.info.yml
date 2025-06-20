@@ -1,0 +1,7 @@
+name: YaleSites Migrate Tools
+type: module
+description: Development and testing tools for YaleSites migrations, including content cloning and test migrations.
+core_version_requirement: '^9 || ^10'
+package: YaleSites
+dependencies:
+  - ys_migrate_core
