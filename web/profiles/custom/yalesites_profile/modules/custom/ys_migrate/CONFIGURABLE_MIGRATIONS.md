@@ -93,20 +93,116 @@ field_media:
 ```
 
 #### Paragraph Fields (Complex)
+
+Paragraph fields allow you to create repeatable content structures. Each paragraph must specify its `type` and `fields`.
+
+**Accordion Items (with nested text paragraphs):**
 ```yaml
 field_accordion_items:
   - type: accordion_item
     fields:
-      field_heading: 'Question 1'
-      field_text:
-        value: '<p>Answer 1</p>'
-        format: 'basic_html'
+      field_heading: 'What services do you offer?'
+      field_content:
+        - type: text
+          fields:
+            field_text:
+              value: '<p>We offer web development, design, and consulting services.</p>'
+              format: 'basic_html'
   - type: accordion_item
     fields:
-      field_heading: 'Question 2'
-      field_text:
-        value: '<p>Answer 2</p>'
-        format: 'basic_html'
+      field_heading: 'How can I get started?'
+      field_content:
+        - type: text
+          fields:
+            field_text:
+              value: '<p>Contact us today for a free consultation.</p>'
+              format: 'basic_html'
+```
+
+**Custom Cards:**
+```yaml
+field_cards:
+  - type: custom_card
+    fields:
+      field_heading: 'Web Development'
+      field_text: 'Professional website development services.'
+      field_image: 'web-icon.jpg'  # Media filename or ID
+      field_link:
+        uri: 'https://example.com/web-dev'
+        title: 'Learn More'
+  - type: custom_card
+    fields:
+      field_heading: 'Design Services'
+      field_text: 'Creative design solutions.'
+      field_image: 'design-icon.jpg'
+      field_link:
+        uri: 'https://example.com/design'
+        title: 'View Portfolio'
+```
+
+**Gallery Items:**
+```yaml
+field_gallery_items:
+  - type: gallery_item
+    fields:
+      field_media: 'campus-photo-1.jpg'
+      field_heading: 'Campus Quad'
+      field_text: 'The heart of campus life.'
+  - type: gallery_item
+    fields:
+      field_media: 'campus-photo-2.jpg'
+      field_heading: 'Library'
+      field_text: 'Our research library.'
+```
+
+**Tiles with Styling:**
+```yaml
+field_tiles:
+  - type: tile
+    fields:
+      field_heading: 'Excellence'
+      field_text: 'Committed to quality.'
+      field_media: 'excellence-icon.jpg'
+      field_style_color: 'blue'
+      field_link:
+        uri: 'https://example.com/about'
+        title: 'Learn More'
+```
+
+**Facts/Statistics:**
+```yaml
+field_facts_items:
+  - type: facts_item
+    fields:
+      field_heading: '15,000+'
+      field_text: 'Students enrolled'
+  - type: facts_item
+    fields:
+      field_heading: '200+'
+      field_text: 'Faculty members'
+```
+
+**Tabs with Nested Content:**
+```yaml
+field_tabs:
+  - type: tab
+    fields:
+      field_heading: 'Overview'
+      field_content:
+        - type: text
+          fields:
+            field_text:
+              value: '<p>General information about our program.</p>'
+              format: 'basic_html'
+  - type: tab
+    fields:
+      field_heading: 'Details'
+      field_content:
+        - type: text
+          fields:
+            field_text:
+              value: '<p>Detailed program requirements and curriculum.</p>'
+              format: 'basic_html'
 ```
 
 ## Layout Builder Migration
@@ -253,6 +349,34 @@ sections:
             label_display: true
 ```
 
+## Available Paragraph Types
+
+The following paragraph types can be used within block fields:
+
+### Content Paragraphs
+- `text` - Basic text content with formatting
+- `accordion_item` - Collapsible content with heading and nested text
+- `tab` - Tab content with heading and nested text
+- `callout_item` - Highlighted callout with heading, text, and link
+
+### Media Paragraphs  
+- `gallery_item` - Image with optional heading and caption
+- `media_grid_item` - Media reference for grid layouts
+- `tile` - Content tile with image, text, and styling options
+
+### Interactive Paragraphs
+- `custom_card` - Rich card with image, heading, text, and link
+- `facts_item` - Statistic display with heading and description
+- `link_list` - Collection of links
+- `cta_link` - Call-to-action link
+
+### Field Patterns
+- **Headings**: Most paragraphs have `field_heading` (max 40-80 chars)
+- **Text Content**: `field_text` for descriptions and content
+- **Media**: `field_media` or `field_image` for media references
+- **Links**: `field_link` for CTAs and navigation
+- **Styling**: `field_style_color` for theme/color options
+
 ## Available Block Types
 
 The system supports all 30+ block types:
@@ -346,6 +470,13 @@ lando drush migrate-import my_migration
 - Verify layout plugin exists
 - Check region names match layout definition
 - Ensure all referenced blocks exist
+
+**Paragraph creation errors**
+- Check paragraph type exists and is enabled
+- Verify field names match paragraph bundle definitions
+- Ensure nested paragraph types are valid
+- Check media entities exist before referencing them
+- Validate required fields are provided
 
 ### Debugging
 

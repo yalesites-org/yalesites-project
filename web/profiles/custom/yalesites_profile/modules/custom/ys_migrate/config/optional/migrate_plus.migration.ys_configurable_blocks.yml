@@ -28,7 +28,7 @@ source:
           format: 'basic_html'
         field_style_alignment: 'center'
 
-    # Accordion block example
+    # Accordion block example with nested text paragraphs
     - id: sample_accordion_block
       type: accordion
       info: 'FAQ Accordion'
@@ -40,15 +40,21 @@ source:
           - type: accordion_item
             fields:
               field_heading: 'What is this website about?'
-              field_text:
-                value: '<p>This website provides information about our services.</p>'
-                format: 'basic_html'
+              field_content:
+                - type: text
+                  fields:
+                    field_text:
+                      value: '<p>This website provides information about our services and mission.</p>'
+                      format: 'basic_html'
           - type: accordion_item
             fields:
               field_heading: 'How can I contact you?'
-              field_text:
-                value: '<p>You can reach us at contact@example.com</p>'
-                format: 'basic_html'
+              field_content:
+                - type: text
+                  fields:
+                    field_text:
+                      value: '<p>You can reach us at contact@example.com or call (203) 432-1234.</p>'
+                      format: 'basic_html'
 
     # Callout block example
     - id: sample_callout_block
@@ -75,6 +81,111 @@ source:
         field_button_link:
           uri: 'https://example.com/contact'
           title: 'Contact Us Today'
+
+    # Custom Cards block with multiple card paragraphs
+    - id: sample_custom_cards_block
+      type: custom_cards
+      info: 'Service Cards'
+      reusable: 0
+      fields:
+        field_heading: 'Our Services'
+        field_cards:
+          - type: custom_card
+            fields:
+              field_heading: 'Web Development'
+              field_text: 'Professional website development and maintenance services.'
+              field_image: 'web-dev-icon.jpg'
+              field_link:
+                uri: 'https://example.com/web-development'
+                title: 'Learn More'
+          - type: custom_card
+            fields:
+              field_heading: 'Design Services'
+              field_text: 'Creative design solutions for print and digital media.'
+              field_image: 'design-icon.jpg'
+              field_link:
+                uri: 'https://example.com/design'
+                title: 'View Portfolio'
+          - type: custom_card
+            fields:
+              field_heading: 'Consulting'
+              field_text: 'Strategic technology consulting for your business needs.'
+              field_image: 'consulting-icon.jpg'
+              field_link:
+                uri: 'https://example.com/consulting'
+                title: 'Get Started'
+
+    # Gallery block with media items
+    - id: sample_gallery_block
+      type: gallery
+      info: 'Campus Gallery'
+      reusable: 0
+      fields:
+        field_heading: 'Campus Photos'
+        field_gallery_items:
+          - type: gallery_item
+            fields:
+              field_media: 'campus-quad.jpg'
+              field_heading: 'Historic Quad'
+              field_text: 'The heart of our beautiful campus.'
+          - type: gallery_item
+            fields:
+              field_media: 'library-exterior.jpg'
+              field_heading: 'Sterling Memorial Library'
+              field_text: 'Our main research library.'
+          - type: gallery_item
+            fields:
+              field_media: 'dining-hall.jpg'
+              field_heading: 'Dining Hall'
+              field_text: 'Where students gather for meals.'
+
+    # Tiles block with styled content
+    - id: sample_tiles_block
+      type: tiles
+      info: 'Feature Tiles'
+      reusable: 0
+      fields:
+        field_heading: 'Why Choose Us'
+        field_tiles:
+          - type: tile
+            fields:
+              field_heading: 'Excellence'
+              field_text: 'Committed to the highest standards of quality.'
+              field_media: 'excellence-icon.jpg'
+              field_style_color: 'blue'
+              field_link:
+                uri: 'https://example.com/about'
+                title: 'Learn More'
+          - type: tile
+            fields:
+              field_heading: 'Innovation'
+              field_text: 'Pioneering new approaches and technologies.'
+              field_media: 'innovation-icon.jpg'
+              field_style_color: 'green'
+              field_link:
+                uri: 'https://example.com/research'
+                title: 'Our Research'
+
+    # Facts block with statistics
+    - id: sample_facts_block
+      type: facts
+      info: 'Key Statistics'
+      reusable: 0
+      fields:
+        field_heading: 'By the Numbers'
+        field_facts_items:
+          - type: facts_item
+            fields:
+              field_heading: '15,000+'
+              field_text: 'Students enrolled'
+          - type: facts_item
+            fields:
+              field_heading: '200+'
+              field_text: 'Faculty members'
+          - type: facts_item
+            fields:
+              field_heading: '50+'
+              field_text: 'Research centers'
 
 process:
   type: type

@@ -180,9 +180,95 @@ class ProcessBlockFields extends ProcessPluginBase implements ContainerFactoryPl
    * Process entity reference revisions (paragraphs).
    */
   protected function processEntityReferenceRevisions($value, $field_definition) {
-    // This would need more complex logic to create paragraph entities
-    // For now, return as-is and let the destination plugin handle it
-    return $value;
+    if (empty($value)) {
+      return [];
+    }
+
+    $target_bundles = $field_definition->getSetting('handler_settings')['target_bundles'] ?? [];
+    $paragraph_storage = $this->entityTypeManager->getStorage('paragraph');
+    $created_paragraphs = [];
+
+    // Handle single paragraph or array of paragraphs
+    $paragraphs = is_array($value) && isset($value[0]) ? $value : [$value];
+
+    foreach ($paragraphs as $paragraph_data) {
+      if (!is_array($paragraph_data) || !isset($paragraph_data['type'])) {
+        $this->logger->warning('Invalid paragraph data: @data', ['@data' => json_encode($paragraph_data)]);
+        continue;
+      }
+
+      $paragraph_type = $paragraph_data['type'];
+      $paragraph_fields = $paragraph_data['fields'] ?? [];
+
+      // Validate paragraph type is allowed
+      if (!empty($target_bundles) && !in_array($paragraph_type, $target_bundles)) {
+        $this->logger->warning('Paragraph type @type not allowed for field', ['@type' => $paragraph_type]);
+        continue;
+      }
+
+      // Create the paragraph entity
+      $paragraph = $this->createParagraph($paragraph_type, $paragraph_fields);
+      if ($paragraph) {
+        $created_paragraphs[] = [
+          'target_id' => $paragraph->id(),
+          'target_revision_id' => $paragraph->getRevisionId(),
+        ];
+      }
+    }
+
+    return $created_paragraphs;
+  }
+
+  /**
+   * Create a paragraph entity with field values.
+   */
+  protected function createParagraph($bundle, array $fields) {
+    try {
+      $paragraph_storage = $this->entityTypeManager->getStorage('paragraph');
+      
+      // Get field definitions for this paragraph type
+      $field_definitions = $this->entityFieldManager->getFieldDefinitions('paragraph', $bundle);
+      
+      // Start with basic paragraph data
+      $paragraph_data = [
+        'type' => $bundle,
+      ];
+
+      // Process each field
+      foreach ($fields as $field_name => $field_value) {
+        if (!isset($field_definitions[$field_name])) {
+          $this->logger->warning('Field @field not found for paragraph type @type', [
+            '@field' => $field_name,
+            '@type' => $bundle,
+          ]);
+          continue;
+        }
+
+        $field_definition = $field_definitions[$field_name];
+        $field_type = $field_definition->getType();
+
+        // Process field recursively (paragraphs can contain other paragraphs)
+        $paragraph_data[$field_name] = $this->processFieldValue($field_value, $field_type, $field_definition);
+      }
+
+      // Create and save the paragraph
+      $paragraph = $paragraph_storage->create($paragraph_data);
+      $paragraph->save();
+
+      $this->logger->info('Created paragraph @type with ID @id', [
+        '@type' => $bundle,
+        '@id' => $paragraph->id(),
+      ]);
+
+      return $paragraph;
+
+    } catch (\Exception $e) {
+      $this->logger->error('Failed to create paragraph @type: @error', [
+        '@type' => $bundle,
+        '@error' => $e->getMessage(),
+      ]);
+      return NULL;
+    }
   }
 
   /**
