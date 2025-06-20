@@ -1,0 +1,175 @@
+id: ys_test_blocks
+label: 'Test Block Creation Migration'
+migration_group: ys_test
+
+source:
+  plugin: block_content_source
+  blocks:
+    # Simple text block
+    - id: test_text_block
+      type: text
+      info: 'Test Text Block'
+      reusable: 0
+      fields:
+        field_text:
+          value: '<p>This is a test text block for validating basic block creation.</p>'
+          format: 'basic_html'
+        field_style_variation: 'default'
+
+    # Accordion block with multiple items and nested content
+    - id: test_accordion_block
+      type: accordion
+      info: 'Test Accordion Block'
+      reusable: 0
+      fields:
+        field_heading: 'Test FAQ Section'
+        field_style_color: 'blue'
+        field_accordion_items:
+          - type: accordion_item
+            fields:
+              field_heading: 'What is this test about?'
+              field_content:
+                - type: text
+                  fields:
+                    field_text:
+                      value: '<p>This test validates accordion creation with nested text paragraphs.</p>'
+                      format: 'basic_html'
+          - type: accordion_item
+            fields:
+              field_heading: 'How does the migration work?'
+              field_content:
+                - type: text
+                  fields:
+                    field_text:
+                      value: '<p>The migration system automatically creates paragraph entities and links them to blocks.</p>'
+                      format: 'basic_html'
+          - type: accordion_item
+            fields:
+              field_heading: 'What gets tested?'
+              field_content:
+                - type: text
+                  fields:
+                    field_text:
+                      value: '<p>We test field processing, paragraph creation, and Layout Builder integration.</p>'
+                      format: 'basic_html'
+
+    # Custom cards block
+    - id: test_custom_cards_block
+      type: custom_cards
+      info: 'Test Custom Cards Block'
+      reusable: 0
+      fields:
+        field_heading: 'Test Services'
+        field_cards:
+          - type: custom_card
+            fields:
+              field_heading: 'Migration Testing'
+              field_text: 'Comprehensive testing of migration functionality.'
+              field_link:
+                uri: 'https://example.com/testing'
+                title: 'Learn More'
+          - type: custom_card
+            fields:
+              field_heading: 'Block Creation'
+              field_text: 'Automated creation of complex block structures.'
+              field_link:
+                uri: 'https://example.com/blocks'
+                title: 'View Details'
+
+    # Gallery block for media testing
+    - id: test_gallery_block
+      type: gallery
+      info: 'Test Gallery Block'
+      reusable: 0
+      fields:
+        field_heading: 'Test Gallery'
+        field_gallery_items:
+          - type: gallery_item
+            fields:
+              field_heading: 'Test Image 1'
+              field_text: 'Caption for the first test image.'
+          - type: gallery_item
+            fields:
+              field_heading: 'Test Image 2'
+              field_text: 'Caption for the second test image.'
+
+    # Facts block for statistics
+    - id: test_facts_block
+      type: facts
+      info: 'Test Facts Block'
+      reusable: 0
+      fields:
+        field_heading: 'Test Statistics'
+        field_facts_items:
+          - type: facts_item
+            fields:
+              field_heading: '100%'
+              field_text: 'Test coverage goal'
+          - type: facts_item
+            fields:
+              field_heading: '5+'
+              field_text: 'Block types tested'
+          - type: facts_item
+            fields:
+              field_heading: '10+'
+              field_text: 'Paragraph entities created'
+
+    # Tiles block with styling
+    - id: test_tiles_block
+      type: tiles
+      info: 'Test Tiles Block'
+      reusable: 0
+      fields:
+        field_heading: 'Test Features'
+        field_tiles:
+          - type: tile
+            fields:
+              field_heading: 'Automated Testing'
+              field_text: 'Validates functionality automatically.'
+              field_style_color: 'green'
+              field_link:
+                uri: 'https://example.com/automation'
+                title: 'Explore'
+          - type: tile
+            fields:
+              field_heading: 'Comprehensive Coverage'
+              field_text: 'Tests all major block types and features.'
+              field_style_color: 'blue'
+              field_link:
+                uri: 'https://example.com/coverage'
+                title: 'Details'
+
+    # Callout block
+    - id: test_callout_block
+      type: callout
+      info: 'Test Callout Block'
+      reusable: 0
+      fields:
+        field_callout:
+          - type: callout_item
+            fields:
+              field_heading: 'Important Test Notice'
+              field_text: 'This callout validates paragraph field processing.'
+              field_link:
+                uri: 'https://example.com/notice'
+                title: 'Read More'
+        field_style_color: 'yellow'
+        field_style_alignment: 'center'
+
+    # Button link for simple testing
+    - id: test_button_block
+      type: button_link
+      info: 'Test Button Block'
+      reusable: 0
+      fields:
+        field_button_link:
+          uri: 'https://example.com/test-action'
+          title: 'Test Action Button'
+
+process:
+  type: type
+  info: info
+  reusable: reusable
+
+destination:
+  plugin: 'block_content_with_fields'

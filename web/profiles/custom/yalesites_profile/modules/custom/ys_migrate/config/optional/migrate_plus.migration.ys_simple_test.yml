@@ -1,0 +1,42 @@
+id: ys_simple_test
+label: 'Simple Test Migration'
+
+source:
+  plugin: embedded_data
+  data_rows:
+    - id: simple_text_block
+      type: text
+      info: 'Simple Text Block'
+      body:
+        - value: '<p>This is a simple test text block.</p>'
+          format: 'basic_html'
+    - id: simple_button_block  
+      type: button_link
+      info: 'Simple Button Block'
+      button_data:
+        - uri: 'https://example.com/test'
+          title: 'Test Button'
+  ids:
+    id:
+      type: string
+
+process:
+  type: type
+  info: info
+  field_text:
+    plugin: sub_process
+    source: body
+    process:
+      value: value
+      format: 
+        plugin: default_value
+        default_value: basic_html
+  field_button_link:
+    plugin: sub_process 
+    source: button_data
+    process:
+      uri: uri
+      title: title
+
+destination:
+  plugin: 'entity:block_content'

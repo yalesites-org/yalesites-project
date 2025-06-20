@@ -1,0 +1,44 @@
+id: ys_corrected_test
+label: 'Corrected Block Content Source Test'
+migration_group: ys_test
+
+source:
+  plugin: block_content_source  
+  blocks:
+    # Text block with proper field structure
+    - id: corrected_text_block
+      type: text
+      info: 'Corrected Text Block'
+      reusable: 0
+      body:  # Use same naming pattern as working version
+        - value: '<p>This text block uses our BlockContentSource!</p>'
+          format: 'basic_html'
+
+    # Button block with proper field structure  
+    - id: corrected_button_block
+      type: button_link
+      info: 'Corrected Button Block'
+      reusable: 0
+      button_data:  # Use same naming pattern as working version
+        - uri: 'https://example.com/corrected'
+          title: 'Corrected Button'
+
+process:
+  type: type
+  info: info
+  reusable: reusable
+  field_text:
+    plugin: sub_process
+    source: body
+    process:
+      value: value
+      format: format
+  field_button_link:
+    plugin: sub_process
+    source: button_data
+    process:
+      uri: uri
+      title: title
+
+destination:
+  plugin: 'entity:block_content'

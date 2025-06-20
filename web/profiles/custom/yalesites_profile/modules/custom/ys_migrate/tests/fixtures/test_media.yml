@@ -1,0 +1,91 @@
+# Test media entities for migration testing
+# These can be created during test setup
+
+test_media:
+  - id: test_image_1
+    bundle: image
+    name: 'Test Image 1'
+    filename: 'test-image-1.jpg'
+    alt: 'Test image for migration testing'
+    width: 800
+    height: 600
+    
+  - id: test_image_2
+    bundle: image
+    name: 'Test Image 2'
+    filename: 'test-image-2.jpg'
+    alt: 'Second test image for migration testing'
+    width: 1200
+    height: 800
+    
+  - id: hero_image
+    bundle: image
+    name: 'Hero Image'
+    filename: 'hero-image.jpg'
+    alt: 'Hero banner image'
+    width: 1920
+    height: 1080
+    
+  - id: web_dev_icon
+    bundle: image
+    name: 'Web Development Icon'
+    filename: 'web-dev-icon.jpg'
+    alt: 'Web development service icon'
+    width: 200
+    height: 200
+    
+  - id: design_icon
+    bundle: image
+    name: 'Design Icon'
+    filename: 'design-icon.jpg'
+    alt: 'Design service icon'
+    width: 200
+    height: 200
+    
+  - id: consulting_icon
+    bundle: image
+    name: 'Consulting Icon'
+    filename: 'consulting-icon.jpg'
+    alt: 'Consulting service icon'
+    width: 200
+    height: 200
+    
+  - id: campus_quad
+    bundle: image
+    name: 'Campus Quad'
+    filename: 'campus-quad.jpg'
+    alt: 'Historic campus quad'
+    width: 1024
+    height: 768
+    
+  - id: library_exterior
+    bundle: image
+    name: 'Library Exterior'
+    filename: 'library-exterior.jpg'
+    alt: 'Sterling Memorial Library exterior'
+    width: 1024
+    height: 768
+    
+  - id: dining_hall
+    bundle: image
+    name: 'Dining Hall'
+    filename: 'dining-hall.jpg'
+    alt: 'Campus dining hall interior'
+    width: 1024
+    height: 768
+    
+  - id: excellence_icon
+    bundle: image
+    name: 'Excellence Icon'
+    filename: 'excellence-icon.jpg'
+    alt: 'Excellence feature icon'
+    width: 150
+    height: 150
+    
+  - id: innovation_icon
+    bundle: image
+    name: 'Innovation Icon'
+    filename: 'innovation-icon.jpg'
+    alt: 'Innovation feature icon'
+    width: 150
+    height: 150

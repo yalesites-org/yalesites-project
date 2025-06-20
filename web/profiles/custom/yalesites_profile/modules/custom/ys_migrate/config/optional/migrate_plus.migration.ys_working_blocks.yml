@@ -1,0 +1,65 @@
+id: ys_working_blocks
+label: 'Working Block Types Migration'
+migration_group: ys_test
+
+source:
+  plugin: embedded_data
+  data_rows:
+    # Text block with all basic fields
+    - id: working_text_block
+      type: text
+      info: 'Working Text Block'
+      reusable: 0
+      body:
+        - value: '<p>This working text block validates field processing.</p>'
+          format: 'basic_html'
+      style_variation: 'default'
+
+    # Button link block
+    - id: working_button_block
+      type: button_link
+      info: 'Working Button Block'
+      reusable: 0
+      button_data:
+        - uri: 'https://example.com/action'
+          title: 'Take Action'
+
+    # Image block (basic fields only for now)
+    - id: working_image_block
+      type: image
+      info: 'Working Image Block'
+      reusable: 0
+      caption_data:
+        - value: '<p>This is an image caption.</p>'
+          format: 'basic_html'
+
+  ids:
+    id:
+      type: string
+
+process:
+  type: type
+  info: info
+  reusable: reusable
+  field_text:
+    plugin: sub_process
+    source: body
+    process:
+      value: value
+      format: format
+  field_style_variation: style_variation
+  field_button_link:
+    plugin: sub_process
+    source: button_data
+    process:
+      uri: uri
+      title: title
+  field_caption:
+    plugin: sub_process
+    source: caption_data
+    process:
+      value: value
+      format: format
+
+destination:
+  plugin: 'entity:block_content'

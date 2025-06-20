@@ -1,0 +1,47 @@
+id: ys_working_test
+label: 'Working Block Test Migration'
+migration_group: ys_test
+
+source:
+  plugin: embedded_data
+  data_rows:
+    # Simple text block - just text field
+    - id: working_text_block
+      type: text
+      info: 'Working Text Test'
+      reusable: 0
+      body:
+        - value: '<p>This should work!</p>'
+          format: 'basic_html'
+
+    # Button block - just button field
+    - id: working_button_block
+      type: button_link
+      info: 'Working Button Test'
+      reusable: 0
+      button_data:
+        - uri: 'https://example.com/working'
+          title: 'Working Button'
+  ids:
+    id:
+      type: string
+
+process:
+  type: type
+  info: info
+  reusable: reusable
+  field_text:
+    plugin: sub_process
+    source: body
+    process:
+      value: value
+      format: format
+  field_button_link:
+    plugin: sub_process
+    source: button_data
+    process:
+      uri: uri
+      title: title
+
+destination:
+  plugin: 'entity:block_content'

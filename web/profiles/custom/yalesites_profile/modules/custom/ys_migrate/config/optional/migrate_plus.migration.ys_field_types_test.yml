@@ -1,0 +1,45 @@
+id: ys_field_types_test
+label: 'Field Types Test Migration'
+migration_group: ys_test
+
+source:
+  plugin: embedded_data
+  data_rows:
+    # Text block with style variation (list field)
+    - id: text_with_style
+      type: text
+      info: 'Text Block with Style'
+      reusable: 0
+      body:
+        - value: '<p>This text block has a style variation.</p>'
+          format: 'basic_html'
+      style_data: 'highlighted'
+
+    # Another text block with different style
+    - id: text_with_accent
+      type: text
+      info: 'Text Block with Accent'
+      reusable: 0
+      body:
+        - value: '<p>This text block has accent styling.</p>'
+          format: 'basic_html'
+      style_data: 'accent'
+      
+  ids:
+    id:
+      type: string
+
+process:
+  type: type
+  info: info
+  reusable: reusable
+  field_text:
+    plugin: sub_process
+    source: body
+    process:
+      value: value
+      format: format
+  field_style_variation: style_data
+
+destination:
+  plugin: 'entity:block_content'

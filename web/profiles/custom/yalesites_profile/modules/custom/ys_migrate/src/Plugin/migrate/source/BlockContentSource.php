@@ -2,7 +2,7 @@
 
 namespace Drupal\ys_migrate\Plugin\migrate\source;
 
-use Drupal\migrate\Plugin\migrate\source\SourcePluginBase;
+use Drupal\migrate\Plugin\migrate\source\EmbeddedDataSource;
 use Drupal\migrate\Row;
 
 /**
@@ -15,18 +15,18 @@ use Drupal\migrate\Row;
  *   id = "block_content_source"
  * )
  */
-class BlockContentSource extends SourcePluginBase {
+class BlockContentSource extends EmbeddedDataSource {
 
   /**
    * {@inheritdoc}
    */
   public function fields() {
     return [
-      'id' => $this->t('Block ID'),
-      'type' => $this->t('Block type'),
-      'info' => $this->t('Administrative label'),
-      'reusable' => $this->t('Reusable flag'),
-      'fields' => $this->t('Block field values'),
+      'id' => 'Block ID',
+      'type' => 'Block type',
+      'info' => 'Administrative label',
+      'reusable' => 'Reusable flag',
+      'fields' => 'Block field values',
     ];
   }
 
@@ -49,33 +49,49 @@ class BlockContentSource extends SourcePluginBase {
   }
 
   /**
-   * {@inheritdoc}
+   * Prepare block configuration data for migration.
    */
-  protected function initializeIterator() {
-    $blocks = $this->configuration['blocks'] ?? [];
-    $rows = [];
-
-    foreach ($blocks as $block_config) {
-      $rows[] = $this->prepareRow($block_config);
-    }
-
-    return new \ArrayIterator($rows);
-  }
-
-  /**
-   * Prepare a row for migration.
-   */
-  protected function prepareRow(array $block_config) {
-    // Set defaults for block configuration
+  protected function prepareBlockData(array $block_config) {
+    // Flatten the block config for easier field access
     $row = [
       'id' => $block_config['id'],
       'type' => $block_config['type'],
       'info' => $block_config['info'] ?? $block_config['id'],
       'reusable' => $block_config['reusable'] ?? 0,
-      'fields' => $block_config['fields'] ?? [],
     ];
 
+    // Add field data directly to the row
+    foreach ($block_config as $key => $value) {
+      if (strpos($key, 'field_') === 0) {
+        $row[$key] = $value;
+      }
+    }
+
     return $row;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, $migration) {
+    // Set default ids if not provided
+    if (!isset($configuration['ids'])) {
+      $configuration['ids'] = [
+        'id' => ['type' => 'string']
+      ];
+    }
+    
+    // Convert blocks configuration to embedded data format
+    if (isset($configuration['blocks'])) {
+      $data_rows = [];
+      foreach ($configuration['blocks'] as $block_config) {
+        $data_rows[] = $this->prepareBlockData($block_config);
+      }
+      $configuration['data_rows'] = $data_rows;
+      unset($configuration['blocks']);
+    }
+    
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $migration);
   }
 
 }

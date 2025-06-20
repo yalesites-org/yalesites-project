@@ -1,0 +1,5 @@
+id: ys_test
+label: 'YaleSites Migration Test Group'
+description: 'Test migrations for validating configurable block and layout builder functionality'
+source_type: 'Embedded Data'
+module: ys_migrate
