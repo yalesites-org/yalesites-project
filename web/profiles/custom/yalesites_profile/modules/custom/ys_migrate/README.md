@@ -4,6 +4,17 @@
 
 This README details the process for Drupal migrations at Yale, specifically the migration from Drupal 7 to Drupal 10. These migrations are part of Yale's strategic initiative to upgrade its web presence across various departments and offices, leveraging enhanced features and improved performance of Drupal 10.
 
+## Enhanced Migration System
+
+The ys_migrate module now includes an enhanced system that allows developers to configure any block type and organize them into Layout Builder sections directly through YAML configuration. This system provides:
+
+- **Generic block creation** - Create any of the 30+ available block types
+- **Dynamic field processing** - Automatically handle all field types and validation
+- **Flexible Layout Builder integration** - Configure multiple blocks within sections and regions
+- **Reusable migration patterns** - Mix migrated content with existing blocks
+
+For detailed documentation on using the enhanced system, see [CONFIGURABLE_MIGRATIONS.md](CONFIGURABLE_MIGRATIONS.md).
+
 ## General Migration Setup
 
 Each migration within Yale is organized into specific migration groups. These groups manage the migration of data and content from old Drupal instances to new ones, focusing on maintaining data integrity and meeting the unique requirements of each site. This document outlines the migrations for the Office of New Haven Affairs (ONHA), but the framework and methods described are applicable to other Yale sites.

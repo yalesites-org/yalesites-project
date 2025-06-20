@@ -1,0 +1,95 @@
+id: ys_configurable_pages
+label: 'Configurable Pages with Layout Builder'
+migration_group: ys_onha
+migration_dependencies:
+  required:
+    - ys_configurable_blocks
+
+source:
+  plugin: embedded_data
+  data_rows:
+    - id: homepage
+      title: 'Welcome to Our Website'
+      body: 'This is the main homepage content.'
+      status: 1
+    - id: about
+      title: 'About Us'
+      body: 'Learn more about our organization.'
+      status: 1
+    - id: services
+      title: 'Our Services'
+      body: 'Discover what we offer.'
+      status: 1
+  ids:
+    id:
+      type: string
+
+process:
+  type:
+    plugin: default_value
+    default_value: page
+  title: title
+  status: status
+  uid:
+    plugin: default_value
+    default_value: 1
+  
+  # Create Layout Builder sections with multiple blocks
+  layout_builder__layout:
+    plugin: configurable_layout_builder
+    source: id
+    sections:
+      # Hero section with image and text
+      - layout: layout_onecol
+        layout_settings:
+          label: 'Hero Section'
+        regions:
+          content:
+            - type: image
+              source: migration
+              migration_id: ys_configurable_blocks
+              source_id: sample_image_block
+              view_mode: full
+              label_display: false
+            - type: text
+              source: migration
+              migration_id: ys_configurable_blocks
+              source_id: sample_text_block
+              view_mode: full
+      
+      # Two column section with callout and accordion
+      - layout: layout_twocol
+        layout_settings:
+          label: 'Content Section'
+          column_widths: '50-50'
+        regions:
+          first:
+            - type: callout
+              source: migration
+              migration_id: ys_configurable_blocks
+              source_id: sample_callout_block
+              view_mode: full
+          second:
+            - type: accordion
+              source: migration
+              migration_id: ys_configurable_blocks
+              source_id: sample_accordion_block
+              view_mode: full
+      
+      # Call to action section
+      - layout: layout_onecol
+        layout_settings:
+          label: 'Call to Action'
+        regions:
+          content:
+            - type: button_link
+              source: migration
+              migration_id: ys_configurable_blocks
+              source_id: sample_button_block
+              view_mode: full
+              component_settings:
+                label_display: true
+
+destination:
+  plugin: 'entity:node'
+  default_bundle: page

@@ -1,0 +1,89 @@
+id: ys_configurable_blocks
+label: 'Configurable Blocks Migration'
+migration_group: ys_onha
+
+source:
+  plugin: block_content_source
+  blocks:
+    # Text block example
+    - id: sample_text_block
+      type: text
+      info: 'Welcome Text Block'
+      reusable: 0
+      fields:
+        field_text:
+          value: '<p>Welcome to our website! This is a sample text block.</p>'
+          format: 'basic_html'
+        field_style_variation: 'default'
+
+    # Image block example  
+    - id: sample_image_block
+      type: image
+      info: 'Hero Image Block'
+      reusable: 0
+      fields:
+        field_media: 'hero-image.jpg'  # Will be resolved to media entity
+        field_text:
+          value: '<p>This is the caption for our hero image.</p>'
+          format: 'basic_html'
+        field_style_alignment: 'center'
+
+    # Accordion block example
+    - id: sample_accordion_block
+      type: accordion
+      info: 'FAQ Accordion'
+      reusable: 0
+      fields:
+        field_heading: 'Frequently Asked Questions'
+        field_style_color: 'blue'
+        field_accordion_items:
+          - type: accordion_item
+            fields:
+              field_heading: 'What is this website about?'
+              field_text:
+                value: '<p>This website provides information about our services.</p>'
+                format: 'basic_html'
+          - type: accordion_item
+            fields:
+              field_heading: 'How can I contact you?'
+              field_text:
+                value: '<p>You can reach us at contact@example.com</p>'
+                format: 'basic_html'
+
+    # Callout block example
+    - id: sample_callout_block
+      type: callout
+      info: 'Important Notice'
+      reusable: 0
+      fields:
+        field_callout:
+          - type: callout_item
+            fields:
+              field_heading: 'Important Update'
+              field_text:
+                value: '<p>Please note our new office hours.</p>'
+                format: 'basic_html'
+        field_style_color: 'red'
+        field_style_alignment: 'center'
+
+    # Button link example
+    - id: sample_button_block
+      type: button_link
+      info: 'Call to Action Button'
+      reusable: 0
+      fields:
+        field_button_link:
+          uri: 'https://example.com/contact'
+          title: 'Contact Us Today'
+
+process:
+  type: type
+  info: info
+  reusable: reusable
+  # Process all fields dynamically
+  'field_*':
+    plugin: process_block_fields
+    source: fields
+
+destination:
+  plugin: 'entity:block_content'
