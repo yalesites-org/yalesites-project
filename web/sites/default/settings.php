@@ -80,7 +80,7 @@ $env_options = [
   'multidev' => [
     'bg_color' => '#e1821f',
     'fg_color' => '#000000',
-    'name' => 'Multidev -' . $env,
+    'name' => 'Multidev - ' . $env,
   ],
 ];
 $env_key = isset($env_options[$env]) ? $env : 'multidev';
