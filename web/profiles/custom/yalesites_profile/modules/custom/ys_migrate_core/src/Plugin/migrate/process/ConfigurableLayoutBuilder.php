@@ -116,7 +116,7 @@ class ConfigurableLayoutBuilder extends ProcessPluginBase implements ContainerFa
     }
 
     foreach ($sections_config as $section_config) {
-      $section = $this->createSection($section_config, $row);
+      $section = $this->createSection($section_config, $row, $migrate_executable);
       if ($section) {
         $sections[] = $section;
       }
@@ -154,7 +154,7 @@ class ConfigurableLayoutBuilder extends ProcessPluginBase implements ContainerFa
   /**
    * Create a section from configuration.
    */
-  protected function createSection(array $section_config, Row $row) {
+  protected function createSection(array $section_config, Row $row, $migrate_executable = NULL) {
     $layout = $section_config['layout'] ?? 'layout_onecol';
     $layout_settings = $section_config['layout_settings'] ?? [];
     $regions = $section_config['regions'] ?? ['content' => $section_config['blocks'] ?? []];
@@ -163,7 +163,7 @@ class ConfigurableLayoutBuilder extends ProcessPluginBase implements ContainerFa
 
     foreach ($regions as $region => $blocks) {
       foreach ($blocks as $block_config) {
-        $component = $this->createSectionComponentFromConfig($block_config, $region, $row);
+        $component = $this->createSectionComponentFromConfig($block_config, $region, $row, $migrate_executable);
         if ($component) {
           $components[] = $component;
         }
@@ -176,7 +176,7 @@ class ConfigurableLayoutBuilder extends ProcessPluginBase implements ContainerFa
   /**
    * Create a section component from block configuration.
    */
-  protected function createSectionComponentFromConfig(array $block_config, string $region, Row $row) {
+  protected function createSectionComponentFromConfig(array $block_config, string $region, Row $row, $migrate_executable = NULL) {
     $block_type = $block_config['type'];
     $block_source = $block_config['source'] ?? 'migration';
 
@@ -209,7 +209,7 @@ class ConfigurableLayoutBuilder extends ProcessPluginBase implements ContainerFa
         // Create block inline from provided data
         $block_data = $block_config['data'] ?? [];
         if ($block_data && $block_type) {
-          $block = $this->createInlineBlock($block_type, $block_data, $row);
+          $block = $this->createInlineBlock($block_type, $block_data, $row, $migrate_executable);
         }
         if (!$block) {
           $this->logger->warning('Failed to create inline block of type @type with data: @data', [
@@ -305,7 +305,7 @@ class ConfigurableLayoutBuilder extends ProcessPluginBase implements ContainerFa
       $regions = $section_config['regions'] ?? ['content' => $section_config['blocks'] ?? []];
       foreach ($regions as $region => $blocks) {
         foreach ($blocks as $block_config) {
-          $component = $this->createSectionComponentFromConfig($block_config, $region, $row);
+          $component = $this->createSectionComponentFromConfig($block_config, $region, $row, $migrate_executable);
           if ($component) {
             $new_components[] = $component;
           }
@@ -355,14 +355,16 @@ class ConfigurableLayoutBuilder extends ProcessPluginBase implements ContainerFa
    *   The block field data.
    * @param \Drupal\migrate\Row $row
    *   The migration row for token replacement.
+   * @param \Drupal\migrate\MigrateExecutableInterface $migrate_executable
+   *   The migration executable.
    *
    * @return \Drupal\block_content\BlockContentInterface|null
    *   The created block entity or NULL on failure.
    */
-   protected function createInlineBlock(string $block_type, array $block_data, Row $row) {
+   protected function createInlineBlock(string $block_type, array $block_data, Row $row, $migrate_executable = NULL) {
     try {
       // Process token replacements in block data
-      $processed_data = $this->processTokens($block_data, $row);
+      $processed_data = $this->processTokens($block_data, $row, $migrate_executable);
       
       // Create the block entity
       $block_values = [
@@ -491,17 +493,38 @@ class ConfigurableLayoutBuilder extends ProcessPluginBase implements ContainerFa
    * @return array
    *   The processed data array.
    */
-  protected function processTokens(array $data, Row $row) {
+  protected function processTokens(array $data, Row $row, $migrate_executable = NULL) {
     $processed = [];
     
     foreach ($data as $key => $value) {
       if (is_array($value)) {
-        $processed[$key] = $this->processTokens($value, $row);
+        $processed[$key] = $this->processTokens($value, $row, $migrate_executable);
       }
       elseif (is_string($value) && str_starts_with($value, '@')) {
         // Replace token with value from row
         $token_key = substr($value, 1);
-        $processed[$key] = $row->getSourceProperty($token_key) ?? $value;
+        
+        // Try destination property first (for processed values), then source property
+        // Destination properties store with @ prefix, so check both ways
+        $dest_value = $row->getDestinationProperty($value) ?? $row->getDestinationProperty($token_key);
+        $source_value = $row->getSourceProperty($token_key);
+        $token_value = $dest_value ?? $source_value ?? $value;
+        
+        
+        // If it's a JSON string, decode it
+        if (is_string($token_value) && str_starts_with($token_value, '{')) {
+          $decoded = json_decode($token_value, TRUE);
+          if (json_last_error() === JSON_ERROR_NONE) {
+            $token_value = $decoded;
+          }
+        }
+        
+        // Auto-process media data for field_media fields
+        if ($key === 'field_media' && is_array($token_value) && isset($token_value['url']) && $migrate_executable) {
+          $token_value = $this->processMediaData($token_value, $row, $migrate_executable);
+        }
+        
+        $processed[$key] = $token_value;
       }
       else {
         $processed[$key] = $value;
@@ -509,6 +532,40 @@ class ConfigurableLayoutBuilder extends ProcessPluginBase implements ContainerFa
     }
     
     return $processed;
+  }
+
+  /**
+   * Process media data using ProcessMediaField plugin.
+   *
+   * @param array $media_data
+   *   The media data to process.
+   * @param \Drupal\migrate\Row $row
+   *   The migration row.
+   *
+   * @return array|null
+   *   The processed media reference or NULL on failure.
+   */
+  protected function processMediaData(array $media_data, Row $row, $migrate_executable) {
+    try {
+      // Create ProcessMediaField plugin instance
+      $plugin_manager = \Drupal::service('plugin.manager.migrate.process');
+      $plugin = $plugin_manager->createInstance('process_media_field', []);
+      
+      // Process the media data
+      $result = $plugin->transform($media_data, $migrate_executable, $row, 'field_media');
+      
+      $this->logger->info('Auto-processed media data for field_media: @result', [
+        '@result' => json_encode($result),
+      ]);
+      
+      return $result;
+    }
+    catch (\Exception $e) {
+      $this->logger->error('Failed to auto-process media data: @message', [
+        '@message' => $e->getMessage(),
+      ]);
+      return NULL;
+    }
   }
 
   /**

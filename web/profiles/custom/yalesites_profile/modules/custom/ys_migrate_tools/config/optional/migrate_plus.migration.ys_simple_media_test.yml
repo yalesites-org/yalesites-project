@@ -1,0 +1,58 @@
+id: ys_simple_media_test
+label: 'Simple Media Test - Direct URL Processing'
+migration_group: ys_field_tests
+
+source:
+  plugin: embedded_data
+  data_rows:
+    - id: 1
+      title: 'Simple Media Test'
+      image_url: 'https://picsum.photos/600/400.jpg'
+      image_alt: 'Random landscape photo from picsum'
+  ids:
+    id:
+      type: integer
+
+process:
+  # Basic node properties
+  type:
+    plugin: default_value
+    default_value: page
+  title: title
+  status:
+    plugin: default_value
+    default_value: 1
+  uid:
+    plugin: default_value
+    default_value: 1
+    
+  # Process media directly from URL
+  '@processed_media':
+    plugin: process_media_field
+    source: image_url
+    
+  # Create layout with media block
+  layout_builder__layout:
+    plugin: configurable_layout_builder
+    source: id
+    target_section: 'Content Section'
+    append_mode: false
+    sections:
+      - layout: layout_onecol
+        layout_settings:
+          label: 'Content Section'
+        regions:
+          content:
+            # Image block with processed media
+            - type: image
+              source: create
+              data:
+                field_media: '@processed_media'
+                field_caption: 'Simple media test - should show target_id'
+                field_style_variation: 'default'
+
+destination:
+  plugin: 'entity:node'
+  default_bundle: page
+
+migration_dependencies: {}

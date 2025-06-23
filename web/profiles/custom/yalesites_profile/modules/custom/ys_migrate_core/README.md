@@ -20,6 +20,30 @@ The core field processing engine that handles all YaleSites block types dynamica
 - Support for text, boolean, link, and entity reference fields
 - Configurable field mapping and transformation
 
+### ProcessMediaField Plugin
+
+**Location**: `src/Plugin/migrate/process/ProcessMediaField.php`
+
+Smart media migration with reuse and alt text enforcement.
+
+**Features**:
+- **Smart Media Reuse**: Checks for existing media by filename before creating new entities
+- **Alt Text Enforcement**: Ensures all images have alt text with helpful placeholder defaults
+- **Multi-format Support**: Handles images, videos, audio, and documents
+- **External Download**: Downloads media from URLs and creates local file entities
+- **Accessibility Focus**: Enforces alt text with admin-friendly placeholder when missing
+
+**Alt Text Strategy**:
+```yaml
+# Good: Proper alt text provided
+- url: 'path/to/image.jpg'
+  alt: 'Descriptive alt text for accessibility'
+
+# Fallback: Missing alt text gets helpful placeholder
+- url: 'path/to/mountain_photo.jpg'
+  # Results in: "[ALT TEXT NEEDED] Image: mountain photo"
+```
+
 **Usage Example**:
 ```yaml
 process:
@@ -31,6 +55,52 @@ process:
     source: '@processed_fields'
     index:
       - field_text
+```
+
+**ProcessMediaField Usage**:
+```yaml
+process:
+  # Process single media item
+  field_media:
+    plugin: process_media_field
+    source: image_data
+    
+  # Process array of media items
+  '@processed_images':
+    plugin: process_media_field
+    source: gallery_images
+    
+  # Use in block creation
+  layout_builder__layout:
+    plugin: configurable_layout_builder
+    sections:
+      - layout: layout_onecol
+        regions:
+          content:
+            - type: image
+              source: create
+              data:
+                field_media: '@processed_images/0'
+                field_caption: 'Migrated image with enforced alt text'
+```
+
+**Media Input Formats**:
+```yaml
+# Simple URL string
+image_data: 'https://example.com/image.jpg'
+
+# Full media object
+image_data:
+  url: 'https://example.com/photo.jpg'
+  alt: 'Descriptive alt text for screen readers'
+  title: 'Photo Title'
+  
+# Array of media items
+gallery_images:
+  - url: 'image1.jpg'
+    alt: 'First image description'
+  - url: 'image2.jpg'
+    # No alt - will get "[ALT TEXT NEEDED] Image: image2"
 ```
 
 **Supported Field Types**:

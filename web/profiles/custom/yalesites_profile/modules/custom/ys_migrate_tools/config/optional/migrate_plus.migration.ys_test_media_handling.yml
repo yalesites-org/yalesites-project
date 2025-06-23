@@ -1,0 +1,101 @@
+id: ys_test_media_handling
+label: 'Test Media Handling with Alt Text Enforcement'
+migration_group: ys_field_tests
+
+source:
+  plugin: embedded_data
+  data_rows:
+    # Test case 1: New image with alt text
+    - id: 1
+      title: 'Test Page with Media'
+      media_examples:
+        - url: 'https://picsum.photos/800/600.jpg'
+          alt: 'Beautiful landscape photo showing mountains and sky'
+          title: 'Sample Landscape'
+        # Test case 2: Image without alt text (should get placeholder)
+        - url: 'https://picsum.photos/400/300.jpg' 
+          title: 'Sample Portrait'
+        # Test case 3: Different size image
+        - url: 'https://picsum.photos/500/350.jpg'
+          alt: 'Square format sample image'
+          title: 'Sample Square Image'
+  ids:
+    id:
+      type: integer
+
+process:
+  # Basic node properties
+  type:
+    plugin: default_value
+    default_value: page
+  title: title
+  status:
+    plugin: default_value
+    default_value: 1
+  uid:
+    plugin: default_value
+    default_value: 1
+    
+  # Extract media items to be processed inline
+  '@media_item1':
+    plugin: extract
+    source: media_examples
+    index: [0]
+    
+  '@media_item2':
+    plugin: extract
+    source: media_examples
+    index: [1]
+    
+  '@media_item3':
+    plugin: extract
+    source: media_examples
+    index: [2]
+    
+  # Create layout with media blocks
+  layout_builder__layout:
+    plugin: configurable_layout_builder
+    source: id
+    target_section: 'Content Section'
+    append_mode: false
+    sections:
+      - layout: layout_onecol
+        layout_settings:
+          label: 'Content Section'
+        regions:
+          content:
+            # Text block explaining the test
+            - type: text
+              source: create
+              data:
+                field_text:
+                  value: '<h2>Media Handling Test</h2><p>This page demonstrates smart media migration with alt text enforcement.</p>'
+                  format: 'basic_html'
+                field_style_variation: 'default'
+            # Image block with direct media item reference
+            - type: image
+              source: create
+              data:
+                field_media: '@media_item1'
+                field_caption: 'This image should have proper alt text'
+                field_style_variation: 'default'
+            # Another image block with direct media item reference
+            - type: image
+              source: create
+              data:
+                field_media: '@media_item2'
+                field_caption: 'This image should have placeholder alt text'
+                field_style_variation: 'highlight'
+            # Third image block with different size
+            - type: image
+              source: create
+              data:
+                field_media: '@media_item3'
+                field_caption: 'Different sized image with proper alt text'
+                field_style_variation: 'default'
+
+destination:
+  plugin: 'entity:node'
+  default_bundle: page
+
+migration_dependencies: {}
