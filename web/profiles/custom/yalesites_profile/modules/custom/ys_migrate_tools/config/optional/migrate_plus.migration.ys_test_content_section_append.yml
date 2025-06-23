@@ -1,0 +1,58 @@
+id: ys_test_content_section_append
+label: 'Test Content Section - Clone Homepage Layout'
+migration_group: ys_field_tests
+
+source:
+  plugin: embedded_data
+  data_rows:
+    - nid: 113
+      title: 'Homepage'
+      type: 'page'
+      status: 1
+      uid: 1
+      created: 1640995200
+      changed: 1640995200
+  ids:
+    nid:
+      type: integer
+  constants:
+    new_title_prefix: '[CLONED] '
+
+process:
+  # Create new node properties
+  type: type
+  title: 
+    plugin: concat
+    source:
+      - constants/new_title_prefix
+      - title
+    delimiter: ''
+  status: status
+  uid: uid
+  created: created
+  changed: changed
+  
+  # Copy the layout structure and create new Content Section with blocks
+  layout_builder__layout:
+    plugin: configurable_layout_builder
+    source: nid
+    target_section: 'Content Section'
+    append_mode: false  # Create fresh layout structure
+    sections:
+      - layout: layout_onecol
+        layout_settings:
+          label: 'Content Section'
+        regions:
+          content:
+            # This will be populated with blocks from the source node
+            - type: text
+              source: migration
+              migration_id: ys_homepage_blocks
+
+destination:
+  plugin: 'entity:node'
+  default_bundle: page
+
+migration_dependencies:
+  required:
+    - ys_homepage_blocks

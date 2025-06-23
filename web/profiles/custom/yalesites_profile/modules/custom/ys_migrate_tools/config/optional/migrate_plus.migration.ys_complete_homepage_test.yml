@@ -1,0 +1,78 @@
+id: ys_complete_homepage_test
+label: 'Complete Homepage Test - Extract and Recreate Homepage Content Section'
+migration_group: ys_field_tests
+
+source:
+  plugin: embedded_data
+  data_rows:
+    - id: 1
+      source_node: 113
+      title: '[CLONED] Homepage'
+      body: '<p>This page contains all the blocks from the original Homepage Content Section.</p>'
+  ids:
+    id:
+      type: integer
+
+process:
+  # Basic node properties
+  type:
+    plugin: default_value
+    default_value: page
+  title: title
+  status:
+    plugin: default_value
+    default_value: 1
+  uid:
+    plugin: default_value
+    default_value: 1
+    
+  # Recreate the exact Content Section from Homepage node 113 with cloned blocks
+  layout_builder__layout:
+    plugin: configurable_layout_builder
+    source: id
+    target_section: 'Content Section'
+    append_mode: false  # Create fresh layout
+    sections:
+      - layout: layout_onecol
+        layout_settings:
+          label: 'Content Section'
+        regions:
+          content:
+            # Block 1: homepage introduction copy (text) - create new copy
+            - type: text
+              source: clone
+              source_block_id: 508
+            # Block 2: homepage services pathways (custom_cards) - create new copy
+            - type: custom_cards
+              source: clone
+              source_block_id: 509
+            # Block 3: divider - create new copy
+            - type: divider
+              source: clone
+              source_block_id: 514
+            # Block 4: homepage building with blocks spotlight (content_spotlight) - create new copy
+            - type: content_spotlight
+              source: clone
+              source_block_id: 510
+            # Block 5: divider - create new copy
+            - type: divider
+              source: clone
+              source_block_id: 513
+            # Block 6: homepage posts view intro text (text) - create new copy
+            - type: text
+              source: clone
+              source_block_id: 511
+            # Block 7: homepage posts view (view) - create new copy
+            - type: view
+              source: clone
+              source_block_id: 512
+            # Block 8: homepage more news and events button (button_link) - create new copy
+            - type: button_link
+              source: clone
+              source_block_id: 515
+
+destination:
+  plugin: 'entity:node'
+  default_bundle: page
+
+migration_dependencies: {}

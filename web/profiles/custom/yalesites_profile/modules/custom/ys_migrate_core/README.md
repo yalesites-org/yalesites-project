@@ -44,13 +44,70 @@ process:
 
 **Location**: `src/Plugin/migrate/process/ConfigurableLayoutBuilder.php`
 
-Enhanced Layout Builder integration supporting multiple sections and regions.
+Enhanced Layout Builder integration supporting multiple sections and regions with prescriptive "Content Section" targeting.
 
 **Features**:
-- Multiple section support
-- Configurable region mapping
+- **Content Section Targeting**: Always appends to existing "Content Section" for safety and consistency
+- **Append Mode**: Adds blocks to existing sections instead of replacing entire layouts
+- Multiple section support with configurable region mapping
 - Support for different block sources (migration, existing, inline)
 - UUID generation for layout components
+- System section protection (prevents modification of headers, footers, metadata sections)
+
+**Content Section Strategy** (Recommended Approach):
+
+YaleSites uses a prescriptive approach for migrated content placement:
+
+1. **Always Target "Content Section"**: All migrated blocks go into the standardized "Content Section"
+2. **Preserve System Sections**: Never modify Banner, Title/Metadata, or other system sections
+3. **Append, Don't Replace**: Add to existing content rather than overwriting layouts
+4. **Create If Missing**: Automatically creates "Content Section" if it doesn't exist
+
+**Configuration Options**:
+- `target_section`: Always set to "Content Section" (default)
+- `append_mode`: Set to `true` to add blocks to existing sections
+- `sections`: Array of section configurations with layouts and blocks
+
+**Why This Approach?**
+
+- **Safety**: Prevents accidental modification of critical layout sections
+- **Consistency**: Content always appears in the expected location
+- **Maintainability**: Single code path reduces complexity and testing burden
+- **User Experience**: Matches where content authors manually add blocks
+- **Future-Proof**: New system sections won't break migrations
+- **Predictable**: Developers know exactly where migrated content will appear
+
+**Usage Example** (Recommended):
+```yaml
+layout_builder__layout:
+  plugin: configurable_layout_builder
+  source: node_id
+  target_section: 'Content Section'  # Always use this
+  append_mode: true                  # Add to existing content
+  sections:
+    - layout: layout_onecol
+      regions:
+        content:
+          - type: text
+            source: migration
+            migration_id: my_text_blocks
+```
+
+**Alternative Usage** (Legacy support):
+```yaml
+layout_builder__layout:
+  plugin: configurable_layout_builder
+  source: node_id
+  sections:
+    - layout: layout_onecol
+      layout_settings:
+        label: 'Custom Section'
+      regions:
+        content:
+          - type: accordion
+            source: existing
+            block_id: 123
+```
 
 ### BlockContentSource Plugin
 

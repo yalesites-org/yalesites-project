@@ -1,0 +1,41 @@
+id: ys_homepage_blocks
+label: 'Extract Blocks from Homepage Layout'
+migration_group: ys_field_tests
+
+source:
+  plugin: d10_layout_blocks
+  source_node: 113  # Homepage node
+  target_section: 'Content Section'  # Extract blocks from Content Section
+
+process:
+  # Basic block properties
+  type: bundle
+  info:
+    plugin: concat
+    source:
+      - 'constants/block_prefix'
+      - info
+    delimiter: ' '
+  reusable: 
+    plugin: default_value
+    default_value: false
+  
+  # Process block fields using our enhanced field processor
+  '@processed_fields':
+    plugin: process_block_fields
+    source: block_data
+    
+  # Map processed fields to destination
+  field_text: '@processed_fields/field_text'
+  field_style_variation: '@processed_fields/field_style_variation'
+  field_heading: '@processed_fields/field_heading'
+  field_accordion_items: '@processed_fields/field_accordion_items'
+  field_cards: '@processed_fields/field_cards'
+  
+  constants:
+    block_prefix: '[FROM HOMEPAGE]'
+
+destination:
+  plugin: 'entity:block_content'
+
+migration_dependencies: {}

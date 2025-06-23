@@ -20,10 +20,10 @@ class D10BlockContent extends SqlBase {
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, StateInterface $state, EntityManagerInterface $entity_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, StateInterface $state) {
     // Ensure we use the default database connection, not d7
     $configuration['key'] = 'default';
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $migration, $state, $entity_manager);
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $migration, $state);
   }
 
   /**

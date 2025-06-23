@@ -1,0 +1,52 @@
+id: ys_simple_homepage_test
+label: 'Simple Test - Create Node with Content Section'
+migration_group: ys_field_tests
+
+source:
+  plugin: embedded_data
+  data_rows:
+    - id: 1
+      title: '[TEST] Homepage Clone'
+      body: '<p>This is a test page to verify Content Section targeting works.</p>'
+  ids:
+    id:
+      type: integer
+
+process:
+  # Basic node properties
+  type:
+    plugin: default_value
+    default_value: page
+  title: title
+  status:
+    plugin: default_value
+    default_value: 1
+  uid:
+    plugin: default_value
+    default_value: 1
+    
+  # Create layout with Content Section using our enhanced plugin
+  layout_builder__layout:
+    plugin: configurable_layout_builder
+    source: id
+    target_section: 'Content Section'
+    append_mode: false  # Create fresh layout
+    sections:
+      - layout: layout_onecol
+        layout_settings:
+          label: 'Content Section'
+        regions:
+          content:
+            - type: text
+              source: create
+              data:
+                field_text:
+                  value: '@body'
+                  format: 'basic_html'
+                field_style_variation: 'default'
+
+destination:
+  plugin: 'entity:node'
+  default_bundle: page
+
+migration_dependencies: {}
