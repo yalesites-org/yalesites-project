@@ -1,9 +1,0 @@
-/**
- * @file
- * CSS for Coffee functionality in main toolbar.
- */
-
-/* Use Gin's standard toolbar icon pattern for Coffee */
-.toolbar .toolbar-bar .coffee-menu-item.toolbar-icon-coffee::before {
-  --icon: url("../../media/sprite.svg#search-view");
-}

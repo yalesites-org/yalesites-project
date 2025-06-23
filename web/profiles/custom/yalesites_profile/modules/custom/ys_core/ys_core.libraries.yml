@@ -34,13 +34,4 @@ grand_hero_form:
     - core/drupal.states
     - core/jquery
     - core/once
-coffee:
-  js:
-    js/coffee.js: {}
-  css:
-    theme:
-      css/coffee.css: {}
-  dependencies:
-    - core/jquery
-    - core/once
-    - coffee/drupal.coffee
+
