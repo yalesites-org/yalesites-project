@@ -19,10 +19,10 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * This plugin allows configuring multiple blocks within sections via YAML,
  * supporting all block types and section layouts. It can append blocks to
- * existing "Content Section" sections or create new sections as needed.
+ * existing content sections or create new sections as needed.
  *
  * Configuration options:
- * - target_section: Always targets "Content Section" for content blocks
+ * - target_section: Target section for content blocks (Content Section, Banner Section, Title and Metadata)
  * - append_mode: When true, adds blocks to existing sections instead of replacing
  * - sections: Array of section configurations with layouts and blocks
  *
@@ -102,9 +102,17 @@ class ConfigurableLayoutBuilder extends ProcessPluginBase implements ContainerFa
     $target_section = $this->configuration['target_section'] ?? 'Content Section';
     $append_mode = $this->configuration['append_mode'] ?? false;
     
+    // Validate target section is safe for content migration
+    if ($append_mode && $target_section && !$this->isValidTargetSection($target_section)) {
+      $this->logger->error('Invalid target section @section. Only Content Section, Banner Section, and Title and Metadata are allowed.', [
+        '@section' => $target_section,
+      ]);
+      return [];
+    }
+    
     // If append mode is enabled, get existing sections and append to target
     if ($append_mode && $target_section) {
-      return $this->appendToContentSection($value, $sections_config, $target_section, $row);
+      return $this->appendToTargetSection($value, $sections_config, $target_section, $row);
     }
 
     // Default behavior: create new sections
@@ -271,13 +279,31 @@ class ConfigurableLayoutBuilder extends ProcessPluginBase implements ContainerFa
   }
 
   /**
-   * Append blocks to existing Content Section or create it if missing.
+   * Validates that the target section is safe for content migration.
    *
-   * This method implements the prescriptive approach of always targeting
-   * the "Content Section" for migrated content blocks, ensuring consistency
-   * and preventing modification of system sections like headers/footers.
+   * @param string $target_section
+   *   The section label to validate.
+   *
+   * @return bool
+   *   TRUE if the section is safe to target, FALSE otherwise.
    */
-  protected function appendToContentSection($node_id, array $sections_config, string $target_section_label, Row $row) {
+  protected function isValidTargetSection(string $target_section): bool {
+    $safe_sections = [
+      'Content Section',
+      'Banner Section', 
+      'Title and Metadata',
+    ];
+    
+    return in_array($target_section, $safe_sections);
+  }
+
+  /**
+   * Append blocks to existing target section or create it if missing.
+   *
+   * This method implements a safe approach for targeting content sections
+   * while preventing modification of system sections like headers/footers.
+   */
+  protected function appendToTargetSection($node_id, array $sections_config, string $target_section_label, Row $row) {
     // Load the target node to get existing layout
     $node = $this->entityTypeManager->getStorage('node')->load($node_id);
     if (!$node || !$node->hasField('layout_builder__layout')) {
@@ -286,15 +312,15 @@ class ConfigurableLayoutBuilder extends ProcessPluginBase implements ContainerFa
     }
 
     $existing_sections = $node->get('layout_builder__layout')->getSections();
-    $content_section_found = false;
-    $content_section_index = null;
+    $target_section_found = false;
+    $target_section_index = null;
 
-    // Find existing Content Section
+    // Find existing target section
     foreach ($existing_sections as $index => $section) {
       $section_settings = $section->getLayoutSettings();
       if (isset($section_settings['label']) && $section_settings['label'] === $target_section_label) {
-        $content_section_found = true;
-        $content_section_index = $index;
+        $target_section_found = true;
+        $target_section_index = $index;
         break;
       }
     }
@@ -313,32 +339,34 @@ class ConfigurableLayoutBuilder extends ProcessPluginBase implements ContainerFa
       }
     }
 
-    if ($content_section_found && $content_section_index !== null) {
-      // Append to existing Content Section
-      $content_section = $existing_sections[$content_section_index];
-      $existing_components = $content_section->getComponents();
+    if ($target_section_found && $target_section_index !== null) {
+      // Append to existing target section
+      $target_section = $existing_sections[$target_section_index];
+      $existing_components = $target_section->getComponents();
       
       // Add new components to existing ones
       foreach ($new_components as $component) {
-        $content_section->appendComponent($component);
+        $target_section->appendComponent($component);
       }
       
-      $this->logger->info('Appended @count blocks to existing Content Section in node @id', [
+      $this->logger->info('Appended @count blocks to existing @section in node @id', [
         '@count' => count($new_components),
+        '@section' => $target_section_label,
         '@id' => $node_id,
       ]);
       
       return $existing_sections;
     } else {
-      // Create new Content Section and add to existing sections
-      $content_section = new Section('layout_onecol', [
+      // Create new target section and add to existing sections
+      $target_section = new Section('layout_onecol', [
         'label' => $target_section_label,
       ], $new_components);
       
-      $existing_sections[] = $content_section;
+      $existing_sections[] = $target_section;
       
-      $this->logger->info('Created new Content Section with @count blocks in node @id', [
+      $this->logger->info('Created new @section with @count blocks in node @id', [
         '@count' => count($new_components),
+        '@section' => $target_section_label,
         '@id' => $node_id,
       ]);
       

@@ -1,0 +1,54 @@
+id: ys_title_metadata_test
+label: 'Title and Metadata Test - Page Header Migration'
+migration_group: ys_field_tests
+
+source:
+  plugin: embedded_data
+  data_rows:
+    - id: 1
+      title: 'Title and Metadata Test Page'
+      subtitle: 'Enhanced with migrated page metadata'
+      description: 'This page demonstrates targeting the Title and Metadata section'
+  ids:
+    id:
+      type: integer
+
+process:
+  # Basic node properties
+  type:
+    plugin: default_value
+    default_value: page
+  title: title
+  status:
+    plugin: default_value
+    default_value: 1
+  uid:
+    plugin: default_value
+    default_value: 1
+    
+  # Create layout targeting Title and Metadata section
+  layout_builder__layout:
+    plugin: configurable_layout_builder
+    source: id
+    target_section: 'Title and Metadata'
+    append_mode: true
+    sections:
+      - layout: layout_onecol
+        layout_settings:
+          label: 'Title and Metadata'
+        regions:
+          content:
+            # Text block for subtitle/description
+            - type: text
+              source: create
+              data:
+                field_text:
+                  value: '<p class="subtitle">@subtitle</p><p class="description">@description</p>'
+                  format: 'basic_html'
+                field_style_variation: 'default'
+
+destination:
+  plugin: 'entity:node'
+  default_bundle: page
+
+migration_dependencies: {}

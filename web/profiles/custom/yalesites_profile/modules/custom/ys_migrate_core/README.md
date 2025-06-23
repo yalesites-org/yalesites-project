@@ -124,17 +124,22 @@ Enhanced Layout Builder integration supporting multiple sections and regions wit
 - UUID generation for layout components
 - System section protection (prevents modification of headers, footers, metadata sections)
 
-**Content Section Strategy** (Recommended Approach):
+**Safe Section Targeting Strategy** (Recommended Approach):
 
 YaleSites uses a prescriptive approach for migrated content placement:
 
-1. **Always Target "Content Section"**: All migrated blocks go into the standardized "Content Section"
-2. **Preserve System Sections**: Never modify Banner, Title/Metadata, or other system sections
+1. **Target Safe Content Sections**: Migrated blocks go into approved content sections only
+2. **Preserve System Sections**: Never modify headers, footers, navigation, or other system sections
 3. **Append, Don't Replace**: Add to existing content rather than overwriting layouts
-4. **Create If Missing**: Automatically creates "Content Section" if it doesn't exist
+4. **Create If Missing**: Automatically creates target section if it doesn't exist
+
+**Approved Target Sections**:
+- `Content Section` (default) - Main content area
+- `Banner Section` - Hero/banner content area  
+- `Title and Metadata` - Page title and metadata area
 
 **Configuration Options**:
-- `target_section`: Always set to "Content Section" (default)
+- `target_section`: Section to target (Content Section, Banner Section, Title and Metadata)
 - `append_mode`: Set to `true` to add blocks to existing sections
 - `sections`: Array of section configurations with layouts and blocks
 
@@ -147,12 +152,14 @@ YaleSites uses a prescriptive approach for migrated content placement:
 - **Future-Proof**: New system sections won't break migrations
 - **Predictable**: Developers know exactly where migrated content will appear
 
-**Usage Example** (Recommended):
+**Usage Examples**:
+
+**Content Section** (Most Common):
 ```yaml
 layout_builder__layout:
   plugin: configurable_layout_builder
   source: node_id
-  target_section: 'Content Section'  # Always use this
+  target_section: 'Content Section'  # Default content area
   append_mode: true                  # Add to existing content
   sections:
     - layout: layout_onecol
@@ -161,6 +168,41 @@ layout_builder__layout:
           - type: text
             source: migration
             migration_id: my_text_blocks
+```
+
+**Banner Section** (Hero Content):
+```yaml
+layout_builder__layout:
+  plugin: configurable_layout_builder
+  source: node_id
+  target_section: 'Banner Section'   # Hero/banner area
+  append_mode: true
+  sections:
+    - layout: layout_onecol
+      regions:
+        content:
+          - type: grand_hero
+            source: create
+            data:
+              field_heading: '@hero_title'
+              field_media: '@hero_image'
+```
+
+**Title and Metadata** (Page Headers):
+```yaml
+layout_builder__layout:
+  plugin: configurable_layout_builder
+  source: node_id
+  target_section: 'Title and Metadata'  # Page title area
+  append_mode: true
+  sections:
+    - layout: layout_onecol
+      regions:
+        content:
+          - type: text
+            source: create
+            data:
+              field_text: '@page_subtitle'
 ```
 
 **Alternative Usage** (Legacy support):
