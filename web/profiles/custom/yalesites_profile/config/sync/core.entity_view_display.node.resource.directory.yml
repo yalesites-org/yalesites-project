@@ -1,9 +1,9 @@
-uuid: 93dbbfb9-58e6-4cd6-89d7-dc89cf8eb62a
+uuid: 1a1e7695-b756-4634-bda3-6c1a5ed9a922
 langcode: en
-status: true
+status: false
 dependencies:
   config:
-    - core.entity_view_mode.node.teaser
+    - core.entity_view_mode.node.directory
     - field.field.node.resource.field_affiliation
     - field.field.node.resource.field_audience
     - field.field.node.resource.field_category
@@ -18,11 +18,28 @@ dependencies:
     - node.type.resource
   module:
     - user
-id: node.resource.teaser
+id: node.resource.directory
 targetEntityType: node
 bundle: resource
-mode: teaser
+mode: directory
 content:
+  field_affiliation:
+    type: entity_reference_label
+    label: hidden
+    settings:
+      link: false
+    third_party_settings: {  }
+    weight: 4
+    region: content
+  field_media:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: profile_directory_card_1_1_
+      link: false
+    third_party_settings: {  }
+    weight: 6
+    region: content
   links:
     settings: {  }
     third_party_settings: {  }
@@ -30,11 +47,9 @@ content:
     region: content
 hidden:
   addtoany: true
-  field_affiliation: true
   field_audience: true
   field_category: true
   field_custom_vocab: true
-  field_media: true
   field_publish_date: true
   field_tags: true
   field_teaser_media: true

@@ -3,11 +3,27 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.node.resource.field_affiliation
+    - field.field.node.resource.field_audience
+    - field.field.node.resource.field_category
+    - field.field.node.resource.field_custom_vocab
+    - field.field.node.resource.field_media
+    - field.field.node.resource.field_publish_date
+    - field.field.node.resource.field_tags
+    - field.field.node.resource.field_teaser_media
+    - field.field.node.resource.field_teaser_text
+    - field.field.node.resource.field_teaser_title
     - field.field.node.resource.layout_builder__layout
     - node.type.resource
   module:
+    - allowed_formats
+    - chosen_field
+    - datetime
     - hide_revision_field
+    - maxlength
+    - media_library
     - path
+    - text
     - workflow_buttons
 id: node.resource.default
 targetEntityType: node
@@ -19,6 +35,81 @@ content:
     weight: 10
     region: content
     settings: {  }
+    third_party_settings: {  }
+  field_affiliation:
+    type: chosen_select
+    weight: 31
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_audience:
+    type: chosen_select
+    weight: 24
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_category:
+    type: chosen_select
+    weight: 23
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_custom_vocab:
+    type: chosen_select
+    weight: 25
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_media:
+    type: media_library_widget
+    weight: 2
+    region: content
+    settings:
+      media_types: {  }
+    third_party_settings:
+      media_library_edit:
+        show_edit: '1'
+  field_publish_date:
+    type: datetime_default
+    weight: 2
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_tags:
+    type: chosen_select
+    weight: 22
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_teaser_media:
+    type: media_library_widget
+    weight: 14
+    region: content
+    settings:
+      media_types: {  }
+    third_party_settings: {  }
+  field_teaser_text:
+    type: text_textarea
+    weight: 13
+    region: content
+    settings:
+      rows: 5
+      placeholder: ''
+    third_party_settings:
+      allowed_formats:
+        hide_help: '1'
+        hide_guidelines: '1'
+      maxlength:
+        maxlength_js: 150
+        maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
+        maxlength_js_enforce: true
+  field_teaser_title:
+    type: string_textfield
+    weight: 12
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
     third_party_settings: {  }
   moderation_state:
     type: workflow_buttons
