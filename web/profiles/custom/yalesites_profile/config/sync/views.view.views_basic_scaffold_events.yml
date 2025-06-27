@@ -377,7 +377,7 @@ display:
             items_per_page_options_all_label: '- All -'
             offset: 0
             offset_label: Offset
-          quantity: '9'
+          quantity: '5'
       exposed_form:
         type: basic
         options:
