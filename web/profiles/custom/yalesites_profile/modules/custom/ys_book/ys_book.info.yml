@@ -5,4 +5,4 @@ core_version_requirement: '^10'
 package: YaleSites
 dependencies:
   - book:book
-  - custom_book_block
+  - custom_book_block:custom_book_block
