@@ -1,0 +1,61 @@
+uuid: b539b678-cd28-4223-8195-fec2f71667ad
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.node.resource.layout_builder__layout
+    - node.type.resource
+  module:
+    - layout_builder
+    - layout_builder_restrictions
+    - layout_discovery
+    - user
+third_party_settings:
+  layout_builder:
+    enabled: true
+    allow_custom: true
+    sections:
+      -
+        layout_id: layout_onecol
+        layout_settings:
+          label: ''
+        components: {  }
+        third_party_settings: {  }
+  layout_builder_restrictions:
+    allowed_block_categories: {  }
+    entity_view_mode_restriction:
+      allowed_layouts:
+        - layout_onecol
+        - ys_layout_two_column
+        - ys_layout_two_column_50_50
+        - ys_layout_three_column_33_33_33
+      denylisted_blocks: {  }
+      allowlisted_blocks: {  }
+      restricted_categories: {  }
+    entity_view_mode_restriction_by_region:
+      allowed_layouts:
+        - layout_onecol
+        - ys_layout_two_column
+        - ys_layout_two_column_50_50
+        - ys_layout_three_column_33_33_33
+id: node.resource.default
+targetEntityType: node
+bundle: resource
+mode: default
+content:
+  body:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 101
+    region: content
+  links:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 100
+    region: content
+hidden:
+  addtoany: true
+  layout_builder__layout: true
+  search_api_excerpt: true
