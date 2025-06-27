@@ -9,3 +9,5 @@ However, before adding new features or functionality to this module, platform de
 - **Sitewide Elements**: This category covers a wide array of elements including plugins, forms, templates, and various assets used for managing sitewide components such as the site header, footer, and breadcrumbs. These elements may also extend into the styling realm within the Atomic theme and the component library.
 - **Install Configuration**: The module houses default values for YaleSites-specific configuration files used during the creation of new sites on the platform. While technically not mandatory, maintaining these install files is considered a best practice, as they ensure consistency and serve as a reference point for values that should ideally reside in the profile's config/sync directory.
 - **Hooks and Custom Functionality**: It provides a growing list of hooks for adding and altering form elements, tokens, caching rules, and website behavior. These hooks empower developers to customize and fine-tune the platform's behavior to meet specific requirements.
+
+## Test, do not merge
