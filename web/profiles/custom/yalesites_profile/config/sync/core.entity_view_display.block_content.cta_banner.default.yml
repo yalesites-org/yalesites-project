@@ -10,6 +10,7 @@ dependencies:
     - field.field.block_content.cta_banner.field_link
     - field.field.block_content.cta_banner.field_link_two
     - field.field.block_content.cta_banner.field_media
+    - field.field.block_content.cta_banner.field_overlay_background_image
     - field.field.block_content.cta_banner.field_style_color
     - field.field.block_content.cta_banner.field_style_position
     - field.field.block_content.cta_banner.field_text
@@ -68,6 +69,15 @@ content:
       link: false
     third_party_settings: {  }
     weight: 0
+    region: content
+  field_overlay_background_image:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: full
+      link: false
+    third_party_settings: {  }
+    weight: 8
     region: content
   field_style_color:
     type: list_key
