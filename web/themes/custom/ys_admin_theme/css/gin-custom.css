@@ -73,6 +73,11 @@ a.focal-point-preview-link {
   background-color: var(--gin-bg-layer2);
 }
 
+/* Environment Indicator */
+#environment-indicator {
+  margin-top: 0.5rem;
+}
+
 /* stylelint-enable */
 
 /*# sourceMappingURL=gin-custom.css.map */
