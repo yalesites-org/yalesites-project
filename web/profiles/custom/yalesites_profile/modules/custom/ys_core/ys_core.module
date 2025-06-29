@@ -135,6 +135,11 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     $delegatable_roles = $delegatable_roles->getAssignableRoles($account);
     $form['roles']['#options'] = $delegatable_roles;
 
+    if (isset($form['cas_usernames'])) {
+      $form['cas_usernames']['#title'] = t('NetIDs');
+      $form['cas_usernames']['#description'] = t('Enter one NetID per line.');
+    }
+
     // Hide the email field since CAS users get email from LDAP.
     if (isset($form['email_hostname'])) {
       $form['email_hostname']['#access'] = FALSE;
@@ -923,6 +928,11 @@ function ys_core_menu_local_actions_alter(&$local_actions) {
       // Remove "Add user" action.
       if (isset($local_actions['user_admin_create'])) {
         unset($local_actions['user_admin_create']);
+      }
+
+      // Change the title of the CAS bulk add action.
+      if (isset($local_actions['cas.bulk_add_cas_users'])) {
+        $local_actions['cas.bulk_add_cas_users']['title'] = 'Add NetID Users';
       }
     }
   }
