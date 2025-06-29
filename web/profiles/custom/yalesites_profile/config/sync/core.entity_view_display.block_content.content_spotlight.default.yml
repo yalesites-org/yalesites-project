@@ -4,6 +4,7 @@ status: true
 dependencies:
   config:
     - block_content.type.content_spotlight
+    - field.field.block_content.content_spotlight.field_caption
     - field.field.block_content.content_spotlight.field_focus
     - field.field.block_content.content_spotlight.field_heading
     - field.field.block_content.content_spotlight.field_heading_level
@@ -27,6 +28,13 @@ targetEntityType: block_content
 bundle: content_spotlight
 mode: default
 content:
+  field_caption:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
   field_focus:
     type: list_key
     label: hidden
