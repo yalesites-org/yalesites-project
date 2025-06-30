@@ -1,0 +1,12 @@
+{% if date_formatted %}
+  {% set date_markup %}
+    Published: {{ date_formatted|date("l, F j, Y") }}
+  {% endset %}
+{% endif %}
+
+{% embed "@molecules/page-title/yds-page-title.twig" with {
+  page_title__heading: label,
+  page_title__meta: date_markup,
+  page_title__width: 'site',
+} %}
+{% endembed %}
