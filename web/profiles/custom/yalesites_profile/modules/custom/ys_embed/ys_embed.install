@@ -217,3 +217,12 @@ function ys_embed_update_9007() {
 function ys_embed_update_10001() {
   _copy_embed_file('springshare-libcal.png');
 }
+
+/**
+ * Implements hook_update().
+ *
+ * Copy Google Maps icon.
+ */
+function ys_embed_update_10002() {
+  _copy_embed_file('googlemaps.png');
+}
