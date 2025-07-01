@@ -414,9 +414,9 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
           )
         );
       }
-      if (strpos($value, '@yale.edu') === FALSE) {
+      if (strpos($value, 'yale.edu') === FALSE) {
         $form_state->setErrorByName(
-          $fieldId, $this->t('Email domain has to be @yale.edu.')
+          $fieldId, $this->t('Email domain has to be yale.edu.')
         );
       }
     }

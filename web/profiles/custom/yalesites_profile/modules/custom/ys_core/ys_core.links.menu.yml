@@ -61,13 +61,6 @@ ys_core.menu_interface:
   route_name: entity.menu.collection
   title: Manage Menus
   weight: 20
-# Create a new section for integrations
-ys_core.admin_yalesites_integrations:
-  description: "YaleSites integrations with other systems."
-  parent: ys_core.admin_yalesites
-  route_name: ys_core.admin_yalesites_integrations
-  title: "Integrations"
-  weight: 30
 # main menu edit form.
 ys_core.menu_main_edit:
   description: "Manage main navigation"
@@ -166,3 +159,14 @@ ys_core.custom_block_library:
   route_parameters:
     menu: "main"
   weight: 20
+# Coffee menu item
+ys_core.coffee:
+  title: 'Find'
+  description: 'Use alt+d to start Coffee and search for a page to go to'
+  route_name: '<none>'
+  parent: system.admin
+  weight: 50
+  options:
+    attributes:
+      class: ['toolbar-icon', 'toolbar-icon-coffee', 'coffee-menu-item']
+      title: 'Use alt+d to start Coffee and search for a page to go to'

@@ -561,7 +561,7 @@ display:
           exposed: true
           expose:
             operator_id: post_year_filter_op
-            label: 'News by Year'
+            label: 'View by Year'
             description: ''
             use_operator: false
             operator: post_year_filter_op
@@ -861,7 +861,7 @@ display:
         options:
           query_comment: ''
           disable_sql_rewrite: false
-          distinct: false
+          distinct: true
           replica: false
           query_tags: {  }
       relationships: {  }

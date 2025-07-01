@@ -64,6 +64,20 @@ a.focal-point-preview-link {
   background-color: var(--gin-bg-layer) !important;
 }
 
+.gin--dark-mode .fancytree-title {
+  color: var(--gin-color-text);
+}
+
+.gin--dark-mode .fancytree-active .fancytree-title,
+.gin--dark-mode .fancytree-selected .fancytree-title {
+  background-color: var(--gin-bg-layer2);
+}
+
+/* Environment Indicator */
+#environment-indicator {
+  margin-top: 0.5rem;
+}
+
 /* stylelint-enable */
 
 /*# sourceMappingURL=gin-custom.css.map */

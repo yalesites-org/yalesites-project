@@ -91,7 +91,7 @@ class ThemeSettingsManager {
       ],
     ],
     'book_navigation' => [
-      'name' => 'Book Navigation theme',
+      'name' => 'Content Collection Navigation Theme',
       'prop_type' => 'element',
       'selector' => '.in-this-section[data-component-theme]',
       'default' => 'one',

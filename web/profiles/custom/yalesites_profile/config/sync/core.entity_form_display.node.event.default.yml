@@ -148,7 +148,7 @@ third_party_settings:
         id: ''
         formatter: closed
         description: ''
-        required_fields: true
+        required_fields: false
     group_classifications:
       children:
         - field_tags

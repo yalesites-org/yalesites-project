@@ -13,6 +13,10 @@ use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Url;
 use Drupal\node\Entity\Node;
+use Drupal\Component\Utility\NestedArray;
+
+// Include coffee commands.
+require_once __DIR__ . '/ys_core.coffee.inc';
 
 /**
  * @file
@@ -72,7 +76,54 @@ function ys_core_theme($existing, $type, $theme, $path): array {
 /**
  * Implements hook_form_alter().
  */
-function ys_core_form_alter(&$form, $form_state, $form_id) {
+function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  if ($form_id === 'layout_builder_update_block' || $form_id === 'layout_builder_add_block') {
+    $block_type = ys_core_get_block_type($form, $form_state);
+
+    if ($block_type === 'grand_hero') {
+
+      // Get the block entity.
+      $block = $form['settings']['block_form']['#block'];
+
+      // Handle field_overlay_png.
+      if ($block && $block->hasField('field_overlay_png')) {
+        if (!isset($form['settings']['block_form']['field_overlay_png'])) {
+          $form['settings']['block_form']['field_overlay_png'] = [
+            '#type' => 'managed_file',
+            '#title' => t('Overlay Image'),
+            '#default_value' => $block->get('field_overlay_png')->target_id,
+            '#upload_location' => 'public://overlay-images/',
+          ];
+        }
+
+        // Apply states to the field_overlay_png.
+        $form['settings']['block_form']['field_overlay_png']['#states'] = [
+          'visible' => [
+            ':input[name="settings[block_form][field_display_mode]"]' => ['value' => 'image'],
+          ],
+          'required' => [
+            ':input[name="settings[block_form][field_display_mode]"]' => ['value' => 'image'],
+          ],
+        ];
+      }
+
+      // Add JavaScript dependencies.
+      $form['#attached']['library'][] = 'core/drupal';
+      $form['#attached']['library'][] = 'core/drupal.states';
+      $form['#attached']['library'][] = 'core/jquery';
+      $form['#attached']['library'][] = 'core/once';
+
+      // Add a wrapper div for AJAX updates.
+      $form['settings']['block_form']['#prefix'] = '<div id="grand-hero-settings">';
+      $form['settings']['block_form']['#suffix'] = '</div>';
+
+      // Add validation handler.
+      $form['#validate'][] = 'ys_core_grand_hero_validate';
+
+      // Add custom JavaScript to ensure states are properly initialized.
+      $form['#attached']['library'][] = 'ys_core/grand_hero_form';
+    }
+  }
 
   // Ensure the CAS bulk add only allows roles that role_delegate will allow.
   if ($form_id == 'bulk_add_cas_users') {
@@ -155,6 +206,18 @@ function ys_core_form_alter(&$form, $form_state, $form_id) {
     if (in_array($block_type_name, $limited_block_types)) {
       $form['#attached']['library'][] = 'ys_core/block_form';
     }
+
+    // Add default admin label to layout builder blocks.
+    $form_object = $form_state->getFormObject();
+    $component = $form_object->getCurrentComponent();
+    $plugin = $component->getPlugin();
+    if (isset($plugin)) {
+      // Get the default admin label from the block plugin label.
+      $plugin_definition = $plugin->getPluginDefinition();
+      $default_admin_label = $plugin_definition['admin_label'] ?? $plugin->getPluginId();
+      // Add the plugin label as default value.
+      $form['settings']['label']['#default_value'] = $default_admin_label;
+    }
   }
 
   _ys_core_disable_event_fields($form, $form_id);
@@ -208,6 +271,8 @@ function ys_core_preprocess_block(&$variables) {
       $node['#node']->show_eyebrow = $showEyebrow;
     }
   }
+
+  _ys_core_webform_valid_email_check($variables);
 }
 
 /**
@@ -353,7 +418,7 @@ function ys_core_help($route_name, RouteMatchInterface $route_match) {
 
     case 'entity.block_content.collection':
 
-      $output = '<p class="replacement-block-help">' . t('Reuse your content with Reusable Blocks. Once created, Reusable Blocks will be available in the Block Picker and can be added when editing content in Layout Builder. Changes made to a Reusable Block’s content are reflected anywhere the Block is used.') . '</p>';
+      $output = '<p class="replacement-block-help">' . t("Reuse your content with Reusable Blocks. Once created, Reusable Blocks will be available in the Block Picker and can be added when editing content in Layout Builder. Changes made to a Reusable Block's content are reflected anywhere the Block is used.") . '</p>';
       return $output;
   }
 }
@@ -500,6 +565,7 @@ function ys_core_get_block_type(&$form, &$form_state) {
   // inline_block:BLOCK_TYPE_NAME.
   if (strpos($inline_block_type_name, ':') !== FALSE) {
     $block_type_name = explode(':', $inline_block_type_name)[1];
+
     // While global block adds have this kind of inline block type name,
     // it's by UUID.
     if (strlen($block_type_name) == 36) {
@@ -510,7 +576,7 @@ function ys_core_get_block_type(&$form, &$form_state) {
     }
   }
   // Otherwise, attempt to get it the original way if it exists.
-  elseif (isset($form['settings']['block_form'])) {
+  elseif (isset($form['settings']['block_form']['#block'])) {
     $block_type_name = $form['settings']['block_form']['#block']->bundle();
   }
   // If we're using reusable blocks, this is how we can get the block type.
@@ -657,5 +723,118 @@ function _ys_core_disable_event_fields(&$form, $form_id) {
     foreach ($fieldsToDisable as $field) {
       $form[$field]['#disabled'] = TRUE;
     }
+  }
+}
+
+/**
+ * Validates the email address in the webform plugin.
+ *
+ * @param array $variables
+ *   The render variables array.
+ */
+function _ys_core_webform_valid_email_check(&$variables) {
+  $plugin_id = $variables['plugin_id'];
+  $in_layout_builder = $variables['in_preview'] ?? FALSE;
+  $validEmail = TRUE;
+
+  if ($in_layout_builder && $plugin_id == 'inline_block:webform') {
+    $config = \Drupal::config('system.site');
+    $siteMail = $config->get('mail');
+
+    $validEmail = ($siteMail != 'noreply@noreply.yale.edu');
+  }
+
+  if (!$validEmail) {
+    $variables['content']['#configuration_issue'] = t('Please go into Settings->Site Settings and update the site email to an email address that can receive this submission.');
+  }
+}
+
+/**
+ * AJAX callback for Grand Hero block display mode changes.
+ */
+function ys_core_grand_hero_display_mode_callback($form, FormStateInterface $form_state) {
+  $trigger = $form_state->getTriggeringElement();
+  $parents = $trigger['#array_parents'];
+  array_pop($parents);
+  $element = NestedArray::getValue($form, $parents);
+
+  return $element['settings']['block_form'];
+}
+
+/**
+ * Validation handler for Grand Hero block form.
+ */
+function ys_core_grand_hero_validate($form, FormStateInterface $form_state) {
+  $display_mode = $form_state->getValue(['settings', 'block_form', 'field_display_mode']);
+
+  if ($display_mode === 'text') {
+    if (empty($form_state->getValue(['settings', 'block_form', 'field_heading', 0, 'value']))) {
+      $form_state->setError($form['settings']['block_form']['field_heading'], t('Heading is required when using Text display mode.'));
+    }
+  }
+  elseif ($display_mode === 'image') {
+    if (empty($form_state->getValue(['settings', 'block_form', 'field_overlay_png', 'media_library_selection']))) {
+      $form_state->setError($form['settings']['block_form']['field_overlay_png'], t('Overlay PNG is required when using Image display mode.'));
+    }
+  }
+}
+
+/**
+ * Helper function to find a field in the form structure.
+ *
+ * @param array $form
+ *   The form array to search in.
+ * @param string $field_name
+ *   The name of the field to find.
+ *
+ * @return array|null
+ *   The path to the field in the form structure, or NULL if not found.
+ */
+function _ys_core_find_field_in_form($form, $field_name) {
+  // Check if the field exists at the current level.
+  if (isset($form[$field_name])) {
+    return [$field_name];
+  }
+
+  // Recursively search through the form structure.
+  foreach ($form as $key => $value) {
+    // Skip non-array values and special keys.
+    if (!is_array($value) || $key[0] === '#') {
+      continue;
+    }
+
+    // Recursively search in the child.
+    $result = _ys_core_find_field_in_form($value, $field_name);
+    if ($result) {
+      // Prepend the current key to the path.
+      array_unshift($result, $key);
+      return $result;
+    }
+  }
+
+  return NULL;
+}
+
+/**
+ * Implements hook_toolbar_alter().
+ *
+ * Remove Coffee module's "Go to" item from secondary toolbar and attach
+ * Coffee functionality to our custom menu item.
+ */
+function ys_core_toolbar_alter(&$items) {
+  // Remove Coffee item from secondary toolbar if it exists.
+  if (isset($items['coffee'])) {
+    unset($items['coffee']);
+  }
+}
+
+/**
+ * Implements hook_entity_type_alter().
+ */
+function ys_core_entity_type_alter(array &$entity_types) {
+  if (isset($entity_types['taxonomy_vocabulary'])) {
+    // Override the collection route class for taxonomy vocabularies.
+    // @see /admin/structure/taxonomy
+    $entity_types['taxonomy_vocabulary']->setHandlerClass('list_builder', 'Drupal\ys_core\YaleSitesVocabularyListBuilder');
   }
 }
