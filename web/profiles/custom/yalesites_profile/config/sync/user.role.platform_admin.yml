@@ -74,6 +74,7 @@ dependencies:
     - content_moderation
     - contextual
     - editoria11y
+    - environment_indicator
     - file
     - layout_builder
     - media
@@ -105,6 +106,7 @@ permissions:
   - 'access coffee'
   - 'access content overview'
   - 'access contextual links'
+  - 'access environment indicator'
   - 'access files overview'
   - 'access media overview'
   - 'access printer-friendly version'
