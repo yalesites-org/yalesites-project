@@ -152,3 +152,14 @@ ys_core.custom_block_library:
   route_parameters:
     menu: "main"
   weight: 20
+# Coffee menu item
+ys_core.coffee:
+  title: 'Find'
+  description: 'Use alt+d to start Coffee and search for a page to go to'
+  route_name: '<none>'
+  parent: system.admin
+  weight: 50
+  options:
+    attributes:
+      class: ['toolbar-icon', 'toolbar-icon-coffee', 'coffee-menu-item']
+      title: 'Use alt+d to start Coffee and search for a page to go to'
