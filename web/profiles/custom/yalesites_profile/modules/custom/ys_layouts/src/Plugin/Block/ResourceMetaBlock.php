@@ -5,6 +5,7 @@ namespace Drupal\ys_layouts\Plugin\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Controller\TitleResolver;
 use Drupal\Core\Datetime\DateFormatter;
+use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\node\NodeInterface;
@@ -51,7 +52,14 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
   protected $dateFormatter;
 
   /**
-   * Constructs a new PostMetaBlock object.
+   * The entity type manager service.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManager
+   */
+  protected $entityTypeManager;
+
+  /**
+   * Constructs a new ResourceMetaBlock object.
    *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.
@@ -67,13 +75,26 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
    *   The request stack.
    * @param \Drupal\Core\Datetime\DateFormatter $date_formatter
    *   The date formatter.
+   * @param \Drupal\Core\Entity\EntityTypeManager $entity_type_manager
+   *   The entity type manager service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $route_match, TitleResolver $title_resolver, RequestStack $request_stack, DateFormatter $date_formatter) {
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    RouteMatchInterface $route_match,
+    TitleResolver $title_resolver,
+    RequestStack $request_stack,
+    DateFormatter $date_formatter,
+    EntityTypeManager $entity_type_manager,
+  ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
+
     $this->routeMatch = $route_match;
     $this->titleResolver = $title_resolver;
     $this->requestStack = $request_stack;
     $this->dateFormatter = $date_formatter;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -88,6 +109,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
       $container->get('title_resolver'),
       $container->get('request_stack'),
       $container->get('date.formatter'),
+      $container->get('entity_type.manager'),
     );
   }
 
@@ -105,6 +127,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
     $title = NULL;
     $publishDate = NULL;
     $dateFormatted = NULL;
+    $category = NULL;
 
     $route = $this->routeMatch->getRouteObject();
 
@@ -113,12 +136,22 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
       $title = $node->getTitle();
       $publishDate = strtotime($node->field_publish_date->first()->getValue()['value']);
       $dateFormatted = $this->dateFormatter->format($publishDate, '', 'c');
+      // $media = $node->field_media->first()->getValue();
+      $category = $node->field_category->first()->getValue();
+
+      if ($category) {
+        /** @var \Drupal\taxonomy\Entity\Term $categoryInfo */
+        $categoryInfo = $this->entityTypeManager->getStorage('taxonomy_term')->load($category['target_id']);
+
+        $category = $categoryInfo->getName();
+      }
     }
 
     return [
       '#theme' => 'ys_resource_meta_block',
-      '#label' => $title,
-      '#date_formatted' => $dateFormatted,
+      '#resource_meta__heading' => $title,
+      '#resource_meta__date_formatted' => $dateFormatted,
+      '#resource_meta__category' => $category,
     ];
   }
 
