@@ -28,6 +28,7 @@ module:
   chosen_field: 0
   chosen_lib: 0
   ckeditor5: 0
+  coffee: 0
   components: 0
   config: 0
   config_filter: 0
@@ -48,6 +49,7 @@ module:
   emulsify_twig: 0
   entity_redirect: 0
   entity_reference_revisions: 0
+  environment_indicator: 0
   field: 0
   field_group: 0
   field_ui: 0
