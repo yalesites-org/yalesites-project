@@ -8,11 +8,19 @@
     </header>
   {% endif %}
 
+  {% include "@atoms/typography/headings/yds-heading.twig" with {
+    heading__level: '1',
+    heading__blockname: 'page-title',
+    heading: title,
+    heading__attributes: {
+      'data-component-width': 'site',
+    },
+  } %}
+
   {{ attachment_before }}
 
   {% if rows -%}
     {% embed "@organisms/card-collection/yds-card-collection.twig" with {
-      card_collection__heading: title,
       card_collection__featured: 'true',
       card_collection__type: 'list',
       card_collection__width: 'site',
