@@ -47,6 +47,13 @@ ys_core.admin_views_settings:
   route_name: ys_core.admin_views_settings
   title: "Views Settings"
   weight: 25
+# Google Tag settings form.
+ys_core.admin_google_tag_settings:
+  description: "Google Tag settings."
+  parent: ys_core.admin_yalesites
+  route_name: entity.google_tag_container.single_form
+  title: "Google Tag Settings"
+  weight: 30
 # Menu interface
 ys_core.menu_interface:
   description: "Manage menus"

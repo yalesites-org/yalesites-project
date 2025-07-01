@@ -54,6 +54,7 @@
     "drupal/gin_lb": "1.0.0-rc8",
     "drupal/gin_moderation_sidebar": "1.0.0",
     "drupal/google_analytics": "4.0.2",
+    "drupal/google_tag": "2.0.8",
     "drupal/hide_revision_field": "2.5.0",
     "drupal/honeypot": "2.1.4",
     "drupal/imagemagick": "4.0.2",

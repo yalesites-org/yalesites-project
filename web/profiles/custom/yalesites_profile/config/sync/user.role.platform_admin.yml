@@ -76,6 +76,7 @@ dependencies:
     - editoria11y
     - environment_indicator
     - file
+    - google_tag
     - layout_builder
     - media
     - menu_admin_per_menu
@@ -118,11 +119,12 @@ permissions:
   - 'access user profiles'
   - 'access webform overview'
   - 'add content to books'
+  - 'administer coffee'
   - 'administer block content'
   - 'administer block types'
   - 'administer blocks'
   - 'administer book outlines'
-  - 'administer coffee'
+  - 'administer google_tag_container'
   - 'administer main menu items'
   - 'administer redirects'
   - 'administer users'

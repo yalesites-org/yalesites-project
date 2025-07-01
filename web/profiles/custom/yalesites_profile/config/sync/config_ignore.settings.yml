@@ -8,6 +8,7 @@ ignored_config_entities:
   - 'field.field.node.post.field_custom_vocab:label'
   - 'field.field.node.profile.field_custom_vocab:label'
   - 'google_analytics.settings:account'
+  - 'google_tag*'
   - 'system.site*'
   - 'taxonomy.vocabulary.custom_vocab:name'
   - 'ys_alert.settings:alert'
