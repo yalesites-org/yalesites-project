@@ -11,7 +11,7 @@ id: node.resource.field_publish_date
 field_name: field_publish_date
 entity_type: node
 bundle: resource
-label: 'Publication Date'
+label: 'Published On'
 description: ''
 required: true
 translatable: false

@@ -20,6 +20,7 @@ dependencies:
     - layout_builder_restrictions
     - layout_discovery
     - user
+    - ys_layouts
 third_party_settings:
   layout_builder:
     enabled: true
@@ -28,90 +29,33 @@ third_party_settings:
       -
         layout_id: layout_onecol
         layout_settings:
-          label: ''
+          label: 'TItle and Metadata'
+          context_mapping: {  }
+          ys_layouts_sections_config:
+            padding_options: default
         components:
-          4d3cdd71-f19b-4653-9263-4003f1c91e15:
-            uuid: 4d3cdd71-f19b-4653-9263-4003f1c91e15
+          97ac234f-73aa-4c3b-8180-82a1908c1262:
+            uuid: 97ac234f-73aa-4c3b-8180-82a1908c1262
             region: content
             configuration:
-              id: 'field_block:node:resource:field_audience'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: entity_reference_label
-                label: above
-                settings:
-                  link: true
-                third_party_settings: {  }
-            weight: 1
+              id: resource_meta_block
+              label: 'Resource Meta Block'
+              label_display: ''
+              provider: ys_layouts
+              context_mapping: {  }
+            weight: 0
             additional: {  }
-          ec2f1920-b488-49e9-b2af-5a8de93dae1e:
-            uuid: ec2f1920-b488-49e9-b2af-5a8de93dae1e
-            region: content
-            configuration:
-              id: 'field_block:node:resource:field_affiliation'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: entity_reference_label
-                label: above
-                settings:
-                  link: true
-                third_party_settings: {  }
-            weight: 2
-            additional: {  }
-          6518e5a2-e239-499a-8ad1-e83ff2a3feef:
-            uuid: 6518e5a2-e239-499a-8ad1-e83ff2a3feef
-            region: content
-            configuration:
-              id: 'field_block:node:resource:field_custom_vocab'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: entity_reference_label
-                label: above
-                settings:
-                  link: true
-                third_party_settings: {  }
-            weight: 3
-            additional: {  }
-          45eb5126-a87a-4a78-9418-bd84a565e6be:
-            uuid: 45eb5126-a87a-4a78-9418-bd84a565e6be
-            region: content
-            configuration:
-              id: 'field_block:node:resource:field_category'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: entity_reference_label
-                label: above
-                settings:
-                  link: true
-                third_party_settings: {  }
-            weight: 4
-            additional: {  }
-          d4cc30cd-7905-45f8-b927-eddc248f297e:
-            uuid: d4cc30cd-7905-45f8-b927-eddc248f297e
-            region: content
-            configuration:
-              id: 'field_block:node:resource:field_media'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: entity_reference_entity_view
-                label: above
-                settings:
-                  view_mode: default
-                  link: false
-                third_party_settings: {  }
-            weight: 5
-            additional: {  }
-        third_party_settings: {  }
+        third_party_settings:
+          layout_builder_lock:
+            lock:
+              2: 2
+              3: 3
+              4: 4
+              5: 5
+              6: 6
+              7: 7
+              8: 8
+            regions: {  }
   layout_builder_restrictions:
     allowed_block_categories: {  }
     entity_view_mode_restriction:
