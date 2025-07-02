@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(drush cache:rebuild:*)",
+      "Bash(lando drush:*)",
+      "Bash(find:*)",
+      "Bash(python3:*)",
+      "Bash(git checkout:*)",
+      "Bash(git merge-base:*)",
+      "Bash(git rebase:*)",
+      "Bash(git reset:*)",
+      "Bash(composer code-sniff:*)",
+      "Bash(composer code-fix:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": []
+  }
+}
