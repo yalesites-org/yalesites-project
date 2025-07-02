@@ -34,16 +34,8 @@ grand_hero_form:
     - core/drupal.states
     - core/jquery
     - core/once
-font_preview:
-  css:
-    theme:
-      css/font-preview.css: {}
-  js:
-    js/font-preview.js: {}
-  dependencies:
-    - core/jquery
-    - core/drupal
-    - core/once
+<<<<<<< HEAD
+=======
 facts_icon_preview:
   version: 1.x
   css:
@@ -56,3 +48,4 @@ facts_icon_preview:
     - core/jquery
     - core/once
     - chosen/chosen
+>>>>>>> 84269ca2 (feat(YSP-918): implement Facts and Figures icon admin interface)
