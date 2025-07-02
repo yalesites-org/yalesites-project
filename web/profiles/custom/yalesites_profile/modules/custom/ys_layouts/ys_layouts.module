@@ -84,8 +84,13 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
     'ys_resource_meta_block' => [
       'variables' => [
         'resource_meta__heading' => NULL,
-        'resource_meta__date_formatted' => NULL,
+        'resource_meta__published_on' => NULL,
         'resource_meta__category' => NULL,
+        'resource_meta__metadata' => [],
+        'resource_meta__resource_type' => NULL,
+        'resource_meta__download_url' => NULL,
+        'resource_meta__download_label' => NULL,
+        'resource_meta__media_id' => NULL,
       ],
     ],
     'ys_taxonomy_display_block' => [
