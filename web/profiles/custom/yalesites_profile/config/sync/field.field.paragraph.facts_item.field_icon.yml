@@ -1,0 +1,23 @@
+uuid: 58f9e567-e234-5678-9012-345678901234
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_icon
+    - paragraphs.paragraphs_type.facts_item
+  module:
+    - options
+id: paragraph.facts_item.field_icon
+field_name: field_icon
+entity_type: paragraph
+bundle: facts_item
+label: Icon
+description: 'Choose an icon to display with this fact or figure. Icons help users quickly understand and categorize information. Select "None" if you don''t want to display an icon.'
+required: false
+translatable: false
+default_value:
+  -
+    value: _none
+default_value_callback: ''
+settings: {  }
+field_type: list_string
