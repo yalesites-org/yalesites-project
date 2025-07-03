@@ -126,11 +126,13 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
 
     $title = NULL;
     $categoryName = NULL;
-    $publishedOn = NULL;
+    $publishDateLabel = NULL;
+    $publishDate = NULL;
     $metadata = [];
     $mediaBundle = NULL;
     $fileUrl = NULL;
-    $mediaId = NULL;
+    $mediaLabel = NULL;
+    $renderedVideo = NULL;
 
     $route = $this->routeMatch->getRouteObject();
 
@@ -141,18 +143,17 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
       $fieldCategory = $node->field_category->first()->getValue();
       $fieldMedia = $node->field_media?->first()?->getValue();
 
-      // Set the "published on" date.
-      $publishDateValue = strtotime($fieldPublishDate->first()->getValue()['value']);
+      // Set PUBLISH DATE variables.
       $publishDateLabel = $fieldPublishDate->getFieldDefinition()->getLabel();
-      $dateFormatted = $this->dateFormatter->format($publishDateValue, '', 'F j, Y');
-      $publishedOn = "$publishDateLabel: $dateFormatted";
+      $publishDateValue = strtotime($fieldPublishDate->first()->getValue()['value']);
+      $publishDate = $this->dateFormatter->format($publishDateValue, '', 'F j, Y');
 
-      // Get Category term.
+      // Get CATEGORY term.
       /** @var \Drupal\taxonomy\Entity\Term $categoryTerm */
       $categoryTerm = $this->entityTypeManager->getStorage('taxonomy_term')->load($fieldCategory['target_id']);
       $categoryName = $categoryTerm->getName();
 
-      // Set metadata.
+      // Select specific taxonomy fields to show in the METADATA.
       $selected_term_fields = [
         'field_custom_vocab',
         'field_audience',
@@ -172,18 +173,20 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
             ];
           }
 
-          $metadata[$field_name] = [
-            'label' => $field_label,
-            'items' => $terms,
-          ];
+          // Only set metadata if there are terms.
+          if ($terms) {
+            $metadata[$field_name] = [
+              'label' => $field_label,
+              'items' => $terms,
+            ];
+          }
         }
       }
 
-      // Set media.
+      // Set MEDIA.
       if ($fieldMedia) {
         /** @var \Drupal\media\Entity\Media $media */
         $media = $this->entityTypeManager->getStorage('media')->load($fieldMedia['target_id']);
-        $mediaId = $media->id();
         $mediaBundle = $media->bundle();
         $mediaLabel = $media->label();
 
@@ -194,19 +197,23 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
           $file = $this->entityTypeManager->getStorage('file')->load($fieldMediaFile['target_id']);
           $fileUrl = $file->createFileUrl();
         }
+        elseif ($mediaBundle == 'video') {
+          $renderedVideo = $this->entityTypeManager->getViewBuilder('media')->view($media, 'default');
+        }
       }
     }
 
     return [
       '#theme' => 'ys_resource_meta_block',
       '#resource_meta__heading' => $title,
-      '#resource_meta__published_on' => $publishedOn,
       '#resource_meta__category' => $categoryName,
+      '#resource_meta__publish_date_label' => $publishDateLabel,
+      '#resource_meta__publish_date' => $publishDate,
       '#resource_meta__metadata' => $metadata,
       '#resource_meta__resource_type' => $mediaBundle,
       '#resource_meta__download_url' => $fileUrl,
       '#resource_meta__download_label' => $this->t('Download') . ' ' . $mediaLabel,
-      '#resource_meta__media_id' => $mediaId,
+      '#resource_meta__video' => $renderedVideo,
     ];
   }
 

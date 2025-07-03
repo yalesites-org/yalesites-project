@@ -1,12 +1,15 @@
+{#
+  Available variables:
+    resource_meta__heading - The title of the resource.
+    resource_meta__category - The resource category taxonomy.
+    resource_meta__publish_date_label - The label used in the Content Type.
+    resource_meta__publish_date - The date this resource was published.
+    resource_meta__metadata - The visible taxonomies that should be shown.
+    resource_meta__resource_type - The media type (Media Bundle).
+    resource_meta__download_url - The link to the document to download.
+    resource_meta__download_label - The label of the download link.
+    resource_meta__video - The fully rendered video.
+#}
+
+{# All TWIG variables are named appropriately and pass through to this template #}
 {% include '@molecules/meta/resource-meta/yds-resource-meta.twig' %}
-
-
-{# 
-  {% block page_title__meta__extra %}
-    meta extras
-  {% endblock %}
-
-  {% block page_title__overline %}
-    {{  }}
-  {% endblock %}
-{% endembed %} #}
