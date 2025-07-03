@@ -843,3 +843,12 @@ function ys_core_entity_type_alter(array &$entity_types) {
     $entity_types['taxonomy_vocabulary']->setHandlerClass('list_builder', 'Drupal\ys_core\YaleSitesVocabularyListBuilder');
   }
 }
+
+/**
+ * Implements hook_yale_cas_app_parameter_alter().
+ */
+function ys_core_yale_cas_app_parameter_alter(&$app_value, $event) {
+  // Retrieve the ys_core config.
+  $config = \Drupal::config('ys_core.site');
+  $app_value = $config->get('cas_app_name') ?: 'yalesites';
+}
