@@ -993,14 +993,3 @@ function ys_core_yale_cas_app_parameter_alter(&$app_value, $event) {
   $config = \Drupal::config('ys_core.site');
   $app_value = $config->get('cas_app_name') ?: 'yalesites';
 }
-
-/**
- * Implements hook_entity_type_alter().
- */
-function ys_core_entity_type_alter(array &$entity_types) {
-  if (isset($entity_types['taxonomy_vocabulary'])) {
-    // Override the collection route class for taxonomy vocabularies.
-    // @see /admin/structure/taxonomy
-    $entity_types['taxonomy_vocabulary']->setHandlerClass('list_builder', 'Drupal\ys_core\YaleSitesVocabularyListBuilder');
-  }
-}
