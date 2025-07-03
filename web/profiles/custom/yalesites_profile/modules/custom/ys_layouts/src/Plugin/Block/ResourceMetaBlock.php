@@ -132,7 +132,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
     $mediaBundle = NULL;
     $fileUrl = NULL;
     $mediaLabel = NULL;
-    $renderedVideo = NULL;
+    $mediaId = NULL;
 
     $route = $this->routeMatch->getRouteObject();
 
@@ -189,6 +189,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
         $media = $this->entityTypeManager->getStorage('media')->load($fieldMedia['target_id']);
         $mediaBundle = $media->bundle();
         $mediaLabel = $media->label();
+        $mediaId = $media->id();
 
         if ($mediaBundle === 'document') {
           $fieldMediaFile = $media->field_media_file->first()->getValue();
@@ -196,9 +197,6 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
           /** @var \Drupal\file\Entity\File $file */
           $file = $this->entityTypeManager->getStorage('file')->load($fieldMediaFile['target_id']);
           $fileUrl = $file->createFileUrl();
-        }
-        elseif ($mediaBundle == 'video') {
-          $renderedVideo = $this->entityTypeManager->getViewBuilder('media')->view($media, 'default');
         }
       }
     }
@@ -213,7 +211,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
       '#resource_meta__resource_type' => $mediaBundle,
       '#resource_meta__download_url' => $fileUrl,
       '#resource_meta__download_label' => $this->t('Download') . ' ' . $mediaLabel,
-      '#resource_meta__video' => $renderedVideo,
+      '#resource_meta__media_id' => $mediaId,
     ];
   }
 
