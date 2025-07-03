@@ -397,7 +397,6 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       ->set('image_fallback.teaser', $form_state->getValue('teaser_image_fallback'))
       ->set('custom_favicon', $form_state->getValue('favicon'))
       ->set('font_pairing', $form_state->getValue('font_pairing'))
-      ->set('cas_protection_default', $form_state->getValue('cas_protection_default') ?? FALSE)
       ->set('cas_app_name', $form_state->getValue('cas_app_name') ?? 'yalesites')
       ->save();
 

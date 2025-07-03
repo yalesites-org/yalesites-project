@@ -939,6 +939,7 @@ function _ys_core_attach_icon_preview(&$form, FormStateInterface $form_state, $f
 }
 
 /**
+ * <<<<<<< HEAD
  * Implements hook_menu_local_actions_alter().
  *
  * Hide 'Add user' action for users without the platform_admin role.
@@ -999,18 +1000,12 @@ $form['ys_core_netid_alert_message'] = [
  * /
 
 /**
- *
+ * Implements hook_yale_cas_app_parameter_alter().
  */
-function ys_core_yale_cas_pre_redirect_service_parameters_alter(
-  array &$service_parameters,
-  $event,
-) {
+function ys_core_yale_cas_app_parameter_alter(&$app_value, $event) {
   // Retrieve the ys_core config.
   $config = \Drupal::config('ys_core.site');
-  $app_name = $config->get('cas_app_name') ?: 'yalesites';
-
-  // Set the app parameter to the configured value.
-  $service_parameters['app'] = $app_name;
+  $app_value = $config->get('cas_app_name') ?: 'yalesites';
 }
 
 /**
