@@ -1,0 +1,29 @@
+uuid: 24de8b35-266c-485d-b106-c9076033da71
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.callout
+    - field.storage.block_content.field_overlay_background_image
+    - media.type.image
+id: block_content.callout.field_overlay_background_image
+field_name: field_overlay_background_image
+entity_type: block_content
+bundle: callout
+label: 'Overlay background image'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:media'
+  handler_settings:
+    target_bundles:
+      image: image
+    sort:
+      field: _none
+      direction: ASC
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference

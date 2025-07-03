@@ -70,9 +70,11 @@ dependencies:
     - block
     - block_content
     - book
+    - coffee
     - content_moderation
     - contextual
     - editoria11y
+    - environment_indicator
     - file
     - layout_builder
     - media
@@ -101,8 +103,10 @@ weight: -5
 is_admin: null
 permissions:
   - 'access block library'
+  - 'access coffee'
   - 'access content overview'
   - 'access contextual links'
+  - 'access environment indicator'
   - 'access files overview'
   - 'access media overview'
   - 'access printer-friendly version'
@@ -118,6 +122,7 @@ permissions:
   - 'administer block types'
   - 'administer blocks'
   - 'administer book outlines'
+  - 'administer coffee'
   - 'administer main menu items'
   - 'administer redirects'
   - 'administer users'

@@ -1,18 +1,18 @@
-uuid: be5f9149-3533-4dd0-a7ce-c02388d5fb7b
+uuid: cba7058f-d2c0-40dd-8b9c-aed1eb785920
 langcode: en
 status: true
 dependencies:
   config:
-    - block_content.type.facts
-    - field.storage.block_content.field_text
+    - block_content.type.content_spotlight
+    - field.storage.block_content.field_caption
     - filter.format.restricted_html
   module:
     - text
-id: block_content.facts.field_text
-field_name: field_text
+id: block_content.content_spotlight.field_caption
+field_name: field_caption
 entity_type: block_content
-bundle: facts
-label: Content
+bundle: content_spotlight
+label: Caption
 description: ''
 required: false
 translatable: false
