@@ -859,21 +859,12 @@ function ys_core_entity_type_alter(array &$entity_types) {
 }
 
 /**
- * Implements hook_yale_cas_pre_redirect_service_parameters_alter().
- *
- * Allows modules to alter CAS service parameters before redirect
- * at the pre-redirect event.
+ * Implements hook_yale_cas_app_parameter_alter().
  */
-function ys_core_yale_cas_pre_redirect_service_parameters_alter(
-  array &$service_parameters,
-  $event,
-) {
+function ys_core_yale_cas_app_parameter_alter(&$app_value, $event) {
   // Retrieve the ys_core config.
   $config = \Drupal::config('ys_core.site');
-  $app_name = $config->get('cas_app_name') ?: 'yalesites';
-
-  // Set the app parameter to the configured value.
-  $service_parameters['app'] = $app_name;
+  $app_value = $config->get('cas_app_name') ?: 'yalesites';
 }
 
 /**
