@@ -17,10 +17,6 @@
           "type": "tar"
         }
       }
-    },
-    "yale_cas_dev": {
-      "type": "vcs",
-      "url": "https://github.com/yalesites-org/yale_cas.git"
     }
   },
   "require": {
@@ -121,7 +117,7 @@
     "northernco/ckeditor5-anchor-drupal": "0.4.0",
     "yalesites-org/ai_engine": "1.2.10",
     "yalesites-org/atomic": "1.51.0",
-    "yalesites-org/yale_cas": "v1.0.5"
+    "yalesites-org/yale_cas": "v1.2.0"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
