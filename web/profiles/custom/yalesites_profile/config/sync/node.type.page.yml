@@ -14,7 +14,7 @@ third_party_settings:
       - utility-navigation
     parent: 'main:'
   search_api_exclude:
-    enabled: 1
+    enabled: true
   node_revision_delete:
     amount:
       status: true
