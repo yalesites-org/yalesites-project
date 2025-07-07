@@ -74,7 +74,7 @@ class FactsAndFiguresIconManager {
 
     // Load and parse the YAML file from component library.
     $config_file = DRUPAL_ROOT . '/themes/contrib/atomic/' .
-      '_yale-packages/component-library-twig/components/02-molecules/' .
+      'node_modules/@yalesites-org/component-library-twig/components/02-molecules/' .
       'facts-and-figures/facts-and-figures-icons.yml';
 
     if (!file_exists($config_file)) {
