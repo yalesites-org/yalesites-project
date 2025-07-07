@@ -2,7 +2,7 @@
 
 namespace Drupal\ys_starterkit\Plugin\SingleContentSyncFieldProcessor;
 
-use Drupal\single_content_sync\Plugin\SingleContentSyncFieldProcessor\GenericField;
+use Drupal\single_content_sync\Plugin\SingleContentSyncFieldProcessor\SimpleField;
 
 /**
  * Single Content Sync SmartDate Handler.
@@ -13,5 +13,5 @@ use Drupal\single_content_sync\Plugin\SingleContentSyncFieldProcessor\GenericFie
  *   field_type = "smartdate",
  * )
  */
-class SmartDate extends GenericField {
+class SmartDate extends SimpleField {
 }

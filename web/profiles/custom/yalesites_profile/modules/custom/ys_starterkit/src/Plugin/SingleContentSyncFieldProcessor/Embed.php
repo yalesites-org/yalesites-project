@@ -2,7 +2,7 @@
 
 namespace Drupal\ys_starterkit\Plugin\SingleContentSyncFieldProcessor;
 
-use Drupal\single_content_sync\Plugin\SingleContentSyncFieldProcessor\GenericField;
+use Drupal\single_content_sync\Plugin\SingleContentSyncFieldProcessor\SimpleField;
 
 /**
  * Single Content Sync Embed Handler.
@@ -13,5 +13,5 @@ use Drupal\single_content_sync\Plugin\SingleContentSyncFieldProcessor\GenericFie
  *   field_type = "embed",
  * )
  */
-class Embed extends GenericField {
+class Embed extends SimpleField {
 }
