@@ -15,7 +15,7 @@
 {# All TWIG variables are named appropriately and pass through to this template #}
 {% embed '@molecules/meta/resource-meta/yds-resource-meta.twig' %}
   {% block resource_meta__image %}
-    image here
+    {{ resource_meta__document_image }}
   {% endblock %}
 
   {% block resource_meta__video %}

@@ -133,6 +133,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
     $fileUrl = NULL;
     $mediaLabel = NULL;
     $mediaId = NULL;
+    $documentImage = NULL;
 
     $route = $this->routeMatch->getRouteObject();
 
@@ -197,6 +198,27 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
           /** @var \Drupal\file\Entity\File $file */
           $file = $this->entityTypeManager->getStorage('file')->load($fieldMediaFile['target_id']);
           $fileUrl = $file->createFileUrl();
+
+          $thumbnail = $media?->thumbnail;
+
+          if ($thumbnail) {
+            /** @var \Drupal\file\Entity\File $thumbnail_file */
+            $thumbnail_file = reset($thumbnail->referencedEntities());
+
+            if ($thumbnail_file) {
+              $documentImage = [
+                '#theme' => 'responsive_image',
+                '#uri' => $thumbnail_file->getFileUri(),
+                '#responsive_image_style_id' => 'content_spotlight_portrait',
+                '#height' => $thumbnail?->height,
+                '#width' => $thumbnail?->width,
+                '#attributes' => [
+                  'loading' => 'lazy',
+                  'alt' => $media->label(),
+                ],
+              ];
+            }
+          }
         }
       }
     }
@@ -210,8 +232,10 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
       '#resource_meta__metadata' => $metadata,
       '#resource_meta__resource_type' => $mediaBundle,
       '#resource_meta__download_url' => $fileUrl,
-      '#resource_meta__download_label' => $this->t('Download') . ' ' . $mediaLabel,
+      '#resource_meta__download_label' => $this->t('Download'),
+      '#resource_meta__download_aria_label' => $this->t('Download') . ' ' . $mediaLabel,
       '#resource_meta__media_id' => $mediaId,
+      '#resource_meta__document_image' => $documentImage,
     ];
   }
 
