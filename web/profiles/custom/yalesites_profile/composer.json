@@ -107,7 +107,7 @@
     "drupal/smart_date": "4.1.6",
     "drupal/taxonomy_manager": "2.0.19",
     "drupal/twig_tweak": "3.4.0",
-    "drupal/typogrify": "1.4-rc1",
+    "drupal/typogrify": "1.4",
     "drupal/upgrade_status": "4.3.5",
     "drupal/webform": "6.3.0-beta2",
     "drupal/workflow_buttons": "1.0-beta7",
