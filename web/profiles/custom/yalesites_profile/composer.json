@@ -52,7 +52,7 @@
     "drupal/formdazzle": "4.0.0",
     "drupal/gin": "3.0.0-rc13",
     "drupal/gin_lb": "1.0.0-rc8",
-    "drupal/gin_moderation_sidebar": "1.0.0",
+    "drupal/gin_moderation_sidebar": "1.0.1",
     "drupal/google_analytics": "4.0.2",
     "drupal/hide_revision_field": "2.5.0",
     "drupal/honeypot": "2.2.2",
