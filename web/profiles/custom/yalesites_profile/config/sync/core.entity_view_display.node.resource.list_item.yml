@@ -17,6 +17,7 @@ dependencies:
     - field.field.node.resource.layout_builder__layout
     - node.type.resource
   module:
+    - datetime
     - text
     - user
 id: node.resource.list_item
@@ -24,38 +25,31 @@ targetEntityType: node
 bundle: resource
 mode: list_item
 content:
-  field_affiliation:
-    type: entity_reference_label
-    label: hidden
-    settings:
-      link: false
-    third_party_settings: {  }
-    weight: 8
-    region: content
   field_category:
     type: entity_reference_label
     label: hidden
     settings:
       link: false
     third_party_settings: {  }
-    weight: 11
+    weight: 4
     region: content
   field_media:
     type: entity_reference_entity_view
     label: hidden
     settings:
-      view_mode: profile_directory_card_1_1_
+      view_mode: default
       link: false
     third_party_settings: {  }
-    weight: 1
+    weight: 0
     region: content
-  field_tags:
-    type: entity_reference_label
+  field_publish_date:
+    type: datetime_custom
     label: hidden
     settings:
-      link: false
+      timezone_override: ''
+      date_format: 'F j, Y'
     third_party_settings: {  }
-    weight: 12
+    weight: 5
     region: content
   field_teaser_media:
     type: entity_reference_entity_view
@@ -84,12 +78,13 @@ content:
   links:
     settings: {  }
     third_party_settings: {  }
-    weight: 100
+    weight: 6
     region: content
 hidden:
   addtoany: true
+  field_affiliation: true
   field_audience: true
   field_custom_vocab: true
-  field_publish_date: true
+  field_tags: true
   layout_builder__layout: true
   search_api_excerpt: true
