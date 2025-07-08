@@ -16,6 +16,14 @@ targetEntityType: media
 bundle: document
 mode: media_library
 content:
+  name:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 0
+    region: content
   thumbnail:
     type: image
     label: hidden
@@ -25,7 +33,7 @@ content:
       image_loading:
         attribute: lazy
     third_party_settings: {  }
-    weight: 0
+    weight: 1
     region: content
 hidden:
   addtoany: true
@@ -33,6 +41,5 @@ hidden:
   field_media_file: true
   field_metatags: true
   field_tags: true
-  name: true
   search_api_excerpt: true
   uid: true
