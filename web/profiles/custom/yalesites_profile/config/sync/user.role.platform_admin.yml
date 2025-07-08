@@ -81,6 +81,7 @@ dependencies:
     - google_tag
     - layout_builder
     - media
+    - media_thumbnails
     - menu_admin_per_menu
     - moderation_sidebar
     - node
@@ -121,11 +122,11 @@ permissions:
   - 'access user profiles'
   - 'access webform overview'
   - 'add content to books'
-  - 'administer coffee'
   - 'administer block content'
   - 'administer block types'
   - 'administer blocks'
   - 'administer book outlines'
+  - 'administer coffee'
   - 'administer google_tag_container'
   - 'administer main menu items'
   - 'administer redirects'
@@ -368,6 +369,7 @@ permissions:
   - 'edit terms in page_category'
   - 'edit terms in post_category'
   - 'edit terms in tags'
+  - 'manage media thumbnails settings'
   - 'mark as hidden in editoria11y'
   - 'override all authored by option'
   - 'override all authored on option'

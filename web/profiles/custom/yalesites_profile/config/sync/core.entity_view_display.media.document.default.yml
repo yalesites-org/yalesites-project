@@ -6,9 +6,11 @@ dependencies:
     - field.field.media.document.field_media_file
     - field.field.media.document.field_metatags
     - field.field.media.document.field_tags
+    - image.style.media_library
     - media.type.document
   module:
     - file
+    - image
 id: media.document.default
 targetEntityType: media
 bundle: document
@@ -21,6 +23,17 @@ content:
     third_party_settings: {  }
     weight: 0
     region: content
+  thumbnail:
+    type: image
+    label: hidden
+    settings:
+      image_link: ''
+      image_style: media_library
+      image_loading:
+        attribute: lazy
+    third_party_settings: {  }
+    weight: 1
+    region: content
 hidden:
   addtoany: true
   created: true
@@ -28,5 +41,4 @@ hidden:
   field_tags: true
   name: true
   search_api_excerpt: true
-  thumbnail: true
   uid: true
