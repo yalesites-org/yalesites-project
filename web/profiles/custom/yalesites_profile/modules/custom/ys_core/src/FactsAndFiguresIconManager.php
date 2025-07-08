@@ -119,9 +119,7 @@ class FactsAndFiguresIconManager {
         'description' => 'Fallback icon configuration',
       ],
       'icons' => [
-        'graduation-cap-solid' => 'Graduation Cap',
-        'trophy-solid' => 'Trophy',
-        'globe-solid' => 'Globe',
+        'sack-dollar-solid' => 'Sack Dollar',
       ],
       'cache' => [
         'tags' => ['component_library_icons', 'facts_and_figures_icons'],
