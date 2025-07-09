@@ -118,10 +118,11 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
       $dateFormatted = $this->dateFormatter->format($publishDate, '', 'c');
       $showReadTime = ($node->field_show_read_time->first()) ? $node->field_show_read_time->first()->getValue()['value'] : NULL;
       $showSocialMediaSharingLinks = ($node->field_show_social_media_sharing->first()) ? $node->field_show_social_media_sharing->first()->getValue()['value'] : NULL;
-      $post_authors = $this->getPostAuthorLinks($node->field_authors);
+      $post_authors = [];
       if ($author) {
-        array_push($post_authors, ['title' => $author, 'url' => NULL, 'isLink' => FALSE]);
+        $post_authors[] = ['title' => $author, 'url' => NULL, 'isLink' => FALSE];
       }
+      $post_authors = array_merge($post_authors, $this->getPostAuthorLinks($node->field_authors));
     }
 
     return [
