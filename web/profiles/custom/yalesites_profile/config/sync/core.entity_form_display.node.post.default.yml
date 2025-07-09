@@ -146,7 +146,7 @@ content:
     third_party_settings: {  }
   field_author:
     type: string_textfield
-    weight: 3
+    weight: 2
     region: content
     settings:
       size: 60
@@ -154,7 +154,7 @@ content:
     third_party_settings: {  }
   field_authors:
     type: chosen_select
-    weight: 2
+    weight: 3
     region: content
     settings: {  }
     third_party_settings: {  }
