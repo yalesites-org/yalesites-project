@@ -83,9 +83,7 @@ class CsvValidatorService {
     // Create a mapping from normalized headers to original headers.
     $header_mapping = array_combine($normalized_headers, $headers);
 
-    // Read and validate data rows.
     $data = [];
-    // Start at 1 since we already read the header.
     $row_number = 1;
     $errors = [];
 

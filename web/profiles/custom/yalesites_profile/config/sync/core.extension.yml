@@ -101,6 +101,7 @@ module:
   metatag_verification: 0
   metatag_views: 0
   migrate: 0
+  migrate_drupal: 0
   migrate_plus: 0
   migrate_tools: 0
   moderation_sidebar: 0
@@ -159,6 +160,7 @@ module:
   ys_layouts: 0
   ys_localist: 0
   ys_mail: 0
+  ys_migrate: 0
   ys_node_access: 0
   ys_servicenow: 0
   ys_starterkit: 0
