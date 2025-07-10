@@ -15,7 +15,7 @@ function ys_core_deploy_10001() {
   if ($vocab && $vocab->get('name') === NULL) {
     $vocab->set('name', 'Custom Vocab')->save();
 
-    $content_types = ['event', 'page', 'post', 'profile'];
+    $content_types = ['event', 'page', 'post', 'profile', 'resource'];
 
     foreach ($content_types as $content_type) {
       \Drupal::configFactory()->getEditable("field.field.node.{$content_type}.field_custom_vocab")

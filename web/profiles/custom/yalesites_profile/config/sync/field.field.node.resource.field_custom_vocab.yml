@@ -10,14 +10,14 @@ id: node.resource.field_custom_vocab
 field_name: field_custom_vocab
 entity_type: node
 bundle: resource
-label: Programs
+label: 'Custom Vocab'
 description: ''
 required: false
 translatable: false
 default_value: {  }
 default_value_callback: ''
 settings:
-  handler: 'default:filter_existing_terms'
+  handler: 'default:taxonomy_term'
   handler_settings:
     target_bundles:
       custom_vocab: custom_vocab
