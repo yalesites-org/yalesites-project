@@ -57,6 +57,15 @@ third_party_settings:
               7: 7
               8: 8
             regions: {  }
+      -
+        layout_id: layout_onecol
+        layout_settings:
+          label: 'Initial Content'
+          context_mapping: {  }
+          ys_layouts_sections_config:
+            padding_options: default
+        components: {  }
+        third_party_settings: {  }
   layout_builder_restrictions:
     allowed_block_categories: {  }
     entity_view_mode_restriction:

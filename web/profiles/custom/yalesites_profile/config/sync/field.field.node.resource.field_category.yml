@@ -12,7 +12,7 @@ entity_type: node
 bundle: resource
 label: 'Resource Category'
 description: "Categories will autocomplete as you type.  Choose from pre-created options only.  To add a new category, go to 'Content->Manage Taxonomy->Event Categories'."
-required: true
+required: false
 translatable: false
 default_value: {  }
 default_value_callback: ''
