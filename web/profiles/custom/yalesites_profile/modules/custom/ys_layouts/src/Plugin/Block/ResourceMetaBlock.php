@@ -140,19 +140,23 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
     if ($route) {
       // Get Resource fields.
       $title = $node->getTitle();
-      $fieldPublishDate = $node->field_publish_date;
-      $fieldCategory = $node->field_category->first()->getValue();
-      $fieldMedia = $node->field_media?->first()?->getValue();
+      $fieldPublishDate = $node?->field_publish_date;
+      $fieldCategory = $node?->field_category?->first()?->getValue();
+      $fieldMedia = $node?->field_media?->first()?->getValue();
 
       // Set PUBLISH DATE variables.
-      $publishDateLabel = $fieldPublishDate->getFieldDefinition()->getLabel();
-      $publishDateValue = strtotime($fieldPublishDate->first()->getValue()['value']);
-      $publishDate = $this->dateFormatter->format($publishDateValue, '', 'F j, Y');
+      if ($fieldPublishDate) {
+        $publishDateLabel = $fieldPublishDate->getFieldDefinition()->getLabel();
+        $publishDateValue = strtotime($fieldPublishDate->first()->getValue()['value']);
+        $publishDate = $this->dateFormatter->format($publishDateValue, '', 'F j, Y');
+      }
 
       // Get CATEGORY term.
-      /** @var \Drupal\taxonomy\Entity\Term $categoryTerm */
-      $categoryTerm = $this->entityTypeManager->getStorage('taxonomy_term')->load($fieldCategory['target_id']);
-      $categoryName = $categoryTerm->getName();
+      if ($fieldCategory) {
+        /** @var \Drupal\taxonomy\Entity\Term $categoryTerm */
+        $categoryTerm = $this->entityTypeManager->getStorage('taxonomy_term')->load($fieldCategory['target_id']);
+        $categoryName = $categoryTerm->getName();
+      }
 
       // Select specific taxonomy fields to show in the METADATA.
       $selected_term_fields = [
