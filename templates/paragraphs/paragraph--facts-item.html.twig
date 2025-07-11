@@ -1,12 +1,19 @@
 {# Get values from parent to pass here #}
 {% set parent = paragraph._referringItem.parent.parent.entity %}
 
+{# Determine icon settings #}
+{% set icon_value = paragraph.field_icon.value %}
+{% set has_icon = icon_value and icon_value != '_none' %}
+{% set icon_name = has_icon ? icon_value : null %}
+
 {% embed "@molecules/facts-and-figures/yds-facts-and-figures.twig" with {
   facts_and_figures__stat: content.field_heading.0['#text'],
   facts_and_figures__content: content.field_text.0,
   facts_and_figures__alignment: parent.fields.field_style_alignment.0.value,
   facts_and_figures__presentation_style: 'basic',
   facts_and_figures__theme: 'none',
+  facts_and_figures__has_icon: has_icon ? 'true' : 'false',
+  facts_and_figures__icon_name: icon_name,
   }
 %}
 {% endembed %}
