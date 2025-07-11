@@ -69,7 +69,7 @@ class CasUser1BypassSubscriber implements EventSubscriberInterface {
       // Temporarily disable forced login for user 1 by modifying the config.
       $config = $this->configFactory->getEditable('cas.settings');
       $original_enabled = $config->get('forced_login.enabled');
-
+      
       if ($original_enabled) {
         // Store the original state and disable forced login for this request.
         $event->getRequest()->attributes->set('cas_user1_bypass', TRUE);
