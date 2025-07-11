@@ -6,7 +6,6 @@ ignored_config_entities:
   - 'cas.settings:forced_login.enabled'
   - 'cas.settings:forced_login.paths.negate'
   - 'cas.settings:forced_login.paths.pages'
-  - 'cas.settings:logout.cas_logout'
   - 'field.field.node.event.field_custom_vocab:label'
   - 'field.field.node.page.field_custom_vocab:label'
   - 'field.field.node.post.field_custom_vocab:label'

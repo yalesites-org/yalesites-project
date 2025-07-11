@@ -9,8 +9,3 @@ services:
     arguments: ['@access_manager', '@current_user', '@entity_type.manager', '@module_handler', '@config.factory']
     decorates: menu.default_tree_manipulators
     decoration_priority: 100
-  ys_node_access.cas_user1_bypass:
-    class: Drupal\ys_node_access\EventSubscriber\CasUser1BypassSubscriber
-    arguments: ['@current_user', '@config.factory']
-    tags:
-      - { name: event_subscriber }
