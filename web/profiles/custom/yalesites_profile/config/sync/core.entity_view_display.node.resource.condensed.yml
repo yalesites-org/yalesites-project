@@ -24,6 +24,14 @@ targetEntityType: node
 bundle: resource
 mode: condensed
 content:
+  field_category:
+    type: entity_reference_label
+    label: hidden
+    settings:
+      link: false
+    third_party_settings: {  }
+    weight: 1
+    region: content
   field_publish_date:
     type: datetime_default
     label: hidden
@@ -31,18 +39,17 @@ content:
       timezone_override: ''
       format_type: medium
     third_party_settings: {  }
-    weight: 1
+    weight: 0
     region: content
   links:
     settings: {  }
     third_party_settings: {  }
-    weight: 100
+    weight: 2
     region: content
 hidden:
   addtoany: true
   field_affiliation: true
   field_audience: true
-  field_category: true
   field_custom_vocab: true
   field_media: true
   field_tags: true
