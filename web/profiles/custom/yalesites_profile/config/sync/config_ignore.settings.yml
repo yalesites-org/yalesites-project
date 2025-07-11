@@ -4,6 +4,8 @@ mode: simple
 ignored_config_entities:
   - 'ai_engine*'
   - 'cas.settings:forced_login.enabled'
+  - 'cas.settings:forced_login.paths.negate'
+  - 'cas.settings:forced_login.paths.pages'
   - 'field.field.node.event.field_custom_vocab:label'
   - 'field.field.node.page.field_custom_vocab:label'
   - 'field.field.node.post.field_custom_vocab:label'
