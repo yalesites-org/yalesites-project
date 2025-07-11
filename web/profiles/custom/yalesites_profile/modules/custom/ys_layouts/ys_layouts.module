@@ -59,6 +59,7 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'date_formatted' => NULL,
         'show_read_time' => NULL,
         'show_social_media_sharing_links' => NULL,
+        'post_authors' => NULL,
       ],
     ],
     'ys_profile_meta_block' => [
