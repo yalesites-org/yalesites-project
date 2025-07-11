@@ -1,0 +1,59 @@
+# Facts and Figures Icon Configuration
+#
+# This file defines all available icons for Facts and Figures components.
+# This is the SINGLE SOURCE OF TRUTH for icon options.
+#
+# Used by:
+# - Storybook (for interactive controls)
+# - Drupal (via FactsAndFiguresIconManager service)
+# - Any other consumers of the Facts and Figures component
+#
+# To add new icons:
+# 1. Add the icon SVG file to images/icons/ directory
+# 2. Add the icon definition below in the appropriate category
+# 3. Rebuild component library: npm run build
+# 4. Clear Drupal cache: drush cr
+
+# Configuration metadata
+config:
+  version: '1.0'
+  default_value: '_none'
+  none_label: '- None -'
+  description: 'Available icons for Facts and Figures components'
+
+# Available icons (alphabetically sorted)
+icons:
+  award-solid: 'Award'
+  book-solid: 'Book'
+  brain-solid: 'Brain/Learning'
+  building-solid: 'Building/Institution'
+  certificate-solid: 'Certificate'
+  chalkboard-teacher-solid: 'Teacher'
+  check-circle-solid: 'Success/Checkmark'
+  cog-solid: 'Process/System'
+  comments-solid: 'Communication'
+  envelope-solid: 'Contact/Outreach'
+  globe-solid: 'Globe'
+  graduation-cap-solid: 'Graduation Cap'
+  heart-solid: 'Heart'
+  home-solid: 'Home/Community'
+  lightbulb-solid: 'Innovation/Ideas'
+  lock-solid: 'Security/Privacy'
+  medal-solid: 'Medal'
+  microscope-solid: 'Microscope'
+  rocket-solid: 'Rocket/Launch'
+  sack-dollar-solid: 'Funding/Financial Impact'
+  scroll-solid: 'Scroll/Diploma'
+  star-solid: 'Star'
+  thumbs-up-solid: 'Thumbs Up'
+  trophy-solid: 'Trophy'
+  university-solid: 'University Building'
+  user-graduate-solid: 'Graduate Student'
+  users-solid: 'Community/People'
+
+# Cache configuration (for Drupal consumers)
+cache:
+  tags:
+    - 'component_library_icons'
+    - 'facts_and_figures_icons'
+  max_age: 3600 # 1 hour

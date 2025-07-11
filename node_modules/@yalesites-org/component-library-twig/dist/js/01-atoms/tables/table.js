@@ -1,0 +1,1 @@
+Drupal.behaviors.table={attach(){}};

@@ -1,0 +1,17 @@
+{#
+ # Available Variables:
+ # - embed__src
+ # - embed__title
+ # - embed__width: default('site')
+ # - embed__type: 'form', 'audio', default('form')
+ # - embed__loading: 'lazy', 'eager', default('lazy')
+ # - embed__allowfullscreen: TRUE, FALSE, default(FALSE)
+ #}
+
+{% extends "@molecules/embed/yds-embed.twig" %}
+{% block prefix_suffix %}
+    {% include "@molecules/inline-message/yds-inline-message.twig" with {
+      inline_message__heading: 'NOTE',
+      inline_message__content: 'This component is deprecated'
+    } %}
+{% endblock %}
