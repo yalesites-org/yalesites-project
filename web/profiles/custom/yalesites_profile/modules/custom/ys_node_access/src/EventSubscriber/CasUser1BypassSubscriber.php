@@ -67,6 +67,7 @@ class CasUser1BypassSubscriber implements EventSubscriberInterface {
       return;
     }
 
+    $request = $event->getRequest();
     $config = $this->configFactory->getEditable('cas.settings');
 
     // Check if forced login is enabled.
