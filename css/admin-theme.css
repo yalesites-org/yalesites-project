@@ -351,3 +351,71 @@ label.form-required::after, label.js-form-required::after {
   color: var(--gin-color-danger) !important;
   background: none !important;
 }
+
+/*
+ * Pager styles
+ *
+ * These address using our custom pager with layout builder in certain cases like
+ * media library and layout builder itself.
+ */
+.pager__link.is-active {
+  color: var(--color-basic-brown-gray);
+  border-color: var(--color-basic-brown-gray);
+}
+
+.layout-builder .pager__link.is-active {
+  background: var(--color-basic-white);
+}
+
+.media-library-widget-modal .ui-widget-content a {
+  color: var(--color-basic-black);
+}
+
+.media-library-widget-modal .pager__items {
+  font-weight: normal;
+}
+
+.media-library-widget-modal .pager__link.is-active {
+  background: transparent;
+}
+.media-library-widget-modal .pager__link--next:hover,
+.media-library-widget-modal .pager__link--previous:hover {
+  background: transparent;
+  color: var(--color-link-base);
+}
+
+.layout-builder .pager__items {
+  font-weight: normal;
+}
+
+.layout-builder .pager__items.is-active {
+  background-color: var(--color-basic-white);
+  background: var(--color-basic-white);
+}
+
+/* Claro's pager styles are interfering with ours. */
+.pager__item--last .pager__link::after,
+.pager__item--first .pager__link::before,
+.pager__item--next .pager__link::after,
+.pager__item--previous .pager__link::before {
+  --background-image: none;
+  display: none;
+}
+
+/*
+ * Dark mode pager style
+ */
+.gin--dark-mode .media-library-widget-modal .pager__link--next:hover,
+.gin--dark-mode .media-library-widget-modal .pager__link--previous:hover {
+  background: transparent;
+  color: var(--color-basic-white);
+}
+
+.gin--dark-mode .media-library-widget-modal .pager__link {
+  color: var(--gin-color-primary);
+  background-color: transparent;
+}
+
+.gin--dark-mode .media-library-widget-modal .pager__link {
+  color: var(--color-basic-white);
+}
