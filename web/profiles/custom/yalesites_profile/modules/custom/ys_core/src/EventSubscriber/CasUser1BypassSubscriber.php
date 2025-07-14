@@ -7,7 +7,6 @@ use Drupal\cas\Service\CasHelper;
 use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
@@ -61,16 +60,16 @@ class CasUser1BypassSubscriber implements EventSubscriberInterface {
     if ($this->currentUser->id() == 1) {
       // Get the current request to determine destination.
       $request = $this->requestStack->getCurrentRequest();
-      
+
       // Get destination from query parameters or default to homepage.
       $destination = $request->query->get('destination', '/');
-      
+
       // Create a redirect response to bypass CAS.
       $response = new TrustedRedirectResponse($destination);
-      
+
       // Set the response in the event to prevent the CAS redirect.
       $event->setResponse($response);
-      
+
       // Stop propagation to prevent other subscribers from processing.
       $event->stopPropagation();
     }
