@@ -23,25 +23,20 @@
   const modalConfig = {
     // Modal content and titles
     content: {
-      title: Drupal.t("Confirm enable CAS protection"),
+      title: Drupal.t("⚠️ Warning: YaleSites is NOT secure for sensitive data"),
 
       // Body content array - supports unlimited paragraphs and different content types
       // String items become paragraphs, objects can be links or other content types
       bodyContent: [
         Drupal.t(
-          "YaleSites is for low-risk data only - information that could be made public without harming Yale's mission, safety, finances, or reputation."
+          "Never upload personal information, student records, research data, or confidential documents to YaleSites. All content is stored on the public internet."
         ),
         Drupal.t(
-          "Do not store personal information, student records, research data, internal documents, or anything not intended for public access."
+          "CAS protection only limits who can view content - it does not make this platform secure for sensitive data."
         ),
-        {
-          type: "link",
-          text: Drupal.t("Learn more about Yale's Data Classification Policy"),
-          url: "https://your.yale.edu/policies-procedures/policies/1604-data-classification-policy#1604.1",
-        },
       ],
       confirmationText: Drupal.t(
-        "Are you sure you want to enable CAS protection to access this page? This will restrict access to people with Yale NetIds."
+        ""
       ),
       successMessage: Drupal.t(
         "CAS protection has been enabled for this page."
@@ -66,7 +61,7 @@
         class: "button button--secondary",
       },
       confirm: {
-        text: Drupal.t("Require Yale NetID"),
+        text: Drupal.t("I understand - Enable CAS Protection"),
         class: "button button--primary",
       },
     },
@@ -313,17 +308,17 @@
 
     return [
       {
-        text: config.buttons.cancel.text,
-        class: config.buttons.cancel.class,
-        click() {
-          Drupal.casProtectionModal.cancel();
-        },
-      },
-      {
         text: config.buttons.confirm.text,
         class: config.buttons.confirm.class,
         click() {
           Drupal.casProtectionModal.confirm();
+        },
+      },
+      {
+        text: config.buttons.cancel.text,
+        class: config.buttons.cancel.class,
+        click() {
+          Drupal.casProtectionModal.cancel();
         },
       },
     ];
