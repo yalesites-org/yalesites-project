@@ -4,13 +4,31 @@
 # folder so that any work-in-progress in the component library can be used
 # during development in Drupal.
 
-[ -e "./scripts/local/util/say.sh" ] || (echo -e "[$0] Say utility not found.  You must run this from the yalesites root directory: " && exit 1)
-source ./scripts/local/util/say.sh
+# Source git utilities
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/git-utils.sh"
+
+# Validate git setup
+if ! validate_git_setup; then
+  echo "Error: Invalid git setup. Please ensure you are in a git repository."
+  exit 1
+fi
+
+# Get git root for worktree support
+git_root=$(get_git_root)
+if [ $? -ne 0 ]; then
+  echo "Error: Could not determine git root directory"
+  exit 1
+fi
+
+# Source say.sh from git root
+[ -e "$git_root/scripts/local/util/say.sh" ] || (echo -e "[$0] Say utility not found.  You must run this from the yalesites root directory: " && exit 1)
+source "$git_root/scripts/local/util/say.sh"
 
 read -p "Which branch of the component-library-twig repo do you need? " BRANCH
 
 _say "Move into atomic and checkout develop"
-cd web/themes/contrib/atomic || exit
+cd "$git_root/web/themes/contrib/atomic" || exit
 _say "Delete installed component library"
 rm -rf node_modules/@yalesites-org/component-library-twig
 _say "Clone component library"

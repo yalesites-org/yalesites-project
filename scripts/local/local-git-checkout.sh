@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Source git utilities
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/git-utils.sh"
+
 # current_branch_for_path
 #
 # This function will return the current branch for a given path.
@@ -178,6 +182,20 @@ function repo_has_changes() {
 
 # Main function that does the work
 function _local-git-checkout() {
+  # Validate git setup first
+  if ! validate_git_setup; then
+    _error "Invalid git setup. Please ensure you are in a git repository."
+    exit 1
+  fi
+
+  # Get git root to make paths relative to repo root (works for both regular repos and worktrees)
+  local git_root
+  git_root=$(get_git_root)
+  if [ $? -ne 0 ]; then
+    _error "Could not determine git root directory"
+    exit 1
+  fi
+
   # Default values
   local default_branch="main"
   local default_yalesites_branch="develop"
@@ -188,11 +206,11 @@ function _local-git-checkout() {
   local debug=false
   local verbose=false
 
-  # Default paths
-  local atomic_path="web/themes/contrib/atomic"
+  # Default paths - make them relative to git root for worktree support
+  local atomic_path="$git_root/web/themes/contrib/atomic"
   local tokens_path="$atomic_path/_yale-packages/tokens"
   local cl_path="$atomic_path/_yale-packages/component-library-twig"
-  local yalesites_path="./"
+  local yalesites_path="$git_root"
 
   # If atomic changes branches, we need to know this so we can know to 
   # clear Drupal's cache toward the end of the script.
@@ -245,13 +263,13 @@ function _local-git-checkout() {
     esac
   done
 
-  # Check for utilities directory
-  local utils_path="./scripts/local/util"
+  # Check for utilities directory - use git root path for worktree support
+  local utils_path="$git_root/scripts/local/util"
   [ -e "$utils_path" ] || (echo -e "[$0] Utilities not found.  You must run this from the yalesites root directory: " && exit 1)
 
   # source say.sh so we can use the _say and _error functions
   [ -e "$utils_path/say.sh" ] || (echo -e "[$0] Say utility not found.  You must run this from the yalesites root directory: " && exit 1)
-  source ./scripts/local/util/say.sh
+  source "$utils_path/say.sh"
 
   # enable debugging or verbose mode if requested
   [ "$debug" = true ] && _say "Debug mode enabled" && set -x
@@ -361,8 +379,10 @@ function _local-git-checkout() {
   npm run build
 
   _say "Symlinking to root directory"
-  cd ../../../../../..
-  [ ! -L "atomic" ] && ln -s $atomic_path atomic
+  cd "$git_root"
+  
+  # Create symlinks relative to git root for worktree support
+  [ ! -L "atomic" ] && ln -s web/themes/contrib/atomic atomic
   [ ! -L "component-library-twig" ] && ln -s atomic/_yale-packages/component-library-twig component-library-twig
   [ ! -L "tokens" ] && ln -s atomic/_yale-packages/tokens tokens
 

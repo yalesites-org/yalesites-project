@@ -11,11 +11,29 @@
 # through the regular component library release process, and be included in an
 # official release of Atomic.
 
-[ -e "./scripts/local/util/say.sh" ] || (echo -e "[$0] Say utility not found.  You must run this from the yalesites root directory: " && exit 1)
-source ./scripts/local/util/say.sh
+# Source git utilities
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/git-utils.sh"
+
+# Validate git setup
+if ! validate_git_setup; then
+  echo "Error: Invalid git setup. Please ensure you are in a git repository."
+  exit 1
+fi
+
+# Get git root for worktree support
+git_root=$(get_git_root)
+if [ $? -ne 0 ]; then
+  echo "Error: Could not determine git root directory"
+  exit 1
+fi
+
+# Source say.sh from git root
+[ -e "$git_root/scripts/local/util/say.sh" ] || (echo -e "[$0] Say utility not found.  You must run this from the yalesites root directory: " && exit 1)
+source "$git_root/scripts/local/util/say.sh"
 
 _say "Move into tokens repo and create a global link"
-cd web/themes/contrib/atomic
+cd "$git_root/web/themes/contrib/atomic"
 [ ! -d "_yale-packages/tokens" ] && git clone git@github.com:yalesites-org/tokens.git _yale-packages/tokens
 cd _yale-packages/tokens || exit
 npm link

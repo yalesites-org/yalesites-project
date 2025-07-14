@@ -3,10 +3,29 @@
 # Define variable to check from other scripts if this script is being invoked.
 export YALESITES_IS_LOCAL=1
 
+# Source git utilities
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/git-utils.sh"
+
+# Validate git setup and show info
+if ! validate_git_setup; then
+  echo "Error: Invalid git setup. Please ensure you are in a git repository."
+  exit 1
+fi
+
 # Ignore the composer.lock file on local dev only.
-if ! grep -qxF 'composer.lock' .git/info/exclude; then
+# Use git-utils to get the correct exclude file path for both regular repos and worktrees
+EXCLUDE_FILE=$(get_git_exclude_file)
+if [ $? -ne 0 ]; then
+  echo "Error: Could not determine git exclude file location"
+  exit 1
+fi
+
+if ! grep -qxF 'composer.lock' "$EXCLUDE_FILE"; then
   echo "Excluding composer.lock to keep it out of the repo."
-  echo 'composer.lock' >> .git/info/exclude
+  # Ensure the info directory exists
+  mkdir -p "$(dirname "$EXCLUDE_FILE")"
+  echo 'composer.lock' >> "$EXCLUDE_FILE"
 fi
 
 # Create a local lando settings file if it does not exist.
