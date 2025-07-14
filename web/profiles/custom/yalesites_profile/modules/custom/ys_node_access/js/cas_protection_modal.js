@@ -1,6 +1,16 @@
 /**
  * @file
  * CAS Protection Modal functionality.
+ * 
+ * Provides a confirmation modal when users attempt to enable CAS protection
+ * on content. The modal displays security warnings and requires explicit
+ * confirmation before applying the change.
+ * 
+ * Features:
+ * - Configuration-driven content and styling
+ * - Accessibility compliant with ARIA attributes and focus management
+ * - Only shows when enabling CAS protection (not when disabling)
+ * - Returns focus to original checkbox after modal closes
  */
 
 (function ($, Drupal) {
@@ -8,151 +18,432 @@
   'use strict';
 
   /**
-   * CAS Protection Modal behavior.
+   * Configuration object for easy customization of modal content and behavior.
+   * 
+   * CUSTOMIZE THIS SECTION to change modal text, titles, and settings.
+   * Note: This modal only appears when ENABLING CAS protection, not when disabling.
+   */
+  var modalConfig = {
+    // Modal content and titles
+    content: {
+      title: Drupal.t('Confirm enable CAS protection'),
+      
+      // Body content array - supports unlimited paragraphs and different content types
+      // String items become paragraphs, objects can be links or other content types
+      bodyContent: [
+        Drupal.t('YaleSites is for low-risk data only - information that could be made public without harming Yale\'s mission, safety, finances, or reputation.'),
+        Drupal.t('Do not store personal information, student records, research data, internal documents, or anything not intended for public access.'),
+        {
+          type: 'link',
+          text: Drupal.t('Learn more about Yale\'s Data Classification Policy'),
+          url: 'https://your.yale.edu/policies-procedures/policies/1604-data-classification-policy#1604.1'
+        }
+      ],
+      confirmationText: Drupal.t('Are you sure you want to enable CAS protection to access this page? This will restrict access to people with Yale NetIds.'),
+      successMessage: Drupal.t('CAS protection has been enabled for this page.')
+    },
+    
+    // Modal dialog settings
+    dialog: {
+      title: Drupal.t('CAS Protection Confirmation'),
+      dialogClass: 'cas-protection-modal',
+      width: 500,
+      height: 'auto',
+      modal: true,
+      resizable: false,
+      closeOnEscape: true
+    },
+    
+    // Button configurations
+    buttons: {
+      cancel: {
+        text: Drupal.t('Cancel'),
+        class: 'button button--secondary'
+      },
+      confirm: {
+        text: Drupal.t('Require Yale NetID'),
+        class: 'button button--primary'
+      }
+    },
+    
+    // CSS classes and IDs for styling and accessibility
+    classes: {
+      modalContent: 'cas-protection-modal-content',
+      modalTitle: 'modal-title'
+    },
+    
+    // Accessibility settings
+    accessibility: {
+      titleId: 'cas-modal-title',
+      descriptionId: 'cas-modal-description',
+      focusDelay: 100
+    }
+  };
+
+  // =============================================================================
+  // DRUPAL BEHAVIOR INTEGRATION
+  // =============================================================================
+
+  /**
+   * Drupal behavior for CAS Protection Modal functionality.
+   * 
+   * This behavior attaches event listeners to CAS protection checkboxes
+   * and shows a confirmation modal when users attempt to enable CAS protection.
+   * 
+   * @type {Drupal~behavior}
    */
   Drupal.behaviors.casProtectionModal = {
+    /**
+     * Attaches the CAS protection modal behavior to the page.
+     *
+     * @param {HTMLElement} context
+     *   The context within which to search for CAS protection fields.
+     * @param {object} settings
+     *   Drupal settings object.
+     */
     attach: function (context, settings) {
-      // Find the CAS protection field.
       var $casField = $('[name="field_login_required[value]"]', context);
       
       if ($casField.length) {
-        // Store initial state.
-        $casField.each(function() {
-          var $this = $(this);
-          var initialState = $this.is(':checked');
-          $this.data('original-state', initialState);
-        });
-        
-        // Use event delegation to catch changes.
-        if (!$(document).data('cas-protection-modal-attached')) {
-          $(document).data('cas-protection-modal-attached', true);
-          $(document).on('change.casProtectionModal', '[name="field_login_required[value]"]', function (event) {
-          var $checkbox = $(this);
-          var isChecked = $checkbox.is(':checked');
-          var originalState = $checkbox.data('original-state');
-          
-          // Only show modal when enabling CAS protection (changing from false to true).
-          if (originalState === false && isChecked === true) {
-            // Revert the change temporarily to show confirmation modal.
-            $checkbox.prop('checked', originalState);
-            
-            // Show confirmation modal.
-            Drupal.casProtectionModal.showConfirmation(isChecked, $checkbox);
-          } else if (originalState !== isChecked) {
-            // For disabling, just update the stored state without modal.
-            $checkbox.data('original-state', isChecked);
-          }
-        });
-        }
+        this.initializeCheckboxStates($casField);
+        this.attachChangeHandler();
+      }
+    },
+
+    /**
+     * Stores the initial state of each CAS protection checkbox.
+     *
+     * @param {jQuery} $casField
+     *   The CAS protection checkbox elements.
+     */
+    initializeCheckboxStates: function ($casField) {
+      $casField.each(function() {
+        var $checkbox = $(this);
+        var initialState = $checkbox.is(':checked');
+        $checkbox.data('original-state', initialState);
+      });
+    },
+
+    /**
+     * Attaches change event handler to CAS protection checkboxes.
+     */
+    attachChangeHandler: function () {
+      // Prevent multiple event handlers from being attached
+      if ($(document).data('cas-protection-modal-attached')) {
+        return;
+      }
+
+      $(document).data('cas-protection-modal-attached', true);
+      $(document).on('change.casProtectionModal', '[name="field_login_required[value]"]', this.handleCheckboxChange);
+    },
+
+    /**
+     * Handles changes to the CAS protection checkbox.
+     *
+     * @param {Event} event
+     *   The change event.
+     */
+    handleCheckboxChange: function (event) {
+      var $checkbox = $(this);
+      var isChecked = $checkbox.is(':checked');
+      var originalState = $checkbox.data('original-state');
+      
+      if (originalState === false && isChecked === true) {
+        // User is enabling CAS protection - show confirmation modal
+        $checkbox.prop('checked', originalState); // Revert temporarily
+        Drupal.casProtectionModal.showConfirmation(isChecked, $checkbox);
+      } else if (originalState !== isChecked) {
+        // User is disabling CAS protection - allow without modal
+        $checkbox.data('original-state', isChecked);
       }
     }
   };
 
+  // =============================================================================
+  // NAMESPACE AND STATE VARIABLES
+  // =============================================================================
+
   /**
    * CAS Protection Modal namespace.
+   * 
+   * Contains all functions and state variables for managing the CAS protection
+   * confirmation modal dialog.
    */
   Drupal.casProtectionModal = Drupal.casProtectionModal || {};
 
   /**
    * Current checkbox element being processed.
+   * @type {jQuery|null}
    */
   Drupal.casProtectionModal.currentCheckbox = null;
 
   /**
-   * Current target state (enabling/disabling).
+   * Current target state (enabling/disabling CAS protection).
+   * @type {boolean|null}
    */
   Drupal.casProtectionModal.targetState = null;
 
   /**
-   * Shows the confirmation modal.
-   *
-   * @param {boolean} enabling
-   *   Whether CAS protection is being enabled.
-   * @param {jQuery} $checkbox
-   *   The checkbox element.
+   * Original focused element for accessibility restoration.
+   * @type {HTMLElement|null}
    */
-  Drupal.casProtectionModal.showConfirmation = function (enabling, $checkbox) {
-    // Store current context.
+  Drupal.casProtectionModal.originalFocusedElement = null;
+
+  /**
+   * Original checkbox jQuery object for reliable focus restoration.
+   * @type {jQuery|null}
+   */
+  Drupal.casProtectionModal.originalCheckboxQuery = null;
+
+  // =============================================================================
+  // HELPER FUNCTIONS - State Management and Utilities
+  // =============================================================================
+
+  /**
+   * Stores checkbox reference for later focus restoration.
+   *
+   * @param {jQuery} $checkbox
+   *   The checkbox element to store.
+   */
+  Drupal.casProtectionModal.storeCheckboxReference = function ($checkbox) {
     this.currentCheckbox = $checkbox;
-    this.targetState = enabling;
-    
-    var action = enabling ? Drupal.t('enable') : Drupal.t('disable');
-    var actionCap = enabling ? Drupal.t('Enable') : Drupal.t('Disable');
-    
-    // Create modal content.
-    var content = [
-      '<div class="cas-protection-modal-content" role="dialog" aria-labelledby="cas-modal-title" aria-describedby="cas-modal-description">',
-      '<h2 id="cas-modal-title" class="modal-title">' + Drupal.t('Confirm @action CAS protection', {'@action': action}) + '</h2>',
-      '<div class="security-warning" role="alert">',
-      '<strong>' + Drupal.t('YaleSites is for low-risk data only. Do not store sensitive information.') + '</strong>',
-      '</div>',
-      '<p id="cas-modal-description">',
-      enabling 
-        ? Drupal.t('Are you sure you want to enable CAS protection for this page?')
-        : Drupal.t('Are you sure you want to disable CAS protection for this page?'),
-      '</p>',
-      '</div>'
-    ].join('');
-
-    // Create and show dialog.
-    var $dialog = $(content);
-    var dialog = Drupal.dialog($dialog, {
-      title: Drupal.t('CAS Protection Confirmation'),
-      dialogClass: 'cas-protection-modal',
-      resizable: false,
-      closeOnEscape: true,
-      width: 500,
-      height: 'auto',
-      modal: true,
-      buttons: [
-        {
-          text: Drupal.t('Cancel'),
-          class: 'button button--secondary',
-          click: function () {
-            Drupal.casProtectionModal.cancel();
-          }
-        },
-        {
-          text: actionCap,
-          class: 'button button--primary',
-          click: function () {
-            Drupal.casProtectionModal.confirm();
-          }
-        }
-      ]
-    });
-
-    dialog.showModal();
-    
-    // Set focus to the first button for accessibility.
-    setTimeout(function() {
-      $dialog.parent().find('.button--secondary').focus();
-    }, 100);
+    this.originalFocusedElement = $checkbox[0];
+    this.originalCheckboxQuery = $checkbox;
   };
 
   /**
-   * Handles modal confirmation.
+   * Resets all stored state to clean values.
    */
-  Drupal.casProtectionModal.confirm = function () {
+  Drupal.casProtectionModal.resetState = function () {
+    this.currentCheckbox = null;
+    this.targetState = null;
+    this.originalFocusedElement = null;
+    this.originalCheckboxQuery = null;
+  };
+
+  /**
+   * Displays success message to user.
+   */
+  Drupal.casProtectionModal.showSuccessMessage = function () {
+    if (Drupal.messenger) {
+      Drupal.messenger().addMessage(modalConfig.content.successMessage, 'status');
+    }
+  };
+
+  /**
+   * Scrolls element into view with smooth animation.
+   *
+   * @param {HTMLElement} element
+   *   The element to scroll into view.
+   */
+  Drupal.casProtectionModal.scrollElementIntoView = function (element) {
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  /**
+   * Attempts to focus an element with multiple fallback strategies.
+   *
+   * @param {jQuery} $element
+   *   The jQuery element to focus.
+   * @return {boolean}
+   *   True if focus was successful, false otherwise.
+   */
+  Drupal.casProtectionModal.attemptElementFocus = function ($element) {
+    if (!$element || !$element.length) {
+      return false;
+    }
+
+    try {
+      // First attempt: Direct focus
+      $element[0].focus();
+      if (document.activeElement === $element[0]) {
+        return true;
+      }
+
+      // Second attempt: jQuery focus
+      $element.focus();
+      if (document.activeElement === $element[0]) {
+        return true;
+      }
+
+      // Third attempt: Focus associated label
+      var $label = $element.closest('.form-item').find('label').first();
+      if ($label.length) {
+        $label.attr('tabindex', '0').focus();
+        return document.activeElement === $label[0];
+      }
+
+      // Final fallback: Focus by selector
+      var $fallback = $('[name="field_login_required[value]"]');
+      if ($fallback.length) {
+        $fallback.focus();
+        return document.activeElement === $fallback[0];
+      }
+
+    } catch (e) {
+      // Silent error handling
+    }
+
+    return false;
+  };
+
+  // =============================================================================
+  // DIALOG CREATION AND MANAGEMENT
+  // =============================================================================
+
+  /**
+   * Creates dialog button configuration.
+   *
+   * @return {Array}
+   *   Array of button configuration objects.
+   */
+  Drupal.casProtectionModal.createDialogButtons = function () {
+    var config = modalConfig;
+    
+    return [
+      {
+        text: config.buttons.cancel.text,
+        class: config.buttons.cancel.class,
+        click: function () {
+          Drupal.casProtectionModal.cancel();
+        }
+      },
+      {
+        text: config.buttons.confirm.text,
+        class: config.buttons.confirm.class,
+        click: function () {
+          Drupal.casProtectionModal.confirm();
+        }
+      }
+    ];
+  };
+
+  /**
+   * Creates and configures the dialog instance.
+   *
+   * @param {jQuery} $dialogContent
+   *   The dialog content element.
+   * @return {Object}
+   *   The Drupal dialog instance.
+   */
+  Drupal.casProtectionModal.createDialog = function ($dialogContent) {
+    var config = modalConfig;
+    
+    return Drupal.dialog($dialogContent, {
+      title: config.dialog.title,
+      dialogClass: config.dialog.dialogClass,
+      resizable: config.dialog.resizable,
+      closeOnEscape: config.dialog.closeOnEscape,
+      width: config.dialog.width,
+      height: config.dialog.height,
+      modal: config.dialog.modal,
+      buttons: this.createDialogButtons()
+    });
+  };
+
+  /**
+   * Sets initial focus on the dialog for accessibility.
+   *
+   * @param {jQuery} $dialogElement
+   *   The dialog element.
+   */
+  Drupal.casProtectionModal.setInitialDialogFocus = function ($dialogElement) {
+    setTimeout(function() {
+      $dialogElement.parent().find('.button--secondary').focus();
+    }, modalConfig.accessibility.focusDelay);
+  };
+
+  /**
+   * Generates body content HTML from the flexible content array.
+   *
+   * @return {string}
+   *   The body content HTML.
+   */
+  Drupal.casProtectionModal.generateBodyContent = function () {
+    var config = modalConfig;
+    var bodyHtml = '';
+    
+    config.content.bodyContent.forEach(function(item) {
+      if (typeof item === 'string') {
+        // Regular paragraph
+        bodyHtml += '<p>' + item + '</p>';
+      } else if (item.type === 'link') {
+        // Link paragraph
+        bodyHtml += '<p><a href="' + item.url + '" target="_blank" rel="noopener">' + item.text + '</a></p>';
+      }
+      // Future: could easily add support for other content types like lists, warnings, etc.
+    });
+    
+    return bodyHtml;
+  };
+
+  /**
+   * Generates modal content HTML using the configuration object.
+   * Note: This modal only appears when enabling CAS protection.
+   * 
+   * @return {string}
+   *   The modal content HTML.
+   */
+  Drupal.casProtectionModal.generateModalContent = function () {
+    var config = modalConfig;
+    var bodyContent = this.generateBodyContent();
+    
+    return [
+      '<div class="' + config.classes.modalContent + '" role="dialog" aria-modal="true" aria-labelledby="' + config.accessibility.titleId + '" aria-describedby="' + config.accessibility.descriptionId + '">',
+      '<h2 id="' + config.accessibility.titleId + '" class="' + config.classes.modalTitle + '">' + config.content.title + '</h2>',
+      bodyContent,
+      '<p id="' + config.accessibility.descriptionId + '">',
+      config.content.confirmationText,
+      '</p>',
+      '</div>'
+    ].join('');
+  };
+
+  // =============================================================================
+  // MAIN MODAL FUNCTIONS
+  // =============================================================================
+
+  /**
+   * Shows the confirmation modal for enabling CAS protection.
+   *
+   * @param {boolean} enabling
+   *   Whether CAS protection is being enabled (always true for this modal).
+   * @param {jQuery} $checkbox
+   *   The checkbox element that triggered the modal.
+   */
+  Drupal.casProtectionModal.showConfirmation = function (enabling, $checkbox) {
+    // Store checkbox reference and state for later use
+    this.storeCheckboxReference($checkbox);
+    this.targetState = enabling;
+    
+    // Generate and display the modal
+    var modalContent = this.generateModalContent();
+    var $dialog = $(modalContent);
+    var dialog = this.createDialog($dialog);
+    
+    dialog.showModal();
+    this.setInitialDialogFocus($dialog);
+  };
+
+  /**
+   * Applies the CAS protection change to the checkbox.
+   */
+  Drupal.casProtectionModal.applyCasProtectionChange = function () {
     if (this.currentCheckbox && this.targetState !== null) {
-      // Apply the change.
+      // Enable CAS protection on the checkbox
       this.currentCheckbox.prop('checked', this.targetState);
       
-      // Update original state to prevent re-triggering.
+      // Update stored state to prevent re-triggering the modal
       this.currentCheckbox.data('original-state', this.targetState);
-      
-      // Show success message.
-      var message = this.targetState 
-        ? Drupal.t('CAS protection has been enabled for this page.')
-        : Drupal.t('CAS protection has been disabled for this page.');
-      
-      // Add message if messenger is available.
-      if (Drupal.messenger) {
-        Drupal.messenger().addMessage(message, 'status');
-      }
     }
-    
-    // Close dialog and reset state.
+  };
+
+  /**
+   * Handles modal confirmation for enabling CAS protection.
+   */
+  Drupal.casProtectionModal.confirm = function () {
+    this.applyCasProtectionChange();
+    this.showSuccessMessage();
     this.closeDialog();
   };
 
@@ -160,15 +451,41 @@
    * Handles modal cancellation.
    */
   Drupal.casProtectionModal.cancel = function () {
-    // Just close the dialog without making changes.
     this.closeDialog();
   };
 
+  // =============================================================================
+  // FOCUS MANAGEMENT
+  // =============================================================================
+
   /**
-   * Closes the dialog and resets state.
+   * Restores focus to the original checkbox element.
+   *
+   * @param {jQuery} $checkboxToFocus
+   *   The checkbox element to focus.
    */
-  Drupal.casProtectionModal.closeDialog = function () {
-    // Find and close any open cas protection modal.
+  Drupal.casProtectionModal.restoreFocus = function ($checkboxToFocus) {
+    var self = this;
+    
+    if (!$checkboxToFocus || !$checkboxToFocus.length) {
+      return;
+    }
+
+    setTimeout(function() {
+      // Scroll checkbox into view and attempt focus
+      self.scrollElementIntoView($checkboxToFocus[0]);
+      
+      setTimeout(function() {
+        self.attemptElementFocus($checkboxToFocus);
+      }, 100);
+      
+    }, modalConfig.accessibility.focusDelay);
+  };
+
+  /**
+   * Closes any open CAS protection modal dialogs.
+   */
+  Drupal.casProtectionModal.closeModalDialogs = function () {
     $('.ui-dialog').each(function() {
       var $dialog = $(this);
       if ($dialog.find('.cas-protection-modal-content').length) {
@@ -176,16 +493,29 @@
         if (dialog && dialog.close) {
           dialog.close();
         } else {
-          // Fallback - remove the dialog manually.
+          // Fallback for manual cleanup
           $dialog.remove();
           $('.ui-widget-overlay').remove();
         }
       }
     });
+  };
+
+  /**
+   * Closes the dialog and resets state.
+   */
+  Drupal.casProtectionModal.closeDialog = function () {
+    // Store checkbox reference before resetting state
+    var $checkboxToFocus = this.originalCheckboxQuery;
     
-    // Reset state.
-    this.currentCheckbox = null;
-    this.targetState = null;
+    // Close modal dialogs
+    this.closeModalDialogs();
+    
+    // Restore focus to original checkbox
+    this.restoreFocus($checkboxToFocus);
+    
+    // Clean up stored state
+    this.resetState();
   };
 
   /**
