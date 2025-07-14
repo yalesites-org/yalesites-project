@@ -2,6 +2,8 @@
 
 namespace Drupal\Tests\ys_node_access\Functional;
 
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
@@ -46,14 +48,14 @@ class CasProtectionFormTest extends KernelTestBase {
     ])->save();
 
     // Create field storage and field instance for CAS protection.
-    $field_storage = \Drupal\field\Entity\FieldStorageConfig::create([
+    $field_storage = FieldStorageConfig::create([
       'field_name' => 'field_login_required',
       'entity_type' => 'node',
       'type' => 'boolean',
     ]);
     $field_storage->save();
 
-    $field = \Drupal\field\Entity\FieldConfig::create([
+    $field = FieldConfig::create([
       'field_storage' => $field_storage,
       'bundle' => 'page',
       'label' => 'CAS Login Required',
@@ -75,11 +77,11 @@ class CasProtectionFormTest extends KernelTestBase {
 
     // Check that the field exists and has the correct value.
     $this->assertEquals(0, $node->field_login_required->value);
-    
+
     // Test setting the field to TRUE.
     $node->set('field_login_required', TRUE);
     $node->save();
-    
+
     // Reload and verify.
     $node = Node::load($node->id());
     $this->assertEquals(1, $node->field_login_required->value);
@@ -109,16 +111,16 @@ class CasProtectionFormTest extends KernelTestBase {
     NodeType::create(['type' => 'event', 'name' => 'Event'])->save();
 
     // Add the field to the new content types.
-    $field_storage = \Drupal\field\Entity\FieldStorageConfig::load('node.field_login_required');
-    
-    $field_post = \Drupal\field\Entity\FieldConfig::create([
+    $field_storage = FieldStorageConfig::load('node.field_login_required');
+
+    $field_post = FieldConfig::create([
       'field_storage' => $field_storage,
       'bundle' => 'post',
       'label' => 'CAS Login Required',
     ]);
     $field_post->save();
 
-    $field_event = \Drupal\field\Entity\FieldConfig::create([
+    $field_event = FieldConfig::create([
       'field_storage' => $field_storage,
       'bundle' => 'event',
       'label' => 'CAS Login Required',
