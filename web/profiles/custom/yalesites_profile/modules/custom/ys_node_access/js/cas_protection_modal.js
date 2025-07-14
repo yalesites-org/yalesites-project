@@ -389,7 +389,7 @@
     var bodyContent = this.generateBodyContent();
     
     return [
-      '<div class="' + config.classes.modalContent + '" role="dialog" aria-modal="true" aria-labelledby="' + config.accessibility.titleId + '" aria-describedby="' + config.accessibility.descriptionId + '">',
+      '<div class="' + config.classes.modalContent + '" aria-labelledby="' + config.accessibility.titleId + '" aria-describedby="' + config.accessibility.descriptionId + '">',
       '<h2 id="' + config.accessibility.titleId + '" class="' + config.classes.modalTitle + '">' + config.content.title + '</h2>',
       bodyContent,
       '<p id="' + config.accessibility.descriptionId + '">',
@@ -547,6 +547,27 @@
           $firstElement.focus();
           event.preventDefault();
         }
+      }
+    }
+  });
+
+  // =============================================================================
+  // DRUPAL DIALOG EVENT HANDLING FOR ACCESSIBILITY
+  // =============================================================================
+
+  /**
+   * Enhances CAS protection modals with proper ARIA attributes using Drupal's event system.
+   * 
+   * This event listener uses Drupal's built-in dialog:aftercreate event to properly set
+   * aria-modal="true" on the outer dialog container, following Drupal best practices
+   * instead of manual DOM manipulation.
+   */
+  $(window).on('dialog:aftercreate', function(event, dialog, $element, settings) {
+    // Only apply to CAS protection modals
+    if ($element.hasClass(modalConfig.classes.modalContent)) {
+      var $dialogContainer = $element.parent('.ui-dialog');
+      if ($dialogContainer.length) {
+        $dialogContainer.attr('aria-modal', 'true');
       }
     }
   });
