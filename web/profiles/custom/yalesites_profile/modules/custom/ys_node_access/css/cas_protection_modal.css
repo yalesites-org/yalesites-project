@@ -9,21 +9,21 @@
 }
 
 .cas-protection-modal .ui-dialog-titlebar {
-  background: #f8f9fa;
-  border-bottom: 1px solid #dee2e6;
-  padding: 1rem;
+  background: var(--gin-bg-layer2);
+  border-bottom: 1px solid var(--gin-border-color-layer);
+  padding: var(--gin-spacing-m);
 }
 
 .cas-protection-modal .ui-dialog-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #212529;
+  font-size: var(--gin-font-size-xl);
+  font-weight: var(--gin-font-weight-semibold);
+  color: var(--gin-color-text);
   margin: 0;
 }
 
 .cas-protection-modal .ui-dialog-content {
-  padding: 1.5rem;
-  background: #ffffff;
+  padding: var(--gin-spacing-l);
+  background: var(--gin-bg-layer);
 }
 
 /* Modal content */
@@ -32,39 +32,39 @@
 }
 
 .cas-protection-modal-content .modal-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #212529;
-  margin: 0 0 1rem 0;
+  font-size: var(--gin-font-size-xl);
+  font-weight: var(--gin-font-weight-semibold);
+  color: var(--gin-color-text);
+  margin: 0 0 var(--gin-spacing-m) 0;
   line-height: 1.4;
 }
 
 .cas-protection-modal-content .security-warning {
-  background: #fff3cd;
-  border: 1px solid #ffeaa7;
-  border-radius: 0.375rem;
-  padding: 1rem;
-  margin: 1rem 0;
-  color: #856404;
-  font-weight: 500;
+  background: var(--gin-bg-warning);
+  border: 1px solid var(--gin-color-warning);
+  border-radius: var(--gin-border-s);
+  padding: var(--gin-spacing-m);
+  margin: var(--gin-spacing-m) 0;
+  color: var(--gin-color-warning-light);
+  font-weight: var(--gin-font-weight-normal);
 }
 
 .cas-protection-modal-content .security-warning strong {
   display: block;
-  font-weight: 600;
+  font-weight: var(--gin-font-weight-semibold);
 }
 
 .cas-protection-modal-content p {
-  margin: 1rem 0;
+  margin: var(--gin-spacing-m) 0;
   line-height: 1.5;
-  color: #495057;
+  color: var(--gin-color-text);
 }
 
 /* Button styling */
 .cas-protection-modal .ui-dialog-buttonpane {
-  background: #f8f9fa;
-  border-top: 1px solid #dee2e6;
-  padding: 1rem;
+  background: var(--gin-bg-layer2);
+  border-top: 1px solid var(--gin-border-color-layer);
+  padding: var(--gin-spacing-m);
   text-align: right;
 }
 
@@ -74,17 +74,17 @@
 }
 
 .cas-protection-modal .ui-dialog-buttonset .button {
-  margin-left: 0.5rem;
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  font-weight: 500;
+  margin-left: var(--gin-spacing-xs);
+  padding: var(--gin-spacing-xs) var(--gin-spacing-m);
+  border-radius: var(--gin-border-s);
+  font-weight: var(--gin-font-weight-normal);
   text-decoration: none;
   display: inline-block;
   cursor: pointer;
   border: 1px solid transparent;
-  font-size: 0.875rem;
+  font-size: var(--gin-font-size-s);
   line-height: 1.5;
-  transition: all 0.15s ease-in-out;
+  transition: all var(--gin-transition);
 }
 
 .cas-protection-modal .ui-dialog-buttonset .button:first-child {
@@ -92,38 +92,42 @@
 }
 
 .cas-protection-modal .ui-dialog-buttonset .button--secondary {
-  background: #6c757d;
-  border-color: #6c757d;
-  color: #ffffff;
+  background: var(--gin-color-text-light);
+  border-color: var(--gin-color-text-light);
+  color: var(--gin-bg-layer);
 }
 
 .cas-protection-modal .ui-dialog-buttonset .button--secondary:hover,
 .cas-protection-modal .ui-dialog-buttonset .button--secondary:focus {
-  background: #5a6268;
-  border-color: #545b62;
-  outline: 2px solid #007bff;
+  background: var(--gin-color-text);
+  border-color: var(--gin-color-text);
+  color: var(--gin-bg-layer);
+  outline: 2px solid var(--gin-color-focus);
   outline-offset: 2px;
 }
 
 .cas-protection-modal .ui-dialog-buttonset .button--primary {
-  background: #007bff;
-  border-color: #007bff;
-  color: #ffffff;
+  background: var(--gin-color-primary);
+  border-color: var(--gin-color-primary);
+  color: var(--gin-bg-layer);
 }
 
 .cas-protection-modal .ui-dialog-buttonset .button--primary:hover,
 .cas-protection-modal .ui-dialog-buttonset .button--primary:focus {
-  background: #0056b3;
-  border-color: #004085;
-  outline: 2px solid #ffc107;
+  background: var(--gin-color-primary-hover);
+  border-color: var(--gin-color-primary-hover);
+  color: var(--gin-bg-layer);
+  outline: 2px solid var(--gin-color-focus);
   outline-offset: 2px;
 }
 
 /* Accessibility improvements */
 .cas-protection-modal .ui-dialog-buttonset .button:focus {
-  outline: 2px solid #007bff;
+  outline: 2px solid var(--gin-color-focus);
   outline-offset: 2px;
 }
+
+/* Dark mode is automatically handled by Gin CSS variables */
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
@@ -154,17 +158,17 @@
   }
   
   .cas-protection-modal .ui-dialog-content {
-    padding: 1rem;
+    padding: var(--gin-spacing-m);
   }
   
   .cas-protection-modal .ui-dialog-buttonpane {
-    padding: 0.75rem;
+    padding: var(--gin-spacing-s);
   }
   
   .cas-protection-modal .ui-dialog-buttonset .button {
     display: block;
     width: 100%;
-    margin: 0.25rem 0;
+    margin: var(--gin-spacing-xxs) 0;
   }
   
   .cas-protection-modal .ui-dialog-buttonset .button:first-child {
