@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_core\Form;
 
+use Drupal\Core\Url;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
@@ -205,6 +206,48 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#title' => $this->t('404 page'),
       '#default_value' => $siteConfig->get('page')['404'],
     ];
+
+    // Only show migration message if Google Site Verification has a value.
+    $googleSiteVerification = $yaleConfig->get('seo')['google_site_verification'];
+    $showMigrationMessage = !empty($googleSiteVerification);
+
+    if ($showMigrationMessage) {
+      $form['google_analytics_migration'] = [
+        '#type' => 'container',
+        '#attributes' => [
+          'class' => ['google-analytics-migration-message'],
+        ],
+        'message' => [
+          '#type' => 'html_tag',
+          '#tag' => 'div',
+          '#attributes' => [
+            'class' => ['messages', 'messages--info'],
+            'role' => 'alert',
+            'aria-live' => 'polite',
+          ],
+          'content' => [
+            '#type' => 'html_tag',
+            '#tag' => 'div',
+            '#attributes' => [
+              'class' => ['google-analytics-migration-content'],
+            ],
+            'text' => [
+              '#type' => 'html_tag',
+              '#tag' => 'p',
+              '#value' => $this->t('Google Analytics will be removed from the platform soon. Please configure Google Tag Manager to migrate your website analytics tracking.'),
+            ],
+            'link' => [
+              '#type' => 'link',
+              '#title' => $this->t('Configure Google Tag Manager'),
+              '#url' => Url::fromRoute('entity.google_tag_container.single_form'),
+              '#attributes' => [
+                'class' => ['button', 'button--primary'],
+              ],
+            ],
+          ],
+        ],
+      ];
+    }
 
     $form['google_site_verification'] = [
       '#type' => 'textfield',
