@@ -825,7 +825,6 @@ function ys_core_entity_type_alter(array &$entity_types) {
 }
 
 /**
-<<<<<<< HEAD
  * Allowed values callback for Facts and Figures icon field.
  *
  * This function serves as a bridge between Drupal's allowed_values_function
