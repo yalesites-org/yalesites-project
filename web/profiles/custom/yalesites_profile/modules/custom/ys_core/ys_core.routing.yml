@@ -54,4 +54,12 @@ ys_core.search_page:
     _controller: '\Drupal\ys_core\Controller\SearchController::searchPage'
   requirements:
     _access: 'TRUE'
+# Facts and Figures icon preview endpoint.
+ys_core.facts_icon_preview:
+  path: '/admin/ys_core/facts-icon-preview'
+  defaults:
+    _controller: '\Drupal\ys_core\Controller\FactsIconPreviewController::renderIcon'
+  requirements:
+    _permission: 'access content'
+  methods: [GET]
 
