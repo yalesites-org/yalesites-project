@@ -207,53 +207,39 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#default_value' => $siteConfig->get('page')['404'],
     ];
 
-    // Only show migration message if Google Site Verification has a value.
-    $googleSiteVerification = $yaleConfig->get('seo')['google_site_verification'];
-    $showMigrationMessage = !empty($googleSiteVerification);
-
-    if ($showMigrationMessage) {
-      $form['google_analytics_migration'] = [
-        '#type' => 'container',
-        '#attributes' => [
-          'class' => ['google-analytics-migration-message'],
-        ],
-        'message' => [
-          '#type' => 'html_tag',
-          '#tag' => 'div',
-          '#attributes' => [
-            'class' => ['messages', 'messages--info'],
-            'role' => 'alert',
-            'aria-live' => 'polite',
-          ],
-          'content' => [
-            '#type' => 'html_tag',
-            '#tag' => 'div',
-            '#attributes' => [
-              'class' => ['google-analytics-migration-content'],
-            ],
-            'text' => [
-              '#type' => 'html_tag',
-              '#tag' => 'p',
-              '#value' => $this->t('Google Analytics will be removed from the platform soon. Please configure Google Tag Manager to migrate your website analytics tracking.'),
-            ],
-            'link' => [
-              '#type' => 'link',
-              '#title' => $this->t('Configure Google Tag Manager'),
-              '#url' => Url::fromRoute('entity.google_tag_container.single_form'),
-              '#attributes' => [
-                'class' => ['button', 'button--primary'],
-              ],
-            ],
-          ],
-        ],
-      ];
-    }
 
     $form['google_site_verification'] = [
       '#type' => 'textfield',
       '#description' => $this->t('Get a verification key from Google Search Console Tools using the "URL Prefix" tool, clicking on the the alternate methods tab, and selecting the HTML Tag option. Use the "content" attribute from the Google tag within this field. Example: <code>&#60;meta name="google-site-verification" content="USE-THIS-CODE" /></code>'),
       '#title' => $this->t('Google Site Verification'),
       '#default_value' => $yaleConfig->get('seo')['google_site_verification'],
+    ];
+
+    $form['google_analytics_migration'] = [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => ['google-analytics-migration-message'],
+      ],
+      'content' => [
+        '#type' => 'html_tag',
+        '#tag' => 'div',
+        '#attributes' => [
+          'class' => ['google-analytics-migration-content'],
+        ],
+        'text' => [
+          '#type' => 'html_tag',
+          '#tag' => 'p',
+          '#value' => $this->t('Google Analytics will be removed from the platform soon. Please configure Google Tag Manager to migrate your website analytics tracking.'),
+        ],
+        'link' => [
+          '#type' => 'link',
+          '#title' => $this->t('Configure Google Tag Manager'),
+          '#url' => Url::fromRoute('entity.google_tag_container.single_form'),
+          '#attributes' => [
+            'class' => ['button'],
+          ],
+        ],
+      ],
     ];
 
     $form['custom_vocab_name'] = [
