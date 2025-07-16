@@ -5,8 +5,12 @@
  * Contains ys_core.module functions.
  */
 
+<<<<<<< HEAD
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+=======
+use Drupal\Core\Block\BlockPluginInterface;
+>>>>>>> a05d0cf61 (ysp-920 updates to local actions, menu items, add user form)
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
@@ -824,6 +828,7 @@ function ys_core_entity_type_alter(array &$entity_types) {
 }
 
 /**
+<<<<<<< HEAD
  * Allowed values callback for Facts and Figures icon field.
  *
  * This function serves as a bridge between Drupal's allowed_values_function
@@ -939,6 +944,8 @@ function ys_core_menu_local_actions_alter(&$local_actions) {
 }
 
 /**
+=======
+>>>>>>> a05d0cf61 (ysp-920 updates to local actions, menu items, add user form)
  * Implements hook_preprocess_menu__toolbar__gin().
  *
  * Hide user creation menu items from the Gin admin toolbar.
@@ -946,24 +953,40 @@ function ys_core_menu_local_actions_alter(&$local_actions) {
 function ys_core_preprocess_menu__toolbar__gin(&$variables) {
   $current_user = \Drupal::currentUser();
 
-  // Skip processing if user is user 1.
-  if ($current_user->id() == 1) {
-    return;
-  }
-
   // Check if current user has the platform_admin role.
   $user_roles = $current_user->getRoles();
-  $has_platform_admin = in_array('platform_admin', $user_roles);
+  $has_platform_admin = in_array('platform_admin', $user_roles) || $current_user->id() == 1;
 
   // If user doesn't have platform_admin role, hide the menu items.
-  if (!$has_platform_admin && isset($variables['items']['entity.user.collection']['below'])) {
-    $restricted_routes = ['user.admin_create', 'cas.bulk_add_cas_users'];
+  if (isset($variables['items']['entity.user.collection']['below'])) {
 
-    foreach ($variables['items']['entity.user.collection']['below'] as $key => $item) {
-      // Check if this sub-item points to a restricted route.
-      if (isset($item['url']) && $item['url']->isRouted() && in_array($item['url']->getRouteName(), $restricted_routes)) {
-        unset($variables['items']['entity.user.collection']['below'][$key]);
+    foreach ($variables['items']['entity.user.collection']['below'] as $key => &$item) {
+      if (isset($item['url']) && $item['url']->isRouted()) {
+        $route_name = $item['url']->getRouteName();
+        if ($route_name === 'cas.bulk_add_cas_users') {
+          // Change the title instead of removing.
+          $item['title'] = t('Add NetID User(s)');
+        }
+        if (!$has_platform_admin && $route_name === 'user.admin_create') {
+          // Still remove the regular user creation if needed.
+          unset($variables['items']['entity.user.collection']['below']['admin_toolbar_tools.extra_links:user.admin_create']);
+        }
       }
     }
   }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter() for user_admin_account_form.
+ */
+function ys_core_form_user_register_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $form['ys_core_netid_alert_message'] = [
+    '#type' => 'markup',
+    '#markup' => t('To add users with NetIDs go <a href=":url">here</a>.', [
+      ':url' => Url::fromRoute('cas.bulk_add_cas_users')->toString(),
+    ]),
+    '#prefix' => '<div class="messages messages--warning">',
+    '#suffix' => '</div>',
+    '#weight' => -99,
+  ];
 }
