@@ -4,7 +4,6 @@ namespace Drupal\ys_core\EventSubscriber;
 
 use Drupal\cas\Event\CasPreRedirectEvent;
 use Drupal\cas\Service\CasHelper;
-use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -56,19 +55,30 @@ class CasUser1BypassSubscriber implements EventSubscriberInterface {
    *   The CAS pre-redirect event.
    */
   public function onPreRedirect(CasPreRedirectEvent $event) {
-    // Check if current user is user 1.
-    if ($this->currentUser->id() == 1) {
-      // Get the current request to determine destination.
-      $request = $this->requestStack->getCurrentRequest();
+    $request = $this->requestStack->getCurrentRequest();
 
-      // Get destination from query parameters or default to homepage.
-      $destination = $request->query->get('destination', '/');
+    // Check if current user is user 1 OR if this is a user 1 login flow.
+    $is_user_1 = ($this->currentUser->id() == 1);
 
-      // Create a redirect response to bypass CAS.
-      $response = new TrustedRedirectResponse($destination);
+    // Check if this is a user 1 one-time login link.
+    $is_user_1_login = FALSE;
+    if (preg_match('/^\/user\/reset\/1\//', $request->getPathInfo())) {
+      $is_user_1_login = TRUE;
+    }
 
-      // Set the response in the event to prevent the CAS redirect.
-      $event->setResponse($response);
+    // Also check session for user 1 authentication.
+    $session = $request->getSession();
+    $is_user_1_session = FALSE;
+    if ($session && $session->has('_drupal_uid') && $session->get('_drupal_uid') == 1) {
+      $is_user_1_session = TRUE;
+    }
+
+    if ($is_user_1 || $is_user_1_login || $is_user_1_session) {
+      // Get the redirect data from the event.
+      $redirect_data = $event->getCasRedirectData();
+
+      // Prevent the CAS redirect from occurring.
+      $redirect_data->preventRedirection();
 
       // Stop propagation to prevent other subscribers from processing.
       $event->stopPropagation();
