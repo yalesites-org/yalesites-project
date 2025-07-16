@@ -5,12 +5,9 @@
  * Contains ys_core.module functions.
  */
 
-<<<<<<< HEAD
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
-=======
 use Drupal\Core\Block\BlockPluginInterface;
->>>>>>> a05d0cf61 (ysp-920 updates to local actions, menu items, add user form)
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
@@ -944,8 +941,6 @@ function ys_core_menu_local_actions_alter(&$local_actions) {
 }
 
 /**
-=======
->>>>>>> a05d0cf61 (ysp-920 updates to local actions, menu items, add user form)
  * Implements hook_preprocess_menu__toolbar__gin().
  *
  * Hide user creation menu items from the Gin admin toolbar.
@@ -977,7 +972,7 @@ function ys_core_preprocess_menu__toolbar__gin(&$variables) {
 }
 
 /**
- * Implements hook_form_FORM_ID_alter() for user_admin_account_form.
+ * Implements hook_form_FORM_ID_alter().
  */
 function ys_core_form_user_register_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   $form['ys_core_netid_alert_message'] = [
