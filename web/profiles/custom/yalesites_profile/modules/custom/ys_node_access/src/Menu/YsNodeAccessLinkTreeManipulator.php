@@ -59,13 +59,10 @@ class YsNodeAccessLinkTreeManipulator extends DefaultMenuLinkTreeManipulators {
    */
   protected function menuLinkCheckAccess(MenuLinkInterface $instance) {
     /*
-     * If set in header_settings config, allows anonymous users to see CAS
-     * only links.
+     * Allows anonymous users to see CAS-protected links with appropriate
+     * styling. CAS protection is now the default behavior.
      */
     $access_result = parent::menuLinkCheckAccess($instance);
-    if (!$this->headerSettings->get('enable_cas_menu_links')) {
-      return $access_result;
-    }
 
     $menuName = $instance->getMenuName();
     if (in_array($menuName, _ys_node_access_cas_menus())) {

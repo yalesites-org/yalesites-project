@@ -189,14 +189,9 @@ class YSExpandBookManager extends BookManager {
     // fails an access check will not be included in the book tree. We want to
     // include it, and add a flag so that the template can add a lock icon to
     // the menu item. Access will still be checked when the user attempts to
-    // view the node.
-    if ($this->configFactory->get('ys_core.header_settings')->get('enable_cas_menu_links')) {
-      $link['access'] = $node && TRUE;
-      $link['is_cas'] = $node && !$node->access('view');
-    }
-    else {
-      $link['access'] = $node && $node->access('view');
-    }
+    // view the node. CAS protection is now the default behavior.
+    $link['access'] = $node && TRUE;
+    $link['is_cas'] = $node && !$node->access('view');
 
     // For performance, don't localize a link the user can't access.
     if ($link['access']) {
