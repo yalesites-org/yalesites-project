@@ -4,25 +4,13 @@ status: true
 dependencies:
   config:
     - block_content.type.resource_view
-    - field.field.block_content.resource_view.body
   module:
     - hide_revision_field
-    - text
 id: block_content.resource_view.default
 targetEntityType: block_content
 bundle: resource_view
 mode: default
 content:
-  body:
-    type: text_textarea_with_summary
-    weight: 81
-    region: content
-    settings:
-      rows: 9
-      summary_rows: 3
-      placeholder: ''
-      show_summary: false
-    third_party_settings: {  }
   info:
     type: string_textfield
     weight: -5
