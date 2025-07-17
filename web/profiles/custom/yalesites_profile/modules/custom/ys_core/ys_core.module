@@ -666,7 +666,7 @@ function ys_core_form_views_exposed_form_alter(&$form, FormStateInterface $form_
   /** @var \Drupal\views\ViewExecutable $view */
   $view = $form_state->get('view');
 
-  if (in_array($view->id(), ['views_basic_scaffold', 'views_basic_scaffold_events'])) {
+  if (in_array($view->id(), ['views_basic_scaffold', 'views_basic_scaffold_events', 'content_resources'])) {
     // List of form elements to which Chosen should be applied.
     $chosen_filters = [
       'field_category_target_id',
@@ -675,6 +675,7 @@ function ys_core_form_views_exposed_form_alter(&$form, FormStateInterface $form_
       'field_custom_vocab_target_id',
       'field_audience_target_id',
       'post_year_filter',
+      'resource_year_filter',
     ];
     // Loop through each specified field and apply Chosen settings if the field
     // exists.
