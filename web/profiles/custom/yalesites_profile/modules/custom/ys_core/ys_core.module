@@ -403,18 +403,14 @@ function ys_core_preprocess_menu(&$variables) {
       array_unshift($menuItem['below'], $clonedMenuItem);
     }
   }
-  // CAS bulk add menu item title change (global for all menus) and remove Add user for non-platform admins.
+  // CAS bulk add menu item title change,
+  // and remove Add user for non-platform admins.
   if (!empty($variables['items'])) {
     $current_user = \Drupal::currentUser();
     $user_roles = $current_user->getRoles();
     $has_platform_admin = in_array('platform_admin', $user_roles) || $current_user->id() == 1;
     foreach ($variables['items'] as $key => &$item) {
-      // Remove Add user menu item for non-platform admins
-      if (isset($item['url']) && $item['url']->isRouted() && $item['url']->getRouteName() === 'user.admin_create' && !$has_platform_admin) {
-        unset($variables['items'][$key]);
-        continue;
-      }
-      // Also check submenus recursively.
+      // These are submenu items.
       if (!empty($item['below'])) {
         foreach ($item['below'] as $subkey => &$subitem) {
           if (isset($subitem['url']) && $subitem['url']->isRouted()) {
