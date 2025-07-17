@@ -409,7 +409,7 @@ function ys_core_preprocess_menu(&$variables) {
     $current_user = \Drupal::currentUser();
     $user_roles = $current_user->getRoles();
     $has_platform_admin = in_array('platform_admin', $user_roles) || $current_user->id() == 1;
-    foreach ($variables['items'] as $key => &$item) {
+    foreach ($variables['items'] as &$item) {
       // These are submenu items.
       if (!empty($item['below'])) {
         foreach ($item['below'] as $subkey => &$subitem) {
