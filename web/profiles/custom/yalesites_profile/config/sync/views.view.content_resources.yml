@@ -6,7 +6,6 @@ dependencies:
     - core.entity_view_mode.node.teaser
     - field.storage.node.field_teaser_text
     - field.storage.node.field_teaser_title
-    - taxonomy.vocabulary.affiliation
     - taxonomy.vocabulary.audience
     - taxonomy.vocabulary.custom_vocab
     - taxonomy.vocabulary.resource_category
@@ -408,56 +407,6 @@ display:
             title: title
             field_teaser_text: field_teaser_text
             field_teaser_title: field_teaser_title
-        field_affiliation_target_id:
-          id: field_affiliation_target_id
-          table: node__field_affiliation
-          field: field_affiliation_target_id
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: taxonomy_index_tid
-          operator: or
-          value: {  }
-          group: 1
-          exposed: true
-          expose:
-            operator_id: field_affiliation_target_id_op
-            label: Affiliation
-            description: ''
-            use_operator: false
-            operator: field_affiliation_target_id_op
-            operator_limit_selection: false
-            operator_list: {  }
-            identifier: field_affiliation_target_id
-            required: false
-            remember: false
-            multiple: true
-            remember_roles:
-              authenticated: authenticated
-              anonymous: '0'
-              contributor: '0'
-              editor: '0'
-              site_admin: '0'
-              platform_admin: '0'
-            reduce: false
-          is_grouped: false
-          group_info:
-            label: ''
-            description: ''
-            identifier: ''
-            optional: true
-            widget: select
-            multiple: false
-            remember: false
-            default_group: All
-            default_group_multiple: {  }
-            group_items: {  }
-          reduce_duplicates: false
-          vid: affiliation
-          type: select
-          hierarchy: false
-          limit: true
-          error_message: true
         field_audience_target_id:
           id: field_audience_target_id
           table: node__field_audience

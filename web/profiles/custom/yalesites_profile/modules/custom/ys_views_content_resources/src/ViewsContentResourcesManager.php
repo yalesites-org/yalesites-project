@@ -163,7 +163,7 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     if (!empty($paramsDecoded['exposed_filter_options']['show_category_filter']) && $category_filter_name) {
       $filters_to_unset = match ($filterType) {
         'resource' => [
-          'field_category_target_id',
+          // 'field_category_target_id',
           'field_affiliation_target_id',
         ],
         default => [],
