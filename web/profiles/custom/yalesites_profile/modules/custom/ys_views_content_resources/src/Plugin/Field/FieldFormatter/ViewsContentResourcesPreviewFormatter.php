@@ -1,22 +1,22 @@
 <?php
 
-namespace Drupal\ys_views_basic\Plugin\Field\FieldFormatter;
+namespace Drupal\ys_views_content_resources\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\ys_views_basic\ViewsBasicManager;
+use Drupal\ys_views_content_resources\ViewsContentResourcesManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Plugin implementation of the 'views_basic_preview' formatter.
+ * Plugin implementation of the 'views_content_resources_preview' formatter.
  *
  * @FieldFormatter(
- *   id = "views_basic_preview_formatter",
- *   label = @Translation("Views Basic Settings Overview"),
+ *   id = "views_content_resources_preview_formatter",
+ *   label = @Translation("Views Content Resources Settings Overview"),
  *   field_types = {
- *     "views_basic_params"
+ *     "views_content_resources_params"
  *   }
  * )
  */
@@ -25,9 +25,9 @@ class ViewsContentResourcesPreviewFormatter extends FormatterBase implements Con
   /**
    * The views basic manager service.
    *
-   * @var \Drupal\ys_views_basic\ViewsBasicManager
+   * @var \Drupal\ys_views_basic\ViewsContentResourcesManager
    */
-  protected $viewsBasicManager;
+  protected $viewsContentResourcesManager;
 
   /**
    * Constructs an views basic default formatter object.
@@ -46,7 +46,7 @@ class ViewsContentResourcesPreviewFormatter extends FormatterBase implements Con
    *   The view mode.
    * @param array $third_party_settings
    *   Any third party settings.
-   * @param \Drupal\ys_views_basic\Plugin\ViewsBasicManager $viewsBasicManager
+   * @param \Drupal\ys_views_basic\Plugin\ViewsContentResourcesManager $viewsContentResourcesManager
    *   The views basic manager service.
    */
   public function __construct(
@@ -57,7 +57,7 @@ class ViewsContentResourcesPreviewFormatter extends FormatterBase implements Con
     string $label,
     string $view_mode,
     array $third_party_settings,
-    ViewsBasicManager $viewsBasicManager,
+    ViewsContentResourcesManager $viewsContentResourcesManager,
   ) {
     parent::__construct(
       $plugin_id,
@@ -68,7 +68,7 @@ class ViewsContentResourcesPreviewFormatter extends FormatterBase implements Con
       $view_mode,
       $third_party_settings,
     );
-    $this->viewsBasicManager = $viewsBasicManager;
+    $this->viewsContentResourcesManager = $viewsContentResourcesManager;
   }
 
   /**
@@ -88,7 +88,7 @@ class ViewsContentResourcesPreviewFormatter extends FormatterBase implements Con
       $configuration['label'],
       $configuration['view_mode'],
       $configuration['third_party_settings'],
-      $container->get('ys_views_basic.views_basic_manager'),
+      $container->get('ys_views_content_resources.views_content_resources_manager'),
     );
   }
 
@@ -112,10 +112,10 @@ class ViewsContentResourcesPreviewFormatter extends FormatterBase implements Con
 
       // Gets the entity labels and view modes.
       foreach ($paramsDecoded['filters']['types'] as $type) {
-        $entityLabel = $this->viewsBasicManager->getLabel($type, 'entity');
+        $entityLabel = $this->viewsContentResourcesManager->getLabel($type, 'entity');
         array_push($paramsForRender['types'], $entityLabel);
-        $viewModeLabel = $this->viewsBasicManager->getLabel($type, 'view_modes', $paramsDecoded['view_mode']);
-        $sortByLabel = $this->viewsBasicManager->getLabel($type, 'sort_by', $paramsDecoded['sort_by']);
+        $viewModeLabel = $this->viewsContentResourcesManager->getLabel($type, 'view_modes', $paramsDecoded['view_mode']);
+        $sortByLabel = $this->viewsContentResourcesManager->getLabel($type, 'sort_by', $paramsDecoded['sort_by']);
         $paramsForRender['view_mode'] = $viewModeLabel;
         $paramsForRender['sort_by'] = $sortByLabel;
       }
@@ -123,7 +123,7 @@ class ViewsContentResourcesPreviewFormatter extends FormatterBase implements Con
       // Gets the tag labels.
       if (!empty($paramsDecoded['filters']['tags'][0])) {
         foreach ($paramsDecoded['filters']['tags'] as $tag) {
-          $tagLabel = $this->viewsBasicManager->getTagLabel($tag);
+          $tagLabel = $this->viewsContentResourcesManager->getTagLabel($tag);
           array_push($paramsForRender['tags'], $tagLabel);
         }
       }
@@ -135,7 +135,7 @@ class ViewsContentResourcesPreviewFormatter extends FormatterBase implements Con
       $paramsForRender['limit'] = $paramsDecoded['limit'];
 
       // Gets the number of results for the view.
-      $paramsForRender['count'] = $this->viewsBasicManager->getView('count', $item->params);
+      $paramsForRender['count'] = $this->viewsContentResourcesManager->getView('count', $item->params);
 
       $elements[$delta] = [
         '#theme' => 'views_basic_formatter_preview',
