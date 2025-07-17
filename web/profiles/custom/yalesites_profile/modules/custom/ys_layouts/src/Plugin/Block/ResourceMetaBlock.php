@@ -145,7 +145,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
       $fieldMedia = $node?->field_media?->first()?->getValue();
 
       // Set PUBLISH DATE variables.
-      if ($fieldPublishDate) {
+      if ($fieldPublishDate->getValue()) {
         $publishDateLabel = $fieldPublishDate->getFieldDefinition()->getLabel();
         $publishDateValue = strtotime($fieldPublishDate->first()->getValue()['value']);
         $publishDate = $this->dateFormatter->format($publishDateValue, '', 'F j, Y');
