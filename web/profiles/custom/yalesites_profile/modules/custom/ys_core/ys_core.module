@@ -403,6 +403,33 @@ function ys_core_preprocess_menu(&$variables) {
       array_unshift($menuItem['below'], $clonedMenuItem);
     }
   }
+  // CAS bulk add menu item title change (global for all menus) and remove Add user for non-platform admins.
+  if (!empty($variables['items'])) {
+    $current_user = \Drupal::currentUser();
+    $user_roles = $current_user->getRoles();
+    $has_platform_admin = in_array('platform_admin', $user_roles) || $current_user->id() == 1;
+    foreach ($variables['items'] as $key => &$item) {
+      // Remove Add user menu item for non-platform admins
+      if (isset($item['url']) && $item['url']->isRouted() && $item['url']->getRouteName() === 'user.admin_create' && !$has_platform_admin) {
+        unset($variables['items'][$key]);
+        continue;
+      }
+      // Also check submenus recursively.
+      if (!empty($item['below'])) {
+        foreach ($item['below'] as $subkey => &$subitem) {
+          if (isset($subitem['url']) && $subitem['url']->isRouted()) {
+            $route_name = $subitem['url']->getRouteName();
+            if ($route_name === 'cas.bulk_add_cas_users') {
+              $subitem['title'] = t('Add NetID User(s)');
+            }
+            if ($route_name === 'user.admin_create' && !$has_platform_admin) {
+              unset($item['below'][$subkey]);
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 /**
@@ -933,37 +960,6 @@ function ys_core_menu_local_actions_alter(&$local_actions) {
       // Change the title of the CAS bulk add action.
       if (isset($local_actions['cas.bulk_add_cas_users'])) {
         $local_actions['cas.bulk_add_cas_users']['title'] = 'Add NetID Users';
-      }
-    }
-  }
-}
-
-/**
- * Implements hook_preprocess_menu__toolbar__gin().
- *
- * Hide user creation menu items from the Gin admin toolbar.
- */
-function ys_core_preprocess_menu__toolbar__gin(&$variables) {
-  $current_user = \Drupal::currentUser();
-
-  // Check if current user has the platform_admin role.
-  $user_roles = $current_user->getRoles();
-  $has_platform_admin = in_array('platform_admin', $user_roles) || $current_user->id() == 1;
-
-  // If user doesn't have platform_admin role, hide the menu items.
-  if (isset($variables['items']['entity.user.collection']['below'])) {
-
-    foreach ($variables['items']['entity.user.collection']['below'] as &$item) {
-      if (isset($item['url']) && $item['url']->isRouted()) {
-        $route_name = $item['url']->getRouteName();
-        if ($route_name === 'cas.bulk_add_cas_users') {
-          // Change the title instead of removing.
-          $item['title'] = t('Add NetID User(s)');
-        }
-        if (!$has_platform_admin && $route_name === 'user.admin_create') {
-          // Still remove the regular user creation if needed.
-          unset($variables['items']['entity.user.collection']['below']['admin_toolbar_tools.extra_links:user.admin_create']);
-        }
       }
     }
   }
