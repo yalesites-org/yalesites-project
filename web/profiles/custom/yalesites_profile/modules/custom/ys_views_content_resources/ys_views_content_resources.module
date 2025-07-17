@@ -108,8 +108,8 @@ function ys_views_content_resources_views_pre_view(ViewExecutable $view, $displa
     return;
   }
 
-  $viewsBasicManager = \Drupal::service('ys_views_content_resources.views_content_resources_manager');
-  $viewsBasicManager->setupView($view, end($args));
+  $viewsContentResourcesManager = \Drupal::service('ys_views_content_resources.views_content_resources_manager');
+  $viewsContentResourcesManager->setupView($view, end($args));
 }
 
 /**

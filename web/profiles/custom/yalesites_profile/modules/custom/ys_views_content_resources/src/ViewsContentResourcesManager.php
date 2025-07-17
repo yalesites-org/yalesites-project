@@ -147,18 +147,27 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     $pinned_to_top = isset($paramsDecoded['pinned_to_top']) ? (bool) $paramsDecoded['pinned_to_top'] : FALSE;
 
     $view->setDisplay('block_1');
+    $filterType = implode('+', $paramsDecoded['filters']['types']);
 
     // Retrieve the current filter options from the view's display settings.
     $filters = $view->getDisplay()->getOption('filters');
 
-    $category_filter_name = 'field_category_target_id';
+    // Mapping content types to their respective category filters.
+    $category_filters = [
+      'resource' => 'field_category_target_id',
+    ];
+
+    $category_filter_name = $category_filters[$filterType] ?? NULL;
 
     // Show the exposed filter 'Category' or 'Affiliation'.
     if (!empty($paramsDecoded['exposed_filter_options']['show_category_filter']) && $category_filter_name) {
-      $filters_to_unset = [
-        'field_category_target_id',
-        'field_affiliation_target_id',
-      ];
+      $filters_to_unset = match ($filterType) {
+        'resource' => [
+          'field_category_target_id',
+          'field_affiliation_target_id',
+        ],
+        default => [],
+      };
 
       // Remove the filters that are not relevant to the current type.
       foreach ($filters_to_unset as $filter) {
@@ -182,8 +191,13 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
       }
     }
     else {
-      unset($category_filter_name);
+      // Remove all category and affiliation filters if 'show_category_filter'
+      // is not set or category filter name is not defined.
+      foreach ($category_filters as $filter_name) {
+        unset($filters[$filter_name]);
+      }
     }
+    
 
     // Custom vocab filter.
     if (!empty($paramsDecoded['exposed_filter_options']['show_custom_vocab_filter'])) {
@@ -309,6 +323,7 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
      * End setting dynamic arguments.
      */
 
+
     /*
      * Includes current node, if specified in settings.
      */
@@ -331,6 +346,7 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
      */
 
     $view_args = [
+      'type' => 'resource',
       'terms_include' => $termsInclude,
       'terms_exclude' => $termsExclude,
       'sort' => $paramsDecoded['sort_by'],

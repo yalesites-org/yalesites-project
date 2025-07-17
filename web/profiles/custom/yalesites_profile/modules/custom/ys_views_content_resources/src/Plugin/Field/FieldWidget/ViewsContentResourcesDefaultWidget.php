@@ -422,6 +422,7 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
       $paramData = [
         "view_mode" => $form['group_user_selection']['entity_and_view_mode']['entity_and_view_mode']['#value'],
         "filters" => [
+          "types" => ['resource'],
           "terms_include" => $terms_include,
           "terms_exclude" => $terms_exclude,
         ],
