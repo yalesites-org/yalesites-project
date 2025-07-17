@@ -953,7 +953,7 @@ function ys_core_preprocess_menu__toolbar__gin(&$variables) {
   // If user doesn't have platform_admin role, hide the menu items.
   if (isset($variables['items']['entity.user.collection']['below'])) {
 
-    foreach ($variables['items']['entity.user.collection']['below'] as $key => &$item) {
+    foreach ($variables['items']['entity.user.collection']['below'] as &$item) {
       if (isset($item['url']) && $item['url']->isRouted()) {
         $route_name = $item['url']->getRouteName();
         if ($route_name === 'cas.bulk_add_cas_users') {
