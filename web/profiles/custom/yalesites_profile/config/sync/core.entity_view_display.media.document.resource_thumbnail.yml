@@ -1,8 +1,9 @@
-uuid: 46a9d9e5-3a84-4146-82c9-faebe66d6159
+uuid: accee670-6bb0-425f-8bd0-282976620dce
 langcode: en
 status: true
 dependencies:
   config:
+    - core.entity_view_mode.media.resource_thumbnail
     - field.field.media.document.field_media_file
     - field.field.media.document.field_metatags
     - field.field.media.document.field_tags
@@ -10,11 +11,16 @@ dependencies:
     - responsive_image.styles.resource_thumbnail
   module:
     - file
+    - layout_builder
     - responsive_image
-id: media.document.default
+third_party_settings:
+  layout_builder:
+    enabled: false
+    allow_custom: false
+id: media.document.resource_thumbnail
 targetEntityType: media
 bundle: document
-mode: default
+mode: resource_thumbnail
 content:
   field_media_file:
     type: file_url_plain

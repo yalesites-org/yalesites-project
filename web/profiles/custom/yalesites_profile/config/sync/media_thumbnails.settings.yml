@@ -1,7 +1,7 @@
 _core:
   default_config_hash: d3xhgN31Gi1-7nzTOVPcNkQBCFuz6Q6Em1gP_l9Be44
-bgcolor_active: false
-bgcolor_value: '#eeeeee'
-width: 500
+bgcolor_active: true
+bgcolor_value: '#787878'
+width: 600
 no_thumbnail_update: false
 allow_thumbnail_edit: true

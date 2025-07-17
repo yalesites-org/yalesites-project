@@ -213,7 +213,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
               $documentImage = [
                 '#theme' => 'responsive_image',
                 '#uri' => $thumbnail_file->getFileUri(),
-                '#responsive_image_style_id' => 'content_spotlight_portrait',
+                '#responsive_image_style_id' => 'resource_thumbnail',
                 '#height' => $thumbnail?->height,
                 '#width' => $thumbnail?->width,
                 '#attributes' => [
