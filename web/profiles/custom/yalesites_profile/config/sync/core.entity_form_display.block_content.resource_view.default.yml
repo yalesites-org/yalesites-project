@@ -4,13 +4,21 @@ status: true
 dependencies:
   config:
     - block_content.type.resource_view
+    - field.field.block_content.resource_view.field_view_resource_params
   module:
     - hide_revision_field
+    - ys_views_content_resources
 id: block_content.resource_view.default
 targetEntityType: block_content
 bundle: resource_view
 mode: default
 content:
+  field_view_resource_params:
+    type: views_content_resources_default_widget
+    weight: 81
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   info:
     type: string_textfield
     weight: -5
