@@ -31,12 +31,12 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
 
   const ALLOWED_VIEW_MODES = [
     'card' => [
-      'label' => 'Post Card Grid',
+      'label' => 'Card Grid',
       'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-card-grid.svg',
       'img_alt' => 'Icon showing 3 generic cards next to each other. Image placement is on the top of each card.',
     ],
     'list_item' => [
-      'label' => 'Post List',
+      'label' => 'List',
       'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-list-view.svg',
       'img_alt' => 'Icon showing 3 generic list items one on top of the other. Image placement is on the left of each list item.',
     ],
@@ -118,13 +118,10 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
   /**
    * Initializes the view based on the content type.
    *
-   * @param array $types
-   *   An array of content types.
-   *
    * @return \Drupal\views\ViewExecutable
    *   The view object.
    */
-  public function initView($types) {
+  public function initView() {
     return Views::getView('content_resources');
   }
 
@@ -150,7 +147,6 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     $pinned_to_top = isset($paramsDecoded['pinned_to_top']) ? (bool) $paramsDecoded['pinned_to_top'] : FALSE;
 
     $view->setDisplay('block_1');
-    $filterType = implode('+', $paramsDecoded['filters']['types']);
 
     // Retrieve the current filter options from the view's display settings.
     $filters = $view->getDisplay()->getOption('filters');
@@ -159,22 +155,10 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
 
     // Show the exposed filter 'Category' or 'Affiliation'.
     if (!empty($paramsDecoded['exposed_filter_options']['show_category_filter']) && $category_filter_name) {
-      // Determine which filters to unset based on the current filter type.
-      // $filters_to_unset = match ($filterType) {
-      //   self::CONTENT_TYPE_POST, self::CONTENT_TYPE_EVENT => [
-      //     'field_category_target_id_1',
-      //     'field_affiliation_target_id',
-      //   ],
-      //   self::CONTENT_TYPE_PROFILE => [
-      //     'field_category_target_id',
-      //     'field_category_target_id_1',
-      //   ],
-      //   self::CONTENT_TYPE_PAGE => [
-      //     'field_category_target_id',
-      //     'field_affiliation_target_id',
-      //   ],
-      //   default => [],
-      // };
+      $filters_to_unset = [
+        'field_category_target_id',
+        'field_affiliation_target_id',
+      ];
 
       // Remove the filters that are not relevant to the current type.
       foreach ($filters_to_unset as $filter) {
@@ -184,10 +168,7 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
       // Check if 'category_included_terms' is provided for the current
       // filter type.
       if (!empty($paramsDecoded['category_included_terms'])) {
-        // Determine the vocabulary ID based on the selected filter type.
-        $vid = $filterType == self::CONTENT_TYPE_PROFILE
-          ? 'affiliation'
-          : "{$filterType}_category";
+        $vid = "resource_category";
 
         // Limit the filter to specific terms if provided.
         $filters[$category_filter_name]['value'] = $this->getChildTermsByParentId($paramsDecoded['category_included_terms'], $vid);
@@ -201,11 +182,7 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
       }
     }
     else {
-      // Remove all category and affiliation filters if 'show_category_filter'
-      // is not set or category filter name is not defined.
-      foreach ($category_filters as $filter_name) {
-        unset($filters[$filter_name]);
-      }
+      unset($category_filter_name);
     }
 
     // Custom vocab filter.
@@ -354,7 +331,6 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
      */
 
     $view_args = [
-      'type' => $filterType,
       'terms_include' => $termsInclude,
       'terms_exclude' => $termsExclude,
       'sort' => $paramsDecoded['sort_by'],
@@ -412,9 +388,8 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     }
     $running = TRUE;
 
-    // Set up the view and initial decoded parameters.
-    $paramsDecoded = json_decode($params, TRUE);
-    $view = $this->initView($paramsDecoded['filters']['types']);
+    // Set up the view.
+    $view = $this->initView();
     $this->setupView($view, $params);
 
     // End current view run.
@@ -426,13 +401,10 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
   /**
    * Returns an array of view mode machine names and the human readable name.
    *
-   * @param string $content_type
-   *   The entity machine name.
-   *
    * @return array
    *   An array of human readable view modes, with machine name as the key.
    */
-  public function viewModeList($content_type) {
+  public function viewModeList() {
     foreach (self::ALLOWED_VIEW_MODES as $machine_name => $viewMode) {
       $viewModes[$machine_name] = $viewMode['label'] . "<img src='{$viewMode['img']}' alt='{$viewMode['img_alt']}'>";
     }
@@ -443,13 +415,10 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
   /**
    * Returns an array of sort by machine names and the human readable name.
    *
-   * @param string $content_type
-   *   The entity machine name.
-   *
    * @return array
    *   An array of human readable sorts, with machine name as the key.
    */
-  public function sortByList($content_type) {
+  public function sortByList() {
     return [
       'field_publish_date:DESC' => 'Published Date - newer first',
       'field_publish_date:ASC' => 'Published Date - older first',
@@ -708,14 +677,10 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
   public function getFormSelectors($formState, $form = NULL, $entityValue = NULL) {
     $formSelectors = [];
 
-    $rebuildValues = ($formState->isRebuilding()) ? $formState->getValues() : NULL;
-
     if ($formState->getCompleteForm() && str_starts_with($formState->getCompleteForm()['#form_id'], 'layout_builder_')) {
       if (isset($formState->getCompleteForm()['block_form']['#block']) && $formState->getCompleteForm()['block_form']['#block']->isReusable()) {
         // Reusable block Layout Builder form.
         $formSelectors = [
-          // 'entity_types' => $rebuildValues['block_form']['group_user_selection']['entity_and_view_mode']['entity_types'] ?? $entityValue,
-          // 'entity_types_ajax' => ':input[name="block_form[group_user_selection][entity_and_view_mode][entity_types]"]',
           'view_mode_input_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][view_mode]"]',
           'view_mode_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
           'category_included_terms_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
@@ -785,8 +750,6 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
       else {
         // Regular block Layout Builder form.
         $formSelectors = [
-          // 'entity_types' => $rebuildValues['settings']['block_form']['group_user_selection']['entity_and_view_mode']['entity_types'] ?? $entityValue,
-          // 'entity_types_ajax' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][entity_types]"]',
           'view_mode_input_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][view_mode]"]',
           'view_mode_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
           'category_included_terms_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
@@ -870,8 +833,6 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     else {
       // Drupal core block form.
       $formSelectors = [
-        // 'entity_types' => $rebuildValues['entity_types'] ?? $entityValue,
-        // 'entity_types_ajax' => ':input[name="entity_types"]',
         'view_mode_input_selector' => ':input[name="view_mode"]',
         'view_mode_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
         'category_included_terms_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,

@@ -14,7 +14,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @FieldFormatter(
  *   id = "views_content_resources_default_formatter",
- *   label = @Translation("Views Basic View"),
+ *   label = @Translation("Views Content Resources View"),
  *   field_types = {
  *     "views_content_resources_params"
  *   }
@@ -83,7 +83,7 @@ class ViewsContentResourcesDefaultFormatter extends FormatterBase implements Con
       $configuration['label'],
       $configuration['view_mode'],
       $configuration['third_party_settings'],
-      $container->get('ys_views_content_resources.views_basic_manager'),
+      $container->get('ys_views_content_resources.views_content_resources_manager'),
     );
   }
 
@@ -95,6 +95,7 @@ class ViewsContentResourcesDefaultFormatter extends FormatterBase implements Con
 
     foreach ($items as $delta => $item) {
       $view = $this->viewsContentResourcesManager->getView('rendered', $item->getValue()['params']);
+
       $elements[$delta] = [
         '#theme' => 'views_basic_formatter_default',
         '#view' => $view,

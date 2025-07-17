@@ -9,7 +9,7 @@ use Drupal\views\ViewExecutable;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Filter posts by year.
+ * Filter resources by year.
  *
  * @ingroup views_filter_handlers
  *

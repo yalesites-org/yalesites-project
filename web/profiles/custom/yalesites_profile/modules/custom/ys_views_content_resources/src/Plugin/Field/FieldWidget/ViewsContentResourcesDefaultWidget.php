@@ -15,13 +15,13 @@ use Drupal\ys_views_content_resources\ViewsContentResourcesManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Plugin implementation of the 'views_content_resource_default' widget.
+ * Plugin implementation of the 'views_content_resources_default' widget.
  *
  * @FieldWidget(
- *   id = "views_content_resource_default_widget",
+ *   id = "views_content_resources_default_widget",
  *   label = @Translation("Views Content Resources default widget"),
  *   field_types = {
- *     "views_basic_params"
+ *     "views_content_resources_params"
  *   }
  * )
  */
@@ -137,7 +137,7 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
       '#weight' => 10,
     ];
 
-    $form['group_user_selection']['view_mode'] = [
+    $form['group_user_selection']['entity_and_view_mode'] = [
       '#type' => 'container',
       '#attributes' => [
         'class' => [
@@ -186,15 +186,15 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
     // Gets the view mode options based on Ajax callbacks or initial load.
     // In situations where the currently selected view mode does not exist
     // in the new content type, we default to the first item.
-    $viewModeOptions = $this->viewsContentResourcesManager->viewModeList($formSelectors['entity_types']);
-    $viewModeValue = ($items[$delta]->params) ? $this->viewsContentResourcesManager->getDefaultParamValue('view_mode', $items[$delta]->params) : key($viewModeOptions);
+    $viewModeOptions = $this->viewsContentResourcesManager->viewModeList('resource');
+    $viewModeValue = ($items[$delta]->params) ? $this->viewsContentResourcesManager->getDefaultParamValue('entity_and_view_mode', $items[$delta]->params) : key($viewModeOptions);
     $viewModeDefault = array_key_first($viewModeOptions);
 
     if (!array_key_exists($viewModeValue, $viewModeOptions)) {
       $viewModeValue = $viewModeDefault;
     }
 
-    $form['group_user_selection']['view_mode']['view_mode'] = [
+    $form['group_user_selection']['entity_and_view_mode']['entity_and_view_mode'] = [
       '#type' => 'radios',
       '#options' => $viewModeOptions,
       '#title' => $this->t('Show resources as'),
@@ -216,7 +216,7 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
     ];
 
     $custom_vocab_label = $this->entityTypeManager->getStorage('taxonomy_vocabulary')->load('custom_vocab')->label();
-    $form['group_user_selection']['view_mode']['exposed_filter_options'] = [
+    $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options'] = [
       '#type' => 'checkboxes',
       '#options' => [
         'show_search_filter' => $this->t('Show Search'),
@@ -230,7 +230,7 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
       '#default_value' => ($items[$delta]->params) ? $this->viewsContentResourcesManager->getDefaultParamValue('exposed_filter_options', $items[$delta]->params) : [],
     ];
 
-    $form['group_user_selection']['view_mode']['category_filter_label'] = [
+    $form['group_user_selection']['entity_and_view_mode']['category_filter_label'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Category Filter Label'),
       '#description' => $this->t("Enter a custom label for the <strong>Category Filter</strong>. This label will be displayed to users as the filter's name. If left blank, the default label <strong>Category</strong> will be used."),
@@ -240,8 +240,8 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
       ],
     ];
 
-    $vocabulary_id = $formSelectors['entity_types'] . '_category';
-    $form['group_user_selection']['view_mode']['category_included_terms'] = [
+    $vocabulary_id = 'resource_category';
+    $form['group_user_selection']['entity_and_view_mode']['category_included_terms'] = [
       '#type' => 'select',
       '#title' => $this->t('Filter by Category Parent Term'),
       '#description' => $this->t("Select a parent term to show content tagged with that terms sub-items. This ignores content tagged as the parent term and any other parent terms in the vocabulary."),
@@ -255,7 +255,7 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
       ],
     ];
 
-    $form['group_user_selection']['view_mode']['custom_vocab_included_terms'] = [
+    $form['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] = [
       '#type' => 'select',
       '#title' => $this->t('Filter by @vocab Parent Term', ['@vocab' => $custom_vocab_label]),
       '#description' => $this->t("Select a parent term to show content tagged with that terms sub-items. This ignores content tagged as the parent term and any other parent terms in the vocabulary."),
@@ -308,7 +308,7 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
     ];
 
     // Gets the view mode options based on Ajax callbacks or initial load.
-    $sortOptions = $this->viewsContentResourcesManager->sortByList($formSelectors['entity_types']);
+    $sortOptions = $this->viewsContentResourcesManager->sortByList('resource');
     $sortBy = ($items[$delta]->params) ? $this->viewsContentResourcesManager->getDefaultParamValue('sort_by', $items[$delta]->params) : NULL;
 
     $form['group_user_selection']['filter_and_sort']['sort_by'] = [
@@ -420,15 +420,15 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
 
     foreach ($values as &$value) {
       $paramData = [
-        "view_mode" => $form['group_user_selection']['view_mode']['view_mode']['#value'],
+        "view_mode" => $form['group_user_selection']['entity_and_view_mode']['entity_and_view_mode']['#value'],
         "filters" => [
           "terms_include" => $terms_include,
           "terms_exclude" => $terms_exclude,
         ],
-        "exposed_filter_options" => $form['group_user_selection']['view_mode']['exposed_filter_options']['#value'],
-        "category_filter_label" => $form['group_user_selection']['view_mode']['category_filter_label']['#value'],
-        "category_included_terms" => $form['group_user_selection']['view_mode']['category_included_terms']['#value'],
-        "custom_vocab_included_terms" => $form['group_user_selection']['view_mode']['custom_vocab_included_terms']['#value'],
+        "exposed_filter_options" => $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options']['#value'],
+        "category_filter_label" => $form['group_user_selection']['entity_and_view_mode']['category_filter_label']['#value'],
+        "category_included_terms" => $form['group_user_selection']['entity_and_view_mode']['category_included_terms']['#value'],
+        "custom_vocab_included_terms" => $form['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms']['#value'],
         "operator" => $form['group_user_selection']['filter_and_sort']['term_operator']['#value'],
         "sort_by" => $form_state->getValue($formSelectors['sort_by_array']),
         "display" => $form_state->getValue($formSelectors['display_array']),

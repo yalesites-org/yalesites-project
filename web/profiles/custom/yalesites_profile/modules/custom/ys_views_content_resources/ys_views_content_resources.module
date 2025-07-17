@@ -1,0 +1,128 @@
+<?php
+
+/**
+ * @file
+ * Contains ys_views_content_resources.module functions.
+ */
+
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\node\NodeInterface;
+use Drupal\views\ViewExecutable;
+
+/**
+ * Implements hook_theme().
+ */
+function ys_views_content_resources_theme($existing, $type, $theme, $path): array {
+  return [
+    // The default formatter will only be used for preview on the back-end.
+    'views_basic_formatter_default' => [
+      'variables' => [
+        'view' => [],
+        'exposed' => [],
+      ],
+    ],
+    'views_basic_rows' => [
+      'variables' => [
+        'card_collection_type' => NULL,
+        'rows' => [],
+        'parentNode' => NULL,
+        'contentType' => NULL,
+      ],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_views_data().
+ */
+function ys_views_content_resources_views_data_alter(array &$data) {
+  $data['node_field_data']['views_basic_sort'] = [
+    'title' => t('Views Basic Sort'),
+    'sort' => [
+      'help' => t('Creates a dynamic sort from Views Basic fields.'),
+      'id' => 'views_basic_sort',
+    ],
+  ];
+  $data['node_field_data']['exclude_taxonomy_terms'] = [
+    'title' => t('Exclude Taxonomy Terms'),
+    'filter' => [
+      'help' => t('Excludes taxonomy terms dynamically from the views tool'),
+      'id' => 'exclude_taxonomy_terms',
+    ],
+  ];
+  $data['node_field_data']['resource_year_filter'] = [
+    'title' => t('Resource Year'),
+    'filter' => [
+      'help' => t('Filter resources by year based on published date.'),
+      'id' => 'resource_year_filter',
+    ],
+  ];
+
+}
+
+/**
+ * Implements hook_views_pre_build().
+ */
+function ys_views_content_resources_views_pre_build($view) {
+  static $counter = 0;
+
+  if (empty($view->dom_id)) {
+    $view->dom_id = "view_" . $counter++;
+  }
+}
+
+/**
+ * Implements hook_views_pre_render().
+ */
+function ys_views_content_resources_views_pre_render(ViewExecutable $view): void {
+  if ($view->id() === 'content_resources') {
+    $pin_options = json_decode($view->args[11]);
+    $pin_label = '';
+    if ($pin_options->pinned_to_top) {
+      $pin_label = $pin_options->pin_label;
+    }
+    
+    // Loop through each row in the view's results and update the node's
+    // properties based on show_categories, show_tags and show_thumbnail
+    // configuration.
+    foreach ($view->result as $row) {
+      $sticky = (bool) $row->_entity->get('sticky')->value;
+      if ($sticky) {
+        $row->_entity->pin_label = $pin_label;
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_views_pre_view().
+ */
+function ys_views_content_resources_views_pre_view(ViewExecutable $view, $display_id, array &$args) {
+  if ($view->id() !== 'content_resources') {
+    return;
+  }
+  
+  // Detect if this is an AJAX request.
+  $is_ajax = \Drupal::request()->isXmlHttpRequest();
+  if (!$is_ajax) {
+    return;
+  }
+
+  $viewsBasicManager = \Drupal::service('ys_views_content_resources.views_content_resources_manager');
+  $viewsBasicManager->setupView($view, end($args));
+}
+
+/**
+ * Implements hook_node_view().
+ */
+function ys_views_content_resources_node_view(array &$build, NodeInterface $node, EntityViewDisplayInterface $display, $view_mode) {
+  $view_modes = [
+    "card",
+    "condensed",
+    "list_item",
+  ];
+
+  if (in_array($view_mode, $view_modes)) {
+    $build['#cache']['max-age'] = 0;
+  }
+}
