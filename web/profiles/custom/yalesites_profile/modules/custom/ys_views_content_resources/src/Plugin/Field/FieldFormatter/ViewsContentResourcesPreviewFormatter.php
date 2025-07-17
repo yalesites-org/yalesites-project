@@ -20,7 +20,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   }
  * )
  */
-class ViewsBasicPreviewFormatter extends FormatterBase implements ContainerFactoryPluginInterface {
+class ViewsContentResourcesPreviewFormatter extends FormatterBase implements ContainerFactoryPluginInterface {
 
   /**
    * The views basic manager service.

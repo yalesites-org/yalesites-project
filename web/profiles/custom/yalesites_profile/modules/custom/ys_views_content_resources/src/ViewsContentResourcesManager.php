@@ -197,7 +197,6 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
         unset($filters[$filter_name]);
       }
     }
-    
 
     // Custom vocab filter.
     if (!empty($paramsDecoded['exposed_filter_options']['show_custom_vocab_filter'])) {
@@ -322,7 +321,6 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     /*
      * End setting dynamic arguments.
      */
-
 
     /*
      * Includes current node, if specified in settings.

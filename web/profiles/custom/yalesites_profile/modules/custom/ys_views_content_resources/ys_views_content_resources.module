@@ -81,7 +81,7 @@ function ys_views_content_resources_views_pre_render(ViewExecutable $view): void
     if ($pin_options->pinned_to_top) {
       $pin_label = $pin_options->pin_label;
     }
-    
+
     // Loop through each row in the view's results and update the node's
     // properties based on show_categories, show_tags and show_thumbnail
     // configuration.
@@ -101,7 +101,7 @@ function ys_views_content_resources_views_pre_view(ViewExecutable $view, $displa
   if ($view->id() !== 'content_resources') {
     return;
   }
-  
+
   // Detect if this is an AJAX request.
   $is_ajax = \Drupal::request()->isXmlHttpRequest();
   if (!$is_ajax) {
