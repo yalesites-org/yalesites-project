@@ -61,7 +61,7 @@ class YSExpandBookManager extends BookManager {
   /**
    * {@inheritdoc}
    */
-  public function bookTreeAllDataBreak($bid, $link = NULL, $max_depth = NULL, $start_level = NULL, $always_expand = 0) {
+  public function bookTreeAllData($bid, $link = NULL, $max_depth = NULL, $start_level = NULL, $always_expand = 0) {
 
     $tree = &drupal_static(__METHOD__, []);
     $language_interface = $this->languageManager->getCurrentLanguage();
@@ -190,13 +190,8 @@ class YSExpandBookManager extends BookManager {
     // include it, and add a flag so that the template can add a lock icon to
     // the menu item. Access will still be checked when the user attempts to
     // view the node.
-    if ($this->configFactory->get('ys_core.header_settings')->get('enable_cas_menu_links')) {
-      $link['access'] = $node && TRUE;
-      $link['is_cas'] = $node && !$node->access('view');
-    }
-    else {
-      $link['access'] = $node && $node->access('view');
-    }
+    $link['access'] = TRUE;
+    $link['is_cas'] = $node && !$node->access('view');
 
     // For performance, don't localize a link the user can't access.
     if ($link['access']) {
