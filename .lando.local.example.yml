@@ -49,4 +49,4 @@ services:
     # This is needed to have ImagImageMagick work on Lando
     # because the Pantheon recipie is broken for ImageMagick
     run_as_root:
-     - /bin/sh /app/.lando/imagemagicfix.sh
+      - /bin/sh /app/.lando/imagemagicfix.sh
