@@ -209,16 +209,19 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
       $form['#attached']['library'][] = 'ys_core/block_form';
     }
 
-    // Add default admin label to layout builder blocks.
-    $form_object = $form_state->getFormObject();
-    $component = $form_object->getCurrentComponent();
-    $plugin = $component->getPlugin();
-    if (isset($plugin)) {
-      // Get the default admin label from the block plugin label.
-      $plugin_definition = $plugin->getPluginDefinition();
-      $default_admin_label = $plugin_definition['admin_label'] ?? $plugin->getPluginId();
-      // Add the plugin label as default value.
-      $form['settings']['label']['#default_value'] = $default_admin_label;
+    $emptyAdminLabel = $form['settings']['label']['#default_value'] ?? '';
+    if (empty($emptyAdminLabel)) {
+      // Add default admin label to layout builder blocks.
+      $form_object = $form_state->getFormObject();
+      $component = $form_object->getCurrentComponent();
+      $plugin = $component->getPlugin();
+      if (isset($plugin)) {
+        // Get the default admin label from the block plugin label.
+        $plugin_definition = $plugin->getPluginDefinition();
+        $default_admin_label = $plugin_definition['admin_label'] ?? $plugin->getPluginId();
+        // Add the plugin label as default value.
+        $form['settings']['label']['#default_value'] = $default_admin_label;
+      }
     }
   }
 
