@@ -2,6 +2,8 @@
 
 namespace Drupal\ys_core\Form;
 
+use Drupal\Core\Link;
+use Drupal\Core\Url;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
@@ -211,6 +213,17 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#description' => $this->t('Get a verification key from Google Search Console Tools using the "URL Prefix" tool, clicking on the the alternate methods tab, and selecting the HTML Tag option. Use the "content" attribute from the Google tag within this field. Example: <code>&#60;meta name="google-site-verification" content="USE-THIS-CODE" /></code>'),
       '#title' => $this->t('Google Site Verification'),
       '#default_value' => $yaleConfig->get('seo')['google_site_verification'],
+    ];
+
+    $form['google_analytics_migration'] = [
+      '#type' => 'item',
+      '#title' => $this->t('Google Analytics/Tag Manager'),
+      '#description' => $this->t('YaleSites is transitioning from Google Analytics to Google Tag Manager. Configure Google Tag Manager below to maintain your website analytics tracking.'),
+      '#markup' => Link::fromTextAndUrl(
+        $this->t('Configure Google Tag Manager'),
+        Url::fromRoute('entity.google_tag_container.single_form')
+          ->setOptions(['attributes' => ['class' => ['button'], 'style' => 'margin-top: 0; margin-bottom: 0;']])
+      )->toString(),
     ];
 
     $form['custom_vocab_name'] = [

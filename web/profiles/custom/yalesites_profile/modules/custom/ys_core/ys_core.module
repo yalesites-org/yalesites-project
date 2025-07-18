@@ -5,6 +5,8 @@
  * Contains ys_core.module functions.
  */
 
+use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
@@ -207,20 +209,26 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
       $form['#attached']['library'][] = 'ys_core/block_form';
     }
 
-    // Add default admin label to layout builder blocks.
-    $form_object = $form_state->getFormObject();
-    $component = $form_object->getCurrentComponent();
-    $plugin = $component->getPlugin();
-    if (isset($plugin)) {
-      // Get the default admin label from the block plugin label.
-      $plugin_definition = $plugin->getPluginDefinition();
-      $default_admin_label = $plugin_definition['admin_label'] ?? $plugin->getPluginId();
-      // Add the plugin label as default value.
-      $form['settings']['label']['#default_value'] = $default_admin_label;
+    $emptyAdminLabel = $form['settings']['label']['#default_value'] ?? '';
+    if (empty($emptyAdminLabel)) {
+      // Add default admin label to layout builder blocks.
+      $form_object = $form_state->getFormObject();
+      $component = $form_object->getCurrentComponent();
+      $plugin = $component->getPlugin();
+      if (isset($plugin)) {
+        // Get the default admin label from the block plugin label.
+        $plugin_definition = $plugin->getPluginDefinition();
+        $default_admin_label = $plugin_definition['admin_label'] ?? $plugin->getPluginId();
+        // Add the plugin label as default value.
+        $form['settings']['label']['#default_value'] = $default_admin_label;
+      }
     }
   }
 
   _ys_core_disable_event_fields($form, $form_id);
+
+  // Add JavaScript preview functionality to Facts and Figures icon fields.
+  _ys_core_attach_icon_preview($form, $form_state, $form_id);
 }
 
 /**
@@ -786,42 +794,6 @@ function ys_core_grand_hero_validate($form, FormStateInterface $form_state) {
 }
 
 /**
- * Helper function to find a field in the form structure.
- *
- * @param array $form
- *   The form array to search in.
- * @param string $field_name
- *   The name of the field to find.
- *
- * @return array|null
- *   The path to the field in the form structure, or NULL if not found.
- */
-function _ys_core_find_field_in_form($form, $field_name) {
-  // Check if the field exists at the current level.
-  if (isset($form[$field_name])) {
-    return [$field_name];
-  }
-
-  // Recursively search through the form structure.
-  foreach ($form as $key => $value) {
-    // Skip non-array values and special keys.
-    if (!is_array($value) || $key[0] === '#') {
-      continue;
-    }
-
-    // Recursively search in the child.
-    $result = _ys_core_find_field_in_form($value, $field_name);
-    if ($result) {
-      // Prepend the current key to the path.
-      array_unshift($result, $key);
-      return $result;
-    }
-  }
-
-  return NULL;
-}
-
-/**
  * Implements hook_toolbar_alter().
  *
  * Remove Coffee module's "Go to" item from secondary toolbar and attach
@@ -842,5 +814,80 @@ function ys_core_entity_type_alter(array &$entity_types) {
     // Override the collection route class for taxonomy vocabularies.
     // @see /admin/structure/taxonomy
     $entity_types['taxonomy_vocabulary']->setHandlerClass('list_builder', 'Drupal\ys_core\YaleSitesVocabularyListBuilder');
+  }
+}
+
+/**
+ * Allowed values callback for Facts and Figures icon field.
+ *
+ * This function serves as a bridge between Drupal's allowed_values_function
+ * mechanism and our FactsAndFiguresIconManager service.
+ *
+ * @param \Drupal\Core\Field\FieldStorageDefinitionInterface $definition
+ *   The field storage definition.
+ * @param \Drupal\Core\Entity\FieldableEntityInterface|null $entity
+ *   The entity being created if applicable.
+ * @param bool $cacheable
+ *   Boolean indicating if the results are cacheable.
+ *
+ * @return array
+ *   An array of valid values in the form:
+ *   - option_key => option_value
+ */
+function ys_core_facts_icon_allowed_values(FieldStorageDefinitionInterface $definition, ?FieldableEntityInterface $entity = NULL, $cacheable = TRUE) {
+  /** @var \Drupal\ys_core\FactsAndFiguresIconManager $icon_manager */
+  $icon_manager = \Drupal::service('ys_core.facts_and_figures_icon_manager');
+  return $icon_manager->getFlatIconOptions();
+}
+
+/**
+ * Helper function to attach icon preview to Facts and Figures forms.
+ *
+ * This function adds JavaScript preview functionality to Facts and Figures icon
+ * fields. The field options are handled by the allowed_values_function in field
+ * configuration.
+ *
+ * @param array $form
+ *   The form array.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state.
+ * @param string $form_id
+ *   The form ID.
+ */
+function _ys_core_attach_icon_preview(&$form, FormStateInterface $form_state, $form_id) {
+  // Only process paragraph forms and layout builder forms that might contain
+  // paragraphs.
+  $relevant_forms = [
+    'paragraph_facts_item_form',
+    'paragraph_facts_item_edit_form',
+    'layout_builder_add_block',
+    'layout_builder_update_block',
+  ];
+
+  $is_relevant_form = FALSE;
+  foreach ($relevant_forms as $pattern) {
+    if (strpos($form_id, $pattern) === 0) {
+      $is_relevant_form = TRUE;
+      break;
+    }
+  }
+
+  // Also check for block content forms that contain facts paragraphs.
+  if (strpos($form_id, 'block_content_facts') !== FALSE) {
+    $is_relevant_form = TRUE;
+  }
+
+  if (!$is_relevant_form) {
+    return;
+  }
+
+  // Always attach the library for forms that might contain icon fields.
+  $form['#attached']['library'][] = 'ys_core/facts_icon_preview';
+
+  // Add CSS class to icon fields if they exist and are visible.
+  if (isset($form['field_icon'])) {
+    if (isset($form['field_icon']['widget'][0]['value'])) {
+      $form['field_icon']['widget'][0]['value']['#attributes']['class'][] = 'facts-icon-selector';
+    }
   }
 }

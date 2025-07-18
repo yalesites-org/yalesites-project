@@ -29,3 +29,7 @@ services:
   ys_core.taxonomy_vocabulary_manager:
     class: Drupal\ys_core\TaxonomyVocabularyManager
     arguments: ['@entity_type.manager', '@entity_field.manager']
+  # Service for managing Facts and Figures icon options.
+  ys_core.facts_and_figures_icon_manager:
+    class: Drupal\ys_core\FactsAndFiguresIconManager
+    arguments: ['@cache.default', '@module_handler', '@logger.factory']

@@ -49,8 +49,22 @@ a.focal-point-preview-link {
     gap: 1rem;
     grid-template-columns: repeat(2, 1fr);
   }
-  .ys-gin-two-column-wrapper .form-element {
+  .ys-gin-two-column-wrapper .form-element, .ys-gin-two-column-wrapper .form-item {
     width: 100%;
+    min-width: 100%;
+  }
+}
+
+/* Three column layout for profile add/edit form */
+@media screen and (min-width: 1000px) {
+  .ys-gin-three-column-wrapper {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .ys-gin-three-column-wrapper .form-element, .ys-gin-three-column-wrapper .form-item {
+    width: 100%;
+    min-width: 100%;
   }
 }
 
@@ -78,6 +92,9 @@ a.focal-point-preview-link {
   margin-top: 0.5rem;
 }
 
+.form-element {
+  min-height: calc(var(--input-padding-vertical) * 3 + var(--input-line-height)) !important;
+}
 /* stylelint-enable */
 
 /*# sourceMappingURL=gin-custom.css.map */
