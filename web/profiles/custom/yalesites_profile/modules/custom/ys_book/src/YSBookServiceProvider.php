@@ -9,7 +9,7 @@ use Symfony\Component\DependencyInjection\Reference;
 /**
  * Replaces the book manager service with our YS version.
  */
-class YsBookServiceProvider extends ServiceProviderBase {
+class YSBookServiceProvider extends ServiceProviderBase {
 
   /**
    * {@inheritdoc}
