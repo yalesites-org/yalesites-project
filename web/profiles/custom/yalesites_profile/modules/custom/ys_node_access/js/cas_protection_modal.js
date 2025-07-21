@@ -34,6 +34,11 @@
         Drupal.t(
           "CAS protection only limits who can view content - it does not make this platform secure for sensitive data."
         ),
+        {
+          type: "link",
+          text: Drupal.t("Learn more about Yale's Data Classification Policy"),
+          url: "https://your.yale.edu/policies-procedures/policies/1604-data-classification-policy#1604.1",
+        },
       ],
       confirmationText: Drupal.t(
         ""
