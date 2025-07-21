@@ -978,12 +978,6 @@ $form['ys_core_netid_alert_message'] = [
   '#weight' => -99,
 ];
 
-* implements hook_yale_cas_pre_redirect_service_parameters_alter() .
- *
- * Allows modules to alter CAS service parameters before redirect
- * at the pre - redirect event .
- * /
-
 /**
  * Implements hook_yale_cas_app_parameter_alter().
  */
