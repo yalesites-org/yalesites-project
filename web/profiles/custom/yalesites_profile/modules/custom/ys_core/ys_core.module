@@ -968,15 +968,16 @@ function ys_core_menu_local_actions_alter(&$local_actions) {
  * Implements hook_form_FORM_ID_alter().
  */
 function ys_core_form_user_register_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-$form['ys_core_netid_alert_message'] = [
-  '#type' => 'markup',
-  '#markup' => t('To add users with NetIDs go <a href=":url">here</a>.', [
-    ':url' => Url::fromRoute('cas.bulk_add_cas_users')->toString(),
-  ]),
-  '#prefix' => '<div class="messages messages--warning">',
-  '#suffix' => '</div>',
-  '#weight' => -99,
-];
+  $form['ys_core_netid_alert_message'] = [
+    '#type' => 'markup',
+    '#markup' => t('To add users with NetIDs go <a href=":url">here</a>.', [
+      ':url' => Url::fromRoute('cas.bulk_add_cas_users')->toString(),
+    ]),
+    '#prefix' => '<div class="messages messages--warning">',
+    '#suffix' => '</div>',
+    '#weight' => -99,
+  ];
+}
 
 /**
  * Implements hook_yale_cas_app_parameter_alter().
