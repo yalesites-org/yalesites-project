@@ -63,10 +63,6 @@ class YsNodeAccessLinkTreeManipulator extends DefaultMenuLinkTreeManipulators {
      * only links.
      */
     $access_result = parent::menuLinkCheckAccess($instance);
-    if (!$this->headerSettings->get('enable_cas_menu_links')) {
-      return $access_result;
-    }
-
     $menuName = $instance->getMenuName();
     if (in_array($menuName, _ys_node_access_cas_menus())) {
       if ($this->account->isAnonymous()) {
