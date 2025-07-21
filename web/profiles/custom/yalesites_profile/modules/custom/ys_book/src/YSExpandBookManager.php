@@ -48,6 +48,12 @@ class YSExpandBookManager extends ExpandBookManager {
     $link['access'] = TRUE;
     $link['is_cas'] = $node && !$node->access('view');
 
+    // Debug: Log that our service is being used (temporary for multidev testing)
+    \Drupal::logger('ys_book')->notice('YSExpandBookManager::bookLinkTranslate called for node @nid, is_cas: @is_cas', [
+      '@nid' => $link['nid'],
+      '@is_cas' => $link['is_cas'] ? 'TRUE' : 'FALSE',
+    ]);
+
     // Set the localized title.
     if ($node) {
       $node = $this->entityRepository->getTranslationFromContext($node);
