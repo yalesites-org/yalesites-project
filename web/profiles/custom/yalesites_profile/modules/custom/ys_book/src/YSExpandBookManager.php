@@ -74,35 +74,37 @@ class YSExpandBookManager extends BookManager {
     // depth.
     $cid = 'book-links:' . $bid . ':all:' . $nid . ':' . $language_interface->getId() . ':' . (int) $max_depth;
 
-    // If the tree data was not in the static cache, build $tree_parameters.
-    $tree_parameters = [
-      'min_depth' => $start_level ?? 1,
-      'max_depth' => $max_depth,
-    ];
+    if (!isset($tree[$cid])) {
+      // If the tree data was not in the static cache, build $tree_parameters.
+      $tree_parameters = [
+        'min_depth' => $start_level ?? 1,
+        'max_depth' => $max_depth,
+      ];
 
-    if ($nid) {
-      $active_trail = $this->getActiveTrailIds((string) $bid, $link);
+      if ($nid) {
+        $active_trail = $this->getActiveTrailIds((string) $bid, $link);
 
-      // Setting the 'expanded' value to $active_trail would be same as core.
-      if ($always_expand) {
-        $tree_parameters['expanded'] = [];
+        // Setting the 'expanded' value to $active_trail would be same as core.
+        if ($always_expand) {
+          $tree_parameters['expanded'] = [];
+        }
+        else {
+          $tree_parameters['expanded'] = $active_trail;
+        }
+        $tree_parameters['active_trail'] = $active_trail;
+        $tree_parameters['active_trail'][] = $nid;
       }
-      else {
-        $tree_parameters['expanded'] = $active_trail;
+
+      if ($start_level && $start_level > 1) {
+        $book_link = $this->loadBookLink($nid);
+        if (!empty($book_link['p' . $start_level]) && $book_link['p' . $start_level] > 0) {
+          $tree_parameters['conditions']['p' . $start_level] = $book_link['p' . $start_level];
+        }
       }
-      $tree_parameters['active_trail'] = $active_trail;
-      $tree_parameters['active_trail'][] = $nid;
+
+      // Build the tree using the parameters; the resulting tree will be cached.
+      $tree[$cid] = $this->bookTreeBuild($bid, $tree_parameters);
     }
-
-    if ($start_level && $start_level > 1) {
-      $book_link = $this->loadBookLink($nid);
-      if (!empty($book_link['p' . $start_level]) && $book_link['p' . $start_level] > 0) {
-        $tree_parameters['conditions']['p' . $start_level] = $book_link['p' . $start_level];
-      }
-    }
-
-    // Build the tree using the parameters; the resulting tree will be cached.
-    $tree[$cid] = $this->bookTreeBuild($bid, $tree_parameters);
 
     return $tree[$cid];
   }
