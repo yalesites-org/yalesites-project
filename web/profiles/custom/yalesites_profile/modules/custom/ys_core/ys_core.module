@@ -925,7 +925,6 @@ function _ys_core_attach_icon_preview(&$form, FormStateInterface $form_state, $f
 }
 
 /**
- * <<<<<<< HEAD
  * Implements hook_menu_local_actions_alter().
  *
  * Hide 'Add user' action for users without the platform_admin role.
