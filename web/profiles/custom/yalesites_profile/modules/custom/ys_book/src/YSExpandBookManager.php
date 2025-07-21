@@ -193,13 +193,11 @@ class YSExpandBookManager extends BookManager {
     $link['access'] = TRUE;
     $link['is_cas'] = $node && !$node->access('view');
 
-    // For performance, don't localize a link the user can't access.
-    if ($link['access']) {
-      // The node label will be the value for the current language.
-      $node = $this->entityRepository->getTranslationFromContext($node);
-      $link['title'] = $node->label();
-      $link['options'] = [];
-    }
+    // The node label will be the value for the current language.
+    $node = $this->entityRepository->getTranslationFromContext($node);
+    $link['title'] = $node->label();
+    $link['options'] = [];
+
     return $link;
   }
 
