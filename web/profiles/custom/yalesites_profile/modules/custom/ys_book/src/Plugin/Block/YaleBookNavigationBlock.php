@@ -21,14 +21,14 @@ class YaleBookNavigationBlock extends CustomBookNavigationBlock {
    */
   public function getCacheContexts() {
     $contexts = parent::getCacheContexts();
-    
+
     // Add user-specific contexts since ys_book module shows all items
-    // but flags restricted ones with is_cas based on actual permissions
+    // but flags restricted ones with is_cas based on actual permissions.
     $contexts = Cache::mergeContexts($contexts, [
       'user.permissions',
       'user.roles',
     ]);
-    
+
     return $contexts;
   }
 
