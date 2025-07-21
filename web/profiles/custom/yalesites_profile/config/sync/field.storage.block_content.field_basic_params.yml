@@ -1,0 +1,19 @@
+uuid: 7e91e533-0378-4835-a59c-204480afbc9a
+langcode: en
+status: true
+dependencies:
+  module:
+    - block_content
+    - ys_views_basic
+id: block_content.field_basic_params
+field_name: field_basic_params
+entity_type: block_content
+type: event_calendar_basic_params
+settings: {  }
+module: ys_views_basic
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false
