@@ -21,7 +21,7 @@ class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
   /**
    * {@inheritdoc}
    *
-   * Only exposes the Hide Add to Calendar option.
+   * Add event calendar specific options.
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $formState) {
     $element['hide_add_to_calendar'] = [
@@ -34,7 +34,6 @@ class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
 
   /**
    * {@inheritdoc}
-   * Massage the form values to always save the correct params for the calendar.
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
     foreach ($values as &$value) {
