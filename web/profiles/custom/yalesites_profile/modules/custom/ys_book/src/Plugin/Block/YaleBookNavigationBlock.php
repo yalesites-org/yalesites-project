@@ -2,11 +2,14 @@
 
 namespace Drupal\ys_book\Plugin\Block;
 
-use Drupal\Core\Cache\Cache;
 use Drupal\custom_book_block\Plugin\Block\CustomBookNavigationBlock;
 
 /**
- * Provides a Yale book navigation block with proper cache contexts.
+ * Provides a Yale book navigation block.
+ *
+ * This extends CustomBookNavigationBlock which already includes the necessary
+ * user.permissions and user.roles cache contexts. Additional service-level
+ * caching in YSExpandBookManager ensures proper per-user cache handling.
  *
  * @Block(
  *   id = "yale_book_navigation",
@@ -16,20 +19,6 @@ use Drupal\custom_book_block\Plugin\Block\CustomBookNavigationBlock;
  */
 class YaleBookNavigationBlock extends CustomBookNavigationBlock {
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheContexts() {
-    $contexts = parent::getCacheContexts();
-
-    // Add user-specific contexts since ys_book module shows all items
-    // but flags restricted ones with is_cas based on actual permissions.
-    $contexts = Cache::mergeContexts($contexts, [
-      'user.permissions',
-      'user.roles',
-    ]);
-
-    return $contexts;
-  }
-
+  // No additional overrides needed - parent class handles cache contexts
+  // and YSExpandBookManager service handles user-specific book tree caching.
 }

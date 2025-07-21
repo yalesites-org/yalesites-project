@@ -7,9 +7,9 @@ use Drupal\Core\DependencyInjection\ServiceProviderBase;
 use Symfony\Component\DependencyInjection\Reference;
 
 /**
- * Defines a book manager which extends the core BookManager class.
+ * Replaces the book manager service with our YS version.
  */
-class YSBookServiceProvider extends ServiceProviderBase {
+class YsBookServiceProvider extends ServiceProviderBase {
 
   /**
    * {@inheritdoc}

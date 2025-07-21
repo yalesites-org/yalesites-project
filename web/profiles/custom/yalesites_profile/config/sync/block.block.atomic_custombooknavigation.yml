@@ -3,7 +3,7 @@ langcode: en
 status: false
 dependencies:
   module:
-    - ys_book
+    - custom_book_block
   theme:
     - atomic
 id: atomic_custombooknavigation
@@ -11,12 +11,12 @@ theme: atomic
 region: content
 weight: -3
 provider: null
-plugin: yale_book_navigation
+plugin: custom_book_navigation
 settings:
-  id: yale_book_navigation
-  label: 'Yale Book Navigation'
+  id: custom_book_navigation
+  label: 'Custom book navigation'
   label_display: '0'
-  provider: ys_book
+  provider: custom_book_block
   block_mode: 'book pages'
   target_book: dynamic
   start_level: '1'

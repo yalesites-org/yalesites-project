@@ -2,7 +2,10 @@
 
 namespace Drupal\ys_book;
 
-use Drupal\book\BookManager;
+use Drupal\Core\Url;
+use Drupal\Core\Template\Attribute;
+use Drupal\node\NodeInterface;
+use Drupal\custom_book_block\ExpandBookManager;
 use Drupal\book\BookOutlineStorageInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -13,14 +16,11 @@ use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\TranslationInterface;
-use Drupal\Core\Template\Attribute;
-use Drupal\Core\Url;
-use Drupal\node\NodeInterface;
 
 /**
- * Overrides class for BookManager service.
+ * Extends ExpandBookManager to include CAS-protected content in navigation.
  */
-class YSExpandBookManager extends BookManager {
+class YSExpandBookManager extends ExpandBookManager {
 
   /**
    * The current route match.
@@ -30,90 +30,39 @@ class YSExpandBookManager extends BookManager {
   protected $routeMatch;
 
   /**
-   * Constructs an ExpandBookManager object.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   * @param \Drupal\Core\StringTranslation\TranslationInterface $translation
-   *   The string translation service.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The config factory.
-   * @param \Drupal\book\BookOutlineStorageInterface $book_outline_storage
-   *   The book outline storage.
-   * @param \Drupal\Core\Render\RendererInterface $renderer
-   *   The renderer.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
-   *   The language manager.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
-   *   The entity repository service.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $backend_chained_cache
-   *   The book chained backend cache service.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $memory_cache
-   *   The book memory cache service.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
-   *   The current route match.
+   * Constructs an YSExpandBookManager object.
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, TranslationInterface $translation, ConfigFactoryInterface $config_factory, BookOutlineStorageInterface $book_outline_storage, RendererInterface $renderer, LanguageManagerInterface $language_manager, EntityRepositoryInterface $entity_repository, CacheBackendInterface $backend_chained_cache, CacheBackendInterface $memory_cache, RouteMatchInterface $route_match) {
-    parent::__construct($entity_type_manager, $translation, $config_factory, $book_outline_storage, $renderer, $language_manager, $entity_repository, $backend_chained_cache, $memory_cache);
+    parent::__construct($entity_type_manager, $translation, $config_factory, $book_outline_storage, $renderer, $language_manager, $entity_repository, $backend_chained_cache, $memory_cache, $route_match);
     $this->routeMatch = $route_match;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function bookTreeAllData($bid, $link = NULL, $max_depth = NULL, $start_level = NULL, $always_expand = 0) {
+  public function bookLinkTranslate(&$link) {
+    // Load the node to check access.
+    $node = $this->entityTypeManager->getStorage('node')->load($link['nid']);
 
-    $tree = &drupal_static(__METHOD__, []);
-    $language_interface = $this->languageManager->getCurrentLanguage();
+    // Override default behavior: include all pages but flag CAS-protected ones.
+    $link['access'] = TRUE;
+    $link['is_cas'] = $node && !$node->access('view');
 
-    // Use $nid as a flag for whether the data being loaded is for the whole
-    // tree.
-    $nid = $link['nid'] ?? 0;
-
-    // Generate a cache ID (cid) specific for this $bid, $link, $language, and
-    // depth.
-    $cid = 'book-links:' . $bid . ':all:' . $nid . ':' . $language_interface->getId() . ':' . (int) $max_depth;
-
-    if (!isset($tree[$cid])) {
-      // If the tree data was not in the static cache, build $tree_parameters.
-      $tree_parameters = [
-        'min_depth' => $start_level ?? 1,
-        'max_depth' => $max_depth,
-      ];
-
-      if ($nid) {
-        $active_trail = $this->getActiveTrailIds((string) $bid, $link);
-
-        // Setting the 'expanded' value to $active_trail would be same as core.
-        if ($always_expand) {
-          $tree_parameters['expanded'] = [];
-        }
-        else {
-          $tree_parameters['expanded'] = $active_trail;
-        }
-        $tree_parameters['active_trail'] = $active_trail;
-        $tree_parameters['active_trail'][] = $nid;
-      }
-
-      if ($start_level && $start_level > 1) {
-        $book_link = $this->loadBookLink($nid);
-        if (!empty($book_link['p' . $start_level]) && $book_link['p' . $start_level] > 0) {
-          $tree_parameters['conditions']['p' . $start_level] = $book_link['p' . $start_level];
-        }
-      }
-
-      // Build the tree using the parameters; the resulting tree will be cached.
-      $tree[$cid] = $this->bookTreeBuild($bid, $tree_parameters);
+    // Set the localized title.
+    if ($node) {
+      $node = $this->entityRepository->getTranslationFromContext($node);
+      $link['title'] = $node->label();
     }
 
-    return $tree[$cid];
+    $link['options'] = [];
+
+    return $link;
   }
 
   /**
    * {@inheritdoc}
    */
   protected function buildItems(array $tree) {
-
     $items = [];
     $langcode = $this->languageManager->getCurrentLanguage(LanguageInterface::TYPE_CONTENT)->getId();
     $node = $this->routeMatch->getParameter('node');
@@ -151,13 +100,14 @@ class YSExpandBookManager extends BookManager {
         $element['is_active'] = TRUE;
       }
 
-      // Allow book-specific theme overrides.
-      $element['attributes'] = new Attribute();
-      $element['title'] = $data['link']['title'];
-
+      // IMPORTANT: Pass through the is_cas flag we set in bookLinkTranslate.
       if (isset($data['link']['is_cas']) && $data['link']['is_cas']) {
         $element['is_cas'] = TRUE;
       }
+
+      // Allow book-specific theme overrides.
+      $element['attributes'] = new Attribute();
+      $element['title'] = $data['link']['title'];
 
       $element['url'] = Url::fromUri('entity:node/' . $data['link']['nid'], [
         'langcode' => $langcode,
@@ -173,32 +123,6 @@ class YSExpandBookManager extends BookManager {
     }
 
     return $items;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function bookLinkTranslate(&$link) {
-    // Check access via the api, since the query node_access tag doesn't check
-    // for unpublished nodes.
-    // @todo load the nodes en-mass rather than individually.
-    // @see https://www.drupal.org/project/drupal/issues/2470896
-    $node = $this->entityTypeManager->getStorage('node')->load($link['nid']);
-
-    // This is the custom check that we are overriding. By default, content that
-    // fails an access check will not be included in the book tree. We want to
-    // include it, and add a flag so that the template can add a lock icon to
-    // the menu item. Access will still be checked when the user attempts to
-    // view the node.
-    $link['access'] = TRUE;
-    $link['is_cas'] = $node && !$node->access('view');
-
-    // The node label will be the value for the current language.
-    $node = $this->entityRepository->getTranslationFromContext($node);
-    $link['title'] = $node->label();
-    $link['options'] = [];
-
-    return $link;
   }
 
 }
