@@ -20,7 +20,7 @@ use Drupal\node\NodeInterface;
 /**
  * Overrides class for BookManager service.
  */
-class YSExpandBookManager extends BookManager {
+class YsExpandBookManager extends BookManager {
 
   /**
    * The current route match.
