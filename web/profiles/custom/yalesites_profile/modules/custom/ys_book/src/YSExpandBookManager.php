@@ -191,7 +191,9 @@ class YSExpandBookManager extends BookManager {
     // the menu item. Access will still be checked when the user attempts to
     // view the node.
     $link['access'] = TRUE;
-    $link['is_cas'] = $node && !$node->access('view');
+    // Check the field_login_required field instead of access check to avoid
+    // cache-related issues between environments.
+    $link['is_cas'] = $node && $node->hasField('field_login_required') && (bool) $node->get('field_login_required')->value;
 
     // For performance, don't localize a link the user can't access.
     if ($link['access']) {
