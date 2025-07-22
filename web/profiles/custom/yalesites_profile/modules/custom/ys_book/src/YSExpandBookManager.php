@@ -182,6 +182,9 @@ class YSExpandBookManager extends BookManager {
    * where they will be flagged with is_cas by bookLinkTranslate().
    */
   protected function bookTreeBuild($bid, array $parameters = []) {
+    // Debug logging to verify this method is called.
+    \Drupal::logger('ys_book')->info('YSExpandBookManager::bookTreeBuild called for bid: @bid', ['@bid' => $bid]);
+
     // Build the book tree.
     $data = $this->doBookTreeBuild($bid, $parameters);
     // Translate links but skip access filtering that removes CAS-protected
@@ -217,6 +220,9 @@ class YSExpandBookManager extends BookManager {
    * {@inheritdoc}
    */
   public function bookLinkTranslate(&$link) {
+    // Debug logging to verify this method is called.
+    \Drupal::logger('ys_book')->info('YSExpandBookManager::bookLinkTranslate called for nid: @nid', ['@nid' => $link['nid']]);
+
     // Check access via the api, since the query node_access tag doesn't check
     // for unpublished nodes.
     // @todo load the nodes en-mass rather than individually.
@@ -232,6 +238,11 @@ class YSExpandBookManager extends BookManager {
     // Check the field_login_required field instead of access check to avoid
     // cache-related issues between environments.
     $link['is_cas'] = $node && $node->hasField('field_login_required') && (bool) $node->get('field_login_required')->value;
+
+    // Debug logging for CAS detection.
+    if ($link['is_cas']) {
+      \Drupal::logger('ys_book')->info('Node @nid flagged as CAS-protected', ['@nid' => $link['nid']]);
+    }
 
     // For performance, don't localize a link the user can't access.
     if ($link['access']) {
