@@ -1,0 +1,128 @@
+{% set heading = content.field_teaser_title.0 ? content.field_teaser_title : label %}
+{% set url = content.field_external_source[0]['#url']|render ? content.field_external_source[0]['#url']|render : url %}
+
+{# For posts, include date formatting #}
+{% if node.getType() == 'post' %}
+  {% set date__formatted %}
+    {% include "@atoms/date-time/yds-date-time.twig" with {
+      date_time__start: date_formatted,
+      date_time__format: 'date',
+    } %}
+  {% endset %}
+{% endif %}
+
+{# For events, include event-specific formatting #}
+{% if node.getType() == 'event' %}
+  {% set delta = 0 %}
+  
+  {% if elements['#delta'] is not empty %}
+    {% set delta = elements['#delta'] %}
+  {% endif %}
+  
+  {% set event_has_passed = event_dates is empty %}
+  
+  {# Use event_dates array to print any event dates #}
+  {% if event_dates|length > 1 %}
+    {% set multi_day_text %}
+      {% include "@atoms/typography/text/yds-text.twig" with {
+        text__base_class: 'multi-day-event',
+        text__content: '(multi-day event)',
+      } %}
+    {% endset %}
+  {% endif %}
+
+  {% set date__formatted %}
+    {% include "@atoms/date-time/yds-date-time.twig" with {
+      date_time__start: content.field_event_date[delta].start_time['#markup'],
+    } %} {{ multi_day_text }}
+  {% endset %}
+
+  {% if content.field_localist_event_experience.0 %}
+    {% set reference_card__overline -%}
+      {% include "@molecules/cards/reference-card/event/_yds-event-format.twig" with {
+        format: content.field_localist_event_experience,
+      } %}
+    {%- endset %}
+  {% endif %}
+
+  {# Set the event title prefix based on event status #}
+  {% set event_title__prefix = event_has_passed ? 'Past Event: ' : '' %}
+{% endif %}
+
+{# Build the reference card parameters based on content type #}
+{% set reference_card_params = {
+  reference_card__heading: heading,
+  reference_card__heading_level: '2',
+  reference_card__url: url,
+  reference_card__image: node.show_thumbnail ? 'true' : 'false',
+  reference_card__image_aria: heading[0]['#context'].value,
+  reference_card__overlay: node.pin_label,
+  show_categories: node.show_categories,
+  show_tags: node.show_tags,
+} %}
+
+{# Add content type specific parameters #}
+{% if node.getType() == 'post' %}
+  {% set reference_card_params = reference_card_params|merge({
+    reference_card__overline: date__formatted,
+    reference_card__snippet: content.field_teaser_text,
+    reference_card__eyebrow: content.field_teaser_lead_in[0]['#context'].value,
+    show_eyebrow: node.show_eyebrow,
+  }) %}
+{% elseif node.getType() == 'event' %}
+  {% set reference_card_params = reference_card_params|merge({
+    reference_card__prefix: event_title__prefix,
+    reference_card__subheading: date__formatted,
+    reference_card__snippet: content.field_teaser_text,
+    reference_card__cta_primary__href: ticket_url,
+    reference_card__cta_primary__content: cost_button_text,
+    reference_card__cta_secondary__content: (node.hide_add_to_calendar) ? null : 'Add to Calendar',
+    reference_card__cta_secondary__href: (node.hide_add_to_calendar) ? null : ics_url,
+  }) %}
+{% elseif node.getType() == 'profile' %}
+  {% set reference_card_params = reference_card_params|merge({
+    reference_card__subheading: content.field_position,
+    reference_card__snippet: content.field_subtitle,
+  }) %}
+{% else %}
+  {# Default for page and other content types #}
+  {% set reference_card_params = reference_card_params|merge({
+    reference_card__snippet: content.field_teaser_text,
+  }) %}
+{% endif %}
+
+{% embed "@molecules/cards/reference-card/yds-reference-card.twig" with reference_card_params %}
+
+  {% block reference_card__tags %}
+    {{ content.field_tags }}
+  {% endblock %}
+
+  {% block reference_card__categories %}
+    {% if node.getType() == 'profile' %}
+      {{ content.field_affiliation }}
+    {% else %}
+      {{ content.field_category }}
+    {% endif %}
+  {% endblock %}
+
+  {% block reference_card__image %}
+    {% if node.getType() == 'event' and localist_image_url %}
+      {% include "@atoms/images/image/_responsive-image.twig" with {
+        image__src: localist_image_url,
+        image__alt: localist_image_alt,
+        responsive_image__modifiers: ['localist-3-2'],
+      }%}
+    {% elseif content.field_teaser_media[0] %}
+      {{ content.field_teaser_media }}
+    {% elseif node.getType() == 'profile' and content.field_media[0] %}
+      {{ content.field_media }}
+    {% elseif getCoreSetting('image_fallback.teaser') %}
+      {% if node.getType() == 'profile' %}
+        {{ drupal_entity('media', getCoreSetting('image_fallback.teaser'), 'profile_directory_card_1_1_') }}
+      {% else %}
+        {{ drupal_entity('media', getCoreSetting('image_fallback.teaser'), 'card_list_3_2') }}
+      {% endif %}
+    {% endif %}
+  {% endblock %}
+
+{% endembed %}
