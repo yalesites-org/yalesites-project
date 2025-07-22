@@ -7,9 +7,12 @@ use Drupal\Core\DependencyInjection\ServiceProviderBase;
 use Symfony\Component\DependencyInjection\Reference;
 
 /**
- * Defines a book manager which extends the core BookManager class.
+ * Service provider to override the book manager with our YSExpandBookManager.
+ * 
+ * This takes precedence over the contrib custom_book_block module's service
+ * provider to ensure our CAS-enabled book navigation logic is used.
  */
-class YSBookServiceProvider extends ServiceProviderBase {
+class YsBookServiceProvider extends ServiceProviderBase {
 
   /**
    * {@inheritdoc}
