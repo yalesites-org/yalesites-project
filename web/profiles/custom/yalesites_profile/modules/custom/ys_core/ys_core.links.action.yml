@@ -30,3 +30,10 @@ ys_core.link_add_profile:
   title: 'Add profile'
   appears_on:
     - view.manage_profiles.page_1
+
+cas.bulk_add_cas_users:
+  title: 'Add NetId user(s)'
+  route_name: cas.bulk_add_cas_users
+  appears_on:
+    - entity.user.collection
+  weight: 1

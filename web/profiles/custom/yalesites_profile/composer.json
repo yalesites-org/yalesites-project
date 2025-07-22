@@ -116,8 +116,8 @@
     "laminas/laminas-escaper": "2.13.0",
     "northernco/ckeditor5-anchor-drupal": "0.4.0",
     "yalesites-org/ai_engine": "1.2.10",
-    "yalesites-org/atomic": "1.51.0",
-    "yalesites-org/yale_cas": "v1.0.5"
+    "yalesites-org/atomic": "1.52.0",
+    "yalesites-org/yale_cas": "v1.2.0"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
@@ -189,6 +189,9 @@
       },
       "drupal/layout_builder_lock": {
         "Show help text for only users who have permission https://www.drupal.org/project/layout_builder_lock/issues/3497055": "https://git.drupalcode.org/project/layout_builder_lock/-/merge_requests/26.patch"
+      },
+      "drupal/cas": {
+        "Fix coffee url_generator.non_bubbling override for CAS logouts https://www.drupal.org/project/cas/issues/2948185": "https://www.drupal.org/files/issues/cas_logout_error-2948185-2.patch"
       }
     }
   }

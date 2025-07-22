@@ -134,6 +134,16 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
 
     $delegatable_roles = $delegatable_roles->getAssignableRoles($account);
     $form['roles']['#options'] = $delegatable_roles;
+
+    if (isset($form['cas_usernames'])) {
+      $form['cas_usernames']['#title'] = t('NetIDs');
+      $form['cas_usernames']['#description'] = t('Enter one NetID per line.');
+    }
+
+    // Hide the email field since CAS users get email from LDAP.
+    if (isset($form['email_hostname'])) {
+      $form['email_hostname']['#access'] = FALSE;
+    }
   }
 
   // Load custom library.
@@ -209,16 +219,19 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
       $form['#attached']['library'][] = 'ys_core/block_form';
     }
 
-    // Add default admin label to layout builder blocks.
-    $form_object = $form_state->getFormObject();
-    $component = $form_object->getCurrentComponent();
-    $plugin = $component->getPlugin();
-    if (isset($plugin)) {
-      // Get the default admin label from the block plugin label.
-      $plugin_definition = $plugin->getPluginDefinition();
-      $default_admin_label = $plugin_definition['admin_label'] ?? $plugin->getPluginId();
-      // Add the plugin label as default value.
-      $form['settings']['label']['#default_value'] = $default_admin_label;
+    $emptyAdminLabel = $form['settings']['label']['#default_value'] ?? '';
+    if (empty($emptyAdminLabel)) {
+      // Add default admin label to layout builder blocks.
+      $form_object = $form_state->getFormObject();
+      $component = $form_object->getCurrentComponent();
+      $plugin = $component->getPlugin();
+      if (isset($plugin)) {
+        // Get the default admin label from the block plugin label.
+        $plugin_definition = $plugin->getPluginDefinition();
+        $default_admin_label = $plugin_definition['admin_label'] ?? $plugin->getPluginId();
+        // Add the plugin label as default value.
+        $form['settings']['label']['#default_value'] = $default_admin_label;
+      }
     }
   }
 
@@ -391,6 +404,29 @@ function ys_core_preprocess_menu(&$variables) {
 
       // Add cloned item to the beginning of the menu.
       array_unshift($menuItem['below'], $clonedMenuItem);
+    }
+  }
+  // CAS bulk add menu item title change,
+  // and remove Add user for non-platform admins.
+  if (!empty($variables['items'])) {
+    $current_user = \Drupal::currentUser();
+    $user_roles = $current_user->getRoles();
+    $has_platform_admin = in_array('platform_admin', $user_roles) || $current_user->id() == 1;
+    foreach ($variables['items'] as &$item) {
+      // These are submenu items.
+      if (!empty($item['below'])) {
+        foreach ($item['below'] as $subkey => &$subitem) {
+          if (isset($subitem['url']) && $subitem['url']->isRouted()) {
+            $route_name = $subitem['url']->getRouteName();
+            if ($route_name === 'cas.bulk_add_cas_users') {
+              $subitem['title'] = t('Add NetID User(s)');
+            }
+            if ($route_name === 'user.admin_create' && !$has_platform_admin) {
+              unset($item['below'][$subkey]);
+            }
+          }
+        }
+      }
     }
   }
 }
@@ -886,4 +922,68 @@ function _ys_core_attach_icon_preview(&$form, FormStateInterface $form_state, $f
       $form['field_icon']['widget'][0]['value']['#attributes']['class'][] = 'facts-icon-selector';
     }
   }
+}
+
+/**
+ * Implements hook_menu_local_actions_alter().
+ *
+ * Hide 'Add user' action for users without the platform_admin role.
+ */
+function ys_core_menu_local_actions_alter(&$local_actions) {
+  // Get the current route name.
+  $route_name = \Drupal::routeMatch()->getRouteName();
+
+  // Only affect the user admin page where the user creation actions appear.
+  if ($route_name === 'entity.user.collection') {
+    // Disable caching for local actions on this page to prevent aching issues.
+    \Drupal::service('plugin.manager.menu.local_action')->useCaches(FALSE);
+
+    $current_user = \Drupal::currentUser();
+
+    // Skip processing if user is user 1.
+    if ($current_user->id() == 1) {
+      return;
+    }
+
+    // Check if current user has the platform_admin role.
+    $user_roles = $current_user->getRoles();
+    $has_platform_admin = in_array('platform_admin', $user_roles);
+
+    // Hide the actions if user doesn't have platform_admin role.
+    if (!$has_platform_admin) {
+      // Remove "Add user" action.
+      if (isset($local_actions['user_admin_create'])) {
+        unset($local_actions['user_admin_create']);
+      }
+
+      // Change the title of the CAS bulk add action.
+      if (isset($local_actions['cas.bulk_add_cas_users'])) {
+        $local_actions['cas.bulk_add_cas_users']['title'] = 'Add NetID Users';
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function ys_core_form_user_register_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $form['ys_core_netid_alert_message'] = [
+    '#type' => 'markup',
+    '#markup' => t('To add users with NetIDs go <a href=":url">here</a>.', [
+      ':url' => Url::fromRoute('cas.bulk_add_cas_users')->toString(),
+    ]),
+    '#prefix' => '<div class="messages messages--warning">',
+    '#suffix' => '</div>',
+    '#weight' => -99,
+  ];
+}
+
+/**
+ * Implements hook_yale_cas_app_parameter_alter().
+ */
+function ys_core_yale_cas_app_parameter_alter(&$app_value, $event) {
+  // Retrieve the ys_core config.
+  $config = \Drupal::config('ys_core.site');
+  $app_value = $config->get('cas_app_name') ?: 'yalesites';
 }
