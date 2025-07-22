@@ -8,7 +8,7 @@ use Symfony\Component\DependencyInjection\Reference;
 
 /**
  * Service provider to override the book manager with our YSExpandBookManager.
- * 
+ *
  * This takes precedence over the contrib custom_book_block module's service
  * provider to ensure our CAS-enabled book navigation logic is used.
  */
