@@ -8,13 +8,8 @@
     </header>
   {% endif %}
 
-  {% include "@atoms/typography/headings/yds-heading.twig" with {
-    heading__level: '1',
-    heading__blockname: 'page-title',
-    heading: title,
-    heading__attributes: {
-      'data-component-width': 'site',
-    },
+  {% include "@molecules/page-title/yds-page-title.twig" with {
+    page_title__heading: title,
   } %}
 
   {{ attachment_before }}
