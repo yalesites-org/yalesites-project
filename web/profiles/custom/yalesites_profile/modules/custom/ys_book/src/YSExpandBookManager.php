@@ -177,21 +177,22 @@ class YSExpandBookManager extends BookManager {
 
   /**
    * Override bookTreeBuild to bypass access filtering.
-   * 
+   *
    * This allows CAS-protected pages to be included in the book tree,
    * where they will be flagged with is_cas by bookLinkTranslate().
    */
   protected function bookTreeBuild($bid, array $parameters = []) {
     // Build the book tree.
     $data = $this->doBookTreeBuild($bid, $parameters);
-    // Translate links but skip access filtering that removes CAS-protected nodes.
+    // Translate links but skip access filtering that removes CAS-protected
+    // nodes.
     $this->doBookTreeTranslateLinks($data['tree']);
     return $data['tree'];
   }
 
   /**
    * Translate book links without access filtering.
-   * 
+   *
    * Similar to doBookTreeCheckAccess but doesn't filter out inaccessible items.
    */
   protected function doBookTreeTranslateLinks(&$tree) {
@@ -204,7 +205,8 @@ class YSExpandBookManager extends BookManager {
         $this->doBookTreeTranslateLinks($tree[$key]['below']);
       }
       // The weights are made a uniform 5 digits by adding 50000 as an offset.
-      // After calling bookLinkTranslate(), $item['title'] has the translated title.
+      // After calling bookLinkTranslate(), $item['title'] has the translated
+      // title.
       // Adding the nid to the end of the index ensures that it is unique.
       $new_tree[(50000 + $item['weight']) . ' ' . $item['title'] . ' ' . $item['nid']] = $tree[$key];
     }
