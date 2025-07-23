@@ -8,6 +8,7 @@ dependencies:
     - field.field.node.resource.field_audience
     - field.field.node.resource.field_category
     - field.field.node.resource.field_custom_vocab
+    - field.field.node.resource.field_date_format
     - field.field.node.resource.field_media
     - field.field.node.resource.field_publish_date
     - field.field.node.resource.field_tags
@@ -92,6 +93,7 @@ hidden:
   addtoany: true
   field_audience: true
   field_custom_vocab: true
+  field_date_format: true
   field_tags: true
   layout_builder__layout: true
   search_api_excerpt: true

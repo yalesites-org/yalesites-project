@@ -7,6 +7,7 @@ dependencies:
     - field.field.node.resource.field_audience
     - field.field.node.resource.field_category
     - field.field.node.resource.field_custom_vocab
+    - field.field.node.resource.field_date_format
     - field.field.node.resource.field_media
     - field.field.node.resource.field_publish_date
     - field.field.node.resource.field_tags
@@ -19,6 +20,7 @@ dependencies:
     - layout_builder
     - layout_builder_restrictions
     - layout_discovery
+    - options
     - user
     - ys_layouts
 third_party_settings:
@@ -44,6 +46,21 @@ third_party_settings:
               provider: ys_layouts
               context_mapping: {  }
             weight: 0
+            additional: {  }
+          e753436e-22a8-48cd-9034-8d37061ef00e:
+            uuid: e753436e-22a8-48cd-9034-8d37061ef00e
+            region: content
+            configuration:
+              id: 'field_block:node:resource:field_date_format'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: list_default
+                label: above
+                settings: {  }
+                third_party_settings: {  }
+            weight: 1
             additional: {  }
         third_party_settings:
           layout_builder_lock:
@@ -126,6 +143,13 @@ content:
       link: true
     third_party_settings: {  }
     weight: 32
+    region: content
+  field_date_format:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 115
     region: content
   field_media:
     type: entity_reference_entity_view
