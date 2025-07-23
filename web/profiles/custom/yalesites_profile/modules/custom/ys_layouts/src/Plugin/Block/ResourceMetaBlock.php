@@ -141,14 +141,20 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
       // Get Resource fields.
       $title = $node->getTitle();
       $fieldPublishDate = $node?->field_publish_date;
+      $fieldDateFormat = $node?->field_date_format?->first()?->getString();
       $fieldCategory = $node?->field_category?->first()?->getValue();
       $fieldMedia = $node?->field_media?->first()?->getValue();
 
+      $date_formats = [
+        'date' => 'F j, Y',
+        'month_year' => 'F Y',
+        'year_only' => 'Y',
+      ];
+
       // Set PUBLISH DATE variables.
-      if ($fieldPublishDate->getValue()) {
-        $publishDateLabel = $fieldPublishDate->getFieldDefinition()->getLabel();
+      if ($fieldPublishDate->getValue() and $fieldDateFormat) {
         $publishDateValue = strtotime($fieldPublishDate->first()->getValue()['value']);
-        $publishDate = $this->dateFormatter->format($publishDateValue, '', 'F j, Y');
+        $publishDate = $this->dateFormatter->format($publishDateValue, '', $date_formats[$fieldDateFormat]);
       }
 
       // Get CATEGORY term.
@@ -231,7 +237,6 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
       '#theme' => 'ys_resource_meta_block',
       '#resource_meta__heading' => $title,
       '#resource_meta__category' => $categoryName,
-      '#resource_meta__publish_date_label' => $publishDateLabel,
       '#resource_meta__publish_date' => $publishDate,
       '#resource_meta__metadata' => $metadata,
       '#resource_meta__resource_type' => $mediaBundle,
