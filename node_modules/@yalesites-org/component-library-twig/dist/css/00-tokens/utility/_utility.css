@@ -1,0 +1,1 @@
+.visually-hidden{position:absolute !important;clip:rect(1px, 1px, 1px, 1px);overflow:hidden;height:1px;width:1px;word-wrap:normal}*:focus-visible{outline:var(--size-thickness-2) solid var(--color-link-base);outline-offset:var(--size-thickness-2)}*:focus:not(:focus-visible){outline:none}

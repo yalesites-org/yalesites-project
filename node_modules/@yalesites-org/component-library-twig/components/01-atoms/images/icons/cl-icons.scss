@@ -1,0 +1,23 @@
+.icons-demo {
+  display: flex;
+  flex-wrap: wrap;
+  text-align: center;
+
+  .icon {
+    height: 100px;
+    width: 100px;
+    padding: var(--size-spacing-5);
+  }
+
+  pre {
+    margin: 0;
+    padding: var(--size-spacing-3);
+    background-color: var(--color-text);
+    color: var(--color-background);
+  }
+}
+
+.icons-demo__item {
+  border: var(--border-thickness-1) solid;
+  margin: var(--size-spacing-3);
+}

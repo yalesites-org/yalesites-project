@@ -1,0 +1,437 @@
+{% set pager__base_class = 'pager' %}
+
+{# 
+   PAGINATION SETUP & DATA VALIDATION
+   Extract and validate pagination data from Drupal's pager array
+#}
+
+{# Extract basic pagination data from Drupal's pager array #}
+{% set total_pages = pager['#total_pages']|default(items.pages|length) %}
+{% set current_page = current|default(1) %}
+
+{# Page label variables - centralized for easy customization #}
+{% set page_label = 'Go to '|t %}
+{% set current_page_label = 'Current'|t %}
+{% set previous_page_label = 'Previous'|t %}
+{% set next_page_label = 'Next'|t %}
+
+{# 
+   PAGINATION PATTERN DETECTION
+   Determine which visual pattern to use based on total page count
+#}
+
+{# 
+   Single Page: Hide pagination when only one page exists
+   Business Case: No pagination needed when there's only one page - 
+   reduces visual clutter and follows UX best practices
+#}
+{% set is_single_page = total_pages == 1 %}
+
+{# 
+   Simple Pagination: For 2-3 pages, show all numbers
+   Business Case: With few pages, users benefit from seeing all options
+   at once. No cognitive load from ellipsis or hidden pages.
+#}
+{% set is_simple = total_pages > 1 and total_pages < 4 %}
+
+{# 
+   Exactly Four Pages: Special case to avoid redundant ellipsis
+   Business Case: Showing "1 2 3 4 ... 4" would be confusing and wasteful.
+   Better UX to just show "1 2 3 4" even when current page is 3.
+#}
+{% set is_exactly_four = total_pages == 4 %}
+
+{# 
+   Complex Pagination: 5+ pages require ellipsis patterns
+   Business Case: Prevents horizontal scrolling and cognitive overload
+   while maintaining navigation context (first/last pages visible)
+#}
+{% set needs_ellipsis = total_pages >= 5 %}
+
+{# 
+   CURRENT PAGE POSITION ANALYSIS
+   Analyze where the current page sits relative to start/end boundaries
+#}
+
+{# 
+   Start Position: Pages 1-2 
+   Business Case: Users near the beginning need clear forward navigation
+   Pattern shows: 1 2 3 ... 10 (emphasizes forward progress)
+#}
+{% set at_start = current_page <= 2 %}
+
+{# 
+   Third Page Special Case: Page 3 shows page 4 for easy next-step navigation
+   Business Case: When on page 3, users expect to easily click to page 4
+   without jumping to the last page. Reduces navigation friction.
+   Pattern shows: 1 2 3 4 ... 10 (page 4 readily available)
+#}
+{% set on_third = current_page == 3 %}
+
+{# 
+   End Position: Last 2 pages
+   Business Case: Users near the end need context about where they are
+   and easy access to earlier content.
+   Pattern shows: 1 ... 8 9 10 (emphasizes position near end)
+#}
+{% set at_end = current_page >= (total_pages - 1) %}
+
+{# 
+   Third From Last Special Case: Shows extra page for backward navigation
+   Business Case: Mirror of the "third page" case - when on page 8 of 10,
+   users should easily access page 7 without jumping to page 1.
+   Pattern shows: 1 ... 7 8 9 10 (page 7 readily available)
+#}
+{% set on_third_from_end = current_page == (total_pages - 2) %}
+
+{# 
+   Middle Position: Not near start or end
+   Business Case: Shows current page with context (one before/after)
+   while maintaining awareness of start/end boundaries.
+   Pattern shows: 1 ... 4 5 6 ... 10 (current page centered)
+#}
+{% set in_middle = not at_start and not on_third and not at_end and not on_third_from_end %}
+
+{# 
+   PAGE RANGE DEFINITIONS
+   Pre-calculate which consecutive pages to show for each pattern
+#}
+
+{# 
+   These ranges define which consecutive pages to show for each pattern
+   Business Case: Pre-calculating ranges makes the template logic cleaner
+   and easier to modify if UX requirements change
+#}
+
+{# Standard start pattern: show first 3 pages + ellipsis + last page #}
+{% set start_range = { first: 1, last: 3 } %}
+
+{# Extended start: show first 4 pages when on page 3 (for easy next-click) #}
+{% set extended_start_range = { first: 1, last: 4 } %}
+
+{# Middle pattern: show current page with one neighbor on each side #}
+{% set middle_range = { first: current_page - 1, last: current_page + 1 } %}
+
+{# Standard end pattern: show last 3 pages #}
+{% set end_range = { first: total_pages - 2, last: total_pages } %}
+
+{# Extended end: show last 4 pages when on 3rd-from-last (for easy prev-click) #}
+{% set extended_end_range = { first: total_pages - 3, last: total_pages } %}
+
+{# 
+   PATTERN SELECTION LOGIC
+   Single source of truth for determining which pagination layout to render
+#}
+
+{# 
+   Determine which pagination pattern to render based on current state
+   Business Case: Single source of truth for pattern selection makes
+   the code easier to debug and modify
+#}
+{% set pattern = 'simple' %}
+{% if is_exactly_four %}
+  {% set pattern = 'all_four' %}
+{% elseif needs_ellipsis %}
+  {% if at_start %}
+    {% set pattern = 'start' %}
+  {% elseif on_third %}
+    {% set pattern = 'extended_start' %}
+  {% elseif at_end %}
+    {% set pattern = 'end' %}
+  {% elseif on_third_from_end %}
+    {% set pattern = 'extended_end' %}
+  {% elseif in_middle %}
+    {% set pattern = 'middle' %}
+  {% endif %}
+{% endif %}
+
+{% if items and not is_single_page %}
+  <nav {{ bem(pager__base_class) }} role="navigation" aria-label="Pagination">
+    <ul {{ bem('items', [], pager__base_class, ['js-pager__items']) }}>
+      
+      {# 
+         PREVIOUS NAVIGATION ARROW
+         Backward navigation control
+      #}
+      
+      {# 
+         Previous Button: Only show when not on first page
+         Business Case: Provides consistent backward navigation without
+         requiring users to identify and click page numbers
+      #}
+      {% if items.previous %}
+        <li {{ bem('item', ['previous'], pager__base_class) }}>
+          <a {{ bem('link', ['previous'], pager__base_class) }} href="{{ items.previous.href }}" title="{{ 'Go to previous page'|t }}" rel="prev"{{ items.previous.attributes|without('href', 'title', 'rel') }}>
+            <span {{ bem('visually-hidden') }}>{{ previous_page_label }}</span>
+            {% include "@atoms/images/icons/_yds-icon.twig" with {
+              icon__name: 'angle-down',
+              icon__decorative: true,
+              icon__blockname: pager__base_class,
+              icon__modifiers: ['previous'],
+            } %}
+          </a>
+        </li>
+      {% endif %}
+
+      {# 
+         PAGE NUMBER PATTERNS
+         Render the appropriate pagination pattern based on position and total pages
+      #}
+
+      {% if pattern == 'simple' %}
+        {# 
+           SIMPLE PATTERN: 1 2 3
+           Use Case: 1-3 pages total
+           Business Logic: Show all pages when few enough to display without crowding
+           UX Benefit: Users see complete picture, no hidden information
+        #}
+        {% for page in 1..total_pages %}
+          {% if current_page == page %}
+            <li {{ bem('item', ['desktop'], pager__base_class, ['is-active']) }}>
+              <span {{ bem('link', ['current'], pager__base_class, ['is-active']) }}>
+                <span {{ bem('visually-hidden') }}>{{ current_page_label }}</span>
+                {{ page }}
+              </span>
+            </li>
+          {% else %}
+            <li {{ bem('item', ['desktop'], pager__base_class) }}>
+              <a {{ bem('link', [], pager__base_class) }} href="{{ items.pages[page].href }}" aria-label="{{ page_label ~ page }}">
+                {{ page }}
+              </a>
+            </li>
+          {% endif %}
+        {% endfor %}
+
+      {% elseif pattern == 'all_four' %}
+        {# 
+           ALL FOUR PATTERN: 1 2 3 4
+           Use Case: Exactly 4 pages total
+           Business Logic: Avoid redundant "1 2 3 4 ... 4" when on page 3
+           UX Benefit: Clean display without confusing ellipsis
+        #}
+        {% for page in 1..4 %}
+          {% if current_page == page %}
+            <li {{ bem('item', ['desktop'], pager__base_class, ['is-active']) }}>
+              <span {{ bem('link', ['current'], pager__base_class, ['is-active']) }}>
+                <span {{ bem('visually-hidden') }}>{{ current_page_label }}</span>
+                {{ page }}
+              </span>
+            </li>
+          {% else %}
+            <li {{ bem('item', ['desktop'], pager__base_class) }}>
+              <a {{ bem('link', [], pager__base_class) }} href="{{ items.pages[page].href }}" aria-label="{{ page_label ~ page }}">
+                {{ page }}
+              </a>
+            </li>
+          {% endif %}
+        {% endfor %}
+
+      {% elseif pattern == 'start' %}
+        {# 
+           START PATTERN: 1 2 3 ... 10
+           Use Case: Current page is 1 or 2 of 5+ pages
+           Business Logic: Show beginning context + jump-to-end option
+           UX Benefit: Users can progress sequentially or jump to end
+        #}
+        {% for page in start_range.first..start_range.last %}
+          {% if current_page == page %}
+            <li {{ bem('item', ['desktop'], pager__base_class, ['is-active']) }}>
+              <span {{ bem('link', ['current'], pager__base_class, ['is-active']) }}>
+                <span {{ bem('visually-hidden') }}>{{ current_page_label }}</span>
+                {{ page }}
+              </span>
+            </li>
+          {% else %}
+            <li {{ bem('item', ['desktop'], pager__base_class) }}>
+              <a {{ bem('link', [], pager__base_class) }} href="{{ items.pages[page].href }}" aria-label="{{ page_label ~ page }}">
+                {{ page }}
+              </a>
+            </li>
+          {% endif %}
+        {% endfor %}
+        <li {{ bem('item', ['ellipsis'], pager__base_class) }}>
+          <span {{ bem('ellipsis', [], pager__base_class) }} aria-hidden="true">...</span>
+        </li>
+        <li {{ bem('item', ['desktop'], pager__base_class) }}>
+          <a {{ bem('link', [], pager__base_class) }} href="{{ items.last.href|default(items.pages[total_pages].href) }}" aria-label="{{ page_label ~ total_pages }}">
+            {{ total_pages }}
+          </a>
+        </li>
+
+      {% elseif pattern == 'extended_start' %}
+        {# 
+           EXTENDED START PATTERN: 1 2 3 4 ... 10
+           Use Case: Current page is 3 of 5+ pages
+           Business Logic: Show page 4 for easy "next" navigation
+           UX Benefit: Users on page 3 can easily click page 4 instead of jumping to last page
+        #}
+        {% for page in extended_start_range.first..extended_start_range.last %}
+          {% if current_page == page %}
+            <li {{ bem('item', ['desktop'], pager__base_class, ['is-active']) }}>
+              <span {{ bem('link', ['current'], pager__base_class, ['is-active']) }}>
+                <span {{ bem('visually-hidden') }}>{{ current_page_label }}</span>
+                {{ page }}
+              </span>
+            </li>
+          {% else %}
+            <li {{ bem('item', ['desktop'], pager__base_class) }}>
+              <a {{ bem('link', [], pager__base_class) }} href="{{ items.pages[page].href }}" aria-label="{{ page_label ~ page }}">
+                {{ page }}
+              </a>
+            </li>
+          {% endif %}
+        {% endfor %}
+        <li {{ bem('item', ['ellipsis'], pager__base_class) }}>
+          <span {{ bem('ellipsis', [], pager__base_class) }} aria-hidden="true">...</span>
+        </li>
+        <li {{ bem('item', ['desktop'], pager__base_class) }}>
+          <a {{ bem('link', [], pager__base_class) }} href="{{ items.last.href|default(items.pages[total_pages].href) }}" aria-label="{{ page_label ~ total_pages }}">
+            {{ total_pages }}
+          </a>
+        </li>
+
+      {% elseif pattern == 'end' %}
+        {# 
+           END PATTERN: 1 ... 8 9 10
+           Use Case: Current page is in last 2 pages
+           Business Logic: Show end context + jump-to-start option
+           UX Benefit: Users near end can see their position and easily return to beginning
+        #}
+        <li {{ bem('item', ['desktop'], pager__base_class) }}>
+          <a {{ bem('link', [], pager__base_class) }} href="{{ items.first.href|default(items.pages[1].href) }}" aria-label="{{ page_label ~ '1' }}">
+            1
+          </a>
+        </li>
+        <li {{ bem('item', ['ellipsis'], pager__base_class) }}>
+          <span {{ bem('ellipsis', [], pager__base_class) }} aria-hidden="true">...</span>
+        </li>
+        {% for page in end_range.first..end_range.last %}
+          {% if current_page == page %}
+            <li {{ bem('item', ['desktop'], pager__base_class, ['is-active']) }}>
+              <span {{ bem('link', ['current'], pager__base_class, ['is-active']) }}>
+                <span {{ bem('visually-hidden') }}>{{ current_page_label }}</span>
+                {{ page }}
+              </span>
+            </li>
+          {% else %}
+            <li {{ bem('item', ['desktop'], pager__base_class) }}>
+              <a {{ bem('link', [], pager__base_class) }} href="{{ items.pages[page].href }}" aria-label="{{ page_label ~ page }}">
+                {{ page }}
+              </a>
+            </li>
+          {% endif %}
+        {% endfor %}
+
+      {% elseif pattern == 'extended_end' %}
+        {# 
+           EXTENDED END PATTERN: 1 ... 7 8 9 10
+           Use Case: Current page is 3rd from last
+           Business Logic: Show extra page for easy "previous" navigation
+           UX Benefit: Mirror of extended_start - users can easily go back one page
+        #}
+        <li {{ bem('item', ['desktop'], pager__base_class) }}>
+          <a {{ bem('link', [], pager__base_class) }} href="{{ items.first.href|default(items.pages[1].href) }}" aria-label="{{ page_label ~ '1' }}">
+            1
+          </a>
+        </li>
+        <li {{ bem('item', ['ellipsis'], pager__base_class) }}>
+          <span {{ bem('ellipsis', [], pager__base_class) }} aria-hidden="true">...</span>
+        </li>
+        {% for page in extended_end_range.first..extended_end_range.last %}
+          {% if current_page == page %}
+            <li {{ bem('item', ['desktop'], pager__base_class, ['is-active']) }}>
+              <span {{ bem('link', ['current'], pager__base_class, ['is-active']) }}>
+                <span {{ bem('visually-hidden') }}>{{ current_page_label }}</span>
+                {{ page }}
+              </span>
+            </li>
+          {% else %}
+            <li {{ bem('item', ['desktop'], pager__base_class) }}>
+              <a {{ bem('link', [], pager__base_class) }} href="{{ items.pages[page].href }}" aria-label="{{ page_label ~ page }}">
+                {{ page }}
+              </a>
+            </li>
+          {% endif %}
+        {% endfor %}
+
+      {% elseif pattern == 'middle' %}
+        {# 
+           MIDDLE PATTERN: 1 ... 4 5 6 ... 10
+           Use Case: Current page is away from both start and end
+           Business Logic: Keep current page centered with immediate neighbors
+           UX Benefit: Users see where they are and can navigate incrementally or jump to boundaries
+        #}
+        <li {{ bem('item', ['desktop'], pager__base_class) }}>
+          <a {{ bem('link', [], pager__base_class) }} href="{{ items.first.href|default(items.pages[1].href) }}" aria-label="{{ page_label ~ '1' }}">
+            1
+          </a>
+        </li>
+        <li {{ bem('item', ['ellipsis'], pager__base_class) }}>
+          <span {{ bem('ellipsis', [], pager__base_class) }} aria-hidden="true">...</span>
+        </li>
+        {% for page in middle_range.first..middle_range.last %}
+          {% if current_page == page %}
+            <li {{ bem('item', ['desktop'], pager__base_class, ['is-active']) }}>
+              <span {{ bem('link', ['current'], pager__base_class, ['is-active']) }}>
+                <span {{ bem('visually-hidden') }}>{{ current_page_label }}</span>
+                {{ page }}
+              </span>
+            </li>
+          {% else %}
+            <li {{ bem('item', ['desktop'], pager__base_class) }}>
+              <a {{ bem('link', [], pager__base_class) }} href="{{ items.pages[page].href }}" aria-label="{{ page_label ~ page }}">
+                {{ page }}
+              </a>
+            </li>
+          {% endif %}
+        {% endfor %}
+        <li {{ bem('item', ['ellipsis'], pager__base_class) }}>
+          <span {{ bem('ellipsis', [], pager__base_class) }} aria-hidden="true">...</span>
+        </li>
+        <li {{ bem('item', ['desktop'], pager__base_class) }}>
+          <a {{ bem('link', [], pager__base_class) }} href="{{ items.last.href|default(items.pages[total_pages].href) }}" aria-label="{{ page_label ~ total_pages }}">
+            {{ total_pages }}
+          </a>
+        </li>
+      {% endif %}
+
+      {# 
+         MOBILE PAGINATION DISPLAY
+         Compact format for mobile devices
+      #}
+      
+      {# 
+         Mobile Pattern: "5 / 10" format
+         Business Case: Limited mobile screen space requires compact display
+         UX Benefit: Users still see their position without horizontal scrolling
+      #}
+      <li {{ bem('item', ['mobile'], pager__base_class) }}>
+        {{ current_page }} / {{ total_pages }}
+      </li>
+
+      {# 
+         NEXT NAVIGATION ARROW
+         Forward navigation control
+      #}
+      
+      {# 
+         Next Button: Only show when not on last page
+         Business Case: Provides consistent forward navigation without
+         requiring users to identify and click page numbers
+      #}
+      {% if items.next %}
+        <li {{ bem('item', ['next'], pager__base_class) }}>
+          <a {{ bem('link', ['next'], pager__base_class) }} href="{{ items.next.href }}" title="{{ 'Go to next page'|t }}" rel="next"{{ items.next.attributes|without('href', 'title', 'rel') }}>
+            <span {{ bem('visually-hidden') }}>{{ next_page_label }}</span>
+            {% include "@atoms/images/icons/_yds-icon.twig" with {
+              icon__name: 'angle-down',
+              icon__decorative: true,
+              icon__blockname: pager__base_class,
+              icon__modifiers: ['next'],
+            } %}
+          </a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+{% endif %}
