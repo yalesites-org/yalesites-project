@@ -194,7 +194,7 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
       $viewModeValue = $viewModeDefault;
     }
 
-    $form['group_user_selection']['entity_and_view_mode']['entity_and_view_mode'] = [
+    $form['group_user_selection']['entity_and_view_mode']['view_mode'] = [
       '#type' => 'radios',
       '#options' => $viewModeOptions,
       '#title' => $this->t('Show resources as'),
@@ -420,7 +420,7 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
 
     foreach ($values as &$value) {
       $paramData = [
-        "view_mode" => $form['group_user_selection']['entity_and_view_mode']['entity_and_view_mode']['#value'],
+        "view_mode" => $form['group_user_selection']['entity_and_view_mode']['view_mode']['#value'],
         "filters" => [
           "types" => ['resource'],
           "terms_include" => $terms_include,
