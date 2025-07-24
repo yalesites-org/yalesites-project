@@ -193,6 +193,11 @@ html.gin--dark-mode form.layout-builder-configure-block.glb-form {
   color: var(--color-blue-light) !important;
 }
 
+/* Ensure chosen selection in dark mode sidebar uses readable text color. */
+.gin--dark-mode #drupal-off-canvas-wrapper a.chosen-single {
+  color: var(--color-basic-black) !important;
+}
+
 /*
 Moderation sidebar
 */
