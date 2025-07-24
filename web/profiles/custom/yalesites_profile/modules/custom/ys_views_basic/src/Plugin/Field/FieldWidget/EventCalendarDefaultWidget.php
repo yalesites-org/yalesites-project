@@ -4,6 +4,7 @@ namespace Drupal\ys_views_basic\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Field\WidgetBase;
 
 /**
  * Plugin implementation of the 'event_calendar_default' widget.
@@ -16,7 +17,7 @@ use Drupal\Core\Form\FormStateInterface;
  *   }
  * )
  */
-class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
+class EventCalendarDefaultWidget extends WidgetBase {
 
   /**
    * {@inheritdoc}
@@ -24,10 +25,10 @@ class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
    * Add event calendar specific options.
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $formState) {
-    $element['hide_add_to_calendar'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Hide Add to Calendar link'),
-      '#default_value' => !empty($items[$delta]->event_field_options['hide_add_to_calendar']),
+    // Value will be set in massageFormValues().
+    $element['params'] = [
+      '#type' => 'hidden',
+      '#value' => '',
     ];
     return $element;
   }
@@ -37,16 +38,13 @@ class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
     foreach ($values as &$value) {
-      $hide_add_to_calendar = !empty($form['hide_add_to_calendar']['#value']);
       $paramData = [
         "view_mode" => "calendar",
         "filters" => [
           "types" => ["event"],
           "event_time_period" => "future",
         ],
-        "event_field_options" => [
-          "hide_add_to_calendar" => $hide_add_to_calendar,
-        ],
+        "event_field_options" => [],
         "operator" => "+",
         "sort_by" => "field_event_date:DESC",
         "display" => "all",
