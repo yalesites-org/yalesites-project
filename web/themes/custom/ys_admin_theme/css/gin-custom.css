@@ -1,16 +1,19 @@
 /* stylelint-disable */
 :root {
   --gin-font: Mallory, sans-serif;
-  --gin-font-size-h1: 1.75rem;
-  --gin-font-size-h2: 1.5rem;
-  --gin-font-size-h3: 1.25rem;
+  /* Original sizes: H1: 1.75rem, H2: 1.5rem, H3: 1.25rem */
+  /* Reduced by ~5px: H1: 1.438rem, H2: 1.188rem, H3: 0.938rem */
+  --gin-font-size-h1: 1.438rem;
+  --gin-font-size-h2: 1.188rem;
+  --gin-font-size-h3: 0.938rem;
   --gin-border-m: 0.313rem;
   --jui-dropdown-bg-color: var(--gin-bg-layer);
   --input-fg-color--placeholder: var(--gin-color-text);
 }
 :root h1,
 :root h2 {
-  font-weight: 600;
+  /* Changed from font-weight: 600 to 400 (Book weight) for Mallory headings */
+  font-weight: 400;
 }
 
 .views-bulk-actions__item .button--primary:not(:disabled, .is-disabled) {
@@ -49,8 +52,22 @@ a.focal-point-preview-link {
     gap: 1rem;
     grid-template-columns: repeat(2, 1fr);
   }
-  .ys-gin-two-column-wrapper .form-element {
+  .ys-gin-two-column-wrapper .form-element, .ys-gin-two-column-wrapper .form-item {
     width: 100%;
+    min-width: 100%;
+  }
+}
+
+/* Three column layout for profile add/edit form */
+@media screen and (min-width: 1000px) {
+  .ys-gin-three-column-wrapper {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .ys-gin-three-column-wrapper .form-element, .ys-gin-three-column-wrapper .form-item {
+    width: 100%;
+    min-width: 100%;
   }
 }
 
@@ -73,6 +90,14 @@ a.focal-point-preview-link {
   background-color: var(--gin-bg-layer2);
 }
 
+/* Environment Indicator */
+#environment-indicator {
+  margin-top: 0.5rem;
+}
+
+.form-element {
+  min-height: calc(var(--input-padding-vertical) * 3 + var(--input-line-height)) !important;
+}
 /* stylelint-enable */
 
 /*# sourceMappingURL=gin-custom.css.map */

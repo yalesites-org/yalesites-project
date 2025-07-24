@@ -303,3 +303,133 @@ function ys_core_update_10003() {
     \Drupal::messenger()->addStatus("Site email not updated as it was set to {$site_mail}.");
   }
 }
+
+/**
+ * Implements hook_update().
+ *
+ * This update will update paragraph Facts and Figure Item block's
+ * field_text format from Heading HTML to Restricted.  Doing so
+ * will allow links to be used.
+ */
+function ys_core_update_10004() {
+
+  $query = \Drupal::entityQuery('paragraph')
+    ->accessCheck(FALSE)
+    ->condition('type', 'facts_item')
+    ->condition('field_text.format', 'heading_html')
+    ->allRevisions();
+
+  $ids = $query->execute();
+  $paragraph_storage = \Drupal::entityTypeManager()->getStorage('paragraph');
+
+  foreach ($ids as $revision_id => $id) {
+    $paragraph = $paragraph_storage->loadRevision($revision_id);
+
+    if ($paragraph && $paragraph->id() == $id) {
+      $new_field_text = ['format' => 'restricted_html', 'value' => $paragraph->field_text->value];
+      $paragraph->set('field_text', $new_field_text);
+      $paragraph->save();
+    }
+  }
+}
+
+/**
+ * Implements hook_update().
+ *
+ * Adds icon functionality to Facts and Figures items.
+ * Creates the field_icon field and sets default values for existing items.
+ */
+function ys_core_update_10005() {
+  $entity_type_manager = \Drupal::entityTypeManager();
+
+  // Check if field storage already exists.
+  $field_storage = $entity_type_manager->getStorage('field_storage_config')->load('paragraph.field_icon');
+  if (!$field_storage) {
+    // Create field storage configuration.
+    $field_storage = $entity_type_manager->getStorage('field_storage_config')->create([
+      'id' => 'paragraph.field_icon',
+      'field_name' => 'field_icon',
+      'entity_type' => 'paragraph',
+      'type' => 'list_string',
+      'settings' => [
+        'allowed_values' => [],
+        'allowed_values_function' => 'ys_core_facts_icon_allowed_values',
+      ],
+      'module' => 'options',
+      'locked' => FALSE,
+      'cardinality' => 1,
+      'translatable' => FALSE,
+    ]);
+    $field_storage->save();
+  }
+
+  // Check if field instance already exists.
+  $field = $entity_type_manager->getStorage('field_config')->load('paragraph.facts_item.field_icon');
+  if (!$field) {
+    // Create field instance configuration.
+    $field = $entity_type_manager->getStorage('field_config')->create([
+      'id' => 'paragraph.facts_item.field_icon',
+      'field_name' => 'field_icon',
+      'entity_type' => 'paragraph',
+      'bundle' => 'facts_item',
+      'label' => 'Icon',
+      'description' => 'Choose an icon to display with this fact or figure. Icons help users quickly understand and categorize information. Select "None" if you don\'t want to display an icon.',
+      'required' => FALSE,
+      'translatable' => FALSE,
+      'default_value' => [['value' => '_none']],
+      'settings' => [
+        'allowed_values' => [],
+        'allowed_values_function' => '',
+      ],
+      'field_type' => 'list_string',
+    ]);
+    $field->save();
+  }
+
+  // Update form display.
+  $form_display = $entity_type_manager->getStorage('entity_form_display')->load('paragraph.facts_item.default');
+  if ($form_display) {
+    $form_display->setComponent('field_icon', [
+      'type' => 'options_select',
+      'weight' => 1,
+      'region' => 'content',
+      'settings' => [],
+      'third_party_settings' => [],
+    ]);
+    $form_display->save();
+  }
+
+  // Update view display (hide the field).
+  $view_display = $entity_type_manager->getStorage('entity_view_display')->load('paragraph.facts_item.default');
+  if ($view_display) {
+    $hidden_components = $view_display->get('hidden');
+    $hidden_components['field_icon'] = TRUE;
+    $view_display->set('hidden', $hidden_components);
+    $view_display->save();
+  }
+
+  // Clear field and entity caches.
+  \Drupal::service('entity_field.manager')->clearCachedFieldDefinitions();
+  \Drupal::entityTypeManager()->clearCachedDefinitions();
+
+  // Set default icon value for existing facts_item paragraphs.
+  $query = \Drupal::entityQuery('paragraph')
+    ->accessCheck(FALSE)
+    ->condition('type', 'facts_item');
+
+  $ids = $query->execute();
+  $paragraph_storage = \Drupal::entityTypeManager()->getStorage('paragraph');
+
+  foreach ($ids as $id) {
+    $paragraph = $paragraph_storage->load($id);
+    if ($paragraph && $paragraph->hasField('field_icon')) {
+      // Set default value to '_none' for existing items.
+      if ($paragraph->get('field_icon')->isEmpty()) {
+        $paragraph->set('field_icon', '_none');
+        $paragraph->save();
+      }
+    }
+  }
+
+  \Drupal::messenger()->addStatus(t('Facts and Figures icon functionality has been successfully added.'));
+}

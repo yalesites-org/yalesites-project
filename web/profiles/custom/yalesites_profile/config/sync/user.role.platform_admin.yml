@@ -70,10 +70,13 @@ dependencies:
     - block
     - block_content
     - book
+    - coffee
     - content_moderation
     - contextual
     - editoria11y
+    - environment_indicator
     - file
+    - google_tag
     - layout_builder
     - media
     - menu_admin_per_menu
@@ -101,8 +104,10 @@ weight: -5
 is_admin: null
 permissions:
   - 'access block library'
+  - 'access coffee'
   - 'access content overview'
   - 'access contextual links'
+  - 'access environment indicator'
   - 'access files overview'
   - 'access media overview'
   - 'access printer-friendly version'
@@ -114,10 +119,12 @@ permissions:
   - 'access user profiles'
   - 'access webform overview'
   - 'add content to books'
+  - 'administer coffee'
   - 'administer block content'
   - 'administer block types'
   - 'administer blocks'
   - 'administer book outlines'
+  - 'administer google_tag_container'
   - 'administer main menu items'
   - 'administer redirects'
   - 'administer users'

@@ -2,16 +2,19 @@
 
 :root {
   --gin-font: Mallory, sans-serif;
-  --gin-font-size-h1: 1.75rem;
-  --gin-font-size-h2: 1.5rem;
-  --gin-font-size-h3: 1.25rem;
+  // Original sizes: H1: 1.75rem, H2: 1.5rem, H3: 1.25rem
+  // Reduced by ~5px: H1: 1.438rem, H2: 1.188rem, H3: 0.938rem
+  --gin-font-size-h1: 1.438rem;
+  --gin-font-size-h2: 1.188rem;
+  --gin-font-size-h3: 0.938rem;
   --gin-border-m: 0.313rem;
   --jui-dropdown-bg-color: var(--gin-bg-layer);
   --input-fg-color--placeholder: var(--gin-color-text);
 
   h1,
   h2 {
-    font-weight: 600;
+    // Changed from font-weight: 600 to 400 (Book weight) for Mallory headings
+    font-weight: 400;
   }
 }
 
@@ -52,8 +55,23 @@ a.focal-point-preview-link {
     gap: 1rem;
     grid-template-columns: repeat(2, 1fr);
 
-    .form-element {
+    .form-element, .form-item {
       width: 100%;
+      min-width: 100%;
+    }
+  }
+}
+
+/* Three column layout for profile add/edit form */
+.ys-gin-three-column-wrapper {
+  @media screen and (min-width: 1000px) {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(3, 1fr);
+
+    .form-element, .form-item {
+      width: 100%;
+      min-width: 100%;
     }
   }
 }
@@ -79,4 +97,10 @@ a.focal-point-preview-link {
   background-color: var(--gin-bg-layer2);
 }
 
+// Form elements were not scaling to the larger height that 
+// other items adhere to, like chosen and the title of a
+// drupal form.  This allows it to closer match them.
+.form-element {
+  min-height: calc(var(--input-padding-vertical) * 3 + var(--input-line-height)) !important;
+}
 /* stylelint-enable */

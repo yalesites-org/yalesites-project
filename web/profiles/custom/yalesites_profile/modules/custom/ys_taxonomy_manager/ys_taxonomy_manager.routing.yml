@@ -9,3 +9,11 @@ ys_taxonomy_manager.admin_vocabulary.add_to_nodes:
     parameters:
       taxonomy_vocabulary:
         type: entity:taxonomy_vocabulary
+
+taxonomy_manager.admin:
+  path: '/admin/structure/taxonomy_manager/voc'
+  defaults:
+    _controller: '\Drupal\ys_taxonomy_manager\Controller\YsTaxonomyManagerMainController::listVocabularies'
+    _title: 'Taxonomy Manager'
+  requirements:
+    _permission: 'administer taxonomy'
