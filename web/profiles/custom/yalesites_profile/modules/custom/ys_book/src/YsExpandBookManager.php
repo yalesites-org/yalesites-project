@@ -2,8 +2,7 @@
 
 namespace Drupal\ys_book;
 
-use Drupal\book\BookManager;
-use Drupal\book\BookOutlineStorageInterface;
+use Drupal\custom_book_block\ExpandBookManager;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
@@ -16,11 +15,15 @@ use Drupal\Core\StringTranslation\TranslationInterface;
 use Drupal\Core\Template\Attribute;
 use Drupal\Core\Url;
 use Drupal\node\NodeInterface;
+use Drupal\book\BookOutlineStorageInterface;
 
 /**
- * Overrides class for BookManager service.
+ * Overrides class for custom_book_block ExpandBookManager service.
+ *
+ * Extends the custom_book_block ExpandBookManager to add CAS functionality
+ * while maintaining compatibility with the custom_book_navigation block.
  */
-class YsExpandBookManager extends BookManager {
+class YsExpandBookManager extends ExpandBookManager {
 
   /**
    * The current route match.
@@ -54,7 +57,7 @@ class YsExpandBookManager extends BookManager {
    *   The current route match.
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, TranslationInterface $translation, ConfigFactoryInterface $config_factory, BookOutlineStorageInterface $book_outline_storage, RendererInterface $renderer, LanguageManagerInterface $language_manager, EntityRepositoryInterface $entity_repository, CacheBackendInterface $backend_chained_cache, CacheBackendInterface $memory_cache, RouteMatchInterface $route_match) {
-    parent::__construct($entity_type_manager, $translation, $config_factory, $book_outline_storage, $renderer, $language_manager, $entity_repository, $backend_chained_cache, $memory_cache);
+    parent::__construct($entity_type_manager, $translation, $config_factory, $book_outline_storage, $renderer, $language_manager, $entity_repository, $backend_chained_cache, $memory_cache, $route_match);
     $this->routeMatch = $route_match;
   }
 
@@ -121,8 +124,8 @@ class YsExpandBookManager extends BookManager {
     foreach ($tree as $data) {
       $element = [];
 
-      // Generally we only deal with visible links, but just in case.
-      if (!$data['link']['access']) {
+      // Check if link data exists and is accessible.
+      if (!isset($data['link']) || !$data['link']['access']) {
         continue;
       }
 
@@ -182,9 +185,6 @@ class YsExpandBookManager extends BookManager {
    * where they will be flagged with is_cas by bookLinkTranslate().
    */
   protected function bookTreeBuild($bid, array $parameters = []) {
-    // Debug logging to verify this method is called.
-    \Drupal::logger('ys_book')->info('YSExpandBookManager::bookTreeBuild called for bid: @bid', ['@bid' => $bid]);
-
     // Build the book tree.
     $data = $this->doBookTreeBuild($bid, $parameters);
     // Translate links but skip access filtering that removes CAS-protected
@@ -220,16 +220,13 @@ class YsExpandBookManager extends BookManager {
    * {@inheritdoc}
    */
   public function bookLinkTranslate(&$link) {
-    // Debug logging to verify this method is called.
-    \Drupal::logger('ys_book')->info('YSExpandBookManager::bookLinkTranslate called for nid: @nid', ['@nid' => $link['nid']]);
-
     // Check access via the api, since the query node_access tag doesn't check
     // for unpublished nodes.
     // @todo load the nodes en-mass rather than individually.
     // @see https://www.drupal.org/project/drupal/issues/2470896
     $node = $this->entityTypeManager->getStorage('node')->load($link['nid']);
 
-    // This is the custom check that we are overriding. By default, content that
+    // Override default access check behavior. By default, content that
     // fails an access check will not be included in the book tree. We want to
     // include it, and add a flag so that the template can add a lock icon to
     // the menu item. Access will still be checked when the user attempts to
@@ -239,18 +236,11 @@ class YsExpandBookManager extends BookManager {
     // cache-related issues between environments.
     $link['is_cas'] = $node && $node->hasField('field_login_required') && (bool) $node->get('field_login_required')->value;
 
-    // Debug logging for CAS detection.
-    if ($link['is_cas']) {
-      \Drupal::logger('ys_book')->info('Node @nid flagged as CAS-protected', ['@nid' => $link['nid']]);
-    }
-
-    // For performance, don't localize a link the user can't access.
-    if ($link['access']) {
-      // The node label will be the value for the current language.
-      $node = $this->entityRepository->getTranslationFromContext($node);
-      $link['title'] = $node->label();
-      $link['options'] = [];
-    }
+    // Localize the link since we always set access to TRUE.
+    // The node label will be the value for the current language.
+    $node = $this->entityRepository->getTranslationFromContext($node);
+    $link['title'] = $node->label();
+    $link['options'] = [];
     return $link;
   }
 
