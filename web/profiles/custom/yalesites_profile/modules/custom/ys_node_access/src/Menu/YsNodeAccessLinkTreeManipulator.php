@@ -59,18 +59,17 @@ class YsNodeAccessLinkTreeManipulator extends DefaultMenuLinkTreeManipulators {
    */
   protected function menuLinkCheckAccess(MenuLinkInterface $instance) {
     /*
-     * If set in header_settings config, allows anonymous users to see CAS
-     * only links.
+     * Allows anonymous users to see CAS only links.
      */
     $access_result = parent::menuLinkCheckAccess($instance);
-    if (!$this->headerSettings->get('enable_cas_menu_links')) {
-      return $access_result;
-    }
 
     $menuName = $instance->getMenuName();
     if (in_array($menuName, _ys_node_access_cas_menus())) {
-      if ($this->account->isAnonymous()) {
-        if (!$access_result->isAllowed()) {
+      $nodeId = $instance->getRouteParameters()['node'] ?? NULL;
+
+      if ($nodeId) {
+        $node = $this->entityTypeManager->getStorage('node')->load($nodeId);
+        if ($this->is_cas_restricted($node)) {
           $metadata = $instance->getMetaData();
           $menu_link_content_storage = $this->entityTypeManager->getStorage('menu_link_content');
           $menu_entity = $menu_link_content_storage->load($metadata['entity_id']);
@@ -83,6 +82,23 @@ class YsNodeAccessLinkTreeManipulator extends DefaultMenuLinkTreeManipulators {
     }
 
     return $access_result;
+  }
+
+  /**
+   * Checks if the node is CAS restricted.
+   *
+   * @param \Drupal\node\NodeInterface $node
+   *   The node to check.
+   *
+   * @return bool
+   *   True if the node is CAS restricted, false otherwise.
+   */
+  protected function is_cas_restricted($node) {
+    return (
+      is_object($node) &&
+      $node->hasField('field_login_required') &&
+      $node->get('field_login_required')->value == 1
+    );
   }
 
 }
