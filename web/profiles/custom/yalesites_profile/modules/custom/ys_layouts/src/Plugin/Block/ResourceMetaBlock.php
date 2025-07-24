@@ -126,7 +126,6 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
 
     $title = NULL;
     $categoryName = NULL;
-    $publishDateLabel = NULL;
     $publishDate = NULL;
     $metadata = [];
     $mediaBundle = NULL;
