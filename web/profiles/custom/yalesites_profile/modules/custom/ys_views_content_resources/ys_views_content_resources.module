@@ -76,7 +76,7 @@ function ys_views_content_resources_views_pre_build($view) {
  */
 function ys_views_content_resources_views_pre_render(ViewExecutable $view): void {
   if ($view->id() === 'content_resources') {
-    $pin_options = json_decode($view->args[11]);
+    $pin_options = json_decode($view->args[7]);
     $pin_label = '';
     if ($pin_options->pinned_to_top) {
       $pin_label = $pin_options->pin_label;
