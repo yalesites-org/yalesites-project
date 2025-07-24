@@ -47,21 +47,6 @@ third_party_settings:
               context_mapping: {  }
             weight: 0
             additional: {  }
-          e753436e-22a8-48cd-9034-8d37061ef00e:
-            uuid: e753436e-22a8-48cd-9034-8d37061ef00e
-            region: content
-            configuration:
-              id: 'field_block:node:resource:field_date_format'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: list_default
-                label: above
-                settings: {  }
-                third_party_settings: {  }
-            weight: 1
-            additional: {  }
         third_party_settings:
           layout_builder_lock:
             lock:
