@@ -66,7 +66,7 @@ function ys_views_basic_update_10000() {
           $section_obj = unserialize($section_obj, ['allowed_classes' => ['Drupal\\layout_builder\\Section']]);
         }
         $components = $section_obj->getComponents();
-        foreach ($components as $uuid => $component) {
+        foreach ($components as $component) {
           $config = $component->get('configuration');
           if (!empty($config['block_revision_id'])) {
             $block = \Drupal::entityTypeManager()->getStorage('block_content')->loadRevision($config['block_revision_id']);
