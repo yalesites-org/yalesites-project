@@ -18,8 +18,6 @@ function ys_views_basic_update_10000() {
 
   foreach ($blocks as $block) {
     $changed = FALSE;
-    // Get the value BEFORE changing the type.
-    $view_params_value = $block->get('field_view_params')->getValue();
     foreach ($block->get('field_view_params') as $item) {
       $params = $item->getValue();
       $params_decoded = json_decode($params['params'] ?? '', TRUE);
@@ -29,12 +27,11 @@ function ys_views_basic_update_10000() {
         // Set the description/label.
         $block->set('info', 'Event Calendar');
 
-
         $block->save();
         // Reload the block so the new fields are available.
         $block = \Drupal::entityTypeManager()->getStorage('block_content')->load($block->id());
-        // Now set the new field using the value we saved.
-        $block->set('field_basic_params', $view_params_value);
+        // Set the basic params field to an empty array.
+        $block->set('field_basic_params', ['params' => []]);
         $changed = TRUE;
       }
     }
