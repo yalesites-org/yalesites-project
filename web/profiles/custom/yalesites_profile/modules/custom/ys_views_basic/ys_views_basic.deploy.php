@@ -2,13 +2,13 @@
 
 /**
  * @file
- * Install file for the ys_views_basic module.
+ * Contains ys_views_basic.deploy.php.
  */
 
 /**
  * Converts view blocks with calendar view_mode to event_calendar blocks.
  */
-function ys_views_basic_update_10000() {
+function ys_views_basic_deploy_10000() {
   $storage = \Drupal::entityTypeManager()->getStorage('block_content');
   $query = $storage->getQuery()
     ->condition('type', 'view')
