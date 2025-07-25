@@ -1,0 +1,55 @@
+langcode: en
+status: true
+dependencies: {  }
+id: node_event
+label: 'Whitney Events'
+migration_group: ys_whc_migrate
+migration_tags:
+  - node
+source:
+  plugin: d7_node
+  node_type: event
+process:
+  langcode: constants/langcode_en
+  status: status
+  title: title
+  created: created
+  changed: changed
+  promote: promote
+  field_category/0/target_id:
+    - plugin: skip_on_empty
+      source: field_calendar_selection
+    - plugin: static_map
+      map:
+        1: 39
+        2: 40
+  field_event_date:
+    plugin: parse_dates
+    source: field_event_time
+  field_event_place/0/target_id:
+    plugin: entity_generate
+    source: field_building
+    value_key: name
+    bundle_key: vid
+    bundle: event_place
+    entity_type: taxonomy_term
+    ignore_case: true
+  field_event_room: field_room_number
+  # field_localist_event_experience:
+  path/alias:
+    -
+      plugin: concat
+      source:
+        - constants/slash
+        - alias
+  path/pathauto:
+    plugin: null_coalesce
+    source:
+      - pathauto
+      - constants/one
+destination:
+  plugin: entity:node
+  default_bundle: event
+migration_dependencies:
+  required: [  ]
+  optional: [  ]

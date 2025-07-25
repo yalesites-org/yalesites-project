@@ -1,0 +1,18 @@
+langcode: en
+status: true
+id: ys_whc_migrate
+label: 'Yale WHC Migrate'
+description: 'Whitney D7 into Yale Sites Migration'
+source_type: 'D7'
+shared_configuration:
+  source:
+    constants:
+      published: 1
+      langcode_en: 'en'
+      one: 1
+      zero: 0
+      slash: /
+dependencies:
+  enforced:
+    module:
+      - ys_whc_migrate
