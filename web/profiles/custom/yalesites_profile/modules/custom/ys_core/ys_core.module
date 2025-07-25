@@ -978,3 +978,12 @@ function ys_core_form_user_register_form_alter(&$form, FormStateInterface $form_
     '#weight' => -99,
   ];
 }
+
+/**
+ * Implements hook_yale_cas_app_parameter_alter().
+ */
+function ys_core_yale_cas_app_parameter_alter(&$app_value, $event) {
+  // Retrieve the ys_core config.
+  $config = \Drupal::config('ys_core.site');
+  $app_value = $config->get('cas_app_name') ?: 'yalesites';
+}
