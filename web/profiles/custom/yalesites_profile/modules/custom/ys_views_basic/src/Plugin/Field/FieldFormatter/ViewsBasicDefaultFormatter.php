@@ -68,7 +68,6 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
     string $view_mode,
     array $third_party_settings,
     ViewsBasicManager $viewsBasicManager,
-    EventsCalendarInterface $eventsCalendar,
   ) {
     parent::__construct(
       $plugin_id,
@@ -80,7 +79,6 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
       $third_party_settings,
     );
     $this->viewsBasicManager = $viewsBasicManager;
-    $this->eventsCalendar = $eventsCalendar;
   }
 
   /**
@@ -96,7 +94,6 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
       $configuration['view_mode'],
       $configuration['third_party_settings'],
       $container->get('ys_views_basic.views_basic_manager'),
-      $container->get('ys_views_basic.events_calendar')
     );
   }
 
@@ -109,46 +106,21 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
 
     foreach ($items as $delta => $item) {
       // Get decoded parameters.
-      $paramsDecoded = json_decode($item->getValue()['params'], TRUE);
-
-      if ($paramsDecoded['filters']['types'][0] === 'event' && $paramsDecoded['view_mode'] === 'calendar') {
-        // Calculate the remaining time until the end of the current month.
-        $now = new \DateTime();
-        $end_of_month = new \DateTime('last day of this month 23:59:59');
-        $remaining_time_in_seconds = $end_of_month->getTimestamp() - $now->getTimestamp();
-
-        $events_calendar = $this->eventsCalendar
-          ->getCalendar(date('m'), date('Y'));
-
-        $elements[$delta] = [
-          '#theme' => 'views_basic_events_calendar',
-          '#month_data' => $events_calendar,
-          '#cache' => [
-            'tags' => ['node_list:event'],
-            // Set max-age to the remaining time until the end of the month.
-            'max-age' => $remaining_time_in_seconds,
-            'contexts' => ['timezone'],
-          ],
-        ];
-      }
-      else {
-        $view = $this->viewsBasicManager->getView('rendered', $item->getValue()['params']);
-        $elements[$delta] = [
-          '#theme' => 'views_basic_formatter_default',
-          '#view' => $view,
-          // Extract exposed filters from the view and place them separately.
-          // This is necessary because we are conditionally displaying
-          // specific exposed filters based on field configuration.
-          // By placing the exposed filters outside of the view rendering
-          // context, we ensure that they do not get re-rendered
-          // when AJAX operations are performed on the view,
-          // allowing for better control over which filters are displayed
-          // and maintaining the expected user interface behavior.
-          '#exposed' => $view['#view']->exposed_widgets,
-        ];
-      }
+      $view = $this->viewsBasicManager->getView('rendered', $item->getValue()['params']);
+      $elements[$delta] = [
+        '#theme' => 'views_basic_formatter_default',
+        '#view' => $view,
+        // Extract exposed filters from the view and place them separately.
+        // This is necessary because we are conditionally displaying
+        // specific exposed filters based on field configuration.
+        // By placing the exposed filters outside of the view rendering
+        // context, we ensure that they do not get re-rendered
+        // when AJAX operations are performed on the view,
+        // allowing for better control over which filters are displayed
+        // and maintaining the expected user interface behavior.
+        '#exposed' => $view['#view']->exposed_widgets,
+      ];
     }
-
     return $elements;
   }
 
