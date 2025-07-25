@@ -38,19 +38,7 @@ class EventCalendarDefaultWidget extends WidgetBase {
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
     foreach ($values as &$value) {
-      $paramData = [
-        "view_mode" => "calendar",
-        "filters" => [
-          "types" => ["event"],
-          "event_time_period" => "future",
-        ],
-        "event_field_options" => [],
-        "operator" => "+",
-        "sort_by" => "field_event_date:DESC",
-        "display" => "all",
-        "limit" => 0,
-        "offset" => 0,
-      ];
+      $paramData = [];
       $value['params'] = json_encode($paramData);
     }
 
