@@ -122,8 +122,3 @@ color theme is set to dark  */
   background-color: var(--color-admin-button-secondary-hover);
   color: var(--color-admin-button-dark-text);
 }
-
-/* Override environment indicator bold font weight */
-#environment-indicator {
-  font-weight: normal !important;
-}
