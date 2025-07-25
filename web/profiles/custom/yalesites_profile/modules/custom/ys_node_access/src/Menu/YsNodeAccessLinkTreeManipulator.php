@@ -4,24 +4,17 @@ namespace Drupal\ys_node_access\Menu;
 
 use Drupal\Core\Access\AccessManagerInterface;
 use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Menu\DefaultMenuLinkTreeManipulators;
 use Drupal\Core\Menu\MenuLinkInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\node\NodeInterface;
 
 /**
  * Custom menu link tree manipulator to override access checks.
  */
 class YsNodeAccessLinkTreeManipulator extends DefaultMenuLinkTreeManipulators {
-
-  /**
-   * Configuration Factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $headerSettings;
 
   /**
    * Constructs a CustomMenuLinkTreeManipulator object.
@@ -34,18 +27,14 @@ class YsNodeAccessLinkTreeManipulator extends DefaultMenuLinkTreeManipulators {
    *   The entity type manager.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface|null $module_handler
    *   The module handler.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The configuration factory.
    */
   public function __construct(
     AccessManagerInterface $access_manager,
     AccountInterface $account,
     EntityTypeManagerInterface $entity_type_manager,
     ModuleHandlerInterface $module_handler,
-    ConfigFactoryInterface $config_factory,
   ) {
     parent::__construct($access_manager, $account, $entity_type_manager, $module_handler);
-    $this->headerSettings = $config_factory->get('ys_core.header_settings');
   }
 
   /**
@@ -69,7 +58,7 @@ class YsNodeAccessLinkTreeManipulator extends DefaultMenuLinkTreeManipulators {
 
       if ($nodeId) {
         $node = $this->entityTypeManager->getStorage('node')->load($nodeId);
-        if ($this->is_cas_restricted($node)) {
+        if ($node && $this->isCasRestricted($node)) {
           $metadata = $instance->getMetaData();
           $menu_link_content_storage = $this->entityTypeManager->getStorage('menu_link_content');
           $menu_entity = $menu_link_content_storage->load($metadata['entity_id']);
@@ -93,9 +82,8 @@ class YsNodeAccessLinkTreeManipulator extends DefaultMenuLinkTreeManipulators {
    * @return bool
    *   True if the node is CAS restricted, false otherwise.
    */
-  protected function is_cas_restricted($node) {
+  protected function isCasRestricted(NodeInterface $node) {
     return (
-      is_object($node) &&
       $node->hasField('field_login_required') &&
       $node->get('field_login_required')->value == 1
     );
