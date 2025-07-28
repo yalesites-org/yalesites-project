@@ -26,13 +26,14 @@ function ys_views_basic_deploy_10000() {
         $block->set('type', 'event_calendar');
         // Set the description/label.
         $block->set('info', 'Event Calendar');
-
         $block->save();
         // Reload the block so the new fields are available.
         $block = \Drupal::entityTypeManager()->getStorage('block_content')->load($block->id());
-        // Set the basic params field to an empty array.
-        $block->set('field_basic_params', ['params' => []]);
-        $changed = TRUE;
+        // Copy the params value from field_view_params to field_basic_params.
+        if (isset($params['params'])) {
+          $block->set('field_basic_params', [['params' => $params['params']]]);
+          $changed = TRUE;
+        }
       }
     }
     if ($changed) {
