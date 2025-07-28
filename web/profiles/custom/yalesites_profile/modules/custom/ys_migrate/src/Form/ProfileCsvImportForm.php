@@ -141,7 +141,8 @@ class ProfileCsvImportForm extends FormBase {
           <li><strong>Custom Vocabulary</strong> - Comma-separated custom terms</li>
         </ul>
         <p><strong>Note:</strong> The first row should contain column headers. All fields except Display Name are optional.</p>
-        <p><a href="/admin/yalesites/migrate/profile-csv-template" target="_blank">Download CSV Template</a></p>
+        <p><a href="https://yalesites.yale.edu/explore-resources/yalesites-user-guide/migrating-a-legacy-site" target="_blank">Learn how to create an import and download a CSV Template</a></p>
+
       </div>',
     ];
 
@@ -303,7 +304,7 @@ class ProfileCsvImportForm extends FormBase {
     $rows = [];
 
     // Show first 10.
-    foreach (array_slice($profiles, 0, 10) as $profile) {
+    foreach (array_slice($profiles, 0, 100) as $profile) {
       $rows[] = [
         $profile['display_name'],
         $profile['email'] ?: '-',
@@ -312,7 +313,7 @@ class ProfileCsvImportForm extends FormBase {
       ];
     }
 
-    if (count($profiles) > 10) {
+    if (count($profiles) > 100) {
       $rows[] = [
         '...',
         '...',

@@ -5,11 +5,3 @@ ys_migrate.profile_csv_import:
     _title: 'Profile CSV Import'
   requirements:
     _permission: 'create profile content'
-
-ys_migrate.profile_csv_template:
-  path: '/admin/content/manage-profiles/csv-template'
-  defaults:
-    _controller: '\Drupal\ys_migrate\Controller\ProfileCsvTemplateController::downloadTemplate'
-    _title: 'Profile CSV Template'
-  requirements:
-    _permission: 'create profile content'
