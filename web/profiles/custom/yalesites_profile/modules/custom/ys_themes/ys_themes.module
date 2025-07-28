@@ -121,10 +121,10 @@ function ys_themes_build_css_variables() : string {
   $css[] = "--thickness-theme-divider: var(--thickness-divider-{$lineThickness});";
 
   $css[] = '}';
-  
-  // Override environment indicator bold font weight
+
+  // Override environment indicator bold font weight.
   $css[] = '#environment-indicator { font-weight: normal !important; }';
-  
+
   return implode(PHP_EOL, $css);
 }
 
