@@ -38,3 +38,10 @@ ys_core.link_add_resources:
   title: 'Add resource'
   appears_on:
     - view.manage_resources.page_1
+
+cas.bulk_add_cas_users:
+  title: 'Add NetId user(s)'
+  route_name: cas.bulk_add_cas_users
+  appears_on:
+    - entity.user.collection
+  weight: 1
