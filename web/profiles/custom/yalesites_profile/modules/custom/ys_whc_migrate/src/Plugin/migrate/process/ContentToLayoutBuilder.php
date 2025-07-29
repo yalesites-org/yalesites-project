@@ -10,6 +10,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionComponent;
+use Drupal\migrate\Attribute\MigrateProcess;
 use Drupal\migrate\MigrateException;
 use Drupal\migrate\MigrateExecutableInterface;
 use Drupal\migrate\ProcessPluginBase;
@@ -45,9 +46,10 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *           - type: text
  *             source: body
  * @endcode
- *
- * @MigrateProcessPlugin(id = "whc_content_to_layout_builder")
  */
+#[MigrateProcess(
+  id: 'whc_content_to_layout_builder'
+)]
 class ContentToLayoutBuilder extends ProcessPluginBase implements ContainerFactoryPluginInterface {
 
   /**

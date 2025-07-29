@@ -1,13 +1,12 @@
 langcode: en
 status: true
-dependencies: {  }
 id: whc_node_event
 label: 'Whitney Events'
 migration_group: ys_whc_migrate
 migration_tags:
   - node
 source:
-  plugin: d7_node
+  plugin: whc_node
   node_type: event
 process:
   langcode: constants/langcode_en
@@ -16,6 +15,11 @@ process:
   created: created
   changed: changed
   promote: promote
+  field_teaser_media/0/target_id:
+    plugin: migration_lookup
+    migration: whc_node_media
+    source: field_event_image/0/fid
+    no_stub: true
   field_category/0/target_id:
     - plugin: skip_on_empty
       source: field_calendar_selection/0/value
@@ -27,15 +31,15 @@ process:
   field_event_date:
     plugin: parse_dates
     source: field_event_time/0/value
-  field_event_place:
-    plugin: entity_generate
-    # Fix: pass in the term name.
-    source: field_building
-    value_key: name
-    bundle_key: vid
-    bundle: event_place
-    entity_type: taxonomy_term
-    ignore_case: true
+  # field_event_place:
+  #   plugin: entity_generate
+  #   # Fix: pass in the term name.
+  #   source: field_building
+  #   value_key: name
+  #   bundle_key: vid
+  #   bundle: event_place
+  #   entity_type: taxonomy_term
+  #   ignore_case: true
   field_event_room: field_room_number
   layout_builder__layout:
     plugin: whc_content_to_layout_builder
@@ -60,5 +64,11 @@ destination:
   plugin: entity:node
   default_bundle: event
 migration_dependencies:
-  required: [  ]
+  required:
+    - whc_node_media
   optional: [  ]
+
+dependencies:
+  enforced:
+    module:
+      - ys_whc_migrate

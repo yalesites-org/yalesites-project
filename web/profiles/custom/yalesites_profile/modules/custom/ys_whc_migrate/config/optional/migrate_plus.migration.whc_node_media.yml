@@ -1,0 +1,51 @@
+langcode: en
+status: true
+id: whc_node_media
+label: 'Whitney Media'
+migration_group: ys_whc_migrate
+migration_tags:
+  - media
+source:
+  plugin: whc_media_entity_generator
+  entity_type: node
+  bundle:
+    - event
+  source_langcode: und
+  include_revisions: false
+  toggle_media_mapping: true
+  d7_file_url: 'https://tst.whc.yale.edu/sites/default/files/'
+  field_names:
+    - field_event_image
+process:
+  bundle:
+    plugin: default_value
+    default_value: image
+  name:
+    plugin: media_name
+    source: file_name
+  # This process plugin will skip the whole row if a existing media is found.
+  _check_existing_media_file:
+    plugin: check_media_duplicate
+    source: target_id
+  # This process plugin will skip the whole row if a duplicate image is found.
+  _check_unique_file_id:
+    plugin: check_duplicate
+    source: target_id
+  field_media_image/alt: alt
+  field_media_image/title: title
+  field_media_image/target_id:
+    plugin: media_file_copy
+    move: FALSE
+    reuse: TRUE
+    source: file_path
+destination:
+  plugin: entity:media
+
+migration_dependencies:
+  required: [  ]
+  optional: [  ]
+
+dependencies:
+  enforced:
+    module:
+      - ys_whc_migrate
