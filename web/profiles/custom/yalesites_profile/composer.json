@@ -32,6 +32,7 @@
     "drupal/captcha": "2.0.6",
     "drupal/cas": "2.3.2",
     "drupal/chosen": "4.0.3",
+    "drupal/coffee": "2.0.1",
     "drupal/components": "3.1.0",
     "drupal/config_filter": "2.6.0",
     "drupal/config_ignore": "3.3.0",
@@ -44,6 +45,7 @@
     "drupal/editoria11y": "2.1.19",
     "drupal/emulsify_twig": "5.0.0",
     "drupal/entity_redirect": "2.x-dev",
+    "drupal/environment_indicator": "4.0.22",
     "drupal/fast_404": "3.3.0",
     "drupal/field_group": "3.6.0",
     "drupal/focal_point": "2.1.2",
@@ -52,6 +54,7 @@
     "drupal/gin_lb": "1.0.0-rc8",
     "drupal/gin_moderation_sidebar": "1.0.0",
     "drupal/google_analytics": "4.0.2",
+    "drupal/google_tag": "2.0.8",
     "drupal/hide_revision_field": "2.5.0",
     "drupal/honeypot": "2.1.4",
     "drupal/imagemagick": "4.0.2",
@@ -113,8 +116,8 @@
     "laminas/laminas-escaper": "2.13.0",
     "northernco/ckeditor5-anchor-drupal": "0.4.0",
     "yalesites-org/ai_engine": "1.2.10",
-    "yalesites-org/atomic": "1.50.0",
-    "yalesites-org/yale_cas": "v1.0.5"
+    "yalesites-org/atomic": "1.54.0",
+    "yalesites-org/yale_cas": "v1.2.0"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
@@ -186,6 +189,9 @@
       },
       "drupal/layout_builder_lock": {
         "Show help text for only users who have permission https://www.drupal.org/project/layout_builder_lock/issues/3497055": "https://git.drupalcode.org/project/layout_builder_lock/-/merge_requests/26.patch"
+      },
+      "drupal/cas": {
+        "Fix coffee url_generator.non_bubbling override for CAS logouts https://www.drupal.org/project/cas/issues/2948185": "https://www.drupal.org/files/issues/cas_logout_error-2948185-2.patch"
       }
     }
   }
