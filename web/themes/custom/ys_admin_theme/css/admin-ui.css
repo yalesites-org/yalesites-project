@@ -12,4 +12,19 @@
   float: none;
 }
 
+.gin--dark-mode .layout-builder-configure-block .fieldset__label.has-error {
+  color: var(--gin-color-info);
+}
+.gin--dark-mode .layout-builder-configure-block .form-boolean.error {
+  border-color: var(--gin-color-info);
+  box-shadow: inset 0 0 0 1px var(--gin-color-info);
+}
+.gin--dark-mode .layout-builder-configure-block .form-boolean--type-checkbox.error:checked {
+  background-color: white;
+}
+.gin--dark-mode .layout-builder-configure-block .form-boolean.error:checked:hover, .gin--dark-mode .layout-builder-configure-block .form-boolean.error:checked:active, .gin--dark-mode .layout-builder-configure-block .form-boolean.error:checked:active:hover {
+  border-color: var(--gin-color-info);
+  color: white;
+}
+
 /*# sourceMappingURL=admin-ui.css.map */

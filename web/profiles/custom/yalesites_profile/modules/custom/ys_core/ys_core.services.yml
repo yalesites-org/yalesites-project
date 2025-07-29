@@ -33,3 +33,9 @@ services:
   ys_core.facts_and_figures_icon_manager:
     class: Drupal\ys_core\FactsAndFiguresIconManager
     arguments: ['@cache.default', '@module_handler', '@logger.factory']
+  # Provides user 1 bypass for CAS forced login.
+  ys_core.cas_user1_bypass_subscriber:
+    class: Drupal\ys_core\EventSubscriber\CasUser1BypassSubscriber
+    arguments: ['@current_user', '@request_stack']
+    tags:
+      - { name: event_subscriber }

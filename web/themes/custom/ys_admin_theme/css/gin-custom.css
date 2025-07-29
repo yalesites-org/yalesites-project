@@ -1,16 +1,19 @@
 /* stylelint-disable */
 :root {
   --gin-font: Mallory, sans-serif;
-  --gin-font-size-h1: 1.75rem;
-  --gin-font-size-h2: 1.5rem;
-  --gin-font-size-h3: 1.25rem;
+  /* Original sizes: H1: 1.75rem, H2: 1.5rem, H3: 1.25rem */
+  /* Reduced by ~5px: H1: 1.438rem, H2: 1.188rem, H3: 0.938rem */
+  --gin-font-size-h1: 1.438rem;
+  --gin-font-size-h2: 1.188rem;
+  --gin-font-size-h3: 0.938rem;
   --gin-border-m: 0.313rem;
   --jui-dropdown-bg-color: var(--gin-bg-layer);
   --input-fg-color--placeholder: var(--gin-color-text);
 }
 :root h1,
 :root h2 {
-  font-weight: 600;
+  /* Changed from font-weight: 600 to 400 (Book weight) for Mallory headings */
+  font-weight: 400;
 }
 
 .views-bulk-actions__item .button--primary:not(:disabled, .is-disabled) {

@@ -1,0 +1,177 @@
+/**
+ * @file
+ * Styles for CAS Protection Modal.
+ */
+
+/* Modal dialog styling */
+.cas-protection-modal {
+  font-family: inherit;
+}
+
+.cas-protection-modal .ui-dialog-titlebar {
+  background: var(--gin-bg-layer2);
+  border-bottom: 1px solid var(--gin-border-color-layer);
+  padding: var(--gin-spacing-m);
+}
+
+.cas-protection-modal .ui-dialog-title {
+  font-size: var(--gin-font-size-xl);
+  font-weight: var(--gin-font-weight-semibold);
+  color: var(--gin-color-text);
+  margin: 0;
+}
+
+.cas-protection-modal .ui-dialog-content {
+  padding: var(--gin-spacing-l);
+  background: var(--gin-bg-layer);
+}
+
+/* Modal content */
+.cas-protection-modal-content {
+  max-width: 100%;
+}
+
+.cas-protection-modal-content .modal-title {
+  font-size: var(--gin-font-size-xl);
+  font-weight: var(--gin-font-weight-semibold);
+  color: var(--gin-color-text);
+  margin: 0 0 var(--gin-spacing-m) 0;
+  line-height: 1.4;
+}
+
+.cas-protection-modal-content .security-warning {
+  background: var(--gin-bg-warning);
+  border: 1px solid var(--gin-color-warning);
+  border-radius: var(--gin-border-s);
+  padding: var(--gin-spacing-m);
+  margin: var(--gin-spacing-m) 0;
+  color: var(--gin-color-warning-light);
+  font-weight: var(--gin-font-weight-normal);
+}
+
+.cas-protection-modal-content .security-warning strong {
+  display: block;
+  font-weight: var(--gin-font-weight-semibold);
+}
+
+.cas-protection-modal-content p {
+  margin: var(--gin-spacing-m) 0;
+  line-height: 1.5;
+  color: var(--gin-color-text);
+}
+
+/* Button styling */
+.cas-protection-modal .ui-dialog-buttonpane {
+  background: var(--gin-bg-layer2);
+  border-top: 1px solid var(--gin-border-color-layer);
+  padding: var(--gin-spacing-m);
+  text-align: right;
+}
+
+.cas-protection-modal .ui-dialog-buttonset {
+  float: none;
+  text-align: right;
+}
+
+.cas-protection-modal .ui-dialog-buttonset .button {
+  margin-left: var(--gin-spacing-xs);
+  padding: var(--gin-spacing-xs) var(--gin-spacing-m);
+  border-radius: var(--gin-border-s);
+  font-weight: var(--gin-font-weight-normal);
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+  border: 1px solid transparent;
+  font-size: var(--gin-font-size-s);
+  line-height: 1.5;
+  transition: all var(--gin-transition);
+}
+
+.cas-protection-modal .ui-dialog-buttonset .button:first-child {
+  margin-left: 0;
+}
+
+.cas-protection-modal .ui-dialog-buttonset .button--secondary {
+  background: var(--gin-color-text-light);
+  border-color: var(--gin-color-text-light);
+  color: var(--gin-bg-layer);
+}
+
+.cas-protection-modal .ui-dialog-buttonset .button--secondary:hover,
+.cas-protection-modal .ui-dialog-buttonset .button--secondary:focus {
+  background: var(--gin-color-text);
+  border-color: var(--gin-color-text);
+  color: var(--gin-bg-layer);
+  outline: 2px solid var(--gin-color-focus);
+  outline-offset: 2px;
+}
+
+.cas-protection-modal .ui-dialog-buttonset .button--primary {
+  background: var(--gin-color-primary);
+  border-color: var(--gin-color-primary);
+  color: var(--gin-bg-layer);
+}
+
+.cas-protection-modal .ui-dialog-buttonset .button--primary:hover,
+.cas-protection-modal .ui-dialog-buttonset .button--primary:focus {
+  background: var(--gin-color-primary-hover);
+  border-color: var(--gin-color-primary-hover);
+  color: var(--gin-bg-layer);
+  outline: 2px solid var(--gin-color-focus);
+  outline-offset: 2px;
+}
+
+/* Accessibility improvements */
+.cas-protection-modal .ui-dialog-buttonset .button:focus {
+  outline: 2px solid var(--gin-color-focus);
+  outline-offset: 2px;
+}
+
+/* Dark mode is automatically handled by Gin CSS variables */
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .cas-protection-modal-content .security-warning {
+    background: #000000;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+  }
+  
+  .cas-protection-modal .ui-dialog-buttonset .button {
+    border: 2px solid;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .cas-protection-modal .ui-dialog-buttonset .button {
+    transition: none;
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 767px) {
+  .cas-protection-modal {
+    width: 90% !important;
+    left: 5% !important;
+    margin: 0;
+  }
+  
+  .cas-protection-modal .ui-dialog-content {
+    padding: var(--gin-spacing-m);
+  }
+  
+  .cas-protection-modal .ui-dialog-buttonpane {
+    padding: var(--gin-spacing-s);
+  }
+  
+  .cas-protection-modal .ui-dialog-buttonset .button {
+    display: block;
+    width: 100%;
+    margin: var(--gin-spacing-xxs) 0;
+  }
+  
+  .cas-protection-modal .ui-dialog-buttonset .button:first-child {
+    margin-top: 0;
+  }
+}

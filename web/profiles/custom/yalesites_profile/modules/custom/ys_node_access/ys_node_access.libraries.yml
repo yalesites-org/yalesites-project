@@ -1,0 +1,12 @@
+cas_protection_modal:
+  version: 1.x
+  js:
+    js/cas_protection_modal.js: {}
+  css:
+    theme:
+      css/cas_protection_modal.css: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupal.dialog
+    - core/drupal.dialog.ajax
