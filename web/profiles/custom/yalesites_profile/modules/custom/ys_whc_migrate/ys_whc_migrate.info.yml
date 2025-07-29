@@ -5,5 +5,6 @@ package: whc
 core_version_requirement: ^10 || ^11
 dependencies:
   - migrate:migrate
+  - migrate_drupal:migrate_drupal
   - migrate_plus:migrate_plus
   - migrate_tools:migrate_tools

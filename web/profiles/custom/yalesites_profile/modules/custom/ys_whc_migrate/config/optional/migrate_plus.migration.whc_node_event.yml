@@ -1,7 +1,7 @@
 langcode: en
 status: true
 dependencies: {  }
-id: node_event
+id: whc_node_event
 label: 'Whitney Events'
 migration_group: ys_whc_migrate
 migration_tags:
@@ -18,16 +18,18 @@ process:
   promote: promote
   field_category/0/target_id:
     - plugin: skip_on_empty
-      source: field_calendar_selection
+      source: field_calendar_selection/0/value
+      method: process
     - plugin: static_map
       map:
         1: 39
         2: 40
   field_event_date:
     plugin: parse_dates
-    source: field_event_time
-  field_event_place/0/target_id:
+    source: field_event_time/0/value
+  field_event_place:
     plugin: entity_generate
+    # Fix: pass in the term name.
     source: field_building
     value_key: name
     bundle_key: vid
@@ -35,7 +37,14 @@ process:
     entity_type: taxonomy_term
     ignore_case: true
   field_event_room: field_room_number
-  # field_localist_event_experience:
+  layout_builder__layout:
+    plugin: whc_content_to_layout_builder
+    sections:
+      body:
+        id: layout_onecol
+        components:
+          - type: text
+            source: body/0/value
   path/alias:
     -
       plugin: concat
