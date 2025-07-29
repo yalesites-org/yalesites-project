@@ -187,7 +187,7 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
     // In situations where the currently selected view mode does not exist
     // in the new content type, we default to the first item.
     $viewModeOptions = $this->viewsContentResourcesManager->viewModeList('resource');
-    $viewModeValue = ($items[$delta]->params) ? $this->viewsContentResourcesManager->getDefaultParamValue('entity_and_view_mode', $items[$delta]->params) : key($viewModeOptions);
+    $viewModeValue = ($items[$delta]->params) ? $this->viewsContentResourcesManager->getDefaultParamValue('view_mode', $items[$delta]->params) : key($viewModeOptions);
     $viewModeDefault = array_key_first($viewModeOptions);
 
     if (!array_key_exists($viewModeValue, $viewModeOptions)) {
