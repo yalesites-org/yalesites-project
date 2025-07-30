@@ -5,12 +5,6 @@ ys_ai.settings:
     enable:
       type: boolean
       label: 'Enable chat widget'
-    floating_button:
-      type: boolean
-      label: 'Enable floating chat button'
-    floating_button_text:
-      type: string
-      label: 'Floating button text'
     enable_embedding:
       type: boolean
       label: 'Enable embedding services'
