@@ -12,6 +12,17 @@ class YsAiSettings extends AiEngineChatSettings {
 
   /**
    * {@inheritdoc}
+   *
+   * Builds the YaleSites AI settings form by extending the base AI Engine
+   * chat settings form with YaleSites-specific configuration options.
+   *
+   * @param array $form
+   *   An associative array containing the structure of the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   *
+   * @return array
+   *   The form structure.
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $chat_config = $this->config('ai_engine_chat.settings');
@@ -61,6 +72,14 @@ class YsAiSettings extends AiEngineChatSettings {
 
   /**
    * {@inheritdoc}
+   *
+   * Handles form submission by saving YaleSites-specific AI configuration
+   * to the appropriate AI Engine configuration objects.
+   *
+   * @param array $form
+   *   An associative array containing the structure of the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->configFactory->getEditable('ai_engine_chat.settings')
