@@ -28,7 +28,7 @@ class YsAiSettings extends AiEngineChatSettings {
     $chat_config = $this->config('ai_engine_chat.settings');
     $embedding_config = $this->config('ai_engine_embedding.settings');
 
-    if ($chat_config->get('azure_base_url') != NULL) {
+    if (!empty($chat_config->get('azure_base_url'))) {
       $form['enable'] = [
         '#type' => 'checkbox',
         '#title' => $this->t('Enable chat widget'),
@@ -39,9 +39,9 @@ class YsAiSettings extends AiEngineChatSettings {
     }
 
     if (
-      $embedding_config->get('azure_embedding_service_url') != NULL &&
-        $embedding_config->get('azure_search_service_name') != NULL &&
-        $embedding_config->get('azure_search_service_index') != NULL
+      !empty($embedding_config->get('azure_embedding_service_url')) &&
+        !empty($embedding_config->get('azure_search_service_name')) &&
+        !empty($embedding_config->get('azure_search_service_index'))
     ) {
       $form['enable_embedding'] = [
         '#type' => 'checkbox',
