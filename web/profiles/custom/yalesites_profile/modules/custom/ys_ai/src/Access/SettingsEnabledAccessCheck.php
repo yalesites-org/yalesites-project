@@ -43,16 +43,16 @@ class SettingsEnabledAccessCheck {
   public function access(AccountInterface $account) {
     $chat_config = $this->configFactory->get('ai_engine_chat.settings');
 
-    // Check if Azure is configured AND AI is enabled.
-    $azure_configured = $chat_config->get('azure_base_url') !== NULL;
-    $ai_enabled = $chat_config->get('enable') ?? FALSE;
+    // Check if Azure is configured (AI infrastructure ready).
+    $azure_base_url = $chat_config->get('azure_base_url');
+    $azure_configured = !empty($azure_base_url);
 
     $has_permission = $account->hasPermission('configure ys ai user settings');
     $integration_enabled = $this->configFactory->get('ys_integrations.integration_settings')->get('ys_ai') ?? FALSE;
 
     return AccessResult::allowedIf(
-      $azure_configured && $ai_enabled && $has_permission && $integration_enabled
-    );
+      $azure_configured && $has_permission && $integration_enabled
+    )->addCacheableDependency($chat_config);
   }
 
 }
