@@ -36,19 +36,6 @@ class YsAiSettings extends AiEngineChatSettings {
         '#description' => $this->t('Enable or disable chat service across the site. Chat can be launched by using the href="#launch-chat" on any link.'),
         '#weight' => -10,
       ];
-      $form['floating_button'] = [
-        '#type' => 'checkbox',
-        '#title' => $this->t('Enable floating chat button'),
-        '#default_value' => $chat_config->get('floating_button') ?? FALSE,
-        '#weight' => -10,
-      ];
-      $form['floating_button_text'] = [
-        '#type' => 'textfield',
-        '#title' => $this->t('Floating button text'),
-        '#default_value' => $chat_config->get('floating_button_text') ?? $this->t('Ask Yale Chat'),
-        '#required' => TRUE,
-        '#weight' => -10,
-      ];
     }
 
     if (
@@ -84,8 +71,6 @@ class YsAiSettings extends AiEngineChatSettings {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->configFactory->getEditable('ai_engine_chat.settings')
       ->set('enable', $form_state->getValue('enable'))
-      ->set('floating_button', $form_state->getValue('floating_button'))
-      ->set('floating_button_text', $form_state->getValue('floating_button_text'))
       ->save();
     $this->configFactory->getEditable('ai_engine_embedding.settings')
       ->set('enable', $form_state->getValue('enable_embedding'))
