@@ -8,7 +8,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 
 /**
-* Provides a localist integration plugin.
+* Provides an AI integration plugin.
 */
 #[Integration(
   id: 'ys_ai',
