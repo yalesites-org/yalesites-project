@@ -267,21 +267,23 @@ function ys_layouts_page_attachments_alter(array &$attachments) {
   $route_match = \Drupal::routeMatch();
   $route_name = $route_match->getRouteName();
 
-  // Define the Layout Builder routes we want to target
+  // Define the Layout Builder routes we want to target.
   $layout_builder_routes = [
-    'entity.node.edit_form',              // Manage Settings interface
-    'layout_builder.overrides.node.view', // Edit Layout and Content interface
+  // Manage Settings interface.
+    'entity.node.edit_form',
+  // Edit Layout and Content interface.
+    'layout_builder.overrides.node.view',
   ];
 
-  // Only attach library on Layout Builder routes
+  // Only attach library on Layout Builder routes.
   if (in_array($route_name, $layout_builder_routes)) {
-    // Attach our custom sidebar library
+    // Attach our custom sidebar library.
     $attachments['#attached']['library'][] = 'ys_layouts/layout_builder_sidebar';
 
-    // Determine the context based on the route
+    // Determine the context based on the route.
     $context = ($route_name === 'entity.node.edit_form') ? 'manageSettings' : 'editLayout';
 
-    // Pass context information to JavaScript via drupalSettings
+    // Pass context information to JavaScript via drupalSettings.
     $attachments['#attached']['drupalSettings']['ysLayouts']['context'] = $context;
   }
 }
