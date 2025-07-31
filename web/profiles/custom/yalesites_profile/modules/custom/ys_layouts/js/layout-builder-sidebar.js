@@ -52,6 +52,13 @@
         width: 'Drupal.gin.sidebarWidth',
         desktopExpanded: 'Drupal.gin.sidebarExpanded.desktop',
         mobileExpanded: 'Drupal.gin.sidebarExpanded.mobile'
+      },
+      // Monitoring configuration
+      monitoring: {
+        enabled: true,
+        logChanges: false, // Set to true for debugging
+        trackUsage: true,
+        maxLogEntries: 100
       }
     },
     
@@ -88,6 +95,109 @@
   const STORAGE_KEYS = {
     manageSettings: generateStorageKeys('manageSettings'),
     editLayout: generateStorageKeys('editLayout')
+  };
+
+  // Storage monitoring functionality
+  const storageMonitor = {
+    log: [],
+    
+    /**
+     * Record a localStorage operation for monitoring.
+     * @param {string} operation - The operation type (get, set, remove)
+     * @param {string} key - The localStorage key
+     * @param {string|null} value - The value (for set operations)
+     * @param {string} context - The current context
+     */
+    recordOperation(operation, key, value = null, context = null) {
+      if (!CONFIG.storage.monitoring.enabled) return;
+      
+      const entry = {
+        timestamp: Date.now(),
+        operation,
+        key,
+        value,
+        context: context || currentContext,
+        url: window.location.pathname
+      };
+      
+      this.log.push(entry);
+      
+      // Limit log size
+      if (this.log.length > CONFIG.storage.monitoring.maxLogEntries) {
+        this.log.shift();
+      }
+      
+      // Optional console logging for debugging
+      if (CONFIG.storage.monitoring.logChanges) {
+        console.log('YS Layouts Storage:', entry);
+      }
+    },
+    
+    /**
+     * Get usage statistics for localStorage operations.
+     * @returns {Object} Usage statistics
+     */
+    getUsageStats() {
+      const stats = {
+        totalOperations: this.log.length,
+        operationTypes: {},
+        contexts: {},
+        keysAccessed: {},
+        timeRange: {
+          start: this.log.length > 0 ? this.log[0].timestamp : null,
+          end: this.log.length > 0 ? this.log[this.log.length - 1].timestamp : null
+        }
+      };
+      
+      this.log.forEach(entry => {
+        // Count operations by type
+        stats.operationTypes[entry.operation] = (stats.operationTypes[entry.operation] || 0) + 1;
+        
+        // Count operations by context
+        if (entry.context) {
+          stats.contexts[entry.context] = (stats.contexts[entry.context] || 0) + 1;
+        }
+        
+        // Count key access
+        stats.keysAccessed[entry.key] = (stats.keysAccessed[entry.key] || 0) + 1;
+      });
+      
+      return stats;
+    },
+    
+    /**
+     * Export monitoring data for analysis.
+     * @returns {Array} Complete log entries
+     */
+    exportData() {
+      return this.log.slice(); // Return copy
+    },
+    
+    /**
+     * Clear monitoring log.
+     */
+    clearLog() {
+      this.log = [];
+    }
+  };
+
+  // Enhanced localStorage wrapper with monitoring
+  const monitoredStorage = {
+    getItem(key) {
+      const value = localStorage.getItem(key);
+      storageMonitor.recordOperation('get', key, value);
+      return value;
+    },
+    
+    setItem(key, value) {
+      localStorage.setItem(key, value);
+      storageMonitor.recordOperation('set', key, value);
+    },
+    
+    removeItem(key) {
+      localStorage.removeItem(key);
+      storageMonitor.recordOperation('remove', key);
+    }
   };
 
   let currentContext = null;
@@ -152,23 +262,23 @@
     const defaults = getDefaultStates(context);
 
     // Initialize desktop state if not set
-    if (!localStorage.getItem(keys.desktop)) {
-      localStorage.setItem(keys.desktop, defaults.desktop);
+    if (!monitoredStorage.getItem(keys.desktop)) {
+      monitoredStorage.setItem(keys.desktop, defaults.desktop);
     }
 
     // Initialize mobile state if not set
-    if (!localStorage.getItem(keys.mobile)) {
-      localStorage.setItem(keys.mobile, defaults.mobile);
+    if (!monitoredStorage.getItem(keys.mobile)) {
+      monitoredStorage.setItem(keys.mobile, defaults.mobile);
     }
 
     // Initialize width if not set, or migrate old unitless values
-    let width = localStorage.getItem(keys.width);
+    let width = monitoredStorage.getItem(keys.width);
     if (!width) {
-      localStorage.setItem(keys.width, defaults.width);
+      monitoredStorage.setItem(keys.width, defaults.width);
     } else if (width && !width.includes('px') && !isNaN(parseInt(width))) {
       // Migrate old unitless values (like "360") to proper pixel values
       const migratedWidth = width + 'px';
-      localStorage.setItem(keys.width, migratedWidth);
+      monitoredStorage.setItem(keys.width, migratedWidth);
       console.log('YS Layouts: Migrated width from', width, 'to', migratedWidth);
     }
   }
@@ -193,13 +303,13 @@
     const storageKey = breakpoint === 'desktop' ? keys.desktop : keys.mobile;
 
     // Set context-specific storage
-    localStorage.setItem(storageKey, 'true');
+    monitoredStorage.setItem(storageKey, 'true');
 
     // For Manage Settings, sync our width to Gin's expected key
     if (currentContext === 'manageSettings') {
-      const contextWidth = localStorage.getItem(keys.width);
+      const contextWidth = monitoredStorage.getItem(keys.width);
       if (contextWidth) {
-        localStorage.setItem(CONFIG.storage.ginKeys.width, contextWidth);
+        monitoredStorage.setItem(CONFIG.storage.ginKeys.width, contextWidth);
       }
     }
 
@@ -228,7 +338,7 @@
     const storageKey = breakpoint === 'desktop' ? keys.desktop : keys.mobile;
 
     // Set context-specific storage
-    localStorage.setItem(storageKey, 'false');
+    monitoredStorage.setItem(storageKey, 'false');
 
     // Call original Gin function for DOM manipulation
     if (originalGinFunctions.collapseSidebar) {
@@ -250,7 +360,7 @@
     const keys = getStorageKeys(currentContext);
     const breakpoint = getCurrentBreakpoint();
     const storageKey = breakpoint === 'desktop' ? keys.desktop : keys.mobile;
-    const isExpanded = localStorage.getItem(storageKey) === 'true';
+    const isExpanded = monitoredStorage.getItem(storageKey) === 'true';
 
     if (isExpanded) {
       overrideCollapseSidebar();
@@ -282,12 +392,12 @@
 
       // Set 33% width as default for edit layout context, but allow resizing
       const keys = getStorageKeys(currentContext);
-      let width = localStorage.getItem(keys.width);
+      let width = monitoredStorage.getItem(keys.width);
       
       // If no width is stored, set the default to 33%
       if (!width) {
         width = '33%';
-        localStorage.setItem(keys.width, width);
+        monitoredStorage.setItem(keys.width, width);
         
         // Only set the CSS property if we're setting the default
         sidebar.style.setProperty('--gin-sidebar-width', width);
@@ -305,7 +415,7 @@
     const keys = getStorageKeys(currentContext);
     const breakpoint = getCurrentBreakpoint();
     const storageKey = breakpoint === 'desktop' ? keys.desktop : keys.mobile;
-    const isExpanded = localStorage.getItem(storageKey) === 'true';
+    const isExpanded = monitoredStorage.getItem(storageKey) === 'true';
 
     // Apply context styling first
     applyContextStyling();
@@ -386,19 +496,19 @@
         // For editLayout, just restore context values to Gin's keys and let Gin work normally
         if (currentContext === 'editLayout') {
           // Restore saved values to Gin's storage BEFORE Gin initializes
-          let width = localStorage.getItem(keys.width);
-          let desktopExpanded = localStorage.getItem(keys.desktop);
-          let mobileExpanded = localStorage.getItem(keys.mobile);
+          let width = monitoredStorage.getItem(keys.width);
+          let desktopExpanded = monitoredStorage.getItem(keys.desktop);
+          let mobileExpanded = monitoredStorage.getItem(keys.mobile);
           
           if (!width) {
             width = '400px';
-            localStorage.setItem(keys.width, width);
+            monitoredStorage.setItem(keys.width, width);
           }
           
           // Set Gin's keys to our context-specific values
-          localStorage.setItem(CONFIG.storage.ginKeys.width, width);
-          localStorage.setItem(CONFIG.storage.ginKeys.desktopExpanded, desktopExpanded || 'false');
-          localStorage.setItem(CONFIG.storage.ginKeys.mobileExpanded, mobileExpanded || 'false');
+          monitoredStorage.setItem(CONFIG.storage.ginKeys.width, width);
+          monitoredStorage.setItem(CONFIG.storage.ginKeys.desktopExpanded, desktopExpanded || 'false');
+          monitoredStorage.setItem(CONFIG.storage.ginKeys.mobileExpanded, mobileExpanded || 'false');
           
           // Set the CSS custom property directly to ensure visual update
           document.documentElement.style.setProperty('--gin-sidebar-width', width);
@@ -426,9 +536,9 @@
             if (dragHandle) {
               const syncAfterDrag = () => {
                 setTimeout(() => {
-                  const currentGinWidth = localStorage.getItem(CONFIG.storage.ginKeys.width);
-                  if (currentGinWidth && currentGinWidth !== localStorage.getItem(keys.width)) {
-                    localStorage.setItem(keys.width, currentGinWidth);
+                  const currentGinWidth = monitoredStorage.getItem(CONFIG.storage.ginKeys.width);
+                  if (currentGinWidth && currentGinWidth !== monitoredStorage.getItem(keys.width)) {
+                    monitoredStorage.setItem(keys.width, currentGinWidth);
                   }
                 }, CONFIG.timeouts.DRAG_SYNC);
               };
@@ -444,12 +554,12 @@
               
               if (stillEditLayout) {
                 const currentGinWidth = localStorage.getItem(CONFIG.storage.ginKeys.width);
-                const currentDesktop = localStorage.getItem(CONFIG.storage.ginKeys.desktopExpanded);
-                const currentMobile = localStorage.getItem(CONFIG.storage.ginKeys.mobileExpanded);
+                const currentDesktop = monitoredStorage.getItem(CONFIG.storage.ginKeys.desktopExpanded);
+                const currentMobile = monitoredStorage.getItem(CONFIG.storage.ginKeys.mobileExpanded);
                 
-                if (currentGinWidth) localStorage.setItem(keys.width, currentGinWidth);
-                if (currentDesktop) localStorage.setItem(keys.desktop, currentDesktop);
-                if (currentMobile) localStorage.setItem(keys.mobile, currentMobile);
+                if (currentGinWidth) monitoredStorage.setItem(keys.width, currentGinWidth);
+                if (currentDesktop) monitoredStorage.setItem(keys.desktop, currentDesktop);
+                if (currentMobile) monitoredStorage.setItem(keys.mobile, currentMobile);
               }
             });
           }, CONFIG.timeouts.DRAG_SETUP);
@@ -460,15 +570,15 @@
         // For manageSettings, restore context values and use function overrides
         if (currentContext === 'manageSettings') {
           // Restore saved values to Gin's storage BEFORE Gin initializes
-          let width = localStorage.getItem(keys.width);
-          let desktopExpanded = localStorage.getItem(keys.desktop);
-          let mobileExpanded = localStorage.getItem(keys.mobile);
+          let width = monitoredStorage.getItem(keys.width);
+          let desktopExpanded = monitoredStorage.getItem(keys.desktop);
+          let mobileExpanded = monitoredStorage.getItem(keys.mobile);
           
           // Set Gin's keys to our context-specific values
           const finalWidth = width || '360px';
           localStorage.setItem(CONFIG.storage.ginKeys.width, finalWidth);
           localStorage.setItem(CONFIG.storage.ginKeys.desktopExpanded, desktopExpanded || 'true');
-          localStorage.setItem(CONFIG.storage.ginKeys.mobileExpanded, mobileExpanded || 'false');
+          monitoredStorage.setItem(CONFIG.storage.ginKeys.mobileExpanded, mobileExpanded || 'false');
           
           // Set the CSS custom property directly to ensure visual update
           document.documentElement.style.setProperty('--gin-sidebar-width', finalWidth);
@@ -505,12 +615,12 @@
               
               if (stillManageSettings) {
                 const currentGinWidth = localStorage.getItem(CONFIG.storage.ginKeys.width);
-                const currentDesktop = localStorage.getItem(CONFIG.storage.ginKeys.desktopExpanded);
-                const currentMobile = localStorage.getItem(CONFIG.storage.ginKeys.mobileExpanded);
+                const currentDesktop = monitoredStorage.getItem(CONFIG.storage.ginKeys.desktopExpanded);
+                const currentMobile = monitoredStorage.getItem(CONFIG.storage.ginKeys.mobileExpanded);
                 
-                if (currentGinWidth) localStorage.setItem(keys.width, currentGinWidth);
-                if (currentDesktop) localStorage.setItem(keys.desktop, currentDesktop);
-                if (currentMobile) localStorage.setItem(keys.mobile, currentMobile);
+                if (currentGinWidth) monitoredStorage.setItem(keys.width, currentGinWidth);
+                if (currentDesktop) monitoredStorage.setItem(keys.desktop, currentDesktop);
+                if (currentMobile) monitoredStorage.setItem(keys.mobile, currentMobile);
               }
             });
           }, CONFIG.timeouts.DRAG_SETUP);
@@ -519,6 +629,90 @@
         // Handle window resize
         window.addEventListener('resize', Drupal.debounce(handleResize, 150));
       });
+    }
+  };
+
+  // Expose monitoring functionality globally for debugging and analysis
+  Drupal.ysLayoutsMonitor = {
+    /**
+     * Get current storage usage statistics.
+     * @returns {Object} Usage statistics
+     */
+    getStats: function() {
+      return storageMonitor.getUsageStats();
+    },
+    
+    /**
+     * Export all monitoring data.
+     * @returns {Array} Complete log entries
+     */
+    exportData: function() {
+      return storageMonitor.exportData();
+    },
+    
+    /**
+     * Clear monitoring log.
+     */
+    clearLog: function() {
+      storageMonitor.clearLog();
+    },
+    
+    /**
+     * Enable/disable change logging to console.
+     * @param {boolean} enabled - Whether to log changes
+     */
+    setConsoleLogging: function(enabled) {
+      CONFIG.storage.monitoring.logChanges = enabled;
+    },
+    
+    /**
+     * Get current monitoring configuration.
+     * @returns {Object} Monitoring configuration
+     */
+    getConfig: function() {
+      return CONFIG.storage.monitoring;
+    },
+    
+    /**
+     * Get all YaleSites localStorage keys and their values.
+     * @returns {Object} Key-value pairs for YaleSites keys
+     */
+    getAllStorageKeys: function() {
+      const keys = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith(CONFIG.storage.keyPrefix)) {
+          keys[key] = localStorage.getItem(key);
+        }
+      }
+      return keys;
+    },
+    
+    /**
+     * Generate a usage report for troubleshooting.
+     * @returns {Object} Comprehensive usage report
+     */
+    generateReport: function() {
+      const stats = storageMonitor.getUsageStats();
+      const allKeys = this.getAllStorageKeys();
+      const config = this.getConfig();
+      
+      return {
+        timestamp: new Date().toISOString(),
+        currentContext: currentContext,
+        currentUrl: window.location.pathname,
+        storageKeys: allKeys,
+        usageStats: stats,
+        monitoringConfig: config,
+        totalLogEntries: storageMonitor.log.length,
+        browserInfo: {
+          userAgent: navigator.userAgent,
+          screenWidth: window.screen.width,
+          screenHeight: window.screen.height,
+          windowWidth: window.innerWidth,
+          windowHeight: window.innerHeight
+        }
+      };
     }
   };
 
