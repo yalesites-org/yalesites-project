@@ -9,7 +9,29 @@
 ((Drupal, drupalSettings, once) => {
   'use strict';
 
-  // Storage keys for different contexts
+  /**
+   * Breakpoint threshold for desktop/mobile detection.
+   * Matches Gin's $breakpointLarge (1024px) for consistency.
+   * @constant {number}
+   */
+  const DESKTOP_BREAKPOINT = 1024;
+
+  /**
+   * Timeout delays for DOM operations.
+   * @constant {Object}
+   */
+  const TIMEOUTS = {
+    LAYOUT_RECALC: 100,
+    STYLING_APPLY: 100,
+    GIN_CHECK: 100,
+    DRAG_SETUP: 500,
+    DRAG_SYNC: 50
+  };
+
+  /**
+   * Storage keys for different contexts.
+   * @constant {Object}
+   */
   const STORAGE_KEYS = {
     manageSettings: {
       desktop: 'YaleSites.layoutBuilder.manageSettings.sidebarExpanded.desktop',
@@ -126,7 +148,7 @@
    * @returns {string} 'desktop' or 'mobile'
    */
   function getCurrentBreakpoint() {
-    return window.innerWidth >= 1024 ? 'desktop' : 'mobile';
+    return window.innerWidth >= DESKTOP_BREAKPOINT ? 'desktop' : 'mobile';
   }
 
   /**
@@ -304,7 +326,7 @@
   function handleResize() {
     // Re-initialize sidebar on breakpoint changes
     const wasDesktop = currentBreakpoint === 'desktop';
-    const isDesktop = window.innerWidth >= 1024;
+    const isDesktop = window.innerWidth >= DESKTOP_BREAKPOINT;
 
     if (wasDesktop !== isDesktop) {
       currentBreakpoint = isDesktop ? 'desktop' : 'mobile';
@@ -360,12 +382,12 @@
             if (sidebar) {
               sidebar.offsetWidth; // Force reflow
             }
-          }, 100);
+          }, TIMEOUTS.LAYOUT_RECALC);
           
           // Apply styling class
           setTimeout(() => {
             applyContextStyling();
-          }, 100);
+          }, TIMEOUTS.STYLING_APPLY);
           
           // Set up real-time drag sync for Edit Layout
           setTimeout(() => {
@@ -377,7 +399,7 @@
                   if (currentGinWidth && currentGinWidth !== localStorage.getItem(keys.width)) {
                     localStorage.setItem(keys.width, currentGinWidth);
                   }
-                }, 50);
+                }, TIMEOUTS.DRAG_SYNC);
               };
               
               dragHandle.addEventListener('mouseup', syncAfterDrag);
@@ -399,7 +421,7 @@
                 if (currentMobile) localStorage.setItem(keys.mobile, currentMobile);
               }
             });
-          }, 500);
+          }, TIMEOUTS.DRAG_SETUP);
           
           return; // Don't do any Gin function overrides - let Gin work normally
         }
@@ -430,15 +452,15 @@
             if (sidebar) {
               sidebar.offsetWidth; // Force reflow
             }
-          }, 100);
+          }, TIMEOUTS.LAYOUT_RECALC);
           
           // Wait for Gin sidebar to be initialized, then install overrides
           const checkGinSidebar = () => {
             if (Drupal.ginSidebar && typeof Drupal.ginSidebar.init === 'function') {
               installOverrides();
-              setTimeout(initializeSidebar, 100);
+              setTimeout(initializeSidebar, TIMEOUTS.STYLING_APPLY);
             } else {
-              setTimeout(checkGinSidebar, 100);
+              setTimeout(checkGinSidebar, TIMEOUTS.GIN_CHECK);
             }
           };
 
@@ -460,7 +482,7 @@
                 if (currentMobile) localStorage.setItem(keys.mobile, currentMobile);
               }
             });
-          }, 500);
+          }, TIMEOUTS.DRAG_SETUP);
         }
 
         // Handle window resize
