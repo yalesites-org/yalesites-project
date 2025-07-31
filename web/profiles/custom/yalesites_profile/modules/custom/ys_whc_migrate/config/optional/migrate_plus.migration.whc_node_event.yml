@@ -11,36 +11,28 @@ source:
 process:
   langcode: constants/langcode_en
   status: status
-  title: title
   created: created
   changed: changed
+  title:
+    plugin: if_condition
+    condition: empty
+    source: field_lecturer/0/value
+    do_get: title
+    else_process:
+      plugin: concat
+      source:
+        - field_lecturer/0/value
+        - title
+      delimiter: ' | '
   promote: promote
   field_teaser_media/0/target_id:
     plugin: migration_lookup
     migration: whc_node_media
     source: field_event_image/0/fid
     no_stub: true
-  field_category/0/target_id:
-    - plugin: skip_on_empty
-      source: field_calendar_selection/0/value
-      method: process
-    - plugin: static_map
-      map:
-        1: 39
-        2: 40
   field_event_date:
     plugin: parse_dates
     source: field_event_time/0/value
-  # field_event_place:
-  #   plugin: entity_generate
-  #   # Fix: pass in the term name.
-  #   source: field_building
-  #   value_key: name
-  #   bundle_key: vid
-  #   bundle: event_place
-  #   entity_type: taxonomy_term
-  #   ignore_case: true
-  field_event_room: field_room_number
   layout_builder__layout:
     plugin: whc_content_to_layout_builder
     sections:

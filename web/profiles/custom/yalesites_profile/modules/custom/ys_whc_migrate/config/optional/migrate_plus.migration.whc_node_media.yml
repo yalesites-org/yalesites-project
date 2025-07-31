@@ -16,6 +16,7 @@ source:
   d7_file_url: 'https://tst.whc.yale.edu/sites/default/files/'
   field_names:
     - field_event_image
+    - field_event_slide_image
 process:
   bundle:
     plugin: default_value

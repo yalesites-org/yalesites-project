@@ -24,6 +24,15 @@ class WhcNode extends Node {
     $query = parent::query();
     $query->condition('n.status', $this->configuration['status'] ?? 1);
 
+    if ($this->configuration['node_type'] === 'event') {
+      // Only fetch events whose calendar selection is "WHC Event" or not set.
+      $query->leftJoin('field_data_field_calendar_selection', 'fcs', 'n.nid = fcs.entity_id');
+      $or = $query->orConditionGroup();
+      $or->condition('fcs.field_calendar_selection_value', 1)
+        ->isNull('fcs.field_calendar_selection_value');
+      $query->condition($or);
+    }
+
     return $query;
   }
 

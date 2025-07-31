@@ -9,3 +9,4 @@ dependencies:
   - migrate_plus:migrate_plus
   - migrate_tools:migrate_tools
   - migrate_file_to_media:migrate_file_to_media
+  - migrate_conditions:migrate_conditions
