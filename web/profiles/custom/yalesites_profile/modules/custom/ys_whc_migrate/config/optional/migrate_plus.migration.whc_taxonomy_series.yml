@@ -1,0 +1,31 @@
+langcode: en
+status: true
+id: whc_taxonomy_series
+label: 'Whitney Taxonomy Series'
+migration_group: ys_whc_migrate
+migration_tags:
+  - taxonomy
+source:
+  plugin: d7_taxonomy_term
+  bundle: series
+  constants:
+    vid: tags
+process:
+  tid: tid
+  vid: constants/vid
+  name: name
+  weight: weight
+  changed: timestamp
+  langcode: language
+destination:
+  plugin: entity:taxonomy_term
+  default_bundle: tags
+
+migration_dependencies:
+  required: [  ]
+  optional: [  ]
+
+dependencies:
+  enforced:
+    module:
+      - ys_whc_migrate

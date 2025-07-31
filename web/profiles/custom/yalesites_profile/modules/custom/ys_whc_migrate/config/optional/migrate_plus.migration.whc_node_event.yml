@@ -24,7 +24,6 @@ process:
         - field_lecturer/0/value
         - title
       delimiter: ' | '
-  promote: promote
   field_teaser_media/0/target_id:
     plugin: migration_lookup
     migration: whc_node_media
@@ -33,14 +32,30 @@ process:
   field_event_date:
     plugin: parse_dates
     source: field_event_time/0/value
+  field_tags:
+    plugin: migration_lookup
+    migration: whc_taxonomy_series
+    source: field_series/0/target_id
+    no_stub: true
+  _movie_poster:
+    - plugin: skip_on_value
+      source: field_series/0/target_id
+      not_equals: true
+      value: 32
+      method: process
+    - plugin: migration_lookup
+      migration: whc_node_media
+      source: field_event_slide_image/0/fid
   layout_builder__layout:
     plugin: whc_content_to_layout_builder
     sections:
       body:
         id: layout_onecol
         components:
-          - type: text
-            source: body/0/value
+          - type: text_subheader
+            source: field_lecturer/0/value
+          - type: image
+            source: '@_movie_poster'
   path/alias:
     -
       plugin: concat
@@ -58,6 +73,8 @@ destination:
 migration_dependencies:
   required:
     - whc_node_media
+    - whc_taxonomy_series
+    - whc_focal_point
   optional: [  ]
 
 dependencies:

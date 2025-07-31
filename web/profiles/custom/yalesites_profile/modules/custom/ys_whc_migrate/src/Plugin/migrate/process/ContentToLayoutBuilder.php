@@ -181,7 +181,7 @@ class ContentToLayoutBuilder extends ProcessPluginBase implements ContainerFacto
     foreach ($section['components'] as $component) {
       if ($block = $this->mapComponents($component)) {
         $section_components[] = new SectionComponent($this->uuid->generate(), 'content', [
-          'id' => 'inline_block:' . $component['type'],
+          'id' => 'inline_block:' . $block->bundle(),
           'label' => $block->label(),
           'provider' => 'layout_builder',
           'label_display' => FALSE,
@@ -208,8 +208,14 @@ class ContentToLayoutBuilder extends ProcessPluginBase implements ContainerFacto
     $type = $component_definition['type'];
     $source = $this->getComponentSourceValue($component_definition['source']);
 
+    if (!$source) {
+      return NULL;
+    }
+
     return match ($type) {
+      'image' => $this->createImageBlock($source),
       'text' => $this->createTextBlock($source, $component_definition),
+      'text_subheader' => $this->createTextSubheaderBlock($source, $component_definition),
       default => NULL,
     };
   }
@@ -219,27 +225,106 @@ class ContentToLayoutBuilder extends ProcessPluginBase implements ContainerFacto
    *
    * @param string $value
    *   The text value.
-   * @param array ...$args
+   * @param array $additional_args
    *   Additional arguments.
    *
    * @return \Drupal\Core\Entity\EntityInterface
    *   The text block entity.
    */
-  private function createTextBlock(string $value, array ...$args): BlockContentInterface {
+  private function createTextBlock(string $value, array $additional_args): BlockContentInterface {
     $text_block = $this->entityTypeManager
       ->getStorage('block_content')
       ->create([
         'type' => 'text',
-        'title' => $value,
+        'title' => 'Text Block',
+        'reusable' => FALSE,
         'field_text' => [
           'value' => $value,
           'format' => 'basic_html',
         ],
-        'field_style_variation' => $args['field_style_variation'] ?? 'default',
+        'field_style_variation' => $additional_args['field_style_variation'] ?? 'default',
       ]);
 
     $text_block->save();
     return $text_block;
+  }
+
+  /**
+   * Creates a text block entity.
+   *
+   * This is not a block entity type, it's a composite text block. We compose
+   * the text value programatically.
+   *
+   * @param string $value
+   *   The text value.
+   * @param array $additional_args
+   *   Additional arguments.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface
+   *   The text block entity.
+   */
+  private function createTextSubheaderBlock(string $value, array $additional_args): BlockContentInterface {
+    $text = '<h3>' . $value . '</h3>';
+
+    if ($affiliation = $this->getComponentSourceValue('field_bio_points/0/value')) {
+      $text .= '<h4>' . $affiliation . '</h4>';
+    }
+
+    if ($term_id = $this->getComponentSourceValue('field_series/0/target_id')) {
+      /** @var \Drupal\taxonomy\TermInterface $series_term */
+      $series_term = $this->entityTypeManager
+        ->getStorage('taxonomy_term')
+        ->load($term_id);
+
+      if ($series_term) {
+        $series_term = $series_term->getName();
+        $text .= '<p>' . $series_term . '</p>';
+      }
+    }
+
+    return $affiliation ? $this->createTextBlock($text, $additional_args) : NULL;
+  }
+
+  /**
+   * Creates an image block entity.
+   *
+   * @param string $source
+   *   The image source.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface
+   *   The image block entity.
+   */
+  private function createImageBlock(string $source): ?BlockContentInterface {
+    /** @var \Drupal\media\MediaInterface $media */
+    $media = $this->entityTypeManager
+      ->getStorage('media')
+      ->load($source);
+
+    if (!$media) {
+      return NULL;
+    }
+
+    if ($caption = $media->get('field_media_image')->alt) {
+      $caption = '<p>' . $caption . '</p>';
+    }
+
+    $image_block = $this->entityTypeManager
+      ->getStorage('block_content')
+      ->create([
+        'type' => 'image',
+        'title' => 'Image Block',
+        'reusable' => FALSE,
+        'field_media' => [
+          'target_id' => $media->id(),
+        ],
+        'field_text' => [
+          'value' => $caption,
+          'format' => 'basic_html',
+        ],
+      ]);
+
+    $image_block->save();
+    return $image_block;
   }
 
   /**

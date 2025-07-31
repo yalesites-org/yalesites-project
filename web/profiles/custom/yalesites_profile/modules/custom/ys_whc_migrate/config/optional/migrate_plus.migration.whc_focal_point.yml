@@ -1,0 +1,59 @@
+langcode: en
+status: true
+id: whc_focal_point
+label: 'Whitney Focal Points'
+migration_group: ys_whc_migrate
+migration_tags:
+  - media
+  - focal_point
+source:
+  plugin: whc_media_entity_generator
+  entity_type: node
+  bundle:
+    - event
+  source_langcode: und
+  include_revisions: false
+  toggle_media_mapping: true
+  d7_file_url: 'https://tst.whc.yale.edu/sites/default/files/'
+  field_names:
+    - field_event_image
+    - field_event_slide_image
+  constants:
+    focal_point: '50,20'
+    entity_type: 'file'
+    type: 'focal_point'
+process:
+  _media_id:
+    plugin: migration_lookup
+    source: target_id
+    migration: whc_node_media
+    no_stub: true
+  entity_id:
+    - plugin: whc_get_media_file
+      source: '@_media_id'
+  _crop_field_data:
+    - plugin: skip_on_empty
+      method: row
+      source: '@entity_id'
+    - plugin: focal_point_to_crop
+      source:
+        - '@entity_id'
+        - constants/focal_point
+  type: 'constants/type'
+  entity_type: 'constants/entity_type'
+  uri: '@_crop_field_data/uri'
+  x: '@_crop_field_data/x'
+  y: '@_crop_field_data/y'
+destination:
+  plugin: entity:crop
+  default_bundle: 'focal_point'
+
+migration_dependencies:
+  required:
+    - whc_node_media
+  optional: [  ]
+
+dependencies:
+  enforced:
+    module:
+      - ys_whc_migrate
