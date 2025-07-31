@@ -3,6 +3,17 @@
 /**
  * @file
  * Contains ys_layouts.module functions.
+ *
+ * This module provides Layout Builder customizations and integrations:
+ * - Custom block templates for YaleSites components
+ * - Layout Builder sidebar state management
+ * - Section padding configuration
+ * - Block reusability improvements.
+ *
+ * Dependencies:
+ * - Layout Builder (core)
+ * - Gin admin theme (for sidebar customizations)
+ * - Block Content (core)
  */
 
 use Drupal\Core\Entity\EntityInterface;
@@ -139,17 +150,32 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
 }
 
 /**
- * To aids in styling per section, set layout_section if using layout builder.
+ * Adds layout section information to block variables for styling purposes.
  *
- * For now this is only used with the link grid component:
- * atomic/templates/block/layout-builder/block--inline-block--link-grid.html.twig.
+ * This function determines which Layout Builder section a block belongs to
+ * and adds the layout ID as a variable. This enables section-specific styling
+ * in templates, particularly for components that need to adapt their
+ * appearance based on their layout context.
+ *
+ * Currently used by:
+ * - Link grid component template
+ * - atomic/templates/block/layout-builder/block--inline-block--link-grid.html.twig
+ *
+ * The function handles two contexts:
+ * 1. Preview mode (Layout Builder edit interface): Uses contextual links delta
+ * 2. Live view: Searches through section storage to find the block's section
+ *
+ * @param array &$variables
+ *   Template variables array passed by reference. The 'layout_section' key
+ *   will be added with the layout ID or NULL if not found.
  */
-function _ys_layouts_add_layout_section(&$variables) {
+function _ys_layouts_add_layout_section(array &$variables): void {
   $variables['layout_section'] = NULL;
   $block_id = NULL;
 
-  // Different methods for in layout builder vs not.
+  // Handle preview mode (Layout Builder edit interface).
   if ($variables['in_preview']) {
+    // In preview mode, we can get section info directly from contextual links.
     if (isset($variables['elements']['#contextual_links'])) {
       $delta = $variables['elements']['#contextual_links']['layout_builder_block']['route_parameters']['delta'];
       $route_match = \Drupal::routeMatch();
@@ -160,28 +186,35 @@ function _ys_layouts_add_layout_section(&$variables) {
     }
   }
   else {
+    // Handle live view (front-end display).
     if (isset($variables['elements']['content']['#block_content'])) {
       $block_id = $variables['configuration']['block_id'];
     }
-    // Because we can't seem to get layout builder section info via the block.
+
+    // In live view, we must search through section storage to find our block.
+    // This is necessary because blocks don't inherently know their section
+    // context.
     $route_match = \Drupal::routeMatch();
     $entity = $route_match->getParameter('node') ?? $route_match->getParameter('entity');
 
-    // Prevents errors during build.
+    // Prevent errors during site builds or when entity is unavailable.
     if (!$entity || !$entity instanceof EntityInterface) {
       return;
     }
 
+    // Create section storage to access Layout Builder data for this entity.
     $context = new Context(new EntityContextDefinition($entity->getEntityTypeId()), $entity);
     $section_storage_manager = \Drupal::service('plugin.manager.layout_builder.section_storage');
     $section_storage = $section_storage_manager->createInstance('overrides');
     $section_storage->setContext('entity', $context);
 
+    // Search through all sections and components to find our block.
     if ($section_storage && $block_id) {
       foreach ($section_storage->getSections() as $delta => $section) {
         foreach ($section->getComponents() as $component) {
           if (isset($component->get('configuration')['block_id']) && $component->get('configuration')['block_id'] === $block_id) {
             $variables['layout_section'] = $section->getLayoutId();
+            // Exit both foreach loops when found.
             break 2;
           }
         }
@@ -222,14 +255,31 @@ function ys_layouts_form_layout_builder_configure_section_alter(&$form, FormStat
 }
 
 /**
- * Custom submit handler for submitting layout builder section config form.
+ * Custom submit handler for Layout Builder section configuration form.
+ *
+ * This handler processes the custom padding options added to Layout Builder
+ * sections and stores them in the layout configuration. The padding options
+ * allow editors to control section spacing for connected layouts.
+ *
+ * Available padding options:
+ * - 'default': Standard top/bottom padding
+ * - 'no_top': Removes top padding only
+ * - 'no_bottom': Removes bottom padding only
+ * - 'no_padding': Removes both top and bottom padding
+ *
+ * The configuration is stored in the layout's configuration under the
+ * 'ys_layouts_sections_config' key and later processed in the layout
+ * preprocess function.
  *
  * @param array $form
- *   The form array.
+ *   The complete form array.
  * @param \Drupal\Core\Form\FormStateInterface $form_state
- *   The form state object.
+ *   The current state of the form, containing user input values.
+ *
+ * @see ys_layouts_form_layout_builder_configure_section_alter()
+ * @see ys_layouts_preprocess_layout()
  */
-function _ys_layouts_sections_config_submit_form($form, FormStateInterface $form_state) {
+function _ys_layouts_sections_config_submit_form(array $form, FormStateInterface $form_state): void {
   $form_object = $form_state->getFormObject();
   $config = $form_object->getCurrentLayout()->getConfiguration();
   if (!$config) {
@@ -262,16 +312,28 @@ function ys_layouts_preprocess_layout(&$variables) {
 
 /**
  * Implements hook_page_attachments_alter().
+ *
+ * Attaches the Layout Builder sidebar customization library and context
+ * information to specific Layout Builder routes.
+ *
+ * DEPENDENCY RISK: This function relies on specific route names that could
+ * change in future Drupal core updates:
+ * - 'entity.node.edit_form' (Manage Settings interface)
+ * - 'layout_builder.overrides.node.view' (Edit Layout interface)
+ *
+ * If these route names change, the sidebar customizations will not load.
+ * The Gin admin theme CSS selectors used in layout-builder-sidebar.css
+ * could also break if Gin's markup structure changes.
  */
-function ys_layouts_page_attachments_alter(array &$attachments) {
+function ys_layouts_page_attachments_alter(array &$attachments): void {
   $route_match = \Drupal::routeMatch();
   $route_name = $route_match->getRouteName();
 
   // Define the Layout Builder routes we want to target.
   $layout_builder_routes = [
-  // Manage Settings interface.
+    // Manage Settings interface: /node/{node}/edit.
     'entity.node.edit_form',
-  // Edit Layout and Content interface.
+    // Edit Layout and Content interface: /node/{node}/layout.
     'layout_builder.overrides.node.view',
   ];
 
@@ -280,7 +342,9 @@ function ys_layouts_page_attachments_alter(array &$attachments) {
     // Attach our custom sidebar library.
     $attachments['#attached']['library'][] = 'ys_layouts/layout_builder_sidebar';
 
-    // Determine the context based on the route.
+    // Map route to JavaScript context for sidebar behavior.
+    // 'manageSettings' = hide cogwheel, always show sidebar
+    // 'editLayout' = show cogwheel, allow toggle, separate state.
     $context = ($route_name === 'entity.node.edit_form') ? 'manageSettings' : 'editLayout';
 
     // Pass context information to JavaScript via drupalSettings.

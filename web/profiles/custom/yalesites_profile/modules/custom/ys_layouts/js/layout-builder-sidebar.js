@@ -10,53 +10,84 @@
   'use strict';
 
   /**
-   * Breakpoint threshold for desktop/mobile detection.
-   * Matches Gin's $breakpointLarge (1024px) for consistency.
-   * @constant {number}
-   */
-  const DESKTOP_BREAKPOINT = 1024;
-
-  /**
-   * Timeout delays for DOM operations.
+   * Configuration object for Layout Builder sidebar behavior.
+   * Centralizes all hardcoded values for easier maintenance.
    * @constant {Object}
    */
-  const TIMEOUTS = {
-    LAYOUT_RECALC: 100,
-    STYLING_APPLY: 100,
-    GIN_CHECK: 100,
-    DRAG_SETUP: 500,
-    DRAG_SYNC: 50
+  const CONFIG = {
+    // INTEGRATION POINT: Breakpoint settings must match Gin theme
+    // Gin defines $breakpointLarge: 1024px and $breakpointWide: 1280px
+    breakpoints: {
+      desktop: 1024, // Must match Gin's $breakpointLarge
+      wide: 1280     // Must match Gin's $breakpointWide
+    },
+    
+    // Timing delays for DOM operations
+    timeouts: {
+      LAYOUT_RECALC: 100,
+      STYLING_APPLY: 100,
+      GIN_CHECK: 100,
+      DRAG_SETUP: 500,
+      DRAG_SYNC: 50
+    },
+    
+    // Context detection patterns
+    detection: {
+      urlPatterns: {
+        manageSettings: '/edit',
+        editLayout: '/layout'
+      },
+      domSelectors: {
+        manageSettings: '.node-form',
+        editLayout: '.layout-builder-form'
+      }
+    },
+    
+    // Storage configuration
+    storage: {
+      keyPrefix: 'YaleSites.layoutBuilder',
+      // INTEGRATION POINT: Gin theme's native localStorage keys
+      // These must match Gin's exact key names for compatibility
+      ginKeys: {
+        width: 'Drupal.gin.sidebarWidth',
+        desktopExpanded: 'Drupal.gin.sidebarExpanded.desktop',
+        mobileExpanded: 'Drupal.gin.sidebarExpanded.mobile'
+      }
+    },
+    
+    // Default states and widths
+    defaults: {
+      manageSettings: {
+        desktop: 'true',
+        mobile: 'false',
+        width: '360px' // Default Gin width
+      },
+      editLayout: {
+        desktop: 'false', // Hidden by default
+        mobile: 'false',
+        width: '400px' // Within Gin's 240px-560px range
+      }
+    }
   };
 
   /**
-   * Storage keys for different contexts.
-   * @constant {Object}
+   * Generate storage keys for a given context.
+   * @param {string} context - Context identifier
+   * @returns {Object} Storage keys for the context
    */
+  function generateStorageKeys(context) {
+    const prefix = CONFIG.storage.keyPrefix;
+    return {
+      desktop: `${prefix}.${context}.sidebarExpanded.desktop`,
+      mobile: `${prefix}.${context}.sidebarExpanded.mobile`,
+      width: `${prefix}.${context}.sidebarWidth`
+    };
+  }
+
+  // Generate storage keys for each context
   const STORAGE_KEYS = {
-    manageSettings: {
-      desktop: 'YaleSites.layoutBuilder.manageSettings.sidebarExpanded.desktop',
-      mobile: 'YaleSites.layoutBuilder.manageSettings.sidebarExpanded.mobile',
-      width: 'YaleSites.layoutBuilder.manageSettings.sidebarWidth'
-    },
-    editLayout: {
-      desktop: 'YaleSites.layoutBuilder.editLayout.sidebarExpanded.desktop',
-      mobile: 'YaleSites.layoutBuilder.editLayout.sidebarExpanded.mobile',  
-      width: 'YaleSites.layoutBuilder.editLayout.sidebarWidth'
-    }
-  };
-
-  // Default states for each context
-  const DEFAULT_STATES = {
-    manageSettings: {
-      desktop: 'true',
-      mobile: 'false',
-      width: '360px' // Default Gin width with proper unit
-    },
-    editLayout: {
-      desktop: 'false', // Hidden by default
-      mobile: 'false',
-      width: '400px' // Default pixel width (within Gin's 240px-560px range)
-    }
+    manageSettings: generateStorageKeys('manageSettings'),
+    editLayout: generateStorageKeys('editLayout')
   };
 
   let currentContext = null;
@@ -73,18 +104,18 @@
       return drupalSettings.ysLayouts.context;
     }
 
-    // Fallback: detect from URL
+    // Fallback: detect from URL patterns
     const path = window.location.pathname;
-    if (path.includes('/edit')) {
+    if (path.includes(CONFIG.detection.urlPatterns.manageSettings)) {
       return 'manageSettings';
-    } else if (path.includes('/layout')) {
+    } else if (path.includes(CONFIG.detection.urlPatterns.editLayout)) {
       return 'editLayout';
     }
 
     // Final fallback: detect from DOM elements
-    if (document.querySelector('.layout-builder-form')) {
+    if (document.querySelector(CONFIG.detection.domSelectors.editLayout)) {
       return 'editLayout';
-    } else if (document.querySelector('.node-form')) {
+    } else if (document.querySelector(CONFIG.detection.domSelectors.manageSettings)) {
       return 'manageSettings';
     }
 
@@ -108,7 +139,7 @@
    * @returns {object} Default states for the context
    */
   function getDefaultStates(context) {
-    return DEFAULT_STATES[context] || DEFAULT_STATES.editLayout;
+    return CONFIG.defaults[context] || CONFIG.defaults.editLayout;
   }
 
   /**
@@ -148,7 +179,7 @@
    * @returns {string} 'desktop' or 'mobile'
    */
   function getCurrentBreakpoint() {
-    return window.innerWidth >= DESKTOP_BREAKPOINT ? 'desktop' : 'mobile';
+    return window.innerWidth >= CONFIG.breakpoints.desktop ? 'desktop' : 'mobile';
   }
 
   /**
@@ -168,7 +199,7 @@
     if (currentContext === 'manageSettings') {
       const contextWidth = localStorage.getItem(keys.width);
       if (contextWidth) {
-        localStorage.setItem('Drupal.gin.sidebarWidth', contextWidth);
+        localStorage.setItem(CONFIG.storage.ginKeys.width, contextWidth);
       }
     }
 
@@ -326,7 +357,7 @@
   function handleResize() {
     // Re-initialize sidebar on breakpoint changes
     const wasDesktop = currentBreakpoint === 'desktop';
-    const isDesktop = window.innerWidth >= DESKTOP_BREAKPOINT;
+    const isDesktop = window.innerWidth >= CONFIG.breakpoints.desktop;
 
     if (wasDesktop !== isDesktop) {
       currentBreakpoint = isDesktop ? 'desktop' : 'mobile';
@@ -365,9 +396,9 @@
           }
           
           // Set Gin's keys to our context-specific values
-          localStorage.setItem('Drupal.gin.sidebarWidth', width);
-          localStorage.setItem('Drupal.gin.sidebarExpanded.desktop', desktopExpanded || 'false');
-          localStorage.setItem('Drupal.gin.sidebarExpanded.mobile', mobileExpanded || 'false');
+          localStorage.setItem(CONFIG.storage.ginKeys.width, width);
+          localStorage.setItem(CONFIG.storage.ginKeys.desktopExpanded, desktopExpanded || 'false');
+          localStorage.setItem(CONFIG.storage.ginKeys.mobileExpanded, mobileExpanded || 'false');
           
           // Set the CSS custom property directly to ensure visual update
           document.documentElement.style.setProperty('--gin-sidebar-width', width);
@@ -382,12 +413,12 @@
             if (sidebar) {
               sidebar.offsetWidth; // Force reflow
             }
-          }, TIMEOUTS.LAYOUT_RECALC);
+          }, CONFIG.timeouts.LAYOUT_RECALC);
           
           // Apply styling class
           setTimeout(() => {
             applyContextStyling();
-          }, TIMEOUTS.STYLING_APPLY);
+          }, CONFIG.timeouts.STYLING_APPLY);
           
           // Set up real-time drag sync for Edit Layout
           setTimeout(() => {
@@ -395,11 +426,11 @@
             if (dragHandle) {
               const syncAfterDrag = () => {
                 setTimeout(() => {
-                  const currentGinWidth = localStorage.getItem('Drupal.gin.sidebarWidth');
+                  const currentGinWidth = localStorage.getItem(CONFIG.storage.ginKeys.width);
                   if (currentGinWidth && currentGinWidth !== localStorage.getItem(keys.width)) {
                     localStorage.setItem(keys.width, currentGinWidth);
                   }
-                }, TIMEOUTS.DRAG_SYNC);
+                }, CONFIG.timeouts.DRAG_SYNC);
               };
               
               dragHandle.addEventListener('mouseup', syncAfterDrag);
@@ -408,20 +439,20 @@
             
             // Backup sync on page unload
             window.addEventListener('beforeunload', () => {
-              const stillEditLayout = window.location.pathname.includes('/layout') || 
-                                     document.querySelector('.layout-builder-form');
+              const stillEditLayout = window.location.pathname.includes(CONFIG.detection.urlPatterns.editLayout) || 
+                                     document.querySelector(CONFIG.detection.domSelectors.editLayout);
               
               if (stillEditLayout) {
-                const currentGinWidth = localStorage.getItem('Drupal.gin.sidebarWidth');
-                const currentDesktop = localStorage.getItem('Drupal.gin.sidebarExpanded.desktop');
-                const currentMobile = localStorage.getItem('Drupal.gin.sidebarExpanded.mobile');
+                const currentGinWidth = localStorage.getItem(CONFIG.storage.ginKeys.width);
+                const currentDesktop = localStorage.getItem(CONFIG.storage.ginKeys.desktopExpanded);
+                const currentMobile = localStorage.getItem(CONFIG.storage.ginKeys.mobileExpanded);
                 
                 if (currentGinWidth) localStorage.setItem(keys.width, currentGinWidth);
                 if (currentDesktop) localStorage.setItem(keys.desktop, currentDesktop);
                 if (currentMobile) localStorage.setItem(keys.mobile, currentMobile);
               }
             });
-          }, TIMEOUTS.DRAG_SETUP);
+          }, CONFIG.timeouts.DRAG_SETUP);
           
           return; // Don't do any Gin function overrides - let Gin work normally
         }
@@ -435,9 +466,9 @@
           
           // Set Gin's keys to our context-specific values
           const finalWidth = width || '360px';
-          localStorage.setItem('Drupal.gin.sidebarWidth', finalWidth);
-          localStorage.setItem('Drupal.gin.sidebarExpanded.desktop', desktopExpanded || 'true');
-          localStorage.setItem('Drupal.gin.sidebarExpanded.mobile', mobileExpanded || 'false');
+          localStorage.setItem(CONFIG.storage.ginKeys.width, finalWidth);
+          localStorage.setItem(CONFIG.storage.ginKeys.desktopExpanded, desktopExpanded || 'true');
+          localStorage.setItem(CONFIG.storage.ginKeys.mobileExpanded, mobileExpanded || 'false');
           
           // Set the CSS custom property directly to ensure visual update
           document.documentElement.style.setProperty('--gin-sidebar-width', finalWidth);
@@ -452,15 +483,15 @@
             if (sidebar) {
               sidebar.offsetWidth; // Force reflow
             }
-          }, TIMEOUTS.LAYOUT_RECALC);
+          }, CONFIG.timeouts.LAYOUT_RECALC);
           
           // Wait for Gin sidebar to be initialized, then install overrides
           const checkGinSidebar = () => {
             if (Drupal.ginSidebar && typeof Drupal.ginSidebar.init === 'function') {
               installOverrides();
-              setTimeout(initializeSidebar, TIMEOUTS.STYLING_APPLY);
+              setTimeout(initializeSidebar, CONFIG.timeouts.STYLING_APPLY);
             } else {
-              setTimeout(checkGinSidebar, TIMEOUTS.GIN_CHECK);
+              setTimeout(checkGinSidebar, CONFIG.timeouts.GIN_CHECK);
             }
           };
 
@@ -469,20 +500,20 @@
           // Backup sync on page unload
           setTimeout(() => {
             window.addEventListener('beforeunload', () => {
-              const stillManageSettings = window.location.pathname.includes('/edit') || 
-                                         document.querySelector('.node-form');
+              const stillManageSettings = window.location.pathname.includes(CONFIG.detection.urlPatterns.manageSettings) || 
+                                         document.querySelector(CONFIG.detection.domSelectors.manageSettings);
               
               if (stillManageSettings) {
-                const currentGinWidth = localStorage.getItem('Drupal.gin.sidebarWidth');
-                const currentDesktop = localStorage.getItem('Drupal.gin.sidebarExpanded.desktop');
-                const currentMobile = localStorage.getItem('Drupal.gin.sidebarExpanded.mobile');
+                const currentGinWidth = localStorage.getItem(CONFIG.storage.ginKeys.width);
+                const currentDesktop = localStorage.getItem(CONFIG.storage.ginKeys.desktopExpanded);
+                const currentMobile = localStorage.getItem(CONFIG.storage.ginKeys.mobileExpanded);
                 
                 if (currentGinWidth) localStorage.setItem(keys.width, currentGinWidth);
                 if (currentDesktop) localStorage.setItem(keys.desktop, currentDesktop);
                 if (currentMobile) localStorage.setItem(keys.mobile, currentMobile);
               }
             });
-          }, TIMEOUTS.DRAG_SETUP);
+          }, CONFIG.timeouts.DRAG_SETUP);
         }
 
         // Handle window resize
