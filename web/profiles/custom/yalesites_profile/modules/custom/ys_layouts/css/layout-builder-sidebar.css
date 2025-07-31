@@ -106,8 +106,8 @@ body[data-meta-sidebar="open"] .ys-edit-layout ~ .layout-builder-form {
    Responsive Behavior
    ======================================== */
 
-/* Mobile and tablet adjustments */
-@media (max-width: 1023px) {
+/* Mobile and tablet adjustments - using Gin's $breakpointLarge */
+@media (max-width: 1024px) {
   /* On mobile, both contexts should behave similarly for usability */
   .ys-manage-settings,
   .ys-edit-layout {
@@ -131,7 +131,7 @@ body[data-meta-sidebar="open"] .ys-edit-layout ~ .layout-builder-form {
   }
 }
 
-/* Large desktop adjustments (> 1280px) */
+/* Large desktop adjustments - using Gin's $breakpointWide */
 @media (min-width: 1280px) {
   /* Let Gin handle the width - it will respect the stored pixel value */
   body[data-meta-sidebar="open"] .ys-edit-layout ~ .gin-secondary-toolbar,
