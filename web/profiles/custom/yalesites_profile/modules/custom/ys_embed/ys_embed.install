@@ -226,3 +226,12 @@ function ys_embed_update_10001() {
 function ys_embed_update_10002() {
   _copy_embed_file('googlemaps.png');
 }
+
+/**
+ * Implements hook_update().
+ *
+ * Copy Bluesky icon.
+ */
+function ys_embed_update_10003() {
+  _copy_embed_file('bluesky.png');
+}
