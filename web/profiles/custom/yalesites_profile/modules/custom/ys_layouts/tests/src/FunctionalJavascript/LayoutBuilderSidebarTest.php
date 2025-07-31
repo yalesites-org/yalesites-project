@@ -142,14 +142,14 @@ class LayoutBuilderSidebarTest extends WebDriverTestBase {
     $width = $this->getSession()->evaluateScript("
       return localStorage.getItem('YaleSites.layoutBuilder.manageSettings.sidebarWidth');
     ");
-    
+
     $this->assertEquals('360px', $width, 'Default width should be 360px for Manage Settings');
 
     // Test that the sidebar is always expanded in manage settings.
     $expanded = $this->getSession()->evaluateScript("
       return localStorage.getItem('YaleSites.layoutBuilder.manageSettings.sidebarExpanded.desktop');
     ");
-    
+
     $this->assertEquals('true', $expanded, 'Sidebar should always be expanded in Manage Settings');
   }
 
@@ -166,14 +166,14 @@ class LayoutBuilderSidebarTest extends WebDriverTestBase {
     $width = $this->getSession()->evaluateScript("
       return localStorage.getItem('YaleSites.layoutBuilder.editLayout.sidebarWidth');
     ");
-    
+
     $this->assertEquals('400px', $width, 'Default width should be 400px for Edit Layout');
 
     // Test that the sidebar can be collapsed in edit layout.
     $expanded = $this->getSession()->evaluateScript("
       return localStorage.getItem('YaleSites.layoutBuilder.editLayout.sidebarExpanded.desktop');
     ");
-    
+
     $this->assertEquals('false', $expanded, 'Sidebar should be collapsed by default in Edit Layout');
   }
 
@@ -198,7 +198,7 @@ class LayoutBuilderSidebarTest extends WebDriverTestBase {
     $manageWidth = $this->getSession()->evaluateScript("
       return localStorage.getItem('YaleSites.layoutBuilder.manageSettings.sidebarWidth');
     ");
-    
+
     $this->assertEquals('360px', $manageWidth, 'Manage Settings should maintain its own width');
 
     // Navigate back to Edit Layout and verify it maintains its width.
@@ -208,7 +208,7 @@ class LayoutBuilderSidebarTest extends WebDriverTestBase {
     $editWidth = $this->getSession()->evaluateScript("
       return localStorage.getItem('YaleSites.layoutBuilder.editLayout.sidebarWidth');
     ");
-    
+
     $this->assertEquals('500px', $editWidth, 'Edit Layout should maintain its custom width');
   }
 
@@ -231,7 +231,7 @@ class LayoutBuilderSidebarTest extends WebDriverTestBase {
     $migratedWidth = $this->getSession()->evaluateScript("
       return localStorage.getItem('YaleSites.layoutBuilder.manageSettings.sidebarWidth');
     ");
-    
+
     $this->assertEquals('360px', $migratedWidth, 'Unitless width should be migrated to pixel format');
   }
 
@@ -246,14 +246,14 @@ class LayoutBuilderSidebarTest extends WebDriverTestBase {
     $ginWidth = $this->getSession()->evaluateScript("
       return localStorage.getItem('Drupal.gin.sidebarWidth');
     ");
-    
+
     $this->assertNotNull($ginWidth, 'Gin width key should be set');
 
     // Check that CSS custom property is applied.
     $cssWidth = $this->getSession()->evaluateScript("
       return getComputedStyle(document.documentElement).getPropertyValue('--gin-sidebar-width');
     ");
-    
+
     $this->assertNotNull($cssWidth, 'CSS custom property should be set');
   }
 
@@ -268,14 +268,14 @@ class LayoutBuilderSidebarTest extends WebDriverTestBase {
     $desktopExpanded = $this->getSession()->evaluateScript("
       return localStorage.getItem('YaleSites.layoutBuilder.manageSettings.sidebarExpanded.desktop');
     ");
-    
+
     $this->assertEquals('true', $desktopExpanded, 'Desktop expanded state should be true for Manage Settings');
 
     // Test mobile breakpoint storage.
     $mobileExpanded = $this->getSession()->evaluateScript("
       return localStorage.getItem('YaleSites.layoutBuilder.manageSettings.sidebarExpanded.mobile');
     ");
-    
+
     $this->assertEquals('false', $mobileExpanded, 'Mobile expanded state should be false by default');
   }
 
@@ -284,7 +284,7 @@ class LayoutBuilderSidebarTest extends WebDriverTestBase {
    */
   public function testErrorHandling(): void {
     $this->drupalGet("/node/{$this->testNode->id()}/edit");
-    
+
     // Test graceful handling when Gin sidebar is not available.
     $result = $this->getSession()->evaluateScript("
       // Temporarily remove Drupal.ginSidebar
@@ -299,7 +299,7 @@ class LayoutBuilderSidebarTest extends WebDriverTestBase {
       
       return exists;
     ");
-    
+
     $this->assertFalse($result, 'Should handle missing Gin sidebar gracefully');
   }
 
@@ -321,16 +321,16 @@ class LayoutBuilderSidebarTest extends WebDriverTestBase {
       }
       return keys;
     ");
-    
+
     $this->assertGreaterThan(0, count($storageKeys), 'YaleSites localStorage keys should be present');
-    
+
     // Verify expected keys exist.
     $expectedKeys = [
       'YaleSites.layoutBuilder.manageSettings.sidebarWidth',
       'YaleSites.layoutBuilder.manageSettings.sidebarExpanded.desktop',
       'YaleSites.layoutBuilder.manageSettings.sidebarExpanded.mobile',
     ];
-    
+
     foreach ($expectedKeys as $expectedKey) {
       $this->assertContains($expectedKey, $storageKeys, "Expected key {$expectedKey} should exist");
     }
