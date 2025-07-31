@@ -35,8 +35,8 @@
 {% if content.page_meta %}
   <div{{ attributes.addClass(classes) }}>
     <div {{ region_attribute_classes }}>
-      {{ drupal_entity('block', 'yalesitesbreadcrumbs', check_access=false) }}
       {{ drupal_entity('block', 'atomic_custombooknavigation', check_access=false) }}
+      {{ drupal_entity('block', 'yalesitesbreadcrumbs', check_access=false) }}
       {{ content.page_meta }}
     </div>
   </div>
