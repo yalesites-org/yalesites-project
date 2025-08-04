@@ -171,11 +171,6 @@ class HeaderSettingsForm extends ConfigFormBase {
       ],
     ];
 
-    $form['protected_content_container'] = [
-      '#type' => 'details',
-      '#title' => $this->t('Protected Content'),
-    ];
-
     $form['nav_position_container'] = [
       '#type' => 'details',
       '#title' => $this->t('Navigation Position'),
@@ -281,14 +276,7 @@ class HeaderSettingsForm extends ConfigFormBase {
 
     }
 
-    $form['protected_content_container']['enable_cas_menu_links'] = [
-      '#type' => 'checkbox',
-      '#description' => $this->t('When enabled, anonymous users can see links that point to CAS-only content in the menus. The user will still have to login to view these items.'),
-      '#title' => $this->t('Enable CAS menu items'),
-      '#default_value' => $headerConfig->get('enable_cas_menu_links'),
-    ];
-
-    $form['protected_content_container']['enable_cas_search'] = [
+    $form['site_search_container']['enable_cas_search'] = [
       '#type' => 'checkbox',
       '#description' => $this->t('When enabled, anonymous users can see titles only of CAS-only content in search. The user will still have to login to view these items.'),
       '#title' => $this->t('Enable CAS search'),
@@ -464,7 +452,6 @@ class HeaderSettingsForm extends ConfigFormBase {
     else {
       $headerConfig->set('search.enable_all_yale_search', 0);
     }
-    $headerConfig->set('enable_cas_menu_links', $form_state->getValue('enable_cas_menu_links'));
     $headerConfig->set('focus_header_image', $form_state->getValue('focus_header_image'));
 
     $headerConfig->save();
