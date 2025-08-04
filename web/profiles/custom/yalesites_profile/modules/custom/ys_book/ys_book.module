@@ -40,7 +40,10 @@ function ys_book_form_node_form_alter(&$form, FormStateInterface $form_state, $f
  * Implements hook_module_implements_alter().
  */
 function ys_book_module_implements_alter(&$implementations, $hook) {
-  if ($hook === 'help') {
+  // Disable core book module hooks that we override.
+  // - help: We provide custom help text
+  // - node_view: We handle navigation rendering via template instead.
+  if (in_array($hook, ['help', 'node_view'])) {
     unset($implementations['book']);
   }
 }
