@@ -38,17 +38,28 @@ final class EventsCalendarController extends ControllerBase {
   public function __invoke(Request $request): AjaxResponse {
     $response = new AjaxResponse();
 
-    if (!$request->request->has('calendar_id') || !$request->request->has('month') || !$request->request->has('year')) {
-      return $response;
-    }
-
-    // Calendar wrapper that needs to be updated.
     $calendar_id = $request->request->get('calendar_id');
-    $month = $request->request->get('month');
-    $year = $request->request->get('year');
+    $month = $request->request->get('month') ?? date('m');
+    $year = $request->request->get('year') ?? date('Y');
+    $category_included_terms = $request->request->get('category_included_terms');
+    $audience_included_terms = $request->request->get('audience_included_terms');
+    $custom_vocab_included_terms = $request->request->get('custom_vocab_included_terms');
+    $terms_include = $request->request->get('terms_include');
+    $terms_exclude = $request->request->get('terms_exclude');
+    $term_operator = $request->request->get('term_operator');
 
-    $events_calendar = $this->eventsCalendar
-      ->getCalendar($month, $year);
+    // Prepare filter array to be implemented in EventsCalendar service.
+    $filters = [
+      'category_included_terms' => $category_included_terms,
+      'audience_included_terms' => $audience_included_terms,
+      'custom_vocab_included_terms' => $custom_vocab_included_terms,
+      'terms_include' => $terms_include,
+      'terms_exclude' => $terms_exclude,
+      'term_operator' => $term_operator,
+    ];
+
+    // Get filtered calendar (service must be updated to support filters).
+    $events_calendar = $this->eventsCalendar->getCalendar($month, $year, $filters);
 
     $calendar = [
       '#theme' => 'views_basic_events_calendar',
@@ -58,7 +69,9 @@ final class EventsCalendarController extends ControllerBase {
       ],
     ];
 
-    $response->addCommand(new ReplaceCommand($calendar_id, $calendar));
+    if ($calendar_id) {
+      $response->addCommand(new ReplaceCommand($calendar_id, $calendar));
+    }
 
     return $response;
   }

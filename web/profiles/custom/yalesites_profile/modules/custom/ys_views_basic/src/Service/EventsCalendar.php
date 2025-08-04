@@ -68,7 +68,7 @@ class EventsCalendar implements EventsCalendarInterface {
   /**
    * {@inheritdoc}
    */
-  public function getCalendar(string $month, string $year): array {
+  public function getCalendar(string $month, string $year, array $filters = []): array {
     // Create a date object for the first day of the given month and year.
     $firstDayOfMonth = new DrupalDateTime("$year-$month-01");
     $totalDaysInMonth = (int) $firstDayOfMonth->format('t');
@@ -97,6 +97,136 @@ class EventsCalendar implements EventsCalendarInterface {
 
     // Load all events for the given month and year.
     $monthlyEvents = $this->loadMonthlyEvents($month, $year);
+
+    // Taxonomy filtering logic.
+    if (!empty($filters['category_included_terms']) || !empty($filters['audience_included_terms']) || !empty($filters['custom_vocab_included_terms']) || !empty($filters['terms_include']) || !empty($filters['terms_exclude'])) {
+      $category_tids = [];
+      $audience_tids = [];
+      $custom_vocab_tids = [];
+      $terms_include = $filters['terms_include'] ?? [];
+      $terms_exclude = $filters['terms_exclude'] ?? [];
+      $term_operator = $filters['term_operator'] ?? '+';
+
+      // Helper to get all descendant term IDs for a given tid and vocab.
+      $getDescendantTids = function ($tid, $vid) {
+        $descendants = [$tid];
+        $tree = $this->entityTypeManager->getStorage('taxonomy_term')->loadTree($vid, $tid, NULL);
+        foreach ($tree as $term) {
+          $descendants[] = $term->tid;
+        }
+        return $descendants;
+      };
+
+      // Handle multi-select for category.
+      if (!empty($filters['category_included_terms'])) {
+        $selected = is_array($filters['category_included_terms']) ? $filters['category_included_terms'] : [$filters['category_included_terms']];
+        foreach ($selected as $tid) {
+          if ($tid) {
+            $category_tids = array_merge($category_tids, $getDescendantTids($tid, 'event_category'));
+          }
+        }
+      }
+      // Handle multi-select for audience.
+      if (!empty($filters['audience_included_terms'])) {
+        $selected = is_array($filters['audience_included_terms']) ? $filters['audience_included_terms'] : [$filters['audience_included_terms']];
+        foreach ($selected as $tid) {
+          if ($tid) {
+            $audience_tids = array_merge($audience_tids, $getDescendantTids($tid, 'audience'));
+          }
+        }
+      }
+      // Handle multi-select for custom vocab.
+      if (!empty($filters['custom_vocab_included_terms'])) {
+        $selected = is_array($filters['custom_vocab_included_terms']) ? $filters['custom_vocab_included_terms'] : [$filters['custom_vocab_included_terms']];
+        foreach ($selected as $tid) {
+          if ($tid) {
+            $custom_vocab_tids = array_merge($custom_vocab_tids, $getDescendantTids($tid, 'custom_vocab'));
+          }
+        }
+      }
+
+      $monthlyEvents = array_filter($monthlyEvents, function ($node) use ($category_tids, $audience_tids, $custom_vocab_tids, $terms_include, $terms_exclude, $term_operator) {
+        // Check category.
+        if ($category_tids) {
+          $node_tids = array_map(function ($term) {
+            return $term->id();
+          }, $node->get('field_category')->referencedEntities());
+          if (!array_intersect($category_tids, $node_tids)) {
+            return FALSE;
+          }
+        }
+        // Check audience.
+        if ($audience_tids) {
+          $node_tids = array_map(function ($term) {
+            return $term->id();
+          }, $node->get('field_audience')->referencedEntities());
+          if (!array_intersect($audience_tids, $node_tids)) {
+            return FALSE;
+          }
+        }
+        // Check custom vocab.
+        if ($custom_vocab_tids) {
+          $node_tids = array_map(function ($term) {
+            return $term->id();
+          }, $node->get('field_custom_vocab')->referencedEntities());
+          if (!array_intersect($custom_vocab_tids, $node_tids)) {
+            return FALSE;
+          }
+        }
+        // Check terms_include (tags/categories/audience/custom_vocab).
+        if ($terms_include && is_array($terms_include)) {
+          $all_node_tids = [];
+          foreach (['field_category', 'field_audience', 'field_custom_vocab', 'field_tags'] as $field) {
+            if ($node->hasField($field)) {
+              $all_node_tids = array_merge($all_node_tids, array_map(function ($term) {
+                return $term->id();
+              }, $node->get($field)->referencedEntities()));
+            }
+          }
+          // AND: must have all terms.
+          if ($term_operator === ',') {
+            if (count(array_intersect($terms_include, $all_node_tids)) < count($terms_include)) {
+              return FALSE;
+            }
+            // OR: must have any term.
+          }
+          else {
+            if (!array_intersect($terms_include, $all_node_tids)) {
+              return FALSE;
+            }
+          }
+        }
+        // Check terms_exclude (tags/categories/audience/custom_vocab).
+        if ($terms_exclude && is_array($terms_exclude)) {
+          $all_node_tids = [];
+          foreach (['field_category', 'field_audience', 'field_custom_vocab', 'field_tags'] as $field) {
+            if ($node->hasField($field)) {
+              $all_node_tids = array_merge($all_node_tids, array_map(function ($term) {
+                return $term->id();
+              }, $node->get($field)->referencedEntities()));
+            }
+          }
+          // Cast both arrays to int for type consistency.
+          $all_node_tids = array_map('intval', $all_node_tids);
+          $terms_exclude = array_map('intval', $terms_exclude);
+          // Debug log.
+          \Drupal::logger('calendar_debug')->notice('Node ' . $node->id() . ' node_tids: ' . print_r($all_node_tids, TRUE) . ' terms_exclude: ' . print_r($terms_exclude, TRUE));
+          if ($term_operator === ',') {
+            // AND: must have all terms to exclude.
+            if (count(array_intersect($terms_exclude, $all_node_tids)) === count($terms_exclude)) {
+              return FALSE;
+            }
+          }
+          else {
+            // OR: exclude if has any term.
+            if (array_intersect($terms_exclude, $all_node_tids)) {
+              return FALSE;
+            }
+          }
+        }
+        return TRUE;
+      });
+    }
 
     $currentDay = 1;
 
