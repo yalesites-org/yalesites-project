@@ -1,0 +1,61 @@
+uuid: 4ab3b19a-16a9-4bfe-a88e-5d37668feb92
+langcode: en
+status: true
+dependencies:
+  module:
+    - entity_redirect
+    - menu_ui
+    - node_revision_delete
+    - search_api_exclude
+third_party_settings:
+  entity_redirect:
+    redirect:
+      anonymous:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+      add:
+        active: true
+        destination: layout_builder
+        url: ''
+        external: ''
+      edit:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+      delete:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+  menu_ui:
+    available_menus: {  }
+    parent: ''
+  node_revision_delete:
+    amount:
+      status: true
+      settings:
+        amount: 1
+    created:
+      status: true
+      settings:
+        age: 12
+    drafts:
+      status: false
+      settings:
+        age: 1
+    only_drafts:
+      status: false
+      settings:
+        age: 0
+  search_api_exclude:
+    enabled: 1
+name: Resource
+type: resource
+description: null
+help: null
+new_revision: true
+preview_mode: 0
+display_submitted: false

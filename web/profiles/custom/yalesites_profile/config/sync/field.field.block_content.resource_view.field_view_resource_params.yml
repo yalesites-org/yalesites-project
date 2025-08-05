@@ -1,0 +1,25 @@
+uuid: 5637d88c-c65f-4905-ae27-1b2a54e45a34
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.resource_view
+    - field.storage.block_content.field_view_resource_params
+  module:
+    - ys_views_content_resources
+id: block_content.resource_view.field_view_resource_params
+field_name: field_view_resource_params
+entity_type: block_content
+bundle: resource_view
+label: 'View Resource Params'
+description: ''
+required: false
+translatable: false
+default_value:
+  -
+    group_params:
+      params: ''
+    params: '{"view_mode":"card","filters":{"types":["resource"],"terms_include":null,"terms_exclude":null},"exposed_filter_options":{"show_search_filter":"show_search_filter"},"category_filter_label":"","category_included_terms":"","custom_vocab_included_terms":"","operator":"+","sort_by":null,"display":null,"limit":0,"offset":0,"show_current_entity":0,"pinned_to_top":null,"pin_label":null}'
+default_value_callback: ''
+settings: {  }
+field_type: views_content_resources_params
