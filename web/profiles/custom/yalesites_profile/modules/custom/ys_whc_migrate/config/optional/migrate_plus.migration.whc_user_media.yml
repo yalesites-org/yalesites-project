@@ -1,22 +1,15 @@
 langcode: en
 status: true
-id: whc_node_media
-label: 'Whitney Node Media'
+id: whc_user_media
+label: 'Whitney User Media'
 migration_group: ys_whc_migrate
 migration_tags:
   - media
 source:
-  plugin: whc_media_entity_generator
-  entity_type: node
-  bundle:
-    - event
-  source_langcode: und
-  include_revisions: false
+  plugin: whc_user
+  get_media: true
   toggle_media_mapping: true
   d7_file_url: 'https://whc.yale.edu/sites/default/files/'
-  field_names:
-    - field_event_image
-    - field_event_slide_image
 process:
   bundle:
     plugin: default_value
@@ -27,11 +20,11 @@ process:
   # This process plugin will skip the whole row if a existing media is found.
   _check_existing_media_file:
     plugin: check_media_duplicate
-    source: target_id
+    source: fid
   # This process plugin will skip the whole row if a duplicate image is found.
   _check_unique_file_id:
     plugin: check_duplicate
-    source: target_id
+    source: fid
   field_media_image/alt: alt
   field_media_image/title: title
   field_media_image/target_id:

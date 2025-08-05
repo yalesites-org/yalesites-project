@@ -126,23 +126,51 @@ class ContentToLayoutBuilder extends ProcessPluginBase implements ContainerFacto
    *
    * @return \Drupal\layout_builder\Section
    *   The default Layout Builder section.
+   *
+   * @throws \Drupal\migrate\MigrateException
+   *   If the default section id is not specified.
    */
   public function createDefaultSection(): Section {
-    $section_components = [
-      new SectionComponent($this->uuid->generate(), 'content', [
-        'id' => 'event_meta_block',
-        'label' => 'Event Meta Block',
-        'label_display' => '',
-        'provider' => 'ys_layouts',
-      ]),
-      new SectionComponent($this->uuid->generate(), 'content', [
-        'id' => 'extra_field_block:node:event:content_moderation_control',
-        'label_display' => FALSE,
-        'context_mapping' => [
-          'entity' => 'layout_builder.entity',
-        ],
-      ]),
-    ];
+    $default_section_id = $this->configuration['default_section_id'] ?? NULL;
+
+    if (!$default_section_id) {
+      throw new MigrateException('You must specify the default section id.');
+    }
+
+    if ($default_section_id === 'event') {
+      $section_components = [
+        new SectionComponent($this->uuid->generate(), 'content', [
+          'id' => 'event_meta_block',
+          'label' => 'Event Meta Block',
+          'label_display' => '',
+          'provider' => 'ys_layouts',
+        ]),
+        new SectionComponent($this->uuid->generate(), 'content', [
+          'id' => 'extra_field_block:node:event:content_moderation_control',
+          'label_display' => FALSE,
+          'context_mapping' => [
+            'entity' => 'layout_builder.entity',
+          ],
+        ]),
+      ];
+    }
+    elseif ($default_section_id === 'profile') {
+      $section_components = [
+        new SectionComponent($this->uuid->generate(), 'content', [
+          'id' => 'extra_field_block:node:profile:content_moderation_control',
+          'label_display' => FALSE,
+          'context_mapping' => [
+            'entity' => 'layout_builder.entity',
+          ],
+        ]),
+        new SectionComponent($this->uuid->generate(), 'content', [
+          'id' => 'profile_meta_block',
+          'label' => 'Profile Meta Block',
+          'label_display' => '',
+          'provider' => 'ys_layouts',
+        ]),
+      ];
+    }
 
     return new Section(
       'layout_onecol',
@@ -228,7 +256,7 @@ class ContentToLayoutBuilder extends ProcessPluginBase implements ContainerFacto
    * @param array $additional_args
    *   Additional arguments.
    *
-   * @return \Drupal\Core\Entity\EntityInterface
+   * @return \Drupal\block_content\BlockContentInterface
    *   The text block entity.
    */
   private function createTextBlock(string $value, array $additional_args): BlockContentInterface {
@@ -260,10 +288,10 @@ class ContentToLayoutBuilder extends ProcessPluginBase implements ContainerFacto
    * @param array $additional_args
    *   Additional arguments.
    *
-   * @return \Drupal\Core\Entity\EntityInterface
+   * @return \Drupal\block_content\BlockContentInterface|null
    *   The text block entity.
    */
-  private function createTextSubheaderBlock(string $value, array $additional_args): BlockContentInterface {
+  private function createTextSubheaderBlock(string $value, array $additional_args): ?BlockContentInterface {
     $text = '<h3>' . $value . '</h3>';
 
     if ($affiliation = $this->getComponentSourceValue('field_bio_points/0/value')) {
@@ -291,7 +319,7 @@ class ContentToLayoutBuilder extends ProcessPluginBase implements ContainerFacto
    * @param string $source
    *   The image source.
    *
-   * @return \Drupal\Core\Entity\EntityInterface
+   * @return \Drupal\block_content\BlockContentInterface
    *   The image block entity.
    */
   private function createImageBlock(string $source): ?BlockContentInterface {

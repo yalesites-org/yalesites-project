@@ -1,0 +1,31 @@
+langcode: en
+status: true
+id: whc_taxonomy_fellow_role
+label: 'Whitney Taxonomy Fellow Role'
+migration_group: ys_whc_migrate
+migration_tags:
+  - taxonomy
+source:
+  plugin: d7_taxonomy_term
+  bundle: fellow_role
+  constants:
+    vid: audience
+process:
+  tid: tid
+  vid: constants/vid
+  name: name
+  weight: weight
+  changed: timestamp
+  langcode: language
+destination:
+  plugin: entity:taxonomy_term
+  default_bundle: audience
+
+migration_dependencies:
+  required: [  ]
+  optional: [  ]
+
+dependencies:
+  enforced:
+    module:
+      - ys_whc_migrate
