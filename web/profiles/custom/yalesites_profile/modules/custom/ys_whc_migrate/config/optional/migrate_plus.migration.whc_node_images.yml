@@ -1,7 +1,7 @@
 langcode: en
 status: true
-id: whc_node_media
-label: 'Whitney Node Media'
+id: whc_node_images
+label: 'Whitney Node Images'
 migration_group: ys_whc_migrate
 migration_tags:
   - media

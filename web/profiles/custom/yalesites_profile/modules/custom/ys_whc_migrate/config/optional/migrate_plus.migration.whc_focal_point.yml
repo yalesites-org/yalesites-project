@@ -26,7 +26,7 @@ process:
   _media_id:
     plugin: migration_lookup
     source: target_id
-    migration: whc_node_media
+    migration: whc_node_images
     no_stub: true
   entity_id:
     - plugin: whc_get_media_file
@@ -50,7 +50,7 @@ destination:
 
 migration_dependencies:
   required:
-    - whc_node_media
+    - whc_node_images
   optional: [  ]
 
 dependencies:
