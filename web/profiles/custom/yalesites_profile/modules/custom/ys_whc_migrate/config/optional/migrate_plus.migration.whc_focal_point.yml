@@ -4,8 +4,8 @@ id: whc_focal_point
 label: 'Whitney Focal Points'
 migration_group: ys_whc_migrate
 migration_tags:
-  - media
-  - focal_point
+  - whc_media
+  - whc_focal_point
 source:
   plugin: whc_media_entity_generator
   entity_type: node

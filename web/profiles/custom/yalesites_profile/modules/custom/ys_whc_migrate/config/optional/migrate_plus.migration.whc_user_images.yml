@@ -4,7 +4,7 @@ id: whc_user_images
 label: 'Whitney User Images'
 migration_group: ys_whc_migrate
 migration_tags:
-  - media
+  - whc_media
 source:
   plugin: whc_user
   get_media: true

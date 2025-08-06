@@ -4,7 +4,7 @@ id: whc_taxonomy_series
 label: 'Whitney Taxonomy Series'
 migration_group: ys_whc_migrate
 migration_tags:
-  - taxonomy
+  - whc_taxonomy
 source:
   plugin: d7_taxonomy_term
   bundle: series

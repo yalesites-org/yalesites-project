@@ -4,7 +4,7 @@ id: whc_node_profile
 label: 'Whitney Profiles'
 migration_group: ys_whc_migrate
 migration_tags:
-  - node
+  - whc_node
 source:
   plugin: whc_user
 process:
@@ -33,7 +33,7 @@ process:
     bundle_key: vid
     value_key: name
     ignore_case: true
-  field_media/0/target_id:
+  field_teaser_media/0/target_id:
     plugin: migration_lookup
     migration: whc_user_media
     source: uid

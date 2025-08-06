@@ -4,7 +4,7 @@ id: whc_taxonomy_fellow_role
 label: 'Whitney Taxonomy Fellow Role'
 migration_group: ys_whc_migrate
 migration_tags:
-  - taxonomy
+  - whc_taxonomy
 source:
   plugin: d7_taxonomy_term
   bundle: fellow_role

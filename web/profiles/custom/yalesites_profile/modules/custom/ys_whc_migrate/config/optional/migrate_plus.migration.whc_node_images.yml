@@ -4,7 +4,7 @@ id: whc_node_images
 label: 'Whitney Node Images'
 migration_group: ys_whc_migrate
 migration_tags:
-  - media
+  - whc_media
 source:
   plugin: whc_media_entity_generator
   entity_type: node

@@ -4,7 +4,7 @@ id: whc_node_event
 label: 'Whitney Events'
 migration_group: ys_whc_migrate
 migration_tags:
-  - node
+  - whc_node
 source:
   plugin: whc_node
   node_type: event
