@@ -48,7 +48,7 @@ process:
       source: field_event_slide_image/0/fid
   layout_builder__layout:
     plugin: whc_content_to_layout_builder
-    default_section_id: event
+    default_section_type: event
     sections:
       body:
         id: layout_onecol

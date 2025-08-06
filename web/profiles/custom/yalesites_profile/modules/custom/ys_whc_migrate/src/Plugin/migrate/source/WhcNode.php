@@ -33,6 +33,11 @@ class WhcNode extends Node {
       $query->condition($or);
     }
 
+    $query->leftJoin('url_alias', 'ua', "ua.source=CONCAT('node/', n.nid)");
+    $query->leftJoin('pathauto_state', 'ps', "ps.entity_id=n.nid AND ps.entity_type='node'");
+    $query->fields('ua', ['alias']);
+    $query->fields('ps', ['pathauto']);
+
     return $query;
   }
 

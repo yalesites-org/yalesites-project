@@ -31,6 +31,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   layout_builder__layout:
  *     plugin: whc_content_to_layout_builder
  *     create_default_section: TRUE
+ *     default_section_type: event
  *     sections:
  *       header:
  *         id: layout_onecol
@@ -131,46 +132,27 @@ class ContentToLayoutBuilder extends ProcessPluginBase implements ContainerFacto
    *   If the default section id is not specified.
    */
   public function createDefaultSection(): Section {
-    $default_section_id = $this->configuration['default_section_id'] ?? NULL;
+    $default_section_type = $this->configuration['default_section_type'] ?? NULL;
 
-    if (!$default_section_id) {
+    if (!$default_section_type) {
       throw new MigrateException('You must specify the default section id.');
     }
 
-    if ($default_section_id === 'event') {
-      $section_components = [
-        new SectionComponent($this->uuid->generate(), 'content', [
-          'id' => 'event_meta_block',
-          'label' => 'Event Meta Block',
-          'label_display' => '',
-          'provider' => 'ys_layouts',
-        ]),
-        new SectionComponent($this->uuid->generate(), 'content', [
-          'id' => 'extra_field_block:node:event:content_moderation_control',
-          'label_display' => FALSE,
-          'context_mapping' => [
-            'entity' => 'layout_builder.entity',
-          ],
-        ]),
-      ];
-    }
-    elseif ($default_section_id === 'profile') {
-      $section_components = [
-        new SectionComponent($this->uuid->generate(), 'content', [
-          'id' => 'extra_field_block:node:profile:content_moderation_control',
-          'label_display' => FALSE,
-          'context_mapping' => [
-            'entity' => 'layout_builder.entity',
-          ],
-        ]),
-        new SectionComponent($this->uuid->generate(), 'content', [
-          'id' => 'profile_meta_block',
-          'label' => 'Profile Meta Block',
-          'label_display' => '',
-          'provider' => 'ys_layouts',
-        ]),
-      ];
-    }
+    $section_components = [
+      new SectionComponent($this->uuid->generate(), 'content', [
+        'id' => $default_section_type . '_meta_block',
+        'label' => ucfirst($default_section_type) . ' Meta Block',
+        'label_display' => '',
+        'provider' => 'ys_layouts',
+      ]),
+      new SectionComponent($this->uuid->generate(), 'content', [
+        'id' => 'extra_field_block:node:' . $default_section_type . ':content_moderation_control',
+        'label_display' => FALSE,
+        'context_mapping' => [
+          'entity' => 'layout_builder.entity',
+        ],
+      ]),
+    ];
 
     return new Section(
       'layout_onecol',
@@ -244,6 +226,7 @@ class ContentToLayoutBuilder extends ProcessPluginBase implements ContainerFacto
       'image' => $this->createImageBlock($source),
       'text' => $this->createTextBlock($source, $component_definition),
       'text_subheader' => $this->createTextSubheaderBlock($source, $component_definition),
+      'video_banner' => $this->createVideoBannerBlock($source, $component_definition),
       default => NULL,
     };
   }
@@ -353,6 +336,53 @@ class ContentToLayoutBuilder extends ProcessPluginBase implements ContainerFacto
 
     $image_block->save();
     return $image_block;
+  }
+
+  /**
+   * Creates a video banner block entity.
+   *
+   * @param string $source
+   *   The video source.
+   * @param array $additional_args
+   *   Additional arguments.
+   *
+   * @return \Drupal\block_content\BlockContentInterface
+   *   The video banner block entity.
+   */
+  private function createVideoBannerBlock(string $source, array $additional_args): BlockContentInterface {
+    $video_banner_block = $this->entityTypeManager
+      ->getStorage('block_content')
+      ->create([
+        'type' => 'video_banner',
+        'title' => 'Video Banner',
+        'reusable' => FALSE,
+        'field_media' => [
+          'target_id' => $source,
+        ],
+        'field_style_variation' => $additional_args['field_style_width'] ?? 'max',
+      ]);
+
+    $video_banner_block->save();
+    return $video_banner_block;
+  }
+
+  /**
+   * Convert a YouTube URL to a standard watch URL format.
+   *
+   * @param string $url
+   *   The YouTube URL to convert.
+   *
+   * @return string
+   *   The converted URL.
+   */
+  public static function toWatchUrl(string $url): string {
+    $pattern = '/(?:youtube\.com\/(?:embed\/|v\/|watch\?v=)|youtu\.be\/|youtube-nocookie\.com\/embed\/)([a-zA-Z0-9_-]{11})/';
+    if (preg_match($pattern, $url, $matches)) {
+      $video_id = $matches[1];
+      return "https://www.youtube.com/watch?v=" . $video_id;
+    }
+
+    return $url;
   }
 
   /**

@@ -28,10 +28,10 @@ process:
   field_affiliation:
     plugin: entity_generate
     source: field_people_type/0/value
-    value_key: name
-    bundle_key: vid
-    bundle: affiliation
     entity_type: taxonomy_term
+    bundle: affiliation
+    bundle_key: vid
+    value_key: name
     ignore_case: true
   field_media/0/target_id:
     plugin: migration_lookup
@@ -45,7 +45,7 @@ process:
     no_stub: true
   layout_builder__layout:
     plugin: whc_content_to_layout_builder
-    default_section_id: profile
+    default_section_type: profile
     sections:
       body:
         id: layout_onecol
