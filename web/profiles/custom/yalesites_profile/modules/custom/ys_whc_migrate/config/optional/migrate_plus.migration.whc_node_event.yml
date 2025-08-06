@@ -46,6 +46,18 @@ process:
     - plugin: migration_lookup
       migration: whc_node_images
       source: field_event_slide_image/0/fid
+  _body:
+    - plugin: skip_on_value
+      source: field_series/0/target_id
+      not_equals: true
+      value:
+        - 3
+        - 16
+        - 17
+        - 32
+      method: process
+    - plugin: get
+      source: body/0/value
   layout_builder__layout:
     plugin: whc_content_to_layout_builder
     default_section_type: event
@@ -55,6 +67,8 @@ process:
         components:
           - type: text_subheader
             source: field_lecturer/0/value
+          - type: text
+            source: '@_body'
           - type: image
             source: '@_movie_poster'
   path/alias:
