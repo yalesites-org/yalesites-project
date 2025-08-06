@@ -60,7 +60,6 @@ class GoogleCalendar extends EmbedSourceBase implements EmbedSourceInterface {
     'isIframe' => TRUE,
   ];
 
-
   /**
    * {@inheritdoc}
    */
