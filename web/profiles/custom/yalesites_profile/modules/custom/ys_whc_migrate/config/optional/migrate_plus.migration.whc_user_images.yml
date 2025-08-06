@@ -1,7 +1,7 @@
 langcode: en
 status: true
-id: whc_user_media
-label: 'Whitney User Media'
+id: whc_user_images
+label: 'Whitney User Images'
 migration_group: ys_whc_migrate
 migration_tags:
   - media
