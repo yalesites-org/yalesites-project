@@ -10,7 +10,7 @@ id: node.post.field_authors
 field_name: field_authors
 entity_type: node
 bundle: post
-label: "Associated Profile"
+label: 'Associated Profile'
 description: 'Select the profile associated with the person in this post.'
 required: false
 translatable: false
