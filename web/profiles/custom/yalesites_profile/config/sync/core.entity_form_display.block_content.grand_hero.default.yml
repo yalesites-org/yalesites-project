@@ -66,7 +66,7 @@ third_party_settings:
         id: ''
         formatter: closed
         description: ''
-        required_fields: false
+        required_fields: true
         open: true
         weight: -10
     group_style_tab:
@@ -87,7 +87,7 @@ third_party_settings:
         id: ''
         formatter: closed
         description: ''
-        required_fields: false
+        required_fields: true
     group_advanced_tab:
       children:
         - field_heading_level
@@ -104,7 +104,7 @@ third_party_settings:
         id: ''
         formatter: closed
         description: ''
-        required_fields: false
+        required_fields: true
 content:
   field_heading:
     type: text_textfield
