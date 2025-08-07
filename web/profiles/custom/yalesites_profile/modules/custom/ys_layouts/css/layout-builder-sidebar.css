@@ -1,0 +1,14 @@
+/**
+ * @file
+ * Layout Builder sidebar interface-specific styling.
+ * 
+ * Hide the gear icon (sidebar toggle) in Manage Settings interface only.
+ */
+
+/* Hide the gear icon (sidebar toggle) in Manage Settings */
+body.ys-layout-manage-settings .meta-sidebar__trigger,
+body.ys-layout-manage-settings .gin-sidebar-toggle,
+body.ys-layout-manage-settings .gin-sticky-form-actions .meta-sidebar__trigger {
+  display: none !important;
+  visibility: hidden !important;
+}

@@ -18,3 +18,12 @@ ys_layout_three_column_33_33_33:
   css:
     theme:
       layouts/three_column_33_33_33/three-column_33_33_33.css: {}
+layout_builder_sidebar:
+  version: VERSION
+  js:
+    js/layout-builder-sidebar.js: {}
+  css:
+    theme:
+      css/layout-builder-sidebar.css: {}
+  dependencies:
+    - gin/gin_sidebar
