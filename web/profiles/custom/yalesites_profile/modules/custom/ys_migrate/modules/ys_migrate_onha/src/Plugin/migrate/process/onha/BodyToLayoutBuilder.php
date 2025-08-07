@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\ys_migrate\Plugin\migrate\process\onha;
+namespace Drupal\ys_migrate_onha\Plugin\migrate\process\onha;
 
 use Drupal\Component\Uuid\UuidInterface;
 use Drupal\Core\Database\Connection;
