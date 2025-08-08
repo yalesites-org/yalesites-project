@@ -87,7 +87,7 @@ class EventCalendarFilterForm extends FormBase {
     $form['#suffix'] = '</div>';
     $form['#attached']['library'] = [
       'core/drupal.ajax',
-      'ys_views_basic/event_calendar_behaviors',
+      'atomic/chosen-select',
     ];
 
     // Store the calendar wrapper ID in the form state.
