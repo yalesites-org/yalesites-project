@@ -258,8 +258,7 @@ class EventsCalendar implements EventsCalendarInterface {
           // Cast both arrays to int for type consistency.
           $all_node_tids = array_map('intval', $all_node_tids);
           $terms_exclude = array_map('intval', $terms_exclude);
-          // Debug log.
-          \Drupal::logger('calendar_debug')->notice('Node ' . $node->id() . ' node_tids: ' . print_r($all_node_tids, TRUE) . ' terms_exclude: ' . print_r($terms_exclude, TRUE));
+
           if ($term_operator === ',') {
             // AND: must have all terms to exclude.
             if (count(array_intersect($terms_exclude, $all_node_tids)) === count($terms_exclude)) {
