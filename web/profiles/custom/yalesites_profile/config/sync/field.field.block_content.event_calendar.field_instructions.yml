@@ -1,0 +1,25 @@
+uuid: 34337e13-eedc-46c4-8d72-57a191e96a9d
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.event_calendar
+    - field.storage.block_content.field_instructions
+  module:
+    - markup
+id: block_content.event_calendar.field_instructions
+field_name: field_instructions
+entity_type: block_content
+bundle: event_calendar
+label: Instructions
+description: ''
+required: false
+translatable: false
+default_value:
+  - {  }
+default_value_callback: ''
+settings:
+  markup:
+    value: '<p>1</p>'
+    format: basic_html
+field_type: markup
