@@ -99,13 +99,14 @@ class EventsCalendar implements EventsCalendarInterface {
     $monthlyEvents = $this->loadMonthlyEvents($month, $year);
 
     // Taxonomy filtering logic.
-    if (!empty($filters['category_included_terms']) || !empty($filters['audience_included_terms']) || !empty($filters['custom_vocab_included_terms']) || !empty($filters['terms_include']) || !empty($filters['terms_exclude'])) {
+    if (!empty($filters['category_included_terms']) || !empty($filters['audience_included_terms']) || !empty($filters['custom_vocab_included_terms']) || !empty($filters['terms_include']) || !empty($filters['terms_exclude']) || !empty($filters['event_time_period'])) {
       $category_tids = [];
       $audience_tids = [];
       $custom_vocab_tids = [];
       $terms_include = $filters['terms_include'] ?? [];
       $terms_exclude = $filters['terms_exclude'] ?? [];
       $term_operator = $filters['term_operator'] ?? '+';
+      $event_time_period = $filters['event_time_period'] ?? 'all';
 
       // Helper to get all descendant term IDs for a given tid and vocab.
       $getDescendantTids = function ($tid, $vid) {
@@ -145,7 +146,55 @@ class EventsCalendar implements EventsCalendarInterface {
         }
       }
 
-      $monthlyEvents = array_filter($monthlyEvents, function ($node) use ($category_tids, $audience_tids, $custom_vocab_tids, $terms_include, $terms_exclude, $term_operator) {
+      $monthlyEvents = array_filter($monthlyEvents, function ($node) use ($category_tids, $audience_tids, $custom_vocab_tids, $terms_include, $terms_exclude, $term_operator, $event_time_period) {
+        // Time period filtering.
+        if ($event_time_period && $event_time_period !== 'all') {
+          $current_timestamp = time();
+          $event_has_valid_time = FALSE;
+
+          if (!$node->get('field_event_date')->isEmpty()) {
+            // Check recurrence rules if present.
+            if ($node->field_event_date?->rrule) {
+              /** @var \Drupal\smart_date_recur\Entity\SmartDateRule $rule */
+              $rule = $this->entityTypeManager->getStorage('smart_date_rule')
+                ->load($node->field_event_date->rrule);
+
+              if ($rule instanceof SmartDateRule) {
+                foreach ($rule->getStoredInstances() as $instance) {
+                  $instance_end_timestamp = $instance['end_value'];
+
+                  if ($event_time_period === 'future' && $instance_end_timestamp > $current_timestamp) {
+                    $event_has_valid_time = TRUE;
+                    break;
+                  }
+                  elseif ($event_time_period === 'past' && $instance_end_timestamp < $current_timestamp) {
+                    $event_has_valid_time = TRUE;
+                    break;
+                  }
+                }
+              }
+            }
+            else {
+              // Check regular event dates.
+              foreach ($node->get('field_event_date')->getValue() as $eventDate) {
+                $event_end_timestamp = $eventDate['end_value'];
+
+                if ($event_time_period === 'future' && $event_end_timestamp > $current_timestamp) {
+                  $event_has_valid_time = TRUE;
+                  break;
+                }
+                elseif ($event_time_period === 'past' && $event_end_timestamp < $current_timestamp) {
+                  $event_has_valid_time = TRUE;
+                  break;
+                }
+              }
+            }
+          }
+
+          if (!$event_has_valid_time) {
+            return FALSE;
+          }
+        }
         // Check category.
         if ($category_tids) {
           $node_tids = array_map(function ($term) {

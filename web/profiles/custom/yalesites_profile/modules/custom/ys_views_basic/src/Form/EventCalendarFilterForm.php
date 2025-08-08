@@ -4,14 +4,20 @@ namespace Drupal\ys_views_basic\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\ys_views_basic\ViewsBasicManager;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\ys_views_basic\ViewsBasicManager;
+use Drupal\ys_views_basic\Service\EventsCalendarInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Event calendar exposed filter form with AJAX.
  */
 class EventCalendarFilterForm extends FormBase {
+
+  /**
+   * The calendar wrapper ID constant.
+   */
+  const CALENDAR_WRAPPER_ID = 'event-calendar-wrapper-static';
 
   /**
    * The views basic manager service.
@@ -28,20 +34,36 @@ class EventCalendarFilterForm extends FormBase {
   protected $entityTypeManager;
 
   /**
-   * Constructs the form object.
+   * The events calendar service.
+   *
+   * @var \Drupal\ys_views_basic\Service\EventsCalendarInterface
    */
-  public function __construct(ViewsBasicManager $viewsBasicManager, EntityTypeManagerInterface $entityTypeManager) {
+  protected $eventsCalendar;
+
+  /**
+   * Constructs the form object.
+   *
+   * @param \Drupal\ys_views_basic\ViewsBasicManager $viewsBasicManager
+   *   The views basic manager service.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   The entity type manager service.
+   * @param \Drupal\ys_views_basic\Service\EventsCalendarInterface $eventsCalendar
+   *   The events calendar service.
+   */
+  public function __construct(ViewsBasicManager $viewsBasicManager, EntityTypeManagerInterface $entityTypeManager, EventsCalendarInterface $eventsCalendar) {
     $this->viewsBasicManager = $viewsBasicManager;
     $this->entityTypeManager = $entityTypeManager;
+    $this->eventsCalendar = $eventsCalendar;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
     $container->get('ys_views_basic.views_basic_manager'),
-    $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('ys_views_basic.events_calendar'),
     );
   }
 
@@ -56,109 +78,37 @@ class EventCalendarFilterForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, $params = NULL, $wrapper_id = NULL) {
+    // Decode the params from the field widget.
     $paramsDecoded = $params ? json_decode($params, TRUE) : [];
-
-
     $exposedFilterOptions = $paramsDecoded['exposed_filter_options'] ?? [];
-    $unique_id = uniqid();
-    $form_wrapper_id = $wrapper_id ?: 'event-calendar-form-wrapper-' . $unique_id;
-    $calendar_wrapper_id = $form_wrapper_id;
 
-    $form['#prefix'] = '<div id="' . $form_wrapper_id . '">';
+    // Set up form wrapper and libraries.
+    $form['#prefix'] = '<div id="' . $wrapper_id . '">';
     $form['#suffix'] = '</div>';
-    $form['#calendar_wrapper_id'] = $calendar_wrapper_id;
-    if (!empty($exposedFilterOptions['show_category_filter'])) {
-      $options = $this->viewsBasicManager->getTaxonomyParents('event_category');
-      // Remove the 'All Items' option.
-      unset($options['']);
-      $form['category_included_terms'] = [
-        '#type' => 'select',
-        '#title' => $this->t('Filter by Event Category'),
-        '#options' => $options,
-        '#default_value' => [],
-        '#multiple' => TRUE,
-        '#attributes' => [
-          'class' => ['chosen-enable'],
-        ],
-        '#ajax' => [
-          'callback' => '::ajaxFilterCallback',
-          'wrapper' => $form_wrapper_id,
-          'event' => 'change',
-        ],
-      ];
-    }
-    if (!empty($exposedFilterOptions['show_audience_filter'])) {
-      $options = $this->viewsBasicManager->getTaxonomyParents('audience');
-      unset($options['']);
-      $form['audience_included_terms'] = [
-        '#type' => 'select',
-        '#title' => $this->t('Filter by Audience'),
-        '#options' => $options,
-        '#default_value' => [],
-        '#ajax' => [
-          'callback' => '::ajaxFilterCallback',
-          'wrapper' => $form_wrapper_id,
-          'event' => 'change',
-        ],
-      ];
-    }
-    if (!empty($exposedFilterOptions['show_custom_vocab_filter'])) {
-      $custom_vocab_label = $this->entityTypeManager->getStorage('taxonomy_vocabulary')->load('custom_vocab')->label();
-      $options = $this->viewsBasicManager->getTaxonomyParents('custom_vocab');
-      unset($options['']);
-      $form['custom_vocab_included_terms'] = [
-        '#type' => 'select',
-        '#title' => $this->t('Filter by @vocab Parent Term', ['@vocab' => $custom_vocab_label]),
-        '#options' => $options,
-        '#default_value' => [],
-        '#ajax' => [
-          'callback' => '::ajaxFilterCallback',
-          'wrapper' => $form_wrapper_id,
-          'event' => 'change',
-        ],
-      ];
-    }
-    // Always add hidden fields for these options, using values from $paramsDecoded.
-    $form['terms_include'] = [
-      '#type' => 'hidden',
-      '#value' => $paramsDecoded['terms_include'] ?? [],
+    $form['#attached']['library'] = [
+      'core/drupal.ajax',
+      'ys_views_basic/event_calendar_behaviors',
     ];
-    $form['terms_exclude'] = [
-      '#type' => 'hidden',
-      '#value' => $paramsDecoded['terms_exclude'] ?? [],
-    ];
-    $form['term_operator'] = [
-      '#type' => 'hidden',
-      '#value' => $paramsDecoded['term_operator'] ?? '+',
-    ];
-    // Remove terms_include, terms_exclude, and term_operator fields from the form.
-    // (No code for these fields should be present.)
-    $form['submit'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Apply'),
-      '#ajax' => [
-        'callback' => '::ajaxFilterCallback',
-        'wrapper' => $form_wrapper_id,
+
+    // Store the calendar wrapper ID in the form state.
+    $form_state->set('calendar_wrapper_id', self::CALENDAR_WRAPPER_ID);
+
+    // Create filters container.
+    $form['filters_container'] = [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => ['ys-filter-form', 'ys-filter-form--scaffold'],
       ],
     ];
 
-    // Get the current month/year for initial calendar rendering.
-    $month = date('m');
-    $year = date('Y');
+    // Build filter elements.
+    $this->buildFilterElements($form, $form_state, $exposedFilterOptions, $paramsDecoded);
 
-    // Get the EventsCalendar service.
-    $events_calendar_service = \Drupal::service('ys_views_basic.events_calendar');
-    $events_calendar = $events_calendar_service->getCalendar($month, $year);
+    // Add hidden fields.
+    $this->addHiddenFields($form, $paramsDecoded);
 
-    // Render the calendar initially.
-    $form['calendar'] = [
-      '#theme' => 'views_basic_events_calendar',
-      '#month_data' => $events_calendar,
-      '#cache' => [
-        'tags' => ['node_list:event'],
-        'contexts' => ['timezone'],
-      ],
-    ];
+    // Render initial calendar.
+    $this->renderCalendar($form, $this->getFiltersFromParams($paramsDecoded));
 
     return $form;
   }
@@ -174,46 +124,254 @@ class EventCalendarFilterForm extends FormBase {
    * AJAX callback for filter form.
    */
   public function ajaxFilterCallback(array &$form, FormStateInterface $form_state) {
-    // Get selected filter values from the form state.
-    $category = $form_state->getValue('category_included_terms');
-    $audience = $form_state->getValue('audience_included_terms');
-    $custom_vocab = $form_state->getValue('custom_vocab_included_terms');
-    $terms_include = $form_state->getValue('terms_include');
-    $terms_exclude = $form_state->getValue('terms_exclude');
-    $term_operator = $form_state->getValue('term_operator');
+    // Get filters from form state.
+    $filters = $this->getFiltersFromFormState($form_state);
 
-    // Get the current month/year (could be extended to allow navigation).
+    // Render updated calendar.
+    $this->renderCalendar($form, $filters);
+
+    // Return just the calendar container.
+    return $form['calendar_container']['calendar'];
+  }
+
+  /**
+   * Builds filter elements based on exposed filter options.
+   *
+   * @param array $form
+   *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   * @param array $exposedFilterOptions
+   *   The exposed filter options.
+   * @param array $paramsDecoded
+   *   The decoded parameters.
+   */
+  private function buildFilterElements(array &$form, FormStateInterface $form_state, array $exposedFilterOptions, array $paramsDecoded) {
+    // Get current form values for AJAX rebuilds.
+    $currentValues = [
+      'category' => $form_state->getValue('category_included_terms') ?? ($paramsDecoded['category_included_terms'] ?? []),
+      'audience' => $form_state->getValue('audience_included_terms') ?? ($paramsDecoded['audience_included_terms'] ?? []),
+      'custom_vocab' => $form_state->getValue('custom_vocab_included_terms') ?? ($paramsDecoded['custom_vocab_included_terms'] ?? []),
+    ];
+
+    // Category filter.
+    if (!empty($exposedFilterOptions['show_category_filter'])) {
+      $form['filters_container']['category_included_terms'] = $this->createFilterElement(
+        'Category',
+        $this->getTaxonomyOptions('event_category', $paramsDecoded['category_included_terms'] ?? NULL),
+        $currentValues['category']
+      );
+    }
+
+    // Audience filter.
+    if (!empty($exposedFilterOptions['show_audience_filter'])) {
+      $form['filters_container']['audience_included_terms'] = $this->createFilterElement(
+        'Audience',
+        $this->getTaxonomyOptions('audience', $paramsDecoded['audience_included_terms'] ?? NULL),
+        $currentValues['audience']
+      );
+    }
+
+    // Custom vocabulary filter.
+    if (!empty($exposedFilterOptions['show_custom_vocab_filter'])) {
+      $custom_vocab_label = $this->entityTypeManager
+        ->getStorage('taxonomy_vocabulary')
+        ->load('custom_vocab')
+        ->label();
+
+      $form['filters_container']['custom_vocab_included_terms'] = $this->createFilterElement(
+        $custom_vocab_label,
+        $this->getTaxonomyOptions('custom_vocab', $paramsDecoded['custom_vocab_included_terms'] ?? NULL),
+        $currentValues['custom_vocab']
+      );
+    }
+  }
+
+  /**
+   * Creates a filter element with consistent configuration.
+   *
+   * @param string $title
+   *   The filter title.
+   * @param array $options
+   *   The filter options.
+   * @param mixed $default_value
+   *   The default value.
+   *
+   * @return array
+   *   The filter element array.
+   */
+  private function createFilterElement(string $title, array $options, $default_value): array {
+    return [
+      '#type' => 'select',
+      '#title' => $this->t($title),
+      '#options' => $options,
+      '#default_value' => $default_value,
+      '#multiple' => TRUE,
+      '#chosen' => TRUE,
+      '#ajax' => [
+        'callback' => '::ajaxFilterCallback',
+        'wrapper' => self::CALENDAR_WRAPPER_ID,
+        'event' => 'change',
+        'progress' => ['type' => 'none'],
+      ],
+    ];
+  }
+
+  /**
+   * Gets taxonomy options for a vocabulary, optionally filtered by parent term.
+   *
+   * @param string $vocabulary
+   *   The vocabulary machine name.
+   * @param mixed $parent_term_id
+   *   The parent term ID from widget configuration, if any.
+   *
+   * @return array
+   *   The taxonomy options.
+   */
+  private function getTaxonomyOptions(string $vocabulary, $parent_term_id = NULL): array {
+    // If a parent term is selected in the widget, show only its children.
+    if (!empty($parent_term_id)) {
+      $child_terms = $this->viewsBasicManager->getChildTermsByParentId((int) $parent_term_id, $vocabulary);
+
+      // Load the term entities to get their names.
+      if (!empty($child_terms)) {
+        $term_storage = $this->entityTypeManager->getStorage('taxonomy_term');
+        $terms = $term_storage->loadMultiple(array_keys($child_terms));
+        foreach ($terms as $term) {
+          $options[$term->id()] = $term->getName();
+        }
+      }
+
+      return $options;
+    }
+
+    // Default behavior: show all parent terms.
+    $options = $this->viewsBasicManager->getTaxonomyParents($vocabulary);
+    unset($options['']);
+    return $options;
+  }
+
+  /**
+   * Adds hidden fields to the form.
+   *
+   * @param array $form
+   *   The form array.
+   * @param array $paramsDecoded
+   *   The decoded parameters.
+   */
+  private function addHiddenFields(array &$form, array $paramsDecoded) {
+    $hiddenFields = [
+      'terms_include' => $paramsDecoded['terms_include'] ?? [],
+      'terms_exclude' => $paramsDecoded['terms_exclude'] ?? [],
+      'term_operator' => $paramsDecoded['term_operator'] ?? '+',
+      'event_time_period' => $paramsDecoded['event_time_period'] ?? 'all',
+    ];
+
+    foreach ($hiddenFields as $field => $value) {
+      $form['filters_container'][$field] = [
+        '#type' => 'hidden',
+        '#value' => $value,
+      ];
+    }
+  }
+
+  /**
+   * Gets filters array from decoded parameters.
+   *
+   * @param array $paramsDecoded
+   *   The decoded parameters.
+   *
+   * @return array
+   *   The filters array.
+   */
+  private function getFiltersFromParams(array $paramsDecoded): array {
+    return [
+      'category_included_terms' => $paramsDecoded['category_included_terms'] ?? [],
+      'audience_included_terms' => $paramsDecoded['audience_included_terms'] ?? [],
+      'custom_vocab_included_terms' => $paramsDecoded['custom_vocab_included_terms'] ?? [],
+      'terms_include' => $paramsDecoded['terms_include'] ?? [],
+      'terms_exclude' => $paramsDecoded['terms_exclude'] ?? [],
+      'term_operator' => $paramsDecoded['term_operator'] ?? '+',
+      'event_time_period' => $paramsDecoded['event_time_period'] ?? 'all',
+    ];
+  }
+
+  /**
+   * Gets filters array from form state values.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   *
+   * @return array
+   *   The filters array.
+   */
+  private function getFiltersFromFormState(FormStateInterface $form_state): array {
+    // Helper function to ensure array format.
+    $ensureArray = function ($value) {
+      return is_array($value) ? $value : ($value ? [$value] : []);
+    };
+
+    return [
+      'category_included_terms' => $ensureArray($form_state->getValue('category_included_terms')),
+      'audience_included_terms' => $ensureArray($form_state->getValue('audience_included_terms')),
+      'custom_vocab_included_terms' => $ensureArray($form_state->getValue('custom_vocab_included_terms')),
+      'terms_include' => $ensureArray($form_state->getValue('terms_include')),
+      'terms_exclude' => $ensureArray($form_state->getValue('terms_exclude')),
+      'term_operator' => $form_state->getValue('term_operator') ?: '+',
+      'event_time_period' => $form_state->getValue('event_time_period') ?: 'all',
+    ];
+  }
+
+  /**
+   * Renders the calendar with given filters.
+   *
+   * @param array $form
+   *   The form array.
+   * @param array $filters
+   *   The filters to apply.
+   */
+  private function renderCalendar(array &$form, array $filters) {
+    // Get current month/year.
     $month = date('m');
     $year = date('Y');
 
-    // Get the EventsCalendar service.
-    $events_calendar_service = \Drupal::service('ys_views_basic.events_calendar');
+    // Get calendar data.
+    $events_calendar = $this->eventsCalendar->getCalendar($month, $year, $filters);
 
-    // Prepare filters array.
-    $filters = [
-      'category_included_terms' => $category,
-      'audience_included_terms' => $audience,
-      'custom_vocab_included_terms' => $custom_vocab,
-      'terms_include' => $terms_include,
-      'terms_exclude' => $terms_exclude,
-      'term_operator' => $term_operator,
+    // Build cache contexts based on active filters.
+    $cache_contexts = [
+      'timezone',
+      'user',
+      'url.query_args',
     ];
 
-    // Pass filters to the EventsCalendar service.
-    $events_calendar = $events_calendar_service->getCalendar($month, $year, $filters);
+    // Build cache tags.
+    $cache_tags = [
+      // Invalidate when any event node changes.
+      'node_list:event',
+    ];
 
-    // Update the calendar in the form with filtered data.
-    $form['calendar'] = [
-      '#theme' => 'views_basic_events_calendar',
-      '#month_data' => $events_calendar,
-      '#cache' => [
-        'tags' => ['node_list:event'],
-        'contexts' => ['timezone'],
+    // Create calendar container.
+    $form['calendar_container'] = [
+      '#type' => 'container',
+      '#attributes' => ['class' => ['ys-filter-form__calendar']],
+      'calendar' => [
+        '#type' => 'container',
+        '#attributes' => ['id' => self::CALENDAR_WRAPPER_ID],
+        '#cache' => [
+          'contexts' => $cache_contexts,
+          'tags' => $cache_tags,
+        ],
+        'calendar_content' => [
+          '#theme' => 'views_basic_events_calendar',
+          '#month_data' => $events_calendar,
+          '#cache' => [
+            'contexts' => $cache_contexts,
+            'tags' => $cache_tags,
+          ],
+        ],
       ],
     ];
-
-    // Return the updated form.
-    return $form;
   }
 
 }

@@ -8,6 +8,7 @@ use Drupal\Core\Routing\CurrentRouteMatch;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ys_views_basic\Service\EventsCalendarInterface;
 use Drupal\ys_views_basic\ViewsBasicManager;
+use Drupal\Core\Form\FormBuilderInterface;
 
 /**
  * Plugin implementation of the 'event_calendar_default' formatter.
@@ -21,10 +22,20 @@ use Drupal\ys_views_basic\ViewsBasicManager;
  * )
  */
 class EventCalendarDefaultFormatter extends ViewsBasicDefaultFormatter {
+
   /**
+   * The current route match service.
+   *
    * @var \Drupal\Core\Routing\CurrentRouteMatch
    */
   protected $currentRouteMatch;
+
+  /**
+   * The form builder service.
+   *
+   * @var \Drupal\Core\Form\FormBuilderInterface
+   */
+  protected $formBuilder;
 
   public function __construct(
     $plugin_id,
@@ -36,7 +47,8 @@ class EventCalendarDefaultFormatter extends ViewsBasicDefaultFormatter {
     array $third_party_settings,
     ViewsBasicManager $viewsBasicManager,
     EventsCalendarInterface $eventsCalendar,
-    CurrentRouteMatch $currentRouteMatch
+    CurrentRouteMatch $currentRouteMatch,
+    FormBuilderInterface $formBuilder,
   ) {
     parent::__construct(
       $plugin_id,
@@ -50,8 +62,12 @@ class EventCalendarDefaultFormatter extends ViewsBasicDefaultFormatter {
       $eventsCalendar
     );
     $this->currentRouteMatch = $currentRouteMatch;
+    $this->formBuilder = $formBuilder;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     return new static(
       $plugin_id,
@@ -63,7 +79,8 @@ class EventCalendarDefaultFormatter extends ViewsBasicDefaultFormatter {
       $configuration['third_party_settings'],
       $container->get('ys_views_basic.views_basic_manager'),
       $container->get('ys_views_basic.events_calendar'),
-      $container->get('current_route_match')
+      $container->get('current_route_match'),
+      $container->get('form_builder'),
     );
   }
 
@@ -74,33 +91,17 @@ class EventCalendarDefaultFormatter extends ViewsBasicDefaultFormatter {
     $elements = [];
 
     foreach ($items as $delta => $item) {
-      $paramsDecoded = json_decode($item->getValue()['params'], TRUE);
-
       // Unique wrapper for AJAX replacement.
       $wrapper_id = 'event-calendar-filter-wrapper-' . uniqid();
 
-      $form = \Drupal::formBuilder()->getForm(
+      // Get the form for the exposed filter and calendar.
+      $form = $this->formBuilder->getForm(
         'Drupal\\ys_views_basic\\Form\\EventCalendarFilterForm',
         $item->getValue()['params'],
         $wrapper_id
       );
 
-      // Build the filters array from paramsDecoded.
-      $filters = [
-        'category_included_terms' => $paramsDecoded['category_included_terms'] ?? [],
-        'audience_included_terms' => $paramsDecoded['audience_included_terms'] ?? [],
-        'custom_vocab_included_terms' => $paramsDecoded['custom_vocab_included_terms'] ?? [],
-        'terms_include' => $paramsDecoded['terms_include'] ?? [],
-        'terms_exclude' => $paramsDecoded['terms_exclude'] ?? [],
-        'term_operator' => $paramsDecoded['term_operator'] ?? '+',
-      ];
-
-      // Always use the calendar service regardless of params (filtered in AJAX callback later).
-      $now = new \DateTime();
-      $end_of_month = new \DateTime('last day of this month 23:59:59');
-      $remaining_time_in_seconds = $end_of_month->getTimestamp() - $now->getTimestamp();
-      $events_calendar = $this->eventsCalendar->getCalendar(date('m'), date('Y'), $filters);
-
+      // Add the form to the elements array.
       $elements[$delta] = [
         'filter_form' => $form,
       ];

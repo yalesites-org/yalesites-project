@@ -5,9 +5,9 @@ ys_views_basic:
   js:
     assets/js/views-basic.js: {}
 
-event_calendar_filter:
+event_calendar_behaviors:
   js:
-    assets/js/event_calendar_filter.js: {}
+    js/event-calendar-behaviors.js: {}
   dependencies:
     - core/jquery
     - core/drupal
