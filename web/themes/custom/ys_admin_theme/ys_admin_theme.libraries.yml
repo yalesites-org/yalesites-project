@@ -7,8 +7,6 @@ tokens:
   css:
     theme:
       css/gin-custom.css: {}
-  dependencies:
-    - atomic/tokens
 favicon_preview:
   css:
     theme:
