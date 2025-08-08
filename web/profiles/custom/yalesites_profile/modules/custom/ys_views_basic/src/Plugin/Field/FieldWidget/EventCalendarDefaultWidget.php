@@ -269,11 +269,11 @@ class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
       '#title' => $this->t('Event Time Period'),
       '#options' => [
         self::TIME_PERIOD_FUTURE => $this->t('Future Events') .
-          '<img src="' . $icon_base_path . 'event-time-future.svg" alt="Future Events icon showing a calendar with a future-pointing arrow to the right.">',
+        '<img src="' . $icon_base_path . 'event-time-future.svg" alt="Future Events icon showing a calendar with a future-pointing arrow to the right.">',
         self::TIME_PERIOD_PAST => $this->t('Past Events') .
-          '<img src="' . $icon_base_path . 'event-time-past.svg" alt="Past Events icon showing a calendar with a past-pointing arrow to the left.">',
+        '<img src="' . $icon_base_path . 'event-time-past.svg" alt="Past Events icon showing a calendar with a past-pointing arrow to the left.">',
         self::TIME_PERIOD_ALL => $this->t('All Events') .
-          '<img src="' . $icon_base_path . 'event-time-all.svg" alt="All Events icon showing a calendar.">',
+        '<img src="' . $icon_base_path . 'event-time-all.svg" alt="All Events icon showing a calendar.">',
       ],
       '#default_value' => $this->getDefaultParamValue('event_time_period', $items, $delta, self::TIME_PERIOD_FUTURE),
       '#prefix' => '<div id="edit-event-time-period">',
