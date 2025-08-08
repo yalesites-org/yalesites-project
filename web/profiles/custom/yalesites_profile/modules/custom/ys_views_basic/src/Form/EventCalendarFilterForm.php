@@ -203,7 +203,7 @@ class EventCalendarFilterForm extends FormBase {
   private function createFilterElement(string $title, array $options, $default_value): array {
     return [
       '#type' => 'select',
-      '#title' => $this->t($title),
+      '#title' => $this->t('@title', ['@title' => $title]),
       '#options' => $options,
       '#default_value' => $default_value,
       '#multiple' => TRUE,

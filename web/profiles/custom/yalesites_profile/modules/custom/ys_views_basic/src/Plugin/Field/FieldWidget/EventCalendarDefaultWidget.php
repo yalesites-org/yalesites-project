@@ -109,7 +109,7 @@ class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
       '#weight' => 10,
     ];
 
-    // Create sub-containers with consistent structure.
+    // Create sub-containers.
     $containers = [
       'entity_and_view_mode' => ['views-basic--entity-view-mode'],
       'filter_and_sort' => [],
@@ -273,7 +273,7 @@ class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
         self::TIME_PERIOD_PAST => $this->t('Past Events') .
           '<img src="' . $icon_base_path . 'event-time-past.svg" alt="Past Events icon showing a calendar with a past-pointing arrow to the left.">',
         self::TIME_PERIOD_ALL => $this->t('All Events') .
-          '<img src="' . $icon_base_path . 'event-time-all.svg" alt="All Events icon showing a calendar.">'
+          '<img src="' . $icon_base_path . 'event-time-all.svg" alt="All Events icon showing a calendar.">',
       ],
       '#default_value' => $this->getDefaultParamValue('event_time_period', $items, $delta, self::TIME_PERIOD_FUTURE),
       '#prefix' => '<div id="edit-event-time-period">',
@@ -327,7 +327,7 @@ class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
   private function createTaxonomyFilterElement(string $title, string $vocabulary_id, string $field_name, FieldItemListInterface $items, int $delta, string $visibility_selector): array {
     return [
       '#type' => 'select',
-      '#title' => $this->t($title),
+      '#title' => $this->t('@title', ['@title' => $title]),
       '#description' => $this->t("Select a parent term to show content tagged with that terms sub-items. This ignores content tagged as the parent term and any other parent terms in the vocabulary."),
       '#options' => $this->viewsBasicManager->getTaxonomyParents($vocabulary_id),
       '#default_value' => $this->getDefaultParamValue($field_name, $items, $delta),
