@@ -81,7 +81,6 @@ dependencies:
     - role_delegation
     - system
     - taxonomy
-    - taxonomy_manager
     - toolbar
     - webform
     - ys_alert
@@ -102,7 +101,6 @@ permissions:
   - 'access media overview'
   - 'access printer-friendly version'
   - 'access site in maintenance mode'
-  - 'access taxonomy manager list'
   - 'access taxonomy overview'
   - 'access toolbar'
   - 'access user profiles'
