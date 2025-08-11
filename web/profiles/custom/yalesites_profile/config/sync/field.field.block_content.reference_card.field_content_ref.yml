@@ -9,6 +9,7 @@ dependencies:
     - node.type.page
     - node.type.post
     - node.type.profile
+    - node.type.resource
 id: block_content.reference_card.field_content_ref
 field_name: field_content_ref
 entity_type: block_content
@@ -27,6 +28,7 @@ settings:
       page: page
       post: post
       profile: profile
+      resource: resource
     sort:
       field: _none
       direction: ASC
