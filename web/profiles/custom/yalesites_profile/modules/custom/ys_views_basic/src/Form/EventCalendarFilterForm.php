@@ -105,10 +105,10 @@ class EventCalendarFilterForm extends FormBase {
     $this->buildFilterElements($form, $form_state, $exposedFilterOptions, $paramsDecoded);
 
     // Add hidden fields.
-    $this->addHiddenFields($form, $paramsDecoded);
+    $this->addHiddenFields($form, $paramsDecoded, $form_state);
 
     // Render initial calendar.
-    $this->renderCalendar($form, $this->getFiltersFromParams($paramsDecoded));
+    $this->renderCalendar($form, $this->getFiltersFromParams($paramsDecoded), $form_state);
 
     return $form;
   }
@@ -124,11 +124,20 @@ class EventCalendarFilterForm extends FormBase {
    * AJAX callback for filter form.
    */
   public function ajaxFilterCallback(array &$form, FormStateInterface $form_state) {
+    // Ensure navigated month/year from user input are persisted in form state.
+    $user_input = (array) $form_state->getUserInput();
+    if (!empty($user_input['calendar_month'])) {
+      $form_state->setValue('calendar_month', $user_input['calendar_month']);
+    }
+    if (!empty($user_input['calendar_year'])) {
+      $form_state->setValue('calendar_year', $user_input['calendar_year']);
+    }
+
     // Get filters from form state.
     $filters = $this->getFiltersFromFormState($form_state);
 
     // Render updated calendar.
-    $this->renderCalendar($form, $filters);
+    $this->renderCalendar($form, $filters, $form_state);
 
     // Return just the calendar container.
     return $form['calendar_container']['calendar'];
@@ -258,21 +267,34 @@ class EventCalendarFilterForm extends FormBase {
    *   The form array.
    * @param array $paramsDecoded
    *   The decoded parameters.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
    */
-  private function addHiddenFields(array &$form, array $paramsDecoded) {
-    $hiddenFields = [
+  private function addHiddenFields(array &$form, array $paramsDecoded, FormStateInterface $form_state) {
+    // Hidden filters stay under the filters_container.
+    $filterHiddenFields = [
       'terms_include' => $paramsDecoded['terms_include'] ?? [],
       'terms_exclude' => $paramsDecoded['terms_exclude'] ?? [],
       'term_operator' => $paramsDecoded['term_operator'] ?? '+',
       'event_time_period' => $paramsDecoded['event_time_period'] ?? 'all',
     ];
 
-    foreach ($hiddenFields as $field => $value) {
+    foreach ($filterHiddenFields as $field => $value) {
       $form['filters_container'][$field] = [
         '#type' => 'hidden',
         '#value' => $value,
       ];
     }
+
+    // Persist navigated calendar state at the form root for easy retrieval.
+    $form['calendar_month'] = [
+      '#type' => 'hidden',
+      '#value' => $form_state->getValue('calendar_month') ?? date('m'),
+    ];
+    $form['calendar_year'] = [
+      '#type' => 'hidden',
+      '#value' => $form_state->getValue('calendar_year') ?? date('Y'),
+    ];
   }
 
   /**
@@ -329,11 +351,18 @@ class EventCalendarFilterForm extends FormBase {
    *   The form array.
    * @param array $filters
    *   The filters to apply.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state containing month/year values.
    */
-  private function renderCalendar(array &$form, array $filters) {
-    // Get current month/year.
-    $month = date('m');
-    $year = date('Y');
+  private function renderCalendar(array &$form, array $filters, FormStateInterface $form_state) {
+    // Use navigated month/year if provided, otherwise fall back to current.
+    $user_input = (array) $form_state->getUserInput();
+    $month = $form_state->getValue('calendar_month')
+      ?: $form_state->getValue(['filters_container', 'calendar_month'])
+      ?: ($user_input['calendar_month'] ?? ($user_input['filters_container']['calendar_month'] ?? date('m')));
+    $year = $form_state->getValue('calendar_year')
+      ?: $form_state->getValue(['filters_container', 'calendar_year'])
+      ?: ($user_input['calendar_year'] ?? ($user_input['filters_container']['calendar_year'] ?? date('Y')));
 
     // Get calendar data.
     $events_calendar = $this->eventsCalendar->getCalendar($month, $year, $filters);

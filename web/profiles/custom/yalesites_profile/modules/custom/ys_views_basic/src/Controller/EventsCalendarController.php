@@ -41,12 +41,19 @@ final class EventsCalendarController extends ControllerBase {
     $calendar_id = $request->request->get('calendar_id');
     $month = $request->request->get('month') ?? date('m');
     $year = $request->request->get('year') ?? date('Y');
+    // If present, prefer explicit calendar_month/year from the form state.
+    $month = $request->request->get('calendar_month', $month);
+    $year = $request->request->get('calendar_year', $year);
     $category_included_terms = $request->request->get('category_included_terms');
     $audience_included_terms = $request->request->get('audience_included_terms');
     $custom_vocab_included_terms = $request->request->get('custom_vocab_included_terms');
     $terms_include = $request->request->get('terms_include');
     $terms_exclude = $request->request->get('terms_exclude');
     $term_operator = $request->request->get('term_operator');
+
+    $category_included_terms = $this->decodeArray($category_included_terms);
+    $audience_included_terms = $this->decodeArray($audience_included_terms);
+    $custom_vocab_included_terms = $this->decodeArray($custom_vocab_included_terms);
 
     // Prepare filter array to be implemented in EventsCalendar service.
     $filters = [
@@ -74,6 +81,35 @@ final class EventsCalendarController extends ControllerBase {
     }
 
     return $response;
+  }
+
+  /**
+   * Decodes a JSON-encoded array value if applicable.
+   *
+   * Accepts mixed input (string or array). If a JSON string is provided and
+   * decodes cleanly to an array, returns that array. Empty strings return an
+   * empty array. Non-array inputs are returned as-is to preserve type.
+   *
+   * @param mixed $value
+   *   The incoming value from the request.
+   *
+   * @return mixed
+   *   The decoded array if applicable, otherwise the original value.
+   */
+  private function decodeArray($value) {
+    if (is_string($value)) {
+      $trimmed = trim($value);
+      if ($trimmed === '') {
+        return [];
+      }
+      if ($trimmed[0] === '[' || $trimmed[0] === '{') {
+        $decoded = json_decode($trimmed, TRUE);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+          return $decoded;
+        }
+      }
+    }
+    return $value;
   }
 
 }
