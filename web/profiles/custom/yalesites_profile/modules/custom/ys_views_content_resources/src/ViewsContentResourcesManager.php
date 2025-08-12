@@ -300,6 +300,15 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     $termsInclude = (count($termsIncludeArray) != 0) ? implode($operator, $termsIncludeArray) : 'all';
     $termsExclude = (count($termsExcludeArray) != 0) ? implode($operator, $termsExcludeArray) : NULL;
 
+    // Determine if we are in a state where field_options doesn't yet exist
+    // (pre-existing view)
+    $no_field_display_options_saved = !array_key_exists('field_options', $paramsDecoded) || !is_array($paramsDecoded['field_options']);
+
+    $field_display_options = [
+      'show_category' => (int) !empty($paramsDecoded['field_options']['show_category']),
+      'show_thumbnail' => (int) $no_field_display_options_saved || !empty($paramsDecoded['field_options']['show_thumbnail']),
+    ];
+
     if ($paramsDecoded['display'] == 'all') {
       $itemsLimit = 0;
     }
@@ -351,6 +360,7 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
       'view' => $paramsDecoded['view_mode'],
       'items' => $itemsLimit,
       'offset' => $paramsDecoded['offset'] ?? 0,
+      'field_display_options' => json_encode($field_display_options),
       'pin_settings' => json_encode($pin_options),
       'original_settings' => $params,
     ];

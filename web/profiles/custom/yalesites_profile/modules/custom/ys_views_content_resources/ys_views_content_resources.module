@@ -76,17 +76,17 @@ function ys_views_content_resources_views_pre_build($view) {
  */
 function ys_views_content_resources_views_pre_render(ViewExecutable $view): void {
   if ($view->id() === 'content_resources') {
-    $pin_options = json_decode($view->args[7]);
+    $pin_options = json_decode($view->args[8]);
     $pin_label = '';
     if ($pin_options->pinned_to_top) {
       $pin_label = $pin_options->pin_label;
     }
-
+    $field_display_options = json_decode($view->args[7]);
     // Loop through each row in the view's results and update the node's
-    // properties based on show_categories, show_tags and show_thumbnail
-    // configuration.
+    // properties based on show_category and show_thumbnail configuration.
     foreach ($view->result as $row) {
-      $row->_entity->show_thumbnail = TRUE;
+      $row->_entity->show_category = $field_display_options->show_category;
+      $row->_entity->show_thumbnail = $field_display_options->show_thumbnail;
 
       $sticky = (bool) $row->_entity->get('sticky')->value;
       if ($sticky) {

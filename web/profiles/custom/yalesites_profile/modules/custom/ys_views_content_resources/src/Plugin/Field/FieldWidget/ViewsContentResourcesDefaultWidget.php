@@ -215,6 +215,36 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
       '#suffix' => '</div>',
     ];
 
+    $fieldOptionValue = ($items[$delta]->params) ? $this->viewsContentResourcesManager->getDefaultParamValue('field_options', $items[$delta]->params) : [];
+    $fieldOptionDefaultValue = $fieldOptionValue ?? [
+      'show_thumbnail' => 'show_thumbnail',
+      'show_category' => 'show_category',
+    ];
+    $isNewForm = str_contains($formState->getCompleteForm()['#id'], 'layout-builder-add-block');
+
+    // Set the default value for 'field_options' to 'show_thumbnail'
+    // when creating a new block.
+    $form['group_user_selection']['entity_and_view_mode']['field_options'] = [
+      '#type' => 'checkboxes',
+      '#options' => [
+        'show_thumbnail' => $this->t('Show Teaser Image'),
+        'show_category' => $this->t('Show Category'),
+      ],
+      '#title' => $this->t('Field Display Options'),
+      '#tree' => TRUE,
+      '#default_value' => ($isNewForm && empty($fieldOptionValue)) ? ['show_thumbnail', 'show_category'] : $fieldOptionDefaultValue,
+      'show_thumbnail' => [
+        '#states' => [
+          'visible' => [
+            $formSelectors['view_mode_input_selector'] => [
+              ['value' => 'card'],
+              ['value' => 'list_item'],
+            ],
+          ],
+        ],
+      ],
+    ];
+
     $custom_vocab_label = $this->entityTypeManager->getStorage('taxonomy_vocabulary')->load('custom_vocab')->label();
     $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options'] = [
       '#type' => 'checkboxes',
@@ -426,6 +456,7 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
           "terms_include" => $terms_include,
           "terms_exclude" => $terms_exclude,
         ],
+        "field_options" => $form['group_user_selection']['entity_and_view_mode']['field_options']['#value'],
         "exposed_filter_options" => $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options']['#value'],
         "category_filter_label" => $form['group_user_selection']['entity_and_view_mode']['category_filter_label']['#value'],
         "category_included_terms" => $form['group_user_selection']['entity_and_view_mode']['category_included_terms']['#value'],
