@@ -52,6 +52,9 @@ if (isset($_ENV['PANTHEON_SITE_NAME'])) {
 // Set the install profile as the source of site config.
 $settings['config_sync_directory'] = 'profiles/custom/yalesites_profile/config/sync';
 
+// Exclude modules from config sync.
+$settings['config_exclude_modules'] = ['redis'];
+
 /**
  * Environment Indicator.
  */
