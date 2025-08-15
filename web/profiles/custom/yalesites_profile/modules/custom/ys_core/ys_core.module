@@ -440,6 +440,16 @@ function ys_core_module_implements_alter(&$implementations, $hook) {
   if ($hook == 'help') {
     $implementations = ['ys_core' => $implementations['ys_core']] + $implementations;
   }
+
+  // Ensure ys_core hooks run after environment_indicator hooks for page_top and
+  // preprocess_html.
+  if (in_array($hook, ['page_top', 'preprocess_html'])) {
+    if (isset($implementations['ys_core']) && isset($implementations['environment_indicator'])) {
+      $ys_core_implementation = $implementations['ys_core'];
+      unset($implementations['ys_core']);
+      $implementations['ys_core'] = $ys_core_implementation;
+    }
+  }
 }
 
 /**
@@ -643,6 +653,16 @@ function ys_core_preprocess_html(&$variables) {
   $config = \Drupal::config('ys_core.site');
   $font_pairing = $config->get('font_pairing') ?? 'yalenew';
   $variables['attributes']['data-font-pairing'] = $font_pairing;
+
+  // Remove environment indicator CSS class if the indicator is disabled.
+  $show_indicator = $config->get('environment_indicator.show') ?? TRUE;
+  if (!$show_indicator) {
+    // Remove environment-indicator class if it exists.
+    $classes = $variables['attributes']['class'] ?? [];
+    $variables['attributes']['class'] = array_filter($classes, function ($class) {
+      return $class !== 'environment-indicator';
+    });
+  }
 }
 
 /**
@@ -987,4 +1007,20 @@ function ys_core_yale_cas_app_parameter_alter(&$app_value, $event) {
   // Retrieve the ys_core config.
   $config = \Drupal::config('ys_core.site');
   $app_value = $config->get('cas_app_name') ?: 'yalesites';
+}
+
+/**
+ * Implements hook_page_top().
+ *
+ * Override environment indicator display based on ys_core.site configuration.
+ */
+function ys_core_page_top(array &$page_top) {
+  // Check if environment indicator should be shown.
+  $config = \Drupal::config('ys_core.site');
+  $show_indicator = $config->get('environment_indicator.show') ?? TRUE;
+
+  // If disabled, remove the environment indicator from page_top.
+  if (!$show_indicator && isset($page_top['indicator'])) {
+    unset($page_top['indicator']);
+  }
 }

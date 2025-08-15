@@ -7,3 +7,5 @@ seo:
 image_fallback:
   teaser: ''
 custom_favicon: ''
+environment_indicator:
+  show: true

@@ -91,8 +91,7 @@ function ys_node_access_preprocess_menu(array &$variables) {
    * Adds data attribute to menu links that are CAS only.
    * @see ys_node_access/src/Menu/YsNodeAccessLinkTreeManipulator.php
    */
-  $config = \Drupal::config('ys_core.header_settings');
-  if ($config->get('enable_cas_menu_links') && in_array($variables['menu_name'], _ys_node_access_cas_menus())) {
+  if (in_array($variables['menu_name'], _ys_node_access_cas_menus())) {
     _ys_node_access_cas_menu_attribute($variables['items']);
   }
 
