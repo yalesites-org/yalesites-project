@@ -50,6 +50,7 @@ final class EventsCalendarController extends ControllerBase {
     $terms_include = $request->request->get('terms_include');
     $terms_exclude = $request->request->get('terms_exclude');
     $term_operator = $request->request->get('term_operator');
+    $search = $request->request->get('search');
 
     $category_included_terms = $this->decodeArray($category_included_terms);
     $audience_included_terms = $this->decodeArray($audience_included_terms);
@@ -63,6 +64,7 @@ final class EventsCalendarController extends ControllerBase {
       'terms_include' => $terms_include,
       'terms_exclude' => $terms_exclude,
       'term_operator' => $term_operator,
+      'search' => $search,
     ];
 
     // Get filtered calendar (service must be updated to support filters).
@@ -76,8 +78,19 @@ final class EventsCalendarController extends ControllerBase {
       ],
     ];
 
+    // Wrap with a container that preserves the original wrapper ID so
+    // subsequent AJAX updates continue to target the same element.
     if ($calendar_id) {
-      $response->addCommand(new ReplaceCommand($calendar_id, $calendar));
+      $wrapper_id = ltrim((string) $calendar_id, '#');
+      $calendar_wrapper = [
+        '#type' => 'container',
+        '#attributes' => ['id' => $wrapper_id],
+        '#cache' => [
+          'tags' => ['node_list:event'],
+        ],
+        'calendar_content' => $calendar,
+      ];
+      $response->addCommand(new ReplaceCommand($calendar_id, $calendar_wrapper));
     }
 
     return $response;

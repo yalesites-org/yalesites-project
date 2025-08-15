@@ -59,8 +59,8 @@ class EventCalendarFilterForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container): static {
-    return new static(
+  public static function create(ContainerInterface $container): self {
+    return new self(
     $container->get('ys_views_basic.views_basic_manager'),
       $container->get('entity_type.manager'),
       $container->get('ys_views_basic.events_calendar'),
@@ -194,6 +194,25 @@ class EventCalendarFilterForm extends FormBase {
         $currentValues['custom_vocab']
       );
     }
+
+    // Search filter (text input with AJAX; triggers via debounced change in JS).
+    if (!empty($exposedFilterOptions['show_search_filter'])) {
+      $form['filters_container']['search'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('Search'),
+        '#default_value' => $form_state->getValue('search') ?? '',
+        '#attributes' => [
+          'placeholder' => $this->t('Search events'),
+          'class' => ['ys-events-search-input'],
+        ],
+        '#ajax' => [
+          'callback' => '::ajaxFilterCallback',
+          'wrapper' => self::CALENDAR_WRAPPER_ID,
+          'event' => 'ys-calendar-search',
+          'progress' => ['type' => 'none'],
+        ],
+      ];
+    }
   }
 
   /**
@@ -315,6 +334,7 @@ class EventCalendarFilterForm extends FormBase {
       'terms_exclude' => $paramsDecoded['terms_exclude'] ?? [],
       'term_operator' => $paramsDecoded['term_operator'] ?? '+',
       'event_time_period' => $paramsDecoded['event_time_period'] ?? 'all',
+      'search' => $paramsDecoded['search'] ?? '',
     ];
   }
 
@@ -341,6 +361,7 @@ class EventCalendarFilterForm extends FormBase {
       'terms_exclude' => $ensureArray($form_state->getValue('terms_exclude')),
       'term_operator' => $form_state->getValue('term_operator') ?: '+',
       'event_time_period' => $form_state->getValue('event_time_period') ?: 'all',
+      'search' => trim((string) ($form_state->getValue('search') ?? '')),
     ];
   }
 

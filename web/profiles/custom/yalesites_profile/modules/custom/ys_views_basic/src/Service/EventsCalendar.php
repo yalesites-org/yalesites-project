@@ -98,6 +98,16 @@ class EventsCalendar implements EventsCalendarInterface {
     // Load all events for the given month and year.
     $monthlyEvents = $this->loadMonthlyEvents($month, $year);
 
+    // Text search filtering by title when 3+ chars.
+    $search = isset($filters['search']) ? trim((string) $filters['search']) : '';
+    if ($search !== '' && mb_strlen($search) >= 3) {
+      $needle = mb_strtolower($search);
+      $monthlyEvents = array_filter($monthlyEvents, function ($node) use ($needle) {
+        $title = $node->label();
+        return mb_strpos(mb_strtolower($title), $needle) !== FALSE;
+      });
+    }
+
     // Taxonomy filtering logic.
     if (!empty($filters['category_included_terms']) || !empty($filters['audience_included_terms']) || !empty($filters['custom_vocab_included_terms']) || !empty($filters['terms_include']) || !empty($filters['terms_exclude']) || !empty($filters['event_time_period'])) {
       $category_tids = [];

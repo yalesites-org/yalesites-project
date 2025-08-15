@@ -144,6 +144,7 @@ class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
       '#type' => 'checkboxes',
       '#title' => $this->t('Exposed Filter Options'),
       '#options' => [
+        'show_search_filter' => $this->t('Show Search (results based on the content title only)'),
         'show_category_filter' => $this->t('Show Event Category'),
         'show_audience_filter' => $this->t('Show Audience'),
         'show_custom_vocab_filter' => $this->t('Show @vocab', ['@vocab' => $custom_vocab_label]),
