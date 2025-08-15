@@ -56,6 +56,17 @@ $settings['config_sync_directory'] = 'profiles/custom/yalesites_profile/config/s
 $settings['config_exclude_modules'] = ['redis'];
 
 /**
+ * Include the Redis settings file.
+ */
+if (!empty($_ENV['PANTHEON_ENVIRONMENT']) && !empty($_ENV['CACHE_HOST'])) {
+  $redis_settings = __DIR__ . "/settings.redis.php";
+
+  if (file_exists($redis_settings)) {
+    include $redis_settings;
+  }
+}
+
+/**
  * Environment Indicator.
  */
 $env = $_ENV['PANTHEON_ENVIRONMENT'] ?? 'lando';
