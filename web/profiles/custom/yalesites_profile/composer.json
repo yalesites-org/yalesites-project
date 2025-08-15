@@ -76,6 +76,8 @@
     "drupal/media_entity_download": "2.3.0",
     "drupal/media_library_edit": "3.0.4",
     "drupal/media_library_form_element": "2.1.1",
+    "drupal/media_thumbnails": "2.0",
+    "drupal/media_thumbnails_pdf": "2.0",
     "drupal/menu_admin_per_menu": "1.5",
     "drupal/menu_breadcrumb": "2.0.0-alpha0",
     "drupal/menu_item_extras": "3.1.0",

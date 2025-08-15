@@ -7,7 +7,7 @@ dependencies:
     - field.field.media.document.field_media_file
     - field.field.media.document.field_metatags
     - field.field.media.document.field_tags
-    - image.style.media_library
+    - image.style.resource_300
     - media.type.document
   module:
     - image
@@ -16,16 +16,24 @@ targetEntityType: media
 bundle: document
 mode: media_library
 content:
+  name:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 0
+    region: content
   thumbnail:
     type: image
     label: hidden
     settings:
       image_link: ''
-      image_style: media_library
+      image_style: resource_300
       image_loading:
         attribute: lazy
     third_party_settings: {  }
-    weight: 0
+    weight: 1
     region: content
 hidden:
   addtoany: true
@@ -33,6 +41,5 @@ hidden:
   field_media_file: true
   field_metatags: true
   field_tags: true
-  name: true
   search_api_excerpt: true
   uid: true

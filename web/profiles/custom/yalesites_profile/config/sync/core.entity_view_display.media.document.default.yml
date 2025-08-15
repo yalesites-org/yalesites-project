@@ -7,8 +7,10 @@ dependencies:
     - field.field.media.document.field_metatags
     - field.field.media.document.field_tags
     - media.type.document
+    - responsive_image.styles.resource_thumbnail
   module:
     - file
+    - responsive_image
 id: media.document.default
 targetEntityType: media
 bundle: document
@@ -21,6 +23,17 @@ content:
     third_party_settings: {  }
     weight: 0
     region: content
+  thumbnail:
+    type: responsive_image
+    label: hidden
+    settings:
+      responsive_image_style: resource_thumbnail
+      image_link: ''
+      image_loading:
+        attribute: lazy
+    third_party_settings: {  }
+    weight: 1
+    region: content
 hidden:
   addtoany: true
   created: true
@@ -28,5 +41,4 @@ hidden:
   field_tags: true
   name: true
   search_api_excerpt: true
-  thumbnail: true
   uid: true
