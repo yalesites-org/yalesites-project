@@ -2,6 +2,8 @@ api_version: 1
 php_version: 8.3
 database:
   version: 10.6
+object_cache:
+  version: 6.2
 drush_version: 10
 web_docroot: true
 enforce_https: transitional
