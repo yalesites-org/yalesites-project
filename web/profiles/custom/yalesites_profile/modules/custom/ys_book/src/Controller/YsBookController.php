@@ -7,7 +7,7 @@ use Drupal\book\Controller\BookController;
 /**
  * Changes text that comes from the book controller.
  */
-class YSBookController extends BookController {
+class YsBookController extends BookController {
 
   /**
    * Overrides the book admin overview page.

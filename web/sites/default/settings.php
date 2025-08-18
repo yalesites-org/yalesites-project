@@ -62,7 +62,7 @@ $env_options = [
     'fg_color' => '#000000',
     'name' => 'Local Environment',
   ],
-  'dev' => [
+  'development' => [
     'bg_color' => '#3b82f6',
     'fg_color' => '#ffffff',
     'name' => 'Development - Build & Test. Make big changes here, then request go-live.',
