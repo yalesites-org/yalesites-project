@@ -195,7 +195,7 @@ class EventCalendarFilterForm extends FormBase {
       );
     }
 
-    // Search filter (text input with AJAX; triggers via debounced change in JS).
+    // Search filter (ajax triggers via debounced change in JS).
     if (!empty($exposedFilterOptions['show_search_filter'])) {
       $form['filters_container']['search'] = [
         '#type' => 'textfield',
