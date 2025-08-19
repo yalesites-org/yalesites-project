@@ -53,7 +53,7 @@
 # ==============================================================================
 
 # --- CONFIGURATION ---
-MODE="lando"
+MODE=""
 SITE_NAME=""
 ENV=""
 FILENAME=""
@@ -427,6 +427,28 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# Auto-detect mode if not specified
+if [ -z "$MODE" ]; then
+    # Try to detect Lando environment first (preferred default)
+    if command -v lando >/dev/null 2>&1; then
+        if [ -f ".lando.yml" ] || [ -f ".lando.local.yml" ]; then
+            if lando info >/dev/null 2>&1; then
+                MODE="lando"
+            fi
+        fi
+    fi
+    
+    # Try to detect Terminus environment
+    if [ -z "$MODE" ] && command -v terminus >/dev/null 2>&1; then
+        MODE="terminus"
+    fi
+    
+    # Default to lando as a sane default
+    if [ -z "$MODE" ]; then
+        MODE="lando"
+    fi
+fi
 
 # Validate arguments
 if [ -z "$FILENAME" ]; then

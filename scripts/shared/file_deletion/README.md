@@ -65,17 +65,70 @@ The scripts follow Unix philosophy principles: each tool does one thing well and
 
 ### Configuration
 
-Edit the configuration section in each script as needed:
+All scripts now use a consistent command-line interface with intelligent auto-detection, eliminating the need to modify script files or set environment variables.
+
+#### Method 1: Auto-Detection (Recommended)
+
+Scripts automatically detect your environment with sane defaults:
 
 ```bash
-# Lando Configuration
-MODE="lando"
+# Auto-detects Lando or Terminus, defaults to Lando
+./diagnose_files.sh files_to_check.txt
 
-# Terminus Configuration  
-MODE="terminus"
-SITE_NAME="your-pantheon-site-name"
-ENV="dev"  # or test, live
+# All scripts use the same auto-detection
+./cleanup_files.sh scan_results.log
+./run_cron.sh
+./test_domain_detection.sh
 ```
+
+#### Method 2: Explicit Mode Selection
+
+Override auto-detection with command-line parameters:
+
+```bash
+# Force Lando mode
+./diagnose_files.sh --mode lando files_to_check.txt
+./cleanup_files.sh --mode lando scan_results.log
+
+# Force Terminus mode with site parameters
+./diagnose_files.sh --mode terminus --site mysite --env dev files_to_check.txt
+./cleanup_files.sh --mode terminus --site mysite --env dev scan_results.log
+```
+
+#### Method 3: Legacy Environment Variables (Still Supported)
+
+```bash
+# Set environment variables for the session (optional)
+export MODE="terminus"
+export SITE_NAME="ys-your-yale-edu" 
+export ENV="filedeltest"
+
+# Scripts will use these if no CLI flags provided
+./diagnose_files.sh files_to_check.txt
+./cleanup_files.sh scan_results.log
+```
+
+#### Available Parameters (All Scripts)
+
+**Common Parameters:**
+- `--mode <lando|terminus>`: Force execution mode (auto-detected if not specified)
+- `--site <sitename>`: Pantheon site name (required for terminus mode)  
+- `--env <environment>`: Pantheon environment (dev/test/live)
+- `--help`: Show help message with script-specific options
+
+**Script-Specific Parameters:**
+- `--dry-run`: Preview actions without executing (cleanup scripts)
+- `--auto-confirm`: Skip confirmation prompts (cleanup_files.sh)
+- `--run-cron`: Execute Drupal cron after cleanup (cleanup_files.sh)
+- `--verbose`: Show detailed output (run_cron.sh, verify scripts)
+- `--base-url <url>`: Override base URL (verification scripts)
+- `--output <format>`: Output format: human|json|tsv (single file scripts)
+
+**Auto-Detection Logic:**
+1. Try to detect Lando environment (checks for .lando.yml and running containers)
+2. Fall back to Terminus environment (checks for terminus command)  
+3. Default to Lando mode as sane fallback
+4. Parse cleanup results files for mode information (where applicable)
 
 ## Core Workflow
 
@@ -86,10 +139,10 @@ ENV="dev"  # or test, live
 echo "report.pdf" > files_to_check.txt
 echo "document.docx" >> files_to_check.txt
 
-# 2. Diagnose files
+# 2. Diagnose files (using environment-specific settings)
 ./diagnose_files.sh files_to_check.txt > scan_results.log
 
-# 3. Preview cleanup actions
+# 3. Preview cleanup actions (auto-detects settings from scan results)
 ./cleanup_files.sh --dry-run scan_results.log
 
 # 4. Execute cleanup
@@ -97,6 +150,30 @@ echo "document.docx" >> files_to_check.txt
 
 # 5. Process temporary files
 ./run_cron.sh --verbose
+```
+
+### Environment-Specific Workflows
+
+**Lando (Local Development):**
+```bash
+# Set environment for session
+export MODE="lando"
+
+./diagnose_files.sh files_to_check.txt > lando_results.log
+./cleanup_files.sh --dry-run lando_results.log
+./cleanup_files.sh lando_results.log
+```
+
+**Terminus (Pantheon Remote):**
+```bash
+# Using command-line parameters
+./cleanup_files.sh --mode terminus --site ys-your-yale-edu --env filedeltest --dry-run scan_results.log
+./cleanup_files.sh --mode terminus --site ys-your-yale-edu --env filedeltest scan_results.log
+
+# Or using environment variables  
+export MODE="terminus" SITE_NAME="ys-your-yale-edu" ENV="filedeltest"
+./diagnose_files.sh files_to_check.txt > pantheon_results.log
+./cleanup_files.sh pantheon_results.log
 ```
 
 ### Unix-Style Single File Workflow
@@ -123,15 +200,26 @@ echo "document.docx" >> files_to_check.txt
 
 **Usage:**
 ```bash
-./diagnose_files.sh [input_file]
+./diagnose_files.sh [OPTIONS] <files_to_check.txt>
 ```
 
-**Configuration Variables:**
-- `MODE`: "lando" or "terminus"  
-- `SITE_NAME`: Pantheon site name (terminus mode)
-- `ENV`: Pantheon environment (terminus mode)
-- `ENABLE_DOM_VERIFICATION`: true/false for DOM checking
-- `BASE_URL`: Override for DOM verification URL
+**Options:**
+- `--mode <lando|terminus>`: Force execution mode (auto-detected if not specified)
+- `--site <sitename>`: Pantheon site name (required for terminus mode)
+- `--env <environment>`: Pantheon environment (required for terminus mode)
+- `--help`: Show help message
+
+**Examples:**
+```bash
+# Auto-detect mode
+./diagnose_files.sh files_to_check.txt
+
+# Force lando mode
+./diagnose_files.sh --mode lando files_to_check.txt
+
+# Terminus mode
+./diagnose_files.sh --mode terminus --site mysite --env dev files_to_check.txt
+```
 
 **Input Format:**
 Text file with one filename per line:
@@ -297,7 +385,10 @@ image.jpg
 ```
 
 **Options:**
-- `--base-url <url>`: Base URL for the site (default: auto-detect from lando)
+- `--mode <lando|terminus>`: Force execution mode (default: auto-detect)
+- `--site <sitename>`: Pantheon site name (required for terminus mode)
+- `--env <environment>`: Pantheon environment (required for terminus mode)
+- `--base-url <url>`: Override base URL for DOM verification
 - `--user-agent <string>`: Custom User-Agent string
 - `--timeout <seconds>`: Request timeout in seconds (default: 30)
 - `--dry-run`: Show what would be checked without making requests
@@ -306,8 +397,14 @@ image.jpg
 
 **Examples:**
 ```bash
-# Auto-detect lando URL and verify all manual files
+# Auto-detect environment and verify all manual files
 ./verify_dom_usage.sh cleanup_report_20250814_075224.log
+
+# Force lando mode
+./verify_dom_usage.sh --mode lando cleanup_report.log
+
+# Terminus mode with site parameters
+./verify_dom_usage.sh --mode terminus --site mysite --env dev cleanup_report.log
 
 # Use custom base URL
 ./verify_dom_usage.sh --base-url https://dev-mysite.pantheonsite.io cleanup_report.log
@@ -355,29 +452,47 @@ image.jpg
 
 **Usage:**
 ```bash
-./test_domain_detection.sh [lando|terminus]
+./test_domain_detection.sh [OPTIONS]
 ```
+
+**Options:**
+- `--mode <lando|terminus>`: Force execution mode (default: auto-detect)
+- `--site <sitename>`: Pantheon site name (required for terminus mode)
+- `--env <environment>`: Pantheon environment (required for terminus mode)
+- `--help`: Show help message
 
 **Examples:**
 ```bash
+# Auto-detect mode and test domain detection
+./test_domain_detection.sh
+
 # Test lando domain detection
-./test_domain_detection.sh lando
+./test_domain_detection.sh --mode lando
 
 # Test terminus domain detection  
-./test_domain_detection.sh terminus
+./test_domain_detection.sh --mode terminus --site mysite --env dev
 ```
 
 ## Environment Support
 
 ### Lando Mode (Local Development)
 
-**Configuration:**
+**Auto-Detection Criteria:**
+- Presence of `.lando.yml` or `.lando.local.yml` file
+- `lando` command available and responsive
+- Active Lando containers (`lando info` succeeds)
+
+**Usage:**
 ```bash
-MODE="lando"
+# Auto-detected when criteria met
+./diagnose_files.sh files_to_check.txt
+
+# Force lando mode explicitly
+./cleanup_files.sh --mode lando scan_results.log
 ```
 
 **Requirements:**
-- Active Lando environment
+- Active Lando environment (`lando start`)
 - `.lando.local.yml` with proper DRUSH_OPTIONS_URI (recommended)
 - Database connectivity via `lando mysql`
 
@@ -388,22 +503,29 @@ MODE="lando"
 
 ### Terminus Mode (Pantheon Remote)
 
-**Configuration:**
+**Auto-Detection Criteria:**
+- `terminus` command available
+- No active Lando environment detected
+
+**Usage:**
 ```bash
-MODE="terminus"
-SITE_NAME="your-pantheon-site-name"
-ENV="dev"  # or test, live
+# Auto-detected when terminus available (requires --site and --env)
+./diagnose_files.sh --site mysite --env dev files_to_check.txt
+
+# Force terminus mode explicitly  
+./cleanup_files.sh --mode terminus --site mysite --env dev scan_results.log
 ```
 
 **Requirements:**
-- Authenticated Terminus CLI session
+- Authenticated Terminus CLI session (`terminus auth:login`)
 - Valid site and environment access
 - Network connectivity to Pantheon
+- Site name and environment specified for most operations
 
 **Domain Detection Methods:**
 1. `terminus domain:list` API call
 2. `terminus env:info` environment data
-3. Standard pantheonsite.io URL pattern
+3. Standard pantheonsite.io URL pattern (`https://ENV-SITE.pantheonsite.io`)
 
 ## File Diagnosis Categories
 
@@ -503,8 +625,26 @@ The scripts include sophisticated Layout Builder analysis:
 
 ### Common Issues
 
+**Auto-Detection Issues:**
+```bash
+# Test environment detection
+./test_domain_detection.sh
+
+# Check Lando environment
+lando info
+cat .lando.local.yml | grep DRUSH_OPTIONS_URI
+
+# Check Terminus authentication  
+terminus auth:whoami
+terminus site:list
+```
+
 **Domain Detection Failures:**
 ```bash
+# Force mode and test domain detection
+./test_domain_detection.sh --mode lando
+./test_domain_detection.sh --mode terminus --site mysite --env dev
+
 # Check Lando configuration
 cat .lando.local.yml | grep DRUSH_OPTIONS_URI
 lando info
@@ -515,21 +655,25 @@ lando start
 
 **Database Connection Issues:**
 ```bash
-# Lando mode
-lando mysql -e "SELECT 1;"
+# Test with explicit mode
+./run_cron.sh --mode lando --dry-run
+./run_cron.sh --mode terminus --site mysite --env dev --dry-run
 
-# Terminus mode  
-terminus auth:whoami
-terminus sql:query site.env "SELECT 1;" --raw
+# Manual connection testing
+lando mysql -e "SELECT 1;"  # Lando mode
+terminus sql:query site.env "SELECT 1;" --raw  # Terminus mode
 ```
 
 **DOM Verification Timeouts:**
 ```bash
+# Test with custom timeout and base URL
+./verify_dom_usage.sh --timeout 60 --base-url https://your-site.lndo.site cleanup_report.log
+
 # Increase timeout and test manually
 curl --max-time 30 "https://your-site.lndo.site/node/123"
 
 # Check site accessibility
-./test_domain_detection.sh lando
+./test_domain_detection.sh --mode lando
 ```
 
 **Permission Errors:**

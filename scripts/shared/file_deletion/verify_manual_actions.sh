@@ -503,15 +503,37 @@ fi
 
 # Auto-detect mode if not specified
 if [ -z "$MODE" ]; then
-    if grep -q "Mode: lando" "$CLEANUP_RESULTS_FILE"; then
-        MODE="lando"
-        log_info "Auto-detected mode: lando"
-    elif grep -q "Mode: terminus" "$CLEANUP_RESULTS_FILE"; then
+    # Try to detect Lando environment first (preferred default)
+    if command -v lando >/dev/null 2>&1; then
+        if [ -f ".lando.yml" ] || [ -f ".lando.local.yml" ]; then
+            if lando info >/dev/null 2>&1; then
+                MODE="lando"
+                log_info "Auto-detected mode: lando (from environment)"
+            fi
+        fi
+    fi
+    
+    # Try to detect Terminus environment
+    if [ -z "$MODE" ] && command -v terminus >/dev/null 2>&1; then
         MODE="terminus"
-        log_info "Auto-detected mode: terminus"
-    else
-        log_error "Could not detect mode from cleanup results. Please specify --mode"
-        exit 1
+        log_info "Auto-detected mode: terminus (from environment)"
+    fi
+    
+    # Fall back to parsing cleanup results file if available
+    if [ -z "$MODE" ] && [ -n "$CLEANUP_RESULTS_FILE" ] && [ -f "$CLEANUP_RESULTS_FILE" ]; then
+        if grep -q "Mode: lando" "$CLEANUP_RESULTS_FILE"; then
+            MODE="lando"
+            log_info "Auto-detected mode: lando (from cleanup file)"
+        elif grep -q "Mode: terminus" "$CLEANUP_RESULTS_FILE"; then
+            MODE="terminus"
+            log_info "Auto-detected mode: terminus (from cleanup file)"
+        fi
+    fi
+    
+    # Default to lando as a sane default
+    if [ -z "$MODE" ]; then
+        MODE="lando"
+        log_info "No mode detected. Defaulting to: lando"
     fi
 fi
 

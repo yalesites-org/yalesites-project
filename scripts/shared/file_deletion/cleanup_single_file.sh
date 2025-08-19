@@ -56,7 +56,7 @@
 # ==============================================================================
 
 # --- CONFIGURATION ---
-MODE="lando"
+MODE=""
 SITE_NAME=""
 ENV=""
 FILENAME=""
@@ -121,7 +121,7 @@ run_sql() {
         result=$(lando mysql -e "$query" 2>&1)
         exit_code=$?
     elif [ "$MODE" == "terminus" ]; then
-        result=$(terminus remote:drush ${SITE_NAME}.${ENV} -- sql:query "$query" 2>&1)
+        result=$(echo "$query" | terminus drush "${SITE_NAME}.${ENV}" sql:cli 2>&1)
         exit_code=$?
     else
         echo "Error: Unknown mode: $MODE" >&2
@@ -440,6 +440,28 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Auto-detect mode if not specified
+if [ -z "$MODE" ]; then
+    # Try to detect Lando environment first (preferred default)
+    if command -v lando >/dev/null 2>&1; then
+        if [ -f ".lando.yml" ] || [ -f ".lando.local.yml" ]; then
+            if lando info >/dev/null 2>&1; then
+                MODE="lando"
+            fi
+        fi
+    fi
+    
+    # Try to detect Terminus environment
+    if [ -z "$MODE" ] && command -v terminus >/dev/null 2>&1; then
+        MODE="terminus"
+    fi
+    
+    # Default to lando as a sane default
+    if [ -z "$MODE" ]; then
+        MODE="lando"
+    fi
+fi
+
 # Validate arguments
 if [ -z "$FILENAME" ]; then
     echo "Error: Filename is required" >&2
@@ -467,7 +489,7 @@ case "$ACTION" in
                 exit 2
             fi
         elif [ "$MODE" == "terminus" ]; then
-            if ! terminus remote:drush ${SITE_NAME}.${ENV} -- sql:query "SELECT 1;" >/dev/null 2>&1; then
+            if ! echo "SELECT 1" | terminus drush "${SITE_NAME}.${ENV}" sql:cli >/dev/null 2>&1; then
                 echo "Error: Cannot connect to Terminus database. Check site/env parameters." >&2
                 exit 2
             fi
