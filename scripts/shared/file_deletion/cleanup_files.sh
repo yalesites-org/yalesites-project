@@ -487,7 +487,7 @@ execute_auto_deletions() {
                 
                 if [[ "$command" =~ ^find\ .* ]] || [[ "$command" =~ ^rm\ .* ]]; then
                     # Lando file deletion
-                    if execute_command "$command"; then
+                    if execute_file_deletion "$command"; then
                         log_info "Successfully deleted orphaned file: $filename"
                         ((DELETED_SUCCESS++))
                         echo "SUCCESS|$filename|$command" >> "/tmp/cleanup_deleted_$$"
@@ -498,7 +498,7 @@ execute_auto_deletions() {
                     fi
                 elif [[ "$command" =~ ^terminus\ remote:drush ]]; then
                     # Terminus file deletion
-                    if execute_command "$command"; then
+                    if execute_file_deletion "$command"; then
                         log_info "Successfully deleted orphaned file: $filename"
                         ((DELETED_SUCCESS++))
                         echo "SUCCESS|$filename|$command" >> "/tmp/cleanup_deleted_$$"
