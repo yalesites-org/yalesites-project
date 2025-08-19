@@ -55,10 +55,10 @@ class ExternalSourceRedirectSubscriber implements EventSubscriberInterface {
 
         if ($fresh_node && $fresh_node->hasField(self::SOURCE_FIELD)) {
           $external_source_field = $fresh_node->get(self::SOURCE_FIELD)->first();
-          
+
           if ($external_source_field) {
             $link = $external_source_field->getValue();
-            
+
             if (!empty($link['uri'])) {
               $response = new TrustedRedirectResponse($link['uri']);
               // Comprehensive cache prevention headers to ensure redirect
