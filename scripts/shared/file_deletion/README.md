@@ -1,29 +1,19 @@
 # Drupal File Deletion Scripts
 
-A comprehensive suite of Unix-philosophy shell scripts for diagnosing and cleaning up orphaned files in Drupal installations. The scripts work with both local Lando environments and remote Pantheon hosting via Terminus CLI.
+A streamlined set of shell scripts for diagnosing and cleaning up orphaned files in Drupal installations. The scripts work with both local Lando environments and remote Pantheon hosting via Terminus CLI.
 
 ## Architecture
 
-The scripts follow Unix philosophy principles: each tool does one thing well and can be chained together for complex workflows. They provide both bulk operations for large-scale cleanup and individual file utilities for precise control.
+The scripts follow a simple, effective workflow: diagnose files to identify cleanup opportunities, execute automated cleanup operations, and run Drupal cron to process temporary files.
 
-### Script Categories
+### Core Scripts
 
-**Diagnostic Scripts (Analysis Phase):**
-- `diagnose_files.sh` - Main bulk file analyzer with DOM verification
-- `diagnose_single_file.sh` - Single file diagnosis utility  
-- `test_domain_detection.sh` - Domain detection testing utility
+**Analysis Phase:**
+- `diagnose_files.sh` - Bulk file analyzer with DOM verification
 
-**Cleanup Scripts (Execution Phase):**
-- `cleanup_files.sh` - Automated cleanup executor for bulk operations
-- `cleanup_single_file.sh` - Single file cleanup utility
+**Execution Phase:**
+- `cleanup_files.sh` - Automated cleanup executor for bulk operations  
 - `run_cron.sh` - Drupal cron execution for temporary file processing
-
-**Verification Scripts (Validation Phase):**
-- `verify_dom_usage.sh` - DOM content verification for manual review files
-- `verify_manual_actions.sh` - Spot-check verification for specific files
-
-**Demonstration:**
-- `unix_workflow_demo.sh` - Example Unix-style single file workflow
 
 ## Prerequisites
 
@@ -117,12 +107,12 @@ export ENV="filedeltest"
 - `--help`: Show help message with script-specific options
 
 **Script-Specific Parameters:**
-- `--dry-run`: Preview actions without executing (cleanup scripts)
+- `--dry-run`: Preview actions without executing (cleanup_files.sh)
 - `--auto-confirm`: Skip confirmation prompts (cleanup_files.sh)
 - `--run-cron`: Execute Drupal cron after cleanup (cleanup_files.sh)
-- `--verbose`: Show detailed output (run_cron.sh, verify scripts)
-- `--base-url <url>`: Override base URL (verification scripts)
-- `--output <format>`: Output format: human|json|tsv (single file scripts)
+- `--verbose`: Show detailed output (run_cron.sh)
+- `--timeout <seconds>`: Timeout for operations (run_cron.sh)
+- `--output <format>`: Output format: human|json|tsv (run_cron.sh)
 
 **Auto-Detection Logic:**
 1. Try to detect Lando environment (checks for .lando.yml and running containers)
@@ -132,17 +122,17 @@ export ENV="filedeltest"
 
 ## Core Workflow
 
-### Complete Bulk Workflow
+### Complete Workflow
 
 ```bash
 # 1. Create file list
 echo "report.pdf" > files_to_check.txt
 echo "document.docx" >> files_to_check.txt
 
-# 2. Diagnose files (using environment-specific settings)
+# 2. Diagnose files (auto-detects environment)
 ./diagnose_files.sh files_to_check.txt > scan_results.log
 
-# 3. Preview cleanup actions (auto-detects settings from scan results)
+# 3. Preview cleanup actions 
 ./cleanup_files.sh --dry-run scan_results.log
 
 # 4. Execute cleanup
@@ -152,44 +142,24 @@ echo "document.docx" >> files_to_check.txt
 ./run_cron.sh --verbose
 ```
 
-### Environment-Specific Workflows
+### Environment-Specific Examples
 
 **Lando (Local Development):**
 ```bash
-# Set environment for session
-export MODE="lando"
-
-./diagnose_files.sh files_to_check.txt > lando_results.log
-./cleanup_files.sh --dry-run lando_results.log
-./cleanup_files.sh lando_results.log
+# Auto-detects lando mode
+./diagnose_files.sh files_to_check.txt > scan_results.log
+./cleanup_files.sh --dry-run scan_results.log
+./cleanup_files.sh scan_results.log
+./run_cron.sh --verbose
 ```
 
 **Terminus (Pantheon Remote):**
 ```bash
-# Using command-line parameters
-./cleanup_files.sh --mode terminus --site ys-your-yale-edu --env filedeltest --dry-run scan_results.log
-./cleanup_files.sh --mode terminus --site ys-your-yale-edu --env filedeltest scan_results.log
-
-# Or using environment variables  
-export MODE="terminus" SITE_NAME="ys-your-yale-edu" ENV="filedeltest"
-./diagnose_files.sh files_to_check.txt > pantheon_results.log
-./cleanup_files.sh pantheon_results.log
-```
-
-### Unix-Style Single File Workflow
-
-```bash
-# 1. Diagnose single file
-./diagnose_single_file.sh report.pdf
-
-# 2. Clean up based on diagnosis  
-./cleanup_single_file.sh --dry-run report.pdf rm-file
-
-# 3. Execute cleanup
-./cleanup_single_file.sh report.pdf rm-file
-
-# 4. Run cron if needed
-./run_cron.sh
+# Force terminus mode with site parameters
+./diagnose_files.sh --mode terminus --site mysite --env dev files_to_check.txt > scan_results.log
+./cleanup_files.sh --mode terminus --site mysite --env dev --dry-run scan_results.log
+./cleanup_files.sh --mode terminus --site mysite --env dev scan_results.log
+./run_cron.sh --mode terminus --site mysite --env dev --verbose
 ```
 
 ## Script Reference
@@ -236,39 +206,6 @@ image.jpg
 - **Phantom References:** In database but not in rendered DOM
 - **Active Content:** Used in published pages, requires manual removal
 
-### diagnose_single_file.sh
-
-**Purpose:** Comprehensive analysis of individual files
-
-**Usage:**
-```bash
-./diagnose_single_file.sh [OPTIONS] <filename>
-```
-
-**Options:**
-- `--mode <lando|terminus>`: Force execution mode (default: lando)
-- `--site <sitename>`: Pantheon site name (required for terminus)
-- `--env <environment>`: Pantheon environment (required for terminus)  
-- `--enable-dom-verification`: Enable DOM content verification
-- `--base-url <url>`: Override base URL for DOM verification
-- `--output <format>`: Output format: human|json|tsv (default: human)
-- `--help`: Show help message
-
-**Examples:**
-```bash
-# Basic diagnosis
-./diagnose_single_file.sh report.pdf
-
-# With DOM verification
-./diagnose_single_file.sh --enable-dom-verification document.docx
-
-# JSON output for scripting
-./diagnose_single_file.sh --output json file.xlsx
-
-# Terminus mode
-./diagnose_single_file.sh --mode terminus --site mysite --env dev file.pdf
-```
-
 ### cleanup_files.sh
 
 **Purpose:** Automated execution of cleanup operations from diagnostic results
@@ -300,45 +237,6 @@ image.jpg
 
 # With cron execution
 ./cleanup_files.sh --run-cron scan_results.log
-```
-
-### cleanup_single_file.sh
-
-**Purpose:** Execute specific cleanup actions on individual files
-
-**Usage:**
-```bash
-./cleanup_single_file.sh [OPTIONS] <filename> <action> [action_params]
-```
-
-**Options:**
-- `--mode <lando|terminus>`: Force execution mode (default: lando)
-- `--site <sitename>`: Pantheon site name (required for terminus)
-- `--env <environment>`: Pantheon environment (required for terminus)
-- `--dry-run`: Show what would be executed without running
-- `--output <format>`: Output format: human|json|tsv (default: human)
-- `--help`: Show help message
-
-**Actions:**
-- `rm-file`: Delete file directly from filesystem
-- `set-status-0 <fid>`: Set file_managed status = 0 for given FID
-- `delete-usage <fid> <type> <id>`: Delete specific file_usage record
-- `sql-command "<command>"`: Execute custom SQL command
-- `file-command "<command>"`: Execute custom file system command
-
-**Examples:**
-```bash
-# Delete orphaned file
-./cleanup_single_file.sh report.pdf rm-file
-
-# Set file status to temporary
-./cleanup_single_file.sh document.docx set-status-0 1234
-
-# Delete specific usage record
-./cleanup_single_file.sh image.jpg delete-usage 1234 block_content 5678
-
-# Dry run mode
-./cleanup_single_file.sh --dry-run report.pdf rm-file
 ```
 
 ### run_cron.sh
@@ -373,104 +271,6 @@ image.jpg
 
 # JSON output for scripting
 ./run_cron.sh --output json
-```
-
-### verify_dom_usage.sh
-
-**Purpose:** Verify if files marked for manual review actually appear in rendered DOM content
-
-**Usage:**
-```bash
-./verify_dom_usage.sh [OPTIONS] <cleanup_report_file>
-```
-
-**Options:**
-- `--mode <lando|terminus>`: Force execution mode (default: auto-detect)
-- `--site <sitename>`: Pantheon site name (required for terminus mode)
-- `--env <environment>`: Pantheon environment (required for terminus mode)
-- `--base-url <url>`: Override base URL for DOM verification
-- `--user-agent <string>`: Custom User-Agent string
-- `--timeout <seconds>`: Request timeout in seconds (default: 30)
-- `--dry-run`: Show what would be checked without making requests
-- `--verbose`: Show detailed output
-- `--help`: Show help message
-
-**Examples:**
-```bash
-# Auto-detect environment and verify all manual files
-./verify_dom_usage.sh cleanup_report_20250814_075224.log
-
-# Force lando mode
-./verify_dom_usage.sh --mode lando cleanup_report.log
-
-# Terminus mode with site parameters
-./verify_dom_usage.sh --mode terminus --site mysite --env dev cleanup_report.log
-
-# Use custom base URL
-./verify_dom_usage.sh --base-url https://dev-mysite.pantheonsite.io cleanup_report.log
-
-# Dry run to see what would be checked
-./verify_dom_usage.sh --dry-run cleanup_report.log
-```
-
-### verify_manual_actions.sh
-
-**Purpose:** Spot-check files or re-verify files where DOM verification failed
-
-**Usage:**
-```bash
-./verify_manual_actions.sh [OPTIONS] [<input_source>]
-```
-
-**Options:**
-- `--mode <lando|terminus>`: Execution mode (auto-detected if not specified)
-- `--site <sitename>`: Pantheon site name (required for terminus mode)
-- `--env <environment>`: Pantheon environment (required for terminus mode)
-- `--base-url <url>`: Override base URL for DOM verification
-- `--timeout <seconds>`: HTTP timeout for DOM checks (default: 10)
-- `--file <filename>`: Check specific file by name
-- `--node <node_id>`: Check specific node page
-- `--conservative-only`: Only check files marked as "Conservative" (DOM check failed)
-- `--dry-run`: Show what would be checked without executing
-- `--help`: Show help message
-
-**Examples:**
-```bash
-# Check all manual action files
-./verify_manual_actions.sh cleanup_results.txt
-
-# Spot-check specific file
-./verify_manual_actions.sh --file "document.docx" --node 1007
-
-# Re-check only conservative files
-./verify_manual_actions.sh --conservative-only cleanup_results.txt
-```
-
-### test_domain_detection.sh
-
-**Purpose:** Test domain detection capabilities for both Lando and Terminus environments
-
-**Usage:**
-```bash
-./test_domain_detection.sh [OPTIONS]
-```
-
-**Options:**
-- `--mode <lando|terminus>`: Force execution mode (default: auto-detect)
-- `--site <sitename>`: Pantheon site name (required for terminus mode)
-- `--env <environment>`: Pantheon environment (required for terminus mode)
-- `--help`: Show help message
-
-**Examples:**
-```bash
-# Auto-detect mode and test domain detection
-./test_domain_detection.sh
-
-# Test lando domain detection
-./test_domain_detection.sh --mode lando
-
-# Test terminus domain detection  
-./test_domain_detection.sh --mode terminus --site mysite --env dev
 ```
 
 ## Environment Support
@@ -554,21 +354,19 @@ image.jpg
 - **Action:** Manual UI removal required
 - **Safety:** Manual only - automated deletion would break content
 
-## DOM Verification System
+## File Analysis Features
 
-The scripts include sophisticated DOM verification to distinguish between database references and actual page content:
+The `diagnose_files.sh` script includes advanced analysis capabilities:
 
-**Features:**
-- Fetches actual rendered pages using curl
-- Multiple filename pattern matching (spaces, underscores, URL encoding)
-- Handles Layout Builder and nested paragraph structures
-- Configurable timeouts and User-Agent strings
+**Database Analysis:**
+- Comprehensive file_managed and file_usage table analysis
+- Layout Builder entity relationship detection
+- Orphaned file identification across complex entity structures
 
-**Pattern Matching:**
-- Exact filename matches
-- Space-to-underscore/hyphen conversions
-- URL encoding variations
-- Filename without extension matching
+**Smart Classification:**
+- Distinguishes between truly orphaned files and stale references
+- Identifies files safe for automatic cleanup vs. manual review
+- Handles complex Drupal entity relationships and nested content
 
 ## Database Operations
 
@@ -627,8 +425,9 @@ The scripts include sophisticated Layout Builder analysis:
 
 **Auto-Detection Issues:**
 ```bash
-# Test environment detection
-./test_domain_detection.sh
+# Test environment auto-detection
+./diagnose_files.sh --help  # Check available options
+./cleanup_files.sh --help   # Verify CLI flags
 
 # Check Lando environment
 lando info
@@ -641,9 +440,9 @@ terminus site:list
 
 **Domain Detection Failures:**
 ```bash
-# Force mode and test domain detection
-./test_domain_detection.sh --mode lando
-./test_domain_detection.sh --mode terminus --site mysite --env dev
+# Test mode detection with actual scripts
+./diagnose_files.sh --mode lando files_to_check.txt
+./diagnose_files.sh --mode terminus --site mysite --env dev files_to_check.txt
 
 # Check Lando configuration
 cat .lando.local.yml | grep DRUSH_OPTIONS_URI
@@ -664,16 +463,16 @@ lando mysql -e "SELECT 1;"  # Lando mode
 terminus sql:query site.env "SELECT 1;" --raw  # Terminus mode
 ```
 
-**DOM Verification Timeouts:**
+**Cleanup Issues:**
 ```bash
-# Test with custom timeout and base URL
-./verify_dom_usage.sh --timeout 60 --base-url https://your-site.lndo.site cleanup_report.log
+# Test cleanup with dry-run first
+./cleanup_files.sh --dry-run scan_results.log
 
-# Increase timeout and test manually
-curl --max-time 30 "https://your-site.lndo.site/node/123"
+# Check for specific error patterns in output
+./cleanup_files.sh scan_results.log 2>&1 | grep -i error
 
-# Check site accessibility
-./test_domain_detection.sh --mode lando
+# Test basic connectivity
+curl --max-time 10 "https://your-site.lndo.site"
 ```
 
 **Permission Errors:**
@@ -746,28 +545,20 @@ grep "Failed\|Error" cleanup_report.log
 
 ## Output Formats
 
-All scripts support multiple output formats for different use cases:
+The scripts provide detailed, readable output for analysis and debugging:
 
-### Human Format (Default)
+### Human-Readable Format (Default)
 - Color-coded console output
 - Detailed explanations and recommendations
 - Interactive prompts and confirmations
+- Comprehensive reports with statistics
 
-### JSON Format
+### Alternative Formats
+The `run_cron.sh` script supports additional output formats:
 ```bash
-./diagnose_single_file.sh --output json file.pdf
+./run_cron.sh --output json    # Machine-readable JSON
+./run_cron.sh --output tsv     # Tab-separated values
 ```
-- Structured data for programmatic processing
-- Consistent field names across scripts
-- Machine-readable status and error information
-
-### TSV Format  
-```bash
-./run_cron.sh --output tsv
-```
-- Tab-separated values for data analysis
-- Compatible with spreadsheet applications
-- Easy parsing with standard Unix tools
 
 ## Integration Examples
 
