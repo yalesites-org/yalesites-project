@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_core\EventSubscriber;
 
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Routing\TrustedRedirectResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -25,6 +26,13 @@ class ExternalSourceRedirectSubscriber implements EventSubscriberInterface {
    * @var \Drupal\Core\Routing\RouteMatchInterface
    */
   protected $routeMatch;
+
+  /**
+   * The entity type manager service.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
 
   /**
    * {@inheritdoc}
@@ -51,7 +59,7 @@ class ExternalSourceRedirectSubscriber implements EventSubscriberInterface {
       if (!empty($node) && $node->hasField(self::SOURCE_FIELD)) {
         // Reload the node from storage to ensure we have the latest data.
         // This prevents issues with cached entity data.
-        $fresh_node = \Drupal::entityTypeManager()->getStorage('node')->load($node->id());
+        $fresh_node = $this->entityTypeManager->getStorage('node')->load($node->id());
 
         if ($fresh_node && $fresh_node->hasField(self::SOURCE_FIELD)) {
           $external_source_field = $fresh_node->get(self::SOURCE_FIELD)->first();
@@ -86,9 +94,12 @@ class ExternalSourceRedirectSubscriber implements EventSubscriberInterface {
    *
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The route match service.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager service.
    */
-  public function __construct(RouteMatchInterface $route_match) {
+  public function __construct(RouteMatchInterface $route_match, EntityTypeManagerInterface $entity_type_manager) {
     $this->routeMatch = $route_match;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -96,7 +107,8 @@ class ExternalSourceRedirectSubscriber implements EventSubscriberInterface {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('current_route_match')
+      $container->get('current_route_match'),
+      $container->get('entity_type.manager')
     );
   }
 
