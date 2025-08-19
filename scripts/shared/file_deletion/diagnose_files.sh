@@ -22,14 +22,13 @@
 # commands for safe cleanup operations.
 #
 # USAGE:
-#   ./diagnose_files.sh
+#   ./diagnose_files.sh [OPTIONS] <files_to_check.txt>
 #
-# CONFIGURATION:
-# Edit the configuration section below to set:
-# - MODE: "lando" (local) or "terminus" (remote Pantheon)
-# - SITE_NAME: Pantheon site name (required for terminus mode)
-# - ENV: Pantheon environment (dev/test/live) (required for terminus mode)
-# - FILES_TO_CHECK: Path to input file containing list of files to analyze
+# OPTIONS:
+#   --mode <lando|terminus>     Force execution mode (auto-detected if not specified)
+#   --site <sitename>          Pantheon site name (required for terminus mode)
+#   --env <environment>        Pantheon environment (required for terminus mode)
+#   --help                     Show this help message
 #
 # INPUT FILE FORMAT:
 # The input file should contain one filename per line:
@@ -80,7 +79,7 @@
 #
 # ENVIRONMENT SUPPORT:
 # - Lando (local): Uses 'lando mysql' for database queries and 'rm' for file deletion
-# - Terminus (remote): Uses 'terminus sql:query' and 'terminus remote:drush -- eval' for operations
+# - Terminus (remote): Uses 'terminus drush site.env sql:cli' and 'terminus remote:drush -- eval' for operations
 #
 # SAFETY FEATURES:
 # - Only processes files listed in the input file
@@ -109,17 +108,17 @@
 # ==============================================================================
 
 # --- CONFIGURATION ---
-MODE="lando"
-SITE_NAME="your-pantheon-site-name"
-ENV="dev"
-FILES_TO_CHECK="${1:-${FILES_TO_CHECK:-files_to_check.txt}}"
+MODE=""
+SITE_NAME=""
+ENV=""
+FILES_TO_CHECK=""
 PARAGRAPH_MEDIA_FIELD_NAME="field_media"
 NODE_MEDIA_FIELD_NAME="field_media"
 # DOM Verification Configuration
 ENABLE_DOM_VERIFICATION=true
-BASE_URL=""  # Auto-detect if empty. Override with specific URL if needed.
+BASE_URL=""  # Auto-detect from environment. Override with specific URL if needed.
 USER_AGENT="Mozilla/5.0 (Drupal File Diagnosis) DOM Scanner/v11"
-CURL_TIMEOUT=10
+CURL_TIMEOUT=15
 
 # Domain Detection Methods:
 # Lando: 1) .lando.local.yml DRUSH_OPTIONS_URI, 2) Constructed from name, 3) lando info JSON
@@ -134,7 +133,7 @@ build_sql_command() {
   if [ "$MODE" == "lando" ]; then
     echo "lando mysql -e \"${query}\""
   elif [ "$MODE" == "terminus" ]; then
-    echo "terminus sql:query --site=\"$SITE_NAME\" --env=\"$ENV\" \"${query}\" --raw"
+    echo "echo \"${query}\" | terminus drush \"${SITE_NAME}.${ENV}\" sql:cli"
   else
     echo "ERROR: Invalid MODE set" >&2
     return 1
@@ -190,7 +189,7 @@ fi
 run_sql() {
     local query="$1"
     if [ "$MODE" == "lando" ]; then lando mysql -sN -e "$query" < /dev/null;
-    elif [ "$MODE" == "terminus" ]; then terminus sql:query --site="$SITE_NAME" --env="$ENV" "$query" --raw < /dev/null;
+    elif [ "$MODE" == "terminus" ]; then echo "$query" | terminus drush "${SITE_NAME}.${ENV}" sql:cli < /dev/null;
     else echo -e "${RED}Error: Invalid MODE set.${NC}"; exit 1; fi
 }
 
@@ -430,7 +429,123 @@ verify_file_in_block_content() {
     return 1
 }
 
-if [ ! -f "$FILES_TO_CHECK" ]; then echo -e "${RED}Error: Input file '$FILES_TO_CHECK' not found.${NC}"; exit 1; fi
+# --- CLI FUNCTIONS ---
+
+show_usage() {
+    echo "Usage: $(basename "$0") [OPTIONS] <files_to_check.txt>"
+    echo ""
+    echo "OPTIONS:"
+    echo "  --mode <lando|terminus>     Force execution mode (auto-detected if not specified)"
+    echo "  --site <sitename>          Pantheon site name (required for terminus mode)"
+    echo "  --env <environment>        Pantheon environment (required for terminus mode)"
+    echo "  --help                     Show this help message"
+    echo ""
+    echo "Examples:"
+    echo "  $(basename "$0") files_to_check.txt                                # Auto-detect mode"
+    echo "  $(basename "$0") --mode lando files_to_check.txt                  # Force lando mode"
+    echo "  $(basename "$0") --mode terminus --site mysite --env dev files.txt # Terminus mode"
+}
+
+# Auto-detect mode from environment
+detect_environment_mode() {
+    if [ -n "$MODE" ]; then
+        return 0
+    fi
+    
+    # Try to detect Lando environment first (preferred default)
+    if command -v lando >/dev/null 2>&1; then
+        if [ -f ".lando.yml" ] || [ -f ".lando.local.yml" ]; then
+            if lando info >/dev/null 2>&1; then
+                MODE="lando"
+                echo "Auto-detected mode: lando"
+                return 0
+            fi
+        fi
+    fi
+    
+    # Try to detect Terminus environment
+    if command -v terminus >/dev/null 2>&1; then
+        MODE="terminus"
+        echo "Auto-detected mode: terminus (requires --site and --env)"
+        return 0
+    fi
+    
+    # Default to lando as a sane default
+    MODE="lando"
+    echo "No environment auto-detected. Defaulting to mode: lando"
+    return 0
+}
+
+# Validate configuration
+validate_config() {
+    if [ ! -f "$FILES_TO_CHECK" ]; then
+        echo -e "${RED}Error: Input file '$FILES_TO_CHECK' not found.${NC}"
+        exit 1
+    fi
+    
+    if [ -z "$MODE" ]; then
+        echo -e "${RED}Error: Mode not specified and could not be auto-detected${NC}"
+        exit 1
+    fi
+    
+    if [ "$MODE" == "terminus" ]; then
+        if [ -z "$SITE_NAME" ] || [ -z "$ENV" ]; then
+            echo -e "${RED}Error: Terminus mode requires --site and --env parameters${NC}"
+            echo "Example: $(basename "$0") --mode terminus --site mysite --env dev files.txt"
+            exit 1
+        fi
+    fi
+}
+
+# --- MAIN SCRIPT ---
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --mode)
+            MODE="$2"
+            shift 2
+            ;;
+        --site)
+            SITE_NAME="$2"
+            shift 2
+            ;;
+        --env)
+            ENV="$2"
+            shift 2
+            ;;
+        --help)
+            show_usage
+            exit 0
+            ;;
+        -*)
+            echo "Unknown option: $1"
+            show_usage
+            exit 1
+            ;;
+        *)
+            if [ -z "$FILES_TO_CHECK" ]; then
+                FILES_TO_CHECK="$1"
+            else
+                echo "Too many arguments"
+                show_usage
+                exit 1
+            fi
+            shift
+            ;;
+    esac
+done
+
+# Set default files to check if not specified
+if [ -z "$FILES_TO_CHECK" ]; then
+    FILES_TO_CHECK="files_to_check.txt"
+fi
+
+# Detect environment mode if not specified
+detect_environment_mode
+
+# Validate configuration
+validate_config
 
 echo -e "${BLUE}--- Starting File Usage Diagnostic Scan ---${NC}"
 echo "Mode: $MODE"; [ "$MODE" == "terminus" ] && echo "Site: $SITE_NAME.$ENV"
@@ -516,9 +631,9 @@ while IFS= read -r filename || [ -n "$filename" ]; do
             echo -e "    ${YELLOW}- FID ${fid}: ${file_path} (current status: ${status})${NC}"
             # Generate environment-specific database command to set status = 0
             if [ "$MODE" == "lando" ]; then
-                echo -e "    ${BLUE}COMMAND: lando mysql -e \"UPDATE pantheon.file_managed SET status = 0 WHERE fid = ${fid};\" # Set unused file to temporary${NC}"
+                echo -e "    ${BLUE}COMMAND: lando mysql -e \"UPDATE pantheon.file_managed SET status = 0 WHERE fid = ${fid}\" # Set unused file to temporary${NC}"
             else
-                echo -e "    ${BLUE}COMMAND: terminus remote:drush ${SITE_NAME}.${ENV} -- sql:query \"UPDATE pantheon.file_managed SET status = 0 WHERE fid = ${fid};\" # Set unused file to temporary${NC}"
+                echo -e "    ${BLUE}COMMAND: echo \"UPDATE pantheon.file_managed SET status = 0 WHERE fid = ${fid}\" | terminus drush \"${SITE_NAME}.${ENV}\" sql:cli # Set unused file to temporary${NC}"
             fi
         done
         continue
@@ -772,7 +887,7 @@ generate_consolidated_transaction() {
     done
     consolidated_cmd+="SET @remaining = (SELECT COUNT(*) FROM pantheon.file_usage WHERE fid = $fid); UPDATE pantheon.file_managed SET status = 0 WHERE fid = $fid AND @remaining = 0; COMMIT;"
     
-    [ "$MODE" == "lando" ] && echo -e "    ${BLUE}COMMAND: lando mysql -e \"${consolidated_cmd}\"${NC}" || echo -e "    ${BLUE}COMMAND: terminus sql:query --site=${SITE_NAME} --env=${ENV} \"${consolidated_cmd}\"${NC}"
+    [ "$MODE" == "lando" ] && echo -e "    ${BLUE}COMMAND: lando mysql -e \"${consolidated_cmd}\"${NC}" || echo -e "    ${BLUE}COMMAND: echo \"${consolidated_cmd}\" | terminus drush \"${SITE_NAME}.${ENV}\" sql:cli${NC}"
 }
 
 # Process collected deletable records and generate consolidated transactions

@@ -142,9 +142,9 @@ DRY_RUN=false
 AUTO_CONFIRM=false
 RUN_CRON=false
 CRON_SUCCESS=false
-MODE=""
-SITE_NAME=""
-ENV=""
+MODE="terminus"
+SITE_NAME="ys-your-yale-edu"
+ENV="filedeltest"
 SCAN_RESULTS_FILE=""
 USING_STDIN=false
 TEMP_STDIN_FILE=""
@@ -265,7 +265,7 @@ validate_config() {
             exit 1
         fi
     else
-        if ! terminus sql:query --site="$SITE_NAME" --env="$ENV" "SELECT 1;" > /dev/null 2>&1; then
+        if ! echo "SELECT 1" | terminus drush "${SITE_NAME}.${ENV}" sql:cli > /dev/null 2>&1; then
             log_error "Cannot connect to Pantheon database. Check site name and environment."
             exit 1
         fi
@@ -295,7 +295,7 @@ execute_sql() {
         result=$(lando mysql -e "$sql_command" 2>&1)
         exit_code=$?
     else
-        result=$(terminus sql:query --site="$SITE_NAME" --env="$ENV" "$sql_command" 2>&1)
+        result=$(echo "$sql_command" | terminus drush "${SITE_NAME}.${ENV}" sql:cli 2>&1)
         exit_code=$?
     fi
     

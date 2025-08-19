@@ -17,7 +17,10 @@
 #   ./verify_dom_usage.sh [OPTIONS] <cleanup_report_file>
 #
 # OPTIONS:
-#   --base-url <url>           Base URL for the site (default: auto-detect from lando)
+#   --mode <lando|terminus>    Force execution mode (default: auto-detect)
+#   --site <sitename>          Pantheon site name (required for terminus mode)
+#   --env <environment>        Pantheon environment (required for terminus mode)
+#   --base-url <url>           Base URL for the site (default: auto-detect)
 #   --user-agent <string>      Custom User-Agent string
 #   --timeout <seconds>        Request timeout in seconds (default: 30)
 #   --dry-run                  Show what would be checked without making requests
@@ -25,8 +28,14 @@
 #   --help                     Show this help message
 #
 # EXAMPLES:
-#   # Auto-detect lando URL and verify all manual files
+#   # Auto-detect environment and verify all manual files
 #   ./verify_dom_usage.sh cleanup_report_20250814_075224.log
+#
+#   # Force lando mode
+#   ./verify_dom_usage.sh --mode lando cleanup_report.log
+#
+#   # Terminus mode with site parameters
+#   ./verify_dom_usage.sh --mode terminus --site mysite --env dev cleanup_report.log
 #
 #   # Use custom base URL
 #   ./verify_dom_usage.sh --base-url https://dev-mysite.pantheonsite.io cleanup_report.log
@@ -73,6 +82,9 @@ VERSION="1.0"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 REPORT_FILE="dom_verification_report_${TIMESTAMP}.log"
 CLEANUP_REPORT_FILE=""
+MODE=""
+SITE_NAME=""
+ENV=""
 BASE_URL=""
 USER_AGENT="Mozilla/5.0 (File Cleanup Verifier) Drupal DOM Scanner"
 TIMEOUT=30
@@ -100,7 +112,10 @@ show_usage() {
     echo "Usage: $SCRIPT_NAME [OPTIONS] <cleanup_report_file>"
     echo ""
     echo "OPTIONS:"
-    echo "  --base-url <url>           Base URL for the site (default: auto-detect from lando)"
+    echo "  --mode <lando|terminus>    Force execution mode (default: auto-detect)"
+    echo "  --site <sitename>          Pantheon site name (required for terminus mode)"
+    echo "  --env <environment>        Pantheon environment (required for terminus mode)"
+    echo "  --base-url <url>           Base URL for the site (default: auto-detect)"
     echo "  --user-agent <string>      Custom User-Agent string"
     echo "  --timeout <seconds>        Request timeout in seconds (default: 30)"
     echo "  --dry-run                  Show what would be checked without making requests"
@@ -108,7 +123,9 @@ show_usage() {
     echo "  --help                     Show this help message"
     echo ""
     echo "Examples:"
-    echo "  $SCRIPT_NAME cleanup_report.log                              # Auto-detect lando URL"
+    echo "  $SCRIPT_NAME cleanup_report.log                              # Auto-detect environment"
+    echo "  $SCRIPT_NAME --mode lando cleanup_report.log                # Force lando mode"
+    echo "  $SCRIPT_NAME --mode terminus --site mysite --env dev cleanup_report.log"
     echo "  $SCRIPT_NAME --base-url https://dev-site.pantheonsite.io cleanup_report.log"
     echo "  $SCRIPT_NAME --dry-run cleanup_report.log                    # Preview only"
 }
@@ -431,6 +448,18 @@ cleanup_temp_files() {
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
+        --mode)
+            MODE="$2"
+            shift 2
+            ;;
+        --site)
+            SITE_NAME="$2"
+            shift 2
+            ;;
+        --env)
+            ENV="$2"
+            shift 2
+            ;;
         --base-url)
             BASE_URL="$2"
             shift 2
@@ -493,10 +522,45 @@ echo "" >> "$REPORT_FILE"
 log_info "Starting DOM verification process..."
 log_info "Cleanup report file: $CLEANUP_REPORT_FILE"
 
+# Auto-detect mode if not specified
+if [ -z "$MODE" ]; then
+    # Try to detect Lando environment first (preferred default)
+    if command -v lando >/dev/null 2>&1; then
+        if [ -f ".lando.yml" ] || [ -f ".lando.local.yml" ]; then
+            if lando info >/dev/null 2>&1; then
+                MODE="lando"
+            fi
+        fi
+    fi
+    
+    # Try to detect Terminus environment
+    if [ -z "$MODE" ] && command -v terminus >/dev/null 2>&1; then
+        MODE="terminus"
+    fi
+    
+    # Default to lando as a sane default
+    if [ -z "$MODE" ]; then
+        MODE="lando"
+    fi
+fi
+
+# Validate terminus mode requirements
+if [ "$MODE" == "terminus" ] && [ -z "$BASE_URL" ]; then
+    if [ -z "$SITE_NAME" ] || [ -z "$ENV" ]; then
+        log_error "Terminus mode requires --site and --env parameters when --base-url is not provided"
+        exit 1
+    fi
+fi
+
 # Auto-detect base URL if not provided
 if [ -z "$BASE_URL" ]; then
-    log_info "Auto-detecting base URL..."
-    BASE_URL=$(detect_lando_url)
+    log_info "Auto-detecting base URL for $MODE mode..."
+    if [ "$MODE" == "lando" ]; then
+        BASE_URL=$(detect_lando_url)
+    else
+        BASE_URL="https://${ENV}-${SITE_NAME}.pantheonsite.io"
+    fi
+    
     if [ $? -eq 0 ] && [ -n "$BASE_URL" ]; then
         log_success "Auto-detected base URL: $BASE_URL"
     else

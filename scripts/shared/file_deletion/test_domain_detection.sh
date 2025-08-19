@@ -1,9 +1,116 @@
 #!/bin/bash
 
-# Test script to demonstrate enhanced domain detection
-# Usage: ./test_domain_detection.sh [lando|terminus]
+# ==============================================================================
+# Domain Detection Test Utility (v1.0)
+#
+# Tests domain detection capabilities for both Lando and Terminus environments.
+# Designed to follow Unix philosophy: do one thing and do it well.
+#
+# USAGE:
+#   ./test_domain_detection.sh [OPTIONS]
+#
+# OPTIONS:
+#   --mode <lando|terminus>     Force execution mode (default: lando)
+#   --site <sitename>          Pantheon site name (required for terminus mode)
+#   --env <environment>        Pantheon environment (required for terminus mode)
+#   --help                     Show this help message
+#
+# EXAMPLES:
+#   # Test lando domain detection
+#   ./test_domain_detection.sh --mode lando
+#
+#   # Test terminus domain detection
+#   ./test_domain_detection.sh --mode terminus --site mysite --env dev
+#
+#   # Auto-detect mode
+#   ./test_domain_detection.sh
+#
+# ==============================================================================
 
-MODE="${1:-lando}"
+# --- CONFIGURATION ---
+MODE=""
+SITE_NAME=""
+ENV=""
+
+# --- FUNCTIONS ---
+
+show_usage() {
+    echo "Usage: $(basename "$0") [OPTIONS]"
+    echo ""
+    echo "Test domain detection capabilities for Drupal file cleanup environments."
+    echo ""
+    echo "OPTIONS:"
+    echo "  --mode <lando|terminus>     Force execution mode (default: lando)"
+    echo "  --site <sitename>          Pantheon site name (required for terminus mode)"
+    echo "  --env <environment>        Pantheon environment (required for terminus mode)"
+    echo "  --help                     Show this help message"
+    echo ""
+    echo "Examples:"
+    echo "  $(basename "$0") --mode lando"
+    echo "  $(basename "$0") --mode terminus --site mysite --env dev"
+    echo "  $(basename "$0")  # Auto-detect mode"
+}
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --mode)
+            MODE="$2"
+            shift 2
+            ;;
+        --site)
+            SITE_NAME="$2"
+            shift 2
+            ;;
+        --env)
+            ENV="$2"
+            shift 2
+            ;;
+        --help)
+            show_usage
+            exit 0
+            ;;
+        -*)
+            echo "Unknown option: $1"
+            show_usage
+            exit 1
+            ;;
+        *)
+            echo "Unexpected argument: $1"
+            show_usage
+            exit 1
+            ;;
+    esac
+done
+
+# Auto-detect mode if not specified
+if [ -z "$MODE" ]; then
+    # Try to detect Lando environment first (preferred default)
+    if command -v lando >/dev/null 2>&1; then
+        if [ -f ".lando.yml" ] || [ -f ".lando.local.yml" ]; then
+            if lando info >/dev/null 2>&1; then
+                MODE="lando"
+            fi
+        fi
+    fi
+    
+    # Try to detect Terminus environment
+    if [ -z "$MODE" ] && command -v terminus >/dev/null 2>&1; then
+        MODE="terminus"
+    fi
+    
+    # Default to lando as a sane default
+    if [ -z "$MODE" ]; then
+        MODE="lando"
+    fi
+fi
+
+# Validate arguments
+if [ "$MODE" == "terminus" ] && ([ -z "$SITE_NAME" ] || [ -z "$ENV" ]); then
+    echo "Error: Terminus mode requires --site and --env parameters"
+    show_usage
+    exit 1
+fi
 
 # Colors
 RED='\033[0;31m'
@@ -68,9 +175,6 @@ if [ "$MODE" == "lando" ]; then
     fi
 
 elif [ "$MODE" == "terminus" ]; then
-    SITE_NAME="ys-research-support-yale-edu"
-    ENV="dev"
-    
     echo -e "${YELLOW}Testing Terminus Domain Detection:${NC}"
     echo "Site: $SITE_NAME"
     echo "Env: $ENV"
