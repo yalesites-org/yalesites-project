@@ -56,7 +56,7 @@ class GoogleCalendar extends EmbedSourceBase implements EmbedSourceInterface {
     'height' => '100%',
     'scrolling' => 'no',
     'frameborder' => 'no',
-    'embedType' => 'form',
+    'embedType' => 'map',
     'isIframe' => TRUE,
   ];
 
