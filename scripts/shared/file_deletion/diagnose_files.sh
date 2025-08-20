@@ -127,6 +127,16 @@ CURL_TIMEOUT=15
 
 # --- CORE UTILITY FUNCTIONS ---
 
+# Detect if filename input is a path or basename
+detect_file_format() {
+    local input_file="$1"
+    if [[ "$input_file" == *"/"* ]]; then
+        echo "path"
+    else
+        echo "basename"
+    fi
+}
+
 # Build environment-specific SQL command
 build_sql_command() {
   local query="$1"
@@ -188,9 +198,17 @@ fi
 
 run_sql() {
     local query="$1"
-    if [ "$MODE" == "lando" ]; then lando mysql -sN -e "$query" < /dev/null;
-    elif [ "$MODE" == "terminus" ]; then echo "$query" | terminus drush "${SITE_NAME}.${ENV}" sql:cli < /dev/null;
-    else echo -e "${RED}Error: Invalid MODE set.${NC}"; exit 1; fi
+    if [ "$MODE" == "lando" ]; then 
+        lando mysql -sN -e "$query" < /dev/null
+    elif [ "$MODE" == "terminus" ]; then 
+        # Use a temporary file to avoid stdin conflicts with command substitution
+        local temp_query=$(mktemp)
+        echo "$query" > "$temp_query"
+        terminus drush "${SITE_NAME}.${ENV}" sql:cli < "$temp_query"
+        rm -f "$temp_query"
+    else 
+        echo -e "${RED}Error: Invalid MODE set.${NC}"; exit 1
+    fi
 }
 
 # Auto-detect base URL for DOM verification
@@ -573,27 +591,71 @@ fi
 
 echo "------------------------------------------------"
 
-while IFS= read -r filename || [ -n "$filename" ]; do
+while IFS= read -r filename <&3 || [ -n "$filename" ]; do
     [ -z "$filename" ] && continue
     echo -e "\n🔎 ${YELLOW}Checking file:${NC} ${filename}"
     
-    # Step 1: Check if file exists in file_managed table
-    file_managed_query="SELECT fid, REPLACE(uri, 'public://', '') as file_path, status FROM pantheon.file_managed WHERE filename = '${filename}';"
+    # Detect file format and prepare query variables
+    file_format=$(detect_file_format "$filename")
+    if [ "$file_format" == "path" ]; then
+        # Extract basename for database filename matching
+        file_basename=$(basename "$filename")
+        # Construct exact URI for precise path matching
+        file_uri="public://${filename}"
+        echo -e "  ${CYAN}Input format: Path - targeting specific file at ${file_uri}${NC}"
+    else
+        # Basename only - use as-is for filename matching
+        file_basename="$filename"
+        file_uri=""
+        echo -e "  ${CYAN}Input format: Basename - searching across all directories${NC}"
+    fi
+    
+    # Step 1: Check if file exists in file_managed table with precise path matching
+    if [ "$file_format" == "path" ]; then
+        # Path input: Match both filename AND exact URI to prevent cross-directory conflicts
+        file_managed_query="SELECT fid, REPLACE(uri, 'public://', '') as file_path, status FROM pantheon.file_managed WHERE filename = '${file_basename}' AND uri = '${file_uri}';"
+    else
+        # Basename input: Match filename across all paths (existing behavior)
+        file_managed_query="SELECT fid, REPLACE(uri, 'public://', '') as file_path, status FROM pantheon.file_managed WHERE filename = '${file_basename}';"
+    fi
     file_managed_info=$(run_sql "$file_managed_query")
     
     if [ -z "$file_managed_info" ]; then
         # File not in file_managed table - check if it physically exists
         echo -e "  ${GREEN}✅ No database record found.${NC}"
         
-        # Check if the physical file actually exists
+        # Check if the physical file actually exists using appropriate path format
         file_exists=false
-        if [ -f "web/sites/default/files/$filename" ]; then
-            file_exists=true
-        else
-            # Check for files with the same name in subdirectories
-            found_files=$(find web/sites/default/files -name "$filename" -type f 2>/dev/null)
+        if [ "$MODE" == "terminus" ]; then
+            # Terminus mode - check remote filesystem
+            if [ "$file_format" == "path" ]; then
+                # For path input, check exact path
+                found_files=$(terminus remote:drush ${SITE_NAME}.${ENV} -- eval "echo file_exists(DRUPAL_ROOT . '/sites/default/files/${filename}') ? '${filename}' : '';")
+            else
+                # For basename, search in subdirectories
+                found_files=$(terminus remote:drush ${SITE_NAME}.${ENV} -- eval "echo shell_exec('find sites/default/files -name \"${filename}\" -type f 2>/dev/null');")
+            fi
             if [ -n "$found_files" ]; then
                 file_exists=true
+            fi
+        else
+            # Lando mode (default)
+            if [ "$file_format" == "path" ]; then
+                # For path input, check exact path
+                if [ -f "web/sites/default/files/$filename" ]; then
+                    file_exists=true
+                fi
+            else
+                # For basename, check both direct and subdirectory matches
+                if [ -f "web/sites/default/files/$filename" ]; then
+                    file_exists=true
+                else
+                    # Check for files with the same name in subdirectories
+                    found_files=$(find web/sites/default/files -name "$filename" -type f 2>/dev/null)
+                    if [ -n "$found_files" ]; then
+                        file_exists=true
+                    fi
+                fi
             fi
         fi
         
@@ -603,9 +665,21 @@ while IFS= read -r filename || [ -n "$filename" ]; do
             
             # Generate environment-specific direct deletion command
             if [ "$MODE" == "lando" ]; then
-                echo -e "  ${BLUE}COMMAND: find web/sites/default/files -name '${filename}' -type f -print0 | while IFS= read -r -d '' file; do if rm \"\$file\" 2>/dev/null; then echo \"Successfully deleted: \$(basename \"\$file\")\"; else echo \"Error deleting: \$(basename \"\$file\")\"; fi; done; if [ ! -f \"web/sites/default/files/${filename}\" ] && ! find web/sites/default/files -name '${filename}' -type f -print -quit | grep -q .; then echo \"No files found matching: ${filename}\"; fi # Direct deletion for truly orphaned file${NC}"
+                if [ "$file_format" == "path" ]; then
+                    # For path input, delete specific file
+                    echo -e "  ${BLUE}COMMAND: if rm \"web/sites/default/files/${filename}\" 2>/dev/null; then echo \"Successfully deleted: ${filename}\"; else echo \"Error deleting: ${filename}\"; fi # Direct deletion for truly orphaned file${NC}"
+                else
+                    # For basename, find and delete all matches
+                    echo -e "  ${BLUE}COMMAND: find web/sites/default/files -name '${filename}' -type f -print0 | while IFS= read -r -d '' file; do if rm \"\$file\" 2>/dev/null; then echo \"Successfully deleted: \$(basename \"\$file\")\"; else echo \"Error deleting: \$(basename \"\$file\")\"; fi; done; if [ ! -f \"web/sites/default/files/${filename}\" ] && ! find web/sites/default/files -name '${filename}' -type f -print -quit | grep -q .; then echo \"No files found matching: ${filename}\"; fi # Direct deletion for truly orphaned file${NC}"
+                fi
             else
-                echo -e "  ${BLUE}COMMAND: terminus remote:drush ${SITE_NAME}.${ENV} -- eval \"\\\$files = glob(DRUPAL_ROOT . '/sites/default/files/**/${filename}'); \\\$deleted = 0; foreach(\\\$files as \\\$file) { if(file_exists(\\\$file)) { if(is_writable(\\\$file)) { if(unlink(\\\$file)) { echo 'Successfully deleted: ' . basename(\\\$file); \\\$deleted++; } else { echo 'Error deleting: ' . basename(\\\$file) . ' - ' . (error_get_last()['message'] ?? 'Unknown error'); } } else { echo 'Permission denied: ' . basename(\\\$file); } } else { echo 'File not found: ' . basename(\\\$file); } } if(\\\$deleted === 0 && empty(\\\$files)) { echo 'No files found matching: ${filename}'; }\" # Direct deletion for truly orphaned file${NC}"
+                if [ "$file_format" == "path" ]; then
+                    # For path input, delete specific file
+                    echo -e "  ${BLUE}COMMAND: terminus remote:drush ${SITE_NAME}.${ENV} -- eval \"if(file_exists(DRUPAL_ROOT . '/sites/default/files/${filename}')) { if(unlink(DRUPAL_ROOT . '/sites/default/files/${filename}')) { echo 'Successfully deleted: ${filename}'; } else { echo 'Error deleting: ${filename}'; } } else { echo 'File not found: ${filename}'; }\" # Direct deletion for truly orphaned file${NC}"
+                else
+                    # For basename, find and delete all matches
+                    echo -e "  ${BLUE}COMMAND: terminus remote:drush ${SITE_NAME}.${ENV} -- eval \"\\\$files = glob(DRUPAL_ROOT . '/sites/default/files/**/${filename}'); \\\$deleted = 0; foreach(\\\$files as \\\$file) { if(file_exists(\\\$file)) { if(is_writable(\\\$file)) { if(unlink(\\\$file)) { echo 'Successfully deleted: ' . basename(\\\$file); \\\$deleted++; } else { echo 'Error deleting: ' . basename(\\\$file) . ' - ' . (error_get_last()['message'] ?? 'Unknown error'); } } else { echo 'Permission denied: ' . basename(\\\$file); } } else { echo 'File not found: ' . basename(\\\$file); } } if(\\\$deleted === 0 && empty(\\\$files)) { echo 'No files found matching: ${filename}'; }\" # Direct deletion for truly orphaned file${NC}"
+                fi
             fi
         else
             echo -e "  ${CYAN}ℹ️ File not found on filesystem.${NC}"
@@ -616,8 +690,14 @@ while IFS= read -r filename || [ -n "$filename" ]; do
         continue
     fi
     
-    # File exists in file_managed - now check for usage records
-    file_usage_query="SELECT fu.module, fu.type, fu.id, fu.fid FROM pantheon.file_usage fu WHERE fu.fid IN (SELECT fid FROM pantheon.file_managed WHERE filename = '${filename}');"
+    # File exists in file_managed - now check for usage records using same path-specific logic
+    if [ "$file_format" == "path" ]; then
+        # Path input: Match usage records for files with specific path
+        file_usage_query="SELECT fu.module, fu.type, fu.id, fu.fid FROM pantheon.file_usage fu WHERE fu.fid IN (SELECT fid FROM pantheon.file_managed WHERE filename = '${file_basename}' AND uri = '${file_uri}');"
+    else
+        # Basename input: Match usage records for all files with this basename
+        file_usage_query="SELECT fu.module, fu.type, fu.id, fu.fid FROM pantheon.file_usage fu WHERE fu.fid IN (SELECT fid FROM pantheon.file_managed WHERE filename = '${file_basename}');"
+    fi
     usage_info=$(run_sql "$file_usage_query")
 
     if [ -z "$usage_info" ]; then 
@@ -727,7 +807,7 @@ while IFS= read -r filename || [ -n "$filename" ]; do
                     if [ "$node_status" == "1" ]; then
                         # Block is used in published Layout Builder, but verify file actually exists in block content
                         echo -e "    ${YELLOW}Block is in Layout Builder on published node ${node_id}. Verifying file actually exists in block content...${NC}"
-                        content_verification=$(verify_file_in_block_content "$ultimate_parent_id" "$filename")
+                        content_verification=$(verify_file_in_block_content "$ultimate_parent_id" "$file_basename")
                         
                         if [ "$content_verification" != "not_found" ]; then
                             echo -e "    ${YELLOW}File found in block content (${content_verification}). Now checking if file appears in rendered DOM...${NC}"
@@ -735,7 +815,7 @@ while IFS= read -r filename || [ -n "$filename" ]; do
                             # DOM verification using pre-initialized base URL
                             if [ "$ENABLE_DOM_VERIFICATION" == "true" ] && [ -n "$DETECTED_BASE_URL" ]; then
                                 echo -e "    ${YELLOW}Checking DOM at ${DETECTED_BASE_URL}/node/${node_id}...${NC}"
-                                check_file_in_dom "$filename" "$node_id" "$DETECTED_BASE_URL"
+                                check_file_in_dom "$file_basename" "$node_id" "$DETECTED_BASE_URL"
                                 dom_result=$?
                                 
                                 case $dom_result in
@@ -794,7 +874,7 @@ while IFS= read -r filename || [ -n "$filename" ]; do
                                     if [ "$parent_node_status" == "1" ]; then
                                         # Nested block is used in published Layout Builder, verify file exists in content
                                         echo -e "    ${YELLOW}Nested block is in Layout Builder on published node ${parent_node_id}. Verifying file actually exists in block content...${NC}"
-                                        nested_content_verification=$(verify_file_in_block_content "$ultimate_parent_id" "$filename")
+                                        nested_content_verification=$(verify_file_in_block_content "$ultimate_parent_id" "$file_basename")
                                         
                                         if [ "$nested_content_verification" != "not_found" ]; then
                                             usage_found="paragraph_nested_in_layout_verified"
@@ -868,7 +948,7 @@ while IFS= read -r filename || [ -n "$filename" ]; do
         echo -e "    Some references may be automatically cleaned while others require manual action."
         echo -e "    Check both the 'Successfully Deleted' and 'Manual Action Required' sections in cleanup results."
     fi
-done < "$FILES_TO_CHECK"
+done 3< "$FILES_TO_CHECK"
 
 # Function to generate consolidated transaction
 generate_consolidated_transaction() {
