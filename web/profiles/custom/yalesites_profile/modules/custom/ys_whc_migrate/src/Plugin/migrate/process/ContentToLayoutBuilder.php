@@ -243,6 +243,10 @@ class ContentToLayoutBuilder extends ProcessPluginBase implements ContainerFacto
    *   The text block entity.
    */
   private function createTextBlock(string $value, array $additional_args): BlockContentInterface {
+    if ($additional_args['wrap_value'] ?? FALSE) {
+      $value = '<p>' . $value . '</p>';
+    }
+
     $text_block = $this->entityTypeManager
       ->getStorage('block_content')
       ->create([
@@ -281,7 +285,7 @@ class ContentToLayoutBuilder extends ProcessPluginBase implements ContainerFacto
       $text .= '<h4>' . $affiliation . '</h4>';
     }
 
-    if ($term_id = $this->getComponentSourceValue('field_series/0/target_id')) {
+    if ($term_id = $this->getComponentSourceValue('@field_tags')) {
       /** @var \Drupal\taxonomy\TermInterface $series_term */
       $series_term = $this->entityTypeManager
         ->getStorage('taxonomy_term')
@@ -293,7 +297,7 @@ class ContentToLayoutBuilder extends ProcessPluginBase implements ContainerFacto
       }
     }
 
-    return $affiliation ? $this->createTextBlock($text, $additional_args) : NULL;
+    return $this->createTextBlock($text, $additional_args);
   }
 
   /**
@@ -336,6 +340,24 @@ class ContentToLayoutBuilder extends ProcessPluginBase implements ContainerFacto
 
     $image_block->save();
     return $image_block;
+  }
+
+  /**
+   * Gets a term name.
+   *
+   * @param string $tid
+   *   The term ID.
+   *
+   * @return string|null
+   *   The term name.
+   */
+  public static function getTermName(string $tid): ?string {
+    /** @var \Drupal\taxonomy\TermInterface $term */
+    $term = \Drupal::entityTypeManager()
+      ->getStorage('taxonomy_term')
+      ->load($tid);
+
+    return $term?->getName();
   }
 
   /**

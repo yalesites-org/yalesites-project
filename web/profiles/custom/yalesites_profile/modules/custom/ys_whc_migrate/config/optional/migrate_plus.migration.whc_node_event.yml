@@ -31,7 +31,7 @@ process:
     no_stub: true
   field_event_date:
     plugin: parse_dates
-    source: field_event_time/0/value
+    source: field_event_time/0/smart_date
   field_tags:
     plugin: migration_lookup
     migration: whc_taxonomy_series
@@ -41,7 +41,7 @@ process:
     - plugin: skip_on_value
       source: field_series/0/target_id
       not_equals: true
-      value: 32
+      value: 32 # Films at the Whitney
       method: process
     - plugin: migration_lookup
       migration: whc_node_images
@@ -51,13 +51,34 @@ process:
       source: field_series/0/target_id
       not_equals: true
       value:
-        - 3
-        - 16
-        - 17
-        - 32
+        - 3  # Shulman Lectures in Science and the Humanities
+        - 16 # Franke Lectures in the Humanities
+        - 17 # Tanner Lectures on Human Values
+        - 32 # Films at the Whitney
       method: process
     - plugin: get
       source: body/0/value
+  _tag_name:
+    - plugin: skip_on_condition
+      condition: not:empty
+      source: field_bio_points/0/value
+      method: process
+    - plugin: skip_on_value
+      source: field_series/0/target_id
+      not_equals: true
+      value:
+        - 14 # Franke Visiting Fellows
+        - 15 # Finzi-Contini Lectures
+        - 16 # Franke Lectures in the Humanities
+        - 17 # Tanner Lectures on Human Values
+        - 32 # Films at the Whitney
+        - 48 # Whitney Publishing Project
+        - 56 # Humanities Now
+      method: process
+    - plugin: get
+      source: '@field_tags'
+    - plugin: callback
+      callable: '\Drupal\ys_whc_migrate\Plugin\migrate\process\ContentToLayoutBuilder::getTermName'
   layout_builder__layout:
     plugin: whc_content_to_layout_builder
     default_section_type: event
@@ -71,6 +92,9 @@ process:
             source: '@_body'
           - type: image
             source: '@_movie_poster'
+          - type: text
+            source: '@_tag_name'
+            wrap_value: true
   path/alias:
     -
       plugin: concat

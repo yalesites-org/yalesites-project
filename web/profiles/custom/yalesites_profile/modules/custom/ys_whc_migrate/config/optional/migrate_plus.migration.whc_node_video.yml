@@ -8,12 +8,20 @@ migration_tags:
 source:
   plugin: whc_node
   node_type: video
+  constants:
+    quotation_mark: '"'
 process:
   langcode: constants/langcode_en
   status: status
   created: created
   changed: changed
-  title: title
+  title:
+    plugin: callback
+    callable: trim
+    unpack_source: true
+    source:
+      - title
+      - constants/quotation_mark
   field_author: field_lecturer
   field_publish_date: field_date
   field_category/0/target_id:

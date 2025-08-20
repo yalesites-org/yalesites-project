@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\ys_whc_migrate\Plugin\migrate\source;
 
 use Drupal\Core\Database\Query\SelectInterface;
+use Drupal\migrate\Row;
 use Drupal\node\Plugin\migrate\source\d7\Node;
 
 /**
@@ -39,6 +40,39 @@ class WhcNode extends Node {
     $query->fields('ps', ['pathauto']);
 
     return $query;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function prepareRow(Row $row): bool {
+    $result = parent::prepareRow($row);
+    if ($this->configuration['node_type'] === 'event') {
+      $this->prepareRowEvent($row);
+    }
+
+    return $result;
+  }
+
+  /**
+   * Prepare row for event nodes.
+   *
+   * @param \Drupal\migrate\Row $row
+   *   The row.
+   */
+  private function prepareRowEvent(Row $row): void {
+    $event_time = $row->getSourceProperty('field_event_time');
+    if ($event_time[0]['value'] === $event_time[0]['value2']) {
+      $value2 = strtotime($event_time[0]['value2']);
+      $value2 += 60 * 90;
+      $value2 = date('Y-m-d H:i:s', $value2);
+      $event_time[0]['smart_date'] = $event_time[0]['value'] . ' to ' . $value2;
+      $row->setSourceProperty('field_event_time', $event_time);
+    }
+    else {
+      $event_time[0]['smart_date'] = $event_time[0]['value'] . ' to ' . $event_time[0]['value2'];
+      $row->setSourceProperty('field_event_time', $event_time);
+    }
   }
 
 }
