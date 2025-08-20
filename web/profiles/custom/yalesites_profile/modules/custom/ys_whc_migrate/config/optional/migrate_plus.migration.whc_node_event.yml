@@ -14,16 +14,18 @@ process:
   created: created
   changed: changed
   title:
-    plugin: if_condition
-    condition: empty
-    source: field_lecturer/0/value
-    do_get: title
-    else_process:
-      plugin: concat
-      source:
-        - field_lecturer/0/value
-        - title
-      delimiter: ' | '
+    - plugin: if_condition
+      condition: empty
+      source: field_lecturer/0/value
+      do_get: title
+      else_process:
+        plugin: concat
+        source:
+          - field_lecturer/0/value
+          - title
+        delimiter: ' | '
+    - plugin: callback
+      callable: strip_tags
   field_teaser_media/0/target_id:
     plugin: migration_lookup
     migration: whc_node_images
@@ -32,6 +34,8 @@ process:
   field_event_date:
     plugin: parse_dates
     source: field_event_time/0/smart_date
+    entity_type: node
+    bundle: event
   field_tags:
     plugin: migration_lookup
     migration: whc_taxonomy_series
@@ -61,7 +65,7 @@ process:
   _tag_name:
     - plugin: skip_on_condition
       condition: not:empty
-      source: field_bio_points/0/value
+      source: field_lecturer/0/value
       method: process
     - plugin: skip_on_value
       source: field_series/0/target_id

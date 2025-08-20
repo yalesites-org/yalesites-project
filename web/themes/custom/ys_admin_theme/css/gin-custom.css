@@ -1,8 +1,6 @@
 /* stylelint-disable */
 :root {
   --gin-font: Mallory, sans-serif;
-  /* Original sizes: H1: 1.75rem, H2: 1.5rem, H3: 1.25rem */
-  /* Reduced by ~5px: H1: 1.438rem, H2: 1.188rem, H3: 0.938rem */
   --gin-font-size-h1: 1.438rem;
   --gin-font-size-h2: 1.188rem;
   --gin-font-size-h3: 0.938rem;
@@ -12,7 +10,6 @@
 }
 :root h1,
 :root h2 {
-  /* Changed from font-weight: 600 to 400 (Book weight) for Mallory headings */
   font-weight: 400;
 }
 
@@ -90,14 +87,10 @@ a.focal-point-preview-link {
   background-color: var(--gin-bg-layer2);
 }
 
-/* Environment Indicator */
-#environment-indicator {
-  margin-top: 0.5rem;
-}
-
 .form-element {
   min-height: calc(var(--input-padding-vertical) * 3 + var(--input-line-height)) !important;
 }
+
 /* stylelint-enable */
 
 /*# sourceMappingURL=gin-custom.css.map */

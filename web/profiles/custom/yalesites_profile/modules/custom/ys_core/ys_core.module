@@ -440,6 +440,16 @@ function ys_core_module_implements_alter(&$implementations, $hook) {
   if ($hook == 'help') {
     $implementations = ['ys_core' => $implementations['ys_core']] + $implementations;
   }
+
+  // Ensure ys_core hooks run after environment_indicator hooks for page_top and
+  // preprocess_html.
+  if (in_array($hook, ['page_top', 'preprocess_html'])) {
+    if (isset($implementations['ys_core']) && isset($implementations['environment_indicator'])) {
+      $ys_core_implementation = $implementations['ys_core'];
+      unset($implementations['ys_core']);
+      $implementations['ys_core'] = $ys_core_implementation;
+    }
+  }
 }
 
 /**
@@ -577,6 +587,62 @@ function ys_core_taxonomy_term_update() {
 }
 
 /**
+ * Implements hook_ENTITY_update().
+ *
+ * Clears entity and page cache when field_external_source is updated on a node.
+ * This ensures the ExternalSourceRedirectSubscriber sees fresh field data.
+ */
+function ys_core_node_update($node) {
+  // Only process nodes that have the external source field.
+  if (!$node->hasField('field_external_source')) {
+    return;
+  }
+
+  // Check if the external source field was changed.
+  $original_node = $node->original;
+  if (!$original_node || !$original_node->hasField('field_external_source')) {
+    return;
+  }
+
+  // Get current and original field values.
+  // Use first() and getValue() to properly access link field data.
+  $current_field = $node->get('field_external_source')->first();
+  $current_value = $current_field ? $current_field->getValue() : NULL;
+  $current_uri = $current_value['uri'] ?? '';
+
+  $original_field = $original_node->get('field_external_source')->first();
+  $original_value = $original_field ? $original_field->getValue() : NULL;
+  $original_uri = $original_value['uri'] ?? '';
+
+  // If the external source URL has changed, invalidate relevant caches.
+  // This handles all cases: value to empty, empty to value, value to different
+  // value.
+  if ($current_uri !== $original_uri) {
+    // Clear multiple cache layers that could affect the redirect behavior:
+    $cache_tags = [
+      // Node-specific cache.
+      'node:' . $node->id(),
+      // General render cache.
+      'rendered',
+      // Response cache.
+      'response',
+      // Page cache.
+      'page',
+      // HTTP response cache.
+      'http_response',
+    ];
+    Cache::invalidateTags($cache_tags);
+
+    // Clear entity storage cache to ensure fresh data for the event subscriber.
+    \Drupal::entityTypeManager()->getStorage('node')->resetCache([$node->id()]);
+
+    // Clear the dynamic page cache for comprehensive coverage.
+    $dynamic_cache = \Drupal::cache('dynamic_page_cache');
+    $dynamic_cache->invalidateAll();
+  }
+}
+
+/**
  * Implements hook_preprocess_page().
  */
 function ys_core_preprocess_page(&$variables) {
@@ -643,6 +709,16 @@ function ys_core_preprocess_html(&$variables) {
   $config = \Drupal::config('ys_core.site');
   $font_pairing = $config->get('font_pairing') ?? 'yalenew';
   $variables['attributes']['data-font-pairing'] = $font_pairing;
+
+  // Remove environment indicator CSS class if the indicator is disabled.
+  $show_indicator = $config->get('environment_indicator.show') ?? TRUE;
+  if (!$show_indicator) {
+    // Remove environment-indicator class if it exists.
+    $classes = $variables['attributes']['class'] ?? [];
+    $variables['attributes']['class'] = array_filter($classes, function ($class) {
+      return $class !== 'environment-indicator';
+    });
+  }
 }
 
 /**
@@ -977,4 +1053,29 @@ function ys_core_form_user_register_form_alter(&$form, FormStateInterface $form_
     '#suffix' => '</div>',
     '#weight' => -99,
   ];
+}
+
+/**
+ * Implements hook_yale_cas_app_parameter_alter().
+ */
+function ys_core_yale_cas_app_parameter_alter(&$app_value, $event) {
+  // Retrieve the ys_core config.
+  $config = \Drupal::config('ys_core.site');
+  $app_value = $config->get('cas_app_name') ?: 'yalesites';
+}
+
+/**
+ * Implements hook_page_top().
+ *
+ * Override environment indicator display based on ys_core.site configuration.
+ */
+function ys_core_page_top(array &$page_top) {
+  // Check if environment indicator should be shown.
+  $config = \Drupal::config('ys_core.site');
+  $show_indicator = $config->get('environment_indicator.show') ?? TRUE;
+
+  // If disabled, remove the environment indicator from page_top.
+  if (!$show_indicator && isset($page_top['indicator'])) {
+    unset($page_top['indicator']);
+  }
 }

@@ -47,11 +47,12 @@ process:
     bundle_key: vid
     value_key: name
     ignore_case: true
-  field_teaser_media/0/target_id:
+  field_media/0/target_id:
     plugin: migration_lookup
-    migration: whc_user_media
+    migration: whc_user_images
     source: uid
     no_stub: true
+  field_teaser_media/0/target_id: '@field_media/0/target_id'
   field_audience:
     plugin: migration_lookup
     migration: whc_taxonomy_fellow_role
@@ -83,7 +84,7 @@ destination:
   default_bundle: profile
 migration_dependencies:
   required:
-    - whc_user_media
+    - whc_user_images
     - whc_taxonomy_fellow_role
   optional: [  ]
 

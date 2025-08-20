@@ -18,7 +18,7 @@ services:
   # Redirect visitors to external source if set on the node.
   ys_core.external_source_redirect_subscriber:
     class: Drupal\ys_core\EventSubscriber\ExternalSourceRedirectSubscriber
-    arguments: ['@current_route_match']
+    arguments: ['@current_route_match', '@entity_type.manager']
     tags:
       - { name: 'event_subscriber' }
   ys_core.moderation_sidebar_controller_alter:
@@ -33,3 +33,9 @@ services:
   ys_core.facts_and_figures_icon_manager:
     class: Drupal\ys_core\FactsAndFiguresIconManager
     arguments: ['@cache.default', '@module_handler', '@logger.factory']
+  # Provides user 1 bypass for CAS forced login.
+  ys_core.cas_user1_bypass_subscriber:
+    class: Drupal\ys_core\EventSubscriber\CasUser1BypassSubscriber
+    arguments: ['@current_user', '@request_stack']
+    tags:
+      - { name: event_subscriber }

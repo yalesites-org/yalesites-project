@@ -78,6 +78,13 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
   protected $cacheDiscovery;
 
   /**
+   * Current user session.
+   *
+   * @var \Drupal\Core\Session\AccountProxy
+   */
+  protected $currentUserSession;
+
+  /**
    * Constructs a SiteInformationForm object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -114,6 +121,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     $this->ysMediaManager = $ys_media_manager;
     $this->entityTypeManager = $entity_type_manager;
     $this->currentUser = $account_interface;
+    $this->currentUserSession = $account_interface;
     $this->cacheDiscovery = $cache_discovery;
   }
 
@@ -322,6 +330,24 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#use_favicon_preview' => TRUE,
     ];
 
+    $is_user_1 = ($this->currentUser->id() == 1);
+    $form['cas_app_name'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('CAS Application Name'),
+      '#description' => $this->t('The name of the application to be used in CAS login.'),
+      '#default_value' => ($yaleConfig->get('cas_app_name')) ? $yaleConfig->get('cas_app_name') : 'yalesites',
+      '#access' => $is_user_1,
+    ];
+
+    if (ys_core_allow_secret_items($this->currentUserSession)) {
+      $form['environment_indicator_show'] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Show environment indicator'),
+        '#description' => $this->t('Display the environment indicator banner at the top of the site. This setting overrides all environment-specific configurations.'),
+        '#default_value' => $yaleConfig->get('environment_indicator')['show'] ?? TRUE,
+      ];
+    }
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -380,7 +406,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       ->set('page.403', $form_state->getValue('site_page_403'))
       ->set('page.404', $form_state->getValue('site_page_404'))
       ->save();
-    $this->configFactory->getEditable('ys_core.site')
+    $yaleSiteConfig = $this->configFactory->getEditable('ys_core.site')
       ->set('page.posts', $form_state->getValue('site_page_posts'))
       ->set('page.events', $form_state->getValue('site_page_events'))
       ->set('seo.google_site_verification', $form_state->getValue('google_site_verification'))
@@ -388,7 +414,15 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       ->set('image_fallback.teaser', $form_state->getValue('teaser_image_fallback'))
       ->set('custom_favicon', $form_state->getValue('favicon'))
       ->set('font_pairing', $form_state->getValue('font_pairing'))
-      ->save();
+      ->set('cas_app_name', $form_state->getValue('cas_app_name') ?? 'yalesites');
+
+    // Save environment indicator setting if the field was present
+    // (platform admin only).
+    if (ys_core_allow_secret_items($this->currentUserSession)) {
+      $yaleSiteConfig->set('environment_indicator.show', $form_state->getValue('environment_indicator_show') ?? TRUE);
+    }
+
+    $yaleSiteConfig->save();
 
     $custom_vocab_name = $this->configFactory->getEditable('taxonomy.vocabulary.custom_vocab')->get('name');
     if ($custom_vocab_name !== $form_state->getValue('custom_vocab_name')) {
