@@ -1,0 +1,8 @@
+name: 'YaleSites File Management'
+type: module
+description: 'Custom file management overrides'
+core_version_requirement: ^9 || ^10
+package: YaleSites
+dependencies:
+  - drupal:media
+  - media_file_delete:media_file_delete

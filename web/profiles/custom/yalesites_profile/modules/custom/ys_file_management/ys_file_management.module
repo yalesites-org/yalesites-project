@@ -1,0 +1,33 @@
+<?php
+
+/**
+ * @file
+ * Contains main module functions for ys_file_management.
+ */
+
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\ys_file_management\Form\YsMediaDeleteForm;
+
+/**
+ * Implements hook_entity_type_alter().
+ */
+function ys_file_management_entity_type_alter(array &$entity_types) {
+  if (!empty($entity_types['media'])) {
+    assert($entity_types['media'] instanceof EntityTypeInterface);
+    // Override the delete form with our custom form.
+    $entity_types['media']->setFormClass('delete', YsMediaDeleteForm::class);
+  }
+}
+
+/**
+ * Implements hook_module_implements_alter().
+ */
+function ys_file_management_module_implements_alter(&$implementations, $hook) {
+  if ($hook === 'entity_type_alter') {
+    // Move our implementation to the end to ensure it runs after
+    // media_file_delete.
+    $group = $implementations['ys_file_management'];
+    unset($implementations['ys_file_management']);
+    $implementations['ys_file_management'] = $group;
+  }
+}

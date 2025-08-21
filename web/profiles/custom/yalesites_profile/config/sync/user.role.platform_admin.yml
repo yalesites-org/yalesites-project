@@ -74,6 +74,7 @@ dependencies:
     - content_moderation
     - contextual
     - editoria11y
+    - entity_usage
     - environment_indicator
     - file
     - google_tag
@@ -96,6 +97,7 @@ dependencies:
     - ys_alert
     - ys_campus_groups
     - ys_core
+    - ys_file_management
     - ys_integrations
     - ys_localist
 id: platform_admin
@@ -107,6 +109,7 @@ permissions:
   - 'access coffee'
   - 'access content overview'
   - 'access contextual links'
+  - 'access entity usage statistics'
   - 'access environment indicator'
   - 'access files overview'
   - 'access media overview'
@@ -274,6 +277,7 @@ permissions:
   - 'delete any wrapped_text_callout block content'
   - 'delete any wrapped_text_callout block content revisions'
   - 'delete media'
+  - 'delete media files regardless of owner'
   - 'delete own background_video media'
   - 'delete own document media'
   - 'delete own embed media'
@@ -359,6 +363,7 @@ permissions:
   - 'edit terms in page_category'
   - 'edit terms in post_category'
   - 'edit terms in tags'
+  - 'force delete media files'
   - 'mark as hidden in editoria11y'
   - 'override all authored by option'
   - 'override all authored on option'
