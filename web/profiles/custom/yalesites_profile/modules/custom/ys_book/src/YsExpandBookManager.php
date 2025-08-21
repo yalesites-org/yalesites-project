@@ -213,6 +213,8 @@ class YsExpandBookManager extends ExpandBookManager {
       // Adding the nid to the end of the index ensures that it is unique.
       $new_tree[(50000 + $item['weight']) . ' ' . $item['title'] . ' ' . $item['nid']] = $tree[$key];
     }
+    // Sort siblings in the tree based on the weights and localized titles.
+    ksort($new_tree);
     $tree = $new_tree;
   }
 
