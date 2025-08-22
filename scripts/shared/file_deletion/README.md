@@ -1,19 +1,19 @@
 # Drupal File Deletion Scripts
 
-A streamlined set of shell scripts for diagnosing and cleaning up orphaned files in Drupal installations. The scripts work with both local Lando environments and remote Pantheon hosting via Terminus CLI.
+A comprehensive suite of Unix-philosophy shell scripts for diagnosing and cleaning up orphaned files in Drupal installations. The scripts work with both local Lando environments and remote Pantheon hosting via Terminus CLI.
 
 ## Architecture
 
-The scripts follow a simple, effective workflow: diagnose files to identify cleanup opportunities, execute automated cleanup operations, and run Drupal cron to process temporary files.
+### Script Types and Workflow
 
-### Core Scripts
+**Diagnostic Scripts (Analysis Phase):**
+- `diagnose_files.sh` - Main bulk file analyzer with DOM verification (v11)
 
-**Analysis Phase:**
-- `diagnose_files.sh` - Bulk file analyzer with DOM verification
-
-**Execution Phase:**
-- `cleanup_files.sh` - Automated cleanup executor for bulk operations  
+**Cleanup Scripts (Execution Phase):**
+- `cleanup_files.sh` - Automated cleanup executor for bulk operations
 - `run_cron.sh` - Drupal cron execution for temporary file processing
+
+**NOTE:** This directory contains only the core production scripts. CLAUDE.md documents the complete suite that also includes single-file utilities, domain testing, and verification scripts located elsewhere in the project.
 
 ## Prerequisites
 
@@ -192,19 +192,19 @@ echo "document.docx" >> files_to_check.txt
 ```
 
 **Input Format:**
-Text file with one filename per line:
+Text file with one filename per line (supports both basenames and full paths):
 ```
-report.pdf
-document.xlsx
-image.jpg
+report.pdf                                  # Basename - searches all directories
+2025-02/document.xlsx                       # Path - targets specific location  
+subdirectory/image.jpg                      # Relative path from files directory
 ```
 
 **Output Categories:**
-- **Truly Orphaned Files:** Not in database, safe to delete
-- **Unused Files:** In database but no usage records
-- **Ghost References:** Stale database records to broken entities
-- **Phantom References:** In database but not in rendered DOM
-- **Active Content:** Used in published pages, requires manual removal
+- **Truly Orphaned Files:** Not in database, exist on filesystem → Direct deletion
+- **Unused Files:** In database but no usage records → Set status=0 for cron cleanup
+- **Ghost References:** Usage records point to deleted/non-existent entities → SQL cleanup
+- **Phantom References:** In database and Layout Builder but not in rendered DOM → SQL cleanup
+- **Active Content:** Actually used in published pages → Manual UI removal required
 
 ### cleanup_files.sh
 
@@ -356,17 +356,36 @@ image.jpg
 
 ## File Analysis Features
 
-The `diagnose_files.sh` script includes advanced analysis capabilities:
+The `diagnose_files.sh` script (v11) includes advanced analysis capabilities:
+
+**Multi-Environment Support:**
+- **Lando Mode:** Local development with automatic .lando.local.yml detection
+- **Terminus Mode:** Remote Pantheon environments with API integration
+- **Auto-Detection:** Scripts automatically detect environment when possible
+
+**DOM Verification System:**
+- Fetches actual rendered pages using curl
+- Verifies files actually appear in DOM content vs. database references
+- Identifies "phantom references" (database entries without rendered usage)
+- Handles URL encoding, filename variations, and case-insensitive matching
 
 **Database Analysis:**
 - Comprehensive file_managed and file_usage table analysis
-- Layout Builder entity relationship detection
-- Orphaned file identification across complex entity structures
+- Layout Builder entity relationship detection with PHP serialized data parsing
+- Cross-references with actual block content to verify file existence
+- Handles nested paragraphs and complex entity relationships
 
 **Smart Classification:**
 - Distinguishes between truly orphaned files and stale references
 - Identifies files safe for automatic cleanup vs. manual review
-- Handles complex Drupal entity relationships and nested content
+- Supports both basename and path-specific file targeting
+- Conservative fallbacks for uncertain cases
+
+**Safety Features:**
+- **Dry-run modes** for all destructive operations
+- **Transactional SQL** with BEGIN/COMMIT for database safety
+- **Drupal-native cleanup** using status=0 and cron processing
+- **Conservative fallbacks** for uncertain cases
 
 ## Database Operations
 
@@ -387,11 +406,14 @@ UPDATE pantheon.file_managed SET status = 0 WHERE fid = X AND @remaining = 0;
 COMMIT;
 ```
 
-**Bulk Unused File Cleanup:**
+**Consolidated Cleanup Transaction:**
 ```sql
-UPDATE pantheon.file_managed SET status = 0 WHERE fid IN (
-  SELECT fid FROM file_managed WHERE filename = 'orphaned.pdf'
-);
+BEGIN; 
+DELETE FROM pantheon.file_usage WHERE fid = X AND type = 'block_content' AND id = Y;
+DELETE FROM pantheon.file_usage WHERE fid = X AND type = 'block_content' AND id = Z;
+SET @remaining = (SELECT COUNT(*) FROM pantheon.file_usage WHERE fid = X); 
+UPDATE pantheon.file_managed SET status = 0 WHERE fid = X AND @remaining = 0; 
+COMMIT;
 ```
 
 ## Layout Builder Detection
@@ -444,12 +466,25 @@ terminus site:list
 ./diagnose_files.sh --mode lando files_to_check.txt
 ./diagnose_files.sh --mode terminus --site mysite --env dev files_to_check.txt
 
-# Check Lando configuration
+# Check Lando configuration - DOM verification uses these methods:
+# 1) .lando.local.yml DRUSH_OPTIONS_URI setting
+# 2) Constructed from Lando project name (.lando.yml)
+# 3) lando info JSON parsing for edge service URLs
 cat .lando.local.yml | grep DRUSH_OPTIONS_URI
 lando info
 
 # Verify Lando is running
 lando start
+```
+
+**DOM Verification Issues:**
+```bash
+# Check if base URL is accessible
+curl --max-time 10 "https://your-site.lndo.site"
+curl --max-time 10 "https://dev-yoursite.pantheonsite.io"
+
+# Test with DOM verification disabled
+# (Edit diagnose_files.sh and set ENABLE_DOM_VERIFICATION=false)
 ```
 
 **Database Connection Issues:**
@@ -486,10 +521,11 @@ lando mysql -e "SHOW GRANTS;"
 
 ### Performance Considerations
 
-- DOM verification adds 0.5+ seconds per file
+- DOM verification adds significant time (0.5s per file minimum)
 - Large file lists benefit from `--dry-run` testing first
 - Conservative mode reduces false positives but increases manual review
-- Batch operations more efficient than individual processing
+- Batch operations are more efficient than individual file processing
+- Consolidated transactions reduce database load for multi-reference files
 
 ## Best Practices
 
@@ -532,6 +568,12 @@ lando mysql -e "SELECT COUNT(*) FROM pantheon.file_managed WHERE status = 0;"
 
 # Monitor cron execution
 ./run_cron.sh --verbose --output json
+
+# Check for phantom references detected by DOM verification
+grep "PHANTOM REFERENCE\|👻" scan_results.log
+
+# Review DOM verification results
+grep "DOM verification\|TRULY ACTIVE" scan_results.log
 ```
 
 **Audit cleanup results:**
@@ -541,6 +583,9 @@ grep "Successfully" cleanup_report.log
 
 # Check failed operations
 grep "Failed\|Error" cleanup_report.log
+
+# Check consolidated transactions
+grep "🔄.*consolidated cleanup" scan_results.log
 ```
 
 ## Output Formats
