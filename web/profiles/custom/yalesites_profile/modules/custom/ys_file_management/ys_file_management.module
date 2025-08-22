@@ -5,6 +5,7 @@
  * Contains main module functions for ys_file_management.
  */
 
+use Drupal\ys_file_management\Form\YsMediaDeleteMultipleForm;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\ys_file_management\Form\YsMediaDeleteForm;
 
@@ -16,6 +17,8 @@ function ys_file_management_entity_type_alter(array &$entity_types) {
     assert($entity_types['media'] instanceof EntityTypeInterface);
     // Override the delete form with our custom form.
     $entity_types['media']->setFormClass('delete', YsMediaDeleteForm::class);
+    // Override the bulk delete form with our custom form.
+    $entity_types['media']->setFormClass('delete-multiple-confirm', YsMediaDeleteMultipleForm::class);
   }
 }
 
