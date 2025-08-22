@@ -67,6 +67,12 @@ class YsMediaDeleteForm extends MediaDeleteForm {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $media = $this->getEntity();
     assert($media instanceof MediaInterface);
+
+    // Only apply our custom logic to file-based media bundles.
+    if (!\ys_file_management_is_file_based_media($media)) {
+      return parent::buildForm($form, $form_state);
+    }
+
     $file = $this->getFile($media);
 
     // Get the base form from the grandparent (ContentEntityDeleteForm)
