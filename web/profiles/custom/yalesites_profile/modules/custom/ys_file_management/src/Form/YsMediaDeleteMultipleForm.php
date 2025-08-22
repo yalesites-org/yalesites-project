@@ -2,12 +2,8 @@
 
 namespace Drupal\ys_file_management\Form;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Form\DeleteMultipleForm;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Messenger\MessengerInterface;
-use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\TempStore\PrivateTempStoreFactory;
 use Drupal\file\FileInterface;
 use Drupal\media\MediaInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -48,18 +44,6 @@ class YsMediaDeleteMultipleForm extends DeleteMultipleForm {
   /**
    * {@inheritdoc}
    */
-  public function __construct(
-    AccountInterface $current_user,
-    EntityTypeManagerInterface $entity_type_manager,
-    PrivateTempStoreFactory $temp_store_factory,
-    MessengerInterface $messenger,
-  ) {
-    parent::__construct($current_user, $entity_type_manager, $temp_store_factory, $messenger);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public static function create(ContainerInterface $container) {
     $instance = new static(
       $container->get('current_user'),
@@ -77,7 +61,9 @@ class YsMediaDeleteMultipleForm extends DeleteMultipleForm {
   /**
    * {@inheritdoc}
    */
+  // phpcs:ignore -- Override needed to prevent default description, we build dynamic ones.
   public function getDescription() {
+    // We build our own descriptions dynamically based on analysis.
     return '';
   }
 
@@ -204,7 +190,8 @@ class YsMediaDeleteMultipleForm extends DeleteMultipleForm {
    *   The modified form array.
    */
   protected function buildBatchForm(array $form, array $analysis): array {
-    // If there are access or ownership issues that can't be bypassed, block submission.
+    // If there are access or ownership issues that can't be bypassed, block
+    // submission.
     $blocking_issues = !empty($analysis['blocked_entities']);
     $usage_issues = !empty($analysis['problematic_files']);
 

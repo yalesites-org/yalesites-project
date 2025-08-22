@@ -105,9 +105,9 @@ class YsMediaDeleteForm extends MediaDeleteForm {
     // Debug logging to help identify usage detection issues.
     $drupal_usage = \Drupal::service('file.usage')->listUsage($file);
     $drupal_usage_count = 0;
-    foreach ($drupal_usage as $module => $module_usages) {
-      foreach ($module_usages as $type => $type_usages) {
-        foreach ($type_usages as $id => $count) {
+    foreach ($drupal_usage as $module_usages) {
+      foreach ($module_usages as $type_usages) {
+        foreach ($type_usages as $count) {
           $drupal_usage_count += $count;
         }
       }
@@ -147,7 +147,8 @@ class YsMediaDeleteForm extends MediaDeleteForm {
       // Force delete users continue to buildForceDeleteForm with warnings.
     }
 
-    // User can proceed - show "This action cannot be undone" only when deletion is allowed.
+    // User can proceed - show "This action cannot be undone" only when deletion
+    // is allowed.
     if (!($media_used_elsewhere || $file_used_elsewhere) || $can_force_delete) {
       $build['description'] = $this->messageBuilder->buildActionWarningMessage();
     }
@@ -182,7 +183,8 @@ class YsMediaDeleteForm extends MediaDeleteForm {
     $file_used_elsewhere = $usages > 1;
     $has_usage = $media_used_elsewhere || $file_used_elsewhere;
 
-    // If there's usage, show consistent message and hide Delete button initially.
+    // If there's usage, show consistent message and hide Delete button
+    // initially.
     if ($has_usage) {
       if ($media_used_elsewhere) {
         // Update description to include usage information.
