@@ -8,6 +8,7 @@
 use Drupal\ys_file_management\Form\YsMediaDeleteMultipleForm;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\ys_file_management\Form\YsMediaDeleteForm;
+use Drupal\Core\Entity\EntityInterface;
 
 /**
  * Implements hook_entity_type_alter().
@@ -33,4 +34,23 @@ function ys_file_management_module_implements_alter(&$implementations, $hook) {
     unset($implementations['ys_file_management']);
     $implementations['ys_file_management'] = $group;
   }
+}
+
+/**
+ * Checks if a media entity has a file-based bundle that we should manage.
+ *
+ * @param \Drupal\Core\Entity\EntityInterface $media
+ *   The media entity to check.
+ *
+ * @return bool
+ *   TRUE if this is a file-based media bundle, FALSE otherwise.
+ */
+function ys_file_management_is_file_based_media(EntityInterface $media) {
+  if ($media->getEntityTypeId() !== 'media') {
+    return FALSE;
+  }
+
+  // Only handle media bundles that have physical files on the server.
+  $file_based_bundles = ['image', 'document', 'background_video'];
+  return in_array($media->bundle(), $file_based_bundles);
 }

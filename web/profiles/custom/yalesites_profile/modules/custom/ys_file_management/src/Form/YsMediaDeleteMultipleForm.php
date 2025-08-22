@@ -95,6 +95,23 @@ class YsMediaDeleteMultipleForm extends DeleteMultipleForm {
     $storage = $this->entityTypeManager->getStorage($this->entityTypeId);
     $entities = $storage->loadMultiple(array_keys($this->selection));
 
+    // Filter to only file-based media entities.
+    $file_based_entities = array_filter($entities, function ($entity) {
+      return \ys_file_management_is_file_based_media($entity);
+    });
+
+    // If no file-based media entities, use parent form.
+    if (empty($file_based_entities)) {
+      return $form;
+    }
+
+    // If mixed selection, update entities to only file-based ones.
+    if (count($file_based_entities) < count($entities)) {
+      $entities = $file_based_entities;
+      // Update selection to match filtered entities.
+      $this->selection = array_intersect_key($this->selection, array_flip(array_keys($entities)));
+    }
+
     // Analyze the batch for permission and usage issues.
     $batch_analysis = $this->analyzeBatch($entities);
 
