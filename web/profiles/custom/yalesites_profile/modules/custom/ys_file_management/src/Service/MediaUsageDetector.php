@@ -4,6 +4,7 @@ namespace Drupal\ys_file_management\Service;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
+use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\media\MediaInterface;
 
@@ -34,6 +35,13 @@ class MediaUsageDetector {
   protected $logger;
 
   /**
+   * The entity type bundle info service.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
+   */
+  protected $bundleInfo;
+
+  /**
    * Constructs a MediaUsageDetector object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -42,15 +50,19 @@ class MediaUsageDetector {
    *   The entity field manager.
    * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
    *   The logger channel.
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundle_info
+   *   The entity type bundle info service.
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
     EntityFieldManagerInterface $entity_field_manager,
     LoggerChannelInterface $logger,
+    EntityTypeBundleInfoInterface $bundle_info,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityFieldManager = $entity_field_manager;
     $this->logger = $logger;
+    $this->bundleInfo = $bundle_info;
   }
 
   /**
@@ -164,7 +176,7 @@ class MediaUsageDetector {
    */
   protected function checkEntityTypeForMediaUsage(string $entity_type_id, int $media_id): bool {
     $storage = $this->entityTypeManager->getStorage($entity_type_id);
-    $bundle_info = \Drupal::service('entity_type.bundle.info')->getBundleInfo($entity_type_id);
+    $bundle_info = $this->bundleInfo->getBundleInfo($entity_type_id);
 
     foreach (array_keys($bundle_info) as $bundle) {
       $field_definitions = $this->entityFieldManager->getFieldDefinitions($entity_type_id, $bundle);
@@ -208,7 +220,7 @@ class MediaUsageDetector {
   protected function getEntityTypeUsageDetails(string $entity_type_id, int $media_id): array {
     $details = [];
     $storage = $this->entityTypeManager->getStorage($entity_type_id);
-    $bundle_info = \Drupal::service('entity_type.bundle.info')->getBundleInfo($entity_type_id);
+    $bundle_info = $this->bundleInfo->getBundleInfo($entity_type_id);
 
     foreach (array_keys($bundle_info) as $bundle) {
       $field_definitions = $this->entityFieldManager->getFieldDefinitions($entity_type_id, $bundle);

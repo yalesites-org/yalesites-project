@@ -7,7 +7,9 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\media\MediaInterface;
 
 /**
- * Service for building consistent error and informational messages for media deletion.
+ * Service for building consistent error and informational messages.
+ *
+ * Handles media deletion messaging across individual and bulk operations.
  */
 class MediaDeleteMessageBuilder {
 

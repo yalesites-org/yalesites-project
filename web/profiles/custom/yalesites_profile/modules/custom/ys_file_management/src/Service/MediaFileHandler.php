@@ -5,14 +5,18 @@ namespace Drupal\ys_file_management\Service;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\file\FileInterface;
 use Drupal\file\FileUsage\FileUsageInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Service for handling media file operations like deletion and cleanup.
  */
 class MediaFileHandler {
+
+  use StringTranslationTrait;
 
   /**
    * The file usage service.
@@ -43,6 +47,13 @@ class MediaFileHandler {
   protected $currentUser;
 
   /**
+   * The request stack.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  protected $requestStack;
+
+  /**
    * Constructs a MediaFileHandler object.
    *
    * @param \Drupal\file\FileUsage\FileUsageInterface $file_usage
@@ -53,17 +64,21 @@ class MediaFileHandler {
    *   The logger channel.
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The current user.
+   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+   *   The request stack.
    */
   public function __construct(
     FileUsageInterface $file_usage,
     MessengerInterface $messenger,
     LoggerChannelInterface $logger,
     AccountInterface $current_user,
+    RequestStack $request_stack,
   ) {
     $this->fileUsage = $file_usage;
     $this->messenger = $messenger;
     $this->logger = $logger;
     $this->currentUser = $current_user;
+    $this->requestStack = $request_stack;
   }
 
   /**
@@ -136,7 +151,7 @@ class MediaFileHandler {
    */
   public function getRedirectUrl(): Url {
     // Try to get the referring page from the request.
-    $request = \Drupal::request();
+    $request = $this->requestStack->getCurrentRequest();
     $referer = $request->headers->get('referer');
 
     if ($referer) {
@@ -188,21 +203,6 @@ class MediaFileHandler {
       // Standard behavior: mark file as temporary for cron cleanup.
       $this->markAsTemporary($file);
     }
-  }
-
-  /**
-   * Translates a string.
-   *
-   * @param string $string
-   *   The string to translate.
-   * @param array $args
-   *   The arguments for translation.
-   *
-   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
-   *   The translated string.
-   */
-  protected function t(string $string, array $args = []) {
-    return \Drupal::translation()->translate($string, $args);
   }
 
 }
