@@ -31,11 +31,7 @@ process:
     migration: whc_node_images
     source: field_event_image/0/fid
     no_stub: true
-  field_event_date:
-    plugin: parse_dates
-    source: field_event_time/0/smart_date
-    entity_type: node
-    bundle: event
+  field_event_date/0: field_event_time/0/smart_date
   field_tags:
     plugin: migration_lookup
     migration: whc_taxonomy_series
@@ -110,6 +106,13 @@ process:
     source:
       - pathauto
       - constants/one
+  moderation_state:
+    plugin: static_map
+    source: status
+    default_value: draft
+    map:
+      0: draft
+      1: published
 destination:
   plugin: entity:node
   default_bundle: event

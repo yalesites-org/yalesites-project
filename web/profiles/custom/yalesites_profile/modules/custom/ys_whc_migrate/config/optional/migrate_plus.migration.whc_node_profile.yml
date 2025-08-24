@@ -23,8 +23,7 @@ process:
       - field_firstname/0/value
       - field_lastname/0/value
     delimiter: ' '
-  field_position: field_title
-  field_department:
+  field_position:
     plugin: if_condition
     source: field_fellow_role/0/target_id
     condition:
@@ -33,12 +32,13 @@ process:
         - 61 # 2024–25 GPE Fellows
         - 57 # 2023–24 GPE Fellows
         - 50 # 2022–23 GPE Fellows
+        - 51 # 2021–22 Graduate Outreach Fellows
         - 60 # 2024–25 Environmental Humanities Graduate Fellows
         - 49 # 2023–24 Environmental Humanities Graduate Fellows
         - 47 # 2022–23 Environmental Humanities Graduate Fellows
         - 44 # 2021–22 Environmental Humanities Graduate Fellows
-    do_get: field_title/0/value
-    else_get: field_department/0/value
+    do_get: field_department/0/value
+    else_get: field_title/0/value
   field_affiliation:
     plugin: entity_generate
     source: field_people_type/0/value

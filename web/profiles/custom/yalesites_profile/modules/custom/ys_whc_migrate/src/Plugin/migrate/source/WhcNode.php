@@ -62,16 +62,30 @@ class WhcNode extends Node {
    */
   private function prepareRowEvent(Row $row): void {
     $event_time = $row->getSourceProperty('field_event_time');
-    if ($event_time[0]['value'] === $event_time[0]['value2']) {
-      $value2 = strtotime($event_time[0]['value2']);
-      $value2 += 60 * 90;
-      $value2 = date('Y-m-d H:i:s', $value2);
-      $event_time[0]['smart_date'] = $event_time[0]['value'] . ' to ' . $value2;
+    if ($event_time) {
+      $smart_date = [
+        'value' => strtotime($event_time[0]['value']),
+        'end_value' => strtotime($event_time[0]['value2']),
+        'timezone' => 'America/New_York',
+      ];
+
+      if ($smart_date['value'] === $smart_date['end_value']) {
+        $smart_date['end_value'] += 60 * 90;
+      }
+
+      $smart_date['duration'] = (int) round(($smart_date['end_value'] - $smart_date['value']) / 60);
+      $event_time[0]['smart_date'] = $smart_date;
+
       $row->setSourceProperty('field_event_time', $event_time);
     }
-    else {
-      $event_time[0]['smart_date'] = $event_time[0]['value'] . ' to ' . $event_time[0]['value2'];
-      $row->setSourceProperty('field_event_time', $event_time);
+
+    $series_id = $row->getSourceProperty('field_series/0/target_id') ?? -1;
+    if (
+      $event_time[0]['smart_date']['value'] < 1690869600 &&
+      !in_array($series_id, [3, 14, 15, 16, 17, 27, 32, 48, 56])
+    ) {
+      // Fall 2023 - August 1st, 2023.
+      $row->setSourceProperty('status', 0);
     }
   }
 
