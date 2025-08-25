@@ -21,6 +21,7 @@ class SocialLinksManager {
     'youtube' => 'YouTube',
     'weibo' => 'Weibo',
     'linkedin' => 'LinkedIn',
+    'bluesky' => 'Bluesky',
   ];
 
   /**
