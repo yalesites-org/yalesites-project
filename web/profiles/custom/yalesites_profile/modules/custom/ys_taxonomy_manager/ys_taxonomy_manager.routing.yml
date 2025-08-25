@@ -16,4 +16,4 @@ taxonomy_manager.admin:
     _controller: '\Drupal\ys_taxonomy_manager\Controller\YsTaxonomyManagerMainController::listVocabularies'
     _title: 'Taxonomy Manager'
   requirements:
-    _permission: 'administer taxonomy'
+    _permission: 'access taxonomy manager list'
