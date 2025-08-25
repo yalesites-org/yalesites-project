@@ -1,7 +1,5 @@
 <?php
 
-// phpcs:ignoreFile
-
 /**
  * @file
  * Redis configuration file.
