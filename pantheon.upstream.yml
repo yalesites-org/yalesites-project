@@ -10,3 +10,5 @@ protected_web_paths:
   - /private/
   - /sites/default/files/private/
   - /sites/default/files/config/
+new_relic:
+  drupal_hooks: true
