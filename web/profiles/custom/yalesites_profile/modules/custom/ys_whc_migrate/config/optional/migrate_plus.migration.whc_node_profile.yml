@@ -8,6 +8,13 @@ migration_tags:
 source:
   plugin: whc_user
 process:
+  _skip_row:
+    plugin: skip_on_condition
+    source: skip_row
+    condition:
+      plugin: equals
+      value: true
+    method: row
   langcode: constants/langcode_en
   status: status
   created: created

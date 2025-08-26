@@ -6,6 +6,7 @@ namespace Drupal\ys_whc_migrate\Plugin\migrate\source;
 
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Database\Query\SelectInterface;
+use Drupal\migrate\Row;
 use Drupal\user\Plugin\migrate\source\d7\User;
 
 /**
@@ -93,6 +94,19 @@ class WhcUser extends User {
     }
 
     return new \ArrayIterator($files_found);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function prepareRow(Row $row): bool {
+    $result = parent::prepareRow($row);
+
+    $fellow_role = $row->getSourceProperty('field_fellow_role/0/target_id');
+    $people_type = $row->getSourceProperty('field_people_type/0/value');
+    $row->setSourceProperty('skip_row', (bool) (!$fellow_role && !$people_type));
+
+    return $result;
   }
 
   /**
