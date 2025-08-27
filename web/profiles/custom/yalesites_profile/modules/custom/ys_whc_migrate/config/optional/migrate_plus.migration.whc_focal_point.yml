@@ -19,7 +19,7 @@ source:
     - field_event_image
     - field_event_slide_image
   constants:
-    focal_point: '50,20'
+    focal_point: '50,50'
     entity_type: 'file'
     type: 'focal_point'
 process:
