@@ -128,10 +128,10 @@ class EventCalendarFilterForm extends FormBase {
     // Ensure navigated month/year from user input are persisted in form state.
     $user_input = (array) $form_state->getUserInput();
     if (!empty($user_input['calendar_month'])) {
-      $form_state->setValue('calendar_month', $user_input['calendar_month']);
+      $form_state->setValue(['filters_container', 'calendar_month'], $user_input['calendar_month']);
     }
     if (!empty($user_input['calendar_year'])) {
-      $form_state->setValue('calendar_year', $user_input['calendar_year']);
+      $form_state->setValue(['filters_container', 'calendar_year'], $user_input['calendar_year']);
     }
 
     // Get filters from form state.
@@ -164,6 +164,25 @@ class EventCalendarFilterForm extends FormBase {
       'custom_vocab' => $form_state->getValue('custom_vocab_included_terms') ?? ($paramsDecoded['custom_vocab_included_terms'] ?? []),
     ];
 
+    // Search filter (ajax triggers via debounced change in JS).
+    if (!empty($exposedFilterOptions['show_search_filter'])) {
+      $form['filters_container']['search'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('Search'),
+        '#default_value' => $form_state->getValue('search') ?? '',
+        '#attributes' => [
+          'placeholder' => $this->t('Search events'),
+          'class' => ['ys-events-search-input'],
+        ],
+        '#ajax' => [
+          'callback' => '::ajaxFilterCallback',
+          'wrapper' => self::CALENDAR_WRAPPER_ID,
+          'event' => 'ys-calendar-search',
+          'progress' => ['type' => 'none'],
+        ],
+      ];
+    }
+
     // Category filter.
     if (!empty($exposedFilterOptions['show_category_filter'])) {
       $form['filters_container']['category_included_terms'] = $this->createFilterElement(
@@ -194,25 +213,6 @@ class EventCalendarFilterForm extends FormBase {
         $this->getTaxonomyOptions('custom_vocab', $paramsDecoded['custom_vocab_included_terms'] ?? NULL),
         $currentValues['custom_vocab']
       );
-    }
-
-    // Search filter (ajax triggers via debounced change in JS).
-    if (!empty($exposedFilterOptions['show_search_filter'])) {
-      $form['filters_container']['search'] = [
-        '#type' => 'textfield',
-        '#title' => $this->t('Search'),
-        '#default_value' => $form_state->getValue('search') ?? '',
-        '#attributes' => [
-          'placeholder' => $this->t('Search events'),
-          'class' => ['ys-events-search-input'],
-        ],
-        '#ajax' => [
-          'callback' => '::ajaxFilterCallback',
-          'wrapper' => self::CALENDAR_WRAPPER_ID,
-          'event' => 'ys-calendar-search',
-          'progress' => ['type' => 'none'],
-        ],
-      ];
     }
   }
 
@@ -306,12 +306,13 @@ class EventCalendarFilterForm extends FormBase {
       ];
     }
 
-    // Persist navigated calendar state at the form root for easy retrieval.
-    $form['calendar_month'] = [
+    // Persist navigated calendar state in filters container for :has() CSS
+    // selector counting.
+    $form['filters_container']['calendar_month'] = [
       '#type' => 'hidden',
       '#value' => $form_state->getValue('calendar_month') ?? date('m'),
     ];
-    $form['calendar_year'] = [
+    $form['filters_container']['calendar_year'] = [
       '#type' => 'hidden',
       '#value' => $form_state->getValue('calendar_year') ?? date('Y'),
     ];
@@ -379,11 +380,9 @@ class EventCalendarFilterForm extends FormBase {
   private function renderCalendar(array &$form, array $filters, FormStateInterface $form_state) {
     // Use navigated month/year if provided, otherwise fall back to current.
     $user_input = (array) $form_state->getUserInput();
-    $month = $form_state->getValue('calendar_month')
-      ?: $form_state->getValue(['filters_container', 'calendar_month'])
+    $month = $form_state->getValue(['filters_container', 'calendar_month'])
       ?: ($user_input['calendar_month'] ?? ($user_input['filters_container']['calendar_month'] ?? date('m')));
-    $year = $form_state->getValue('calendar_year')
-      ?: $form_state->getValue(['filters_container', 'calendar_year'])
+    $year = $form_state->getValue(['filters_container', 'calendar_year'])
       ?: ($user_input['calendar_year'] ?? ($user_input['filters_container']['calendar_year'] ?? date('Y')));
 
     // Get calendar data.
