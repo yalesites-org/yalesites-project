@@ -5,6 +5,7 @@ dependencies:
   config:
     - block_content.type.video_banner
     - field.field.block_content.video_banner.field_media
+    - field.field.block_content.video_banner.field_padding_options
     - field.field.block_content.video_banner.field_style_width
   module:
     - options
@@ -21,6 +22,13 @@ content:
       link: false
     third_party_settings: {  }
     weight: 0
+    region: content
+  field_padding_options:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 10
     region: content
   field_style_width:
     type: list_key

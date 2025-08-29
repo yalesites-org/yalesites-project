@@ -6,6 +6,7 @@ dependencies:
     - block_content.type.button_link
     - field.field.block_content.button_link.field_button_link
     - field.field.block_content.button_link.field_instructions
+    - field.field.block_content.button_link.field_padding_options
   module:
     - hide_revision_field
     - linkit
@@ -28,6 +29,12 @@ content:
   field_instructions:
     type: markup
     weight: 0
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_padding_options:
+    type: options_select
+    weight: 10
     region: content
     settings: {  }
     third_party_settings: {  }

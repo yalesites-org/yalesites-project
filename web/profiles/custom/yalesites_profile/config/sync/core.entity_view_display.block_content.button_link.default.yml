@@ -6,8 +6,10 @@ dependencies:
     - block_content.type.button_link
     - field.field.block_content.button_link.field_button_link
     - field.field.block_content.button_link.field_instructions
+    - field.field.block_content.button_link.field_padding_options
   module:
     - link
+    - options
 id: block_content.button_link.default
 targetEntityType: block_content
 bundle: button_link
@@ -24,6 +26,13 @@ content:
       target: '0'
     third_party_settings: {  }
     weight: 0
+    region: content
+  field_padding_options:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 10
     region: content
 hidden:
   field_instructions: true

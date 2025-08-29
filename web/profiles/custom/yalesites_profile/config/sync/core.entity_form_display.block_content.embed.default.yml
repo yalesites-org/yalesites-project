@@ -6,6 +6,7 @@ dependencies:
     - block_content.type.embed
     - field.field.block_content.embed.field_instructions
     - field.field.block_content.embed.field_media
+    - field.field.block_content.embed.field_padding_options
   module:
     - markup
     - media_library
@@ -30,6 +31,12 @@ content:
     third_party_settings:
       media_library_edit:
         show_edit: '1'
+  field_padding_options:
+    type: options_select
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   info:
     type: string_textfield
     weight: 1

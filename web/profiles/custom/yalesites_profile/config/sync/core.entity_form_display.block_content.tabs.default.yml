@@ -5,6 +5,7 @@ dependencies:
   config:
     - block_content.type.tabs
     - field.field.block_content.tabs.field_instructions
+    - field.field.block_content.tabs.field_padding_options
     - field.field.block_content.tabs.field_tabs
   module:
     - markup
@@ -18,6 +19,12 @@ content:
   field_instructions:
     type: markup
     weight: 0
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_padding_options:
+    type: options_select
+    weight: 10
     region: content
     settings: {  }
     third_party_settings: {  }

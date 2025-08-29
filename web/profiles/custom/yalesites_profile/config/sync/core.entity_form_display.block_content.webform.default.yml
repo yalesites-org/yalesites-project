@@ -7,6 +7,7 @@ dependencies:
     - field.field.block_content.webform.field_form
     - field.field.block_content.webform.field_heading
     - field.field.block_content.webform.field_instructions
+    - field.field.block_content.webform.field_padding_options
   module:
     - allowed_formats
     - markup
@@ -44,6 +45,12 @@ content:
   field_instructions:
     type: markup
     weight: 0
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_padding_options:
+    type: options_select
+    weight: 10
     region: content
     settings: {  }
     third_party_settings: {  }

@@ -6,6 +6,7 @@ dependencies:
     - block_content.type.inline_message
     - field.field.block_content.inline_message.field_heading
     - field.field.block_content.inline_message.field_link
+    - field.field.block_content.inline_message.field_padding_options
     - field.field.block_content.inline_message.field_style_color
     - field.field.block_content.inline_message.field_text
   module:
@@ -35,6 +36,13 @@ content:
       target: '0'
     third_party_settings: {  }
     weight: 4
+    region: content
+  field_padding_options:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 10
     region: content
   field_style_color:
     type: list_key
