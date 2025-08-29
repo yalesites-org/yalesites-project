@@ -7,6 +7,7 @@ dependencies:
     - field.field.block_content.wrapped_image.field_caption
     - field.field.block_content.wrapped_image.field_instructions
     - field.field.block_content.wrapped_image.field_media
+    - field.field.block_content.wrapped_image.field_padding_options
     - field.field.block_content.wrapped_image.field_style_position
     - field.field.block_content.wrapped_image.field_style_variation
     - field.field.block_content.wrapped_image.field_text
@@ -33,6 +34,13 @@ content:
       link: false
     third_party_settings: {  }
     weight: 1
+    region: content
+  field_padding_options:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 10
     region: content
   field_style_position:
     type: list_key

@@ -5,14 +5,23 @@ dependencies:
   config:
     - block_content.type.tabs
     - field.field.block_content.tabs.field_instructions
+    - field.field.block_content.tabs.field_padding_options
     - field.field.block_content.tabs.field_tabs
   module:
     - entity_reference_revisions
+    - options
 id: block_content.tabs.default
 targetEntityType: block_content
 bundle: tabs
 mode: default
 content:
+  field_padding_options:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 10
+    region: content
   field_tabs:
     type: entity_reference_revisions_entity_view
     label: hidden

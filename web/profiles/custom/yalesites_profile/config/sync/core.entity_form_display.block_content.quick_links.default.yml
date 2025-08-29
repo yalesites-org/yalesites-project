@@ -8,6 +8,7 @@ dependencies:
     - field.field.block_content.quick_links.field_instructions
     - field.field.block_content.quick_links.field_links
     - field.field.block_content.quick_links.field_media
+    - field.field.block_content.quick_links.field_padding_options
     - field.field.block_content.quick_links.field_text
   module:
     - allowed_formats
@@ -62,6 +63,12 @@ content:
     third_party_settings:
       media_library_edit:
         show_edit: '1'
+  field_padding_options:
+    type: options_select
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_text:
     type: text_textarea
     weight: 3
