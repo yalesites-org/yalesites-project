@@ -121,6 +121,8 @@ function ys_layouts_theme_suggestions_block($variables) {
   }
 }
 
+
+
 /**
  * Implements hook_preprocess_block().
  */
@@ -135,6 +137,18 @@ function ys_layouts_preprocess_block(&$variables) {
   // Add layout_section variable for styling (Layout Builder context only).
   if (!empty($variables['elements']['#configuration']['provider']) && $variables['elements']['#configuration']['provider'] === 'layout_builder') {
     _ys_layouts_add_layout_section($variables);
+
+    // Add block padding options from the field.
+    if (isset($variables['content']['#block_content'])) {
+      $block_content = $variables['content']['#block_content'];
+      if ($block_content->hasField('field_padding_options') && !$block_content->get('field_padding_options')->isEmpty()) {
+        $padding_value = $block_content->get('field_padding_options')->value;
+        if ($padding_value) {
+          // Replace underscores with hyphens for CSS classes.
+          $variables['padding_options'] = str_replace('_', '-', $padding_value);
+        }
+      }
+    }
   }
 
   // Add block padding options from the field.
