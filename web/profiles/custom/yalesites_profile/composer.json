@@ -113,7 +113,7 @@
     "drupal/webform": "6.2.7",
     "drupal/workflow_buttons": "1.0.0-beta6",
     "jjj/chosen": "2.2.1",
-    "laminas/laminas-escaper": "2.13.0",
+    "laminas/laminas-escaper": "2.17.0",
     "northernco/ckeditor5-anchor-drupal": "0.4.0",
     "yalesites-org/ai_engine": "1.2.10",
     "yalesites-org/atomic": "1.58.0",
