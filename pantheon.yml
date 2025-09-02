@@ -1,6 +1,9 @@
 api_version: 1
 # Downstream sites should not change the workflow.
 
+new_relic:
+  drupal_hooks: true
+
 # Specifying Quicksilver workflows in pantheon.upstream.yml is not supported.
 workflows:
   clone_database:
