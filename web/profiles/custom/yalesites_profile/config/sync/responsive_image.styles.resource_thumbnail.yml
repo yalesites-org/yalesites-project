@@ -1,0 +1,21 @@
+uuid: 5c6499a2-444f-4374-b6e0-18fb46ddcf8e
+langcode: en
+status: true
+dependencies:
+  config:
+    - image.style.resource_300
+    - image.style.resource_600
+id: resource_thumbnail
+label: 'Resource Thumbnail'
+image_style_mappings:
+  -
+    image_mapping_type: sizes
+    image_mapping:
+      sizes: '(min-width: 768px)'
+      sizes_image_styles:
+        - resource_300
+        - resource_600
+    breakpoint_id: responsive_image.viewport_sizing
+    multiplier: 1x
+breakpoint_group: responsive_image
+fallback_image_style: resource_300

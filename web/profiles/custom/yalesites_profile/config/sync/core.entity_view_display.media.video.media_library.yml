@@ -6,7 +6,7 @@ dependencies:
     - core.entity_view_mode.media.media_library
     - field.field.media.video.field_media_oembed_video
     - field.field.media.video.field_tags
-    - image.style.media_library
+    - image.style.resource_300
     - media.type.video
   module:
     - image
@@ -20,7 +20,7 @@ content:
     label: hidden
     settings:
       image_link: ''
-      image_style: media_library
+      image_style: resource_300
       image_loading:
         attribute: lazy
     third_party_settings: {  }

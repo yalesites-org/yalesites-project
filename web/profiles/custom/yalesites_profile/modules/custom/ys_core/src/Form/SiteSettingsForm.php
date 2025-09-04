@@ -431,7 +431,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
         ->set('name', $form_state->getValue('custom_vocab_name'))
         ->save();
 
-      $content_types = ['event', 'page', 'post', 'profile'];
+      $content_types = ['event', 'page', 'post', 'profile', 'resource'];
       // Update the custom vocab field label for each content type.
       foreach ($content_types as $type) {
         $this->configFactory->getEditable("field.field.node.{$type}.field_custom_vocab")
