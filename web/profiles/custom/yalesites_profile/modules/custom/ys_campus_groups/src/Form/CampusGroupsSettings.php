@@ -4,6 +4,7 @@ namespace Drupal\ys_campus_groups\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\ys_campus_groups\Plugin\migrate\source\CampusGroupUrl;
 
 /**
  * Defines the manage Campus Group settings interface.
@@ -37,10 +38,12 @@ class CampusGroupsSettings extends ConfigFormBase {
       ];
     }
 
+    $sync_days = CampusGroupUrl::DAYS;
+
     $form['enable_campus_groups_sync'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Enable Campus Group sync'),
-      '#description' => $this->t('Once enabled, Campus Group data will sync events for the selected group roughly every hour.'),
+      '#description' => $this->t('Once enabled, Campus Group data will sync events up to @days days in the future for the selected group roughly every hour.', ['@days' => $sync_days]),
       '#default_value' => $config->get('enable_campus_groups_sync') ?: FALSE,
     ];
 
