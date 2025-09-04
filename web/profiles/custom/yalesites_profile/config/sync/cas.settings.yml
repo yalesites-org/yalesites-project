@@ -10,7 +10,7 @@ server:
   hostname: secure.its.yale.edu
   port: 443
   path: /cas
-  verify: 0
+  verify: 1
   cert: /etc/pki/tls/certs/ca-bundle.crt
 gateway:
   enabled: false
