@@ -5,6 +5,7 @@ dependencies:
   config:
     - block_content.type.video_banner
     - field.field.block_content.video_banner.field_media
+    - field.field.block_content.video_banner.field_padding_options
     - field.field.block_content.video_banner.field_style_width
   module:
     - hide_revision_field
@@ -24,6 +25,12 @@ content:
     third_party_settings:
       media_library_edit:
         show_edit: '1'
+  field_padding_options:
+    type: options_select
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_style_width:
     type: options_select
     weight: 10

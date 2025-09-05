@@ -7,6 +7,7 @@ dependencies:
     - field.field.block_content.link_grid.field_heading
     - field.field.block_content.link_grid.field_instructions
     - field.field.block_content.link_grid.field_link_lists
+    - field.field.block_content.link_grid.field_padding_options
     - field.field.block_content.link_grid.field_style_color
   module:
     - entity_reference_revisions
@@ -32,6 +33,13 @@ content:
       link: ''
     third_party_settings: {  }
     weight: 0
+    region: content
+  field_padding_options:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 10
     region: content
   field_style_color:
     type: list_key

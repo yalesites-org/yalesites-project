@@ -7,6 +7,7 @@ dependencies:
     - field.field.block_content.media_grid.field_heading
     - field.field.block_content.media_grid.field_instructions
     - field.field.block_content.media_grid.field_media_grid_items
+    - field.field.block_content.media_grid.field_padding_options
   module:
     - allowed_formats
     - markup
@@ -64,6 +65,12 @@ content:
         add_in_between_link_count: 3
         delete_confirmation: true
         show_drag_and_drop: true
+  field_padding_options:
+    type: options_select
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   info:
     type: string_textfield
     weight: 1
