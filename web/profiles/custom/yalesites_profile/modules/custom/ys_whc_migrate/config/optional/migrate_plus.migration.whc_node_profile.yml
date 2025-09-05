@@ -63,7 +63,7 @@ process:
   field_audience:
     plugin: migration_lookup
     migration: whc_taxonomy_fellow_role
-    source: field_series/0/target_id
+    source: field_fellow_role/0/target_id
     no_stub: true
   layout_builder__layout:
     plugin: whc_content_to_layout_builder
