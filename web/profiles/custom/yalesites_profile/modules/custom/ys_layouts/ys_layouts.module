@@ -120,8 +120,6 @@ function ys_layouts_theme_suggestions_block($variables) {
   }
 }
 
-
-
 /**
  * Implements hook_preprocess_block().
  */
