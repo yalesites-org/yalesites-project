@@ -157,6 +157,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     $ticketCost = $node->field_ticket_cost->first() ? $node->field_ticket_cost->first()->getValue()['value'] : NULL;
     $costButtonText = $ticketCost ? 'Buy Tickets' : 'Register';
     $description = $node->field_event_description->first() ? $node->field_event_description->first()->getValue()['value'] : NULL;
+    $room = $node->field_event_room->first() ? $node->field_event_room->first()->getValue()['value'] : NULL;
     $externalEventWebsiteUrl = ($node->field_event_cta->first()) ? Url::fromUri($node->field_event_cta->first()->getValue()['uri'])->toString() : NULL;
     $externalEventWebsiteTitle = ($node->field_event_cta->first()) ? $node->field_event_cta->first()->getValue()['title'] : NULL;
     $localistImageUrl = ($node->field_localist_event_image_url->first()) ? Url::fromUri($node->field_localist_event_image_url->first()->getValue()['uri'])->toString() : NULL;
@@ -273,6 +274,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       'ticket_url' => $ticketLink,
       'ticket_cost' => $ticketCost,
       'description' => $description,
+      'room' => $room,
       'external_website_url' => $externalEventWebsiteUrl,
       'external_website_title' => $externalEventWebsiteTitle,
       'localist_image_url' => $localistImageUrl,
