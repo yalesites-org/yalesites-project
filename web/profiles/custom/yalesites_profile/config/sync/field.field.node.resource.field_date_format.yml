@@ -1,0 +1,21 @@
+uuid: ff6af0fb-8828-405b-98b0-1db04b80f416
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_date_format
+    - node.type.resource
+  module:
+    - options
+id: node.resource.field_date_format
+field_name: field_date_format
+entity_type: node
+bundle: resource
+label: 'Date Format'
+description: 'A complete "Published On" date must be entered regardless of the date format value. Leave blank if you don''t want to display the date.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_string
