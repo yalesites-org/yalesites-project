@@ -6,5 +6,7 @@ core_version_requirement: ^10 || ^11
 configure: ys_ai.settings
 dependencies:
   - ai_engine
+  - ai_engine_chat
+  - ai_engine_embedding
   - ys_core
   - ys_integrations
