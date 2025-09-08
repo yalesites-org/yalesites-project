@@ -96,6 +96,7 @@ dependencies:
     - taxonomy_manager
     - toolbar
     - webform
+    - ys_ai
     - ys_alert
     - ys_campus_groups
     - ys_core
@@ -147,6 +148,7 @@ permissions:
   - 'configure editable post node layout overrides'
   - 'configure editable profile node layout overrides'
   - 'configure editable resource node layout overrides'
+  - 'configure ys ai user settings'
   - 'create accordion block content'
   - 'create and edit custom blocks'
   - 'create background_video media'
