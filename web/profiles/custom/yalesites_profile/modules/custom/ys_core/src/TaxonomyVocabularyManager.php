@@ -56,6 +56,7 @@ class TaxonomyVocabularyManager {
       'custom_vocab',
       'post_category',
       'page_category',
+      'resource_category',
       'tags',
     ];
   }

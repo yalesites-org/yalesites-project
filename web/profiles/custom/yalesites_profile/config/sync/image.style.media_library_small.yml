@@ -1,0 +1,15 @@
+uuid: 04acb1d0-c5bb-4294-86d0-b1b012979467
+langcode: en
+status: true
+dependencies: {  }
+name: media_library_small
+label: 'Media Library Small'
+effects:
+  68b6458a-79b0-4118-8c92-693a09e606e4:
+    uuid: 68b6458a-79b0-4118-8c92-693a09e606e4
+    id: image_scale
+    weight: 1
+    data:
+      width: 220
+      height: null
+      upscale: false

@@ -587,6 +587,62 @@ function ys_core_taxonomy_term_update() {
 }
 
 /**
+ * Implements hook_ENTITY_update().
+ *
+ * Clears entity and page cache when field_external_source is updated on a node.
+ * This ensures the ExternalSourceRedirectSubscriber sees fresh field data.
+ */
+function ys_core_node_update($node) {
+  // Only process nodes that have the external source field.
+  if (!$node->hasField('field_external_source')) {
+    return;
+  }
+
+  // Check if the external source field was changed.
+  $original_node = $node->original;
+  if (!$original_node || !$original_node->hasField('field_external_source')) {
+    return;
+  }
+
+  // Get current and original field values.
+  // Use first() and getValue() to properly access link field data.
+  $current_field = $node->get('field_external_source')->first();
+  $current_value = $current_field ? $current_field->getValue() : NULL;
+  $current_uri = $current_value['uri'] ?? '';
+
+  $original_field = $original_node->get('field_external_source')->first();
+  $original_value = $original_field ? $original_field->getValue() : NULL;
+  $original_uri = $original_value['uri'] ?? '';
+
+  // If the external source URL has changed, invalidate relevant caches.
+  // This handles all cases: value to empty, empty to value, value to different
+  // value.
+  if ($current_uri !== $original_uri) {
+    // Clear multiple cache layers that could affect the redirect behavior:
+    $cache_tags = [
+      // Node-specific cache.
+      'node:' . $node->id(),
+      // General render cache.
+      'rendered',
+      // Response cache.
+      'response',
+      // Page cache.
+      'page',
+      // HTTP response cache.
+      'http_response',
+    ];
+    Cache::invalidateTags($cache_tags);
+
+    // Clear entity storage cache to ensure fresh data for the event subscriber.
+    \Drupal::entityTypeManager()->getStorage('node')->resetCache([$node->id()]);
+
+    // Clear the dynamic page cache for comprehensive coverage.
+    $dynamic_cache = \Drupal::cache('dynamic_page_cache');
+    $dynamic_cache->invalidateAll();
+  }
+}
+
+/**
  * Implements hook_preprocess_page().
  */
 function ys_core_preprocess_page(&$variables) {
@@ -727,7 +783,7 @@ function ys_core_form_views_exposed_form_alter(&$form, FormStateInterface $form_
   /** @var \Drupal\views\ViewExecutable $view */
   $view = $form_state->get('view');
 
-  if (in_array($view->id(), ['views_basic_scaffold', 'views_basic_scaffold_events'])) {
+  if (in_array($view->id(), ['views_basic_scaffold', 'views_basic_scaffold_events', 'content_resources'])) {
     // List of form elements to which Chosen should be applied.
     $chosen_filters = [
       'field_category_target_id',
@@ -736,6 +792,7 @@ function ys_core_form_views_exposed_form_alter(&$form, FormStateInterface $form_
       'field_custom_vocab_target_id',
       'field_audience_target_id',
       'post_year_filter',
+      'resource_year_filter',
     ];
     // Loop through each specified field and apply Chosen settings if the field
     // exists.
