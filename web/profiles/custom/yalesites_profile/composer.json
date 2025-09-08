@@ -99,6 +99,7 @@
     "drupal/recaptcha": "3.4.0",
     "drupal/recaptcha_v3": "2.0.3",
     "drupal/redirect": "1.10.0",
+    "drupal/redis": "1.10",
     "drupal/role_delegation": "1.2",
     "drupal/search_api": "1.35.0",
     "drupal/search_api_exclude": "2.0.2",
