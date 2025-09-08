@@ -203,13 +203,14 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     if ($teaserMediaId) {
       /** @var Drupal\media\Entity\Media $teaserMedia */
       if ($teaserMedia = $this->entityTypeManager->getStorage('media')->load($teaserMediaId)) {
-        /** @var Drupal\file\FileStorage $fileEntity */
-        $fileEntity = $this->entityTypeManager->getStorage('file');
-        $teaserImageFileUri = $fileEntity->load($teaserMedia->field_media_image->target_id)->getFileUri();
+        /** @var Drupal\file\FileStorage $fileEntityStorage */
+        $fileEntityStorage = $this->entityTypeManager->getStorage('file');
+        $teaserImageFileUri = $fileEntityStorage->load($teaserMedia->field_media_image->target_id)->getFileUri();
+        $isTeaserImageLandscape = $teaserMedia->get('thumbnail')->width > $teaserMedia->get('thumbnail')->height;
 
         $teaserMediaRender = [
           '#type' => 'responsive_image',
-          '#responsive_image_style_id' => 'card_featured_3_2',
+          '#responsive_image_style_id' => $isTeaserImageLandscape ? 'card_featured_3_2' : 'content_spotlight_portrait',
           '#uri' => $teaserImageFileUri,
           '#attributes' => [
             'alt' => $teaserMedia->get('field_media_image')->first()->get('alt')->getValue(),
