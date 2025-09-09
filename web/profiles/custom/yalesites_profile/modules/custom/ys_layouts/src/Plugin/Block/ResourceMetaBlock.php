@@ -8,6 +8,7 @@ use Drupal\Core\Datetime\DateFormatter;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
 use Drupal\node\NodeInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -206,13 +207,14 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
 
           /** @var \Drupal\file\Entity\File $file */
           $file = $this->entityTypeManager->getStorage('file')->load($fieldMediaFile['target_id']);
-          $fileUrl = $file->createFileUrl();
+          $fileUrl = Url::fromRoute('ys_layouts.resource_download', ['file_id' => $file->id()])->toString();
 
           $thumbnail = $media?->thumbnail;
 
           if ($thumbnail) {
             /** @var \Drupal\file\Entity\File $thumbnail_file */
-            $thumbnail_file = reset($thumbnail->referencedEntities());
+            $referenced_entities = $thumbnail->referencedEntities();
+            $thumbnail_file = reset($referenced_entities);
 
             if ($thumbnail_file) {
               $documentImage = [
