@@ -28,6 +28,7 @@ auto_added_reusable_block_content_bundles:
   quick_links: quick_links
   quote_callout: quote_callout
   reference_card: reference_card
+  resource_view: resource_view
   tabs: tabs
   text: text
   tiles: tiles

@@ -12,7 +12,7 @@ field_name: field_date_format
 entity_type: node
 bundle: resource
 label: 'Date Format'
-description: 'A complete "Published On" date must be entered regardless of the date format value. Leave blank if you don''t want to display the date.'
+description: 'A complete "Resource Publication Date" date must be entered regardless of the date format value. Leave blank if you don''t want to display the date.'
 required: false
 translatable: false
 default_value: {  }
