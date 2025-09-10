@@ -11,7 +11,6 @@ source:
   constants:
     vid: tags
 process:
-  tid: tid
   vid: constants/vid
   name: name
   weight: weight
