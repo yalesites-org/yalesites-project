@@ -110,6 +110,7 @@
       if ($casField.length) {
         this.initializeCheckboxStates($casField);
         this.attachChangeHandler();
+        this.createModalTemplate();
       }
     },
 
@@ -125,6 +126,28 @@
         const initialState = $checkbox.is(":checked");
         $checkbox.data("original-state", initialState);
       });
+    },
+
+    /**
+     * Creates a hidden template of modal content that LinkPurpose can process.
+     */
+    createModalTemplate() {
+      // Only create template once
+      if (document.getElementById("cas-modal-template")) {
+        return;
+      }
+
+      // Generate the modal content HTML
+      const templateContent =
+        Drupal.casProtectionModal.generateModalContentTemplate();
+
+      // Create hidden container for the template
+      const $template = $(
+        `<div id="cas-modal-template" style="display: none; visibility: hidden; position: absolute; top: -9999px;">${templateContent}</div>`
+      );
+
+      // Add to document so LinkPurpose can process it
+      $("body").append($template);
     },
 
     /**
@@ -387,13 +410,12 @@
   };
 
   /**
-   * Generates modal content HTML using the configuration object.
-   * Note: This modal only appears when enabling CAS protection.
+   * Generates the template version of modal content for LinkPurpose processing.
    *
    * @return {string}
-   *   The modal content HTML.
+   *   The modal content template HTML.
    */
-  Drupal.casProtectionModal.generateModalContent = function () {
+  Drupal.casProtectionModal.generateModalContentTemplate = function () {
     const config = modalConfig;
     const bodyContent = this.generateBodyContent();
 
@@ -406,6 +428,23 @@
       "</p>",
       "</div>",
     ].join("");
+  };
+
+  /**
+   * Gets modal content by cloning the pre-processed template.
+   *
+   * @return {string}
+   *   The modal content HTML with LinkPurpose decorations preserved.
+   */
+  Drupal.casProtectionModal.generateModalContent = function () {
+    const $template = $("#cas-modal-template");
+    if ($template.length) {
+      // Clone the template content (preserving LinkPurpose decorations)
+      return $template.html();
+    }
+
+    // Fallback to generating fresh content if template not found
+    return this.generateModalContentTemplate();
   };
 
   // =============================================================================
