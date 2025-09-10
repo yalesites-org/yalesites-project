@@ -141,6 +141,14 @@ ys_core.taxonomy_interface_audience:
   title: Audience
   route_parameters:
     taxonomy_vocabulary: "audience"
+# Taxonomy interface - Resource Category
+ys_core.taxonomy_interface_resource_category:
+  description: "Manage resource category taxonomy"
+  parent: ys_core.taxonomy_interface
+  route_name: entity.taxonomy_vocabulary.overview_form
+  title: Resource Category
+  route_parameters:
+    taxonomy_vocabulary: "resource_category"
 # Taxonomy interface - Custom Vocab
 ys_core.taxonomy_interface_custom_vocab:
   description: "Manage custom vocabularoy taxonomy"
