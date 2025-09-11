@@ -15,7 +15,9 @@ label: 'Date Format'
 description: 'A complete "Resource Publication Date" date must be entered regardless of the date format value. Leave blank if you don''t want to display the date.'
 required: false
 translatable: false
-default_value: {  }
+default_value:
+  -
+    value: date
 default_value_callback: ''
 settings: {  }
 field_type: list_string
