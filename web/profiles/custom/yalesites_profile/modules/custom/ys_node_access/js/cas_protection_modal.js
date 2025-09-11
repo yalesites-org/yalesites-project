@@ -40,9 +40,7 @@
           url: "https://your.yale.edu/policies-procedures/policies/1604-data-classification-policy#1604.1",
         },
       ],
-      confirmationText: Drupal.t(
-        ""
-      ),
+      confirmationText: Drupal.t(""),
       successMessage: Drupal.t(
         "CAS protection has been enabled for this page."
       ),
@@ -511,6 +509,62 @@
         }
       }
     });
+
+    // Ensure body scroll is fully restored after modal cleanup
+    this.restoreBodyScroll();
+  };
+
+  /**
+   * Restores body scroll functionality with multiple fallback mechanisms.
+   */
+  Drupal.casProtectionModal.restoreBodyScroll = function () {
+    // Method 1: Use Drupal's body scroll lock API if available
+    if (
+      typeof bodyScrollLock !== "undefined" &&
+      bodyScrollLock.clearBodyLocks
+    ) {
+      try {
+        bodyScrollLock.clearBodyLocks();
+      } catch (e) {
+        // Silent fallback if bodyScrollLock fails
+      }
+    }
+
+    // Method 2: Remove any overflow restrictions on body and html
+    const $body = $("body");
+    const $html = $("html");
+
+    $body.css({
+      overflow: "",
+      "overflow-x": "",
+      "overflow-y": "",
+      position: "",
+      height: "",
+      width: "",
+    });
+
+    $html.css({
+      overflow: "",
+      "overflow-x": "",
+      "overflow-y": "",
+      position: "",
+      height: "",
+      width: "",
+    });
+
+    // Method 3: Remove any data attributes that might affect scrolling
+    $body.removeAttr("data-scroll-locked");
+    $html.removeAttr("data-scroll-locked");
+
+    // Method 4: Timeout-based cleanup as final fallback
+    setTimeout(function () {
+      $body.css("overflow", "");
+      $html.css("overflow", "");
+
+      // Force a reflow to ensure styles are applied
+      // eslint-disable-next-line no-unused-expressions
+      document.body.offsetHeight;
+    }, 50);
   };
 
   /**
@@ -582,6 +636,39 @@
       if ($dialogContainer.length) {
         $dialogContainer.attr("aria-modal", "true");
       }
+    }
+  });
+
+  /**
+   * Enhanced dialog close event handling to ensure body scroll is properly restored.
+   *
+   * This event listener uses Drupal's dialog:beforeclose and dialog:afterclose events
+   * to provide additional scroll restoration for CAS protection modals, ensuring
+   * scrolling is reliably restored even if the standard cleanup fails.
+   */
+  $(window).on("dialog:beforeclose", function (event, dialog, $element) {
+    // Only apply to CAS protection modals
+    if (
+      $element &&
+      $element.hasClass &&
+      $element.hasClass(modalConfig.classes.modalContent)
+    ) {
+      // Ensure scroll restoration happens immediately before close
+      Drupal.casProtectionModal.restoreBodyScroll();
+    }
+  });
+
+  $(window).on("dialog:afterclose", function (event, dialog, $element) {
+    // Only apply to CAS protection modals
+    if (
+      $element &&
+      $element.hasClass &&
+      $element.hasClass(modalConfig.classes.modalContent)
+    ) {
+      // Additional scroll restoration after close as failsafe
+      setTimeout(function () {
+        Drupal.casProtectionModal.restoreBodyScroll();
+      }, 100);
     }
   });
 })(jQuery, Drupal);

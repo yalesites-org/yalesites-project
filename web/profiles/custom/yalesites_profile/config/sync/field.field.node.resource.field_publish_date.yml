@@ -11,7 +11,7 @@ id: node.resource.field_publish_date
 field_name: field_publish_date
 entity_type: node
 bundle: resource
-label: 'Published On'
+label: 'Resource Publication Date'
 description: "Please include a full date, even if you only want a 'Year' or 'Month and Year' format for display. This full date format is necessary for sorting in views, so choose an arbitrary approximate date if you do not have an actual complete date."
 required: false
 translatable: false
