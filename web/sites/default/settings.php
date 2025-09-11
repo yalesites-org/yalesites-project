@@ -52,6 +52,20 @@ if (isset($_ENV['PANTHEON_SITE_NAME'])) {
 // Set the install profile as the source of site config.
 $settings['config_sync_directory'] = 'profiles/custom/yalesites_profile/config/sync';
 
+// Exclude modules from config sync.
+$settings['config_exclude_modules'] = ['redis'];
+
+/**
+ * Include the Redis settings file.
+ */
+if (!empty($_ENV['PANTHEON_ENVIRONMENT']) && !empty($_ENV['CACHE_HOST'])) {
+  $redis_settings = __DIR__ . "/settings.redis.php";
+
+  if (file_exists($redis_settings)) {
+    include $redis_settings;
+  }
+}
+
 /**
  * Environment Indicator.
  */
@@ -62,7 +76,7 @@ $env_options = [
     'fg_color' => '#000000',
     'name' => 'Local Environment',
   ],
-  'dev' => [
+  'development' => [
     'bg_color' => '#3b82f6',
     'fg_color' => '#ffffff',
     'name' => 'Development - Build & Test. Make big changes here, then request go-live.',

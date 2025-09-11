@@ -6,6 +6,7 @@ dependencies:
     - core.entity_view_mode.node.search_result
     - field.field.node.post.field_audience
     - field.field.node.post.field_author
+    - field.field.node.post.field_authors
     - field.field.node.post.field_category
     - field.field.node.post.field_custom_vocab
     - field.field.node.post.field_external_source
@@ -34,7 +35,7 @@ content:
   content_moderation_control:
     settings: {  }
     third_party_settings: {  }
-    weight: 0
+    weight: -20
     region: content
   field_external_source:
     type: link_separate
@@ -74,6 +75,7 @@ hidden:
   addtoany: true
   field_audience: true
   field_author: true
+  field_authors: true
   field_category: true
   field_custom_vocab: true
   field_hide_sharing_links: true

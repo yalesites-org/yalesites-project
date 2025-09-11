@@ -44,3 +44,15 @@ font_preview:
     - core/jquery
     - core/drupal
     - core/once
+facts_icon_preview:
+  version: 1.x
+  css:
+    theme:
+      css/facts-icon-preview.css: {}
+  js:
+    js/facts-icon-preview-chosen.js: {}
+  dependencies:
+    - core/drupal
+    - core/jquery
+    - core/once
+    - chosen/chosen

@@ -5,6 +5,14 @@ ys_layouts.settings_form:
     _title: 'YaleSites Layout Builder'
   requirements:
     _permission: 'administer site configuration'
+ys_layouts.resource_download:
+  path: '/resource/download/{file_id}'
+  defaults:
+    _controller: '\Drupal\ys_layouts\Controller\ResourceDownloadController::download'
+    _title: 'Download Resource File'
+  requirements:
+    _custom_access: '\Drupal\ys_layouts\Controller\ResourceDownloadController::access'
+    file_id: '\d+'
 block_content.add_page:
   path: '/block/add'
   defaults:

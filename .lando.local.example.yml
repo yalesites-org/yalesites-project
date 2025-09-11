@@ -45,3 +45,8 @@ services:
         CUSTOMER_SECRETS_FAKE_FILE: /app/secrets.json
     # This is needed to expose the reverse proxy to the xdebug port (9003)
     xdebug: true
+
+    # This is needed to have ImagImageMagick work on Lando
+    # because the Pantheon recipie is broken for ImageMagick
+    build_as_root:
+      - /bin/sh /app/.lando/imagemagicfix.sh

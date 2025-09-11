@@ -47,6 +47,13 @@ ys_core.admin_views_settings:
   route_name: ys_core.admin_views_settings
   title: "Views Settings"
   weight: 25
+# Google Tag settings form.
+ys_core.admin_google_tag_settings:
+  description: "Google Tag settings."
+  parent: ys_core.admin_yalesites
+  route_name: entity.google_tag_container.single_form
+  title: "Google Tag Settings"
+  weight: 30
 # Menu interface
 ys_core.menu_interface:
   description: "Manage menus"
@@ -134,6 +141,14 @@ ys_core.taxonomy_interface_audience:
   title: Audience
   route_parameters:
     taxonomy_vocabulary: "audience"
+# Taxonomy interface - Resource Category
+ys_core.taxonomy_interface_resource_category:
+  description: "Manage resource category taxonomy"
+  parent: ys_core.taxonomy_interface
+  route_name: entity.taxonomy_vocabulary.overview_form
+  title: Resource Category
+  route_parameters:
+    taxonomy_vocabulary: "resource_category"
 # Taxonomy interface - Custom Vocab
 ys_core.taxonomy_interface_custom_vocab:
   description: "Manage custom vocabularoy taxonomy"

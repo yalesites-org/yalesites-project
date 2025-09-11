@@ -1,0 +1,30 @@
+uuid: 6a41404f-1cf0-4eb6-bcea-bcce5b97ef5a
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+    - options
+id: node.field_date_format
+field_name: field_date_format
+entity_type: node
+type: list_string
+settings:
+  allowed_values:
+    -
+      value: year_only
+      label: 'Year Only'
+    -
+      value: month_year
+      label: 'Month Year'
+    -
+      value: date
+      label: Complete
+  allowed_values_function: ''
+module: options
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

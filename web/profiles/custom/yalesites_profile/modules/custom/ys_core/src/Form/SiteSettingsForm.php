@@ -2,6 +2,8 @@
 
 namespace Drupal\ys_core\Form;
 
+use Drupal\Core\Link;
+use Drupal\Core\Url;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
@@ -11,7 +13,6 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Path\PathValidatorInterface;
 use Drupal\Core\Routing\RequestContext;
 use Drupal\Core\Session\AccountProxy;
-use Drupal\google_analytics\Constants\GoogleAnalyticsPatterns;
 use Drupal\path_alias\AliasManagerInterface;
 use Drupal\ys_core\YaleSitesMediaManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -77,6 +78,13 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
   protected $cacheDiscovery;
 
   /**
+   * Current user session.
+   *
+   * @var \Drupal\Core\Session\AccountProxy
+   */
+  protected $currentUserSession;
+
+  /**
    * Constructs a SiteInformationForm object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -113,6 +121,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     $this->ysMediaManager = $ys_media_manager;
     $this->entityTypeManager = $entity_type_manager;
     $this->currentUser = $account_interface;
+    $this->currentUserSession = $account_interface;
     $this->cacheDiscovery = $cache_discovery;
   }
 
@@ -214,11 +223,15 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#default_value' => $yaleConfig->get('seo')['google_site_verification'],
     ];
 
-    $form['google_analytics_id'] = [
-      '#type' => 'textfield',
-      '#description' => $this->t('This ID has the form of <code>UA-xxxxx-yy</code>, <code>G-xxxxxxxx</code>, <code>AW-xxxxxxxxx</code>, or <code>DC-xxxxxxxx</code>. To get a Web Property ID, register your site with Google Analytics, or if you already have registered your site, go to your Google Analytics Settings page to see the ID next to every site profile.'),
-      '#title' => $this->t('Google Analytics Web Property ID'),
-      '#default_value' => $yaleConfig->get('seo')['google_analytics_id'],
+    $form['google_analytics_migration'] = [
+      '#type' => 'item',
+      '#title' => $this->t('Google Analytics/Tag Manager'),
+      '#description' => $this->t('YaleSites is transitioning from Google Analytics to Google Tag Manager. Configure Google Tag Manager below to maintain your website analytics tracking.'),
+      '#markup' => Link::fromTextAndUrl(
+        $this->t('Configure Google Tag Manager'),
+        Url::fromRoute('entity.google_tag_container.single_form')
+          ->setOptions(['attributes' => ['class' => ['button'], 'style' => 'margin-top: 0; margin-bottom: 0;']])
+      )->toString(),
     ];
 
     $form['custom_vocab_name'] = [
@@ -317,6 +330,24 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#use_favicon_preview' => TRUE,
     ];
 
+    $is_user_1 = ($this->currentUser->id() == 1);
+    $form['cas_app_name'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('CAS Application Name'),
+      '#description' => $this->t('The name of the application to be used in CAS login.'),
+      '#default_value' => ($yaleConfig->get('cas_app_name')) ? $yaleConfig->get('cas_app_name') : 'yalesites',
+      '#access' => $is_user_1,
+    ];
+
+    if (ys_core_allow_secret_items($this->currentUserSession)) {
+      $form['environment_indicator_show'] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Show environment indicator'),
+        '#description' => $this->t('Display the environment indicator banner at the top of the site. This setting overrides all environment-specific configurations.'),
+        '#default_value' => $yaleConfig->get('environment_indicator')['show'] ?? TRUE,
+      ];
+    }
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -354,9 +385,6 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     // Email validations.
     $this->validateEmail($form_state, 'site_mail');
 
-    // Ensure Google Analytics is a valid format.
-    $this->validateGoogleAnalyticsId($form_state, 'google_analytics_id');
-
     parent::validateForm($form, $form_state);
   }
 
@@ -378,19 +406,23 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       ->set('page.403', $form_state->getValue('site_page_403'))
       ->set('page.404', $form_state->getValue('site_page_404'))
       ->save();
-    $this->configFactory->getEditable('ys_core.site')
+    $yaleSiteConfig = $this->configFactory->getEditable('ys_core.site')
       ->set('page.posts', $form_state->getValue('site_page_posts'))
       ->set('page.events', $form_state->getValue('site_page_events'))
       ->set('seo.google_site_verification', $form_state->getValue('google_site_verification'))
-      ->set('seo.google_analytics_id', $form_state->getValue('google_analytics_id'))
       ->set('taxonomy.custom_vocab_name', $form_state->getValue('custom_vocab_name'))
       ->set('image_fallback.teaser', $form_state->getValue('teaser_image_fallback'))
       ->set('custom_favicon', $form_state->getValue('favicon'))
       ->set('font_pairing', $form_state->getValue('font_pairing'))
-      ->save();
-    $this->configFactory->getEditable('google_analytics.settings')
-      ->set('account', $form_state->getValue('google_analytics_id'))
-      ->save();
+      ->set('cas_app_name', $form_state->getValue('cas_app_name') ?? 'yalesites');
+
+    // Save environment indicator setting if the field was present
+    // (platform admin only).
+    if (ys_core_allow_secret_items($this->currentUserSession)) {
+      $yaleSiteConfig->set('environment_indicator.show', $form_state->getValue('environment_indicator_show') ?? TRUE);
+    }
+
+    $yaleSiteConfig->save();
 
     $custom_vocab_name = $this->configFactory->getEditable('taxonomy.vocabulary.custom_vocab')->get('name');
     if ($custom_vocab_name !== $form_state->getValue('custom_vocab_name')) {
@@ -399,7 +431,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
         ->set('name', $form_state->getValue('custom_vocab_name'))
         ->save();
 
-      $content_types = ['event', 'page', 'post', 'profile'];
+      $content_types = ['event', 'page', 'post', 'profile', 'resource'];
       // Update the custom vocab field label for each content type.
       foreach ($content_types as $type) {
         $this->configFactory->getEditable("field.field.node.{$type}.field_custom_vocab")
@@ -495,29 +527,6 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       if (strpos($value, 'yale.edu') === FALSE) {
         $form_state->setErrorByName(
           $fieldId, $this->t('Email domain has to be yale.edu.')
-        );
-      }
-    }
-  }
-
-  /**
-   * Check that a submitted GA value matches a valid Google Analytics format.
-   *
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state passed by reference.
-   * @param string $fieldId
-   *   The id of a field on the cnnfig form.
-   */
-  protected function validateGoogleAnalyticsId(FormStateInterface &$form_state, string $fieldId) {
-    // Exit early if the google_analytics module changed and no longer applies.
-    if (!class_exists('Drupal\google_analytics\Constants\GoogleAnalyticsPatterns')) {
-      return;
-    }
-    if (($value = $form_state->getValue($fieldId))) {
-      if (!preg_match(GoogleAnalyticsPatterns::GOOGLE_ANALYTICS_GTAG_MATCH, $value)) {
-        $form_state->setErrorByName(
-          $fieldId,
-          $this->t('A valid Google Analytics Web Property ID is case sensitive and formatted like UA-xxxxx-yy, G-xxxxxxxx, AW-xxxxxxxxx, or DC-xxxxxxxx.')
         );
       }
     }

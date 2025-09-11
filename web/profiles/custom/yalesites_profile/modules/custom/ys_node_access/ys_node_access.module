@@ -8,6 +8,7 @@
 use Drupal\Core\Session\AccountInterface;
 use Drupal\menu_item_extras\Entity\MenuItemExtrasMenuLinkContent;
 use Drupal\ys_node_access\NodeAccessManager;
+use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Implements hook_node_grants().
@@ -46,7 +47,10 @@ function ys_node_access_node_access_records($node) {
   $nodeAccessManager = new NodeAccessManager();
   // Saving a node, check login required field to set the appropriate grants.
   if ($node->hasField('field_login_required')) {
-    if ($node->get('field_login_required')->getValue()[0]['value'] == 1 || !$node->isPublished()) {
+    $login_required_value = $node->get('field_login_required')->getValue();
+    $login_required = !empty($login_required_value) && $login_required_value[0]['value'] == 1;
+
+    if ($login_required || !$node->isPublished()) {
       $private = TRUE;
     }
     else {
@@ -87,8 +91,7 @@ function ys_node_access_preprocess_menu(array &$variables) {
    * Adds data attribute to menu links that are CAS only.
    * @see ys_node_access/src/Menu/YsNodeAccessLinkTreeManipulator.php
    */
-  $config = \Drupal::config('ys_core.header_settings');
-  if ($config->get('enable_cas_menu_links') && in_array($variables['menu_name'], _ys_node_access_cas_menus())) {
+  if (in_array($variables['menu_name'], _ys_node_access_cas_menus())) {
     _ys_node_access_cas_menu_attribute($variables['items']);
   }
 
@@ -118,4 +121,34 @@ function _ys_node_access_cas_menus() {
   ];
 
   return $menusToCheck;
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function ys_node_access_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Add CAS protection modal to node edit/add forms that have the
+  // field_login_required field.
+  if (preg_match('/^node_.*_(form|edit_form)$/', $form_id)) {
+    $form_object = $form_state->getFormObject();
+    if (method_exists($form_object, 'getEntity')) {
+      $entity = $form_object->getEntity();
+      if ($entity->hasField('field_login_required')) {
+        // Attach the modal library.
+        $form['#attached']['library'][] = 'ys_node_access/cas_protection_modal';
+
+        // Add validation for the field to handle modal confirmation.
+        $form['#validate'][] = 'ys_node_access_cas_protection_validate';
+      }
+    }
+  }
+}
+
+/**
+ * Validation callback for CAS protection field changes.
+ */
+function ys_node_access_cas_protection_validate($form, FormStateInterface $form_state) {
+  // This validation allows the form to continue processing
+  // The actual modal confirmation is handled by JavaScript
+  // If JavaScript is disabled, the form will still work without modal.
 }

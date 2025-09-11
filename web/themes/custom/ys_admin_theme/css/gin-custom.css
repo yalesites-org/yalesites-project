@@ -1,16 +1,16 @@
 /* stylelint-disable */
 :root {
   --gin-font: Mallory, sans-serif;
-  --gin-font-size-h1: 1.75rem;
-  --gin-font-size-h2: 1.5rem;
-  --gin-font-size-h3: 1.25rem;
+  --gin-font-size-h1: 1.438rem;
+  --gin-font-size-h2: 1.188rem;
+  --gin-font-size-h3: 0.938rem;
   --gin-border-m: 0.313rem;
   --jui-dropdown-bg-color: var(--gin-bg-layer);
   --input-fg-color--placeholder: var(--gin-color-text);
 }
 :root h1,
 :root h2 {
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .views-bulk-actions__item .button--primary:not(:disabled, .is-disabled) {
@@ -49,8 +49,22 @@ a.focal-point-preview-link {
     gap: 1rem;
     grid-template-columns: repeat(2, 1fr);
   }
-  .ys-gin-two-column-wrapper .form-element {
+  .ys-gin-two-column-wrapper .form-element, .ys-gin-two-column-wrapper .form-item {
     width: 100%;
+    min-width: 100%;
+  }
+}
+
+/* Three column layout for profile add/edit form */
+@media screen and (min-width: 1000px) {
+  .ys-gin-three-column-wrapper {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .ys-gin-three-column-wrapper .form-element, .ys-gin-three-column-wrapper .form-item {
+    width: 100%;
+    min-width: 100%;
   }
 }
 
@@ -73,9 +87,33 @@ a.focal-point-preview-link {
   background-color: var(--gin-bg-layer2);
 }
 
-/* Environment Indicator */
-#environment-indicator {
-  margin-top: 0.5rem;
+.form-element {
+  min-height: calc(var(--input-padding-vertical) * 3 + var(--input-line-height)) !important;
+}
+
+/* 
+ * Dark mode asterisk contrast fix for WCAG 2.1 AA compliance
+ * YSP-1083: Required field asterisks fail color contrast in dark mode
+ * 
+ * Gin's dark mode was missing the --gin-color-danger-light variable that exists
+ * in light mode. This adds the missing variable with a color that meets WCAG 2.1 AA
+ * contrast requirements (4.5:1 ratio) and updates asterisks to use it.
+ * This maintains consistency with Gin's existing color system.
+ */
+.gin--dark-mode {
+  /* Add missing danger-light variable for dark mode (matches Gin's color system) */
+  --gin-color-danger-light: #ff8080;
+  /* Use the variable for required field asterisks */
+}
+.gin--dark-mode .form-item__label.form-required::after,
+.gin--dark-mode .fieldset__label.form-required::after,
+.gin--dark-mode .form-required > .fieldset__label::after,
+.gin--dark-mode .horizontal-tab-button .form-required::after,
+.gin--dark-mode .vertical-tabs__menu-link .form-required::after {
+  color: var(--gin-color-danger-light);
+}
+.gin--dark-mode .required-mark::after {
+  background: var(--gin-color-danger-light);
 }
 
 /* stylelint-enable */

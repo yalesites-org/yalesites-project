@@ -35,4 +35,5 @@ hidden:
   path: true
   revision_log_message: true
   status: true
+  thumbnail: true
   uid: true
