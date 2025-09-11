@@ -133,7 +133,7 @@ function ys_node_access_form_alter(&$form, FormStateInterface $form_state, $form
     $form_object = $form_state->getFormObject();
     if (method_exists($form_object, 'getEntity')) {
       $entity = $form_object->getEntity();
-      if ($entity->hasField('field_login_required')) {
+      if ($entity instanceof \Drupal\node\Entity\Node && $entity->hasField('field_login_required')) {
         // Attach the modal library.
         $form['#attached']['library'][] = 'ys_node_access/cas_protection_modal';
 
