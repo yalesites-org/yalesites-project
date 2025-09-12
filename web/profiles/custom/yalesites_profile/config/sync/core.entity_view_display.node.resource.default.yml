@@ -79,21 +79,6 @@ third_party_settings:
                 entity: layout_builder.entity
             weight: 0
             additional: {  }
-          f5cb4772-46f2-46da-bf52-91659fc98556:
-            uuid: f5cb4772-46f2-46da-bf52-91659fc98556
-            region: content
-            configuration:
-              id: 'field_block:node:resource:field_content_description'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: text_default
-                label: above
-                settings: {  }
-                third_party_settings: {  }
-            weight: 3
-            additional: {  }
         third_party_settings:
           layout_builder_lock:
             lock:
