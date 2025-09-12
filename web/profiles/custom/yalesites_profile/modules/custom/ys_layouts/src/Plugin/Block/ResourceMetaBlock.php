@@ -161,7 +161,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
 
       // Set DESCRIPTION variable.
       if ($fieldDescription) {
-        // Process the text through the text format filters
+        // Process the text through the text format filters.
         $description = check_markup(
           $fieldDescription['value'],
           $fieldDescription['format']
