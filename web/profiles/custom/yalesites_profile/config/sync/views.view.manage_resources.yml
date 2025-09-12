@@ -214,7 +214,7 @@ display:
           group_type: group
           admin_label: ''
           plugin_id: field
-          label: 'Publish Date'
+          label: 'Resource Publication Date'
           exclude: false
           alter:
             alter_text: false
