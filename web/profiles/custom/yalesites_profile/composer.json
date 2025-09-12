@@ -192,9 +192,6 @@
       },
       "drupal/layout_builder_lock": {
         "Show help text for only users who have permission https://www.drupal.org/project/layout_builder_lock/issues/3497055": "https://git.drupalcode.org/project/layout_builder_lock/-/merge_requests/26.patch"
-      },
-      "drupal/cas": {
-        "Fix coffee url_generator.non_bubbling override for CAS logouts https://www.drupal.org/project/cas/issues/2948185": "https://www.drupal.org/files/issues/cas_logout_error-2948185-2.patch"
       }
     }
   }
