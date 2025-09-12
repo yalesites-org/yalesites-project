@@ -6,6 +6,7 @@ dependencies:
     - node.type.page
     - node.type.post
     - node.type.profile
+    - node.type.resource
   module:
     - content_moderation
 id: editorial
@@ -66,4 +67,5 @@ type_settings:
       - page
       - post
       - profile
+      - resource
   default_moderation_state: draft
