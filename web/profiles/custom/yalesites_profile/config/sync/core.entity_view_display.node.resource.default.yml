@@ -50,7 +50,7 @@ third_party_settings:
               label_display: ''
               provider: ys_layouts
               context_mapping: {  }
-            weight: 0
+            weight: 1
             additional: {  }
           e0c32219-761e-4d4c-8f33-9ecc8649bc5f:
             uuid: e0c32219-761e-4d4c-8f33-9ecc8649bc5f
@@ -65,27 +65,17 @@ third_party_settings:
                 label: above
                 settings: {  }
                 third_party_settings: {  }
-            weight: 1
+            weight: 2
             additional: {  }
-          421262a0-4266-4e9d-b8ad-d6ee14101e07:
-            uuid: 421262a0-4266-4e9d-b8ad-d6ee14101e07
+          ddf5b173-339f-4717-9d71-bb029713f2ea:
+            uuid: ddf5b173-339f-4717-9d71-bb029713f2ea
             region: content
             configuration:
-              id: 'field_block:node:resource:field_external_source'
+              id: 'extra_field_block:node:resource:content_moderation_control'
               label_display: '0'
               context_mapping:
                 entity: layout_builder.entity
-              formatter:
-                type: link
-                label: above
-                settings:
-                  trim_length: 80
-                  url_only: false
-                  url_plain: false
-                  rel: ''
-                  target: ''
-                third_party_settings: {  }
-            weight: 2
+            weight: 0
             additional: {  }
         third_party_settings:
           layout_builder_lock:
@@ -136,6 +126,11 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 101
+    region: content
+  content_moderation_control:
+    settings: {  }
+    third_party_settings: {  }
+    weight: -20
     region: content
   field_affiliation:
     type: entity_reference_label
@@ -219,3 +214,4 @@ hidden:
   field_teaser_title: true
   layout_builder__layout: true
   search_api_excerpt: true
+  workflow_buttons: true
