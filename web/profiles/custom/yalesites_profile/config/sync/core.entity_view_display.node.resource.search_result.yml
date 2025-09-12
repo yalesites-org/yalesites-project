@@ -29,6 +29,11 @@ targetEntityType: node
 bundle: resource
 mode: search_result
 content:
+  content_moderation_control:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
   field_external_source:
     type: link_separate
     label: hidden
@@ -39,7 +44,7 @@ content:
       rel: ''
       target: ''
     third_party_settings: {  }
-    weight: 1
+    weight: 3
     region: content
   field_login_required:
     type: boolean
@@ -49,19 +54,19 @@ content:
       format_custom_false: ''
       format_custom_true: ''
     third_party_settings: {  }
-    weight: 2
+    weight: 4
     region: content
   field_teaser_text:
     type: text_default
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 0
+    weight: 2
     region: content
   search_api_excerpt:
     settings: {  }
     third_party_settings: {  }
-    weight: 3
+    weight: 1
     region: content
 hidden:
   addtoany: true
