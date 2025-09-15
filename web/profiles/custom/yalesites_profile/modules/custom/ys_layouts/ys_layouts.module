@@ -150,6 +150,24 @@ function ys_layouts_preprocess_block(&$variables) {
 }
 
 /**
+ * Implements hook_preprocess_field__block_content__field_tabs().
+ *
+ * Adds padding options from the parent block content to the tabs field.
+ */
+function ys_layouts_preprocess_field__block_content__field_tabs(&$variables) {
+  // Get the parent entity (block content)
+  $parent_entity = $variables['element']['#object'];
+  if ($parent_entity && $parent_entity->hasField('field_padding_options') &&
+      !$parent_entity->get('field_padding_options')->isEmpty()) {
+    $padding_value = $parent_entity->get('field_padding_options')->value;
+    if ($padding_value) {
+      // Replace underscores with hyphens for CSS classes.
+      $variables['padding_options'] = str_replace('_', '-', $padding_value);
+    }
+  }
+}
+
+/**
  * Implements hook_form_alter().
  */
 function ys_layouts_form_alter(&$form, $form_state, $form_id) {
