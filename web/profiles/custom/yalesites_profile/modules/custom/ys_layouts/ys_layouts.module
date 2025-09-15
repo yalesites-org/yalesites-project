@@ -95,6 +95,7 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'resource_meta__download_aria_label' => NULL,
         'resource_meta__media_id' => NULL,
         'resource_meta__document_image' => NULL,
+        'resource_meta__description' => NULL,
       ],
     ],
     'ys_taxonomy_display_block' => [

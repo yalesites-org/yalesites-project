@@ -13,12 +13,7 @@
 #}
 
 {# All TWIG variables are named appropriately and pass through to this template #}
-{% embed '@molecules/meta/resource-meta/yds-resource-meta.twig' %}
-  {% block resource_meta__image %}
-    {{ resource_meta__document_image }}
-  {% endblock %}
-
-  {% block resource_meta__video %}
-    {{ drupal_entity('media', resource_meta__media_id, 'default') }}
-  {% endblock %}
-{% endembed %}
+{% include '@molecules/meta/resource-meta/yds-resource-meta.twig' with {
+  resource_meta__document_image: resource_meta__document_image,
+  video_embed__content__1: drupal_entity('media', resource_meta__media_id, 'default'),
+} %}

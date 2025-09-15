@@ -6,6 +6,7 @@ dependencies:
     - field.field.node.resource.field_affiliation
     - field.field.node.resource.field_audience
     - field.field.node.resource.field_category
+    - field.field.node.resource.field_content_description
     - field.field.node.resource.field_custom_vocab
     - field.field.node.resource.field_date_format
     - field.field.node.resource.field_external_source
@@ -26,6 +27,7 @@ dependencies:
     - link
     - metatag
     - options
+    - text
     - user
     - ys_layouts
 third_party_settings:
@@ -155,6 +157,13 @@ content:
       link: true
     third_party_settings: {  }
     weight: 2
+    region: content
+  field_content_description:
+    type: text_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 117
     region: content
   field_custom_vocab:
     type: entity_reference_label

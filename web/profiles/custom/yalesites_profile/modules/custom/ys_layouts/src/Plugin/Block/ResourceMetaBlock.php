@@ -134,6 +134,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
     $mediaLabel = NULL;
     $mediaId = NULL;
     $documentImage = NULL;
+    $description = NULL;
 
     $route = $this->routeMatch->getRouteObject();
 
@@ -144,6 +145,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
       $fieldDateFormat = $node?->field_date_format?->first()?->getString();
       $fieldCategory = $node?->field_category?->first()?->getValue();
       $fieldMedia = $node?->field_media?->first()?->getValue();
+      $fieldDescription = $node?->field_content_description?->first()?->getValue();
 
       $date_formats = [
         'date' => 'F j, Y',
@@ -155,6 +157,15 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
       if ($fieldPublishDate->getValue() and $fieldDateFormat) {
         $publishDateValue = strtotime($fieldPublishDate->first()->getValue()['value']);
         $publishDate = $this->dateFormatter->format($publishDateValue, '', $date_formats[$fieldDateFormat]);
+      }
+
+      // Set DESCRIPTION variable.
+      if ($fieldDescription) {
+        // Process the text through the text format filters.
+        $description = check_markup(
+          $fieldDescription['value'],
+          $fieldDescription['format']
+        );
       }
 
       // Get CATEGORY term.
@@ -246,6 +257,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
       '#resource_meta__download_aria_label' => $this->t('Download') . ' ' . $mediaLabel,
       '#resource_meta__media_id' => $mediaId,
       '#resource_meta__document_image' => $documentImage,
+      '#resource_meta__description' => $description,
     ];
   }
 
