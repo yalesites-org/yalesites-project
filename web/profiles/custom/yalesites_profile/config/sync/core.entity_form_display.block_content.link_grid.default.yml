@@ -7,6 +7,7 @@ dependencies:
     - field.field.block_content.link_grid.field_heading
     - field.field.block_content.link_grid.field_instructions
     - field.field.block_content.link_grid.field_link_lists
+    - field.field.block_content.link_grid.field_padding_options
     - field.field.block_content.link_grid.field_style_color
   module:
     - allowed_formats
@@ -65,6 +66,12 @@ content:
         add_in_between_link_count: 3
         delete_confirmation: true
         show_drag_and_drop: true
+  field_padding_options:
+    type: options_select
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_style_color:
     type: options_select
     weight: 3

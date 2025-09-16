@@ -5,6 +5,7 @@ dependencies:
   config:
     - block_content.type.resource_view
     - field.field.block_content.resource_view.field_heading
+    - field.field.block_content.resource_view.field_padding_options
     - field.field.block_content.resource_view.field_view_resource_params
   module:
     - allowed_formats
@@ -32,6 +33,12 @@ content:
         maxlength_js: 50
         maxlength_js_label: 'Content recommended length set to @limit characters, remaining: <strong>@remaining</strong>'
         maxlength_js_enforce: false
+  field_padding_options:
+    type: options_select
+    weight: 4
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_view_resource_params:
     type: views_content_resources_default_widget
     weight: 3
