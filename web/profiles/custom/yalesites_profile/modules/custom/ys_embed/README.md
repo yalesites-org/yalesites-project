@@ -2,6 +2,8 @@
 
 The ys_embed module allows site owners to store embedded content in the Drupal media library. Embedded content can be pulled from multiple, approved media sources and elements are rendered using an approved set of templates.
 
+**For GitHub Applet Development**: See the [GitHub Pages Development Guide](./GITHUB_PAGES_DEVELOPMENT_GUIDE.md) for comprehensive instructions on creating embeddable applications.
+
 ## Background
 
 Media in Drupal core already follows an abstract model where any collection of content may be considered a media element. Media is more than an image, a video, or a file. It may contain multiple assets and supporting metadata. For example, a video element may include the video itself (via streaming service), a transcript (text), an alternative description (audio), and a thumbnail (image).
@@ -43,14 +45,52 @@ A custom formatter manages the field rendering logic. Instead of rendering the u
 - [Code: Embed Field Type](./src/Plugin/Field/FieldFormatter/EmbedDefaultFormatter.php)
 - [Community documentation](https://www.drupal.org/docs/creating-custom-modules/creating-custom-field-types-widgets-and-formatters/create-a-custom-field-formatter)
 
-### GitHub Applet Embed Instructions
+### GitHub Applet Embed System
 
-To embed a GitHub Applet via the embed system, there are a few requirements that must first be met.
+The ys_embed module includes a specialized GitHub Applet embed source that allows embedding of interactive applications built with modern web frameworks and hosted on GitHub Pages.
 
-1. A hosted version of a React app (or similar) on GitHub Pages that is located in the `yalesites-org` organization.
-2. Two specific assets are required: `app.js` and `app.css` in a directory of your choosing but must be the same directory. If there isn't any styling, the CSS file can be left empty.
-3. The ID of the entry point of the app, ex: `<div id=xxx></div>` must match the repo name. For example, if the repo name is `yale-po-filter-app` then the entry point div would look like this: `<div id='yale-po-filter-app'></div>`
+#### Overview
 
-Once these requirements are in place, to use the embed, add the URL to "Embed Code or URL" in the format: `https://yalesites-org.github.io/yale-po-filter-app/assets` where `assets` is a directory where `app.js` and `app.css` reside.
+GitHub Applets are React applications (or similar) that are:
+- Hosted on GitHub Pages within the `yalesites-org` organization
+- Built with specific asset naming conventions for YaleSites integration
+- Designed to be embedded seamlessly within Drupal content
 
-Here is a great tutorial on how to set up a repo with scripts that will deploy built assets to GitHub Pages: https://github.com/gitname/react-gh-pages
+#### Key Features
+
+- **Automated Asset Loading**: System automatically loads `app.js` and `app.css` from the GitHub Pages deployment
+- **Dynamic Container Creation**: Creates properly named mount points for application initialization
+- **Cross-Origin Support**: Handles iframe embedding and CORS considerations
+- **Build Tool Integration**: Works with modern build systems (Vite, Webpack, etc.)
+
+#### Quick Start Requirements
+
+1. **Repository**: Must be in `yalesites-org` organization (can be private)
+2. **Assets**: Build must output exactly `assets/app.js` and `assets/app.css`
+3. **Mount Point**: Application must mount to element with ID matching repository name
+4. **GitHub Pages**: Enabled and publicly accessible
+
+#### Embed Usage
+
+Add the GitHub Pages URL to "Embed Code or URL" in this format:
+```
+https://yalesites-org.github.io/your-repo-name/assets
+```
+
+#### Comprehensive Development Guide
+
+For complete instructions on developing GitHub Applet applications, including:
+- Project setup and build configuration
+- TypeScript and accessibility standards
+- Deployment automation
+- Testing and validation procedures
+- Troubleshooting common issues
+
+See: **[GitHub Pages Development Guide](./GITHUB_PAGES_DEVELOPMENT_GUIDE.md)**
+
+#### Architecture Integration
+
+GitHub Applets integrate with the broader ys_embed system through:
+- **EmbedSource Plugin**: `GitHubApplet.php` handles validation and rendering
+- **Embed Field**: Stores GitHub Pages URL and validates format
+- **MediaSource Plugin**: Integrates with Drupal's media library system
