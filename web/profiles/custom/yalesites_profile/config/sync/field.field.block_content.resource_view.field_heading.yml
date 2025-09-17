@@ -1,0 +1,24 @@
+uuid: baa29702-9298-4278-99fd-4e6e64dea474
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.resource_view
+    - field.storage.block_content.field_heading
+    - filter.format.heading_html
+  module:
+    - text
+id: block_content.resource_view.field_heading
+field_name: field_heading
+entity_type: block_content
+bundle: resource_view
+label: 'View Heading'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - heading_html
+field_type: text
