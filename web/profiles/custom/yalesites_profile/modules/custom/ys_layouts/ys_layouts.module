@@ -153,7 +153,8 @@ function ys_layouts_preprocess_block(&$variables) {
           // Replace underscores with hyphens for CSS classes.
           $variables['padding_options'] = str_replace('_', '-', $padding_value);
         }
-      } else {
+      }
+      else {
         // Use block-specific default if no padding options set.
         $variables['padding_options'] = $default_padding;
       }
