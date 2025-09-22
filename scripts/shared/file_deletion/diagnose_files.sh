@@ -593,6 +593,10 @@ echo "------------------------------------------------"
 
 while IFS= read -r filename <&3 || [ -n "$filename" ]; do
     [ -z "$filename" ] && continue
+    
+    # Remove BOM character if present (UTF-8 BOM: EF BB BF) and strip Windows line endings
+    filename=$(echo "$filename" | sed 's/^\xEF\xBB\xBF//' | tr -d '\r')
+    
     echo -e "\n🔎 ${YELLOW}Checking file:${NC} ${filename}"
     
     # Detect file format and prepare query variables
@@ -603,6 +607,7 @@ while IFS= read -r filename <&3 || [ -n "$filename" ]; do
         # Construct exact URI for precise path matching
         file_uri="public://${filename}"
         echo -e "  ${CYAN}Input format: Path - targeting specific file at ${file_uri}${NC}"
+        echo -e "  ${CYAN}Basename: ${file_basename}${NC}"
     else
         # Basename only - use as-is for filename matching
         file_basename="$filename"
