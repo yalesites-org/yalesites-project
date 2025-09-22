@@ -138,12 +138,24 @@ function ys_layouts_preprocess_block(&$variables) {
     // Add block padding options from the field.
     if (isset($variables['content']['#block_content'])) {
       $block_content = $variables['content']['#block_content'];
+      $block_type = $block_content->bundle();
+
+      // Set default padding based on block type.
+      $default_padding = 'default';
+      $no_padding_blocks = ['text', 'wrapped_text_callout', 'grand_hero', 'image_banner', 'image'];
+      if (in_array($block_type, $no_padding_blocks)) {
+        $default_padding = 'no-padding';
+      }
+
       if ($block_content->hasField('field_padding_options') && !$block_content->get('field_padding_options')->isEmpty()) {
         $padding_value = $block_content->get('field_padding_options')->value;
         if ($padding_value) {
           // Replace underscores with hyphens for CSS classes.
           $variables['padding_options'] = str_replace('_', '-', $padding_value);
         }
+      } else {
+        // Use block-specific default if no padding options set.
+        $variables['padding_options'] = $default_padding;
       }
     }
   }
