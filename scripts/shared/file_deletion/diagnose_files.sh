@@ -190,7 +190,8 @@ build_drush_command() {
 
 # --- SCRIPT LOGIC ---
 
-if [ -t 1 ]; then
+# Enable colors unless explicitly disabled
+if [ "${NO_COLOR:-}" != "1" ] && [ "${TERM:-}" != "dumb" ]; then
     RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BLUE='\033[0;34m'; NC='\033[0m';
 else
     RED=""; GREEN=""; YELLOW=""; BLUE=""; NC="";
@@ -219,7 +220,7 @@ detect_base_url() {
     fi
     
     if [ "$MODE" == "lando" ] && command -v lando >/dev/null 2>&1; then
-        echo "    ${YELLOW}Detecting Lando domain...${NC}" >&2
+        echo -e "    ${YELLOW}Detecting Lando domain...${NC}" >&2
         
         # Method 1: Check .lando.local.yml for DRUSH_OPTIONS_URI
         if [ -f ".lando.local.yml" ]; then
@@ -242,14 +243,14 @@ detect_base_url() {
         
         if [ -n "$lando_name" ]; then
             local constructed_url="https://${lando_name}.lndo.site"
-            echo "    ${YELLOW}Trying constructed URL from lando name: ${constructed_url}${NC}" >&2
+            echo -e "    ${YELLOW}Trying constructed URL from lando name: ${constructed_url}${NC}" >&2
             # Test if the URL is accessible
             if curl -s --max-time 5 --head "$constructed_url" >/dev/null 2>&1; then
-                echo "    ${GREEN}✓ Constructed URL is accessible${NC}" >&2
+                echo -e "    ${GREEN}✓ Constructed URL is accessible${NC}" >&2
                 echo "$constructed_url"
                 return 0
             else
-                echo "    ${YELLOW}✗ Constructed URL not accessible${NC}" >&2
+                echo -e "    ${YELLOW}✗ Constructed URL not accessible${NC}" >&2
             fi
         fi
         
