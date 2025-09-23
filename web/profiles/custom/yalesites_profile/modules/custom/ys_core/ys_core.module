@@ -39,7 +39,9 @@ function ys_core_theme($existing, $type, $theme, $path): array {
       ],
     ],
     'ys_dashboard' => [
-      'variables' => [],
+      'variables' => [
+        'platform_version' => NULL,
+      ],
     ],
     'ys_social_links' => [
       'variables' => [
