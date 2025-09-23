@@ -15,6 +15,7 @@ ignored_config_entities:
   - 'google_tag*'
   - 'system.site*'
   - 'taxonomy.vocabulary.custom_vocab:name'
+  - 'ys_ai_system_instructions*'
   - 'ys_alert.settings:alert'
   - 'ys_campus_groups*'
   - 'ys_core*'

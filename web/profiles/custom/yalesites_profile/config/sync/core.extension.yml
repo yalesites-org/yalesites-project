@@ -13,7 +13,6 @@ module:
   ai_engine_embedding: 0
   ai_engine_feed: 0
   ai_engine_metadata: 0
-  ys_ai_system_instructions: 0
   allowed_formats: 0
   anchor_link: 0
   better_exposed_filters: 0
@@ -155,6 +154,7 @@ module:
   workflows: 0
   yale_cas: 0
   ys_ai: 0
+  ys_ai_system_instructions: 0
   ys_alert: 0
   ys_book: 0
   ys_campus_groups: 0
