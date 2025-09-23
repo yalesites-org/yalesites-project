@@ -1,0 +1,6 @@
+system_instructions_enabled: false
+system_instructions_api_endpoint: ''
+system_instructions_web_app_name: ''
+system_instructions_api_key: ''
+system_instructions_max_length: 4000
+system_instructions_warning_threshold: 3500

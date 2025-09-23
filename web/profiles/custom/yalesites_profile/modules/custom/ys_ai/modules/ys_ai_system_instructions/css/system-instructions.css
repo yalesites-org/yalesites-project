@@ -1,0 +1,103 @@
+/**
+ * @file
+ * Styles for the system instructions admin interface.
+ */
+
+.system-instructions-status {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid #d4d4d8;
+  border-radius: 4px;
+  color: #1f2937;
+}
+
+.system-instructions-status .messages {
+  margin: 0;
+}
+
+.system-instructions-summary {
+  margin-bottom: 1.5rem;
+  color: #374151;
+}
+
+.system-instructions-summary a,
+.system-instructions-status a {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.system-instructions-summary a:hover,
+.system-instructions-status a:hover {
+  color: #1e40af;
+  text-decoration: none;
+}
+
+.system-instructions-history {
+  margin-top: 1rem;
+}
+
+.system-instructions-history th,
+.system-instructions-history td {
+  padding: 0.75rem;
+  vertical-align: top;
+  border-top: 1px solid #d4d4d8;
+  color: #374151;
+}
+
+.system-instructions-version-header {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid #d4d4d8;
+  border-radius: 4px;
+  color: #1f2937;
+}
+
+.character-count {
+  margin-left: 0;
+  font-size: inherit;
+  color: #9ca3af;
+  font-weight: normal;
+}
+
+.form-textarea[data-maxlength].warning {
+  border-color: #f59e0b;
+}
+
+.form-textarea[data-maxlength].error {
+  border-color: #ef4444;
+}
+
+/* Loading spinner styles */
+.system-instructions-loading {
+  text-align: center;
+  padding: 2rem;
+}
+
+.system-instructions-loading .ajax-progress {
+  display: inline-block;
+  margin-right: 1rem;
+}
+
+.system-instructions-loading .message {
+  font-size: 1.1rem;
+  color: #6b7280;
+  margin-top: 1rem;
+}
+
+.system-instructions-loading .throbber {
+  width: 24px;
+  height: 24px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83' stroke='%23007acc' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center center no-repeat;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

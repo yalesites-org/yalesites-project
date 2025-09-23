@@ -13,7 +13,7 @@ module:
   ai_engine_embedding: 0
   ai_engine_feed: 0
   ai_engine_metadata: 0
-  ai_engine_system_instructions: 0
+  ys_ai_system_instructions: 0
   allowed_formats: 0
   anchor_link: 0
   better_exposed_filters: 0

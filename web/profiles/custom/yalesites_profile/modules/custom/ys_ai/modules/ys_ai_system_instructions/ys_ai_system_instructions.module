@@ -1,0 +1,16 @@
+<?php
+
+/**
+ * @file
+ * YS AI System Instructions module.
+ */
+
+/**
+ * Implements hook_help().
+ */
+function ys_ai_system_instructions_help($route_name, \Drupal\Core\Routing\RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.ys_ai_system_instructions':
+      return '<p>' . t('This module provides system instructions management for YaleSites AI with versioning and API synchronization capabilities.') . '</p>';
+  }
+}
