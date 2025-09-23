@@ -164,7 +164,7 @@ class SystemInstructionsSettingsForm extends ConfigFormBase {
     $warning_threshold = $form_state->getValue('system_instructions_warning_threshold');
 
     if ($warning_threshold >= $max_length) {
-      $form_state->setErrorByName('system_instructions_warning_threshold', 
+      $form_state->setErrorByName('system_instructions_warning_threshold',
         $this->t('Warning threshold must be less than maximum length.'));
     }
 

@@ -5,7 +5,7 @@ services:
 
   ys_ai_system_instructions.storage:
     class: Drupal\ys_ai_system_instructions\Service\SystemInstructionsStorageService
-    arguments: ['@database', '@current_user', '@datetime.time']
+    arguments: ['@database', '@current_user', '@datetime.time', '@ys_ai_system_instructions.text_format_detection']
 
   ys_ai_system_instructions.text_format_detection:
     class: Drupal\ys_ai_system_instructions\Service\TextFormatDetectionService

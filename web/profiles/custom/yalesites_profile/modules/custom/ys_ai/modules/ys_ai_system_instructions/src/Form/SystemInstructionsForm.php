@@ -79,21 +79,6 @@ class SystemInstructionsForm extends FormBase {
   }
 
   /**
-   * Format instructions text using the detection service.
-   *
-   * @param string $text
-   *   The raw instructions text.
-   *
-   * @return string
-   *   The formatted instructions text.
-   */
-  protected function formatInstructions(string $text): string {
-    // Access the text format detection service through the manager service.
-    $text_format_service = \Drupal::service('ys_ai_system_instructions.text_format_detection');
-    return $text_format_service->formatText($text);
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
@@ -172,7 +157,7 @@ class SystemInstructionsForm extends FormBase {
       $this->messenger()->addError($this->t('Failed to sync system instructions: @error', ['@error' => $e->getMessage()]));
       $active = $this->instructionsManager->getStorageService()->getActiveInstructions();
       $current = [
-        'instructions' => $active ? $this->formatInstructions($active['instructions']) : '',
+        'instructions' => $active ? $active['instructions'] : '',
         'version' => $active ? (int) $active['version'] : 0,
         'synced' => FALSE,
         'sync_error' => $e->getMessage(),

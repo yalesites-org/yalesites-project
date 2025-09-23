@@ -157,7 +157,7 @@ class SystemInstructionsManagerService {
     $unescaped_instructions = $this->textFormatDetection->unescapeMarkdownFromApi($api_instructions);
     $formatted_instructions = $this->textFormatDetection->formatUnescapedMarkdown($unescaped_instructions);
 
-    // Check if these instructions are different from current active version (using unescaped content).
+    // Check if instructions differ from current active version.
     if (!$this->storageService->areInstructionsDifferent($formatted_instructions)) {
       return [
         'success' => TRUE,
@@ -207,7 +207,7 @@ class SystemInstructionsManagerService {
     $current_active = $this->storageService->getActiveInstructions();
     $old_version = $current_active['version'] ?? NULL;
     $instructions_length = strlen($instructions);
-    
+
     $this->logger->info('User initiated save system instructions', [
       'user_id' => $user_id,
       'user_name' => $user_name,
@@ -247,7 +247,7 @@ class SystemInstructionsManagerService {
 
     // Escape markdown for API transmission to preserve formatting.
     $escaped_instructions = $this->textFormatDetection->escapeMarkdownForApi($instructions);
-    
+
     // Try to push to API.
     $api_result = $this->apiService->setSystemInstructions($escaped_instructions);
 
@@ -373,7 +373,7 @@ class SystemInstructionsManagerService {
 
     // Escape markdown for API transmission to preserve formatting.
     $escaped_instructions = $this->textFormatDetection->escapeMarkdownForApi($target_version['instructions']);
-    
+
     // Push to API.
     $api_result = $this->apiService->setSystemInstructions($escaped_instructions);
 
@@ -432,7 +432,6 @@ class SystemInstructionsManagerService {
       'active_created' => $active ? (int) $active['created_date'] : 0,
     ];
   }
-
 
   /**
    * Get the storage service.

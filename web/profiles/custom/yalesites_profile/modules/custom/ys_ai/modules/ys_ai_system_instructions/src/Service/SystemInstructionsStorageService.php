@@ -33,6 +33,13 @@ class SystemInstructionsStorageService {
   protected $time;
 
   /**
+   * The text format detection service.
+   *
+   * @var \Drupal\ys_ai_system_instructions\Service\TextFormatDetectionService
+   */
+  protected $textFormatDetection;
+
+  /**
    * The table name.
    */
   const TABLE_NAME = 'ys_ai_system_instructions';
@@ -46,11 +53,14 @@ class SystemInstructionsStorageService {
    *   The current user.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
+   * @param \Drupal\ys_ai_system_instructions\Service\TextFormatDetectionService $text_format_detection
+   *   The text format detection service.
    */
-  public function __construct(Connection $database, AccountProxyInterface $current_user, TimeInterface $time) {
+  public function __construct(Connection $database, AccountProxyInterface $current_user, TimeInterface $time, TextFormatDetectionService $text_format_detection) {
     $this->database = $database;
     $this->currentUser = $current_user;
     $this->time = $time;
+    $this->textFormatDetection = $text_format_detection;
   }
 
   /**
@@ -131,7 +141,7 @@ class SystemInstructionsStorageService {
     $transaction = $this->database->startTransaction();
     try {
       // Lock active versions to prevent race conditions.
-      // Use SELECT FOR UPDATE to lock any active versions during this transaction.
+      // Use SELECT FOR UPDATE to lock active versions during transaction.
       $active_versions = $this->database->select(self::TABLE_NAME, 'si')
         ->fields('si', ['id'])
         ->condition('is_active', 1)
@@ -159,6 +169,8 @@ class SystemInstructionsStorageService {
         ])
         ->execute();
 
+      // Explicitly commit the transaction.
+      unset($transaction);
       return $next_version;
     }
     catch (\Exception $e) {
@@ -187,7 +199,7 @@ class SystemInstructionsStorageService {
     $transaction = $this->database->startTransaction();
     try {
       // Lock active versions to prevent race conditions.
-      // Use SELECT FOR UPDATE to lock any active versions during this transaction.
+      // Use SELECT FOR UPDATE to lock active versions during transaction.
       $active_versions = $this->database->select(self::TABLE_NAME, 'si')
         ->fields('si', ['id'])
         ->condition('is_active', 1)
@@ -209,6 +221,8 @@ class SystemInstructionsStorageService {
         ->condition('version', $version)
         ->execute();
 
+      // Explicitly commit the transaction.
+      unset($transaction);
       return TRUE;
     }
     catch (\Exception $e) {
@@ -234,10 +248,9 @@ class SystemInstructionsStorageService {
       return TRUE;
     }
 
-    // Format both sides consistently for comparison
-    $text_format_service = \Drupal::service('ys_ai_system_instructions.text_format_detection');
-    $active_formatted = $text_format_service->formatText($active['instructions']);
-    $input_formatted = $text_format_service->formatText($instructions);
+    // Format both sides consistently for comparison.
+    $active_formatted = $this->textFormatDetection->formatText($active['instructions']);
+    $input_formatted = $this->textFormatDetection->formatText($instructions);
 
     return trim($active_formatted) !== trim($input_formatted);
   }
