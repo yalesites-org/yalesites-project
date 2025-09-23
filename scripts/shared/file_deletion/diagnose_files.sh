@@ -737,7 +737,7 @@ while IFS= read -r filename <&3 || [ -n "$filename" ]; do
     echo "$usage_info" | while IFS=$'\t' read -r module type id fid; do
         ((reference_number++))
         if [ "$reference_count" -gt 1 ]; then
-            echo "  ${CYAN}[${reference_number}/${reference_count}]${NC} Found usage by '${type}' (id: ${id})"
+            echo -e "  ${CYAN}[${reference_number}/${reference_count}]${NC} Found usage by '${type}' (id: ${id})"
         else
             echo "  - Found usage by '${type}' (id: ${id})"
         fi
