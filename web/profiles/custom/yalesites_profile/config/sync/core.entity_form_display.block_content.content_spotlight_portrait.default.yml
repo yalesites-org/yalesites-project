@@ -80,7 +80,7 @@ third_party_settings:
         - field_style_color
         - field_style_position
         - field_style_variation
-      label: Style
+      label: Design
       region: content
       parent_name: group_block_tabs
       weight: 2
