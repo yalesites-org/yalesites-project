@@ -9,3 +9,4 @@ system_instructions:
     - core/jquery
     - core/drupal
     - core/once
+    - gin/gin
