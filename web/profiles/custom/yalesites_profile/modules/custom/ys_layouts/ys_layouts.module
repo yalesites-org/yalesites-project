@@ -136,7 +136,7 @@ function ys_layouts_preprocess_block(&$variables) {
     _ys_layouts_add_layout_section($variables);
   }
 
-  // Add block padding options from the field (both Layout Builder and reusable blocks).
+  // Add block padding options from the field.
   if (isset($variables['content']['#block_content'])) {
     $block_content = $variables['content']['#block_content'];
     $block_type = $block_content->bundle();
