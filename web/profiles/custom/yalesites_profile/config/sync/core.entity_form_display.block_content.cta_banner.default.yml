@@ -17,6 +17,8 @@ dependencies:
     - field.field.block_content.cta_banner.field_text
   module:
     - allowed_formats
+    - field_group
+    - hide_revision_field
     - linkit
     - markup
     - maxlength
@@ -27,6 +29,55 @@ targetEntityType: block_content
 bundle: cta_banner
 mode: default
 content:
+  group_content:
+    children:
+      - info
+      - field_media
+      - field_heading
+      - field_text
+      - field_link
+      - field_link_two
+    label: Content
+    parent_name: ''
+    weight: 1
+    format_type: tab
+    format_settings:
+      classes: ''
+      show_empty_fields: false
+      id: ''
+      formatter: open
+      description: ''
+      required_fields: true
+  group_design:
+    children:
+      - field_style_color
+      - field_style_position
+    label: Design
+    parent_name: ''
+    weight: 2
+    format_type: tab
+    format_settings:
+      classes: ''
+      show_empty_fields: false
+      id: ''
+      formatter: closed
+      description: ''
+      required_fields: true
+  group_advanced:
+    children:
+      - field_overlay_background_image
+      - field_heading_level
+    label: Advanced
+    parent_name: ''
+    weight: 3
+    format_type: tab
+    format_settings:
+      classes: ''
+      show_empty_fields: false
+      id: ''
+      formatter: closed
+      description: ''
+      required_fields: true
   field_heading:
     type: text_textfield
     weight: 3
@@ -44,7 +95,7 @@ content:
         maxlength_js_enforce: false
   field_heading_level:
     type: options_select
-    weight: 8
+    weight: 10
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -56,7 +107,7 @@ content:
     third_party_settings: {  }
   field_link:
     type: linkit
-    weight: 9
+    weight: 5
     region: content
     settings:
       placeholder_url: ''
@@ -66,7 +117,7 @@ content:
     third_party_settings: {  }
   field_link_two:
     type: linkit
-    weight: 10
+    weight: 6
     region: content
     settings:
       placeholder_url: ''
@@ -85,7 +136,7 @@ content:
         show_edit: '1'
   field_overlay_background_image:
     type: media_library_widget
-    weight: 7
+    weight: 9
     region: content
     settings:
       media_types: {  }
@@ -98,13 +149,13 @@ content:
     third_party_settings: {  }
   field_style_color:
     type: options_select
-    weight: 5
+    weight: 7
     region: content
     settings: {  }
     third_party_settings: {  }
   field_style_position:
     type: options_select
-    weight: 6
+    weight: 8
     region: content
     settings: {  }
     third_party_settings: {  }

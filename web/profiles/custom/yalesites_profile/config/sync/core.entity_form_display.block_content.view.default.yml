@@ -12,6 +12,7 @@ dependencies:
   module:
     - allowed_formats
     - field_group
+    - hide_revision_field
     - markup
     - maxlength
     - paragraphs
@@ -20,21 +21,24 @@ dependencies:
     - ys_views_basic
 third_party_settings:
   field_group:
-    group_heading_links:
+    group_content:
       children:
+        - info
+        - field_heading
         - field_heading_links
-      label: 'Heading Link(s)'
+        - field_view_params
+      label: Content
       region: content
       parent_name: ''
-      weight: 3
-      format_type: details
+      weight: 1
+      format_type: tab
       format_settings:
         classes: ''
         show_empty_fields: false
         id: ''
-        open: false
+        formatter: open
+        description: ''
         required_fields: true
-        formatter: closed
 id: block_content.view.default
 targetEntityType: block_content
 bundle: view
@@ -57,7 +61,7 @@ content:
         maxlength_js_enforce: false
   field_heading_links:
     type: paragraphs
-    weight: 4
+    weight: 3
     region: content
     settings:
       title: Paragraph
@@ -93,7 +97,7 @@ content:
     third_party_settings: {  }
   field_view_params:
     type: views_basic_default_widget
-    weight: 5
+    weight: 4
     region: content
     settings: {  }
     third_party_settings: {  }
