@@ -11,5 +11,5 @@ ys_ai_system_instructions.form:
   title: 'System Instructions'
   description: 'Manage AI system instructions with version control'
   route_name: ys_ai_system_instructions.form
-  parent: ai_engine.admin
+  parent: ys_integrations.admin_yalesites_integrations
   weight: 10
