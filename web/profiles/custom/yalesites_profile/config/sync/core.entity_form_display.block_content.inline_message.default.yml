@@ -10,6 +10,7 @@ dependencies:
     - field.field.block_content.inline_message.field_text
   module:
     - allowed_formats
+    - field_group
     - hide_revision_field
     - linkit
     - maxlength
@@ -19,9 +20,54 @@ targetEntityType: block_content
 bundle: inline_message
 mode: default
 content:
+  group_content:
+    children:
+      - info
+      - field_heading
+      - field_text
+      - field_link
+    label: Content
+    parent_name: ''
+    weight: 1
+    format_type: tab
+    format_settings:
+      classes: ''
+      show_empty_fields: false
+      id: ''
+      formatter: open
+      description: ''
+      required_fields: true
+  group_design:
+    children:
+      - field_style_color
+    label: Design
+    parent_name: ''
+    weight: 2
+    format_type: tab
+    format_settings:
+      classes: ''
+      show_empty_fields: false
+      id: ''
+      formatter: closed
+      description: ''
+      required_fields: true
+  group_advanced:
+    children:
+      - revision_log
+    label: Advanced
+    parent_name: ''
+    weight: 3
+    format_type: tab
+    format_settings:
+      classes: ''
+      show_empty_fields: false
+      id: ''
+      formatter: closed
+      description: ''
+      required_fields: true
   field_heading:
     type: text_textfield
-    weight: 2
+    weight: 1
     region: content
     settings:
       size: 60
@@ -36,7 +82,7 @@ content:
         maxlength_js_enforce: false
   field_link:
     type: linkit
-    weight: 6
+    weight: 3
     region: content
     settings:
       placeholder_url: ''
@@ -50,13 +96,13 @@ content:
         maxlength_js_enforce: false
   field_style_color:
     type: options_select
-    weight: 3
+    weight: 4
     region: content
     settings: {  }
     third_party_settings: {  }
   field_text:
     type: text_textarea
-    weight: 4
+    weight: 2
     region: content
     settings:
       rows: 5
@@ -71,7 +117,7 @@ content:
         maxlength_js_enforce: true
   info:
     type: string_textfield
-    weight: -5
+    weight: 0
     region: content
     settings:
       size: 60
@@ -79,7 +125,7 @@ content:
     third_party_settings: {  }
   revision_log:
     type: hide_revision_field_log_widget
-    weight: 80
+    weight: 5
     region: content
     settings:
       rows: 5

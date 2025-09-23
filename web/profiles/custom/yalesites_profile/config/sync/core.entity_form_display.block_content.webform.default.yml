@@ -9,6 +9,8 @@ dependencies:
     - field.field.block_content.webform.field_instructions
   module:
     - allowed_formats
+    - field_group
+    - hide_revision_field
     - markup
     - maxlength
     - text
@@ -18,6 +20,22 @@ targetEntityType: block_content
 bundle: webform
 mode: default
 content:
+  group_content:
+    children:
+      - info
+      - field_form
+      - field_heading
+    label: Content
+    parent_name: ''
+    weight: 1
+    format_type: tab
+    format_settings:
+      classes: ''
+      show_empty_fields: false
+      id: ''
+      formatter: open
+      description: ''
+      required_fields: true
   field_form:
     type: webform_entity_reference_select
     weight: 2

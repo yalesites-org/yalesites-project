@@ -9,6 +9,8 @@ dependencies:
     - field.field.block_content.custom_cards.field_instructions
   module:
     - allowed_formats
+    - field_group
+    - hide_revision_field
     - markup
     - maxlength
     - paragraphs
@@ -19,6 +21,22 @@ targetEntityType: block_content
 bundle: custom_cards
 mode: default
 content:
+  group_content:
+    children:
+      - info
+      - field_heading
+      - field_cards
+    label: Content
+    parent_name: ''
+    weight: 1
+    format_type: tab
+    format_settings:
+      classes: ''
+      show_empty_fields: false
+      id: ''
+      formatter: open
+      description: ''
+      required_fields: true
   field_cards:
     type: paragraphs
     weight: 3

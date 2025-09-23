@@ -8,6 +8,8 @@ dependencies:
     - field.field.block_content.directory.field_instructions
   module:
     - allowed_formats
+    - field_group
+    - hide_revision_field
     - markup
     - maxlength
     - text
@@ -16,6 +18,21 @@ targetEntityType: block_content
 bundle: directory
 mode: default
 content:
+  group_content:
+    children:
+      - info
+      - field_heading
+    label: Content
+    parent_name: ''
+    weight: 1
+    format_type: tab
+    format_settings:
+      classes: ''
+      show_empty_fields: false
+      id: ''
+      formatter: open
+      description: ''
+      required_fields: true
   field_heading:
     type: text_textfield
     weight: 2
