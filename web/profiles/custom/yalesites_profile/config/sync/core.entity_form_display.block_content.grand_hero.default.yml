@@ -86,7 +86,6 @@ third_party_settings:
     group_advanced_tab:
       children:
         - field_heading_level
-        - field_instructions
         - info
       label: Advanced
       region: content
@@ -128,7 +127,7 @@ content:
     third_party_settings: {  }
   field_instructions:
     type: markup
-    weight: 2
+    weight: -1
     region: content
     settings: {  }
     third_party_settings: {  }
