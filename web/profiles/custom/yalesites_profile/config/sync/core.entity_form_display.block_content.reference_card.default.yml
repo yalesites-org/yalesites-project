@@ -66,7 +66,6 @@ third_party_settings:
         required_fields: false
     group_advanced_tab:
       children:
-        - field_instructions
         - info
         - revision_log
       label: Advanced
@@ -98,7 +97,7 @@ content:
     third_party_settings: {  }
   field_instructions:
     type: markup
-    weight: 1
+    weight: -1
     region: content
     settings: {  }
     third_party_settings: {  }

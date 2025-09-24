@@ -104,7 +104,7 @@ content:
         maxlength_js_enforce: false
   field_instructions:
     type: markup
-    weight: 0
+    weight: -1
     region: content
     settings: {  }
     third_party_settings: {  }

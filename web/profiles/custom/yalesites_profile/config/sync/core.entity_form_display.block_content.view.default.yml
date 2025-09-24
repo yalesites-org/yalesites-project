@@ -85,7 +85,7 @@ content:
         show_drag_and_drop: true
   field_instructions:
     type: markup
-    weight: 0
+    weight: -1
     region: content
     settings: {  }
     third_party_settings: {  }
