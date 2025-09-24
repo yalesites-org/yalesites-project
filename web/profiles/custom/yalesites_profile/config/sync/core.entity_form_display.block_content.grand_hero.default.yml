@@ -25,10 +25,6 @@ dependencies:
     - media_library
     - media_library_edit
     - text
-id: block_content.grand_hero.default
-targetEntityType: block_content
-bundle: grand_hero
-mode: default
 third_party_settings:
   field_group:
     group_block_tabs:
@@ -104,6 +100,10 @@ third_party_settings:
         formatter: closed
         description: ''
         required_fields: false
+id: block_content.grand_hero.default
+targetEntityType: block_content
+bundle: grand_hero
+mode: default
 content:
   field_heading:
     type: text_textfield

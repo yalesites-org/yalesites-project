@@ -16,10 +16,6 @@ dependencies:
     - paragraphs
     - paragraphs_features
     - text
-id: block_content.gallery.default
-targetEntityType: block_content
-bundle: gallery
-mode: default
 third_party_settings:
   field_group:
     group_block_tabs:
@@ -72,6 +68,10 @@ third_party_settings:
         formatter: closed
         description: ''
         required_fields: false
+id: block_content.gallery.default
+targetEntityType: block_content
+bundle: gallery
+mode: default
 content:
   field_gallery_items:
     type: paragraphs

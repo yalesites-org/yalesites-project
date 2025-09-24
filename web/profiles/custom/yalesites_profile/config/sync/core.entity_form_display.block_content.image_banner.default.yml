@@ -20,36 +20,6 @@ targetEntityType: block_content
 bundle: image_banner
 mode: default
 content:
-  group_content:
-    children:
-      - info
-      - field_media
-      - field_text
-    label: Content
-    parent_name: ''
-    weight: 1
-    format_type: tab
-    format_settings:
-      classes: ''
-      show_empty_fields: false
-      id: ''
-      formatter: open
-      description: ''
-      required_fields: true
-  group_design:
-    children:
-      - field_style_variation
-    label: Design
-    parent_name: ''
-    weight: 2
-    format_type: tab
-    format_settings:
-      classes: ''
-      show_empty_fields: false
-      id: ''
-      formatter: closed
-      description: ''
-      required_fields: true
   field_media:
     type: media_library_widget
     weight: 1
@@ -82,6 +52,38 @@ content:
         maxlength_js: 600
         maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
         maxlength_js_enforce: true
+  group_content:
+    weight: 1
+    region: content
+    children:
+      - info
+      - field_media
+      - field_text
+    label: Content
+    parent_name: ''
+    format_type: tab
+    format_settings:
+      classes: ''
+      show_empty_fields: false
+      id: ''
+      formatter: open
+      description: ''
+      required_fields: true
+  group_design:
+    weight: 2
+    region: content
+    children:
+      - field_style_variation
+    label: Design
+    parent_name: ''
+    format_type: tab
+    format_settings:
+      classes: ''
+      show_empty_fields: false
+      id: ''
+      formatter: closed
+      description: ''
+      required_fields: true
   info:
     type: string_textfield
     weight: 0

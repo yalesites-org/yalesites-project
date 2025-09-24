@@ -28,10 +28,6 @@ dependencies:
     - media_library
     - media_library_edit
     - text
-id: block_content.content_spotlight_portrait.default
-targetEntityType: block_content
-bundle: content_spotlight_portrait
-mode: default
 third_party_settings:
   field_group:
     group_block_tabs:
@@ -109,6 +105,10 @@ third_party_settings:
         formatter: closed
         description: ''
         required_fields: false
+id: block_content.content_spotlight_portrait.default
+targetEntityType: block_content
+bundle: content_spotlight_portrait
+mode: default
 content:
   field_caption:
     type: text_textarea

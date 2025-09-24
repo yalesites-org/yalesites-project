@@ -12,10 +12,6 @@ dependencies:
     - markup
     - media_library
     - media_library_edit
-id: block_content.embed.default
-targetEntityType: block_content
-bundle: embed
-mode: default
 third_party_settings:
   field_group:
     group_block_tabs:
@@ -67,6 +63,10 @@ third_party_settings:
         formatter: closed
         description: ''
         required_fields: false
+id: block_content.embed.default
+targetEntityType: block_content
+bundle: embed
+mode: default
 content:
   field_instructions:
     type: markup
