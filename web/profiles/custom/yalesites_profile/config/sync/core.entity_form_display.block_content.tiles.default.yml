@@ -21,52 +21,75 @@ id: block_content.tiles.default
 targetEntityType: block_content
 bundle: tiles
 mode: default
+third_party_settings:
+  field_group:
+    group_block_tabs:
+      children:
+        - group_content_tab
+        - group_design_tab
+        - group_advanced_tab
+      label: 'Block tabs'
+      region: content
+      parent_name: ''
+      weight: 1
+      format_type: tabs
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        direction: horizontal
+        width_breakpoint: 640
+    group_content_tab:
+      children:
+        - info
+        - field_tiles
+      label: Content
+      region: content
+      parent_name: group_block_tabs
+      weight: 1
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: open
+        description: ''
+        required_fields: false
+        open: true
+        weight: -10
+    group_design_tab:
+      children:
+        - field_style_width
+        - field_style_alignment
+        - field_style_position
+      label: Design
+      region: content
+      parent_name: group_block_tabs
+      weight: 2
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: closed
+        description: ''
+        required_fields: false
+    group_advanced_tab:
+      children:
+        - field_enable_animation
+      label: Advanced
+      region: content
+      parent_name: group_block_tabs
+      weight: 3
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: closed
+        description: ''
+        required_fields: false
 content:
-  group_content:
-    children:
-      - info
-      - field_tiles
-    label: Content
-    parent_name: ''
-    weight: 1
-    format_type: tab
-    format_settings:
-      classes: ''
-      show_empty_fields: false
-      id: ''
-      formatter: open
-      description: ''
-      required_fields: true
-  group_design:
-    children:
-      - field_style_width
-      - field_style_alignment
-      - field_style_position
-    label: Design
-    parent_name: ''
-    weight: 2
-    format_type: tab
-    format_settings:
-      classes: ''
-      show_empty_fields: false
-      id: ''
-      formatter: closed
-      description: ''
-      required_fields: true
-  group_advanced:
-    children:
-      - field_enable_animation
-    label: Advanced
-    parent_name: ''
-    weight: 3
-    format_type: tab
-    format_settings:
-      classes: ''
-      show_empty_fields: false
-      id: ''
-      formatter: closed
-      description: ''
-      required_fields: true
   field_enable_animation:
     type: boolean_checkbox
     weight: 6

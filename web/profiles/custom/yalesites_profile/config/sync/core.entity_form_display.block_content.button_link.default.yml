@@ -12,10 +12,6 @@ dependencies:
     - hide_revision_field
     - linkit
     - markup
-id: block_content.button_link.default
-targetEntityType: block_content
-bundle: button_link
-mode: default
 third_party_settings:
   field_group:
     group_block_tabs:
@@ -67,6 +63,10 @@ third_party_settings:
         formatter: closed
         description: ''
         required_fields: false
+id: block_content.button_link.default
+targetEntityType: block_content
+bundle: button_link
+mode: default
 content:
   field_button_link:
     type: linkit

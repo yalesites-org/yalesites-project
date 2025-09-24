@@ -17,10 +17,6 @@ dependencies:
     - paragraphs
     - paragraphs_features
     - text
-id: block_content.media_grid.default
-targetEntityType: block_content
-bundle: media_grid
-mode: default
 third_party_settings:
   field_group:
     group_block_tabs:
@@ -73,6 +69,10 @@ third_party_settings:
         formatter: closed
         description: ''
         required_fields: false
+id: block_content.media_grid.default
+targetEntityType: block_content
+bundle: media_grid
+mode: default
 content:
   field_heading:
     type: text_textfield

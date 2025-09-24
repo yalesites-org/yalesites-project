@@ -13,10 +13,6 @@ dependencies:
     - field_group
     - hide_revision_field
     - markup
-id: block_content.reference_card.default
-targetEntityType: block_content
-bundle: reference_card
-mode: default
 third_party_settings:
   field_group:
     group_block_tabs:
@@ -85,6 +81,10 @@ third_party_settings:
         formatter: closed
         description: ''
         required_fields: false
+id: block_content.reference_card.default
+targetEntityType: block_content
+bundle: reference_card
+mode: default
 content:
   field_content_ref:
     type: entity_reference_autocomplete

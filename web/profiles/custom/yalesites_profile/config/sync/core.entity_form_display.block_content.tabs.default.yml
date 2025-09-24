@@ -13,10 +13,6 @@ dependencies:
     - markup
     - paragraphs
     - paragraphs_features
-id: block_content.tabs.default
-targetEntityType: block_content
-bundle: tabs
-mode: default
 third_party_settings:
   field_group:
     group_block_tabs:
@@ -68,6 +64,10 @@ third_party_settings:
         formatter: closed
         description: ''
         required_fields: false
+id: block_content.tabs.default
+targetEntityType: block_content
+bundle: tabs
+mode: default
 content:
   field_instructions:
     type: markup

@@ -17,49 +17,6 @@ targetEntityType: block_content
 bundle: video_banner
 mode: default
 content:
-  group_content:
-    children:
-      - info
-      - field_media
-    label: Content
-    parent_name: ''
-    weight: 1
-    format_type: tab
-    format_settings:
-      classes: ''
-      show_empty_fields: false
-      id: ''
-      formatter: open
-      description: ''
-      required_fields: true
-  group_design:
-    children:
-      - field_style_width
-    label: Design
-    parent_name: ''
-    weight: 2
-    format_type: tab
-    format_settings:
-      classes: ''
-      show_empty_fields: false
-      id: ''
-      formatter: closed
-      description: ''
-      required_fields: true
-  group_advanced:
-    children:
-      - revision_log
-    label: Advanced
-    parent_name: ''
-    weight: 3
-    format_type: tab
-    format_settings:
-      classes: ''
-      show_empty_fields: false
-      id: ''
-      formatter: closed
-      description: ''
-      required_fields: true
   field_media:
     type: media_library_widget
     weight: 1
@@ -81,6 +38,52 @@ content:
     region: content
     settings: {  }
     third_party_settings: {  }
+  group_advanced:
+    weight: 3
+    region: content
+    children:
+      - revision_log
+    label: Advanced
+    parent_name: ''
+    format_type: tab
+    format_settings:
+      classes: ''
+      show_empty_fields: false
+      id: ''
+      formatter: closed
+      description: ''
+      required_fields: true
+  group_content:
+    weight: 1
+    region: content
+    children:
+      - info
+      - field_media
+    label: Content
+    parent_name: ''
+    format_type: tab
+    format_settings:
+      classes: ''
+      show_empty_fields: false
+      id: ''
+      formatter: open
+      description: ''
+      required_fields: true
+  group_design:
+    weight: 2
+    region: content
+    children:
+      - field_style_width
+    label: Design
+    parent_name: ''
+    format_type: tab
+    format_settings:
+      classes: ''
+      show_empty_fields: false
+      id: ''
+      formatter: closed
+      description: ''
+      required_fields: true
   info:
     type: string_textfield
     weight: 0

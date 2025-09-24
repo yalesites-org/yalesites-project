@@ -20,52 +20,75 @@ id: block_content.inline_message.default
 targetEntityType: block_content
 bundle: inline_message
 mode: default
+third_party_settings:
+  field_group:
+    group_block_tabs:
+      children:
+        - group_content_tab
+        - group_design_tab
+        - group_advanced_tab
+      label: 'Block tabs'
+      region: content
+      parent_name: ''
+      weight: 1
+      format_type: tabs
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        direction: horizontal
+        width_breakpoint: 640
+    group_content_tab:
+      children:
+        - field_heading
+        - field_text
+        - field_link
+      label: Content
+      region: content
+      parent_name: group_block_tabs
+      weight: 1
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: open
+        description: ''
+        required_fields: false
+        open: true
+        weight: -10
+    group_design_tab:
+      children:
+        - field_style_color
+      label: Design
+      region: content
+      parent_name: group_block_tabs
+      weight: 2
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: closed
+        description: ''
+        required_fields: false
+    group_advanced_tab:
+      children:
+        - info
+        - revision_log
+      label: Advanced
+      region: content
+      parent_name: group_block_tabs
+      weight: 3
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: closed
+        description: ''
+        required_fields: false
 content:
-  group_content:
-    children:
-      - info
-      - field_heading
-      - field_text
-      - field_link
-    label: Content
-    parent_name: ''
-    weight: 1
-    format_type: tab
-    format_settings:
-      classes: ''
-      show_empty_fields: false
-      id: ''
-      formatter: open
-      description: ''
-      required_fields: true
-  group_design:
-    children:
-      - field_style_color
-    label: Design
-    parent_name: ''
-    weight: 2
-    format_type: tab
-    format_settings:
-      classes: ''
-      show_empty_fields: false
-      id: ''
-      formatter: closed
-      description: ''
-      required_fields: true
-  group_advanced:
-    children:
-      - revision_log
-    label: Advanced
-    parent_name: ''
-    weight: 3
-    format_type: tab
-    format_settings:
-      classes: ''
-      show_empty_fields: false
-      id: ''
-      formatter: closed
-      description: ''
-      required_fields: true
   field_heading:
     type: text_textfield
     weight: 1
@@ -103,7 +126,7 @@ content:
     third_party_settings: {  }
   field_style_color:
     type: options_select
-    weight: 4
+    weight: 1
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -124,7 +147,7 @@ content:
         maxlength_js_enforce: true
   info:
     type: string_textfield
-    weight: 0
+    weight: 2
     region: content
     settings:
       size: 60
@@ -132,7 +155,7 @@ content:
     third_party_settings: {  }
   revision_log:
     type: hide_revision_field_log_widget
-    weight: 5
+    weight: 80
     region: content
     settings:
       rows: 5

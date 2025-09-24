@@ -18,10 +18,6 @@ dependencies:
     - paragraphs
     - paragraphs_features
     - text
-id: block_content.accordion.default
-targetEntityType: block_content
-bundle: accordion
-mode: default
 third_party_settings:
   field_group:
     group_block_tabs:
@@ -89,6 +85,10 @@ third_party_settings:
         formatter: closed
         description: ''
         required_fields: false
+id: block_content.accordion.default
+targetEntityType: block_content
+bundle: accordion
+mode: default
 content:
   field_accordion_items:
     type: paragraphs
