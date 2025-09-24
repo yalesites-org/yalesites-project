@@ -478,9 +478,9 @@ function ys_core_help($route_name, RouteMatchInterface $route_match) {
  * Implements hook_page_attachments().
  */
 function ys_core_page_attachments(array &$page) {
-  // Add Siteimprove Javascript only on production.
+  // Add Siteimprove Javascript only on production and front-facing pages.
   $config = \Drupal::config('config_split.config_split.production_config');
-  if ($config->get('status')) {
+  if ($config->get('status') && _ys_core_should_load_siteimprove()) {
     $page['#attached']['library'][] = 'ys_core/siteimprove';
   }
 
@@ -489,6 +489,129 @@ function ys_core_page_attachments(array &$page) {
   foreach ($favicons as $name => $favicon) {
     $page['#attached']['html_head'][] = [$favicon, $name];
   }
+}
+
+/**
+ * Helper function to determine if SiteImprove should load on the current page.
+ *
+ * @return bool
+ *   TRUE if SiteImprove should load, FALSE otherwise.
+ */
+function _ys_core_should_load_siteimprove() {
+  $route_match = \Drupal::routeMatch();
+  $route_name = $route_match->getRouteName();
+  $current_path = \Drupal::service('path.current')->getPath();
+
+  // Administrative routes to exclude.
+  $excluded_routes = [
+    // Admin pages.
+    'system.admin',
+    'system.admin_content',
+    'system.admin_structure',
+    'system.admin_config',
+    'system.admin_reports',
+    'system.admin_help',
+    'system.modules_list',
+    'system.themes_page',
+
+    // Content editing.
+    'entity.node.edit_form',
+    'node.add',
+    'entity.node.delete_form',
+    'entity.node.revision',
+    'entity.node.version_history',
+    'quickedit.field_form',
+    'entity.node.content_translation_overview',
+
+    // Layout Builder.
+    'layout_builder.overrides.node.view',
+    'layout_builder.overrides.node.save',
+    'layout_builder.overrides.node.cancel',
+    'layout_builder.overrides.node.revert',
+    'layout_builder.move_block',
+    'layout_builder.configure_block',
+    'layout_builder.add_block',
+    'layout_builder.remove_block',
+    'layout_builder.configure_section',
+    'layout_builder.add_section',
+    'layout_builder.remove_section',
+
+    // User management (keep public profiles).
+    'entity.user.edit_form',
+    'user.register',
+    'user.pass',
+    'user.login',
+    'user.logout',
+    'entity.user.delete_form',
+    'user.admin_create',
+    'user.admin_index',
+    'user.multiple_cancel_confirm',
+    'cas.bulk_add_cas_users',
+
+    // Taxonomy editing.
+    'entity.taxonomy_term.edit_form',
+    'entity.taxonomy_term.add_form',
+    'entity.taxonomy_term.delete_form',
+    'entity.taxonomy_vocabulary.overview_form',
+    'entity.taxonomy_vocabulary.collection',
+    'entity.taxonomy_vocabulary.add_form',
+    'entity.taxonomy_vocabulary.edit_form',
+
+    // Block and media management.
+    'entity.block_content.collection',
+    'entity.block_content.add_form',
+    'entity.block_content.edit_form',
+    'entity.media.collection',
+    'entity.media.add_form',
+    'entity.media.edit_form',
+    'view.media.media_page_list',
+
+    // Configuration and development.
+    'config.sync',
+    'config.import_full',
+    'config.export_full',
+    'config.diff',
+    'devel.admin_settings',
+    'devel.switch',
+    'system.performance_settings',
+    'system.logging_settings',
+    'system.cron_settings',
+    'system.site_information_settings',
+
+    // Reports and maintenance.
+    'system.status',
+    'dblog.overview',
+    'update.status',
+    'system.run_cron',
+  ];
+
+  // Path patterns to exclude (for routes not caught above).
+  $excluded_path_patterns = [
+    '/admin',
+    '/node/add',
+    '/layout_builder',
+    '/devel',
+  ];
+
+  // Check if current route should be excluded.
+  if (in_array($route_name, $excluded_routes)) {
+    return FALSE;
+  }
+
+  // Check for editing paths in current path.
+  if (preg_match('/\/(edit|add|delete|layout)($|\/)/i', $current_path)) {
+    return FALSE;
+  }
+
+  // Check excluded path patterns.
+  foreach ($excluded_path_patterns as $pattern) {
+    if (strpos($current_path, $pattern) === 0) {
+      return FALSE;
+    }
+  }
+
+  // Allow SiteImprove on all other pages (front-facing content).
+  return TRUE;
 }
 
 /**
