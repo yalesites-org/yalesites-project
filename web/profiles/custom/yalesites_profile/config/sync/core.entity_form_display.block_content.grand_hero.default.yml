@@ -70,8 +70,6 @@ third_party_settings:
         - field_style_color
         - field_style_position
         - field_style_variation
-        - field_overlay_png
-        - field_replace_heading_with_image
       label: Design
       region: content
       parent_name: group_block_tabs
@@ -86,6 +84,8 @@ third_party_settings:
         required_fields: true
     group_advanced_tab:
       children:
+        - field_overlay_png
+        - field_replace_heading_with_image
         - field_heading_level
         - info
       label: Advanced
