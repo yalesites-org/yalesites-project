@@ -5,6 +5,7 @@
  * Contains ys_core.module functions.
  */
 
+use Drupal\imagemagick\ImagemagickExecArguments;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Cache\Cache;
@@ -1086,7 +1087,7 @@ function ys_core_page_top(array &$page_top) {
  *
  * Preserves PNG transparency across all image style operations.
  */
-function ys_core_imagemagick_arguments_alter(\Drupal\imagemagick\ImagemagickExecArguments $arguments, $command) {
+function ys_core_imagemagick_arguments_alter(ImagemagickExecArguments $arguments, $command) {
   // Only process 'convert' operations (image transformations).
   if ($command !== 'convert') {
     return;
