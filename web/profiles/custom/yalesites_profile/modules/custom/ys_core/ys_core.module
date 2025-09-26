@@ -1080,3 +1080,36 @@ function ys_core_page_top(array &$page_top) {
     unset($page_top['indicator']);
   }
 }
+
+/**
+ * Implements hook_imagemagick_arguments_alter().
+ *
+ * Preserves PNG transparency across all image style operations.
+ */
+function ys_core_imagemagick_arguments_alter(\Drupal\imagemagick\ImagemagickExecArguments $arguments, $command) {
+  // Only process 'convert' operations (image transformations).
+  if ($command !== 'convert') {
+    return;
+  }
+
+  // Get the source image path to check if it's a PNG.
+  $source = $arguments->getSource();
+  if (!$source) {
+    return;
+  }
+
+  // Check if source is a PNG file.
+  $source_extension = strtolower(pathinfo($source, PATHINFO_EXTENSION));
+  $source_mime = mime_content_type($source);
+
+  if ($source_extension === 'png' || $source_mime === 'image/png') {
+    // Add transparency preservation arguments for PNG files.
+    // Use ImageMagick v6 compatible syntax.
+    $arguments->add('-alpha on');
+    $arguments->add('-channel RGBA');
+
+    // Ensure PNG compression is optimized while preserving transparency.
+    $arguments->add('-define png:preserve-colormap=true');
+    $arguments->add('-define png:exclude-chunks=date');
+  }
+}
