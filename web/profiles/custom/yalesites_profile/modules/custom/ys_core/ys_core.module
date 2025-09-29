@@ -1330,3 +1330,163 @@ function ys_core_imagemagick_arguments_alter(ImagemagickExecArguments $arguments
     $arguments->add('-define png:exclude-chunks=date');
   }
 }
+
+/**
+ * Implements hook_preprocess_views_view().
+ *
+ * Enhances accessibility for media library Grid/Table view buttons.
+ */
+function ys_core_preprocess_views_view(&$variables) {
+  $view = $variables['view'];
+
+  // Only process media library views.
+  if ($view->id() !== 'media_library') {
+    return;
+  }
+
+  // Check if header exists and contains view display links.
+  if (empty($variables['header'])) {
+    return;
+  }
+
+  // Recursively find and enhance views display links in the header render
+  // array.
+  _ys_core_enhance_media_library_display_links($variables['header']);
+
+  // Add region role and label to the header container for screen reader
+  // context.
+  if (isset($variables['header']['#attributes'])) {
+    $variables['header']['#attributes']['role'] = 'region';
+    $variables['header']['#attributes']['aria-label'] = t('Media library view options');
+  }
+  else {
+    $variables['header']['#attributes'] = [
+      'role' => 'region',
+      'aria-label' => t('Media library view options'),
+    ];
+  }
+
+  // Add region role and label to the content section for screen reader context.
+  if (isset($variables['rows'])) {
+    if (!isset($variables['rows']['#attributes'])) {
+      $variables['rows']['#attributes'] = [];
+    }
+    $variables['rows']['#attributes']['role'] = 'region';
+    $variables['rows']['#attributes']['aria-label'] = t('Media library content');
+  }
+}
+
+/**
+ * Recursively enhances media library display links with accessibility.
+ *
+ * @param array &$render_array
+ *   The render array to process.
+ */
+function _ys_core_enhance_media_library_display_links(&$render_array) {
+  if (!is_array($render_array)) {
+    return;
+  }
+
+  // Check if this is a link render element.
+  if (isset($render_array['#type']) && $render_array['#type'] === 'link') {
+    // Check all possible class locations for views display links.
+    $classes = [];
+    $attributes_location = '';
+
+    // First check the direct attributes location (from debug output).
+    if (isset($render_array['attributes']['class']) && is_array($render_array['attributes']['class'])) {
+      $classes = $render_array['attributes']['class'];
+      $attributes_location = 'attributes';
+    }
+    // Check #options attributes location.
+    elseif (isset($render_array['#options']['attributes']['class']) && is_array($render_array['#options']['attributes']['class'])) {
+      $classes = $render_array['#options']['attributes']['class'];
+      $attributes_location = '#options_attributes';
+    }
+    // Fallback to standard Drupal link attributes.
+    elseif (isset($render_array['#attributes']['class']) && is_array($render_array['#attributes']['class'])) {
+      $classes = $render_array['#attributes']['class'];
+      $attributes_location = '#attributes';
+    }
+
+    if (!empty($classes) && in_array('views-display-link', $classes)) {
+      // Determine if this is the active display link.
+      $is_active = in_array('is-active', $classes);
+
+      // Add accessibility attributes to the same location as the classes.
+      if ($attributes_location === 'attributes') {
+        $render_array['attributes']['role'] = 'button';
+        $render_array['attributes']['aria-pressed'] = $is_active ? 'true' : 'false';
+      }
+      elseif ($attributes_location === '#options_attributes') {
+        if (!isset($render_array['#options']['attributes'])) {
+          $render_array['#options']['attributes'] = [];
+        }
+        $render_array['#options']['attributes']['role'] = 'button';
+        $render_array['#options']['attributes']['aria-pressed'] = $is_active ? 'true' : 'false';
+      }
+      elseif ($attributes_location === '#attributes') {
+        $render_array['#attributes']['role'] = 'button';
+        $render_array['#attributes']['aria-pressed'] = $is_active ? 'true' : 'false';
+      }
+    }
+  }
+  // If this appears to be a container of display links, add list role.
+  elseif (_ys_core_contains_display_links($render_array)) {
+    // Add list wrapper attributes.
+    if (!isset($render_array['#attributes'])) {
+      $render_array['#attributes'] = [];
+    }
+    $render_array['#attributes']['role'] = 'list';
+  }
+
+  // Recursively process child elements.
+  foreach ($render_array as $key => &$child) {
+    if (is_array($child) && strpos($key, '#') !== 0) {
+      _ys_core_enhance_media_library_display_links($child);
+    }
+  }
+}
+
+/**
+ * Checks if a render array contains views display links.
+ *
+ * @param array $render_array
+ *   The render array to check.
+ *
+ * @return bool
+ *   TRUE if the array contains display links.
+ */
+function _ys_core_contains_display_links($render_array) {
+  if (!is_array($render_array)) {
+    return FALSE;
+  }
+
+  foreach ($render_array as $key => $child) {
+    if (is_array($child) && strpos($key, '#') !== 0) {
+      // Check if this child is a display link.
+      if (isset($child['#type']) && $child['#type'] === 'link') {
+        $classes = [];
+        if (isset($child['attributes']['class']) && is_array($child['attributes']['class'])) {
+          $classes = $child['attributes']['class'];
+        }
+        elseif (isset($child['#options']['attributes']['class']) && is_array($child['#options']['attributes']['class'])) {
+          $classes = $child['#options']['attributes']['class'];
+        }
+        elseif (isset($child['#attributes']['class']) && is_array($child['#attributes']['class'])) {
+          $classes = $child['#attributes']['class'];
+        }
+
+        if (!empty($classes) && in_array('views-display-link', $classes)) {
+          return TRUE;
+        }
+      }
+      // Recursively check children.
+      if (_ys_core_contains_display_links($child)) {
+        return TRUE;
+      }
+    }
+  }
+
+  return FALSE;
+}
