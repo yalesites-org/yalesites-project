@@ -1,12 +1,12 @@
-uuid: 144865b0-6d00-4d98-afb6-911416ca268c
+uuid: 08db2fa0-cc5b-4628-be9f-49742cbe69df
 langcode: en
 status: true
 dependencies:
   config:
-    - taxonomy.vocabulary.custom_vocab
-id: taxonomy_term.custom_vocab.default
+    - taxonomy.vocabulary.resource_category
+id: taxonomy_term.resource_category.default
 targetEntityType: taxonomy_term
-bundle: custom_vocab
+bundle: resource_category
 mode: default
 content:
   name:

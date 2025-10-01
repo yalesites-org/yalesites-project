@@ -557,8 +557,12 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
         $defaultParam = (empty($paramsDecoded['pin_label'])) ? self::DEFAULT_PIN_LABEL : $paramsDecoded['pin_label'];
         break;
 
+      case 'field_options':
+        $defaultParam = (empty($paramsDecoded['field_options']) || !is_array($paramsDecoded['field_options'])) ? [] : $paramsDecoded['field_options'];
+        break;
+
       default:
-        $defaultParam = $paramsDecoded[$type];
+        $defaultParam = $paramsDecoded[$type] ?? NULL;
         break;
     }
     return $defaultParam;
