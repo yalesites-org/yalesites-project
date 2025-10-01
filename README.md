@@ -7,7 +7,7 @@ The YaleSites platform empowers the Yale community to create digital experiences
 - Code quality, testing, and build tools
 - Continuous integration and delivery support
 
-## Contributing
+## Contributing 
 
 - [Review contribution guidelines](/docs/CONTRIBUTING.md)
 - [Setup a local development environment](/docs/setup.md)
