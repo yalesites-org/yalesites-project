@@ -70,6 +70,17 @@ if (!empty($_ENV['PANTHEON_ENVIRONMENT']) && !empty($_ENV['CACHE_HOST'])) {
  * Environment Indicator.
  */
 $env = $_ENV['PANTHEON_ENVIRONMENT'] ?? 'lando';
+
+// Get version from profile info file.
+$profile_info_file = DRUPAL_ROOT . '/profiles/custom/yalesites_profile/yalesites_profile.info.yml';
+$version = '';
+if (file_exists($profile_info_file)) {
+  $profile_info = file_get_contents($profile_info_file);
+  if (preg_match('/^version:\s*(.+)$/m', $profile_info, $matches)) {
+    $version = trim($matches[1]);
+  }
+}
+
 $env_options = [
   'lando' => [
     'bg_color' => '#94bdff',
@@ -79,17 +90,17 @@ $env_options = [
   'development' => [
     'bg_color' => '#3b82f6',
     'fg_color' => '#ffffff',
-    'name' => 'Development',
+    'name' => 'Development' . ($version ? ' - ' . $version : ''),
   ],
   'test' => [
     'bg_color' => '#8b5cf6',
     'fg_color' => '#ffffff',
-    'name' => 'YaleSites Team Testing Only.',
+    'name' => 'YaleSites Team Testing Only.' . ($version ? ' - ' . $version : ''),
   ],
   'live' => [
     'bg_color' => '#22c55e',
     'fg_color' => '#000000',
-    'name' => 'Live Site',
+    'name' => 'Live Site' . ($version ? ' - ' . $version : ''),
   ],
   'multidev' => [
     'bg_color' => '#e1821f',
