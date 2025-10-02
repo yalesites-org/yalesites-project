@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * Load services definition file.
  */
 
@@ -9,7 +10,7 @@ $settings['container_yamls'][] = __DIR__ . '/services.yml';
 /**
  * Include the Pantheon-specific settings file.
  *
- * n.b. The settings.pantheon.php file makes some changes
+ * N.b. The settings.pantheon.php file makes some changes
  *      that affect all environments that this site
  *      exists in.  Always include this file, even in
  *      a local development environment, to ensure that
@@ -22,16 +23,15 @@ include __DIR__ . "/settings.pantheon.php";
  * work better, but will also raise a warning when you
  * install Drupal.
  *
- * https://www.drupal.org/project/drupal/issues/3091285
+ * Https://www.drupal.org/project/drupal/issues/3091285
  */
 // $settings['skip_permissions_hardening'] = TRUE;
-
 // Config split for production environments.
 $config['config_split.config_split.local_config']['status'] = FALSE;
 $config['config_split.config_split.production_config']['status'] = TRUE;
 
 /**
- * If there is a local settings file, then include it
+ * If there is a local settings file, then include it.
  */
 $local_settings = __DIR__ . "/settings.local.php";
 if (file_exists($local_settings)) {
@@ -39,7 +39,7 @@ if (file_exists($local_settings)) {
 }
 
 /**
- * If there is a site-specific settings file, then include it
+ * If there is a site-specific settings file, then include it.
  */
 if (isset($_ENV['PANTHEON_SITE_NAME'])) {
   $site_settings = __DIR__ . "/settings." . $_ENV['PANTHEON_SITE_NAME'] . ".php";
@@ -79,7 +79,7 @@ $env_options = [
   'development' => [
     'bg_color' => '#3b82f6',
     'fg_color' => '#ffffff',
-    'name' => 'Development - Build & Test. Make big changes here, then request go-live.',
+    'name' => 'Development',
   ],
   'test' => [
     'bg_color' => '#8b5cf6',
@@ -89,7 +89,7 @@ $env_options = [
   'live' => [
     'bg_color' => '#22c55e',
     'fg_color' => '#000000',
-    'name' => 'Live Site - Published. Make small edits and add content here.',
+    'name' => 'Live Site',
   ],
   'multidev' => [
     'bg_color' => '#e1821f',
