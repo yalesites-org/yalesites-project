@@ -1,0 +1,105 @@
+<?php
+/**
+ * @file
+ * ys_whc_migrate.install
+ */
+
+use Drupal\taxonomy\Entity\Term;
+
+/**
+ * Updates the node tags and category fields with correct values.
+ */
+function ys_whc_migrate_update_10101(): void {
+  $entities_to_update = [
+    [
+      'nids' => [
+        126, 131, 132, 134, 135, 136, 137, 138,
+        139, 140, 141, 142, 143, 144, 145, 146,
+      ],
+      'field' => 'field_tags',
+      'term' => [
+        'vid' => 'tags',
+        'name' => 'Film Archive',
+        'tid' => 45,
+      ],
+    ],
+    [
+      'nids' => [11],
+      'field' => 'field_category',
+      'term' => [
+        'vid' => 'post_category',
+        'name' => 'Campus & Community',
+      ],
+    ],
+    [
+      'nids' => [10],
+      'field' => 'field_category',
+      'term' => [
+        'vid' => 'post_category',
+        'name' => 'Business',
+      ],
+    ],
+    [
+      'nids' => [15, 16, 19],
+      'field' => 'field_category',
+      'term' => [
+        'vid' => 'page_category',
+        'name' => 'From the Director',
+      ],
+    ],
+    [
+      'nids' => [
+        20, 21, 22, 23, 24, 29, 30, 31, 32, 33, 34, 35,
+        37, 38, 39, 41, 43, 44, 45,
+      ],
+      'field' => 'field_category',
+      'term' => [
+        'vid' => 'post_category',
+        'name' => 'From the Quadrangle',
+        'tid' => 89,
+      ],
+    ],
+    [
+      'nids' => [
+        47, 49, 50, 99, 100, 101, 102, 103, 104, 105, 106, 107,
+        108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118,
+        119, 120, 121, 122, 124, 125, 128,
+      ],
+      'field' => 'field_category',
+      'term' => [
+        'vid' => 'page_category',
+        'name' => 'Gallery Exhibit',
+        'tid' => 549,
+      ],
+    ],
+    [
+      'nids' => [72, 73, 74, 75, 76, 77, 78, 79, 81],
+      'field' => 'field_category',
+      'term' => [
+        'vid' => 'page_category',
+        'name' => 'Past Shulman Lectures',
+      ],
+    ],
+  ];
+
+  $node_storage = \Drupal::entityTypeManager()->getStorage('node');
+  $create_term_callback = function (string $vid, string $name): int {
+    $term = Term::create([
+      'vid' => $vid,
+      'name' => $name,
+    ]);
+    $term->save();
+    return (int) $term->id();
+  };
+
+  foreach ($entities_to_update as $entity_info) {
+    $term_info = $entity_info['term'];
+    $tid = $term_info['tid'] ?? $create_term_callback($term_info['vid'], $term_info['name']);
+
+    foreach ($node_storage->loadMultiple($entity_info['nids']) as $node) {
+      /** @var \Drupal\node\NodeInterface $node */
+      $node->set($entity_info['field'], ['target_id' => $tid]);
+      $node->save();
+    }
+  }
+}
