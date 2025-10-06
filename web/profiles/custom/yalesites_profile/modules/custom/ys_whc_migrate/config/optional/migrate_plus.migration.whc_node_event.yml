@@ -32,6 +32,23 @@ process:
     source: field_event_image/0/fid
     no_stub: true
   field_event_date/0: field_event_time/0/smart_date
+  field_event_description/0/value:
+    - plugin: skip_on_value
+      source: field_series/0/target_id
+      not_equals: true
+      value:
+        - 14 # Franke Visiting Fellows
+        - 15 # Finzi-Contini Lectures
+        # - 16 # Franke Lectures in the Humanities
+        # - 17 # Tanner Lectures on Human Values
+        - 48 # Whitney Publishing Project
+        - 56 # Humanities Now
+      method: process
+    - plugin: get
+      source: body/0/value
+  field_event_description/0/format:
+    plugin: default_value
+    default_value: basic_html
   field_tags:
     plugin: migration_lookup
     migration: whc_taxonomy_series
