@@ -15,7 +15,7 @@ function ys_core_deploy_10001() {
   if ($vocab && $vocab->get('name') === NULL) {
     $vocab->set('name', 'Custom Vocab')->save();
 
-    $content_types = ['event', 'page', 'post', 'profile'];
+    $content_types = ['event', 'page', 'post', 'profile', 'resource'];
 
     foreach ($content_types as $content_type) {
       \Drupal::configFactory()->getEditable("field.field.node.{$content_type}.field_custom_vocab")
@@ -88,5 +88,28 @@ function ys_core_deploy_10003() {
     );
 
     $node->save();
+  }
+}
+
+/**
+ * Implements hook_deploy_NAME().
+ *
+ * Updates the field_custom_vocab label for resources content type
+ * to match the current custom_vocab_name setting.
+ */
+function ys_core_deploy_10004() {
+  // Get the current custom vocabulary name from site settings.
+  $custom_vocab_name = \Drupal::config('ys_core.site')->get('taxonomy.custom_vocab_name') ?? 'Custom Vocab';
+
+  // Update the field label for the resource content type.
+  $field_config = \Drupal::configFactory()->getEditable('field.field.node.resource.field_custom_vocab');
+
+  if (!$field_config->isNew()) {
+    $field_config->set('label', $custom_vocab_name)->save();
+
+    // Clear cache so the new label is reflected.
+    \Drupal::service('cache.discovery')->invalidateAll();
+
+    \Drupal::messenger()->addStatus(t('Updated field_custom_vocab label for resources to "@label".', ['@label' => $custom_vocab_name]));
   }
 }

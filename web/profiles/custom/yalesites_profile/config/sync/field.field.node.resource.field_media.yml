@@ -1,0 +1,31 @@
+uuid: ee332202-c553-45fb-a446-afc84ca2760b
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_media
+    - media.type.document
+    - media.type.video
+    - node.type.resource
+id: node.resource.field_media
+field_name: field_media
+entity_type: node
+bundle: resource
+label: 'Resource Media'
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:media'
+  handler_settings:
+    target_bundles:
+      document: document
+      video: video
+    sort:
+      field: _none
+      direction: ASC
+    auto_create: false
+    auto_create_bundle: document
+field_type: entity_reference

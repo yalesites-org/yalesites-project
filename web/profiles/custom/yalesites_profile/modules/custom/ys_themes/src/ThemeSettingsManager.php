@@ -52,6 +52,10 @@ class ThemeSettingsManager {
           'label' => 'It’s Your Yale',
           'color_theme' => 'five',
         ],
+        'six' => [
+          'label' => 'AI',
+          'color_theme' => 'six',
+        ],
       ],
     ],
     'button_theme' => [

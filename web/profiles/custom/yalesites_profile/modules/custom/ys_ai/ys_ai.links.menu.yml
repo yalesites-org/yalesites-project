@@ -1,0 +1,6 @@
+ys_ai.settings:
+  title: 'AI settings'
+  description: 'Configure AI engine settings'
+  route_name: ys_ai.settings
+  parent: ys_integrations.admin_yalesites_integrations
+  weight: 0

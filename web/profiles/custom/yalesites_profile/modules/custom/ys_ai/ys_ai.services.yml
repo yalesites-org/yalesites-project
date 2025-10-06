@@ -1,0 +1,5 @@
+services:
+  ys_ai.settings_enabled_access_check:
+    class: Drupal\ys_ai\Access\SettingsEnabledAccessCheck
+    arguments: ['@config.factory']
+
