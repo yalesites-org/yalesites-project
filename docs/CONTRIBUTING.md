@@ -103,7 +103,7 @@ Development standards will be rigorously enforced on this project. Drupal mainta
 
 - [Drupal Coding standards](https://www.drupal.org/docs/develop/standards)
 - [Twig coding standards](https://www.drupal.org/docs/develop/coding-standards/twig-coding-standards)
-- [JavaScript coding stand](https://www.drupal.org/docs/develop/standards/javascript)
+- [JavaScript coding standards](https://www.drupal.org/docs/develop/standards/javascript)
 - [CSS Architecture](https://www.drupal.org/docs/develop/standards/css/css-architecture-for-drupal-8)
 
 ### Linting
@@ -122,11 +122,13 @@ To run linting, you'll need to install packages in the project root and in web/c
 - cd back to the root with `cd ../../` and run `npm install`
 
 Available npm commands for testing. All commands below can be run with `npm run [command]`. For example, `npm run lint:js`.
-Adding 'fix' onto each command will automatically fix the found issues where possible. For example, `npm run lint fix`.
 
-- prettier - runs prettier code beautifier tool on docs, .github, custom modules, and custom themes directories.
-- lint:js - uses eslint to validate the JS in custom modules and themes.
-- lint:style - uses eslint to validate the CSS in custom modules and themes.
-- lint:php - runs PHPCS with Drupal standards.
-- lint - runs lint:styles, lint:js, and lint:php.
-- test - runs lint:styles, lint:js, lint:php and prettier.
+### Code Quality Commands
+
+- **prettier** - Runs prettier code beautifier tool on docs, .github, custom modules, and custom themes directories. Shows formatting issues without fixing them.
+- **lint:js** - Uses eslint to validate JavaScript in custom modules and themes.
+- **lint:styles** - Uses stylelint to validate SCSS/CSS in custom modules and themes.
+- **lint:php** - Runs PHPCS with Drupal standards via composer.
+- **lint** - Runs all linting commands: lint:styles, lint:js, and lint:php.
+- **fix:js** - Auto-fixes JavaScript linting errors where possible using eslint --fix.
+- **test** - Runs both prettier checks and all linting commands (lint:styles, lint:js, lint:php).
