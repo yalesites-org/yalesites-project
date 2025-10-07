@@ -1,6 +1,6 @@
 # YaleSites GitHub Pages Application Development Guide
 
-**Last Updated:** December 2024
+**Last Updated:** October 2025
 
 This guide provides comprehensive instructions for developing applications that can be embedded in YaleSites using GitHub Pages and the `ys_embed` module's GitHub Applet embed source.
 
