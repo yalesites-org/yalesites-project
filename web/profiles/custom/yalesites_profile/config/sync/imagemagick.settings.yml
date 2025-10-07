@@ -2,8 +2,9 @@ _core:
   default_config_hash: do7QLcSY6lDV82NBI3jy5FNsUwWFjjJzXmHPTGsSvIQ
 quality: 100
 binaries: imagemagick
+imagemagick_version: v6
 path_to_binaries: ''
-prepend: '-limit area 20MP -limit memory 96MB -limit map 192MB'
+prepend: '-limit area 20MP -limit memory 96MB -limit map 192MB -alpha on -channel RGBA'
 log_warnings: true
 debug: false
 image_formats:
@@ -58,4 +59,3 @@ advanced:
   colorspace: '0'
   profile: ''
   coalesce: false
-imagemagick_version: v6
