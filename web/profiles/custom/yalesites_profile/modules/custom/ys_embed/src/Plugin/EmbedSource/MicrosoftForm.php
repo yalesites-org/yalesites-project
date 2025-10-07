@@ -83,7 +83,8 @@ class MicrosoftForm extends EmbedSourceBase implements EmbedSourceInterface {
    *   The sanitized parameters.
    */
   protected function sanitizeOfficeParams(string $params): string {
-    // Minimal sanitization: prevent quote injection and XSS, preserve Microsoft params.
+    // Minimal sanitization: prevent quote injection and XSS,
+    // preserve Microsoft params.
     $sanitized = str_replace('"', '', $params);
     $sanitized = htmlspecialchars($sanitized, ENT_QUOTES, 'UTF-8');
     return substr($sanitized, 0, 2000);
@@ -99,7 +100,8 @@ class MicrosoftForm extends EmbedSourceBase implements EmbedSourceInterface {
    *   The sanitized form ID.
    */
   protected function sanitizeFormId(string $form_id): string {
-    // Minimal sanitization: prevent quote injection and basic XSS, preserve Microsoft IDs.
+    // Minimal sanitization: prevent quote injection and basic XSS,
+    // preserve Microsoft IDs.
     $sanitized = str_replace(['"', '<', '>', '&'], '', $form_id);
     return substr($sanitized, 0, 100);
   }
