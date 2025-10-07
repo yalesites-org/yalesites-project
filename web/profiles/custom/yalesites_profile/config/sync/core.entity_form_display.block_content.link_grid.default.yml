@@ -10,6 +10,8 @@ dependencies:
     - field.field.block_content.link_grid.field_style_color
   module:
     - allowed_formats
+    - field_group
+    - hide_revision_field
     - markup
     - maxlength
     - paragraphs
@@ -19,6 +21,72 @@ id: block_content.link_grid.default
 targetEntityType: block_content
 bundle: link_grid
 mode: default
+third_party_settings:
+  field_group:
+    group_block_tabs:
+      children:
+        - group_content_tab
+        - group_design_tab
+        - group_advanced_tab
+      label: 'Block tabs'
+      region: content
+      parent_name: ''
+      weight: 1
+      format_type: tabs
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        direction: horizontal
+        width_breakpoint: 640
+    group_content_tab:
+      children:
+        - info
+        - field_heading
+        - field_link_lists
+      label: Content
+      region: content
+      parent_name: group_block_tabs
+      weight: 1
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: open
+        description: ''
+        required_fields: false
+        open: true
+        weight: -10
+    group_design_tab:
+      children:
+        - field_style_color
+      label: Design
+      region: content
+      parent_name: group_block_tabs
+      weight: 2
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: closed
+        description: ''
+        required_fields: false
+    group_advanced_tab:
+      children: []
+      label: Advanced
+      region: content
+      parent_name: group_block_tabs
+      weight: 3
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: closed
+        description: ''
+        required_fields: false
 content:
   field_heading:
     type: text_textfield
@@ -37,13 +105,13 @@ content:
         maxlength_js_enforce: false
   field_instructions:
     type: markup
-    weight: 0
+    weight: -1
     region: content
     settings: {  }
     third_party_settings: {  }
   field_link_lists:
     type: paragraphs
-    weight: 2
+    weight: 3
     region: content
     settings:
       title: 'Link List'
@@ -67,7 +135,7 @@ content:
         show_drag_and_drop: true
   field_style_color:
     type: options_select
-    weight: 3
+    weight: 4
     region: content
     settings: {  }
     third_party_settings: {  }
