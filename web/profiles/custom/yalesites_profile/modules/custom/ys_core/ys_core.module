@@ -1080,3 +1080,61 @@ function ys_core_page_top(array &$page_top) {
     unset($page_top['indicator']);
   }
 }
+
+/**
+ * Implements hook_inline_entity_form_entity_form_alter().
+ *
+ * Add validation for tile paragraph link fields to ensure accessibility.
+ */
+function ys_core_inline_entity_form_entity_form_alter(&$entity_form, &$form_state) {
+  // Check if this is a tile paragraph form.
+  if (isset($entity_form['#entity_type']) && $entity_form['#entity_type'] == 'paragraph' &&
+      isset($entity_form['#bundle']) && $entity_form['#bundle'] == 'tile') {
+
+    // Add validation for tile link accessibility.
+    $entity_form['#validate'][] = 'ys_core_tile_link_validate';
+  }
+}
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter() for paragraph forms.
+ */
+function ys_core_form_paragraph_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Get the paragraph entity from form state.
+  $paragraph = $form_state->getFormObject()->getEntity();
+
+  if ($paragraph && $paragraph->bundle() == 'tile') {
+    // Add validation for tile link accessibility.
+    $form['#validate'][] = 'ys_core_tile_link_validate';
+  }
+}
+
+/**
+ * Validation function for tile paragraph link fields.
+ *
+ * Ensures that when a link is provided without content or heading,
+ * the link title is required for accessibility.
+ */
+function ys_core_tile_link_validate($form, FormStateInterface $form_state) {
+  // Get field values from form state.
+  $link_field = $form_state->getValue('field_link');
+  $heading_field = $form_state->getValue('field_heading');
+  $content_field = $form_state->getValue('field_text');
+
+  // Check if link URL is provided.
+  if (!empty($link_field) && !empty($link_field[0]['uri'])) {
+    $link_title = $link_field[0]['title'] ?? '';
+
+    // Check if heading or content exists.
+    $has_heading = !empty($heading_field) && !empty($heading_field[0]['value']);
+    $has_content = !empty($content_field) && !empty($content_field[0]['value']);
+
+    // If link exists but no heading or content, require link title.
+    if (!$has_heading && !$has_content && empty($link_title)) {
+      $form_state->setError(
+        $form['field_link'],
+        t('Link text is required when no tile heading or content is provided. This ensures the link is accessible to screen readers.')
+      );
+    }
+  }
+}

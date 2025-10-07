@@ -41,13 +41,13 @@ content:
     region: content
     settings:
       placeholder_url: ''
-      placeholder_title: ''
+      placeholder_title: 'Enter descriptive link text (required when no content or heading is provided)'
       linkit_profile: default
       linkit_auto_link_text: false
     third_party_settings:
       maxlength:
-        maxlength_js: null
-        maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
+        maxlength_js: 80
+        maxlength_js_label: 'Link text limited to @limit characters, remaining: <strong>@remaining</strong>'
   field_media:
     type: media_library_widget
     weight: 2
