@@ -4,6 +4,8 @@ status: true
 dependencies:
   config:
     - block_content.type.cta_banner
+    - field.field.block_content.cta_banner.field_button_alignment
+    - field.field.block_content.cta_banner.field_button_style_consistency
     - field.field.block_content.cta_banner.field_heading
     - field.field.block_content.cta_banner.field_heading_level
     - field.field.block_content.cta_banner.field_instructions
@@ -20,6 +22,7 @@ dependencies:
     - markup
     - maxlength
     - media_library
+    - options
     - text
 id: block_content.cta_banner.default
 targetEntityType: block_content
@@ -72,6 +75,18 @@ content:
       placeholder_title: ''
       linkit_profile: default
       linkit_auto_link_text: false
+    third_party_settings: {  }
+  field_button_alignment:
+    type: options_select
+    weight: 11
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_button_style_consistency:
+    type: options_select
+    weight: 12
+    region: content
+    settings: {  }
     third_party_settings: {  }
   field_media:
     type: media_library_widget

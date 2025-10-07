@@ -27,6 +27,18 @@ cta_banner:
       left: Left
       right: Right
     default: bottom
+  field_button_alignment:
+    values:
+      left: Left
+      center: Center
+      right: Right
+    default: right
+  field_button_style_consistency:
+    values:
+      both_primary: 'Both Primary'
+      both_secondary: 'Both Secondary'
+      mixed: 'Mixed (Default)'
+    default: mixed
 pull_quote:
   field_style_variation:
     values:

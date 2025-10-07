@@ -1,0 +1,21 @@
+uuid: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.cta_banner
+    - field.storage.block_content.field_button_alignment
+  module:
+    - options
+id: block_content.cta_banner.field_button_alignment
+field_name: field_button_alignment
+entity_type: block_content
+bundle: cta_banner
+label: 'Button Alignment'
+description: 'Choose how to align the buttons horizontally. This setting works across all section layout options (70/30, 50/50, 33/33/33).'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ys_themes_default_value_function
+settings: {  }
+field_type: list_string
