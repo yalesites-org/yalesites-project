@@ -1502,6 +1502,15 @@ function ys_core_tiles_block_validate($form, FormStateInterface $form_state) {
       if ($heading_empty && $text_empty) {
         $tile_error_message = t('Tile @number: At least one of "Tile Heading" or "Content" must be filled.', ['@number' => $delta + 1]);
 
+        // Add red border decoration to the specific empty fields
+        if (isset($form['settings']['block_form']['field_tiles']['widget'][$delta]['subform']['field_heading'])) {
+          $form_state->setError($form['settings']['block_form']['field_tiles']['widget'][$delta]['subform']['field_heading'], '');
+        }
+
+        if (isset($form['settings']['block_form']['field_tiles']['widget'][$delta]['subform']['field_text'])) {
+          $form_state->setError($form['settings']['block_form']['field_tiles']['widget'][$delta]['subform']['field_text'], '');
+        }
+
         // Set form error to prevent saving
         $form_state->setErrorByName('settings][block_form', $tile_error_message);
 
