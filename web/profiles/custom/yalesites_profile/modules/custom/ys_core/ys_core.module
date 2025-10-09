@@ -1511,6 +1511,28 @@ function ys_core_tiles_block_validate($form, FormStateInterface $form_state) {
           $form_state->setError($form['settings']['block_form']['field_tiles']['widget'][$delta]['subform']['field_text'], '');
         }
 
+        // Error message display attempts - multiple positioning strategies
+        $error_markup = '<div class="messages messages--error" style="margin: 20px 0; padding: 15px; border: 2px solid #d72222; background-color: #fcf4f4; color: #d72222; border-radius: 5px; font-weight: bold;"><strong>Validation Error:</strong> ' . $tile_error_message . '</div>';
+
+        // Attempt 1: Position after administrative label
+        if (isset($form['settings']['admin_label'])) {
+          $admin_label_weight = $form['settings']['admin_label']['#weight'] ?? 0;
+          $form['settings']['validation_error_after_admin'] = [
+            '#type' => 'markup',
+            '#markup' => $error_markup,
+            '#weight' => $admin_label_weight + 0.1,
+          ];
+        }
+
+        // Attempt 2: Add to tiles field (known working location)
+        if (isset($form['settings']['block_form']['field_tiles'])) {
+          $form['settings']['block_form']['field_tiles']['error_message'] = [
+            '#type' => 'markup',
+            '#markup' => $error_markup,
+            '#weight' => -1000,
+          ];
+        }
+
         // Set form error to prevent saving
         $form_state->setErrorByName('settings][block_form', $tile_error_message);
 
