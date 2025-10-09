@@ -13,7 +13,7 @@ field_name: field_tiles
 entity_type: block_content
 bundle: tiles
 label: Tiles
-description: ''
+description: 'Each tile must have either a heading or content (or both).'
 required: true
 translatable: false
 default_value: {  }
