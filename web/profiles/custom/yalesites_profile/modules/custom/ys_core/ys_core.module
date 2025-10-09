@@ -17,6 +17,8 @@ use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Url;
 use Drupal\node\Entity\Node;
 use Drupal\Component\Utility\NestedArray;
+use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Core\Template\Attribute;
 
 // Include coffee commands.
 require_once __DIR__ . '/ys_core.coffee.inc';
@@ -207,6 +209,26 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     $form['#attached']['library'][] = 'ys_core/block_form';
   }
 
+  // Add validation for tiles block content forms.
+  $tiles_forms = [
+    'block_content_tiles_form',
+    'block_content_tiles_edit_form',
+  ];
+
+  if (in_array($form_id, $tiles_forms)) {
+    $form['#validate'][] = 'ys_core_tiles_standalone_validate';
+  }
+
+  // Add validation for individual tile paragraph forms.
+  $tile_paragraph_forms = [
+    'paragraph_tile_form',
+    'paragraph_tile_edit_form',
+  ];
+
+  if (in_array($form_id, $tile_paragraph_forms)) {
+    $form['#validate'][] = 'ys_core_tile_paragraph_validate';
+  }
+
   $layout_builder_block_forms = [
     'layout_builder_update_block',
     'layout_builder_add_block',
@@ -214,6 +236,7 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
 
   if (in_array($form_id, $layout_builder_block_forms)) {
     $block_type_name = ys_core_get_block_type($form, $form_state);
+
     $limited_block_types = [
       'tabs',
       'quick_links',
@@ -222,6 +245,18 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     ];
     if (in_array($block_type_name, $limited_block_types)) {
       $form['#attached']['library'][] = 'ys_core/block_form';
+    }
+
+    // Add tile validation for tiles block.
+    if ($block_type_name === 'tiles') {
+      // Add validation to the form and attach library for better UX.
+      $form['#validate'][] = 'ys_core_tiles_block_validate';
+      $form['#attached']['library'][] = 'core/drupal.form';
+
+
+
+      // Add a form process callback to check for errors after form is built.
+      $form['#process'][] = 'ys_core_tiles_form_process';
     }
 
     $emptyAdminLabel = $form['settings']['label']['#default_value'] ?? '';
@@ -1328,5 +1363,193 @@ function ys_core_imagemagick_arguments_alter(ImagemagickExecArguments $arguments
     // Ensure PNG compression is optimized while preserving transparency.
     $arguments->add('-define png:preserve-colormap=true');
     $arguments->add('-define png:exclude-chunks=date');
+  }
+}
+
+/**
+ * Validation handler for individual tile paragraph forms.
+ */
+function ys_core_tile_paragraph_validate($form, FormStateInterface $form_state) {
+  $heading_value = $form_state->getValue(['field_heading', 0, 'value']) ?? '';
+  $text_value = $form_state->getValue(['field_text', 0, 'value']) ?? '';
+
+  // Check if both fields are empty.
+  $heading_empty = empty(trim($heading_value));
+  $text_empty = empty(trim($text_value));
+
+  if ($heading_empty && $text_empty) {
+    $form_state->setErrorByName('field_heading', t('At least one of "Tile Heading" or "Content" must be filled.'));
+  }
+}
+
+/**
+ * Validation handler for standalone tiles block content forms.
+ */
+function ys_core_tiles_standalone_validate($form, FormStateInterface $form_state) {
+  // Get the tiles field value from the form state.
+  $tiles_values = $form_state->getValue('field_tiles');
+
+  if (!$tiles_values || !is_array($tiles_values)) {
+    return;
+  }
+
+  // Validate each tile paragraph.
+  foreach ($tiles_values as $delta => $tile_data) {
+    // Skip add_more button and invalid entries.
+    if (!is_array($tile_data) || !isset($tile_data['target_id'])) {
+      continue;
+    }
+
+    $heading_value = '';
+    $text_value = '';
+
+    // For existing paragraphs, load the entity to get current values.
+    if (!empty($tile_data['target_id'])) {
+      $paragraph = \Drupal::entityTypeManager()->getStorage('paragraph')->load($tile_data['target_id']);
+      if ($paragraph && $paragraph->bundle() === 'tile') {
+        $heading_value = $paragraph->get('field_heading')->value ?? '';
+        $text_value = $paragraph->get('field_text')->value ?? '';
+      }
+    }
+
+    // For new paragraphs or updated collapsed ones, check subform data if available.
+    if (isset($tile_data['subform'])) {
+      $subform = $tile_data['subform'];
+      // Use subform values if they exist (for expanded/new tiles).
+      if (isset($subform['field_heading'][0]['value'])) {
+        $heading_value = $subform['field_heading'][0]['value'];
+      }
+      if (isset($subform['field_text'][0]['value'])) {
+        $text_value = $subform['field_text'][0]['value'];
+      }
+    }
+
+    // Check if both fields are empty.
+    $heading_empty = empty(trim($heading_value));
+    $text_empty = empty(trim($text_value));
+
+    if ($heading_empty && $text_empty) {
+      $form_state->setError(
+        $form['field_tiles']['widget'][$delta],
+        t('Tile @number: At least one of "Tile Heading" or "Content" must be filled.', ['@number' => $delta + 1])
+      );
+    }
+  }
+}
+
+/**
+ * Form process callback for tiles block forms to add inline error messages.
+ */
+function ys_core_tiles_form_process($element, FormStateInterface $form_state, $form) {
+  // Check if there are any form errors related to tiles.
+  $errors = $form_state->getErrors();
+
+  foreach ($errors as $error) {
+    $error_string = (string) $error;
+    if (strpos($error_string, 'Tile') !== FALSE && strpos($error_string, 'must be filled') !== FALSE) {
+      // Add inline error message at the top of the form.
+      $element['tiles_process_error'] = [
+        '#type' => 'markup',
+        '#markup' => '<div class="messages messages--error" style="margin: 20px 0; padding: 15px; border: 2px solid #d72222; background-color: #fcf4f4; color: #d72222; border-radius: 5px; font-weight: bold; z-index: 1000;"><strong>Validation Error:</strong> ' . $error_string . '</div>',
+        '#weight' => -2000,
+      ];
+      break;
+    }
+  }
+
+  return $element;
+}
+
+/**
+ * Validation handler for tiles block forms.
+ */
+function ys_core_tiles_block_validate($form, FormStateInterface $form_state) {
+  // Only validate on actual form submission, not on AJAX operations like editing tiles.
+  $triggering_element = $form_state->getTriggeringElement();
+  if ($triggering_element && isset($triggering_element['#ajax'])) {
+    return; // Skip validation for AJAX operations.
+  }
+
+  // Also check if this is specifically a save operation.
+  $triggering_element_name = $triggering_element['#name'] ?? '';
+  if (!in_array($triggering_element_name, ['op', 'submit'])) {
+    return; // Only validate on actual save operations.
+  }
+
+  // Get the block content entity from the form.
+  $block_content = $form['settings']['block_form']['#block'] ?? NULL;
+
+  if (!$block_content || $block_content->bundle() !== 'tiles') {
+    return;
+  }
+
+  // Instead of parsing complex form data, validate the existing tiles on the block entity.
+  if ($block_content->hasField('field_tiles') && !$block_content->get('field_tiles')->isEmpty()) {
+    foreach ($block_content->get('field_tiles') as $delta => $tile_reference) {
+      $tile_paragraph = $tile_reference->entity;
+
+      if (!$tile_paragraph || $tile_paragraph->bundle() !== 'tile') {
+        continue;
+      }
+
+      $heading_value = $tile_paragraph->get('field_heading')->value ?? '';
+      $text_value = $tile_paragraph->get('field_text')->value ?? '';
+
+      // Check if both fields are empty.
+      $heading_empty = empty(trim($heading_value));
+      $text_empty = empty(trim($text_value));
+
+      if ($heading_empty && $text_empty) {
+        $tile_error_message = t('Tile @number: At least one of "Tile Heading" or "Content" must be filled.', ['@number' => $delta + 1]);
+
+        // Set form error to prevent saving
+        $form_state->setErrorByName('settings][block_form', $tile_error_message);
+
+        // Break out after first error to avoid multiple messages.
+        break;
+      }
+    }
+  }
+}
+
+
+/**
+ * Implements hook_entity_presave().
+ */
+function ys_core_entity_presave($entity) {
+  // Validate tile paragraphs before saving.
+  if ($entity->getEntityTypeId() === 'paragraph' && $entity->bundle() === 'tile') {
+    _ys_core_validate_tile_content($entity);
+  }
+}
+
+/**
+ * Validates that tile paragraphs have at least title or content.
+ *
+ * @param \Drupal\paragraphs\Entity\Paragraph $paragraph
+ *   The tile paragraph entity.
+ *
+ * @throws \Drupal\Core\Entity\EntityStorageException
+ *   When validation fails.
+ */
+function _ys_core_validate_tile_content($paragraph) {
+  // Check if paragraph has the required fields.
+  if (!$paragraph->hasField('field_heading') || !$paragraph->hasField('field_text')) {
+    return;
+  }
+
+  // Get field values.
+  $heading_value = $paragraph->get('field_heading')->value;
+  $text_value = $paragraph->get('field_text')->value;
+
+  // Check if both fields are empty.
+  $heading_empty = empty(trim($heading_value ?? ''));
+  $text_empty = empty(trim($text_value ?? ''));
+
+  // Throw validation error if both fields are empty.
+  if ($heading_empty && $text_empty) {
+    // Create a more user-friendly error message.
+    \Drupal::messenger()->addError('Cannot save: At least one of "Tile Heading" or "Content" must be filled for each tile.');
+    throw new EntityStorageException('Tile validation failed: At least one of "Tile Heading" or "Content" must be filled.');
   }
 }
