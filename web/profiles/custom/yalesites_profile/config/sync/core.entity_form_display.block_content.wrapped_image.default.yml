@@ -19,10 +19,6 @@ dependencies:
     - media_library
     - media_library_edit
     - text
-id: block_content.wrapped_image.default
-targetEntityType: block_content
-bundle: wrapped_image
-mode: default
 third_party_settings:
   field_group:
     group_block_tabs:
@@ -78,7 +74,7 @@ third_party_settings:
         description: ''
         required_fields: false
     group_advanced_tab:
-      children: []
+      children: {  }
       label: Advanced
       region: content
       parent_name: group_block_tabs
@@ -91,6 +87,10 @@ third_party_settings:
         formatter: closed
         description: ''
         required_fields: false
+id: block_content.wrapped_image.default
+targetEntityType: block_content
+bundle: wrapped_image
+mode: default
 content:
   field_caption:
     type: text_textarea

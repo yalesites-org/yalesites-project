@@ -15,10 +15,6 @@ dependencies:
     - markup
     - maxlength
     - text
-id: block_content.pull_quote.default
-targetEntityType: block_content
-bundle: pull_quote
-mode: default
 third_party_settings:
   field_group:
     group_block_tabs:
@@ -72,7 +68,7 @@ third_party_settings:
         description: ''
         required_fields: false
     group_advanced_tab:
-      children: []
+      children: {  }
       label: Advanced
       region: content
       parent_name: group_block_tabs
@@ -85,6 +81,10 @@ third_party_settings:
         formatter: closed
         description: ''
         required_fields: false
+id: block_content.pull_quote.default
+targetEntityType: block_content
+bundle: pull_quote
+mode: default
 content:
   field_caption:
     type: text_textarea

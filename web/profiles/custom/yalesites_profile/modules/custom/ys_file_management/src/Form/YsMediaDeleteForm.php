@@ -131,20 +131,13 @@ class YsMediaDeleteForm extends MediaDeleteForm {
 
     // Check media and file usage.
     if ($media_used_elsewhere || $file_used_elsewhere) {
+      // Entity Usage will show the warning, our form_alter adds the recommendation.
+      // Just show "This action cannot be undone" for users who can still delete.
       if (!$can_force_delete) {
-        // Non-force delete users are completely blocked.
-        unset($build['actions']['submit']);
-
-        $user_level = $this->messageBuilder->getUserLevel($can_delete_any_file, $can_force_delete);
-        $build['description'] = $this->messageBuilder->buildUsageMessage(
-          $usages,
-          $user_level,
-          $media_used_elsewhere
-        );
-
+        $build['description'] = $this->messageBuilder->buildActionWarningMessage();
         return $build;
       }
-      // Force delete users continue to buildForceDeleteForm with warnings.
+      // Force delete users continue to buildForceDeleteForm.
     }
 
     // User can proceed - show "This action cannot be undone" only when deletion
@@ -183,40 +176,17 @@ class YsMediaDeleteForm extends MediaDeleteForm {
     $file_used_elsewhere = $usages > 1;
     $has_usage = $media_used_elsewhere || $file_used_elsewhere;
 
-    // If there's usage, show consistent message and hide Delete button
-    // initially.
+    // Entity Usage will show the main warning, just show "cannot be undone".
     if ($has_usage) {
-      if ($media_used_elsewhere) {
-        // Update description to include usage information.
-        // Platform admin level.
-        $user_level = $this->messageBuilder->getUserLevel(TRUE, TRUE);
-        $build['description'] = $this->messageBuilder->buildUsageMessage(
-          $usages,
-          $user_level,
-          $media_used_elsewhere
-        );
-      }
-
-      $build['actions']['submit']['#states'] = [
-        'visible' => [
-          ':input[name="force_delete_file"]' => ['checked' => TRUE],
-        ],
-      ];
+      $build['description'] = $this->messageBuilder->buildActionWarningMessage();
     }
 
-    // Add warning if file is used elsewhere.
-    $warning_markup = $this->messageBuilder->buildForceDeleteWarningMarkup($usages);
-
     return $build + [
-      'force_delete_warning' => [
-        '#type' => 'item',
-        '#markup' => $warning_markup,
-      ],
       'force_delete_file' => [
         '#type' => 'checkbox',
         '#default_value' => FALSE,
-        '#title' => $this->t('Force delete the associated file immediately'),
-        '#description' => $this->t('When checked, the file %file will be permanently deleted immediately instead of being marked temporary for cron cleanup. <strong>This action cannot be undone and may break other content.</strong>', [
+        '#title' => $this->t('Delete the associated file'),
+        '#description' => $this->t('When checked, the file %file will be marked as temporary for cron cleanup, bypassing usage checks. <strong>This action cannot be undone and may break other content.</strong>', [
           '%file' => $file->getFilename(),
         ]),
       ],

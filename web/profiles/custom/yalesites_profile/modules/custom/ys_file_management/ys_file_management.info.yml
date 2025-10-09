@@ -5,4 +5,5 @@ core_version_requirement: ^9 || ^10
 package: YaleSites
 dependencies:
   - drupal:media
+  - entity_usage:entity_usage
   - media_file_delete:media_file_delete

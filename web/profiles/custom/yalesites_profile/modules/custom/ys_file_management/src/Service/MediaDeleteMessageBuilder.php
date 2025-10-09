@@ -56,31 +56,13 @@ class MediaDeleteMessageBuilder {
    *   Render array for the message.
    */
   public function buildUsageMessage(int $usage_count, string $user_level, bool $is_media_usage = TRUE): array {
-    if ($is_media_usage) {
-      // Base message with usage count and recorded usages reference.
-      $base_message = $this->t('Cannot delete: media is used in @count location(s). See "recorded usages" above for details.', [
-        '@count' => $usage_count,
-      ]);
+    // Entity Usage will handle the usage warning and our form_alter will add
+    // the recommendation. Just show the "cannot be undone" message.
+    $undone_message = $this->buildActionWarningMessage();
 
-      $additional_message = match ($user_level) {
-        self::LEVEL_SITE_ADMIN => $this->t('Remove references first, or contact a platform administrator for force deletion.'),
-        self::LEVEL_PLATFORM_ADMIN => $this->t('Use force delete option below to override.'),
-        default => $this->t('Please remove those references first, then try again.'),
-      };
-
-      return [
-        '#markup' => $base_message . ' ' . $additional_message,
-      ];
-    }
-    else {
-      // File usage (not media usage).
-      return [
-        '#markup' => new PluralTranslatableMarkup($usage_count - 1,
-          'This media item cannot be deleted because its file is used in 1 other place. Please remove that reference first, then try again.',
-          'This media item cannot be deleted because its file is used in @count other places. Please remove those references first, then try again.'
-        ),
-      ];
-    }
+    return [
+      '#markup' => $undone_message['#markup'],
+    ];
   }
 
   /**

@@ -196,8 +196,8 @@ class MediaFileHandler {
     }
 
     if ($can_force_delete && $force_delete_requested) {
-      // Platform admin requested immediate force deletion.
-      $this->forceDelete($file);
+      // Platform admin requested force deletion - use cron cleanup.
+      $this->markAsTemporary($file);
     }
     else {
       // Standard behavior: mark file as temporary for cron cleanup.

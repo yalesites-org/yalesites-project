@@ -206,26 +206,22 @@ class YsMediaDeleteMultipleForm extends DeleteMultipleForm {
 
     // Handle usage issues based on permissions.
     if ($usage_issues && !$analysis['can_force_delete']) {
-      unset($form['actions']['submit']);
-      $form['usage_issues'] = [
+      // Entity Usage will show the warning, just show "cannot be undone".
+      $form['description'] = [
         '#type' => 'item',
-        '#markup' => $this->buildUsageIssuesMessage($analysis),
+        '#markup' => $this->messageBuilder->buildActionWarningMessage()['#markup'],
+        '#weight' => 0,
       ];
       return $form;
     }
 
     // Handle different scenarios based on usage and permissions.
     if ($usage_issues && $analysis['can_force_delete']) {
-      // Force delete users: Show usage info, hide button until confirmed.
-      $user_level = $this->messageBuilder->getUserLevel($analysis['can_delete_any_file'], $analysis['can_force_delete']);
-      $form['usage_info'] = [
+      // Entity Usage will show the main warning, just show "cannot be undone".
+      $form['description'] = [
         '#type' => 'item',
-        '#markup' => $this->messageBuilder->buildUsageMessage(
-          $analysis['files_with_usage'],
-          $user_level,
-          TRUE
-        )['#markup'],
-        '#weight' => -10,
+        '#markup' => $this->messageBuilder->buildActionWarningMessage()['#markup'],
+        '#weight' => 0,
       ];
       $form = $this->addForceDeleteOptions($form, $analysis);
     }
@@ -307,35 +303,21 @@ class YsMediaDeleteMultipleForm extends DeleteMultipleForm {
    *   The formatted message.
    */
   protected function buildUsageIssuesMessage(array $analysis): string {
-    $safe_count = $analysis['accessible_count'] - $analysis['files_with_usage'];
-    $user_level = $this->messageBuilder->getUserLevel($analysis['can_delete_any_file'], $analysis['can_force_delete']);
-
     $messages = [
+      '<strong>Warning:</strong> ',
       $this->formatPlural(
         $analysis['files_with_usage'],
-        'Cannot delete: @count media item is used in other locations on the site.',
-        'Cannot delete: @count media items are used in other locations on the site.'
+        '@count media item is used in other locations on the site.',
+        '@count media items are used in other locations on the site.'
       ),
     ];
 
-    // Add user-level specific guidance using the consistent messaging.
-    $additional_message = match ($user_level) {
-      'site_admin' => $this->t('Remove references first, or contact a platform administrator for force deletion.'),
-      'platform_admin' => $this->t('Use force delete option below to override.'),
-      default => $this->t('Please remove those references first, then try again.'),
-    };
-    $messages[] = $additional_message;
+    $messages[] = "We strongly recommend using file usage to ensure they're not associated with any blocks before deleting.";
 
-    if ($safe_count > 0) {
-      $messages[] = $this->formatPlural(
-        $safe_count,
-        'Only @count media item can be safely deleted.',
-        'Only @count media items can be safely deleted.'
-      );
-      $messages[] = 'Please adjust your selection to exclude media items that are in use.';
-    }
+    // Add the standard "cannot be undone" warning.
+    $undone_message = $this->messageBuilder->buildActionWarningMessage();
 
-    return '<div class="messages messages--error">' . implode(' ', $messages) . '</div>';
+    return '<div class="messages messages--warning">' . implode(' ', $messages) . '</div>' . $undone_message['#markup'];
   }
 
   /**
@@ -392,26 +374,13 @@ class YsMediaDeleteMultipleForm extends DeleteMultipleForm {
    *   The modified form array.
    */
   protected function addForceDeleteOptions(array $form, array $analysis): array {
-    // Hide submit button until force delete is confirmed.
-    $form['actions']['submit']['#states'] = [
-      'visible' => [
-        ':input[name="force_delete_bulk"]' => ['checked' => TRUE],
-      ],
-    ];
-
-    // Add force delete warning (matching single form pattern).
-    $form['force_delete_warning'] = [
-      '#type' => 'item',
-      '#markup' => $this->buildForceDeleteWarning($analysis),
-      '#weight' => 5,
-    ];
-
+    // Entity Usage will show the main warning, no need for duplicate.
     // Add confirmation checkbox.
     $form['force_delete_bulk'] = [
       '#type' => 'checkbox',
       '#default_value' => FALSE,
-      '#title' => $this->t('Force delete files with usage'),
-      '#description' => $this->t('<strong>WARNING:</strong> Files will be permanently deleted immediately instead of being marked temporary. This may break other content that references these files. <strong>This action cannot be undone.</strong>'),
+      '#title' => $this->t('Delete files with usage'),
+      '#description' => $this->t('<strong>WARNING:</strong> Files will be marked as temporary for cron cleanup, bypassing usage checks. This may break other content that references these files. <strong>This action cannot be undone.</strong>'),
       '#weight' => 10,
     ];
 

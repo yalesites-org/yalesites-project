@@ -4,6 +4,6 @@ delete media files regardless of owner:
   restrict access: true
 
 force delete media files:
-  title: 'Force delete media files'
-  description: 'Allows users to force delete files attached to media entities even if they are used elsewhere. This bypasses all safety checks.'
+  title: 'Delete media files with usage'
+  description: 'Allows users to delete files attached to media entities even if they are used elsewhere. This bypasses usage safety checks.'
   restrict access: true
