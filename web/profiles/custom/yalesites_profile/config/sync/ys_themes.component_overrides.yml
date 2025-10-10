@@ -211,6 +211,14 @@ reference_card:
       featured: Featured
       non-featured: Non-featured
     default: featured
+  field_style_color:
+    values:
+      one: One
+      two: Two
+      three: Three
+      four: Four
+      five: Five
+    default: one
 tile:
   field_style_color:
     values:
