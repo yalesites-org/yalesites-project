@@ -13,10 +13,6 @@ dependencies:
     - markup
     - maxlength
     - text
-id: block_content.event_list.default
-targetEntityType: block_content
-bundle: event_list
-mode: default
 third_party_settings:
   field_group:
     group_block_tabs:
@@ -54,7 +50,7 @@ third_party_settings:
         open: true
         weight: -10
     group_design_tab:
-      children: []
+      children: {  }
       label: Design
       region: content
       parent_name: group_block_tabs
@@ -68,7 +64,7 @@ third_party_settings:
         description: ''
         required_fields: false
     group_advanced_tab:
-      children: []
+      children: {  }
       label: Advanced
       region: content
       parent_name: group_block_tabs
@@ -81,6 +77,10 @@ third_party_settings:
         formatter: closed
         description: ''
         required_fields: false
+id: block_content.event_list.default
+targetEntityType: block_content
+bundle: event_list
+mode: default
 content:
   field_heading:
     type: text_textfield

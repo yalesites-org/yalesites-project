@@ -16,10 +16,6 @@ dependencies:
     - paragraphs
     - paragraphs_features
     - text
-id: block_content.custom_cards.default
-targetEntityType: block_content
-bundle: custom_cards
-mode: default
 third_party_settings:
   field_group:
     group_block_tabs:
@@ -58,7 +54,7 @@ third_party_settings:
         open: true
         weight: -10
     group_design_tab:
-      children: []
+      children: {  }
       label: Design
       region: content
       parent_name: group_block_tabs
@@ -72,7 +68,7 @@ third_party_settings:
         description: ''
         required_fields: false
     group_advanced_tab:
-      children: []
+      children: {  }
       label: Advanced
       region: content
       parent_name: group_block_tabs
@@ -85,6 +81,10 @@ third_party_settings:
         formatter: closed
         description: ''
         required_fields: false
+id: block_content.custom_cards.default
+targetEntityType: block_content
+bundle: custom_cards
+mode: default
 content:
   field_cards:
     type: paragraphs
