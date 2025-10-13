@@ -7,6 +7,7 @@ dependencies:
     - field.field.block_content.reference_card.field_content_ref
     - field.field.block_content.reference_card.field_instructions
     - field.field.block_content.reference_card.field_show_teaser_lead_in
+    - field.field.block_content.reference_card.field_style_color
     - field.field.block_content.reference_card.field_style_variation
   module:
     - options
@@ -31,6 +32,13 @@ content:
       format: boolean
       format_custom_false: ''
       format_custom_true: ''
+    third_party_settings: {  }
+    weight: 3
+    region: content
+  field_style_color:
+    type: list_key
+    label: hidden
+    settings: {  }
     third_party_settings: {  }
     weight: 2
     region: content

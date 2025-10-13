@@ -1,0 +1,21 @@
+uuid: f2260e53-7510-4200-88ee-a0a9759e1e78
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.reference_card
+    - field.storage.block_content.field_style_color
+  module:
+    - options
+id: block_content.reference_card.field_style_color
+field_name: field_style_color
+entity_type: block_content
+bundle: reference_card
+label: 'Background Color'
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ys_themes_default_value_function
+settings: {  }
+field_type: list_string

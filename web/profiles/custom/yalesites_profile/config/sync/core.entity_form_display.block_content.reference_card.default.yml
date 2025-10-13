@@ -7,6 +7,7 @@ dependencies:
     - field.field.block_content.reference_card.field_content_ref
     - field.field.block_content.reference_card.field_instructions
     - field.field.block_content.reference_card.field_show_teaser_lead_in
+    - field.field.block_content.reference_card.field_style_color
     - field.field.block_content.reference_card.field_style_variation
   module:
     - field_group
@@ -50,6 +51,7 @@ third_party_settings:
     group_design_tab:
       children:
         - field_style_variation
+        - field_style_color
         - field_show_teaser_lead_in
       label: Design
       region: content
@@ -102,10 +104,16 @@ content:
     third_party_settings: {  }
   field_show_teaser_lead_in:
     type: boolean_checkbox
-    weight: 2
+    weight: 3
     region: content
     settings:
       display_label: true
+    third_party_settings: {  }
+  field_style_color:
+    type: options_select
+    weight: 2
+    region: content
+    settings: {  }
     third_party_settings: {  }
   field_style_variation:
     type: options_select
