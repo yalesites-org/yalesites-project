@@ -18,12 +18,87 @@ dependencies:
     - field.field.block_content.grand_hero.field_text
   module:
     - allowed_formats
+    - field_group
     - linkit
     - markup
     - maxlength
     - media_library
     - media_library_edit
     - text
+third_party_settings:
+  field_group:
+    group_block_tabs:
+      children:
+        - group_content_tab
+        - group_style_tab
+        - group_advanced_tab
+      label: 'Block tabs'
+      region: content
+      parent_name: ''
+      weight: 0
+      format_type: tabs
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        direction: horizontal
+        width_breakpoint: 640
+    group_content_tab:
+      children:
+        - field_heading
+        - field_text
+        - field_link
+        - field_link_two
+        - field_media
+      label: Content
+      region: content
+      parent_name: group_block_tabs
+      weight: 1
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: closed
+        description: ''
+        required_fields: true
+        open: true
+        weight: -10
+    group_style_tab:
+      children:
+        - field_style_color
+        - field_style_position
+        - field_style_variation
+      label: Design
+      region: content
+      parent_name: group_block_tabs
+      weight: 2
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: closed
+        description: ''
+        required_fields: true
+    group_advanced_tab:
+      children:
+        - field_overlay_png
+        - field_replace_heading_with_image
+        - field_heading_level
+        - info
+      label: Advanced
+      region: content
+      parent_name: group_block_tabs
+      weight: 3
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: closed
+        description: ''
+        required_fields: false
 id: block_content.grand_hero.default
 targetEntityType: block_content
 bundle: grand_hero
@@ -31,7 +106,7 @@ mode: default
 content:
   field_heading:
     type: text_textfield
-    weight: 4
+    weight: 1
     region: content
     settings:
       size: 60
@@ -46,19 +121,19 @@ content:
         maxlength_js_enforce: false
   field_heading_level:
     type: options_select
-    weight: 11
+    weight: 1
     region: content
     settings: {  }
     third_party_settings: {  }
   field_instructions:
     type: markup
-    weight: 0
+    weight: -1
     region: content
     settings: {  }
     third_party_settings: {  }
   field_link:
     type: linkit
-    weight: 8
+    weight: 3
     region: content
     settings:
       placeholder_url: ''
@@ -68,7 +143,7 @@ content:
     third_party_settings: {  }
   field_link_two:
     type: linkit
-    weight: 9
+    weight: 4
     region: content
     settings:
       placeholder_url: ''
@@ -78,7 +153,7 @@ content:
     third_party_settings: {  }
   field_media:
     type: media_library_widget
-    weight: 2
+    weight: 5
     region: content
     settings:
       media_types:
@@ -89,7 +164,7 @@ content:
         show_edit: '1'
   field_overlay_png:
     type: media_library_widget
-    weight: 13
+    weight: 4
     region: content
     settings:
       media_types: {  }
@@ -99,32 +174,32 @@ content:
         edit_form_mode: default
   field_replace_heading_with_image:
     type: boolean_checkbox
-    weight: 12
+    weight: 5
     region: content
     settings:
       display_label: true
     third_party_settings: {  }
   field_style_color:
     type: options_select
-    weight: 5
+    weight: 1
     region: content
     settings: {  }
     third_party_settings: {  }
   field_style_position:
     type: options_select
-    weight: 10
+    weight: 2
     region: content
     settings: {  }
     third_party_settings: {  }
   field_style_variation:
     type: options_select
-    weight: 7
+    weight: 3
     region: content
     settings: {  }
     third_party_settings: {  }
   field_text:
     type: text_textarea
-    weight: 6
+    weight: 2
     region: content
     settings:
       rows: 3
@@ -139,7 +214,7 @@ content:
         maxlength_js_enforce: false
   info:
     type: string_textfield
-    weight: 1
+    weight: 3
     region: content
     settings:
       size: 60
