@@ -225,7 +225,6 @@ class ContentToLayoutBuilder extends ProcessPluginBase implements ContainerFacto
     return match ($type) {
       'image' => $this->createImageBlock($source),
       'text' => $this->createTextBlock($source, $component_definition),
-      'text_subheader' => $this->createTextSubheaderBlock($source, $component_definition),
       'video_banner' => $this->createVideoBannerBlock($source, $component_definition),
       default => NULL,
     };
@@ -262,42 +261,6 @@ class ContentToLayoutBuilder extends ProcessPluginBase implements ContainerFacto
 
     $text_block->save();
     return $text_block;
-  }
-
-  /**
-   * Creates a text block entity.
-   *
-   * This is not a block entity type, it's a composite text block. We compose
-   * the text value programatically.
-   *
-   * @param string $value
-   *   The text value.
-   * @param array $additional_args
-   *   Additional arguments.
-   *
-   * @return \Drupal\block_content\BlockContentInterface|null
-   *   The text block entity.
-   */
-  private function createTextSubheaderBlock(string $value, array $additional_args): ?BlockContentInterface {
-    $text = '<h3>' . $value . '</h3>';
-
-    if ($affiliation = $this->getComponentSourceValue('field_bio_points/0/value')) {
-      $text .= '<h4>' . $affiliation . '</h4>';
-    }
-
-    if ($term_id = $this->getComponentSourceValue('@field_tags')) {
-      /** @var \Drupal\taxonomy\TermInterface $series_term */
-      $series_term = $this->entityTypeManager
-        ->getStorage('taxonomy_term')
-        ->load($term_id);
-
-      if ($series_term) {
-        $series_term = $series_term->getName();
-        $text .= '<p>' . $series_term . '</p>';
-      }
-    }
-
-    return $this->createTextBlock($text, $additional_args);
   }
 
   /**
@@ -405,6 +368,22 @@ class ContentToLayoutBuilder extends ProcessPluginBase implements ContainerFacto
     }
 
     return $url;
+  }
+
+  /**
+   * Replaces straight quotes with curly quotes.
+   *
+   * @param string $text
+   *   The text to replace.
+   *
+   * @return string
+   *   The replaced text.
+   */
+  public static function replaceStraightQuotes(string $text): string {
+    $text = preg_replace('/"([^\"]*)"/', '“$1”', $text);
+    $text = preg_replace("/'([^']*)'/", '‘$1’', $text);
+
+    return $text;
   }
 
   /**

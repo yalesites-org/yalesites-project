@@ -103,3 +103,54 @@ function ys_whc_migrate_update_10101(): void {
     }
   }
 }
+
+/**
+ * Replaces duplicated series with migrated series.
+ */
+function ys_whc_migrate_update_10102(): void {
+  $database = \Drupal::database();
+  // When we talk about series, we're referring to the D7 series vocabulary. In
+  // YS D11, they were migrated into the tags vocabulary.
+  $migrated_series_query = $database->select('migrate_map_whc_taxonomy_series', 'mts');
+  $migrated_series_query->addField('mts', 'sourceid1', 'tid');
+  $migrated_series_query->join('taxonomy_term_field_data', 'tfd', 'tfd.tid = mts.sourceid1');
+  $migrated_series_query->addField('tfd', 'name');
+  $migrated_series = $migrated_series_query->execute()->fetchAll();
+  $migrated_series_tids = array_column($migrated_series, 'tid');
+  $migrated_series_name = array_column($migrated_series, 'name');
+  $migrated_series_map = array_combine($migrated_series_name, $migrated_series_tids);
+
+  $duplicated_series_tids = \Drupal::entityQuery('taxonomy_term')
+    ->condition('vid', 'tags')
+    ->condition('tid', $migrated_series_tids, 'NOT IN')
+    ->condition('name', $migrated_series_name, 'IN')
+    ->accessCheck(FALSE)
+    ->execute();
+
+  /** @var \Drupal\taxonomy\TermInterface[] $duplicated_series_entities */
+  $duplicated_series_entities = \Drupal::entityTypeManager()
+    ->getStorage('taxonomy_term')
+    ->loadMultiple($duplicated_series_tids);
+
+  /** @var \Drupal\node\NodeInterface[] $nodes_with_duplicated_series */
+  $nodes_with_duplicated_series = \Drupal::entityTypeManager()
+    ->getStorage('node')
+    ->loadByProperties(['field_tags' => $duplicated_series_tids]);
+
+  foreach ($nodes_with_duplicated_series as $node) {
+    $replaced_series_target_ids = array_map(
+      function (array $target_id) use ($migrated_series_map, $duplicated_series_entities) {
+        $series_name = $duplicated_series_entities[$target_id['target_id']]->getName();
+        $target_id['target_id'] = $migrated_series_map[$series_name];
+        return $target_id;
+      },
+      $node->get('field_tags')->getValue()
+    );
+    $node->set('field_tags', $replaced_series_target_ids);
+    $node->save();
+  }
+
+  foreach ($duplicated_series_entities as $duplicated_series_entity) {
+    $duplicated_series_entity->delete();
+  }
+}

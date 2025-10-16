@@ -26,6 +26,8 @@ process:
         delimiter: ' | '
     - plugin: callback
       callable: strip_tags
+    - plugin: callback
+      callable: '\Drupal\ys_whc_migrate\Plugin\migrate\process\ContentToLayoutBuilder::replaceStraightQuotes'
   field_teaser_media/0/target_id:
     plugin: migration_lookup
     migration: whc_node_images
@@ -37,10 +39,12 @@ process:
       source: field_series/0/target_id
       not_equals: true
       value:
+        - 3  # Shulman Lectures in Science and the Humanities
         - 14 # Franke Visiting Fellows
         - 15 # Finzi-Contini Lectures
-        # - 16 # Franke Lectures in the Humanities
-        # - 17 # Tanner Lectures on Human Values
+        - 16 # Franke Lectures in the Humanities
+        - 17 # Tanner Lectures on Human Values
+        - 32 # Films at the Whitney
         - 48 # Whitney Publishing Project
         - 56 # Humanities Now
       method: process
@@ -54,32 +58,7 @@ process:
     migration: whc_taxonomy_series
     source: field_series/0/target_id
     no_stub: true
-  _movie_poster:
-    - plugin: skip_on_value
-      source: field_series/0/target_id
-      not_equals: true
-      value: 32 # Films at the Whitney
-      method: process
-    - plugin: migration_lookup
-      migration: whc_node_images
-      source: field_event_slide_image/0/fid
-  _body:
-    - plugin: skip_on_value
-      source: field_series/0/target_id
-      not_equals: true
-      value:
-        - 3  # Shulman Lectures in Science and the Humanities
-        - 16 # Franke Lectures in the Humanities
-        - 17 # Tanner Lectures on Human Values
-        - 32 # Films at the Whitney
-      method: process
-    - plugin: get
-      source: body/0/value
   _tag_name:
-    - plugin: skip_on_condition
-      condition: not:empty
-      source: field_lecturer/0/value
-      method: process
     - plugin: skip_on_value
       source: field_series/0/target_id
       not_equals: true
@@ -103,12 +82,6 @@ process:
       body:
         id: layout_onecol
         components:
-          - type: text_subheader
-            source: field_lecturer/0/value
-          - type: text
-            source: '@_body'
-          - type: image
-            source: '@_movie_poster'
           - type: text
             source: '@_tag_name'
             wrap_value: true
