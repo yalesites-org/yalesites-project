@@ -6,6 +6,6 @@ services:
       - {name: event_subscriber}
   ys_node_access.default_tree_manipulators:
     class: Drupal\ys_node_access\Menu\YsNodeAccessLinkTreeManipulator
-    arguments: ['@access_manager', '@current_user', '@entity_type.manager', '@module_handler', '@config.factory']
+    arguments: ['@access_manager', '@current_user', '@entity_type.manager', '@module_handler', '@database']
     decorates: menu.default_tree_manipulators
     decoration_priority: 100
