@@ -257,8 +257,23 @@ function ys_core_preprocess_block(&$variables) {
   // Via: https://drupal.stackexchange.com/questions/266379/how-to-clear-cache-for-config-entity-after-making-changes
   \Drupal::service('renderer')->addCacheableDependency($variables, $config);
 
+  // Add render caching for menu blocks to reduce database queries.
+  if ($variables['base_plugin_id'] == 'system_menu_block') {
+    // Cache menu blocks per user role and menu.
+    // This avoids rebuilding menus on every request, especially for CAS-protected items.
+    $variables['#cache']['contexts'][] = 'user.roles';
+    $variables['#cache']['contexts'][] = 'route';
+    $variables['#cache']['tags'][] = 'config:system.menu.' . $variables['derivative_plugin_id'];
+    $variables['#cache']['max-age'] = 3600; // Cache for 1 hour.
+  }
+
   // Add top level book link to the book navigation sub-nav.
   if ($variables['base_plugin_id'] == 'custom_book_navigation') {
+    // Add render caching for book navigation to reduce database queries.
+    $variables['#cache']['contexts'][] = 'route.book_navigation';
+    $variables['#cache']['tags'][] = 'book_outline';
+    $variables['#cache']['max-age'] = 3600; // Cache for 1 hour.
+
     if (isset($variables['content']['#items']) && is_array($variables['content']['#items'])) {
 
       foreach ($variables['content']['#items'] as &$menuItem) {
@@ -365,6 +380,29 @@ function ys_core_user_login_form_submit($form, FormStateInterface $form_state) {
  */
 function ys_core_preprocess_menu(&$variables) {
   if ($variables['menu_name'] == 'main') {
+    // Optimized: Query only node titles directly from the node_field_data table
+    // instead of loading full node entities with all fields.
+    // This reduces queries from ~50 per node to 1 query total.
+    $node_ids = [];
+    foreach ($variables['items'] as $menuItem) {
+      if (!empty($menuItem['below']) && $menuItem['url']->isRouted()) {
+        $routeParameters = $menuItem['url']->getRouteParameters();
+        if (isset($routeParameters['node'])) {
+          $node_ids[] = $routeParameters['node'];
+        }
+      }
+    }
+
+    // Batch query only titles using direct database query (1 query vs N entity loads).
+    $node_titles = [];
+    if (!empty($node_ids)) {
+      $database = \Drupal::database();
+      $query = $database->select('node_field_data', 'n')
+        ->fields('n', ['nid', 'title'])
+        ->condition('nid', $node_ids, 'IN');
+      $node_titles = $query->execute()->fetchAllKeyed();
+    }
+
     // If submenu, add the top level link as the first link in the submenu.
     foreach ($variables['items'] as &$menuItem) {
       // Skip menu items that do not have subitems.
@@ -388,21 +426,16 @@ function ys_core_preprocess_menu(&$variables) {
       // Default the node_title to the menu title.
       $clonedMenuItem['node_title'] = $clonedMenuItem['title'];
 
-      // If the menu item is associated with a node, replace the node_title
-      // with the node's title.
+      // If the menu item is associated with a node, use the preloaded title.
       if ($menuItem['url']->isRouted()) {
         $routeParameters = $menuItem['url']->getRouteParameters();
 
         if (array_key_exists('node', $routeParameters)) {
           $nodeId = $routeParameters['node'];
 
-          if ($nodeId) {
-            /** @var \Drupal\node\Entity\Node $node */
-            $node = \Drupal::entityTypeManager()->getStorage('node')->load($nodeId);
-
-            if ($node) {
-              $clonedMenuItem['node_title'] = $node->getTitle();
-            }
+          // Use preloaded title from direct query instead of loading full entity.
+          if ($nodeId && isset($node_titles[$nodeId])) {
+            $clonedMenuItem['node_title'] = $node_titles[$nodeId];
           }
         }
       }

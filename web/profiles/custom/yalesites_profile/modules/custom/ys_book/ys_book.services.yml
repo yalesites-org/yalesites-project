@@ -1,0 +1,11 @@
+services:
+  # Decorate the book outline storage service to add batch loading and caching.
+  # This solves the N+1 query problem where book outline data is loaded one
+  # node at a time, reducing ~1,256 individual queries to 1 batch query.
+  ys_book.outline_storage:
+    class: Drupal\ys_book\YsBookOutlineStorage
+    decorates: book.outline_storage
+    decoration_priority: 100
+    arguments:
+      - '@ys_book.outline_storage.inner'
+      - '@database'

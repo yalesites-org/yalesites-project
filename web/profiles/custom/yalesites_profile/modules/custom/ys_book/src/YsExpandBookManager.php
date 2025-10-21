@@ -33,6 +33,20 @@ class YsExpandBookManager extends ExpandBookManager {
   protected $routeMatch;
 
   /**
+   * Static cache for preloaded book nodes.
+   *
+   * @var array
+   */
+  protected static $bookNodesCache = [];
+
+  /**
+   * Flag to track if book nodes have been preloaded.
+   *
+   * @var array
+   */
+  protected static $bookNodesPreloaded = [];
+
+  /**
    * Constructs an ExpandBookManager object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -188,17 +202,73 @@ class YsExpandBookManager extends ExpandBookManager {
     // Build the book tree.
     $data = $this->doBookTreeBuild($bid, $parameters);
     // Translate links but skip access filtering that removes CAS-protected
-    // nodes.
-    $this->doBookTreeTranslateLinks($data['tree']);
+    // nodes. Pass $bid to enable batch loading.
+    $this->doBookTreeTranslateLinks($data['tree'], $bid);
     return $data['tree'];
+  }
+
+  /**
+   * Preload all book nodes from tree to avoid N+1 queries.
+   *
+   * Walks the tree and batch loads all nodes at once.
+   *
+   * @param array $tree
+   *   The book tree.
+   * @param int $bid
+   *   The book ID for cache keying.
+   */
+  protected function preloadBookNodes(array &$tree, $bid) {
+    // Check if we've already preloaded nodes for this book.
+    if (isset(static::$bookNodesPreloaded[$bid])) {
+      return;
+    }
+
+    // Collect all node IDs from the tree.
+    $nids = [];
+    $this->collectNodeIds($tree, $nids);
+
+    // Batch load all nodes at once.
+    if (!empty($nids)) {
+      $nodes = $this->entityTypeManager->getStorage('node')->loadMultiple($nids);
+      foreach ($nodes as $nid => $node) {
+        static::$bookNodesCache[$nid] = $node;
+      }
+    }
+
+    static::$bookNodesPreloaded[$bid] = TRUE;
+  }
+
+  /**
+   * Recursively collect node IDs from book tree.
+   *
+   * @param array $tree
+   *   The book tree.
+   * @param array $nids
+   *   Array to collect node IDs (passed by reference).
+   */
+  protected function collectNodeIds(array $tree, array &$nids) {
+    foreach ($tree as $item) {
+      if (isset($item['link']['nid'])) {
+        $nids[$item['link']['nid']] = $item['link']['nid'];
+      }
+      if (!empty($item['below'])) {
+        $this->collectNodeIds($item['below'], $nids);
+      }
+    }
   }
 
   /**
    * Translate book links without access filtering.
    *
    * Similar to doBookTreeCheckAccess but doesn't filter out inaccessible items.
+   * Now preloads all nodes before translation to avoid N+1 queries.
    */
-  protected function doBookTreeTranslateLinks(&$tree) {
+  protected function doBookTreeTranslateLinks(&$tree, $bid = NULL) {
+    // Preload all nodes in the tree before translation.
+    if ($bid !== NULL) {
+      $this->preloadBookNodes($tree, $bid);
+    }
+
     $new_tree = [];
     foreach ($tree as $key => $v) {
       $item = &$tree[$key]['link'];
@@ -220,13 +290,26 @@ class YsExpandBookManager extends ExpandBookManager {
 
   /**
    * {@inheritdoc}
+   *
+   * Performance optimization: Uses preloaded nodes from static cache instead
+   * of loading individually. Resolves N+1 query problem in book navigation.
    */
   public function bookLinkTranslate(&$link) {
     // Check access via the api, since the query node_access tag doesn't check
     // for unpublished nodes.
-    // @todo load the nodes en-mass rather than individually.
-    // @see https://www.drupal.org/project/drupal/issues/2470896
-    $node = $this->entityTypeManager->getStorage('node')->load($link['nid']);
+    // Performance improvement: Check static cache first before loading.
+    $nid = $link['nid'];
+    if (isset(static::$bookNodesCache[$nid])) {
+      $node = static::$bookNodesCache[$nid];
+    }
+    else {
+      // Fallback to individual load if not in cache (shouldn't happen after
+      // preload, but provides safety).
+      $node = $this->entityTypeManager->getStorage('node')->load($nid);
+      if ($node) {
+        static::$bookNodesCache[$nid] = $node;
+      }
+    }
 
     // Override default access check behavior. By default, content that
     // fails an access check will not be included in the book tree. We want to
