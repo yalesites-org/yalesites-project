@@ -1330,6 +1330,7 @@ if ($source_extension === 'png' || $source_mime === 'image/png') {
   $arguments->add('-define png:preserve-colormap=true');
   $arguments->add('-define png:exclude-chunks=date');
 }
+}
 
 /**
  * Implements hook_entity_form_display_alter().
