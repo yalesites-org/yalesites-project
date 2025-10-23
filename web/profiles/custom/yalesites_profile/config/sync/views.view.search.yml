@@ -243,6 +243,7 @@ display:
               page: search_result
               post: search_result
               profile: search_result
+              resource: search_result
       query:
         type: search_api_query
         options:
@@ -265,7 +266,10 @@ display:
           content_plural: '<div class="search-results--summary">@total search results</div>'
           plural_count_token: '@total'
       footer: {  }
-      display_extenders: {  }
+      display_extenders:
+        metatag_display_extender:
+          metatags: {  }
+          tokenize: false
     cache_metadata:
       max-age: -1
       contexts:

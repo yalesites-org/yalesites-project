@@ -1,0 +1,19 @@
+uuid: 55e64b23-cf58-41cc-99d8-83cd99092cc9
+langcode: en
+status: true
+dependencies:
+  module:
+    - block_content
+    - ys_views_content_resources
+id: block_content.field_view_resource_params
+field_name: field_view_resource_params
+entity_type: block_content
+type: views_content_resources_params
+settings: {  }
+module: ys_views_content_resources
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

@@ -1,0 +1,24 @@
+uuid: 79595aac-6b1a-44a0-b74c-8177e2b651dc
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_publish_date
+    - node.type.resource
+  module:
+    - datetime
+id: node.resource.field_publish_date
+field_name: field_publish_date
+entity_type: node
+bundle: resource
+label: 'Resource Publication Date'
+description: "Please include a full date, even if you only want a 'Year' or 'Month and Year' format for display. This full date format is necessary for sorting in views, so choose an arbitrary approximate date if you do not have an actual complete date."
+required: false
+translatable: false
+default_value:
+  -
+    default_date_type: now
+    default_date: now
+default_value_callback: ''
+settings: {  }
+field_type: datetime

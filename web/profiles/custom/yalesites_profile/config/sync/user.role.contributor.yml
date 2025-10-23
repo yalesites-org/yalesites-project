@@ -27,6 +27,7 @@ dependencies:
     - block_content.type.quick_links
     - block_content.type.quote_callout
     - block_content.type.reference_card
+    - block_content.type.resource_view
     - block_content.type.tabs
     - block_content.type.text
     - block_content.type.tiles
@@ -40,6 +41,7 @@ dependencies:
     - core.entity_view_display.node.page.default
     - core.entity_view_display.node.post.default
     - core.entity_view_display.node.profile.default
+    - core.entity_view_display.node.resource.default
     - media.type.background_video
     - media.type.document
     - media.type.embed
@@ -49,12 +51,14 @@ dependencies:
     - node.type.page
     - node.type.post
     - node.type.profile
+    - node.type.resource
     - taxonomy.vocabulary.affiliation
     - taxonomy.vocabulary.audience
     - taxonomy.vocabulary.custom_vocab
     - taxonomy.vocabulary.event_category
     - taxonomy.vocabulary.page_category
     - taxonomy.vocabulary.post_category
+    - taxonomy.vocabulary.resource_category
     - taxonomy.vocabulary.tags
     - workflows.workflow.editorial
     - workflows.workflow.events
@@ -111,10 +115,12 @@ permissions:
   - 'clone page content'
   - 'clone post content'
   - 'clone profile content'
+  - 'clone resource content'
   - 'configure editable event node layout overrides'
   - 'configure editable page node layout overrides'
   - 'configure editable post node layout overrides'
   - 'configure editable profile node layout overrides'
+  - 'configure editable resource node layout overrides'
   - 'create accordion block content'
   - 'create and edit custom blocks'
   - 'create background_video media'
@@ -149,6 +155,8 @@ permissions:
   - 'create quick_links block content'
   - 'create quote_callout block content'
   - 'create reference_card block content'
+  - 'create resource content'
+  - 'create resource_view block content'
   - 'create reusable blocks'
   - 'create tabs block content'
   - 'create terms in affiliation'
@@ -157,6 +165,7 @@ permissions:
   - 'create terms in event_category'
   - 'create terms in page_category'
   - 'create terms in post_category'
+  - 'create terms in resource_category'
   - 'create terms in tags'
   - 'create text block content'
   - 'create tiles block content'
@@ -221,6 +230,9 @@ permissions:
   - 'delete any quote_callout block content revisions'
   - 'delete any reference_card block content'
   - 'delete any reference_card block content revisions'
+  - 'delete any resource content'
+  - 'delete any resource_view block content'
+  - 'delete any resource_view block content revisions'
   - 'delete any tabs block content'
   - 'delete any tabs block content revisions'
   - 'delete any text block content'
@@ -244,6 +256,7 @@ permissions:
   - 'delete own page content'
   - 'delete own post content'
   - 'delete own profile content'
+  - 'delete own resource content'
   - 'delete terms in affiliation'
   - 'delete terms in audience'
   - 'delete terms in custom_vocab'
@@ -283,6 +296,8 @@ permissions:
   - 'edit any quick_links block content'
   - 'edit any quote_callout block content'
   - 'edit any reference_card block content'
+  - 'edit any resource content'
+  - 'edit any resource_view block content'
   - 'edit any tabs block content'
   - 'edit any text block content'
   - 'edit any tiles block content'
@@ -302,6 +317,7 @@ permissions:
   - 'edit own page content'
   - 'edit own post content'
   - 'edit own profile content'
+  - 'edit own resource content'
   - 'edit own video media'
   - 'edit own webform submission'
   - 'edit terms in affiliation'
@@ -310,6 +326,7 @@ permissions:
   - 'edit terms in event_category'
   - 'edit terms in page_category'
   - 'edit terms in post_category'
+  - 'edit terms in resource_category'
   - 'edit terms in tags'
   - 'mark as hidden in editoria11y'
   - 'override all sticky option'
@@ -339,6 +356,7 @@ permissions:
   - 'revert any quick_links block content revisions'
   - 'revert any quote_callout block content revisions'
   - 'revert any reference_card block content revisions'
+  - 'revert any resource_view block content revisions'
   - 'revert any tabs block content revisions'
   - 'revert any text block content revisions'
   - 'revert any tiles block content revisions'
@@ -352,6 +370,7 @@ permissions:
   - 'revert page revisions'
   - 'revert post revisions'
   - 'revert profile revisions'
+  - 'revert resource revisions'
   - 'update any media'
   - 'update media'
   - 'use editorial transition create_new_draft'
@@ -383,6 +402,7 @@ permissions:
   - 'view any quick_links block content history'
   - 'view any quote_callout block content history'
   - 'view any reference_card block content history'
+  - 'view any resource_view block content history'
   - 'view any tabs block content history'
   - 'view any text block content history'
   - 'view any tiles block content history'
@@ -403,6 +423,7 @@ permissions:
   - 'view page revisions'
   - 'view post revisions'
   - 'view profile revisions'
+  - 'view resource revisions'
   - 'view the administration theme'
   - 'view unpublished paragraphs'
   - 'view vocabulary labels'

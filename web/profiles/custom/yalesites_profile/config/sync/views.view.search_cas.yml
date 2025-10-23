@@ -245,6 +245,7 @@ display:
               page: search_result
               post: search_result
               profile: search_result
+              resource: search_result
       query:
         type: search_api_query
         options:
