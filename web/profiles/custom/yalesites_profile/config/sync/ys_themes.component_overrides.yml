@@ -12,6 +12,19 @@ callout:
       left: Left
       center: Center
     default: center
+button_link:
+  field_button_alignment:
+    values:
+      left: Left
+      center: Center
+      right: Right
+    default: left
+  field_button_style_consistency:
+    values:
+      both_filled: 'Both Filled'
+      both_outline: 'Both Outline'
+      mixed: 'Mixed (First Filled, Second Outline)'
+    default: mixed
 cta_banner:
   field_style_color:
     values:
@@ -27,18 +40,6 @@ cta_banner:
       left: Left
       right: Right
     default: bottom
-  field_button_alignment:
-    values:
-      left: Left
-      center: Center
-      right: Right
-    default: right
-  field_button_style_consistency:
-    values:
-      both_primary: 'Both Primary'
-      both_secondary: 'Both Secondary'
-      mixed: 'Mixed (Default)'
-    default: mixed
 pull_quote:
   field_style_variation:
     values:
