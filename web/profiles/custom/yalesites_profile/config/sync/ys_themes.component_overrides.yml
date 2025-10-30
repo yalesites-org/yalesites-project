@@ -23,8 +23,9 @@ button_link:
     values:
       both_filled: 'Both Filled'
       both_outline: 'Both Outline'
-      mixed: 'Mixed (First Filled, Second Outline)'
-    default: mixed
+      filled_outline: 'Filled, Outline'
+      outline_filled: 'Outline, Filled'
+    default: filled_outline
 cta_banner:
   field_style_color:
     values:
