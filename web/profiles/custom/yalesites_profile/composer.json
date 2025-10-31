@@ -195,6 +195,9 @@
       },
       "drupal/cas": {
         "Fix coffee url_generator.non_bubbling override for CAS logouts https://www.drupal.org/project/cas/issues/2948185": "https://www.drupal.org/files/issues/cas_logout_error-2948185-2.patch"
+      },
+      "drupal/field_group": {
+        "Fix HTML5 validation presents submission in tabs: https://www.drupal.org/project/field_group/issues/2969051": "https://www.drupal.org/files/issues/2024-11-27/2969051-170.patch"
       }
     }
   }
