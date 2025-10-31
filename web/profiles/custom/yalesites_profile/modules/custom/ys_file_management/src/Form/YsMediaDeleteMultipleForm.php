@@ -381,17 +381,10 @@ class YsMediaDeleteMultipleForm extends DeleteMultipleForm {
 
       // Process file if should delete.
       if ($file && $should_delete_files) {
-        $can_process = $this->canProcessFile($file);
-
-        if ($can_process) {
-          // Delete file (always for standard users,
-          // optional for platform admins).
-          $this->mediaFileHandler->processFile($file, TRUE, TRUE);
-          $file_processed_count++;
-        }
-        else {
-          $file_skipped_count++;
-        }
+        // Delete file (always for site admins,
+        // optional for platform admins).
+        $this->mediaFileHandler->processFile($file, TRUE, TRUE);
+        $file_processed_count++;
       }
     }
 
@@ -400,20 +393,6 @@ class YsMediaDeleteMultipleForm extends DeleteMultipleForm {
 
     // Add status messages.
     $this->addCompletionMessages($deleted_count, $file_processed_count, $file_skipped_count);
-  }
-
-  /**
-   * Determines if a file can be processed based on permissions.
-   *
-   * @param \Drupal\file\FileInterface $file
-   *   The file entity.
-   *
-   * @return bool
-   *   TRUE if file can be processed, FALSE otherwise.
-   */
-  protected function canProcessFile(FileInterface $file): bool {
-    // Check basic file access.
-    return $file->access('delete', $this->currentUser);
   }
 
   /**
