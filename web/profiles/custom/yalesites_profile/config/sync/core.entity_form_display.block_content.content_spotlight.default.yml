@@ -24,12 +24,92 @@ dependencies:
     - allowed_formats
     - field_group
     - hide_revision_field
+    - field_group
+    - hide_revision_field
     - linkit
     - markup
     - maxlength
     - media_library
     - media_library_edit
     - text
+third_party_settings:
+  field_group:
+    group_block_tabs:
+      children:
+        - group_content_tab
+        - group_design_tab
+        - group_advanced_tab
+      label: 'Block tabs'
+      region: content
+      parent_name: ''
+      weight: 0
+      format_type: tabs
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        direction: horizontal
+        width_breakpoint: 640
+    group_content_tab:
+      children:
+        - field_heading
+        - field_subheading
+        - field_text
+        - field_caption
+        - field_media
+        - field_link
+        - field_link_two
+      label: Content
+      region: content
+      parent_name: group_block_tabs
+      weight: 1
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: closed
+        description: ''
+        required_fields: false
+        open: true
+        weight: -10
+    group_design_tab:
+      children:
+        - field_style_alignment
+        - field_style_position
+        - field_style_width
+        - field_style_variation
+        - field_style_color
+        - field_focus
+      label: Design
+      region: content
+      parent_name: group_block_tabs
+      weight: 2
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: closed
+        description: ''
+        required_fields: false
+    group_advanced_tab:
+      children:
+        - field_heading_level
+        - info
+        - revision_log
+      label: Advanced
+      region: content
+      parent_name: group_block_tabs
+      weight: 3
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: closed
+        description: ''
+        required_fields: false
 third_party_settings:
   field_group:
     group_block_tabs:
@@ -116,6 +196,7 @@ content:
   field_caption:
     type: text_textarea
     weight: 4
+    weight: 4
     region: content
     settings:
       rows: 2
@@ -131,11 +212,13 @@ content:
   field_focus:
     type: options_select
     weight: 6
+    weight: 6
     region: content
     settings: {  }
     third_party_settings: {  }
   field_heading:
     type: text_textfield
+    weight: 1
     weight: 1
     region: content
     settings:
@@ -152,11 +235,13 @@ content:
   field_heading_level:
     type: options_select
     weight: 1
+    weight: 1
     region: content
     settings: {  }
     third_party_settings: {  }
   field_instructions:
     type: markup
+    weight: -1
     weight: -1
     region: content
     settings: {  }
@@ -188,6 +273,7 @@ content:
   field_media:
     type: media_library_widget
     weight: 5
+    weight: 5
     region: content
     settings:
       media_types: {  }
@@ -203,11 +289,13 @@ content:
   field_style_alignment:
     type: options_select
     weight: 1
+    weight: 1
     region: content
     settings: {  }
     third_party_settings: {  }
   field_style_color:
     type: options_select
+    weight: 5
     weight: 5
     region: content
     settings: {  }
@@ -215,11 +303,13 @@ content:
   field_style_position:
     type: options_select
     weight: 2
+    weight: 2
     region: content
     settings: {  }
     third_party_settings: {  }
   field_style_variation:
     type: options_select
+    weight: 4
     weight: 4
     region: content
     settings: {  }
@@ -227,11 +317,13 @@ content:
   field_style_width:
     type: options_select
     weight: 3
+    weight: 3
     region: content
     settings: {  }
     third_party_settings: {  }
   field_subheading:
     type: text_textfield
+    weight: 2
     weight: 2
     region: content
     settings:
@@ -248,6 +340,7 @@ content:
   field_text:
     type: text_textarea
     weight: 3
+    weight: 3
     region: content
     settings:
       rows: 5
@@ -263,11 +356,26 @@ content:
   info:
     type: string_textfield
     weight: 3
+    weight: 3
     region: content
     settings:
       size: 60
       placeholder: ''
     third_party_settings: {  }
+  revision_log:
+    type: hide_revision_field_log_widget
+    weight: 4
+    region: content
+    settings:
+      rows: 5
+      placeholder: ''
+      show: true
+      default: ''
+      permission_based: false
+      allow_user_settings: true
+      hide_revision: false
+    third_party_settings: {  }
+hidden: {  }
   revision_log:
     type: hide_revision_field_log_widget
     weight: 4
