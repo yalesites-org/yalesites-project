@@ -195,10 +195,15 @@ class YsMediaDeleteForm extends MediaDeleteForm {
     $media = $this->getEntity();
     $file = $this->getFile($media);
 
-    // Check if user has permission and requested file deletion.
-    $can_delete_file = $this->currentUser
+    // Check if user is platform admin.
+    $is_platform_admin = $this->currentUser
       ->hasPermission('force delete media files');
-    $delete_file_requested = $form_state->getValue('delete_file');
+
+    // Determine if file should be deleted.
+    // Standard users: always delete file.
+    // Platform admins: delete if checkbox is checked (default: checked).
+    $should_delete_file = !$is_platform_admin ||
+      $form_state->getValue('delete_file', TRUE);
 
     // Store a better redirect URL before deletion.
     $redirect_url = $this->mediaFileHandler->getRedirectUrl();
@@ -215,9 +220,10 @@ class YsMediaDeleteForm extends MediaDeleteForm {
     // Add confirmation message.
     $this->messenger()->addMessage($success_message['#markup']);
 
-    // Handle file processing if platform admin requested it.
-    if ($can_delete_file && $delete_file_requested && $file) {
-      // Platform admins can always delete files.
+    // Handle file processing.
+    if ($should_delete_file && $file) {
+      // Delete file (always for standard users,
+      // optional for platform admins).
       $this->mediaFileHandler->processFile($file, TRUE, TRUE);
     }
   }

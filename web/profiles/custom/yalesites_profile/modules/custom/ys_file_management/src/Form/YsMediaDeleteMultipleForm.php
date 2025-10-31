@@ -344,11 +344,15 @@ class YsMediaDeleteMultipleForm extends DeleteMultipleForm {
     $storage = $this->entityTypeManager->getStorage($this->entityTypeId);
     $entities = $storage->loadMultiple(array_keys($this->selection));
 
-    // Check if user has permission and requested file deletion.
-    $can_delete_file = $this->currentUser
+    // Check if user is platform admin.
+    $is_platform_admin = $this->currentUser
       ->hasPermission('force delete media files');
-    $delete_files_requested = $form_state
-      ->getValue('delete_files_bulk', FALSE);
+
+    // Determine if files should be deleted.
+    // Standard users: always delete files.
+    // Platform admins: delete if checkbox is checked (default: checked).
+    $should_delete_files = !$is_platform_admin ||
+      $form_state->getValue('delete_files_bulk', TRUE);
 
     $deleted_count = 0;
     $file_processed_count = 0;
@@ -375,12 +379,13 @@ class YsMediaDeleteMultipleForm extends DeleteMultipleForm {
         '@label' => $entity->label(),
       ]);
 
-      // Process file if platform admin requested it.
-      if ($file && $can_delete_file && $delete_files_requested) {
+      // Process file if should delete.
+      if ($file && $should_delete_files) {
         $can_process = $this->canProcessFile($file);
 
         if ($can_process) {
-          // Platform admins can always delete files.
+          // Delete file (always for standard users,
+          // optional for platform admins).
           $this->mediaFileHandler->processFile($file, TRUE, TRUE);
           $file_processed_count++;
         }

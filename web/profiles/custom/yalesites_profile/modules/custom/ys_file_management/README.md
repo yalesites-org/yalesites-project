@@ -20,9 +20,9 @@ While Drupal core and the `media_file_delete` module provide basic file deletion
 ### Individual Media Deletion
 - **Custom Delete Form**: Replaces the default media delete form with enhanced safety checks
 - **Usage Validation**: Scans entity reference fields across content types to detect file usage
-- **Platform Admin File Deletion**: Only platform administrators see a checkbox to delete files from the filesystem (default checked)
+- **Platform Admin File Deletion**: Only platform administrators see a checkbox to choose whether to delete files from the filesystem (default checked)
 - **Safe File Handling**: Files are marked as temporary for cron cleanup (typically within 6 hours)
-- **Standard User Behavior**: Non-admin users get standard Drupal deletion (media deleted, file unreferenced but remains)
+- **Standard User Behavior**: Non-admin users automatically delete files with media (no choice, always delete)
 
 ### Bulk Media Deletion
 - **Batch Operations**: Handles multiple media deletions with comprehensive safety analysis
@@ -33,8 +33,8 @@ While Drupal core and the `media_file_delete` module provide basic file deletion
 ### Permission-Based Controls
 Single custom permission controls file deletion from filesystem:
 
-- **Standard Users & Site Admins** (no special permission): Can delete media, files remain in filesystem (standard Drupal behavior)
-- **Platform Administrators** (`force delete media files` permission): Can delete files from filesystem via checkbox, even when files are in use (with warnings)
+- **Standard Users & Site Admins** (no special permission): Can delete media, files are automatically deleted (marked as temporary for cron cleanup)
+- **Platform Administrators** (`force delete media files` permission): Can choose whether to delete files from filesystem via checkbox (default checked), even when files are in use (with warnings)
 
 ### Usage Detection
 - **Entity Reference Scanning**: Checks nodes, paragraphs, and block content for media usage
@@ -136,8 +136,8 @@ The module defines one custom permission for advanced file deletion capabilities
 - **Restriction**: Access restricted (admin-only by default)
 
 ### Permission Model
-- **Standard users & site admins** (no special permissions): Can delete media, files remain in filesystem (unreferenced)
-- **Platform administrators** (`force delete media files` permission): Can delete files from filesystem via checkbox (default checked), even when files are in use elsewhere
+- **Standard users & site admins** (no special permissions): Can delete media, files are automatically deleted (marked as temporary for cron cleanup)
+- **Platform administrators** (`force delete media files` permission): Can choose whether to delete files from filesystem via checkbox (default checked), even when files are in use elsewhere
 
 ## Usage
 
@@ -145,7 +145,7 @@ The module defines one custom permission for advanced file deletion capabilities
 1. Navigate to a media entity
 2. Click "Delete"
 3. The system will:
-   - **For standard users/site admins**: Show simple confirmation, media deleted, file remains (unreferenced)
+   - **For standard users/site admins**: Show simple confirmation, media and file both deleted automatically
    - **For platform admins**: Show "Delete the associated file" checkbox (default checked), with warnings if file is in use
 
 ### Bulk Media Deletion
@@ -153,7 +153,7 @@ The module defines one custom permission for advanced file deletion capabilities
 2. Select multiple media items
 3. Choose "Delete media" from the action dropdown
 4. The system will:
-   - **For standard users/site admins**: Delete media entities, files remain (unreferenced)
+   - **For standard users/site admins**: Delete media entities and files automatically
    - **For platform admins**: Show "Delete the associated files" checkbox (default checked), with warnings if files are in use
 
 ## Technical Details
