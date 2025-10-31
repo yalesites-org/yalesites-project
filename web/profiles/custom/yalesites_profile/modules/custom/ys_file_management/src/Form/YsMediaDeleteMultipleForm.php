@@ -188,52 +188,44 @@ class YsMediaDeleteMultipleForm extends DeleteMultipleForm {
       return $form;
     }
 
-    // Handle usage issues based on permissions.
-    if ($usage_issues && !$analysis['can_force_delete']) {
-      // Entity Usage will show the warning, just show "cannot be undone".
-      $form['description'] = [
-        '#type' => 'item',
-        '#markup' => $this->messageBuilder->buildActionWarningMessage()['#markup'],
-        '#weight' => 0,
-      ];
+    // Show description message.
+    $form['description'] = [
+      '#type' => 'item',
+      '#markup' => $usage_issues ?
+      $this->messageBuilder->buildActionWarningMessage()['#markup'] :
+      $this->buildSuccessMessage($analysis),
+      '#weight' => 0,
+    ];
+
+    // Only platform admins can delete files from filesystem.
+    if (!$analysis['can_force_delete']) {
+      // Standard users and site admins get no file deletion UI.
       return $form;
     }
 
-    // Handle different scenarios based on usage and permissions.
-    if ($usage_issues && $analysis['can_force_delete']) {
-      // Entity Usage will show the main warning, just show "cannot be undone".
-      $form['description'] = [
-        '#type' => 'item',
-        '#markup' => $this->messageBuilder->buildActionWarningMessage()['#markup'],
-        '#weight' => 0,
-      ];
-      $form = $this->addForceDeleteOptions($form, $analysis);
-    }
-    elseif (!$usage_issues) {
-      // Safe deletion: Show "Are you sure?" message.
-      $form['description'] = [
-        '#type' => 'item',
-        '#markup' => $this->buildSuccessMessage($analysis),
-        '#weight' => 0,
-      ];
-      // Add checkbox for deleting files
-      // (default value from media_file_delete config).
-      $files_to_process = $analysis['accessible_count'] -
-        $analysis['no_file_attached'];
-      if ($files_to_process > 0) {
-        $config = \Drupal::config('media_file_delete.settings');
-        $form['delete_files_bulk'] = [
-          '#type' => 'checkbox',
-          '#default_value' => $config->get('delete_file_default'),
-          '#title' => $this->t('Delete the associated files'),
-          '#description' => $this->formatPlural(
-            $files_to_process,
-            'When checked, the associated file will be marked as temporary and removed by cron cleanup (typically within 6 hours).',
-            'When checked, the associated files will be marked as temporary and removed by cron cleanup (typically within 6 hours).'
-          ),
-          '#weight' => 10,
-        ];
+    // Platform admins get file deletion checkbox.
+    $files_to_process = $analysis['accessible_count'] -
+      $analysis['no_file_attached'];
+    if ($files_to_process > 0) {
+      $description = $this->formatPlural(
+        $files_to_process,
+        'When checked, the associated file will be marked as temporary and removed by cron cleanup (typically within 6 hours).',
+        'When checked, the associated files will be marked as temporary and removed by cron cleanup (typically within 6 hours).'
+      );
+
+      if ($usage_issues) {
+        $description .= ' <strong>WARNING: Some files are used ';
+        $description .= 'elsewhere and deleting them may break ';
+        $description .= 'other content.</strong>';
       }
+
+      $form['delete_files_bulk'] = [
+        '#type' => 'checkbox',
+        '#default_value' => TRUE,
+        '#title' => $this->t('Delete the associated files'),
+        '#description' => $description,
+        '#weight' => 10,
+      ];
     }
 
     return $form;
@@ -346,69 +338,17 @@ class YsMediaDeleteMultipleForm extends DeleteMultipleForm {
   }
 
   /**
-   * Adds force delete options to the form for users with permissions.
-   *
-   * @param array $form
-   *   The form array.
-   * @param array $analysis
-   *   The batch analysis results.
-   *
-   * @return array
-   *   The modified form array.
-   */
-  protected function addForceDeleteOptions(array $form, array $analysis): array {
-    // Entity Usage will show the main warning, no need for duplicate.
-    // Add confirmation checkbox with default from config.
-    $config = \Drupal::config('media_file_delete.settings');
-    $form['force_delete_bulk'] = [
-      '#type' => 'checkbox',
-      '#default_value' => $config->get('delete_file_default'),
-      '#title' => $this->t('Delete files with usage'),
-      '#description' => $this->t('<strong>WARNING:</strong> Files will be marked as temporary for cron cleanup, bypassing usage checks. This may break other content that references these files. <strong>This action cannot be undone.</strong>'),
-      '#weight' => 10,
-    ];
-
-    return $form;
-  }
-
-  /**
-   * Builds force delete warning message.
-   *
-   * @param array $analysis
-   *   The batch analysis results.
-   *
-   * @return string
-   *   The formatted warning message.
-   */
-  protected function buildForceDeleteWarning(array $analysis): string {
-    $messages = [];
-
-    $messages[] = '<div class="messages messages--warning">';
-    $messages[] = '<strong>Warning:</strong> ';
-    $messages[] = $this->formatPlural(
-      $analysis['files_with_usage'],
-      '@count of the selected files is used in other locations. Force deleting could break other content.',
-      '@count of the selected files are used in other locations. Force deleting could break other content.'
-    );
-    $messages[] = '</div>';
-
-    return implode('', $messages);
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $storage = $this->entityTypeManager->getStorage($this->entityTypeId);
     $entities = $storage->loadMultiple(array_keys($this->selection));
 
-    // Check permission levels.
-    $can_force_delete = $this->currentUser->hasPermission('force delete media files');
-
-    // Check if user requested file deletion.
-    $force_delete_requested = $form_state->getValue('force_delete_bulk', FALSE);
-    $delete_files_requested = $form_state->getValue('delete_files_bulk', FALSE);
-    $should_delete_files = $force_delete_requested || $delete_files_requested;
+    // Check if user has permission and requested file deletion.
+    $can_delete_file = $this->currentUser
+      ->hasPermission('force delete media files');
+    $delete_files_requested = $form_state
+      ->getValue('delete_files_bulk', FALSE);
 
     $deleted_count = 0;
     $file_processed_count = 0;
@@ -418,7 +358,8 @@ class YsMediaDeleteMultipleForm extends DeleteMultipleForm {
     $redirect_url = $this->mediaFileHandler->getRedirectUrl();
 
     foreach ($entities as $entity) {
-      if (!($entity instanceof MediaInterface) || !$entity->access('delete', $this->currentUser)) {
+      if (!($entity instanceof MediaInterface) ||
+          !$entity->access('delete', $this->currentUser)) {
         continue;
       }
 
@@ -434,12 +375,13 @@ class YsMediaDeleteMultipleForm extends DeleteMultipleForm {
         '@label' => $entity->label(),
       ]);
 
-      // Process associated file if deletion was requested.
-      if ($file && $should_delete_files) {
+      // Process file if platform admin requested it.
+      if ($file && $can_delete_file && $delete_files_requested) {
         $can_process = $this->canProcessFile($file);
 
         if ($can_process) {
-          $this->mediaFileHandler->processFile($file, $force_delete_requested, $can_force_delete);
+          // Platform admins can always delete files.
+          $this->mediaFileHandler->processFile($file, TRUE, TRUE);
           $file_processed_count++;
         }
         else {

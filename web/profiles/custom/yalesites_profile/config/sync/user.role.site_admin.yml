@@ -355,7 +355,6 @@ permissions:
   - 'edit terms in post_category'
   - 'edit terms in resource_category'
   - 'edit terms in tags'
-  - 'force delete media files'
   - 'mark as hidden in editoria11y'
   - 'override all sticky option'
   - 'override post authored on option'

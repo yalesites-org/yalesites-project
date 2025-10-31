@@ -4,7 +4,6 @@ namespace Drupal\ys_file_management\Form;
 
 use Drupal\media_file_delete\Form\MediaDeleteForm;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\file\FileInterface;
 use Drupal\media\MediaInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -84,23 +83,34 @@ class YsMediaDeleteForm extends MediaDeleteForm {
       return $build;
     }
 
-    // Check permission levels.
-    $can_force_delete = $this->currentUser->hasPermission('force delete media files');
+    // Check permission levels - only platform admins can delete files.
+    $can_delete_file = $this->currentUser
+      ->hasPermission('force delete media files');
 
-    // Check if media entity is used elsewhere using entity reference fields.
-    $media_used_elsewhere = $this->mediaUsageDetector->isMediaUsedElsewhere($media);
+    // Show "This action cannot be undone" message.
+    $build['description'] = $this->messageBuilder
+      ->buildActionWarningMessage();
 
-    // Debug media usage detection.
+    // Only platform administrators can delete files from filesystem.
+    // All other users get standard Drupal behavior
+    // (media deleted, file unreferenced).
+    if (!$can_delete_file) {
+      // Standard users and site admins - no file deletion UI.
+      return $build;
+    }
+
+    // Platform admins: check if media/file is used elsewhere.
+    $media_used_elsewhere = $this->mediaUsageDetector
+      ->isMediaUsedElsewhere($media);
+    $usages = $this->usageResolver->getFileUsages($file);
+    $file_used_elsewhere = $usages > 1;
+
+    // Debug logging.
     $this->logger->info('Media usage debug: media @mid, used_elsewhere=@used', [
       '@mid' => $media->id(),
       '@used' => $media_used_elsewhere ? 'TRUE' : 'FALSE',
     ]);
 
-    // Also check file usage for completeness.
-    $usages = $this->usageResolver->getFileUsages($file);
-    $file_used_elsewhere = $usages > 1;
-
-    // Debug logging to help identify usage detection issues.
     $drupal_usage = \Drupal::service('file.usage')->listUsage($file);
     $drupal_usage_count = 0;
     foreach ($drupal_usage as $module_usages) {
@@ -118,86 +128,29 @@ class YsMediaDeleteForm extends MediaDeleteForm {
       '@used' => $file_used_elsewhere ? 'TRUE' : 'FALSE',
     ]);
 
-    // Check media and file usage.
-    if ($media_used_elsewhere || $file_used_elsewhere) {
-      // Entity Usage will show the warning,
-      // our form_alter adds the recommendation.
-      // Just show "This action cannot be undone"
-      // for users who can still delete.
-      if (!$can_force_delete) {
-        $build['description'] = $this->messageBuilder
-          ->buildActionWarningMessage();
-        // Don't allow deletion if file is used elsewhere
-        // and user can't force delete.
-        return $build;
-      }
-      // Force delete users continue to form
-      // with force delete checkbox.
+    // Platform admins get file deletion checkbox
+    // (default checked, always shown).
+    $has_usage = $media_used_elsewhere || $file_used_elsewhere;
+
+    if ($has_usage) {
+      $description = $this->t('When checked, the file %file will be marked as temporary and removed by cron cleanup (typically within 6 hours). <strong>WARNING: This file is used elsewhere and deleting it may break other content.</strong>', [
+        '%file' => $file->getFilename(),
+      ]);
+    }
+    else {
+      $description = $this->t('When checked, the file %file will be marked as temporary and removed by cron cleanup (typically within 6 hours).', [
+        '%file' => $file->getFilename(),
+      ]);
     }
 
-    // User can proceed - show "This action cannot be undone".
-    $build['description'] = $this->messageBuilder
-      ->buildActionWarningMessage();
-
-    // Platform administrators with force delete permission
-    // get force delete checkbox.
-    if ($can_force_delete && ($media_used_elsewhere ||
-        $file_used_elsewhere)) {
-      return $this->buildForceDeleteForm($build, $file, $usages);
-    }
-
-    // All users who can delete media can delete the file -
-    // add checkbox (default value from media_file_delete config).
-    $config = $this->configFactory()->get('media_file_delete.settings');
     $build['delete_file'] = [
       '#type' => 'checkbox',
-      '#default_value' => $config->get('delete_file_default'),
+      '#default_value' => TRUE,
       '#title' => $this->t('Delete the associated file'),
-      '#description' => $this->t('When checked, the file %file will be marked as temporary and removed by cron cleanup (typically within 6 hours).', [
-        '%file' => $file->getFilename(),
-      ]),
+      '#description' => $description,
     ];
 
     return $build;
-  }
-
-  /**
-   * Builds the form for users with force delete permissions.
-   *
-   * @param array $build
-   *   The base form build.
-   * @param \Drupal\file\FileInterface $file
-   *   The file entity.
-   * @param int $usages
-   *   Number of places the file is used.
-   *
-   * @return array
-   *   The form build.
-   */
-  protected function buildForceDeleteForm(array $build, FileInterface $file, int $usages) {
-    $media = $this->getEntity();
-    $media_used_elsewhere = $this->mediaUsageDetector->isMediaUsedElsewhere($media);
-    $file_used_elsewhere = $usages > 1;
-    $has_usage = $media_used_elsewhere || $file_used_elsewhere;
-
-    // Entity Usage will show the main warning, just show "cannot be undone".
-    if ($has_usage) {
-      $build['description'] = $this->messageBuilder->buildActionWarningMessage();
-    }
-
-    // Get default value from media_file_delete config.
-    $config = $this->configFactory()->get('media_file_delete.settings');
-
-    return $build + [
-      'force_delete_file' => [
-        '#type' => 'checkbox',
-        '#default_value' => $config->get('delete_file_default'),
-        '#title' => $this->t('Delete the associated file'),
-        '#description' => $this->t('When checked, the file %file will be marked as temporary for cron cleanup, bypassing usage checks. <strong>This action cannot be undone and may break other content.</strong>', [
-          '%file' => $file->getFilename(),
-        ]),
-      ],
-    ];
   }
 
   /**
@@ -242,19 +195,10 @@ class YsMediaDeleteForm extends MediaDeleteForm {
     $media = $this->getEntity();
     $file = $this->getFile($media);
 
-    // Check permission levels.
-    $can_force_delete = $this->currentUser
+    // Check if user has permission and requested file deletion.
+    $can_delete_file = $this->currentUser
       ->hasPermission('force delete media files');
-
-    // Check if user requested file deletion
-    // (force_delete_file for admins with usage,
-    // delete_file for regular deletion).
-    $force_delete_requested = $form_state
-      ->getValue('force_delete_file');
-    $delete_file_requested = $form_state
-      ->getValue('delete_file');
-    $should_delete_file = $force_delete_requested ||
-      $delete_file_requested;
+    $delete_file_requested = $form_state->getValue('delete_file');
 
     // Store a better redirect URL before deletion.
     $redirect_url = $this->mediaFileHandler->getRedirectUrl();
@@ -271,9 +215,10 @@ class YsMediaDeleteForm extends MediaDeleteForm {
     // Add confirmation message.
     $this->messenger()->addMessage($success_message['#markup']);
 
-    // Handle file processing if deletion was requested.
-    if ($should_delete_file) {
-      $this->mediaFileHandler->processFile($file, $force_delete_requested, $can_force_delete);
+    // Handle file processing if platform admin requested it.
+    if ($can_delete_file && $delete_file_requested && $file) {
+      // Platform admins can always delete files.
+      $this->mediaFileHandler->processFile($file, TRUE, TRUE);
     }
   }
 

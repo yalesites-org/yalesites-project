@@ -2,25 +2,27 @@
 
 ## Description
 
-The YaleSites File Management module extends the `media_file_delete` contrib module to provide enhanced safety controls for deleting media entities and their associated files. This module implements comprehensive usage validation to prevent accidental deletion of files that are referenced elsewhere in the site, while allowing any user with media delete access to also delete the associated files.
+The YaleSites File Management module extends the `media_file_delete` contrib module to provide enhanced safety controls for deleting media entities and their associated files. This module implements comprehensive usage validation to prevent accidental deletion of files that are referenced elsewhere in the site. File deletion from the filesystem is restricted to platform administrators only - all other users get standard Drupal behavior (media deleted, file unreferenced).
 
 ## Background
 
 While Drupal core and the `media_file_delete` module provide basic file deletion capabilities, they lack the comprehensive usage validation needed for a multi-user content management environment. This module addresses these limitations by:
 
 - Implementing comprehensive usage detection across entity reference fields
-- Providing both individual and bulk deletion operations with user-controlled file deletion
+- Restricting file deletion to platform administrators only
+- Providing both individual and bulk deletion operations
 - Ensuring consistent messaging and user experience
 - Maintaining detailed audit logs for all file operations
-- Allowing platform administrators to force delete files in use when necessary
+- Allowing platform administrators to delete files even when in use (with warnings)
 
 ## Features
 
 ### Individual Media Deletion
 - **Custom Delete Form**: Replaces the default media delete form with enhanced safety checks
 - **Usage Validation**: Scans entity reference fields across content types to detect file usage
-- **User-Controlled File Deletion**: Checkbox allows users to choose whether to delete the file with the media (default state follows media_file_delete module configuration)
+- **Platform Admin File Deletion**: Only platform administrators see a checkbox to delete files from the filesystem (default checked)
 - **Safe File Handling**: Files are marked as temporary for cron cleanup (typically within 6 hours)
+- **Standard User Behavior**: Non-admin users get standard Drupal deletion (media deleted, file unreferenced but remains)
 
 ### Bulk Media Deletion
 - **Batch Operations**: Handles multiple media deletions with comprehensive safety analysis
@@ -29,10 +31,10 @@ While Drupal core and the `media_file_delete` module provide basic file deletion
 - **Progress Tracking**: Provides clear feedback during bulk operations
 
 ### Permission-Based Controls
-Two permission levels control file deletion capabilities:
+Single custom permission controls file deletion from filesystem:
 
-1. **Standard Users**: Can delete media and choose whether to delete the associated file (blocked if file is used elsewhere)
-2. **Platform Administrators** (`force delete media files`): Can force delete files even if used elsewhere, with explicit warnings about potential content breakage
+- **Standard Users & Site Admins** (no special permission): Can delete media, files remain in filesystem (standard Drupal behavior)
+- **Platform Administrators** (`force delete media files` permission): Can delete files from filesystem via checkbox, even when files are in use (with warnings)
 
 ### Usage Detection
 - **Entity Reference Scanning**: Checks nodes, paragraphs, and block content for media usage
@@ -134,8 +136,8 @@ The module defines one custom permission for advanced file deletion capabilities
 - **Restriction**: Access restricted (admin-only by default)
 
 ### Permission Model
-- **Standard users** (no special permissions): Can delete media they have access to and choose whether to delete the associated file (blocked if file is used elsewhere)
-- **Platform administrators** (`force delete media files` permission): Can force delete files even when used elsewhere, with explicit warnings about potential content breakage
+- **Standard users & site admins** (no special permissions): Can delete media, files remain in filesystem (unreferenced)
+- **Platform administrators** (`force delete media files` permission): Can delete files from filesystem via checkbox (default checked), even when files are in use elsewhere
 
 ## Usage
 
@@ -143,26 +145,16 @@ The module defines one custom permission for advanced file deletion capabilities
 1. Navigate to a media entity
 2. Click "Delete"
 3. The system will:
-   - Scan for usage across the site
-   - Present a checkbox to delete the associated file (default state respects media_file_delete configuration)
-   - Block file deletion if the file is used elsewhere (unless you have force delete permission)
-   - Allow you to proceed with media deletion, with or without file deletion
+   - **For standard users/site admins**: Show simple confirmation, media deleted, file remains (unreferenced)
+   - **For platform admins**: Show "Delete the associated file" checkbox (default checked), with warnings if file is in use
 
 ### Bulk Media Deletion
 1. Go to the media library (`/admin/content/media`)
 2. Select multiple media items
 3. Choose "Delete media" from the action dropdown
 4. The system will:
-   - Analyze the entire batch for usage
-   - Present a checkbox to delete the associated files (default state respects media_file_delete configuration)
-   - Block the operation if any file is used elsewhere (unless you have force delete permission)
-   - Present a summary of what will be deleted
-
-### Force Deletion (Platform Administrators)
-When files are used elsewhere, platform administrators will see:
-- Clear warnings about potential content breakage
-- A "Delete files with usage" checkbox to confirm force deletion
-- Explicit warnings in the checkbox description about breaking other content
+   - **For standard users/site admins**: Delete media entities, files remain (unreferenced)
+   - **For platform admins**: Show "Delete the associated files" checkbox (default checked), with warnings if files are in use
 
 ## Technical Details
 
