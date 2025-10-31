@@ -19,28 +19,7 @@ class MediaDeleteMessageBuilder {
    * User permission levels.
    */
   const LEVEL_REGULAR = 'regular';
-  const LEVEL_SITE_ADMIN = 'site_admin';
   const LEVEL_PLATFORM_ADMIN = 'platform_admin';
-
-  /**
-   * Builds an ownership error message.
-   *
-   * @param \Drupal\media\MediaInterface $media
-   *   The media entity.
-   *
-   * @return array
-   *   Render array for the message.
-   */
-  public function buildOwnershipMessage(MediaInterface $media): array {
-    $media_owner = $media->getOwner();
-    $owner_name = $media_owner ? $media_owner->getDisplayName() : $this->t('Unknown');
-
-    return [
-      '#markup' => $this->t('This media item cannot be deleted because you do not own it. This media is owned by %owner. Please contact the owner or a site administrator if you need to delete this media item.', [
-        '%owner' => $owner_name,
-      ]),
-    ];
-  }
 
   /**
    * Builds a usage blocking message based on user permission level.
@@ -119,20 +98,15 @@ class MediaDeleteMessageBuilder {
   /**
    * Gets the user permission level based on permissions.
    *
-   * @param bool $can_delete_any_file
-   *   Whether user has "delete media files regardless of owner" permission.
    * @param bool $can_force_delete
    *   Whether user has "force delete media files" permission.
    *
    * @return string
    *   The user permission level constant.
    */
-  public function getUserLevel(bool $can_delete_any_file, bool $can_force_delete): string {
+  public function getUserLevel(bool $can_force_delete): string {
     if ($can_force_delete) {
       return self::LEVEL_PLATFORM_ADMIN;
-    }
-    if ($can_delete_any_file) {
-      return self::LEVEL_SITE_ADMIN;
     }
     return self::LEVEL_REGULAR;
   }

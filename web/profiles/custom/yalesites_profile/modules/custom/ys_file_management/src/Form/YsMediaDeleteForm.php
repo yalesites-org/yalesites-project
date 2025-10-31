@@ -86,8 +86,6 @@ class YsMediaDeleteForm extends MediaDeleteForm {
 
     // Check permission levels.
     $can_force_delete = $this->currentUser->hasPermission('force delete media files');
-    $can_delete_any_file = $this->currentUser->hasPermission('delete media files regardless of owner');
-    $can_bypass_ownership = $can_delete_any_file || $can_force_delete;
 
     // Check if media entity is used elsewhere using entity reference fields.
     $media_used_elsewhere = $this->mediaUsageDetector->isMediaUsedElsewhere($media);
@@ -120,40 +118,46 @@ class YsMediaDeleteForm extends MediaDeleteForm {
       '@used' => $file_used_elsewhere ? 'TRUE' : 'FALSE',
     ]);
 
-    // Check media ownership (unless user can bypass ownership).
-    $user_owns_media = $media->getOwnerId() == $this->currentUser->id();
-    if (!$can_bypass_ownership && !$user_owns_media) {
-      // Remove submit button and show only cancel.
-      unset($build['actions']['submit']);
-      $build['description'] = $this->messageBuilder->buildOwnershipMessage($media);
-      return $build;
-    }
-
     // Check media and file usage.
     if ($media_used_elsewhere || $file_used_elsewhere) {
-      // Entity Usage will show the warning, our form_alter adds the recommendation.
-      // Just show "This action cannot be undone" for users who can still delete.
+      // Entity Usage will show the warning,
+      // our form_alter adds the recommendation.
+      // Just show "This action cannot be undone"
+      // for users who can still delete.
       if (!$can_force_delete) {
-        $build['description'] = $this->messageBuilder->buildActionWarningMessage();
+        $build['description'] = $this->messageBuilder
+          ->buildActionWarningMessage();
+        // Don't allow deletion if file is used elsewhere
+        // and user can't force delete.
         return $build;
       }
-      // Force delete users continue to buildForceDeleteForm.
+      // Force delete users continue to form
+      // with force delete checkbox.
     }
 
-    // User can proceed - show "This action cannot be undone" only when deletion
-    // is allowed.
-    if (!($media_used_elsewhere || $file_used_elsewhere) || $can_force_delete) {
-      $build['description'] = $this->messageBuilder->buildActionWarningMessage();
-    }
+    // User can proceed - show "This action cannot be undone".
+    $build['description'] = $this->messageBuilder
+      ->buildActionWarningMessage();
 
-    // Platform administrators with force delete permission get special options.
-    if ($can_force_delete) {
+    // Platform administrators with force delete permission
+    // get force delete checkbox.
+    if ($can_force_delete && ($media_used_elsewhere ||
+        $file_used_elsewhere)) {
       return $this->buildForceDeleteForm($build, $file, $usages);
     }
 
-    // Regular users and site administrators get automatic file temp marking.
-    // No additional options needed - file will be automatically marked as
-    // temporary.
+    // All users who can delete media can delete the file -
+    // add checkbox (default value from media_file_delete config).
+    $config = $this->configFactory()->get('media_file_delete.settings');
+    $build['delete_file'] = [
+      '#type' => 'checkbox',
+      '#default_value' => $config->get('delete_file_default'),
+      '#title' => $this->t('Delete the associated file'),
+      '#description' => $this->t('When checked, the file %file will be marked as temporary and removed by cron cleanup (typically within 6 hours).', [
+        '%file' => $file->getFilename(),
+      ]),
+    ];
+
     return $build;
   }
 
@@ -181,10 +185,13 @@ class YsMediaDeleteForm extends MediaDeleteForm {
       $build['description'] = $this->messageBuilder->buildActionWarningMessage();
     }
 
+    // Get default value from media_file_delete config.
+    $config = $this->configFactory()->get('media_file_delete.settings');
+
     return $build + [
       'force_delete_file' => [
         '#type' => 'checkbox',
-        '#default_value' => FALSE,
+        '#default_value' => $config->get('delete_file_default'),
         '#title' => $this->t('Delete the associated file'),
         '#description' => $this->t('When checked, the file %file will be marked as temporary for cron cleanup, bypassing usage checks. <strong>This action cannot be undone and may break other content.</strong>', [
           '%file' => $file->getFilename(),
@@ -236,8 +243,18 @@ class YsMediaDeleteForm extends MediaDeleteForm {
     $file = $this->getFile($media);
 
     // Check permission levels.
-    $can_force_delete = $this->currentUser->hasPermission('force delete media files');
-    $force_delete_requested = $form_state->getValue('force_delete_file');
+    $can_force_delete = $this->currentUser
+      ->hasPermission('force delete media files');
+
+    // Check if user requested file deletion
+    // (force_delete_file for admins with usage,
+    // delete_file for regular deletion).
+    $force_delete_requested = $form_state
+      ->getValue('force_delete_file');
+    $delete_file_requested = $form_state
+      ->getValue('delete_file');
+    $should_delete_file = $force_delete_requested ||
+      $delete_file_requested;
 
     // Store a better redirect URL before deletion.
     $redirect_url = $this->mediaFileHandler->getRedirectUrl();
@@ -254,8 +271,10 @@ class YsMediaDeleteForm extends MediaDeleteForm {
     // Add confirmation message.
     $this->messenger()->addMessage($success_message['#markup']);
 
-    // Handle file processing.
-    $this->mediaFileHandler->processFile($file, $force_delete_requested, $can_force_delete);
+    // Handle file processing if deletion was requested.
+    if ($should_delete_file) {
+      $this->mediaFileHandler->processFile($file, $force_delete_requested, $can_force_delete);
+    }
   }
 
 }

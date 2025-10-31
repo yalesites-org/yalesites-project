@@ -119,10 +119,8 @@ class YsMediaDeleteMultipleForm extends DeleteMultipleForm {
       'total_count' => count($entities),
       'accessible_count' => 0,
       'files_with_usage' => 0,
-      'ownership_issues' => 0,
       'no_file_attached' => 0,
       'can_force_delete' => $this->currentUser->hasPermission('force delete media files'),
-      'can_delete_any_file' => $this->currentUser->hasPermission('delete media files regardless of owner'),
       'blocked_entities' => [],
       'problematic_files' => [],
     ];
@@ -146,20 +144,6 @@ class YsMediaDeleteMultipleForm extends DeleteMultipleForm {
 
       if (!$file) {
         $analysis['no_file_attached']++;
-        continue;
-      }
-
-      // Check ownership unless user can bypass.
-      $can_bypass_ownership = $analysis['can_delete_any_file'] || $analysis['can_force_delete'];
-      $user_owns_media = $entity->getOwnerId() == $this->currentUser->id();
-
-      if (!$can_bypass_ownership && !$user_owns_media) {
-        $analysis['ownership_issues']++;
-        $analysis['blocked_entities'][] = [
-          'entity' => $entity,
-          'reason' => 'ownership',
-          'file' => $file,
-        ];
         continue;
       }
 
@@ -232,13 +216,31 @@ class YsMediaDeleteMultipleForm extends DeleteMultipleForm {
         '#markup' => $this->buildSuccessMessage($analysis),
         '#weight' => 0,
       ];
+      // Add checkbox for deleting files
+      // (default value from media_file_delete config).
+      $files_to_process = $analysis['accessible_count'] -
+        $analysis['no_file_attached'];
+      if ($files_to_process > 0) {
+        $config = \Drupal::config('media_file_delete.settings');
+        $form['delete_files_bulk'] = [
+          '#type' => 'checkbox',
+          '#default_value' => $config->get('delete_file_default'),
+          '#title' => $this->t('Delete the associated files'),
+          '#description' => $this->formatPlural(
+            $files_to_process,
+            'When checked, the associated file will be marked as temporary and removed by cron cleanup (typically within 6 hours).',
+            'When checked, the associated files will be marked as temporary and removed by cron cleanup (typically within 6 hours).'
+          ),
+          '#weight' => 10,
+        ];
+      }
     }
 
     return $form;
   }
 
   /**
-   * Builds message for blocking issues (access/ownership).
+   * Builds message for blocking issues (access denied).
    *
    * @param array $analysis
    *   The batch analysis results.
@@ -249,17 +251,7 @@ class YsMediaDeleteMultipleForm extends DeleteMultipleForm {
   protected function buildBlockingIssuesMessage(array $analysis): string {
     $messages = [];
 
-    $access_denied_count = 0;
-    $ownership_issues_count = 0;
-
-    foreach ($analysis['blocked_entities'] as $blocked) {
-      if ($blocked['reason'] === 'access_denied') {
-        $access_denied_count++;
-      }
-      elseif ($blocked['reason'] === 'ownership') {
-        $ownership_issues_count++;
-      }
-    }
+    $access_denied_count = count($analysis['blocked_entities']);
 
     if ($access_denied_count > 0) {
       $messages[] = $this->formatPlural(
@@ -269,18 +261,9 @@ class YsMediaDeleteMultipleForm extends DeleteMultipleForm {
       );
     }
 
-    if ($ownership_issues_count > 0) {
+    if ($analysis['accessible_count'] > 0) {
       $messages[] = $this->formatPlural(
-        $ownership_issues_count,
-        '@count of the selected media items cannot be deleted because you do not own them. You need the "Delete media files regardless of owner" permission to delete files you do not own.',
-        '@count of the selected media items cannot be deleted because you do not own them. You need the "Delete media files regardless of owner" permission to delete files you do not own.'
-      );
-    }
-
-    $total_accessible = $analysis['accessible_count'] - $ownership_issues_count;
-    if ($total_accessible > 0) {
-      $messages[] = $this->formatPlural(
-        $total_accessible,
+        $analysis['accessible_count'],
         'Only @count media item can be deleted.',
         'Only @count media items can be deleted.'
       );
@@ -375,10 +358,11 @@ class YsMediaDeleteMultipleForm extends DeleteMultipleForm {
    */
   protected function addForceDeleteOptions(array $form, array $analysis): array {
     // Entity Usage will show the main warning, no need for duplicate.
-    // Add confirmation checkbox.
+    // Add confirmation checkbox with default from config.
+    $config = \Drupal::config('media_file_delete.settings');
     $form['force_delete_bulk'] = [
       '#type' => 'checkbox',
-      '#default_value' => FALSE,
+      '#default_value' => $config->get('delete_file_default'),
       '#title' => $this->t('Delete files with usage'),
       '#description' => $this->t('<strong>WARNING:</strong> Files will be marked as temporary for cron cleanup, bypassing usage checks. This may break other content that references these files. <strong>This action cannot be undone.</strong>'),
       '#weight' => 10,
@@ -420,7 +404,11 @@ class YsMediaDeleteMultipleForm extends DeleteMultipleForm {
 
     // Check permission levels.
     $can_force_delete = $this->currentUser->hasPermission('force delete media files');
+
+    // Check if user requested file deletion.
     $force_delete_requested = $form_state->getValue('force_delete_bulk', FALSE);
+    $delete_files_requested = $form_state->getValue('delete_files_bulk', FALSE);
+    $should_delete_files = $force_delete_requested || $delete_files_requested;
 
     $deleted_count = 0;
     $file_processed_count = 0;
@@ -446,9 +434,9 @@ class YsMediaDeleteMultipleForm extends DeleteMultipleForm {
         '@label' => $entity->label(),
       ]);
 
-      // Process associated file.
-      if ($file) {
-        $can_process = $this->canProcessFile($entity, $file);
+      // Process associated file if deletion was requested.
+      if ($file && $should_delete_files) {
+        $can_process = $this->canProcessFile($file);
 
         if ($can_process) {
           $this->mediaFileHandler->processFile($file, $force_delete_requested, $can_force_delete);
@@ -468,34 +456,17 @@ class YsMediaDeleteMultipleForm extends DeleteMultipleForm {
   }
 
   /**
-   * Determines if a file can be processed based on permissions and usage.
+   * Determines if a file can be processed based on permissions.
    *
-   * @param \Drupal\media\MediaInterface $media
-   *   The media entity.
    * @param \Drupal\file\FileInterface $file
    *   The file entity.
    *
    * @return bool
    *   TRUE if file can be processed, FALSE otherwise.
    */
-  protected function canProcessFile(MediaInterface $media, FileInterface $file): bool {
+  protected function canProcessFile(FileInterface $file): bool {
     // Check basic file access.
-    if (!$file->access('delete', $this->currentUser)) {
-      return FALSE;
-    }
-
-    // Check permissions.
-    $can_force_delete = $this->currentUser->hasPermission('force delete media files');
-    $can_delete_any_file = $this->currentUser->hasPermission('delete media files regardless of owner');
-    $can_bypass_ownership = $can_delete_any_file || $can_force_delete;
-
-    // Check ownership.
-    $user_owns_media = $media->getOwnerId() == $this->currentUser->id();
-    if (!$can_bypass_ownership && !$user_owns_media) {
-      return FALSE;
-    }
-
-    return TRUE;
+    return $file->access('delete', $this->currentUser);
   }
 
   /**

@@ -2,26 +2,25 @@
 
 ## Description
 
-The YaleSites File Management module extends the `media_file_delete` contrib module to provide enhanced safety controls for deleting media entities and their associated files. This module implements a sophisticated three-tier permission system and comprehensive usage validation to prevent accidental deletion of files that are referenced elsewhere in the site.
+The YaleSites File Management module extends the `media_file_delete` contrib module to provide enhanced safety controls for deleting media entities and their associated files. This module implements comprehensive usage validation to prevent accidental deletion of files that are referenced elsewhere in the site, while allowing any user with media delete access to also delete the associated files.
 
 ## Background
 
-While Drupal core and the `media_file_delete` module provide basic file deletion capabilities, they lack the granular permission controls and usage validation needed for a multi-user content management environment. This module addresses these limitations by:
+While Drupal core and the `media_file_delete` module provide basic file deletion capabilities, they lack the comprehensive usage validation needed for a multi-user content management environment. This module addresses these limitations by:
 
-- Adding permission-based access controls for file deletion
 - Implementing comprehensive usage detection across entity reference fields
-- Providing both individual and bulk deletion operations
+- Providing both individual and bulk deletion operations with user-controlled file deletion
 - Ensuring consistent messaging and user experience
 - Maintaining detailed audit logs for all file operations
+- Allowing platform administrators to force delete files in use when necessary
 
 ## Features
 
 ### Individual Media Deletion
 - **Custom Delete Form**: Replaces the default media delete form with enhanced safety checks
 - **Usage Validation**: Scans entity reference fields across content types to detect file usage
-- **Permission-Based Controls**: Restricts deletion based on user permission level
-- **Ownership Validation**: Respects file ownership unless user has elevated permissions
-- **Safe File Handling**: Files are marked as temporary for cron cleanup by default
+- **User-Controlled File Deletion**: Checkbox allows users to choose whether to delete the file with the media (default state follows media_file_delete module configuration)
+- **Safe File Handling**: Files are marked as temporary for cron cleanup (typically within 6 hours)
 
 ### Bulk Media Deletion
 - **Batch Operations**: Handles multiple media deletions with comprehensive safety analysis
@@ -30,11 +29,10 @@ While Drupal core and the `media_file_delete` module provide basic file deletion
 - **Progress Tracking**: Provides clear feedback during bulk operations
 
 ### Permission-Based Controls
-Three distinct permission levels provide granular control:
+Two permission levels control file deletion capabilities:
 
-1. **Standard Users**: Can delete media with attached files only if the file is not used elsewhere and they own the media
-2. **Site Administrators** (`delete media files regardless of owner`): Can delete unused files regardless of ownership but are still blocked by usage validation
-3. **Platform Administrators** (`force delete media files`): Can force delete files even if used elsewhere, with explicit warnings about potential content breakage
+1. **Standard Users**: Can delete media and choose whether to delete the associated file (blocked if file is used elsewhere)
+2. **Platform Administrators** (`force delete media files`): Can force delete files even if used elsewhere, with explicit warnings about potential content breakage
 
 ### Usage Detection
 - **Entity Reference Scanning**: Checks nodes, paragraphs, and block content for media usage
@@ -128,49 +126,43 @@ This configuration reduces database overhead by 80%+ while maintaining the usage
 
 ## Permissions
 
-The module defines two custom permissions that work together to create a three-tier system:
+The module defines one custom permission for advanced file deletion capabilities:
 
-### delete media files regardless of owner
-- **Title**: Delete media files regardless of owner
-- **Description**: Allows users to delete files attached to media entities even if they do not own the file
+### force delete media files
+- **Title**: Delete media files with usage
+- **Description**: Allows users to delete files attached to media entities even if they are used elsewhere. This bypasses usage safety checks.
 - **Restriction**: Access restricted (admin-only by default)
 
-### force delete media files  
-- **Title**: Force delete media files
-- **Description**: Allows users to force delete files attached to media entities even if they are used elsewhere. This bypasses all safety checks.
-- **Restriction**: Access restricted (admin-only by default)
-
-### Permission Combinations
-- **Neither permission**: Standard user - can only delete unused files they own
-- **Owner bypass only**: Site administrator - can delete unused files regardless of ownership
-- **Both permissions**: Platform administrator - can force delete files even when in use
+### Permission Model
+- **Standard users** (no special permissions): Can delete media they have access to and choose whether to delete the associated file (blocked if file is used elsewhere)
+- **Platform administrators** (`force delete media files` permission): Can force delete files even when used elsewhere, with explicit warnings about potential content breakage
 
 ## Usage
 
 ### Individual Media Deletion
 1. Navigate to a media entity
-2. Click "Delete" 
+2. Click "Delete"
 3. The system will:
-   - Check your permissions
-   - Validate file ownership (if applicable)
    - Scan for usage across the site
-   - Present appropriate options based on findings
+   - Present a checkbox to delete the associated file (default state respects media_file_delete configuration)
+   - Block file deletion if the file is used elsewhere (unless you have force delete permission)
+   - Allow you to proceed with media deletion, with or without file deletion
 
 ### Bulk Media Deletion
 1. Go to the media library (`/admin/content/media`)
 2. Select multiple media items
 3. Choose "Delete media" from the action dropdown
 4. The system will:
-   - Analyze the entire batch for permissions and usage
-   - Block the operation if any file requires higher permissions
+   - Analyze the entire batch for usage
+   - Present a checkbox to delete the associated files (default state respects media_file_delete configuration)
+   - Block the operation if any file is used elsewhere (unless you have force delete permission)
    - Present a summary of what will be deleted
 
 ### Force Deletion (Platform Administrators)
 When files are used elsewhere, platform administrators will see:
 - Clear warnings about potential content breakage
-- A checkbox to confirm force deletion
-- The delete button is hidden until force deletion is confirmed
-- Explicit warnings in confirmation messages
+- A "Delete files with usage" checkbox to confirm force deletion
+- Explicit warnings in the checkbox description about breaking other content
 
 ## Technical Details
 

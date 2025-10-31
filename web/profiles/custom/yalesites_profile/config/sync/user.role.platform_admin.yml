@@ -292,7 +292,6 @@ permissions:
   - 'delete any wrapped_text_callout block content'
   - 'delete any wrapped_text_callout block content revisions'
   - 'delete media'
-  - 'delete media files regardless of owner'
   - 'delete own background_video media'
   - 'delete own document media'
   - 'delete own embed media'
