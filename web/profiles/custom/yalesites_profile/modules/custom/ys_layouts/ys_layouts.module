@@ -158,7 +158,16 @@ function ys_layouts_preprocess_block(&$variables) {
 
     // Set default padding based on block type.
     $default_padding = 'default';
-    $no_padding_blocks = ['text', 'wrapped_text_callout', 'grand_hero', 'image_banner', 'image'];
+    $no_padding_blocks = [
+      'text',
+      'wrapped_text_callout',
+      'grand_hero',
+      'image_banner',
+      'cta_banner',
+      'video_banner',
+      'image',
+    ];
+
     if (in_array($block_type, $no_padding_blocks)) {
       $default_padding = 'no-padding';
     }
