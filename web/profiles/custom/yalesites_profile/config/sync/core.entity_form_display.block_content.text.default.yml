@@ -94,7 +94,7 @@ content:
     third_party_settings: {  }
   field_padding_options:
     type: options_select
-    weight: 1
+    weight: 10
     region: content
     settings: {  }
     third_party_settings: {  }

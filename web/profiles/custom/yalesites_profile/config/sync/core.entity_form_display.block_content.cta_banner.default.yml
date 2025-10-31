@@ -24,10 +24,6 @@ dependencies:
     - maxlength
     - media_library
     - text
-id: block_content.cta_banner.default
-targetEntityType: block_content
-bundle: cta_banner
-mode: default
 third_party_settings:
   field_group:
     group_block_tabs:
@@ -100,6 +96,10 @@ third_party_settings:
         formatter: closed
         description: ''
         required_fields: false
+id: block_content.cta_banner.default
+targetEntityType: block_content
+bundle: cta_banner
+mode: default
 content:
   field_heading:
     type: text_textfield

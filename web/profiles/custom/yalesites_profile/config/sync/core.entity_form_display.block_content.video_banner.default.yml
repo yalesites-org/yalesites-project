@@ -9,7 +9,6 @@ dependencies:
     - field.field.block_content.video_banner.field_style_width
   module:
     - field_group
-    - field_group
     - hide_revision_field
     - media_library
     - media_library_edit
@@ -21,7 +20,6 @@ content:
   field_media:
     type: media_library_widget
     weight: 1
-    weight: 1
     region: content
     settings:
       media_types: {  }
@@ -30,7 +28,7 @@ content:
         show_edit: '1'
   field_padding_options:
     type: options_select
-    weight: 2
+    weight: 10
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -89,7 +87,6 @@ content:
   info:
     type: string_textfield
     weight: 0
-    weight: 0
     region: content
     settings:
       size: 60
@@ -97,7 +94,6 @@ content:
     third_party_settings: {  }
   revision_log:
     type: hide_revision_field_log_widget
-    weight: 3
     weight: 3
     region: content
     settings:
