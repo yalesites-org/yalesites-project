@@ -15,7 +15,7 @@ class YsAiSettings extends AiEngineChatSettings {
   /**
    * The system instructions access check service.
    *
-   * @var \Drupal\ai_engine_chat\Access\SystemInstructionsAccessCheck
+   * @var \Drupal\ys_ai_system_instructions\Access\SystemInstructionsAccessCheck
    */
   protected $systemInstructionsAccess;
 
@@ -24,7 +24,7 @@ class YsAiSettings extends AiEngineChatSettings {
    */
   public static function create(ContainerInterface $container) {
     $instance = parent::create($container);
-    $instance->systemInstructionsAccess = $container->get('ai_engine_chat.system_instructions_access_check');
+    $instance->systemInstructionsAccess = $container->get('ys_ai_system_instructions.access_check');
     return $instance;
   }
 
