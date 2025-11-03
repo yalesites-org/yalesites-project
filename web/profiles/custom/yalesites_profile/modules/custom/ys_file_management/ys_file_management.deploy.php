@@ -8,7 +8,7 @@
 /**
  * Recreate entity usage statistics after module installation and configuration.
  */
-function ys_file_management_deploy_recreate_entity_usage_statistics(array &$sandbox = NULL): ?string {
+function ys_file_management_deploy_recreate_entity_usage_statistics(?array &$sandbox = NULL): ?string {
   // Ensure entity_usage module is enabled before proceeding.
   if (!\Drupal::moduleHandler()->moduleExists('entity_usage')) {
     \Drupal::logger('ys_file_management')->warning('Cannot recreate entity usage statistics: entity_usage module is not enabled.');
