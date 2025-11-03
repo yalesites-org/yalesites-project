@@ -1040,37 +1040,59 @@ function ys_core_grand_hero_prepare_validation(array &$form, FormStateInterface 
  */
 function ys_core_grand_hero_validate($form, FormStateInterface $form_state) {
   // Validate required fields that are configured in field definitions.
+  // Note: Using setErrorByName() instead of setError() to work with
+  // field_group tabs. The tab structure changes form element paths, but
+  // setErrorByName() uses field names which remain consistent regardless
+  // of tab nesting.
   // Heading field validation.
   $heading_value = $form_state->getValue(['settings', 'block_form', 'field_heading', 0, 'value']);
   if (empty(trim($heading_value))) {
-    $form_state->setError($form['settings']['block_form']['field_heading'], t('Heading field is required.'));
+    $form_state->setErrorByName('settings][block_form][field_heading', t('Heading field is required.'));
   }
 
   // Media field validation.
   $media_value = $form_state->getValue(['settings', 'block_form', 'field_media']);
-  if (empty($media_value) || (is_array($media_value) && empty($media_value[0]['target_id']))) {
-    $form_state->setError($form['settings']['block_form']['field_media'], t('Media field is required.'));
+
+  // Check if media has a value in any of the possible formats.
+  $has_media = FALSE;
+  if (!empty($media_value)) {
+    // Media library widget can return selection array.
+    if (isset($media_value['selection'])) {
+      $has_media = !empty($media_value['selection']);
+    }
+    // Or standard target_id format.
+    elseif (is_array($media_value) && isset($media_value[0]['target_id'])) {
+      $has_media = !empty($media_value[0]['target_id']);
+    }
+    // Or just target_id directly.
+    elseif (is_numeric($media_value)) {
+      $has_media = TRUE;
+    }
+  }
+
+  if (!$has_media) {
+    $form_state->setErrorByName('settings][block_form][field_media', t('Media field is required.'));
   }
 
   // Style fields validation.
   $style_color = $form_state->getValue(['settings', 'block_form', 'field_style_color']);
   if (empty($style_color) || (is_array($style_color) && empty($style_color[0]['value']))) {
-    $form_state->setError($form['settings']['block_form']['field_style_color'], t('Style Color field is required.'));
+    $form_state->setErrorByName('settings][block_form][field_style_color', t('Style Color field is required.'));
   }
 
   $style_position = $form_state->getValue(['settings', 'block_form', 'field_style_position']);
   if (empty($style_position) || (is_array($style_position) && empty($style_position[0]['value']))) {
-    $form_state->setError($form['settings']['block_form']['field_style_position'], t('Style Position field is required.'));
+    $form_state->setErrorByName('settings][block_form][field_style_position', t('Style Position field is required.'));
   }
 
   $style_variation = $form_state->getValue(['settings', 'block_form', 'field_style_variation']);
   if (empty($style_variation) || (is_array($style_variation) && empty($style_variation[0]['value']))) {
-    $form_state->setError($form['settings']['block_form']['field_style_variation'], t('Media Size field is required.'));
+    $form_state->setErrorByName('settings][block_form][field_style_variation', t('Media Size field is required.'));
   }
 
   $heading_level = $form_state->getValue(['settings', 'block_form', 'field_heading_level']);
   if (empty($heading_level) || (is_array($heading_level) && empty($heading_level[0]['value']))) {
-    $form_state->setError($form['settings']['block_form']['field_heading_level'], t('Heading Level field is required.'));
+    $form_state->setErrorByName('settings][block_form][field_heading_level', t('Heading Level field is required.'));
   }
 }
 

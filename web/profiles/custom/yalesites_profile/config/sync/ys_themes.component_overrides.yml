@@ -136,6 +136,7 @@ grand_hero:
     values:
       full: Tall
       reduced: Short
+      mini: Mini
     default: full
   field_style_color:
     values:
