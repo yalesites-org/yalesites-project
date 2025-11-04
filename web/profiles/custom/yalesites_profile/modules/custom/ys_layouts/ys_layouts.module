@@ -153,16 +153,6 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
       $form['info']['#description'] = t('Add a short, descriptive title to easily find and reuse the Reusable Block. Defaults to Administrative label if no title is provided.');
     }
   }
-
-  // Target Layout Builder block configuration forms to preserve tabs.
-  if ($form_id === 'layout_builder_configure_block' ||
-      (isset($form['#base_form_id']) &&
-       $form['#base_form_id'] === 'layout_builder_configure_block')) {
-
-    // Add validation handlers to maintain modal context during errors.
-    array_unshift($form['#validate'], 'ys_layouts_prepare_validation_context');
-    $form['#validate'][] = 'ys_layouts_preserve_field_group_context';
-  }
 }
 
 /**
@@ -283,78 +273,6 @@ function ys_layouts_preprocess_layout(&$variables) {
       // Replace underscores with hyphens.
       $padding_options = str_replace('_', '-', $config['padding_options']);
       $variables['settings']['padding'] = $padding_options;
-    }
-  }
-}
-
-/**
- * Prepare validation context for Layout Builder block forms.
- *
- * This validation handler stores the current form state context before
- * validation occurs, allowing us to preserve modal context and Field Group
- * tabs when validation errors are present.
- *
- * @param array $form
- *   The form array.
- * @param \Drupal\Core\Form\FormStateInterface $form_state
- *   The form state object.
- */
-function ys_layouts_prepare_validation_context(array &$form, FormStateInterface $form_state) {
-  // Store relevant form context data to preserve during validation errors.
-  $context_data = [
-    'form_id' => $form_state->getFormObject()->getFormId(),
-    'form_display_id' => $form_state->get('form_display'),
-    'layout_builder_modal' => TRUE,
-    'preserve_field_groups' => TRUE,
-  ];
-
-  // Store context in form state for later retrieval.
-  $form_state->set('ys_layouts_validation_context', $context_data);
-}
-
-/**
- * Preserve Field Group context during Layout Builder validation errors.
- *
- * This validation handler ensures that Field Group tabs and modal context
- * are maintained when validation errors occur in Layout Builder block forms,
- * preventing users from being redirected out of the tabbed interface.
- *
- * @param array $form
- *   The form array.
- * @param \Drupal\Core\Form\FormStateInterface $form_state
- *   The form state object.
- */
-function ys_layouts_preserve_field_group_context(array &$form, FormStateInterface $form_state) {
-  // Only act if there are validation errors.
-  if (!$form_state->getErrors()) {
-    return;
-  }
-
-  // Retrieve stored validation context.
-  $context_data = $form_state->get('ys_layouts_validation_context');
-  if (!$context_data) {
-    return;
-  }
-
-  // Ensure Field Group processing is maintained during validation errors.
-  if (!empty($context_data['preserve_field_groups'])) {
-    // Re-process field groups to maintain tab structure.
-    $form_display = $form_state->get('form_display');
-    if ($form_display) {
-      // Trigger field group processing again to restore tab structure.
-      \Drupal::moduleHandler()->alter('form', $form, $form_state, $form_state->getFormObject()->getFormId());
-    }
-
-    // Maintain modal context by ensuring proper form rebuild attributes.
-    if (!empty($context_data['layout_builder_modal'])) {
-      $form_state->setRebuild(TRUE);
-      $form_state->set('layout_builder_modal_preserved', TRUE);
-
-      // Add attributes to help maintain modal state in the frontend.
-      if (!isset($form['#attributes'])) {
-        $form['#attributes'] = [];
-      }
-      $form['#attributes']['data-layout-builder-modal'] = 'preserved';
     }
   }
 }
