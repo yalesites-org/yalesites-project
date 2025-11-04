@@ -97,7 +97,7 @@ content:
     type: entity_reference_entity_view
     label: hidden
     settings:
-      view_mode: card_secondary_3_2
+      view_mode: text_with_image_feature_equal
       link: false
     third_party_settings: {  }
     weight: 2
