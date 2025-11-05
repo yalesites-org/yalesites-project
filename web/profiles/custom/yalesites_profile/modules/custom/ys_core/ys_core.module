@@ -122,10 +122,8 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
       $form['settings']['block_form']['#prefix'] = '<div id="grand-hero-settings">';
       $form['settings']['block_form']['#suffix'] = '</div>';
 
-      // Add validation handlers.
-      array_unshift($form['#validate'], 'ys_core_grand_hero_prepare_validation');
+      // Add validation handler.
       $form['#validate'][] = 'ys_core_grand_hero_validate';
-      $form['#validate'][] = 'ys_core_grand_hero_preserve_context';
 
       // Add custom JavaScript to ensure states are properly initialized.
       $form['#attached']['library'][] = 'ys_core/grand_hero_form';
@@ -1023,99 +1021,63 @@ function ys_core_grand_hero_display_mode_callback($form, FormStateInterface $for
  * @param \Drupal\Core\Form\FormStateInterface $form_state
  *   The form state object.
  */
-function ys_core_grand_hero_prepare_validation(array &$form, FormStateInterface $form_state) {
-  // Store context for preserving modal and field group behavior during errors.
-  $context_data = [
-    'form_id' => $form_state->getFormObject()->getFormId(),
-    'block_type' => 'grand_hero',
-    'layout_builder_modal' => TRUE,
-    'preserve_field_groups' => TRUE,
-  ];
-
-  $form_state->set('ys_core_grand_hero_validation_context', $context_data);
-}
 
 /**
  * Validation handler for Grand Hero block form.
  */
 function ys_core_grand_hero_validate($form, FormStateInterface $form_state) {
   // Validate required fields that are configured in field definitions.
+  // Using setErrorByName() to ensure errors are properly associated
+  // with field names regardless of form structure.
   // Heading field validation.
   $heading_value = $form_state->getValue(['settings', 'block_form', 'field_heading', 0, 'value']);
   if (empty(trim($heading_value))) {
-    $form_state->setError($form['settings']['block_form']['field_heading'], t('Heading field is required.'));
+    $form_state->setErrorByName('settings][block_form][field_heading', t('Heading field is required.'));
   }
 
   // Media field validation.
   $media_value = $form_state->getValue(['settings', 'block_form', 'field_media']);
-  if (empty($media_value) || (is_array($media_value) && empty($media_value[0]['target_id']))) {
-    $form_state->setError($form['settings']['block_form']['field_media'], t('Media field is required.'));
+
+  // Check if media has a value in any of the possible formats.
+  $has_media = FALSE;
+  if (!empty($media_value)) {
+    // Media library widget can return selection array.
+    if (isset($media_value['selection'])) {
+      $has_media = !empty($media_value['selection']);
+    }
+    // Or standard target_id format.
+    elseif (is_array($media_value) && isset($media_value[0]['target_id'])) {
+      $has_media = !empty($media_value[0]['target_id']);
+    }
+    // Or just target_id directly.
+    elseif (is_numeric($media_value)) {
+      $has_media = TRUE;
+    }
+  }
+
+  if (!$has_media) {
+    $form_state->setErrorByName('settings][block_form][field_media', t('Media field is required.'));
   }
 
   // Style fields validation.
   $style_color = $form_state->getValue(['settings', 'block_form', 'field_style_color']);
   if (empty($style_color) || (is_array($style_color) && empty($style_color[0]['value']))) {
-    $form_state->setError($form['settings']['block_form']['field_style_color'], t('Style Color field is required.'));
+    $form_state->setErrorByName('settings][block_form][field_style_color', t('Style Color field is required.'));
   }
 
   $style_position = $form_state->getValue(['settings', 'block_form', 'field_style_position']);
   if (empty($style_position) || (is_array($style_position) && empty($style_position[0]['value']))) {
-    $form_state->setError($form['settings']['block_form']['field_style_position'], t('Style Position field is required.'));
+    $form_state->setErrorByName('settings][block_form][field_style_position', t('Style Position field is required.'));
   }
 
   $style_variation = $form_state->getValue(['settings', 'block_form', 'field_style_variation']);
   if (empty($style_variation) || (is_array($style_variation) && empty($style_variation[0]['value']))) {
-    $form_state->setError($form['settings']['block_form']['field_style_variation'], t('Media Size field is required.'));
+    $form_state->setErrorByName('settings][block_form][field_style_variation', t('Media Size field is required.'));
   }
 
   $heading_level = $form_state->getValue(['settings', 'block_form', 'field_heading_level']);
   if (empty($heading_level) || (is_array($heading_level) && empty($heading_level[0]['value']))) {
-    $form_state->setError($form['settings']['block_form']['field_heading_level'], t('Heading Level field is required.'));
-  }
-}
-
-/**
- * Preserve form context for Grand Hero block during validation errors.
- *
- * This validation handler ensures that when validation errors occur,
- * the modal context and field group tabs are preserved, preventing
- * users from being redirected out of the tabbed interface.
- *
- * @param array $form
- *   The form array.
- * @param \Drupal\Core\Form\FormStateInterface $form_state
- *   The form state object.
- */
-function ys_core_grand_hero_preserve_context(array &$form, FormStateInterface $form_state) {
-  // Only act if there are validation errors.
-  if (!$form_state->getErrors()) {
-    return;
-  }
-
-  // Retrieve stored validation context.
-  $context_data = $form_state->get('ys_core_grand_hero_validation_context');
-  if (!$context_data) {
-    return;
-  }
-
-  // Ensure the form stays in modal context during validation errors.
-  if (!empty($context_data['layout_builder_modal'])) {
-    $form_state->setRebuild(TRUE);
-    $form_state->set('layout_builder_modal_preserved', TRUE);
-
-    // Add attributes to help maintain modal state in the frontend.
-    if (!isset($form['#attributes'])) {
-      $form['#attributes'] = [];
-    }
-    $form['#attributes']['data-layout-builder-modal'] = 'preserved';
-    $form['#attributes']['data-grand-hero-validation'] = 'error';
-  }
-
-  // Ensure Field Group processing is maintained during validation errors.
-  if (!empty($context_data['preserve_field_groups'])) {
-    // Force field group libraries to be attached for proper tab functionality.
-    $form['#attached']['library'][] = 'field_group/formatter.tabs';
-    $form['#attached']['library'][] = 'field_group/core';
+    $form_state->setErrorByName('settings][block_form][field_heading_level', t('Heading Level field is required.'));
   }
 }
 
