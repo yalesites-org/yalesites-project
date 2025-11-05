@@ -6,6 +6,7 @@ dependencies:
     - block_content.type.directory
     - field.field.block_content.directory.field_heading
     - field.field.block_content.directory.field_instructions
+    - field.field.block_content.directory.field_padding_options
   module:
     - allowed_formats
     - field_group
@@ -100,6 +101,12 @@ content:
   field_instructions:
     type: markup
     weight: -1
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_padding_options:
+    type: options_select
+    weight: 10
     region: content
     settings: {  }
     third_party_settings: {  }

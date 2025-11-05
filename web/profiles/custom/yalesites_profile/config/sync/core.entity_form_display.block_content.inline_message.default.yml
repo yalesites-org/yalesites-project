@@ -6,6 +6,7 @@ dependencies:
     - block_content.type.inline_message
     - field.field.block_content.inline_message.field_heading
     - field.field.block_content.inline_message.field_link
+    - field.field.block_content.inline_message.field_padding_options
     - field.field.block_content.inline_message.field_style_color
     - field.field.block_content.inline_message.field_text
   module:
@@ -117,6 +118,12 @@ content:
         maxlength_js: null
         maxlength_js_label: 'Content limited to @limit characters, remaining: <strong>@remaining</strong>'
         maxlength_js_enforce: false
+  field_padding_options:
+    type: options_select
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_style_color:
     type: options_select
     weight: 1

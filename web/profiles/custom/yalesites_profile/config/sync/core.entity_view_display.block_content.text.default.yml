@@ -5,6 +5,7 @@ dependencies:
   config:
     - block_content.type.text
     - field.field.block_content.text.field_instructions
+    - field.field.block_content.text.field_padding_options
     - field.field.block_content.text.field_style_variation
     - field.field.block_content.text.field_text
   module:
@@ -15,6 +16,13 @@ targetEntityType: block_content
 bundle: text
 mode: default
 content:
+  field_padding_options:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 10
+    region: content
   field_style_variation:
     type: list_key
     label: hidden

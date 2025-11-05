@@ -6,62 +6,11 @@ dependencies:
     - block_content.type.embed
     - field.field.block_content.embed.field_instructions
     - field.field.block_content.embed.field_media
+    - field.field.block_content.embed.field_padding_options
   module:
-    - field_group
-    - hide_revision_field
     - markup
     - media_library
     - media_library_edit
-third_party_settings:
-  field_group:
-    group_block_tabs:
-      children:
-        - group_content_tab
-        - group_advanced_tab
-      label: 'Block tabs'
-      region: content
-      parent_name: ''
-      weight: 0
-      format_type: tabs
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        direction: horizontal
-        width_breakpoint: 640
-    group_content_tab:
-      children:
-        - field_media
-      label: Content
-      region: content
-      parent_name: group_block_tabs
-      weight: 1
-      format_type: tab
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        formatter: closed
-        description: ''
-        required_fields: false
-        open: true
-        weight: -10
-    group_advanced_tab:
-      children:
-        - info
-        - revision_log
-      label: Advanced
-      region: content
-      parent_name: group_block_tabs
-      weight: 3
-      format_type: tab
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        formatter: closed
-        description: ''
-        required_fields: false
 id: block_content.embed.default
 targetEntityType: block_content
 bundle: embed
@@ -82,6 +31,12 @@ content:
     third_party_settings:
       media_library_edit:
         show_edit: '1'
+  field_padding_options:
+    type: options_select
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   info:
     type: string_textfield
     weight: 2
@@ -104,4 +59,3 @@ content:
       hide_revision: false
     third_party_settings: {  }
 hidden: {  }
-
