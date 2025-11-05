@@ -278,7 +278,7 @@ function ys_core_preprocess_block(&$variables) {
   // Supports the post lead-in (field_teaser_lead_in) on reference cards.
   if ($variables['plugin_id'] == 'inline_block:reference_card') {
 
-    if (!isset($variables['content']['field_show_teaser_lead_in']) && !isset($variables['content']['field_content_ref'])) {
+    if (!isset($variables['content']['field_content_ref'])) {
       return;
     }
 
@@ -287,9 +287,20 @@ function ys_core_preprocess_block(&$variables) {
       $showEyebrow = $variables['content']['field_show_teaser_lead_in'][0]['#markup'];
     }
 
+    // Get the component theme from the block entity's field_style_color.
+    $theme = 'one';
+    $block = $variables['content']['#block_content'] ?? NULL;
+    if ($block && $block->hasField('field_style_color')) {
+      $fieldValue = $block->get('field_style_color')->value;
+      if (!empty($fieldValue)) {
+        $theme = $fieldValue;
+      }
+    }
+
     $node = ($variables['content']['field_content_ref'][0]) ?? NULL;
     if ($node && $node['#node'] instanceof Node) {
       $node['#node']->show_eyebrow = $showEyebrow;
+      $node['#node']->reference_card_theme = $theme;
     }
   }
 
