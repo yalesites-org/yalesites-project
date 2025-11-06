@@ -39,20 +39,42 @@ class SystemInstructionsAccessCheck implements AccessInterface {
    *   The access result.
    */
   public function access(AccountInterface $account) {
-    // Check if user has the required permission or is a site administrator.
-    if (!$account->hasPermission('manage ys ai system instructions') && !$account->hasPermission('administer site configuration')) {
+    // Check if user has the required permission.
+    if (!$account->hasPermission('manage ys ai system instructions')) {
       return AccessResult::forbidden('User lacks required permission.');
     }
 
-    // Check if the feature is enabled in configuration.
+    // Check if the integration is enabled in the integrations settings.
+    $integrationsConfig = $this->configFactory->get('ys_integrations.integration_settings');
+    if (!$integrationsConfig->get('ys_ai_system_instructions')) {
+      return AccessResult::forbidden('System instructions integration is not enabled.')
+        ->addCacheableDependency($integrationsConfig);
+    }
+
+    // Check if the feature is enabled and fully configured.
     $config = $this->configFactory->get('ys_ai_system_instructions.settings');
     if (!$config->get('system_instructions_enabled')) {
       return AccessResult::forbidden('System instruction modification is not enabled.')
         ->addCacheableDependency($config);
     }
 
+    // Verify all required API configuration is present.
+    $required_settings = [
+      'system_instructions_api_endpoint',
+      'system_instructions_web_app_name',
+      'system_instructions_api_key',
+    ];
+
+    foreach ($required_settings as $setting) {
+      if (empty($config->get($setting))) {
+        return AccessResult::forbidden('System instructions are not fully configured.')
+          ->addCacheableDependency($config);
+      }
+    }
+
     return AccessResult::allowed()
       ->addCacheableDependency($config)
+      ->addCacheableDependency($integrationsConfig)
       ->cachePerPermissions();
   }
 

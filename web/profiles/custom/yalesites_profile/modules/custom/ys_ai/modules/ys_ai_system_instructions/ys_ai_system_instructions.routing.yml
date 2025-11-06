@@ -5,7 +5,7 @@ ys_ai_system_instructions.settings:
     _form: '\Drupal\ys_ai_system_instructions\Form\SystemInstructionsSettingsForm'
     _title: 'YS AI System Instructions Settings'
   requirements:
-    _permission: 'manage ys ai system instructions'
+    _permission: 'configure ys ai system instructions'
 
 # System Instructions Management
 ys_ai_system_instructions.form:

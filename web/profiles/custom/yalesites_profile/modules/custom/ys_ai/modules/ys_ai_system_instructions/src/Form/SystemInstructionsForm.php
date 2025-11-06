@@ -153,14 +153,15 @@ class SystemInstructionsForm extends FormBase {
       $stats = $this->instructionsManager->getVersionStats();
     }
     catch (\Exception $e) {
-      // If API sync fails, get local version and show error.
-      $this->messenger()->addError($this->t('Failed to sync system instructions: @error', ['@error' => $e->getMessage()]));
+      // If an unexpected error occurs, fall back to local version.
+      // The API service already handles known errors gracefully, but catch
+      // any unexpected exceptions here.
       $active = $this->instructionsManager->getStorageService()->getActiveInstructions();
       $current = [
         'instructions' => $active ? $active['instructions'] : '',
         'version' => $active ? (int) $active['version'] : 0,
         'synced' => FALSE,
-        'sync_error' => $e->getMessage(),
+        'sync_error' => 'Unable to sync with API. Using local version.',
       ];
       $stats = $this->instructionsManager->getVersionStats();
     }

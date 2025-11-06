@@ -6,7 +6,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\key\KeyRepositoryInterface;
 use GuzzleHttp\ClientInterface;
-use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\GuzzleException;
 
 /**
  * Service for managing system instructions API calls.
@@ -144,19 +144,49 @@ class SystemInstructionsApiService {
       ];
 
     }
-    catch (RequestException $e) {
+    catch (GuzzleException $e) {
       $response_time = round((microtime(TRUE) - $start_time) * 1000, 2);
+      $error_message = $e->getMessage();
+
+      // Log the detailed error for debugging.
       $this->logger->error('Failed to get system instructions from API: @error', [
-        '@error' => $e->getMessage(),
+        '@error' => $error_message,
         'response_time_ms' => $response_time,
         'endpoint' => $config['api_endpoint'],
         'timeout' => self::API_TIMEOUT,
+        'exception_class' => get_class($e),
       ]);
+
+      // Provide a user-friendly error message.
+      $user_message = 'Unable to connect to the API. Please check your API endpoint and network connection.';
+
+      // Check for specific error types to provide more helpful messages.
+      if (strpos($error_message, 'cURL error 6') !== FALSE || strpos($error_message, 'Could not resolve host') !== FALSE) {
+        $user_message = 'Cannot reach the API endpoint. Please verify the endpoint URL is correct.';
+      }
+      elseif (strpos($error_message, 'cURL error 7') !== FALSE || strpos($error_message, 'Failed to connect') !== FALSE) {
+        $user_message = 'Connection refused by the API endpoint. Please check if the service is running.';
+      }
+      elseif (strpos($error_message, 'cURL error 28') !== FALSE || strpos($error_message, 'timed out') !== FALSE) {
+        $user_message = 'API request timed out. The service may be slow or unreachable.';
+      }
+      elseif (strpos($error_message, '401') !== FALSE || strpos($error_message, 'Unauthorized') !== FALSE) {
+        $user_message = 'API authentication failed. Please check your API key.';
+      }
+      elseif (strpos($error_message, '403') !== FALSE || strpos($error_message, 'Forbidden') !== FALSE) {
+        $user_message = 'Access denied by the API. Please verify your API key has the correct permissions.';
+      }
+      elseif (strpos($error_message, '404') !== FALSE || strpos($error_message, 'Not Found') !== FALSE) {
+        $user_message = 'API endpoint not found. Please check the endpoint URL.';
+      }
+      elseif (strpos($error_message, '500') !== FALSE || strpos($error_message, 'Internal Server Error') !== FALSE) {
+        $user_message = 'The API server encountered an error. Please try again later.';
+      }
 
       return [
         'success' => FALSE,
         'data' => '',
-        'error' => 'API request failed: ' . $e->getMessage(),
+        'error' => $user_message,
       ];
     }
   }
@@ -244,19 +274,49 @@ class SystemInstructionsApiService {
       ];
 
     }
-    catch (RequestException $e) {
+    catch (GuzzleException $e) {
       $response_time = round((microtime(TRUE) - $start_time) * 1000, 2);
+      $error_message = $e->getMessage();
+
+      // Log the detailed error for debugging.
       $this->logger->error('Failed to set system instructions via API: @error', [
-        '@error' => $e->getMessage(),
+        '@error' => $error_message,
         'response_time_ms' => $response_time,
         'endpoint' => $config['api_endpoint'],
         'instructions_length' => $instructions_length,
         'timeout' => self::API_TIMEOUT,
+        'exception_class' => get_class($e),
       ]);
+
+      // Provide a user-friendly error message.
+      $user_message = 'Unable to connect to the API. Please check your API endpoint and network connection.';
+
+      // Check for specific error types to provide more helpful messages.
+      if (strpos($error_message, 'cURL error 6') !== FALSE || strpos($error_message, 'Could not resolve host') !== FALSE) {
+        $user_message = 'Cannot reach the API endpoint. Please verify the endpoint URL is correct.';
+      }
+      elseif (strpos($error_message, 'cURL error 7') !== FALSE || strpos($error_message, 'Failed to connect') !== FALSE) {
+        $user_message = 'Connection refused by the API endpoint. Please check if the service is running.';
+      }
+      elseif (strpos($error_message, 'cURL error 28') !== FALSE || strpos($error_message, 'timed out') !== FALSE) {
+        $user_message = 'API request timed out. The service may be slow or unreachable.';
+      }
+      elseif (strpos($error_message, '401') !== FALSE || strpos($error_message, 'Unauthorized') !== FALSE) {
+        $user_message = 'API authentication failed. Please check your API key.';
+      }
+      elseif (strpos($error_message, '403') !== FALSE || strpos($error_message, 'Forbidden') !== FALSE) {
+        $user_message = 'Access denied by the API. Please verify your API key has the correct permissions.';
+      }
+      elseif (strpos($error_message, '404') !== FALSE || strpos($error_message, 'Not Found') !== FALSE) {
+        $user_message = 'API endpoint not found. Please check the endpoint URL.';
+      }
+      elseif (strpos($error_message, '500') !== FALSE || strpos($error_message, 'Internal Server Error') !== FALSE) {
+        $user_message = 'The API server encountered an error. Please try again later.';
+      }
 
       return [
         'success' => FALSE,
-        'error' => 'API request failed: ' . $e->getMessage(),
+        'error' => $user_message,
       ];
     }
   }

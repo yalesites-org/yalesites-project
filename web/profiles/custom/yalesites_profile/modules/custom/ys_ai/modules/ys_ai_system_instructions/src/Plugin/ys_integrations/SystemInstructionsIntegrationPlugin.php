@@ -102,6 +102,11 @@ class SystemInstructionsIntegrationPlugin extends IntegrationPluginBase {
    * {@inheritdoc}
    */
   public function build(): array {
+    // Only show the integration card if fully configured.
+    if (!$this->isTurnedOn()) {
+      return [];
+    }
+
     $form = [];
 
     $form['title'] = $this->pluginDefinition['label'];
@@ -112,75 +117,60 @@ class SystemInstructionsIntegrationPlugin extends IntegrationPluginBase {
     $configUrlAccess = $configUrl->access($this->currentUser);
     $syncUrlAccess = $syncUrl->access($this->currentUser);
 
-    if ($this->isTurnedOn()) {
-      // Get version statistics and current status.
-      try {
-        $stats = $this->instructionsManager->getVersionStats();
-        $current = $this->instructionsManager->getCurrentInstructions();
+    // Get version statistics and current status.
+    try {
+      $stats = $this->instructionsManager->getVersionStats();
+      $current = $this->instructionsManager->getCurrentInstructions();
 
-        $form['status'] = [
-          '#type' => 'container',
-          '#attributes' => ['class' => ['integration-status']],
-        ];
+      $form['status'] = [
+        '#type' => 'container',
+        '#attributes' => ['class' => ['integration-status']],
+      ];
 
-        $form['status']['version_info'] = [
-          '#markup' => '<p><strong>' . $this->t('Current version:') . '</strong> ' .
-          ($current['version'] ?: $this->t('None')) .
-          ' | <strong>' . $this->t('Total versions:') . '</strong> ' .
-          $stats['total_versions'] . '</p>',
-        ];
+      $form['status']['version_info'] = [
+        '#markup' => '<p><strong>' . $this->t('Current version:') . '</strong> ' .
+        ($current['version'] ?: $this->t('None')) .
+        ' | <strong>' . $this->t('Total versions:') . '</strong> ' .
+        $stats['total_versions'] . '</p>',
+      ];
 
-        if (!$current['synced']) {
-          $form['status']['sync_warning'] = [
-            '#markup' => '<div class="messages messages--warning">' .
-            $this->t('Warning: API sync issues detected') . '</div>',
-          ];
-        }
-
-        $form['#actions']['manage'] = [
-          '#type' => 'link',
-          '#title' => $this->t('Manage Instructions'),
-          '#url' => $syncUrl,
-          '#access' => $syncUrlAccess,
-          '#attributes' => ['class' => ['button', 'button--primary']],
-        ];
-
-        $form['#actions']['configure'] = [
-          '#type' => 'link',
-          '#title' => $this->t('Configure'),
-          '#url' => $configUrl,
-          '#access' => $configUrlAccess,
-          '#attributes' => ['class' => ['button']],
-        ];
-
-        $form['#actions']['history'] = [
-          '#type' => 'link',
-          '#title' => $this->t('Version History'),
-          '#url' => Url::fromRoute('ys_ai_system_instructions.versions'),
-          '#access' => $syncUrlAccess,
-          '#attributes' => ['class' => ['button']],
-        ];
-
-      }
-      catch (\Exception $e) {
-        $form['error'] = [
-          '#markup' => '<div class="messages messages--error">' .
-          $this->t('Error loading system instructions status: @error', ['@error' => $e->getMessage()]) .
-          '</div>',
-        ];
-
-        $form['#actions']['configure'] = [
-          '#type' => 'link',
-          '#title' => $this->t('Configure'),
-          '#url' => $configUrl,
-          '#access' => $configUrlAccess,
-          '#attributes' => ['class' => ['button', 'button--primary']],
+      if (!$current['synced']) {
+        $form['status']['sync_warning'] = [
+          '#markup' => '<div class="messages messages--warning">' .
+          $this->t('Warning: API sync issues detected') . '</div>',
         ];
       }
+
+      $form['#actions']['manage'] = [
+        '#type' => 'link',
+        '#title' => $this->t('Manage Instructions'),
+        '#url' => $syncUrl,
+        '#access' => $syncUrlAccess,
+        '#attributes' => ['class' => ['button', 'button--primary']],
+      ];
+
+      $form['#actions']['configure'] = [
+        '#type' => 'link',
+        '#title' => $this->t('Configure'),
+        '#url' => $configUrl,
+        '#access' => $configUrlAccess,
+        '#attributes' => ['class' => ['button']],
+      ];
+
+      $form['#actions']['history'] = [
+        '#type' => 'link',
+        '#title' => $this->t('Version History'),
+        '#url' => Url::fromRoute('ys_ai_system_instructions.versions'),
+        '#access' => $syncUrlAccess,
+        '#attributes' => ['class' => ['button']],
+      ];
+
     }
-    else {
-      $form['#actions']['not_configured'] = [
-        '#markup' => '<p>' . $this->t('This integration is not configured. Configure the API settings to enable system instructions management.') . '</p>',
+    catch (\Exception $e) {
+      $form['error'] = [
+        '#markup' => '<div class="messages messages--error">' .
+        $this->t('Error loading system instructions status: @error', ['@error' => $e->getMessage()]) .
+        '</div>',
       ];
 
       $form['#actions']['configure'] = [
