@@ -1,0 +1,24 @@
+uuid: d58c2694-bf77-4060-b103-289c12f20a8f
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.event_calendar
+    - field.storage.block_content.field_heading
+    - filter.format.heading_html
+  module:
+    - text
+id: block_content.event_calendar.field_heading
+field_name: field_heading
+entity_type: block_content
+bundle: event_calendar
+label: 'Event Calendar Title'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - heading_html
+field_type: text

@@ -7,6 +7,7 @@ dependencies:
     - field.field.block_content.link_grid.field_heading
     - field.field.block_content.link_grid.field_instructions
     - field.field.block_content.link_grid.field_link_lists
+    - field.field.block_content.link_grid.field_padding_options
     - field.field.block_content.link_grid.field_style_color
   module:
     - allowed_formats
@@ -17,10 +18,6 @@ dependencies:
     - paragraphs
     - paragraphs_features
     - text
-id: block_content.link_grid.default
-targetEntityType: block_content
-bundle: link_grid
-mode: default
 third_party_settings:
   field_group:
     group_block_tabs:
@@ -74,7 +71,7 @@ third_party_settings:
         description: ''
         required_fields: false
     group_advanced_tab:
-      children: []
+      children: {  }
       label: Advanced
       region: content
       parent_name: group_block_tabs
@@ -87,6 +84,10 @@ third_party_settings:
         formatter: closed
         description: ''
         required_fields: false
+id: block_content.link_grid.default
+targetEntityType: block_content
+bundle: link_grid
+mode: default
 content:
   field_heading:
     type: text_textfield
@@ -133,6 +134,12 @@ content:
         add_in_between_link_count: 3
         delete_confirmation: true
         show_drag_and_drop: true
+  field_padding_options:
+    type: options_select
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_style_color:
     type: options_select
     weight: 4
@@ -149,3 +156,4 @@ content:
     third_party_settings: {  }
 hidden:
   revision_log: true
+

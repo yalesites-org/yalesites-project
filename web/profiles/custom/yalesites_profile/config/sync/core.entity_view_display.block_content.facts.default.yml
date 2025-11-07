@@ -4,10 +4,11 @@ status: true
 dependencies:
   config:
     - block_content.type.facts
-    - field.field.block_content.facts.field_heading
     - field.field.block_content.facts.field_facts_items
+    - field.field.block_content.facts.field_heading
     - field.field.block_content.facts.field_instructions
     - field.field.block_content.facts.field_media
+    - field.field.block_content.facts.field_padding_options
     - field.field.block_content.facts.field_style_alignment
     - field.field.block_content.facts.field_style_color
     - field.field.block_content.facts.field_style_width
@@ -45,6 +46,13 @@ content:
       link: false
     third_party_settings: {  }
     weight: 1
+    region: content
+  field_padding_options:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 10
     region: content
   field_style_alignment:
     type: list_key

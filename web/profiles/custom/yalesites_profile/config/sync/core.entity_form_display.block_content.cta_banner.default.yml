@@ -11,6 +11,7 @@ dependencies:
     - field.field.block_content.cta_banner.field_link_two
     - field.field.block_content.cta_banner.field_media
     - field.field.block_content.cta_banner.field_overlay_background_image
+    - field.field.block_content.cta_banner.field_padding_options
     - field.field.block_content.cta_banner.field_style_color
     - field.field.block_content.cta_banner.field_style_position
     - field.field.block_content.cta_banner.field_text
@@ -23,10 +24,6 @@ dependencies:
     - maxlength
     - media_library
     - text
-id: block_content.cta_banner.default
-targetEntityType: block_content
-bundle: cta_banner
-mode: default
 third_party_settings:
   field_group:
     group_block_tabs:
@@ -99,6 +96,10 @@ third_party_settings:
         formatter: closed
         description: ''
         required_fields: false
+id: block_content.cta_banner.default
+targetEntityType: block_content
+bundle: cta_banner
+mode: default
 content:
   field_heading:
     type: text_textfield
@@ -163,6 +164,12 @@ content:
     settings:
       media_types: {  }
     third_party_settings: {  }
+  field_padding_options:
+    type: options_select
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_style_color:
     type: options_select
     weight: 7
@@ -200,3 +207,4 @@ content:
     third_party_settings: {  }
 hidden:
   revision_log: true
+

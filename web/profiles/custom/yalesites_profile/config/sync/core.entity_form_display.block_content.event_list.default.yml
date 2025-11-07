@@ -6,10 +6,9 @@ dependencies:
     - block_content.type.event_list
     - field.field.block_content.event_list.field_heading
     - field.field.block_content.event_list.field_instructions
+    - field.field.block_content.event_list.field_padding_options
   module:
     - allowed_formats
-    - field_group
-    - hide_revision_field
     - markup
     - maxlength
     - text
@@ -17,70 +16,6 @@ id: block_content.event_list.default
 targetEntityType: block_content
 bundle: event_list
 mode: default
-third_party_settings:
-  field_group:
-    group_block_tabs:
-      children:
-        - group_content_tab
-        - group_design_tab
-        - group_advanced_tab
-      label: 'Block tabs'
-      region: content
-      parent_name: ''
-      weight: 1
-      format_type: tabs
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        direction: horizontal
-        width_breakpoint: 640
-    group_content_tab:
-      children:
-        - info
-        - field_heading
-      label: Content
-      region: content
-      parent_name: group_block_tabs
-      weight: 1
-      format_type: tab
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        formatter: open
-        description: ''
-        required_fields: false
-        open: true
-        weight: -10
-    group_design_tab:
-      children: []
-      label: Design
-      region: content
-      parent_name: group_block_tabs
-      weight: 2
-      format_type: tab
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        formatter: closed
-        description: ''
-        required_fields: false
-    group_advanced_tab:
-      children: []
-      label: Advanced
-      region: content
-      parent_name: group_block_tabs
-      weight: 3
-      format_type: tab
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        formatter: closed
-        description: ''
-        required_fields: false
 content:
   field_heading:
     type: text_textfield
@@ -100,6 +35,12 @@ content:
   field_instructions:
     type: markup
     weight: -1
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_padding_options:
+    type: options_select
+    weight: 10
     region: content
     settings: {  }
     third_party_settings: {  }

@@ -48,6 +48,7 @@ module:
   emulsify_twig: 0
   entity_redirect: 0
   entity_reference_revisions: 0
+  entity_usage: 0
   environment_indicator: 0
   field: 0
   field_group: 0
@@ -87,6 +88,8 @@ module:
   maxlength: 0
   media: 0
   media_entity_download: 0
+  media_file_delete: 0
+  media_file_delete_entity_usage: 0
   media_library: 0
   media_library_edit: 0
   media_library_form_element: 0
@@ -102,6 +105,7 @@ module:
   metatag_verification: 0
   metatag_views: 0
   migrate: 0
+  migrate_drupal: 0
   migrate_plus: 0
   migrate_tools: 0
   moderation_sidebar: 0
@@ -161,6 +165,7 @@ module:
   ys_layouts: 0
   ys_localist: 0
   ys_mail: 0
+  ys_migrate: 0
   ys_node_access: 0
   ys_servicenow: 0
   ys_starterkit: 0
@@ -177,6 +182,7 @@ module:
   views: 10
   ys_core: 10
   ys_embed: 10
+  ys_file_management: 10
   ys_themes: 10
   paragraphs: 11
   yalesites_profile: 1000

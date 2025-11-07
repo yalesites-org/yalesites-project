@@ -5,9 +5,9 @@ dependencies:
   config:
     - block_content.type.video_banner
     - field.field.block_content.video_banner.field_media
+    - field.field.block_content.video_banner.field_padding_options
     - field.field.block_content.video_banner.field_style_width
   module:
-    - field_group
     - hide_revision_field
     - media_library
     - media_library_edit
@@ -18,68 +18,28 @@ mode: default
 content:
   field_media:
     type: media_library_widget
-    weight: 1
+    weight: 2
     region: content
     settings:
       media_types: {  }
     third_party_settings:
       media_library_edit:
         show_edit: '1'
-  field_style_width:
+  field_padding_options:
     type: options_select
-    weight: 2
+    weight: 10
     region: content
     settings: {  }
     third_party_settings: {  }
-  group_advanced:
-    weight: 3
+  field_style_width:
+    type: options_select
+    weight: 10
     region: content
-    children:
-      - revision_log
-    label: Advanced
-    parent_name: ''
-    format_type: tab
-    format_settings:
-      classes: ''
-      show_empty_fields: false
-      id: ''
-      formatter: closed
-      description: ''
-      required_fields: true
-  group_content:
-    weight: 1
-    region: content
-    children:
-      - info
-      - field_media
-    label: Content
-    parent_name: ''
-    format_type: tab
-    format_settings:
-      classes: ''
-      show_empty_fields: false
-      id: ''
-      formatter: open
-      description: ''
-      required_fields: true
-  group_design:
-    weight: 2
-    region: content
-    children:
-      - field_style_width
-    label: Design
-    parent_name: ''
-    format_type: tab
-    format_settings:
-      classes: ''
-      show_empty_fields: false
-      id: ''
-      formatter: closed
-      description: ''
-      required_fields: true
+    settings: {  }
+    third_party_settings: {  }
   info:
     type: string_textfield
-    weight: 0
+    weight: -5
     region: content
     settings:
       size: 60
@@ -87,7 +47,7 @@ content:
     third_party_settings: {  }
   revision_log:
     type: hide_revision_field_log_widget
-    weight: 3
+    weight: 80
     region: content
     settings:
       rows: 5
