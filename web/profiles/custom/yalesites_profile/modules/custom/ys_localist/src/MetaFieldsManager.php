@@ -339,15 +339,19 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       return $dates;
     }
 
+    // Track the position (0, 1, 2...) not the array key
+    $position = 0;
     foreach ($dates as $index => $date) {
       if ($date['end_value'] >= time()) {
-        $featuredIndex = $index;
+        $featuredIndex = $position;
         break;
       }
+      $position++;
     }
 
     if (!isset($featuredIndex)) {
-      $featuredIndex = array_key_last($dates);
+      // If no upcoming date, use the last position
+      $featuredIndex = count($dates) - 1;
     }
 
     return $featuredIndex;
