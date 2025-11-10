@@ -320,6 +320,8 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       }
       // Sort dates - first date is next upcoming date.
       asort($dates);
+      // Reindex the array so position matches array keys
+      $dates = array_values($dates);
     }
   }
 
