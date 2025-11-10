@@ -320,7 +320,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       }
       // Sort dates - first date is next upcoming date.
       asort($dates);
-      // Reindex the array so position matches array keys
+      // Reindex the array so position matches array keys.
       $dates = array_values($dates);
     }
   }
@@ -341,9 +341,9 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       return $dates;
     }
 
-    // Track the position (0, 1, 2...) not the array key
+    // Track the position (0, 1, 2...) not the array key.
     $position = 0;
-    foreach ($dates as $index => $date) {
+    foreach ($dates as $date) {
       if ($date['end_value'] >= time()) {
         $featuredIndex = $position;
         break;
@@ -352,7 +352,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     }
 
     if (!isset($featuredIndex)) {
-      // If no upcoming date, use the last position
+      // If no upcoming date, use the last position.
       $featuredIndex = count($dates) - 1;
     }
 
