@@ -1,0 +1,11 @@
+services:
+  ys_migrate.csv_validator:
+    class: Drupal\ys_migrate\Service\CsvValidatorService
+    
+  ys_migrate.taxonomy_resolver:
+    class: Drupal\ys_migrate\Service\TaxonomyResolverService
+    arguments: ['@entity_type.manager', '@logger.factory']
+    
+  ys_migrate.profile_import:
+    class: Drupal\ys_migrate\Service\ProfileImportService
+    arguments: ['@current_user', '@ys_migrate.taxonomy_resolver', '@entity_type.manager', '@logger.factory'] 

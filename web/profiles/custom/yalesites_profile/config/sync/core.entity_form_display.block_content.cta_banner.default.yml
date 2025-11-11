@@ -11,16 +11,91 @@ dependencies:
     - field.field.block_content.cta_banner.field_link_two
     - field.field.block_content.cta_banner.field_media
     - field.field.block_content.cta_banner.field_overlay_background_image
+    - field.field.block_content.cta_banner.field_padding_options
     - field.field.block_content.cta_banner.field_style_color
     - field.field.block_content.cta_banner.field_style_position
     - field.field.block_content.cta_banner.field_text
   module:
     - allowed_formats
+    - field_group
+    - hide_revision_field
     - linkit
     - markup
     - maxlength
     - media_library
     - text
+third_party_settings:
+  field_group:
+    group_block_tabs:
+      children:
+        - group_content_tab
+        - group_design_tab
+        - group_advanced_tab
+      label: 'Block tabs'
+      region: content
+      parent_name: ''
+      weight: 1
+      format_type: tabs
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        direction: horizontal
+        width_breakpoint: 640
+    group_content_tab:
+      children:
+        - info
+        - field_media
+        - field_heading
+        - field_text
+        - field_link
+        - field_link_two
+      label: Content
+      region: content
+      parent_name: group_block_tabs
+      weight: 1
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: open
+        description: ''
+        required_fields: false
+        open: true
+        weight: -10
+    group_design_tab:
+      children:
+        - field_style_color
+        - field_style_position
+      label: Design
+      region: content
+      parent_name: group_block_tabs
+      weight: 2
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: closed
+        description: ''
+        required_fields: false
+    group_advanced_tab:
+      children:
+        - field_overlay_background_image
+        - field_heading_level
+      label: Advanced
+      region: content
+      parent_name: group_block_tabs
+      weight: 3
+      format_type: tab
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        formatter: closed
+        description: ''
+        required_fields: false
 id: block_content.cta_banner.default
 targetEntityType: block_content
 bundle: cta_banner
@@ -43,19 +118,19 @@ content:
         maxlength_js_enforce: false
   field_heading_level:
     type: options_select
-    weight: 8
+    weight: 10
     region: content
     settings: {  }
     third_party_settings: {  }
   field_instructions:
     type: markup
-    weight: 0
+    weight: -1
     region: content
     settings: {  }
     third_party_settings: {  }
   field_link:
     type: linkit
-    weight: 9
+    weight: 5
     region: content
     settings:
       placeholder_url: ''
@@ -65,7 +140,7 @@ content:
     third_party_settings: {  }
   field_link_two:
     type: linkit
-    weight: 10
+    weight: 6
     region: content
     settings:
       placeholder_url: ''
@@ -84,20 +159,26 @@ content:
         show_edit: '1'
   field_overlay_background_image:
     type: media_library_widget
-    weight: 7
+    weight: 9
     region: content
     settings:
       media_types: {  }
     third_party_settings: {  }
+  field_padding_options:
+    type: options_select
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_style_color:
     type: options_select
-    weight: 5
+    weight: 7
     region: content
     settings: {  }
     third_party_settings: {  }
   field_style_position:
     type: options_select
-    weight: 6
+    weight: 8
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -126,3 +207,4 @@ content:
     third_party_settings: {  }
 hidden:
   revision_log: true
+

@@ -195,7 +195,8 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     // Dates.
     $dates = $node->field_event_date->getValue();
     $this->orderEventDates($dates);
-    $featuredDate = $this->getFeaturedDate($dates);
+    $featuredIndex = $this->getFeaturedDateIndex($dates);
+    $featuredDate = $this->getFeaturedDateFromIndex($dates, $featuredIndex);
 
     // Teaser responsive image.
     $teaserMediaRender = [];
@@ -292,6 +293,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       'stream_embed_code' => $streamEmbedCode,
       'event_source' => $eventSource,
       'event_featured_date' => $featuredDate,
+      'event_featured_index' => $featuredIndex,
     ];
   }
 
@@ -319,6 +321,36 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       // Sort dates - first date is next upcoming date.
       asort($dates);
     }
+  }
+
+  /**
+   * Get the index of the featured date from the list of dates.
+   *
+   * @param array $dates
+   *   An array of dates.
+   *
+   * @return int|null
+   *   The index of the featured date or NULL.
+   */
+  protected function getFeaturedDateIndex($dates) {
+    $featuredIndex = NULL;
+
+    if (!is_array($dates)) {
+      return $dates;
+    }
+
+    foreach ($dates as $index => $date) {
+      if ($date['end_value'] >= time()) {
+        $featuredIndex = $index;
+        break;
+      }
+    }
+
+    if (!isset($featuredIndex)) {
+      $featuredIndex = array_key_last($dates);
+    }
+
+    return $featuredIndex;
   }
 
   /**
@@ -351,6 +383,29 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     }
 
     return $featuredDate;
+  }
+
+  /**
+   * Get the featured date from the list of dates by index.
+   *
+   * @param array $dates
+   *   An array of dates.
+   * @param int $index
+   *   The index of the date to return.
+   *
+   * @return array|NodeInterface
+   *   The date at the given index or what was passed.
+   */
+  protected function getFeaturedDateFromIndex($dates, $index) {
+    if (!is_array($dates)) {
+      return $dates;
+    }
+
+    if (isset($dates[$index])) {
+      return $dates[$index];
+    }
+
+    return end($dates);
   }
 
 }

@@ -6,6 +6,7 @@ dependencies:
     - block_content.type.pull_quote
     - field.field.block_content.pull_quote.field_caption
     - field.field.block_content.pull_quote.field_instructions
+    - field.field.block_content.pull_quote.field_padding_options
     - field.field.block_content.pull_quote.field_style_variation
     - field.field.block_content.pull_quote.field_text
   module:
@@ -35,7 +36,13 @@ content:
         maxlength_js_enforce: false
   field_instructions:
     type: markup
-    weight: 0
+    weight: -1
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_padding_options:
+    type: options_select
+    weight: 10
     region: content
     settings: {  }
     third_party_settings: {  }
