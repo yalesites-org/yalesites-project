@@ -69,7 +69,7 @@
     "drupal/menu_admin_per_menu": "1.7",
     "drupal/menu_breadcrumb": "2.0.0",
     "drupal/menu_item_extras": "3.1.0",
-    "drupal/menu_item_limit": "2.1.0",
+    "drupal/menu_item_limit": "2.2.0",
     "drupal/metatag": "2.0.2",
     "drupal/migrate_plus": "6.0.4",
     "drupal/migrate_tools": "6.0.4",
@@ -156,7 +156,6 @@
         "Deprecated function: explode(): Passing null to parameter #2 ($string) of type string is deprecated https://www.drupal.org/project/media_library_form_element/issues/3277273": "https://www.drupal.org/files/issues/2023-01-25/deprecated-explode-3277273-11.patch"
       },
       "drupal/menu_item_limit": {
-        "Automated Drupal 11 compatibility fixes for menu_item_limit":"https://www.drupal.org/files/issues/2024-03-18/menu_item_limit.2.1.0.rector.patch",
         "Can permissions be set for specific roles? https://www.drupal.org/project/menu_item_limit/issues/3458139": "https://git.drupalcode.org/project/menu_item_limit/-/merge_requests/12.patch"
       },
       "drupal/migrate_plus": {
