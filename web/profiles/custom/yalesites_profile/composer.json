@@ -42,7 +42,7 @@
     "drupal/gin": "4.1.2",
     "drupal/gin_lb": "2.0.0-beta1",
     "drupal/gin_moderation_sidebar": "1.0.1",
-    "drupal/google_analytics": "4.0.2",
+    "drupal/google_analytics": "4.0.3",
     "drupal/google_tag": "2.0.8",
     "drupal/hide_revision_field": "2.5.0",
     "drupal/honeypot": "2.2.2",
