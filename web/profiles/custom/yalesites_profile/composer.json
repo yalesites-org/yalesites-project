@@ -179,9 +179,6 @@
       "drupal/selective_better_exposed_filters": {
         "Hide form when no options are available:": "patches/selective_better_exposed_filters/selective_better_exposed_filters-3432551.patch"
       },
-      "drupal/taxonomy_manager": {
-        "Access bug on edit terms form https://www.drupal.org/project/taxonomy_manager/issues/3514624": "https://git.drupalcode.org/project/taxonomy_manager/-/merge_requests/69.patch"
-      },
       "drupal/typogrify": {
         "update deprecated php for v8.2 https://www.drupal.org/project/typogrify/issues/3398815": "https://git.drupalcode.org/project/typogrify/-/merge_requests/6.diff"
       }
