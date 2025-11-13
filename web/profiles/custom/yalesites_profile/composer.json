@@ -157,7 +157,7 @@
         "Can permissions be set for specific roles? https://www.drupal.org/project/menu_item_limit/issues/3458139": "https://git.drupalcode.org/project/menu_item_limit/-/merge_requests/12.patch"
       },
       "drupal/migrate_plus": {
-        "Allow callback for Url source, and single item Json plugin https://www.drupal.org/project/migrate_plus/issues/3040427": "https://www.drupal.org/files/issues/2023-02-15/3040427-42-migrate_plus_multiple_urls.patch"
+        "Allow callback for Url source, and single item Json plugin https://www.drupal.org/project/migrate_plus/issues/3040427": "https://www.drupal.org/files/issues/2025-07-20/3040427-66-migrate_plus_multiple_urls.patch"
       },
       "drupal/paragraphs": {
         "hide remove button https://www.drupal.org/project/paragraphs/issues/2919186": "https://www.drupal.org/files/issues/2020-05-13/hide_field_required_paragraphs_remove_button_1.patch"
