@@ -139,10 +139,6 @@
       "drupal/gin": {
         "fix description toggle for CKEditor fields https://www.drupal.org/project/gin/issues/3316265": "https://git.drupalcode.org/project/gin/-/merge_requests/227.patch"
       },
-      "drupal/google_analytics": {
-        "Cannot install from existing config https://www.drupal.org/project/google_analytics/issues/3373921": "https://www.drupal.org/files/issues/2023-08-07/google-analytics-issues-3373921-cannot-install-from-existing-config-11.patch",
-        "Guard against null account https://www.drupal.org/project/google_analytics/issues/3275926": "https://git.drupalcode.org/project/google_analytics/-/merge_requests/36.patch"
-      },
       "drupal/layout_builder_browser": {
         "Add grouping of reusable blocks (3409153) and add fallback images (3408935) - can't use both patches from d.o would cause merge conflict, combined patch": "patches/layout_builder_browser/3408935-and-3409153-9.patch"
       },
