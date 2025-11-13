@@ -171,7 +171,7 @@
         "Fix cloning of inline blocks and paragraphs: https://www.drupal.org/project/quick_node_clone/issues/3100117": "https://git.drupalcode.org/project/quick_node_clone/-/merge_requests/22.diff"
       },
       "drupal/redirect": {
-        "fix validation issue on adding url redirect": "https://www.drupal.org/files/issues/2024-08-11/redirect--2024-08-11--3057250-79.patch"
+        "fix validation issue on adding url redirect: https://www.drupal.org/node/3057250": "https://git.drupalcode.org/project/redirect/-/merge_requests/133.diff"
       },
       "drupal/search_api_html_element_filter": {
         "Automated Drupal 11 compatibility fixes for search_api_html_element_filter": "https://www.drupal.org/files/issues/2024-03-24/search_api_html_element_filter.1.0.4.rector.patch"
