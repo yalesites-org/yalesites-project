@@ -133,7 +133,7 @@ class YsMediaDeleteForm extends MediaDeleteForm {
     $has_usage = $media_used_elsewhere || $file_used_elsewhere;
 
     if ($has_usage) {
-      $description = $this->t('When checked, the file %file will be marked as temporary and removed by cron cleanup (typically within 6 hours). <strong>WARNING: This file is used elsewhere and deleting it may break other content.</strong>', [
+      $description = $this->t("When checked, the file %file will be marked for deletion. The file will only be removed by cron cleanup (typically within 6 hours) <strong>AFTER you remove it from all content where it's used</strong>. <strong>WARNING: This file is currently used in other content. You must remove it from all locations before it can be deleted.</strong>", [
         '%file' => $file->getFilename(),
       ]);
     }

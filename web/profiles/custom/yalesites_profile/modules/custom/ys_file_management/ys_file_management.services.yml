@@ -13,3 +13,12 @@ services:
 
   ys_file_management.media_delete_message_builder:
     class: Drupal\ys_file_management\Service\MediaDeleteMessageBuilder
+
+  ys_file_management.layout_builder_usage_tracker:
+    class: Drupal\ys_file_management\Service\LayoutBuilderUsageTracker
+    arguments: ['@database', '@entity_type.manager', '@logger.channel.ys_file_management']
+
+  ys_file_management.route_subscriber:
+    class: Drupal\ys_file_management\Routing\RouteSubscriber
+    tags:
+      - { name: event_subscriber }

@@ -209,14 +209,14 @@ class YsMediaDeleteMultipleForm extends DeleteMultipleForm {
     if ($files_to_process > 0) {
       $description = $this->formatPlural(
         $files_to_process,
-        'When checked, the associated file will be marked as temporary and removed by cron cleanup (typically within 6 hours).',
-        'When checked, the associated files will be marked as temporary and removed by cron cleanup (typically within 6 hours).'
+        'When checked, the associated file will be marked for deletion and removed by cron cleanup (typically within 6 hours) after all usage is removed.',
+        'When checked, the associated files will be marked for deletion and removed by cron cleanup (typically within 6 hours) after all usage is removed.'
       );
 
       if ($usage_issues) {
-        $description .= ' <strong>WARNING: Some files are used ';
-        $description .= 'elsewhere and deleting them may break ';
-        $description .= 'other content.</strong>';
+        $description .= ' <strong>WARNING: Some files are currently used ';
+        $description .= 'in other content. They will only be deleted AFTER you remove them ';
+        $description .= 'from all locations where they are used.</strong>';
       }
 
       $form['delete_files_bulk'] = [
