@@ -1,4 +1,0 @@
-force delete media files:
-  title: 'Delete media files with usage'
-  description: 'Allows users to delete files attached to media entities even if they are used elsewhere. This bypasses usage safety checks.'
-  restrict access: true

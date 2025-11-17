@@ -78,7 +78,6 @@ dependencies:
     - content_moderation
     - contextual
     - editoria11y
-    - entity_usage
     - environment_indicator
     - file
     - google_tag
@@ -103,7 +102,6 @@ dependencies:
     - ys_alert
     - ys_campus_groups
     - ys_core
-    - ys_file_management
     - ys_integrations
     - ys_localist
 id: platform_admin
@@ -115,7 +113,6 @@ permissions:
   - 'access coffee'
   - 'access content overview'
   - 'access contextual links'
-  - 'access entity usage statistics'
   - 'access environment indicator'
   - 'access files overview'
   - 'access media overview'
@@ -382,7 +379,6 @@ permissions:
   - 'edit terms in post_category'
   - 'edit terms in resource_category'
   - 'edit terms in tags'
-  - 'force delete media files'
   - 'manage media thumbnails settings'
   - 'mark as hidden in editoria11y'
   - 'override all authored by option'
