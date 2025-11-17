@@ -101,7 +101,7 @@
     "preferred-install": "dist",
     "sort-packages": true,
     "platform": {
-      "php": "8.3"
+      "php": "8.4"
     },
     "allow-plugins": {
       "dealerdirect/phpcodesniffer-composer-installer": true,
