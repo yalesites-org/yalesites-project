@@ -227,17 +227,19 @@ class SystemInstructionsForm extends FormBase {
       '#type' => 'submit',
       '#value' => $this->t('Sync'),
       '#submit' => ['::syncFromApi'],
-    ];
-
-    $form['form_wrapper']['actions']['force_sync'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Force Sync'),
-      '#submit' => ['::forceSyncFromApi'],
       '#attributes' => [
-        'title' => $this->t('Force sync ignoring the 10-second cooldown period'),
+        'title' => $this->t('Perform a manual sync'),
       ],
     ];
 
+    // $form['form_wrapper']['actions']['force_sync'] = [
+    //   '#type' => 'submit',
+    //   '#value' => $this->t('Force Sync'),
+    //   '#submit' => ['::forceSyncFromApi'],
+    //   '#attributes' => [
+    //     'title' => $this->t('Force sync ignoring the 10-second cooldown period'),
+    //   ],
+    // ];
     // Add JavaScript for character counting.
     $form['#attached']['drupalSettings']['ysAiSystemInstructions'] = [
       'maxLength' => $max_length,
