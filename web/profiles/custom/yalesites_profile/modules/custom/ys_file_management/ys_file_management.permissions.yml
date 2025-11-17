@@ -1,0 +1,4 @@
+manage media files:
+  title: 'Manage media files'
+  description: 'Delete media files and view usage information regardless of ownership'
+  restrict access: true
