@@ -93,7 +93,9 @@ function ys_views_basic_deploy_10000() {
   // Clear node entity cache (if nodes were updated).
   \Drupal::entityTypeManager()->getStorage('node')->resetCache();
   // Clear Layout Builder tempstore overrides.
-  \Drupal::database()->delete('key_value_expire')
-    ->condition('collection', 'tempstore.shared.layout_builder.section_storage.overrides')
-    ->execute();
+  if (\Drupal::database()->schema()->tableExists('key_value_expire')) {
+    \Drupal::database()->delete('key_value_expire')
+      ->condition('collection', 'tempstore.shared.layout_builder.section_storage.overrides')
+      ->execute();
+  }
 }

@@ -49,4 +49,5 @@ services:
     # This is needed to have ImagImageMagick work on Lando
     # because the Pantheon recipie is broken for ImageMagick
     build_as_root:
+      - git config --global --add safe.directory /app
       - /bin/sh /app/.lando/imagemagicfix.sh

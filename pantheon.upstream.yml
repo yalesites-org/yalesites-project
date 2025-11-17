@@ -5,7 +5,7 @@ database:
   version: 10.6
 object_cache:
   version: 6.2
-drush_version: 10
+drush_version: 12
 web_docroot: true
 enforce_https: transitional
 build_step: true
