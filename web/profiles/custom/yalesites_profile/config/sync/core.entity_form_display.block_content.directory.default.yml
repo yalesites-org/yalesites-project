@@ -9,75 +9,10 @@ dependencies:
     - field.field.block_content.directory.field_padding_options
   module:
     - allowed_formats
-    - field_group
     - hide_revision_field
     - markup
     - maxlength
     - text
-third_party_settings:
-  field_group:
-    group_block_tabs:
-      children:
-        - group_content_tab
-        - group_design_tab
-        - group_advanced_tab
-      label: 'Block tabs'
-      region: content
-      parent_name: ''
-      weight: 1
-      format_type: tabs
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        direction: horizontal
-        width_breakpoint: 640
-    group_content_tab:
-      children:
-        - info
-        - field_heading
-      label: Content
-      region: content
-      parent_name: group_block_tabs
-      weight: 1
-      format_type: tab
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        formatter: open
-        description: ''
-        required_fields: false
-        open: true
-        weight: -10
-    group_design_tab:
-      children: {  }
-      label: Design
-      region: content
-      parent_name: group_block_tabs
-      weight: 2
-      format_type: tab
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        formatter: closed
-        description: ''
-        required_fields: false
-    group_advanced_tab:
-      children: {  }
-      label: Advanced
-      region: content
-      parent_name: group_block_tabs
-      weight: 3
-      format_type: tab
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        formatter: closed
-        description: ''
-        required_fields: false
 id: block_content.directory.default
 targetEntityType: block_content
 bundle: directory
@@ -106,7 +41,7 @@ content:
     third_party_settings: {  }
   field_padding_options:
     type: options_select
-    weight: 10
+    weight: 3
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -120,4 +55,3 @@ content:
     third_party_settings: {  }
 hidden:
   revision_log: true
-
