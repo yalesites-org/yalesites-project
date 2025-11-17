@@ -79,7 +79,7 @@ class YsAiSettings extends AiEngineChatSettings {
         '#title' => $this->t('System Instructions Management'),
         '#description' => $this->t("Configure the AI assistant's behavior and responses."),
         '#markup' => $this->t('<a href="@url">Manage System Instructions</a>', [
-          '@url' => Url::fromRoute('ai_engine_chat.system_instructions_form')->toString(),
+          '@url' => Url::fromRoute('ys_ai_system_instructions.system_instructions_form')->toString(),
         ]),
         '#weight' => 100,
       ];
