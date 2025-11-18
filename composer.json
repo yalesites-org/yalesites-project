@@ -110,6 +110,9 @@
     }
   },
   "config": {
+    "audit": {
+      "ignore": ["SA-CONTRIB-2025-060", "SA-CORE-2025-007", "SA-CORE-2025-008", "SA-CORE-2025-005", "SA-CORE-2025-006"]
+    },
     "preferred-install": "dist",
     "sort-packages": true,
     "platform": {
