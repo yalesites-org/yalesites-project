@@ -187,13 +187,37 @@ If checkbox checked:
 ContentEntityDeleteForm::submitForm() - Delete media entity
 ```
 
-### Error Handling
+### Error Handling Strategy
 
-The module handles errors gracefully:
+The module uses a **best-effort** approach that prioritizes database consistency and allows media deletion to proceed even when file deletion encounters issues.
 
-- **Filesystem deletion fails**: Warning shown, file entity still deleted, media deletion continues
-- **Exception thrown**: Error logged, user notified, media deletion continues
-- **File doesn't exist**: No error, media deletion continues
+**Strategy Details:**
+
+| Scenario | Behavior | Logging | User Feedback | Return Value |
+|----------|----------|---------|---------------|--------------|
+| **Success** | File and entity deleted, cache invalidated | Info log | Success message | TRUE |
+| **Invalid file object** | Abort operation | Error log | Error message | FALSE |
+| **Invalid URI scheme** | Abort operation | Error log | Error message | FALSE |
+| **Filesystem delete fails** | Delete entity anyway | Warning log | Warning message | FALSE |
+| **FileException** | Skip entity deletion | Error log | Error message | FALSE |
+| **EntityStorageException** | File may be orphaned | Error log | Error message | FALSE |
+| **Unexpected exception** | Varies | Error log with type | Error message | FALSE |
+
+**Rationale:**
+- Database consistency takes priority over filesystem consistency
+- Media deletion should not be blocked by file system issues
+- All failures are logged with appropriate severity for monitoring
+- Cache is invalidated on any deletion to prevent stale UI
+
+**Logging Levels:**
+- `info`: Successful operations
+- `warning`: Partial failures (file system deletion failed but entity deleted)
+- `error`: Complete failures, security issues, unexpected errors
+
+**Cache Invalidation:**
+- File cache tags are invalidated on both success and partial success
+- Ensures UI accurately reflects file status
+- Prevents references to deleted files from being cached
 
 ## Limitations
 

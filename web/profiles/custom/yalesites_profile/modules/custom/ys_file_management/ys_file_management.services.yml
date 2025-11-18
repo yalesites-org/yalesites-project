@@ -6,3 +6,4 @@ services:
       - '@messenger'
       - '@logger.factory'
       - '@stream_wrapper_manager'
+      - '@cache_tags.invalidator'
