@@ -35,7 +35,7 @@ class ConditionalMediaDeleteFormTest extends KernelTestBase {
   /**
    * The media file deleter service.
    *
-   * @var \Drupal\ys_file_management\Service\MediaFileDeleter
+   * @var \Drupal\ys_file_management\Service\MediaFileDeleterInterface
    */
   protected $mediaFileDeleter;
 
@@ -114,6 +114,12 @@ class ConditionalMediaDeleteFormTest extends KernelTestBase {
    */
   public function testServiceExists() {
     $this->assertNotNull($this->mediaFileDeleter);
+    // Check that it implements the interface.
+    $this->assertInstanceOf(
+      'Drupal\ys_file_management\Service\MediaFileDeleterInterface',
+      $this->mediaFileDeleter
+    );
+    // Check that it's the concrete implementation.
     $this->assertInstanceOf(
       'Drupal\ys_file_management\Service\MediaFileDeleter',
       $this->mediaFileDeleter

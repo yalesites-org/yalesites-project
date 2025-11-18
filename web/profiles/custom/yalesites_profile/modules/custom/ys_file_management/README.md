@@ -126,14 +126,17 @@ The Media File Delete module checks for file usage via Drupal core's file_usage 
 
 ### Architecture
 
-The module uses a service-oriented architecture to separate concerns:
+The module uses a service-oriented architecture to separate concerns and follows modern Drupal 10+ best practices:
 
 **Service Layer:**
 - `MediaFileDeleter` - Business logic for file deletion
+  - Implements `MediaFileDeleterInterface` for better testability
+  - Uses typed properties and constructor property promotion (PHP 8.0+)
   - Validates file objects and URIs
   - Handles immediate filesystem deletion
   - Manages error handling and user feedback
   - Ensures security through URI scheme validation
+  - Helper methods for logger and cache tag management
 
 **Form Layer:**
 - `ConditionalMediaDeleteForm` - UI and permission handling
@@ -141,12 +144,19 @@ The module uses a service-oriented architecture to separate concerns:
   - Implements defense-in-depth permission checking
   - Delegates file deletion to service layer
   - Manages form display based on user roles
+  - Uses typed properties for injected services
 
 ### Class Structure
 
+**`MediaFileDeleterInterface`**
+- Interface for the file deletion service
+- Defines contract for `validateFile()`, `validateFileUri()`, `deleteFile()`
+- Allows for alternative implementations and improved testing
+
 **`ConditionalMediaDeleteForm`**
 - Extends: `MediaDeleteForm` (from media_file_delete)
-- Services: `ys_file_management.media_file_deleter`
+- Services: `ys_file_management.media_file_deleter` (injected as `MediaFileDeleterInterface`)
+- Constants: `PERMISSION_MANAGE_FILES` (public, for reusability)
 - Methods:
   - `create()` - Dependency injection
   - `buildForm()` - Conditionally show file deletion options
@@ -154,11 +164,20 @@ The module uses a service-oriented architecture to separate concerns:
 
 **`MediaFileDeleter`** (Service)
 - Service ID: `ys_file_management.media_file_deleter`
-- Dependencies: `file_system`, `messenger`, `logger.factory`, `stream_wrapper_manager`
-- Methods:
-  - `validateFile()` - Validates FileInterface objects
-  - `validateFileUri()` - Security check for URI schemes
-  - `deleteFile()` - Immediate file deletion with error handling
+- Interface: `MediaFileDeleterInterface`
+- Dependencies (via constructor property promotion):
+  - `FileSystemInterface $fileSystem`
+  - `MessengerInterface $messenger`
+  - `LoggerChannelFactoryInterface $loggerFactory`
+  - `StreamWrapperManagerInterface $streamWrapperManager`
+  - `CacheTagsInvalidatorInterface $cacheTagsInvalidator`
+- Public Methods:
+  - `validateFile(mixed $file): bool` - Validates FileInterface objects
+  - `validateFileUri(string $file_uri): bool` - Security check for URI schemes
+  - `deleteFile(FileInterface $file): bool` - Immediate file deletion with error handling
+- Protected Helper Methods:
+  - `getLogger(): LoggerChannelInterface` - Returns logger channel
+  - `getFileCacheTags(string $file_id): array` - Returns cache tags for invalidation
 
 ### File Deletion Flow
 
@@ -219,6 +238,28 @@ The module uses a **best-effort** approach that prioritizes database consistency
 - Ensures UI accurately reflects file status
 - Prevents references to deleted files from being cached
 
+### Modern PHP and Drupal 10+ Patterns
+
+This module follows modern development practices for Drupal 10+:
+
+**PHP 8.0+ Features:**
+- **Constructor Property Promotion**: Service dependencies are declared and assigned in the constructor signature, reducing boilerplate code
+- **Typed Properties**: All class properties use explicit type declarations for better IDE support and runtime safety
+- **Mixed Type**: The `validateFile()` method uses `mixed` type for flexible validation
+
+**Drupal 10+ Best Practices:**
+- **Interface-Based Design**: `MediaFileDeleterInterface` follows SOLID principles (Dependency Inversion)
+- **Service Aliasing**: The service definition includes an interface alias for type-hinting flexibility
+- **Constant Visibility**: Public constants (e.g., `PERMISSION_MANAGE_FILES`) allow reuse across classes
+- **Helper Methods**: Private helper methods (`getLogger()`, `getFileCacheTags()`) reduce code duplication
+- **Comprehensive Documentation**: All methods include detailed PHPDoc blocks explaining the "why" not just the "what"
+
+**Code Quality:**
+- Follows PSR-12 coding standard
+- Uses Drupal coding conventions (uppercase TRUE/FALSE/NULL)
+- Comprehensive test coverage (unit and kernel tests)
+- All code passes `phpcs` and `phpstan` analysis
+
 ## Limitations
 
 - File usage tracking relies on Media File Delete module's usage resolver
@@ -241,21 +282,23 @@ lando composer code-fix    # Auto-fix violations
 The module includes comprehensive test coverage:
 
 **Unit Tests** (`tests/src/Unit/MediaFileDeleterTest.php`):
-- Service instantiation and dependency injection
+- Service implements MediaFileDeleterInterface
 - File object validation (valid, null, invalid objects)
 - URI validation (valid schemes, invalid schemes)
 - Successful file deletion with cache invalidation
 - Filesystem deletion failures (best-effort strategy)
 - FileException handling (entity not deleted)
 - EntityStorageException handling (orphaned files)
+- Helper method testing (getLogger, getFileCacheTags)
 - Invalid file object handling
 - Invalid URI handling
 
 **Kernel Tests** (`tests/src/Kernel/ConditionalMediaDeleteFormTest.php`):
-- Service availability and registration
+- Service availability and interface implementation
+- Service registration in container
 - File validation integration
 - URI validation with stream wrapper manager
-- Permission constant definition
+- Permission constant definition and visibility
 - User permissions and role assignments
 
 **Running Tests:**

@@ -406,4 +406,49 @@ class MediaFileDeleterTest extends UnitTestCase {
     $this->assertFalse($result);
   }
 
+  /**
+   * Tests that the service implements the interface.
+   *
+   * @covers ::__construct
+   */
+  public function testServiceImplementsInterface() {
+    $this->assertInstanceOf(
+      'Drupal\ys_file_management\Service\MediaFileDeleterInterface',
+      $this->mediaFileDeleter
+    );
+  }
+
+  /**
+   * Tests getFileCacheTags() helper method.
+   *
+   * Uses reflection to test the protected method since it's used internally
+   * by deleteFile() for cache invalidation.
+   */
+  public function testGetFileCacheTags() {
+    $reflection = new \ReflectionClass($this->mediaFileDeleter);
+    $method = $reflection->getMethod('getFileCacheTags');
+    $method->setAccessible(TRUE);
+
+    $result = $method->invoke($this->mediaFileDeleter, '123');
+    $this->assertEquals(['file:123'], $result);
+  }
+
+  /**
+   * Tests getLogger() helper method.
+   *
+   * Uses reflection to test the protected method since it's used internally
+   * throughout the service.
+   */
+  public function testGetLogger() {
+    $reflection = new \ReflectionClass($this->mediaFileDeleter);
+    $method = $reflection->getMethod('getLogger');
+    $method->setAccessible(TRUE);
+
+    $result = $method->invoke($this->mediaFileDeleter);
+    $this->assertInstanceOf(
+      'Drupal\Core\Logger\LoggerChannelInterface',
+      $result
+    );
+  }
+
 }

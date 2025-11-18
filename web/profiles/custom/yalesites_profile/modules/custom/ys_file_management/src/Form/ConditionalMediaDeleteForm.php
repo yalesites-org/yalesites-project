@@ -6,6 +6,7 @@ use Drupal\Core\Entity\ContentEntityDeleteForm;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\file\FileInterface;
 use Drupal\media_file_delete\Form\MediaDeleteForm;
+use Drupal\ys_file_management\Service\MediaFileDeleterInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -32,14 +33,14 @@ class ConditionalMediaDeleteForm extends MediaDeleteForm {
    *
    * This permission gates access to file deletion functionality.
    */
-  const PERMISSION_MANAGE_FILES = 'manage media files';
+  public const PERMISSION_MANAGE_FILES = 'manage media files';
 
   /**
    * The media file deleter service.
    *
-   * @var \Drupal\ys_file_management\Service\MediaFileDeleter
+   * @var \Drupal\ys_file_management\Service\MediaFileDeleterInterface
    */
-  protected $mediaFileDeleter;
+  protected MediaFileDeleterInterface $mediaFileDeleter;
 
   /**
    * {@inheritdoc}
