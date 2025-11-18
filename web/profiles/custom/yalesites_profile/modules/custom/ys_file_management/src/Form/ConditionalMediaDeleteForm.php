@@ -4,29 +4,29 @@ namespace Drupal\ys_file_management\Form;
 
 use Drupal\Core\Entity\ContentEntityDeleteForm;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\file\Entity\File;
 use Drupal\file\FileInterface;
-use Drupal\media_file_delete\Form\MediaDeleteForm;
+use Drupal\file\FileUsage\FileUsageInterface;
+use Drupal\file\Plugin\Field\FieldType\FileItem;
+use Drupal\media\MediaInterface;
 use Drupal\ys_file_management\Service\MediaFileDeleterInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a conditional media delete form.
  *
- * This form extends the media_file_delete module's MediaDeleteForm to
- * conditionally show file deletion options based on user permissions.
- *
- * Users with 'manage media files' permission see the file deletion checkbox
- * and usage warnings. Users without this permission see standard media
- * deletion (no file deletion options).
+ * This form provides file deletion options for users with the 'manage media
+ * files' permission, allowing them to delete files regardless of ownership or
+ * usage count. Users without this permission see standard media deletion with
+ * no file deletion options.
  *
  * The form implements a defense-in-depth security pattern by checking
  * permissions in both buildForm() and submitForm() to prevent unauthorized
  * file deletion even if the form is submitted directly via POST.
  *
- * @see \Drupal\media_file_delete\Form\MediaDeleteForm
  * @see \Drupal\Core\Entity\ContentEntityDeleteForm
  */
-class ConditionalMediaDeleteForm extends MediaDeleteForm {
+class ConditionalMediaDeleteForm extends ContentEntityDeleteForm {
 
   /**
    * Permission required to manage media files.
@@ -43,12 +43,56 @@ class ConditionalMediaDeleteForm extends MediaDeleteForm {
   protected MediaFileDeleterInterface $mediaFileDeleter;
 
   /**
+   * The file usage service.
+   *
+   * @var \Drupal\file\FileUsage\FileUsageInterface
+   */
+  protected FileUsageInterface $fileUsage;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
     $instance = parent::create($container);
     $instance->mediaFileDeleter = $container->get('ys_file_management.media_file_deleter');
+    $instance->fileUsage = $container->get('file.usage');
     return $instance;
+  }
+
+  /**
+   * Gets the file entity associated with a media entity.
+   *
+   * @param \Drupal\media\MediaInterface $media
+   *   The media entity.
+   *
+   * @return \Drupal\file\FileInterface|null
+   *   The associated file entity, or NULL if none exists.
+   */
+  protected function getFile(MediaInterface $media): ?FileInterface {
+    $field = $media->getSource()->getSourceFieldDefinition($media->bundle->entity);
+    if (is_a($field->getItemDefinition()->getClass(), FileItem::class, TRUE)
+        && $fid = $media->getSource()->getSourceFieldValue($media)) {
+      return File::load($fid);
+    }
+    return NULL;
+  }
+
+  /**
+   * Gets the usage count for a file.
+   *
+   * @param \Drupal\file\FileInterface $file
+   *   The file entity.
+   *
+   * @return int
+   *   The number of places the file is used.
+   */
+  protected function getFileUsageCount(FileInterface $file): int {
+    $usages = $this->fileUsage->listUsage($file);
+    return array_reduce($usages, function (int $count, array $module_usage) {
+      return $count + array_reduce($module_usage, function (int $object_count, array $object_usage) {
+        return $object_count + count($object_usage);
+      }, 0);
+    }, 0);
   }
 
   /**
@@ -72,7 +116,7 @@ class ConditionalMediaDeleteForm extends MediaDeleteForm {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     // Check if the current user has the 'manage media files' permission.
-    if (!$this->currentUser->hasPermission(self::PERMISSION_MANAGE_FILES)) {
+    if (!$this->currentUser()->hasPermission(self::PERMISSION_MANAGE_FILES)) {
       // User does not have file management permissions.
       // Use the standard Drupal media deletion form without file deletion
       // options by calling ContentEntityDeleteForm::buildForm() directly
@@ -94,7 +138,7 @@ class ConditionalMediaDeleteForm extends MediaDeleteForm {
     // Get file information for warnings and descriptions.
     $file_owner = $file->getOwner();
     $file_name = $file->getFilename();
-    $usages = $this->usageResolver->getFileUsages($file);
+    $usages = $this->getFileUsageCount($file);
 
     // Build the checkbox description with appropriate warnings.
     $description = $this->t('After deleting the media item, this will also remove the associated file %file from the file system.', [
@@ -103,7 +147,7 @@ class ConditionalMediaDeleteForm extends MediaDeleteForm {
 
     // Add ownership warning if file is owned by another user.
     // File Managers can still delete it, but we inform them.
-    if (!$file->access('delete', $this->currentUser)) {
+    if (!$file->access('delete', $this->currentUser())) {
       $description = $this->t('After deleting the media item, this will also remove the associated file %file from the file system. <strong>Note:</strong> This file is owned by %owner.', [
         '%file' => $file_name,
         '%owner' => $file_owner->getDisplayName(),
@@ -126,15 +170,15 @@ class ConditionalMediaDeleteForm extends MediaDeleteForm {
     }
 
     // Get module configuration for checkbox defaults.
-    $config = $this->configFactory()->get('media_file_delete.settings');
+    $config = $this->configFactory()->get('ys_file_management.settings');
 
     // Always show the checkbox for File Managers, with appropriate warnings.
     $build['also_delete_file'] = [
       '#type' => 'checkbox',
-      '#default_value' => $config->get('delete_file_default'),
+      '#default_value' => $config->get('delete_file_default') ?? FALSE,
       '#title' => $this->t('Also delete the associated file?'),
       '#description' => $description,
-      '#access' => !$config->get('disable_delete_control'),
+      '#access' => !($config->get('disable_delete_control') ?? FALSE),
     ];
 
     return $build;
@@ -163,7 +207,7 @@ class ConditionalMediaDeleteForm extends MediaDeleteForm {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // Defense-in-depth: Re-check permissions even though buildForm() checked.
     // This protects against direct form submission bypassing the UI layer.
-    if ($this->currentUser->hasPermission(self::PERMISSION_MANAGE_FILES)) {
+    if ($this->currentUser()->hasPermission(self::PERMISSION_MANAGE_FILES)) {
       // Get the media entity and its associated file.
       $media = $this->getEntity();
       $file = $this->getFile($media);

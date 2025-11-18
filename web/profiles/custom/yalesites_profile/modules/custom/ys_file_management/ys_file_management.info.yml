@@ -4,5 +4,5 @@ description: 'Provides conditional file deletion capabilities for privileged use
 core_version_requirement: ^10 || ^11
 package: YaleSites
 dependencies:
+  - drupal:file
   - drupal:media
-  - media_file_delete:media_file_delete

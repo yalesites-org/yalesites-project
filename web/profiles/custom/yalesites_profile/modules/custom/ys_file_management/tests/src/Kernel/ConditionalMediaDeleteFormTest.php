@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\ys_file_management\Kernel;
 
+use Drupal\Core\Form\FormState;
 use Drupal\file\Entity\File;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\media\Traits\MediaTypeCreationTrait;
@@ -28,7 +29,6 @@ class ConditionalMediaDeleteFormTest extends KernelTestBase {
     'field',
     'image',
     'media',
-    'media_file_delete',
     'ys_file_management',
   ];
 
@@ -184,6 +184,161 @@ class ConditionalMediaDeleteFormTest extends KernelTestBase {
   public function testFileManagerPermissions() {
     $this->assertTrue($this->fileManagerUser->hasPermission('manage media files'));
     $this->assertFalse($this->regularUser->hasPermission('manage media files'));
+  }
+
+  /**
+   * Tests that the form can be instantiated via dependency injection.
+   *
+   * This test ensures that all services are properly injected and the form
+   * can be created through the container, catching issues like incorrect
+   * interface namespaces that wouldn't be caught by unit tests.
+   *
+   * @covers \Drupal\ys_file_management\Form\ConditionalMediaDeleteForm::create
+   */
+  public function testFormInstantiation() {
+    // Create a media type for testing.
+    $media_type = $this->createMediaType('image');
+
+    // Create a test file.
+    $file = File::create([
+      'uri' => 'public://test-image.jpg',
+      'filename' => 'test-image.jpg',
+    ]);
+    $file->save();
+
+    // Create a test media entity.
+    $media = $this->container->get('entity_type.manager')
+      ->getStorage('media')
+      ->create([
+        'bundle' => $media_type->id(),
+        'name' => 'Test Image',
+        'field_media_image' => [
+          'target_id' => $file->id(),
+        ],
+      ]);
+    $media->save();
+
+    // Get the form through the entity form builder (uses dependency injection).
+    $form_object = $this->container->get('entity_type.manager')
+      ->getFormObject('media', 'delete');
+
+    // Set the entity on the form.
+    $form_object->setEntity($media);
+
+    // Verify the form object was created successfully.
+    $this->assertInstanceOf(
+      'Drupal\ys_file_management\Form\ConditionalMediaDeleteForm',
+      $form_object
+    );
+
+    // Verify that the form has the required services injected.
+    $reflection = new \ReflectionClass($form_object);
+
+    // Check that mediaFileDeleter property exists and is the correct type.
+    $this->assertTrue($reflection->hasProperty('mediaFileDeleter'));
+    $deleter_property = $reflection->getProperty('mediaFileDeleter');
+    $deleter_property->setAccessible(TRUE);
+    $this->assertInstanceOf(
+      'Drupal\ys_file_management\Service\MediaFileDeleterInterface',
+      $deleter_property->getValue($form_object)
+    );
+
+    // Check that fileUsage property exists and is the correct type.
+    $this->assertTrue($reflection->hasProperty('fileUsage'));
+    $usage_property = $reflection->getProperty('fileUsage');
+    $usage_property->setAccessible(TRUE);
+    $this->assertInstanceOf(
+      'Drupal\file\FileUsage\FileUsageInterface',
+      $usage_property->getValue($form_object)
+    );
+  }
+
+  /**
+   * Tests that buildForm works correctly for file managers.
+   *
+   * @covers \Drupal\ys_file_management\Form\ConditionalMediaDeleteForm::buildForm
+   */
+  public function testBuildFormForFileManager() {
+    // Set current user to file manager.
+    $this->container->get('current_user')->setAccount($this->fileManagerUser);
+
+    // Create a media type for testing.
+    $media_type = $this->createMediaType('image');
+
+    // Create a test file.
+    $file = File::create([
+      'uri' => 'public://test-image.jpg',
+      'filename' => 'test-image.jpg',
+      'uid' => $this->fileManagerUser->id(),
+    ]);
+    $file->save();
+
+    // Create a test media entity.
+    $media = $this->container->get('entity_type.manager')
+      ->getStorage('media')
+      ->create([
+        'bundle' => $media_type->id(),
+        'name' => 'Test Image',
+        'field_media_image' => [
+          'target_id' => $file->id(),
+        ],
+      ]);
+    $media->save();
+
+    // Build the form.
+    $form_object = $this->container->get('entity_type.manager')
+      ->getFormObject('media', 'delete');
+    $form_object->setEntity($media);
+
+    $form_state = new FormState();
+    $form = $form_object->buildForm([], $form_state);
+
+    // Verify the file deletion checkbox is present for file managers.
+    $this->assertArrayHasKey('also_delete_file', $form);
+    $this->assertEquals('checkbox', $form['also_delete_file']['#type']);
+  }
+
+  /**
+   * Tests that buildForm works correctly for regular users.
+   *
+   * @covers \Drupal\ys_file_management\Form\ConditionalMediaDeleteForm::buildForm
+   */
+  public function testBuildFormForRegularUser() {
+    // Set current user to regular user.
+    $this->container->get('current_user')->setAccount($this->regularUser);
+
+    // Create a media type for testing.
+    $media_type = $this->createMediaType('image');
+
+    // Create a test file.
+    $file = File::create([
+      'uri' => 'public://test-image.jpg',
+      'filename' => 'test-image.jpg',
+    ]);
+    $file->save();
+
+    // Create a test media entity.
+    $media = $this->container->get('entity_type.manager')
+      ->getStorage('media')
+      ->create([
+        'bundle' => $media_type->id(),
+        'name' => 'Test Image',
+        'field_media_image' => [
+          'target_id' => $file->id(),
+        ],
+      ]);
+    $media->save();
+
+    // Build the form.
+    $form_object = $this->container->get('entity_type.manager')
+      ->getFormObject('media', 'delete');
+    $form_object->setEntity($media);
+
+    $form_state = new FormState();
+    $form = $form_object->buildForm([], $form_state);
+
+    // Verify the file deletion checkbox is NOT present for regular users.
+    $this->assertArrayNotHasKey('also_delete_file', $form);
   }
 
 }

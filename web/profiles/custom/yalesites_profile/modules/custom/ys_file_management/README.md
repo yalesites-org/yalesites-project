@@ -4,7 +4,7 @@ Provides conditional file deletion capabilities for privileged users when deleti
 
 ## Overview
 
-This module extends the [Media File Delete](https://www.drupal.org/project/media_file_delete) contrib module to provide role-based file deletion with immediate physical file removal from the filesystem.
+This module provides role-based file deletion capabilities for media entities with immediate physical file removal from the filesystem.
 
 ## Features
 
@@ -58,7 +58,7 @@ The module implements `hook_entity_type_alter()` to replace the default media de
 
 ### Conditional Display
 
-`ConditionalMediaDeleteForm` extends the Media File Delete module's `MediaDeleteForm` and:
+`ConditionalMediaDeleteForm` extends Drupal Core's `ContentEntityDeleteForm` and:
 
 1. **For File Managers** (`manage media files` permission):
    - Shows custom file deletion form with checkbox
@@ -88,7 +88,7 @@ This differs from the default Drupal behavior where `$file->delete()` only marks
 
 ### Module Settings
 
-File deletion behavior is controlled by `media_file_delete.settings.yml`:
+File deletion behavior is controlled by `ys_file_management.settings.yml`:
 
 ```yaml
 delete_file_default: false  # Checkbox unchecked by default
@@ -97,8 +97,8 @@ disable_delete_control: false  # Checkbox can be toggled
 
 ### Dependencies
 
+- `drupal:file` - Core file module
 - `drupal:media` - Core media module
-- `media_file_delete:media_file_delete` - Contrib module for file deletion UI
 
 ## Usage
 
@@ -154,11 +154,12 @@ The module uses a service-oriented architecture to separate concerns and follows
 
 **Form Layer:**
 - `ConditionalMediaDeleteForm` - UI and permission handling
-  - Extends `MediaDeleteForm` (from media_file_delete)
+  - Extends `ContentEntityDeleteForm` (Drupal Core)
   - Implements defense-in-depth permission checking
   - Delegates file deletion to service layer
   - Manages form display based on user roles
   - Uses typed properties for injected services
+  - Self-contained file extraction and usage counting logic
 
 ### Class Structure
 
@@ -168,11 +169,15 @@ The module uses a service-oriented architecture to separate concerns and follows
 - Allows for alternative implementations and improved testing
 
 **`ConditionalMediaDeleteForm`**
-- Extends: `MediaDeleteForm` (from media_file_delete)
-- Services: `ys_file_management.media_file_deleter` (injected as `MediaFileDeleterInterface`)
+- Extends: `ContentEntityDeleteForm` (Drupal Core)
+- Services:
+  - `ys_file_management.media_file_deleter` (injected as `MediaFileDeleterInterface`)
+  - `file.usage` (injected as `\Drupal\file\FileUsage\FileUsageInterface`)
 - Constants: `PERMISSION_MANAGE_FILES` (public, for reusability)
 - Methods:
   - `create()` - Dependency injection
+  - `getFile()` - Extracts file entity from media
+  - `getFileUsageCount()` - Calculates file usage count
   - `buildForm()` - Conditionally show file deletion options
   - `submitForm()` - Delegates to service for file deletion
 
@@ -276,8 +281,9 @@ This module follows modern development practices for Drupal 10+:
 
 ## Limitations
 
-- File usage tracking relies on Media File Delete module's usage resolver
-- Layout Builder inline block usage may not be detected without additional modules
+- File usage tracking relies on Drupal core's `file.usage` service
+- Usage count only includes tracked references (may not detect all custom field types)
+- Layout Builder inline block usage may not be detected without additional contrib modules
 - Deleting a file that's still referenced elsewhere will result in broken image displays (no PHP errors, but 404s)
 
 ## Development
@@ -314,6 +320,9 @@ The module includes comprehensive test coverage:
 - URI validation with stream wrapper manager
 - Permission constant definition and visibility
 - User permissions and role assignments
+- Form instantiation via dependency injection (catches interface namespace issues)
+- Form builds correctly for file managers (checkbox displayed)
+- Form builds correctly for regular users (no file deletion options)
 
 **Running Tests:**
 
@@ -358,7 +367,7 @@ SIMPLETEST_DB='mysql://pantheon:pantheon@database/pantheon' SIMPLETEST_BASE_URL=
 - **Password:** `pantheon`
 - **Connection String:** `mysql://pantheon:pantheon@database/pantheon`
 
-Unit tests provide comprehensive coverage of the service layer and can be run locally without additional setup. Kernel tests verify integration with Drupal's entity and permission systems.
+Unit tests provide comprehensive coverage of the service layer and can be run locally without additional setup. Kernel tests verify integration with Drupal's entity and permission systems, including form instantiation via dependency injection to catch issues that unit tests cannot detect.
 
 ### Manual Testing Checklist
 
@@ -397,6 +406,6 @@ Unit tests provide comprehensive coverage of the service layer and can be run lo
 
 ## See Also
 
-- [Media File Delete module](https://www.drupal.org/project/media_file_delete)
 - [Drupal File API](https://api.drupal.org/api/drupal/core%21modules%21file%21file.module/group/file/10)
 - [File System Service](https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Core%21File%21FileSystemInterface.php/interface/FileSystemInterface/10)
+- [File Usage Service](https://api.drupal.org/api/drupal/core%21modules%21file%21src%21FileUsage%21FileUsageInterface.php/interface/FileUsageInterface/10)
