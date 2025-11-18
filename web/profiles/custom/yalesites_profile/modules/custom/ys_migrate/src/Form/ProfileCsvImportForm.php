@@ -141,7 +141,7 @@ class ProfileCsvImportForm extends FormBase {
           <li><strong>Custom Vocabulary</strong> - Comma-separated custom terms</li>
         </ul>
         <p><strong>Note:</strong> The first row should contain column headers. All fields except Display Name are optional.</p>
-        <p><a href="https://yalesites.yale.edu/explore-resources/yalesites-user-guide/migrating-a-legacy-site" target="_blank">Learn how to create an import and download a CSV Template</a></p>
+        <p><a href="https://yalesites.yale.edu/profile#import" target="_blank">For more information and the CSV Template, visit the YaleSites Profile resource in our User Guide</a></p>
 
       </div>',
     ];
