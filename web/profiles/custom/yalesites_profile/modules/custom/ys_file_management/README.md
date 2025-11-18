@@ -10,7 +10,7 @@ This module extends the [Media File Delete](https://www.drupal.org/project/media
 
 - **Role-based Access**: File deletion is restricted to users with the "File Manager" role
 - **Immediate Deletion**: Physical files are removed from the filesystem immediately, not marked for cron cleanup
-- **Usage Warnings**: Displays warnings when files are used in multiple locations
+- **Usage Count Warnings**: Displays count of how many places a file is used (prevents deletion if used elsewhere)
 - **Conditional UI**: File deletion checkbox only appears for authorized users
 - **Error Handling**: Graceful error handling with user feedback if deletion fails
 
@@ -21,9 +21,10 @@ This module extends the [Media File Delete](https://www.drupal.org/project/media
 Users with the "File Manager" role have the following capabilities:
 
 - Delete media entities regardless of who created them
-- Delete associated physical files from the filesystem
-- View file usage warnings before deletion
+- Delete associated physical files from the filesystem **regardless of ownership or usage count**
 - Access the "Also delete the associated file?" checkbox on media deletion forms
+- See informational warnings about file ownership and usage but can override all restrictions
+- Delete files even when they're used by other media (with warnings about broken references)
 
 **Permissions granted to File Manager:**
 - `access files overview`
@@ -60,14 +61,17 @@ The module implements `hook_entity_type_alter()` to replace the default media de
 `ConditionalMediaDeleteForm` extends the Media File Delete module's `MediaDeleteForm` and:
 
 1. **For File Managers** (`manage media files` permission):
-   - Shows the parent form with file deletion checkbox
-   - Displays usage warnings if file is referenced elsewhere
-   - Provides "Also delete the associated file?" option
+   - Shows custom file deletion form with checkbox
+   - **Can delete files regardless of ownership** - warned if owned by another user
+   - **Can delete files regardless of usage count** - warned about broken references if used elsewhere
+   - Checkbox is always shown (never blocked)
+   - Informational warnings appear in checkbox description to inform decisions
 
 2. **For other users**:
    - Shows standard Drupal media deletion form
-   - No file deletion options
-   - Files are retained when media is deleted
+   - No file deletion options at all
+   - Files are always retained when media is deleted
+   - Do not see any file-related warnings or messages
 
 ### Immediate File Deletion
 
@@ -114,13 +118,23 @@ disable_delete_control: false  # Checkbox can be toggled
    - If file is used by other media, a message will appear instead and the file will be retained
 5. Confirm deletion
 
-### File Usage Detection
+### File Usage and Ownership Detection
 
-The Media File Delete module checks for file usage via Drupal core's file_usage table:
+For File Managers with the `manage media files` permission:
 
-- **Single usage** (file used by only this media): Checkbox appears, file can be deleted
-- **Multiple usages** (file used by other media): Message shown that file will be retained, checkbox hidden
-- **No delete permission**: Message shown that file is owned by another user and will be retained
+- **Single usage** (file used by only this media): Checkbox appears with standard description
+- **Multiple usages** (file used by other media): Checkbox appears with warning about usage count (e.g., "This file is used in 2 other places. Deleting it will cause broken references.")
+- **Owned by another user**: Checkbox appears with ownership warning (e.g., "Note: This file is owned by [username]")
+- **Multiple usages AND different owner**: Both warnings appear in checkbox description
+
+**File Managers can always proceed with deletion** - warnings are informational only and never block the checkbox from appearing.
+
+For regular users without the `manage media files` permission:
+- No file deletion options are shown
+- Files are always retained
+- No usage or ownership information is displayed
+
+**Note:** The system only displays a count of where files are used, not detailed information about the specific locations or content using the file.
 
 ## Technical Details
 

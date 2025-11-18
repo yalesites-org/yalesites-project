@@ -57,9 +57,10 @@ class ConditionalMediaDeleteForm extends MediaDeleteForm {
    * Conditionally displays file deletion options based on user permissions.
    *
    * This method implements the first layer of permission checking (UI layer).
-   * Users with the 'manage media files' permission see the enhanced form from
-   * MediaDeleteForm (parent), while other users see the standard Drupal media
-   * deletion form from ContentEntityDeleteForm (grandparent).
+   * Users with the 'manage media files' permission can delete files regardless
+   * of ownership or usage count. They see informational warnings but are never
+   * blocked. Other users see standard Drupal media deletion with no file
+   * deletion options.
    *
    * @param array $form
    *   The form array.
@@ -71,18 +72,72 @@ class ConditionalMediaDeleteForm extends MediaDeleteForm {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     // Check if the current user has the 'manage media files' permission.
-    if ($this->currentUser->hasPermission(self::PERMISSION_MANAGE_FILES)) {
-      // User is a File Manager or has elevated permissions.
-      // Show the file deletion checkbox and usage warnings by calling
-      // MediaDeleteForm::buildForm() (parent class).
-      return parent::buildForm($form, $form_state);
+    if (!$this->currentUser->hasPermission(self::PERMISSION_MANAGE_FILES)) {
+      // User does not have file management permissions.
+      // Use the standard Drupal media deletion form without file deletion
+      // options by calling ContentEntityDeleteForm::buildForm() directly
+      // (grandparent class), which bypasses all file deletion UI.
+      return ContentEntityDeleteForm::buildForm($form, $form_state);
     }
 
-    // User does not have file management permissions.
-    // Use the standard Drupal media deletion form without file deletion
-    // options by calling ContentEntityDeleteForm::buildForm() directly
-    // (grandparent class), which bypasses MediaDeleteForm's file deletion UI.
-    return ContentEntityDeleteForm::buildForm($form, $form_state);
+    // User has 'manage media files' permission (File Manager role).
+    // Build custom form that allows deletion regardless of ownership/usage.
+    $media = $this->getEntity();
+    $file = $this->getFile($media);
+    $build = ContentEntityDeleteForm::buildForm($form, $form_state);
+
+    // If no file is associated with this media, return the base form.
+    if (!$file) {
+      return $build;
+    }
+
+    // Get file information for warnings and descriptions.
+    $file_owner = $file->getOwner();
+    $file_name = $file->getFilename();
+    $usages = $this->usageResolver->getFileUsages($file);
+
+    // Build the checkbox description with appropriate warnings.
+    $description = $this->t('After deleting the media item, this will also remove the associated file %file from the file system.', [
+      '%file' => $file_name,
+    ]);
+
+    // Add ownership warning if file is owned by another user.
+    // File Managers can still delete it, but we inform them.
+    if (!$file->access('delete', $this->currentUser)) {
+      $description = $this->t('After deleting the media item, this will also remove the associated file %file from the file system. <strong>Note:</strong> This file is owned by %owner.', [
+        '%file' => $file_name,
+        '%owner' => $file_owner->getDisplayName(),
+      ]);
+    }
+
+    // Add usage warning if file is used in multiple places.
+    // File Managers can still delete it, but we warn about consequences.
+    if ($usages > 1) {
+      $usage_warning = $this->formatPlural(
+        $usages - 1,
+        'This file is used in 1 other place. Deleting it will cause broken references.',
+        'This file is used in @count other places. Deleting it will cause broken references.'
+      );
+
+      $description = $this->t('After deleting the media item, this will also remove the associated file %file from the file system. <strong>Warning:</strong> @usage_warning', [
+        '%file' => $file_name,
+        '@usage_warning' => $usage_warning,
+      ]);
+    }
+
+    // Get module configuration for checkbox defaults.
+    $config = $this->configFactory()->get('media_file_delete.settings');
+
+    // Always show the checkbox for File Managers, with appropriate warnings.
+    $build['also_delete_file'] = [
+      '#type' => 'checkbox',
+      '#default_value' => $config->get('delete_file_default'),
+      '#title' => $this->t('Also delete the associated file?'),
+      '#description' => $description,
+      '#access' => !$config->get('disable_delete_control'),
+    ];
+
+    return $build;
   }
 
   /**
