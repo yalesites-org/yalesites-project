@@ -124,34 +124,65 @@ The Media File Delete module checks for file usage via Drupal core's file_usage 
 
 ## Technical Details
 
+### Architecture
+
+The module uses a service-oriented architecture to separate concerns:
+
+**Service Layer:**
+- `MediaFileDeleter` - Business logic for file deletion
+  - Validates file objects and URIs
+  - Handles immediate filesystem deletion
+  - Manages error handling and user feedback
+  - Ensures security through URI scheme validation
+
+**Form Layer:**
+- `ConditionalMediaDeleteForm` - UI and permission handling
+  - Extends `MediaDeleteForm` (from media_file_delete)
+  - Implements defense-in-depth permission checking
+  - Delegates file deletion to service layer
+  - Manages form display based on user roles
+
 ### Class Structure
 
 **`ConditionalMediaDeleteForm`**
 - Extends: `MediaDeleteForm` (from media_file_delete)
-- Services: `file_system`, `current_user`, `file_usage_resolver`
+- Services: `ys_file_management.media_file_deleter`
 - Methods:
   - `create()` - Dependency injection
   - `buildForm()` - Conditionally show file deletion options
-  - `submitForm()` - Handle immediate file deletion
+  - `submitForm()` - Delegates to service for file deletion
+
+**`MediaFileDeleter`** (Service)
+- Service ID: `ys_file_management.media_file_deleter`
+- Dependencies: `file_system`, `messenger`, `logger.factory`, `stream_wrapper_manager`
+- Methods:
+  - `validateFile()` - Validates FileInterface objects
+  - `validateFileUri()` - Security check for URI schemes
+  - `deleteFile()` - Immediate file deletion with error handling
 
 ### File Deletion Flow
 
 ```
 User clicks Delete
   ↓
-buildForm() checks permission
+ConditionalMediaDeleteForm::buildForm() checks permission
   ↓
-If 'manage media files' → Show file deletion checkbox
-If not → Show standard form
+If 'manage media files' → Show file deletion checkbox (parent class)
+If not → Show standard form (grandparent class)
   ↓
 User submits form
   ↓
-submitForm() checks permission
+ConditionalMediaDeleteForm::submitForm() re-checks permission
   ↓
 If checkbox checked:
-  1. $fileSystem->delete($uri) - Remove from disk
-  2. $file->delete() - Remove DB record
-  3. Display success message
+  ↓
+  MediaFileDeleter::deleteFile() service method
+    ↓
+    1. validateFile() - Check FileInterface
+    2. validateFileUri() - Check stream wrapper scheme
+    3. $fileSystem->delete($uri) - Remove from disk
+    4. $file->delete() - Remove DB record
+    5. Display success message or errors
   ↓
 ContentEntityDeleteForm::submitForm() - Delete media entity
 ```
