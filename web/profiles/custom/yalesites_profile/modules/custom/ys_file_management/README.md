@@ -260,8 +260,9 @@ The module includes comprehensive test coverage:
 
 **Running Tests:**
 
+**Unit Tests** (no database required):
 ```bash
-# Run unit tests (no database required)
+# Run all unit tests
 lando phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/src/Unit/
 
 # Run specific unit test class
@@ -274,7 +275,33 @@ lando phpunit --filter testDeleteFileSuccess web/profiles/custom/yalesites_profi
 lando phpunit --verbose web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/src/Unit/
 ```
 
-**Note:** Kernel tests require database configuration via `SIMPLETEST_DB` environment variable and are typically run as part of CI/CD pipelines. Unit tests provide comprehensive coverage and can be run locally without additional setup.
+**Kernel Tests** (require database):
+```bash
+# Set up environment variables for Lando database
+export SIMPLETEST_DB='mysql://pantheon:pantheon@database/pantheon'
+export SIMPLETEST_BASE_URL='http://appserver'
+
+# Run kernel tests
+lando phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/src/Kernel/
+
+# Or run as one-liner
+SIMPLETEST_DB='mysql://pantheon:pantheon@database/pantheon' SIMPLETEST_BASE_URL='http://appserver' lando phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/src/Kernel/
+```
+
+**Run All Tests:**
+```bash
+# Set environment and run all tests (unit + kernel)
+SIMPLETEST_DB='mysql://pantheon:pantheon@database/pantheon' SIMPLETEST_BASE_URL='http://appserver' lando phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/
+```
+
+**Database Configuration:**
+- **Host:** `database` (Lando internal hostname)
+- **Database:** `pantheon`
+- **User:** `pantheon`
+- **Password:** `pantheon`
+- **Connection String:** `mysql://pantheon:pantheon@database/pantheon`
+
+Unit tests provide comprehensive coverage of the service layer and can be run locally without additional setup. Kernel tests verify integration with Drupal's entity and permission systems.
 
 ### Manual Testing Checklist
 
