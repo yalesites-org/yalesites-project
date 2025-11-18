@@ -8,6 +8,7 @@ use Drupal\Core\File\Exception\FileException;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Messenger\MessengerInterface;
+use Drupal\Core\StreamWrapper\StreamWrapperManager;
 use Drupal\Core\StreamWrapper\StreamWrapperManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\file\FileInterface;
@@ -132,7 +133,8 @@ class MediaFileDeleter {
    *   TRUE if the URI is valid, FALSE otherwise.
    */
   public function validateFileUri(string $file_uri): bool {
-    $scheme = $this->streamWrapperManager->getScheme($file_uri);
+    // Use static method for getScheme since it's a utility function.
+    $scheme = StreamWrapperManager::getScheme($file_uri);
     if (!$scheme || !$this->streamWrapperManager->isValidScheme($scheme)) {
       $this->loggerFactory->get('ys_file_management')->error('Invalid file URI scheme for @uri', [
         '@uri' => $file_uri,

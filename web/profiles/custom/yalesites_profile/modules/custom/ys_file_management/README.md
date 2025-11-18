@@ -261,15 +261,20 @@ The module includes comprehensive test coverage:
 **Running Tests:**
 
 ```bash
-# Run all module tests
-vendor/bin/phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests
+# Run unit tests (no database required)
+lando phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/src/Unit/
 
-# Run specific test class
-vendor/bin/phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/src/Unit/MediaFileDeleterTest.php
+# Run specific unit test class
+lando phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/src/Unit/MediaFileDeleterTest.php
 
-# Run with coverage report
-vendor/bin/phpunit --coverage-html coverage web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests
+# Run a specific test method
+lando phpunit --filter testDeleteFileSuccess web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/src/Unit/MediaFileDeleterTest.php
+
+# Run with verbose output
+lando phpunit --verbose web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/src/Unit/
 ```
+
+**Note:** Kernel tests require database configuration via `SIMPLETEST_DB` environment variable and are typically run as part of CI/CD pipelines. Unit tests provide comprehensive coverage and can be run locally without additional setup.
 
 ### Manual Testing Checklist
 
