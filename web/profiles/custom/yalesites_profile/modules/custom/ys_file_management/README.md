@@ -236,7 +236,42 @@ lando composer code-sniff  # Check standards
 lando composer code-fix    # Auto-fix violations
 ```
 
-### Testing Checklist
+### Automated Tests
+
+The module includes comprehensive test coverage:
+
+**Unit Tests** (`tests/src/Unit/MediaFileDeleterTest.php`):
+- Service instantiation and dependency injection
+- File object validation (valid, null, invalid objects)
+- URI validation (valid schemes, invalid schemes)
+- Successful file deletion with cache invalidation
+- Filesystem deletion failures (best-effort strategy)
+- FileException handling (entity not deleted)
+- EntityStorageException handling (orphaned files)
+- Invalid file object handling
+- Invalid URI handling
+
+**Kernel Tests** (`tests/src/Kernel/ConditionalMediaDeleteFormTest.php`):
+- Service availability and registration
+- File validation integration
+- URI validation with stream wrapper manager
+- Permission constant definition
+- User permissions and role assignments
+
+**Running Tests:**
+
+```bash
+# Run all module tests
+vendor/bin/phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests
+
+# Run specific test class
+vendor/bin/phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/src/Unit/MediaFileDeleterTest.php
+
+# Run with coverage report
+vendor/bin/phpunit --coverage-html coverage web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests
+```
+
+### Manual Testing Checklist
 
 - [ ] File Manager can delete media with files
 - [ ] File is immediately removed from filesystem
@@ -245,6 +280,8 @@ lando composer code-fix    # Auto-fix violations
 - [ ] Platform Admins don't have permission by default
 - [ ] Multiple media types work (document, image, background_video)
 - [ ] Files used by multiple media show retention message (no checkbox)
+- [ ] Cache is invalidated after deletion
+- [ ] Logs contain appropriate severity levels
 
 ## Troubleshooting
 
