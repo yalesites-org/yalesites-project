@@ -1,15 +1,13 @@
 services:
-  logger.channel.ys_file_management:
-    parent: logger.channel_base
-    arguments: ['ys_file_management']
+  ys_file_management.media_file_deleter:
+    class: Drupal\ys_file_management\Service\MediaFileDeleter
+    arguments:
+      - '@file_system'
+      - '@messenger'
+      - '@logger.factory'
+      - '@stream_wrapper_manager'
+      - '@cache_tags.invalidator'
 
-  ys_file_management.media_usage_detector:
-    class: Drupal\ys_file_management\Service\MediaUsageDetector
-    arguments: ['@entity_type.manager', '@entity_field.manager', '@logger.channel.ys_file_management', '@entity_type.bundle.info']
-
-  ys_file_management.media_file_handler:
-    class: Drupal\ys_file_management\Service\MediaFileHandler
-    arguments: ['@file.usage', '@messenger', '@logger.channel.ys_file_management', '@current_user', '@request_stack']
-
-  ys_file_management.media_delete_message_builder:
-    class: Drupal\ys_file_management\Service\MediaDeleteMessageBuilder
+  # Alias to allow type-hinting against the interface.
+  Drupal\ys_file_management\Service\MediaFileDeleterInterface:
+    alias: ys_file_management.media_file_deleter
