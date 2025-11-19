@@ -1,0 +1,60 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the YS File Management module.
+ */
+
+/**
+ * Remove phantom 'force delete media files' permission from roles.
+ *
+ * The media_file_delete contrib module was replaced by ys_file_management.
+ * This update hook removes the old permission that no longer exists from any
+ * roles that may have it stored in the database. This prevents configuration
+ * import errors about non-existent permissions.
+ */
+function ys_file_management_update_10001() {
+  $phantom_permission = 'force delete media files';
+  $roles_updated = [];
+  $roles_skipped = [];
+
+  // Get all user roles.
+  $role_storage = \Drupal::entityTypeManager()->getStorage('user_role');
+  $roles = $role_storage->loadMultiple();
+
+  foreach ($roles as $role_id => $role) {
+    // Check if this role has the phantom permission.
+    if ($role->hasPermission($phantom_permission)) {
+      // Remove the phantom permission.
+      $role->revokePermission($phantom_permission);
+      $role->save();
+      $roles_updated[] = $role_id;
+      \Drupal::logger('ys_file_management')->info('Removed phantom permission "@permission" from role "@role".', [
+        '@permission' => $phantom_permission,
+        '@role' => $role_id,
+      ]);
+    }
+    else {
+      $roles_skipped[] = $role_id;
+    }
+  }
+
+  // Report results.
+  $message = [];
+  if (!empty($roles_updated)) {
+    $message[] = t('Removed phantom permission "@permission" from the following roles: @roles', [
+      '@permission' => $phantom_permission,
+      '@roles' => implode(', ', $roles_updated),
+    ]);
+  }
+  if (!empty($roles_skipped)) {
+    $message[] = t('The following roles did not have the phantom permission: @roles', [
+      '@roles' => implode(', ', $roles_skipped),
+    ]);
+  }
+  if (empty($roles_updated) && empty($roles_skipped)) {
+    $message[] = t('No roles found to process.');
+  }
+
+  return implode("\n", $message);
+}
