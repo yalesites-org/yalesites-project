@@ -193,15 +193,8 @@ class SystemInstructionsController extends ControllerBase {
       throw new AccessDeniedHttpException('System instruction modification is not enabled.');
     }
 
-    $version_data = $this->instructionsManager->getAllVersions();
-    $current_version = NULL;
-
-    foreach ($version_data as $v) {
-      if ($v['version'] == $version) {
-        $current_version = $v;
-        break;
-      }
-    }
+    // Get the specific version with full data including instructions.
+    $current_version = $this->instructionsManager->getStorageService()->getVersion($version);
 
     if (!$current_version) {
       $build['error'] = [

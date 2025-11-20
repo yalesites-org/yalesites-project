@@ -219,7 +219,7 @@ class SystemInstructionsForm extends FormBase {
 
     $form['form_wrapper']['actions']['submit'] = [
       '#type' => 'submit',
-      '#value' => $this->t('Save Instructions'),
+      '#value' => $this->t('Save and Sync Instructions'),
       '#button_type' => 'primary',
     ];
 
