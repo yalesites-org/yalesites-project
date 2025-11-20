@@ -25,7 +25,8 @@
     "local:git-checkout": "./scripts/local/local-git-checkout.sh",
     "prettier": "prettier '{.github,docs,web/profiles/custom,web/modules/custom,web/themes/contrib/atomic,web/themes/custom}/**/*.{json,md,js,html,scss,html}' --ignore-unknown --list-different",
     "setup": "./scripts/local/setup.sh",
-    "test": "./scripts/local/test.sh"
+    "test": "./scripts/local/test.sh",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@saithodev/semantic-release-backmerge": "^4.0.1",
