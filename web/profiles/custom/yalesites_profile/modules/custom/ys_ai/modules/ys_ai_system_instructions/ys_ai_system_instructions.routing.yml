@@ -1,0 +1,43 @@
+# System Instructions Settings
+ys_ai_system_instructions.settings:
+  path: '/admin/config/ys-ai/system-instructions/settings'
+  defaults:
+    _form: '\Drupal\ys_ai_system_instructions\Form\SystemInstructionsSettingsForm'
+    _title: 'YS AI System Instructions Settings'
+  requirements:
+    _permission: 'configure ys ai system instructions'
+
+# System Instructions Management
+ys_ai_system_instructions.form:
+  path: '/admin/config/ys-ai/system-instructions'
+  defaults:
+    _form: '\Drupal\ys_ai_system_instructions\Form\SystemInstructionsForm'
+    _title: 'YS AI System Instructions'
+  requirements:
+    _ys_ai_system_instructions_access: 'TRUE'
+
+ys_ai_system_instructions.versions:
+  path: '/admin/config/ys-ai/system-instructions/versions'
+  defaults:
+    _controller: '\Drupal\ys_ai_system_instructions\Controller\SystemInstructionsController::versionHistory'
+    _title: 'YS AI System Instructions Version History'
+  requirements:
+    _ys_ai_system_instructions_access: 'TRUE'
+
+ys_ai_system_instructions.view:
+  path: '/admin/config/ys-ai/system-instructions/versions/{version}'
+  defaults:
+    _controller: '\Drupal\ys_ai_system_instructions\Controller\SystemInstructionsController::viewVersion'
+    _title: 'View YS AI System Instructions Version'
+  requirements:
+    _ys_ai_system_instructions_access: 'TRUE'
+    version: \d+
+
+ys_ai_system_instructions.revert:
+  path: '/admin/config/ys-ai/system-instructions/revert/{version}'
+  defaults:
+    _form: '\Drupal\ys_ai_system_instructions\Form\SystemInstructionsRevertForm'
+    _title: 'Revert YS AI System Instructions'
+  requirements:
+    _ys_ai_system_instructions_access: 'TRUE'
+    version: \d+
