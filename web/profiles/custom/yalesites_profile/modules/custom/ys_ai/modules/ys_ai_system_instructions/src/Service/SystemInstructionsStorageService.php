@@ -84,13 +84,23 @@ class SystemInstructionsStorageService {
   /**
    * Get all versions of system instructions.
    *
+   * @param bool $use_pager
+   *   Whether to use a pager. Defaults to FALSE for backward compatibility.
+   * @param int $items_per_page
+   *   Number of items per page when using pager. Defaults to 25.
+   *
    * @return array
    *   Array of instruction versions, ordered by version desc.
    */
-  public function getAllVersions(): array {
+  public function getAllVersions(bool $use_pager = FALSE, int $items_per_page = 25): array {
     $query = $this->database->select(self::TABLE_NAME, 'si')
-      ->fields('si')
+      ->fields('si', ['id', 'version', 'created_by', 'created_date', 'is_active', 'notes'])
       ->orderBy('version', 'DESC');
+
+    if ($use_pager) {
+      $query = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')
+        ->limit($items_per_page);
+    }
 
     return $query->execute()->fetchAll(\PDO::FETCH_ASSOC);
   }

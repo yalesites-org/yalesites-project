@@ -410,11 +410,16 @@ class SystemInstructionsManagerService {
   /**
    * Get all versions for display.
    *
+   * @param bool $use_pager
+   *   Whether to use a pager. Defaults to FALSE for backward compatibility.
+   * @param int $items_per_page
+   *   Number of items per page when using pager. Defaults to 25.
+   *
    * @return array
    *   Array of version data for admin display.
    */
-  public function getAllVersions(): array {
-    return $this->storageService->getAllVersions();
+  public function getAllVersions(bool $use_pager = FALSE, int $items_per_page = 25): array {
+    return $this->storageService->getAllVersions($use_pager, $items_per_page);
   }
 
   /**

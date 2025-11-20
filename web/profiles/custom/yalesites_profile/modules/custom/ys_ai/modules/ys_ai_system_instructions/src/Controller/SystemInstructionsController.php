@@ -76,7 +76,8 @@ class SystemInstructionsController extends ControllerBase {
       throw new AccessDeniedHttpException('System instruction modification is not enabled.');
     }
 
-    $versions = $this->instructionsManager->getAllVersions();
+    // Use pagination with 25 items per page.
+    $versions = $this->instructionsManager->getAllVersions(TRUE, 25);
     $stats = $this->instructionsManager->getVersionStats();
 
     $build = [];
@@ -105,6 +106,10 @@ class SystemInstructionsController extends ControllerBase {
       return $build;
     }
 
+    // Batch load all users to avoid N+1 query problem.
+    $user_ids = array_unique(array_column($versions, 'created_by'));
+    $users = $this->userStorage->loadMultiple($user_ids);
+
     // Build the version history table.
     $header = [
       $this->t('Version'),
@@ -117,7 +122,8 @@ class SystemInstructionsController extends ControllerBase {
 
     $rows = [];
     foreach ($versions as $version) {
-      $user = $this->userStorage->load($version['created_by']);
+      // Use batch-loaded users instead of individual load() calls.
+      $user = $users[$version['created_by']] ?? NULL;
       $username = $user ? $user->getDisplayName() : $this->t('Unknown');
 
       if ($version['created_by'] == 1) {
@@ -161,6 +167,11 @@ class SystemInstructionsController extends ControllerBase {
       '#rows' => $rows,
       '#empty' => $this->t('No versions found.'),
       '#attributes' => ['class' => ['system-instructions-history']],
+    ];
+
+    // Add pager.
+    $build['pager'] = [
+      '#type' => 'pager',
     ];
 
     return $build;
