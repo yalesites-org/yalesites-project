@@ -79,18 +79,9 @@ class SystemInstructionsRevertForm extends ConfirmFormBase {
     $this->version = $version;
 
     // Validate that the version exists and is not already active.
-    $versions = $this->instructionsManager->getAllVersions();
-    $target_version = NULL;
-    $active_version = NULL;
-
-    foreach ($versions as $v) {
-      if ($v['version'] == $version) {
-        $target_version = $v;
-      }
-      if ($v['is_active']) {
-        $active_version = $v;
-      }
-    }
+    // Get full version data including instructions field.
+    $target_version = $this->instructionsManager->getStorageService()->getVersion($version);
+    $active_version = $this->instructionsManager->getStorageService()->getActiveInstructions();
 
     if (!$target_version) {
       $form['error'] = [
