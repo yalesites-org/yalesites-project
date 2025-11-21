@@ -141,7 +141,7 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
           if (is_object($view) && isset($view->exposed_widgets)) {
             $exposedWidgets = $view->exposed_widgets;
           }
-          // Handle case where view might be a render array (getView returns ViewExecutable).
+          // Handle case where view might be a render array.
           elseif (is_array($view) && isset($view['#view']) && isset($view['#view']->exposed_widgets)) {
             $exposedWidgets = $view['#view']->exposed_widgets;
           }
