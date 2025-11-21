@@ -5,6 +5,7 @@ dependencies:
   config:
     - block_content.type.tabs
     - field.field.block_content.tabs.field_instructions
+    - field.field.block_content.tabs.field_padding_options
     - field.field.block_content.tabs.field_tabs
   module:
     - entity_reference_revisions
@@ -24,4 +25,5 @@ content:
     region: content
 hidden:
   field_instructions: true
+  field_padding_options: true
   search_api_excerpt: true

@@ -1,0 +1,21 @@
+uuid: 7f8a9c3d-4e5b-6c7d-8e9f-0a1b2c3d4e5f
+langcode: en
+status: true
+dependencies:
+  module:
+    - block_content
+    - options
+id: block_content.field_button_alignment
+field_name: field_button_alignment
+entity_type: block_content
+type: list_string
+settings:
+  allowed_values: {  }
+  allowed_values_function: ys_themes_allowed_values_function
+module: options
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

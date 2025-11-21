@@ -1,0 +1,11 @@
+uuid: da2d3a5f-c3df-4f72-9550-a4e0a508b960
+langcode: en
+status: true
+dependencies: {  }
+id: event_calendar
+block_id: 'inline_block:event_calendar'
+category: dynamic_content
+label: 'Event Calendar'
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/event-calendar.svg
+image_alt: 'View of a calendar that displays events'
+weight: null

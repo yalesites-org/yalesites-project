@@ -45,6 +45,7 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'event_source' => NULL,
         'event_id' => NULL,
         'event_featured_date' => NULL,
+        'event_featured_index' => NULL,
       ],
     ],
     'ys_page_meta_block' => [
@@ -131,9 +132,55 @@ function ys_layouts_preprocess_block(&$variables) {
     }
   }
 
-  // Add layout_section variable for styling.
+  // Add layout_section variable for styling (Layout Builder context only).
   if (!empty($variables['elements']['#configuration']['provider']) && $variables['elements']['#configuration']['provider'] === 'layout_builder') {
     _ys_layouts_add_layout_section($variables);
+
+    // Add block padding options from the field.
+    if (isset($variables['content']['#block_content'])) {
+      $block_content = $variables['content']['#block_content'];
+      if ($block_content->hasField('field_padding_options') && !$block_content->get('field_padding_options')->isEmpty()) {
+        $padding_value = $block_content->get('field_padding_options')->value;
+        if ($padding_value) {
+          // Replace underscores with hyphens for CSS classes.
+          $variables['padding_options'] = str_replace('_', '-', $padding_value);
+        }
+      }
+    }
+  }
+
+  // Add block padding options from the field.
+  if (isset($variables['content']['#block_content'])) {
+    $block_content = $variables['content']['#block_content'];
+    $block_type = $block_content->bundle();
+
+    // Set default padding based on block type.
+    $default_padding = 'default';
+    $no_padding_blocks = [
+      'text',
+      'wrapped_text_callout',
+      'grand_hero',
+      'image_banner',
+      'cta_banner',
+      'video_banner',
+      'image',
+    ];
+
+    if (in_array($block_type, $no_padding_blocks)) {
+      $default_padding = 'no-padding';
+    }
+
+    if ($block_content->hasField('field_padding_options') && !$block_content->get('field_padding_options')->isEmpty()) {
+      $padding_value = $block_content->get('field_padding_options')->value;
+      if ($padding_value) {
+        // Replace underscores with hyphens for CSS classes.
+        $variables['padding_options'] = str_replace('_', '-', $padding_value);
+      }
+    }
+    else {
+      // Use block-specific default if no padding options set.
+      $variables['padding_options'] = $default_padding;
+    }
   }
 }
 
@@ -146,7 +193,7 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
   if ($form_id == 'layout_builder_update_block' || $form_id == 'layout_builder_add_block') {
     if (isset($form['reusable'])) {
       $form['reusable']['#title'] = t('Reusable Block');
-      $form['reusable']['#description'] = t('Create reusable content with Reusable Blocks. Changes made to a Reusable Block’s content are reflected anywhere the Block is used. This setting cannot be changed after saving.');
+      $form['reusable']['#description'] = t("Create reusable content with Reusable Blocks. Changes made to a Reusable Block's content are reflected anywhere the Block is used. This setting cannot be changed after saving.");
 
       $form['info']['#title'] = t('Reusable Block title');
       $form['info']['#description'] = t('Add a short, descriptive title to easily find and reuse the Reusable Block. Defaults to Administrative label if no title is provided.');

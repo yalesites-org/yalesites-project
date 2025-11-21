@@ -1,0 +1,165 @@
+/**
+ * @file
+ * Styles for the system instructions admin interface.
+ * Uses Gin design system variables for seamless admin integration.
+ */
+
+.system-instructions-status {
+  margin-bottom: var(--gin-spacing-m);
+  padding: var(--gin-spacing-m);
+  background: var(--gin-bg-layer);
+  border: 1px solid var(--gin-border-color);
+  border-radius: var(--gin-border-s);
+  color: var(--gin-color-text);
+}
+
+.system-instructions-status .messages {
+  margin: 0;
+}
+
+.system-instructions-summary {
+  margin-bottom: var(--gin-spacing-l);
+  color: var(--gin-color-text-light);
+}
+
+.system-instructions-summary a,
+.system-instructions-status a {
+  color: var(--gin-color-primary);
+  text-decoration: underline;
+}
+
+.system-instructions-summary a:hover,
+.system-instructions-status a:hover {
+  color: var(--gin-color-primary-hover);
+  text-decoration: none;
+}
+
+.system-instructions-history {
+  margin-top: var(--gin-spacing-m);
+}
+
+.system-instructions-history th,
+.system-instructions-history td {
+  padding: var(--gin-spacing-s);
+  vertical-align: top;
+  border-top: 1px solid var(--gin-border-color-table);
+  color: var(--gin-color-text-light);
+}
+
+.system-instructions-version-header {
+  margin-bottom: var(--gin-spacing-l);
+  padding: var(--gin-spacing-m);
+  background: var(--gin-bg-layer);
+  border: 1px solid var(--gin-border-color);
+  border-radius: var(--gin-border-s);
+  color: var(--gin-color-text);
+}
+
+.character-count {
+  font-size: var(--gin-font-size-s);
+  margin-left: 0;
+  color: var(--gin-color-text-light);
+  font-weight: var(--gin-font-weight-normal);
+}
+
+.form-textarea[data-maxlength].warning {
+  border-color: var(--gin-color-warning);
+}
+
+.form-textarea[data-maxlength].error {
+  border-color: var(--gin-color-danger);
+}
+
+/* Loading spinner styles */
+.system-instructions-loading {
+  text-align: center;
+  padding: var(--gin-spacing-xl);
+}
+
+.system-instructions-loading .ajax-progress {
+  display: inline-block;
+  margin-right: var(--gin-spacing-m);
+}
+
+.system-instructions-loading .message {
+  font-size: var(--gin-font-size);
+  color: var(--gin-color-text-light);
+  margin-top: var(--gin-spacing-m);
+}
+
+.system-instructions-loading .throbber {
+  width: var(--gin-spacing-l);
+  height: var(--gin-spacing-l);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83' stroke='%23007acc' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center center no-repeat;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Enhanced form styling for better integration with Gin design system */
+.system-instructions-form .form-item {
+  margin-bottom: var(--gin-spacing-m);
+}
+
+.system-instructions-form .form-textarea {
+  font-size: var(--gin-font-size);
+  border: 1px solid var(--gin-border-color-form-element);
+  border-radius: var(--gin-border-s);
+  padding: var(--gin-spacing-s);
+  background: var(--gin-bg-input);
+  color: var(--gin-color-text);
+}
+
+.system-instructions-form .form-textarea:focus {
+  border-color: var(--gin-color-primary);
+  outline: 2px solid var(--gin-color-focus);
+  outline-offset: 1px;
+}
+
+.system-instructions-form .form-submit {
+  font-size: var(--gin-font-size);
+  background-color: var(--gin-color-primary);
+  color: var(--gin-color-button-text);
+  border: 1px solid var(--gin-color-primary);
+  border-radius: var(--gin-border-s);
+  padding: var(--gin-spacing-xs) var(--gin-spacing-l);
+  font-weight: var(--gin-font-weight-semibold);
+  transition: background-color var(--gin-transition) ease-in-out;
+}
+
+.system-instructions-form .form-submit:hover {
+  background-color: var(--gin-color-primary-hover);
+  border-color: var(--gin-color-primary-hover);
+}
+
+.system-instructions-form .form-submit:focus {
+  outline: 2px solid var(--gin-color-focus);
+  outline-offset: 1px;
+}
+
+/* Responsive adjustments using Gin's responsive patterns */
+@media (max-width: 768px) {
+  .system-instructions-status,
+  .system-instructions-version-header {
+    padding: var(--gin-spacing-s);
+    margin-bottom: var(--gin-spacing-s);
+  }
+  
+  .system-instructions-history th,
+  .system-instructions-history td {
+    padding: var(--gin-spacing-xs);
+  }
+}
+
+@media (min-width: 1024px) {
+  .system-instructions-loading {
+    padding: var(--gin-spacing-xxl);
+  }
+}

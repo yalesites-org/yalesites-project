@@ -4,8 +4,11 @@ status: true
 dependencies:
   config:
     - block_content.type.button_link
+    - field.field.block_content.button_link.field_button_alignment
     - field.field.block_content.button_link.field_button_link
+    - field.field.block_content.button_link.field_button_style_consistency
     - field.field.block_content.button_link.field_instructions
+    - field.field.block_content.button_link.field_padding_options
   module:
     - hide_revision_field
     - linkit
@@ -15,6 +18,12 @@ targetEntityType: block_content
 bundle: button_link
 mode: default
 content:
+  field_button_alignment:
+    type: options_select
+    weight: 4
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_button_link:
     type: linkit
     weight: 3
@@ -25,9 +34,21 @@ content:
       linkit_profile: default
       linkit_auto_link_text: false
     third_party_settings: {  }
+  field_button_style_consistency:
+    type: options_select
+    weight: 5
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_instructions:
     type: markup
     weight: 0
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_padding_options:
+    type: options_select
+    weight: 10
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -50,5 +71,6 @@ content:
       default: ''
       permission_based: false
       allow_user_settings: true
+      hide_revision: false
     third_party_settings: {  }
 hidden: {  }

@@ -15,7 +15,7 @@ use Drupal\Core\Url as UrlObject;
  */
 class CampusGroupUrl extends Url {
   // The number of days in the future to retrieve events.
-  const DAYS = 120;
+  const DAYS = 365;
 
   /**
    * {@inheritdoc}

@@ -195,7 +195,8 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     // Dates.
     $dates = $node->field_event_date->getValue();
     $this->orderEventDates($dates);
-    $featuredDate = $this->getFeaturedDate($dates);
+    $featuredIndex = $this->getFeaturedDateIndex($dates);
+    $featuredDate = $this->getFeaturedDateFromIndex($dates, $featuredIndex);
 
     // Teaser responsive image.
     $teaserMediaRender = [];
@@ -292,6 +293,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       'stream_embed_code' => $streamEmbedCode,
       'event_source' => $eventSource,
       'event_featured_date' => $featuredDate,
+      'event_featured_index' => $featuredIndex,
     ];
   }
 
@@ -318,7 +320,43 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       }
       // Sort dates - first date is next upcoming date.
       asort($dates);
+      // Reindex the array so position matches array keys.
+      $dates = array_values($dates);
     }
+  }
+
+  /**
+   * Get the index of the featured date from the list of dates.
+   *
+   * @param array $dates
+   *   An array of dates.
+   *
+   * @return int|null
+   *   The index of the featured date or NULL.
+   */
+  protected function getFeaturedDateIndex($dates) {
+    $featuredIndex = NULL;
+
+    if (!is_array($dates)) {
+      return $dates;
+    }
+
+    // Track the position (0, 1, 2...) not the array key.
+    $position = 0;
+    foreach ($dates as $date) {
+      if ($date['end_value'] >= time()) {
+        $featuredIndex = $position;
+        break;
+      }
+      $position++;
+    }
+
+    if (!isset($featuredIndex)) {
+      // If no upcoming date, use the last position.
+      $featuredIndex = count($dates) - 1;
+    }
+
+    return $featuredIndex;
   }
 
   /**
@@ -351,6 +389,29 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     }
 
     return $featuredDate;
+  }
+
+  /**
+   * Get the featured date from the list of dates by index.
+   *
+   * @param array $dates
+   *   An array of dates.
+   * @param int $index
+   *   The index of the date to return.
+   *
+   * @return array|NodeInterface
+   *   The date at the given index or what was passed.
+   */
+  protected function getFeaturedDateFromIndex($dates, $index) {
+    if (!is_array($dates)) {
+      return $dates;
+    }
+
+    if (isset($dates[$index])) {
+      return $dates[$index];
+    }
+
+    return end($dates);
   }
 
 }

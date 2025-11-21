@@ -1,0 +1,8 @@
+# Default configuration for YaleSites File Management module.
+
+# Whether the "Also delete the associated file?" checkbox should be checked by default.
+delete_file_default: false
+
+# Whether to disable the file deletion control entirely.
+# If true, the checkbox will not be shown even to File Managers.
+disable_delete_control: false

@@ -117,8 +117,8 @@ class LocalistSettings extends ConfigFormBase {
     $form['localist_endpoint'] = [
       '#type' => 'url',
       '#title' => $this->t('Localist endpoint base URL'),
-      '#description' => $this->t('Ex: https://yale.enterprise.localist.com'),
-      '#default_value' => $config->get('localist_endpoint') ?: 'https://yale.enterprise.localist.com',
+      '#description' => $this->t('Ex: https://events.yale.edu'),
+      '#default_value' => $config->get('localist_endpoint') ?: 'https://events.yale.edu',
       '#disabled' => !$allowSecretItems,
     ];
 

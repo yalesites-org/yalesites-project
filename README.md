@@ -1,11 +1,44 @@
 # YaleSites Project
 
-The YaleSites platform empowers the Yale community to create digital experiences for the web in applications that are secure, cost-effective, accessible, and sustainable. This project repository contains the tooling, configuration, and scaffolding required to create sites on the platform. This project includes:
+YaleSites Project is a **Pantheon custom upstream for Drupal 10** that serves as the foundation for Yale's web platform. The YaleSites platform empowers the Yale community to create digital experiences for the web in applications that are secure, cost-effective, accessible, and sustainable.
 
-- Pantheon custom upstream for Drupal
-- Local development environment and tooling
-- Code quality, testing, and build tools
-- Continuous integration and delivery support
+This is a sophisticated multi-repository system that includes:
+
+- **Pantheon custom upstream for Drupal 10** - Core platform infrastructure
+- **Local development environment and tooling** - Lando-based development setup
+- **Code quality, testing, and build tools** - Comprehensive linting and testing suite
+- **Continuous integration and delivery support** - Automated builds and deployments
+
+## Multi-Repository Architecture
+
+This platform coordinates development across multiple repositories:
+
+1. **yalesites-project** (this repo): Drupal platform and installation profile
+2. **atomic**: Theme implementation bridging Drupal and component library
+3. **component-library-twig**: Storybook component library with Yale design system
+4. **tokens**: Design system tokens from Figma
+
+## Quick Start
+
+```bash
+git clone git@github.com:yalesites-org/yalesites-project
+cd yalesites-project
+npm run setup
+```
+
+**Local Development URLs:**
+- Primary Site: `https://yalesites-platform.lndo.site/`
+- Storybook: Available when component library is linked
+
+## Prerequisites
+
+- **PHP Version**: 8.3
+- **Node.js**: >=8.0, <11.0 (managed via NVM)
+- **Docker**: 3GB+ memory, 3+ CPUs recommended
+- **Lando**: Latest release
+- **Composer**: Version 2.x
+- **GitHub Personal Access Token**: Required for `@yalesites-org` packages (scope: `write:packages`)
+- **Pantheon Terminus**: Machine token for platform integration
 
 ## Contributing
 
@@ -16,28 +49,64 @@ The YaleSites platform empowers the Yale community to create digital experiences
 - [Frontend review and development](/docs/theming.md)
 - [Working with component themes and global themes](/docs/color-theme.md)
 
-## Common Scripts
+## Development Commands
 
-These are the most common npm scripts you may find yourself using:
-(Each is prefixed with `npm run `)
+All commands are prefixed with `npm run`. For example: `npm run setup`
 
-### PR Reviews
+### Environment Setup
 
-- `build` Builds your current project branch _on top of your existing db_. Useful when you just need to check a config update, but don't want to lose your local content etc.
-- `build-with-assets` Builds your current project branch _on a clean import of your Pantheon reference db_. Useful when you want to see exactly what the current branch will do to the dev Pantheon instance.
-- `build-with-install` Builds your current project branch _with a clean site install (empty database)_. Useful when your branch includes a breaking change and the existing database would produce errors.
-- `local:review-with-atomic-branch` Will ask which branch of Atomic you want to review. Useful when you need to review an atomic PR that doesn't have associated component library changes.
-- `local:review-with-cl-branch` Will ask which branch of the component library you want to review. Useful when you need to review a CL PR that doesn't have associated Atomic changes.
-- `local:review-with-atomic-and-cl-branch` Runs each of the scripts above, in order, so that you can review changes that span both the Atomic and CL repos.
+- `setup` - Complete environment initialization and setup
+- `db:get` - Download database from Pantheon dev environment
+- `files:get` - Download files from Pantheon dev environment
+- `content-import` - Import starterkit content for testing
 
-_Notes:_
+### Build Commands
 
-- _For the last three `local:` scripts, you'll still need to run one of the the `build` scripts to import config etc. for Drupal. They just get the Atomic and Component Library setup._
-- _During the initial build phase, we're introducing a lot of breaking changes, and instead of writing update hooks, we're just doing fresh site installs. Once the platform is live, we'll need to stop doing that, and we should get rid of the `build-with-install` script, as we'll no longer support that workflow._
+- `build` - Standard build preserving local database (for config updates)
+- `build-with-assets` - Build with clean Pantheon database import (matches dev environment)
+- `build-with-install` - Build with fresh site install (empty database for breaking changes)
 
-### Active Development
+### Multi-Repository Development
 
-- `confex` Exports your local drupal config.
-- `confim` Imports the current config files to your database.
-- `local:theme-link` Run this script once to establish `npm link`s to all of the frontend-related repositories.
-- `local:cl-dev` Enables a frontend developer to work across all of the repositories (`yalesites-project`, `atomic`, and `component-library-twig`) in an environment configured to support both Storybook development, and have the changes reflected in the Drupal instance. Note: This also wires up the Tokens repo, but if you want to watch for changes there, you'll have to run the `npm run develop` script inside the Tokens directory..
+- `local:theme-link` - Establish npm links to frontend repositories (run once)
+- `local:cl-dev` - Full cross-repository development mode (Storybook + Drupal)
+- `local:git-checkout` - Sync all repositories to default branches
+
+### Theme/Component Review
+
+- `local:review-with-atomic-branch` - Review Atomic branch with latest CL release
+- `local:review-with-cl-branch` - Review Component Library branch with current Atomic
+- `local:review-with-atomic-and-cl-branch` - Review branches from both Atomic and CL
+
+### Configuration Management
+
+- `confex` - Export Drupal configuration to YAML files
+- `confim` - Import YAML configuration to database
+
+### Code Quality & Testing
+
+- `lint` - Run all linting (JavaScript, PHP, Styles)
+- `lint:js` - ESLint for custom JavaScript
+- `lint:php` - PHP CodeSniffer with Drupal standards
+- `lint:styles` - Stylelint for SCSS files
+- `fix:js` - Auto-fix JavaScript linting errors
+- `prettier` - Check code formatting (does not auto-fix)
+- `test` - Run complete test suite (prettier + all linting)
+
+### Alternative Commands (via Lando)
+
+```bash
+lando composer code-sniff    # PHP linting
+lando composer code-fix      # Auto-fix PHP code style
+lando phpunit               # Run PHPUnit tests
+lando drush [command]       # Drush commands
+lando xdebug-on            # Enable Xdebug
+lando xdebug-off           # Disable Xdebug
+```
+
+## Architecture Notes
+
+- **Configuration**: Managed through installation profile at `web/profiles/custom/yalesites_profile/config/sync/`
+- **Custom Modules**: Use `ys_` prefix (e.g., `ys_core`, `ys_themes`)
+- **Branch Strategy**: `develop` (primary), `master` (releases), `YALB-XXX-description` (features)
+- **Semantic Release**: Automated versioning on master branch using conventional commits

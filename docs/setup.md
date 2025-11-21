@@ -16,7 +16,8 @@ __NOTE: Documentation assumes you are using MacOS with at least 8GB of memory on
 6. [Terminus](#terminus): Machine auth token
 7. [Lando](#lando)
 8. Docker: Use the version Lando wants to install and increase memory resources to at least 3GB memory and 3 CPUs if possible
-9. [Project Setup](#project-setup)
+9. **PHP Version**: 8.3 (as configured in composer.json platform requirement)
+10. [Project Setup](#project-setup)
     ```bash
     # Set up local development version of repo
     git clone git@github.com:yalesites-org/yalesites-project
@@ -98,7 +99,7 @@ This project supports development with Lando using the Pantheon recipe. This pro
 
 To clone the project, the above requirements must be met first.  If you have not already cloned the repository:
 
-`git clone git@github.com:yaleitsites-org/yalesites-project.git`
+`git clone git@github.com:yalesites-org/yalesites-project.git`
 
 ## Project setup
 
@@ -179,10 +180,25 @@ npm run db:get                                  # Download a dev database locall
 npm run files:get                               # Download dev files locally from a pantheon site
 ```
 ```bash
+npm run content-import                          # Import starterkit content
+```
+```bash
 npm run lint                                    # Lints js, php, and styles
 ```
 ```bash
+npm run lint:js                                 # ESLint for custom JavaScript code
+```
+```bash
+npm run lint:php                                # PHP CodeSniffer via composer
+```
+```bash
+npm run lint:styles                             # Stylelint for SCSS files
+```
+```bash
 npm run fix:js                                  # Fixes js linting errors if possible
+```
+```bash
+npm run prettier                                # Prettier formatting check
 ```
 ```bash
 npm run test                                    # Runs prettier and linting

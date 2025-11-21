@@ -294,8 +294,8 @@ content:
     type: entity_reference_entity_view
     label: hidden
     settings:
-      view_mode: default
-      link: true
+      view_mode: text_with_image_feature_equal
+      link: false
     third_party_settings: {  }
     weight: 1
     region: content

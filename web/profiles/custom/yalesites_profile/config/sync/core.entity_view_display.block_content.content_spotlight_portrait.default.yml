@@ -11,6 +11,7 @@ dependencies:
     - field.field.block_content.content_spotlight_portrait.field_link
     - field.field.block_content.content_spotlight_portrait.field_link_two
     - field.field.block_content.content_spotlight_portrait.field_media
+    - field.field.block_content.content_spotlight_portrait.field_padding_options
     - field.field.block_content.content_spotlight_portrait.field_style_alignment
     - field.field.block_content.content_spotlight_portrait.field_style_color
     - field.field.block_content.content_spotlight_portrait.field_style_position
@@ -79,6 +80,13 @@ content:
       link: false
     third_party_settings: {  }
     weight: 0
+    region: content
+  field_padding_options:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 10
     region: content
   field_style_alignment:
     type: list_key

@@ -1,0 +1,23 @@
+uuid: 0dbe4ed2-81e2-408a-8249-e2e1068d2454
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.wrapped_image
+    - field.storage.block_content.field_padding_options
+  module:
+    - options
+id: block_content.wrapped_image.field_padding_options
+field_name: field_padding_options
+entity_type: block_content
+bundle: wrapped_image
+label: 'Padding Options'
+description: 'Choose the padding configuration for this block. Each block may have a different default value depending on which Block you selected. Reference this resource on YaleSites block padding.'
+required: true
+translatable: true
+default_value:
+  -
+    value: default
+default_value_callback: ''
+settings: {  }
+field_type: list_string

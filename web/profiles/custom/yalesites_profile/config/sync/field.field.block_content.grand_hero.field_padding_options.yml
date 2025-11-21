@@ -1,0 +1,23 @@
+uuid: 64b25c2d-6ce3-4021-ba0b-5d679e021001
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.grand_hero
+    - field.storage.block_content.field_padding_options
+  module:
+    - options
+id: block_content.grand_hero.field_padding_options
+field_name: field_padding_options
+entity_type: block_content
+bundle: grand_hero
+label: 'Padding Options'
+description: 'Choose the padding configuration for this block. Each block may have a different default value depending on which Block you selected. Reference this resource on YaleSites block padding.'
+required: true
+translatable: true
+default_value:
+  -
+    value: no_padding
+default_value_callback: ''
+settings: {  }
+field_type: list_string

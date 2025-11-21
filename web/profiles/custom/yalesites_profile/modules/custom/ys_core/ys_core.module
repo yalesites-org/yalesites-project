@@ -5,6 +5,7 @@
  * Contains ys_core.module functions.
  */
 
+use Drupal\imagemagick\ImagemagickExecArguments;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Cache\Cache;
@@ -39,7 +40,9 @@ function ys_core_theme($existing, $type, $theme, $path): array {
       ],
     ],
     'ys_dashboard' => [
-      'variables' => [],
+      'variables' => [
+        'platform_version' => NULL,
+      ],
     ],
     'ys_social_links' => [
       'variables' => [
@@ -478,9 +481,9 @@ function ys_core_help($route_name, RouteMatchInterface $route_match) {
  * Implements hook_page_attachments().
  */
 function ys_core_page_attachments(array &$page) {
-  // Add Siteimprove Javascript only on production.
+  // Add Siteimprove Javascript only on production and front-facing pages.
   $config = \Drupal::config('config_split.config_split.production_config');
-  if ($config->get('status')) {
+  if ($config->get('status') && _ys_core_should_load_siteimprove()) {
     $page['#attached']['library'][] = 'ys_core/siteimprove';
   }
 
@@ -489,6 +492,129 @@ function ys_core_page_attachments(array &$page) {
   foreach ($favicons as $name => $favicon) {
     $page['#attached']['html_head'][] = [$favicon, $name];
   }
+}
+
+/**
+ * Helper function to determine if SiteImprove should load on the current page.
+ *
+ * @return bool
+ *   TRUE if SiteImprove should load, FALSE otherwise.
+ */
+function _ys_core_should_load_siteimprove() {
+  $route_match = \Drupal::routeMatch();
+  $route_name = $route_match->getRouteName();
+  $current_path = \Drupal::service('path.current')->getPath();
+
+  // Administrative routes to exclude.
+  $excluded_routes = [
+    // Admin pages.
+    'system.admin',
+    'system.admin_content',
+    'system.admin_structure',
+    'system.admin_config',
+    'system.admin_reports',
+    'system.admin_help',
+    'system.modules_list',
+    'system.themes_page',
+
+    // Content editing.
+    'entity.node.edit_form',
+    'node.add',
+    'entity.node.delete_form',
+    'entity.node.revision',
+    'entity.node.version_history',
+    'quickedit.field_form',
+    'entity.node.content_translation_overview',
+
+    // Layout Builder.
+    'layout_builder.overrides.node.view',
+    'layout_builder.overrides.node.save',
+    'layout_builder.overrides.node.cancel',
+    'layout_builder.overrides.node.revert',
+    'layout_builder.move_block',
+    'layout_builder.configure_block',
+    'layout_builder.add_block',
+    'layout_builder.remove_block',
+    'layout_builder.configure_section',
+    'layout_builder.add_section',
+    'layout_builder.remove_section',
+
+    // User management (keep public profiles).
+    'entity.user.edit_form',
+    'user.register',
+    'user.pass',
+    'user.login',
+    'user.logout',
+    'entity.user.delete_form',
+    'user.admin_create',
+    'user.admin_index',
+    'user.multiple_cancel_confirm',
+    'cas.bulk_add_cas_users',
+
+    // Taxonomy editing.
+    'entity.taxonomy_term.edit_form',
+    'entity.taxonomy_term.add_form',
+    'entity.taxonomy_term.delete_form',
+    'entity.taxonomy_vocabulary.overview_form',
+    'entity.taxonomy_vocabulary.collection',
+    'entity.taxonomy_vocabulary.add_form',
+    'entity.taxonomy_vocabulary.edit_form',
+
+    // Block and media management.
+    'entity.block_content.collection',
+    'entity.block_content.add_form',
+    'entity.block_content.edit_form',
+    'entity.media.collection',
+    'entity.media.add_form',
+    'entity.media.edit_form',
+    'view.media.media_page_list',
+
+    // Configuration and development.
+    'config.sync',
+    'config.import_full',
+    'config.export_full',
+    'config.diff',
+    'devel.admin_settings',
+    'devel.switch',
+    'system.performance_settings',
+    'system.logging_settings',
+    'system.cron_settings',
+    'system.site_information_settings',
+
+    // Reports and maintenance.
+    'system.status',
+    'dblog.overview',
+    'update.status',
+    'system.run_cron',
+  ];
+
+  // Path patterns to exclude (for routes not caught above).
+  $excluded_path_patterns = [
+    '/admin',
+    '/node/add',
+    '/layout_builder',
+    '/devel',
+  ];
+
+  // Check if current route should be excluded.
+  if (in_array($route_name, $excluded_routes)) {
+    return FALSE;
+  }
+
+  // Check for editing paths in current path.
+  if (preg_match('/\/(edit|add|delete|layout)($|\/)/i', $current_path)) {
+    return FALSE;
+  }
+
+  // Check excluded path patterns.
+  foreach ($excluded_path_patterns as $pattern) {
+    if (strpos($current_path, $pattern) === 0) {
+      return FALSE;
+    }
+  }
+
+  // Allow SiteImprove on all other pages (front-facing content).
+  return TRUE;
 }
 
 /**
@@ -885,20 +1011,73 @@ function ys_core_grand_hero_display_mode_callback($form, FormStateInterface $for
 }
 
 /**
+ * Prepare validation context for Grand Hero block form.
+ *
+ * This validation handler ensures that the form stays in modal context
+ * during validation errors and properly preserves field group tabs.
+ *
+ * @param array $form
+ *   The form array.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state object.
+ */
+
+/**
  * Validation handler for Grand Hero block form.
  */
 function ys_core_grand_hero_validate($form, FormStateInterface $form_state) {
-  $display_mode = $form_state->getValue(['settings', 'block_form', 'field_display_mode']);
+  // Validate required fields that are configured in field definitions.
+  // Using setErrorByName() to ensure errors are properly associated
+  // with field names regardless of form structure.
+  // Heading field validation.
+  $heading_value = $form_state->getValue(['settings', 'block_form', 'field_heading', 0, 'value']);
+  if (empty(trim($heading_value))) {
+    $form_state->setErrorByName('settings][block_form][field_heading', t('Heading field is required.'));
+  }
 
-  if ($display_mode === 'text') {
-    if (empty($form_state->getValue(['settings', 'block_form', 'field_heading', 0, 'value']))) {
-      $form_state->setError($form['settings']['block_form']['field_heading'], t('Heading is required when using Text display mode.'));
+  // Media field validation.
+  $media_value = $form_state->getValue(['settings', 'block_form', 'field_media']);
+
+  // Check if media has a value in any of the possible formats.
+  $has_media = FALSE;
+  if (!empty($media_value)) {
+    // Media library widget can return selection array.
+    if (isset($media_value['selection'])) {
+      $has_media = !empty($media_value['selection']);
+    }
+    // Or standard target_id format.
+    elseif (is_array($media_value) && isset($media_value[0]['target_id'])) {
+      $has_media = !empty($media_value[0]['target_id']);
+    }
+    // Or just target_id directly.
+    elseif (is_numeric($media_value)) {
+      $has_media = TRUE;
     }
   }
-  elseif ($display_mode === 'image') {
-    if (empty($form_state->getValue(['settings', 'block_form', 'field_overlay_png', 'media_library_selection']))) {
-      $form_state->setError($form['settings']['block_form']['field_overlay_png'], t('Overlay PNG is required when using Image display mode.'));
-    }
+
+  if (!$has_media) {
+    $form_state->setErrorByName('settings][block_form][field_media', t('Media field is required.'));
+  }
+
+  // Style fields validation.
+  $style_color = $form_state->getValue(['settings', 'block_form', 'field_style_color']);
+  if (empty($style_color) || (is_array($style_color) && empty($style_color[0]['value']))) {
+    $form_state->setErrorByName('settings][block_form][field_style_color', t('Style Color field is required.'));
+  }
+
+  $style_position = $form_state->getValue(['settings', 'block_form', 'field_style_position']);
+  if (empty($style_position) || (is_array($style_position) && empty($style_position[0]['value']))) {
+    $form_state->setErrorByName('settings][block_form][field_style_position', t('Style Position field is required.'));
+  }
+
+  $style_variation = $form_state->getValue(['settings', 'block_form', 'field_style_variation']);
+  if (empty($style_variation) || (is_array($style_variation) && empty($style_variation[0]['value']))) {
+    $form_state->setErrorByName('settings][block_form][field_style_variation', t('Media Size field is required.'));
+  }
+
+  $heading_level = $form_state->getValue(['settings', 'block_form', 'field_heading_level']);
+  if (empty($heading_level) || (is_array($heading_level) && empty($heading_level[0]['value']))) {
+    $form_state->setErrorByName('settings][block_form][field_heading_level', t('Heading Level field is required.'));
   }
 }
 
@@ -1078,5 +1257,38 @@ function ys_core_page_top(array &$page_top) {
   // If disabled, remove the environment indicator from page_top.
   if (!$show_indicator && isset($page_top['indicator'])) {
     unset($page_top['indicator']);
+  }
+}
+
+/**
+ * Implements hook_imagemagick_arguments_alter().
+ *
+ * Preserves PNG transparency across all image style operations.
+ */
+function ys_core_imagemagick_arguments_alter(ImagemagickExecArguments $arguments, $command) {
+  // Only process 'convert' operations (image transformations).
+  if ($command !== 'convert') {
+    return;
+  }
+
+  // Get the source image path to check if it's a PNG.
+  $source = $arguments->getSource();
+  if (!$source) {
+    return;
+  }
+
+  // Check if source is a PNG file.
+  $source_extension = strtolower(pathinfo($source, PATHINFO_EXTENSION));
+  $source_mime = mime_content_type($source);
+
+  if ($source_extension === 'png' || $source_mime === 'image/png') {
+    // Add transparency preservation arguments for PNG files.
+    // Use ImageMagick v6 compatible syntax.
+    $arguments->add('-alpha on');
+    $arguments->add('-channel RGBA');
+
+    // Ensure PNG compression is optimized while preserving transparency.
+    $arguments->add('-define png:preserve-colormap=true');
+    $arguments->add('-define png:exclude-chunks=date');
   }
 }

@@ -6,6 +6,7 @@ dependencies:
     - block_content.type.tiles
     - field.field.block_content.tiles.field_enable_animation
     - field.field.block_content.tiles.field_instructions
+    - field.field.block_content.tiles.field_padding_options
     - field.field.block_content.tiles.field_style_alignment
     - field.field.block_content.tiles.field_style_position
     - field.field.block_content.tiles.field_style_width
@@ -28,7 +29,13 @@ content:
     third_party_settings: {  }
   field_instructions:
     type: markup
-    weight: 0
+    weight: -1
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_padding_options:
+    type: options_select
+    weight: 10
     region: content
     settings: {  }
     third_party_settings: {  }

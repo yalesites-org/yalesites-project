@@ -7,6 +7,7 @@ dependencies:
     - field.field.block_content.callout.field_callout
     - field.field.block_content.callout.field_instructions
     - field.field.block_content.callout.field_overlay_background_image
+    - field.field.block_content.callout.field_padding_options
     - field.field.block_content.callout.field_style_alignment
     - field.field.block_content.callout.field_style_color
   module:
@@ -34,6 +35,13 @@ content:
       link: false
     third_party_settings: {  }
     weight: 8
+    region: content
+  field_padding_options:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 10
     region: content
   field_style_alignment:
     type: list_key

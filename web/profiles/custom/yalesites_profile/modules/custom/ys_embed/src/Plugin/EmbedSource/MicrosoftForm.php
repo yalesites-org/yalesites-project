@@ -20,12 +20,12 @@ class MicrosoftForm extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $pattern = '/^<iframe.+src=\"https:\/\/forms\.office\.com\/Pages\/ResponsePage.aspx(?<form_params>[^"]+)".+/';
+  protected static $pattern = '/^<iframe.+src=\"https:\/\/(?:(?:forms\.office\.com\/Pages\/ResponsePage\.aspx(?<office_params>\?[^"]+))|(?:forms\.cloud\.microsoft\/r\/(?<form_id>[^"\?]+)(?:\?[^"]*)?))".+/';
 
   /**
    * {@inheritdoc}
    */
-  protected static $template = '<iframe width="640px" height="480px" src="https://forms.office.com/Pages/ResponsePage.aspx{{ form_params }}" height="100%" width="100%" loading="lazy"></iframe>\r\n';
+  protected static $template = '<iframe width="640px" height="480px" src="{{ url }}" height="100%" width="100%" loading="lazy"></iframe>\r\n';
 
   /**
    * {@inheritdoc}
@@ -52,9 +52,58 @@ class MicrosoftForm extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
+  public function build(array $params): array {
+    // Add the constructed URL to params for template use.
+    $params['url'] = $this->getUrl($params);
+    return parent::build($params);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getUrl(array $params): string {
-    $form_params = $params['form_params'];
-    return 'https://forms.office.com/Pages/ResponsePage.aspx' . $form_params;
+    if (isset($params['office_params']) && !empty($params['office_params'])) {
+      $sanitized_params = $this->sanitizeOfficeParams($params['office_params']);
+      return 'https://forms.office.com/Pages/ResponsePage.aspx' . $sanitized_params;
+    }
+    if (isset($params['form_id']) && !empty($params['form_id'])) {
+      $sanitized_id = $this->sanitizeFormId($params['form_id']);
+      return 'https://forms.cloud.microsoft/r/' . $sanitized_id;
+    }
+    return '';
+  }
+
+  /**
+   * Sanitizes office.com form parameters.
+   *
+   * @param string $params
+   *   The query string parameters.
+   *
+   * @return string
+   *   The sanitized parameters.
+   */
+  protected function sanitizeOfficeParams(string $params): string {
+    // Minimal sanitization: prevent quote injection and XSS,
+    // preserve Microsoft params.
+    $sanitized = str_replace('"', '', $params);
+    $sanitized = htmlspecialchars($sanitized, ENT_QUOTES, 'UTF-8');
+    return substr($sanitized, 0, 2000);
+  }
+
+  /**
+   * Sanitizes cloud.microsoft form ID.
+   *
+   * @param string $form_id
+   *   The form ID.
+   *
+   * @return string
+   *   The sanitized form ID.
+   */
+  protected function sanitizeFormId(string $form_id): string {
+    // Minimal sanitization: prevent quote injection and basic XSS,
+    // preserve Microsoft IDs.
+    $sanitized = str_replace(['"', '<', '>', '&'], '', $form_id);
+    return substr($sanitized, 0, 100);
   }
 
 }

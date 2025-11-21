@@ -5,6 +5,7 @@ dependencies:
   config:
     - block_content.type.tabs
     - field.field.block_content.tabs.field_instructions
+    - field.field.block_content.tabs.field_padding_options
     - field.field.block_content.tabs.field_tabs
   module:
     - markup
@@ -17,13 +18,19 @@ mode: default
 content:
   field_instructions:
     type: markup
-    weight: 0
+    weight: -1
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_padding_options:
+    type: options_select
+    weight: 10
     region: content
     settings: {  }
     third_party_settings: {  }
   field_tabs:
     type: paragraphs
-    weight: 2
+    weight: 1
     region: content
     settings:
       title: tab
@@ -47,11 +54,23 @@ content:
         show_drag_and_drop: true
   info:
     type: string_textfield
-    weight: 1
+    weight: 2
     region: content
     settings:
       size: 60
       placeholder: ''
     third_party_settings: {  }
-hidden:
-  revision_log: true
+  revision_log:
+    type: hide_revision_field_log_widget
+    weight: 3
+    region: content
+    settings:
+      rows: 5
+      placeholder: ''
+      show: true
+      default: ''
+      permission_based: false
+      allow_user_settings: true
+      hide_revision: false
+    third_party_settings: {  }
+hidden: {  }

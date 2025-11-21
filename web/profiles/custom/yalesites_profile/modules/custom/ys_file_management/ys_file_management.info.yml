@@ -1,0 +1,8 @@
+name: YaleSites File Management
+type: module
+description: 'Provides conditional file deletion capabilities for privileged users when deleting media entities.'
+core_version_requirement: ^10 || ^11
+package: YaleSites
+dependencies:
+  - drupal:file
+  - drupal:media

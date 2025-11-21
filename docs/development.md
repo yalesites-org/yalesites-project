@@ -19,7 +19,7 @@ Configuration in Drupal refers to many parts of the website including content ty
 
 ### Platform settings
 
-All platform config files are stored in the `yalesites_profile` installation profile. YAML files are stored in the `config/sync` directory. This is a new approach to maintaining configuration without the need to edit file contents like the UUID. The project's settings.php ensures all sites use the profile configuration as the canonical source of site settings.
+All platform config files are stored in the `yalesites_profile` installation profile. YAML files are stored in the `config/sync` directory at `web/profiles/custom/yalesites_profile/config/sync/`. This is a profile-based configuration management approach that differs from traditional Drupal site-specific config. The project's settings.php ensures all sites use the profile configuration as the canonical source of site settings.
 
 ### Process for updating
 
@@ -46,7 +46,7 @@ Custom functionality is added to the platform through Yale maintained modules. I
 
 ```bash
 # Navigate to the custom modules directory
-cd web/profiles/contrib/yalesites_profile/modules/custom
+cd web/profiles/custom/yalesites_profile/modules/custom
 # Custom modules are added directly to the profile repo.
 ```
 
@@ -113,3 +113,22 @@ This project features custom fields for block theming. For example, the divider 
 4. In the event that this is a newly created field, update the field storage configuration file. Specify the callback function for values using `allowed_values_function: ys_themes_allowed_values_function`.
 5. Proceed to update the key-value pairs within `ys_themes.component_overrides.yml`. Remember to make these updates in two locations: the config/sync directory and the module/install directory.
 6. With these adjustments in place, you can now connect these values to components within the theme templates, achieving the desired styling and functionality.
+
+## Release Process
+
+This project uses semantic release for automated versioning and publishing:
+
+### Branch Strategy
+- **develop**: Default branch for active development and integration testing
+- **master**: Production-ready code; triggers semantic release process
+
+### Semantic Release
+- Commits to `master` branch trigger automated versioning based on conventional commit messages
+- Version updates are automatically applied to `web/profiles/custom/yalesites_profile/yalesites_profile.info.yml`
+- Changes are automatically backmerged to the `develop` branch
+- GitHub releases are created automatically
+
+### Conventional Commits Impact
+- `fix:` commits trigger patch releases (e.g., 1.0.1)
+- `feat:` commits trigger minor releases (e.g., 1.1.0)
+- `BREAKING CHANGE:` in commit body triggers major releases (e.g., 2.0.0)
