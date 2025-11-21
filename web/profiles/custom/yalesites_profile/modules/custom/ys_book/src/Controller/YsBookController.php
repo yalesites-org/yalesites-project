@@ -15,7 +15,7 @@ class YsBookController extends BookController {
    * @return array
    *   A render array for the admin overview page.
    */
-  public function adminOverview() {
+  public function adminOverview(): array {
     $build = parent::adminOverview();
 
     if (isset($build['#header'])) {
