@@ -10,9 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
+        uses: actions/checkout@v6
+
+      - name: Git setup
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
 
       - name: Install Node.js
         uses: actions/setup-node@v4
@@ -24,3 +27,41 @@ jobs:
 
       - name: Release
         run: npx semantic-release
+
+      - name: Backmerge master to develop
+        run: |
+          set -euo pipefail
+
+          git fetch origin --no-tags
+          git checkout --track origin/develop
+
+          # Attempt a fast-forward merge first
+          if git merge --ff-only origin/master; then
+            git push origin develop
+            echo "Backmerge: completed by fast-forward."
+            exit 0
+          fi
+
+          # If fast-forward fails, try a merge commit
+          if git merge --no-ff --no-edit origin/master; then
+            git push origin develop
+            echo "Backmerge: completed by merge commit."
+            exit 0
+          fi
+
+          # If there is a conflict, branch off master and create a pull request
+          git merge --abort || true
+          SHORT_SHA=$(git rev-parse --short origin/master)
+          BRANCH="backmerge/master-into-develop-${SHORT_SHA}"
+          git checkout -B "$BRANCH" origin/master
+          git push -u origin "$BRANCH"
+
+          # Create pull request
+          gh pr create \
+            --title "Backmerge master → develop" \
+            --body "Automatic backmerge of master into develop failed due to conflicts. Please review, resolve, and merge." \
+            --base develop \
+            --head "$BRANCH" \
+            --repo "${GITHUB_REPOSITORY}"
+
+          echo "Backmerge: opened pull request from $BRANCH → develop for manual resolution."
