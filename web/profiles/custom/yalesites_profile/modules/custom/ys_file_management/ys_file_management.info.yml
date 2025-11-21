@@ -1,9 +1,8 @@
-name: 'YaleSites File Management'
+name: YaleSites File Management
 type: module
-description: 'Custom file management overrides'
-core_version_requirement: ^9 || ^10
+description: 'Provides conditional file deletion capabilities for privileged users when deleting media entities.'
+core_version_requirement: ^10 || ^11
 package: YaleSites
 dependencies:
+  - drupal:file
   - drupal:media
-  - entity_usage:entity_usage
-  - media_file_delete:media_file_delete

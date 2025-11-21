@@ -1,0 +1,7 @@
+configure ys ai system instructions:
+  title: 'Configure YS AI system instructions'
+  description: 'Allow users to configure system instructions settings including API endpoints and feature toggles'
+
+manage ys ai system instructions:
+  title: 'Manage YS AI system instructions'
+  description: 'Allow users to create, edit, and manage system instructions for YaleSites AI'
