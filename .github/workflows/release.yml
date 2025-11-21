@@ -10,9 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
+        uses: actions/checkout@v6
 
       - name: Git setup
         run: |
@@ -34,6 +32,7 @@ jobs:
         run: |
           set -euo pipefail
 
+          git fetch origin --no-tags
           git checkout --track origin/develop
 
           # Attempt a fast-forward merge first
@@ -62,6 +61,7 @@ jobs:
             --title "Backmerge master → develop" \
             --body "Automatic backmerge of master into develop failed due to conflicts. Please review, resolve, and merge." \
             --base develop \
-            --head "$BRANCH"
+            --head "$BRANCH" \
+            --repo "${GITHUB_REPOSITORY}"
 
           echo "Backmerge: opened pull request from $BRANCH → develop for manual resolution."
