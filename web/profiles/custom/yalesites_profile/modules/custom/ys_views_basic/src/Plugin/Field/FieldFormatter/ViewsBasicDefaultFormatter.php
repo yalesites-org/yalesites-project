@@ -136,15 +136,8 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
         // Extract exposed widgets from the view.
         // The view might be NULL or a ViewExecutable object.
         $exposedWidgets = NULL;
-        if ($view) {
-          // Check if exposed_widgets exists on the view object.
-          if (is_object($view) && isset($view->exposed_widgets)) {
-            $exposedWidgets = $view->exposed_widgets;
-          }
-          // Handle case where view might be a render array.
-          elseif (is_array($view) && isset($view['#view']) && isset($view['#view']->exposed_widgets)) {
-            $exposedWidgets = $view['#view']->exposed_widgets;
-          }
+        if ($view && is_array($view) && isset($view['#view']) && isset($view['#view']->exposed_widgets)) {
+          $exposedWidgets = $view['#view']->exposed_widgets;
         }
 
         $elements[$delta] = [
