@@ -1,4 +1,11 @@
 <div>
+  {% if platform_version %}
+    <section class="platform-version">
+      <h2>Platform Information</h2>
+      <p><strong>Platform Version:</strong> {{ platform_version }}</p>
+    </section>
+  {% endif %}
+
   Welcome to the YaleSites dashboard.
   {{ drupal_view('content', 'block_1') }}
   <h2>Resources</h2>

@@ -3,12 +3,30 @@
 namespace Drupal\ys_ai\Form;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 use Drupal\ai_engine_chat\Form\AiEngineChatSettings;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Form for configuring the AI chat settings.
  */
 class YsAiSettings extends AiEngineChatSettings {
+
+  /**
+   * The system instructions access check service.
+   *
+   * @var \Drupal\ys_ai_system_instructions\Access\SystemInstructionsAccessCheck
+   */
+  protected $systemInstructionsAccess;
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    $instance = parent::create($container);
+    $instance->systemInstructionsAccess = $container->get('ys_ai_system_instructions.access_check');
+    return $instance;
+  }
 
   /**
    * {@inheritdoc}
@@ -53,6 +71,19 @@ class YsAiSettings extends AiEngineChatSettings {
     }
 
     $form = parent::buildForm($form, $form_state);
+
+    // Add system instructions link if user has access.
+    if ($this->systemInstructionsAccess->access($this->currentUser())->isAllowed()) {
+      $form['system_instructions_link'] = [
+        '#type' => 'item',
+        '#title' => $this->t('System Instructions Management'),
+        '#description' => $this->t("Configure the AI assistant's behavior and responses."),
+        '#markup' => $this->t('<a href="@url">Manage System Instructions</a>', [
+          '@url' => Url::fromRoute('ys_ai_system_instructions.form')->toString(),
+        ]),
+        '#weight' => 100,
+      ];
+    }
 
     return $form;
   }

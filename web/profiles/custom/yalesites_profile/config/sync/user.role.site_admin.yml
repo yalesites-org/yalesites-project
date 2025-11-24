@@ -88,6 +88,7 @@ dependencies:
     - toolbar
     - webform
     - ys_ai
+    - ys_ai_system_instructions
     - ys_alert
     - ys_campus_groups
     - ys_core
@@ -352,6 +353,7 @@ permissions:
   - 'edit terms in post_category'
   - 'edit terms in resource_category'
   - 'edit terms in tags'
+  - 'manage ys ai system instructions'
   - 'mark as hidden in editoria11y'
   - 'override all sticky option'
   - 'override post authored on option'

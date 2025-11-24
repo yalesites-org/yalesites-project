@@ -5,11 +5,13 @@ dependencies:
   config:
     - block_content.type.wrapped_text_callout
     - field.field.block_content.wrapped_text_callout.field_callout_text
+    - field.field.block_content.wrapped_text_callout.field_padding_options
     - field.field.block_content.wrapped_text_callout.field_style_color
     - field.field.block_content.wrapped_text_callout.field_style_position
     - field.field.block_content.wrapped_text_callout.field_text
   module:
     - allowed_formats
+    - hide_revision_field
     - maxlength
     - text
 id: block_content.wrapped_text_callout.default
@@ -19,27 +21,33 @@ mode: default
 content:
   field_callout_text:
     type: text_textarea
-    weight: 1
+    weight: 2
     region: content
     settings:
       rows: 5
       placeholder: ''
     third_party_settings: {  }
+  field_padding_options:
+    type: options_select
+    weight: 6
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_style_color:
     type: options_select
-    weight: 4
+    weight: 5
     region: content
     settings: {  }
     third_party_settings: {  }
   field_style_position:
     type: options_select
-    weight: 3
+    weight: 4
     region: content
     settings: {  }
     third_party_settings: {  }
   field_text:
     type: text_textarea
-    weight: 2
+    weight: 3
     region: content
     settings:
       rows: 5
@@ -54,7 +62,7 @@ content:
         maxlength_js_enforce: false
   info:
     type: string_textfield
-    weight: 0
+    weight: 1
     region: content
     settings:
       size: 60

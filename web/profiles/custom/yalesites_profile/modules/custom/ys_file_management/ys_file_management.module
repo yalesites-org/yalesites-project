@@ -1,0 +1,37 @@
+<?php
+
+/**
+ * @file
+ * YaleSites File Management module.
+ */
+
+/**
+ * Implements hook_entity_type_alter().
+ */
+function ys_file_management_entity_type_alter(array &$entity_types) {
+  /** @var \Drupal\Core\Entity\EntityTypeInterface[] $entity_types */
+  if (isset($entity_types['media'])) {
+    // Override the media delete form with our conditional form.
+    $entity_types['media']->setFormClass('delete', 'Drupal\ys_file_management\Form\ConditionalMediaDeleteForm');
+  }
+}
+
+/**
+ * Implements hook_help().
+ */
+function ys_file_management_help($route_name, $route_match) {
+  switch ($route_name) {
+    case 'help.page.ys_file_management':
+      $output = '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('The YaleSites File Management module provides conditional file deletion capabilities when removing media entities.') . '</p>';
+      $output .= '<h3>' . t('File Manager Role') . '</h3>';
+      $output .= '<p>' . t('Users with the "manage media files" permission (File Managers and Platform Admins) can:') . '</p>';
+      $output .= '<ul>';
+      $output .= '<li>' . t('Delete media files regardless of who uploaded them') . '</li>';
+      $output .= '<li>' . t('View where media files are used across the site') . '</li>';
+      $output .= '<li>' . t('Choose whether to delete the associated file when deleting media') . '</li>';
+      $output .= '</ul>';
+      $output .= '<p>' . t('Users without this permission will only see standard media deletion (media entity removed, files retained).') . '</p>';
+      return $output;
+  }
+}

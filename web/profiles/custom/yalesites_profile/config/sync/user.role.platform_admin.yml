@@ -99,6 +99,7 @@ dependencies:
     - toolbar
     - webform
     - ys_ai
+    - ys_ai_system_instructions
     - ys_alert
     - ys_campus_groups
     - ys_core
@@ -138,6 +139,7 @@ permissions:
   - 'administer utility-navigation menu items'
   - 'assign contributor role'
   - 'assign editor role'
+  - 'assign file_manager role'
   - 'assign platform_admin role'
   - 'assign site_admin role'
   - 'clone event content'
@@ -380,6 +382,7 @@ permissions:
   - 'edit terms in resource_category'
   - 'edit terms in tags'
   - 'manage media thumbnails settings'
+  - 'manage ys ai system instructions'
   - 'mark as hidden in editoria11y'
   - 'override all authored by option'
   - 'override all authored on option'

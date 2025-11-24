@@ -1,0 +1,4 @@
+manage media files:
+  title: 'Manage media files'
+  description: 'Delete media files regardless of ownership or usage count. Users with this permission can override all file deletion restrictions.'
+  restrict access: TRUE

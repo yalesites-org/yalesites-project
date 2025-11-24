@@ -1,0 +1,13 @@
+services:
+  ys_file_management.media_file_deleter:
+    class: Drupal\ys_file_management\Service\MediaFileDeleter
+    arguments:
+      - '@file_system'
+      - '@messenger'
+      - '@logger.factory'
+      - '@stream_wrapper_manager'
+      - '@cache_tags.invalidator'
+
+  # Alias to allow type-hinting against the interface.
+  Drupal\ys_file_management\Service\MediaFileDeleterInterface:
+    alias: ys_file_management.media_file_deleter

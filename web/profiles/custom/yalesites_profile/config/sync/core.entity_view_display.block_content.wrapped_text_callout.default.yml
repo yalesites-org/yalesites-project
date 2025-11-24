@@ -5,6 +5,7 @@ dependencies:
   config:
     - block_content.type.wrapped_text_callout
     - field.field.block_content.wrapped_text_callout.field_callout_text
+    - field.field.block_content.wrapped_text_callout.field_padding_options
     - field.field.block_content.wrapped_text_callout.field_style_color
     - field.field.block_content.wrapped_text_callout.field_style_position
     - field.field.block_content.wrapped_text_callout.field_text
@@ -22,6 +23,13 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 4
+    region: content
+  field_padding_options:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 10
     region: content
   field_style_color:
     type: list_key

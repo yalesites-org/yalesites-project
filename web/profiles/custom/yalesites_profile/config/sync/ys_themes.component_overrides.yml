@@ -12,6 +12,20 @@ callout:
       left: Left
       center: Center
     default: center
+button_link:
+  field_button_alignment:
+    values:
+      left: Left
+      center: Center
+      right: Right
+    default: left
+  field_button_style_consistency:
+    values:
+      both_filled: 'Both Filled'
+      both_outline: 'Both Outline'
+      filled_outline: 'Filled, Outline'
+      outline_filled: 'Outline, Filled'
+    default: filled_outline
 cta_banner:
   field_style_color:
     values:
@@ -136,6 +150,7 @@ grand_hero:
     values:
       full: Tall
       reduced: Short
+      mini: Mini
     default: full
   field_style_color:
     values:
