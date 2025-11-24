@@ -64,7 +64,7 @@ class YsExpandBookManager extends ExpandBookManager {
   /**
    * {@inheritdoc}
    */
-  public function bookTreeAllData($bid, $link = NULL, $max_depth = NULL, $start_level = NULL, $always_expand = 0) {
+  public function bookTreeAllData($bid, $link = NULL, $max_depth = NULL, $start_level = NULL, int $always_expand = 0): array {
 
     $tree = &drupal_static(__METHOD__, []);
     $language_interface = $this->languageManager->getCurrentLanguage();
@@ -115,7 +115,7 @@ class YsExpandBookManager extends ExpandBookManager {
   /**
    * {@inheritdoc}
    */
-  protected function buildItems(array $tree) {
+  protected function buildItems(array $tree): array {
 
     $items = [];
     $langcode = $this->languageManager->getCurrentLanguage(LanguageInterface::TYPE_CONTENT)->getId();
@@ -184,7 +184,7 @@ class YsExpandBookManager extends ExpandBookManager {
    * This allows CAS-protected pages to be included in the book tree,
    * where they will be flagged with is_cas by bookLinkTranslate().
    */
-  protected function bookTreeBuild($bid, array $parameters = []) {
+  protected function bookTreeBuild(string|int $bid, array $parameters = []): array {
     // Build the book tree.
     $data = $this->doBookTreeBuild($bid, $parameters);
     // Translate links but skip access filtering that removes CAS-protected
@@ -221,7 +221,7 @@ class YsExpandBookManager extends ExpandBookManager {
   /**
    * {@inheritdoc}
    */
-  public function bookLinkTranslate(&$link) {
+  public function bookLinkTranslate(array &$link): array {
     // Check access via the api, since the query node_access tag doesn't check
     // for unpublished nodes.
     // @todo load the nodes en-mass rather than individually.
