@@ -134,7 +134,6 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
       else {
         $view = $this->viewsBasicManager->getView('rendered', $item->getValue()['params']);
         // Extract exposed widgets from the view.
-        // The view might be NULL or a ViewExecutable object.
         $exposedWidgets = NULL;
         if ($view && is_array($view) && isset($view['#view']) && isset($view['#view']->exposed_widgets)) {
           $exposedWidgets = $view['#view']->exposed_widgets;
