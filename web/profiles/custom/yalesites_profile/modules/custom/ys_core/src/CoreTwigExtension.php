@@ -308,27 +308,19 @@ class CoreTwigExtension extends AbstractExtension {
   /**
    * Get the versioned asset path from the webpack manifest.
    *
-   * @param string $asset_name
+   * @param string $original_filename
    *   The original asset filename (e.g., 'icons.svg').
-   * @param string $directory
-   *   Optional directory path for Drupal themes (e.g., 'themes/contrib/atomic').
    *
    * @return string
    *   The versioned asset path, or the original filename if manifest not found.
    */
-  public function getAssetPath($asset_name, $directory = NULL) {
-    // Determine the manifest file path.
+  public function getAssetPath($original_filename) {
     $manifest_path = DRUPAL_ROOT . '/themes/contrib/atomic/node_modules/@yalesites-org/component-library-twig/dist/manifest.json';
-
-    // If directory is provided, construct path relative to that directory.
-    if ($directory) {
-      $manifest_path = DRUPAL_ROOT . '/' . $directory . '/node_modules/@yalesites-org/component-library-twig/dist/manifest.json';
-    }
 
     // Check if manifest file exists.
     if (!file_exists($manifest_path)) {
       // Fallback to original filename if manifest doesn't exist.
-      return $asset_name;
+      return $original_filename;
     }
 
     // Read and parse the manifest.
@@ -336,13 +328,13 @@ class CoreTwigExtension extends AbstractExtension {
     $manifest = json_decode($manifest_content, TRUE);
 
     // Check if manifest is valid and contains the asset.
-    if (!is_array($manifest) || !isset($manifest[$asset_name])) {
+    if (!is_array($manifest) || !isset($manifest[$original_filename])) {
       // Fallback to original filename if asset not in manifest.
-      return $asset_name;
+      return $original_filename;
     }
 
     // Return the versioned filename from manifest.
-    return $manifest[$asset_name];
+    return $manifest[$original_filename];
   }
 
 }
