@@ -137,6 +137,9 @@
       "drupal/core": "-p2"
     },
     "patches": {
+      "drupal/book": {
+        "Fix book outline validation for Layout Builder and content moderation https://www.drupal.org/project/book/issues/2918537": "https://www.drupal.org/files/issues/2021-11-16/2918537-68.patch"
+      },
       "drupal/paragraphs": {
         "hide remove button https://www.drupal.org/project/paragraphs/issues/2919186": "https://www.drupal.org/files/issues/2020-05-13/hide_field_required_paragraphs_remove_button_1.patch"
       },
