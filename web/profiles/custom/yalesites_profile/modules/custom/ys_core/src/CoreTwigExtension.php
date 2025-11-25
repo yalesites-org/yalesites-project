@@ -375,11 +375,33 @@ class CoreTwigExtension extends AbstractExtension {
     $manifest_content = file_get_contents($manifest_path);
     $manifest = json_decode($manifest_content, TRUE);
 
-    // Check if manifest is valid and contains the asset.
-    if (!is_array($manifest) || !isset($manifest[$asset_name])) {
+    // Log manifest content for debugging.
+    $logger->debug('getAssetPath: Manifest content: @content', [
+      '@content' => $manifest_content,
+    ]);
+    $logger->debug('getAssetPath: Parsed manifest: @manifest', [
+      '@manifest' => print_r($manifest, TRUE),
+    ]);
+
+    // Check if manifest is valid.
+    if (!is_array($manifest)) {
+      $logger->error('getAssetPath: Manifest is not a valid array. Content: @content', [
+        '@content' => $manifest_content,
+      ]);
+      return $asset_name;
+    }
+
+    // Log all keys in manifest.
+    $logger->debug('getAssetPath: Manifest keys: @keys', [
+      '@keys' => implode(', ', array_keys($manifest)),
+    ]);
+
+    // Check if manifest contains the asset.
+    if (!isset($manifest[$asset_name])) {
       $logger->warning('getAssetPath: Asset @asset not found in manifest, using original filename', [
         '@asset' => $asset_name,
-        'manifest_keys' => is_array($manifest) ? array_keys($manifest) : 'invalid manifest',
+        'manifest_keys' => implode(', ', array_keys($manifest)),
+        'manifest_content' => $manifest_content,
       ]);
       // Fallback to original filename if asset not in manifest.
       return $asset_name;
