@@ -328,46 +328,17 @@ class CoreTwigExtension extends AbstractExtension {
    *   The versioned asset path, or the original filename if manifest not found.
    */
   public function getAssetPath($asset_name, $directory = NULL) {
-    $logger = $this->loggerFactory->get('ys_core');
+    // Determine the manifest file path.
+    $theme_path = $directory ?: 'themes/contrib/atomic';
+    $manifest_path = DRUPAL_ROOT . '/' . $theme_path . '/node_modules/@yalesites-org/component-library-twig/dist/manifest.json';
 
-    // Build list of possible manifest paths to check.
-    $possible_paths = [];
-
-    // If directory is provided, construct path relative to that directory.
-    if ($directory) {
-      $possible_paths[] = DRUPAL_ROOT . '/' . $directory . '/node_modules/@yalesites-org/component-library-twig/dist/manifest.json';
-      // Also check in _yale-packages (local development).
-      $possible_paths[] = DRUPAL_ROOT . '/' . $directory . '/_yale-packages/component-library-twig/dist/manifest.json';
-    }
-    else {
-      // Default to themes/contrib/atomic.
-      $possible_paths[] = DRUPAL_ROOT . '/themes/contrib/atomic/node_modules/@yalesites-org/component-library-twig/dist/manifest.json';
-      // Also check in _yale-packages (local development).
-      $possible_paths[] = DRUPAL_ROOT . '/themes/contrib/atomic/_yale-packages/component-library-twig/dist/manifest.json';
-    }
-
-    // Log all paths being checked.
-    $logger->debug('getAssetPath: Checking manifest paths for @asset', [
-      '@asset' => $asset_name,
-      'paths' => $possible_paths,
-    ]);
-
-    // Try each possible path until we find the manifest.
-    $manifest_path = NULL;
-    foreach ($possible_paths as $path) {
-      if (file_exists($path)) {
-        $manifest_path = $path;
-        $logger->info('getAssetPath: Found manifest at @path', ['@path' => $path]);
-        break;
-      }
-      else {
-        $logger->debug('getAssetPath: Manifest not found at @path', ['@path' => $path]);
-      }
+    // Fallback to _yale-packages for local development.
+    if (!file_exists($manifest_path)) {
+      $manifest_path = DRUPAL_ROOT . '/' . $theme_path . '/_yale-packages/component-library-twig/dist/manifest.json';
     }
 
     // If manifest file doesn't exist, fallback to original filename.
-    if (!$manifest_path) {
-      $logger->warning('getAssetPath: Manifest not found for @asset, using original filename', ['@asset' => $asset_name]);
+    if (!file_exists($manifest_path)) {
       return $asset_name;
     }
 
@@ -375,47 +346,13 @@ class CoreTwigExtension extends AbstractExtension {
     $manifest_content = file_get_contents($manifest_path);
     $manifest = json_decode($manifest_content, TRUE);
 
-    // Log manifest content for debugging.
-    $logger->debug('getAssetPath: Manifest content: @content', [
-      '@content' => $manifest_content,
-    ]);
-    $logger->debug('getAssetPath: Parsed manifest: @manifest', [
-      '@manifest' => print_r($manifest, TRUE),
-    ]);
-
-    // Check if manifest is valid.
-    if (!is_array($manifest)) {
-      $logger->error('getAssetPath: Manifest is not a valid array. Content: @content', [
-        '@content' => $manifest_content,
-      ]);
+    // Check if manifest is valid and contains the asset.
+    if (!is_array($manifest) || !isset($manifest[$asset_name])) {
       return $asset_name;
     }
-
-    // Log all keys in manifest.
-    $logger->debug('getAssetPath: Manifest keys: @keys', [
-      '@keys' => implode(', ', array_keys($manifest)),
-    ]);
-
-    // Check if manifest contains the asset.
-    if (!isset($manifest[$asset_name])) {
-      $logger->warning('getAssetPath: Asset @asset not found in manifest, using original filename', [
-        '@asset' => $asset_name,
-        'manifest_keys' => implode(', ', array_keys($manifest)),
-        'manifest_content' => $manifest_content,
-      ]);
-      // Fallback to original filename if asset not in manifest.
-      return $asset_name;
-    }
-
-    $versioned_filename = $manifest[$asset_name];
-    $logger->info('getAssetPath: Resolved @asset to @versioned', [
-      '@asset' => $asset_name,
-      '@versioned' => $versioned_filename,
-      '@manifest_path' => $manifest_path,
-    ]);
 
     // Return the versioned filename from manifest.
-    return $versioned_filename;
+    return $manifest[$asset_name];
   }
 
 }
