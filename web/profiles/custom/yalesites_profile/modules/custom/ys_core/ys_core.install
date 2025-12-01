@@ -433,3 +433,79 @@ function ys_core_update_10005() {
 
   \Drupal::messenger()->addStatus(t('Facts and Figures icon functionality has been successfully added.'));
 }
+
+/**
+ * Implements hook_update().
+ *
+ * Sets default padding values for all existing blocks with empty
+ * field_padding_options.
+ */
+function ys_core_update_10006() {
+  $block_defaults = [
+    // Blocks with no_padding default.
+    'grand_hero' => 'no_padding',
+    'image_banner' => 'no_padding',
+    'image' => 'no_padding',
+    'text' => 'no_padding',
+    'wrapped_text_callout' => 'no_padding',
+    // All other blocks with default padding.
+    'accordion' => 'default',
+    'button_link' => 'default',
+    'callout' => 'default',
+    'content_spotlight' => 'default',
+    'content_spotlight_portrait' => 'default',
+    'cta_banner' => 'default',
+    'custom_cards' => 'default',
+    'directory' => 'default',
+    'divider' => 'default',
+    'embed' => 'default',
+    'event_list' => 'default',
+    'facts' => 'default',
+    'gallery' => 'default',
+    'inline_message' => 'default',
+    'link_grid' => 'default',
+    'media_grid' => 'default',
+    'post_list' => 'default',
+    'pull_quote' => 'default',
+    'quick_links' => 'default',
+    'quote_callout' => 'default',
+    'reference_card' => 'default',
+    'resource_view' => 'default',
+    'tabs' => 'default',
+    'tiles' => 'default',
+    'video' => 'default',
+    'video_banner' => 'default',
+    'view' => 'default',
+    'webform' => 'default',
+    'wrapped_image' => 'default',
+  ];
+
+  $total_updated = 0;
+  $results = [];
+
+  foreach ($block_defaults as $block_type => $default_value) {
+    $count = ys_core_set_block_field_defaults($block_type, 'field_padding_options', $default_value);
+    $total_updated += $count;
+    if ($count > 0) {
+      $results[] = t('@type: @count block(s) set to "@value"', [
+        '@type' => $block_type,
+        '@count' => $count,
+        '@value' => $default_value,
+      ]);
+    }
+  }
+
+  $logger = \Drupal::logger('ys_core');
+  $logger->info('Block padding defaults update completed. Updated @count total block(s).', ['@count' => $total_updated]);
+
+  if (!empty($results)) {
+    foreach ($results as $result) {
+      $logger->info($result);
+    }
+    \Drupal::messenger()->addStatus(t('Successfully updated @count block(s) with default padding values. See logs for details.', ['@count' => $total_updated]));
+  }
+  else {
+    \Drupal::messenger()->addStatus(t('No blocks needed padding value updates.'));
+    $logger->info('No blocks needed padding value updates.');
+  }
+}
