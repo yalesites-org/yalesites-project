@@ -1,0 +1,39 @@
+{#
+/**
+ * @file
+ * Template for Component Color Picker widget.
+ *
+ * Available variables:
+ * - select_element: The hidden select element render array.
+ * - palette_options: Array of palette options with keys and labels.
+ * - global_theme: The current global theme value (e.g., 'one', 'two', etc.).
+ * - selected_value: The currently selected palette value.
+ * - color_styles: Array of color styles for the current global theme, keyed by component option name.
+ *
+ * @ingroup themeable
+ */
+#}
+<div class="component-color-picker-wrapper" style="position: relative;">
+  {{ select_element|render }}
+  <div class="palette-selector" data-palette-selector>
+    <div class="palette-visual-container" data-palette-container>
+      <button type="button" class="expand-indicator" data-expand-button aria-label="{{ 'Show all palettes'|t }}">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      {% for key, label in palette_options %}
+        <div class="palette-option" data-palette="{{ key }}" data-selected="{{ (selected_value == key) ? 'true' : 'false' }}">
+          <div class="palette-circles">
+            {% if color_styles is defined and color_styles[key] is defined and color_styles[key] is not empty %}
+              {% for color_style in color_styles[key] %}
+                <span class="palette-circle" style="background-color: {{ color_style }};"></span>
+              {% endfor %}
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+

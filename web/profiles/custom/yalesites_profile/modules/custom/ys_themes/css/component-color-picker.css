@@ -1,0 +1,290 @@
+/**
+ * @file
+ * Component Color Picker widget styles.
+ */
+
+.palette-selector {
+  position: relative;
+  display: inline-block;
+}
+
+.palette-select-hidden {
+  position: absolute !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 0 !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  clip: rect(0, 0, 0, 0) !important;
+  clip-path: inset(50%) !important;
+}
+
+/* Remove space from form item wrapper when it contains hidden select */
+.component-color-picker-wrapper .form-type--select,
+.component-color-picker-wrapper .js-form-item {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.component-color-picker-wrapper .form-type--select .form-select {
+  margin: 0;
+}
+
+.palette-visual-container {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.5rem;
+  cursor: pointer;
+  position: relative;
+}
+
+/* Remove gap for collapsed items - gap creates space even for zero-width items */
+.palette-selector:not(.expanded) .palette-visual-container {
+  gap: 0;
+}
+
+/* Restore gap when expanded */
+.palette-selector.expanded .palette-visual-container {
+  gap: 0.75rem;
+}
+
+.expand-indicator {
+  width: 24px;
+  height: 24px;
+  background: rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  transition: all 0.15s ease, margin 0.15s ease;
+  padding: 0;
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.expand-indicator:hover {
+  background: rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+}
+
+/* Dark mode support for Gin admin theme */
+[data-gin-accent] .expand-indicator,
+.gin--dark-mode .expand-indicator,
+body.gin--dark-mode .expand-indicator {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+[data-gin-accent] .expand-indicator:hover,
+.gin--dark-mode .expand-indicator:hover,
+body.gin--dark-mode .expand-indicator:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Fallback for prefers-color-scheme */
+@media (prefers-color-scheme: dark) {
+  .expand-indicator {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .expand-indicator:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.9);
+  }
+}
+
+.expand-indicator:active {
+  transform: translateY(0);
+}
+
+.expand-indicator svg {
+  width: 12px;
+  height: 12px;
+}
+
+.palette-selector.expanded .expand-indicator {
+  transform: rotate(180deg);
+}
+
+.palette-selector.expanded .expand-indicator:hover {
+  transform: rotate(180deg) translateY(1px);
+}
+
+.palette-option {
+  opacity: 0;
+  max-width: 0;
+  width: 0;
+  min-width: 0;
+  overflow: hidden;
+  transition: opacity 0.15s ease, max-width 0.15s ease, width 0.15s ease, margin 0.15s ease, padding 0.15s ease;
+  margin: 0;
+  padding: 0;
+  flex-shrink: 1;
+  flex-basis: 0;
+  flex-grow: 0;
+}
+
+/* When collapsed, non-selected options should take absolutely no space */
+.palette-selector:not(.expanded) .palette-option:not([data-selected="true"]) {
+  position: absolute;
+  visibility: hidden;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  flex-basis: 0;
+  flex-shrink: 0;
+  flex-grow: 0;
+}
+
+.palette-option[data-selected="true"] {
+  opacity: 1;
+  max-width: 200px;
+  width: auto;
+  min-width: auto;
+  overflow: visible;
+  flex-shrink: 0;
+  flex-basis: auto;
+  position: relative;
+  visibility: visible;
+  height: auto;
+}
+
+/* Add space between button and selected palette when collapsed */
+/* Use margin-right on button to avoid bounce effect */
+.palette-selector:not(.expanded) .expand-indicator {
+  margin-right: 0.75rem;
+}
+
+.palette-selector.expanded .expand-indicator {
+  margin-right: 0;
+}
+
+.palette-selector.expanded .palette-option {
+  opacity: 1;
+  max-width: 200px;
+  width: auto;
+  min-width: auto;
+  overflow: visible;
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+  flex-basis: auto;
+  position: relative;
+  visibility: visible;
+  height: auto;
+}
+
+.palette-selector.expanded .palette-option:last-child {
+  margin-right: 0;
+}
+
+.palette-circles {
+  display: flex;
+  gap: 0;
+  align-items: center;
+  padding: 4px;
+  border-radius: 20px;
+  transition: transform 0.15s ease, width 0.15s ease, max-width 0.15s ease, padding 0.15s ease;
+  white-space: nowrap;
+}
+
+/* Make circles overlap by using negative margins */
+.palette-circle:not(:first-child) {
+  margin-left: -12px;
+}
+
+/* Ensure circles container and circles take no space when parent is collapsed */
+.palette-selector:not(.expanded) .palette-option:not([data-selected="true"]) .palette-circles {
+  width: 0;
+  max-width: 0;
+  min-width: 0;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+}
+
+.palette-selector.expanded .palette-option .palette-circles {
+  width: auto;
+  max-width: none;
+  min-width: auto;
+  padding: 4px;
+  gap: 0;
+  overflow: visible;
+}
+
+/* Ensure individual circles take no space when parent is collapsed */
+.palette-selector:not(.expanded) .palette-option:not([data-selected="true"]) .palette-circle {
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.palette-option:hover .palette-circles {
+  transform: translateY(-2px);
+}
+
+.palette-circle {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: transform 0.15s ease;
+  /* Background color is applied via JavaScript from data-color attribute */
+}
+
+.palette-option:hover .palette-circle {
+  transform: scale(1.1);
+}
+
+.palette-option[data-selected="true"] .palette-circle {
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Dark mode adjustments for palette circles */
+[data-gin-accent] .palette-circle,
+.gin--dark-mode .palette-circle,
+body.gin--dark-mode .palette-circle {
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+[data-gin-accent] .palette-option[data-selected="true"] .palette-circle,
+.gin--dark-mode .palette-option[data-selected="true"] .palette-circle,
+body.gin--dark-mode .palette-option[data-selected="true"] .palette-circle {
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  .palette-circle {
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  }
+
+  .palette-option[data-selected="true"] .palette-circle {
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+  }
+}
+
