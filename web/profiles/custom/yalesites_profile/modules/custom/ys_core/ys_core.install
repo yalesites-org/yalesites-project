@@ -509,3 +509,47 @@ function ys_core_update_10006() {
     $logger->info('No blocks needed padding value updates.');
   }
 }
+
+/**
+ * Implements hook_update().
+ *
+ * Sets default button alignment and button style values for all existing
+ * button_link blocks with empty field_button_alignment or
+ * field_button_style_consistency.
+ */
+function ys_core_update_10007() {
+  $logger = \Drupal::logger('ys_core');
+  $total_updated = 0;
+  $results = [];
+
+  // Set default for field_button_alignment.
+  $alignment_count = ys_core_set_block_field_defaults('button_link', 'field_button_alignment', 'left');
+  $total_updated += $alignment_count;
+  if ($alignment_count > 0) {
+    $results[] = t('button_link: @count block(s) set Button Alignment to "left"', [
+      '@count' => $alignment_count,
+    ]);
+  }
+
+  // Set default for field_button_style_consistency.
+  $style_count = ys_core_set_block_field_defaults('button_link', 'field_button_style_consistency', 'filled_outline');
+  $total_updated += $style_count;
+  if ($style_count > 0) {
+    $results[] = t('button_link: @count block(s) set Button Style to "filled_outline"', [
+      '@count' => $style_count,
+    ]);
+  }
+
+  $logger->info('Button link defaults update completed. Updated @count total field(s).', ['@count' => $total_updated]);
+
+  if (!empty($results)) {
+    foreach ($results as $result) {
+      $logger->info($result);
+    }
+    \Drupal::messenger()->addStatus(t('Successfully updated @count button link field(s) with default values. See logs for details.', ['@count' => $total_updated]));
+  }
+  else {
+    \Drupal::messenger()->addStatus(t('No button link blocks needed default value updates.'));
+    $logger->info('No button link blocks needed default value updates.');
+  }
+}
