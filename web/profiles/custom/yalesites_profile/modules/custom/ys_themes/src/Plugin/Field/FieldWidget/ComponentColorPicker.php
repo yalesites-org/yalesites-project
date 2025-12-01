@@ -79,8 +79,13 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
     // Get the current global theme value.
     $global_theme = $this->themeSettingsManager->getSetting('global_theme') ?? 'one';
 
+    // Get the entity to determine entity type and bundle.
+    $entity = $items->getEntity();
+    $entity_type = $entity ? $entity->getEntityTypeId() : NULL;
+    $bundle = $entity ? $entity->bundle() : NULL;
+
     // Get the available options from the field.
-    $options = $this->getOptions($items->getEntity());
+    $options = $this->getOptions($entity);
     $selected_value = $this->getSelectedOptions($items);
     $selected_value = is_array($selected_value) ? reset($selected_value) : $selected_value;
 
@@ -96,38 +101,11 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
       }
     }
 
-    // Build array of all color styles for all global themes.
-    // First index is the global theme name.
-    // Second index is the component option name.
-    $global_themes = ['one', 'two', 'three', 'four', 'five'];
-    $all_color_styles = [];
-    foreach ($global_themes as $global) {
-      $all_color_styles[$global] = [
-        'one' => [
-          "var(--global-themes-{$global}-colors-slot-one)",
-          "var(--global-themes-{$global}-colors-slot-eight)",
-        ],
-        'two' => [
-          "var(--global-themes-{$global}-colors-slot-three)",
-          "var(--global-themes-{$global}-colors-slot-seven)",
-        ],
-        'three' => [
-          "var(--global-themes-{$global}-colors-slot-five)",
-          "var(--global-themes-{$global}-colors-slot-eight)",
-        ],
-        'four' => [
-          "var(--global-themes-{$global}-colors-slot-four)",
-          "var(--global-themes-{$global}-colors-slot-seven)",
-        ],
-        'five' => [
-          "var(--global-themes-{$global}-colors-slot-two)",
-          "var(--global-themes-{$global}-colors-slot-eight)",
-        ],
-      ];
-    }
+    // Get color styles based on entity type and bundle.
+    $all_color_styles = $this->getColorStylesForEntity($entity_type, $bundle);
 
     // Get color styles for the current global theme.
-    $color_styles = $all_color_styles[$global_theme] ?? $all_color_styles['one'];
+    $color_styles = $all_color_styles[$global_theme] ?? $all_color_styles['one'] ?? [];
 
     // Use a process callback to add the palette UI after the element is processed.
     $element['#process'][] = [
@@ -211,80 +189,163 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
       }
     }
     
-    // Build the palette HTML directly in PHP - simpler and more reliable than template.
-    \Drupal::logger('ys_themes')->debug('Building palette HTML directly in PHP');
-    \Drupal::logger('ys_themes')->debug('Color styles available for keys: @keys', [
-      '@keys' => implode(', ', array_keys($safe_color_styles)),
-    ]);
+    // Render the palette UI using the template.
+    $palette_render = [
+      '#theme' => 'component_color_picker',
+      '#palette_options' => $safe_palette_options,
+      '#global_theme' => $global_theme,
+      '#selected_value' => $selected_value_string,
+      '#color_styles' => $safe_color_styles,
+    ];
     
-    $button_html = '<button type="button" class="expand-indicator" data-expand-button aria-label="' . htmlspecialchars((string) $this->t('Show all palettes'), ENT_QUOTES, 'UTF-8') . '">';
-    $button_html .= '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">';
-    $button_html .= '<path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>';
-    $button_html .= '</svg></button>';
-    
-    $palette_options_html = '';
-    $total_circles = 0;
-    foreach ($safe_palette_options as $option_key => $option_label) {
-      $is_selected = ($selected_value_string === $option_key) ? 'true' : 'false';
-      $escaped_key = htmlspecialchars($option_key, ENT_QUOTES, 'UTF-8');
-      $escaped_label = htmlspecialchars($option_label, ENT_QUOTES, 'UTF-8');
-      
-      // Build color circles for this option.
-      $circles_html = '';
-      if (isset($safe_color_styles[$option_key]) && is_array($safe_color_styles[$option_key])) {
-        foreach ($safe_color_styles[$option_key] as $color_style) {
-          $safe_color = is_scalar($color_style) ? (string) $color_style : '';
-          if (!empty($safe_color)) {
-            $escaped_color = htmlspecialchars($safe_color, ENT_QUOTES, 'UTF-8');
-            // Use data-color attribute instead of inline style to avoid Drupal sanitization
-            $circles_html .= '<span class="palette-circle" data-color="' . $escaped_color . '"></span>';
-            $total_circles++;
-          }
-        }
-        \Drupal::logger('ys_themes')->debug('Palette @key: added @count circles', [
-          '@key' => $option_key,
-          '@count' => substr_count($circles_html, 'palette-circle'),
-        ]);
-      } else {
-        \Drupal::logger('ys_themes')->debug('Palette @key: no color styles found', ['@key' => $option_key]);
-      }
-      
-      $palette_options_html .= '<div class="palette-option" data-palette="' . $escaped_key . '" data-selected="' . $is_selected . '">';
-      $palette_options_html .= '<div class="palette-circles">' . $circles_html . '</div>';
-      $palette_options_html .= '</div>';
-    }
-    
-    // Build the complete palette HTML.
-    $palette_html = '<div class="palette-selector" data-palette-selector>';
-    $palette_html .= '<div class="palette-visual-container" data-palette-container>';
-    $palette_html .= $button_html;
-    $palette_html .= $palette_options_html;
-    $palette_html .= '</div>';
-    $palette_html .= '</div>';
-    
-    \Drupal::logger('ys_themes')->debug('Built palette HTML - Total circles: @count, Has button: @button, Has colors: @colors', [
-      '@count' => $total_circles,
-      '@button' => strpos($palette_html, 'data-expand-button') !== FALSE ? 'yes' : 'no',
-      '@colors' => strpos($palette_html, 'background-color:') !== FALSE ? 'yes' : 'no',
-    ]);
-    
-    // Log a sample of the actual HTML to verify it's correct
-    $sample_html = substr($palette_html, 0, 800);
-    \Drupal::logger('ys_themes')->debug('Palette HTML sample: @sample', ['@sample' => $sample_html]);
-    
-    // Ensure prefix and suffix are simple strings, not arrays.
-    // Drupal should preserve the HTML in #suffix, including style attributes.
+    // Wrap the select element and add the palette UI.
     $element['#prefix'] = '<div class="component-color-picker-wrapper" style="position: relative;">';
-    $element['#suffix'] = $palette_html . '</div>';
-    
-    // Final verification - check the complete suffix
-    $has_colors_in_suffix = strpos($element['#suffix'], 'background-color:') !== FALSE;
-    \Drupal::logger('ys_themes')->debug('Final suffix check - Has colors: @colors, Suffix length: @length', [
-      '@colors' => $has_colors_in_suffix ? 'yes' : 'no',
-      '@length' => strlen($element['#suffix']),
-    ]);
+    $element['#suffix'] = \Drupal::service('renderer')->render($palette_render) . '</div>';
     
     return $element;
+  }
+
+  /**
+   * Gets color styles for a specific entity type and bundle.
+   *
+   * @param string|null $entity_type
+   *   The entity type ID (e.g., 'block_content', 'node').
+   * @param string|null $bundle
+   *   The bundle name (e.g., 'quote_callout').
+   *
+   * @return array
+   *   Array of color styles keyed by global theme, then by component option.
+   */
+  protected function getColorStylesForEntity($entity_type = NULL, $bundle = NULL) {
+    $global_themes = ['one', 'two', 'three', 'four', 'five'];
+    $all_color_styles = [];
+
+    // Define color styles for specific entity types/bundles.
+    // Default styles for quote_callout block content.
+    if ($entity_type === 'block_content' && $bundle === 'quote_callout') {
+      foreach ($global_themes as $global) {
+        $all_color_styles[$global] = [
+          'one' => [
+            "var(--global-themes-{$global}-colors-slot-one)",
+            "var(--global-themes-{$global}-colors-slot-eight)",
+          ],
+          'two' => [
+            "var(--global-themes-{$global}-colors-slot-three)",
+            "var(--global-themes-{$global}-colors-slot-seven)",
+          ],
+          'three' => [
+            "var(--global-themes-{$global}-colors-slot-five)",
+            "var(--global-themes-{$global}-colors-slot-eight)",
+          ],
+          'four' => [
+            "var(--global-themes-{$global}-colors-slot-four)",
+            "var(--global-themes-{$global}-colors-slot-seven)",
+          ],
+          'five' => [
+            "var(--global-themes-{$global}-colors-slot-two)",
+            "var(--global-themes-{$global}-colors-slot-eight)",
+          ],
+        ];
+      }
+    }
+    elseif ($entity_type === 'block_content' && $bundle === 'content_spotlight') {
+      foreach ($global_themes as $global) {
+        $all_color_styles[$global] = [
+          'one' => [
+            "var(--global-themes-{$global}-colors-slot-one)",
+            "var(--global-themes-{$global}-colors-slot-eight)",
+          ],
+          'two' => [
+            "var(--global-themes-{$global}-colors-slot-four)",
+            "var(--global-themes-{$global}-colors-slot-seven)",
+          ],
+          'three' => [
+            "var(--global-themes-{$global}-colors-slot-five)",
+            "var(--global-themes-{$global}-colors-slot-eight)",
+          ],
+          'four' => [
+            "var(--global-themes-{$global}-colors-slot-three)",
+            "var(--global-themes-{$global}-colors-slot-seven)",
+          ],
+          'five' => [
+            "var(--global-themes-{$global}-colors-slot-two)",
+            "var(--global-themes-{$global}-colors-slot-eight)",
+          ],
+        ];
+      }
+    }
+    elseif ($entity_type === 'block_content' && $bundle === 'accordion') {
+      foreach ($global_themes as $global) {
+        // Three colors: accent, background, text.
+        // See: molecules/accordion/_yds-accordion.scss.
+        $all_color_styles[$global] = [
+          'default' => [
+            "var(--color-accordion-accent)",
+            "var(--color-basic-white)",
+            "var(--color-gray-800)",
+          ],
+          'one' => [
+            "var(--global-themes-{$global}-colors-slot-one)",
+            "var(--color-gray-100)",
+            "var(--color-gray-800)",
+          ],
+          'two' => [
+            "var(--global-themes-{$global}-colors-slot-two)",
+            "var(--color-gray-100)",
+            "var(--color-gray-800)",
+          ],
+          'three' => [
+            "var(--global-themes-{$global}-colors-slot-three)",
+            "var(--color-gray-100)",
+            "var(--color-gray-800)",
+          ],
+          'four' => [
+            "var(--global-themes-{$global}-colors-slot-four)",
+            "var(--color-gray-100)",
+            "var(--color-gray-800)",
+          ],
+          'five' => [
+            "var(--global-themes-{$global}-colors-slot-five)",
+            "var(--color-gray-100)",
+            "var(--color-gray-800)",
+          ],
+        ];
+      }
+    }
+    // Add more entity type/bundle specific styles here as needed.
+    // Example:
+    // elseif ($entity_type === 'block_content' && $bundle === 'other_bundle') {
+    //   // Different color styles for other_bundle
+    // }
+    // Default fallback if no specific styles are defined.
+    else {
+      foreach ($global_themes as $global) {
+        $all_color_styles[$global] = [
+          'one' => [
+            "var(--global-themes-{$global}-colors-slot-one)",
+            "var(--global-themes-{$global}-colors-slot-eight)",
+          ],
+          'two' => [
+            "var(--global-themes-{$global}-colors-slot-three)",
+            "var(--global-themes-{$global}-colors-slot-seven)",
+          ],
+          'three' => [
+            "var(--global-themes-{$global}-colors-slot-five)",
+            "var(--global-themes-{$global}-colors-slot-eight)",
+          ],
+          'four' => [
+            "var(--global-themes-{$global}-colors-slot-four)",
+            "var(--global-themes-{$global}-colors-slot-seven)",
+          ],
+          'five' => [
+            "var(--global-themes-{$global}-colors-slot-two)",
+            "var(--global-themes-{$global}-colors-slot-eight)",
+          ],
+        ];
+      }
+    }
+
+    return $all_color_styles;
   }
 
   /**
@@ -292,7 +353,6 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
     // Ensure values are properly extracted.
-    // The parent class should handle this, but we can add debugging if needed.
     $massaged = parent::massageFormValues($values, $form, $form_state);
     return $massaged;
   }

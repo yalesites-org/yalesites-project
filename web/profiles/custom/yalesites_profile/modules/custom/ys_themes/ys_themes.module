@@ -289,7 +289,6 @@ function ys_themes_theme($existing, $type, $theme, $path) {
   return [
     'component_color_picker' => [
       'variables' => [
-        'select_element' => NULL,
         'palette_options' => [],
         'global_theme' => 'one',
         'selected_value' => NULL,
