@@ -295,8 +295,8 @@ class EventCalendarFilterForm extends FormBase {
     $filterHiddenFields = [
       'terms_include' => $paramsDecoded['terms_include'] ?? [],
       'terms_exclude' => $paramsDecoded['terms_exclude'] ?? [],
-      'term_operator' => $paramsDecoded['term_operator'] ?? '+',
-      'event_time_period' => $paramsDecoded['event_time_period'] ?? 'all',
+      'term_operator' => $paramsDecoded['operator'] ?? '+',
+      'event_time_period' => $paramsDecoded['filters']['event_time_period'] ?? 'all',
     ];
 
     foreach ($filterHiddenFields as $field => $value) {
@@ -334,8 +334,8 @@ class EventCalendarFilterForm extends FormBase {
       'custom_vocab_included_terms' => $paramsDecoded['custom_vocab_included_terms'] ?? [],
       'terms_include' => $paramsDecoded['terms_include'] ?? [],
       'terms_exclude' => $paramsDecoded['terms_exclude'] ?? [],
-      'term_operator' => $paramsDecoded['term_operator'] ?? '+',
-      'event_time_period' => $paramsDecoded['event_time_period'] ?? 'all',
+      'term_operator' => $paramsDecoded['operator'] ?? '+',
+      'event_time_period' => $paramsDecoded['filters']['event_time_period'] ?? 'all',
       'search' => $paramsDecoded['search'] ?? '',
     ];
   }
