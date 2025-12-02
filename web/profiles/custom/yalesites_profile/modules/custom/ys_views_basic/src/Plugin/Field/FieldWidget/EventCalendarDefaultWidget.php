@@ -74,7 +74,7 @@ class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
     foreach ($values as &$value) {
-      $paramData = $this->buildParamData($form);
+      $paramData = $this->buildParamData($form, $form_state);
       $value['params'] = json_encode($paramData);
     }
     return $values;
@@ -215,6 +215,19 @@ class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
   private function buildTermFilters(array &$form, FieldItemListInterface $items, int $delta) {
     $event_tags = $this->viewsBasicManager->getEventTags();
 
+    // Get default values from saved params (stored at root level for calendar).
+    $terms_include_default = [];
+    $terms_exclude_default = [];
+    if ($items[$delta]->params) {
+      $paramsDecoded = json_decode($items[$delta]->params, TRUE);
+      if (!empty($paramsDecoded['terms_include'])) {
+        $terms_include_default = array_map('intval', $paramsDecoded['terms_include']);
+      }
+      if (!empty($paramsDecoded['terms_exclude'])) {
+        $terms_exclude_default = array_map('intval', $paramsDecoded['terms_exclude']);
+      }
+    }
+
     // Include terms.
     $form['group_user_selection']['filter_and_sort']['terms_include'] = [
       '#title' => $this->t('Include content that uses the following tags or categories'),
@@ -224,7 +237,7 @@ class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
       '#multiple' => TRUE,
       '#tags' => TRUE,
       '#target_type' => 'taxonomy_term',
-      '#default_value' => $this->getDefaultParamValue('terms_include', $items, $delta),
+      '#default_value' => $terms_include_default,
     ];
 
     // Exclude terms.
@@ -236,7 +249,7 @@ class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
       '#chosen' => TRUE,
       '#tags' => TRUE,
       '#target_type' => 'taxonomy_term',
-      '#default_value' => $this->getDefaultParamValue('terms_exclude', $items, $delta),
+      '#default_value' => $terms_exclude_default,
     ];
 
     // Term operator.
@@ -380,24 +393,32 @@ class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
    *
    * @param array $form
    *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
    *
    * @return array
    *   The parameter data array.
    */
-  private function buildParamData(array $form): array {
+  private function buildParamData(array $form, FormStateInterface $form_state): array {
+    // Get terms_include and terms_exclude from form state using form selectors,
+    // similar to how the parent class handles it.
+    $formSelectors = $this->viewsBasicManager->getFormSelectors($form_state);
+    $terms_include = ($form_state->getValue($formSelectors['massage_terms_include_array'])) ?? NULL;
+    $terms_exclude = ($form_state->getValue($formSelectors['massage_terms_exclude_array'])) ?? NULL;
+
     return [
       "filters" => [
         "types" => ['event'],
-        "terms_include" => $form['group_user_selection']['filter_and_sort']['terms_include']['#value'],
-        "terms_exclude" => $form['group_user_selection']['filter_and_sort']['terms_exclude']['#value'],
-        "event_time_period" => $form['group_user_selection']['entity_specific']['event_time_period']['#value'],
-        "operator" => $form['group_user_selection']['filter_and_sort']['term_operator']['#value'],
+        "event_time_period" => $form['group_user_selection']['entity_specific']['event_time_period']['#value'] ?? self::TIME_PERIOD_FUTURE,
       ],
-      "exposed_filter_options" => $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options']['#value'],
+      "terms_include" => $terms_include,
+      "terms_exclude" => $terms_exclude,
+      "operator" => $form['group_user_selection']['filter_and_sort']['term_operator']['#value'] ?? self::TERM_OPERATOR_OR,
+      "exposed_filter_options" => $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options']['#value'] ?? [],
       "category_filter_label" => $form['group_user_selection']['entity_and_view_mode']['category_filter_label']['#value'] ?? NULL,
-      "category_included_terms" => $form['group_user_selection']['entity_and_view_mode']['category_included_terms']['#value'],
-      "audience_included_terms" => $form['group_user_selection']['entity_and_view_mode']['audience_included_terms']['#value'],
-      "custom_vocab_included_terms" => $form['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms']['#value'],
+      "category_included_terms" => $form['group_user_selection']['entity_and_view_mode']['category_included_terms']['#value'] ?? NULL,
+      "audience_included_terms" => $form['group_user_selection']['entity_and_view_mode']['audience_included_terms']['#value'] ?? NULL,
+      "custom_vocab_included_terms" => $form['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms']['#value'] ?? NULL,
     ];
   }
 
