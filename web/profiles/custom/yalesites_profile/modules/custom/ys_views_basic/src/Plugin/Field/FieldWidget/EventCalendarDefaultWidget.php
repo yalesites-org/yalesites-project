@@ -215,6 +215,19 @@ class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
   private function buildTermFilters(array &$form, FieldItemListInterface $items, int $delta) {
     $event_tags = $this->viewsBasicManager->getEventTags();
 
+    // Get default values from saved params (stored at root level for calendar).
+    $terms_include_default = [];
+    $terms_exclude_default = [];
+    if ($items[$delta]->params) {
+      $paramsDecoded = json_decode($items[$delta]->params, TRUE);
+      if (!empty($paramsDecoded['terms_include'])) {
+        $terms_include_default = array_map('intval', $paramsDecoded['terms_include']);
+      }
+      if (!empty($paramsDecoded['terms_exclude'])) {
+        $terms_exclude_default = array_map('intval', $paramsDecoded['terms_exclude']);
+      }
+    }
+
     // Include terms.
     $form['group_user_selection']['filter_and_sort']['terms_include'] = [
       '#title' => $this->t('Include content that uses the following tags or categories'),
@@ -224,7 +237,7 @@ class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
       '#multiple' => TRUE,
       '#tags' => TRUE,
       '#target_type' => 'taxonomy_term',
-      '#default_value' => $this->getDefaultParamValue('terms_include', $items, $delta),
+      '#default_value' => $terms_include_default,
     ];
 
     // Exclude terms.
@@ -236,7 +249,7 @@ class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
       '#chosen' => TRUE,
       '#tags' => TRUE,
       '#target_type' => 'taxonomy_term',
-      '#default_value' => $this->getDefaultParamValue('terms_exclude', $items, $delta),
+      '#default_value' => $terms_exclude_default,
     ];
 
     // Term operator.
