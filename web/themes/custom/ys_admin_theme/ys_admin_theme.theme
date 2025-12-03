@@ -5,6 +5,7 @@
  * Functions to support the YaleSites admin theme.
  */
 
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\node\Entity\Node;
 
 /**
@@ -37,5 +38,27 @@ function ys_admin_theme_set_title_on_node_edit_page(array &$variables) {
     $variables['title'] = [
       '#markup' => "<em>" . $bundle_label . ":</em> " . $node->getTitle(),
     ];
+  }
+}
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter() for node_form.
+ */
+function ys_admin_theme_form_node_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  /** @var Drupal\node\NodeForm $node_form */
+  $node_form = $form_state->getFormObject();
+  
+  /** @var Drupal\node\Entity\Node $node */
+  $node = $node_form->getEntity();
+
+  // Only run for page nodes.
+  if ($node->bundle() !== 'page') {
+    return;
+  }
+  
+  // Move field_collection_as_microsite into the book fieldset.
+  if (isset($form['field_collection_as_microsite']) && isset($form['book'])) {
+    $form['book']['field_collection_as_microsite'] = $form['field_collection_as_microsite'];
+    unset($form['field_collection_as_microsite']);
   }
 }
