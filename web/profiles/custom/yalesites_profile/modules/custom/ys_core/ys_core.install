@@ -439,8 +439,11 @@ function ys_core_update_10005() {
  *
  * Sets default padding values for all existing blocks with empty
  * field_padding_options.
+ *
+ * Uses sandbox API to process blocks in chunks to avoid timeouts on sites
+ * with large numbers of blocks.
  */
-function ys_core_update_10006() {
+function ys_core_update_10006(&$sandbox) {
   $block_defaults = [
     // Blocks with no_padding default.
     'grand_hero' => 'no_padding',
@@ -480,34 +483,124 @@ function ys_core_update_10006() {
     'wrapped_image' => 'default',
   ];
 
-  $total_updated = 0;
-  $results = [];
+  $logger = \Drupal::logger('ys_core');
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
 
-  foreach ($block_defaults as $block_type => $default_value) {
-    $count = ys_core_set_block_field_defaults($block_type, 'field_padding_options', $default_value);
-    $total_updated += $count;
-    if ($count > 0) {
-      $results[] = t('@type: @count block(s) set to "@value"', [
-        '@type' => $block_type,
-        '@count' => $count,
+  // Initialize sandbox on first run.
+  if (!isset($sandbox['current_type_index'])) {
+    $sandbox['block_types'] = array_keys($block_defaults);
+    $sandbox['current_type_index'] = 0;
+    $sandbox['current_block_index'] = 0;
+    $sandbox['total_updated'] = 0;
+    $sandbox['results'] = [];
+    $sandbox['type_results'] = [];
+
+    // Calculate total blocks to process.
+    $sandbox['total_blocks'] = 0;
+    foreach ($sandbox['block_types'] as $block_type) {
+      $query = $block_storage->getQuery();
+      $query->accessCheck(FALSE)
+        ->condition('type', $block_type);
+      $count = $query->count()->execute();
+      $sandbox['total_blocks'] += $count;
+    }
+
+    $sandbox['processed_blocks'] = 0;
+
+    if ($sandbox['total_blocks'] == 0) {
+      $sandbox['#finished'] = 1;
+      return t('No blocks found to update.');
+    }
+  }
+
+  // Process blocks in chunks.
+  $blocks_per_iteration = 50;
+  $current_type_index = $sandbox['current_type_index'];
+  $block_types = $sandbox['block_types'];
+
+  // Check if we've processed all block types.
+  if ($current_type_index >= count($block_types)) {
+    $sandbox['#finished'] = 1;
+
+    // Log final results.
+    $logger->info('Block padding defaults update completed. Updated @count total block(s).', ['@count' => $sandbox['total_updated']]);
+
+    if (!empty($sandbox['results'])) {
+      foreach ($sandbox['results'] as $result) {
+        $logger->info($result);
+      }
+      return t('Successfully updated @count block(s) with default padding values. See logs for details.', ['@count' => $sandbox['total_updated']]);
+    }
+    else {
+      $logger->info('No blocks needed padding value updates.');
+      return t('No blocks needed padding value updates.');
+    }
+  }
+
+  $current_type = $block_types[$current_type_index];
+  $default_value = $block_defaults[$current_type];
+
+  // Query blocks of current type.
+  $query = $block_storage->getQuery();
+  $query->accessCheck(FALSE)
+    ->condition('type', $current_type)
+    ->range($sandbox['current_block_index'], $blocks_per_iteration);
+
+  $ids = $query->execute();
+
+  // Process blocks.
+  $updated_in_iteration = 0;
+  foreach ($ids as $id) {
+    $block = $block_storage->load($id);
+    $latestRevisionId = $block_storage->getLatestRevisionId($id);
+
+    if (!$latestRevisionId) {
+      $latestRevision = $block_storage->createRevision($block);
+    }
+    else {
+      $latestRevision = $block_storage->loadRevision($latestRevisionId);
+    }
+
+    // Only update if the field exists and is empty.
+    if ($latestRevision->hasField('field_padding_options') && $latestRevision->get('field_padding_options')->isEmpty()) {
+      $latestRevision->set('field_padding_options', $default_value);
+      $latestRevision->save();
+      $updated_in_iteration++;
+      $sandbox['total_updated']++;
+
+      // Track updates per type.
+      if (!isset($sandbox['type_results'][$current_type])) {
+        $sandbox['type_results'][$current_type] = 0;
+      }
+      $sandbox['type_results'][$current_type]++;
+    }
+
+    $sandbox['processed_blocks']++;
+  }
+
+  // Move to next position.
+  if (count($ids) < $blocks_per_iteration) {
+    // Finished with this block type, move to next.
+    if (isset($sandbox['type_results'][$current_type]) && $sandbox['type_results'][$current_type] > 0) {
+      $sandbox['results'][] = t('@type: @count block(s) set to "@value"', [
+        '@type' => $current_type,
+        '@count' => $sandbox['type_results'][$current_type],
         '@value' => $default_value,
       ]);
     }
-  }
 
-  $logger = \Drupal::logger('ys_core');
-  $logger->info('Block padding defaults update completed. Updated @count total block(s).', ['@count' => $total_updated]);
-
-  if (!empty($results)) {
-    foreach ($results as $result) {
-      $logger->info($result);
-    }
-    \Drupal::messenger()->addStatus(t('Successfully updated @count block(s) with default padding values. See logs for details.', ['@count' => $total_updated]));
+    $sandbox['current_type_index']++;
+    $sandbox['current_block_index'] = 0;
   }
   else {
-    \Drupal::messenger()->addStatus(t('No blocks needed padding value updates.'));
-    $logger->info('No blocks needed padding value updates.');
+    // More blocks in this type to process.
+    $sandbox['current_block_index'] += $blocks_per_iteration;
   }
+
+  // Calculate progress.
+  $sandbox['#finished'] = $sandbox['total_blocks'] > 0
+    ? $sandbox['processed_blocks'] / $sandbox['total_blocks']
+    : 1;
 }
 
 /**
@@ -516,40 +609,132 @@ function ys_core_update_10006() {
  * Sets default button alignment and button style values for all existing
  * button_link blocks with empty field_button_alignment or
  * field_button_style_consistency.
+ *
+ * Uses sandbox API to process blocks in chunks to avoid timeouts on sites
+ * with large numbers of blocks.
  */
-function ys_core_update_10007() {
+function ys_core_update_10007(&$sandbox) {
   $logger = \Drupal::logger('ys_core');
-  $total_updated = 0;
-  $results = [];
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
 
-  // Set default for field_button_alignment.
-  $alignment_count = ys_core_set_block_field_defaults('button_link', 'field_button_alignment', 'left');
-  $total_updated += $alignment_count;
-  if ($alignment_count > 0) {
-    $results[] = t('button_link: @count block(s) set Button Alignment to "left"', [
-      '@count' => $alignment_count,
-    ]);
-  }
+  // Initialize sandbox on first run.
+  if (!isset($sandbox['current_field_index'])) {
+    $sandbox['fields'] = [
+      'field_button_alignment' => 'left',
+      'field_button_style_consistency' => 'filled_outline',
+    ];
+    $sandbox['field_keys'] = array_keys($sandbox['fields']);
+    $sandbox['current_field_index'] = 0;
+    $sandbox['current_block_index'] = 0;
+    $sandbox['total_updated'] = 0;
+    $sandbox['field_results'] = [];
 
-  // Set default for field_button_style_consistency.
-  $style_count = ys_core_set_block_field_defaults('button_link', 'field_button_style_consistency', 'filled_outline');
-  $total_updated += $style_count;
-  if ($style_count > 0) {
-    $results[] = t('button_link: @count block(s) set Button Style to "filled_outline"', [
-      '@count' => $style_count,
-    ]);
-  }
+    // Calculate total button_link blocks.
+    $query = $block_storage->getQuery();
+    $query->accessCheck(FALSE)
+      ->condition('type', 'button_link');
+    $sandbox['total_blocks'] = $query->count()->execute();
+    $sandbox['processed_blocks'] = 0;
 
-  $logger->info('Button link defaults update completed. Updated @count total field(s).', ['@count' => $total_updated]);
+    // Total iterations = blocks * number of fields.
+    $sandbox['total_iterations'] = $sandbox['total_blocks'] * count($sandbox['fields']);
+    $sandbox['current_iteration'] = 0;
 
-  if (!empty($results)) {
-    foreach ($results as $result) {
-      $logger->info($result);
+    if ($sandbox['total_blocks'] == 0) {
+      $sandbox['#finished'] = 1;
+      return t('No button_link blocks found to update.');
     }
-    \Drupal::messenger()->addStatus(t('Successfully updated @count button link field(s) with default values. See logs for details.', ['@count' => $total_updated]));
+  }
+
+  // Process blocks in chunks.
+  $blocks_per_iteration = 50;
+  $current_field_index = $sandbox['current_field_index'];
+  $field_keys = $sandbox['field_keys'];
+
+  // Check if we've processed all fields.
+  if ($current_field_index >= count($field_keys)) {
+    $sandbox['#finished'] = 1;
+
+    // Log final results.
+    $logger->info('Button link defaults update completed. Updated @count total field(s).', ['@count' => $sandbox['total_updated']]);
+
+    if (!empty($sandbox['field_results'])) {
+      $results = [];
+      foreach ($sandbox['field_results'] as $field_name => $count) {
+        $field_label = $field_name == 'field_button_alignment' ? 'Button Alignment' : 'Button Style';
+        $field_value = $sandbox['fields'][$field_name];
+        $results[] = t('button_link: @count block(s) set @label to "@value"', [
+          '@count' => $count,
+          '@label' => $field_label,
+          '@value' => $field_value,
+        ]);
+      }
+
+      foreach ($results as $result) {
+        $logger->info($result);
+      }
+      return t('Successfully updated @count button link field(s) with default values. See logs for details.', ['@count' => $sandbox['total_updated']]);
+    }
+    else {
+      $logger->info('No button link blocks needed default value updates.');
+      return t('No button link blocks needed default value updates.');
+    }
+  }
+
+  $current_field = $field_keys[$current_field_index];
+  $default_value = $sandbox['fields'][$current_field];
+
+  // Query button_link blocks.
+  $query = $block_storage->getQuery();
+  $query->accessCheck(FALSE)
+    ->condition('type', 'button_link')
+    ->range($sandbox['current_block_index'], $blocks_per_iteration);
+
+  $ids = $query->execute();
+
+  // Process blocks.
+  foreach ($ids as $id) {
+    $block = $block_storage->load($id);
+    $latestRevisionId = $block_storage->getLatestRevisionId($id);
+
+    if (!$latestRevisionId) {
+      $latestRevision = $block_storage->createRevision($block);
+    }
+    else {
+      $latestRevision = $block_storage->loadRevision($latestRevisionId);
+    }
+
+    // Only update if the field exists and is empty.
+    if ($latestRevision->hasField($current_field) && $latestRevision->get($current_field)->isEmpty()) {
+      $latestRevision->set($current_field, $default_value);
+      $latestRevision->save();
+      $sandbox['total_updated']++;
+
+      // Track updates per field.
+      if (!isset($sandbox['field_results'][$current_field])) {
+        $sandbox['field_results'][$current_field] = 0;
+      }
+      $sandbox['field_results'][$current_field]++;
+    }
+
+    $sandbox['current_iteration']++;
+  }
+
+  // Move to next position.
+  if (count($ids) < $blocks_per_iteration) {
+    // Finished with this field, move to next field and reset block index.
+    $sandbox['current_field_index']++;
+    $sandbox['current_block_index'] = 0;
+    $sandbox['processed_blocks'] = 0;
   }
   else {
-    \Drupal::messenger()->addStatus(t('No button link blocks needed default value updates.'));
-    $logger->info('No button link blocks needed default value updates.');
+    // More blocks to process for this field.
+    $sandbox['current_block_index'] += $blocks_per_iteration;
+    $sandbox['processed_blocks'] += count($ids);
   }
+
+  // Calculate progress.
+  $sandbox['#finished'] = $sandbox['total_iterations'] > 0
+    ? $sandbox['current_iteration'] / $sandbox['total_iterations']
+    : 1;
 }
