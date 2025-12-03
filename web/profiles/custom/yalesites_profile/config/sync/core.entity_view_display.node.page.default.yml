@@ -5,6 +5,7 @@ dependencies:
   config:
     - field.field.node.page.field_audience
     - field.field.node.page.field_category
+    - field.field.node.page.field_collection_as_microsite
     - field.field.node.page.field_custom_vocab
     - field.field.node.page.field_external_source
     - field.field.node.page.field_login_required
@@ -42,6 +43,24 @@ third_party_settings:
               context_mapping:
                 entity: layout_builder.entity
             weight: 0
+            additional: {  }
+          c91767af-92e4-40bc-b37d-f7bb2b729144:
+            uuid: c91767af-92e4-40bc-b37d-f7bb2b729144
+            region: content
+            configuration:
+              id: 'field_block:node:page:field_collection_as_microsite'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: boolean
+                label: above
+                settings:
+                  format: default
+                  format_custom_false: ''
+                  format_custom_true: ''
+                third_party_settings: {  }
+            weight: 1
             additional: {  }
         third_party_settings:
           layout_builder_lock:
@@ -351,6 +370,16 @@ content:
       link: true
     third_party_settings: {  }
     weight: 2
+    region: content
+  field_collection_as_microsite:
+    type: boolean
+    label: above
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    weight: 4
     region: content
   field_custom_vocab:
     type: entity_reference_label
