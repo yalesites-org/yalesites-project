@@ -818,7 +818,7 @@ function ys_core_update_10007(&$sandbox) {
  * Updates padding for blocks that are first in banner sections.
  *
  * Blocks that appear as the first content block in a banner section and
- * currently have 'default' padding will be updated to 'no_top_padding'.
+ * currently have 'default' padding will be updated to 'no_top'.
  * Only applies to banner block types that would have received 'default'
  * padding from update 10006 (cta_banner, content_spotlight, and
  * content_spotlight_portrait).
@@ -883,7 +883,7 @@ function ys_core_update_10008(&$sandbox) {
       foreach ($sandbox['results'] as $result) {
         $logger->info($result);
       }
-      return t('Successfully updated @count first banner block(s) to no_top_padding. See logs for details.', ['@count' => $sandbox['total_updated']]);
+      return t('Successfully updated @count first banner block(s) to no_top. See logs for details.', ['@count' => $sandbox['total_updated']]);
     }
     else {
       $logger->info('No first banner blocks needed padding value updates.');
@@ -922,7 +922,7 @@ function ys_core_update_10008(&$sandbox) {
         $latestRevision->get('field_padding_options')->value === 'default' &&
         in_array($id, $first_banner_block_ids)) {
 
-      $latestRevision->set('field_padding_options', 'no_top_padding');
+      $latestRevision->set('field_padding_options', 'no_top');
       $latestRevision->save();
       $updated_in_iteration++;
       $sandbox['total_updated']++;
@@ -941,7 +941,7 @@ function ys_core_update_10008(&$sandbox) {
   if (count($ids) < $blocks_per_iteration) {
     // Finished with this block type, move to next.
     if (isset($sandbox['type_results'][$current_type]) && $sandbox['type_results'][$current_type] > 0) {
-      $sandbox['results'][] = t('@type: @count block(s) updated from "default" to "no_top_padding"', [
+      $sandbox['results'][] = t('@type: @count block(s) updated from "default" to "no_top"', [
         '@type' => $current_type,
         '@count' => $sandbox['type_results'][$current_type],
       ]);
