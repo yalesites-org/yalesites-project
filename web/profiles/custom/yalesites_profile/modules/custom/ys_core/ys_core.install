@@ -435,6 +435,79 @@ function ys_core_update_10005() {
 }
 
 /**
+ * Gets block IDs that are the first content block in a banner section.
+ *
+ * This function examines all page nodes with Layout Builder overrides to find
+ * blocks that are positioned as the first content block in the banner section.
+ * The content moderation control block is excluded from this check.
+ *
+ * @return array
+ *   Array of block content IDs that are first in a banner section.
+ */
+function ys_core_get_first_banner_block_ids() {
+  $first_banner_block_ids = [];
+  $node_storage = \Drupal::entityTypeManager()->getStorage('node');
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+
+  // Get all page nodes.
+  $query = \Drupal::entityQuery('node')
+    ->accessCheck(FALSE)
+    ->condition('type', 'page');
+  $nids = $query->execute();
+
+  foreach ($nids as $nid) {
+    $node = $node_storage->load($nid);
+    if (!$node) {
+      continue;
+    }
+
+    $layout = $node->get('layout_builder__layout');
+
+    // Skip nodes using default layout (no overrides).
+    if ($layout->isEmpty()) {
+      continue;
+    }
+
+    $sections = $layout->getSections();
+
+    foreach ($sections as $section) {
+      // Find the banner section.
+      if ($section->getLayoutId() === 'ys_layout_banner') {
+        // Get components in the banner's content region, sorted by weight.
+        $banner_components = $section->getComponentsByRegion('content');
+
+        // Find the first content block (skip content moderation control).
+        foreach ($banner_components as $component) {
+          $config = $component->get('configuration');
+          $plugin_id = $config['id'];
+
+          // Skip the content moderation control block.
+          if ($plugin_id === 'extra_field_block:node:page:content_moderation_control') {
+            continue;
+          }
+
+          // Check if this is an inline block with a revision ID.
+          if (!empty($config['block_revision_id'])) {
+            $block = $block_storage->loadRevision($config['block_revision_id']);
+            if ($block) {
+              $first_banner_block_ids[] = (int) $block->id();
+            }
+          }
+
+          // We found the first content block, stop looking.
+          break;
+        }
+
+        // We found the banner section, stop looking.
+        break;
+      }
+    }
+  }
+
+  return array_unique($first_banner_block_ids);
+}
+
+/**
  * Implements hook_update().
  *
  * Sets default padding values for all existing blocks with empty
@@ -488,6 +561,9 @@ function ys_core_update_10006(&$sandbox) {
 
   // Initialize sandbox on first run.
   if (!isset($sandbox['current_type_index'])) {
+    // Get list of block IDs that are first content blocks in banner sections.
+    // These blocks will receive special padding treatment.
+    $sandbox['first_banner_block_ids'] = ys_core_get_first_banner_block_ids();
     $sandbox['block_types'] = array_keys($block_defaults);
     $sandbox['current_type_index'] = 0;
     $sandbox['current_block_index'] = 0;
@@ -539,6 +615,7 @@ function ys_core_update_10006(&$sandbox) {
 
   $current_type = $block_types[$current_type_index];
   $default_value = $block_defaults[$current_type];
+  $first_banner_block_ids = $sandbox['first_banner_block_ids'];
 
   // Query blocks of current type.
   $query = $block_storage->getQuery();
@@ -563,7 +640,16 @@ function ys_core_update_10006(&$sandbox) {
 
     // Only update if the field exists and is empty.
     if ($latestRevision->hasField('field_padding_options') && $latestRevision->get('field_padding_options')->isEmpty()) {
-      $latestRevision->set('field_padding_options', $default_value);
+      // Check if this block is the first content block in a banner section.
+      // First banner blocks get special padding treatment.
+      $padding_value = $default_value;
+      if (in_array($id, $first_banner_block_ids)) {
+        // If the block type default is 'no_padding', keep it as 'no_padding'.
+        // Otherwise, set to 'no_top_padding' for first banner blocks.
+        $padding_value = ($default_value === 'no_padding') ? 'no_padding' : 'no_top_padding';
+      }
+
+      $latestRevision->set('field_padding_options', $padding_value);
       $latestRevision->save();
       $updated_in_iteration++;
       $sandbox['total_updated']++;
