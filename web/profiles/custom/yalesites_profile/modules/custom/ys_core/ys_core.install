@@ -561,9 +561,6 @@ function ys_core_update_10006(&$sandbox) {
 
   // Initialize sandbox on first run.
   if (!isset($sandbox['current_type_index'])) {
-    // Get list of block IDs that are first content blocks in banner sections.
-    // These blocks will receive special padding treatment.
-    $sandbox['first_banner_block_ids'] = ys_core_get_first_banner_block_ids();
     $sandbox['block_types'] = array_keys($block_defaults);
     $sandbox['current_type_index'] = 0;
     $sandbox['current_block_index'] = 0;
@@ -615,7 +612,6 @@ function ys_core_update_10006(&$sandbox) {
 
   $current_type = $block_types[$current_type_index];
   $default_value = $block_defaults[$current_type];
-  $first_banner_block_ids = $sandbox['first_banner_block_ids'];
 
   // Query blocks of current type.
   $query = $block_storage->getQuery();
@@ -640,16 +636,7 @@ function ys_core_update_10006(&$sandbox) {
 
     // Only update if the field exists and is empty.
     if ($latestRevision->hasField('field_padding_options') && $latestRevision->get('field_padding_options')->isEmpty()) {
-      // Check if this block is the first content block in a banner section.
-      // First banner blocks get special padding treatment.
-      $padding_value = $default_value;
-      if (in_array($id, $first_banner_block_ids)) {
-        // If the block type default is 'no_padding', keep it as 'no_padding'.
-        // Otherwise, set to 'no_top_padding' for first banner blocks.
-        $padding_value = ($default_value === 'no_padding') ? 'no_padding' : 'no_top_padding';
-      }
-
-      $latestRevision->set('field_padding_options', $padding_value);
+      $latestRevision->set('field_padding_options', $default_value);
       $latestRevision->save();
       $updated_in_iteration++;
       $sandbox['total_updated']++;
@@ -822,5 +809,154 @@ function ys_core_update_10007(&$sandbox) {
   // Calculate progress.
   $sandbox['#finished'] = $sandbox['total_iterations'] > 0
     ? $sandbox['current_iteration'] / $sandbox['total_iterations']
+    : 1;
+}
+
+/**
+ * Implements hook_update().
+ *
+ * Updates padding for blocks that are first in banner sections.
+ *
+ * Blocks that appear as the first content block in a banner section and
+ * currently have 'default' padding will be updated to 'no_top_padding'.
+ * Only applies to banner block types that would have received 'default'
+ * padding from update 10006 (cta_banner, content_spotlight, and
+ * content_spotlight_portrait).
+ *
+ * Uses sandbox API to process blocks in chunks to avoid timeouts on sites
+ * with large numbers of blocks.
+ */
+function ys_core_update_10008(&$sandbox) {
+  // Block types that are allowed in banners and have 'default' padding.
+  // These are the only types that need adjustment when first in banner.
+  $banner_block_types = [
+    'cta_banner',
+    'content_spotlight',
+    'content_spotlight_portrait',
+  ];
+
+  $logger = \Drupal::logger('ys_core');
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+
+  // Initialize sandbox on first run.
+  if (!isset($sandbox['current_type_index'])) {
+    // Get list of block IDs that are first content blocks in banner sections.
+    $sandbox['first_banner_block_ids'] = ys_core_get_first_banner_block_ids();
+    $sandbox['block_types'] = $banner_block_types;
+    $sandbox['current_type_index'] = 0;
+    $sandbox['current_block_index'] = 0;
+    $sandbox['total_updated'] = 0;
+    $sandbox['results'] = [];
+    $sandbox['type_results'] = [];
+
+    // Calculate total blocks to process.
+    $sandbox['total_blocks'] = 0;
+    foreach ($sandbox['block_types'] as $block_type) {
+      $query = $block_storage->getQuery();
+      $query->accessCheck(FALSE)
+        ->condition('type', $block_type);
+      $count = $query->count()->execute();
+      $sandbox['total_blocks'] += $count;
+    }
+
+    $sandbox['processed_blocks'] = 0;
+
+    if ($sandbox['total_blocks'] == 0) {
+      $sandbox['#finished'] = 1;
+      return t('No banner blocks found to update.');
+    }
+  }
+
+  // Process blocks in chunks.
+  $blocks_per_iteration = 50;
+  $current_type_index = $sandbox['current_type_index'];
+  $block_types = $sandbox['block_types'];
+
+  // Check if we've processed all block types.
+  if ($current_type_index >= count($block_types)) {
+    $sandbox['#finished'] = 1;
+
+    // Log final results.
+    $logger->info('First banner block padding update completed. Updated @count total block(s).', ['@count' => $sandbox['total_updated']]);
+
+    if (!empty($sandbox['results'])) {
+      foreach ($sandbox['results'] as $result) {
+        $logger->info($result);
+      }
+      return t('Successfully updated @count first banner block(s) to no_top_padding. See logs for details.', ['@count' => $sandbox['total_updated']]);
+    }
+    else {
+      $logger->info('No first banner blocks needed padding value updates.');
+      return t('No first banner blocks needed padding value updates.');
+    }
+  }
+
+  $current_type = $block_types[$current_type_index];
+  $first_banner_block_ids = $sandbox['first_banner_block_ids'];
+
+  // Query blocks of current type.
+  $query = $block_storage->getQuery();
+  $query->accessCheck(FALSE)
+    ->condition('type', $current_type)
+    ->range($sandbox['current_block_index'], $blocks_per_iteration);
+
+  $ids = $query->execute();
+
+  // Process blocks.
+  $updated_in_iteration = 0;
+  foreach ($ids as $id) {
+    $block = $block_storage->load($id);
+    $latestRevisionId = $block_storage->getLatestRevisionId($id);
+
+    if (!$latestRevisionId) {
+      $latestRevision = $block_storage->createRevision($block);
+    }
+    else {
+      $latestRevision = $block_storage->loadRevision($latestRevisionId);
+    }
+
+    // Only update if this block is first in a banner section AND
+    // currently has 'default' padding.
+    if ($latestRevision->hasField('field_padding_options') &&
+        !$latestRevision->get('field_padding_options')->isEmpty() &&
+        $latestRevision->get('field_padding_options')->value === 'default' &&
+        in_array($id, $first_banner_block_ids)) {
+
+      $latestRevision->set('field_padding_options', 'no_top_padding');
+      $latestRevision->save();
+      $updated_in_iteration++;
+      $sandbox['total_updated']++;
+
+      // Track updates per type.
+      if (!isset($sandbox['type_results'][$current_type])) {
+        $sandbox['type_results'][$current_type] = 0;
+      }
+      $sandbox['type_results'][$current_type]++;
+    }
+
+    $sandbox['processed_blocks']++;
+  }
+
+  // Move to next position.
+  if (count($ids) < $blocks_per_iteration) {
+    // Finished with this block type, move to next.
+    if (isset($sandbox['type_results'][$current_type]) && $sandbox['type_results'][$current_type] > 0) {
+      $sandbox['results'][] = t('@type: @count block(s) updated from "default" to "no_top_padding"', [
+        '@type' => $current_type,
+        '@count' => $sandbox['type_results'][$current_type],
+      ]);
+    }
+
+    $sandbox['current_type_index']++;
+    $sandbox['current_block_index'] = 0;
+  }
+  else {
+    // More blocks in this type to process.
+    $sandbox['current_block_index'] += $blocks_per_iteration;
+  }
+
+  // Calculate progress.
+  $sandbox['#finished'] = $sandbox['total_blocks'] > 0
+    ? $sandbox['processed_blocks'] / $sandbox['total_blocks']
     : 1;
 }
