@@ -56,21 +56,33 @@ function ys_admin_theme_form_node_form_alter(&$form, FormStateInterface $form_st
     return;
   }
 
-  // Move field_collection_as_microsite into the book fieldset.
-  if (isset($form['field_collection_as_microsite']) && isset($form['book'])) {
-    $form['book']['field_collection_as_microsite'] = $form['field_collection_as_microsite'];
-    unset($form['field_collection_as_microsite']);
-
-    // Only show field_collection_as_microsite for top-level books.
-    // Show when: pid is -1 (no parent) OR pid equals the current node's nid.
-    $nid = $node->isNew() ? 'new' : $node->id();
-
-    $form['book']['field_collection_as_microsite']['#states'] = [
-      'visible' => [
-        [':input[name="book[pid]"]' => ['value' => '-1']],
-        'or',
-        [':input[name="book[bid]"]' => ['value' => $nid]],
-      ],
-    ];
+  // Book is required to continue.
+  if (!isset($form['book'])) {
+    return;
   }
+
+  $nid = $node->isNew() ? 'new' : $node->id();
+
+  $book_fields = [
+    'field_collection_as_microsite', 
+    'field_hide_utility_menu'
+  ];
+
+  foreach ($book_fields as $book_field) {
+    // Move book_field into the book details.
+    if (isset($form[$book_field])) {
+      $form['book'][$book_field] = $form[$book_field];
+      unset($form[$book_field]);
+
+      // Only show book_field for top-level books.
+      // If pid is -1 (no parent) OR pid equals the current node's nid.
+      $form['book'][$book_field]['#states'] = [
+        'visible' => [
+          [':input[name="book[pid]"]' => ['value' => '-1']],
+          'or',
+          [':input[name="book[bid]"]' => ['value' => $nid]],
+        ],
+      ];
+    }
+  } 
 }
