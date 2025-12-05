@@ -55,10 +55,22 @@ function ys_admin_theme_form_node_form_alter(&$form, FormStateInterface $form_st
   if ($node->bundle() !== 'page') {
     return;
   }
-  
+
   // Move field_collection_as_microsite into the book fieldset.
   if (isset($form['field_collection_as_microsite']) && isset($form['book'])) {
     $form['book']['field_collection_as_microsite'] = $form['field_collection_as_microsite'];
     unset($form['field_collection_as_microsite']);
+
+    // Only show field_collection_as_microsite for top-level books.
+    // Show when: pid is -1 (no parent) OR pid equals the current node's nid.
+    $nid = $node->isNew() ? 'new' : $node->id();
+
+    $form['book']['field_collection_as_microsite']['#states'] = [
+      'visible' => [
+        [':input[name="book[pid]"]' => ['value' => '-1']],
+        'or',
+        [':input[name="book[bid]"]' => ['value' => $nid]],
+      ],
+    ];
   }
 }
