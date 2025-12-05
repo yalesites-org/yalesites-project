@@ -4,6 +4,7 @@ namespace Drupal\ys_file_management\Service;
 
 use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\File\Exception\FileException;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
@@ -57,6 +58,8 @@ class MediaFileDeleter implements MediaFileDeleterInterface {
    *   The stream wrapper manager.
    * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cacheTagsInvalidator
    *   The cache tags invalidator service.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+   *   The module handler service.
    */
   public function __construct(
     protected FileSystemInterface $fileSystem,
@@ -64,6 +67,7 @@ class MediaFileDeleter implements MediaFileDeleterInterface {
     protected LoggerChannelFactoryInterface $loggerFactory,
     protected StreamWrapperManagerInterface $streamWrapperManager,
     protected CacheTagsInvalidatorInterface $cacheTagsInvalidator,
+    protected ModuleHandlerInterface $moduleHandler,
   ) {}
 
   /**
@@ -148,6 +152,10 @@ class MediaFileDeleter implements MediaFileDeleterInterface {
       // unlike $file->delete() which only marks files for cron cleanup.
       if ($this->fileSystem->delete($file_uri)) {
         // Physical file deleted successfully. Remove the database record.
+        // Invoke file_update hooks before deletion to trigger CDN cache
+        // invalidation (e.g., Pantheon Advanced Page Cache clears edge cache
+        // for the file URL and all image style derivatives).
+        $this->moduleHandler->invokeAll('file_update', [$file]);
         $file->delete();
 
         // Invalidate caches for this file to ensure UI reflects deletion.
@@ -176,6 +184,8 @@ class MediaFileDeleter implements MediaFileDeleterInterface {
 
         // Still delete the file entity to maintain database consistency.
         // This may leave an orphaned file on disk.
+        // Invoke file_update hooks to trigger CDN cache invalidation.
+        $this->moduleHandler->invokeAll('file_update', [$file]);
         $file->delete();
 
         // Invalidate cache even on partial success.
