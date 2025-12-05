@@ -133,6 +133,12 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
       }
       else {
         $view = $this->viewsBasicManager->getView('rendered', $item->getValue()['params']);
+        // Extract exposed widgets from the view.
+        $exposedWidgets = NULL;
+        if ($view && is_array($view) && isset($view['#view']) && isset($view['#view']->exposed_widgets)) {
+          $exposedWidgets = $view['#view']->exposed_widgets;
+        }
+
         $elements[$delta] = [
           '#theme' => 'views_basic_formatter_default',
           '#view' => $view,
@@ -144,7 +150,7 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
           // when AJAX operations are performed on the view,
           // allowing for better control over which filters are displayed
           // and maintaining the expected user interface behavior.
-          '#exposed' => $view['#view']->exposed_widgets,
+          '#exposed' => $exposedWidgets,
         ];
       }
     }
