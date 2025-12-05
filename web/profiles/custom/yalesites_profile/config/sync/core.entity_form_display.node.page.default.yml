@@ -8,6 +8,7 @@ dependencies:
     - field.field.node.page.field_collection_as_microsite
     - field.field.node.page.field_custom_vocab
     - field.field.node.page.field_external_source
+    - field.field.node.page.field_hide_utility_menu
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
     - field.field.node.page.field_tags
@@ -115,6 +116,13 @@ content:
     settings:
       placeholder_url: ''
       placeholder_title: ''
+    third_party_settings: {  }
+  field_hide_utility_menu:
+    type: boolean_checkbox
+    weight: 15
+    region: content
+    settings:
+      display_label: true
     third_party_settings: {  }
   field_login_required:
     type: boolean_checkbox

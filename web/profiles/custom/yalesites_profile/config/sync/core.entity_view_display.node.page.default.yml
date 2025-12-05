@@ -8,6 +8,7 @@ dependencies:
     - field.field.node.page.field_collection_as_microsite
     - field.field.node.page.field_custom_vocab
     - field.field.node.page.field_external_source
+    - field.field.node.page.field_hide_utility_menu
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
     - field.field.node.page.field_tags
@@ -61,6 +62,24 @@ third_party_settings:
                   format_custom_true: ''
                 third_party_settings: {  }
             weight: 1
+            additional: {  }
+          e1225368-2391-437f-88fa-83229e089d20:
+            uuid: e1225368-2391-437f-88fa-83229e089d20
+            region: content
+            configuration:
+              id: 'field_block:node:page:field_hide_utility_menu'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: boolean
+                label: above
+                settings:
+                  format: default
+                  format_custom_false: ''
+                  format_custom_true: ''
+                third_party_settings: {  }
+            weight: 2
             additional: {  }
         third_party_settings:
           layout_builder_lock:
@@ -400,6 +419,16 @@ content:
       target: ''
     third_party_settings: {  }
     weight: 1
+    region: content
+  field_hide_utility_menu:
+    type: boolean
+    label: above
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    weight: 5
     region: content
 hidden:
   addtoany: true
