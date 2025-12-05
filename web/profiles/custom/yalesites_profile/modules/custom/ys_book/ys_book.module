@@ -95,9 +95,28 @@ function ys_book_form_alter(&$form, &$form_state, $form_id) {
 function ys_book_form_book_admin_edit_alter(&$form, FormStateInterface $form_state, $form_id) {
   // Add required indicator to all title fields in the book admin table.
   if (isset($form['table'])) {
+    /** @var \Drupal\book\BookManagerInterface $bookManager */
+    $bookManager = \Drupal::service('book.manager');
+    $destination = \Drupal::destination()->getAsArray();
+
     foreach (Element::children($form['table']) as $key) {
       if (isset($form['table'][$key]['title'])) {
         $form['table'][$key]['title']['#required'] = TRUE;
+      }
+
+      // Add Remove action to operations column if it exists.
+      if (isset($form['table'][$key]['operations']) && isset($form['table'][$key]['#nid'])) {
+        $nid = $form['table'][$key]['#nid'];
+        /** @var \Drupal\node\NodeInterface $node */
+        $node = \Drupal::entityTypeManager()->getStorage('node')->load($nid);
+
+        if ($node && $bookManager->checkNodeIsRemovable($node)) {
+          $form['table'][$key]['operations']['#links']['remove'] = [
+            'title' => t('Remove'),
+            'url' => Url::fromRoute('entity.node.book_remove_form', ['node' => $nid]),
+            'query' => $destination,
+          ];
+        }
       }
     }
   }
