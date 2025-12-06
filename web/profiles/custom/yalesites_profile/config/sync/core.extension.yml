@@ -3,7 +3,6 @@ _core:
 module:
   workflow_buttons: -1
   auto_entitylabel: -100
-  action: 0
   address: 0
   addtoany: 0
   admin_toolbar: 0
@@ -59,7 +58,6 @@ module:
   gin_lb: 0
   gin_moderation_sidebar: 0
   gin_toolbar: 0
-  google_analytics: 0
   google_tag: 0
   help: 0
   honeypot: 0
@@ -70,10 +68,10 @@ module:
   jquery_ui_datepicker: 0
   jquery_ui_slider: 0
   jquery_ui_touch_punch: 0
+  js_cookie: 0
   key: 0
   layout_builder: 0
   layout_builder_browser: 0
-  layout_builder_expose_all_field_blocks: 0
   layout_builder_lock: 0
   layout_builder_restrictions: 0
   layout_builder_restrictions_by_region: 0
@@ -146,7 +144,6 @@ module:
   twig_tweak: 0
   typogrify: 0
   update: 0
-  upgrade_status: 0
   user: 0
   views_ui: 0
   webform: 0
