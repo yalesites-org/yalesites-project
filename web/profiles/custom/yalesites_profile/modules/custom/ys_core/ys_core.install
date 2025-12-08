@@ -960,3 +960,42 @@ function ys_core_update_10008(&$sandbox) {
     ? $sandbox['processed_blocks'] / $sandbox['total_blocks']
     : 1;
 }
+
+/**
+ * Implements hook_update().
+ *
+ * Sets default field_line_treatment value to 'default' for all existing
+ * link_grid blocks that don't have this field set.
+ */
+function ys_core_update_10009() {
+  $logger = \Drupal::logger('ys_core');
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+
+  // Query all link_grid blocks.
+  $query = $block_storage->getQuery();
+  $query->accessCheck(FALSE)
+    ->condition('type', 'link_grid');
+  $ids = $query->execute();
+
+  if (empty($ids)) {
+    return t('No link_grid blocks found to update.');
+  }
+
+  $updated = 0;
+  foreach ($ids as $id) {
+    $block = $block_storage->load($id);
+    if (!$block) {
+      continue;
+    }
+
+    // Check if field_line_treatment is empty and set to 'default'.
+    if ($block->hasField('field_line_treatment') && $block->get('field_line_treatment')->isEmpty()) {
+      $block->set('field_line_treatment', 'default');
+      $block->save();
+      $updated++;
+    }
+  }
+
+  $logger->info('Updated @count link_grid block(s) with default field_line_treatment value.', ['@count' => $updated]);
+  return t('Updated @count link_grid block(s) with default field_line_treatment value.', ['@count' => $updated]);
+}
