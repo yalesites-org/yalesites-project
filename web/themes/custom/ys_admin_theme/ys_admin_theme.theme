@@ -47,7 +47,7 @@ function ys_admin_theme_set_title_on_node_edit_page(array &$variables) {
 function ys_admin_theme_form_node_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   /** @var Drupal\node\NodeForm $node_form */
   $node_form = $form_state->getFormObject();
-  
+
   /** @var Drupal\node\Entity\Node $node */
   $node = $node_form->getEntity();
 
@@ -64,8 +64,8 @@ function ys_admin_theme_form_node_form_alter(&$form, FormStateInterface $form_st
   $nid = $node->isNew() ? 'new' : $node->id();
 
   $book_fields = [
-    'field_collection_as_microsite', 
-    'field_hide_utility_menu'
+    'field_collection_as_microsite',
+    'field_hide_utility_menu',
   ];
 
   foreach ($book_fields as $book_field) {
@@ -84,5 +84,5 @@ function ys_admin_theme_form_node_form_alter(&$form, FormStateInterface $form_st
         ],
       ];
     }
-  } 
+  }
 }
