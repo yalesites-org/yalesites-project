@@ -1292,3 +1292,47 @@ function ys_core_imagemagick_arguments_alter(ImagemagickExecArguments $arguments
     $arguments->add('-define png:exclude-chunks=date');
   }
 }
+
+/**
+ * Updates a field value for blocks of a type where field is empty.
+ *
+ * @param string $block_type
+ *   The block content type machine name.
+ * @param string $field_name
+ *   The machine name of the field to update.
+ * @param mixed $default_value
+ *   The default value to set.
+ *
+ * @return int
+ *   The number of blocks updated.
+ */
+function ys_core_set_block_field_defaults(string $block_type, string $field_name, $default_value) {
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+  $query = $block_storage->getQuery();
+  $query->accessCheck(FALSE)
+    ->condition('type', $block_type);
+
+  $ids = $query->execute();
+  $updated_count = 0;
+
+  foreach ($ids as $id) {
+    $block = $block_storage->load($id);
+    $latestRevisionId = $block_storage->getLatestRevisionId($id);
+
+    if (!$latestRevisionId) {
+      $latestRevision = $block_storage->createRevision($block);
+    }
+    else {
+      $latestRevision = $block_storage->loadRevision($latestRevisionId);
+    }
+
+    // Only update if the field exists and is empty.
+    if ($latestRevision->hasField($field_name) && $latestRevision->get($field_name)->isEmpty()) {
+      $latestRevision->set($field_name, $default_value);
+      $latestRevision->save();
+      $updated_count++;
+    }
+  }
+
+  return $updated_count;
+}
