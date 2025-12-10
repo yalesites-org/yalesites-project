@@ -283,33 +283,8 @@ class TextFormatDetectionService {
       return '';
     }
 
-    // Check if this looks like compressed/oneliner content.
-    $is_compressed = $this->isCompressedMarkdown($text);
-
-    if ($is_compressed) {
-      // Use the regex-based approach for compressed content.
-      $simple_formatted = $this->simpleMarkdownFormat($text);
-
-      try {
-        // Then try CommonMark parsing if the simple approach helps.
-        $document = $this->parser->parse($simple_formatted);
-        $formatted_text = $this->reconstructMarkdownFromAst($document);
-
-        // Only use the AST result if it's significantly better.
-        if (strlen($formatted_text) > strlen($simple_formatted) * 0.8) {
-          return trim($formatted_text);
-        }
-      }
-      catch (\Exception $e) {
-        // If parsing fails, use the simple formatted version.
-      }
-
-      return trim($simple_formatted);
-    }
-    else {
-      // For properly formatted content, just use CommonMark directly.
-      return $this->formatUnescapedMarkdown($text);
-    }
+    // Always use CommonMark parser - let it handle all markdown.
+    return $this->formatUnescapedMarkdown($text);
   }
 
   /**
@@ -449,25 +424,64 @@ class TextFormatDetectionService {
    * @return string
    *   The reconstructed list.
    */
-  protected function reconstructListBlock(ListBlock $listBlock): string {
+  protected function reconstructListBlock(ListBlock $listBlock, int $depth = 0): string {
     $output = '';
     $listData = $listBlock->getListData();
     $counter = $listData->start ?? 1;
+    $indent = str_repeat('   ', $depth);
+
+    // DEBUG: Count total children in this list block.
+    $child_count = 0;
+    foreach ($listBlock->children() as $listItem) {
+      $child_count++;
+    }
+    \Drupal::logger('ys_ai_system_instructions')->debug('reconstructListBlock processing @count list items at depth @depth', [
+      '@count' => $child_count,
+      '@depth' => $depth,
+    ]);
 
     foreach ($listBlock->children() as $listItem) {
       if ($listItem instanceof ListItem) {
-        // Add list item marker.
+        // DEBUG: Check for nested lists within this list item.
+        $has_nested = FALSE;
+        $nested_count = 0;
+        foreach ($listItem->children() as $child) {
+          if ($child instanceof ListBlock) {
+            $has_nested = TRUE;
+            $nested_count++;
+          }
+        }
+        if ($has_nested) {
+          \Drupal::logger('ys_ai_system_instructions')->debug('List item has @count nested ListBlock(s) - WILL PROCESS RECURSIVELY', [
+            '@count' => $nested_count,
+          ]);
+        }
+
+        // Add list item marker with proper indentation.
         if ($listData->type === 'ordered') {
-          $output .= $counter . '. ';
+          $output .= $indent . $counter . '. ';
           $counter++;
         }
         else {
-          $output .= '- ';
+          $output .= $indent . '- ';
         }
 
-        // Get list item content.
+        // Get list item content (text only, not nested lists).
         $item_text = $this->extractDirectTextFromNode($listItem);
         $output .= $item_text . "\n";
+
+        // DEBUG: Log the extracted item text.
+        \Drupal::logger('ys_ai_system_instructions')->debug('Extracted list item text: @text', [
+          '@text' => substr($item_text, 0, 200),
+        ]);
+
+        // Process any nested lists recursively.
+        foreach ($listItem->children() as $child) {
+          if ($child instanceof ListBlock) {
+            $nested_output = $this->reconstructListBlock($child, $depth + 1);
+            $output .= $nested_output;
+          }
+        }
       }
     }
 
@@ -498,6 +512,10 @@ class TextFormatDetectionService {
         if ($current_node instanceof Heading ||
             $current_node instanceof ListBlock ||
             $current_node instanceof ListItem) {
+          // DEBUG: Log when we skip nested elements.
+          \Drupal::logger('ys_ai_system_instructions')->debug('extractDirectTextFromNode SKIPPING nested element: @type', [
+            '@type' => get_class($current_node),
+          ]);
           // Skip nested block elements (but allow paragraphs for content)
           $walker->resumeAt($current_node, FALSE);
           continue;
@@ -700,29 +718,8 @@ class TextFormatDetectionService {
    *   The formatted markdown with any minor cleanup applied.
    */
   public function formatUnescapedMarkdown(string $markdown): string {
-    $markdown = trim($markdown);
-
-    if (empty($markdown)) {
-      return '';
-    }
-
-    // Just use CommonMark to parse and validate the structure.
-    try {
-      $document = $this->parser->parse($markdown);
-      $formatted_text = $this->reconstructMarkdownFromAST($document);
-
-      if (!empty($formatted_text)) {
-        return trim($formatted_text);
-      }
-    }
-    catch (\Exception $e) {
-      // If parsing fails, return the original with basic cleanup.
-    }
-
-    // Fallback: basic cleanup without aggressive processing.
-    $markdown = preg_replace('/[ \t]+/', ' ', $markdown);
-    $markdown = preg_replace('/\n{3,}/', "\n\n", $markdown);
-
+    // Just return the markdown as-is. Let CommonMark handle it when rendering.
+    // No reconstruction, no processing - preserve exactly what the user created.
     return trim($markdown);
   }
 
