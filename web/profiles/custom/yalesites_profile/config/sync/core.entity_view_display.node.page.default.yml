@@ -45,42 +45,6 @@ third_party_settings:
                 entity: layout_builder.entity
             weight: 0
             additional: {  }
-          c91767af-92e4-40bc-b37d-f7bb2b729144:
-            uuid: c91767af-92e4-40bc-b37d-f7bb2b729144
-            region: content
-            configuration:
-              id: 'field_block:node:page:field_collection_as_microsite'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: boolean
-                label: above
-                settings:
-                  format: default
-                  format_custom_false: ''
-                  format_custom_true: ''
-                third_party_settings: {  }
-            weight: 1
-            additional: {  }
-          e1225368-2391-437f-88fa-83229e089d20:
-            uuid: e1225368-2391-437f-88fa-83229e089d20
-            region: content
-            configuration:
-              id: 'field_block:node:page:field_hide_utility_menu'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: boolean
-                label: above
-                settings:
-                  format: default
-                  format_custom_false: ''
-                  format_custom_true: ''
-                third_party_settings: {  }
-            weight: 2
-            additional: {  }
         third_party_settings:
           layout_builder_lock:
             lock:
@@ -390,16 +354,6 @@ content:
     third_party_settings: {  }
     weight: 2
     region: content
-  field_collection_as_microsite:
-    type: boolean
-    label: above
-    settings:
-      format: default
-      format_custom_false: ''
-      format_custom_true: ''
-    third_party_settings: {  }
-    weight: 4
-    region: content
   field_custom_vocab:
     type: entity_reference_label
     label: above
@@ -420,19 +374,11 @@ content:
     third_party_settings: {  }
     weight: 1
     region: content
-  field_hide_utility_menu:
-    type: boolean
-    label: above
-    settings:
-      format: default
-      format_custom_false: ''
-      format_custom_true: ''
-    third_party_settings: {  }
-    weight: 5
-    region: content
 hidden:
   addtoany: true
   field_category: true
+  field_collection_as_microsite: true
+  field_hide_utility_menu: true
   field_login_required: true
   field_metatags: true
   field_tags: true
