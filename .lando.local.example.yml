@@ -51,4 +51,3 @@ services:
     build_as_root:
       - git config --global --add safe.directory /app
       - mkdir -p /var/www/.composer && echo '{"config":{"audit":{"block-insecure":false}}}' > /var/www/.composer/config.json
-      - /bin/sh /app/.lando/imagemagicfix.sh
