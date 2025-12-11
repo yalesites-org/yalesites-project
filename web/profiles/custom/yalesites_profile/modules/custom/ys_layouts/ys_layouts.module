@@ -146,6 +146,11 @@ function ys_layouts_preprocess_block(&$variables) {
           $variables['padding_options'] = str_replace('_', '-', $padding_value);
         }
       }
+
+      // Add line treatment value for link_grid blocks.
+      if ($block_content->bundle() === 'link_grid' && $block_content->hasField('field_line_treatment') && !$block_content->get('field_line_treatment')->isEmpty()) {
+        $variables['link_grid__line_treatment'] = $block_content->get('field_line_treatment')->value;
+      }
     }
   }
 
@@ -153,6 +158,11 @@ function ys_layouts_preprocess_block(&$variables) {
   if (isset($variables['content']['#block_content'])) {
     $block_content = $variables['content']['#block_content'];
     $block_type = $block_content->bundle();
+
+    // Add line treatment value for link_grid blocks.
+    if ($block_type === 'link_grid' && $block_content->hasField('field_line_treatment') && !$block_content->get('field_line_treatment')->isEmpty()) {
+      $variables['link_grid__line_treatment'] = $block_content->get('field_line_treatment')->value;
+    }
 
     // Set default padding based on block type.
     $default_padding = 'default';

@@ -6,12 +6,12 @@ dependencies:
     - block_content.type.link_grid
     - field.field.block_content.link_grid.field_heading
     - field.field.block_content.link_grid.field_instructions
+    - field.field.block_content.link_grid.field_line_treatment
     - field.field.block_content.link_grid.field_link_lists
     - field.field.block_content.link_grid.field_padding_options
     - field.field.block_content.link_grid.field_style_color
   module:
     - allowed_formats
-    - hide_revision_field
     - markup
     - maxlength
     - paragraphs
@@ -40,6 +40,12 @@ content:
   field_instructions:
     type: markup
     weight: -1
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_line_treatment:
+    type: options_select
+    weight: 6
     region: content
     settings: {  }
     third_party_settings: {  }
