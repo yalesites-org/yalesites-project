@@ -7,6 +7,7 @@
  * - in_preview: Whether the plugin is being rendered in preview mode.
  * - content: The content for this layout.
  * - attributes: HTML attributes for the layout <div>.
+ * - show_secondary_nav: Whether or not to show the secondary nav.
  */
 #}
 {%
@@ -36,7 +37,11 @@
   <div{{ attributes.addClass(classes) }}>
     <div {{ region_attribute_classes }}>
       {{ drupal_entity('block', 'yalesitesbreadcrumbs', check_access=false) }}
-      {{ drupal_entity('block', 'atomic_custombooknavigation', check_access=false) }}
+
+      {% if show_secondary_nav %}
+        {{ drupal_entity('block', 'atomic_custombooknavigation', check_access=false) }}
+      {% endif %}
+  
       {{ content.page_meta }}
     </div>
   </div>
