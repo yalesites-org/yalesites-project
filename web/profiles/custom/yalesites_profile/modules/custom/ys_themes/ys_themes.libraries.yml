@@ -20,3 +20,7 @@ component_color_picker:
   dependencies:
     - core/drupal
     - core/once
+color_tokens:
+  css:
+    theme:
+      css/color-tokens.css: {}

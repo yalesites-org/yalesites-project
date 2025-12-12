@@ -292,7 +292,7 @@ function ys_themes_theme($existing, $type, $theme, $path) {
         'palette_options' => [],
         'global_theme' => 'one',
         'selected_value' => NULL,
-        'color_styles' => [],
+        'color_info' => [],
       ],
       'template' => 'component-color-picker',
     ],

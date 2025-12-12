@@ -17,7 +17,7 @@
       : null;
     const options = selector.querySelectorAll('.palette-option');
     let expandButton = selector.querySelector('[data-expand-button]');
-    
+
     // If button is missing (Drupal might have stripped it), create it
     if (!expandButton && container) {
       expandButton = document.createElement('button');
@@ -47,15 +47,9 @@
       }
     });
 
-    let isExpanded = false;
-
-    // Toggle expand/collapse on expand button click.
-    expandButton.addEventListener('click', function (e) {
-      e.stopPropagation();
-      e.preventDefault();
-      isExpanded = !isExpanded;
-      selector.classList.toggle('expanded', isExpanded);
-    });
+    // Always start expanded - no collapse functionality needed.
+    selector.classList.add('expanded');
+    let isExpanded = true;
 
     // Handle palette option clicks.
     container.addEventListener('click', function (e) {
@@ -71,10 +65,10 @@
           clickedOption.getAttribute('data-selected') === 'true';
 
         if (isCurrentlySelected) {
-          // If clicking the selected option, toggle expand/collapse.
-          isExpanded = !isExpanded;
-          selector.classList.toggle('expanded', isExpanded);
-        } else {
+          // Selected option clicked - no action needed since always expanded.
+          return;
+        }
+        else {
           // Deselect all options.
           options.forEach((opt) => opt.setAttribute('data-selected', 'false'));
 
@@ -112,10 +106,10 @@
           }
 
           // Verify the value was set correctly.
-          const actualValue = typeof jQuery !== 'undefined' 
-            ? jQuery(selectElement).val() 
+          const actualValue = typeof jQuery !== 'undefined'
+            ? jQuery(selectElement).val()
             : selectElement.value;
-          
+
           if (actualValue !== paletteValue && !selectElement.multiple) {
             return;
           }
@@ -126,12 +120,12 @@
             $select.val(paletteValue);
             $select.triggerHandler('input');
             $select.trigger('change');
-            
+
             const $parent = $select.parent();
             if ($parent.length) {
               $parent.trigger('change');
             }
-            
+
             const $fieldItem = $select.closest('.js-form-item, .field--widget-component-color-picker');
             if ($fieldItem.length) {
               $fieldItem.trigger('change');
@@ -149,7 +143,7 @@
             if (typeof jQuery !== 'undefined') {
               const $form = jQuery(form);
               $form.trigger('change');
-              
+
               // For Layout Builder, trigger the formUpdated event
               if (form.id && form.id.includes('layout-builder')) {
                 const selectName = selectElement.name;
@@ -161,9 +155,9 @@
                     }
                   });
                 }
-                
+
                 $form.trigger('formUpdated');
-                
+
                 const fieldWrapper = selectElement.closest('.field--widget-component-color-picker, .js-form-item, .form-item');
                 if (fieldWrapper) {
                   jQuery(fieldWrapper).trigger('change').trigger('formUpdated');
@@ -172,11 +166,7 @@
             }
           }
 
-          // Collapse if expanded.
-          if (isExpanded) {
-            isExpanded = false;
-            selector.classList.remove('expanded');
-          }
+          // Options are always expanded, no collapse needed.
         }
       }
     });

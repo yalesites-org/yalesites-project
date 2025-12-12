@@ -1,0 +1,56 @@
+/**
+ * @file
+ * Styles for the color tokens table.
+ */
+
+.color-tokens-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.color-tokens-table th {
+  background-color: #f5f5f5;
+  padding: 12px;
+  text-align: left;
+  font-weight: bold;
+  border-bottom: 2px solid #ddd;
+}
+
+.color-tokens-table td {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+  vertical-align: middle;
+}
+
+.color-tokens-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+.color-tokens-table .theme-label {
+  font-weight: 600;
+}
+
+.color-tokens-table .slot-name {
+  text-transform: capitalize;
+}
+
+.color-tokens-table .hex-code {
+  font-family: monospace;
+  font-weight: 600;
+}
+
+.color-tokens-table .token-ref {
+  font-family: monospace;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.color-tokens-table .color-swatch {
+  text-align: center;
+}
+
+.color-tokens-table .color-swatch div {
+  margin: 0 auto;
+  border-radius: 4px;
+}
+

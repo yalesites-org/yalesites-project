@@ -8,6 +8,13 @@
   display: inline-block;
 }
 
+/* Hide any palette-option divs that are outside the palette-visual-container */
+.component-color-picker-wrapper > .palette-option,
+.component-color-picker-wrapper .form-item > .palette-option,
+.component-color-picker-wrapper .js-form-item > .palette-option {
+  display: none !important;
+}
+
 .palette-select-hidden {
   position: absolute !important;
   opacity: 0 !important;
@@ -46,31 +53,13 @@
   position: relative;
 }
 
-/* Remove gap for collapsed items - gap creates space even for zero-width items */
-.palette-selector:not(.expanded) .palette-visual-container {
-  gap: 0;
-}
-
-/* Restore gap when expanded */
-.palette-selector.expanded .palette-visual-container {
+/* Always show gap - options are always expanded */
+.palette-visual-container {
   gap: 0.75rem;
 }
 
 .expand-indicator {
-  width: 24px;
-  height: 24px;
-  background: rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(0, 0, 0, 0.5);
-  cursor: pointer;
-  transition: all 0.15s ease, margin 0.15s ease;
-  padding: 0;
-  flex-shrink: 0;
-  margin: 0;
+  display: none;
 }
 
 .expand-indicator:hover {
@@ -125,57 +114,8 @@ body.gin--dark-mode .expand-indicator:hover {
   transform: rotate(180deg) translateY(1px);
 }
 
+/* All options are always visible */
 .palette-option {
-  opacity: 0;
-  max-width: 0;
-  width: 0;
-  min-width: 0;
-  overflow: hidden;
-  transition: opacity 0.15s ease, max-width 0.15s ease, width 0.15s ease, margin 0.15s ease, padding 0.15s ease;
-  margin: 0;
-  padding: 0;
-  flex-shrink: 1;
-  flex-basis: 0;
-  flex-grow: 0;
-}
-
-/* When collapsed, non-selected options should take absolutely no space */
-.palette-selector:not(.expanded) .palette-option:not([data-selected="true"]) {
-  position: absolute;
-  visibility: hidden;
-  width: 0;
-  height: 0;
-  margin: 0;
-  padding: 0;
-  flex-basis: 0;
-  flex-shrink: 0;
-  flex-grow: 0;
-}
-
-.palette-option[data-selected="true"] {
-  opacity: 1;
-  max-width: 200px;
-  width: auto;
-  min-width: auto;
-  overflow: visible;
-  flex-shrink: 0;
-  flex-basis: auto;
-  position: relative;
-  visibility: visible;
-  height: auto;
-}
-
-/* Add space between button and selected palette when collapsed */
-/* Use margin-right on button to avoid bounce effect */
-.palette-selector:not(.expanded) .expand-indicator {
-  margin-right: 0.75rem;
-}
-
-.palette-selector.expanded .expand-indicator {
-  margin-right: 0;
-}
-
-.palette-selector.expanded .palette-option {
   opacity: 1;
   max-width: 200px;
   width: auto;
@@ -187,61 +127,120 @@ body.gin--dark-mode .expand-indicator:hover {
   position: relative;
   visibility: visible;
   height: auto;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
 }
 
-.palette-selector.expanded .palette-option:last-child {
+.palette-option:last-child {
   margin-right: 0;
 }
 
-.palette-circles {
+/* Selected state styling */
+.palette-option[data-selected="true"] {
+  background-color: rgba(0, 0, 0, 0.05);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Dark mode support for selected state */
+[data-gin-accent] .palette-option[data-selected="true"],
+.gin--dark-mode .palette-option[data-selected="true"],
+body.gin--dark-mode .palette-option[data-selected="true"] {
+  background-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+  .palette-option[data-selected="true"] {
+    background-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+  }
+}
+
+.palette-color-wrapper {
   display: flex;
-  gap: 0;
+  flex-direction: column;
   align-items: center;
+  gap: 0.5rem;
   padding: 4px;
-  border-radius: 20px;
   transition: transform 0.15s ease, width 0.15s ease, max-width 0.15s ease, padding 0.15s ease;
   white-space: nowrap;
 }
 
-/* Make circles overlap by using negative margins */
-.palette-circle:not(:first-child) {
-  margin-left: -12px;
+.palette-circle-container {
+  display: block;
 }
 
-/* Ensure circles container and circles take no space when parent is collapsed */
-.palette-selector:not(.expanded) .palette-option:not([data-selected="true"]) .palette-circles {
-  width: 0;
-  max-width: 0;
-  min-width: 0;
-  padding: 0;
-  gap: 0;
-  overflow: hidden;
-}
-
-.palette-selector.expanded .palette-option .palette-circles {
+/* Color wrapper is always visible */
+.palette-option .palette-color-wrapper {
   width: auto;
   max-width: none;
   min-width: auto;
   padding: 4px;
-  gap: 0;
+  gap: 0.5rem;
   overflow: visible;
 }
 
-/* Ensure individual circles take no space when parent is collapsed */
-.palette-selector:not(.expanded) .palette-option:not([data-selected="true"]) .palette-circle {
-  width: 0 !important;
-  min-width: 0 !important;
-  max-width: 0 !important;
-  height: 0 !important;
-  min-height: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  border: 0 !important;
-  box-shadow: none !important;
+.palette-option:hover .palette-color-wrapper {
+  transform: translateY(-2px);
 }
 
-.palette-option:hover .palette-circles {
-  transform: translateY(-2px);
+.palette-color-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  text-align: center;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.palette-token-name {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #333;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+}
+
+.palette-hex-code {
+  font-size: 0.7rem;
+  font-family: monospace;
+  color: #666;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* Color info is always visible */
+.palette-option .palette-color-info {
+  opacity: 1;
+}
+
+/* Dark mode adjustments for color info */
+[data-gin-accent] .palette-token-name,
+.gin--dark-mode .palette-token-name,
+body.gin--dark-mode .palette-token-name {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+[data-gin-accent] .palette-hex-code,
+.gin--dark-mode .palette-hex-code,
+body.gin--dark-mode .palette-hex-code {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+@media (prefers-color-scheme: dark) {
+  .palette-token-name {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .palette-hex-code {
+    color: rgba(255, 255, 255, 0.7);
+  }
 }
 
 .palette-circle {
