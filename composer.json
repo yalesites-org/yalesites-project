@@ -31,6 +31,7 @@
     "drupal/core-project-message": "10.3.14",
     "drupal/core-recommended": "10.3.14",
     "drush/drush": "^11 || ^12",
+    "league/commonmark": "^2.0",
     "oomphinc/composer-installers-extender": "^2.0",
     "pantheon-systems/drupal-integrations": "^10",
     "yalesites-org/yalesites_profile": "*"
@@ -110,6 +111,9 @@
     }
   },
   "config": {
+    "audit": {
+      "ignore": ["SA-CONTRIB-2025-060", "SA-CORE-2025-007", "SA-CORE-2025-008", "SA-CORE-2025-005", "SA-CORE-2025-006", "PKSA-d8tb-wwz2-ctxk", "PKSA-dh1f-zjm5-qg8y", "PKSA-bn52-vyzy-rmnm", "PKSA-xj83-g6g8-41vf"]
+    },
     "preferred-install": "dist",
     "sort-packages": true,
     "platform": {

@@ -1,0 +1,52 @@
+uuid: 0d304703-591f-4ea5-b7ab-c3b17290fb43
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.event_calendar
+    - field.field.block_content.event_calendar.field_basic_params
+    - field.field.block_content.event_calendar.field_heading
+    - field.field.block_content.event_calendar.field_heading_links
+    - field.field.block_content.event_calendar.field_instructions
+  module:
+    - entity_reference_revisions
+    - markup
+    - text
+    - ys_views_basic
+id: block_content.event_calendar.default
+targetEntityType: block_content
+bundle: event_calendar
+mode: default
+content:
+  field_basic_params:
+    type: event_calendar_default_formatter
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 3
+    region: content
+  field_heading:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_heading_links:
+    type: entity_reference_revisions_entity_view
+    label: hidden
+    settings:
+      view_mode: default
+      link: ''
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  field_instructions:
+    type: markup
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
+hidden:
+  search_api_excerpt: true

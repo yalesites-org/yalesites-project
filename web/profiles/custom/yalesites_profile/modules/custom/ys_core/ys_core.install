@@ -433,3 +433,569 @@ function ys_core_update_10005() {
 
   \Drupal::messenger()->addStatus(t('Facts and Figures icon functionality has been successfully added.'));
 }
+
+/**
+ * Gets block IDs that are the first content block in a banner section.
+ *
+ * This function examines all page nodes with Layout Builder overrides to find
+ * blocks that are positioned as the first content block in the banner section.
+ * The content moderation control block is excluded from this check.
+ *
+ * @return array
+ *   Array of block content IDs that are first in a banner section.
+ */
+function ys_core_get_first_banner_block_ids() {
+  $first_banner_block_ids = [];
+  $node_storage = \Drupal::entityTypeManager()->getStorage('node');
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+
+  // Get all page nodes.
+  $query = \Drupal::entityQuery('node')
+    ->accessCheck(FALSE)
+    ->condition('type', 'page');
+  $nids = $query->execute();
+
+  foreach ($nids as $nid) {
+    $node = $node_storage->load($nid);
+    if (!$node) {
+      continue;
+    }
+
+    $layout = $node->get('layout_builder__layout');
+
+    // Skip nodes using default layout (no overrides).
+    if ($layout->isEmpty()) {
+      continue;
+    }
+
+    $sections = $layout->getSections();
+
+    foreach ($sections as $section) {
+      // Find the banner section.
+      if ($section->getLayoutId() === 'ys_layout_banner') {
+        // Get components in the banner's content region, sorted by weight.
+        $banner_components = $section->getComponentsByRegion('content');
+
+        // Find the first content block (skip content moderation control).
+        foreach ($banner_components as $component) {
+          $config = $component->get('configuration');
+          $plugin_id = $config['id'];
+
+          // Skip the content moderation control block.
+          if ($plugin_id === 'extra_field_block:node:page:content_moderation_control') {
+            continue;
+          }
+
+          // Check if this is an inline block with a revision ID.
+          if (!empty($config['block_revision_id'])) {
+            $block = $block_storage->loadRevision($config['block_revision_id']);
+            if ($block) {
+              $first_banner_block_ids[] = (int) $block->id();
+            }
+          }
+
+          // We found the first content block, stop looking.
+          break;
+        }
+
+        // We found the banner section, stop looking.
+        break;
+      }
+    }
+  }
+
+  return array_unique($first_banner_block_ids);
+}
+
+/**
+ * Implements hook_update().
+ *
+ * Sets default padding values for all existing blocks with empty
+ * field_padding_options.
+ *
+ * Uses sandbox API to process blocks in chunks to avoid timeouts on sites
+ * with large numbers of blocks.
+ */
+function ys_core_update_10006(&$sandbox) {
+  $block_defaults = [
+    // Blocks with no_padding default.
+    'grand_hero' => 'no_padding',
+    'image_banner' => 'no_padding',
+    'image' => 'no_padding',
+    'text' => 'no_padding',
+    'wrapped_text_callout' => 'no_padding',
+    // All other blocks with default padding.
+    'accordion' => 'default',
+    'button_link' => 'default',
+    'callout' => 'default',
+    'content_spotlight' => 'default',
+    'content_spotlight_portrait' => 'default',
+    'cta_banner' => 'default',
+    'custom_cards' => 'default',
+    'directory' => 'default',
+    'divider' => 'default',
+    'embed' => 'default',
+    'event_list' => 'default',
+    'facts' => 'default',
+    'gallery' => 'default',
+    'inline_message' => 'default',
+    'link_grid' => 'default',
+    'media_grid' => 'default',
+    'post_list' => 'default',
+    'pull_quote' => 'default',
+    'quick_links' => 'default',
+    'quote_callout' => 'default',
+    'reference_card' => 'default',
+    'resource_view' => 'default',
+    'tabs' => 'default',
+    'tiles' => 'default',
+    'video' => 'default',
+    'video_banner' => 'default',
+    'view' => 'default',
+    'webform' => 'default',
+    'wrapped_image' => 'default',
+  ];
+
+  $logger = \Drupal::logger('ys_core');
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+
+  // Initialize sandbox on first run.
+  if (!isset($sandbox['current_type_index'])) {
+    $sandbox['block_types'] = array_keys($block_defaults);
+    $sandbox['current_type_index'] = 0;
+    $sandbox['current_block_index'] = 0;
+    $sandbox['total_updated'] = 0;
+    $sandbox['results'] = [];
+    $sandbox['type_results'] = [];
+
+    // Calculate total blocks to process.
+    $sandbox['total_blocks'] = 0;
+    foreach ($sandbox['block_types'] as $block_type) {
+      $query = $block_storage->getQuery();
+      $query->accessCheck(FALSE)
+        ->condition('type', $block_type);
+      $count = $query->count()->execute();
+      $sandbox['total_blocks'] += $count;
+    }
+
+    $sandbox['processed_blocks'] = 0;
+
+    if ($sandbox['total_blocks'] == 0) {
+      $sandbox['#finished'] = 1;
+      return t('No blocks found to update.');
+    }
+  }
+
+  // Process blocks in chunks.
+  $blocks_per_iteration = 50;
+  $current_type_index = $sandbox['current_type_index'];
+  $block_types = $sandbox['block_types'];
+
+  // Check if we've processed all block types.
+  if ($current_type_index >= count($block_types)) {
+    $sandbox['#finished'] = 1;
+
+    // Log final results.
+    $logger->info('Block padding defaults update completed. Updated @count total block(s).', ['@count' => $sandbox['total_updated']]);
+
+    if (!empty($sandbox['results'])) {
+      foreach ($sandbox['results'] as $result) {
+        $logger->info($result);
+      }
+      return t('Successfully updated @count block(s) with default padding values. See logs for details.', ['@count' => $sandbox['total_updated']]);
+    }
+    else {
+      $logger->info('No blocks needed padding value updates.');
+      return t('No blocks needed padding value updates.');
+    }
+  }
+
+  $current_type = $block_types[$current_type_index];
+  $default_value = $block_defaults[$current_type];
+
+  // Query blocks of current type.
+  $query = $block_storage->getQuery();
+  $query->accessCheck(FALSE)
+    ->condition('type', $current_type)
+    ->range($sandbox['current_block_index'], $blocks_per_iteration);
+
+  $ids = $query->execute();
+
+  // Process blocks.
+  $updated_in_iteration = 0;
+  foreach ($ids as $id) {
+    $block = $block_storage->load($id);
+    $latestRevisionId = $block_storage->getLatestRevisionId($id);
+
+    if (!$latestRevisionId) {
+      $latestRevision = $block_storage->createRevision($block);
+    }
+    else {
+      $latestRevision = $block_storage->loadRevision($latestRevisionId);
+    }
+
+    // Only update if the field exists and is empty.
+    if ($latestRevision->hasField('field_padding_options') && $latestRevision->get('field_padding_options')->isEmpty()) {
+      $latestRevision->set('field_padding_options', $default_value);
+      $latestRevision->save();
+      $updated_in_iteration++;
+      $sandbox['total_updated']++;
+
+      // Track updates per type.
+      if (!isset($sandbox['type_results'][$current_type])) {
+        $sandbox['type_results'][$current_type] = 0;
+      }
+      $sandbox['type_results'][$current_type]++;
+    }
+
+    $sandbox['processed_blocks']++;
+  }
+
+  // Move to next position.
+  if (count($ids) < $blocks_per_iteration) {
+    // Finished with this block type, move to next.
+    if (isset($sandbox['type_results'][$current_type]) && $sandbox['type_results'][$current_type] > 0) {
+      $sandbox['results'][] = t('@type: @count block(s) set to "@value"', [
+        '@type' => $current_type,
+        '@count' => $sandbox['type_results'][$current_type],
+        '@value' => $default_value,
+      ]);
+    }
+
+    $sandbox['current_type_index']++;
+    $sandbox['current_block_index'] = 0;
+  }
+  else {
+    // More blocks in this type to process.
+    $sandbox['current_block_index'] += $blocks_per_iteration;
+  }
+
+  // Calculate progress.
+  $sandbox['#finished'] = $sandbox['total_blocks'] > 0
+    ? $sandbox['processed_blocks'] / $sandbox['total_blocks']
+    : 1;
+}
+
+/**
+ * Implements hook_update().
+ *
+ * Sets default button alignment and button style values for all existing
+ * button_link blocks with empty field_button_alignment or
+ * field_button_style_consistency.
+ *
+ * Uses sandbox API to process blocks in chunks to avoid timeouts on sites
+ * with large numbers of blocks.
+ */
+function ys_core_update_10007(&$sandbox) {
+  $logger = \Drupal::logger('ys_core');
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+
+  // Initialize sandbox on first run.
+  if (!isset($sandbox['current_field_index'])) {
+    $sandbox['fields'] = [
+      'field_button_alignment' => 'left',
+      'field_button_style_consistency' => 'filled_outline',
+    ];
+    $sandbox['field_keys'] = array_keys($sandbox['fields']);
+    $sandbox['current_field_index'] = 0;
+    $sandbox['current_block_index'] = 0;
+    $sandbox['total_updated'] = 0;
+    $sandbox['field_results'] = [];
+
+    // Calculate total button_link blocks.
+    $query = $block_storage->getQuery();
+    $query->accessCheck(FALSE)
+      ->condition('type', 'button_link');
+    $sandbox['total_blocks'] = $query->count()->execute();
+    $sandbox['processed_blocks'] = 0;
+
+    // Total iterations = blocks * number of fields.
+    $sandbox['total_iterations'] = $sandbox['total_blocks'] * count($sandbox['fields']);
+    $sandbox['current_iteration'] = 0;
+
+    if ($sandbox['total_blocks'] == 0) {
+      $sandbox['#finished'] = 1;
+      return t('No button_link blocks found to update.');
+    }
+  }
+
+  // Process blocks in chunks.
+  $blocks_per_iteration = 50;
+  $current_field_index = $sandbox['current_field_index'];
+  $field_keys = $sandbox['field_keys'];
+
+  // Check if we've processed all fields.
+  if ($current_field_index >= count($field_keys)) {
+    $sandbox['#finished'] = 1;
+
+    // Log final results.
+    $logger->info('Button link defaults update completed. Updated @count total field(s).', ['@count' => $sandbox['total_updated']]);
+
+    if (!empty($sandbox['field_results'])) {
+      $results = [];
+      foreach ($sandbox['field_results'] as $field_name => $count) {
+        $field_label = $field_name == 'field_button_alignment' ? 'Button Alignment' : 'Button Style';
+        $field_value = $sandbox['fields'][$field_name];
+        $results[] = t('button_link: @count block(s) set @label to "@value"', [
+          '@count' => $count,
+          '@label' => $field_label,
+          '@value' => $field_value,
+        ]);
+      }
+
+      foreach ($results as $result) {
+        $logger->info($result);
+      }
+      return t('Successfully updated @count button link field(s) with default values. See logs for details.', ['@count' => $sandbox['total_updated']]);
+    }
+    else {
+      $logger->info('No button link blocks needed default value updates.');
+      return t('No button link blocks needed default value updates.');
+    }
+  }
+
+  $current_field = $field_keys[$current_field_index];
+  $default_value = $sandbox['fields'][$current_field];
+
+  // Query button_link blocks.
+  $query = $block_storage->getQuery();
+  $query->accessCheck(FALSE)
+    ->condition('type', 'button_link')
+    ->range($sandbox['current_block_index'], $blocks_per_iteration);
+
+  $ids = $query->execute();
+
+  // Process blocks.
+  foreach ($ids as $id) {
+    $block = $block_storage->load($id);
+    $latestRevisionId = $block_storage->getLatestRevisionId($id);
+
+    if (!$latestRevisionId) {
+      $latestRevision = $block_storage->createRevision($block);
+    }
+    else {
+      $latestRevision = $block_storage->loadRevision($latestRevisionId);
+    }
+
+    // Only update if the field exists and is empty.
+    if ($latestRevision->hasField($current_field) && $latestRevision->get($current_field)->isEmpty()) {
+      $latestRevision->set($current_field, $default_value);
+      $latestRevision->save();
+      $sandbox['total_updated']++;
+
+      // Track updates per field.
+      if (!isset($sandbox['field_results'][$current_field])) {
+        $sandbox['field_results'][$current_field] = 0;
+      }
+      $sandbox['field_results'][$current_field]++;
+    }
+
+    $sandbox['current_iteration']++;
+  }
+
+  // Move to next position.
+  if (count($ids) < $blocks_per_iteration) {
+    // Finished with this field, move to next field and reset block index.
+    $sandbox['current_field_index']++;
+    $sandbox['current_block_index'] = 0;
+    $sandbox['processed_blocks'] = 0;
+  }
+  else {
+    // More blocks to process for this field.
+    $sandbox['current_block_index'] += $blocks_per_iteration;
+    $sandbox['processed_blocks'] += count($ids);
+  }
+
+  // Calculate progress.
+  $sandbox['#finished'] = $sandbox['total_iterations'] > 0
+    ? $sandbox['current_iteration'] / $sandbox['total_iterations']
+    : 1;
+}
+
+/**
+ * Implements hook_update().
+ *
+ * Updates padding for blocks that are first in banner sections.
+ *
+ * Blocks that appear as the first content block in a banner section and
+ * currently have 'default' padding will be updated to 'no_top'.
+ * Only applies to banner block types that would have received 'default'
+ * padding from update 10006 (cta_banner, content_spotlight, and
+ * content_spotlight_portrait).
+ *
+ * Uses sandbox API to process blocks in chunks to avoid timeouts on sites
+ * with large numbers of blocks.
+ */
+function ys_core_update_10008(&$sandbox) {
+  // Block types that are allowed in banners and have 'default' padding.
+  // These are the only types that need adjustment when first in banner.
+  $banner_block_types = [
+    'cta_banner',
+    'content_spotlight',
+    'content_spotlight_portrait',
+  ];
+
+  $logger = \Drupal::logger('ys_core');
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+
+  // Initialize sandbox on first run.
+  if (!isset($sandbox['current_type_index'])) {
+    // Get list of block IDs that are first content blocks in banner sections.
+    $sandbox['first_banner_block_ids'] = ys_core_get_first_banner_block_ids();
+    $sandbox['block_types'] = $banner_block_types;
+    $sandbox['current_type_index'] = 0;
+    $sandbox['current_block_index'] = 0;
+    $sandbox['total_updated'] = 0;
+    $sandbox['results'] = [];
+    $sandbox['type_results'] = [];
+
+    // Calculate total blocks to process.
+    $sandbox['total_blocks'] = 0;
+    foreach ($sandbox['block_types'] as $block_type) {
+      $query = $block_storage->getQuery();
+      $query->accessCheck(FALSE)
+        ->condition('type', $block_type);
+      $count = $query->count()->execute();
+      $sandbox['total_blocks'] += $count;
+    }
+
+    $sandbox['processed_blocks'] = 0;
+
+    if ($sandbox['total_blocks'] == 0) {
+      $sandbox['#finished'] = 1;
+      return t('No banner blocks found to update.');
+    }
+  }
+
+  // Process blocks in chunks.
+  $blocks_per_iteration = 50;
+  $current_type_index = $sandbox['current_type_index'];
+  $block_types = $sandbox['block_types'];
+
+  // Check if we've processed all block types.
+  if ($current_type_index >= count($block_types)) {
+    $sandbox['#finished'] = 1;
+
+    // Log final results.
+    $logger->info('First banner block padding update completed. Updated @count total block(s).', ['@count' => $sandbox['total_updated']]);
+
+    if (!empty($sandbox['results'])) {
+      foreach ($sandbox['results'] as $result) {
+        $logger->info($result);
+      }
+      return t('Successfully updated @count first banner block(s) to no_top. See logs for details.', ['@count' => $sandbox['total_updated']]);
+    }
+    else {
+      $logger->info('No first banner blocks needed padding value updates.');
+      return t('No first banner blocks needed padding value updates.');
+    }
+  }
+
+  $current_type = $block_types[$current_type_index];
+  $first_banner_block_ids = $sandbox['first_banner_block_ids'];
+
+  // Query blocks of current type.
+  $query = $block_storage->getQuery();
+  $query->accessCheck(FALSE)
+    ->condition('type', $current_type)
+    ->range($sandbox['current_block_index'], $blocks_per_iteration);
+
+  $ids = $query->execute();
+
+  // Process blocks.
+  $updated_in_iteration = 0;
+  foreach ($ids as $id) {
+    $block = $block_storage->load($id);
+    $latestRevisionId = $block_storage->getLatestRevisionId($id);
+
+    if (!$latestRevisionId) {
+      $latestRevision = $block_storage->createRevision($block);
+    }
+    else {
+      $latestRevision = $block_storage->loadRevision($latestRevisionId);
+    }
+
+    // Only update if this block is first in a banner section AND
+    // currently has 'default' padding.
+    if ($latestRevision->hasField('field_padding_options') &&
+        !$latestRevision->get('field_padding_options')->isEmpty() &&
+        $latestRevision->get('field_padding_options')->value === 'default' &&
+        in_array($id, $first_banner_block_ids)) {
+
+      $latestRevision->set('field_padding_options', 'no_top');
+      $latestRevision->save();
+      $updated_in_iteration++;
+      $sandbox['total_updated']++;
+
+      // Track updates per type.
+      if (!isset($sandbox['type_results'][$current_type])) {
+        $sandbox['type_results'][$current_type] = 0;
+      }
+      $sandbox['type_results'][$current_type]++;
+    }
+
+    $sandbox['processed_blocks']++;
+  }
+
+  // Move to next position.
+  if (count($ids) < $blocks_per_iteration) {
+    // Finished with this block type, move to next.
+    if (isset($sandbox['type_results'][$current_type]) && $sandbox['type_results'][$current_type] > 0) {
+      $sandbox['results'][] = t('@type: @count block(s) updated from "default" to "no_top"', [
+        '@type' => $current_type,
+        '@count' => $sandbox['type_results'][$current_type],
+      ]);
+    }
+
+    $sandbox['current_type_index']++;
+    $sandbox['current_block_index'] = 0;
+  }
+  else {
+    // More blocks in this type to process.
+    $sandbox['current_block_index'] += $blocks_per_iteration;
+  }
+
+  // Calculate progress.
+  $sandbox['#finished'] = $sandbox['total_blocks'] > 0
+    ? $sandbox['processed_blocks'] / $sandbox['total_blocks']
+    : 1;
+}
+
+/**
+ * Implements hook_update().
+ *
+ * Sets default field_line_treatment value to 'default' for all existing
+ * link_grid blocks that don't have this field set.
+ */
+function ys_core_update_10009() {
+  $logger = \Drupal::logger('ys_core');
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+
+  // Query all link_grid blocks.
+  $query = $block_storage->getQuery();
+  $query->accessCheck(FALSE)
+    ->condition('type', 'link_grid');
+  $ids = $query->execute();
+
+  if (empty($ids)) {
+    return t('No link_grid blocks found to update.');
+  }
+
+  $updated = 0;
+  foreach ($ids as $id) {
+    $block = $block_storage->load($id);
+    if (!$block) {
+      continue;
+    }
+
+    // Check if field_line_treatment is empty and set to 'default'.
+    if ($block->hasField('field_line_treatment') && $block->get('field_line_treatment')->isEmpty()) {
+      $block->set('field_line_treatment', 'default');
+      $block->save();
+      $updated++;
+    }
+  }
+
+  $logger->info('Updated @count link_grid block(s) with default field_line_treatment value.', ['@count' => $updated]);
+  return t('Updated @count link_grid block(s) with default field_line_treatment value.', ['@count' => $updated]);
+}

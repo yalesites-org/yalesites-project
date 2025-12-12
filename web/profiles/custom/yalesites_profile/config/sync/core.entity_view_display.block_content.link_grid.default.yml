@@ -6,7 +6,9 @@ dependencies:
     - block_content.type.link_grid
     - field.field.block_content.link_grid.field_heading
     - field.field.block_content.link_grid.field_instructions
+    - field.field.block_content.link_grid.field_line_treatment
     - field.field.block_content.link_grid.field_link_lists
+    - field.field.block_content.link_grid.field_padding_options
     - field.field.block_content.link_grid.field_style_color
   module:
     - entity_reference_revisions
@@ -24,6 +26,13 @@ content:
     third_party_settings: {  }
     weight: 0
     region: content
+  field_line_treatment:
+    type: list_key
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 11
+    region: content
   field_link_lists:
     type: entity_reference_revisions_entity_view
     label: hidden
@@ -32,6 +41,13 @@ content:
       link: ''
     third_party_settings: {  }
     weight: 0
+    region: content
+  field_padding_options:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 10
     region: content
   field_style_color:
     type: list_key

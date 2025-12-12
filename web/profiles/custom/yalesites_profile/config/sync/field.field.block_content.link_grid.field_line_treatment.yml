@@ -1,0 +1,23 @@
+uuid: 8b9c7ec2-a454-434f-a22b-8bce457ecb26
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.link_grid
+    - field.storage.block_content.field_line_treatment
+  module:
+    - options
+id: block_content.link_grid.field_line_treatment
+field_name: field_line_treatment
+entity_type: block_content
+bundle: link_grid
+label: 'Line Treatment'
+description: ''
+required: true
+translatable: false
+default_value:
+  -
+    value: default
+default_value_callback: ''
+settings: {  }
+field_type: list_string

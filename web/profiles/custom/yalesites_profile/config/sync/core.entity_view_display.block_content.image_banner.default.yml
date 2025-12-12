@@ -5,6 +5,7 @@ dependencies:
   config:
     - block_content.type.image_banner
     - field.field.block_content.image_banner.field_media
+    - field.field.block_content.image_banner.field_padding_options
     - field.field.block_content.image_banner.field_style_variation
     - field.field.block_content.image_banner.field_text
   module:
@@ -23,6 +24,13 @@ content:
       link: false
     third_party_settings: {  }
     weight: 0
+    region: content
+  field_padding_options:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 10
     region: content
   field_style_variation:
     type: list_key

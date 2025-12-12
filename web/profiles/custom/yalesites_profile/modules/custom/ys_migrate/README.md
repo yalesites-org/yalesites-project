@@ -4,6 +4,10 @@
 
 This README details the process for Drupal migrations at Yale, specifically the migration from Drupal 7 to Drupal 10. These migrations are part of Yale's strategic initiative to upgrade its web presence across various departments and offices, leveraging enhanced features and improved performance of Drupal 10.
 
+## CSV Template
+
+The Profile CSV Import tool includes a "Download CSV Template" link that redirects users to an external CSV template file. The external URL is hardcoded in the controller and can be updated by developers as needed.
+
 ## General Migration Setup
 
 Each migration within Yale is organized into specific migration groups. These groups manage the migration of data and content from old Drupal instances to new ones, focusing on maintaining data integrity and meeting the unique requirements of each site. This document outlines the migrations for the Office of New Haven Affairs (ONHA), but the framework and methods described are applicable to other Yale sites.

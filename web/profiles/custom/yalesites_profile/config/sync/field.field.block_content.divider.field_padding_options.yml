@@ -1,0 +1,23 @@
+uuid: 36a5b506-1f48-4199-94cc-4ba25bfc4d44
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.divider
+    - field.storage.block_content.field_padding_options
+  module:
+    - options
+id: block_content.divider.field_padding_options
+field_name: field_padding_options
+entity_type: block_content
+bundle: divider
+label: 'Padding Options'
+description: 'Choose the padding configuration for this block. Each block may have a different default value depending on which Block you selected. Reference this resource on YaleSites block padding.'
+required: true
+translatable: true
+default_value:
+  -
+    value: default
+default_value_callback: ''
+settings: {  }
+field_type: list_string

@@ -102,6 +102,7 @@ module:
   metatag_verification: 0
   metatag_views: 0
   migrate: 0
+  migrate_drupal: 0
   migrate_plus: 0
   migrate_tools: 0
   moderation_sidebar: 0
@@ -153,14 +154,17 @@ module:
   workflows: 0
   yale_cas: 0
   ys_ai: 0
+  ys_ai_system_instructions: 0
   ys_alert: 0
   ys_book: 0
   ys_campus_groups: 0
   ys_captcha: 0
+  ys_file_management: 0
   ys_integrations: 0
   ys_layouts: 0
   ys_localist: 0
   ys_mail: 0
+  ys_migrate: 0
   ys_node_access: 0
   ys_servicenow: 0
   ys_starterkit: 0

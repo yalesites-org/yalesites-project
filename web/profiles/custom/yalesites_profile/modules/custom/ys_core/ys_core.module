@@ -122,10 +122,8 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
       $form['settings']['block_form']['#prefix'] = '<div id="grand-hero-settings">';
       $form['settings']['block_form']['#suffix'] = '</div>';
 
-      // Add validation handlers.
-      array_unshift($form['#validate'], 'ys_core_grand_hero_prepare_validation');
+      // Add validation handler.
       $form['#validate'][] = 'ys_core_grand_hero_validate';
-      $form['#validate'][] = 'ys_core_grand_hero_preserve_context';
 
       // Add custom JavaScript to ensure states are properly initialized.
       $form['#attached']['library'][] = 'ys_core/grand_hero_form';
@@ -1023,27 +1021,14 @@ function ys_core_grand_hero_display_mode_callback($form, FormStateInterface $for
  * @param \Drupal\Core\Form\FormStateInterface $form_state
  *   The form state object.
  */
-function ys_core_grand_hero_prepare_validation(array &$form, FormStateInterface $form_state) {
-  // Store context for preserving modal and field group behavior during errors.
-  $context_data = [
-    'form_id' => $form_state->getFormObject()->getFormId(),
-    'block_type' => 'grand_hero',
-    'layout_builder_modal' => TRUE,
-    'preserve_field_groups' => TRUE,
-  ];
-
-  $form_state->set('ys_core_grand_hero_validation_context', $context_data);
-}
 
 /**
  * Validation handler for Grand Hero block form.
  */
 function ys_core_grand_hero_validate($form, FormStateInterface $form_state) {
   // Validate required fields that are configured in field definitions.
-  // Note: Using setErrorByName() instead of setError() to work with
-  // field_group tabs. The tab structure changes form element paths, but
-  // setErrorByName() uses field names which remain consistent regardless
-  // of tab nesting.
+  // Using setErrorByName() to ensure errors are properly associated
+  // with field names regardless of form structure.
   // Heading field validation.
   $heading_value = $form_state->getValue(['settings', 'block_form', 'field_heading', 0, 'value']);
   if (empty(trim($heading_value))) {
@@ -1093,51 +1078,6 @@ function ys_core_grand_hero_validate($form, FormStateInterface $form_state) {
   $heading_level = $form_state->getValue(['settings', 'block_form', 'field_heading_level']);
   if (empty($heading_level) || (is_array($heading_level) && empty($heading_level[0]['value']))) {
     $form_state->setErrorByName('settings][block_form][field_heading_level', t('Heading Level field is required.'));
-  }
-}
-
-/**
- * Preserve form context for Grand Hero block during validation errors.
- *
- * This validation handler ensures that when validation errors occur,
- * the modal context and field group tabs are preserved, preventing
- * users from being redirected out of the tabbed interface.
- *
- * @param array $form
- *   The form array.
- * @param \Drupal\Core\Form\FormStateInterface $form_state
- *   The form state object.
- */
-function ys_core_grand_hero_preserve_context(array &$form, FormStateInterface $form_state) {
-  // Only act if there are validation errors.
-  if (!$form_state->getErrors()) {
-    return;
-  }
-
-  // Retrieve stored validation context.
-  $context_data = $form_state->get('ys_core_grand_hero_validation_context');
-  if (!$context_data) {
-    return;
-  }
-
-  // Ensure the form stays in modal context during validation errors.
-  if (!empty($context_data['layout_builder_modal'])) {
-    $form_state->setRebuild(TRUE);
-    $form_state->set('layout_builder_modal_preserved', TRUE);
-
-    // Add attributes to help maintain modal state in the frontend.
-    if (!isset($form['#attributes'])) {
-      $form['#attributes'] = [];
-    }
-    $form['#attributes']['data-layout-builder-modal'] = 'preserved';
-    $form['#attributes']['data-grand-hero-validation'] = 'error';
-  }
-
-  // Ensure Field Group processing is maintained during validation errors.
-  if (!empty($context_data['preserve_field_groups'])) {
-    // Force field group libraries to be attached for proper tab functionality.
-    $form['#attached']['library'][] = 'field_group/formatter.tabs';
-    $form['#attached']['library'][] = 'field_group/core';
   }
 }
 
@@ -1351,4 +1291,48 @@ function ys_core_imagemagick_arguments_alter(ImagemagickExecArguments $arguments
     $arguments->add('-define png:preserve-colormap=true');
     $arguments->add('-define png:exclude-chunks=date');
   }
+}
+
+/**
+ * Updates a field value for blocks of a type where field is empty.
+ *
+ * @param string $block_type
+ *   The block content type machine name.
+ * @param string $field_name
+ *   The machine name of the field to update.
+ * @param mixed $default_value
+ *   The default value to set.
+ *
+ * @return int
+ *   The number of blocks updated.
+ */
+function ys_core_set_block_field_defaults(string $block_type, string $field_name, $default_value) {
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+  $query = $block_storage->getQuery();
+  $query->accessCheck(FALSE)
+    ->condition('type', $block_type);
+
+  $ids = $query->execute();
+  $updated_count = 0;
+
+  foreach ($ids as $id) {
+    $block = $block_storage->load($id);
+    $latestRevisionId = $block_storage->getLatestRevisionId($id);
+
+    if (!$latestRevisionId) {
+      $latestRevision = $block_storage->createRevision($block);
+    }
+    else {
+      $latestRevision = $block_storage->loadRevision($latestRevisionId);
+    }
+
+    // Only update if the field exists and is empty.
+    if ($latestRevision->hasField($field_name) && $latestRevision->get($field_name)->isEmpty()) {
+      $latestRevision->set($field_name, $default_value);
+      $latestRevision->save();
+      $updated_count++;
+    }
+  }
+
+  return $updated_count;
 }

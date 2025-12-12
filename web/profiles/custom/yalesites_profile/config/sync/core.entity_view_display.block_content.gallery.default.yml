@@ -7,8 +7,10 @@ dependencies:
     - field.field.block_content.gallery.field_gallery_items
     - field.field.block_content.gallery.field_heading
     - field.field.block_content.gallery.field_instructions
+    - field.field.block_content.gallery.field_padding_options
   module:
     - entity_reference_revisions
+    - options
     - text
 id: block_content.gallery.default
 targetEntityType: block_content
@@ -30,6 +32,13 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 0
+    region: content
+  field_padding_options:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 10
     region: content
 hidden:
   field_instructions: true
