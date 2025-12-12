@@ -61,6 +61,8 @@ process:
 destination:
   plugin: 'entity:media'
   default_bundle: image
+idMap: {  }
 migration_dependencies:
   required:
     - ys_images_files
+include: null

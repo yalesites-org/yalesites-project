@@ -12,7 +12,7 @@ third_party_settings:
     available_menus: {  }
     parent: ''
   search_api_exclude:
-    enabled: 1
+    enabled: true
   node_revision_delete:
     amount:
       status: true
