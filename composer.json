@@ -108,15 +108,14 @@
       "php": "8.3"
     },
     "allow-plugins": {
-      "dealerdirect/phpcodesniffer-composer-installer": true,
       "composer/installers": true,
       "cweagans/composer-patches": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true,
       "drupal/core-composer-scaffold": true,
-      "oomphinc/composer-installers-extender": true,
       "drupal/core-project-message": true,
-      "phpstan/extension-installer": true,
-      "drupal/console-extend-plugin": true,
+      "oomphinc/composer-installers-extender": true,
       "php-http/discovery": true,
+      "phpstan/extension-installer": true,
       "tbachert/spi": true
     }
   },
