@@ -11,11 +11,13 @@ dependencies:
     - field.field.block_content.accordion.field_style_color
   module:
     - allowed_formats
+    - hide_revision_field
     - markup
     - maxlength
     - paragraphs
     - paragraphs_features
     - text
+    - ys_themes
 id: block_content.accordion.default
 targetEntityType: block_content
 bundle: accordion
@@ -73,7 +75,7 @@ content:
     settings: {  }
     third_party_settings: {  }
   field_style_color:
-    type: options_select
+    type: component_color_picker
     weight: 1
     region: content
     settings: {  }
