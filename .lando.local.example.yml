@@ -45,9 +45,6 @@ services:
         CUSTOMER_SECRETS_FAKE_FILE: /app/secrets.json
     # This is needed to expose the reverse proxy to the xdebug port (9003)
     xdebug: true
-
-    # This is needed to have ImagImageMagick work on Lando
-    # because the Pantheon recipie is broken for ImageMagick
     build_as_root:
       - git config --global --add safe.directory /app
       - mkdir -p /var/www/.composer && echo '{"config":{"audit":{"block-insecure":false}}}' > /var/www/.composer/config.json
