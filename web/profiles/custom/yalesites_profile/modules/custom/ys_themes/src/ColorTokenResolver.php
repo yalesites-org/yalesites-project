@@ -101,6 +101,7 @@ class ColorTokenResolver {
 
     // Second, try _yale-packages component library node_modules
     // (local dev with built tokens).
+    // The tokens package builds to build/json/tokens.json per sd.config.js.
     $yale_packages_cl_json = $atomic_theme_path .
       '/_yale-packages/component-library-twig/node_modules/@yalesites-org/tokens/build/json/tokens.json';
 
@@ -108,7 +109,24 @@ class ColorTokenResolver {
       $this->yamlPath = NULL;
       $this->jsonPath = $yale_packages_cl_json;
       $this->usingBuiltJson = TRUE;
-      $this->logger->debug('Using _yale-packages component library node_modules built JSON token file.');
+      $this->logger->debug('Using _yale-packages component library node_modules built JSON token file: @path', [
+        '@path' => $yale_packages_cl_json,
+      ]);
+      return;
+    }
+
+    // Also check if tokens package exists directly in _yale-packages
+    // (if built locally).
+    $yale_packages_tokens_json = $atomic_theme_path .
+      '/_yale-packages/tokens/build/json/tokens.json';
+
+    if (file_exists($yale_packages_tokens_json)) {
+      $this->yamlPath = NULL;
+      $this->jsonPath = $yale_packages_tokens_json;
+      $this->usingBuiltJson = TRUE;
+      $this->logger->debug('Using _yale-packages tokens built JSON token file: @path', [
+        '@path' => $yale_packages_tokens_json,
+      ]);
       return;
     }
 
@@ -188,6 +206,7 @@ class ColorTokenResolver {
     $alt_paths = [
       'yale_packages_yaml' => $atomic_theme_path . '/_yale-packages/tokens/tokens/base/color.yml',
       'yale_packages_json' => $atomic_theme_path . '/_yale-packages/tokens/tokens/figma-export/tokens.json',
+      'yale_packages_tokens_build_json' => $atomic_theme_path . '/_yale-packages/tokens/build/json/tokens.json',
       'yale_packages_cl_node_modules_json' => $atomic_theme_path . '/_yale-packages/component-library-twig/node_modules/@yalesites-org/tokens/build/json/tokens.json',
       'node_modules_built_json' => $atomic_theme_path . '/node_modules/@yalesites-org/tokens/build/json/tokens.json',
       'component_library_node_modules_json' => $atomic_theme_path . '/node_modules/@yalesites-org/component-library-twig/node_modules/@yalesites-org/tokens/build/json/tokens.json',
