@@ -152,11 +152,88 @@ class ColorTokenResolver {
       return;
     }
 
+    // Fifth, try to find tokens by searching in node_modules recursively.
+    // This handles cases where the structure might be different on multidev.
+    $found_json = $this->findTokensInNodeModules($atomic_theme_path);
+    if ($found_json) {
+      $this->yamlPath = NULL;
+      $this->jsonPath = $found_json;
+      $this->usingBuiltJson = TRUE;
+      $this->logger->debug('Found tokens by searching node_modules: @path', [
+        '@path' => $found_json,
+      ]);
+      return;
+    }
+
     // Fallback to default paths if not found.
     $this->yamlPath = $yale_packages_yaml;
     $this->jsonPath = $yale_packages_json;
     $this->usingBuiltJson = FALSE;
     $this->logger->warning('Token files not found in expected locations. Using default paths.');
+  }
+
+  /**
+   * Recursively searches for tokens.json in node_modules.
+   *
+   * @param string $atomic_theme_path
+   *   The atomic theme path.
+   *
+   * @return string|null
+   *   Path to tokens.json if found, NULL otherwise.
+   */
+  protected function findTokensInNodeModules($atomic_theme_path) {
+    // The component library imports tokens from
+    // '@yalesites-org/tokens/build/json/tokens.json' which webpack resolves
+    // from the component library's node_modules.
+    // So we need to check:
+    // component-library-twig/node_modules/@yalesites-org/tokens/build/json/tokens.json
+    // First, check _yale-packages if it exists (local dev).
+    // This is where the user confirmed the file exists locally.
+    $yale_cl_node_modules = $atomic_theme_path .
+      '/_yale-packages/component-library-twig/node_modules';
+    if (is_dir($yale_cl_node_modules)) {
+      $yale_cl_tokens_path = $yale_cl_node_modules .
+        '/@yalesites-org/tokens/build/json/tokens.json';
+      if (file_exists($yale_cl_tokens_path)) {
+        $this->logger->debug('Found tokens in _yale-packages component library node_modules: @path', [
+          '@path' => $yale_cl_tokens_path,
+        ]);
+        return $yale_cl_tokens_path;
+      }
+    }
+
+    // Second, check if component-library-twig has node_modules that we can
+    // search. This is the most likely location on multidev.
+    $cl_node_modules = $atomic_theme_path .
+      '/node_modules/@yalesites-org/component-library-twig/node_modules';
+    if (is_dir($cl_node_modules)) {
+      // Look for @yalesites-org/tokens in component library's node_modules.
+      $cl_tokens_path = $cl_node_modules .
+        '/@yalesites-org/tokens/build/json/tokens.json';
+      if (file_exists($cl_tokens_path)) {
+        $this->logger->debug('Found tokens in component library node_modules: @path', [
+          '@path' => $cl_tokens_path,
+        ]);
+        return $cl_tokens_path;
+      }
+    }
+
+    // Check other possible paths (direct tokens package).
+    $search_paths = [
+      $atomic_theme_path .
+      '/node_modules/@yalesites-org/tokens/build/json/tokens.json',
+    ];
+
+    foreach ($search_paths as $path) {
+      if (file_exists($path)) {
+        $this->logger->debug('Found tokens in search path: @path', [
+          '@path' => $path,
+        ]);
+        return $path;
+      }
+    }
+
+    return NULL;
   }
 
   /**
@@ -238,6 +315,55 @@ class ColorTokenResolver {
       }
     }
 
+    // Check if component library node_modules directory structure exists.
+    $cl_node_modules_base = $atomic_theme_path .
+      '/node_modules/@yalesites-org/component-library-twig/node_modules';
+    $diagnostics['cl_node_modules_base'] = $cl_node_modules_base;
+    $diagnostics['cl_node_modules_base_exists'] = is_dir($cl_node_modules_base);
+    if (is_dir($cl_node_modules_base)) {
+      $diagnostics['cl_node_modules_base_readable'] = is_readable($cl_node_modules_base);
+      // List what's in the node_modules directory.
+      $cl_node_modules_contents = @scandir($cl_node_modules_base);
+      if ($cl_node_modules_contents) {
+        $diagnostics['cl_node_modules_contents'] = array_filter($cl_node_modules_contents, function ($item) {
+          return $item !== '.' && $item !== '..';
+        });
+      }
+      // Check if @yalesites-org directory exists.
+      $yalesites_org_dir = $cl_node_modules_base . '/@yalesites-org';
+      $diagnostics['cl_node_modules_yalesites_org_exists'] = is_dir($yalesites_org_dir);
+      if (is_dir($yalesites_org_dir)) {
+        $yalesites_org_contents = @scandir($yalesites_org_dir);
+        if ($yalesites_org_contents) {
+          $diagnostics['cl_node_modules_yalesites_org_contents'] = array_filter($yalesites_org_contents, function ($item) {
+            return $item !== '.' && $item !== '..';
+          });
+        }
+        // Check if tokens directory exists.
+        $tokens_dir = $yalesites_org_dir . '/tokens';
+        $diagnostics['cl_node_modules_tokens_dir_exists'] = is_dir($tokens_dir);
+        if (is_dir($tokens_dir)) {
+          $tokens_dir_contents = @scandir($tokens_dir);
+          if ($tokens_dir_contents) {
+            $diagnostics['cl_node_modules_tokens_dir_contents'] = array_filter($tokens_dir_contents, function ($item) {
+              return $item !== '.' && $item !== '..';
+            });
+          }
+          // Check if build directory exists.
+          $build_dir = $tokens_dir . '/build';
+          $diagnostics['cl_node_modules_tokens_build_dir_exists'] = is_dir($build_dir);
+          if (is_dir($build_dir)) {
+            $build_dir_contents = @scandir($build_dir);
+            if ($build_dir_contents) {
+              $diagnostics['cl_node_modules_tokens_build_dir_contents'] = array_filter($build_dir_contents, function ($item) {
+                return $item !== '.' && $item !== '..';
+              });
+            }
+          }
+        }
+      }
+    }
+
     return $diagnostics;
   }
 
@@ -246,6 +372,7 @@ class ColorTokenResolver {
    *
    * @return array
    *   Array of themes with their color slots and hex values.
+   *   Structure matches the Twig template: tokens['global-themes'].
    */
   public function getGlobalThemeColors() {
     if (!file_exists($this->jsonPath)) {
@@ -260,10 +387,18 @@ class ColorTokenResolver {
 
       if ($this->usingBuiltJson) {
         // Handle built JSON format (node_modules).
-        return $this->parseBuiltJson($json);
+        // Access tokens the same way as the Twig template:
+        // tokens['global-themes'].
+        if (!isset($json['global-themes'])) {
+          $this->logger->warning('Token JSON does not contain global-themes key.');
+          return [];
+        }
+        return $this->parseBuiltJson($json['global-themes']);
       }
       else {
         // Handle YAML + JSON format (local dev).
+        // For YAML+JSON, global-themes is in the YAML file, not JSON.
+        // The JSON only contains the color values that are referenced.
         return $this->parseYamlJson($json);
       }
     }
@@ -278,23 +413,22 @@ class ColorTokenResolver {
   /**
    * Parses the built JSON format (from node_modules).
    *
-   * @param array $json
-   *   The parsed JSON data.
+   * @param array $global_themes
+   *   The global-themes data from tokens['global-themes'].
    *
    * @return array
    *   Array of themes with their color slots and hex values.
+   *   Structure matches: { theme_id: { label: "...", colors: {...} } }.
    */
-  protected function parseBuiltJson(array $json) {
-    if (!isset($json['global-themes'])) {
-      $this->logger->warning('Built JSON does not contain global-themes key.');
-      return [];
-    }
-
+  protected function parseBuiltJson(array $global_themes) {
     // Build a lookup map of HSL values to color token names.
-    $color_lookup = $this->buildColorLookup($json);
+    // We need the full JSON to build the lookup, so get it from the file.
+    $full_json = json_decode(file_get_contents($this->jsonPath), TRUE);
+    $color_lookup = $this->buildColorLookup($full_json);
 
     $themes = [];
-    foreach ($json['global-themes'] as $theme_id => $theme_data) {
+    foreach ($global_themes as $theme_id => $theme_data) {
+      // Structure matches the Twig template: values.label and values.colors.
       $theme_info = [
         'id' => $theme_id,
         'label' => $theme_data['label'] ?? $theme_id,
@@ -307,10 +441,14 @@ class ColorTokenResolver {
           $hex_value = $this->hslToHex($color_value);
           // Look up the color name from the HSL value.
           $token_name = $color_lookup[$color_value] ?? $this->getSlotName($slot);
+          // Store both the original HSL value and converted hex,
+          // matching Twig structure.
           $theme_info['colors'][$slot] = [
-            'token' => $slot,
+            'hsl' => $color_value,
             'hex' => $hex_value,
+            'token' => $slot,
             'name' => $token_name,
+            'css_var' => "--global-themes-{$theme_id}-colors-{$slot}",
           ];
         }
       }
@@ -372,10 +510,11 @@ class ColorTokenResolver {
    * Parses the YAML + JSON format (from _yale-packages).
    *
    * @param array $json
-   *   The parsed JSON data.
+   *   The full parsed JSON data (for resolving token references).
    *
    * @return array
    *   Array of themes with their color slots and hex values.
+   *   Structure matches: { theme_id: { label: "...", colors: {...} } }.
    */
   protected function parseYamlJson(array $json) {
     if (!$this->yamlPath || !file_exists($this->yamlPath)) {
@@ -399,6 +538,7 @@ class ColorTokenResolver {
 
     $themes = [];
     foreach ($yaml['global-themes'] as $theme_id => $theme_data) {
+      // Structure matches the Twig template: values.label and values.colors.
       $theme_info = [
         'id' => $theme_id,
         'label' => $theme_data['label']['value'] ?? $theme_id,
@@ -409,10 +549,13 @@ class ColorTokenResolver {
         foreach ($theme_data['colors'] as $slot => $slot_data) {
           $token_ref = $slot_data['value'] ?? '';
           $hex_value = $this->resolveTokenReference($token_ref, $json);
+          // Store both the token reference and converted hex,
+          // matching Twig structure.
           $theme_info['colors'][$slot] = [
             'token' => $token_ref,
             'hex' => $hex_value,
             'name' => $this->getTokenName($token_ref),
+            'css_var' => "--global-themes-{$theme_id}-colors-{$slot}",
           ];
         }
       }

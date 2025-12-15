@@ -56,7 +56,20 @@ class ColorTokensController extends ControllerBase {
       $message .= '<table class="diagnostics-table" style="margin-top: 1em; border-collapse: collapse;">';
 
       foreach ($diagnostics as $key => $value) {
-        $display_value = is_bool($value) ? ($value ? 'Yes' : 'No') : $value;
+        if (is_bool($value)) {
+          $display_value = $value ? 'Yes' : 'No';
+        }
+        elseif (is_array($value)) {
+          $display_value = implode(', ', array_map(function ($item) {
+            return is_string($item) ? $item : json_encode($item);
+          }, $value));
+        }
+        elseif (is_null($value)) {
+          $display_value = 'NULL';
+        }
+        else {
+          $display_value = (string) $value;
+        }
         $message .= '<tr style="border-bottom: 1px solid #ddd;">';
         $message .= '<td style="padding: 0.5em; font-weight: bold;">' . htmlspecialchars($key) . '</td>';
         $message .= '<td style="padding: 0.5em;">' . htmlspecialchars($display_value) . '</td>';
@@ -77,8 +90,10 @@ class ColorTokensController extends ControllerBase {
     }
 
     // Build table rows for each theme.
+    // Structure matches Twig template:
+    // {% for globalTheme, values in _context.globalThemes %}.
     $rows = [];
-    foreach ($themes as $theme_data) {
+    foreach ($themes as $theme_id => $theme_data) {
       $theme_label = $theme_data['label'];
       $colors = $theme_data['colors'];
 
@@ -96,6 +111,9 @@ class ColorTokensController extends ControllerBase {
         $hex = $color_data['hex'];
         $name = $color_data['name'];
         $token = $color_data['token'];
+        // Display CSS variable name like the Twig template:
+        // --global-themes-{theme}-colors-{slot}.
+        $css_var = $color_data['css_var'] ?? "--global-themes-{$theme_id}-colors-{$slot}";
 
         // Create color swatch.
         $swatch = [
@@ -113,6 +131,7 @@ class ColorTokensController extends ControllerBase {
             ['data' => ucfirst(str_replace('slot-', '', $slot)), 'class' => ['slot-name']],
             ['data' => $name, 'class' => ['color-name']],
             ['data' => $hex, 'class' => ['hex-code']],
+            ['data' => $css_var, 'class' => ['css-var']],
             ['data' => $token, 'class' => ['token-ref']],
             ['data' => $swatch, 'class' => ['color-swatch']],
           ],
@@ -127,6 +146,7 @@ class ColorTokensController extends ControllerBase {
         $this->t('Slot'),
         $this->t('Color Name'),
         $this->t('Hex Code'),
+        $this->t('CSS Variable'),
         $this->t('Token Reference'),
         $this->t('Swatch'),
       ],
