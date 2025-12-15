@@ -110,6 +110,17 @@ class ColorTokenResolver {
       return;
     }
 
+    // Third, try component library dist folder (alternative location).
+    $component_library_json = $atomic_theme_path . '/node_modules/@yalesites-org/component-library-twig/node_modules/@yalesites-org/tokens/build/json/tokens.json';
+
+    if (file_exists($component_library_json)) {
+      $this->yamlPath = NULL;
+      $this->jsonPath = $component_library_json;
+      $this->usingBuiltJson = TRUE;
+      $this->logger->debug('Using component library node_modules built JSON token file.');
+      return;
+    }
+
     // Fallback to default paths if not found.
     $this->yamlPath = $yale_packages_yaml;
     $this->jsonPath = $yale_packages_json;
@@ -165,11 +176,15 @@ class ColorTokenResolver {
       'yale_packages_yaml' => $atomic_theme_path . '/_yale-packages/tokens/tokens/base/color.yml',
       'yale_packages_json' => $atomic_theme_path . '/_yale-packages/tokens/tokens/figma-export/tokens.json',
       'node_modules_built_json' => $atomic_theme_path . '/node_modules/@yalesites-org/tokens/build/json/tokens.json',
+      'component_library_node_modules_json' => $atomic_theme_path . '/node_modules/@yalesites-org/component-library-twig/node_modules/@yalesites-org/tokens/build/json/tokens.json',
     ];
 
     foreach ($alt_paths as $key => $path) {
       $diagnostics[$key . '_exists'] = file_exists($path);
     }
+
+    // Check directories separately.
+    $diagnostics['component_library_dist_exists'] = is_dir($atomic_theme_path . '/node_modules/@yalesites-org/component-library-twig/dist');
 
     return $diagnostics;
   }
