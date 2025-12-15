@@ -45,9 +45,39 @@ class ColorTokenResolver {
    *   The logger service.
    */
   public function __construct(LoggerInterface $logger) {
+    $this->logger = $logger;
+    $this->findTokenFiles();
+  }
+
+  /**
+   * Finds the token files in available locations.
+   *
+   * Checks both _yale-packages (local dev) and node_modules (deployed).
+   */
+  protected function findTokenFiles() {
+    $base_paths = [
+      DRUPAL_ROOT . '/themes/contrib/atomic/_yale-packages/tokens',
+      DRUPAL_ROOT . '/themes/contrib/atomic/node_modules/@yalesites-org/tokens',
+    ];
+
+    $yaml_file = 'tokens/base/color.yml';
+    $json_file = 'tokens/figma-export/tokens.json';
+
+    // Try to find files in each possible location.
+    foreach ($base_paths as $base_path) {
+      $yaml_path = $base_path . '/' . $yaml_file;
+      $json_path = $base_path . '/' . $json_file;
+
+      if (file_exists($yaml_path) && file_exists($json_path)) {
+        $this->yamlPath = $yaml_path;
+        $this->jsonPath = $json_path;
+        return;
+      }
+    }
+
+    // Fallback to default paths if not found.
     $this->yamlPath = DRUPAL_ROOT . '/themes/contrib/atomic/_yale-packages/tokens/tokens/base/color.yml';
     $this->jsonPath = DRUPAL_ROOT . '/themes/contrib/atomic/_yale-packages/tokens/tokens/figma-export/tokens.json';
-    $this->logger = $logger;
   }
 
   /**
@@ -67,7 +97,8 @@ class ColorTokenResolver {
       'drupal_root' => DRUPAL_ROOT,
       'themes_dir_exists' => is_dir(DRUPAL_ROOT . '/themes'),
       'atomic_dir_exists' => is_dir(DRUPAL_ROOT . '/themes/contrib/atomic'),
-      'tokens_dir_exists' => is_dir(DRUPAL_ROOT . '/themes/contrib/atomic/_yale-packages/tokens'),
+      'yale_packages_tokens_exists' => is_dir(DRUPAL_ROOT . '/themes/contrib/atomic/_yale-packages/tokens'),
+      'node_modules_tokens_exists' => is_dir(DRUPAL_ROOT . '/themes/contrib/atomic/node_modules/@yalesites-org/tokens'),
     ];
 
     // Try to get more specific path info.
@@ -76,6 +107,18 @@ class ColorTokenResolver {
     }
     if (file_exists($this->jsonPath)) {
       $diagnostics['json_size'] = filesize($this->jsonPath);
+    }
+
+    // Check alternative paths.
+    $alt_paths = [
+      'yale_packages_yaml' => DRUPAL_ROOT . '/themes/contrib/atomic/_yale-packages/tokens/tokens/base/color.yml',
+      'yale_packages_json' => DRUPAL_ROOT . '/themes/contrib/atomic/_yale-packages/tokens/tokens/figma-export/tokens.json',
+      'node_modules_yaml' => DRUPAL_ROOT . '/themes/contrib/atomic/node_modules/@yalesites-org/tokens/tokens/base/color.yml',
+      'node_modules_json' => DRUPAL_ROOT . '/themes/contrib/atomic/node_modules/@yalesites-org/tokens/tokens/figma-export/tokens.json',
+    ];
+
+    foreach ($alt_paths as $key => $path) {
+      $diagnostics[$key . '_exists'] = file_exists($path);
     }
 
     return $diagnostics;
