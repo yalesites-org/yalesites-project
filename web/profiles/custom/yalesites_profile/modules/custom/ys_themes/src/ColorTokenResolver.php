@@ -199,7 +199,25 @@ class ColorTokenResolver {
 
     // Check directories separately.
     $diagnostics['yale_packages_cl_node_modules_exists'] = is_dir($atomic_theme_path . '/_yale-packages/component-library-twig/node_modules/@yalesites-org/tokens');
+    $diagnostics['yale_packages_cl_node_modules_dir'] = $atomic_theme_path . '/_yale-packages/component-library-twig/node_modules/@yalesites-org';
+    $diagnostics['yale_packages_cl_node_modules_dir_exists'] = is_dir($atomic_theme_path . '/_yale-packages/component-library-twig/node_modules/@yalesites-org');
     $diagnostics['component_library_dist_exists'] = is_dir($atomic_theme_path . '/node_modules/@yalesites-org/component-library-twig/dist');
+    $diagnostics['node_modules_cl_exists'] = is_dir($atomic_theme_path . '/node_modules/@yalesites-org/component-library-twig');
+
+    // Try to find tokens by scanning node_modules directories.
+    $possible_token_paths = [
+      $atomic_theme_path . '/node_modules/@yalesites-org/component-library-twig/node_modules/@yalesites-org/tokens/build/json/tokens.json',
+      $atomic_theme_path . '/_yale-packages/component-library-twig/node_modules/@yalesites-org/tokens/build/json/tokens.json',
+    ];
+
+    foreach ($possible_token_paths as $idx => $path) {
+      $key = 'scan_path_' . ($idx + 1);
+      $diagnostics[$key] = $path;
+      $diagnostics[$key . '_exists'] = file_exists($path);
+      if (file_exists($path)) {
+        $diagnostics[$key . '_readable'] = is_readable($path);
+      }
+    }
 
     return $diagnostics;
   }
