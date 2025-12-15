@@ -99,7 +99,20 @@ class ColorTokenResolver {
       return;
     }
 
-    // Second, try node_modules built JSON (deployed environment).
+    // Second, try _yale-packages component library node_modules
+    // (local dev with built tokens).
+    $yale_packages_cl_json = $atomic_theme_path .
+      '/_yale-packages/component-library-twig/node_modules/@yalesites-org/tokens/build/json/tokens.json';
+
+    if (file_exists($yale_packages_cl_json)) {
+      $this->yamlPath = NULL;
+      $this->jsonPath = $yale_packages_cl_json;
+      $this->usingBuiltJson = TRUE;
+      $this->logger->debug('Using _yale-packages component library node_modules built JSON token file.');
+      return;
+    }
+
+    // Third, try node_modules built JSON (deployed environment).
     $node_modules_json = $atomic_theme_path . '/node_modules/@yalesites-org/tokens/build/json/tokens.json';
 
     if (file_exists($node_modules_json)) {
@@ -110,7 +123,7 @@ class ColorTokenResolver {
       return;
     }
 
-    // Third, try component library dist folder (alternative location).
+    // Fourth, try component library dist folder (alternative location).
     $component_library_json = $atomic_theme_path . '/node_modules/@yalesites-org/component-library-twig/node_modules/@yalesites-org/tokens/build/json/tokens.json';
 
     if (file_exists($component_library_json)) {
@@ -175,6 +188,7 @@ class ColorTokenResolver {
     $alt_paths = [
       'yale_packages_yaml' => $atomic_theme_path . '/_yale-packages/tokens/tokens/base/color.yml',
       'yale_packages_json' => $atomic_theme_path . '/_yale-packages/tokens/tokens/figma-export/tokens.json',
+      'yale_packages_cl_node_modules_json' => $atomic_theme_path . '/_yale-packages/component-library-twig/node_modules/@yalesites-org/tokens/build/json/tokens.json',
       'node_modules_built_json' => $atomic_theme_path . '/node_modules/@yalesites-org/tokens/build/json/tokens.json',
       'component_library_node_modules_json' => $atomic_theme_path . '/node_modules/@yalesites-org/component-library-twig/node_modules/@yalesites-org/tokens/build/json/tokens.json',
     ];
@@ -184,6 +198,7 @@ class ColorTokenResolver {
     }
 
     // Check directories separately.
+    $diagnostics['yale_packages_cl_node_modules_exists'] = is_dir($atomic_theme_path . '/_yale-packages/component-library-twig/node_modules/@yalesites-org/tokens');
     $diagnostics['component_library_dist_exists'] = is_dir($atomic_theme_path . '/node_modules/@yalesites-org/component-library-twig/dist');
 
     return $diagnostics;
