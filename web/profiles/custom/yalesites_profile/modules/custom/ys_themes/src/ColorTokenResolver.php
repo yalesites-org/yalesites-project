@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_themes;
 
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -31,11 +32,53 @@ class ColorTokenResolver {
   protected $tokenValues = NULL;
 
   /**
-   * Constructs a ColorTokenResolver.
+   * The logger service.
+   *
+   * @var \Psr\Log\LoggerInterface
    */
-  public function __construct() {
+  protected $logger;
+
+  /**
+   * Constructs a ColorTokenResolver.
+   *
+   * @param \Psr\Log\LoggerInterface $logger
+   *   The logger service.
+   */
+  public function __construct(LoggerInterface $logger) {
     $this->yamlPath = DRUPAL_ROOT . '/themes/contrib/atomic/_yale-packages/tokens/tokens/base/color.yml';
     $this->jsonPath = DRUPAL_ROOT . '/themes/contrib/atomic/_yale-packages/tokens/tokens/figma-export/tokens.json';
+    $this->logger = $logger;
+  }
+
+  /**
+   * Gets diagnostic information about file paths and accessibility.
+   *
+   * @return array
+   *   Array with diagnostic information.
+   */
+  public function getDiagnostics() {
+    $diagnostics = [
+      'yaml_path' => $this->yamlPath,
+      'yaml_exists' => file_exists($this->yamlPath),
+      'yaml_readable' => file_exists($this->yamlPath) ? is_readable($this->yamlPath) : FALSE,
+      'json_path' => $this->jsonPath,
+      'json_exists' => file_exists($this->jsonPath),
+      'json_readable' => file_exists($this->jsonPath) ? is_readable($this->jsonPath) : FALSE,
+      'drupal_root' => DRUPAL_ROOT,
+      'themes_dir_exists' => is_dir(DRUPAL_ROOT . '/themes'),
+      'atomic_dir_exists' => is_dir(DRUPAL_ROOT . '/themes/contrib/atomic'),
+      'tokens_dir_exists' => is_dir(DRUPAL_ROOT . '/themes/contrib/atomic/_yale-packages/tokens'),
+    ];
+
+    // Try to get more specific path info.
+    if (file_exists($this->yamlPath)) {
+      $diagnostics['yaml_size'] = filesize($this->yamlPath);
+    }
+    if (file_exists($this->jsonPath)) {
+      $diagnostics['json_size'] = filesize($this->jsonPath);
+    }
+
+    return $diagnostics;
   }
 
   /**
@@ -46,6 +89,10 @@ class ColorTokenResolver {
    */
   public function getGlobalThemeColors() {
     if (!file_exists($this->yamlPath) || !file_exists($this->jsonPath)) {
+      $this->logger->warning('Color token files not found. YAML: @yaml, JSON: @json', [
+        '@yaml' => $this->yamlPath,
+        '@json' => $this->jsonPath,
+      ]);
       return [];
     }
 
@@ -54,6 +101,10 @@ class ColorTokenResolver {
       $json = json_decode(file_get_contents($this->jsonPath), TRUE);
 
       if (!isset($yaml['global-themes']) || !isset($json['global']['color'])) {
+        $this->logger->warning('Color token data structure invalid. YAML has global-themes: @yaml, JSON has global.color: @json', [
+          '@yaml' => isset($yaml['global-themes']) ? 'yes' : 'no',
+          '@json' => isset($json['global']['color']) ? 'yes' : 'no',
+        ]);
         return [];
       }
 
@@ -83,6 +134,9 @@ class ColorTokenResolver {
       return $themes;
     }
     catch (\Exception $e) {
+      $this->logger->error('Error parsing color token files: @message', [
+        '@message' => $e->getMessage(),
+      ]);
       return [];
     }
   }

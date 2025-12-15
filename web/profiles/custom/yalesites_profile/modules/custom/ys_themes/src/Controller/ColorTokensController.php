@@ -48,8 +48,31 @@ class ColorTokensController extends ControllerBase {
     $themes = $this->colorTokenResolver->getGlobalThemeColors();
 
     if (empty($themes)) {
+      // Get diagnostic information to help troubleshoot.
+      $diagnostics = $this->colorTokenResolver->getDiagnostics();
+
+      $message = '<p>' . $this->t('No color tokens found.') . '</p>';
+      $message .= '<details><summary>' . $this->t('Troubleshooting Information') . '</summary>';
+      $message .= '<table class="diagnostics-table" style="margin-top: 1em; border-collapse: collapse;">';
+
+      foreach ($diagnostics as $key => $value) {
+        $display_value = is_bool($value) ? ($value ? 'Yes' : 'No') : $value;
+        $message .= '<tr style="border-bottom: 1px solid #ddd;">';
+        $message .= '<td style="padding: 0.5em; font-weight: bold;">' . htmlspecialchars($key) . '</td>';
+        $message .= '<td style="padding: 0.5em;">' . htmlspecialchars($display_value) . '</td>';
+        $message .= '</tr>';
+      }
+
+      $message .= '</table>';
+      $message .= '<p style="margin-top: 1em;"><strong>' . $this->t('Expected paths:') . '</strong></p>';
+      $message .= '<ul>';
+      $message .= '<li>YAML: <code>' . htmlspecialchars($diagnostics['yaml_path']) . '</code></li>';
+      $message .= '<li>JSON: <code>' . htmlspecialchars($diagnostics['json_path']) . '</code></li>';
+      $message .= '</ul>';
+      $message .= '</details>';
+
       return [
-        '#markup' => '<p>' . $this->t('No color tokens found.') . '</p>',
+        '#markup' => $message,
       ];
     }
 
