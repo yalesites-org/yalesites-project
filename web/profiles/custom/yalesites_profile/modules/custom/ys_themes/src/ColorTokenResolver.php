@@ -175,6 +175,9 @@ class ColorTokenResolver {
   /**
    * Recursively searches for tokens.json in node_modules.
    *
+   * This mimics how webpack resolves @yalesites-org/tokens imports.
+   * Webpack looks in node_modules/@yalesites-org/tokens for the package.
+   *
    * @param string $atomic_theme_path
    *   The atomic theme path.
    *
@@ -230,6 +233,80 @@ class ColorTokenResolver {
           '@path' => $path,
         ]);
         return $path;
+      }
+    }
+
+    // Last resort: recursively search for tokens.json in node_modules.
+    // This handles cases where npm hoists dependencies or the structure
+    // is different than expected.
+    $node_modules_base = $atomic_theme_path . '/node_modules';
+    if (is_dir($node_modules_base)) {
+      $found = $this->recursiveFindTokens($node_modules_base);
+      if ($found) {
+        $this->logger->debug('Found tokens via recursive search: @path', [
+          '@path' => $found,
+        ]);
+        return $found;
+      }
+    }
+
+    return NULL;
+  }
+
+  /**
+   * Recursively searches for tokens.json in node_modules directories.
+   *
+   * @param string $dir
+   *   The directory to search in.
+   * @param int $depth
+   *   Current recursion depth (to prevent infinite loops).
+   *
+   * @return string|null
+   *   Path to tokens.json if found, NULL otherwise.
+   */
+  protected function recursiveFindTokens($dir, $depth = 0) {
+    // Limit recursion depth to prevent infinite loops.
+    if ($depth > 10) {
+      return NULL;
+    }
+
+    // Look for tokens.json in the expected location relative to this directory.
+    $tokens_path = $dir . '/@yalesites-org/tokens/build/json/tokens.json';
+    if (file_exists($tokens_path)) {
+      return $tokens_path;
+    }
+
+    // Search in subdirectories, but skip certain directories to avoid
+    // unnecessary searching.
+    if (is_dir($dir) && is_readable($dir)) {
+      $entries = @scandir($dir);
+      if ($entries === FALSE) {
+        return NULL;
+      }
+
+      foreach ($entries as $entry) {
+        if ($entry === '.' || $entry === '..') {
+          continue;
+        }
+
+        $full_path = $dir . '/' . $entry;
+
+        // Skip if not a directory.
+        if (!is_dir($full_path)) {
+          continue;
+        }
+
+        // Skip certain directories that are unlikely to contain tokens.
+        $skip_dirs = ['.bin', '.cache', 'bin'];
+        if (in_array($entry, $skip_dirs)) {
+          continue;
+        }
+
+        // Recursively search in this directory.
+        $found = $this->recursiveFindTokens($full_path, $depth + 1);
+        if ($found) {
+          return $found;
+        }
       }
     }
 
