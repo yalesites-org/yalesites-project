@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_themes;
 
+use Drupal\Core\Extension\ThemeExtensionList;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Yaml\Yaml;
 
@@ -46,13 +47,23 @@ class ColorTokenResolver {
   protected $logger;
 
   /**
+   * The theme extension list service.
+   *
+   * @var \Drupal\Core\Extension\ThemeExtensionList
+   */
+  protected $themeExtensionList;
+
+  /**
    * Constructs a ColorTokenResolver.
    *
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger service.
+   * @param \Drupal\Core\Extension\ThemeExtensionList $theme_extension_list
+   *   The theme extension list service.
    */
-  public function __construct(LoggerInterface $logger) {
+  public function __construct(LoggerInterface $logger, ThemeExtensionList $theme_extension_list) {
     $this->logger = $logger;
+    $this->themeExtensionList = $theme_extension_list;
     $this->findTokenFiles();
   }
 
@@ -62,9 +73,21 @@ class ColorTokenResolver {
    * Checks both _yale-packages (local dev) and node_modules (deployed).
    */
   protected function findTokenFiles() {
+    // Get the atomic theme path using the theme extension list service.
+    try {
+      $atomic_theme_path = $this->themeExtensionList->getPath('atomic');
+    }
+    catch (\Exception $e) {
+      // Fallback to DRUPAL_ROOT if theme extension list fails.
+      $atomic_theme_path = DRUPAL_ROOT . '/themes/contrib/atomic';
+      $this->logger->warning('Could not get atomic theme path from extension list, using fallback: @path', [
+        '@path' => $atomic_theme_path,
+      ]);
+    }
+
     // First, try _yale-packages (local dev with YAML + JSON).
-    $yale_packages_yaml = DRUPAL_ROOT . '/themes/contrib/atomic/_yale-packages/tokens/tokens/base/color.yml';
-    $yale_packages_json = DRUPAL_ROOT . '/themes/contrib/atomic/_yale-packages/tokens/tokens/figma-export/tokens.json';
+    $yale_packages_yaml = $atomic_theme_path . '/_yale-packages/tokens/tokens/base/color.yml';
+    $yale_packages_json = $atomic_theme_path . '/_yale-packages/tokens/tokens/figma-export/tokens.json';
 
     if (file_exists($yale_packages_yaml) && file_exists($yale_packages_json)) {
       $this->yamlPath = $yale_packages_yaml;
@@ -75,7 +98,7 @@ class ColorTokenResolver {
     }
 
     // Second, try node_modules built JSON (deployed environment).
-    $node_modules_json = DRUPAL_ROOT . '/themes/contrib/atomic/node_modules/@yalesites-org/tokens/build/json/tokens.json';
+    $node_modules_json = $atomic_theme_path . '/node_modules/@yalesites-org/tokens/build/json/tokens.json';
 
     if (file_exists($node_modules_json)) {
       $this->yamlPath = NULL;
@@ -99,6 +122,14 @@ class ColorTokenResolver {
    *   Array with diagnostic information.
    */
   public function getDiagnostics() {
+    // Get the atomic theme path.
+    try {
+      $atomic_theme_path = $this->themeExtensionList->getPath('atomic');
+    }
+    catch (\Exception $e) {
+      $atomic_theme_path = DRUPAL_ROOT . '/themes/contrib/atomic';
+    }
+
     $diagnostics = [
       'yaml_path' => $this->yamlPath,
       'yaml_exists' => $this->yamlPath ? file_exists($this->yamlPath) : FALSE,
@@ -108,10 +139,12 @@ class ColorTokenResolver {
       'json_readable' => file_exists($this->jsonPath) ? is_readable($this->jsonPath) : FALSE,
       'using_built_json' => $this->usingBuiltJson,
       'drupal_root' => DRUPAL_ROOT,
+      'atomic_theme_path' => $atomic_theme_path,
+      'atomic_theme_path_exists' => is_dir($atomic_theme_path),
       'themes_dir_exists' => is_dir(DRUPAL_ROOT . '/themes'),
       'atomic_dir_exists' => is_dir(DRUPAL_ROOT . '/themes/contrib/atomic'),
-      'yale_packages_tokens_exists' => is_dir(DRUPAL_ROOT . '/themes/contrib/atomic/_yale-packages/tokens'),
-      'node_modules_tokens_exists' => is_dir(DRUPAL_ROOT . '/themes/contrib/atomic/node_modules/@yalesites-org/tokens'),
+      'yale_packages_tokens_exists' => is_dir($atomic_theme_path . '/_yale-packages/tokens'),
+      'node_modules_tokens_exists' => is_dir($atomic_theme_path . '/node_modules/@yalesites-org/tokens'),
     ];
 
     // Try to get more specific path info.
@@ -124,9 +157,9 @@ class ColorTokenResolver {
 
     // Check alternative paths.
     $alt_paths = [
-      'yale_packages_yaml' => DRUPAL_ROOT . '/themes/contrib/atomic/_yale-packages/tokens/tokens/base/color.yml',
-      'yale_packages_json' => DRUPAL_ROOT . '/themes/contrib/atomic/_yale-packages/tokens/tokens/figma-export/tokens.json',
-      'node_modules_built_json' => DRUPAL_ROOT . '/themes/contrib/atomic/node_modules/@yalesites-org/tokens/build/json/tokens.json',
+      'yale_packages_yaml' => $atomic_theme_path . '/_yale-packages/tokens/tokens/base/color.yml',
+      'yale_packages_json' => $atomic_theme_path . '/_yale-packages/tokens/tokens/figma-export/tokens.json',
+      'node_modules_built_json' => $atomic_theme_path . '/node_modules/@yalesites-org/tokens/build/json/tokens.json',
     ];
 
     foreach ($alt_paths as $key => $path) {
@@ -185,6 +218,9 @@ class ColorTokenResolver {
       return [];
     }
 
+    // Build a lookup map of HSL values to color token names.
+    $color_lookup = $this->buildColorLookup($json);
+
     $themes = [];
     foreach ($json['global-themes'] as $theme_id => $theme_data) {
       $theme_info = [
@@ -197,10 +233,12 @@ class ColorTokenResolver {
         foreach ($theme_data['colors'] as $slot => $color_value) {
           // Color value is in HSL format, convert to hex.
           $hex_value = $this->hslToHex($color_value);
+          // Look up the color name from the HSL value.
+          $token_name = $color_lookup[$color_value] ?? $this->getSlotName($slot);
           $theme_info['colors'][$slot] = [
             'token' => $slot,
             'hex' => $hex_value,
-            'name' => $this->getSlotName($slot),
+            'name' => $token_name,
           ];
         }
       }
@@ -209,6 +247,53 @@ class ColorTokenResolver {
     }
 
     return $themes;
+  }
+
+  /**
+   * Builds a lookup map of HSL values to color token names.
+   *
+   * @param array $json
+   *   The parsed JSON data.
+   *
+   * @return array
+   *   Array mapping HSL strings to human-readable color names.
+   */
+  protected function buildColorLookup(array $json) {
+    $lookup = [];
+    if (!isset($json['color'])) {
+      return $lookup;
+    }
+
+    // Recursively traverse the color object to build the lookup.
+    $this->traverseColorObject($json['color'], $lookup, []);
+
+    return $lookup;
+  }
+
+  /**
+   * Recursively traverses the color object to build HSL to name lookup.
+   *
+   * @param array $color_obj
+   *   The color object or sub-object.
+   * @param array &$lookup
+   *   The lookup array being built (passed by reference).
+   * @param array $path
+   *   The current path in the color object (e.g., ['blue', 'yale']).
+   */
+  protected function traverseColorObject(array $color_obj, array &$lookup, array $path) {
+    foreach ($color_obj as $key => $value) {
+      if (is_string($value) && preg_match('/^hsl\(/', $value)) {
+        // This is an HSL color value.
+        $name_parts = array_merge($path, [$key]);
+        // Capitalize each part and join with space.
+        $name = implode(' ', array_map('ucfirst', $name_parts));
+        $lookup[$value] = $name;
+      }
+      elseif (is_array($value)) {
+        // Recurse into nested objects.
+        $this->traverseColorObject($value, $lookup, array_merge($path, [$key]));
+      }
+    }
   }
 
   /**
