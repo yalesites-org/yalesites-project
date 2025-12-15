@@ -74,8 +74,10 @@ class ColorTokenResolver {
    */
   protected function findTokenFiles() {
     // Get the atomic theme path using the theme extension list service.
+    // getPath() returns a relative path, so we need to prepend DRUPAL_ROOT.
     try {
-      $atomic_theme_path = $this->themeExtensionList->getPath('atomic');
+      $atomic_theme_relative = $this->themeExtensionList->getPath('atomic');
+      $atomic_theme_path = DRUPAL_ROOT . '/' . $atomic_theme_relative;
     }
     catch (\Exception $e) {
       // Fallback to DRUPAL_ROOT if theme extension list fails.
@@ -123,8 +125,10 @@ class ColorTokenResolver {
    */
   public function getDiagnostics() {
     // Get the atomic theme path.
+    // getPath() returns a relative path, so we need to prepend DRUPAL_ROOT.
     try {
-      $atomic_theme_path = $this->themeExtensionList->getPath('atomic');
+      $atomic_theme_relative = $this->themeExtensionList->getPath('atomic');
+      $atomic_theme_path = DRUPAL_ROOT . '/' . $atomic_theme_relative;
     }
     catch (\Exception $e) {
       $atomic_theme_path = DRUPAL_ROOT . '/themes/contrib/atomic';
@@ -139,7 +143,8 @@ class ColorTokenResolver {
       'json_readable' => file_exists($this->jsonPath) ? is_readable($this->jsonPath) : FALSE,
       'using_built_json' => $this->usingBuiltJson,
       'drupal_root' => DRUPAL_ROOT,
-      'atomic_theme_path' => $atomic_theme_path,
+      'atomic_theme_path_relative' => $atomic_theme_relative ?? 'unknown',
+      'atomic_theme_path_absolute' => $atomic_theme_path,
       'atomic_theme_path_exists' => is_dir($atomic_theme_path),
       'themes_dir_exists' => is_dir(DRUPAL_ROOT . '/themes'),
       'atomic_dir_exists' => is_dir(DRUPAL_ROOT . '/themes/contrib/atomic'),
