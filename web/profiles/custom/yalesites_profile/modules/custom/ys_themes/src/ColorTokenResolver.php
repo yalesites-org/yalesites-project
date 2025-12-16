@@ -377,6 +377,61 @@ class ColorTokenResolver {
     $diagnostics['component_library_dist_exists'] = is_dir($atomic_theme_path . '/node_modules/@yalesites-org/component-library-twig/dist');
     $diagnostics['node_modules_cl_exists'] = is_dir($atomic_theme_path . '/node_modules/@yalesites-org/component-library-twig');
 
+    // Check what's in the root node_modules/@yalesites-org directory.
+    $yalesites_org_root = $atomic_theme_path . '/node_modules/@yalesites-org';
+    $diagnostics['node_modules_yalesites_org_exists'] = is_dir($yalesites_org_root);
+    if (is_dir($yalesites_org_root)) {
+      $yalesites_org_contents = @scandir($yalesites_org_root);
+      if ($yalesites_org_contents) {
+        $diagnostics['node_modules_yalesites_org_contents'] = array_filter($yalesites_org_contents, function ($item) {
+          return $item !== '.' && $item !== '..';
+        });
+      }
+      // Check if tokens package exists (even without build/json).
+      $tokens_package = $yalesites_org_root . '/tokens';
+      $diagnostics['tokens_package_exists'] = is_dir($tokens_package);
+      if (is_dir($tokens_package)) {
+        $tokens_package_contents = @scandir($tokens_package);
+        if ($tokens_package_contents) {
+          $diagnostics['tokens_package_contents'] = array_filter($tokens_package_contents, function ($item) {
+            return $item !== '.' && $item !== '..';
+          });
+        }
+        // Check if build directory exists.
+        $tokens_build = $tokens_package . '/build';
+        $diagnostics['tokens_build_exists'] = is_dir($tokens_build);
+        if (is_dir($tokens_build)) {
+          $tokens_build_contents = @scandir($tokens_build);
+          if ($tokens_build_contents) {
+            $diagnostics['tokens_build_contents'] = array_filter($tokens_build_contents, function ($item) {
+              return $item !== '.' && $item !== '..';
+            });
+          }
+          // Check if json directory exists.
+          $tokens_json_dir = $tokens_build . '/json';
+          $diagnostics['tokens_json_dir_exists'] = is_dir($tokens_json_dir);
+          if (is_dir($tokens_json_dir)) {
+            $tokens_json_contents = @scandir($tokens_json_dir);
+            if ($tokens_json_contents) {
+              $diagnostics['tokens_json_dir_contents'] = array_filter($tokens_json_contents, function ($item) {
+                return $item !== '.' && $item !== '..';
+              });
+            }
+          }
+        }
+      }
+    }
+
+    // Also check if we can find tokens.json via recursive search.
+    $node_modules_base = $atomic_theme_path . '/node_modules';
+    if (is_dir($node_modules_base)) {
+      $recursive_found = $this->recursiveFindTokens($node_modules_base);
+      $diagnostics['recursive_search_found'] = $recursive_found ? $recursive_found : 'No';
+    }
+    else {
+      $diagnostics['recursive_search_found'] = 'node_modules not found';
+    }
+
     // Try to find tokens by scanning node_modules directories.
     $possible_token_paths = [
       $atomic_theme_path . '/node_modules/@yalesites-org/component-library-twig/node_modules/@yalesites-org/tokens/build/json/tokens.json',
