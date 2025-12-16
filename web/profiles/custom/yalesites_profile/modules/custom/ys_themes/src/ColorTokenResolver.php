@@ -130,8 +130,25 @@ class ColorTokenResolver {
       return;
     }
 
-    // Third, try node_modules built JSON (deployed environment).
-    $node_modules_json = $atomic_theme_path . '/node_modules/@yalesites-org/tokens/build/json/tokens.json';
+    // Third, try component library dist folder (tokens.json copied during
+    // build).
+    // The build process copies tokens.json to dist/tokens.json.
+    $cl_dist_json = $atomic_theme_path .
+      '/node_modules/@yalesites-org/component-library-twig/dist/tokens.json';
+
+    if (file_exists($cl_dist_json)) {
+      $this->yamlPath = NULL;
+      $this->jsonPath = $cl_dist_json;
+      $this->usingBuiltJson = TRUE;
+      $this->logger->debug('Using component library dist tokens.json: @path', [
+        '@path' => $cl_dist_json,
+      ]);
+      return;
+    }
+
+    // Fourth, try node_modules built JSON (deployed environment with tokens).
+    $node_modules_json = $atomic_theme_path .
+      '/node_modules/@yalesites-org/tokens/build/json/tokens.json';
 
     if (file_exists($node_modules_json)) {
       $this->yamlPath = NULL;
@@ -141,8 +158,9 @@ class ColorTokenResolver {
       return;
     }
 
-    // Fourth, try component library dist folder (alternative location).
-    $component_library_json = $atomic_theme_path . '/node_modules/@yalesites-org/component-library-twig/node_modules/@yalesites-org/tokens/build/json/tokens.json';
+    // Fifth, try component library nested node_modules (alternative location).
+    $component_library_json = $atomic_theme_path .
+      '/node_modules/@yalesites-org/component-library-twig/node_modules/@yalesites-org/tokens/build/json/tokens.json';
 
     if (file_exists($component_library_json)) {
       $this->yamlPath = NULL;
@@ -152,14 +170,45 @@ class ColorTokenResolver {
       return;
     }
 
-    // Fifth, try to find tokens by searching in node_modules recursively.
-    // This handles cases where the structure might be different on multidev.
+    // Sixth, check root-level node_modules (project root, not theme root).
+    // On Pantheon/multidev, npm packages might be installed at project root.
+    $root_node_modules_json = DRUPAL_ROOT .
+      '/../node_modules/@yalesites-org/tokens/build/json/tokens.json';
+    if (file_exists($root_node_modules_json)) {
+      $this->yamlPath = NULL;
+      $this->jsonPath = $root_node_modules_json;
+      $this->usingBuiltJson = TRUE;
+      $this->logger->debug('Using root-level node_modules built JSON token file: @path', [
+        '@path' => $root_node_modules_json,
+      ]);
+      return;
+    }
+
+    // Also check if root node_modules exists and search recursively there.
+    $root_node_modules = DRUPAL_ROOT . '/../node_modules';
+    if (is_dir($root_node_modules)) {
+      $found = $this->recursiveFindTokens($root_node_modules);
+      if ($found) {
+        $this->yamlPath = NULL;
+        $this->jsonPath = $found;
+        $this->usingBuiltJson = TRUE;
+        $this->logger->debug('Using recursively found built JSON token file from root node_modules: @path',
+          [
+            '@path' => $found,
+          ]);
+        return;
+      }
+    }
+
+    // Seventh, try to find tokens by searching in theme node_modules
+    // recursively. This handles cases where the structure might be different
+    // on multidev.
     $found_json = $this->findTokensInNodeModules($atomic_theme_path);
     if ($found_json) {
       $this->yamlPath = NULL;
       $this->jsonPath = $found_json;
       $this->usingBuiltJson = TRUE;
-      $this->logger->debug('Found tokens by searching node_modules: @path', [
+      $this->logger->debug('Found tokens by searching theme node_modules: @path', [
         '@path' => $found_json,
       ]);
       return;
@@ -362,6 +411,7 @@ class ColorTokenResolver {
       'yale_packages_json' => $atomic_theme_path . '/_yale-packages/tokens/tokens/figma-export/tokens.json',
       'yale_packages_tokens_build_json' => $atomic_theme_path . '/_yale-packages/tokens/build/json/tokens.json',
       'yale_packages_cl_node_modules_json' => $atomic_theme_path . '/_yale-packages/component-library-twig/node_modules/@yalesites-org/tokens/build/json/tokens.json',
+      'cl_dist_json' => $atomic_theme_path . '/node_modules/@yalesites-org/component-library-twig/dist/tokens.json',
       'node_modules_built_json' => $atomic_theme_path . '/node_modules/@yalesites-org/tokens/build/json/tokens.json',
       'component_library_node_modules_json' => $atomic_theme_path . '/node_modules/@yalesites-org/component-library-twig/node_modules/@yalesites-org/tokens/build/json/tokens.json',
     ];
@@ -422,7 +472,37 @@ class ColorTokenResolver {
       }
     }
 
-    // Also check if we can find tokens.json via recursive search.
+    // Also check root-level node_modules.
+    $root_node_modules = DRUPAL_ROOT . '/../node_modules';
+    $diagnostics['root_node_modules_exists'] = is_dir($root_node_modules);
+    if (is_dir($root_node_modules)) {
+      $root_node_modules_json = $root_node_modules . '/@yalesites-org/tokens/build/json/tokens.json';
+      $diagnostics['root_node_modules_json_exists'] = file_exists($root_node_modules_json);
+      $diagnostics['root_node_modules_json_path'] = $root_node_modules_json;
+
+      // Check what's in root @yalesites-org.
+      $root_yalesites_org = $root_node_modules . '/@yalesites-org';
+      $diagnostics['root_yalesites_org_exists'] = is_dir($root_yalesites_org);
+      if (is_dir($root_yalesites_org)) {
+        $root_yalesites_org_contents = @scandir($root_yalesites_org);
+        if ($root_yalesites_org_contents) {
+          $diagnostics['root_yalesites_org_contents'] = array_filter($root_yalesites_org_contents, function ($item) {
+            return $item !== '.' && $item !== '..';
+          });
+        }
+      }
+
+      // Recursive search in root node_modules.
+      $root_recursive_found = $this->recursiveFindTokens($root_node_modules);
+      $diagnostics['root_recursive_search_found'] = $root_recursive_found ? $root_recursive_found : 'No';
+    }
+    else {
+      $diagnostics['root_node_modules_json_exists'] = FALSE;
+      $diagnostics['root_recursive_search_found'] = 'root node_modules not found';
+    }
+
+    // Also check if we can find tokens.json via recursive search in theme
+    // node_modules.
     $node_modules_base = $atomic_theme_path . '/node_modules';
     if (is_dir($node_modules_base)) {
       $recursive_found = $this->recursiveFindTokens($node_modules_base);
