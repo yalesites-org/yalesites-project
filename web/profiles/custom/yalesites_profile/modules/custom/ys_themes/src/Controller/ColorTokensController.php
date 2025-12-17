@@ -48,44 +48,8 @@ class ColorTokensController extends ControllerBase {
     $themes = $this->colorTokenResolver->getGlobalThemeColors();
 
     if (empty($themes)) {
-      // Get diagnostic information to help troubleshoot.
-      $diagnostics = $this->colorTokenResolver->getDiagnostics();
-
-      $message = '<p>' . $this->t('No color tokens found.') . '</p>';
-      $message .= '<details><summary>' . $this->t('Troubleshooting Information') . '</summary>';
-      $message .= '<table class="diagnostics-table" style="margin-top: 1em; border-collapse: collapse;">';
-
-      foreach ($diagnostics as $key => $value) {
-        if (is_bool($value)) {
-          $display_value = $value ? 'Yes' : 'No';
-        }
-        elseif (is_array($value)) {
-          $display_value = implode(', ', array_map(function ($item) {
-            return is_string($item) ? $item : json_encode($item);
-          }, $value));
-        }
-        elseif (is_null($value)) {
-          $display_value = 'NULL';
-        }
-        else {
-          $display_value = (string) $value;
-        }
-        $message .= '<tr style="border-bottom: 1px solid #ddd;">';
-        $message .= '<td style="padding: 0.5em; font-weight: bold;">' . htmlspecialchars($key) . '</td>';
-        $message .= '<td style="padding: 0.5em;">' . htmlspecialchars($display_value) . '</td>';
-        $message .= '</tr>';
-      }
-
-      $message .= '</table>';
-      $message .= '<p style="margin-top: 1em;"><strong>' . $this->t('Expected paths:') . '</strong></p>';
-      $message .= '<ul>';
-      $message .= '<li>YAML: <code>' . htmlspecialchars($diagnostics['yaml_path']) . '</code></li>';
-      $message .= '<li>JSON: <code>' . htmlspecialchars($diagnostics['json_path']) . '</code></li>';
-      $message .= '</ul>';
-      $message .= '</details>';
-
       return [
-        '#markup' => $message,
+        '#markup' => '<p>' . $this->t('No color tokens found.') . '</p>',
       ];
     }
 
@@ -128,12 +92,12 @@ class ColorTokensController extends ControllerBase {
         $rows[] = [
           'data' => [
             ['data' => $theme_label, 'class' => ['theme-label']],
+            ['data' => $swatch, 'class' => ['color-swatch']],
             ['data' => ucfirst(str_replace('slot-', '', $slot)), 'class' => ['slot-name']],
             ['data' => $name, 'class' => ['color-name']],
             ['data' => $hex, 'class' => ['hex-code']],
             ['data' => $css_var, 'class' => ['css-var']],
             ['data' => $token, 'class' => ['token-ref']],
-            ['data' => $swatch, 'class' => ['color-swatch']],
           ],
         ];
       }
@@ -143,12 +107,12 @@ class ColorTokensController extends ControllerBase {
       '#type' => 'table',
       '#header' => [
         $this->t('Theme'),
+        $this->t('Swatch'),
         $this->t('Slot'),
         $this->t('Color Name'),
         $this->t('Hex Code'),
         $this->t('CSS Variable'),
         $this->t('Token Reference'),
-        $this->t('Swatch'),
       ],
       '#rows' => $rows,
       '#attributes' => [

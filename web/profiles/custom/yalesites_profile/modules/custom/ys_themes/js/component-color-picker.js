@@ -84,84 +84,71 @@
             return;
           }
 
-          // Use jQuery to set the value if available (Drupal's preferred method).
-          if (typeof jQuery !== 'undefined') {
-            const $select = jQuery(selectElement);
-            $select.val(paletteValue);
-          } else {
-            // Fallback to native value setting.
-            if (selectElement.multiple) {
-              Array.from(selectElement.options).forEach((option) => {
-                option.selected = false;
-              });
-              const optionToSelect = Array.from(selectElement.options).find(
-                (option) => option.value === paletteValue
-              );
-              if (optionToSelect) {
-                optionToSelect.selected = true;
-              }
-            } else {
-              selectElement.value = paletteValue;
+          if (selectElement.multiple) {
+            Array.from(selectElement.options).forEach((option) => {
+              option.selected = false;
+            });
+            const optionToSelect = Array.from(selectElement.options).find(
+              (option) => option.value === paletteValue
+            );
+            if (optionToSelect) {
+              optionToSelect.selected = true;
             }
           }
-
-          // Verify the value was set correctly.
-          const actualValue = typeof jQuery !== 'undefined'
-            ? jQuery(selectElement).val()
-            : selectElement.value;
-
-          if (actualValue !== paletteValue && !selectElement.multiple) {
-            return;
+          else {
+            selectElement.value = paletteValue;
           }
 
-          // Trigger multiple events for Drupal form processing.
-          if (typeof jQuery !== 'undefined') {
-            const $select = jQuery(selectElement);
-            $select.val(paletteValue);
-            $select.triggerHandler('input');
-            $select.trigger('change');
-
-            const $parent = $select.parent();
-            if ($parent.length) {
-              $parent.trigger('change');
-            }
-
-            const $fieldItem = $select.closest('.js-form-item, .field--widget-component-color-picker');
-            if ($fieldItem.length) {
-              $fieldItem.trigger('change');
-            }
-          } else {
-            const inputEvent = new Event('input', { bubbles: true, cancelable: true });
-            selectElement.dispatchEvent(inputEvent);
-            const changeEvent = new Event('change', { bubbles: true, cancelable: true });
-            selectElement.dispatchEvent(changeEvent);
-          }
+          // Trigger events for Drupal form processing.
+          selectElement.dispatchEvent(new Event('input', {
+            bubbles: true,
+            cancelable: true,
+          }));
+          selectElement.dispatchEvent(new Event('change', {
+            bubbles: true,
+            cancelable: true,
+          }));
 
           // Force form state update by triggering on the form if it exists.
           const form = selectElement.closest('form');
           if (form) {
-            if (typeof jQuery !== 'undefined') {
-              const $form = jQuery(form);
-              $form.trigger('change');
+            form.dispatchEvent(new Event('change', {
+              bubbles: true,
+              cancelable: true,
+            }));
 
-              // For Layout Builder, trigger the formUpdated event
-              if (form.id && form.id.includes('layout-builder')) {
-                const selectName = selectElement.name;
-                if (selectName) {
-                  const allInputsWithSameName = form.querySelectorAll(`[name="${selectName}"]`);
-                  allInputsWithSameName.forEach((input) => {
-                    if (input !== selectElement && input.type === 'hidden') {
-                      input.value = paletteValue;
-                    }
-                  });
-                }
+            // For Layout Builder, trigger the formUpdated event.
+            if (form.id && form.id.includes('layout-builder')) {
+              const selectName = selectElement.name;
+              if (selectName) {
+                const allInputsWithSameName = form.querySelectorAll(
+                  `[name="${selectName}"]`
+                );
+                allInputsWithSameName.forEach((input) => {
+                  if (input !== selectElement && input.type === 'hidden') {
+                    input.value = paletteValue;
+                  }
+                });
+              }
 
-                $form.trigger('formUpdated');
+              form.dispatchEvent(new Event('formUpdated', {
+                bubbles: true,
+                cancelable: true,
+              }));
 
-                const fieldWrapper = selectElement.closest('.field--widget-component-color-picker, .js-form-item, .form-item');
-                if (fieldWrapper) {
-                  jQuery(fieldWrapper).trigger('change').trigger('formUpdated');
-                }
+              const fieldWrapper = selectElement.closest(
+                '.field--widget-component-color-picker, ' +
+                '.js-form-item, .form-item'
+              );
+              if (fieldWrapper) {
+                fieldWrapper.dispatchEvent(new Event('change', {
+                  bubbles: true,
+                  cancelable: true,
+                }));
+                fieldWrapper.dispatchEvent(new Event('formUpdated', {
+                  bubbles: true,
+                  cancelable: true,
+                }));
               }
             }
           }
