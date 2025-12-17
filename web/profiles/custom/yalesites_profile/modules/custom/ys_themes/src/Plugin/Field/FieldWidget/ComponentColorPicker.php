@@ -297,57 +297,31 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
     $global_themes = ['one', 'two', 'three', 'four', 'five'];
     $all_color_styles = [];
 
-    // Define color styles for specific entity types/bundles.
+    // Base mapping: options map directly to global slots.
+    foreach ($global_themes as $global) {
+      $all_color_styles[$global] = [
+        'one' => [
+          "var(--global-themes-{$global}-colors-slot-one)",
+        ],
+        'two' => [
+          "var(--global-themes-{$global}-colors-slot-two)",
+        ],
+        'three' => [
+          "var(--global-themes-{$global}-colors-slot-three)",
+        ],
+        'four' => [
+          "var(--global-themes-{$global}-colors-slot-four)",
+        ],
+        'five' => [
+          "var(--global-themes-{$global}-colors-slot-five)",
+        ],
+      ];
+    }
+
+    // Accordion gets an explicit default (accent) in addition to the base map.
     if ($entity_type === 'block_content' && $bundle === 'accordion') {
       foreach ($global_themes as $global) {
-        // For accordion, use the first color (accent) as background.
-        $all_color_styles[$global] = [
-          'default' => [
-            "var(--color-accordion-accent)",
-          ],
-          'one' => [
-            "var(--global-themes-{$global}-colors-slot-one)",
-          ],
-          'two' => [
-            "var(--global-themes-{$global}-colors-slot-two)",
-          ],
-          'three' => [
-            "var(--global-themes-{$global}-colors-slot-three)",
-          ],
-          'four' => [
-            "var(--global-themes-{$global}-colors-slot-four)",
-          ],
-          'five' => [
-            "var(--global-themes-{$global}-colors-slot-five)",
-          ],
-        ];
-      }
-    }
-    // Add more entity type/bundle specific styles here as needed.
-    // Example:
-    // elseif ($entity_type === 'block_content' && $bundle === 'other_bundle') {
-    // Different color styles for other_bundle.
-    // }
-    // Default fallback if no specific styles are defined.
-    else {
-      foreach ($global_themes as $global) {
-        $all_color_styles[$global] = [
-          'one' => [
-            "var(--global-themes-{$global}-colors-slot-one)",
-          ],
-          'two' => [
-            "var(--global-themes-{$global}-colors-slot-three)",
-          ],
-          'three' => [
-            "var(--global-themes-{$global}-colors-slot-five)",
-          ],
-          'four' => [
-            "var(--global-themes-{$global}-colors-slot-four)",
-          ],
-          'five' => [
-            "var(--global-themes-{$global}-colors-slot-two)",
-          ],
-        ];
+        $all_color_styles[$global]['default'] = ["var(--color-accordion-accent)"];
       }
     }
 
