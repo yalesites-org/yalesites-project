@@ -92,9 +92,13 @@ class ColorTokensController extends ControllerBase {
         $rows[] = [
           'data' => [
             ['data' => $theme_label, 'class' => ['theme-label']],
-            ['data' => $swatch, 'class' => ['color-swatch']],
             ['data' => ucfirst(str_replace('slot-', '', $slot)), 'class' => ['slot-name']],
             ['data' => $name, 'class' => ['color-name']],
+            [
+              'data' => $swatch,
+              'class' => ['color-swatch'],
+              'style' => 'text-align: left;',
+            ],
             ['data' => $hex, 'class' => ['hex-code']],
             ['data' => $css_var, 'class' => ['css-var']],
             ['data' => $token, 'class' => ['token-ref']],
@@ -107,9 +111,9 @@ class ColorTokensController extends ControllerBase {
       '#type' => 'table',
       '#header' => [
         $this->t('Theme'),
-        $this->t('Swatch'),
         $this->t('Slot'),
         $this->t('Color Name'),
+        $this->t('Swatch'),
         $this->t('Hex Code'),
         $this->t('CSS Variable'),
         $this->t('Token Reference'),

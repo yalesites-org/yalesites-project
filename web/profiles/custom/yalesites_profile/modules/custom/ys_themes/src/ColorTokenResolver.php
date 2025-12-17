@@ -80,6 +80,7 @@ class ColorTokenResolver {
       return;
     }
 
+    // Default to primary path even if missing, so the warning is clear.
     $this->jsonPath = $cl_dist_json;
     $this->logger->warning('Token file not found; expected at @path', [
       '@path' => $cl_dist_json,

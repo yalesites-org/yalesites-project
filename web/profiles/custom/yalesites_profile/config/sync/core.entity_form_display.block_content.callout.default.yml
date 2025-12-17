@@ -15,6 +15,7 @@ dependencies:
     - media_library
     - paragraphs
     - paragraphs_features
+    - ys_themes
 id: block_content.callout.default
 targetEntityType: block_content
 bundle: callout
@@ -70,7 +71,7 @@ content:
     settings: {  }
     third_party_settings: {  }
   field_style_color:
-    type: options_select
+    type: component_color_picker
     weight: 2
     region: content
     settings: {  }

@@ -229,24 +229,25 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
       if ($background_color_var && is_scalar($background_color_var)) {
         $background_color_var = (string) $background_color_var;
 
-        // Extract token reference from CSS variable.
-        // Example: "var(--global-themes-one-colors-slot-one)" ->
-        // "--global-themes-one-colors-slot-one".
+        // Defaults.
         $token_ref = '';
         $hex_value = '';
         $token_name = '';
 
-        if (preg_match('/var\(([^)]+)\)/', $background_color_var, $matches)) {
+        // Handle default explicitly: force white with a token name.
+        if ($option_key === 'default') {
+          $hex_value = '#ffffff';
+          $token_name = 'Default';
+          $token_ref = $background_color_var ?: 'default';
+        }
+        elseif (preg_match('/var\(([^)]+)\)/', $background_color_var, $matches)) {
           $css_var = $matches[1];
 
-          // Try to resolve the CSS variable to a token reference.
-          // For global theme colors, the pattern is:
-          // --global-themes-{theme}-colors-slot-{slot}.
-          if (preg_match('/--global-themes-(\w+)-colors-slot-(\w+)/', $css_var, $var_matches)) {
+          // Global theme colors: --global-themes-{theme}-colors-slot-{slot}.
+          if (preg_match('/--global-themes-([A-Za-z0-9_-]+)-colors-slot-([A-Za-z0-9_-]+)/', $css_var, $var_matches)) {
             $theme_num = $var_matches[1];
             $slot = $var_matches[2];
 
-            // Get the theme colors from the resolver.
             $theme_colors = $this->colorTokenResolver->getThemeColors($theme_num);
             if (isset($theme_colors["slot-{$slot}"])) {
               $color_data = $theme_colors["slot-{$slot}"];
@@ -255,18 +256,8 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
               $token_ref = $color_data['token'] ?? '';
             }
           }
-          // Handle special CSS variables like --color-accordion-accent for
-          // "default" option.
-          elseif ($option_key === 'default') {
-            // For default option, use white color.
-            $hex_value = '#ffffff';
-            $token_name = 'Default';
-            $token_ref = $css_var;
-          }
         }
 
-        // For default option, use hex value directly in css_var so JavaScript
-        // applies white instead of the CSS variable.
         $css_var_for_display = ($option_key === 'default' && !empty($hex_value))
           ? $hex_value
           : $background_color_var;
@@ -328,6 +319,9 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
     if ($entity_type === 'block_content' && $bundle === 'quote_callout') {
       foreach ($global_themes as $global) {
         $all_color_styles[$global] = [
+          'default' => [
+            '#ffffff',
+          ],
           'one' => [
             "var(--global-themes-{$global}-colors-slot-one)",
           ],
@@ -349,6 +343,9 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
     elseif ($entity_type === 'block_content' && $bundle === 'content_spotlight') {
       foreach ($global_themes as $global) {
         $all_color_styles[$global] = [
+          'default' => [
+            '#ffffff',
+          ],
           'one' => [
             "var(--global-themes-{$global}-colors-slot-one)",
           ],
@@ -401,6 +398,9 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
     else {
       foreach ($global_themes as $global) {
         $all_color_styles[$global] = [
+          'default' => [
+            '#ffffff',
+          ],
           'one' => [
             "var(--global-themes-{$global}-colors-slot-one)",
           ],

@@ -22,6 +22,7 @@ dependencies:
     - paragraphs
     - paragraphs_features
     - text
+    - ys_themes
 id: block_content.facts.default
 targetEntityType: block_content
 bundle: facts
@@ -94,7 +95,7 @@ content:
     settings: {  }
     third_party_settings: {  }
   field_style_color:
-    type: options_select
+    type: component_color_picker
     weight: 3
     region: content
     settings: {  }

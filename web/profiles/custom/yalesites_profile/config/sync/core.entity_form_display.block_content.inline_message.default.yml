@@ -15,6 +15,7 @@ dependencies:
     - linkit
     - maxlength
     - text
+    - ys_themes
 id: block_content.inline_message.default
 targetEntityType: block_content
 bundle: inline_message
@@ -56,7 +57,7 @@ content:
     settings: {  }
     third_party_settings: {  }
   field_style_color:
-    type: options_select
+    type: component_color_picker
     weight: 5
     region: content
     settings: {  }
