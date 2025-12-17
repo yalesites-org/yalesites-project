@@ -334,9 +334,12 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
 
     // Callout mapping: one→slot-one, two→slot-four, three→slot-five,
     // four→slot-three, five→slot-two.
-    // Used by: callout, content_spotlight_portrait, cta_banner, grand_hero.
+    // Used by: callout, content_spotlight, content_spotlight_portrait,
+    // cta_banner, grand_hero.
+    // Note: content_spotlight uses text-with-image component.
     if ($entity_type === 'block_content' && in_array($bundle, [
       'callout',
+      'content_spotlight',
       'content_spotlight_portrait',
       'cta_banner',
       'grand_hero',
