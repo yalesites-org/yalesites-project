@@ -180,13 +180,17 @@ body.gin--dark-mode .palette-option[data-selected="true"] .palette-circle {
 
 [data-gin-accent] .palette-option[data-selected="true"] .palette-token-name,
 .gin--dark-mode .palette-option[data-selected="true"] .palette-token-name,
-body.gin--dark-mode .palette-option[data-selected="true"] .palette-token-name {
+body.gin--dark-mode .palette-option[data-selected="true"] .palette-token-name,
+.gin--dark-mode .component-color-picker-wrapper .palette-option[data-selected="true"] .palette-token-name,
+body.gin--dark-mode .component-color-picker-wrapper .palette-option[data-selected="true"] .palette-token-name {
   color: rgba(255, 255, 255, 1);
 }
 
 [data-gin-accent] .palette-option[data-selected="true"] .palette-hex-code,
 .gin--dark-mode .palette-option[data-selected="true"] .palette-hex-code,
-body.gin--dark-mode .palette-option[data-selected="true"] .palette-hex-code {
+body.gin--dark-mode .palette-option[data-selected="true"] .palette-hex-code,
+.gin--dark-mode .component-color-picker-wrapper .palette-option[data-selected="true"] .palette-hex-code,
+body.gin--dark-mode .component-color-picker-wrapper .palette-option[data-selected="true"] .palette-hex-code {
   color: rgba(255, 255, 255, 0.9);
 }
 
@@ -201,11 +205,11 @@ body.gin--dark-mode .palette-option[data-selected="true"] .palette-hex-code {
     box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4), 0 3px 10px rgba(0, 0, 0, 0.4);
   }
 
-  .palette-option[data-selected="true"] .palette-token-name {
+  .component-color-picker-wrapper .palette-option[data-selected="true"] .palette-token-name {
     color: rgba(255, 255, 255, 1);
   }
 
-  .palette-option[data-selected="true"] .palette-hex-code {
+  .component-color-picker-wrapper .palette-option[data-selected="true"] .palette-hex-code {
     color: rgba(255, 255, 255, 0.9);
   }
 }
@@ -294,11 +298,14 @@ body.gin--dark-mode .palette-hex-code {
 }
 
 /* Ensure text stays readable on light backgrounds within palette-option */
-.palette-option {
+:not(.gin--dark-mode) .palette-option,
+body:not(.gin--dark-mode) .palette-option {
   color: #111;
 }
-.palette-option .palette-token-name,
-.palette-option .palette-hex-code {
+:not(.gin--dark-mode) .palette-option .palette-token-name,
+:not(.gin--dark-mode) .palette-option .palette-hex-code,
+body:not(.gin--dark-mode) .palette-option .palette-token-name,
+body:not(.gin--dark-mode) .palette-option .palette-hex-code {
   color: #111;
 }
 

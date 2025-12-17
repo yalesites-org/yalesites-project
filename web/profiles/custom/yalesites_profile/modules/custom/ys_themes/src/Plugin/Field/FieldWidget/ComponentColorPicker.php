@@ -227,13 +227,19 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
           $css_var = $matches[1];
 
           // Global theme colors: --global-themes-{theme}-colors-slot-{slot}.
+          // Extract theme number and slot identifier from CSS variable.
+          // Example: --global-themes-one-colors-slot-four → theme="one",
+          // slot="four".
           if (preg_match('/--global-themes-([A-Za-z0-9_-]+)-colors-slot-([A-Za-z0-9_-]+)/', $css_var, $var_matches)) {
             $theme_num = $var_matches[1];
-            $slot = $var_matches[2];
+            $slot_identifier = $var_matches[2];
 
             $theme_colors = $this->colorTokenResolver->getThemeColors($theme_num);
-            if (isset($theme_colors["slot-{$slot}"])) {
-              $color_data = $theme_colors["slot-{$slot}"];
+            // The slot key in theme_colors should be "slot-{identifier}".
+            // Example: if slot_identifier is "four", look for "slot-four".
+            $slot_key = "slot-{$slot_identifier}";
+            if (isset($theme_colors[$slot_key])) {
+              $color_data = $theme_colors[$slot_key];
               $hex_value = $color_data['hex'] ?? '';
               $token_name = $color_data['name'] ?? '';
               $token_ref = $color_data['token'] ?? '';
@@ -297,7 +303,9 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
     $global_themes = ['one', 'two', 'three', 'four', 'five'];
     $all_color_styles = [];
 
-    // Base mapping: options map directly to global slots.
+    // Base mapping: options map directly to global slots (1:1).
+    // This matches accordion, facts, wrapped_callout, tile, and most
+    // components.
     foreach ($global_themes as $global) {
       $all_color_styles[$global] = [
         'one' => [
@@ -318,24 +326,18 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
       ];
     }
 
-    // Accordion gets an explicit default (accent) in addition to the base map.
-    if ($entity_type === 'block_content' && $bundle === 'accordion') {
-      foreach ($global_themes as $global) {
-        $all_color_styles[$global]['default'] = ["var(--color-accordion-accent)"];
-      }
-    }
-    // Facts block aligns with component theme overrides in SCSS.
-    elseif ($entity_type === 'block_content' && $bundle === 'facts') {
+    // Callout mapping: one→slot-one, two→slot-four, three→slot-five,
+    // four→slot-three, five→slot-two.
+    // Used by: callout, content_spotlight_portrait, cta_banner.
+    if ($entity_type === 'block_content' && in_array($bundle, [
+      'callout',
+      'content_spotlight_portrait',
+      'cta_banner',
+    ])) {
       foreach ($global_themes as $global) {
         $all_color_styles[$global] = [
           'one' => [
             "var(--global-themes-{$global}-colors-slot-one)",
-          ],
-          'five' => [
-            "var(--global-themes-{$global}-colors-slot-three)",
-          ],
-          'four' => [
-            "var(--global-themes-{$global}-colors-slot-two)",
           ],
           'two' => [
             "var(--global-themes-{$global}-colors-slot-four)",
@@ -343,7 +345,72 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
           'three' => [
             "var(--global-themes-{$global}-colors-slot-five)",
           ],
+          'four' => [
+            "var(--global-themes-{$global}-colors-slot-three)",
+          ],
+          'five' => [
+            "var(--global-themes-{$global}-colors-slot-two)",
+          ],
         ];
+      }
+    }
+
+    // Quote-callout/Link-grid mapping: one→slot-one, two→slot-three,
+    // three→slot-five, four→slot-four, five→slot-two.
+    // Used by: quote_callout, link_grid.
+    if ($entity_type === 'block_content' && in_array($bundle, [
+      'quote_callout',
+      'link_grid',
+    ])) {
+      foreach ($global_themes as $global) {
+        $all_color_styles[$global] = [
+          'one' => [
+            "var(--global-themes-{$global}-colors-slot-one)",
+          ],
+          'two' => [
+            "var(--global-themes-{$global}-colors-slot-three)",
+          ],
+          'three' => [
+            "var(--global-themes-{$global}-colors-slot-five)",
+          ],
+          'four' => [
+            "var(--global-themes-{$global}-colors-slot-four)",
+          ],
+          'five' => [
+            "var(--global-themes-{$global}-colors-slot-two)",
+          ],
+        ];
+      }
+    }
+
+    // Inline-message mapping: one→slot-one, two→slot-one, three→slot-two,
+    // four→slot-three, five→slot-five.
+    if ($entity_type === 'block_content' && $bundle === 'inline_message') {
+      foreach ($global_themes as $global) {
+        $all_color_styles[$global] = [
+          'one' => [
+            "var(--global-themes-{$global}-colors-slot-one)",
+          ],
+          'two' => [
+            "var(--global-themes-{$global}-colors-slot-one)",
+          ],
+          'three' => [
+            "var(--global-themes-{$global}-colors-slot-two)",
+          ],
+          'four' => [
+            "var(--global-themes-{$global}-colors-slot-three)",
+          ],
+          'five' => [
+            "var(--global-themes-{$global}-colors-slot-five)",
+          ],
+        ];
+      }
+    }
+
+    // Accordion gets an explicit default (accent) in addition to the base map.
+    if ($entity_type === 'block_content' && $bundle === 'accordion') {
+      foreach ($global_themes as $global) {
+        $all_color_styles[$global]['default'] = ["var(--color-accordion-accent)"];
       }
     }
 
