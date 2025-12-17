@@ -147,30 +147,25 @@ body.gin--dark-mode .expand-indicator:hover {
   transform: scale(1.1);
 }
 
-.palette-option[data-selected="true"] .palette-token-name {
+/* Selected state text - light mode only */
+:not(.gin--dark-mode) .palette-option[data-selected="true"] .palette-token-name,
+body:not(.gin--dark-mode) .palette-option[data-selected="true"] .palette-token-name {
   font-weight: 600;
   color: #000;
 }
 
-.palette-option[data-selected="true"] .palette-hex-code {
+:not(.gin--dark-mode) .palette-option[data-selected="true"] .palette-hex-code,
+body:not(.gin--dark-mode) .palette-option[data-selected="true"] .palette-hex-code {
   font-weight: 600;
   color: #333;
-}
-
-/* Force readable text for selected state in light mode (override any dark styles) */
-:not(.gin--dark-mode) .palette-option[data-selected="true"] .palette-token-name,
-:not(.gin--dark-mode) .palette-option[data-selected="true"] .palette-hex-code,
-body:not(.gin--dark-mode) .palette-option[data-selected="true"] .palette-token-name,
-body:not(.gin--dark-mode) .palette-option[data-selected="true"] .palette-hex-code {
-  color: #000 !important;
 }
 
 /* Dark mode support for selected state */
 .gin--dark-mode .palette-option[data-selected="true"],
 body.gin--dark-mode .palette-option[data-selected="true"] {
-  background-color: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
-  border: 2px solid rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.6);
 }
 
 .gin--dark-mode .palette-option[data-selected="true"] .palette-circle,
@@ -178,12 +173,14 @@ body.gin--dark-mode .palette-option[data-selected="true"] .palette-circle {
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4), 0 3px 10px rgba(0, 0, 0, 0.4);
 }
 
+/* Selected state text - dark mode */
 [data-gin-accent] .palette-option[data-selected="true"] .palette-token-name,
 .gin--dark-mode .palette-option[data-selected="true"] .palette-token-name,
 body.gin--dark-mode .palette-option[data-selected="true"] .palette-token-name,
 .gin--dark-mode .component-color-picker-wrapper .palette-option[data-selected="true"] .palette-token-name,
 body.gin--dark-mode .component-color-picker-wrapper .palette-option[data-selected="true"] .palette-token-name {
-  color: rgba(255, 255, 255, 1);
+  font-weight: 600;
+  color: #ffffff;
 }
 
 [data-gin-accent] .palette-option[data-selected="true"] .palette-hex-code,
@@ -191,14 +188,15 @@ body.gin--dark-mode .component-color-picker-wrapper .palette-option[data-selecte
 body.gin--dark-mode .palette-option[data-selected="true"] .palette-hex-code,
 .gin--dark-mode .component-color-picker-wrapper .palette-option[data-selected="true"] .palette-hex-code,
 body.gin--dark-mode .component-color-picker-wrapper .palette-option[data-selected="true"] .palette-hex-code {
-  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  color: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
   .palette-option[data-selected="true"] {
-    background-color: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
-    border: 2px solid rgba(255, 255, 255, 0.5);
+    background-color: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.6);
   }
 
   .palette-option[data-selected="true"] .palette-circle {
@@ -206,11 +204,13 @@ body.gin--dark-mode .component-color-picker-wrapper .palette-option[data-selecte
   }
 
   .component-color-picker-wrapper .palette-option[data-selected="true"] .palette-token-name {
-    color: rgba(255, 255, 255, 1);
+    font-weight: 600;
+    color: #ffffff;
   }
 
   .component-color-picker-wrapper .palette-option[data-selected="true"] .palette-hex-code {
-    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+    color: #ffffff;
   }
 }
 
