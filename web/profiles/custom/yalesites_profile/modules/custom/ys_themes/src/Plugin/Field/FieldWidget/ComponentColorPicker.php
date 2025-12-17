@@ -324,6 +324,28 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
         $all_color_styles[$global]['default'] = ["var(--color-accordion-accent)"];
       }
     }
+    // Facts block aligns with component theme overrides in SCSS.
+    elseif ($entity_type === 'block_content' && $bundle === 'facts') {
+      foreach ($global_themes as $global) {
+        $all_color_styles[$global] = [
+          'one' => [
+            "var(--global-themes-{$global}-colors-slot-one)",
+          ],
+          'five' => [
+            "var(--global-themes-{$global}-colors-slot-three)",
+          ],
+          'four' => [
+            "var(--global-themes-{$global}-colors-slot-two)",
+          ],
+          'two' => [
+            "var(--global-themes-{$global}-colors-slot-four)",
+          ],
+          'three' => [
+            "var(--global-themes-{$global}-colors-slot-five)",
+          ],
+        ];
+      }
+    }
 
     return $all_color_styles;
   }
