@@ -304,8 +304,7 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
     $all_color_styles = [];
 
     // Base mapping: options map directly to global slots (1:1).
-    // This matches accordion, facts, wrapped_callout, tile, and most
-    // components.
+    // This matches accordion, wrapped_callout, tile, and most components.
     foreach ($global_themes as $global) {
       $all_color_styles[$global] = [
         'one' => [
@@ -328,11 +327,12 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
 
     // Callout mapping: one→slot-one, two→slot-four, three→slot-five,
     // four→slot-three, five→slot-two.
-    // Used by: callout, content_spotlight_portrait, cta_banner.
+    // Used by: callout, content_spotlight_portrait, cta_banner, grand_hero.
     if ($entity_type === 'block_content' && in_array($bundle, [
       'callout',
       'content_spotlight_portrait',
       'cta_banner',
+      'grand_hero',
     ])) {
       foreach ($global_themes as $global) {
         $all_color_styles[$global] = [
@@ -350,6 +350,31 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
           ],
           'five' => [
             "var(--global-themes-{$global}-colors-slot-two)",
+          ],
+        ];
+      }
+    }
+
+    // Facts mapping: one→slot-one, two→slot-four, three→slot-five,
+    // four→slot-two, five→slot-three.
+    // Used by: facts (uses facts-and-figures-group organism).
+    if ($entity_type === 'block_content' && $bundle === 'facts') {
+      foreach ($global_themes as $global) {
+        $all_color_styles[$global] = [
+          'one' => [
+            "var(--global-themes-{$global}-colors-slot-one)",
+          ],
+          'two' => [
+            "var(--global-themes-{$global}-colors-slot-four)",
+          ],
+          'three' => [
+            "var(--global-themes-{$global}-colors-slot-five)",
+          ],
+          'four' => [
+            "var(--global-themes-{$global}-colors-slot-two)",
+          ],
+          'five' => [
+            "var(--global-themes-{$global}-colors-slot-three)",
           ],
         ];
       }
