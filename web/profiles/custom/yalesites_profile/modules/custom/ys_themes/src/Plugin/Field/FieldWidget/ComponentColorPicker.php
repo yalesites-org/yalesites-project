@@ -209,21 +209,30 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
       // Get the background color (first color) for this option.
       $background_color_var = $color_styles[$option_key][0] ?? NULL;
 
-      if ($background_color_var && is_scalar($background_color_var)) {
+      // Defaults.
+      $token_ref = '';
+      $hex_value = '';
+      $token_name = '';
+
+      // Handle default option explicitly: force white with a token name.
+      // This applies even if no CSS variable is defined for the default option.
+      if ($option_key === 'default') {
+        $hex_value = '#ffffff';
+        $token_name = 'Default';
+        $token_ref = $background_color_var ?: 'default';
+        $css_var_for_display = $hex_value;
+
+        $color_info[$option_key] = [
+          'css_var' => $css_var_for_display,
+          'hex' => $hex_value,
+          'token_name' => $token_name,
+          'token_ref' => $token_ref,
+        ];
+      }
+      elseif ($background_color_var && is_scalar($background_color_var)) {
         $background_color_var = (string) $background_color_var;
 
-        // Defaults.
-        $token_ref = '';
-        $hex_value = '';
-        $token_name = '';
-
-        // Handle default explicitly: force white with a token name.
-        if ($option_key === 'default') {
-          $hex_value = '#ffffff';
-          $token_name = 'Default';
-          $token_ref = $background_color_var ?: 'default';
-        }
-        elseif (str_starts_with($background_color_var, 'var(') && preg_match('/var\(([^)]+)\)/', $background_color_var, $matches)) {
+        if (str_starts_with($background_color_var, 'var(') && preg_match('/var\(([^)]+)\)/', $background_color_var, $matches)) {
           $css_var = $matches[1];
 
           // Global theme colors: --global-themes-{theme}-colors-slot-{slot}.
@@ -247,9 +256,7 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
           }
         }
 
-        $css_var_for_display = ($option_key === 'default' && !empty($hex_value))
-          ? $hex_value
-          : $background_color_var;
+        $css_var_for_display = $background_color_var;
 
         $color_info[$option_key] = [
           'css_var' => $css_var_for_display,
