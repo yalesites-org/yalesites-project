@@ -207,24 +207,7 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
     $color_info = [];
     foreach ($safe_palette_options as $option_key => $option_label) {
       // Get the background color (first color) for this option.
-      $background_color_var = NULL;
-      if (isset($color_styles[$option_key])
-        && is_array($color_styles[$option_key])
-        && !empty($color_styles[$option_key])) {
-        $background_color_var = $color_styles[$option_key][0];
-      }
-      else {
-        // Try to find it with the original key structure.
-        foreach ($color_styles as $style_key => $style_values) {
-          if (is_scalar($style_key)
-            && (string) $style_key === $option_key
-            && is_array($style_values)
-            && !empty($style_values)) {
-            $background_color_var = $style_values[0];
-            break;
-          }
-        }
-      }
+      $background_color_var = $color_styles[$option_key][0] ?? NULL;
 
       if ($background_color_var && is_scalar($background_color_var)) {
         $background_color_var = (string) $background_color_var;
@@ -240,7 +223,7 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
           $token_name = 'Default';
           $token_ref = $background_color_var ?: 'default';
         }
-        elseif (preg_match('/var\(([^)]+)\)/', $background_color_var, $matches)) {
+        elseif (str_starts_with($background_color_var, 'var(') && preg_match('/var\(([^)]+)\)/', $background_color_var, $matches)) {
           $css_var = $matches[1];
 
           // Global theme colors: --global-themes-{theme}-colors-slot-{slot}.
@@ -315,56 +298,7 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
     $all_color_styles = [];
 
     // Define color styles for specific entity types/bundles.
-    // Default styles for quote_callout block content.
-    if ($entity_type === 'block_content' && $bundle === 'quote_callout') {
-      foreach ($global_themes as $global) {
-        $all_color_styles[$global] = [
-          'default' => [
-            '#ffffff',
-          ],
-          'one' => [
-            "var(--global-themes-{$global}-colors-slot-one)",
-          ],
-          'two' => [
-            "var(--global-themes-{$global}-colors-slot-three)",
-          ],
-          'three' => [
-            "var(--global-themes-{$global}-colors-slot-five)",
-          ],
-          'four' => [
-            "var(--global-themes-{$global}-colors-slot-four)",
-          ],
-          'five' => [
-            "var(--global-themes-{$global}-colors-slot-two)",
-          ],
-        ];
-      }
-    }
-    elseif ($entity_type === 'block_content' && $bundle === 'content_spotlight') {
-      foreach ($global_themes as $global) {
-        $all_color_styles[$global] = [
-          'default' => [
-            '#ffffff',
-          ],
-          'one' => [
-            "var(--global-themes-{$global}-colors-slot-one)",
-          ],
-          'two' => [
-            "var(--global-themes-{$global}-colors-slot-four)",
-          ],
-          'three' => [
-            "var(--global-themes-{$global}-colors-slot-five)",
-          ],
-          'four' => [
-            "var(--global-themes-{$global}-colors-slot-three)",
-          ],
-          'five' => [
-            "var(--global-themes-{$global}-colors-slot-two)",
-          ],
-        ];
-      }
-    }
-    elseif ($entity_type === 'block_content' && $bundle === 'accordion') {
+    if ($entity_type === 'block_content' && $bundle === 'accordion') {
       foreach ($global_themes as $global) {
         // For accordion, use the first color (accent) as background.
         $all_color_styles[$global] = [
@@ -398,9 +332,6 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
     else {
       foreach ($global_themes as $global) {
         $all_color_styles[$global] = [
-          'default' => [
-            '#ffffff',
-          ],
           'one' => [
             "var(--global-themes-{$global}-colors-slot-one)",
           ],
