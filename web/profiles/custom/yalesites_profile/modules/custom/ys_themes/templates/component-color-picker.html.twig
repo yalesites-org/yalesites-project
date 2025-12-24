@@ -29,7 +29,7 @@
           {% if color_info is defined and color_info[key] is defined %}
             {% set color = color_info[key] %}
             <div class="palette-circle-container">
-              <span class="palette-circle" data-color="{{ color.css_var }}"{% if color.hex %} style="background-color: {{ color.hex }};"{% endif %}></span>
+              <span class="palette-circle" data-color="{{ color.css_var }}"{% if color.hex %} data-hex="{{ color.hex }}" style="background-color: {{ color.hex }};"{% endif %}></span>
             </div>
             <div class="palette-color-info">
               {% if color.token_name %}

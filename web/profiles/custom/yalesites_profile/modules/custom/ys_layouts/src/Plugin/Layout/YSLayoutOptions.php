@@ -4,11 +4,56 @@ namespace Drupal\ys_layouts\Plugin\Layout;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Layout\LayoutDefault;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\ys_themes\ColorTokenResolver;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Configuration per section for YS Layouts.
  */
-class YSLayoutOptions extends LayoutDefault {
+class YSLayoutOptions extends LayoutDefault implements ContainerFactoryPluginInterface {
+
+  /**
+   * The color token resolver.
+   *
+   * @var \Drupal\ys_themes\ColorTokenResolver
+   */
+  protected ColorTokenResolver $colorTokenResolver;
+
+  /**
+   * Constructs a YSLayoutOptions object.
+   *
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin_id for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   * @param \Drupal\ys_themes\ColorTokenResolver $color_token_resolver
+   *   The color token resolver service.
+   */
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    ColorTokenResolver $color_token_resolver,
+  ) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->colorTokenResolver = $color_token_resolver;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    // @phpstan-ignore-next-line
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('ys_themes.color_token_resolver'),
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -36,15 +81,19 @@ class YSLayoutOptions extends LayoutDefault {
     $form['theme'] = [
       '#type' => 'select',
       '#title' => $this->t('Component theme'),
-      '#default_value' => $this->configuration['theme'],
+      '#default_value' => $this->configuration['theme'] ?? 'default',
       '#options' => [
         'default' => $this->t('Default - no color'),
         'one' => $this->t('One'),
         'two' => $this->t('Two'),
         'three' => $this->t('Three'),
         'four' => $this->t('Four'),
+        'five' => $this->t('Five'),
       ],
       '#weight' => 10,
+      '#process' => [
+        [$this, 'processColorPicker'],
+      ],
     ];
 
     return parent::buildConfigurationForm($form, $form_state);
@@ -58,6 +107,41 @@ class YSLayoutOptions extends LayoutDefault {
 
     $this->configuration['divider'] = $form_state->getValue('divider');
     $this->configuration['theme'] = $form_state->getValue('theme');
+  }
+
+  /**
+   * Process callback to add the color picker palette UI.
+   *
+   * Wraps the ColorTokenResolver processColorPicker method with the section
+   * layout mapping: one=Blue Yale, two=Gray 100, three=Gray 800,
+   * four=Blue Medium, five=Blue Light.
+   *
+   * @param array $element
+   *   The form element.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   * @param array $complete_form
+   *   The complete form.
+   *
+   * @return array
+   *   The processed form element.
+   */
+  public function processColorPicker(
+    array &$element,
+    FormStateInterface $form_state,
+    array &$complete_form,
+  ) {
+    // Use section layout mapping: one→slot-one, two→slot-three,
+    // three→slot-two, four→slot-five, five→slot-four.
+    // This gives: one=Blue Yale, two=Gray 100, three=Gray 800,
+    // four=Blue Medium, five=Blue Light.
+    return $this->colorTokenResolver->processColorPicker(
+      $element,
+      $form_state,
+      $complete_form,
+      'layout_section',
+      'ys_layout_options',
+    );
   }
 
 }

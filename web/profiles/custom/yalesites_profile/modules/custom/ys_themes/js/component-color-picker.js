@@ -23,12 +23,20 @@
       return;
     }
 
-    // Apply background colors from data-color attributes (to avoid Drupal sanitization of inline styles)
-    const colorCircles = selector.querySelectorAll('.palette-circle[data-color]');
+    // Apply background colors from data-hex or data-color attributes.
+    // Prefer hex values over CSS variables for better compatibility.
+    const colorCircles = selector.querySelectorAll('.palette-circle');
     colorCircles.forEach(function(circle) {
-      const colorValue = circle.getAttribute('data-color');
-      if (colorValue) {
-        circle.style.setProperty('background-color', colorValue);
+      const hexValue = circle.getAttribute('data-hex');
+      if (hexValue) {
+        circle.style.setProperty('background-color', hexValue);
+      }
+      else {
+        // Fallback to data-color if no hex is available.
+        const colorValue = circle.getAttribute('data-color');
+        if (colorValue && !colorValue.startsWith('var(')) {
+          circle.style.setProperty('background-color', colorValue);
+        }
       }
     });
 

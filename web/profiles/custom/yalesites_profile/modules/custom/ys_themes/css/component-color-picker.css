@@ -297,18 +297,6 @@ body.gin--dark-mode .palette-hex-code {
   }
 }
 
-/* Ensure text stays readable on light backgrounds within palette-option */
-:not(.gin--dark-mode) .palette-option,
-body:not(.gin--dark-mode) .palette-option {
-  color: #111;
-}
-:not(.gin--dark-mode) .palette-option .palette-token-name,
-:not(.gin--dark-mode) .palette-option .palette-hex-code,
-body:not(.gin--dark-mode) .palette-option .palette-token-name,
-body:not(.gin--dark-mode) .palette-option .palette-hex-code {
-  color: #111;
-}
-
 .palette-circle {
   display: inline-block;
   width: 54px;

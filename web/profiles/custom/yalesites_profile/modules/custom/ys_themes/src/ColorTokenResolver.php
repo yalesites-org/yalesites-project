@@ -3,6 +3,8 @@
 namespace Drupal\ys_themes;
 
 use Drupal\Core\Extension\ThemeExtensionList;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\RendererInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -39,16 +41,41 @@ class ColorTokenResolver {
   protected $themeExtensionList;
 
   /**
+   * The theme settings manager service.
+   *
+   * @var \Drupal\ys_themes\ThemeSettingsManager
+   */
+  protected $themeSettingsManager;
+
+  /**
+   * The renderer service.
+   *
+   * @var \Drupal\Core\Render\RendererInterface
+   */
+  protected $renderer;
+
+  /**
    * Constructs a ColorTokenResolver.
    *
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger service.
    * @param \Drupal\Core\Extension\ThemeExtensionList $theme_extension_list
    *   The theme extension list service.
+   * @param \Drupal\ys_themes\ThemeSettingsManager $theme_settings_manager
+   *   The theme settings manager service.
+   * @param \Drupal\Core\Render\RendererInterface $renderer
+   *   The renderer service.
    */
-  public function __construct(LoggerInterface $logger, ThemeExtensionList $theme_extension_list) {
+  public function __construct(
+    LoggerInterface $logger,
+    ThemeExtensionList $theme_extension_list,
+    ThemeSettingsManager $theme_settings_manager,
+    RendererInterface $renderer,
+  ) {
     $this->logger = $logger;
     $this->themeExtensionList = $theme_extension_list;
+    $this->themeSettingsManager = $theme_settings_manager;
+    $this->renderer = $renderer;
     $this->findTokenFiles();
   }
 
@@ -304,6 +331,340 @@ class ColorTokenResolver {
    */
   protected function getSlotName($slot) {
     return ucwords(str_replace('-', ' ', $slot));
+  }
+
+  /**
+   * Gets color styles for a specific entity type and bundle.
+   *
+   * Returns only the background color (first color) for each theme option.
+   *
+   * @param string|null $entity_type
+   *   The entity type ID (e.g., 'block_content', 'node').
+   * @param string|null $bundle
+   *   The bundle name (e.g., 'quote_callout').
+   *
+   * @return array
+   *   Array of color styles keyed by global theme, then by component option.
+   *   Each option contains only the background color.
+   */
+  public function getColorStylesForEntity($entity_type = NULL, $bundle = NULL) {
+    $global_themes = ['one', 'two', 'three', 'four', 'five'];
+    $all_color_styles = [];
+
+    // Section layout mapping: one→slot-one, two→slot-three, three→slot-two,
+    // four→slot-five, five→slot-four.
+    // Used by: Layout Builder section configuration forms.
+    // Mapping: one=Blue Yale, two=Gray 100, three=Gray 800,
+    // four=Blue Medium, five=Blue Light.
+    // Note: slot-four contains Blue Light, slot-five contains Blue Medium.
+    if ($entity_type === 'layout_section' && $bundle === 'ys_layout_options') {
+      foreach ($global_themes as $global) {
+        $all_color_styles[$global] = [
+          'one' => [
+            "var(--global-themes-{$global}-colors-slot-one)",
+          ],
+          'two' => [
+            "var(--global-themes-{$global}-colors-slot-three)",
+          ],
+          'three' => [
+            "var(--global-themes-{$global}-colors-slot-two)",
+          ],
+          'four' => [
+            "var(--global-themes-{$global}-colors-slot-five)",
+          ],
+          'five' => [
+            "var(--global-themes-{$global}-colors-slot-four)",
+          ],
+        ];
+      }
+      return $all_color_styles;
+    }
+
+    // Base mapping: options map directly to global slots (1:1).
+    // This matches accordion, wrapped_callout, tile, and most components.
+    foreach ($global_themes as $global) {
+      $all_color_styles[$global] = [
+        'one' => [
+          "var(--global-themes-{$global}-colors-slot-one)",
+        ],
+        'two' => [
+          "var(--global-themes-{$global}-colors-slot-two)",
+        ],
+        'three' => [
+          "var(--global-themes-{$global}-colors-slot-three)",
+        ],
+        'four' => [
+          "var(--global-themes-{$global}-colors-slot-four)",
+        ],
+        'five' => [
+          "var(--global-themes-{$global}-colors-slot-five)",
+        ],
+      ];
+    }
+
+    // Callout mapping: one→slot-one, two→slot-four, three→slot-five,
+    // four→slot-three, five→slot-two.
+    // Used by: callout, content_spotlight, content_spotlight_portrait,
+    // cta_banner, grand_hero.
+    // Note: content_spotlight uses text-with-image component.
+    if ($entity_type === 'block_content' && in_array($bundle, [
+      'callout',
+      'content_spotlight',
+      'content_spotlight_portrait',
+      'cta_banner',
+      'grand_hero',
+    ])) {
+      foreach ($global_themes as $global) {
+        $all_color_styles[$global] = [
+          'one' => [
+            "var(--global-themes-{$global}-colors-slot-one)",
+          ],
+          'two' => [
+            "var(--global-themes-{$global}-colors-slot-four)",
+          ],
+          'three' => [
+            "var(--global-themes-{$global}-colors-slot-five)",
+          ],
+          'four' => [
+            "var(--global-themes-{$global}-colors-slot-three)",
+          ],
+          'five' => [
+            "var(--global-themes-{$global}-colors-slot-two)",
+          ],
+        ];
+      }
+    }
+
+    // Facts mapping: one→slot-one, two→slot-four, three→slot-five,
+    // four→slot-two, five→slot-three.
+    // Used by: facts (uses facts-and-figures-group organism).
+    if ($entity_type === 'block_content' && $bundle === 'facts') {
+      foreach ($global_themes as $global) {
+        $all_color_styles[$global] = [
+          'one' => [
+            "var(--global-themes-{$global}-colors-slot-one)",
+          ],
+          'two' => [
+            "var(--global-themes-{$global}-colors-slot-four)",
+          ],
+          'three' => [
+            "var(--global-themes-{$global}-colors-slot-five)",
+          ],
+          'four' => [
+            "var(--global-themes-{$global}-colors-slot-two)",
+          ],
+          'five' => [
+            "var(--global-themes-{$global}-colors-slot-three)",
+          ],
+        ];
+      }
+    }
+
+    // Quote-callout/Link-grid mapping: one→slot-one, two→slot-three,
+    // three→slot-five, four→slot-four, five→slot-two.
+    // Used by: quote_callout, link_grid.
+    if ($entity_type === 'block_content' && in_array($bundle, [
+      'quote_callout',
+      'link_grid',
+    ])) {
+      foreach ($global_themes as $global) {
+        $all_color_styles[$global] = [
+          'one' => [
+            "var(--global-themes-{$global}-colors-slot-one)",
+          ],
+          'two' => [
+            "var(--global-themes-{$global}-colors-slot-three)",
+          ],
+          'three' => [
+            "var(--global-themes-{$global}-colors-slot-five)",
+          ],
+          'four' => [
+            "var(--global-themes-{$global}-colors-slot-four)",
+          ],
+          'five' => [
+            "var(--global-themes-{$global}-colors-slot-two)",
+          ],
+        ];
+      }
+    }
+
+    // Inline-message mapping: one→slot-one, two→slot-one, three→slot-two,
+    // four→slot-three, five→slot-five.
+    if ($entity_type === 'block_content' && $bundle === 'inline_message') {
+      foreach ($global_themes as $global) {
+        $all_color_styles[$global] = [
+          'one' => [
+            "var(--global-themes-{$global}-colors-slot-one)",
+          ],
+          'two' => [
+            "var(--global-themes-{$global}-colors-slot-one)",
+          ],
+          'three' => [
+            "var(--global-themes-{$global}-colors-slot-two)",
+          ],
+          'four' => [
+            "var(--global-themes-{$global}-colors-slot-three)",
+          ],
+          'five' => [
+            "var(--global-themes-{$global}-colors-slot-five)",
+          ],
+        ];
+      }
+    }
+
+    // Accordion gets an explicit default (accent) in addition to the base map.
+    if ($entity_type === 'block_content' && $bundle === 'accordion') {
+      foreach ($global_themes as $global) {
+        $all_color_styles[$global]['default'] = ["var(--color-accordion-accent)"];
+      }
+    }
+
+    return $all_color_styles;
+  }
+
+  /**
+   * Process callback to add the color picker palette UI.
+   *
+   * @param array $element
+   *   The form element.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   * @param array $complete_form
+   *   The complete form.
+   * @param string|null $entity_type
+   *   Optional entity type for custom color mappings.
+   * @param string|null $bundle
+   *   Optional bundle for custom color mappings.
+   *
+   * @return array
+   *   The processed form element.
+   */
+  public function processColorPicker(
+    array &$element,
+    FormStateInterface $form_state,
+    array &$complete_form,
+    $entity_type = NULL,
+    $bundle = NULL,
+  ) {
+    // Get the current global theme value.
+    $global_theme = $this->themeSettingsManager->getSetting('global_theme') ?? 'one';
+
+    // Get the selected value.
+    $selected_value = $element['#default_value'] ?? 'one';
+
+    // Get options from the element.
+    $palette_options = $element['#options'] ?? [];
+    unset($palette_options['_none']);
+
+    // Get color styles using the service method.
+    $all_color_styles = $this->getColorStylesForEntity($entity_type, $bundle);
+    $color_styles = $all_color_styles[$global_theme] ?? $all_color_styles['one'] ?? [];
+
+    // For section layout forms, reorder options to ensure correct display
+    // order: default, one (Blue Yale), two (Gray 100), three (Gray 800),
+    // four (Blue Medium), five (Blue Light).
+    if ($entity_type === 'layout_section' && $bundle === 'ys_layout_options') {
+      $ordered_options = [];
+      if (isset($palette_options['default'])) {
+        $ordered_options['default'] = $palette_options['default'];
+      }
+      foreach (['one', 'two', 'three', 'four', 'five'] as $key) {
+        if (isset($palette_options[$key])) {
+          $ordered_options[$key] = $palette_options[$key];
+        }
+      }
+      $palette_options = $ordered_options;
+    }
+
+    // Hide the select element visually.
+    $element['#attributes']['class'][] = 'palette-select-hidden';
+    $element['#attributes']['style'] = 'position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0; overflow: hidden;';
+
+    // Ensure selected_value is a string.
+    $selected_value_string = (string) $selected_value;
+
+    // Get color information for each palette option.
+    $color_info = [];
+    foreach ($palette_options as $option_key => $option_label) {
+      $background_color_var = $color_styles[$option_key][0] ?? NULL;
+
+      $token_ref = '';
+      $hex_value = '';
+      $token_name = '';
+
+      // Handle default option explicitly: force white with a token name.
+      // This applies even if no CSS variable is defined for the default option.
+      if ($option_key === 'default') {
+        $hex_value = '#ffffff';
+        $token_name = 'Default';
+        $token_ref = $background_color_var ?: 'default';
+        $css_var_for_display = $hex_value;
+
+        $color_info[$option_key] = [
+          'css_var' => $css_var_for_display,
+          'hex' => $hex_value,
+          'token_name' => $token_name,
+          'token_ref' => $token_ref,
+        ];
+      }
+      elseif ($background_color_var && is_scalar($background_color_var)) {
+        $background_color_var = (string) $background_color_var;
+
+        if (str_starts_with($background_color_var, 'var(') && preg_match('/var\(([^)]+)\)/', $background_color_var, $matches)) {
+          $css_var = $matches[1];
+
+          if (preg_match('/--global-themes-([A-Za-z0-9_-]+)-colors-slot-([A-Za-z0-9_-]+)/', $css_var, $var_matches)) {
+            $theme_num = $var_matches[1];
+            $slot_identifier = $var_matches[2];
+
+            $theme_colors = $this->getThemeColors($theme_num);
+            $slot_key = "slot-{$slot_identifier}";
+            if (isset($theme_colors[$slot_key])) {
+              $color_data = $theme_colors[$slot_key];
+              $hex_value = $color_data['hex'] ?? '';
+              $token_name = $color_data['name'] ?? '';
+              $token_ref = $color_data['token'] ?? '';
+            }
+          }
+        }
+
+        $css_var_for_display = $background_color_var ?: '';
+
+        $color_info[$option_key] = [
+          'css_var' => $css_var_for_display,
+          'hex' => $hex_value,
+          'token_name' => $token_name,
+          'token_ref' => $token_ref,
+        ];
+      }
+      else {
+        // Fallback if no color found.
+        $color_info[$option_key] = [
+          'css_var' => '',
+          'hex' => '',
+          'token_name' => '',
+          'token_ref' => '',
+        ];
+      }
+    }
+
+    // Render the palette UI using the template.
+    $palette_render = [
+      '#theme' => 'component_color_picker',
+      '#palette_options' => $palette_options,
+      '#global_theme' => $global_theme,
+      '#selected_value' => $selected_value_string,
+      '#color_info' => $color_info,
+    ];
+
+    // Wrap the select element and add the palette UI.
+    $element['#prefix'] = '<div class="component-color-picker-wrapper" style="position: relative;">';
+    $element['#suffix'] = $this->renderer->render($palette_render) . '</div>';
+
+    // Attach the library.
+    $element['#attached']['library'][] = 'ys_themes/component_color_picker';
+
+    return $element;
   }
 
 }
