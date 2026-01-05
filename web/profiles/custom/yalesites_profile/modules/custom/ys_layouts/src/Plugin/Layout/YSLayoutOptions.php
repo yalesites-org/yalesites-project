@@ -78,20 +78,21 @@ class YSLayoutOptions extends LayoutDefault implements ContainerFactoryPluginInt
       '#weight' => 10,
     ];
 
+    // Use the saved theme value directly from configuration.
+    $saved_theme = $this->configuration['theme'] ?? 'default';
     $form['theme'] = [
       '#type' => 'select',
       '#title' => $this->t('Component theme'),
-      '#default_value' => $this->configuration['theme'] ?? 'default',
+      '#default_value' => $saved_theme,
       '#options' => [
         'default' => $this->t('Default - no color'),
         'one' => $this->t('One'),
         'two' => $this->t('Two'),
         'three' => $this->t('Three'),
         'four' => $this->t('Four'),
-        'five' => $this->t('Five'),
       ],
       '#weight' => 10,
-      '#process' => [
+      '#after_build' => [
         [$this, 'processColorPicker'],
       ],
     ];
@@ -106,11 +107,13 @@ class YSLayoutOptions extends LayoutDefault implements ContainerFactoryPluginInt
     parent::submitConfigurationForm($form, $form_state);
 
     $this->configuration['divider'] = $form_state->getValue('divider');
+
+    // Save the theme value directly from the form.
     $this->configuration['theme'] = $form_state->getValue('theme');
   }
 
   /**
-   * Process callback to add the color picker palette UI.
+   * After build callback to add the color picker palette UI.
    *
    * Wraps the ColorTokenResolver processColorPicker method with the section
    * layout mapping: one=Blue Yale, two=Gray 100, three=Gray 800,
@@ -120,8 +123,6 @@ class YSLayoutOptions extends LayoutDefault implements ContainerFactoryPluginInt
    *   The form element.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
-   * @param array $complete_form
-   *   The complete form.
    *
    * @return array
    *   The processed form element.
@@ -129,8 +130,10 @@ class YSLayoutOptions extends LayoutDefault implements ContainerFactoryPluginInt
   public function processColorPicker(
     array &$element,
     FormStateInterface $form_state,
-    array &$complete_form,
   ) {
+    // Get the complete form from form state (required for after_build).
+    $complete_form = $form_state->getCompleteForm();
+
     // Use section layout mapping: one→slot-one, two→slot-three,
     // three→slot-two, four→slot-five, five→slot-four.
     // This gives: one=Blue Yale, two=Gray 100, three=Gray 800,

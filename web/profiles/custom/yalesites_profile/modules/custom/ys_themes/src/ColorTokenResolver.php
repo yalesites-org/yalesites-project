@@ -350,13 +350,18 @@ class ColorTokenResolver {
   public function getColorStylesForEntity($entity_type = NULL, $bundle = NULL) {
     $global_themes = ['one', 'two', 'three', 'four', 'five'];
     $all_color_styles = [];
-
     // Section layout mapping: one→slot-one, two→slot-three, three→slot-two,
     // four→slot-five, five→slot-four.
     // Used by: Layout Builder section configuration forms.
-    // Mapping: one=Blue Yale, two=Gray 100, three=Gray 800,
-    // four=Blue Medium, five=Blue Light.
-    // Note: slot-four contains Blue Light, slot-five contains Blue Medium.
+    // Widget options: one=Blue Yale, two=Gray 100, three=Gray 800,
+    // four=Blue Medium.
+    // SCSS themes: one=Blue Yale (slot-one), two=Blue Light (slot-four),
+    // three=Blue Medium (slot-five), four=Gray 800 (slot-two).
+    // Widget mapping:
+    // - one → slot-one (Blue Yale) → SCSS 'one'
+    // - two → slot-three (Gray 100) → SCSS 'default' (no direct match).
+    // - three → slot-two (Gray 800) → SCSS 'four'
+    // - four → slot-five (Blue Medium) → SCSS 'three'.
     if ($entity_type === 'layout_section' && $bundle === 'ys_layout_options') {
       foreach ($global_themes as $global) {
         $all_color_styles[$global] = [
@@ -364,16 +369,13 @@ class ColorTokenResolver {
             "var(--global-themes-{$global}-colors-slot-one)",
           ],
           'two' => [
-            "var(--global-themes-{$global}-colors-slot-three)",
+            "var(--global-themes-{$global}-colors-slot-four)",
           ],
           'three' => [
-            "var(--global-themes-{$global}-colors-slot-two)",
-          ],
-          'four' => [
             "var(--global-themes-{$global}-colors-slot-five)",
           ],
-          'five' => [
-            "var(--global-themes-{$global}-colors-slot-four)",
+          'four' => [
+            "var(--global-themes-{$global}-colors-slot-two)",
           ],
         ];
       }
@@ -546,6 +548,12 @@ class ColorTokenResolver {
     $entity_type = NULL,
     $bundle = NULL,
   ) {
+    // Debug: Log the entity_type and bundle values.
+    \Drupal::logger('ys_themes')->debug('processColorPicker called: entity_type=@entity_type, bundle=@bundle', [
+      '@entity_type' => $entity_type ?? 'NULL',
+      '@bundle' => $bundle ?? 'NULL',
+    ]);
+
     // Get the current global theme value.
     $global_theme = $this->themeSettingsManager->getSetting('global_theme') ?? 'one';
 
@@ -564,16 +572,23 @@ class ColorTokenResolver {
     // order: default, one (Blue Yale), two (Gray 100), three (Gray 800),
     // four (Blue Medium), five (Blue Light).
     if ($entity_type === 'layout_section' && $bundle === 'ys_layout_options') {
+      // Build ordered array explicitly to preserve insertion order.
       $ordered_options = [];
-      if (isset($palette_options['default'])) {
-        $ordered_options['default'] = $palette_options['default'];
-      }
-      foreach (['one', 'two', 'three', 'four', 'five'] as $key) {
+      $desired_order = ['default', 'one', 'two', 'three', 'four', 'five'];
+      foreach ($desired_order as $key) {
         if (isset($palette_options[$key])) {
           $ordered_options[$key] = $palette_options[$key];
         }
       }
+      // Add any remaining options that weren't in the desired order.
+      foreach ($palette_options as $key => $value) {
+        if (!isset($ordered_options[$key])) {
+          $ordered_options[$key] = $value;
+        }
+      }
       $palette_options = $ordered_options;
+      // Also update the element's options to maintain consistency.
+      $element['#options'] = $ordered_options;
     }
 
     // Hide the select element visually.
@@ -648,14 +663,75 @@ class ColorTokenResolver {
       }
     }
 
+    // For section layout forms, ensure options are in correct order one more
+    // time before rendering (in case something modified them).
+    // Also reorder color_info to match the new order.
+    if ($entity_type === 'layout_section' && $bundle === 'ys_layout_options') {
+      $ordered_options = [];
+      $ordered_color_info = [];
+      $desired_order = ['default', 'one', 'two', 'three', 'four', 'five'];
+      foreach ($desired_order as $key) {
+        if (isset($palette_options[$key])) {
+          $ordered_options[$key] = $palette_options[$key];
+          // Also reorder color_info to match.
+          if (isset($color_info[$key])) {
+            $ordered_color_info[$key] = $color_info[$key];
+          }
+        }
+      }
+      // Add any remaining options that weren't in the desired order.
+      foreach ($palette_options as $key => $value) {
+        if (!isset($ordered_options[$key])) {
+          $ordered_options[$key] = $value;
+          if (isset($color_info[$key])) {
+            $ordered_color_info[$key] = $color_info[$key];
+          }
+        }
+      }
+      $palette_options = $ordered_options;
+      $color_info = $ordered_color_info;
+    }
+
     // Render the palette UI using the template.
+    // For section layouts, pass the desired order to the template.
+    // Order: default, one (Blue Yale), two (Blue Light), three (Blue Medium),
+    // four (Gray 800).
+    $palette_order = NULL;
+    $is_section_layout = ($entity_type === 'layout_section' && $bundle === 'ys_layout_options');
+
+    // Debug: Log condition check and current palette_options order.
+    \Drupal::logger('ys_themes')->debug('Section layout check: is_section_layout=@is_section, entity_type=@entity_type, bundle=@bundle', [
+      '@is_section' => $is_section_layout ? 'TRUE' : 'FALSE',
+      '@entity_type' => $entity_type ?? 'NULL',
+      '@bundle' => $bundle ?? 'NULL',
+    ]);
+    \Drupal::logger('ys_themes')->debug('Current palette_options keys: @keys', [
+      '@keys' => implode(', ', array_keys($palette_options)),
+    ]);
+
+    if ($is_section_layout) {
+      // Order: default, then blues (one=Blue Yale, two=Blue Light, three=Blue Medium),
+      // then gray (four=Gray 800).
+      $palette_order = ['default', 'one', 'two', 'three', 'four'];
+      \Drupal::logger('ys_themes')->debug('Setting palette_order: @order', [
+        '@order' => implode(', ', $palette_order),
+      ]);
+    }
+
     $palette_render = [
       '#theme' => 'component_color_picker',
       '#palette_options' => $palette_options,
+      '#palette_order' => $palette_order,
       '#global_theme' => $global_theme,
       '#selected_value' => $selected_value_string,
       '#color_info' => $color_info,
     ];
+
+    // Debug: Log what's being passed to template.
+    \Drupal::logger('ys_themes')->debug('Template variables: palette_order=@order, palette_options_keys=@keys', [
+      '@order' => $palette_order ? implode(', ', $palette_order) : 'NULL',
+      '@keys' => implode(', ', array_keys($palette_options)),
+    ]);
 
     // Wrap the select element and add the palette UI.
     $element['#prefix'] = '<div class="component-color-picker-wrapper" style="position: relative;">';
