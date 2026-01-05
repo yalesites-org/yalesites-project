@@ -548,12 +548,6 @@ class ColorTokenResolver {
     $entity_type = NULL,
     $bundle = NULL,
   ) {
-    // Debug: Log the entity_type and bundle values.
-    \Drupal::logger('ys_themes')->debug('processColorPicker called: entity_type=@entity_type, bundle=@bundle', [
-      '@entity_type' => $entity_type ?? 'NULL',
-      '@bundle' => $bundle ?? 'NULL',
-    ]);
-
     // Get the current global theme value.
     $global_theme = $this->themeSettingsManager->getSetting('global_theme') ?? 'one';
 
@@ -574,7 +568,7 @@ class ColorTokenResolver {
     if ($entity_type === 'layout_section' && $bundle === 'ys_layout_options') {
       // Build ordered array explicitly to preserve insertion order.
       $ordered_options = [];
-      $desired_order = ['default', 'one', 'two', 'three', 'four', 'five'];
+      $desired_order = ['default', 'one', 'two', 'three', 'four'];
       foreach ($desired_order as $key) {
         if (isset($palette_options[$key])) {
           $ordered_options[$key] = $palette_options[$key];
@@ -663,59 +657,13 @@ class ColorTokenResolver {
       }
     }
 
-    // For section layout forms, ensure options are in correct order one more
-    // time before rendering (in case something modified them).
-    // Also reorder color_info to match the new order.
-    if ($entity_type === 'layout_section' && $bundle === 'ys_layout_options') {
-      $ordered_options = [];
-      $ordered_color_info = [];
-      $desired_order = ['default', 'one', 'two', 'three', 'four', 'five'];
-      foreach ($desired_order as $key) {
-        if (isset($palette_options[$key])) {
-          $ordered_options[$key] = $palette_options[$key];
-          // Also reorder color_info to match.
-          if (isset($color_info[$key])) {
-            $ordered_color_info[$key] = $color_info[$key];
-          }
-        }
-      }
-      // Add any remaining options that weren't in the desired order.
-      foreach ($palette_options as $key => $value) {
-        if (!isset($ordered_options[$key])) {
-          $ordered_options[$key] = $value;
-          if (isset($color_info[$key])) {
-            $ordered_color_info[$key] = $color_info[$key];
-          }
-        }
-      }
-      $palette_options = $ordered_options;
-      $color_info = $ordered_color_info;
-    }
-
     // Render the palette UI using the template.
     // For section layouts, pass the desired order to the template.
-    // Order: default, one (Blue Yale), two (Blue Light), three (Blue Medium),
-    // four (Gray 800).
     $palette_order = NULL;
-    $is_section_layout = ($entity_type === 'layout_section' && $bundle === 'ys_layout_options');
-
-    // Debug: Log condition check and current palette_options order.
-    \Drupal::logger('ys_themes')->debug('Section layout check: is_section_layout=@is_section, entity_type=@entity_type, bundle=@bundle', [
-      '@is_section' => $is_section_layout ? 'TRUE' : 'FALSE',
-      '@entity_type' => $entity_type ?? 'NULL',
-      '@bundle' => $bundle ?? 'NULL',
-    ]);
-    \Drupal::logger('ys_themes')->debug('Current palette_options keys: @keys', [
-      '@keys' => implode(', ', array_keys($palette_options)),
-    ]);
-
-    if ($is_section_layout) {
-      // Order: default, then blues (one=Blue Yale, two=Blue Light, three=Blue Medium),
-      // then gray (four=Gray 800).
+    if ($entity_type === 'layout_section' && $bundle === 'ys_layout_options') {
+      // Order: default, then blues (one=Blue Yale, two=Blue Light,
+      // three=Blue Medium), then gray (four=Gray 800).
       $palette_order = ['default', 'one', 'two', 'three', 'four'];
-      \Drupal::logger('ys_themes')->debug('Setting palette_order: @order', [
-        '@order' => implode(', ', $palette_order),
-      ]);
     }
 
     $palette_render = [
@@ -726,12 +674,6 @@ class ColorTokenResolver {
       '#selected_value' => $selected_value_string,
       '#color_info' => $color_info,
     ];
-
-    // Debug: Log what's being passed to template.
-    \Drupal::logger('ys_themes')->debug('Template variables: palette_order=@order, palette_options_keys=@keys', [
-      '@order' => $palette_order ? implode(', ', $palette_order) : 'NULL',
-      '@keys' => implode(', ', array_keys($palette_options)),
-    ]);
 
     // Wrap the select element and add the palette UI.
     $element['#prefix'] = '<div class="component-color-picker-wrapper" style="position: relative;">';
