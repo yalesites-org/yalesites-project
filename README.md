@@ -110,4 +110,3 @@ lando xdebug-off           # Disable Xdebug
 - **Custom Modules**: Use `ys_` prefix (e.g., `ys_core`, `ys_themes`)
 - **Branch Strategy**: `develop` (primary), `master` (releases), `YALB-XXX-description` (features)
 - **Semantic Release**: Automated versioning on master branch using conventional commits
-
