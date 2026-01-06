@@ -8,16 +8,19 @@
   border-collapse: collapse;
 }
 
+.color-tokens-table th,
+.color-tokens-table td {
+  padding: 12px;
+}
+
 .color-tokens-table th {
   background-color: #f5f5f5;
-  padding: 12px;
   text-align: left;
   font-weight: bold;
   border-bottom: 2px solid #ddd;
 }
 
 .color-tokens-table td {
-  padding: 12px;
   border-bottom: 1px solid #ddd;
   vertical-align: middle;
 }
@@ -34,13 +37,16 @@
   text-transform: capitalize;
 }
 
-.color-tokens-table .hex-code {
+.color-tokens-table .hex-code,
+.color-tokens-table .token-ref {
   font-family: monospace;
+}
+
+.color-tokens-table .hex-code {
   font-weight: 600;
 }
 
 .color-tokens-table .token-ref {
-  font-family: monospace;
   font-size: 0.9em;
   color: #666;
 }

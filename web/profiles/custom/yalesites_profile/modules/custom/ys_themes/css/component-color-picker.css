@@ -53,17 +53,12 @@
   position: relative;
 }
 
-/* Always show gap - options are always expanded */
-.palette-visual-container {
-  gap: 0.75rem;
-}
-
 .expand-indicator:hover {
   background: rgba(0, 0, 0, 0.12);
   transform: translateY(-1px);
 }
 
-/* Dark mode support for Gin admin theme */
+/* Dark mode support for expand indicator */
 [data-gin-accent] .expand-indicator,
 .gin--dark-mode .expand-indicator,
 body.gin--dark-mode .expand-indicator {
@@ -79,7 +74,6 @@ body.gin--dark-mode .expand-indicator:hover {
   color: rgba(255, 255, 255, 0.9);
 }
 
-/* Fallback for prefers-color-scheme */
 @media (prefers-color-scheme: dark) {
   .expand-indicator {
     background: rgba(255, 255, 255, 0.1);
@@ -178,11 +172,7 @@ body.gin--dark-mode .palette-option[data-selected="true"] .palette-circle {
 .gin--dark-mode .palette-option[data-selected="true"] .palette-token-name,
 body.gin--dark-mode .palette-option[data-selected="true"] .palette-token-name,
 .gin--dark-mode .component-color-picker-wrapper .palette-option[data-selected="true"] .palette-token-name,
-body.gin--dark-mode .component-color-picker-wrapper .palette-option[data-selected="true"] .palette-token-name {
-  font-weight: 600;
-  color: #ffffff;
-}
-
+body.gin--dark-mode .component-color-picker-wrapper .palette-option[data-selected="true"] .palette-token-name,
 [data-gin-accent] .palette-option[data-selected="true"] .palette-hex-code,
 .gin--dark-mode .palette-option[data-selected="true"] .palette-hex-code,
 body.gin--dark-mode .palette-option[data-selected="true"] .palette-hex-code,
@@ -203,11 +193,7 @@ body.gin--dark-mode .component-color-picker-wrapper .palette-option[data-selecte
     box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4), 0 3px 10px rgba(0, 0, 0, 0.4);
   }
 
-  .component-color-picker-wrapper .palette-option[data-selected="true"] .palette-token-name {
-    font-weight: 600;
-    color: #ffffff;
-  }
-
+  .component-color-picker-wrapper .palette-option[data-selected="true"] .palette-token-name,
   .component-color-picker-wrapper .palette-option[data-selected="true"] .palette-hex-code {
     font-weight: 600;
     color: #ffffff;
@@ -222,20 +208,14 @@ body.gin--dark-mode .component-color-picker-wrapper .palette-option[data-selecte
   padding: 4px;
   transition: transform 0.15s ease, width 0.15s ease, max-width 0.15s ease, padding 0.15s ease;
   white-space: nowrap;
+  width: auto;
+  max-width: none;
+  min-width: auto;
+  overflow: visible;
 }
 
 .palette-circle-container {
   display: block;
-}
-
-/* Color wrapper is always visible */
-.palette-option .palette-color-wrapper {
-  width: auto;
-  max-width: none;
-  min-width: auto;
-  padding: 4px;
-  gap: 0.5rem;
-  overflow: visible;
 }
 
 .palette-option:hover .palette-color-wrapper {

@@ -119,12 +119,9 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
     $element['#attributes']['style'] = 'position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0; overflow: hidden;';
 
     // Filter out the _none option for palette display.
-    $palette_options = [];
-    foreach ($options as $key => $label) {
-      if ($key !== '_none') {
-        $palette_options[$key] = $label;
-      }
-    }
+    $palette_options = array_filter($options, function ($key) {
+      return $key !== '_none';
+    }, ARRAY_FILTER_USE_KEY);
 
     // Default to 'default' if no value is selected and 'default' exists.
     if (empty($selected_value) && isset($palette_options['default'])) {
@@ -168,22 +165,24 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
     $selected_value = $element['#selected_value'] ?? NULL;
     $color_styles = $element['#color_styles'] ?? [];
 
-    // Remove the palette data from the element (it was just for passing to
-    // this callback).
-    unset($element['#palette_options']);
-    unset($element['#global_theme']);
-    unset($element['#selected_value']);
-    unset($element['#color_styles']);
+    // Remove the palette data from the element.
+    unset($element['#palette_options'], $element['#global_theme'], $element['#selected_value'], $element['#color_styles']);
 
-    // Ensure selected_value is a string for comparison.
+    // Normalize selected value to string.
     $selected_value_string = '';
     if (is_array($selected_value)) {
-      $selected_value_string = !empty($selected_value)
-        ? (string) reset($selected_value)
-        : '';
+      $selected_value_string = !empty($selected_value) ? (string) reset($selected_value) : '';
     }
     elseif ($selected_value !== NULL) {
       $selected_value_string = (string) $selected_value;
+    }
+
+    // Ensure palette_options values are strings.
+    $safe_palette_options = [];
+    foreach ($palette_options as $key => $label) {
+      if (is_scalar($key)) {
+        $safe_palette_options[(string) $key] = is_scalar($label) ? (string) $label : (string) $key;
+      }
     }
 
     // Default to 'default' if no value is selected and 'default' exists.
@@ -191,92 +190,14 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
       $selected_value_string = 'default';
     }
 
-    // Ensure palette_options values are strings (not arrays).
-    $safe_palette_options = [];
-    foreach ($palette_options as $key => $label) {
-      if (is_scalar($key)) {
-        $safe_key = (string) $key;
-        $safe_label = is_scalar($label) ? (string) $label : $safe_key;
-        $safe_palette_options[$safe_key] = $safe_label;
-      }
-    }
-
-    // Get color information for each palette option.
-    // We'll get the background color (first color) and resolve it to hex and
-    // token name.
+    // Build color information using ColorTokenResolver.
     $color_info = [];
     foreach ($safe_palette_options as $option_key => $option_label) {
-      // Get the background color (first color) for this option.
       $background_color_var = $color_styles[$option_key][0] ?? NULL;
-
-      // Defaults.
-      $token_ref = '';
-      $hex_value = '';
-      $token_name = '';
-
-      // Handle default option explicitly: force white with a token name.
-      // This applies even if no CSS variable is defined for the default option.
-      if ($option_key === 'default') {
-        $hex_value = '#ffffff';
-        $token_name = 'Default';
-        $token_ref = $background_color_var ?: 'default';
-        $css_var_for_display = $hex_value;
-
-        $color_info[$option_key] = [
-          'css_var' => $css_var_for_display,
-          'hex' => $hex_value,
-          'token_name' => $token_name,
-          'token_ref' => $token_ref,
-        ];
-      }
-      elseif ($background_color_var && is_scalar($background_color_var)) {
-        $background_color_var = (string) $background_color_var;
-
-        if (str_starts_with($background_color_var, 'var(') && preg_match('/var\(([^)]+)\)/', $background_color_var, $matches)) {
-          $css_var = $matches[1];
-
-          // Global theme colors: --global-themes-{theme}-colors-slot-{slot}.
-          // Extract theme number and slot identifier from CSS variable.
-          // Example: --global-themes-one-colors-slot-four → theme="one",
-          // slot="four".
-          if (preg_match('/--global-themes-([A-Za-z0-9_-]+)-colors-slot-([A-Za-z0-9_-]+)/', $css_var, $var_matches)) {
-            $theme_num = $var_matches[1];
-            $slot_identifier = $var_matches[2];
-
-            $theme_colors = $this->colorTokenResolver->getThemeColors($theme_num);
-            // The slot key in theme_colors should be "slot-{identifier}".
-            // Example: if slot_identifier is "four", look for "slot-four".
-            $slot_key = "slot-{$slot_identifier}";
-            if (isset($theme_colors[$slot_key])) {
-              $color_data = $theme_colors[$slot_key];
-              $hex_value = $color_data['hex'] ?? '';
-              $token_name = $color_data['name'] ?? '';
-              $token_ref = $color_data['token'] ?? '';
-            }
-          }
-        }
-
-        $css_var_for_display = $background_color_var;
-
-        $color_info[$option_key] = [
-          'css_var' => $css_var_for_display,
-          'hex' => $hex_value,
-          'token_name' => $token_name,
-          'token_ref' => $token_ref,
-        ];
-      }
-      else {
-        // Fallback if no color found.
-        $color_info[$option_key] = [
-          'css_var' => '',
-          'hex' => '',
-          'token_name' => '',
-          'token_ref' => '',
-        ];
-      }
+      $color_info[$option_key] = $this->colorTokenResolver->buildColorInfo($option_key, $background_color_var);
     }
 
-    // Render the palette UI using the template.
+    // Render the palette UI.
     $palette_render = [
       '#theme' => 'component_color_picker',
       '#palette_options' => $safe_palette_options,
@@ -285,20 +206,10 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
       '#color_info' => $color_info,
     ];
 
-    // Wrap the select element and add the palette UI.
     $element['#prefix'] = '<div class="component-color-picker-wrapper" style="position: relative;">';
     $element['#suffix'] = $this->renderer->render($palette_render) . '</div>';
 
     return $element;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
-    // Ensure values are properly extracted.
-    $massaged = parent::massageFormValues($values, $form, $form_state);
-    return $massaged;
   }
 
 }
