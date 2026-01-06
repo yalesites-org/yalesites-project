@@ -21,7 +21,7 @@ settings:
   handler: 'default:file'
   handler_settings: {  }
   file_directory: '[date:custom:Y]-[date:custom:m]'
-  file_extensions: 'txt rtf doc docx pdf xls xlsx'
+  file_extensions: 'txt rtf doc docx pdf xls xlsx ppt pptx ics'
   max_filesize: ''
   description_field: true
 field_type: file
