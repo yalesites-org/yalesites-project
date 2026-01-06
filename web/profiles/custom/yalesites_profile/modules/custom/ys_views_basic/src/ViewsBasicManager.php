@@ -1029,8 +1029,15 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       }
       else {
         // Regular block Layout Builder form.
+        $entityTypesPath = $rebuildValues && isset($rebuildValues['settings']['block_form']['group_user_selection']['entity_and_view_mode']['entity_types'])
+          ? $rebuildValues['settings']['block_form']['group_user_selection']['entity_and_view_mode']['entity_types']
+          : NULL;
+        $filterAndSortPath = $form && isset($form['settings']['block_form']['group_user_selection']['filter_and_sort'])
+          ? $form['settings']['block_form']['group_user_selection']['filter_and_sort']
+          : NULL;
+
         $formSelectors = [
-          'entity_types' => $rebuildValues['settings']['block_form']['group_user_selection']['entity_and_view_mode']['entity_types'] ?? $entityValue,
+          'entity_types' => $entityTypesPath ?? $entityValue,
           'entity_types_ajax' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][entity_types]"]',
           'view_mode_input_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][view_mode]"]',
           'view_mode_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
@@ -1093,7 +1100,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
             'options',
             'offset',
           ],
-          'pinned_to_top_ajax' => ($form) ? $form['settings']['block_form']['filter_and_sort']['pinned_to_top'] : NULL,
+          'pinned_to_top_ajax' => ($filterAndSortPath && isset($filterAndSortPath['pinned_to_top'])) ? $filterAndSortPath['pinned_to_top'] : NULL,
           'pinned_to_top_array' => [
             'settings',
             'block_form',
@@ -1102,7 +1109,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
             'pinned_to_top',
           ],
           'pinned_to_top_selector' => ':input[name="settings[block_form][group_user_selection][filter_and_sort][pinned_to_top]"]',
-          'pin_label_ajax' => ($form) ? $form['settings']['block_form']['filter_and_sort']['pin_label'] : self::DEFAULT_PIN_LABEL,
+          'pin_label_ajax' => ($filterAndSortPath && isset($filterAndSortPath['pin_label'])) ? $filterAndSortPath['pin_label'] : self::DEFAULT_PIN_LABEL,
           'pin_label_array' => [
             'settings',
             'block_form',
