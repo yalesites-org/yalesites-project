@@ -277,6 +277,7 @@ permissions:
   - 'delete terms in event_category'
   - 'delete terms in page_category'
   - 'delete terms in post_category'
+  - 'delete terms in resource_category'
   - 'delete terms in tags'
   - 'edit any accordion block content'
   - 'edit any background_video media'
