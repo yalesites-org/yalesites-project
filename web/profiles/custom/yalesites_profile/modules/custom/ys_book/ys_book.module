@@ -90,6 +90,17 @@ function ys_book_form_alter(&$form, &$form_state, $form_id) {
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter() for book_remove_form.
+ */
+function ys_book_form_book_remove_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Override the description to use YaleSites terminology.
+  $node = \Drupal::routeMatch()->getParameter('node');
+  if ($node) {
+    $form['description']['#markup'] = t("Remove '%title' from the collection? You can add it back later using the Content Collection tab in Manage Settings.", ['%title' => $node->label()]);
+  }
+}
+
+/**
  * Implements hook_form_FORM_ID_alter() for book_admin_edit.
  */
 function ys_book_form_book_admin_edit_alter(&$form, FormStateInterface $form_state, $form_id) {
