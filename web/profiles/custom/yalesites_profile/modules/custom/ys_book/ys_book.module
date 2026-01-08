@@ -7,6 +7,7 @@
  * This module overrides default book module text.
  */
 
+use Drupal\node\NodeInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -94,8 +95,12 @@ function ys_book_form_alter(&$form, &$form_state, $form_id) {
  */
 function ys_book_form_book_remove_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   // Override the description to use YaleSites terminology.
-  $node = \Drupal::routeMatch()->getParameter('node');
-  if ($node) {
+  // In book 2.0.4+, the form uses ConfirmFormBase which renders description
+  // via getDescription() method, but we can still override the #markup.
+  // Get the node from the form state build info.
+  $build_info = $form_state->getBuildInfo();
+  if (isset($build_info['args'][0]) && $build_info['args'][0] instanceof NodeInterface) {
+    $node = $build_info['args'][0];
     $form['description']['#markup'] = t("Remove '%title' from the collection? You can add it back later using the Content Collection tab in Manage Settings.", ['%title' => $node->label()]);
   }
 }
