@@ -9,6 +9,7 @@ use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\TranslationInterface;
@@ -55,16 +56,18 @@ class YsExpandBookManager extends ExpandBookManager {
    *   The book memory cache service.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The current route match.
+   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
+   *   The logger.factory service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, TranslationInterface $translation, ConfigFactoryInterface $config_factory, BookOutlineStorageInterface $book_outline_storage, RendererInterface $renderer, LanguageManagerInterface $language_manager, EntityRepositoryInterface $entity_repository, CacheBackendInterface $backend_chained_cache, CacheBackendInterface $memory_cache, RouteMatchInterface $route_match) {
-    parent::__construct($entity_type_manager, $translation, $config_factory, $book_outline_storage, $renderer, $language_manager, $entity_repository, $backend_chained_cache, $memory_cache, $route_match);
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, TranslationInterface $translation, ConfigFactoryInterface $config_factory, BookOutlineStorageInterface $book_outline_storage, RendererInterface $renderer, LanguageManagerInterface $language_manager, EntityRepositoryInterface $entity_repository, CacheBackendInterface $backend_chained_cache, CacheBackendInterface $memory_cache, RouteMatchInterface $route_match, LoggerChannelFactoryInterface $logger_factory) {
+    parent::__construct($entity_type_manager, $translation, $config_factory, $book_outline_storage, $renderer, $language_manager, $entity_repository, $backend_chained_cache, $memory_cache, $route_match, $logger_factory);
     $this->routeMatch = $route_match;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function bookTreeAllData($bid, $link = NULL, $max_depth = NULL, $start_level = NULL, $always_expand = 0) {
+  public function bookTreeAllData($bid, $link = NULL, $max_depth = NULL, $start_level = NULL, int $always_expand = 0): array {
 
     $tree = &drupal_static(__METHOD__, []);
     $language_interface = $this->languageManager->getCurrentLanguage();
@@ -115,7 +118,7 @@ class YsExpandBookManager extends ExpandBookManager {
   /**
    * {@inheritdoc}
    */
-  protected function buildItems(array $tree) {
+  protected function buildItems(array $tree): array {
 
     $items = [];
     $langcode = $this->languageManager->getCurrentLanguage(LanguageInterface::TYPE_CONTENT)->getId();
@@ -184,7 +187,7 @@ class YsExpandBookManager extends ExpandBookManager {
    * This allows CAS-protected pages to be included in the book tree,
    * where they will be flagged with is_cas by bookLinkTranslate().
    */
-  protected function bookTreeBuild($bid, array $parameters = []) {
+  protected function bookTreeBuild($bid, array $parameters = []): array {
     // Build the book tree.
     $data = $this->doBookTreeBuild($bid, $parameters);
     // Translate links but skip access filtering that removes CAS-protected
@@ -221,7 +224,7 @@ class YsExpandBookManager extends ExpandBookManager {
   /**
    * {@inheritdoc}
    */
-  public function bookLinkTranslate(&$link) {
+  public function bookLinkTranslate(array &$link): array {
     // Check access via the api, since the query node_access tag doesn't check
     // for unpublished nodes.
     // @todo load the nodes en-mass rather than individually.
