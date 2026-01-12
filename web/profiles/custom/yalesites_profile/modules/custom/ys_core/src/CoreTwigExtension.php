@@ -3,6 +3,7 @@
 namespace Drupal\ys_core;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
@@ -48,6 +49,13 @@ class CoreTwigExtension extends AbstractExtension {
   protected $currentDomain;
 
   /**
+   * The logger factory.
+   *
+   * @var \Drupal\Core\Logger\LoggerChannelFactoryInterface
+   */
+  protected $loggerFactory;
+
+  /**
    * Constructs the object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
@@ -56,12 +64,15 @@ class CoreTwigExtension extends AbstractExtension {
    *   The YaleSites Media Manager.
    * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
    *   The Request Stack to retrieve the domain.
+   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
+   *   The logger factory.
    */
-  public function __construct(ConfigFactoryInterface $configFactory, YaleSitesMediaManager $yale_media_manager, RequestStack $requestStack) {
+  public function __construct(ConfigFactoryInterface $configFactory, YaleSitesMediaManager $yale_media_manager, RequestStack $requestStack, LoggerChannelFactoryInterface $logger_factory) {
     $this->yaleCoreSettings = $configFactory->getEditable('ys_core.site');
     $this->yaleHeaderSettings = $configFactory->getEditable('ys_core.header_settings');
     $this->yaleMediaManager = $yale_media_manager;
     $this->requestStack = $requestStack;
+    $this->loggerFactory = $logger_factory;
     $this->currentDomain = $this->getCurrentDomain();
   }
 
@@ -74,6 +85,7 @@ class CoreTwigExtension extends AbstractExtension {
       new TwigFunction('getHeaderSetting', [$this, 'getHeaderSetting']),
       new TwigFunction('getUrlType', [$this, 'getUrlType']),
       new TwigFunction('getQueryParam', [$this, 'getQueryParam']),
+      new TwigFunction('getAssetPath', [$this, 'getAssetPath']),
     ];
   }
 
@@ -302,6 +314,45 @@ class CoreTwigExtension extends AbstractExtension {
    */
   public function getQueryParam($parameter_name) {
     return $this->requestStack->getCurrentRequest()->query->get($parameter_name);
+  }
+
+  /**
+   * Get the versioned asset path from the webpack manifest.
+   *
+   * @param string $asset_name
+   *   The original asset filename (e.g., 'icons.svg').
+   * @param string $directory
+   *   Optional directory path for theme (e.g. 'themes/contrib/atomic').
+   *
+   * @return string
+   *   The versioned asset path, or the original filename if manifest not found.
+   */
+  public function getAssetPath($asset_name, $directory = NULL) {
+    // Determine the manifest file path.
+    $theme_path = $directory ?: 'themes/contrib/atomic';
+    $manifest_path = DRUPAL_ROOT . '/' . $theme_path . '/node_modules/@yalesites-org/component-library-twig/dist/manifest.json';
+
+    // Fallback to _yale-packages for local development.
+    if (!file_exists($manifest_path)) {
+      $manifest_path = DRUPAL_ROOT . '/' . $theme_path . '/_yale-packages/component-library-twig/dist/manifest.json';
+    }
+
+    // If manifest file doesn't exist, fallback to original filename.
+    if (!file_exists($manifest_path)) {
+      return $asset_name;
+    }
+
+    // Read and parse the manifest.
+    $manifest_content = file_get_contents($manifest_path);
+    $manifest = json_decode($manifest_content, TRUE);
+
+    // Check if manifest is valid and contains the asset.
+    if (!is_array($manifest) || !isset($manifest[$asset_name])) {
+      return $asset_name;
+    }
+
+    // Return the versioned filename from manifest.
+    return $manifest[$asset_name];
   }
 
 }
