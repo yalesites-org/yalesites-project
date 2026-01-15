@@ -292,9 +292,13 @@ class EventCalendarFilterForm extends FormBase {
    */
   private function addHiddenFields(array &$form, array $paramsDecoded, FormStateInterface $form_state) {
     // Hidden filters stay under the filters_container.
+    // Array values must be JSON-encoded so JavaScript can read them.
+    $terms_include = $paramsDecoded['terms_include'] ?? [];
+    $terms_exclude = $paramsDecoded['terms_exclude'] ?? [];
+    
     $filterHiddenFields = [
-      'terms_include' => $paramsDecoded['terms_include'] ?? [],
-      'terms_exclude' => $paramsDecoded['terms_exclude'] ?? [],
+      'terms_include' => is_array($terms_include) ? json_encode(array_values($terms_include)) : $terms_include,
+      'terms_exclude' => is_array($terms_exclude) ? json_encode(array_values($terms_exclude)) : $terms_exclude,
       'term_operator' => $paramsDecoded['operator'] ?? '+',
       'event_time_period' => $paramsDecoded['filters']['event_time_period'] ?? 'all',
     ];
@@ -308,13 +312,27 @@ class EventCalendarFilterForm extends FormBase {
 
     // Persist navigated calendar state in filters container for :has() CSS
     // selector counting.
+    // Get month/year from form state (for AJAX rebuilds) or default to current date.
+    $calendar_month = $form_state->getValue(['filters_container', 'calendar_month']);
+    $calendar_year = $form_state->getValue(['filters_container', 'calendar_year']);
+    
+    // If not set in form state, check user input (for AJAX submissions).
+    if (empty($calendar_month)) {
+      $user_input = $form_state->getUserInput();
+      $calendar_month = $user_input['calendar_month'] ?? date('m');
+    }
+    if (empty($calendar_year)) {
+      $user_input = $user_input ?? $form_state->getUserInput();
+      $calendar_year = $user_input['calendar_year'] ?? date('Y');
+    }
+    
     $form['filters_container']['calendar_month'] = [
       '#type' => 'hidden',
-      '#value' => $form_state->getValue('calendar_month') ?? date('m'),
+      '#value' => $calendar_month,
     ];
     $form['filters_container']['calendar_year'] = [
       '#type' => 'hidden',
-      '#value' => $form_state->getValue('calendar_year') ?? date('Y'),
+      '#value' => $calendar_year,
     ];
   }
 
@@ -378,12 +396,21 @@ class EventCalendarFilterForm extends FormBase {
    *   The form state containing month/year values.
    */
   private function renderCalendar(array &$form, array $filters, FormStateInterface $form_state) {
-    // Use navigated month/year if provided, otherwise fall back to current.
+    // Get month and year for calendar display.
+    // Priority: form state > user input > hidden field values > current date.
     $user_input = (array) $form_state->getUserInput();
+    
     $month = $form_state->getValue(['filters_container', 'calendar_month'])
-      ?: ($user_input['calendar_month'] ?? ($user_input['filters_container']['calendar_month'] ?? date('m')));
+      ?: ($user_input['calendar_month'] 
+        ?? $user_input['filters_container']['calendar_month'] 
+        ?? $form['filters_container']['calendar_month']['#value'] 
+        ?? date('m'));
+        
     $year = $form_state->getValue(['filters_container', 'calendar_year'])
-      ?: ($user_input['calendar_year'] ?? ($user_input['filters_container']['calendar_year'] ?? date('Y')));
+      ?: ($user_input['calendar_year'] 
+        ?? $user_input['filters_container']['calendar_year'] 
+        ?? $form['filters_container']['calendar_year']['#value'] 
+        ?? date('Y'));
 
     // Get calendar data.
     $events_calendar = $this->eventsCalendar->getCalendar($month, $year, $filters);
