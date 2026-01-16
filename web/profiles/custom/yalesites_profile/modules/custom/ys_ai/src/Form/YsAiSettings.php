@@ -75,7 +75,7 @@ class YsAiSettings extends AiEngineChatSettings {
         '#title' => $this->t('Floating button icon'),
         '#description' => $this->t('Select the icon to display on the floating chat button. Changes take effect immediately after saving.'),
         '#options' => [
-          'fa-comments' => $this->t('Comments (default)'),
+          'fa-comments' => $this->t('Chat (default)'),
           'fa-sparkles' => $this->t('Sparkles'),
         ],
         '#default_value' => $chat_config->get('floating_button_icon') ?? 'fa-comments',
