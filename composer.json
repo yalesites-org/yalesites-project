@@ -15,9 +15,9 @@
   "require": {
     "composer/installers": "^1.9",
     "cweagans/composer-patches": "^1.7",
-    "drupal/core-composer-scaffold": "10.6.1",
-    "drupal/core-project-message": "10.6.1",
-    "drupal/core-recommended": "10.6.1",
+    "drupal/core-composer-scaffold": "10.6.2",
+    "drupal/core-project-message": "10.6.2",
+    "drupal/core-recommended": "10.6.2",
     "drush/drush": "^13",
     "league/commonmark": "^2.0",
     "oomphinc/composer-installers-extender": "^2.0",
