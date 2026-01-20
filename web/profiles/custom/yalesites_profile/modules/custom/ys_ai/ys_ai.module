@@ -4,3 +4,14 @@
  * @file
  * Module hooks for the ys_ai module.
  */
+
+/**
+ * Implements hook_theme_registry_alter().
+ */
+function ys_ai_theme_registry_alter(&$theme_registry) {
+  if (isset($theme_registry['ai_engine_chat_button'])) {
+    $module_path = \Drupal::service('extension.list.module')->getPath('ys_ai');
+    $theme_registry['ai_engine_chat_button']['path'] = $module_path . '/templates';
+    $theme_registry['ai_engine_chat_button']['template'] = 'ai-engine-chat-button';
+  }
+}
