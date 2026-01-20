@@ -27,7 +27,7 @@
     "drupal/anchor_link": "3.0.0-beta1",
     "drupal/auto_entitylabel": "3.3.0",
     "drupal/better_exposed_filters": "6.0.5",
-    "drupal/book": "2.0.2",
+    "drupal/book": "2.0.4",
     "drupal/calendar_link": "3.0.3",
     "drupal/captcha": "2.0.6",
     "drupal/cas": "2.3.2",
@@ -121,7 +121,7 @@
     "jjj/chosen": "2.2.1",
     "laminas/laminas-escaper": "2.13.0",
     "northernco/ckeditor5-anchor-drupal": "0.4.0",
-    "yalesites-org/ai_engine": "1.2.16",
+    "yalesites-org/ai_engine": "1.2.18",
     "yalesites-org/atomic": "1.67.0",
     "yalesites-org/yale_cas": "v1.2.0"
   },
