@@ -175,6 +175,16 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     $form['description']['#maxlength'] = 256;
   }
 
+  // Add help text to redirect form Path field.
+  if ($form_id === 'redirect_redirect_form') {
+    if (isset($form['redirect_source']['widget'][0]['path'])) {
+      $form['redirect_source']['widget'][0]['path']['#description'] = t('
+        To add a redirect from an aliased path, the "from" page must be published. <br>
+        To create a redirect from an unpublished page, use the node path, eg. /node/123.
+      ');
+    }
+  }
+
   // Hide core taxonomy description.
   // @see ys_core_help()
   if ($form_id == 'taxonomy_overview_vocabularies') {
