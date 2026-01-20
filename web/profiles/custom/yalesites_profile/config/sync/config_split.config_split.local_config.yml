@@ -12,8 +12,8 @@ storage: folder
 folder: profiles/custom/yalesites_profile/config/local_config
 module:
   devel: 0
-  devel_kint_extras: 0
   tracer: 0
+  upgrade_status: 0
   webprofiler: 0
 theme: {  }
 complete_list: {  }

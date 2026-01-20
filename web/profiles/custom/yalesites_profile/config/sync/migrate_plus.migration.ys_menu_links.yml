@@ -88,6 +88,8 @@ destination:
   plugin: 'entity:menu_link_content'
   bundle: menu_link_content
   no_stub: true
+idMap: {  }
 migration_dependencies:
   required:
     - ys_pages
+include: null

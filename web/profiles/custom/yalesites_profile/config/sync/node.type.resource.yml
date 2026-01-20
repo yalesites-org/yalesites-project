@@ -51,7 +51,7 @@ third_party_settings:
       settings:
         age: 0
   search_api_exclude:
-    enabled: 1
+    enabled: true
 name: Resource
 type: resource
 description: null
