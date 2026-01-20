@@ -50,11 +50,14 @@ final class EventsCalendarController extends ControllerBase {
     $terms_include = $request->request->get('terms_include');
     $terms_exclude = $request->request->get('terms_exclude');
     $term_operator = $request->request->get('term_operator');
+    $event_time_period = $request->request->get('event_time_period');
     $search = $request->request->get('search');
 
     $category_included_terms = $this->decodeArray($category_included_terms);
     $audience_included_terms = $this->decodeArray($audience_included_terms);
     $custom_vocab_included_terms = $this->decodeArray($custom_vocab_included_terms);
+    $terms_include = $this->decodeArray($terms_include);
+    $terms_exclude = $this->decodeArray($terms_exclude);
 
     // Prepare filter array to be implemented in EventsCalendar service.
     $filters = [
@@ -64,6 +67,7 @@ final class EventsCalendarController extends ControllerBase {
       'terms_include' => $terms_include,
       'terms_exclude' => $terms_exclude,
       'term_operator' => $term_operator,
+      'event_time_period' => $event_time_period,
       'search' => $search,
     ];
 
