@@ -68,12 +68,34 @@ function ys_book_help($route_name, RouteMatchInterface $route_match) {
 }
 
 /**
+ * Implements hook_entity_prepare_form().
+ */
+function ys_book_entity_prepare_form($entity, $operation, FormStateInterface $form_state) {
+  // Only process page nodes being cloned.
+  if ($entity->getEntityTypeId() !== 'node' || $entity->bundle() !== 'page') {
+    return;
+  }
+
+  // Detect if this is a quick clone operation by checking the route.
+  $route_name = \Drupal::routeMatch()->getRouteName();
+  if ($route_name === 'quick_node_clone.node.quick_clone') {
+    // Clear book data before the form is built.
+    // This runs BEFORE book_form_node_form_alter, so the book module
+    // will build a clean form.
+    if (isset($entity->book)) {
+      $entity->book = [];
+    }
+  }
+}
+
+/**
  * Implements hook_form_alter().
  */
 function ys_book_form_alter(&$form, &$form_state, $form_id) {
   $nodeFormIds = [
     'node_page_form',
     'node_page_edit_form',
+    'node_page_quick_node_clone_form',
   ];
 
   if (!in_array($form_id, $nodeFormIds)) {

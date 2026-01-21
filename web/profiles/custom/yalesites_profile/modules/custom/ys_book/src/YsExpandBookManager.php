@@ -57,7 +57,7 @@ class YsExpandBookManager extends ExpandBookManager {
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The current route match.
    * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
-   *   The logger.factory service.
+   *   The logger factory service.
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, TranslationInterface $translation, ConfigFactoryInterface $config_factory, BookOutlineStorageInterface $book_outline_storage, RendererInterface $renderer, LanguageManagerInterface $language_manager, EntityRepositoryInterface $entity_repository, CacheBackendInterface $backend_chained_cache, CacheBackendInterface $memory_cache, RouteMatchInterface $route_match, LoggerChannelFactoryInterface $logger_factory) {
     parent::__construct($entity_type_manager, $translation, $config_factory, $book_outline_storage, $renderer, $language_manager, $entity_repository, $backend_chained_cache, $memory_cache, $route_match, $logger_factory);
@@ -187,7 +187,7 @@ class YsExpandBookManager extends ExpandBookManager {
    * This allows CAS-protected pages to be included in the book tree,
    * where they will be flagged with is_cas by bookLinkTranslate().
    */
-  protected function bookTreeBuild($bid, array $parameters = []): array {
+  protected function bookTreeBuild(string|int $bid, array $parameters = []): array {
     // Build the book tree.
     $data = $this->doBookTreeBuild($bid, $parameters);
     // Translate links but skip access filtering that removes CAS-protected
