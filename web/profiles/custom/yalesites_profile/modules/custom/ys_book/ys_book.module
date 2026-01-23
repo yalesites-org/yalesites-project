@@ -88,7 +88,7 @@ function ys_book_form_alter(&$form, FormStateInterface $form_state, $form_id) {
       '#weight' => -10,
     ];
 
-    // Replace "No book selected." with "No collection selected."
+    // Replace prefix.
     if (isset($form['book']['pid']['#prefix'])) {
       $form['book']['pid']['#prefix'] = str_replace(
         '<em>' . t('No book selected.') . '</em>',
