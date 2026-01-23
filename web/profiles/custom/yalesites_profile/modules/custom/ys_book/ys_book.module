@@ -9,6 +9,7 @@
 
 use Drupal\node\NodeInterface;
 use Drupal\Core\Render\Element;
+use Drupal\Core\Render\Markup;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
@@ -70,24 +71,63 @@ function ys_book_help($route_name, RouteMatchInterface $route_match) {
 /**
  * Implements hook_form_alter().
  */
-function ys_book_form_alter(&$form, &$form_state, $form_id) {
+function ys_book_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   $nodeFormIds = [
     'node_page_form',
     'node_page_edit_form',
   ];
 
-  if (!in_array($form_id, $nodeFormIds)) {
-    return;
+  // Handle node edit forms with book outline fieldset.
+  if (in_array($form_id, $nodeFormIds)) {
+    $form['book']['#title'] = t('Content Collection');
+    $form['book']['bid']['#title'] = t('Collection');
+    $form['book']['bid']['#description'] = t('Your page will be a part of the selected collection');
+    $form['book']['help_text'] = [
+      '#type' => 'markup',
+      '#markup' => t('Content Collections provide a way to create secondary navigation on your webpage. When you organize content into Collections, they become navigation sections. Your content can appear in both the main navigation and Content Collections'),
+      '#weight' => -10,
+    ];
+
+    // Replace "No book selected." with "No collection selected."
+    if (isset($form['book']['pid']['#prefix'])) {
+      $form['book']['pid']['#prefix'] = str_replace(
+        '<em>' . t('No book selected.') . '</em>',
+        '<em>' . t('No collection selected.') . '</em>',
+        $form['book']['pid']['#prefix']
+      );
+    }
   }
 
-  $form['book']['#title'] = t('Content Collection');
-  $form['book']['bid']['#title'] = t('Collection');
-  $form['book']['bid']['#description'] = t('Your page will be a part of the selected collection');
-  $form['book']['help_text'] = [
-    '#type' => 'markup',
-    '#markup' => t('Content Collections provide a way to create secondary navigation on your webpage. When you organize content into Collections, they become navigation sections. Your content can appear in both the main navigation and Content Collections'),
-    '#weight' => -10,
-  ];
+  // Handle book outline form (appears at /node/[nid]/outline).
+  // Form ID pattern is node_{content_type}_book_outline_form.
+  if (strpos($form_id, '_book_outline_form') !== FALSE) {
+    // Change "Book outline" fieldset title to "Collection outline".
+    if (isset($form['book']['#title'])) {
+      $form['book']['#title'] = t('Collection outline');
+    }
+
+    // Change "Book" to "Collection" and update description.
+    if (isset($form['book']['bid']['#title'])) {
+      $form['book']['bid']['#title'] = t('Collection');
+    }
+    if (isset($form['book']['bid']['#description'])) {
+      $form['book']['bid']['#description'] = t('Your page will be a part of the selected collection.');
+    }
+
+    // Update button text.
+    if (isset($form['actions']['submit']['#value'])) {
+      $current_value = (string) $form['actions']['submit']['#value'];
+      $form['actions']['submit']['#value'] = str_replace(
+        ['book outline', 'book'],
+        ['collection outline', 'collection'],
+        $current_value
+      );
+    }
+
+    if (isset($form['actions']['delete']['#title'])) {
+      $form['actions']['delete']['#title'] = t('Remove from collection outline');
+    }
+  }
 }
 
 /**
@@ -109,6 +149,19 @@ function ys_book_form_book_remove_form_alter(&$form, FormStateInterface $form_st
  * Implements hook_form_FORM_ID_alter() for book_admin_edit.
  */
 function ys_book_form_book_admin_edit_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Replace "book outline" with "collection outline" in the form title.
+  if (isset($form['#title'])) {
+    $title = (string) $form['#title'];
+    $new_title = str_replace('book outline', 'collection outline', $title);
+    // Mark as safe HTML to preserve the markup.
+    $form['#title'] = Markup::create($new_title);
+  }
+
+  // Update save button text from "Save book pages" to "Save collection".
+  if (isset($form['save']['#value'])) {
+    $form['save']['#value'] = t('Save collection');
+  }
+
   // Add required indicator to all title fields in the book admin table.
   if (isset($form['table'])) {
     /** @var \Drupal\book\BookManagerInterface $bookManager */
@@ -149,6 +202,27 @@ function ys_book_menu_links_discovered_alter(&$links) {
 }
 
 /**
+ * Implements hook_preprocess_page_title().
+ */
+function ys_book_preprocess_page_title(&$variables) {
+  // Replace "book outline" with "collection outline" in page titles.
+  $route_name = \Drupal::routeMatch()->getRouteName();
+  if ($route_name === 'book.admin_edit') {
+    if (isset($variables['title'])) {
+      $title = $variables['title'];
+      // Handle both string and render array formats.
+      if (is_array($title)) {
+        $title = \Drupal::service('renderer')->renderPlain($title);
+      }
+      $title = (string) $title;
+      $new_title = str_replace('book outline', 'collection outline', $title);
+      // Mark as safe HTML to preserve the markup.
+      $variables['title'] = Markup::create($new_title);
+    }
+  }
+}
+
+/**
  * Implements hook_library_info_alter().
  */
 function ys_book_library_info_alter(&$libraries, $extension) {
@@ -157,7 +231,7 @@ function ys_book_library_info_alter(&$libraries, $extension) {
     $new_path = '/' . \Drupal::service('extension.list.module')->getPath('ys_book') . '/js';
     $new_js = [];
     $replacements = [
-      'book.js' => $new_path . '/book.js',
+      'js/book.js' => $new_path . '/book.js',
     ];
     foreach ($libraries['drupal.book']['js'] as $source => $options) {
       if (isset($replacements[$source])) {

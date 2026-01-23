@@ -12,7 +12,7 @@
    * @prop {Drupal~behaviorAttach} attach
    *   Attaches summary behavior to book outline forms.
    */
-  Drupal.behaviors.ysCoreBookChanges = {
+  Drupal.behaviors.bookDetailsSummaries = {
     attach(context) {
       const $select = $(context).find(".book-title-select");
       $select
@@ -40,8 +40,9 @@
       }
 
       function updateDescription() {
+        // Target descriptions within the book form wrapper
         $(context)
-          .find('[id^="edit-book-pid"][id$="description"]')
+          .find('.book-outline-form .description')
           .each(function () {
             const $description = $(this);
             $description.html((index, html) =>
