@@ -11,3 +11,16 @@ levers:
   dependencies:
     - core/drupal
     - core/once
+component_color_picker:
+  css:
+    theme:
+      css/component-color-picker.css: {}
+  js:
+    js/component-color-picker.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+color_tokens:
+  css:
+    theme:
+      css/color-tokens.css: {}

@@ -1,0 +1,55 @@
+{#
+/**
+ * @file
+ * Template for Component Color Picker widget palette UI.
+ *
+ * Available variables:
+ * - palette_options: Array of palette options with keys and labels.
+ * - global_theme: The current global theme value (e.g., 'one', 'two', etc.).
+ * - selected_value: The currently selected palette value.
+ * - color_info: Array of color information for each palette option, containing:
+ *   - css_var: The CSS variable reference.
+ *   - hex: The hex color value.
+ *   - token_name: The human-readable token name.
+ *   - token_ref: The token reference.
+ *
+ * @ingroup themeable
+ */
+#}
+<div class="palette-selector" data-palette-selector>
+  <div class="palette-visual-container" data-palette-container>
+    <button type="button" class="expand-indicator" data-expand-button aria-label="{{ 'Show all palettes'|t }}">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    {% for key, label in palette_options %}
+      <div class="palette-option" data-palette="{{ key }}" data-selected="{{ (selected_value == key) ? 'true' : 'false' }}">
+        <div class="palette-color-wrapper">
+          {% if color_info is defined and color_info[key] is defined %}
+            {% set color = color_info[key] %}
+            <div class="palette-circle-container">
+              <span class="palette-circle" data-color="{{ color.css_var }}"{% if color.hex %} data-hex="{{ color.hex }}" style="background-color: {{ color.hex }};"{% endif %}></span>
+            </div>
+            <div class="palette-color-info">
+              {% if color.token_name %}
+                <div class="palette-token-name">{{ color.token_name }}</div>
+              {% endif %}
+              {% if color.hex %}
+                <div class="palette-hex-code">{{ color.hex }}</div>
+              {% endif %}
+            </div>
+          {% else %}
+            <div class="palette-circle-container">
+              <span class="palette-circle"></span>
+            </div>
+            <div class="palette-color-info">
+              <div class="palette-token-name">—</div>
+              <div class="palette-hex-code">—</div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>

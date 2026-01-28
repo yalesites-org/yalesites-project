@@ -192,6 +192,32 @@ function ys_themes_preprocess_menu(&$variables) {
 }
 
 /**
+ * Checks if form contains field using component_color_picker.
+ *
+ * @param array $form_element
+ *   The form element to check.
+ *
+ * @return bool
+ *   TRUE if a color picker field is found, FALSE otherwise.
+ */
+function _ys_themes_has_color_picker_field(array $form_element) {
+  // Check if field_style_color or theme_selection exists in this level.
+  if (isset($form_element['field_style_color']) ||
+      isset($form_element['theme_selection'])) {
+    return TRUE;
+  }
+  // Recursively check nested arrays.
+  foreach ($form_element as $key => $value) {
+    if (is_array($value) && $key[0] !== '#') {
+      if (_ys_themes_has_color_picker_field($value)) {
+        return TRUE;
+      }
+    }
+  }
+  return FALSE;
+}
+
+/**
  * Implements hook_form_alter().
  */
 function ys_themes_form_alter(&$form, $form_state, $form_id) {
@@ -207,6 +233,29 @@ function ys_themes_form_alter(&$form, $form_state, $form_id) {
     $form['settings']['label']['#description'] = t('Used when not showing content preview');
     $form['settings']['label_display']['#default_value'] = FALSE;
     $form['settings']['label_display']['#access'] = FALSE;
+
+    // Attach component color picker library for Layout Builder forms.
+    // This ensures the library loads when forms are loaded via AJAX.
+    // Check both block_form (for block_content entities) and settings
+    // (for custom block plugins).
+    $has_color_picker = FALSE;
+    if (isset($form['settings']['block_form'])) {
+      $has_color_picker = _ys_themes_has_color_picker_field($form['settings']['block_form']);
+    }
+    if (!$has_color_picker && isset($form['settings'])) {
+      $has_color_picker = _ys_themes_has_color_picker_field($form['settings']);
+    }
+    if ($has_color_picker) {
+      $form['#attached']['library'][] = 'ys_themes/component_color_picker';
+    }
+  }
+
+  // Attach component color picker library for Layout Builder section forms.
+  if ($form_id == 'layout_builder_configure_section') {
+    // Check if the form has a theme field (from YSLayoutOptions).
+    if (isset($form['theme'])) {
+      $form['#attached']['library'][] = 'ys_themes/component_color_picker';
+    }
   }
 
   // Allow front-end theming of the layout builder discard changes form.
@@ -280,6 +329,23 @@ function ys_themes_preprocess_form_element(array &$variables) {
       $variables['label']['#context']['value'] = $value;
     }
   }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function ys_themes_theme($existing, $type, $theme, $path) {
+  return [
+    'component_color_picker' => [
+      'variables' => [
+        'palette_options' => [],
+        'global_theme' => 'one',
+        'selected_value' => NULL,
+        'color_info' => [],
+      ],
+      'template' => 'component-color-picker',
+    ],
+  ];
 }
 
 /**
