@@ -173,7 +173,8 @@
         "Decode file URLs https://www.drupal.org/project/linkit/issues/3436733": "https://www.drupal.org/files/issues/2024-09-26/3436733-7-linkit_base_url_decode_fix.patch"
       },
       "drupal/quick_node_clone": {
-        "Fix cloning of inline blocks and paragraphs: https://www.drupal.org/project/quick_node_clone/issues/3100117": "https://git.drupalcode.org/project/quick_node_clone/-/merge_requests/22.diff"
+        "Fix cloning of inline blocks and paragraphs: https://www.drupal.org/project/quick_node_clone/issues/3100117": "https://git.drupalcode.org/project/quick_node_clone/-/merge_requests/22.diff",
+        "Unset book field during cloning to prevent duplicate entry errors": "patches/quick_node_clone/quick_node_clone-book-field-handling.patch"
       },
       "drupal/layout_builder_browser": {
         "Add grouping of reusable blocks (3409153) and add fallback images (3408935) - can't use both patches from d.o would cause merge conflict, combined patch": "patches/layout_builder_browser/3408935-and-3409153-9.patch"
