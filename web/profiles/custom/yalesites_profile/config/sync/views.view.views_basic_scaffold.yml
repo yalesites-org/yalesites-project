@@ -272,7 +272,7 @@ display:
           plugin_id: text
           empty: true
           content:
-            value: 'No results found.'
+            value: "<div class=\"view-empty-wrapper\">\r\n   <h2 class=\"inline-message__heading\">Nothing to share right now.</h2>\r\n   <p class=\"inline-message__text\">Please check back soon or explore our site.</p>\r\n</div>"
             format: basic_html
           tokenize: false
       sorts:
