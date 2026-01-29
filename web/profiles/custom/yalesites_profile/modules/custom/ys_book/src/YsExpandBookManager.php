@@ -242,7 +242,8 @@ class YsExpandBookManager extends ExpandBookManager {
     $link['is_cas'] = $node && $node->hasField('field_login_required') && (bool) $node->get('field_login_required')->value;
 
     // Localize the link since we always set access to TRUE.
-    // Use custom menu link title from book table if available, otherwise use node title.
+    // Use custom menu link title from book table if available,
+    // otherwise use node title.
     $node = $this->entityRepository->getTranslationFromContext($node);
     if (!empty($link['title'])) {
       // Use the custom menu link title from the book table.
