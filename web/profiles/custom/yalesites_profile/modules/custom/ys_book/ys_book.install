@@ -1,0 +1,25 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the ys_book module.
+ */
+
+/**
+ * Add title column to book table for custom menu link titles.
+ */
+function ys_book_update_10001(): void {
+  $schema = \Drupal::database()->schema();
+  $table_name = 'book';
+
+  // Check if the column already exists.
+  if (!$schema->fieldExists($table_name, 'title')) {
+    $spec = [
+      'type' => 'varchar',
+      'length' => 255,
+      'not null' => FALSE,
+      'description' => 'Custom menu link title for the book page. If NULL, uses node title.',
+    ];
+    $schema->addField($table_name, 'title', $spec);
+  }
+}

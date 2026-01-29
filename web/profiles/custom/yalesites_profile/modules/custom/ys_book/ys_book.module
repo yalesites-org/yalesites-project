@@ -110,6 +110,41 @@ function ys_book_form_alter(&$form, FormStateInterface $form_state, $form_id) {
       '#weight' => -10,
     ];
 
+    // Add Menu link title field to sidebar widget.
+    /** @var \Drupal\node\NodeInterface $node */
+    $node = $form_state->getFormObject()->getEntity();
+    $book_manager = \Drupal::service('book.manager');
+
+    // Get current book link if node is already in a collection.
+    $default_title = $node->label();
+    if (!$node->isNew()) {
+      // Use $translate = FALSE to get raw database value before
+      // bookLinkTranslate overwrites it.
+      $book_link = $book_manager->loadBookLink($node->id(), FALSE);
+      if ($book_link && !empty($book_link['title'])) {
+        $default_title = $book_link['title'];
+      }
+    }
+
+    $form['book']['title'] = [
+      '#type' => 'textfield',
+      '#title' => t('Menu link title'),
+      '#description' => t('The title to display in the Content Collection menu. If left empty, the node title will be used.'),
+      '#default_value' => $default_title,
+      '#weight' => -4,
+      '#maxlength' => 255,
+      '#states' => [
+        'visible' => [
+          ':input[name="book[bid]"]' => ['!value' => '0'],
+        ],
+      ],
+    ];
+
+    // Add submit handler to process the title field.
+    if (!in_array('ys_book_node_form_submit', $form['#submit'] ?? [])) {
+      array_unshift($form['#submit'], 'ys_book_node_form_submit');
+    }
+
     // Replace prefix.
     if (isset($form['book']['pid']['#prefix'])) {
       $form['book']['pid']['#prefix'] = str_replace(
@@ -123,6 +158,8 @@ function ys_book_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   // Handle book outline form (appears at /node/[nid]/outline).
   // Form ID pattern is node_{content_type}_book_outline_form.
   if (strpos($form_id, '_book_outline_form') !== FALSE) {
+    // Store form ID for later use in submit handler.
+    $form['#ys_book_form_id'] = $form_id;
     // Change "Book outline" fieldset title to "Collection outline".
     if (isset($form['book']['#title'])) {
       $form['book']['#title'] = t('Collection outline');
@@ -135,6 +172,30 @@ function ys_book_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     if (isset($form['book']['bid']['#description'])) {
       $form['book']['bid']['#description'] = t('Your page will be a part of the selected collection.');
     }
+
+    // Add Menu link title field.
+    /** @var \Drupal\node\NodeInterface $node */
+    $node = $form_state->getFormObject()->getEntity();
+    $book_manager = \Drupal::service('book.manager');
+    // Use $translate = FALSE to get raw database value before
+    // bookLinkTranslate overwrites it.
+    $book_link = $book_manager->loadBookLink($node->id(), FALSE);
+
+    // Default to node title if no custom title exists.
+    $default_title = $node->label();
+    if ($book_link && !empty($book_link['title'])) {
+      $default_title = $book_link['title'];
+    }
+
+    $form['book']['title'] = [
+      '#type' => 'textfield',
+      '#title' => t('Menu link title'),
+      '#description' => t('The title to display in the Content Collection menu. To edit this field, go to the node edit form and use the "Menu link title" field in the Content Collection sidebar widget.'),
+      '#default_value' => $default_title,
+      '#weight' => -4,
+      '#maxlength' => 255,
+      '#disabled' => TRUE,
+    ];
 
     // Update button text.
     if (isset($form['actions']['submit']['#value'])) {
@@ -184,15 +245,53 @@ function ys_book_form_book_admin_edit_alter(&$form, FormStateInterface $form_sta
     $form['save']['#value'] = t('Save collection');
   }
 
-  // Add required indicator to all title fields in the book admin table.
+  // Add submit handler to save menu link titles to book table
+  // instead of node titles.
+  array_unshift($form['#submit'], 'ys_book_book_admin_edit_form_submit');
+
+  // Replace node title fields with book menu link title fields
+  // in the admin table.
   if (isset($form['table'])) {
+    // Change the table header from "Title" to "Menu link title".
+    if (isset($form['table']['#header']) && is_array($form['table']['#header'])) {
+      $form['table']['#header'][0] = t('Menu link title');
+    }
+
     /** @var \Drupal\book\BookManagerInterface $bookManager */
     $bookManager = \Drupal::service('book.manager');
     $destination = \Drupal::destination()->getAsArray();
 
     foreach (Element::children($form['table']) as $key) {
       if (isset($form['table'][$key]['title'])) {
-        $form['table'][$key]['title']['#required'] = TRUE;
+        // Get the book link to retrieve the custom menu title.
+        $nid = $form['table'][$key]['#nid'] ?? NULL;
+        if ($nid) {
+          $book_link = $bookManager->loadBookLink($nid, FALSE);
+          $default_title = $book_link['title'] ?? NULL;
+
+          // If no custom title, use node title as default.
+          if (empty($default_title)) {
+            /** @var \Drupal\node\NodeInterface $node */
+            $node = \Drupal::entityTypeManager()->getStorage('node')->load($nid);
+            if ($node) {
+              $default_title = $node->label();
+            }
+          }
+
+          // Replace the node title field with a book menu link title field.
+          $form['table'][$key]['title'] = [
+            '#type' => 'textfield',
+            '#title' => t('Menu link title'),
+            '#title_display' => 'hidden',
+            '#default_value' => $default_title,
+            '#required' => TRUE,
+            '#wrapper_attributes' => ['class' => ['container-inline']],
+            '#attributes' => ['class' => ['book-admin-title']],
+          ];
+        }
+        else {
+          $form['table'][$key]['title']['#required'] = TRUE;
+        }
       }
 
       // Add Remove action to operations column if it exists.
@@ -210,6 +309,50 @@ function ys_book_form_book_admin_edit_alter(&$form, FormStateInterface $form_sta
         }
       }
     }
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update() for nodes.
+ */
+function ys_book_node_update(NodeInterface $node): void {
+  _ys_book_save_menu_link_title($node);
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_insert() for nodes.
+ */
+function ys_book_node_insert(NodeInterface $node): void {
+  _ys_book_save_menu_link_title($node);
+}
+
+/**
+ * Helper function to save menu link title to book table.
+ */
+function _ys_book_save_menu_link_title(NodeInterface $node): void {
+  if (!$node->id()) {
+    return;
+  }
+
+  // Get the title from node book data (already processed by submit handler).
+  $title = NULL;
+  if (isset($node->book['title'])) {
+    $title = $node->book['title'];
+    // Ensure it's NULL if empty or matches node title (safety check).
+    if (!empty($title) && $title === $node->label()) {
+      $title = NULL;
+    }
+  }
+
+  // Check if book link exists in database and update the title.
+  $book_manager = \Drupal::service('book.manager');
+  $book_link = $book_manager->loadBookLink($node->id(), FALSE);
+
+  if ($book_link && !empty($book_link['bid'])) {
+    \Drupal::database()->update('book')
+      ->fields(['title' => $title])
+      ->condition('nid', $node->id())
+      ->execute();
   }
 }
 
@@ -265,5 +408,88 @@ function ys_book_library_info_alter(&$libraries, $extension) {
     }
     $libraries['drupal.book']['js'] = $new_js;
 
+  }
+}
+
+/**
+ * Submit handler for node forms to process menu link title.
+ */
+function ys_book_node_form_submit(array &$form, FormStateInterface $form_state): void {
+  $book_values = $form_state->getValue('book');
+  if (!isset($book_values) || empty($book_values['bid']) || $book_values['bid'] == '0') {
+    return;
+  }
+
+  /** @var \Drupal\node\NodeInterface $node */
+  $node = $form_state->getFormObject()->getEntity();
+
+  // Process the title.
+  $title = NULL;
+  if (isset($book_values['title'])) {
+    $title = trim($book_values['title']);
+    $node_title = $node->label();
+    // If title is empty or matches node title, set to NULL
+    // so it uses node title.
+    if (empty($title) || $title === $node_title) {
+      $title = NULL;
+    }
+  }
+
+  // Set the processed title in book values so it's available in hooks.
+  $book_values['title'] = $title;
+  $form_state->setValue('book', $book_values);
+}
+
+/**
+ * Submit handler for book admin edit form to save menu link titles.
+ */
+function ys_book_book_admin_edit_form_submit(array &$form, FormStateInterface $form_state): void {
+  $values = $form_state->getValues();
+  if (!isset($values['table'])) {
+    return;
+  }
+
+  /** @var \Drupal\book\BookManagerInterface $bookManager */
+  $bookManager = \Drupal::service('book.manager');
+  $nodeStorage = \Drupal::entityTypeManager()->getStorage('node');
+
+  foreach (Element::children($form['table']) as $key) {
+    if (!isset($form['table'][$key]['#item']) || !isset($values['table'][$key])) {
+      continue;
+    }
+
+    $row = $form['table'][$key];
+    $row_values = $values['table'][$key];
+    $nid = $row_values['nid'] ?? NULL;
+
+    if (!$nid) {
+      continue;
+    }
+
+    $default_title = $row['title']['#default_value'] ?? NULL;
+    $new_title = trim($row_values['title'] ?? '');
+
+    // If title changed, save to book table.
+    if ($default_title !== $new_title) {
+      $link = $bookManager->loadBookLink($nid, FALSE);
+      if ($link && !empty($link['bid'])) {
+        /** @var \Drupal\node\NodeInterface $node */
+        $node = $nodeStorage->load($nid);
+
+        // Save NULL if title is empty or matches node title.
+        $title_to_save = (!empty($new_title) && $node && $new_title !== $node->label())
+          ? $new_title
+          : NULL;
+
+        \Drupal::database()->update('book')
+          ->fields(['title' => $title_to_save])
+          ->condition('nid', $nid)
+          ->execute();
+      }
+    }
+
+    // Restore original value to prevent
+    // default handler from updating node title.
+    $form_state->setValue(['table', $key, 'title'], $default_title);
   }
 }
