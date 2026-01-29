@@ -197,6 +197,9 @@ function ys_book_form_alter(&$form, FormStateInterface $form_state, $form_id) {
       '#disabled' => TRUE,
     ];
 
+    // Attach CSS library for disabled field styling.
+    $form['#attached']['library'][] = 'ys_book/ys_book';
+
     // Update button text.
     if (isset($form['actions']['submit']['#value'])) {
       $current_value = (string) $form['actions']['submit']['#value'];

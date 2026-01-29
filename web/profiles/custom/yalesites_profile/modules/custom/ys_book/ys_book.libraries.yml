@@ -1,0 +1,7 @@
+ys_book:
+  css:
+    theme:
+      css/ys_book.css: {}
+  dependencies:
+    - core/drupal
+    - gin/gin
