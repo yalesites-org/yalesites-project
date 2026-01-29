@@ -165,7 +165,8 @@
         "hide remove button https://www.drupal.org/project/paragraphs/issues/2919186": "https://www.drupal.org/files/issues/2020-05-13/hide_field_required_paragraphs_remove_button_1.patch"
       },
       "drupal/quick_node_clone": {
-        "Fix cloning of inline blocks and paragraphs: https://www.drupal.org/project/quick_node_clone/issues/3100117": "https://git.drupalcode.org/project/quick_node_clone/-/merge_requests/22.diff"
+        "Fix cloning of inline blocks and paragraphs: https://www.drupal.org/project/quick_node_clone/issues/3100117": "https://git.drupalcode.org/project/quick_node_clone/-/merge_requests/22.diff",
+        "Unset book field during cloning to prevent duplicate entry errors": "patches/quick_node_clone/quick_node_clone-book-field-handling.patch"
       },
       "drupal/redirect": {
         "fix validation issue on adding url redirect: https://www.drupal.org/node/3057250": "https://git.drupalcode.org/project/redirect/-/merge_requests/133.diff"

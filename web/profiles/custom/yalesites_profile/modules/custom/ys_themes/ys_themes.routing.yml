@@ -6,3 +6,12 @@ ys_themes.theme_settings:
     _title: 'Theme Settings'
   requirements:
     _permission: 'yalesites manage settings'
+
+# Color tokens table.
+ys_themes.color_tokens:
+  path: '/admin/yalesites/themes/color-tokens'
+  defaults:
+    _controller: '\Drupal\ys_themes\Controller\ColorTokensController::colorTable'
+    _title: 'Color Tokens'
+  requirements:
+    _permission: 'yalesites manage settings'
