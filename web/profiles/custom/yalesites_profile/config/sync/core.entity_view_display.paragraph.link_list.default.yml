@@ -4,6 +4,7 @@ status: true
 dependencies:
   config:
     - field.field.paragraph.link_list.field_links
+    - field.field.paragraph.link_list.field_list_heading
     - paragraphs.paragraphs_type.link_list
   module:
     - link
@@ -21,6 +22,14 @@ content:
       url_plain: false
       rel: '0'
       target: '0'
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_list_heading:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
     third_party_settings: {  }
     weight: 0
     region: content
