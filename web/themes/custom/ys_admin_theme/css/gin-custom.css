@@ -91,10 +91,10 @@ a.focal-point-preview-link {
   min-height: calc(var(--input-padding-vertical) * 3 + var(--input-line-height)) !important;
 }
 
-/* 
+/*
  * Dark mode asterisk contrast fix for WCAG 2.1 AA compliance
  * YSP-1083: Required field asterisks fail color contrast in dark mode
- * 
+ *
  * Gin's dark mode was missing the --gin-color-danger-light variable that exists
  * in light mode. This adds the missing variable with a color that meets WCAG 2.1 AA
  * contrast requirements (4.5:1 ratio) and updates asterisks to use it.
