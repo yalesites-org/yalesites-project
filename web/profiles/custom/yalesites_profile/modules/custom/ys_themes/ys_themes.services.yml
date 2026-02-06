@@ -1,4 +1,8 @@
 services:
+  # Custom channel for error logging.
+  logger.channel.ys_themes:
+    parent: logger.channel_base
+    arguments: ['ys_themes']
   # Service for managing YaleSites theme settings.
   ys_themes.theme_settings_manager:
     class: Drupal\ys_themes\ThemeSettingsManager
@@ -9,3 +13,7 @@ services:
     arguments: ['@ys_themes.theme_settings_manager']
     tags:
       - { name: twig.extension }
+  # Service for resolving color tokens to hex values.
+  ys_themes.color_token_resolver:
+    class: Drupal\ys_themes\ColorTokenResolver
+    arguments: ['@logger.channel.ys_themes', '@extension.list.theme', '@ys_themes.theme_settings_manager', '@renderer']

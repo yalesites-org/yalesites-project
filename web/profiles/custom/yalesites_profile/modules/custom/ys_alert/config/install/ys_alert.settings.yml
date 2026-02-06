@@ -15,7 +15,7 @@ alert:
   id: 1660263375
   headline: 'Optional banner for displaying an announcement or notice'
   message: 'Additional text goes here'
-  status: 1
+  status: 0
   type: announcement
   link_title: ''
   link_url: ''
