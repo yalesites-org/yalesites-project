@@ -5,6 +5,7 @@
  * Functions to support the YaleSites admin theme.
  */
 
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\node\Entity\Node;
 
 /**
@@ -37,5 +38,51 @@ function ys_admin_theme_set_title_on_node_edit_page(array &$variables) {
     $variables['title'] = [
       '#markup' => "<em>" . $bundle_label . ":</em> " . $node->getTitle(),
     ];
+  }
+}
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter() for node_form.
+ */
+function ys_admin_theme_form_node_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  /** @var Drupal\node\NodeForm $node_form */
+  $node_form = $form_state->getFormObject();
+
+  /** @var Drupal\node\Entity\Node $node */
+  $node = $node_form->getEntity();
+
+  // Only run for page nodes.
+  if ($node->bundle() !== 'page') {
+    return;
+  }
+
+  // Book is required to continue.
+  if (!isset($form['book'])) {
+    return;
+  }
+
+  $nid = $node->isNew() ? 'new' : $node->id();
+
+  $book_fields = [
+    'field_collection_as_microsite',
+    'field_hide_utility_menu',
+  ];
+
+  foreach ($book_fields as $book_field) {
+    // Move book_field into the book details.
+    if (isset($form[$book_field])) {
+      $form['book'][$book_field] = $form[$book_field];
+      unset($form[$book_field]);
+
+      // Only show book_field for top-level books.
+      // If pid is -1 (no parent) OR pid equals the current node's nid.
+      $form['book'][$book_field]['#states'] = [
+        'visible' => [
+          [':input[name="book[pid]"]' => ['value' => '-1']],
+          'or',
+          [':input[name="book[bid]"]' => ['value' => $nid]],
+        ],
+      ];
+    }
   }
 }
