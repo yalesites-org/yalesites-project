@@ -94,11 +94,11 @@ class EventCalendarFilterForm extends FormBase {
     // Store the calendar wrapper ID in the form state.
     $form_state->set('calendar_wrapper_id', self::CALENDAR_WRAPPER_ID);
 
-    // Create filters container.
+    // Create filters container with views-exposed-form structure.
     $form['filters_container'] = [
       '#type' => 'container',
       '#attributes' => [
-        'class' => ['ys-filter-form', 'ys-filter-form--scaffold'],
+        'class' => ['views-exposed-form', 'ys-filter-form', 'ys-filter-form--scaffold'],
       ],
     ];
 
@@ -118,7 +118,8 @@ class EventCalendarFilterForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    // No-op: all logic is handled in AJAX callback.
+    // Form submission is handled via AJAX callback.
+    // This method is called but the actual filtering happens in ajaxFilterCallback.
   }
 
   /**
@@ -127,14 +128,64 @@ class EventCalendarFilterForm extends FormBase {
   public function ajaxFilterCallback(array &$form, FormStateInterface $form_state) {
     // Ensure navigated month/year from user input are persisted in form state.
     $user_input = (array) $form_state->getUserInput();
+    $filters_container_input = $user_input['filters_container'] ?? [];
+
+    // Persist month/year navigation.
     if (!empty($user_input['calendar_month'])) {
       $form_state->setValue(['filters_container', 'calendar_month'], $user_input['calendar_month']);
     }
+    elseif (!empty($filters_container_input['calendar_month'])) {
+      $form_state->setValue(['filters_container', 'calendar_month'], $filters_container_input['calendar_month']);
+    }
+
     if (!empty($user_input['calendar_year'])) {
       $form_state->setValue(['filters_container', 'calendar_year'], $user_input['calendar_year']);
     }
+    elseif (!empty($filters_container_input['calendar_year'])) {
+      $form_state->setValue(['filters_container', 'calendar_year'], $filters_container_input['calendar_year']);
+    }
 
-    // Get filters from form state.
+    // Persist all filter values to form state so they're available on next AJAX call.
+    $filter_keys = [
+      'category_included_terms',
+      'audience_included_terms',
+      'custom_vocab_included_terms',
+      'terms_include',
+      'terms_exclude',
+      'term_operator',
+      'event_time_period',
+      'search',
+    ];
+
+    foreach ($filter_keys as $key) {
+      $value = $form_state->getValue($key);
+      // For search field, empty string is valid, so check for NULL specifically.
+      // For other fields, check for NULL or empty.
+      if ($key === 'search') {
+        if ($value === NULL) {
+          // Try user input.
+          if (isset($user_input[$key])) {
+            $form_state->setValue($key, $user_input[$key]);
+          }
+          elseif (isset($filters_container_input[$key])) {
+            $form_state->setValue($key, $filters_container_input[$key]);
+          }
+        }
+      }
+      else {
+        if ($value === NULL || $value === '') {
+          // Try user input.
+          if (isset($user_input[$key])) {
+            $form_state->setValue($key, $user_input[$key]);
+          }
+          elseif (isset($filters_container_input[$key])) {
+            $form_state->setValue($key, $filters_container_input[$key]);
+          }
+        }
+      }
+    }
+
+    // Get filters from form state (now properly populated).
     $filters = $this->getFiltersFromFormState($form_state);
 
     // Render updated calendar.
@@ -162,43 +213,49 @@ class EventCalendarFilterForm extends FormBase {
       'category' => $form_state->getValue('category_included_terms') ?? ($paramsDecoded['category_included_terms'] ?? []),
       'audience' => $form_state->getValue('audience_included_terms') ?? ($paramsDecoded['audience_included_terms'] ?? []),
       'custom_vocab' => $form_state->getValue('custom_vocab_included_terms') ?? ($paramsDecoded['custom_vocab_included_terms'] ?? []),
+      'search' => $form_state->getValue('search') ?? ($paramsDecoded['search'] ?? ''),
     ];
 
-    // Search filter (ajax triggers via debounced change in JS).
+    $weight = 0;
+
+    // Search filter (no AJAX - will use Apply button).
     if (!empty($exposedFilterOptions['show_search_filter'])) {
       $form['filters_container']['search'] = [
         '#type' => 'textfield',
         '#title' => $this->t('Search'),
-        '#default_value' => $form_state->getValue('search') ?? '',
+        '#default_value' => $currentValues['search'],
         '#attributes' => [
           'placeholder' => $this->t('Search events'),
-          'class' => ['ys-events-search-input'],
+          'class' => ['form-text'],
         ],
-        '#ajax' => [
-          'callback' => '::ajaxFilterCallback',
-          'wrapper' => self::CALENDAR_WRAPPER_ID,
-          'event' => 'ys-calendar-search',
-          'progress' => ['type' => 'none'],
-        ],
+        '#weight' => $weight++,
       ];
     }
 
     // Category filter.
     if (!empty($exposedFilterOptions['show_category_filter'])) {
-      $form['filters_container']['category_included_terms'] = $this->createFilterElement(
+      $category_element = $this->createFilterElement(
         'Category',
         $this->getTaxonomyOptions('event_category', $paramsDecoded['category_included_terms'] ?? NULL),
         $currentValues['category']
       );
+      // Remove AJAX from filter element.
+      unset($category_element['#ajax']);
+      $category_element['#weight'] = $weight++;
+      $form['filters_container']['category_included_terms'] = $category_element;
     }
 
     // Audience filter.
     if (!empty($exposedFilterOptions['show_audience_filter'])) {
-      $form['filters_container']['audience_included_terms'] = $this->createFilterElement(
+      $audience_element = $this->createFilterElement(
         'Audience',
         $this->getTaxonomyOptions('audience', $paramsDecoded['audience_included_terms'] ?? NULL),
         $currentValues['audience']
       );
+      // Remove AJAX from filter element.
+      unset($audience_element['#ajax']);
+      $audience_element['#weight'] = $weight++;
+      $form['filters_container']['audience_included_terms'] = $audience_element;
     }
 
     // Custom vocabulary filter.
@@ -208,12 +265,34 @@ class EventCalendarFilterForm extends FormBase {
         ->load('custom_vocab')
         ->label();
 
-      $form['filters_container']['custom_vocab_included_terms'] = $this->createFilterElement(
+      $custom_vocab_element = $this->createFilterElement(
         $custom_vocab_label,
         $this->getTaxonomyOptions('custom_vocab', $paramsDecoded['custom_vocab_included_terms'] ?? NULL),
         $currentValues['custom_vocab']
       );
+      // Remove AJAX from filter element.
+      unset($custom_vocab_element['#ajax']);
+      $custom_vocab_element['#weight'] = $weight++;
+      $form['filters_container']['custom_vocab_included_terms'] = $custom_vocab_element;
     }
+
+    // Add Apply button (matching views exposed form structure).
+    $form['filters_container']['actions'] = [
+      '#type' => 'actions',
+      '#weight' => $weight++,
+    ];
+    $form['filters_container']['actions']['submit'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Apply'),
+      '#ajax' => [
+        'callback' => '::ajaxFilterCallback',
+        'wrapper' => self::CALENDAR_WRAPPER_ID,
+        'progress' => ['type' => 'none'],
+      ],
+      '#attributes' => [
+        'class' => ['button', 'button--primary'],
+      ],
+    ];
   }
 
   /**
@@ -371,18 +450,52 @@ class EventCalendarFilterForm extends FormBase {
   private function getFiltersFromFormState(FormStateInterface $form_state): array {
     // Helper function to ensure array format.
     $ensureArray = function ($value) {
-      return is_array($value) ? $value : ($value ? [$value] : []);
+      if (is_array($value)) {
+        return $value;
+      }
+      if (is_string($value)) {
+        // Try to decode JSON-encoded arrays.
+        $decoded = json_decode($value, TRUE);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+          return $decoded;
+        }
+        // If it's a single value, wrap it in an array.
+        return $value ? [$value] : [];
+      }
+      return $value ? [$value] : [];
+    };
+
+    // Get user input as fallback for values not yet in form state.
+    $user_input = (array) $form_state->getUserInput();
+    $filters_container_input = $user_input['filters_container'] ?? [];
+
+    // Helper to get value from form state, user input, or default.
+    $getFilterValue = function ($key, $default = NULL) use ($form_state, $user_input, $filters_container_input) {
+      // Check form state first.
+      $value = $form_state->getValue($key);
+      if ($value !== NULL && $value !== '') {
+        return $value;
+      }
+      // Check user input.
+      if (isset($user_input[$key])) {
+        return $user_input[$key];
+      }
+      // Check filters_container in user input.
+      if (isset($filters_container_input[$key])) {
+        return $filters_container_input[$key];
+      }
+      return $default;
     };
 
     return [
-      'category_included_terms' => $ensureArray($form_state->getValue('category_included_terms')),
-      'audience_included_terms' => $ensureArray($form_state->getValue('audience_included_terms')),
-      'custom_vocab_included_terms' => $ensureArray($form_state->getValue('custom_vocab_included_terms')),
-      'terms_include' => $ensureArray($form_state->getValue('terms_include')),
-      'terms_exclude' => $ensureArray($form_state->getValue('terms_exclude')),
-      'term_operator' => $form_state->getValue('term_operator') ?: '+',
-      'event_time_period' => $form_state->getValue('event_time_period') ?: 'all',
-      'search' => trim((string) ($form_state->getValue('search') ?? '')),
+      'category_included_terms' => $ensureArray($getFilterValue('category_included_terms', [])),
+      'audience_included_terms' => $ensureArray($getFilterValue('audience_included_terms', [])),
+      'custom_vocab_included_terms' => $ensureArray($getFilterValue('custom_vocab_included_terms', [])),
+      'terms_include' => $ensureArray($getFilterValue('terms_include', [])),
+      'terms_exclude' => $ensureArray($getFilterValue('terms_exclude', [])),
+      'term_operator' => $getFilterValue('term_operator', '+'),
+      'event_time_period' => $getFilterValue('event_time_period', 'all'),
+      'search' => trim((string) $getFilterValue('search', '')),
     ];
   }
 
