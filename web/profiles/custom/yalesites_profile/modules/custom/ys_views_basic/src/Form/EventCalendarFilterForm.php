@@ -119,7 +119,8 @@ class EventCalendarFilterForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // Form submission is handled via AJAX callback.
-    // This method is called but the actual filtering happens in ajaxFilterCallback.
+    // This method is called but the actual filtering happens in
+    // ajaxFilterCallback.
   }
 
   /**
@@ -145,7 +146,8 @@ class EventCalendarFilterForm extends FormBase {
       $form_state->setValue(['filters_container', 'calendar_year'], $filters_container_input['calendar_year']);
     }
 
-    // Persist all filter values to form state so they're available on next AJAX call.
+    // Persist all filter values to form state so they're available on
+    // next AJAX call.
     $filter_keys = [
       'category_included_terms',
       'audience_included_terms',
@@ -159,7 +161,8 @@ class EventCalendarFilterForm extends FormBase {
 
     foreach ($filter_keys as $key) {
       $value = $form_state->getValue($key);
-      // For search field, empty string is valid, so check for NULL specifically.
+      // For search field, empty string is valid, so check for NULL
+      // specifically.
       // For other fields, check for NULL or empty.
       if ($key === 'search') {
         if ($value === NULL) {
