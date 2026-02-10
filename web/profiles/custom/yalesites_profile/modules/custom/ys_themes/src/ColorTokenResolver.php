@@ -366,7 +366,7 @@ class ColorTokenResolver {
    *   Each option contains only the background color.
    */
   public function getColorStylesForEntity($entity_type = NULL, $bundle = NULL) {
-    $global_themes = ['one', 'two', 'three', 'four', 'five'];
+    $global_themes = ['one', 'two', 'three', 'four', 'five', 'six'];
 
     // Section layout mapping: one→slot-one, two→slot-three, three→slot-two,
     // four→slot-five.
