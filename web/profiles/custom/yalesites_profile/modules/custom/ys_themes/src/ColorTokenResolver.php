@@ -441,11 +441,13 @@ class ColorTokenResolver {
       ], $global_themes);
     }
 
-    // Inline-message mapping: one→slot-one, two→slot-one, three→slot-two,
+    // Inline-message mapping: one→slot-four, two→slot-one, three→slot-two,
     // four→slot-three, five→slot-five.
+    // Maps to inline-message SCSS theme backgrounds: default uses slot-four,
+    // theme two uses slot-one, theme three uses slot-two, etc.
     if ($entity_type === 'block_content' && $bundle === 'inline_message') {
       $all_color_styles = $this->buildColorStyles([
-        'one' => 'one',
+        'one' => 'four',
         'two' => 'one',
         'three' => 'two',
         'four' => 'three',
