@@ -89,6 +89,7 @@ class EventCalendarFilterForm extends FormBase {
       'core/drupal.ajax',
       'atomic/chosen-select',
       'atomic/calendar',
+      'ys_views_basic/ys_views_basic',
     ];
 
     // Store the calendar wrapper ID in the form state.
@@ -342,6 +343,7 @@ class EventCalendarFilterForm extends FormBase {
   private function getTaxonomyOptions(string $vocabulary, $parent_term_id = NULL): array {
     // If a parent term is selected in the widget, show only its children.
     if (!empty($parent_term_id)) {
+      $options = [];
       $child_terms = $this->viewsBasicManager->getChildTermsByParentId((int) $parent_term_id, $vocabulary);
 
       // Load the term entities to get their names.
