@@ -109,7 +109,11 @@ class EventsCalendar implements EventsCalendarInterface {
     }
 
     // Taxonomy filtering logic.
-    if (!empty($filters['category_included_terms']) || !empty($filters['audience_included_terms']) || !empty($filters['custom_vocab_included_terms']) || !empty($filters['terms_include']) || !empty($filters['terms_exclude']) || !empty($filters['event_time_period'])) {
+    // Only apply filtering if there are actual filters to apply.
+    // Note: event_time_period must be checked separately as 'all' means
+    // no time filtering.
+    $has_time_filter = !empty($filters['event_time_period']) && $filters['event_time_period'] !== 'all';
+    if (!empty($filters['category_included_terms']) || !empty($filters['audience_included_terms']) || !empty($filters['custom_vocab_included_terms']) || !empty($filters['terms_include']) || !empty($filters['terms_exclude']) || $has_time_filter) {
       $category_tids = [];
       $audience_tids = [];
       $custom_vocab_tids = [];
