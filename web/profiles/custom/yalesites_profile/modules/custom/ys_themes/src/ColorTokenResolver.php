@@ -366,7 +366,7 @@ class ColorTokenResolver {
    *   Each option contains only the background color.
    */
   public function getColorStylesForEntity($entity_type = NULL, $bundle = NULL) {
-    $global_themes = ['one', 'two', 'three', 'four', 'five'];
+    $global_themes = ['one', 'two', 'three', 'four', 'five', 'six'];
 
     // Section layout mapping: one→slot-one, two→slot-three, three→slot-two,
     // four→slot-five.
@@ -441,11 +441,13 @@ class ColorTokenResolver {
       ], $global_themes);
     }
 
-    // Inline-message mapping: one→slot-one, two→slot-one, three→slot-two,
+    // Inline-message mapping: one→slot-four, two→slot-one, three→slot-two,
     // four→slot-three, five→slot-five.
+    // Maps to inline-message SCSS theme backgrounds: default uses slot-four,
+    // theme two uses slot-one, theme three uses slot-two, etc.
     if ($entity_type === 'block_content' && $bundle === 'inline_message') {
       $all_color_styles = $this->buildColorStyles([
-        'one' => 'one',
+        'one' => 'four',
         'two' => 'one',
         'three' => 'two',
         'four' => 'three',

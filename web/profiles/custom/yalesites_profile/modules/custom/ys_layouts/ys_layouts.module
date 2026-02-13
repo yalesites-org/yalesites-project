@@ -82,6 +82,7 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'email' => NULL,
         'phone' => NULL,
         'address' => [],
+        'padding_options' => 'default',
       ],
     ],
     'ys_resource_meta_block' => [
@@ -190,6 +191,15 @@ function ys_layouts_preprocess_block(&$variables) {
     else {
       // Use block-specific default if no padding options set.
       $variables['padding_options'] = $default_padding;
+    }
+  }
+
+  // Handle padding options for plugin blocks (non-content entity blocks).
+  if (!isset($variables['padding_options']) && isset($variables['elements']['#configuration']['padding_options'])) {
+    $padding_value = $variables['elements']['#configuration']['padding_options'];
+    if ($padding_value) {
+      // Replace underscores with hyphens for CSS classes.
+      $variables['padding_options'] = str_replace('_', '-', $padding_value);
     }
   }
 }
