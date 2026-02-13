@@ -13,6 +13,7 @@ use Drupal\Core\Render\Markup;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
+use Drupal\Core\Cache\Cache;
 
 /**
  * Implements hook_form_FORM_ID_alter().
@@ -149,6 +150,9 @@ function ys_book_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     if (isset($form['actions']['delete']['#title'])) {
       $form['actions']['delete']['#title'] = t('Remove from collection outline');
     }
+
+    // Add cache invalidation submit handler.
+    $form['actions']['submit']['#submit'][] = '_ys_book_outline_form_submit';
   }
 }
 
@@ -165,6 +169,9 @@ function ys_book_form_book_remove_form_alter(&$form, FormStateInterface $form_st
     $node = $build_info['args'][0];
     $form['description']['#markup'] = t("Remove '%title' from the collection? You can add it back later using the Content Collection tab in Manage Settings.", ['%title' => $node->label()]);
   }
+
+  // Add cache invalidation submit handler.
+  $form['actions']['submit']['#submit'][] = '_ys_book_remove_form_submit';
 }
 
 /**
@@ -211,6 +218,9 @@ function ys_book_form_book_admin_edit_alter(&$form, FormStateInterface $form_sta
       }
     }
   }
+
+  // Add cache invalidation submit handler.
+  $form['save']['#submit'][] = '_ys_book_admin_edit_submit';
 }
 
 /**
@@ -266,4 +276,179 @@ function ys_book_library_info_alter(&$libraries, $extension) {
     $libraries['drupal.book']['js'] = $new_js;
 
   }
+}
+
+/**
+ * Submit handler for book outline form to invalidate microsite cache.
+ */
+function _ys_book_outline_form_submit($form, FormStateInterface $form_state) {
+  $book = $form_state->getValue('book');
+  if (!empty($book['bid'])) {
+    _ys_book_invalidate_microsite_cache($book['bid']);
+  }
+  // Also invalidate the original book if the node moved books.
+  if (!empty($book['original_bid']) && $book['original_bid'] != $book['bid']) {
+    _ys_book_invalidate_microsite_cache($book['original_bid']);
+  }
+}
+
+/**
+ * Submit handler for book remove form to invalidate microsite cache.
+ */
+function _ys_book_remove_form_submit($form, FormStateInterface $form_state) {
+  $build_info = $form_state->getBuildInfo();
+  if (isset($build_info['args'][0]) && $build_info['args'][0] instanceof NodeInterface) {
+    $node = $build_info['args'][0];
+    if (!empty($node->book['bid'])) {
+      _ys_book_invalidate_microsite_cache($node->book['bid']);
+    }
+  }
+}
+
+/**
+ * Submit handler for book admin edit form to invalidate microsite cache.
+ */
+function _ys_book_admin_edit_submit($form, FormStateInterface $form_state) {
+  if (isset($form['#node']) && !empty($form['#node']->book['bid'])) {
+    _ys_book_invalidate_microsite_cache($form['#node']->book['bid']);
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update() for node entities.
+ *
+ * Invalidates microsite cache when field_collection_as_microsite changes
+ * or when a node's book assignment changes.
+ */
+function ys_book_node_update($node) {
+  // Scenario 1: field_collection_as_microsite changed on a book root node.
+  if ($node->hasField('field_collection_as_microsite') && isset($node->original)) {
+    $current_value = (bool) $node->get('field_collection_as_microsite')->getString();
+    $original_value = (bool) $node->original->get('field_collection_as_microsite')->getString();
+
+    if ($current_value !== $original_value) {
+      _ys_book_invalidate_microsite_cache($node->id());
+    }
+  }
+
+  // Scenario 2: Book assignment changed (node added to, removed from,
+  // or moved between books).
+  $current_bid = $node->book['bid'] ?? NULL;
+  $original_bid = $node->book['original_bid'] ?? $node->original->book['bid'] ?? NULL;
+
+  if ($current_bid !== $original_bid) {
+    // Invalidate both the old and new book's caches.
+    if ($current_bid) {
+      _ys_book_invalidate_microsite_cache($current_bid);
+    }
+    if ($original_bid && $original_bid !== $current_bid) {
+      _ys_book_invalidate_microsite_cache($original_bid);
+    }
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_presave() for node entities.
+ *
+ * Prevents nested microsite conflicts by automatically disabling the microsite
+ * flag when a node is nested under another book.
+ */
+function ys_book_node_presave($node) {
+  // Only process nodes that have the microsite field.
+  if (!$node->hasField('field_collection_as_microsite')) {
+    return;
+  }
+
+  // Check if this node has microsite enabled.
+  $is_microsite = (bool) $node->get('field_collection_as_microsite')->getString();
+
+  if (!$is_microsite) {
+    // Not a microsite, nothing to do.
+    return;
+  }
+
+  // Check if this node is in a book.
+  if (empty($node->book['bid'])) {
+    // Not in a book, nothing to do.
+    return;
+  }
+
+  // Check if this node is a book root (bid == nid) or a child (bid != nid).
+  $is_book_root = ($node->book['bid'] == $node->id());
+
+  if (!$is_book_root) {
+    // This node is a child in a book but has microsite enabled.
+    // Turn off the microsite flag.
+    $node->set('field_collection_as_microsite', FALSE);
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_insert() for node entities.
+ *
+ * Invalidates microsite cache when a new node is added to a book.
+ */
+function ys_book_node_insert($node) {
+  if (!empty($node->book['bid'])) {
+    _ys_book_invalidate_microsite_cache($node->book['bid']);
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_predelete() for node entities.
+ *
+ * Invalidates microsite cache when a book node is deleted.
+ */
+function ys_book_node_predelete($node) {
+  if (!empty($node->book['bid'])) {
+    _ys_book_invalidate_microsite_cache($node->book['bid']);
+  }
+}
+
+/**
+ * Invalidates all microsite-related caches for a book.
+ *
+ * This clears:
+ * 1. The persistent cache entry for the microsite detection function.
+ * 2. The rendered page cache for all nodes in the book so headers re-render.
+ *
+ * @param int $bid
+ *   The book ID (nid of the root book node).
+ */
+function _ys_book_invalidate_microsite_cache(int $bid) {
+  // 1. Delete the persistent microsite detection cache entry.
+  \Drupal::cache()->delete('collection:microsite:' . $bid);
+
+  // 2. Invalidate the custom cache tag used by the preprocess functions.
+  // This will invalidate the render cache for all pages that checked
+  // the microsite state for this book.
+  Cache::invalidateTags(['ys_microsite:' . $bid]);
+
+  // 3. Invalidate node cache tags for all nodes in the book.
+  // This ensures the rendered pages are rebuilt with the new header.
+  $nids = _ys_book_get_all_book_nids($bid);
+  if (!empty($nids)) {
+    $tags = [];
+    foreach ($nids as $nid) {
+      $tags[] = 'node:' . $nid;
+    }
+    Cache::invalidateTags($tags);
+  }
+}
+
+/**
+ * Gets all node IDs belonging to a book.
+ *
+ * @param int $bid
+ *   The book ID.
+ *
+ * @return array
+ *   An array of node IDs in the book.
+ */
+function _ys_book_get_all_book_nids(int $bid) {
+  return \Drupal::database()->select('book', 'b')
+    ->fields('b', ['nid'])
+    ->condition('b.bid', $bid)
+    ->execute()
+    ->fetchCol();
 }
