@@ -279,55 +279,55 @@ function ys_book_library_info_alter(&$libraries, $extension) {
 }
 
 /**
- * Submit handler for book outline form to invalidate microsite cache.
+ * Submit handler for book outline form to invalidate collection nav cache.
  */
 function _ys_book_outline_form_submit($form, FormStateInterface $form_state) {
   $book = $form_state->getValue('book');
   if (!empty($book['bid'])) {
-    _ys_book_invalidate_microsite_cache($book['bid']);
+    _ys_book_invalidate_collection_nav_cache($book['bid']);
   }
   // Also invalidate the original book if the node moved books.
   if (!empty($book['original_bid']) && $book['original_bid'] != $book['bid']) {
-    _ys_book_invalidate_microsite_cache($book['original_bid']);
+    _ys_book_invalidate_collection_nav_cache($book['original_bid']);
   }
 }
 
 /**
- * Submit handler for book remove form to invalidate microsite cache.
+ * Submit handler for book remove form to invalidate collection nav cache.
  */
 function _ys_book_remove_form_submit($form, FormStateInterface $form_state) {
   $build_info = $form_state->getBuildInfo();
   if (isset($build_info['args'][0]) && $build_info['args'][0] instanceof NodeInterface) {
     $node = $build_info['args'][0];
     if (!empty($node->book['bid'])) {
-      _ys_book_invalidate_microsite_cache($node->book['bid']);
+      _ys_book_invalidate_collection_nav_cache($node->book['bid']);
     }
   }
 }
 
 /**
- * Submit handler for book admin edit form to invalidate microsite cache.
+ * Submit handler for book admin edit form to invalidate collection nav cache.
  */
 function _ys_book_admin_edit_submit($form, FormStateInterface $form_state) {
   if (isset($form['#node']) && !empty($form['#node']->book['bid'])) {
-    _ys_book_invalidate_microsite_cache($form['#node']->book['bid']);
+    _ys_book_invalidate_collection_nav_cache($form['#node']->book['bid']);
   }
 }
 
 /**
  * Implements hook_ENTITY_TYPE_update() for node entities.
  *
- * Invalidates microsite cache when field_collection_as_microsite changes
+ * Invalidates collection nav cache when field_collection_nav_position changes
  * or when a node's book assignment changes.
  */
 function ys_book_node_update($node) {
-  // Scenario 1: field_collection_as_microsite changed on a book root node.
-  if ($node->hasField('field_collection_as_microsite') && isset($node->original)) {
-    $current_value = (bool) $node->get('field_collection_as_microsite')->getString();
-    $original_value = (bool) $node->original->get('field_collection_as_microsite')->getString();
+  // Scenario 1: field_collection_nav_position changed on a book root node.
+  if ($node->hasField('field_collection_nav_position') && isset($node->original)) {
+    $current_value = $node->get('field_collection_nav_position')->getString();
+    $original_value = $node->original->get('field_collection_nav_position')->getString();
 
     if ($current_value !== $original_value) {
-      _ys_book_invalidate_microsite_cache($node->id());
+      _ys_book_invalidate_collection_nav_cache($node->id());
     }
   }
 
@@ -339,10 +339,10 @@ function ys_book_node_update($node) {
   if ($current_bid !== $original_bid) {
     // Invalidate both the old and new book's caches.
     if ($current_bid) {
-      _ys_book_invalidate_microsite_cache($current_bid);
+      _ys_book_invalidate_collection_nav_cache($current_bid);
     }
     if ($original_bid && $original_bid !== $current_bid) {
-      _ys_book_invalidate_microsite_cache($original_bid);
+      _ys_book_invalidate_collection_nav_cache($original_bid);
     }
   }
 }
@@ -350,20 +350,20 @@ function ys_book_node_update($node) {
 /**
  * Implements hook_ENTITY_TYPE_presave() for node entities.
  *
- * Prevents nested microsite conflicts by automatically disabling the microsite
- * flag when a node is nested under another book.
+ * Prevents nested navigation position conflicts by automatically resetting
+ * the navigation position to default when a node is nested under another book.
  */
 function ys_book_node_presave($node) {
-  // Only process nodes that have the microsite field.
-  if (!$node->hasField('field_collection_as_microsite')) {
+  // Only process nodes that have the navigation position field.
+  if (!$node->hasField('field_collection_nav_position')) {
     return;
   }
 
-  // Check if this node has microsite enabled.
-  $is_microsite = (bool) $node->get('field_collection_as_microsite')->getString();
+  // Check if this node has a non-default navigation position.
+  $nav_position = $node->get('field_collection_nav_position')->getString();
 
-  if (!$is_microsite) {
-    // Not a microsite, nothing to do.
+  if ($nav_position === 'body_horizontal' || empty($nav_position)) {
+    // Default position, nothing to do.
     return;
   }
 
@@ -377,52 +377,52 @@ function ys_book_node_presave($node) {
   $is_book_root = ($node->book['bid'] == $node->id());
 
   if (!$is_book_root) {
-    // This node is a child in a book but has microsite enabled.
-    // Turn off the microsite flag.
-    $node->set('field_collection_as_microsite', FALSE);
+    // This node is a child in a book but has a non-default nav position.
+    // Reset to the default.
+    $node->set('field_collection_nav_position', 'body_horizontal');
   }
 }
 
 /**
  * Implements hook_ENTITY_TYPE_insert() for node entities.
  *
- * Invalidates microsite cache when a new node is added to a book.
+ * Invalidates collection nav cache when a new node is added to a book.
  */
 function ys_book_node_insert($node) {
   if (!empty($node->book['bid'])) {
-    _ys_book_invalidate_microsite_cache($node->book['bid']);
+    _ys_book_invalidate_collection_nav_cache($node->book['bid']);
   }
 }
 
 /**
  * Implements hook_ENTITY_TYPE_predelete() for node entities.
  *
- * Invalidates microsite cache when a book node is deleted.
+ * Invalidates collection nav cache when a book node is deleted.
  */
 function ys_book_node_predelete($node) {
   if (!empty($node->book['bid'])) {
-    _ys_book_invalidate_microsite_cache($node->book['bid']);
+    _ys_book_invalidate_collection_nav_cache($node->book['bid']);
   }
 }
 
 /**
- * Invalidates all microsite-related caches for a book.
+ * Invalidates all collection navigation caches for a book.
  *
  * This clears:
- * 1. The persistent cache entry for the microsite detection function.
+ * 1. The persistent cache entry for the navigation position function.
  * 2. The rendered page cache for all nodes in the book so headers re-render.
  *
  * @param int $bid
  *   The book ID (nid of the root book node).
  */
-function _ys_book_invalidate_microsite_cache(int $bid) {
-  // 1. Delete the persistent microsite detection cache entry.
-  \Drupal::cache()->delete('collection:microsite:' . $bid);
+function _ys_book_invalidate_collection_nav_cache(int $bid) {
+  // 1. Delete the persistent navigation position cache entry.
+  \Drupal::cache()->delete('collection:nav_position:' . $bid);
 
   // 2. Invalidate the custom cache tag used by the preprocess functions.
   // This will invalidate the render cache for all pages that checked
-  // the microsite state for this book.
-  Cache::invalidateTags(['ys_microsite:' . $bid]);
+  // the navigation position for this book.
+  Cache::invalidateTags(['ys_collection_nav:' . $bid]);
 
   // 3. Invalidate node cache tags for all nodes in the book.
   // This ensures the rendered pages are rebuilt with the new header.

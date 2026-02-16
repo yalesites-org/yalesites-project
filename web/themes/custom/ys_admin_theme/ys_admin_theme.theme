@@ -64,7 +64,7 @@ function ys_admin_theme_form_node_form_alter(&$form, FormStateInterface $form_st
   $nid = $node->isNew() ? 'new' : $node->id();
 
   $book_fields = [
-    'field_collection_as_microsite',
+    'field_collection_nav_position',
     'field_hide_utility_menu',
   ];
 

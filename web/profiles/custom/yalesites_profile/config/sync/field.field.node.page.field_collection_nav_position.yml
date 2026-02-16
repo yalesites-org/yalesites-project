@@ -1,0 +1,21 @@
+uuid: 2c2673ce-0892-48cf-8fc2-ab5f50b9cbed
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_collection_nav_position
+    - node.type.page
+id: node.page.field_collection_nav_position
+field_name: field_collection_nav_position
+entity_type: node
+bundle: page
+label: 'Collection Navigation Position'
+description: ''
+required: false
+translatable: false
+default_value:
+  -
+    value: body_horizontal
+default_value_callback: ''
+settings: {  }
+field_type: list_string
