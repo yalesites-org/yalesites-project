@@ -73,11 +73,12 @@ function ys_admin_theme_form_node_form_alter(&$form, FormStateInterface $form_st
       $form['book'][$book_field] = $form[$book_field];
       unset($form[$book_field]);
 
-      // Only show book_field for top-level books.
-      // If pid is -1 (no parent) OR pid equals the current node's nid.
+      // Only show book_field when no collection is selected, creating a new
+      // collection, or editing the collection root node. Hidden when joining
+      // an existing collection since the root's setting applies.
       $form['book'][$book_field]['#states'] = [
         'visible' => [
-          [':input[name="book[pid]"]' => ['value' => '-1']],
+          [':input[name="book[bid]"]' => ['value' => 'new']],
           'or',
           [':input[name="book[bid]"]' => ['value' => $nid]],
         ],
