@@ -374,7 +374,17 @@ function ys_book_node_presave($node) {
   }
 
   // Check if this node is a book root (bid == nid) or a child (bid != nid).
-  $is_book_root = ($node->book['bid'] == $node->id());
+  $is_book_root = ($node->book['bid'] === 'new') || ($node->book['bid'] == $node->id());
+
+  \Drupal::logger('ys_book')->notice('Presave: bid=@bid, bid_type=@bid_type, nid=@nid, nav=@nav, is_new=@new, is_root=@root, book_keys=@keys', [
+    '@bid' => $node->book['bid'] ?? 'unset',
+    '@bid_type' => gettype($node->book['bid'] ?? NULL),
+    '@nid' => $node->id() ?? 'NULL',
+    '@nav' => $nav_position,
+    '@new' => $node->isNew() ? 'yes' : 'no',
+    '@root' => $is_book_root ? 'yes' : 'no',
+    '@keys' => implode(',', array_keys($node->book ?? [])),
+  ]);
 
   if (!$is_book_root) {
     // This node is a child in a book but has a non-default nav position.
