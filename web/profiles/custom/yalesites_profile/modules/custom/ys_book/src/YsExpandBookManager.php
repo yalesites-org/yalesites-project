@@ -206,7 +206,10 @@ class YsExpandBookManager extends ExpandBookManager {
     foreach ($tree as $key => $v) {
       $item = &$tree[$key]['link'];
       $this->bookLinkTranslate($item);
-      // Always include the item (don't check $item['access']).
+      // Skip unpublished items.
+      if (!$item['access']) {
+        continue;
+      }
       if ($tree[$key]['below']) {
         $this->doBookTreeTranslateLinks($tree[$key]['below']);
       }
@@ -236,15 +239,20 @@ class YsExpandBookManager extends ExpandBookManager {
     // include it, and add a flag so that the template can add a lock icon to
     // the menu item. Access will still be checked when the user attempts to
     // view the node.
-    $link['access'] = TRUE;
+    // Published nodes are always accessible in the nav (CAS-protected pages
+    // are shown with a lock icon). For unpublished nodes, defer to Drupal's
+    // access system so admins can see them but anonymous users cannot.
+    $link['access'] = $node && ($node->isPublished() || $node->access('view'));
     // Check the field_login_required field instead of access check to avoid
     // cache-related issues between environments.
     $link['is_cas'] = $node && $node->hasField('field_login_required') && (bool) $node->get('field_login_required')->value;
 
-    // Localize the link since we always set access to TRUE.
-    // The node label will be the value for the current language.
-    $node = $this->entityRepository->getTranslationFromContext($node);
-    $link['title'] = $node->label();
+    // Localize the link title. The node label will be the value for the
+    // current language.
+    if ($node) {
+      $node = $this->entityRepository->getTranslationFromContext($node);
+      $link['title'] = $node->label();
+    }
     $link['options'] = [];
     return $link;
   }
