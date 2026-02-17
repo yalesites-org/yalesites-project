@@ -12,7 +12,8 @@ use Drupal\field\Entity\FieldConfig;
  * Migrate field_collection_as_microsite to field_collection_nav_position.
  *
  * Converts the boolean microsite toggle to a list_string dropdown with
- * navigation position options.
+ * navigation position options. Handles cases where the old field's database
+ * tables may not exist (e.g., fresh installs that never had the old field).
  */
 function ys_book_update_10001() {
   $old_field_name = 'field_collection_as_microsite';
@@ -20,20 +21,21 @@ function ys_book_update_10001() {
   $entity_type = 'node';
   $bundle = 'page';
 
-  // Check if the old field exists.
-  $old_storage = FieldStorageConfig::loadByName($entity_type, $old_field_name);
-  if (!$old_storage) {
-    return t('Old field @field does not exist, skipping migration.', [
-      '@field' => $old_field_name,
+  // If the new field already exists, nothing to do.
+  $new_storage = FieldStorageConfig::loadByName($entity_type, $new_field_name);
+  if ($new_storage) {
+    return t('Field @field already exists, skipping migration.', [
+      '@field' => $new_field_name,
     ]);
   }
 
-  // Collect existing values before deleting the old field.
   $database = \Drupal::database();
   $values = [];
-
   $table_name = $entity_type . '__' . $old_field_name;
-  if ($database->schema()->tableExists($table_name)) {
+  $has_old_tables = $database->schema()->tableExists($table_name);
+
+  // Collect existing values from the old field's database table if it exists.
+  if ($has_old_tables) {
     $results = $database->select($table_name, 'f')
       ->fields('f', ['entity_id', $old_field_name . '_value'])
       ->execute();
@@ -43,15 +45,34 @@ function ys_book_update_10001() {
     }
   }
 
-  // Delete old field instance and storage.
-  $old_instance = FieldConfig::loadByName($entity_type, $bundle, $old_field_name);
-  if ($old_instance) {
-    $old_instance->delete();
+  // Remove the old field. Only use the field API delete when the backing
+  // database tables exist; otherwise just delete the config entities directly
+  // to avoid SQL errors on non-existent tables.
+  if ($has_old_tables) {
+    $old_instance = FieldConfig::loadByName($entity_type, $bundle, $old_field_name);
+    if ($old_instance) {
+      $old_instance->delete();
+    }
+    $old_storage = FieldStorageConfig::loadByName($entity_type, $old_field_name);
+    if ($old_storage) {
+      $old_storage->delete();
+    }
+    field_purge_batch(100);
   }
-  $old_storage->delete();
-
-  // Purge deleted field data immediately.
-  field_purge_batch(100);
+  else {
+    // Tables don't exist. Delete config entities directly via the config
+    // system to avoid triggering field storage table operations.
+    $configs_to_delete = [
+      'field.field.' . $entity_type . '.' . $bundle . '.' . $old_field_name,
+      'field.storage.' . $entity_type . '.' . $old_field_name,
+    ];
+    foreach ($configs_to_delete as $config_name) {
+      $config = \Drupal::configFactory()->getEditable($config_name);
+      if (!$config->isNew()) {
+        $config->delete();
+      }
+    }
+  }
 
   // Create new field storage.
   $new_storage = FieldStorageConfig::create([
