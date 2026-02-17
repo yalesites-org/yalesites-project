@@ -8,7 +8,7 @@ dependencies:
     - field.field.node.page.field_collection_nav_position
     - field.field.node.page.field_custom_vocab
     - field.field.node.page.field_external_source
-    - field.field.node.page.field_hide_utility_menu
+
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
     - field.field.node.page.field_tags
@@ -378,7 +378,7 @@ hidden:
   addtoany: true
   field_category: true
   field_collection_nav_position: true
-  field_hide_utility_menu: true
+
   field_login_required: true
   field_metatags: true
   field_tags: true

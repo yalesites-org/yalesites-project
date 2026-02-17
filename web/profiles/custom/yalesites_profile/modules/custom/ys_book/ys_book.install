@@ -5,8 +5,8 @@
  * Install and update functions for the ys_book module.
  */
 
-use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
 
 /**
  * Migrate field_collection_as_microsite to field_collection_nav_position.
@@ -123,4 +123,27 @@ function ys_book_update_10001() {
     '@old' => $old_field_name,
     '@new' => $new_field_name,
   ]);
+}
+
+/**
+ * Remove field_hide_utility_menu from page nodes.
+ */
+function ys_book_update_10002() {
+  $entity_type = 'node';
+  $bundle = 'page';
+  $field_name = 'field_hide_utility_menu';
+
+  $instance = FieldConfig::loadByName($entity_type, $bundle, $field_name);
+  if ($instance) {
+    $instance->delete();
+  }
+
+  $storage = FieldStorageConfig::loadByName($entity_type, $field_name);
+  if ($storage) {
+    $storage->delete();
+  }
+
+  field_purge_batch(100);
+
+  return t('Removed @field field.', ['@field' => $field_name]);
 }

@@ -65,7 +65,6 @@ function ys_admin_theme_form_node_form_alter(&$form, FormStateInterface $form_st
 
   $book_fields = [
     'field_collection_nav_position',
-    'field_hide_utility_menu',
   ];
 
   foreach ($book_fields as $book_field) {
