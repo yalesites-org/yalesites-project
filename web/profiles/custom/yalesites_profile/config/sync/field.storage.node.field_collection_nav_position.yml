@@ -11,8 +11,12 @@ entity_type: node
 type: list_string
 settings:
   allowed_values:
-    body_horizontal: 'Horizontal (below header)'
-    collection_primary_nav: 'Primary navigation'
+    -
+      value: body_horizontal
+      label: 'Horizontal (below header)'
+    -
+      value: collection_primary_nav
+      label: 'Primary navigation'
 module: options
 locked: false
 cardinality: 1
