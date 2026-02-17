@@ -12,11 +12,11 @@ type: list_string
 settings:
   allowed_values:
     -
-      value: body_horizontal
-      label: 'Horizontal (below header)'
+      value: below_header
+      label: 'Below header'
     -
-      value: collection_primary_nav
-      label: 'Primary navigation'
+      value: in_header
+      label: 'In header'
 module: options
 locked: false
 cardinality: 1

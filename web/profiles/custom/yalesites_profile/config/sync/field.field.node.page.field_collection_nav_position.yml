@@ -9,13 +9,13 @@ id: node.page.field_collection_nav_position
 field_name: field_collection_nav_position
 entity_type: node
 bundle: page
-label: 'Collection Navigation Position'
-description: ''
+label: 'Collection Navigation Display'
+description: 'Choose where to display the collection navigation. For more information, see <a href="https://yalesites.yale.edu/collections" target="_blank">Content Collections documentation</a>.'
 required: false
 translatable: false
 default_value:
   -
-    value: body_horizontal
+    value: below_header
 default_value_callback: ''
 settings: {  }
 field_type: list_string

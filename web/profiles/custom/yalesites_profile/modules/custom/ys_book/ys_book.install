@@ -82,8 +82,8 @@ function ys_book_update_10001() {
     'cardinality' => 1,
     'settings' => [
       'allowed_values' => [
-        'body_horizontal' => 'Horizontal (below header)',
-        'collection_primary_nav' => 'Primary navigation',
+        'below_header' => 'Below header',
+        'in_header' => 'In header',
       ],
     ],
     'module' => 'options',
@@ -95,10 +95,10 @@ function ys_book_update_10001() {
   $new_instance = FieldConfig::create([
     'field_storage' => $new_storage,
     'bundle' => $bundle,
-    'label' => 'Collection Navigation Position',
+    'label' => 'Collection Navigation Display',
     'required' => FALSE,
     'default_value' => [
-      ['value' => 'body_horizontal'],
+      ['value' => 'below_header'],
     ],
   ]);
   $new_instance->save();
@@ -106,7 +106,7 @@ function ys_book_update_10001() {
   // Migrate values.
   $migrated = 0;
   foreach ($values as $nid => $old_value) {
-    $new_value = ($old_value) ? 'collection_primary_nav' : 'body_horizontal';
+    $new_value = ($old_value) ? 'in_header' : 'below_header';
     $node = \Drupal::entityTypeManager()->getStorage('node')->load($nid);
     if ($node && $node->hasField($new_field_name)) {
       $node->set($new_field_name, $new_value);
@@ -146,4 +146,98 @@ function ys_book_update_10002() {
   field_purge_batch(100);
 
   return t('Removed @field field.', ['@field' => $field_name]);
+}
+
+/**
+ * Rename collection nav position field values and labels.
+ *
+ * Updates the field storage allowed values, field instance label/description,
+ * and migrates stored data from old machine values to new ones:
+ * - body_horizontal -> below_header
+ * - collection_primary_nav -> in_header.
+ */
+function ys_book_update_10003() {
+  $entity_type = 'node';
+  $bundle = 'page';
+  $field_name = 'field_collection_nav_position';
+
+  // Check if the field storage still uses the old allowed values. Sites that
+  // received a fresh install with the updated config will already have the
+  // new values and can skip this migration entirely.
+  $field_storage = FieldStorageConfig::loadByName($entity_type, $field_name);
+  if (!$field_storage) {
+    return t('Field @field does not exist, skipping.', [
+      '@field' => $field_name,
+    ]);
+  }
+
+  $allowed_values = $field_storage->getSetting('allowed_values');
+  if (!isset($allowed_values['body_horizontal']) && !isset($allowed_values['collection_primary_nav'])) {
+    // Already using new values, just ensure label and description are current.
+    $field_config = FieldConfig::loadByName($entity_type, $bundle, $field_name);
+    if ($field_config) {
+      $field_config->setLabel('Collection Navigation Display');
+      $field_config->setDefaultValue([['value' => 'below_header']]);
+      $field_config->setDescription('Choose where to display the collection navigation. For more information, see <a href="https://yalesites.yale.edu/collections" target="_blank">Content Collections documentation</a>.');
+      $field_config->save();
+    }
+    return t('Field @field already uses new values, skipping data migration.', [
+      '@field' => $field_name,
+    ]);
+  }
+
+  $value_map = [
+    'body_horizontal' => 'below_header',
+    'collection_primary_nav' => 'in_header',
+  ];
+
+  // Migrate stored values in field data and revision tables FIRST, before
+  // updating the field storage config. Drupal rejects allowed_values changes
+  // if data with the old keys still exists in the database.
+  $database = \Drupal::database();
+  $tables = [
+    $entity_type . '__' . $field_name,
+    $entity_type . '_revision__' . $field_name,
+  ];
+  $value_column = $field_name . '_value';
+
+  $updated = 0;
+  foreach ($tables as $table) {
+    if (!$database->schema()->tableExists($table)) {
+      continue;
+    }
+    foreach ($value_map as $old_value => $new_value) {
+      $updated += $database->update($table)
+        ->fields([$value_column => $new_value])
+        ->condition($value_column, $old_value)
+        ->execute();
+    }
+  }
+
+  // Clear entity caches so Drupal's entity query sees the updated data
+  // when validating the allowed_values change.
+  \Drupal::entityTypeManager()->getStorage($entity_type)->resetCache();
+
+  // Update field storage allowed values now that data uses the new keys.
+  $field_storage->setSetting('allowed_values', [
+    'below_header' => 'Below header',
+    'in_header' => 'In header',
+  ]);
+  $field_storage->save();
+
+  // Update field instance label, default value, and description.
+  $field_config = FieldConfig::loadByName($entity_type, $bundle, $field_name);
+  if ($field_config) {
+    $field_config->setLabel('Collection Navigation Display');
+    $field_config->setDefaultValue([['value' => 'below_header']]);
+    $field_config->setDescription('Choose where to display the collection navigation. For more information, see <a href="https://yalesites.yale.edu/collections" target="_blank">Content Collections documentation</a>.');
+    $field_config->save();
+  }
+
+  // Clear caches.
+  \Drupal::cache()->deleteAll();
+
+  return t('Renamed collection nav position values. Updated @count rows.', [
+    '@count' => $updated,
+  ]);
 }

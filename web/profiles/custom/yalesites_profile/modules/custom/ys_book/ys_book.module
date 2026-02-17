@@ -362,7 +362,7 @@ function ys_book_node_presave($node) {
   // Check if this node has a non-default navigation position.
   $nav_position = $node->get('field_collection_nav_position')->getString();
 
-  if ($nav_position === 'body_horizontal' || empty($nav_position)) {
+  if ($nav_position === 'below_header' || empty($nav_position)) {
     // Default position, nothing to do.
     return;
   }
@@ -389,7 +389,7 @@ function ys_book_node_presave($node) {
   if (!$is_book_root) {
     // This node is a child in a book but has a non-default nav position.
     // Reset to the default.
-    $node->set('field_collection_nav_position', 'body_horizontal');
+    $node->set('field_collection_nav_position', 'below_header');
   }
 }
 
