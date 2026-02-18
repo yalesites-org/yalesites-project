@@ -12,11 +12,11 @@ type: list_string
 settings:
   allowed_values:
     -
-      value: below_header
-      label: 'Below header'
+      value: in_content
+      label: 'In Content Section'
     -
       value: in_header
-      label: 'In header'
+      label: 'In Site Header'
 module: options
 locked: false
 cardinality: 1

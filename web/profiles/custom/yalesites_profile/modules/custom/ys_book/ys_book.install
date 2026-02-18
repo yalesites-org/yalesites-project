@@ -241,3 +241,87 @@ function ys_book_update_10003() {
     '@count' => $updated,
   ]);
 }
+
+/**
+ * Rename collection nav position value and labels.
+ *
+ * Updates the field storage allowed values and migrates stored data:
+ * - below_header -> in_content (label: "In Content Section")
+ * - in_header label updated to "In Site Header".
+ */
+function ys_book_update_10004() {
+  $entity_type = 'node';
+  $bundle = 'page';
+  $field_name = 'field_collection_nav_position';
+
+  $field_storage = FieldStorageConfig::loadByName($entity_type, $field_name);
+  if (!$field_storage) {
+    return t('Field @field does not exist, skipping.', [
+      '@field' => $field_name,
+    ]);
+  }
+
+  $allowed_values = $field_storage->getSetting('allowed_values');
+  if (!isset($allowed_values['below_header'])) {
+    // Already using new values, just ensure labels are current.
+    $field_storage->setSetting('allowed_values', [
+      'in_content' => 'In Content Section',
+      'in_header' => 'In Site Header',
+    ]);
+    $field_storage->save();
+
+    $field_config = FieldConfig::loadByName($entity_type, $bundle, $field_name);
+    if ($field_config) {
+      $field_config->setDefaultValue([['value' => 'in_content']]);
+      $field_config->save();
+    }
+
+    return t('Field @field already uses new values, updated labels.', [
+      '@field' => $field_name,
+    ]);
+  }
+
+  // Migrate stored values in field data and revision tables before updating
+  // the field storage config.
+  $database = \Drupal::database();
+  $tables = [
+    $entity_type . '__' . $field_name,
+    $entity_type . '_revision__' . $field_name,
+  ];
+  $value_column = $field_name . '_value';
+
+  $updated = 0;
+  foreach ($tables as $table) {
+    if (!$database->schema()->tableExists($table)) {
+      continue;
+    }
+    $updated += $database->update($table)
+      ->fields([$value_column => 'in_content'])
+      ->condition($value_column, 'below_header')
+      ->execute();
+  }
+
+  // Clear entity caches so Drupal sees the updated data.
+  \Drupal::entityTypeManager()->getStorage($entity_type)->resetCache();
+
+  // Update field storage allowed values.
+  $field_storage->setSetting('allowed_values', [
+    'in_content' => 'In Content Section',
+    'in_header' => 'In Site Header',
+  ]);
+  $field_storage->save();
+
+  // Update field instance default value.
+  $field_config = FieldConfig::loadByName($entity_type, $bundle, $field_name);
+  if ($field_config) {
+    $field_config->setDefaultValue([['value' => 'in_content']]);
+    $field_config->save();
+  }
+
+  // Clear caches.
+  \Drupal::cache()->deleteAll();
+
+  return t('Renamed collection nav position values and labels. Updated @count rows.', [
+    '@count' => $updated,
+  ]);
+}

@@ -15,7 +15,7 @@ required: false
 translatable: false
 default_value:
   -
-    value: below_header
+    value: in_content
 default_value_callback: ''
 settings: {  }
 field_type: list_string
