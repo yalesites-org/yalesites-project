@@ -11,7 +11,7 @@ entity_type: node
 bundle: page
 label: 'Collection Navigation Display'
 description: 'Choose where to display the collection navigation. For more information, see <a href="https://yalesites.yale.edu/collections" target="_blank">Content Collections documentation</a>.'
-required: false
+required: true
 translatable: false
 default_value:
   -
