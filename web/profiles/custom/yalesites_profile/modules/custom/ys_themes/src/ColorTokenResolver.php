@@ -334,17 +334,36 @@ class ColorTokenResolver {
    *   (e.g., ['one' => 'one', 'two' => 'four']).
    * @param array $global_themes
    *   Array of global theme IDs.
+   * @param array $slot_swaps
+   *   Optional per-theme slot identifier overrides, keyed by theme ID then
+   *   by original slot identifier. Used to mirror SCSS-level slot remappings
+   *   (e.g., ['four' => ['five' => 'two']]).
+   * @param array $direct_overrides
+   *   Optional per-theme, per-option-key overrides that bypass slot resolution
+   *   entirely and emit an arbitrary CSS variable string. Keyed by theme ID
+   *   then by option key (e.g., ['four' => ['five' =>
+   *   'var(--component-themes-five-background)']]).
    *
    * @return array
    *   Array of color styles keyed by global theme, then by component option.
    */
-  protected function buildColorStyles(array $slot_mapping, array $global_themes) {
+  protected function buildColorStyles(array $slot_mapping, array $global_themes, array $slot_swaps = [], array $direct_overrides = []) {
     $all_color_styles = [];
     foreach ($global_themes as $global) {
       $all_color_styles[$global] = [];
       foreach ($slot_mapping as $option_key => $slot_identifier) {
+        // Direct override bypasses slot resolution entirely. Used when the
+        // SCSS sets a component-level variable rather than a global slot.
+        if (isset($direct_overrides[$global][$option_key])) {
+          $all_color_styles[$global][$option_key] = [
+            $direct_overrides[$global][$option_key],
+          ];
+          continue;
+        }
+        // Apply per-theme slot swaps to mirror SCSS slot remapping behavior.
+        $effective_slot = $slot_swaps[$global][$slot_identifier] ?? $slot_identifier;
         $all_color_styles[$global][$option_key] = [
-          "var(--global-themes-{$global}-colors-slot-{$slot_identifier})",
+          "var(--global-themes-{$global}-colors-slot-{$effective_slot})",
         ];
       }
     }
@@ -368,8 +387,48 @@ class ColorTokenResolver {
   public function getColorStylesForEntity($entity_type = NULL, $bundle = NULL) {
     $global_themes = ['one', 'two', 'three', 'four', 'five', 'six'];
 
-    // Section layout mapping: one→slot-one, two→slot-three, three→slot-two,
-    // four→slot-five.
+    // Layout section only: full symmetric swap for global theme 'four' (Onha).
+    // _yds-layout.scss applies the slot-two ↔ slot-five exchange directly to
+    // background colors with no component-themes-five-background override, so
+    // both swap directions are correct here.
+    $theme_four_layout_swap = [
+      'four' => [
+        'two' => 'five',
+        'five' => 'two',
+      ],
+    ];
+
+    // Block content components: only the slot-five→slot-two direction. These
+    // components override component-theme='five' backgrounds in global theme
+    // 'four' via --component-themes-five-background (see $direct_overrides
+    // below), so the slot-two→slot-five direction would be wrong for them.
+    $theme_four_block_swap = [
+      'four' => [
+        'five' => 'two',
+      ],
+    ];
+
+    // Direct override for option 'five' on callout-group components and
+    // quote_callout/link_grid. Their SCSS sets the component-theme='five'
+    // background to var(--component-themes-five-background) when
+    // data-global-theme='four', bypassing slot resolution entirely.
+    $theme_four_option_five_override = [
+      'four' => [
+        'five' => 'var(--component-themes-five-background)',
+      ],
+    ];
+
+    // Variant for facts: the component-themes-five-background override appears
+    // on data-component-theme='four' (not 'five') in the facts SCSS, so the
+    // direct override targets option 'four' here.
+    $theme_four_facts_override = [
+      'four' => [
+        'four' => 'var(--component-themes-five-background)',
+      ],
+    ];
+
+    // Section layout mapping: one→slot-one, two→slot-four, three→slot-five,
+    // four→slot-two.
     // Widget options: one=Blue Yale, two=Gray 100, three=Gray 800,
     // four=Blue Medium.
     if ($entity_type === 'layout_section' && $bundle === 'ys_layout_options') {
@@ -378,7 +437,7 @@ class ColorTokenResolver {
         'two' => 'four',
         'three' => 'five',
         'four' => 'two',
-      ], $global_themes);
+      ], $global_themes, $theme_four_layout_swap);
     }
 
     // Base mapping: options map directly to global slots (1:1).
@@ -409,7 +468,7 @@ class ColorTokenResolver {
         'three' => 'five',
         'four' => 'three',
         'five' => 'two',
-      ], $global_themes);
+      ], $global_themes, $theme_four_block_swap, $theme_four_option_five_override);
     }
 
     // Facts mapping: one→slot-one, two→slot-four, three→slot-five,
@@ -422,7 +481,7 @@ class ColorTokenResolver {
         'three' => 'five',
         'four' => 'two',
         'five' => 'three',
-      ], $global_themes);
+      ], $global_themes, $theme_four_block_swap, $theme_four_facts_override);
     }
 
     // Quote-callout/Link-grid mapping: one→slot-one, two→slot-three,
@@ -438,7 +497,7 @@ class ColorTokenResolver {
         'three' => 'five',
         'four' => 'four',
         'five' => 'two',
-      ], $global_themes);
+      ], $global_themes, $theme_four_block_swap, $theme_four_option_five_override);
     }
 
     // Inline-message mapping: one→slot-four, two→slot-one, three→slot-two,
@@ -545,6 +604,23 @@ class ColorTokenResolver {
           $hex_value = $color_data['hex'] ?? '';
           $token_name = $color_data['name'] ?? '';
           $token_ref = $color_data['token'] ?? '';
+        }
+      }
+      elseif (preg_match(
+        '/--component-themes-([A-Za-z0-9_-]+)-([A-Za-z0-9_-]+)/',
+        $css_var,
+        $var_matches
+      )) {
+        // Resolve component-level token variables.
+        $component_theme = $var_matches[1];
+        $prop = $var_matches[2];
+        $json = json_decode(file_get_contents($this->jsonPath), TRUE);
+        $hsl_value = $json['component-themes'][$component_theme][$prop] ?? '';
+        if ($hsl_value) {
+          $hex_value = $this->hslToHex($hsl_value);
+          $color_lookup = $this->buildColorLookup($json);
+          $token_name = $color_lookup[$hsl_value] ?? '';
+          $token_ref = "component-themes-{$component_theme}-{$prop}";
         }
       }
     }
