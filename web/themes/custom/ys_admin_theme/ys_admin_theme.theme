@@ -64,8 +64,7 @@ function ys_admin_theme_form_node_form_alter(&$form, FormStateInterface $form_st
   $nid = $node->isNew() ? 'new' : $node->id();
 
   $book_fields = [
-    'field_collection_as_microsite',
-    'field_hide_utility_menu',
+    'field_collection_nav_position',
   ];
 
   foreach ($book_fields as $book_field) {
@@ -74,15 +73,63 @@ function ys_admin_theme_form_node_form_alter(&$form, FormStateInterface $form_st
       $form['book'][$book_field] = $form[$book_field];
       unset($form[$book_field]);
 
-      // Only show book_field for top-level books.
-      // If pid is -1 (no parent) OR pid equals the current node's nid.
+      // Only show book_field when no collection is selected, creating a new
+      // collection, or editing the collection root node. Hidden when joining
+      // an existing collection since the root's setting applies.
       $form['book'][$book_field]['#states'] = [
         'visible' => [
-          [':input[name="book[pid]"]' => ['value' => '-1']],
+          [':input[name="book[bid]"]' => ['value' => 'new']],
           'or',
           [':input[name="book[bid]"]' => ['value' => $nid]],
         ],
       ];
+    }
+  }
+
+  // Add a validator that sets the default value for fields hidden via #states.
+  // When the field is hidden (child node joining an existing collection),
+  // server-side required validation still fires. Setting the default here
+  // ensures validation passes; the presave hook also resets child node values.
+  $form['#validate'][] = 'ys_admin_theme_book_fields_validate';
+}
+
+/**
+ * Form validate handler for book-related fields on page node forms.
+ *
+ * When field_collection_nav_position is hidden (because the node is joining
+ * an existing collection as a child), set its value to the default so that
+ * the required field validation passes. The presave hook independently resets
+ * child node values to the default.
+ *
+ * Drupal's #required element validation fires before form-level validators, so
+ * any required error already added for this field must also be cleared here.
+ */
+function ys_admin_theme_book_fields_validate(&$form, FormStateInterface $form_state) {
+  $node_form = $form_state->getFormObject();
+  $node = $node_form->getEntity();
+  $nid = $node->isNew() ? 'new' : (string) $node->id();
+
+  $book = $form_state->getValue('book');
+  $bid = (string) ($book['bid'] ?? '');
+
+  // The field is hidden when bid is not 'new' and not the current node's id.
+  $field_is_hidden = ($bid !== 'new' && $bid !== $nid);
+
+  if ($field_is_hidden) {
+    // Set the default value so entity validation passes.
+    $form_state->setValue('field_collection_nav_position', [['value' => 'in_content']]);
+
+    // Element-level #required validation runs before this handler and may have
+    // already added an error for the hidden field. Clear all errors and re-add
+    // any unrelated ones to suppress only the hidden field's required error.
+    $errors = $form_state->getErrors();
+    if (!empty($errors)) {
+      $form_state->clearErrors();
+      foreach ($errors as $name => $error) {
+        if (strpos($name, 'field_collection_nav_position') === FALSE) {
+          $form_state->setErrorByName($name, $error);
+        }
+      }
     }
   }
 }
