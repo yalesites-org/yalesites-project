@@ -1,0 +1,112 @@
+# Migration: YaleSite Sustainability News Files
+# Description: Migrates Drupal 7 file_managed records for public image files
+# into Drupal 10 managed file entities (entity:file). This is a prerequisite
+# for the media migrations, which reference these D10 file entity IDs.
+#
+# IMPORTANT: Before running this migration, the physical D7 files must be
+# copied into the staging directory (d7_source) inside the D10 public files
+# directory, preserving the D7 directory structure.
+#
+# Example: a D7 file at public://2024/01/foo.jpg must exist at
+#   web/sites/default/files/d7_source/2024/01/foo.jpg
+#
+# During migration, each file is COPIED from d7_source/ into the destination
+# directory (news/), so the D10 file entities reference public://news/...
+# Once the migration is complete and verified, d7_source/ can be deleted
+# safely — it is only a staging area and is not referenced by any D10 entity.
+#
+# To copy D7 files into the staging directory (choose one):
+#
+#   From a live Pantheon D7 environment:
+#     ddev exec terminus rsync sustainability-d7.dev:files/ \
+#       /var/www/html/web/sites/default/files/d7_source/ -- --size-only
+#
+#   From a local archive:
+#     ddev exec tar -xzf /var/www/html/d7-files.tar.gz \
+#       -C /var/www/html/web/sites/default/files/d7_source/
+#
+#   From a local directory (outside the container):
+#     cp -r /path/to/d7/sites/default/files/* web/sites/default/files/d7_source/
+#
+# After migration, remove the staging directory:
+#   ddev exec rm -rf /var/www/html/web/sites/default/files/d7_source
+
+id: ys_sn_files
+label: 'YaleSites Sustainability News Files'
+status: true
+dependencies:
+  enforced:
+    module:
+      - ys_migrate_sustainability_news
+class: Drupal\migrate\Plugin\Migration
+migration_tags:
+  - 'Drupal 7'
+  - File
+migration_group: ys_sn
+
+# Migrate only public image files from the D7 database.
+source:
+  plugin: d7_file
+  key: d7_sustainability
+  scheme: public
+  # Filter to image MIME types to avoid migrating unrelated files.
+  # Remove this filter if you need to migrate other file types (e.g. PDFs).
+  mime_type:
+    - image/jpeg
+    - image/png
+    - image/gif
+    - image/webp
+    - image/svg+xml
+  constants:
+    # Staging directory: where D7 files have been placed before migration.
+    d7_source_dir: d7_source
+    # Destination directory: where migrated news images will live in D10.
+    # D10 file entities will reference public://news/... URIs.
+    d7_dest_dir: news
+    # Required by the d7_file source plugin's prepareRow() to compute the
+    # 'filepath' property. We don't use filepath in our process, but without
+    # this key PHP emits an "Undefined array key" warning on every row.
+    source_base_path: ''
+
+process:
+  uid:
+    plugin: default_value
+    default_value: constants/admin_uid
+  filename: filename
+
+  # Build the source URI: where the file currently lives in the staging dir.
+  # e.g. public://2024/01/image.jpg → public://d7_source/2024/01/image.jpg
+  _source_uri:
+    plugin: str_replace
+    source: uri
+    search: 'public://'
+    replace: 'public://d7_source/'
+
+  # Build the destination URI: where the file will live after migration.
+  # e.g. public://2024/01/image.jpg → public://news/2024/01/image.jpg
+  _dest_uri:
+    plugin: str_replace
+    source: uri
+    search: 'public://'
+    replace: 'public://news/'
+
+  # Physically copy the file from d7_source/ to news/ and record the
+  # destination URI as the file entity's uri field.
+  uri:
+    plugin: file_copy
+    source:
+      - '@_source_uri'
+      - '@_dest_uri'
+    move: false
+
+  filemime: filemime
+  filesize: filesize
+  status: status
+  created: timestamp
+
+# D7 file records are migrated into Drupal 10 managed file entities.
+destination:
+  plugin: entity:file
+
+migration_dependencies:
+  required: {}

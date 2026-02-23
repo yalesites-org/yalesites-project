@@ -1,0 +1,35 @@
+# Migration Group: YaleSite Sustainability News Migrations
+# Description: Defines the migration group for transferring news content and data
+# from a Drupal 7 Sustainability site to Drupal 10 (YaleSites Post content type).
+# This migration assumes that the Drupal 7 data is accessible via a database
+# connection named 'd7_sustainability', defined in the site's settings.php file.
+#
+# Add the following to settings.php:
+#
+# $databases['d7_sustainability']['default'] = [
+#   'database' => 'your_db_name',
+#   'username' => 'your_db_user',
+#   'password' => 'your_db_password',
+#   'prefix'   => '',
+#   'host'     => 'your_db_host',
+#   'port'     => '3306',
+#   'namespace' => 'Drupal\\Core\\Database\\Driver\\mysql',
+#   'driver'   => 'mysql',
+# ];
+
+id: ys_sn
+label: 'YaleSite Sustainability News Migrations'
+description: 'Migration group for Sustainability News D7 to D10.'
+langcode: en
+status: true
+dependencies: {  }
+
+source_type: ''
+
+shared_configuration:
+  source:
+    # Specifies the database key used to connect to the Drupal 7 database.
+    # This key must be defined in settings.php under the 'databases' array.
+    key: d7_sustainability
+    constants:
+      admin_uid: 1

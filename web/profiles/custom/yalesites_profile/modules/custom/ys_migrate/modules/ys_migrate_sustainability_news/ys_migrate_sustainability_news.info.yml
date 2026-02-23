@@ -1,0 +1,9 @@
+name: YaleSites migrate Sustainability News
+type: module
+description: Sustainability-specific migration support for YaleSites
+core_version_requirement: '^9 || ^10'
+package: YaleSites
+dependencies:
+  - ys_migrate:ys_migrate
+  - migrate_plus
+  - migrate_tools
