@@ -98,7 +98,7 @@ process:
     source: 'body/0/summary'
   field_teaser_text/format:
     plugin: default_value
-    default_value: 'basic_html'
+    default_value: 'heading_html'
 
   # Category/taxonomy: look up migrated post_category terms. 161 nodes in use.
   # D7 field: field_take_action_topic (term reference to Take Action Topic vocab).

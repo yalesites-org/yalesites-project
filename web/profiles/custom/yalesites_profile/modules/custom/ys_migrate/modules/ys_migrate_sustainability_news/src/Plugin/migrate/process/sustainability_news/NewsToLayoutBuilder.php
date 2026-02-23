@@ -269,7 +269,7 @@ class NewsToLayoutBuilder extends ProcessPluginBase implements ContainerFactoryP
       'info'      => 'Image Block',
       'reusable'  => FALSE,
       'field_media' => ['target_id' => $media->id()],
-      'field_text'  => ['value' => $caption, 'format' => 'basic_html'],
+      'field_text'  => ['value' => $caption, 'format' => 'restricted_html'],
     ]);
     $block->save();
     return $block;

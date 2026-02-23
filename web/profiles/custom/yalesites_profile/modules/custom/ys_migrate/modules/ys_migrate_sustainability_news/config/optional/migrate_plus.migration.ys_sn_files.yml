@@ -45,28 +45,17 @@ migration_tags:
 migration_group: ys_sn
 
 # Migrate only public image files from the D7 database.
+# Uses the same d7_news_images source plugin as ys_sn_media so both
+# migrations iterate over an identical set of files.
 source:
-  plugin: d7_file
+  plugin: d7_news_images
   key: d7_sustainability
-  scheme: public
-  # Filter to image MIME types to avoid migrating unrelated files.
-  # Remove this filter if you need to migrate other file types (e.g. PDFs).
-  mime_type:
-    - image/jpeg
-    - image/png
-    - image/gif
-    - image/webp
-    - image/svg+xml
   constants:
     # Staging directory: where D7 files have been placed before migration.
     d7_source_dir: d7_source
     # Destination directory: where migrated news images will live in D10.
     # D10 file entities will reference public://news/... URIs.
     d7_dest_dir: news
-    # Required by the d7_file source plugin's prepareRow() to compute the
-    # 'filepath' property. We don't use filepath in our process, but without
-    # this key PHP emits an "Undefined array key" warning on every row.
-    source_base_path: ''
 
 process:
   uid:

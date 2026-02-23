@@ -29,19 +29,16 @@ migration_group: ys_sn
 # reference files stored here. A single migration covers both fields since
 # fid is the shared key used by the migration_lookup in ys_sn_news.
 source:
-  plugin: d7_file
+  # Custom source plugin that JOINs file_managed with field_data_field_image2
+  # and field_data_field_news_image to expose alt and title text.
+  # Filters to public images only — no additional mime_type or scheme config
+  # needed as those conditions are built into the plugin query.
+  plugin: d7_news_images
   key: d7_sustainability
-  scheme: public
-  mime_type:
-    - image/jpeg
-    - image/png
-    - image/gif
-    - image/webp
-    - image/svg+xml
   constants:
-    # Required by the d7_file source plugin's prepareRow() to suppress an
-    # "Undefined array key" warning. We don't use the computed filepath property.
-    source_base_path: ''
+    # Tag applied to every migrated media item so they can be identified and
+    # bulk-managed in the media library after migration.
+    migration_tag_name: 'Imported from migration'
 
 process:
   name: filename
@@ -59,14 +56,22 @@ process:
     source: fid
     no_stub: true
 
-  # alt and title are not available from file_managed; default to empty.
-  # Update in the media library after migration if needed.
-  'field_media_image/alt':
-    plugin: default_value
-    default_value: ''
-  'field_media_image/title':
-    plugin: default_value
-    default_value: ''
+  # Alt and title text sourced from field_image2 or field_news_image,
+  # whichever has a value (field_image2 takes precedence). Falls back to
+  # an empty string if neither field has alt/title for this file.
+  'field_media_image/alt': alt
+  'field_media_image/title': title
+
+  # Tag every migrated media item so they can be identified in the media
+  # library. entity_generate looks up the term by name and creates it if it
+  # does not yet exist.
+  'field_tags/target_id':
+    plugin: entity_generate
+    source: constants/migration_tag_name
+    entity_type: taxonomy_term
+    bundle_key: vid
+    bundle: tags
+    value_key: name
 
 destination:
   plugin: entity:media
