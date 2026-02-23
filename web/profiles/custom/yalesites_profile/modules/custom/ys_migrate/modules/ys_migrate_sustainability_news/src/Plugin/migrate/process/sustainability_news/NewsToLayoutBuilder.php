@@ -142,9 +142,8 @@ class NewsToLayoutBuilder extends ProcessPluginBase implements ContainerFactoryP
       throw new MigrateException('sn_news_to_layout_builder: default_section_type is required when create_default_section is TRUE.');
     }
 
-    // Order matches core.entity_view_display.node.post.default.yml:
-    //   weight 0 → content_moderation_control
-    //   weight 1 → post_meta_block
+    // Order matches core.entity_view_display.node.post.default.yml.
+    // Weight 0: content_moderation_control, weight 1: post_meta_block.
     return new Section(
       'layout_onecol',
       ['label' => 'Title and Metadata'],
