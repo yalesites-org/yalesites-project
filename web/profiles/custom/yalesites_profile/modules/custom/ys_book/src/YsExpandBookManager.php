@@ -57,7 +57,7 @@ class YsExpandBookManager extends ExpandBookManager {
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The current route match.
    * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
-   *   The logger.factory service.
+   *   The logger factory service.
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, TranslationInterface $translation, ConfigFactoryInterface $config_factory, BookOutlineStorageInterface $book_outline_storage, RendererInterface $renderer, LanguageManagerInterface $language_manager, EntityRepositoryInterface $entity_repository, CacheBackendInterface $backend_chained_cache, CacheBackendInterface $memory_cache, RouteMatchInterface $route_match, LoggerChannelFactoryInterface $logger_factory) {
     parent::__construct($entity_type_manager, $translation, $config_factory, $book_outline_storage, $renderer, $language_manager, $entity_repository, $backend_chained_cache, $memory_cache, $route_match, $logger_factory);
@@ -187,7 +187,7 @@ class YsExpandBookManager extends ExpandBookManager {
    * This allows CAS-protected pages to be included in the book tree,
    * where they will be flagged with is_cas by bookLinkTranslate().
    */
-  protected function bookTreeBuild($bid, array $parameters = []): array {
+  protected function bookTreeBuild(string|int $bid, array $parameters = []): array {
     // Build the book tree.
     $data = $this->doBookTreeBuild($bid, $parameters);
     // Translate links but skip access filtering that removes CAS-protected
@@ -206,7 +206,10 @@ class YsExpandBookManager extends ExpandBookManager {
     foreach ($tree as $key => $v) {
       $item = &$tree[$key]['link'];
       $this->bookLinkTranslate($item);
-      // Always include the item (don't check $item['access']).
+      // Skip unpublished items.
+      if (!$item['access']) {
+        continue;
+      }
       if ($tree[$key]['below']) {
         $this->doBookTreeTranslateLinks($tree[$key]['below']);
       }
@@ -236,15 +239,20 @@ class YsExpandBookManager extends ExpandBookManager {
     // include it, and add a flag so that the template can add a lock icon to
     // the menu item. Access will still be checked when the user attempts to
     // view the node.
-    $link['access'] = TRUE;
+    // Published nodes are always accessible in the nav (CAS-protected pages
+    // are shown with a lock icon). For unpublished nodes, defer to Drupal's
+    // access system so admins can see them but anonymous users cannot.
+    $link['access'] = $node && ($node->isPublished() || $node->access('view'));
     // Check the field_login_required field instead of access check to avoid
     // cache-related issues between environments.
     $link['is_cas'] = $node && $node->hasField('field_login_required') && (bool) $node->get('field_login_required')->value;
 
-    // Localize the link since we always set access to TRUE.
-    // The node label will be the value for the current language.
-    $node = $this->entityRepository->getTranslationFromContext($node);
-    $link['title'] = $node->label();
+    // Localize the link title. The node label will be the value for the
+    // current language.
+    if ($node) {
+      $node = $this->entityRepository->getTranslationFromContext($node);
+      $link['title'] = $node->label();
+    }
     $link['options'] = [];
     return $link;
   }

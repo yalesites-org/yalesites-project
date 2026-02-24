@@ -19,6 +19,7 @@ dependencies:
     - media_library
     - media_library_edit
     - text
+    - ys_themes
 id: block_content.quote_callout.default
 targetEntityType: block_content
 bundle: quote_callout
@@ -67,7 +68,7 @@ content:
     settings: {  }
     third_party_settings: {  }
   field_style_color:
-    type: options_select
+    type: component_color_picker
     weight: 6
     region: content
     settings: {  }

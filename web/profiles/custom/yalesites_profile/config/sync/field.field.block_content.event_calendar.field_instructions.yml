@@ -20,6 +20,6 @@ default_value:
 default_value_callback: ''
 settings:
   markup:
-    value: '<p>1</p>'
+    value: '<p>Calendar pulls in your Events content types and dynamically references them on your webpage.</p>'
     format: basic_html
 field_type: markup

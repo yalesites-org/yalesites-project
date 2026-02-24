@@ -20,7 +20,7 @@ class MicrosoftForm extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $pattern = '/^<iframe.+src=\"https:\/\/(?:(?:forms\.office\.com\/Pages\/ResponsePage\.aspx(?<office_params>\?[^"]+))|(?:forms\.cloud\.microsoft\/r\/(?<form_id>[^"\?]+)(?:\?[^"]*)?))".+/';
+  protected static $pattern = '/^<iframe.+src=\"?https:\/\/forms\.(?<domain>office\.com|cloud\.microsoft)\/(?:(?:Pages\/ResponsePage\.aspx(?<page_params>\?[^"\s]+))|(?:r\/(?<form_id>[^"\?\s]+)(?<r_params>\?[^"\s]+)?))\"?.+/';
 
   /**
    * {@inheritdoc}
@@ -62,14 +62,28 @@ class MicrosoftForm extends EmbedSourceBase implements EmbedSourceInterface {
    * {@inheritdoc}
    */
   public function getUrl(array $params): string {
-    if (isset($params['office_params']) && !empty($params['office_params'])) {
-      $sanitized_params = $this->sanitizeOfficeParams($params['office_params']);
-      return 'https://forms.office.com/Pages/ResponsePage.aspx' . $sanitized_params;
+    $domain = $params['domain'] ?? '';
+
+    // Handle /Pages/ResponsePage.aspx format.
+    if (isset($params['page_params']) && !empty($params['page_params'])) {
+      $sanitized_params = $this->sanitizeOfficeParams($params['page_params']);
+      return 'https://forms.' . $domain . '/Pages/ResponsePage.aspx' . $sanitized_params;
     }
+
+    // Handle /r/ format.
     if (isset($params['form_id']) && !empty($params['form_id'])) {
       $sanitized_id = $this->sanitizeFormId($params['form_id']);
-      return 'https://forms.cloud.microsoft/r/' . $sanitized_id;
+      $url = 'https://forms.' . $domain . '/r/' . $sanitized_id;
+
+      // Preserve query parameters if present (like ?embed=true).
+      if (isset($params['r_params']) && !empty($params['r_params'])) {
+        $sanitized_params = $this->sanitizeOfficeParams($params['r_params']);
+        $url .= $sanitized_params;
+      }
+
+      return $url;
     }
+
     return '';
   }
 

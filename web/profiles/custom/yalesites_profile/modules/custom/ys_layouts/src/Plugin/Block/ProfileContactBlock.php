@@ -4,6 +4,7 @@ namespace Drupal\ys_layouts\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -94,6 +95,44 @@ class ProfileContactBlock extends BlockBase implements ContainerFactoryPluginInt
   /**
    * {@inheritdoc}
    */
+  public function defaultConfiguration() {
+    return [
+      'padding_options' => 'default',
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function blockForm($form, FormStateInterface $form_state) {
+    $config = $this->getConfiguration();
+
+    $form['padding_options'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Padding Options'),
+      '#description' => $this->t('Choose the padding configuration for this block.'),
+      '#default_value' => $config['padding_options'] ?? 'default',
+      '#options' => [
+        'default' => $this->t('Padding on both top and bottom'),
+        'no_top' => $this->t('No top padding'),
+        'no_bottom' => $this->t('No bottom padding'),
+        'no_padding' => $this->t('No padding (removes both top and bottom padding)'),
+      ],
+    ];
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function blockSubmit($form, FormStateInterface $form_state) {
+    $this->configuration['padding_options'] = $form_state->getValue('padding_options');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function build() {
 
     $email = NULL;
@@ -127,6 +166,7 @@ class ProfileContactBlock extends BlockBase implements ContainerFactoryPluginInt
       '#email' => $email,
       '#phone' => $phone,
       '#address' => $address,
+      '#padding_options' => $this->configuration['padding_options'] ?? 'default',
     ];
   }
 

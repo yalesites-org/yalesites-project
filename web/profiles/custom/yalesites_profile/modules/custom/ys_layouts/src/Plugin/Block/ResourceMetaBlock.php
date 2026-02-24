@@ -172,7 +172,9 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
       if ($fieldCategory) {
         /** @var \Drupal\taxonomy\Entity\Term $categoryTerm */
         $categoryTerm = $this->entityTypeManager->getStorage('taxonomy_term')->load($fieldCategory['target_id']);
-        $categoryName = $categoryTerm->getName();
+        if ($categoryTerm) {
+          $categoryName = $categoryTerm->getName();
+        }
       }
 
       // Select specific taxonomy fields to show in the METADATA.
@@ -209,36 +211,40 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
       if ($fieldMedia) {
         /** @var \Drupal\media\Entity\Media $media */
         $media = $this->entityTypeManager->getStorage('media')->load($fieldMedia['target_id']);
-        $mediaBundle = $media->bundle();
-        $mediaLabel = $media->label();
-        $mediaId = $media->id();
+        if ($media) {
+          $mediaBundle = $media->bundle();
+          $mediaLabel = $media->label();
+          $mediaId = $media->id();
 
-        if ($mediaBundle === 'document') {
-          $fieldMediaFile = $media->field_media_file->first()->getValue();
+          if ($mediaBundle === 'document') {
+            $fieldMediaFile = $media->field_media_file->first()->getValue();
 
-          /** @var \Drupal\file\Entity\File $file */
-          $file = $this->entityTypeManager->getStorage('file')->load($fieldMediaFile['target_id']);
-          $fileUrl = Url::fromRoute('ys_layouts.resource_download', ['file_id' => $file->id()])->toString();
+            /** @var \Drupal\file\Entity\File $file */
+            $file = $this->entityTypeManager->getStorage('file')->load($fieldMediaFile['target_id']);
+            if ($file) {
+              $fileUrl = Url::fromRoute('ys_layouts.resource_download', ['file_id' => $file->id()])->toString();
+            }
 
-          $thumbnail = $media?->thumbnail;
+            $thumbnail = $media?->thumbnail;
 
-          if ($thumbnail) {
-            /** @var \Drupal\file\Entity\File $thumbnail_file */
-            $referenced_entities = $thumbnail->referencedEntities();
-            $thumbnail_file = reset($referenced_entities);
+            if ($thumbnail) {
+              /** @var \Drupal\file\Entity\File $thumbnail_file */
+              $referenced_entities = $thumbnail->referencedEntities();
+              $thumbnail_file = reset($referenced_entities);
 
-            if ($thumbnail_file) {
-              $documentImage = [
-                '#theme' => 'responsive_image',
-                '#uri' => $thumbnail_file->getFileUri(),
-                '#responsive_image_style_id' => 'resource_thumbnail',
-                '#height' => $thumbnail?->height,
-                '#width' => $thumbnail?->width,
-                '#attributes' => [
-                  'loading' => 'lazy',
-                  'alt' => $media->label(),
-                ],
-              ];
+              if ($thumbnail_file) {
+                $documentImage = [
+                  '#theme' => 'responsive_image',
+                  '#uri' => $thumbnail_file->getFileUri(),
+                  '#responsive_image_style_id' => 'resource_thumbnail',
+                  '#height' => $thumbnail?->height,
+                  '#width' => $thumbnail?->width,
+                  '#attributes' => [
+                    'loading' => 'lazy',
+                    'alt' => $media->label(),
+                  ],
+                ];
+              }
             }
           }
         }

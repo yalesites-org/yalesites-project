@@ -26,6 +26,11 @@ class YsBookController extends BookController {
       }
     }
 
+    // Replace the empty message.
+    if (isset($build['#empty'])) {
+      $build['#empty'] = $this->t('No content collections available.');
+    }
+
     return $build;
   }
 

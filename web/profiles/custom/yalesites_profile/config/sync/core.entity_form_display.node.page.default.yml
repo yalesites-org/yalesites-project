@@ -5,8 +5,10 @@ dependencies:
   config:
     - field.field.node.page.field_audience
     - field.field.node.page.field_category
+    - field.field.node.page.field_collection_nav_position
     - field.field.node.page.field_custom_vocab
     - field.field.node.page.field_external_source
+
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
     - field.field.node.page.field_tags
@@ -94,6 +96,12 @@ content:
     region: content
     settings: {  }
     third_party_settings: {  }
+  field_collection_nav_position:
+    type: options_select
+    weight: 14
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_custom_vocab:
     type: chosen_select
     weight: 3
@@ -108,6 +116,7 @@ content:
       placeholder_url: ''
       placeholder_title: ''
     third_party_settings: {  }
+
   field_login_required:
     type: boolean_checkbox
     weight: 7
