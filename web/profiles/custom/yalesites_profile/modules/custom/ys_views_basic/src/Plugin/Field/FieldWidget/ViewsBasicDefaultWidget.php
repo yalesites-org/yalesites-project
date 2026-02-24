@@ -437,7 +437,7 @@ class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPlug
     $form['group_user_selection']['filter_and_sort']['pinned_to_top'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Show pinned label'),
-      '#description' => $this->t('Display a custom label at the top of items.'),
+      '#description' => $this->t('Show a custom label for items pinned to the top of the list.'),
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('pinned_to_top', $items[$delta]->params) : FALSE,
       '#states' => ['invisible' => $calendarViewInvisibleState],
     ];
