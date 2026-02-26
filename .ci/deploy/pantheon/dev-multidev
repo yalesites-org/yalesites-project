@@ -21,7 +21,7 @@ else
 fi
 
 # Wake the environment to make sure the database is reachable.
-terminus -n env:wake "$TERMINUS_SITE.$TERMINUS_ENV"
+terminus -n env:wake "$TERMINUS_SITE.$TERMINUS_ENV" --retry=5 --delay=30
 
 # Run drush deploy - updb, cr, cim, cr, deploy:hook
 terminus -n drush "$TERMINUS_SITE.$TERMINUS_ENV" -- deploy -v -y
