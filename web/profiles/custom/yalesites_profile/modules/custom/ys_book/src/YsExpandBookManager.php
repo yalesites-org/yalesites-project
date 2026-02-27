@@ -117,8 +117,13 @@ class YsExpandBookManager extends ExpandBookManager {
 
   /**
    * {@inheritdoc}
+   *
+   * @param array $tree
+   *   The book tree data.
+   * @param int $depth
+   *   The current depth in the tree (0 = top-level, 1+ = secondary/dropdown).
    */
-  protected function buildItems(array $tree): array {
+  protected function buildItems(array $tree, int $depth = 0): array {
 
     $items = [];
     $langcode = $this->languageManager->getCurrentLanguage(LanguageInterface::TYPE_CONTENT)->getId();
@@ -159,7 +164,20 @@ class YsExpandBookManager extends ExpandBookManager {
 
       // Allow book-specific theme overrides.
       $element['attributes'] = new Attribute();
-      $element['title'] = $data['link']['title'];
+
+      // Store the node title for use by secondary menu items and the cloned
+      // top-level item that is prepended to the dropdown in preprocess_block.
+      $element['node_title'] = $data['link']['node_title'] ?? $data['link']['title'];
+
+      // Top-level items use the menu link title (which may be a custom title
+      // set in the Content Collection sidebar widget). Secondary/dropdown items
+      // use the node title instead.
+      if ($depth === 0) {
+        $element['title'] = $data['link']['title'];
+      }
+      else {
+        $element['title'] = $element['node_title'];
+      }
 
       if (isset($data['link']['is_cas']) && $data['link']['is_cas']) {
         $element['is_cas'] = TRUE;
@@ -171,7 +189,7 @@ class YsExpandBookManager extends ExpandBookManager {
 
       $element['localized_options'] = !empty($data['link']['localized_options']) ? $data['link']['localized_options'] : [];
       $element['localized_options']['set_active_class'] = TRUE;
-      $element['below'] = $data['below'] ? $this->buildItems($data['below']) : [];
+      $element['below'] = $data['below'] ? $this->buildItems($data['below'], $depth + 1) : [];
       $element['original_link'] = $data['link'];
 
       // Index using the link's unique nid.
@@ -251,6 +269,10 @@ class YsExpandBookManager extends ExpandBookManager {
     // table if one has been set, otherwise fall back to the node title.
     if ($node) {
       $node = $this->entityRepository->getTranslationFromContext($node);
+
+      // Always store the node title so secondary menu items can use it.
+      $link['node_title'] = $node->label();
+
       if (empty($link['title'])) {
         $link['title'] = $node->label();
       }

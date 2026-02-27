@@ -408,6 +408,36 @@ function ys_book_menu_links_discovered_alter(&$links) {
 }
 
 /**
+ * Implements hook_preprocess_block().
+ */
+function ys_book_preprocess_block(&$variables) {
+  // Add top level book link to the book navigation sub-nav.
+  if ($variables['base_plugin_id'] == 'custom_book_navigation') {
+    if (isset($variables['content']['#items']) && is_array($variables['content']['#items'])) {
+
+      foreach ($variables['content']['#items'] as &$menuItem) {
+        if (empty($menuItem['below'])) {
+          continue;
+        }
+
+        // Clone top level menu item.
+        $clonedMenuItem = $menuItem;
+
+        // We don't want any other subitems, just the top level.
+        $clonedMenuItem['below'] = NULL;
+
+        // The cloned item appears in the dropdown, so use the node title
+        // rather than the menu link title (which is used for the top-level
+        // label only).
+        $clonedMenuItem['title'] = $clonedMenuItem['node_title'] ?? $clonedMenuItem['title'];
+
+        array_unshift($menuItem['below'], $clonedMenuItem);
+      }
+    }
+  }
+}
+
+/**
  * Implements hook_preprocess_page_title().
  */
 function ys_book_preprocess_page_title(&$variables) {
