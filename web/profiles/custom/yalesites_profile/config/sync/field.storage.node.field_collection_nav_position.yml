@@ -17,6 +17,7 @@ settings:
     -
       value: in_header
       label: 'In Site Header'
+  allowed_values_function: ''
 module: options
 locked: false
 cardinality: 1
