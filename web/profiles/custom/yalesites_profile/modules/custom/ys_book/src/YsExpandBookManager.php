@@ -206,7 +206,10 @@ class YsExpandBookManager extends ExpandBookManager {
     foreach ($tree as $key => $v) {
       $item = &$tree[$key]['link'];
       $this->bookLinkTranslate($item);
-      // Always include the item (don't check $item['access']).
+      // Skip unpublished items.
+      if (!$item['access']) {
+        continue;
+      }
       if ($tree[$key]['below']) {
         $this->doBookTreeTranslateLinks($tree[$key]['below']);
       }
@@ -236,22 +239,21 @@ class YsExpandBookManager extends ExpandBookManager {
     // include it, and add a flag so that the template can add a lock icon to
     // the menu item. Access will still be checked when the user attempts to
     // view the node.
-    $link['access'] = TRUE;
+    // Published nodes are always accessible in the nav (CAS-protected pages
+    // are shown with a lock icon). For unpublished nodes, defer to Drupal's
+    // access system so admins can see them but anonymous users cannot.
+    $link['access'] = $node && ($node->isPublished() || $node->access('view'));
     // Check the field_login_required field instead of access check to avoid
     // cache-related issues between environments.
     $link['is_cas'] = $node && $node->hasField('field_login_required') && (bool) $node->get('field_login_required')->value;
 
-    // Localize the link since we always set access to TRUE.
-    // Use custom menu link title from book table if available,
-    // otherwise use node title.
-    $node = $this->entityRepository->getTranslationFromContext($node);
-    if (!empty($link['title'])) {
-      // Use the custom menu link title from the book table.
-      $link['title'] = $link['title'];
-    }
-    else {
-      // Fall back to node title if no custom title is set.
-      $link['title'] = $node->label();
+    // Localize the link title. Use the custom menu link title from the book
+    // table if one has been set, otherwise fall back to the node title.
+    if ($node) {
+      $node = $this->entityRepository->getTranslationFromContext($node);
+      if (empty($link['title'])) {
+        $link['title'] = $node->label();
+      }
     }
     $link['options'] = [];
     return $link;

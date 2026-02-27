@@ -13,6 +13,7 @@ use Drupal\Core\Render\Markup;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
+use Drupal\Core\Cache\Cache;
 
 /**
  * Implements hook_form_FORM_ID_alter().
@@ -213,6 +214,9 @@ function ys_book_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     if (isset($form['actions']['delete']['#title'])) {
       $form['actions']['delete']['#title'] = t('Remove from collection outline');
     }
+
+    // Add cache invalidation submit handler.
+    $form['actions']['submit']['#submit'][] = '_ys_book_outline_form_submit';
   }
 }
 
@@ -229,6 +233,9 @@ function ys_book_form_book_remove_form_alter(&$form, FormStateInterface $form_st
     $node = $build_info['args'][0];
     $form['description']['#markup'] = t("Remove '%title' from the collection? You can add it back later using the Content Collection tab in Manage Settings.", ['%title' => $node->label()]);
   }
+
+  // Add cache invalidation submit handler.
+  $form['actions']['submit']['#submit'][] = '_ys_book_remove_form_submit';
 }
 
 /**
@@ -313,6 +320,9 @@ function ys_book_form_book_admin_edit_alter(&$form, FormStateInterface $form_sta
       }
     }
   }
+
+  // Add cache invalidation submit handler.
+  $form['save']['#submit'][] = '_ys_book_admin_edit_submit';
 }
 
 /**
@@ -320,6 +330,31 @@ function ys_book_form_book_admin_edit_alter(&$form, FormStateInterface $form_sta
  */
 function ys_book_node_update(NodeInterface $node): void {
   _ys_book_save_menu_link_title($node);
+
+  // Scenario 1: field_collection_nav_position changed on a book root node.
+  if ($node->hasField('field_collection_nav_position') && isset($node->original)) {
+    $current_value = $node->get('field_collection_nav_position')->getString();
+    $original_value = $node->original->get('field_collection_nav_position')->getString();
+
+    if ($current_value !== $original_value) {
+      _ys_book_invalidate_collection_nav_cache($node->id());
+    }
+  }
+
+  // Scenario 2: Book assignment changed (node added to, removed from,
+  // or moved between books).
+  $current_bid = $node->book['bid'] ?? NULL;
+  $original_bid = $node->book['original_bid'] ?? $node->original->book['bid'] ?? NULL;
+
+  if ($current_bid !== $original_bid) {
+    // Invalidate both the old and new book's caches.
+    if ($current_bid) {
+      _ys_book_invalidate_collection_nav_cache($current_bid);
+    }
+    if ($original_bid && $original_bid !== $current_bid) {
+      _ys_book_invalidate_collection_nav_cache($original_bid);
+    }
+  }
 }
 
 /**
@@ -327,6 +362,9 @@ function ys_book_node_update(NodeInterface $node): void {
  */
 function ys_book_node_insert(NodeInterface $node): void {
   _ys_book_save_menu_link_title($node);
+  if (!empty($node->book['bid'])) {
+    _ys_book_invalidate_collection_nav_cache($node->book['bid']);
+  }
 }
 
 /**
@@ -495,4 +533,145 @@ function ys_book_book_admin_edit_form_submit(array &$form, FormStateInterface $f
     // default handler from updating node title.
     $form_state->setValue(['table', $key, 'title'], $default_title);
   }
+}
+
+/**
+ * Submit handler for book outline form to invalidate collection nav cache.
+ */
+function _ys_book_outline_form_submit($form, FormStateInterface $form_state) {
+  $book = $form_state->getValue('book');
+  if (!empty($book['bid'])) {
+    _ys_book_invalidate_collection_nav_cache($book['bid']);
+  }
+  // Also invalidate the original book if the node moved books.
+  if (!empty($book['original_bid']) && $book['original_bid'] != $book['bid']) {
+    _ys_book_invalidate_collection_nav_cache($book['original_bid']);
+  }
+}
+
+/**
+ * Submit handler for book remove form to invalidate collection nav cache.
+ */
+function _ys_book_remove_form_submit($form, FormStateInterface $form_state) {
+  $build_info = $form_state->getBuildInfo();
+  if (isset($build_info['args'][0]) && $build_info['args'][0] instanceof NodeInterface) {
+    $node = $build_info['args'][0];
+    if (!empty($node->book['bid'])) {
+      _ys_book_invalidate_collection_nav_cache($node->book['bid']);
+    }
+  }
+}
+
+/**
+ * Submit handler for book admin edit form to invalidate collection nav cache.
+ */
+function _ys_book_admin_edit_submit($form, FormStateInterface $form_state) {
+  if (isset($form['#node']) && !empty($form['#node']->book['bid'])) {
+    _ys_book_invalidate_collection_nav_cache($form['#node']->book['bid']);
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_presave() for node entities.
+ *
+ * Prevents nested navigation position conflicts by automatically resetting
+ * the navigation position to default when a node is nested under another book.
+ */
+function ys_book_node_presave($node) {
+  // Only process nodes that have the navigation position field.
+  if (!$node->hasField('field_collection_nav_position')) {
+    return;
+  }
+
+  // Check if this node has a non-default navigation position.
+  $nav_position = $node->get('field_collection_nav_position')->getString();
+
+  if ($nav_position === 'in_content' || empty($nav_position)) {
+    // Default position, nothing to do.
+    return;
+  }
+
+  // Check if this node is in a book.
+  if (empty($node->book['bid'])) {
+    // Not in a book, nothing to do.
+    return;
+  }
+
+  // Check if this node is a book root (bid == nid) or a child (bid != nid).
+  $is_book_root = ($node->book['bid'] === 'new') || ($node->book['bid'] == $node->id());
+
+  \Drupal::logger('ys_book')->notice('Presave: bid=@bid, bid_type=@bid_type, nid=@nid, nav=@nav, is_new=@new, is_root=@root, book_keys=@keys', [
+    '@bid' => $node->book['bid'] ?? 'unset',
+    '@bid_type' => gettype($node->book['bid'] ?? NULL),
+    '@nid' => $node->id() ?? 'NULL',
+    '@nav' => $nav_position,
+    '@new' => $node->isNew() ? 'yes' : 'no',
+    '@root' => $is_book_root ? 'yes' : 'no',
+    '@keys' => implode(',', array_keys($node->book ?? [])),
+  ]);
+
+  if (!$is_book_root) {
+    // This node is a child in a book but has a non-default nav position.
+    // Reset to the default.
+    $node->set('field_collection_nav_position', 'in_content');
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_predelete() for node entities.
+ *
+ * Invalidates collection nav cache when a book node is deleted.
+ */
+function ys_book_node_predelete($node) {
+  if (!empty($node->book['bid'])) {
+    _ys_book_invalidate_collection_nav_cache($node->book['bid']);
+  }
+}
+
+/**
+ * Invalidates all collection navigation caches for a book.
+ *
+ * This clears:
+ * 1. The persistent cache entry for the navigation position function.
+ * 2. The rendered page cache for all nodes in the book so headers re-render.
+ *
+ * @param int $bid
+ *   The book ID (nid of the root book node).
+ */
+function _ys_book_invalidate_collection_nav_cache(int $bid) {
+  // 1. Delete the persistent navigation position cache entry.
+  \Drupal::cache()->delete('collection:nav_position:' . $bid);
+
+  // 2. Invalidate the custom cache tag used by the preprocess functions.
+  // This will invalidate the render cache for all pages that checked
+  // the navigation position for this book.
+  Cache::invalidateTags(['ys_collection_nav:' . $bid]);
+
+  // 3. Invalidate node cache tags for all nodes in the book.
+  // This ensures the rendered pages are rebuilt with the new header.
+  $nids = _ys_book_get_all_book_nids($bid);
+  if (!empty($nids)) {
+    $tags = [];
+    foreach ($nids as $nid) {
+      $tags[] = 'node:' . $nid;
+    }
+    Cache::invalidateTags($tags);
+  }
+}
+
+/**
+ * Gets all node IDs belonging to a book.
+ *
+ * @param int $bid
+ *   The book ID.
+ *
+ * @return array
+ *   An array of node IDs in the book.
+ */
+function _ys_book_get_all_book_nids(int $bid) {
+  return \Drupal::database()->select('book', 'b')
+    ->fields('b', ['nid'])
+    ->condition('b.bid', $bid)
+    ->execute()
+    ->fetchCol();
 }

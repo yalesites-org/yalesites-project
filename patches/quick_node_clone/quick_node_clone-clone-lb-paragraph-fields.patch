@@ -1,0 +1,14 @@
+--- a/src/Entity/QuickNodeCloneEntityFormBuilder.php
++++ b/src/Entity/QuickNodeCloneEntityFormBuilder.php
+@@ -334,6 +334,11 @@
+         /** @var \Drupal\block_content\BlockContentInterface $block_content */
+         $cloned_block_content = $block_content->createDuplicate();
+ 
++        // Clone paragraph fields (entity_reference_revisions) on the block.
++        // cloneNestedBlocks() only handles entity_reference fields targeting
++        // block_content, so paragraph fields must be cloned explicitly here.
++        $this->cloneParagraphs($cloned_block_content);
++
+         // Recursively clone blocks stored in entity reference fields
+         $this->cloneNestedBlocks($cloned_block_content);
+ 

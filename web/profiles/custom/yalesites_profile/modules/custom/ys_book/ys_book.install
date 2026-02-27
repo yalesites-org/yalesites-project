@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Install, update and uninstall functions for the ys_book module.
+ * Install and update functions for the ys_book module.
  */
 
 /**

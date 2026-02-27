@@ -4,7 +4,6 @@ namespace Drupal\ys_views_basic\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
-use Drupal\Core\Routing\CurrentRouteMatch;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ys_views_basic\Service\EventsCalendarInterface;
 use Drupal\ys_views_basic\ViewsBasicManager;
@@ -24,13 +23,6 @@ use Drupal\Core\Form\FormBuilderInterface;
 class EventCalendarDefaultFormatter extends ViewsBasicDefaultFormatter {
 
   /**
-   * The current route match service.
-   *
-   * @var \Drupal\Core\Routing\CurrentRouteMatch
-   */
-  protected $currentRouteMatch;
-
-  /**
    * The form builder service.
    *
    * @var \Drupal\Core\Form\FormBuilderInterface
@@ -47,7 +39,6 @@ class EventCalendarDefaultFormatter extends ViewsBasicDefaultFormatter {
     array $third_party_settings,
     ViewsBasicManager $viewsBasicManager,
     EventsCalendarInterface $eventsCalendar,
-    CurrentRouteMatch $currentRouteMatch,
     FormBuilderInterface $formBuilder,
   ) {
     parent::__construct(
@@ -61,7 +52,6 @@ class EventCalendarDefaultFormatter extends ViewsBasicDefaultFormatter {
       $viewsBasicManager,
       $eventsCalendar
     );
-    $this->currentRouteMatch = $currentRouteMatch;
     $this->formBuilder = $formBuilder;
   }
 
@@ -79,7 +69,6 @@ class EventCalendarDefaultFormatter extends ViewsBasicDefaultFormatter {
       $configuration['third_party_settings'],
       $container->get('ys_views_basic.views_basic_manager'),
       $container->get('ys_views_basic.events_calendar'),
-      $container->get('current_route_match'),
       $container->get('form_builder'),
     );
   }
