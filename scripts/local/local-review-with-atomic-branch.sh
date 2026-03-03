@@ -16,4 +16,4 @@ _say "npm ci"
 npm ci
 _say "Clear Drupal's cache"
 cd ../../../..
-lando drush cr
+ddev drush cr

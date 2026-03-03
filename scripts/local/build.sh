@@ -1,8 +1,8 @@
 #!/bin/bash
 
-lando composer update
+ddev composer update
 npm run confim
-lando drush cr
+ddev drush cr
 cd web/themes/contrib/atomic
 npm install
-lando drush uli
+ddev drush uli

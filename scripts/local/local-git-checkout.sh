@@ -366,7 +366,7 @@ function _local-git-checkout() {
   [ ! -L "component-library-twig" ] && ln -s atomic/_yale-packages/component-library-twig component-library-twig
   [ ! -L "tokens" ] && ln -s atomic/_yale-packages/tokens tokens
 
-  [ "$atomic_changed" = true ] && _say "Atomic theme changed, so we need to clear Drupal cache; this could take a while" && lando drush cr
+  [ "$atomic_changed" = true ] && _say "Atomic theme changed, so we need to clear Drupal cache; this could take a while" && ddev drush cr
 
   _say "********************"
   _say "All done!"

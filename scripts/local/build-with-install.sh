@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export YALESITES_IS_LOCAL=1
-lando drush si yalesites_profile -y
-lando drush cr
+ddev drush si yalesites_profile -y
+ddev drush cr
 npm run content-import
 npm run build
