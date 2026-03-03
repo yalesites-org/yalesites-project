@@ -1,0 +1,20 @@
+name: yalesites-platform
+type: drupal
+php_version: "8.3"
+webserver_type: nginx-fpm
+docroot: web
+database:
+  type: mariadb
+  version: "10.6"
+composer_version: "2"
+nodejs_version: "20"
+webimage_extra_packages:
+  - php${DDEV_PHP_VERSION}-imagick
+web_environment:
+  - DDEV_PANTHEON_SITE=yalesites-platform
+  - DDEV_PANTHEON_ENVIRONMENT=dev
+  - COMPOSER_PROCESS_TIMEOUT=1800
+  - CUSTOMER_SECRETS_FAKE_FILE=/var/www/html/secrets.json
+hooks:
+  post-start:
+    - exec: "git config --global --add safe.directory /var/www/html"

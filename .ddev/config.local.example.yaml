@@ -1,0 +1,7 @@
+# Copy this file to .ddev/config.local.yaml and customize as needed.
+# .ddev/config.local.yaml is gitignored.
+#
+# Override the Pantheon site/environment if needed:
+# web_environment:
+#   - DDEV_PANTHEON_SITE=my-site-name
+#   - DDEV_PANTHEON_ENVIRONMENT=dev

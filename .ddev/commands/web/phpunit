@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+## Description: Run PHPUnit tests
+## Usage: phpunit [flags] [args]
+## Example: "ddev phpunit" or "ddev phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_core/tests"
+## ProjectTypes: drupal
+## ExecRaw: true
+
+php /var/www/html/vendor/bin/phpunit -c /var/www/html/phpunit.xml "$@"
