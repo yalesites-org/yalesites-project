@@ -69,7 +69,7 @@ if (!empty($_ENV['PANTHEON_ENVIRONMENT']) && !empty($_ENV['CACHE_HOST'])) {
 /**
  * Environment Indicator.
  */
-$env = $_ENV['PANTHEON_ENVIRONMENT'] ?? 'lando';
+$env = $_ENV['PANTHEON_ENVIRONMENT'] ?? 'ddev';
 
 // Get version from profile info file.
 $profile_info_file = DRUPAL_ROOT . '/profiles/custom/yalesites_profile/yalesites_profile.info.yml';
@@ -82,7 +82,7 @@ if (file_exists($profile_info_file)) {
 }
 
 $env_options = [
-  'lando' => [
+  'ddev' => [
     'bg_color' => '#94bdff',
     'fg_color' => '#000000',
     'name' => 'Local Environment',
@@ -110,10 +110,21 @@ $env_options = [
 ];
 $env_key = isset($env_options[$env]) ? $env : 'multidev';
 $config['environment_indicator.indicator'] = $env_options[$env_key];
-if ($env_key === 'lando') {
+if ($env_key === 'ddev') {
   $git_head = file(DRUPAL_ROOT . '/../.git/HEAD');
   $ref = explode('/', $git_head[0]);
   $branch_parts = array_slice($ref, 2);
   $branch_name = implode('/', $branch_parts);
   $config['environment_indicator.indicator']['name'] .= " - $branch_name";
+}
+
+// Include settings required for Redis cache.
+if (getenv('IS_DDEV_PROJECT') == 'true' && file_exists(__DIR__ . '/settings.ddev.redis.php')) {
+  include __DIR__ . '/settings.ddev.redis.php';
+}
+
+// Automatically generated include for settings managed by ddev.
+$ddev_settings = __DIR__ . '/settings.ddev.php';
+if (getenv('IS_DDEV_PROJECT') == 'true' && is_readable($ddev_settings)) {
+  require $ddev_settings;
 }
