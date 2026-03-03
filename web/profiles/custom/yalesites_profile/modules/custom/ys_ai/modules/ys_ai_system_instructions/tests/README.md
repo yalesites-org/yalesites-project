@@ -36,38 +36,38 @@ CommonMark is used for **detection only** (parsing AST to score markdown likelih
 ### Run All Unit Tests for This Module
 
 ```bash
-lando ssh -c 'export SIMPLETEST_DB="mysql://pantheon:pantheon@database/pantheon" && export SIMPLETEST_BASE_URL="http://appserver" && vendor/bin/phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_ai/modules/ys_ai_system_instructions/tests/src/Unit/'
+ddev ssh -c 'export SIMPLETEST_DB="mysql://db:db@db/db" && export SIMPLETEST_BASE_URL="http://web" && vendor/bin/phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_ai/modules/ys_ai_system_instructions/tests/src/Unit/'
 ```
 
 ### Run Specific Test File
 
 ```bash
-lando ssh -c 'export SIMPLETEST_DB="mysql://pantheon:pantheon@database/pantheon" && export SIMPLETEST_BASE_URL="http://appserver" && vendor/bin/phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_ai/modules/ys_ai_system_instructions/tests/src/Unit/TextFormatDetectionServiceTest.php'
+ddev ssh -c 'export SIMPLETEST_DB="mysql://db:db@db/db" && export SIMPLETEST_BASE_URL="http://web" && vendor/bin/phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_ai/modules/ys_ai_system_instructions/tests/src/Unit/TextFormatDetectionServiceTest.php'
 ```
 
 ### Run Specific Test Method
 
 ```bash
-lando ssh -c 'export SIMPLETEST_DB="mysql://pantheon:pantheon@database/pantheon" && export SIMPLETEST_BASE_URL="http://appserver" && vendor/bin/phpunit --filter testDetectFormatWithHeaders web/profiles/custom/yalesites_profile/modules/custom/ys_ai/modules/ys_ai_system_instructions/tests/src/Unit/TextFormatDetectionServiceTest.php'
+ddev ssh -c 'export SIMPLETEST_DB="mysql://db:db@db/db" && export SIMPLETEST_BASE_URL="http://web" && vendor/bin/phpunit --filter testDetectFormatWithHeaders web/profiles/custom/yalesites_profile/modules/custom/ys_ai/modules/ys_ai_system_instructions/tests/src/Unit/TextFormatDetectionServiceTest.php'
 ```
 
 ### Run with Verbose Output
 
 ```bash
-lando ssh -c 'export SIMPLETEST_DB="mysql://pantheon:pantheon@database/pantheon" && export SIMPLETEST_BASE_URL="http://appserver" && vendor/bin/phpunit --verbose web/profiles/custom/yalesites_profile/modules/custom/ys_ai/modules/ys_ai_system_instructions/tests/src/Unit/'
+ddev ssh -c 'export SIMPLETEST_DB="mysql://db:db@db/db" && export SIMPLETEST_BASE_URL="http://web" && vendor/bin/phpunit --verbose web/profiles/custom/yalesites_profile/modules/custom/ys_ai/modules/ys_ai_system_instructions/tests/src/Unit/'
 ```
 
 ### Run with Code Coverage (requires Xdebug)
 
 ```bash
 # Enable Xdebug first
-lando drush xdebug-on
+ddev drush xdebug-on
 
 # Run tests with coverage
-lando ssh -c 'export SIMPLETEST_DB="mysql://pantheon:pantheon@database/pantheon" && export SIMPLETEST_BASE_URL="http://appserver" && vendor/bin/phpunit --coverage-html coverage web/profiles/custom/yalesites_profile/modules/custom/ys_ai/modules/ys_ai_system_instructions/tests/src/Unit/'
+ddev ssh -c 'export SIMPLETEST_DB="mysql://db:db@db/db" && export SIMPLETEST_BASE_URL="http://web" && vendor/bin/phpunit --coverage-html coverage web/profiles/custom/yalesites_profile/modules/custom/ys_ai/modules/ys_ai_system_instructions/tests/src/Unit/'
 
 # Disable Xdebug when done
-lando drush xdebug-off
+ddev drush xdebug-off
 ```
 
 ## Test Structure
@@ -159,13 +159,13 @@ class MyServiceKernelTest extends KernelTestBase {
 Before committing tests, ensure they pass coding standards:
 
 ```bash
-lando composer code-sniff -- web/profiles/custom/yalesites_profile/modules/custom/ys_ai/modules/ys_ai_system_instructions/tests/
+ddev composer code-sniff -- web/profiles/custom/yalesites_profile/modules/custom/ys_ai/modules/ys_ai_system_instructions/tests/
 ```
 
 Auto-fix coding standard issues:
 
 ```bash
-lando composer code-fix -- web/profiles/custom/yalesites_profile/modules/custom/ys_ai/modules/ys_ai_system_instructions/tests/
+ddev composer code-fix -- web/profiles/custom/yalesites_profile/modules/custom/ys_ai/modules/ys_ai_system_instructions/tests/
 ```
 
 ## Continuous Integration
@@ -183,7 +183,7 @@ These tests are automatically run as part of the CI/CD pipeline when:
 Ensure you're running tests from the project root and that composer dependencies are installed:
 
 ```bash
-lando composer install
+ddev composer install
 ```
 
 ### PHPUnit not found
@@ -191,15 +191,15 @@ lando composer install
 PHPUnit is included via composer. If it's missing:
 
 ```bash
-lando composer update
+ddev composer update
 ```
 
 ### Database connection errors
 
-Verify the `SIMPLETEST_DB` environment variable matches your Lando database configuration:
+Verify the `SIMPLETEST_DB` environment variable matches your DDEV database configuration:
 
 ```bash
-lando info
+ddev describe
 ```
 
 ### Memory limit errors
@@ -207,7 +207,7 @@ lando info
 Increase PHP memory limit in the test command:
 
 ```bash
-lando ssh -c 'php -d memory_limit=512M vendor/bin/phpunit ...'
+ddev ssh -c 'php -d memory_limit=512M vendor/bin/phpunit ...'
 ```
 
 ## Resources

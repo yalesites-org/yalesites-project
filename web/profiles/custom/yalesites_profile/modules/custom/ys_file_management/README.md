@@ -293,8 +293,8 @@ This module follows modern development practices for Drupal 10+:
 All code follows Drupal coding standards:
 
 ```bash
-lando composer code-sniff  # Check standards
-lando composer code-fix    # Auto-fix violations
+ddev composer code-sniff  # Check standards
+ddev composer code-fix    # Auto-fix violations
 ```
 
 ### Automated Tests
@@ -329,43 +329,43 @@ The module includes comprehensive test coverage:
 **Unit Tests** (no database required):
 ```bash
 # Run all unit tests
-lando phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/src/Unit/
+ddev phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/src/Unit/
 
 # Run specific unit test class
-lando phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/src/Unit/MediaFileDeleterTest.php
+ddev phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/src/Unit/MediaFileDeleterTest.php
 
 # Run a specific test method
-lando phpunit --filter testDeleteFileSuccess web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/src/Unit/MediaFileDeleterTest.php
+ddev phpunit --filter testDeleteFileSuccess web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/src/Unit/MediaFileDeleterTest.php
 
 # Run with verbose output
-lando phpunit --verbose web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/src/Unit/
+ddev phpunit --verbose web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/src/Unit/
 ```
 
 **Kernel Tests** (require database):
 ```bash
-# Set up environment variables for Lando database
-export SIMPLETEST_DB='mysql://pantheon:pantheon@database/pantheon'
-export SIMPLETEST_BASE_URL='http://appserver'
+# Set up environment variables for DDEV database
+export SIMPLETEST_DB='mysql://db:db@db/db'
+export SIMPLETEST_BASE_URL='http://web'
 
 # Run kernel tests
-lando phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/src/Kernel/
+ddev phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/src/Kernel/
 
 # Or run as one-liner
-SIMPLETEST_DB='mysql://pantheon:pantheon@database/pantheon' SIMPLETEST_BASE_URL='http://appserver' lando phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/src/Kernel/
+SIMPLETEST_DB='mysql://db:db@db/db' SIMPLETEST_BASE_URL='http://web' ddev phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/src/Kernel/
 ```
 
 **Run All Tests:**
 ```bash
 # Set environment and run all tests (unit + kernel)
-SIMPLETEST_DB='mysql://pantheon:pantheon@database/pantheon' SIMPLETEST_BASE_URL='http://appserver' lando phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/
+SIMPLETEST_DB='mysql://db:db@db/db' SIMPLETEST_BASE_URL='http://web' ddev phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/
 ```
 
 **Database Configuration:**
-- **Host:** `database` (Lando internal hostname)
-- **Database:** `pantheon`
-- **User:** `pantheon`
-- **Password:** `pantheon`
-- **Connection String:** `mysql://pantheon:pantheon@database/pantheon`
+- **Host:** `db` (DDEV internal hostname)
+- **Database:** `db`
+- **User:** `db`
+- **Password:** `db`
+- **Connection String:** `mysql://db:db@db/db`
 
 Unit tests provide comprehensive coverage of the service layer and can be run locally without additional setup. Kernel tests verify integration with Drupal's entity and permission systems, including form instantiation via dependency injection to catch issues that unit tests cannot detect.
 

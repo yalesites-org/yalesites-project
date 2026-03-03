@@ -99,7 +99,7 @@ To add a new filter from Localist to Drupal, follow these steps. (Note the audie
 21. If all worked well, new taxonomy terms should appear in the new vocabulary (given they are already entered into Localist), and if any events are tagged with those filters, they will also show in the event itself.
 22. Note that Layout Builder by default will add these fields to the layout. To remove, visit `/admin/structure/types/manage/event/display`, click "Manage layout" and remove the newly added block "Event audience" and then save.
 23. To add the field to the Event Meta Block that appears above all Layout Builder content, edit the `web/profiles/custom/yalesites_profile/modules/custom/ys_layouts/src/Plugin/Block/EventMetaBlock.php`, `web/profiles/custom/yalesites_profile/modules/custom/ys_layouts/templates/ys-event-meta-block.html.twig` and `web/profiles/custom/yalesites_profile/modules/custom/ys_layouts/ys_layouts.module` (Specifically the `ys_layouts_theme` function) to add the new field.
-24. Note a few of these changes require exporting config before committing to the repo: `lando drush cex`
+24. Note a few of these changes require exporting config before committing to the repo: `ddev drush cex`
 
 ### Extract Groups Process Plugin
 Similar to the extra filters but without the extra key, there is also a specific `extract_localist_groups` process plugin that is used in a similar way to first extract, and then it will use a migration lookup to lookup the correct ID to connect to a taxonomy term.

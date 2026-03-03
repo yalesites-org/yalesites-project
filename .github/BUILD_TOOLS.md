@@ -4,7 +4,7 @@
 You may need to authorize your machine with your token if you are not able to pull assets.
 
 ```
-lando terminus auth:login --machine-token=TOKEN
+terminus auth:login --machine-token=TOKEN
 ```
 
 ### Local Build Commands

@@ -14,8 +14,8 @@ __NOTE: Documentation assumes you are using MacOS with at least 8GB of memory on
 4. [Node.js (>= 8.0, < 11.0)](#additional-tools)
 5. [Composer](#additional-tools): Version 2.x.
 6. [Terminus](#terminus): Machine auth token
-7. [Lando](#lando)
-8. Docker: Use the version Lando wants to install and increase memory resources to at least 3GB memory and 3 CPUs if possible
+7. [DDEV](#ddev)
+8. Docker: Use Docker Desktop and increase memory resources to at least 3GB memory and 3 CPUs if possible
 9. **PHP Version**: 8.3 (as configured in composer.json platform requirement)
 10. [Project Setup](#project-setup)
     ```bash
@@ -48,7 +48,7 @@ Luckily, [GitHub has an intuitive guide on how to setup an SSH key on your machi
 In some cases, git will complain about ownership issues when building packages.  If this happens to you you can execute the following to mark things like atomic as a safe directory.
 
 ```bash
-git config --global --add safe.directory /app/web/themes/contrib/atomic'
+git config --global --add safe.directory /var/www/html/web/themes/contrib/atomic'
 ```
 
 Keep in mind the above command is a global so it will stay in your `.gitconfig` for future builds.
@@ -80,18 +80,17 @@ Pantheon's Terminus is a command-line tool for managing sites. The CLI is requir
    `terminus auth:login --email=<email@example.com> --machine-token=<machine_token>`
 4. [Review documentation](https://pantheon.io/docs/terminus/) to get started with the CLI
 
-### Lando
+### DDEV
 
-This project supports development with Lando using the Pantheon recipe. This produces a local development environment that matches the hardware and configuration of the Pantheon platform. Most local tooling, including Composer, Drush, Drupal Console, and node applications are available through this recipe.
+This project supports development with DDEV. This produces a local development environment suitable for Drupal development with PHP, MariaDB, Redis, and Nginx.
 
-1. [Review the preflight checks](https://docs.devwithlando.io/installation/preflight.html)
-2. [Download and install the latest release](https://github.com/lando/lando/releases)
-3. [Setup local certificate authority](https://docs.devwithlando.io/config/security.html)
-4. Increase Docker resources: Locate the 'Resources' section in your Docker preferences. For most architectures, this project requires at least 3GB of memory and 3 CPUs. Additional CPUs and memory may be helpful but should stay under the halfway mark of your total available resources. Also disable the _'Start Docker when you log in'_ setting under the 'General' tab.
+1. [Install DDEV](https://ddev.readthedocs.io/en/stable/users/install/ddev-installation/): `brew install ddev/ddev/ddev`
+2. Ensure Docker Desktop is running
+3. Increase Docker resources: Locate the 'Resources' section in your Docker preferences. For most architectures, this project requires at least 3GB of memory and 3 CPUs. Additional CPUs and memory may be helpful but should stay under the halfway mark of your total available resources.
 
 ### Additional tools
 
-- [Composer](https://getcomposer.org/download/): PHP package manager. Version 2.x. (Can use lando instead if you prefer)
+- [Composer](https://getcomposer.org/download/): PHP package manager. Version 2.x. (Can use ddev instead if you prefer)
 - [NVM](https://github.com/nvm-sh/nvm#install--update-script): Node Version Manager
 - Node.js (>=8.0,<11.0). Via NVM.
 
@@ -110,7 +109,7 @@ This repository is a Pantheon Custom Upstream used to create and manage every si
 npm run setup
 ```
 
-Visit the local dev site [https://yalesites-project.lndo.site/](https://yalesites-project.lndo.site/) or run `lando drush uli` to obtain a login link.
+Visit the local dev site [https://yalesites-platform.ddev.site](https://yalesites-platform.ddev.site) or run `ddev drush uli` to obtain a login link.
 
 ## Working on projects within this repository
 
@@ -126,13 +125,13 @@ The [YaleSites Atomic theme](https://github.com/yalesites-org/atomic) is a flexi
 
 ```bash
 # Step 1: Configure Composer to use source packaged versions.
-lando composer config --global 'preferred-install.yalesites-org/*' source
+ddev composer config --global 'preferred-install.yalesites-org/*' source
 
 # Step 2: Manually remove the originally downloaded dist packaged version.
 rm -rf web/themes/contrib/atomic
 
 # Step 3: Use Composer to download the new version of the thme.
-lando composer update atomic
+ddev composer update atomic
 
 # Step 4: Verify that the theme is tracking a remote repository.
 git -C web/themes/contrib/atomic ls-remote --get-url
@@ -206,5 +205,5 @@ npm run test                                    # Runs prettier and linting
 
 ### Composer
 ```bash
-lando composer code-sniff                       # Test for PHP linting issues that CI tests against
+ddev composer code-sniff                       # Test for PHP linting issues that CI tests against
 ```

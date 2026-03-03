@@ -27,7 +27,7 @@ All configuration changes must be tracked in the profile repository. This includ
 
 ```bash
 # Export configuration to update local YAML files.
-lando drush cex -y
+ddev drush cex -y
 # Review changes.
 git status
 # If all looks well, then add and commit the set of configs.
@@ -58,11 +58,11 @@ Contributed projects extend the functionality of Drupal to add new features or a
 # Navigate to the installation profile repository.
 cd web/profiles/custom/yalesites_profile
 # Require the new module without downloading packages in this folder.
-lando composer require drupal/PROJECT --no-update
+ddev composer require drupal/PROJECT --no-update
 # Return the project repo root.
 cd ../../../..
 # Add the module to the project repository.
-lando composer update @yalesites-org/yalesites_profile
+ddev composer update @yalesites-org/yalesites_profile
 # Do not check in changes to the top level composer.json file.
 # Never check in the project's composer.lock file.
 ```
@@ -85,11 +85,11 @@ The ys_starterkit module defines content used to showcase how paragraphs and Dru
 
 ```bash
 # Import content for the first time or update content.
-lando drush migrate-import --group ys_starterkit
+ddev drush migrate-import --group ys_starterkit
 # Delete entities created from the migration.
-lando drush migrate-rollback --group ys_starterkit
+ddev drush migrate-rollback --group ys_starterkit
 # Update partial configuration if altering the migration configuration.
-lando drush cim --partial --source=/app/web/profiles/custom/yalesites_profile/modules/custom/ys_starterkit/config/install -y
+ddev drush cim --partial --source=/var/www/html/web/profiles/custom/yalesites_profile/modules/custom/ys_starterkit/config/install -y
 ```
 
 ## Data model best practices

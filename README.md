@@ -5,7 +5,7 @@ YaleSites Project is a **Pantheon custom upstream for Drupal 10** that serves as
 This is a sophisticated multi-repository system that includes:
 
 - **Pantheon custom upstream for Drupal 10** - Core platform infrastructure
-- **Local development environment and tooling** - Lando-based development setup
+- **Local development environment and tooling** - DDEV-based development setup
 - **Code quality, testing, and build tools** - Comprehensive linting and testing suite
 - **Continuous integration and delivery support** - Automated builds and deployments
 
@@ -27,7 +27,7 @@ npm run setup
 ```
 
 **Local Development URLs:**
-- Primary Site: `https://yalesites-platform.lndo.site/`
+- Primary Site: `https://yalesites-platform.ddev.site`
 - Storybook: Available when component library is linked
 
 ## Prerequisites
@@ -35,7 +35,7 @@ npm run setup
 - **PHP Version**: 8.3
 - **Node.js**: >=8.0, <11.0 (managed via NVM)
 - **Docker**: 3GB+ memory, 3+ CPUs recommended
-- **Lando**: Latest release
+- **DDEV**: Latest release (`brew install ddev/ddev/ddev`)
 - **Composer**: Version 2.x
 - **GitHub Personal Access Token**: Required for `@yalesites-org` packages (scope: `write:packages`)
 - **Pantheon Terminus**: Machine token for platform integration
@@ -93,15 +93,15 @@ All commands are prefixed with `npm run`. For example: `npm run setup`
 - `prettier` - Check code formatting (does not auto-fix)
 - `test` - Run complete test suite (prettier + all linting)
 
-### Alternative Commands (via Lando)
+### Alternative Commands (via DDEV)
 
 ```bash
-lando composer code-sniff    # PHP linting
-lando composer code-fix      # Auto-fix PHP code style
-lando phpunit               # Run PHPUnit tests
-lando drush [command]       # Drush commands
-lando xdebug-on            # Enable Xdebug
-lando xdebug-off           # Disable Xdebug
+ddev composer code-sniff    # PHP linting
+ddev composer code-fix      # Auto-fix PHP code style
+ddev phpunit               # Run PHPUnit tests
+ddev drush [command]       # Drush commands
+ddev xdebug on             # Enable Xdebug
+ddev xdebug off            # Disable Xdebug
 ```
 
 ## Architecture Notes

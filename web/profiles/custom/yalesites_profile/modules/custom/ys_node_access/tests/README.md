@@ -64,13 +64,13 @@ Browser interactions must be tested manually:
 
 ### Functional Tests (KernelTestBase)
 ```bash
-lando ssh -c "export SIMPLETEST_DB=mysql://pantheon:pantheon@database/pantheon && phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_node_access/tests/src/Functional/"
+ddev ssh -c "export SIMPLETEST_DB=mysql://db:db@db/db && phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_node_access/tests/src/Functional/"
 ```
 
 ## Environment Variables Required
 
 ### For Functional Tests (KernelTestBase)
-- `SIMPLETEST_DB=mysql://pantheon:pantheon@database/pantheon` - Database connection for test isolation
+- `SIMPLETEST_DB=mysql://db:db@db/db` - Database connection for test isolation
 
 **Note**: Browser automation tests have been removed due to environment limitations (no WebDriver setup). Manual testing is used to verify browser interactions and JavaScript functionality.
 

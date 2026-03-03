@@ -4,40 +4,21 @@
 
 The following should help you set up the YaleSites local environment for a debugging session with the debugging interface of your choice using [xdebug](https://xdebug.org).
 
-## Notes
-
-`xdebug-on` and `xdebug-off` should be located inside the .local.lando.yml file.
-
 ## Usage
 
 ### Enabling xdebug on YaleSites
 
 ```sh
-lando xdebug-on
+ddev xdebug on
 ```
-
-The above command will do the following:
-
-- Set the environment variable XDEBUG_MODE within the appserver to debug
-- Removes any previous docker-php-ext-xdebug.ini files that may still exist
-- Enables the xdebug extension
-- Kills php-fpm so that the new configuration can be loaded
-- Clears the cache one more time (just in case)
-- Tells you that it has been completed
 
 ### Disabling xdebug on YaleSites
 
 ```sh
-lando xdebug-off
+ddev xdebug off
 ```
 
-The above command will do the following:
-
-- Set the environment variable XDEBUG_MODE within the appserver to `off`
-- Removes any previous docker-php-ext-xdebug.ini files that may still exist, disabling the extension
-- Kills php-fpm so that the new configuration can be loaded
-- Clears the cache one more time (just in case)
-- Tells you that it has been completed
+DDEV manages Xdebug natively -- no custom tooling or configuration files are needed.
 
 ## Configuring your IDE
 
@@ -68,7 +49,7 @@ local drupal_configuration = {
   name = "Listen for Xdebug",
   port = 9003,
   pathMappings = {
-    ["/app/"] = "${workspaceFolder}"
+    ["/var/www/html/"] = "${workspaceFolder}"
   }
 }
 
@@ -115,7 +96,7 @@ dap.configurations.twig = {
       "request": "launch",
       "port": 9003,
       "pathMappings": {
-        "/app/": "${workspaceFolder}"
+        "/var/www/html/": "${workspaceFolder}"
       }
     }
   ]
@@ -140,7 +121,7 @@ dap.configurations.twig = {
 The following were used to figure out how to implement this solution:
 
 - [Xdebug documentation](https://xdebug.org/docs/remote)
-- [Lando documentation](https://docs.lando.dev/guides/lando-phpstorm.html)
+- [DDEV Xdebug documentation](https://ddev.readthedocs.io/en/stable/users/debugging-profiling/step-debugging/)
 
 ## Known Issues
 
