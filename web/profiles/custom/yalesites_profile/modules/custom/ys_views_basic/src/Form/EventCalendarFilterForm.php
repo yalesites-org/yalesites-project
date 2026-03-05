@@ -281,12 +281,7 @@ class EventCalendarFilterForm extends FormBase {
     }
 
     // Add Apply button only when at least one filter is configured.
-    $hasExposedFilters = !empty($exposedFilterOptions['show_search_filter']) ||
-      !empty($exposedFilterOptions['show_category_filter']) ||
-      !empty($exposedFilterOptions['show_audience_filter']) ||
-      !empty($exposedFilterOptions['show_custom_vocab_filter']);
-
-    if ($hasExposedFilters) {
+    if ($weight > 0) {
       $form['filters_container']['actions'] = [
         '#type' => 'actions',
         '#weight' => $weight++,
