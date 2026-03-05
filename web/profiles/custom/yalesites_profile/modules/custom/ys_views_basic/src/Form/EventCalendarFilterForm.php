@@ -280,23 +280,30 @@ class EventCalendarFilterForm extends FormBase {
       $form['filters_container']['custom_vocab_included_terms'] = $custom_vocab_element;
     }
 
-    // Add Apply button (matching views exposed form structure).
-    $form['filters_container']['actions'] = [
-      '#type' => 'actions',
-      '#weight' => $weight++,
-    ];
-    $form['filters_container']['actions']['submit'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Apply'),
-      '#ajax' => [
-        'callback' => '::ajaxFilterCallback',
-        'wrapper' => self::CALENDAR_WRAPPER_ID,
-        'progress' => ['type' => 'none'],
-      ],
-      '#attributes' => [
-        'class' => ['button', 'button--primary'],
-      ],
-    ];
+    // Add Apply button only when at least one filter is configured.
+    $hasExposedFilters = !empty($exposedFilterOptions['show_search_filter']) ||
+      !empty($exposedFilterOptions['show_category_filter']) ||
+      !empty($exposedFilterOptions['show_audience_filter']) ||
+      !empty($exposedFilterOptions['show_custom_vocab_filter']);
+
+    if ($hasExposedFilters) {
+      $form['filters_container']['actions'] = [
+        '#type' => 'actions',
+        '#weight' => $weight++,
+      ];
+      $form['filters_container']['actions']['submit'] = [
+        '#type' => 'submit',
+        '#value' => $this->t('Apply'),
+        '#ajax' => [
+          'callback' => '::ajaxFilterCallback',
+          'wrapper' => self::CALENDAR_WRAPPER_ID,
+          'progress' => ['type' => 'none'],
+        ],
+        '#attributes' => [
+          'class' => ['button', 'button--primary'],
+        ],
+      ];
+    }
   }
 
   /**
