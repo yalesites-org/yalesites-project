@@ -10,6 +10,8 @@
 .layout-builder .prevent-operation,
 .ys-layout-builder--drag-drop {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   z-index: 100;
@@ -56,6 +58,24 @@ color theme is set to dark  */
   .layout-builder-block
   .ys-layout-builder--drag-drop {
   border: 0;
+}
+
+/* Fix: .layout-builder-block and .ys-block-wrapper are the same element —
+   combined classes on a single div. The child .ys-layout-builder--drag-drop
+   is position: absolute; height: 100%; z-index: 100, so it requires a
+   positioned ancestor to be its containing block. Without position: relative
+   here, the containing block becomes the nearest positioned ancestor higher
+   up (typically .layout-builder__section, which gin_lb sets to
+   position: relative). This causes height: 100% to resolve to the full
+   section height, making the drag-drop extend past the block and cover the
+   .layout-builder__add-block "Add block" button below it. This is most
+   noticeable when content preview is disabled and the last block in a
+   section has "no-padding" set, collapsing the wrapper to near-zero height.
+   The combined selector (no space) targets the single element that carries
+   both classes — the outer block wrapper — making it the containing block
+   for the drag-drop so the overlay stays within the block bounds. */
+.js-layout-builder-block.ys-block-wrapper {
+  position: relative;
 }
 
 /* center layout */
