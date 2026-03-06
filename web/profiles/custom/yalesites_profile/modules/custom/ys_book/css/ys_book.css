@@ -1,0 +1,25 @@
+/**
+ * @file
+ * Styles for ys_book module.
+ */
+
+/* Styles for disabled Menu link title field in book outline form.
+
+/* Ensure title and description match normal field colors.
+ * Using specific selectors to override any disabled field styling. */
+.gin--dark-mode .book-outline-form .is-disabled.form-item__label {
+  color: var(--gin-color-text);
+}
+
+/* Target descriptions for disabled fields. */
+.gin--dark-mode .book-outline-form .is-disabled.form-item__description {
+  color: var(--gin-color-text-light);
+}
+
+/* Dark mode specific adjustments. */
+.gin--dark-mode .book-outline-form input[disabled] {
+  /* Slightly more opacity in dark mode for better visibility. */
+  opacity: 0.8;
+  color: var(--gin-color-text);
+  -webkit-text-fill-color: var(--gin-color-text);
+}
