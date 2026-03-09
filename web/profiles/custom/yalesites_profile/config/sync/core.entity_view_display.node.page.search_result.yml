@@ -9,7 +9,6 @@ dependencies:
     - field.field.node.page.field_collection_nav_position
     - field.field.node.page.field_custom_vocab
     - field.field.node.page.field_external_source
-
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
     - field.field.node.page.field_tags
@@ -68,11 +67,11 @@ content:
     region: content
 hidden:
   addtoany: true
+  book_navigation: true
   field_audience: true
   field_category: true
   field_collection_nav_position: true
   field_custom_vocab: true
-
   field_metatags: true
   field_tags: true
   field_teaser_media: true
