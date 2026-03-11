@@ -1,0 +1,82 @@
+# Migration: YaleSite Sustainability News Media
+# Description: Creates Drupal 10 media:image entities for all public image
+# files in the D7 file_managed table. Keyed by D7 fid so that ys_sn_news
+# can look up the D10 media entity for both field_news_image and field_image2
+# via migration_lookup.
+#
+# Note: alt and title text is stored per-field-instance in D7 (in the
+# field_data_field_* tables), not on the file entity itself. Since we are
+# sourcing from file_managed only, alt/title are left empty here. Editors
+# can update alt text in the D10 media library after migration.
+#
+# Depends on ys_sn_files to have already created the D10 file entities.
+
+id: ys_sn_media
+label: 'YaleSites Sustainability News Media (Image)'
+status: true
+dependencies:
+  enforced:
+    module:
+      - ys_migrate_sustainability_news
+class: Drupal\migrate\Plugin\Migration
+migration_tags:
+  - 'Drupal 7'
+  - Media
+migration_group: ys_sn
+
+# Source: all public image files from the D7 file_managed table.
+# Both field_news_image (132 older nodes) and field_image2 (199 recent nodes)
+# reference files stored here. A single migration covers both fields since
+# fid is the shared key used by the migration_lookup in ys_sn_news.
+source:
+  # Custom source plugin that JOINs file_managed with field_data_field_image2
+  # and field_data_field_news_image to expose alt and title text.
+  # Filters to public images only — no additional mime_type or scheme config
+  # needed as those conditions are built into the plugin query.
+  plugin: d7_news_images
+  key: d7_sustainability
+  constants:
+    # Tag applied to every migrated media item so they can be identified and
+    # bulk-managed in the media library after migration.
+    migration_tag_name: 'Imported from migration'
+
+process:
+  name: filename
+  status: status
+  created: timestamp
+  uid:
+    plugin: default_value
+    default_value: constants/admin_uid
+
+  # Look up the D10 file entity ID migrated by ys_sn_files.
+  # The D7 fid is the shared key between file_managed and ys_sn_files.
+  'field_media_image/target_id':
+    plugin: migration_lookup
+    migration: ys_sn_files
+    source: fid
+    no_stub: true
+
+  # Alt and title text sourced from field_image2 or field_news_image,
+  # whichever has a value (field_image2 takes precedence). Falls back to
+  # an empty string if neither field has alt/title for this file.
+  'field_media_image/alt': alt
+  'field_media_image/title': title
+
+  # Tag every migrated media item so they can be identified in the media
+  # library. entity_generate looks up the term by name and creates it if it
+  # does not yet exist.
+  'field_tags/target_id':
+    plugin: entity_generate
+    source: constants/migration_tag_name
+    entity_type: taxonomy_term
+    bundle_key: vid
+    bundle: tags
+    value_key: name
+
+destination:
+  plugin: entity:media
+  default_bundle: image
+
+migration_dependencies:
+  required:
+    - ys_sn_files

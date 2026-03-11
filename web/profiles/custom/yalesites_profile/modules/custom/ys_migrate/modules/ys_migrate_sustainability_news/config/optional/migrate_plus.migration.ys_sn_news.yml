@@ -1,0 +1,176 @@
+# Migration: YaleSite Sustainability News Node Migration
+# Description: Migrates Drupal 7 'news' content to Drupal 10 'post' nodes.
+# This is the final migration in the chain. It depends on:
+#   - ys_sn_news_terms  (taxonomy terms → post_category)
+#   - ys_sn_files       (D7 file_managed records → D10 entity:file)
+#   - ys_sn_media       (all D7 image files → media:image entities, keyed by fid)
+#
+# NOTE: ys_sn_news_body and ys_sn_news_image_block are no longer required.
+# The sn_news_to_layout_builder plugin now creates image and text blocks
+# inline during this migration, so those separate migrations have been removed.
+#
+# Field mapping (confirmed D7 machine names):
+#   title                        → title
+#   field_date                   → field_publish_date
+#   field_link_to_external_story → field_external_source    (123 in use)
+#   field_news_image/0/fid       → field_teaser_media       (132 older nodes)
+#   field_image2/0/fid           → field_teaser_media       (199 recent nodes, fallback)
+#   body/0/summary               → field_teaser_text        (156 populated)
+#   field_take_action_topic      → field_category           (161 in use)
+#   body/0/value                 → layout_builder__layout   (440 with body)
+#   field_news_image / field_image2 → layout_builder__layout image block
+#   field_feature_on_homepage    → skip (none since 2022)
+#   metatags                     → skip
+#   redirect                     → skip
+
+id: ys_sn_news
+label: 'YaleSites Sustainability News'
+status: true
+dependencies:
+  enforced:
+    module:
+      - ys_migrate_sustainability_news
+class: Drupal\migrate\Plugin\Migration
+migration_tags:
+  - 'Drupal 7'
+  - Content
+migration_group: ys_sn
+
+# Specifies the source is Drupal 7 nodes of the 'news' content type.
+source:
+  plugin: d7_node
+  key: d7_sustainability
+  node_type: news
+
+# Define how each field or property is mapped to the Drupal 10 post node.
+process:
+  langcode:
+    plugin: default_value
+    source: language
+    default_value: 'und'
+  title: title
+  status: status
+  created: created
+  changed: changed
+  promote: promote
+  sticky: sticky
+
+  # Publication date: D7 field_date stores as datetime; D10 stores as date only.
+  field_publish_date:
+    plugin: sub_process
+    source: field_date
+    process:
+      value:
+        plugin: format_date
+        from_format: 'Y-m-d H:i:s'
+        to_format: 'Y-m-d'
+        source: value
+
+  # External source: 123 news items use an external link (URL only, no title).
+  field_external_source:
+    plugin: field_link
+    source: field_link_to_external_story
+    uri_scheme: 'https://'
+
+  # Teaser media: 199 more recent nodes use field_image2; 132 older nodes use
+  # field_news_image. Both fields reference files in file_managed, all covered
+  # by ys_sn_media. We attempt field_image2 first, then fall back to
+  # field_news_image via a null_coalesce so every node gets a teaser image
+  # when available.
+  _teaser_mid_image2:
+    plugin: migration_lookup
+    migration: ys_sn_media
+    source: 'field_image2/0/fid'
+  _teaser_mid_image:
+    plugin: migration_lookup
+    migration: ys_sn_media
+    source: 'field_news_image/0/fid'
+  'field_teaser_media/target_id':
+    plugin: null_coalesce
+    source:
+      - '@_teaser_mid_image2'
+      - '@_teaser_mid_image'
+
+  # Teaser text: the D7 body summary field maps to the D10 teaser text.
+  # 156 nodes have a populated body summary.
+  field_teaser_text/value:
+    plugin: get
+    source: 'body/0/summary'
+  field_teaser_text/format:
+    plugin: default_value
+    default_value: 'heading_html'
+
+  # Category/taxonomy: look up migrated post_category terms. 161 nodes in use.
+  # D7 field: field_take_action_topic (term reference to Take Action Topic vocab).
+  field_category:
+    plugin: migration_lookup
+    migration: ys_sn_news_terms
+    source: field_take_action_topic
+
+  # Hardcode post_category to 'News' for all migrated nodes.
+  # This sets the post_type field (if it exists) or is informational.
+  # Remove this mapping if the post content type does not have this field.
+  # field_post_type:
+  #   plugin: default_value
+  #   default_value: 'news'
+
+  uid:
+    plugin: default_value
+    default_value: constants/admin_uid
+
+  # Author by: skip migration per the field mapping document. Hardcode uid=1.
+  # field_author is intentionally left unmapped.
+
+  # Moderation state: map D7 publish status to D10 content moderation states.
+  moderation_state:
+    plugin: static_map
+    source: status
+    default_value: draft
+    map:
+      '0': draft
+      '1': published
+
+  # Layout Builder: the plugin creates a default "Title and Metadata" section
+  # (required by Post nodes) plus a one-column content section containing an
+  # image block and a text block, both built inline from the current row.
+  #
+  # The image component tries field_image2's media entity first (@_teaser_mid_image2),
+  # then falls back to field_news_image's (@_teaser_mid_image). Both are
+  # already resolved above via migration_lookup, so '@' reads those
+  # destination properties directly.
+  #
+  # 'post_meta_block' confirmed via ys_layouts/src/Plugin/Block/PostMetaBlock.php
+  # and core.entity_view_display.node.post.default.yml.
+  #
+  # See src/Plugin/migrate/process/sustainability_news/NewsToLayoutBuilder.php
+  layout_builder__layout:
+    plugin: sn_news_to_layout_builder
+    create_default_section: true
+    default_section_type: post
+    sections:
+      - id: layout_onecol
+        components:
+          - type: image
+            # Tries field_image2 first (199 recent nodes), falls back to
+            # field_news_image (132 older nodes). Both look up ys_sn_media
+            # by fid since it covers all image files. Skipped if both NULL.
+            sources:
+              - '@_teaser_mid_image2'
+              - '@_teaser_mid_image'
+          - type: text
+            # 440 nodes have body content; empty bodies produce no block.
+            source: 'body/0/value'
+
+# Drupal 7 news content will be migrated into the post content type.
+destination:
+  plugin: entity:node
+  default_bundle: post
+
+# All prerequisite migrations must complete before running this migration.
+# ys_sn_news_body and ys_sn_news_image_block are no longer in this list
+# because blocks are now created inline by the sn_news_to_layout_builder plugin.
+migration_dependencies:
+  required:
+    - ys_sn_files
+    - ys_sn_news_terms
+    - ys_sn_media
