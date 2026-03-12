@@ -999,3 +999,47 @@ function ys_core_update_10009() {
   $logger->info('Updated @count link_grid block(s) with default field_line_treatment value.', ['@count' => $updated]);
   return t('Updated @count link_grid block(s) with default field_line_treatment value.', ['@count' => $updated]);
 }
+
+/**
+ * Populate Academic Years vocabulary from 2026-2027 back to 2000-2001.
+ */
+function ys_core_update_10010() {
+  $term_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
+
+  // Check if academic_years vocabulary exists.
+  $vocabulary_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_vocabulary');
+  if (!$vocabulary_storage->load('academic_years')) {
+    return t('Academic Years vocabulary does not exist. Skipping term creation.');
+  }
+
+  // Get existing terms to avoid duplicates.
+  $existing_terms = $term_storage->loadByProperties(['vid' => 'academic_years']);
+  $existing_names = [];
+  foreach ($existing_terms as $term) {
+    $existing_names[] = $term->getName();
+  }
+
+  // Generate academic year terms from 2026-2027 back to 2000-2001.
+  $weight = 0;
+  $created = 0;
+  for ($start_year = 2026; $start_year >= 2000; $start_year--) {
+    $end_year = $start_year + 1;
+    $term_name = $start_year . '-' . $end_year;
+
+    // Skip if term already exists.
+    if (in_array($term_name, $existing_names)) {
+      continue;
+    }
+
+    Term::create([
+      'vid' => 'academic_years',
+      'name' => $term_name,
+      'weight' => $weight,
+    ])->save();
+
+    $created++;
+    $weight++;
+  }
+
+  return t('Populated Academic Years vocabulary with @count terms from 2026-2027 to 2000-2001.', ['@count' => $created]);
+}

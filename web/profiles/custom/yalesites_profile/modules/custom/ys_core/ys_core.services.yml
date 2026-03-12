@@ -39,3 +39,4 @@ services:
     arguments: ['@current_user', '@request_stack']
     tags:
       - { name: event_subscriber }
+
