@@ -1,0 +1,5 @@
+dcn_field_widget:
+  version: 1.x
+  css:
+    theme:
+      css/dcn-field-widget.css: {}

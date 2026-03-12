@@ -16,10 +16,10 @@ dependencies:
     - field.field.node.resource.field_custom_vocab
     - field.field.node.resource.field_date_format
     - field.field.node.resource.field_date_range
-    - field.field.node.resource.field_dcn
     - field.field.node.resource.field_discipline
     - field.field.node.resource.field_external_source
     - field.field.node.resource.field_geographic_areas
+    - field.field.node.resource.field_journal_publication_issue
     - field.field.node.resource.field_journal_publication_name
     - field.field.node.resource.field_login_required
     - field.field.node.resource.field_media
@@ -35,7 +35,6 @@ dependencies:
     - node.type.resource
   module:
     - datetime
-    - double_field
     - layout_builder
     - layout_builder_restrictions
     - layout_discovery
@@ -270,38 +269,6 @@ third_party_settings:
                 third_party_settings: {  }
             weight: 13
             additional: {  }
-          a0f3c312-b38f-4fd4-bf90-dd92b7280e35:
-            uuid: a0f3c312-b38f-4fd4-bf90-dd92b7280e35
-            region: content
-            configuration:
-              id: 'field_block:node:resource:field_dcn'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: double_field_unformatted_list
-                label: above
-                settings:
-                  first:
-                    format_type: medium
-                    link: false
-                    hidden: false
-                    key: false
-                    decimal_separator: .
-                    thousand_separator: ''
-                    scale: 2
-                  second:
-                    format_type: medium
-                    link: false
-                    hidden: false
-                    key: false
-                    decimal_separator: .
-                    thousand_separator: ''
-                    scale: 2
-                  inline: true
-                third_party_settings: {  }
-            weight: 14
-            additional: {  }
           4c2b4eb0-b8b5-4020-b298-e0aeb4d3fd35:
             uuid: 4c2b4eb0-b8b5-4020-b298-e0aeb4d3fd35
             region: content
@@ -318,6 +285,22 @@ third_party_settings:
                   show_label: true
                 third_party_settings: {  }
             weight: 15
+            additional: {  }
+          49638323-9446-48bc-a5e6-6cba67ab5d3b:
+            uuid: 49638323-9446-48bc-a5e6-6cba67ab5d3b
+            region: content
+            configuration:
+              id: 'field_block:node:resource:field_journal_publication_issue'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: string
+                label: above
+                settings:
+                  link_to_entity: false
+                third_party_settings: {  }
+            weight: 16
             additional: {  }
         third_party_settings:
           layout_builder_lock:
@@ -475,30 +458,6 @@ content:
     third_party_settings: {  }
     weight: 127
     region: content
-  field_dcn:
-    type: double_field_unformatted_list
-    label: above
-    settings:
-      first:
-        format_type: medium
-        link: false
-        hidden: false
-        key: false
-        decimal_separator: .
-        thousand_separator: ''
-        scale: 2
-      second:
-        format_type: medium
-        link: false
-        hidden: false
-        key: false
-        decimal_separator: .
-        thousand_separator: ''
-        scale: 2
-      inline: true
-    third_party_settings: {  }
-    weight: 128
-    region: content
   field_discipline:
     type: entity_reference_label
     label: above
@@ -526,6 +485,14 @@ content:
       link: true
     third_party_settings: {  }
     weight: 119
+    region: content
+  field_journal_publication_issue:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 128
     region: content
   field_journal_publication_name:
     type: string

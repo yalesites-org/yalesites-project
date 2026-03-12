@@ -13,7 +13,7 @@ id: node.resource.field_cf_dcn
 field_name: field_cf_dcn
 entity_type: node
 bundle: resource
-label: 'Document Control Number (Custom)'
+label: 'Document Control Number(s)'
 description: 'Custom field implementation using taxonomy for DCN types.'
 required: false
 translatable: false

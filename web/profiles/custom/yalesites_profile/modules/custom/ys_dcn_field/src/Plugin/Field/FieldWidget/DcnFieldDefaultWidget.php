@@ -36,6 +36,10 @@ class DcnFieldDefaultWidget extends WidgetBase {
       $options[$term->id()] = $term->getName();
     }
 
+    // Wrap in a container to display fields inline.
+    $element['#type'] = 'container';
+    $element['#attributes']['class'][] = 'dcn-field-widget-inline';
+
     $element['dcn_type_target_id'] = [
       '#type' => 'select',
       '#title' => $this->t('DCN Type'),
@@ -43,6 +47,8 @@ class DcnFieldDefaultWidget extends WidgetBase {
       '#empty_option' => $this->t('- Select -'),
       '#default_value' => $item->dcn_type_target_id ?? NULL,
       '#required' => $element['#required'],
+      '#prefix' => '<div class="dcn-field-item dcn-type">',
+      '#suffix' => '</div>',
     ];
 
     $element['dcn_identifier'] = [
@@ -53,7 +59,12 @@ class DcnFieldDefaultWidget extends WidgetBase {
       '#maxlength' => 255,
       '#required' => $element['#required'],
       '#placeholder' => $this->t('e.g., 978-0-306-40615-7'),
+      '#prefix' => '<div class="dcn-field-item dcn-identifier">',
+      '#suffix' => '</div>',
     ];
+
+    // Attach CSS library.
+    $element['#attached']['library'][] = 'ys_dcn_field/dcn_field_widget';
 
     return $element;
   }
