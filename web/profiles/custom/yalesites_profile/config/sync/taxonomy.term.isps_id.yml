@@ -1,0 +1,10 @@
+_core:
+  default_config_hash: ttno0BiBeCjG77_4FCpy7hg-3-x18XpQT6h6oqgmwyc
+langcode: en
+status: true
+dependencies:
+  config:
+    - taxonomy.vocabulary.dcn_types
+name: 'ISPS ID'
+vid: dcn_types
+weight: 2

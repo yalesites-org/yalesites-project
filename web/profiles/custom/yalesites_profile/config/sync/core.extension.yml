@@ -159,6 +159,7 @@ module:
   ys_book: 0
   ys_campus_groups: 0
   ys_captcha: 0
+  ys_dcn_field: 0
   ys_file_management: 0
   ys_integrations: 0
   ys_layouts: 0

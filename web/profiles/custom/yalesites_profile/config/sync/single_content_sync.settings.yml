@@ -7,3 +7,7 @@ allowed_entity_types:
   node: {  }
   taxonomy_term: {  }
 site_uuid_check: true
+import_directory_schema: temporary
+export_directory_schema: temporary
+embedded_entities_export_mode: stub
+menu_link_export_mode: stub

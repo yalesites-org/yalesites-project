@@ -1,0 +1,21 @@
+uuid: 8b5b5cd1-29b6-4580-bc0c-cbcf115e6885
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_revision_date
+    - node.type.resource
+  module:
+    - datetime
+id: node.resource.field_revision_date
+field_name: field_revision_date
+entity_type: node
+bundle: resource
+label: 'Revision Date'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: datetime

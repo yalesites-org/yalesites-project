@@ -1,0 +1,29 @@
+uuid: e0884942-5a71-4365-8d4c-587259e19cd0
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_areas_of_study
+    - node.type.resource
+    - taxonomy.vocabulary.areas_of_study
+id: node.resource.field_areas_of_study
+field_name: field_areas_of_study
+entity_type: node
+bundle: resource
+label: 'Areas of Study'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:filter_existing_terms'
+  handler_settings:
+    target_bundles:
+      areas_of_study: areas_of_study
+    sort:
+      field: name
+      direction: asc
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference

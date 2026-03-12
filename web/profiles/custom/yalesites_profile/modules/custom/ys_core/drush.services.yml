@@ -1,0 +1,5 @@
+services:
+  ys_core.commands:
+    class: \Drupal\ys_core\Commands\YaleSitesCommands
+    tags:
+      - { name: drush.command }

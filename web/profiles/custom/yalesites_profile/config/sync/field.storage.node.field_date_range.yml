@@ -1,0 +1,21 @@
+uuid: 7367210e-942a-4b19-a496-5917f0e6b735
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+id: node.field_date_range
+field_name: field_date_range
+entity_type: node
+type: string
+settings:
+  max_length: 512
+  case_sensitive: false
+  is_ascii: false
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

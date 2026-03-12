@@ -1,0 +1,34 @@
+uuid: 10105b37-769c-4d55-a672-44225fcfe650
+langcode: en
+status: true
+dependencies:
+  module:
+    - entity_redirect
+third_party_settings:
+  entity_redirect:
+    redirect:
+      anonymous:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+      add:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+      edit:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+      delete:
+        active: false
+        destination: default
+        url: ''
+        external: ''
+name: 'Academic Years'
+vid: academic_years
+description: 'Yale Academic years'
+weight: 0
+new_revision: false

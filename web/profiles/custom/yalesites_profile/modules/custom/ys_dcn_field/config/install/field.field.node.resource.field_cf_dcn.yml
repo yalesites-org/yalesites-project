@@ -1,0 +1,22 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_cf_dcn
+    - node.type.resource
+    - taxonomy.vocabulary.dcn_types
+  module:
+    - ys_dcn_field
+id: node.resource.field_cf_dcn
+field_name: field_cf_dcn
+entity_type: node
+bundle: resource
+label: 'Document Control Number (Custom)'
+description: 'Custom field implementation using taxonomy for DCN types.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  dcn_type_vocabulary: dcn_types
+field_type: dcn_field

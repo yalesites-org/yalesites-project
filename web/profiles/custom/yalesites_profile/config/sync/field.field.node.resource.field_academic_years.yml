@@ -1,0 +1,29 @@
+uuid: febc5c1b-b17b-4ba0-a19e-4728730f30a8
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_academic_years
+    - node.type.resource
+    - taxonomy.vocabulary.academic_years
+id: node.resource.field_academic_years
+field_name: field_academic_years
+entity_type: node
+bundle: resource
+label: 'Academic Years'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:filter_existing_terms'
+  handler_settings:
+    target_bundles:
+      academic_years: academic_years
+    sort:
+      field: name
+      direction: asc
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference
