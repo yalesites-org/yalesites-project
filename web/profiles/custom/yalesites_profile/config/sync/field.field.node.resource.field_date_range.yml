@@ -1,0 +1,19 @@
+uuid: 8eff2600-0e97-4187-9543-26acc565979b
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_date_range
+    - node.type.resource
+id: node.resource.field_date_range
+field_name: field_date_range
+entity_type: node
+bundle: resource
+label: 'Date Range'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

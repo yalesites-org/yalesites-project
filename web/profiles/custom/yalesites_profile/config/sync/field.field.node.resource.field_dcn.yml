@@ -1,0 +1,48 @@
+uuid: 5f0d8c47-0075-4abe-8744-51d337cb6984
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_dcn
+    - node.type.resource
+  module:
+    - double_field
+id: node.resource.field_dcn
+field_name: field_dcn
+entity_type: node
+bundle: resource
+label: 'Document Control Number'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  first:
+    label: 'DCN Type'
+    list: true
+    allowed_values:
+      -
+        label: ISBN
+        value: isbn
+      -
+        label: 'Ref #'
+        value: ref
+      -
+        label: 'ISPS ID'
+        value: isps
+    max: null
+    min: null
+    required: true
+    on_label: 'On'
+    off_label: 'Off'
+  second:
+    label: 'DCN Number'
+    list: false
+    allowed_values: {  }
+    max: null
+    min: null
+    required: true
+    on_label: 'On'
+    off_label: 'Off'
+field_type: double_field

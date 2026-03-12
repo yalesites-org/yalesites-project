@@ -58,6 +58,10 @@ class TaxonomyVocabularyManager {
       'page_category',
       'resource_category',
       'tags',
+      'academic_years',
+      'geographic_areas',
+      'areas_of_study',
+      'discipline'
     ];
   }
 

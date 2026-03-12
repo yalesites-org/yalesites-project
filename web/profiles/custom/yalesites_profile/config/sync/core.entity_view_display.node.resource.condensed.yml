@@ -4,17 +4,29 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.node.condensed
+    - field.field.node.resource.field_abstract
+    - field.field.node.resource.field_academic_years
     - field.field.node.resource.field_affiliation
+    - field.field.node.resource.field_areas_of_study
     - field.field.node.resource.field_audience
+    - field.field.node.resource.field_authors
     - field.field.node.resource.field_category
+    - field.field.node.resource.field_citation
     - field.field.node.resource.field_content_description
     - field.field.node.resource.field_custom_vocab
     - field.field.node.resource.field_date_format
+    - field.field.node.resource.field_date_range
+    - field.field.node.resource.field_dcn
+    - field.field.node.resource.field_discipline
     - field.field.node.resource.field_external_source
+    - field.field.node.resource.field_geographic_areas
+    - field.field.node.resource.field_journal_publication_name
     - field.field.node.resource.field_login_required
     - field.field.node.resource.field_media
     - field.field.node.resource.field_metatags
     - field.field.node.resource.field_publish_date
+    - field.field.node.resource.field_related_resources
+    - field.field.node.resource.field_revision_date
     - field.field.node.resource.field_tags
     - field.field.node.resource.field_teaser_media
     - field.field.node.resource.field_teaser_text
@@ -22,6 +34,7 @@ dependencies:
     - field.field.node.resource.layout_builder__layout
     - node.type.resource
   module:
+    - datetime
     - link
     - options
     - user
@@ -33,7 +46,15 @@ content:
   content_moderation_control:
     settings: {  }
     third_party_settings: {  }
-    weight: -20
+    weight: 0
+    region: content
+  field_academic_years:
+    type: entity_reference_label
+    label: hidden
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 3
     region: content
   field_category:
     type: entity_reference_label
@@ -44,11 +65,11 @@ content:
     weight: 1
     region: content
   field_date_format:
-    type: list_key
+    type: list_default
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 0
+    weight: 5
     region: content
   field_external_source:
     type: link_separate
@@ -62,16 +83,35 @@ content:
     third_party_settings: {  }
     weight: 2
     region: content
+  field_publish_date:
+    type: datetime_default
+    label: above
+    settings:
+      timezone_override: ''
+      format_type: medium
+    third_party_settings: {  }
+    weight: 4
+    region: content
 hidden:
   addtoany: true
+  field_abstract: true
   field_affiliation: true
+  field_areas_of_study: true
   field_audience: true
+  field_authors: true
+  field_citation: true
   field_content_description: true
   field_custom_vocab: true
+  field_date_range: true
+  field_dcn: true
+  field_discipline: true
+  field_geographic_areas: true
+  field_journal_publication_name: true
   field_login_required: true
   field_media: true
   field_metatags: true
-  field_publish_date: true
+  field_related_resources: true
+  field_revision_date: true
   field_tags: true
   field_teaser_media: true
   field_teaser_text: true
