@@ -1,0 +1,19 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.node.resource.field_cf_dcn
+    - node.type.resource
+  module:
+    - ys_dcn_field
+id: node.resource.default
+targetEntityType: node
+bundle: resource
+mode: default
+content:
+  field_cf_dcn:
+    type: dcn_field_default
+    weight: 35
+    region: content
+    settings: {  }
+    third_party_settings: {  }

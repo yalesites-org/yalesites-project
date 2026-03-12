@@ -1,0 +1,21 @@
+uuid: ed1c5bd9-c1a3-46ae-9fa7-daf6613e8061
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+    - ys_dcn_field
+_core:
+  default_config_hash: bj1ia7CSKTWgdyrTd6dkWMTQUSSxR-3t2Ev_aoITbK8
+id: node.field_cf_dcn
+field_name: field_cf_dcn
+entity_type: node
+type: dcn_field
+settings: {  }
+module: ys_dcn_field
+locked: false
+cardinality: -1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false
