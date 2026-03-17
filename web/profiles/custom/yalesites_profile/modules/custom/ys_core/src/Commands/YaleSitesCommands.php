@@ -11,7 +11,7 @@ use Drush\Commands\DrushCommands;
 class YaleSitesCommands extends DrushCommands {
 
   /**
-   * Populates the Academic Years vocabulary with terms from 2026-2027 to 2000-2001.
+   * Populates the Academic Years vocab with terms from 2026-2027 to 2000-2001.
    *
    * @command ys:populate-academic-years
    * @aliases ys-populate-ay

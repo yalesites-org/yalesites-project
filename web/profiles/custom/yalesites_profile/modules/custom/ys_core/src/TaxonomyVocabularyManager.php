@@ -61,7 +61,7 @@ class TaxonomyVocabularyManager {
       'academic_years',
       'geographic_areas',
       'areas_of_study',
-      'discipline'
+      'discipline',
     ];
   }
 
