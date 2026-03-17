@@ -136,18 +136,18 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
    * @return void
    *   No return value.
    */
-  public function setupView(&$view, $params) {
+  public function setupView(&$view, $params = []) {
     static $setupRunning;
     if ($setupRunning) {
       return;
     }
     $setupRunning = TRUE;
-
-    $paramsDecoded = json_decode($params, TRUE);
+    $paramsDecoded = empty($params) ? [] : json_decode($params, TRUE);
     $pinned_to_top = isset($paramsDecoded['pinned_to_top']) ? (bool) $paramsDecoded['pinned_to_top'] : FALSE;
 
     $view->setDisplay('block_1');
-    $filterType = implode('+', $paramsDecoded['filters']['types']);
+
+    $filterType = empty($params) ? 'resource' : implode('+', $paramsDecoded['filters']['types']);
 
     // Retrieve the current filter options from the view's display settings.
     $filters = $view->getDisplay()->getOption('filters');
@@ -221,9 +221,19 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
       unset($filters['field_custom_vocab_target_id']);
     }
 
-    // Audience filter.
-    if (!isset($paramsDecoded['exposed_filter_options']['show_audience_filter'])) {
-      unset($filters['field_audience_target_id']);
+    // Exposed filters.
+    $exposed_filters = [
+      'show_audience_filter' => 'field_audience_target_id',
+      'show_academic_year_filter' => 'field_academic_years_target_id',
+      'show_discipline_filter' => 'field_discipline_target_id',
+      'show_areas_of_study_filter' => 'field_areas_of_study_target_id',
+      'show_geographic_areas_filter' => 'field_geographic_areas_target_id',
+    ];
+
+    foreach ($exposed_filters as $exposed_filter_option => $filter_name) {
+      if (!isset($paramsDecoded['exposed_filter_options'][$exposed_filter_option])) {
+        unset($filters[$filter_name]);
+      }
     }
 
     if (!isset($paramsDecoded['exposed_filter_options']['show_search_filter'])) {
