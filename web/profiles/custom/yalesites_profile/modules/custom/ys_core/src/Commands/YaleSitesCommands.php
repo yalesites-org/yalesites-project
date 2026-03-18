@@ -2,13 +2,31 @@
 
 namespace Drupal\ys_core\Commands;
 
-use Drupal\taxonomy\Entity\Term;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drush\Commands\DrushCommands;
 
 /**
  * A Drush commandfile for YaleSites operations.
  */
 class YaleSitesCommands extends DrushCommands {
+
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * Constructs a YaleSitesCommands object.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   */
+  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+    parent::__construct();
+    $this->entityTypeManager = $entity_type_manager;
+  }
 
   /**
    * Populates the Academic Years vocab with terms from 2026-2027 to 2000-2001.
@@ -19,8 +37,8 @@ class YaleSitesCommands extends DrushCommands {
    *   Populates Academic Years vocabulary with terms.
    */
   public function populateAcademicYears() {
-    $term_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
-    $vocabulary_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_vocabulary');
+    $term_storage = $this->entityTypeManager->getStorage('taxonomy_term');
+    $vocabulary_storage = $this->entityTypeManager->getStorage('taxonomy_vocabulary');
 
     // Check if academic_years vocabulary exists.
     if (!$vocabulary_storage->load('academic_years')) {
@@ -49,7 +67,7 @@ class YaleSitesCommands extends DrushCommands {
         continue;
       }
 
-      Term::create([
+      $term_storage->create([
         'vid' => 'academic_years',
         'name' => $term_name,
         'weight' => $weight,
