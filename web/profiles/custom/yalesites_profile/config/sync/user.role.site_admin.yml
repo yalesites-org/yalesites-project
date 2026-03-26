@@ -52,10 +52,16 @@ dependencies:
     - node.type.post
     - node.type.profile
     - node.type.resource
+    - taxonomy.vocabulary.academic_years
     - taxonomy.vocabulary.affiliation
+    - taxonomy.vocabulary.areas_of_study
     - taxonomy.vocabulary.audience
     - taxonomy.vocabulary.custom_vocab
+    - taxonomy.vocabulary.dcn_types
+    - taxonomy.vocabulary.discipline
+    - taxonomy.vocabulary.event_audience
     - taxonomy.vocabulary.event_category
+    - taxonomy.vocabulary.geographic_areas
     - taxonomy.vocabulary.page_category
     - taxonomy.vocabulary.post_category
     - taxonomy.vocabulary.resource_category
@@ -173,10 +179,15 @@ permissions:
   - 'create resource_view block content'
   - 'create reusable blocks'
   - 'create tabs block content'
+  - 'create terms in academic_years'
   - 'create terms in affiliation'
+  - 'create terms in areas_of_study'
   - 'create terms in audience'
   - 'create terms in custom_vocab'
+  - 'create terms in dcn_types'
+  - 'create terms in discipline'
   - 'create terms in event_category'
+  - 'create terms in geographic_areas'
   - 'create terms in page_category'
   - 'create terms in post_category'
   - 'create terms in resource_category'
@@ -283,10 +294,16 @@ permissions:
   - 'delete own profile content'
   - 'delete own resource content'
   - 'delete own video media'
+  - 'delete terms in academic_years'
   - 'delete terms in affiliation'
+  - 'delete terms in areas_of_study'
   - 'delete terms in audience'
   - 'delete terms in custom_vocab'
+  - 'delete terms in dcn_types'
+  - 'delete terms in discipline'
+  - 'delete terms in event_audience'
   - 'delete terms in event_category'
+  - 'delete terms in geographic_areas'
   - 'delete terms in page_category'
   - 'delete terms in post_category'
   - 'delete terms in resource_category'
@@ -347,10 +364,15 @@ permissions:
   - 'edit own resource content'
   - 'edit own video media'
   - 'edit own webform submission'
+  - 'edit terms in academic_years'
   - 'edit terms in affiliation'
+  - 'edit terms in areas_of_study'
   - 'edit terms in audience'
   - 'edit terms in custom_vocab'
+  - 'edit terms in dcn_types'
+  - 'edit terms in discipline'
   - 'edit terms in event_category'
+  - 'edit terms in geographic_areas'
   - 'edit terms in page_category'
   - 'edit terms in post_category'
   - 'edit terms in resource_category'
