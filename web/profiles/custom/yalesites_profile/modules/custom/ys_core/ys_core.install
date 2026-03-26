@@ -1061,7 +1061,7 @@ function ys_core_populate_academic_years_terms() {
  */
 function ys_core_update_10010() {
   $created = ys_core_populate_academic_years_terms();
-  
+
   if ($created === 0) {
     return t('Academic Years vocabulary does not exist or all terms already exist.');
   }
