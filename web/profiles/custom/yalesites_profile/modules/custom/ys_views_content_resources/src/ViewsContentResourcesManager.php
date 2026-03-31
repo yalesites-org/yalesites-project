@@ -35,6 +35,11 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
       'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-card-grid.svg',
       'img_alt' => 'Icon showing 3 generic cards next to each other. Image placement is on the top of each card.',
     ],
+    'portrait_grid' => [
+      'label' => 'Portrait Grid',
+      'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-portrait-grid.svg',
+      'img_alt' => 'Placeholder icon for portrait grid display mode.',
+    ],
     'list_item' => [
       'label' => 'List',
       'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-list-view.svg',

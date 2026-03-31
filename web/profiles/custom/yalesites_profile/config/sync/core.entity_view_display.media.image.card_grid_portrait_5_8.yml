@@ -1,0 +1,36 @@
+uuid: 0ffef952-b1ac-4696-b07c-c4eb45b2afda
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.media.card_grid_portrait_5_8
+    - field.field.media.image.field_media_image
+    - field.field.media.image.field_tags
+    - media.type.image
+    - responsive_image.styles.card_grid_portrait_5_8
+  module:
+    - responsive_image
+id: media.image.card_grid_portrait_5_8
+targetEntityType: media
+bundle: image
+mode: card_grid_portrait_5_8
+content:
+  field_media_image:
+    type: responsive_image
+    label: hidden
+    settings:
+      responsive_image_style: card_grid_portrait_5_8
+      image_link: ''
+      image_loading:
+        attribute: eager
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  addtoany: true
+  created: true
+  field_tags: true
+  name: true
+  search_api_excerpt: true
+  thumbnail: true
+  uid: true
