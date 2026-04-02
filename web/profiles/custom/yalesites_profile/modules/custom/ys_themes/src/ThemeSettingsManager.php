@@ -56,6 +56,10 @@ class ThemeSettingsManager {
           'label' => 'AI',
           'color_theme' => 'six',
         ],
+        'seven' => [
+          'label' => 'Whitney Humanities Center',
+          'color_theme' => 'seven',
+        ],
       ],
     ],
     'button_theme' => [
