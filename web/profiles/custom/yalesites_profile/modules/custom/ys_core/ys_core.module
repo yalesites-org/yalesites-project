@@ -318,7 +318,6 @@ function ys_core_preprocess_block(&$variables) {
     }
   }
 
-  _ys_core_webform_valid_email_check($variables);
 }
 
 /**
@@ -997,32 +996,6 @@ function _ys_core_disable_event_fields(&$form, $form_id) {
     foreach ($fieldsToDisable as $field) {
       $form[$field]['#disabled'] = TRUE;
     }
-  }
-}
-
-/**
- * Validates the email address in the webform plugin.
- *
- * @param array $variables
- *   The render variables array.
- */
-function _ys_core_webform_valid_email_check(&$variables) {
-  $plugin_id = $variables['plugin_id'];
-  $in_layout_builder = $variables['in_preview'] ?? FALSE;
-  $validEmail = TRUE;
-
-  if ($in_layout_builder && $plugin_id == 'inline_block:webform') {
-    $config = \Drupal::config('system.site');
-    $siteMail = $config->get('mail');
-
-    $validEmail = ($siteMail != 'noreply@noreply.yale.edu');
-  }
-
-  if (!$validEmail) {
-    $settingsUrl = Url::fromRoute('ys_core.admin_site_settings')->toString();
-    $variables['content']['#configuration_issue'] = t('Form submissions will be sent to the default no-reply address and will not be received. Update the site email in Site Settings to receive submissions.');
-    $variables['content']['#configuration_issue_link_content'] = t('Update site email');
-    $variables['content']['#configuration_issue_link_url'] = $settingsUrl;
   }
 }
 
