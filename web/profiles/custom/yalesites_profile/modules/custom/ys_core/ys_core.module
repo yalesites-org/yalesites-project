@@ -85,6 +85,21 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   if ($form_id === 'layout_builder_update_block' || $form_id === 'layout_builder_add_block') {
     $block_type = ys_core_get_block_type($form, $form_state);
 
+    if ($block_type === 'webform') {
+      $siteMail = \Drupal::config('system.site')->get('mail');
+      if ($siteMail === 'noreply@noreply.yale.edu') {
+        $settingsUrl = Url::fromRoute('ys_core.admin_site_settings')->toString();
+        $form['settings']['block_form']['email_warning'] = [
+          '#type' => 'container',
+          '#attributes' => ['class' => ['messages', 'messages--warning']],
+          '#weight' => -100,
+          'message' => [
+            '#markup' => t('Form submissions will be sent to the default no-reply address and will not be received. <a href="@url">Update the site email in Site Settings</a> to receive submissions.', ['@url' => $settingsUrl]),
+          ],
+        ];
+      }
+    }
+
     if ($block_type === 'grand_hero') {
 
       // Get the block entity.
@@ -1004,7 +1019,10 @@ function _ys_core_webform_valid_email_check(&$variables) {
   }
 
   if (!$validEmail) {
-    $variables['content']['#configuration_issue'] = t('Please go into Settings->Site Settings and update the site email to an email address that can receive this submission.');
+    $settingsUrl = Url::fromRoute('ys_core.admin_site_settings')->toString();
+    $variables['content']['#configuration_issue'] = t('Form submissions will be sent to the default no-reply address and will not be received. Update the site email in Site Settings to receive submissions.');
+    $variables['content']['#configuration_issue_link_content'] = t('Update site email');
+    $variables['content']['#configuration_issue_link_url'] = $settingsUrl;
   }
 }
 
