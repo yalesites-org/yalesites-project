@@ -385,7 +385,7 @@ class ColorTokenResolver {
    *   Each option contains only the background color.
    */
   public function getColorStylesForEntity($entity_type = NULL, $bundle = NULL) {
-    $global_themes = ['one', 'two', 'three', 'four', 'five', 'six'];
+    $global_themes = ['one', 'two', 'three', 'four', 'five', 'six', 'seven'];
 
     // Layout section only: full symmetric swap for global theme 'four' (Onha).
     // _yds-layout.scss applies the slot-two ↔ slot-five exchange directly to
