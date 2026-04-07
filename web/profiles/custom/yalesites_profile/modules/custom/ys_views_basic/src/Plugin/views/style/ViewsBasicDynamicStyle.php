@@ -125,12 +125,19 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
     // Map the view mode in Drupal to the type attribute for the component.
     $viewModesMap = [
       'card' => 'grid',
+      'portrait_grid' => 'grid',
       'list_item' => 'list',
       'condensed' => 'condensed',
       'directory' => 'profile-directory',
     ];
 
     $type = $viewModesMap[$this->view->rowPlugin->options['view_mode']];
+
+    $contentType = $this->view->args[0];
+    $cardCollectionModifiers = [];
+    if ($contentType === 'resource' && $this->view->rowPlugin->options['view_mode'] === 'portrait_grid') {
+      $cardCollectionModifiers[] = 'resource-portrait';
+    }
 
     // Get node type to pass to template to determine width.
     $entity = $this->routeMatch->getParameter('node');
@@ -140,8 +147,9 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
       '#theme' => 'views_basic_rows',
       '#rows' => $rows,
       '#card_collection_type' => $type,
+      '#card_collection_modifiers' => $cardCollectionModifiers,
       '#parentNode' => $parentNode,
-      '#contentType' => $this->view->args[0],
+      '#contentType' => $contentType,
     ];
   }
 

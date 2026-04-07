@@ -1,0 +1,11 @@
+uuid: 93076ea7-1fb7-4b28-92d6-2177a8686bb4
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+id: node.portrait_grid
+label: 'Portrait Grid'
+description: ''
+targetEntityType: node
+cache: true

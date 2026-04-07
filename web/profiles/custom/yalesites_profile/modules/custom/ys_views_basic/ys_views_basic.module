@@ -29,6 +29,7 @@ function ys_views_basic_theme($existing, $type, $theme, $path): array {
     'views_basic_rows' => [
       'variables' => [
         'card_collection_type' => NULL,
+        'card_collection_modifiers' => [],
         'rows' => [],
         'parentNode' => NULL,
         'contentType' => NULL,
@@ -145,6 +146,7 @@ function ys_views_basic_views_pre_view(ViewExecutable $view, $display_id, array 
 function ys_views_basic_node_view(array &$build, NodeInterface $node, EntityViewDisplayInterface $display, $view_mode) {
   $view_modes = [
     "card",
+    "portrait_grid",
     "condensed",
     "list_item",
   ];
