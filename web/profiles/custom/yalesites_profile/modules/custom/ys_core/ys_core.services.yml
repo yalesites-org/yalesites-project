@@ -33,6 +33,11 @@ services:
   ys_core.facts_and_figures_icon_manager:
     class: Drupal\ys_core\FactsAndFiguresIconManager
     arguments: ['@cache.default', '@module_handler', '@logger.factory']
+  # Prevents ExtraFieldBlock placeholder text from leaking to published pages.
+  ys_core.extra_field_placeholder_subscriber:
+    class: Drupal\ys_core\EventSubscriber\ExtraFieldPlaceholderSubscriber
+    tags:
+      - { name: event_subscriber }
   # Provides user 1 bypass for CAS forced login.
   ys_core.cas_user1_bypass_subscriber:
     class: Drupal\ys_core\EventSubscriber\CasUser1BypassSubscriber
