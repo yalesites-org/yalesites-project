@@ -1,9 +1,16 @@
 --- a/src/Form/OpenAiConfigForm.php
 +++ b/src/Form/OpenAiConfigForm.php
-@@ -84,6 +84,20 @@
-       '#markup' => '<p>' . $this->t('Moderation is always on by default for any text based call. You can disable it for each request either via code or by changing manually in ai_provider_openai.settings.yml.') . '</p>',
+@@ -81,7 +81,24 @@
      ];
 
+     $form['advanced']['moderation'] = [
+-      '#markup' => '<p>' . $this->t('Moderation is always on by default for any text based call. You can disable it for each request either via code or by changing manually in ai_provider_openai.settings.yml.') . '</p>',
++      '#type' => 'checkbox',
++      '#title' => $this->t('Enable moderation'),
++      '#description' => $this->t('Run a moderation check before each text-based request. Disable when using a custom host that does not support the OpenAI /moderations endpoint (e.g., Portkey).'),
++      '#default_value' => $config->get('moderation'),
++    ];
++
 +    $form['advanced']['host'] = [
 +      '#type' => 'textfield',
 +      '#title' => $this->t('Custom API Host'),
@@ -16,12 +23,10 @@
 +      '#title' => $this->t('Custom HTTP Headers'),
 +      '#description' => $this->t('Additional HTTP headers sent with every API request. One per line in "Header-Name: value" format. E.g., x-portkey-api-key: your-key'),
 +      '#default_value' => $config->get('custom_headers'),
-+    ];
-+
-     return parent::buildForm($form, $form_state);
-   }
+     ];
 
-@@ -102,12 +116,17 @@
+     return parent::buildForm($form, $form_state);
+@@ -102,12 +119,17 @@
        $form_state->setErrorByName('api_key', $this->t('The API Key is invalid.'));
        return;
      }
@@ -45,7 +50,7 @@
      }
 
    }
-@@ -117,11 +136,16 @@
+@@ -117,11 +139,17 @@
     */
    public function submitForm(array &$form, FormStateInterface $form_state) {
      $api_key = $this->keyRepository->getKey($form_state->getValue('api_key'))->getKeyValue();
@@ -59,6 +64,7 @@
      // Retrieve the configuration.
      $this->config(static::CONFIG_NAME)
        ->set('api_key', $form_state->getValue('api_key'))
++      ->set('moderation', (bool) $form_state->getValue('moderation'))
 +      ->set('host', $form_state->getValue('host'))
 +      ->set('custom_headers', $form_state->getValue('custom_headers'))
        ->save();
