@@ -525,6 +525,76 @@ class ColorTokenResolver {
   }
 
   /**
+   * Extracts the global theme and slot identifier from a CSS variable.
+   *
+   * @param string|null $background_color_var
+   *   The CSS variable string.
+   *
+   * @return array|null
+   *   Array with theme_num and slot_identifier, or NULL if not applicable.
+   */
+  protected function extractGlobalThemeSlot(?string $background_color_var) {
+    if (!$background_color_var || !str_starts_with($background_color_var, 'var(')) {
+      return NULL;
+    }
+
+    if (!preg_match('/var\(([^)]+)\)/', $background_color_var, $matches)) {
+      return NULL;
+    }
+
+    $css_var = $matches[1];
+    if (!preg_match('/--global-themes-([A-Za-z0-9_-]+)-colors-slot-([A-Za-z0-9_-]+)/', $css_var, $var_matches)) {
+      return NULL;
+    }
+
+    return [
+      'theme_num' => $var_matches[1],
+      'slot_identifier' => $var_matches[2],
+      'css_var' => $css_var,
+    ];
+  }
+
+  /**
+   * Builds a six-slot palette preview for the current global theme.
+   *
+   * @param string $global_theme
+   *   The active global theme.
+   * @param string|null $background_color_var
+   *   The selected background color CSS variable.
+   *
+   * @return array
+   *   Array of palette slot info for slots one-five and nine.
+   */
+  public function buildPaletteSlots($global_theme, $background_color_var = NULL) {
+    $slot_identifiers = ['one', 'two', 'three', 'four', 'five', 'nine'];
+    $theme_colors = $this->getThemeColors($global_theme);
+    $selected_slot = $this->extractGlobalThemeSlot(
+      is_scalar($background_color_var) ? (string) $background_color_var : NULL
+    );
+    $selected_identifier = $selected_slot['slot_identifier'] ?? NULL;
+
+    $palette_slots = [];
+    foreach ($slot_identifiers as $slot_identifier) {
+      $slot_key = "slot-{$slot_identifier}";
+      if (!isset($theme_colors[$slot_key])) {
+        continue;
+      }
+
+      $color_data = $theme_colors[$slot_key];
+      $palette_slots[] = [
+        'slot' => $slot_identifier,
+        'css_var' => $color_data['css_var'] ?? "--global-themes-{$global_theme}-colors-{$slot_key}",
+        'hex' => $color_data['hex'] ?? '',
+        'token_name' => $color_data['name'] ?? '',
+        'token_ref' => $color_data['token'] ?? '',
+        'is_selected' => $selected_identifier === $slot_identifier,
+      ];
+    }
+
+    return $palette_slots;
+  }
+
+  /**
    * Builds color info for a single palette option.
    *
    * @param string $option_key
@@ -561,23 +631,15 @@ class ColorTokenResolver {
     $token_name = '';
     $token_ref = '';
 
-    // Parse CSS variable to extract theme and slot.
-    if (str_starts_with($background_color_var, 'var(') &&
-        preg_match('/var\(([^)]+)\)/', $background_color_var, $matches)) {
-      $css_var = $matches[1];
-
-      if (preg_match('/--global-themes-([A-Za-z0-9_-]+)-colors-slot-([A-Za-z0-9_-]+)/', $css_var, $var_matches)) {
-        $theme_num = $var_matches[1];
-        $slot_identifier = $var_matches[2];
-
-        $theme_colors = $this->getThemeColors($theme_num);
-        $slot_key = "slot-{$slot_identifier}";
-        if (isset($theme_colors[$slot_key])) {
-          $color_data = $theme_colors[$slot_key];
-          $hex_value = $color_data['hex'] ?? '';
-          $token_name = $color_data['name'] ?? '';
-          $token_ref = $color_data['token'] ?? '';
-        }
+    $selected_slot = $this->extractGlobalThemeSlot($background_color_var);
+    if ($selected_slot) {
+      $theme_colors = $this->getThemeColors($selected_slot['theme_num']);
+      $slot_key = "slot-{$selected_slot['slot_identifier']}";
+      if (isset($theme_colors[$slot_key])) {
+        $color_data = $theme_colors[$slot_key];
+        $hex_value = $color_data['hex'] ?? '';
+        $token_name = $color_data['name'] ?? '';
+        $token_ref = $color_data['token'] ?? '';
       }
     }
 
@@ -637,6 +699,7 @@ class ColorTokenResolver {
     foreach ($palette_options as $option_key => $option_label) {
       $background_color_var = $color_styles[$option_key][0] ?? NULL;
       $color_info[$option_key] = $this->buildColorInfo($option_key, $background_color_var);
+      $color_info[$option_key]['palette_slots'] = $this->buildPaletteSlots($global_theme, $background_color_var);
     }
 
     // Set palette order for section layouts.
