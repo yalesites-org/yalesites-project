@@ -1,6 +1,6 @@
 --- a/src/Form/OpenAiConfigForm.php
 +++ b/src/Form/OpenAiConfigForm.php
-@@ -81,7 +81,24 @@
+@@ -81,7 +81,31 @@
      ];
 
      $form['advanced']['moderation'] = [
@@ -18,6 +18,13 @@
 +      '#default_value' => $config->get('host'),
 +    ];
 +
++    $form['advanced']['custom_model'] = [
++      '#type' => 'textfield',
++      '#title' => $this->t('Custom Model Name'),
++      '#description' => $this->t('Model name to use when a custom host is set. The proxy determines actual model routing; this value is passed in the request and shown in the model dropdown. E.g., claude-haiku-20241022'),
++      '#default_value' => $config->get('custom_model'),
++    ];
++
 +    $form['advanced']['custom_headers'] = [
 +      '#type' => 'textarea',
 +      '#title' => $this->t('Custom HTTP Headers'),
@@ -26,7 +33,7 @@
      ];
 
      return parent::buildForm($form, $form_state);
-@@ -102,12 +119,17 @@
+@@ -102,12 +126,17 @@
        $form_state->setErrorByName('api_key', $this->t('The API Key is invalid.'));
        return;
      }
@@ -50,7 +57,7 @@
      }
 
    }
-@@ -117,11 +139,17 @@
+@@ -117,11 +146,18 @@
     */
    public function submitForm(array &$form, FormStateInterface $form_state) {
      $api_key = $this->keyRepository->getKey($form_state->getValue('api_key'))->getKeyValue();
@@ -66,6 +73,7 @@
        ->set('api_key', $form_state->getValue('api_key'))
 +      ->set('moderation', (bool) $form_state->getValue('moderation'))
 +      ->set('host', $form_state->getValue('host'))
++      ->set('custom_model', $form_state->getValue('custom_model'))
 +      ->set('custom_headers', $form_state->getValue('custom_headers'))
        ->save();
 
@@ -91,12 +99,30 @@
        $this->client = $client->make();
      }
    }
+@@ -770,6 +782,14 @@
+   public function getModels(string $operation_type, $capabilities): array {
+     $models = [];
+
++    // When a custom host is configured (e.g., Portkey), model discovery via the
++    // API is unreliable or returns non-OpenAI model IDs. Return the configured
++    // custom model name instead so the model dropdown is usable.
++    $custom_model = $this->getConfig()->get('custom_model');
++    if (!empty($this->getConfig()->get('host')) && !empty($custom_model)) {
++      return [$custom_model => $custom_model];
++    }
++
+     $cache_key = 'openai_models_' . $operation_type . '_' . Crypt::hashBase64(Json::encode($capabilities));
+     $cache_data = $this->cacheBackend->get($cache_key);
+
 --- a/config/schema/ai_provider_openai.schema.yml
 +++ b/config/schema/ai_provider_openai.schema.yml
-@@ -11,3 +11,6 @@
+@@ -11,3 +11,9 @@
      host:
        type: string
        label: 'The host to use for the API requests.'
++    custom_model:
++      type: string
++      label: 'Custom model name used when a custom host is configured.'
 +    custom_headers:
 +      type: string
 +      label: 'Custom HTTP headers for API requests (one per line, Header-Name: value format).'
