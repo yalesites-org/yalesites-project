@@ -132,6 +132,9 @@
       "drupal/core": "-p2"
     },
     "patches": {
+      "drupal/ai": {
+        "Fix VdbSimilarityMetrics::from() crash when metric is null (Azure AI Search)": "patches/ai/ai_search-metric-enum-fix.patch"
+      },
       "drupal/core": {
         "plural results summary https://www.drupal.org/project/drupal/issues/2888320": "https://www.drupal.org/files/issues/2024-06-21/2888320-92.patch",
         "Add reusable option to inline block creation https://www.drupal.org/project/drupal/issues/2999491": "https://www.drupal.org/files/issues/2024-07-17/drupal-2999491-162.patch",
