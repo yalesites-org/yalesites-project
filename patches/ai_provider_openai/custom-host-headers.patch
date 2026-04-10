@@ -28,7 +28,7 @@
 +    $form['advanced']['custom_headers'] = [
 +      '#type' => 'textarea',
 +      '#title' => $this->t('Custom HTTP Headers'),
-+      '#description' => $this->t('Additional HTTP headers sent with every API request. One per line in "Header-Name: value" format. E.g., x-portkey-api-key: your-key'),
++      '#description' => $this->t('Additional HTTP headers sent with every API request. One per line in "Header-Name: value" format. Use [key:key_name] to reference a Key module key instead of storing secrets in plain config. E.g., x-portkey-api-key: [key:portkey_key]'),
 +      '#default_value' => $config->get('custom_headers'),
      ];
 
@@ -80,18 +80,21 @@
      // Set default models.
 --- a/src/Plugin/AiProvider/OpenAiProvider.php
 +++ b/src/Plugin/AiProvider/OpenAiProvider.php
-@@ -317,6 +317,18 @@
+@@ -317,11 +317,42 @@
          $client->withBaseUri($this->getConfig()->get('host'));
        }
 
 +      // Apply any custom headers (e.g., for Portkey or other proxies).
++      // Header values may contain [key:key_name] placeholders which are
++      // resolved via the Key module so secrets are not stored in plain config.
 +      $custom_headers = $this->getConfig()->get('custom_headers');
 +      if (!empty($custom_headers)) {
 +        foreach (explode("\n", $custom_headers) as $line) {
 +          $line = trim($line);
 +          if ($line !== '' && str_contains($line, ':')) {
 +            [$name, $value] = explode(':', $line, 2);
-+            $client->withHttpHeader(trim($name), trim($value));
++            $value = $this->resolveKeyPlaceholders(trim($value));
++            $client->withHttpHeader(trim($name), $value);
 +          }
 +        }
 +      }
@@ -99,7 +102,28 @@
        $this->client = $client->make();
      }
    }
-@@ -389,6 +401,12 @@
+
+   /**
++   * Resolves [key:key_name] placeholders in a string using the Key module.
++   *
++   * @param string $value
++   *   The string that may contain [key:key_name] tokens.
++   *
++   * @return string
++   *   The string with placeholders replaced by their key values.
++   */
++  protected function resolveKeyPlaceholders(string $value): string {
++    return preg_replace_callback('/\[key:([^\]]+)\]/', function ($matches) {
++      $key = $this->keyRepository->getKey($matches[1]);
++      return $key ? ($key->getKeyValue() ?? $matches[0]) : $matches[0];
++    }, $value);
++  }
++
++  /**
+    * {@inheritdoc}
+    */
+   public function chat(array|string|ChatInput $input, string $model_id, array $tags = []): ChatOutput {
+@@ -389,6 +420,12 @@
        'model' => $model_id,
        'messages' => $chat_input,
      ] + $this->configuration;
@@ -112,7 +136,7 @@
      // If we want to add tools to the input.
      if (is_object($input) && method_exists($input, 'getChatTools') && $input->getChatTools()) {
        $payload['tools'] = $input->getChatTools()->renderToolsArray();
-@@ -770,6 +788,14 @@
+@@ -770,6 +807,14 @@
    public function getModels(string $operation_type, $capabilities): array {
      $models = [];
 
