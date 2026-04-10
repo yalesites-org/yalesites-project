@@ -1,0 +1,96 @@
+--- a/src/Form/OpenAiConfigForm.php
++++ b/src/Form/OpenAiConfigForm.php
+@@ -84,6 +84,20 @@
+       '#markup' => '<p>' . $this->t('Moderation is always on by default for any text based call. You can disable it for each request either via code or by changing manually in ai_provider_openai.settings.yml.') . '</p>',
+     ];
+
++    $form['advanced']['host'] = [
++      '#type' => 'textfield',
++      '#title' => $this->t('Custom API Host'),
++      '#description' => $this->t('Override the default OpenAI API endpoint. Use for OpenAI-compatible proxies (e.g., https://api.portkey.ai/v1). When set, API key validation against api.openai.com is skipped.'),
++      '#default_value' => $config->get('host'),
++    ];
++
++    $form['advanced']['custom_headers'] = [
++      '#type' => 'textarea',
++      '#title' => $this->t('Custom HTTP Headers'),
++      '#description' => $this->t('Additional HTTP headers sent with every API request. One per line in "Header-Name: value" format. E.g., x-portkey-api-key: your-key'),
++      '#default_value' => $config->get('custom_headers'),
++    ];
++
+     return parent::buildForm($form, $form_state);
+   }
+
+@@ -102,12 +116,17 @@
+       $form_state->setErrorByName('api_key', $this->t('The API Key is invalid.'));
+       return;
+     }
+-    $client = \OpenAI::client($api_key);
+-    try {
+-      $client->models()->list();
+-    }
+-    catch (\Exception $e) {
+-      $form_state->setErrorByName('api_key', $this->t('The API Key is not working.'));
++    // Skip live OpenAI validation when a custom host is configured, since the
++    // key is for the proxy (e.g., Portkey), not OpenAI directly.
++    $host = $form_state->getValue('host');
++    if (empty($host)) {
++      $client = \OpenAI::client($api_key);
++      try {
++        $client->models()->list();
++      }
++      catch (\Exception $e) {
++        $form_state->setErrorByName('api_key', $this->t('The API Key is not working.'));
++      }
+     }
+
+   }
+@@ -117,11 +136,16 @@
+    */
+   public function submitForm(array &$form, FormStateInterface $form_state) {
+     $api_key = $this->keyRepository->getKey($form_state->getValue('api_key'))->getKeyValue();
+-    // If it all passed through, we do one last check of rate limits via chat.
+-    $this->openAiHelper->testRateLimit($api_key);
++    // Only check rate limits against api.openai.com when no custom host is set.
++    $host = $form_state->getValue('host');
++    if (empty($host)) {
++      $this->openAiHelper->testRateLimit($api_key);
++    }
+     // Retrieve the configuration.
+     $this->config(static::CONFIG_NAME)
+       ->set('api_key', $form_state->getValue('api_key'))
++      ->set('host', $form_state->getValue('host'))
++      ->set('custom_headers', $form_state->getValue('custom_headers'))
+       ->save();
+
+     // Set default models.
+--- a/src/Plugin/AiProvider/OpenAiProvider.php
++++ b/src/Plugin/AiProvider/OpenAiProvider.php
+@@ -317,6 +317,18 @@
+         $client->withBaseUri($this->getConfig()->get('host'));
+       }
+
++      // Apply any custom headers (e.g., for Portkey or other proxies).
++      $custom_headers = $this->getConfig()->get('custom_headers');
++      if (!empty($custom_headers)) {
++        foreach (explode("\n", $custom_headers) as $line) {
++          $line = trim($line);
++          if ($line !== '' && str_contains($line, ':')) {
++            [$name, $value] = explode(':', $line, 2);
++            $client->withHttpHeader(trim($name), trim($value));
++          }
++        }
++      }
++
+       $this->client = $client->make();
+     }
+   }
+--- a/config/schema/ai_provider_openai.schema.yml
++++ b/config/schema/ai_provider_openai.schema.yml
+@@ -11,3 +11,6 @@
+     host:
+       type: string
+       label: 'The host to use for the API requests.'
++    custom_headers:
++      type: string
++      label: 'Custom HTTP headers for API requests (one per line, Header-Name: value format).'
