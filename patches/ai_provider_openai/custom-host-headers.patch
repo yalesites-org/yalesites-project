@@ -99,7 +99,20 @@
        $this->client = $client->make();
      }
    }
-@@ -770,6 +782,14 @@
+@@ -389,6 +401,12 @@
+       'model' => $model_id,
+       'messages' => $chat_input,
+     ] + $this->configuration;
++    // When using a custom host (e.g., Portkey routing to Vertex AI or Anthropic
++    // models), both temperature and top_p cannot be set simultaneously. Prefer
++    // temperature and drop top_p from the payload.
++    if (!empty($this->getConfig()->get('host')) && isset($payload['temperature']) && isset($payload['top_p'])) {
++      unset($payload['top_p']);
++    }
+     // If we want to add tools to the input.
+     if (is_object($input) && method_exists($input, 'getChatTools') && $input->getChatTools()) {
+       $payload['tools'] = $input->getChatTools()->renderToolsArray();
+@@ -770,6 +788,14 @@
    public function getModels(string $operation_type, $capabilities): array {
      $models = [];
 
