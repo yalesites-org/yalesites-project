@@ -1,0 +1,10 @@
+--- a/modules/ai_search/src/EventSubscriber/NewServerEventSubscriber.php
++++ b/modules/ai_search/src/EventSubscriber/NewServerEventSubscriber.php
+@@ -50,7 +50,7 @@
+         $vdb_provider->createCollection(
+           $data['backend_config']['database_settings']['collection'],
+           $data['backend_config']['embeddings_engine_configuration']['dimensions'],
+-          VdbSimilarityMetrics::from($data['backend_config']['database_settings']['metric']),
++          VdbSimilarityMetrics::tryFrom($data['backend_config']['database_settings']['metric'] ?? '') ?? VdbSimilarityMetrics::CosineSimilarity,
+           $data['backend_config']['database_settings']['database_name'],
+         );
