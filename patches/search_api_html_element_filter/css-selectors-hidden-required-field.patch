@@ -1,6 +1,6 @@
 --- a/src/Plugin/search_api/processor/HtmlElementFilter.php
 +++ b/src/Plugin/search_api/processor/HtmlElementFilter.php
-@@ -42,6 +42,13 @@ class HtmlElementFilter extends ProcessorPluginBase {
+@@ -42,6 +42,13 @@
    public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
      parent::validateConfigurationForm($form, $form_state);
      $css_selectors = $form_state->getValue('css_selectors');
@@ -14,9 +14,7 @@
      $css_selectors = explode("\r\n", $css_selectors);
      $crawler = new Crawler('<body></body>');
      $errors = [];
-@@ -73,7 +80,6 @@ class HtmlElementFilter extends ProcessorPluginBase {
-     $form['css_selectors'] = [
-       '#type' => 'textarea',
+@@ -75,7 +82,6 @@
        '#title' => $this->t('CSS Selectors'),
        '#description' => $this->t('Specify CSS selectors for the elements that need to be removed from the markup. Separate each selector on a new line. E.g. <b>.sidebar-filters</b>'),
        '#default_value' => $this->configuration['css_selectors'],
