@@ -374,21 +374,12 @@ class ColorTokenResolver {
   public function getColorStylesForEntity($entity_type = NULL, $bundle = NULL) {
     $global_themes = ['one', 'two', 'three', 'four', 'five', 'six', 'seven'];
 
-    // Layout section only: full symmetric swap for global theme 'four' (Onha).
-    // _yds-layout.scss applies the slot-two ↔ slot-five exchange directly to
-    // background colors with no component-themes-five-background override, so
-    // both swap directions are correct here.
-    $theme_four_layout_swap = [
+    // Mirrors the SCSS-level slot-two ↔ slot-five exchange for global theme
+    // 'four' (Onha). Applied to both layout sections and block content
+    // components so the color picker circles match what SCSS actually renders.
+    $theme_four_slot_swap = [
       'four' => [
         'two' => 'five',
-        'five' => 'two',
-      ],
-    ];
-
-    // Block content components: only the slot-five→slot-two direction. These
-    // bundles still mirror the SCSS-level slot-five remap used by theme four.
-    $theme_four_block_swap = [
-      'four' => [
         'five' => 'two',
       ],
     ];
@@ -403,7 +394,7 @@ class ColorTokenResolver {
         'two' => 'four',
         'three' => 'five',
         'four' => 'two',
-      ], $global_themes, $theme_four_layout_swap);
+      ], $global_themes, $theme_four_slot_swap);
     }
 
     // Base mapping: options map directly to global slots (1:1).
@@ -436,7 +427,7 @@ class ColorTokenResolver {
         'four' => 'three',
         'five' => 'two',
         'six' => 'nine',
-      ], $global_themes, $theme_four_block_swap);
+      ], $global_themes, $theme_four_slot_swap);
     }
 
     // Facts mapping: one→slot-one, two→slot-four, three→slot-five,
@@ -450,7 +441,7 @@ class ColorTokenResolver {
         'four' => 'two',
         'five' => 'three',
         'six' => 'nine',
-      ], $global_themes, $theme_four_block_swap);
+      ], $global_themes, $theme_four_slot_swap);
     }
 
     // Quote-callout mapping: one→slot-one, two→slot-three, three→slot-five,
@@ -463,7 +454,7 @@ class ColorTokenResolver {
         'four' => 'four',
         'five' => 'two',
         'six' => 'nine',
-      ], $global_themes, $theme_four_block_swap);
+      ], $global_themes, $theme_four_slot_swap);
     }
 
     // Link-grid mapping adds slot-nine as the sixth selectable option.
@@ -475,7 +466,7 @@ class ColorTokenResolver {
         'four' => 'four',
         'five' => 'two',
         'six' => 'nine',
-      ], $global_themes, $theme_four_block_swap);
+      ], $global_themes, $theme_four_slot_swap);
     }
 
     // Inline-message mapping: one→slot-four, two→slot-one, three→slot-two,
