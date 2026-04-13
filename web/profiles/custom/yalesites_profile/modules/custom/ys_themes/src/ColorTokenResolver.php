@@ -385,15 +385,16 @@ class ColorTokenResolver {
     ];
 
     // Section layout mapping: one→slot-one, two→slot-four, three→slot-five,
-    // four→slot-two.
+    // four→slot-two, five→slot-nine.
     // Widget options: one=Blue Yale, two=Gray 100, three=Gray 800,
-    // four=Blue Medium.
+    // four=Blue Medium, five=Soft Oceanic (ONHA) / Gray 100 (others).
     if ($entity_type === 'layout_section' && $bundle === 'ys_layout_options') {
       return $this->buildColorStyles([
         'one' => 'one',
         'two' => 'four',
         'three' => 'five',
         'four' => 'two',
+        'five' => 'nine',
       ], $global_themes, $theme_four_slot_swap);
     }
 
@@ -637,7 +638,7 @@ class ColorTokenResolver {
     }
 
     // Set palette order for section layouts.
-    $palette_order = $is_section_layout ? ['default', 'one', 'two', 'three', 'four'] : NULL;
+    $palette_order = $is_section_layout ? ['default', 'one', 'two', 'three', 'four', 'five'] : NULL;
 
     $palette_render = [
       '#theme' => 'component_color_picker',
