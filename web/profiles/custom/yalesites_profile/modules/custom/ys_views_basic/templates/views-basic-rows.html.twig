@@ -4,10 +4,16 @@
   {% set card_collection__width = "site" %}
 {% endif %}
 
+{% set card_collection__featured = 'true' %}
+{% if card_collection_modifiers is not empty and 'resource-portrait' in card_collection_modifiers %}
+  {% set card_collection__featured = 'false' %}
+{% endif %}
+
 {% embed "@organisms/card-collection/yds-card-collection.twig" with {
-    card_collection__featured: 'true',
+    card_collection__featured: card_collection__featured,
     card_collection__width: card_collection__width,
     card_collection__type: card_collection_type,
+    card_collection__modifiers: card_collection_modifiers,
     card_collection__source_type: contentType,
   } %}
   {% block card_collection__cards %}

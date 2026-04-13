@@ -15,6 +15,7 @@ module:
   allowed_formats: 0
   anchor_link: 0
   better_exposed_filters: 0
+  bigmenu: 0
   block: 0
   block_content: 0
   book: 0

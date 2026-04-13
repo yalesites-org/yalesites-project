@@ -1,0 +1,11 @@
+uuid: 8d27dfe8-4e17-4c0e-9d7a-c45dcf987f97
+langcode: en
+status: true
+dependencies:
+  module:
+    - media
+id: media.card_grid_portrait_5_8
+label: 'Card Grid - Portrait (1:1.6)'
+description: ''
+targetEntityType: media
+cache: true
