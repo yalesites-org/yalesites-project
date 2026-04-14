@@ -52,3 +52,4 @@ services:
       - git config --global --add safe.directory /app
       - mkdir -p /var/www/.composer && echo '{"config":{"audit":{"block-insecure":false}}}' > /var/www/.composer/config.json
       - /bin/sh /app/.lando/imagemagicfix.sh
+      - apt-get update && apt-get install -y libpq-dev && docker-php-ext-install pgsql
