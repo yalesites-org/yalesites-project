@@ -1,0 +1,4 @@
+api_key: ''
+gateway_url: 'https://api.portkey.ai/v1'
+model: ''
+custom_headers: ''

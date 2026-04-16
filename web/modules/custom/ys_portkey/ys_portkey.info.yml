@@ -1,0 +1,9 @@
+name: Portkey AI Provider
+description: Provides Portkey AI gateway integration for the Drupal AI module using the OpenAI-compatible API.
+package: AI Providers
+type: module
+core_version_requirement: ^10.3 || ^11
+
+dependencies:
+  - ai:ai
+  - key:key
