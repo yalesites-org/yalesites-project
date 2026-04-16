@@ -1,0 +1,16 @@
+ys_portkey.settings:
+  type: config_object
+  label: 'Portkey Settings'
+  mapping:
+    api_key:
+      type: string
+      label: 'The Portkey API key via Key module.'
+    gateway_url:
+      type: string
+      label: 'The Portkey gateway URL.'
+    model:
+      type: string
+      label: 'The model name to use for API requests.'
+    custom_headers:
+      type: string
+      label: 'Custom HTTP headers (one per line, Header-Name: value format).'
