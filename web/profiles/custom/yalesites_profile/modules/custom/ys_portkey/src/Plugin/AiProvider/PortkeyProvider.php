@@ -349,6 +349,13 @@ class PortkeyProvider extends AiProviderClientBase implements
   /**
    * {@inheritdoc}
    */
+  public function maxEmbeddingsInput(string $model_id = ''): int {
+    return 8191;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function embeddingsVectorSize(string $model_id): int {
     return 0;
   }
