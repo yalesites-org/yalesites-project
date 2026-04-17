@@ -60,6 +60,16 @@ class PortkeyProvider extends AiProviderClientBase implements
   protected bool $hasPredefinedModels = FALSE;
 
   /**
+   * Maximum number of retry attempts for rate-limited requests.
+   */
+  const MAX_RETRIES = 3;
+
+  /**
+   * Base delay in seconds for exponential backoff (doubles each attempt).
+   */
+  const RETRY_BASE_DELAY = 2;
+
+  /**
    * {@inheritdoc}
    */
   public function isUsable(?string $operation_type = NULL, array $capabilities = []): bool {
@@ -195,6 +205,38 @@ class PortkeyProvider extends AiProviderClientBase implements
   }
 
   /**
+   * Executes an API call with retry and exponential backoff on rate limits.
+   *
+   * @param callable $operation
+   *   The API call to execute.
+   *
+   * @return mixed
+   *   The result of the operation.
+   *
+   * @throws \Exception
+   *   The last exception if all retries are exhausted.
+   */
+  protected function executeWithRetry(callable $operation): mixed {
+    $lastException = NULL;
+    for ($attempt = 0; $attempt <= self::MAX_RETRIES; $attempt++) {
+      try {
+        return $operation();
+      }
+      catch (\Exception $e) {
+        $isRateLimit = str_contains($e->getMessage(), 'Too Many Requests')
+          || str_contains($e->getMessage(), '429');
+        if ($isRateLimit && $attempt < self::MAX_RETRIES) {
+          $lastException = $e;
+          sleep(self::RETRY_BASE_DELAY * (int) pow(2, $attempt));
+          continue;
+        }
+        throw $e;
+      }
+    }
+    throw $lastException;
+  }
+
+  /**
    * Resolves [key:key_name] placeholders in a string using the Key module.
    *
    * @param string $value
@@ -290,11 +332,15 @@ class PortkeyProvider extends AiProviderClientBase implements
 
     try {
       if ($this->streamed) {
-        $response = $this->client->chat()->createStreamed($payload);
+        $response = $this->executeWithRetry(
+          fn() => $this->client->chat()->createStreamed($payload)
+        );
         $message = new PortkeyChatMessageIterator($response);
       }
       else {
-        $response = $this->client->chat()->create($payload)->toArray();
+        $response = $this->executeWithRetry(
+          fn() => $this->client->chat()->create($payload)->toArray()
+        );
         $tools = [];
         if (!empty($response['choices'][0]['message']['tool_calls'])) {
           foreach ($response['choices'][0]['message']['tool_calls'] as $tool) {
@@ -309,13 +355,13 @@ class PortkeyProvider extends AiProviderClientBase implements
       }
     }
     catch (\Exception $e) {
-      if (strpos($e->getMessage(), 'Request too large') !== FALSE) {
+      if (str_contains($e->getMessage(), 'Request too large')) {
         throw new AiRateLimitException($e->getMessage());
       }
-      if (strpos($e->getMessage(), 'Too Many Requests') !== FALSE) {
+      if (str_contains($e->getMessage(), 'Too Many Requests')) {
         throw new AiRateLimitException($e->getMessage());
       }
-      if (strpos($e->getMessage(), 'You exceeded your current quota') !== FALSE) {
+      if (str_contains($e->getMessage(), 'You exceeded your current quota')) {
         throw new AiQuotaException($e->getMessage());
       }
       throw $e;
@@ -346,16 +392,18 @@ class PortkeyProvider extends AiProviderClientBase implements
     }
     $payload += $this->configuration;
     try {
-      $response = $this->client->embeddings()->create($payload)->toArray();
+      $response = $this->executeWithRetry(
+        fn() => $this->client->embeddings()->create($payload)->toArray()
+      );
     }
     catch (\Exception $e) {
-      if (strpos($e->getMessage(), 'Request too large') !== FALSE) {
+      if (str_contains($e->getMessage(), 'Request too large')) {
         throw new AiRateLimitException($e->getMessage());
       }
-      if (strpos($e->getMessage(), 'Too Many Requests') !== FALSE) {
+      if (str_contains($e->getMessage(), 'Too Many Requests')) {
         throw new AiRateLimitException($e->getMessage());
       }
-      if (strpos($e->getMessage(), 'You exceeded your current quota') !== FALSE) {
+      if (str_contains($e->getMessage(), 'You exceeded your current quota')) {
         throw new AiQuotaException($e->getMessage());
       }
       throw $e;
