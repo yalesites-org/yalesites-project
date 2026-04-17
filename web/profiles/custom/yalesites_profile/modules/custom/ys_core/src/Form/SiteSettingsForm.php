@@ -244,8 +244,9 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     $form['font_pairing'] = [
       '#type' => 'radios',
       '#options' => [
-        'yalenew' => $this->t('YaleNew (YaleNew for headings, Mallory for paragraph text)'),
-        'mallory' => $this->t('Mallory (Mallory for headings, Mallory for paragraph text)'),
+        'yalenew' => $this->t('YaleNew / Mallory (YaleNew for headings, Mallory for paragraph text)'),
+        'mallory' => $this->t('Mallory / Mallory (Mallory for headings, Mallory for paragraph text)'),
+        'yalenew-oldstyle' => $this->t('Yale Old-Style Numerals / Mallory (YaleNew with old-style numerals for headings and site title, Mallory for paragraph text)'),
       ],
       '#description' => $this->t('This font pairing will apply site-wide and affect all heading levels (h1-h6)'),
       '#title' => $this->t('Font Pairing'),
@@ -292,6 +293,25 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
           '#type' => 'html_tag',
           '#tag' => 'h2',
           '#value' => $this->t('Mallory Heading Sample'),
+          '#attributes' => ['class' => ['preview-heading']],
+        ],
+        'text' => [
+          '#type' => 'html_tag',
+          '#tag' => 'p',
+          '#value' => $this->t('This is a sample paragraph in Mallory.'),
+          '#attributes' => ['class' => ['preview-text']],
+        ],
+      ],
+      'yalenew-oldstyle' => [
+        '#type' => 'container',
+        '#attributes' => [
+          'class' => ['font-preview', 'font-preview-yalenew-oldstyle'],
+          'data-font-pairing' => 'yalenew-oldstyle',
+        ],
+        'heading' => [
+          '#type' => 'html_tag',
+          '#tag' => 'h2',
+          '#value' => $this->t('Yale Old-Style Numerals Heading Sample — 1234567890'),
           '#attributes' => ['class' => ['preview-heading']],
         ],
         'text' => [
