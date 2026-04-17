@@ -1,5 +1,5 @@
 ys_portkey.settings_menu:
-  title: "Portkey Authentication"
-  description: "Setup Portkey AI gateway"
+  title: "Portkey AI Provider"
+  description: "Setup Portkey AI gateway models"
   route_name: ys_portkey.settings_form
   parent: ai.admin_providers

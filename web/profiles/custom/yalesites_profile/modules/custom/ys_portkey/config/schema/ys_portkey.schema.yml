@@ -2,15 +2,18 @@ ys_portkey.settings:
   type: config_object
   label: 'Portkey Settings'
   mapping:
+    data:
+      type: string
+      label: 'Placeholder config. Per-model settings are stored in ai.settings.'
     api_key:
       type: string
-      label: 'The Portkey API key via Key module.'
+      label: 'Legacy API key (pre-migration)'
     gateway_url:
       type: string
-      label: 'The Portkey gateway URL.'
+      label: 'Legacy gateway URL (pre-migration)'
     model:
       type: string
-      label: 'The model name to use for API requests.'
+      label: 'Legacy model ID (pre-migration)'
     custom_headers:
       type: string
-      label: 'Custom HTTP headers (one per line, Header-Name: value format).'
+      label: 'Legacy custom headers (pre-migration)'
