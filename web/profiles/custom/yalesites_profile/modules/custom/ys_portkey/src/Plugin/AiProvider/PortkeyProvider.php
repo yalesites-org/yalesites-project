@@ -9,6 +9,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\ai\Attribute\AiProvider;
 use Drupal\ai\Base\AiProviderClientBase;
 use Drupal\ai\Enum\AiProviderCapability;
+use Drupal\ai\Exception\AiBadRequestException;
 use Drupal\ai\Exception\AiQuotaException;
 use Drupal\ai\Exception\AiRateLimitException;
 use Drupal\ai\OperationType\Chat\ChatInput;
@@ -21,7 +22,6 @@ use Drupal\ai\OperationType\Embeddings\EmbeddingsInterface;
 use Drupal\ai\OperationType\Embeddings\EmbeddingsOutput;
 use Drupal\ai\Traits\OperationType\ChatTrait;
 use Drupal\ys_portkey\PortkeyChatMessageIterator;
-use OpenAI\Client;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -53,19 +53,16 @@ class PortkeyProvider extends AiProviderClientBase implements
   protected string $apiKey = '';
 
   /**
-   * {@inheritdoc}
+   * Models are user-created, not predefined.
+   *
+   * @var bool
    */
-  public function getConfiguredModels(?string $operation_type = NULL, array $capabilities = []): array {
-    return $this->getModels($operation_type ?? 'chat', $capabilities);
-  }
+  protected bool $hasPredefinedModels = FALSE;
 
   /**
    * {@inheritdoc}
    */
   public function isUsable(?string $operation_type = NULL, array $capabilities = []): bool {
-    if (!$this->getConfig()->get('api_key')) {
-      return FALSE;
-    }
     if ($operation_type) {
       return in_array($operation_type, $this->getSupportedOperationTypes());
     }
@@ -122,44 +119,79 @@ class PortkeyProvider extends AiProviderClientBase implements
   }
 
   /**
-   * Loads the OpenAI-compatible client pointed at the Portkey gateway.
+   * {@inheritdoc}
    */
-  protected function loadClient(): void {
-    if (!$this->client) {
-      $config = $this->getConfig();
-      $gateway_url = $config->get('gateway_url') ?: 'https://api.portkey.ai/v1';
+  public function loadModelsForm(array $form, $form_state, string $operation_type, string|NULL $model_id = NULL): array {
+    $form = parent::loadModelsForm($form, $form_state, $operation_type, $model_id);
+    $config = $this->loadModelConfig($operation_type, $model_id);
 
-      // The SDK requires an API key, but Portkey auth is via the
-      // x-portkey-api-key header. Pass a dummy value to satisfy the SDK.
-      $client = \OpenAI::factory()
-        ->withApiKey('portkey')
-        ->withBaseUri($gateway_url)
-        ->withHttpClient($this->httpClient);
+    $form['model_data']['api_key'] = [
+      '#type' => 'key_select',
+      '#title' => new TranslatableMarkup('Portkey API Key'),
+      '#description' => new TranslatableMarkup('Select a Key entity containing your Portkey API key. This is sent as the x-portkey-api-key header.'),
+      '#default_value' => $config['api_key'] ?? '',
+      '#required' => TRUE,
+      '#weight' => 2,
+    ];
 
-      // Add the Portkey API key header from Key module.
-      $api_key_id = $config->get('api_key');
-      if ($api_key_id) {
-        $key = $this->keyRepository->getKey($api_key_id);
-        if ($key) {
-          $client->withHttpHeader('x-portkey-api-key', $key->getKeyValue());
-        }
-      }
+    $form['model_data']['gateway_url'] = [
+      '#type' => 'textfield',
+      '#title' => new TranslatableMarkup('Gateway URL'),
+      '#description' => new TranslatableMarkup('The Portkey gateway endpoint. Change only for self-hosted Portkey deployments.'),
+      '#default_value' => $config['gateway_url'] ?? 'https://api.portkey.ai/v1',
+      '#weight' => 3,
+    ];
 
-      // Apply any custom headers.
-      $custom_headers = $config->get('custom_headers');
-      if (!empty($custom_headers)) {
-        foreach (explode("\n", $custom_headers) as $line) {
-          $line = trim($line);
-          if ($line !== '' && str_contains($line, ':')) {
-            [$name, $value] = explode(':', $line, 2);
-            $value = $this->resolveKeyPlaceholders(trim($value));
-            $client->withHttpHeader(trim($name), $value);
-          }
-        }
-      }
+    $form['model_data']['custom_headers'] = [
+      '#type' => 'textarea',
+      '#title' => new TranslatableMarkup('Custom Headers'),
+      '#description' => new TranslatableMarkup('Additional HTTP headers sent with every API request. One per line in "Header-Name: value" format. Use [key:key_name] to reference a Key module key.'),
+      '#default_value' => $config['custom_headers'] ?? '',
+      '#weight' => 50,
+    ];
 
-      $this->client = $client->make();
+    return $form;
+  }
+
+  /**
+   * Builds the OpenAI-compatible client for a specific model instance.
+   *
+   * @param array $model_config
+   *   The model configuration from ai.settings.
+   */
+  protected function loadClient(array $model_config): void {
+    $this->client = NULL;
+    $gateway_url = $model_config['gateway_url'] ?? 'https://api.portkey.ai/v1';
+    if (empty($gateway_url)) {
+      $gateway_url = 'https://api.portkey.ai/v1';
     }
+
+    $client = \OpenAI::factory()
+      ->withApiKey('portkey')
+      ->withBaseUri($gateway_url)
+      ->withHttpClient($this->httpClient);
+
+    $api_key_id = $model_config['api_key'] ?? '';
+    if ($api_key_id) {
+      $key = $this->keyRepository->getKey($api_key_id);
+      if ($key) {
+        $client->withHttpHeader('x-portkey-api-key', $key->getKeyValue());
+      }
+    }
+
+    $custom_headers = $model_config['custom_headers'] ?? '';
+    if (!empty($custom_headers)) {
+      foreach (explode("\n", $custom_headers) as $line) {
+        $line = trim($line);
+        if ($line !== '' && str_contains($line, ':')) {
+          [$name, $value] = explode(':', $line, 2);
+          $value = $this->resolveKeyPlaceholders(trim($value));
+          $client->withHttpHeader(trim($name), $value);
+        }
+      }
+    }
+
+    $this->client = $client->make();
   }
 
   /**
@@ -182,7 +214,12 @@ class PortkeyProvider extends AiProviderClientBase implements
    * {@inheritdoc}
    */
   public function chat(array|string|ChatInput $input, string $model_id, array $tags = []): ChatOutput {
-    $this->loadClient();
+    $info = $this->getModelInfo('chat', $model_id);
+    if (empty($info['api_key'])) {
+      throw new AiBadRequestException('The model does not exist.');
+    }
+    $this->loadClient($info);
+
     $chat_input = $input;
     if ($input instanceof ChatInput) {
       $chat_input = [];
@@ -291,14 +328,23 @@ class PortkeyProvider extends AiProviderClientBase implements
    * {@inheritdoc}
    */
   public function embeddings(string|EmbeddingsInput $input, string $model_id, array $tags = []): EmbeddingsOutput {
-    $this->loadClient();
+    $info = $this->getModelInfo('embeddings', $model_id);
+    if (empty($info['api_key'])) {
+      throw new AiBadRequestException('The model does not exist.');
+    }
+    $this->loadClient($info);
+
     if ($input instanceof EmbeddingsInput) {
       $input = $input->getPrompt();
     }
     $payload = [
       'model' => $model_id,
       'input' => $input,
-    ] + $this->configuration;
+    ];
+    if (!empty($info['dimensions'])) {
+      $payload['dimensions'] = (int) $info['dimensions'];
+    }
+    $payload += $this->configuration;
     try {
       $response = $this->client->embeddings()->create($payload)->toArray();
     }
@@ -321,34 +367,6 @@ class PortkeyProvider extends AiProviderClientBase implements
   /**
    * {@inheritdoc}
    */
-  public function getSetupData(): array {
-    $model = $this->getConfig()->get('model');
-    if (empty($model)) {
-      return [];
-    }
-    return [
-      'key_config_name' => 'api_key',
-      'default_models' => [
-        'chat' => $model,
-        'embeddings' => $model,
-      ],
-    ];
-  }
-
-  /**
-   * Returns available models. Always the single configured model.
-   */
-  public function getModels(string $operation_type, $capabilities): array {
-    $model = $this->getConfig()->get('model');
-    if (empty($model)) {
-      return [];
-    }
-    return [$model => $model];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function maxEmbeddingsInput(string $model_id = ''): int {
     return 8191;
   }
@@ -357,6 +375,10 @@ class PortkeyProvider extends AiProviderClientBase implements
    * {@inheritdoc}
    */
   public function embeddingsVectorSize(string $model_id): int {
+    $info = $this->getModelInfo('embeddings', $model_id);
+    if (!empty($info['dimensions'])) {
+      return (int) $info['dimensions'];
+    }
     return 0;
   }
 
