@@ -254,6 +254,11 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
       unset($filters['resource_year_filter']);
     }
 
+    if (!isset($paramsDecoded['exposed_filter_options']['show_journal_publication_name_filter'])) {
+      // Remove the 'Journal Publication Name' filter if not enabled.
+      unset($filters['field_journal_publication_name_value']);
+    }
+
     // Set the modified filters back to the view display options.
     $view->getDisplay()->setOption('filters', $filters);
 

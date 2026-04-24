@@ -285,6 +285,7 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
       '#options' => [
         'show_search_filter' => $this->t('Show Search'),
         'show_year_filter' => $this->t('Show Year'),
+        'show_journal_publication_name_filter' => $this->t('Show Journal Publication Name'),
         'show_category_filter' => $this->t('Show Category'),
         'show_custom_vocab_filter' => $this->t('Show @vocab', ['@vocab' => $custom_vocab_label]),
         'show_audience_filter' => $this->t('Show Audience'),
