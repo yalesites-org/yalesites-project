@@ -107,7 +107,6 @@ third_party_settings:
         - group_teaser
         - group_publication_info
         - group_taxonomies
-        - group_related_content
       label: 'Resource Tabs'
       region: content
       parent_name: ''
@@ -127,9 +126,8 @@ third_party_settings:
         - field_content_description
         - field_media
         - field_date_range
-        - field_date_format
-        - field_publish_date
         - field_revision_date
+        - field_related_resources
       label: 'Basic Info'
       region: content
       parent_name: group_resource_tabs
@@ -151,6 +149,8 @@ third_party_settings:
         - field_citation
         - field_journal_publication_name
         - field_journal_publication_issue
+        - field_publish_date
+        - field_date_format
       label: 'Publication Info'
       region: content
       parent_name: group_resource_tabs
@@ -178,22 +178,6 @@ third_party_settings:
       region: content
       parent_name: group_resource_tabs
       weight: 35
-      format_type: tab
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        label_as_html: false
-        formatter: closed
-        description: ''
-        required_fields: true
-    group_related_content:
-      children:
-        - field_related_resources
-      label: 'Related Content'
-      region: content
-      parent_name: group_resource_tabs
-      weight: 38
       format_type: tab
       format_settings:
         classes: ''
