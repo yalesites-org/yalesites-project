@@ -220,7 +220,6 @@ third_party_settings:
                 third_party_settings: {  }
             weight: 10
             additional: {  }
-
           148d8acf-cfa4-477e-90c2-12ce41813d8a:
             uuid: 148d8acf-cfa4-477e-90c2-12ce41813d8a
             region: content

@@ -83,10 +83,14 @@ function ys_views_content_resources_views_pre_render(ViewExecutable $view): void
     }
     $field_display_options = json_decode($view->args[7]);
     // Loop through each row in the view's results and update the node's
-    // properties based on show_category and show_thumbnail configuration.
+    // properties based on show_category, show_thumbnail, and show_publication
+    // configuration.
     foreach ($view->result as $row) {
       $row->_entity->show_category = $field_display_options->show_category;
       $row->_entity->show_thumbnail = $field_display_options->show_thumbnail;
+      $row->_entity->show_publication = $field_display_options->show_publication ?? 0;
+      $row->_entity->show_discipline = $field_display_options->show_discipline ?? 0;
+      $row->_entity->show_teaser_text = $field_display_options->show_teaser_text ?? 0;
 
       $sticky = (bool) $row->_entity->get('sticky')->value;
       if ($sticky) {

@@ -57,12 +57,28 @@ content:
     third_party_settings: {  }
     weight: 4
     region: content
+  field_authors:
+    type: entity_reference_label
+    label: hidden
+    settings:
+      link: false
+    third_party_settings: {  }
+    weight: 6
+    region: content
   field_date_format:
     type: list_key
     label: hidden
     settings: {  }
     third_party_settings: {  }
     weight: 5
+    region: content
+  field_discipline:
+    type: entity_reference_label
+    label: hidden
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 6
     region: content
   field_external_source:
     type: link_separate
@@ -75,6 +91,22 @@ content:
       target: ''
     third_party_settings: {  }
     weight: 6
+    region: content
+  field_journal_publication_name:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 7
+    region: content
+  field_journal_publication_issue:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 8
     region: content
   field_media:
     type: entity_reference_entity_view
@@ -116,16 +148,12 @@ hidden:
   field_affiliation: true
   field_areas_of_study: true
   field_audience: true
-  field_authors: true
   field_cf_dcn: true
   field_citation: true
   field_content_description: true
   field_custom_vocab: true
   field_date_range: true
-  field_discipline: true
   field_geographic_areas: true
-  field_journal_publication_issue: true
-  field_journal_publication_name: true
   field_login_required: true
   field_metatags: true
   field_publish_date: true

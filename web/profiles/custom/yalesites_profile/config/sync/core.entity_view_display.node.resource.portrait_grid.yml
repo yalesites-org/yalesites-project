@@ -89,14 +89,27 @@ content:
     region: content
 hidden:
   addtoany: true
+  field_abstract: true
+  field_academic_years: true
   field_affiliation: true
+  field_areas_of_study: true
   field_audience: true
+  field_authors: true
+  field_cf_dcn: true
+  field_citation: true
   field_content_description: true
   field_custom_vocab: true
+  field_date_range: true
+  field_discipline: true
+  field_geographic_areas: true
+  field_journal_publication_issue: true
+  field_journal_publication_name: true
   field_login_required: true
   field_media: true
   field_metatags: true
   field_publish_date: true
+  field_related_resources: true
+  field_revision_date: true
   field_tags: true
   layout_builder__layout: true
   links: true

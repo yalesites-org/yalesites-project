@@ -57,6 +57,14 @@ content:
     third_party_settings: {  }
     weight: 3
     region: content
+  field_authors:
+    type: entity_reference_label
+    label: hidden
+    settings:
+      link: false
+    third_party_settings: {  }
+    weight: 6
+    region: content
   field_category:
     type: entity_reference_label
     label: hidden
@@ -66,7 +74,7 @@ content:
     weight: 1
     region: content
   field_date_format:
-    type: list_default
+    type: list_key
     label: hidden
     settings: {  }
     third_party_settings: {  }
@@ -84,22 +92,12 @@ content:
     third_party_settings: {  }
     weight: 2
     region: content
-  field_publish_date:
-    type: datetime_default
-    label: above
-    settings:
-      timezone_override: ''
-      format_type: medium
-    third_party_settings: {  }
-    weight: 4
-    region: content
 hidden:
   addtoany: true
   field_abstract: true
   field_affiliation: true
   field_areas_of_study: true
   field_audience: true
-  field_authors: true
   field_cf_dcn: true
   field_citation: true
   field_content_description: true
@@ -112,6 +110,7 @@ hidden:
   field_login_required: true
   field_media: true
   field_metatags: true
+  field_publish_date: true
   field_related_resources: true
   field_revision_date: true
   field_tags: true

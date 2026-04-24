@@ -322,6 +322,9 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     $field_display_options = [
       'show_category' => (int) !empty($paramsDecoded['field_options']['show_category']),
       'show_thumbnail' => (int) $no_field_display_options_saved || !empty($paramsDecoded['field_options']['show_thumbnail']),
+      'show_publication' => (int) !empty($paramsDecoded['field_options']['show_publication']),
+      'show_discipline' => (int) !empty($paramsDecoded['field_options']['show_discipline']),
+      'show_teaser_text' => (int) !empty($paramsDecoded['field_options']['show_teaser_text']),
     ];
 
     if ($paramsDecoded['display'] == 'all') {

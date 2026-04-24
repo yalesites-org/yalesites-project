@@ -114,6 +114,9 @@ package-lock.json
 .DS_Store
 .zip
 
+# AI session docs (local only — not committed)
+/docs-local/
+
 # Database references
 reference
 
