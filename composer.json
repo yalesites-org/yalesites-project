@@ -38,8 +38,7 @@
   },
   "require-dev": {
     "drupal/core-dev": "^10",
-    "drupal/fpa": "^4.0",
-    "square360/copilot-drupal-instructions": "^3.0.5"
+    "drupal/fpa": "^4.0"
   },
   "conflict": {
     "drupal/drupal": "*"
