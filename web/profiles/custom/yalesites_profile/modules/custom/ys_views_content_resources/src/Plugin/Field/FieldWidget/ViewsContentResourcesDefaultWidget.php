@@ -238,6 +238,7 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
           'visible' => [
             $formSelectors['view_mode_input_selector'] => [
               ['value' => 'card'],
+              ['value' => 'portrait_grid'],
               ['value' => 'list_item'],
             ],
           ],

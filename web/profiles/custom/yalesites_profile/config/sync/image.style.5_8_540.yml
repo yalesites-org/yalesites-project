@@ -1,0 +1,17 @@
+uuid: 56b3466d-942b-4d1a-ab5e-a967cf0c3266
+langcode: en
+status: true
+dependencies:
+  module:
+    - focal_point
+name: '5_8_540'
+label: '5:8 (540)'
+effects:
+  0ea7b8b3-4396-4f51-ba4f-66a6f11ce020:
+    uuid: 0ea7b8b3-4396-4f51-ba4f-66a6f11ce020
+    id: focal_point_scale_and_crop
+    weight: 2
+    data:
+      width: 540
+      height: 864
+      crop_type: focal_point
