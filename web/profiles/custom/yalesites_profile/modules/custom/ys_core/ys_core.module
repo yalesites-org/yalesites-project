@@ -7,6 +7,7 @@
 
 use Drupal\imagemagick\ImagemagickExecArguments;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Form\FormStateInterface;
@@ -76,6 +77,19 @@ function ys_core_theme($existing, $type, $theme, $path): array {
       ],
     ],
   ];
+}
+
+/**
+ * Implements hook_entity_bundle_field_info_alter().
+ */
+function ys_core_entity_bundle_field_info_alter(&$fields, EntityTypeInterface $entity_type, $bundle) {
+  if (
+    $entity_type->id() === 'block_content' &&
+    $bundle === 'quick_links' &&
+    isset($fields['field_links'])
+  ) {
+    $fields['field_links']->getItemDefinition()->addConstraint('YsCoreLinkUri');
+  }
 }
 
 /**
