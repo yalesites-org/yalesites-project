@@ -135,6 +135,10 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
     $mediaId = NULL;
     $documentImage = NULL;
     $description = NULL;
+    $citation = NULL;
+    $abstract = NULL;
+    $journalPublicationName = NULL;
+    $journalPublicationIssue = NULL;
 
     $route = $this->routeMatch->getRouteObject();
 
@@ -181,6 +185,11 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
       $selected_term_fields = [
         'field_custom_vocab',
         'field_audience',
+        'field_academic_years',
+        'field_affiliation',
+        'field_areas_of_study',
+        'field_discipline',
+        'field_geographic_areas',
       ];
 
       foreach ($selected_term_fields as $field_name) {
@@ -204,6 +213,85 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
               'items' => $terms,
             ];
           }
+        }
+      }
+
+      // Handle DCN field (cf_dcn) - custom field type.
+      if ($node->hasField('field_cf_dcn') && !$node->get('field_cf_dcn')->isEmpty()) {
+        $field = $node->get('field_cf_dcn');
+        $field_label = $field->getFieldDefinition()->getLabel();
+        $dcn_items = [];
+
+        foreach ($field as $item) {
+          $dcn_type = $item->getDcnType();
+          $dcn_identifier = $item->dcn_identifier;
+
+          if ($dcn_type && $dcn_identifier) {
+            $dcn_items[] = [
+              'resource_meta__link__content' => $dcn_type->getName() . ' ' . $dcn_identifier,
+            ];
+          }
+        }
+
+        if ($dcn_items) {
+          $metadata['field_cf_dcn'] = [
+            'label' => $field_label,
+            'items' => $dcn_items,
+          ];
+        }
+      }
+
+      // Handle Authors field (entity reference to profiles).
+      if ($node->hasField('field_authors') && !$node->get('field_authors')->isEmpty()) {
+        $field = $node->get('field_authors');
+        $field_label = $field->getFieldDefinition()->getLabel();
+        $author_items = [];
+
+        foreach ($field->referencedEntities() as $profile) {
+          $author_items[] = [
+            '#type' => 'link',
+            '#title' => $profile->label(),
+            '#url' => $profile->toUrl(),
+          ];
+        }
+
+        if ($author_items) {
+          $metadata['field_authors'] = [
+            'label' => $field_label,
+            'items' => $author_items,
+          ];
+        }
+      }
+
+      // Handle Citation field as a standalone text block.
+      if ($node->hasField('field_citation') && !$node->get('field_citation')->isEmpty()) {
+        $field_value = $node->get('field_citation')->first()->getValue();
+        if (!empty($field_value['value'])) {
+          $citation = check_markup($field_value['value'], $field_value['format'] ?? 'basic_html');
+        }
+      }
+
+      // Handle Abstract field as a standalone text block.
+      if ($node->hasField('field_abstract') && !$node->get('field_abstract')->isEmpty()) {
+        $field_value = $node->get('field_abstract')->first()->getValue();
+        if (!empty($field_value['value'])) {
+          $abstract = check_markup($field_value['value'], $field_value['format'] ?? 'basic_html');
+        }
+      }
+
+      // Handle Journal Publication Name.
+      if ($node->hasField('field_journal_publication_name') && !$node->get('field_journal_publication_name')->isEmpty()) {
+        $field_value = $node->get('field_journal_publication_name')->first()->getString();
+        if (!empty($field_value)) {
+          $journalPublicationName = $field_value;
+        }
+      }
+
+      // Handle Journal Publication Issue.
+      if ($node->hasField('field_journal_publication_issue') && !$node->get('field_journal_publication_issue')->isEmpty()) {
+        $field_value = $node->get('field_journal_publication_issue')->first()->getString();
+        if (!empty($field_value)) {
+          $journalPublicationIssue = $field_value;
         }
       }
 
@@ -264,6 +352,10 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
       '#resource_meta__media_id' => $mediaId,
       '#resource_meta__document_image' => $documentImage,
       '#resource_meta__description' => $description,
+      '#resource_meta__citation' => $citation,
+      '#resource_meta__abstract' => $abstract,
+      '#resource_meta__journal_publication_name' => $journalPublicationName,
+      '#resource_meta__journal_publication_issue' => $journalPublicationIssue,
     ];
   }
 

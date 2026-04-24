@@ -133,3 +133,10 @@ web/profiles/custom/yalesites_profile/vendor/
 
 # Secrets for local use
 secrets.json
+
+# Copilot personal instruction files (local only)
+.ai/copilot/copilot.local.md
+copilot.local.md
+/docs/_template.md
+/.github/copilot-instructions.md
+/.ai

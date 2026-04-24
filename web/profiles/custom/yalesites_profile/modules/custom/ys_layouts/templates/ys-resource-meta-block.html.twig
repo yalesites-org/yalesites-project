@@ -9,6 +9,10 @@
  * - resource_meta__resource_type - The media type (Media Bundle).
  * - resource_meta__download_url - The link to the document to download.
  * - resource_meta__download_label - The label of the download link.
+ * - resource_meta__citation - Citation text block.
+ * - resource_meta__abstract - Abstract text block.
+ * - resource_meta__journal_publication_name - Journal publication name.
+ * - resource_meta__journal_publication_issue - Journal publication issue.
  */
 #}
 
@@ -17,3 +21,32 @@
   resource_meta__document_image: resource_meta__document_image,
   video_embed__content__1: drupal_entity('media', resource_meta__media_id, 'default'),
 } %}
+
+{% if resource_meta__citation or resource_meta__abstract or resource_meta__journal_publication_name or resource_meta__journal_publication_issue %}
+  <div class="resource-meta__text-fields">
+    {% if resource_meta__citation %}
+      <div class="resource-meta__text-field">
+        <div class="resource-meta__text-field__label">{{ 'Citation'|t }}</div>
+        <div class="resource-meta__text-field__value">{{ resource_meta__citation }}</div>
+      </div>
+    {% endif %}
+    {% if resource_meta__abstract %}
+      <div class="resource-meta__text-field">
+        <div class="resource-meta__text-field__label">{{ 'Abstract'|t }}</div>
+        <div class="resource-meta__text-field__value">{{ resource_meta__abstract }}</div>
+      </div>
+    {% endif %}
+    {% if resource_meta__journal_publication_name or resource_meta__journal_publication_issue %}
+      <div class="resource-meta__text-field resource-meta__text-field--journal">
+        {% if resource_meta__journal_publication_name %}
+          <span class="resource-meta__text-field__label">{{ 'Journal Publication Name'|t }}:</span>
+          <span class="resource-meta__text-field__value">{{ resource_meta__journal_publication_name }}</span>
+        {% endif %}
+        {% if resource_meta__journal_publication_issue %}
+          <span class="resource-meta__text-field__label">{{ 'Journal Publication Issue'|t }}:</span>
+          <span class="resource-meta__text-field__value">{{ resource_meta__journal_publication_issue }}</span>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+{% endif %}

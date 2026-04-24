@@ -98,6 +98,10 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'resource_meta__media_id' => NULL,
         'resource_meta__document_image' => NULL,
         'resource_meta__description' => NULL,
+        'resource_meta__citation' => NULL,
+        'resource_meta__abstract' => NULL,
+        'resource_meta__journal_publication_name' => NULL,
+        'resource_meta__journal_publication_issue' => NULL,
       ],
     ],
     'ys_taxonomy_display_block' => [

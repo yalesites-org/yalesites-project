@@ -220,22 +220,7 @@ third_party_settings:
                 third_party_settings: {  }
             weight: 10
             additional: {  }
-          462f10ec-4821-445a-9a86-0be8fda0412e:
-            uuid: 462f10ec-4821-445a-9a86-0be8fda0412e
-            region: content
-            configuration:
-              id: 'field_block:node:resource:field_related_resources'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: entity_reference_label
-                label: above
-                settings:
-                  link: true
-                third_party_settings: {  }
-            weight: 11
-            additional: {  }
+
           148d8acf-cfa4-477e-90c2-12ce41813d8a:
             uuid: 148d8acf-cfa4-477e-90c2-12ce41813d8a
             region: content
@@ -322,6 +307,32 @@ third_party_settings:
           ys_layouts_sections_config:
             padding_options: default
         components: {  }
+        third_party_settings: {  }
+      -
+        layout_id: layout_onecol
+        layout_settings:
+          label: 'Related Resources'
+          context_mapping: {  }
+          ys_layouts_sections_config:
+            padding_options: default
+        components:
+          b1e4f2a3-9c5d-4e7f-a8b2-1d3c6e9f0a4b:
+            uuid: b1e4f2a3-9c5d-4e7f-a8b2-1d3c6e9f0a4b
+            region: content
+            configuration:
+              id: 'field_block:node:resource:field_related_resources'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: entity_reference_entity_view
+                label: hidden
+                settings:
+                  view_mode: card
+                  link: false
+                third_party_settings: {  }
+            weight: 0
+            additional: {  }
         third_party_settings: {  }
   layout_builder_restrictions:
     allowed_block_categories: {  }
@@ -519,10 +530,11 @@ content:
     weight: 116
     region: content
   field_related_resources:
-    type: entity_reference_label
-    label: above
+    type: entity_reference_entity_view
+    label: hidden
     settings:
-      link: true
+      view_mode: card
+      link: false
     third_party_settings: {  }
     weight: 125
     region: content
