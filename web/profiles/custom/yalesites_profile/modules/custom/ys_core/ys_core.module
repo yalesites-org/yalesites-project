@@ -6,8 +6,8 @@
  */
 
 use Drupal\imagemagick\ImagemagickExecArguments;
+use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Entity\FieldableEntityInterface;
-use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Form\FormStateInterface;
@@ -77,19 +77,6 @@ function ys_core_theme($existing, $type, $theme, $path): array {
       ],
     ],
   ];
-}
-
-/**
- * Implements hook_entity_bundle_field_info_alter().
- */
-function ys_core_entity_bundle_field_info_alter(&$fields, EntityTypeInterface $entity_type, $bundle) {
-  if (
-    $entity_type->id() === 'block_content' &&
-    $bundle === 'quick_links' &&
-    isset($fields['field_links'])
-  ) {
-    $fields['field_links']->getItemDefinition()->addConstraint('YsCoreLinkUri');
-  }
 }
 
 /**
@@ -244,6 +231,13 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     $form['#attached']['library'][] = 'ys_core/block_form';
   }
 
+  if (in_array($form_id, [
+    'block_content_quick_links_form',
+    'block_content_quick_links_edit_form',
+  ], TRUE)) {
+    $form['#validate'][] = 'ys_core_quick_links_validate';
+  }
+
   $layout_builder_block_forms = [
     'layout_builder_update_block',
     'layout_builder_add_block',
@@ -259,6 +253,10 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     ];
     if (in_array($block_type_name, $limited_block_types)) {
       $form['#attached']['library'][] = 'ys_core/block_form';
+    }
+
+    if ($block_type_name === 'quick_links') {
+      $form['#validate'][] = 'ys_core_quick_links_validate';
     }
 
     $emptyAdminLabel = $form['settings']['label']['#default_value'] ?? '';
@@ -1023,6 +1021,58 @@ function ys_core_grand_hero_display_mode_callback($form, FormStateInterface $for
   $element = NestedArray::getValue($form, $parents);
 
   return $element['settings']['block_form'];
+}
+
+/**
+ * Validation handler for Quick Links block links.
+ */
+function ys_core_quick_links_validate($form, FormStateInterface $form_state) {
+  $field_paths = [
+    ['field_links'],
+    ['settings', 'block_form', 'field_links'],
+  ];
+
+  foreach ($field_paths as $field_path) {
+    $links = $form_state->getValue($field_path);
+
+    if (!is_array($links)) {
+      continue;
+    }
+
+    foreach ($links as $delta => $link) {
+      if (!is_numeric($delta) || !is_array($link) || empty($link['uri'])) {
+        continue;
+      }
+
+      $uri = trim($link['uri']);
+      if ($uri === '' || ys_core_is_valid_quick_link_uri($uri)) {
+        continue;
+      }
+
+      $form_state->setErrorByName(
+        implode('][', $field_path),
+        t('The link URL %url must start with "/" for internal links or include a protocol such as "https://" for external links.', [
+          '%url' => $uri,
+        ])
+      );
+      break;
+    }
+  }
+}
+
+/**
+ * Determines whether a Quick Links URI can be safely saved and rendered.
+ */
+function ys_core_is_valid_quick_link_uri(string $uri): bool {
+  if (str_starts_with($uri, '/')) {
+    return TRUE;
+  }
+
+  if (preg_match('/^https?:/i', $uri)) {
+    return UrlHelper::isValid($uri, TRUE);
+  }
+
+  return (bool) preg_match('/^[a-z][a-z0-9+.-]*:/i', $uri);
 }
 
 /**
