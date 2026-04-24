@@ -2,51 +2,43 @@
 /**
  * Available variables:
  * - resource_meta__heading - The title of the resource.
- * - resource_meta__category - The resource category taxonomy.
- * - resource_meta__publish_date_label - The label used in the Content Type.
- * - resource_meta__publish_date - The date this resource was published.
- * - resource_meta__metadata - The visible taxonomies that should be shown.
- * - resource_meta__resource_type - The media type (Media Bundle).
- * - resource_meta__download_url - The link to the document to download.
+ * - resource_meta__category - The resource category taxonomy term name.
+ * - resource_meta__publish_date - Pre-formatted publish date string.
+ * - resource_meta__metadata - Keyed taxonomy data (label + items render arrays).
+ * - resource_meta__resource_type - Media bundle (document, video, image).
+ * - resource_meta__download_url - Download URL for the resource media.
  * - resource_meta__download_label - The label of the download link.
- * - resource_meta__citation - Citation text block.
- * - resource_meta__abstract - Abstract text block.
- * - resource_meta__journal_publication_name - Journal publication name.
- * - resource_meta__journal_publication_issue - Journal publication issue.
+ * - resource_meta__download_aria_label - The aria-label for the download link.
+ * - resource_meta__media_id - Media entity id (used for video embed).
+ * - resource_meta__document_image - Responsive image render array (thumbnail).
+ * - resource_meta__description - Resource description (currently unused here).
+ * - resource_meta__citation - Citation rendered HTML.
+ * - resource_meta__abstract - Abstract rendered HTML.
+ * - resource_meta__journal_publication_name - String.
+ * - resource_meta__journal_publication_issue - String.
+ * - resource_meta__authors - Array of { label, url }.
+ * - resource_meta__external_source - { url, title }.
  */
 #}
 
-{# All TWIG variables are named appropriately and pass through to this template #}
-{% include '@molecules/meta/resource-meta/yds-resource-meta.twig' with {
-  resource_meta__document_image: resource_meta__document_image,
+{{ attach_library('atomic/publication-detail') }}
+
+{% include '@molecules/meta/publication-meta/yds-publication-detail.twig' with {
+  publication_detail__heading: resource_meta__heading,
+  publication_detail__category: resource_meta__category,
+  publication_detail__publish_date: resource_meta__publish_date,
+  publication_detail__authors: resource_meta__authors,
+  publication_detail__journal_publication_name: resource_meta__journal_publication_name,
+  publication_detail__journal_publication_issue: resource_meta__journal_publication_issue,
+  publication_detail__citation: resource_meta__citation,
+  publication_detail__abstract: resource_meta__abstract,
+  publication_detail__external_source: resource_meta__external_source,
+  publication_detail__download_url: resource_meta__download_url,
+  publication_detail__download_label: resource_meta__download_label,
+  publication_detail__download_aria_label: resource_meta__download_aria_label,
+  publication_detail__resource_type: resource_meta__resource_type,
+  publication_detail__media_id: resource_meta__media_id,
+  publication_detail__document_image: resource_meta__document_image,
+  publication_detail__metadata: resource_meta__metadata,
   video_embed__content__1: drupal_entity('media', resource_meta__media_id, 'default'),
 } %}
-
-{% if resource_meta__citation or resource_meta__abstract or resource_meta__journal_publication_name or resource_meta__journal_publication_issue %}
-  <div class="resource-meta__text-fields">
-    {% if resource_meta__citation %}
-      <div class="resource-meta__text-field">
-        <div class="resource-meta__text-field__label">{{ 'Citation'|t }}</div>
-        <div class="resource-meta__text-field__value">{{ resource_meta__citation }}</div>
-      </div>
-    {% endif %}
-    {% if resource_meta__abstract %}
-      <div class="resource-meta__text-field">
-        <div class="resource-meta__text-field__label">{{ 'Abstract'|t }}</div>
-        <div class="resource-meta__text-field__value">{{ resource_meta__abstract }}</div>
-      </div>
-    {% endif %}
-    {% if resource_meta__journal_publication_name or resource_meta__journal_publication_issue %}
-      <div class="resource-meta__text-field resource-meta__text-field--journal">
-        {% if resource_meta__journal_publication_name %}
-          <span class="resource-meta__text-field__label">{{ 'Journal Publication Name'|t }}:</span>
-          <span class="resource-meta__text-field__value">{{ resource_meta__journal_publication_name }}</span>
-        {% endif %}
-        {% if resource_meta__journal_publication_issue %}
-          <span class="resource-meta__text-field__label">{{ 'Journal Publication Issue'|t }}:</span>
-          <span class="resource-meta__text-field__value">{{ resource_meta__journal_publication_issue }}</span>
-        {% endif %}
-      </div>
-    {% endif %}
-  </div>
-{% endif %}

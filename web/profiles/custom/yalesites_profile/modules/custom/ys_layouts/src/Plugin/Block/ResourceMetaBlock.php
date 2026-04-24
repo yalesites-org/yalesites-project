@@ -139,6 +139,8 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
     $abstract = NULL;
     $journalPublicationName = NULL;
     $journalPublicationIssue = NULL;
+    $authors = [];
+    $externalSource = [];
 
     $route = $this->routeMatch->getRouteObject();
 
@@ -181,15 +183,18 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
         }
       }
 
-      // Select specific taxonomy fields to show in the METADATA.
+      // Select specific taxonomy fields to show in the METADATA grid.
+      // field_authors is handled separately below as first-class data so the
+      // template can render it as a full-width cell with comma-joined links.
       $selected_term_fields = [
-        'field_custom_vocab',
+        'field_discipline',
         'field_audience',
+        'field_areas_of_study',
         'field_academic_years',
         'field_affiliation',
-        'field_areas_of_study',
-        'field_discipline',
         'field_geographic_areas',
+        'field_tags',
+        'field_custom_vocab',
       ];
 
       foreach ($selected_term_fields as $field_name) {
@@ -228,7 +233,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
 
           if ($dcn_type && $dcn_identifier) {
             $dcn_items[] = [
-              'resource_meta__link__content' => $dcn_type->getName() . ' ' . $dcn_identifier,
+              '#markup' => $dcn_type->getName() . ' ' . $dcn_identifier,
             ];
           }
         }
@@ -242,23 +247,28 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
       }
 
       // Handle Authors field (entity reference to profiles).
+      // Passed as a flat array of { label, url } so the template can render
+      // each author as a comma-separated link without a render array.
       if ($node->hasField('field_authors') && !$node->get('field_authors')->isEmpty()) {
-        $field = $node->get('field_authors');
-        $field_label = $field->getFieldDefinition()->getLabel();
-        $author_items = [];
-
-        foreach ($field->referencedEntities() as $profile) {
-          $author_items[] = [
-            '#type' => 'link',
-            '#title' => $profile->label(),
-            '#url' => $profile->toUrl(),
+        foreach ($node->get('field_authors')->referencedEntities() as $profile) {
+          if (!$profile->access('view')) {
+            continue;
+          }
+          $authors[] = [
+            'label' => $profile->label(),
+            'url' => $profile->toUrl()->toString(),
           ];
         }
+      }
 
-        if ($author_items) {
-          $metadata['field_authors'] = [
-            'label' => $field_label,
-            'items' => $author_items,
+      // Handle External Source link field.
+      if ($node->hasField('field_external_source') && !$node->get('field_external_source')->isEmpty()) {
+        $linkItem = $node->get('field_external_source')->first();
+        $url = $linkItem->getUrl()->toString();
+        if ($url) {
+          $externalSource = [
+            'url' => $url,
+            'title' => $linkItem->get('title')->getValue() ?: $url,
           ];
         }
       }
@@ -356,6 +366,8 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
       '#resource_meta__abstract' => $abstract,
       '#resource_meta__journal_publication_name' => $journalPublicationName,
       '#resource_meta__journal_publication_issue' => $journalPublicationIssue,
+      '#resource_meta__authors' => $authors,
+      '#resource_meta__external_source' => $externalSource,
     ];
   }
 
