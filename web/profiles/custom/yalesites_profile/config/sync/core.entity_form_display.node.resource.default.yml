@@ -73,7 +73,7 @@ third_party_settings:
       label: 'Publishing Settings'
       region: content
       parent_name: ''
-      weight: 28
+      weight: 5
       format_type: details_sidebar
       format_settings:
         classes: ''
@@ -90,7 +90,7 @@ third_party_settings:
       label: 'External Link'
       region: content
       parent_name: ''
-      weight: 30
+      weight: 7
       format_type: details_sidebar
       format_settings:
         classes: ''
@@ -110,7 +110,7 @@ third_party_settings:
       label: 'Resource Tabs'
       region: content
       parent_name: ''
-      weight: 3
+      weight: 0
       format_type: tabs
       format_settings:
         classes: ''
@@ -125,8 +125,6 @@ third_party_settings:
         - field_category
         - field_content_description
         - field_media
-        - field_date_range
-        - field_revision_date
         - field_related_resources
       label: 'Basic Info'
       region: content
@@ -143,14 +141,15 @@ third_party_settings:
         required_fields: true
     group_publication_info:
       children:
-        - field_cf_dcn
+        - field_publish_date
+        - field_date_format
+        - field_revision_date
         - field_authors
+        - field_cf_dcn
         - field_abstract
         - field_citation
         - field_journal_publication_name
         - field_journal_publication_issue
-        - field_publish_date
-        - field_date_format
       label: 'Publication Info'
       region: content
       parent_name: group_resource_tabs
@@ -171,9 +170,9 @@ third_party_settings:
         - field_custom_vocab
         - field_geographic_areas
         - field_affiliation
-        - field_tags
         - field_discipline
         - field_areas_of_study
+        - field_tags
       label: Taxonomies
       region: content
       parent_name: group_resource_tabs
@@ -194,7 +193,7 @@ mode: default
 content:
   field_abstract:
     type: text_textarea
-    weight: 6
+    weight: 17
     region: content
     settings:
       rows: 5
@@ -221,7 +220,7 @@ content:
     third_party_settings: {  }
   field_areas_of_study:
     type: chosen_select
-    weight: 20
+    weight: 19
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -233,7 +232,7 @@ content:
     third_party_settings: {  }
   field_authors:
     type: chosen_select
-    weight: 5
+    weight: 15
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -245,13 +244,13 @@ content:
     third_party_settings: {  }
   field_cf_dcn:
     type: dcn_field_default
-    weight: 4
+    weight: 16
     region: content
     settings: {  }
     third_party_settings: {  }
   field_citation:
     type: text_textarea
-    weight: 7
+    weight: 18
     region: content
     settings:
       rows: 5
@@ -280,21 +279,13 @@ content:
     third_party_settings: {  }
   field_date_format:
     type: options_select
-    weight: 5
+    weight: 13
     region: content
     settings: {  }
     third_party_settings: {  }
-  field_date_range:
-    type: string_textfield
-    weight: 4
-    region: content
-    settings:
-      size: 60
-      placeholder: ''
-    third_party_settings: {  }
   field_discipline:
     type: chosen_select
-    weight: 19
+    weight: 18
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -314,7 +305,7 @@ content:
     third_party_settings: {  }
   field_journal_publication_issue:
     type: string_textfield
-    weight: 9
+    weight: 20
     region: content
     settings:
       size: 60
@@ -322,7 +313,7 @@ content:
     third_party_settings: {  }
   field_journal_publication_name:
     type: string_textfield
-    weight: 8
+    weight: 19
     region: content
     settings:
       size: 60
@@ -346,7 +337,7 @@ content:
         show_edit: '1'
   field_metatags:
     type: metatag_firehose
-    weight: 27
+    weight: 4
     region: content
     settings:
       sidebar: true
@@ -354,7 +345,7 @@ content:
     third_party_settings: {  }
   field_publish_date:
     type: datetime_default
-    weight: 6
+    weight: 12
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -370,13 +361,13 @@ content:
     third_party_settings: {  }
   field_revision_date:
     type: datetime_default
-    weight: 7
+    weight: 14
     region: content
     settings: {  }
     third_party_settings: {  }
   field_tags:
     type: chosen_select
-    weight: 18
+    weight: 20
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -412,25 +403,25 @@ content:
     third_party_settings: {  }
   moderation_state:
     type: workflow_buttons
-    weight: 25
+    weight: 2
     region: content
     settings:
       show_current_state: false
     third_party_settings: {  }
   path:
     type: path
-    weight: 24
+    weight: 1
     region: content
     settings: {  }
     third_party_settings: {  }
   simple_sitemap:
-    weight: 31
+    weight: 8
     region: content
     settings: {  }
     third_party_settings: {  }
   status:
     type: boolean_checkbox
-    weight: 29
+    weight: 6
     region: content
     settings:
       display_label: true
@@ -451,12 +442,13 @@ content:
       placeholder: ''
     third_party_settings: {  }
   url_redirects:
-    weight: 26
+    weight: 3
     region: content
     settings: {  }
     third_party_settings: {  }
 hidden:
   created: true
+  field_date_range: true
   layout_builder__layout: true
   promote: true
   revision_log: true
