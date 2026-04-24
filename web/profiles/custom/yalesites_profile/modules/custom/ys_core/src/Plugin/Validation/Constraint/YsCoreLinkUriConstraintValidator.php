@@ -26,7 +26,6 @@ class YsCoreLinkUriConstraintValidator extends ConstraintValidator {
     }
 
     $this->context->buildViolation($constraint->invalidUri)
-      ->atPath('uri')
       ->setParameter('%url', $uri)
       ->addViolation();
   }
