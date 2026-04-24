@@ -3,11 +3,13 @@
 namespace Drupal\ys_layouts\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Controller\TitleResolver;
 use Drupal\Core\Datetime\DateFormatter;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Url;
 use Drupal\node\NodeInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -233,7 +235,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
 
           if ($dcn_type && $dcn_identifier) {
             $dcn_items[] = [
-              '#markup' => $dcn_type->getName() . ' ' . $dcn_identifier,
+              '#plain_text' => $dcn_type->getName() . ' ' . $dcn_identifier,
             ];
           }
         }
@@ -264,7 +266,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
       // Handle External Source link field.
       if ($node->hasField('field_external_source') && !$node->get('field_external_source')->isEmpty()) {
         $linkItem = $node->get('field_external_source')->first();
-        $url = $linkItem->getUrl()->toString();
+        $url = UrlHelper::filterBadProtocol($linkItem->getUrl()->toString());
         if ($url) {
           $externalSource = [
             'url' => $url,
@@ -369,6 +371,25 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
       '#resource_meta__authors' => $authors,
       '#resource_meta__external_source' => $externalSource,
     ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheTags() {
+    $tags = parent::getCacheTags();
+    $node = $this->routeMatch->getParameter('node');
+    if ($node instanceof NodeInterface) {
+      $tags = Cache::mergeTags($tags, $node->getCacheTags());
+    }
+    return $tags;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheContexts() {
+    return Cache::mergeContexts(parent::getCacheContexts(), ['route', 'user.permissions']);
   }
 
 }

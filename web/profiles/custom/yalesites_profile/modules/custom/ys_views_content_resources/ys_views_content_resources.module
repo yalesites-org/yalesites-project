@@ -129,6 +129,13 @@ function ys_views_content_resources_node_view(array &$build, NodeInterface $node
   ];
 
   if (in_array($view_mode, $view_modes)) {
+    // @todo Replace `max-age: 0` with proper cache keys that vary by the
+    //   per-block config properties set in
+    //   ys_views_content_resources_views_pre_render() (show_category,
+    //   show_thumbnail, show_publication, show_discipline, show_teaser_text,
+    //   pin_label). Currently disabled because the same node + view mode is
+    //   rendered with different config across blocks; uncached is correct but
+    //   expensive. Tracked as a follow-up to the YISP-101 audit.
     $build['#cache']['max-age'] = 0;
   }
 }

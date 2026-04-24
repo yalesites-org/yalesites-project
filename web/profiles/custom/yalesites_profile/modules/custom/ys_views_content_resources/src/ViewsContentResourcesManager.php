@@ -572,6 +572,8 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
 
       case 'show_current_entity':
         $defaultParam = (empty($paramsDecoded['show_current_entity'])) ? 0 : $paramsDecoded['show_current_entity'];
+        break;
+
       case 'pinned_to_top':
         $defaultParam = (empty($paramsDecoded['pinned_to_top'])) ? FALSE : (bool) $paramsDecoded['pinned_to_top'];
         break;
@@ -633,13 +635,40 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
   }
 
   /**
+   * Vocabularies whose terms are exposed to the resource view widget.
+   *
+   * Mirrors the vocabularies referenced by the `content_resources` view and
+   * by resource-related fields. Bounding the set prevents loading every
+   * taxonomy term on the site into memory when rendering the widget.
+   */
+  private const ALLOWED_TAG_VOCABULARIES = [
+    'academic_years',
+    'areas_of_study',
+    'audience',
+    'custom_vocab',
+    'discipline',
+    'geographic_areas',
+    'resource_category',
+    'tags',
+  ];
+
+  /**
    * Returns an array of all tags.
    *
    * @return array
    *   An array of all taxonomy term IDs and labels.
    */
   public function getAllTags() : array {
-    $terms = $this->termStorage->loadMultiple();
+    $query = $this->termStorage->getQuery()
+      ->condition('vid', self::ALLOWED_TAG_VOCABULARIES, 'IN')
+      ->accessCheck(TRUE)
+      ->sort('name')
+      ->range(0, 1000);
+    $tids = $query->execute();
+    if (!$tids) {
+      return [];
+    }
+    $terms = $this->termStorage->loadMultiple($tids);
     $tagList = [];
 
     foreach ($terms as $term) {
