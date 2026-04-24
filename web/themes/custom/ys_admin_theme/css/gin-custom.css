@@ -91,6 +91,12 @@ a.focal-point-preview-link {
   min-height: calc(var(--input-padding-vertical) * 3 + var(--input-line-height)) !important;
 }
 
+.ui-autocomplete .ui-menu-item-wrapper {
+  min-width: 100%;
+  width: max-content;
+  white-space: nowrap;
+}
+
 /* 
  * Dark mode asterisk contrast fix for WCAG 2.1 AA compliance
  * YSP-1083: Required field asterisks fail color contrast in dark mode
