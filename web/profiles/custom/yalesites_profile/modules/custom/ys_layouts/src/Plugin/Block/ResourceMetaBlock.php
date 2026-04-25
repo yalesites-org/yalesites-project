@@ -324,27 +324,32 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
             if ($file) {
               $fileUrl = Url::fromRoute('ys_layouts.resource_download', ['file_id' => $file->id()])->toString();
             }
+          }
 
-            $thumbnail = $media?->thumbnail;
+          // Build a thumbnail render array for any media bundle that exposes
+          // a usable thumbnail (document, image, video, etc.). The Media
+          // module's generated `thumbnail` field is populated for all bundles
+          // and points at the source file for image media, so the same
+          // responsive image style works across types.
+          $thumbnail = $media?->thumbnail;
 
-            if ($thumbnail) {
-              /** @var \Drupal\file\Entity\File $thumbnail_file */
-              $referenced_entities = $thumbnail->referencedEntities();
-              $thumbnail_file = reset($referenced_entities);
+          if ($thumbnail) {
+            /** @var \Drupal\file\Entity\File $thumbnail_file */
+            $referenced_entities = $thumbnail->referencedEntities();
+            $thumbnail_file = reset($referenced_entities);
 
-              if ($thumbnail_file) {
-                $documentImage = [
-                  '#theme' => 'responsive_image',
-                  '#uri' => $thumbnail_file->getFileUri(),
-                  '#responsive_image_style_id' => 'resource_thumbnail',
-                  '#height' => $thumbnail?->height,
-                  '#width' => $thumbnail?->width,
-                  '#attributes' => [
-                    'loading' => 'lazy',
-                    'alt' => $media->label(),
-                  ],
-                ];
-              }
+            if ($thumbnail_file) {
+              $documentImage = [
+                '#theme' => 'responsive_image',
+                '#uri' => $thumbnail_file->getFileUri(),
+                '#responsive_image_style_id' => 'resource_thumbnail',
+                '#height' => $thumbnail?->height,
+                '#width' => $thumbnail?->width,
+                '#attributes' => [
+                  'loading' => 'lazy',
+                  'alt' => $media->label(),
+                ],
+              ];
             }
           }
         }

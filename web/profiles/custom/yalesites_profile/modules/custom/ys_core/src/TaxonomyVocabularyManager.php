@@ -62,6 +62,7 @@ class TaxonomyVocabularyManager {
       'geographic_areas',
       'areas_of_study',
       'discipline',
+      'dcn_types',
     ];
   }
 
