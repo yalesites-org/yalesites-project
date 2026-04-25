@@ -6,7 +6,6 @@
  */
 
 use Drupal\imagemagick\ImagemagickExecArguments;
-use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Cache\Cache;
@@ -235,7 +234,7 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     'block_content_quick_links_form',
     'block_content_quick_links_edit_form',
   ], TRUE)) {
-    $form['#validate'][] = 'ys_core_quick_links_validate';
+    $form['#validate'][] = 'ys_core_quick_links_normalize_urls';
   }
 
   $layout_builder_block_forms = [
@@ -256,7 +255,7 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     }
 
     if ($block_type_name === 'quick_links') {
-      $form['#validate'][] = 'ys_core_quick_links_validate';
+      $form['#validate'][] = 'ys_core_quick_links_normalize_urls';
     }
 
     $emptyAdminLabel = $form['settings']['label']['#default_value'] ?? '';
@@ -1024,9 +1023,9 @@ function ys_core_grand_hero_display_mode_callback($form, FormStateInterface $for
 }
 
 /**
- * Validation handler for Quick Links block links.
+ * Validation handler to normalize Quick Links block URLs.
  */
-function ys_core_quick_links_validate($form, FormStateInterface $form_state) {
+function ys_core_quick_links_normalize_urls($form, FormStateInterface $form_state) {
   $field_paths = [
     ['field_links'],
     ['settings', 'block_form', 'field_links'],
@@ -1039,40 +1038,41 @@ function ys_core_quick_links_validate($form, FormStateInterface $form_state) {
       continue;
     }
 
+    $changed = FALSE;
     foreach ($links as $delta => $link) {
       if (!is_numeric($delta) || !is_array($link) || empty($link['uri'])) {
         continue;
       }
 
       $uri = trim($link['uri']);
-      if ($uri === '' || ys_core_is_valid_quick_link_uri($uri)) {
+      $normalized_uri = ys_core_normalize_quick_link_uri($uri);
+      if ($normalized_uri === $uri) {
         continue;
       }
 
-      $form_state->setErrorByName(
-        implode('][', $field_path),
-        t('The link URL %url must start with "/" for internal links or include a protocol such as "https://" for external links.', [
-          '%url' => $uri,
-        ])
-      );
-      break;
+      $links[$delta]['uri'] = $normalized_uri;
+      $changed = TRUE;
+    }
+
+    if ($changed) {
+      $form_state->setValue($field_path, $links);
     }
   }
 }
 
 /**
- * Determines whether a Quick Links URI can be safely saved and rendered.
+ * Adds a protocol to bare domain-style Quick Links URLs.
  */
-function ys_core_is_valid_quick_link_uri(string $uri): bool {
-  if (str_starts_with($uri, '/')) {
-    return TRUE;
+function ys_core_normalize_quick_link_uri(string $uri): string {
+  if (str_starts_with($uri, '/') || preg_match('/^[a-z][a-z0-9+.-]*:/i', $uri)) {
+    return $uri;
   }
 
-  if (preg_match('/^https?:/i', $uri)) {
-    return UrlHelper::isValid($uri, TRUE);
+  if (preg_match('/^[A-Za-z0-9.-]+\.[A-Za-z]{2,}([\/?#].*)?$/', $uri)) {
+    return 'https://' . $uri;
   }
 
-  return (bool) preg_match('/^[a-z][a-z0-9+.-]*:/i', $uri);
+  return $uri;
 }
 
 /**
