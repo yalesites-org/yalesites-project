@@ -15,7 +15,6 @@ dependencies:
     - field.field.node.resource.field_content_description
     - field.field.node.resource.field_custom_vocab
     - field.field.node.resource.field_date_format
-    - field.field.node.resource.field_date_range
     - field.field.node.resource.field_discipline
     - field.field.node.resource.field_external_source
     - field.field.node.resource.field_geographic_areas
@@ -24,6 +23,7 @@ dependencies:
     - field.field.node.resource.field_login_required
     - field.field.node.resource.field_media
     - field.field.node.resource.field_metatags
+    - field.field.node.resource.field_nonaffiliated_authors
     - field.field.node.resource.field_publish_date
     - field.field.node.resource.field_related_resources
     - field.field.node.resource.field_revision_date
@@ -35,6 +35,7 @@ dependencies:
     - node.type.resource
   module:
     - datetime
+    - double_field
     - layout_builder
     - layout_builder_restrictions
     - layout_discovery
@@ -268,14 +269,6 @@ content:
     third_party_settings: {  }
     weight: 115
     region: content
-  field_date_range:
-    type: string
-    label: above
-    settings:
-      link_to_entity: false
-    third_party_settings: {  }
-    weight: 127
-    region: content
   field_discipline:
     type: entity_reference_label
     label: above
@@ -335,6 +328,30 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 116
+    region: content
+  field_nonaffiliated_authors:
+    type: double_field_unformatted_list
+    label: above
+    settings:
+      first:
+        format_type: medium
+        link: false
+        hidden: false
+        key: false
+        decimal_separator: .
+        thousand_separator: ''
+        scale: 2
+      second:
+        format_type: medium
+        link: false
+        hidden: false
+        key: false
+        decimal_separator: .
+        thousand_separator: ''
+        scale: 2
+      inline: true
+    third_party_settings: {  }
+    weight: 129
     region: content
   field_related_resources:
     type: entity_reference_entity_view

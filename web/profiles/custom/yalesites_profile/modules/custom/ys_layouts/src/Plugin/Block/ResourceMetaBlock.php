@@ -142,6 +142,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
     $journalPublicationName = NULL;
     $journalPublicationIssue = NULL;
     $authors = [];
+    $authorCacheTags = [];
     $externalSource = [];
 
     $route = $this->routeMatch->getRouteObject();
@@ -248,20 +249,14 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
         }
       }
 
-      // Handle Authors field (entity reference to profiles).
-      // Passed as a flat array of { label, url } so the template can render
-      // each author as a comma-separated link without a render array.
-      if ($node->hasField('field_authors') && !$node->get('field_authors')->isEmpty()) {
-        foreach ($node->get('field_authors')->referencedEntities() as $profile) {
-          if (!$profile->access('view')) {
-            continue;
-          }
-          $authors[] = [
-            'label' => $profile->label(),
-            'url' => $profile->toUrl()->toString(),
-          ];
-        }
-      }
+      // Build the combined author list.
+      // Affiliated authors come from field_authors (profile entity refs) and
+      // non-affiliated authors come from field_nonaffiliated_authors (Double
+      // Field). Both lists are merged and sorted by last name then first name
+      // using en_US Unicode collation. The result is a flat array of
+      // { label, url|null } so the template renders affiliated entries as
+      // links and non-affiliated entries as plain text.
+      $authors = $this->buildAuthors($node, $authorCacheTags);
 
       // Handle External Source link field.
       if ($node->hasField('field_external_source') && !$node->get('field_external_source')->isEmpty()) {
@@ -356,7 +351,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
       }
     }
 
-    return [
+    $build = [
       '#theme' => 'ys_resource_meta_block',
       '#resource_meta__heading' => $title,
       '#resource_meta__category' => $categoryName,
@@ -376,6 +371,115 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
       '#resource_meta__authors' => $authors,
       '#resource_meta__external_source' => $externalSource,
     ];
+
+    // Bubble up referenced-profile cache tags so author name/URL changes
+    // invalidate the rendered block.
+    if ($authorCacheTags) {
+      $build['#cache']['tags'] = $authorCacheTags;
+    }
+
+    return $build;
+  }
+
+  /**
+   * Builds the merged author list for the resource.
+   *
+   * Combines affiliated authors (entity references to profile nodes) and
+   * non-affiliated authors (Double Field rows of first/last name) into a
+   * single list, sorted by last name then first name using en_US Unicode
+   * collation. Particles (van, de la) are preserved literally so "van der
+   * Berg" sorts under V and "de la Cruz" under D.
+   *
+   * @param \Drupal\node\NodeInterface $node
+   *   The Resource node being rendered.
+   * @param array $cache_tags
+   *   By-reference accumulator for cache tags from referenced profile
+   *   entities. Merged into the block's render array so author updates
+   *   invalidate the cached output.
+   *
+   * @return array
+   *   List of author entries, each an associative array with keys:
+   *   - label: Display string in "First Last" form.
+   *   - url: Profile URL for affiliated authors, NULL for non-affiliated.
+   */
+  protected function buildAuthors(NodeInterface $node, array &$cache_tags): array {
+    $entries = [];
+
+    // Affiliated: entity references to profile nodes.
+    if ($node->hasField('field_authors') && !$node->get('field_authors')->isEmpty()) {
+      foreach ($node->get('field_authors')->referencedEntities() as $profile) {
+        if (!$profile->access('view')) {
+          continue;
+        }
+        $first = $profile->hasField('field_first_name')
+          ? trim((string) $profile->get('field_first_name')->getString())
+          : '';
+        $last = $profile->hasField('field_last_name')
+          ? trim((string) $profile->get('field_last_name')->getString())
+          : '';
+        // Fall back to the profile label when either name part is missing,
+        // so author display always has a value even for legacy or partial
+        // profile records.
+        if ($first === '' || $last === '') {
+          $label = $profile->label();
+          $sort_last = $last !== '' ? $last : $profile->label();
+          $sort_first = $first;
+        }
+        else {
+          $label = $first . ' ' . $last;
+          $sort_last = $last;
+          $sort_first = $first;
+        }
+        $entries[] = [
+          'label' => $label,
+          'url' => $profile->toUrl()->toString(),
+          'sort_last' => $sort_last,
+          'sort_first' => $sort_first,
+        ];
+        $cache_tags = Cache::mergeTags($cache_tags, $profile->getCacheTags());
+      }
+    }
+
+    // Non-affiliated: Double Field rows with `first` and `second` columns.
+    if (
+      $node->hasField('field_nonaffiliated_authors')
+      && !$node->get('field_nonaffiliated_authors')->isEmpty()
+    ) {
+      foreach ($node->get('field_nonaffiliated_authors') as $item) {
+        $first = trim((string) ($item->first ?? ''));
+        $last = trim((string) ($item->second ?? ''));
+        if ($first === '' && $last === '') {
+          continue;
+        }
+        $entries[] = [
+          'label' => trim($first . ' ' . $last),
+          'url' => NULL,
+          'sort_last' => $last,
+          'sort_first' => $first,
+        ];
+      }
+    }
+
+    if (!$entries) {
+      return [];
+    }
+
+    // en_US Unicode collation: Ö collates near O, ä near a, etc.
+    // Particles are preserved literally per project requirement.
+    $collator = new \Collator('en_US');
+    usort($entries, function (array $a, array $b) use ($collator): int {
+      $cmp = $collator->compare($a['sort_last'], $b['sort_last']);
+      if ($cmp !== 0) {
+        return $cmp;
+      }
+      return $collator->compare($a['sort_first'], $b['sort_first']);
+    });
+
+    // Strip sort keys before returning to the template.
+    return array_map(static fn(array $entry): array => [
+      'label' => $entry['label'],
+      'url' => $entry['url'],
+    ], $entries);
   }
 
   /**

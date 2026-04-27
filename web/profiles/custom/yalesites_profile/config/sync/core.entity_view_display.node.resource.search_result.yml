@@ -16,7 +16,6 @@ dependencies:
     - field.field.node.resource.field_content_description
     - field.field.node.resource.field_custom_vocab
     - field.field.node.resource.field_date_format
-    - field.field.node.resource.field_date_range
     - field.field.node.resource.field_discipline
     - field.field.node.resource.field_external_source
     - field.field.node.resource.field_geographic_areas
@@ -25,6 +24,7 @@ dependencies:
     - field.field.node.resource.field_login_required
     - field.field.node.resource.field_media
     - field.field.node.resource.field_metatags
+    - field.field.node.resource.field_nonaffiliated_authors
     - field.field.node.resource.field_publish_date
     - field.field.node.resource.field_related_resources
     - field.field.node.resource.field_revision_date
@@ -96,13 +96,13 @@ hidden:
   field_content_description: true
   field_custom_vocab: true
   field_date_format: true
-  field_date_range: true
   field_discipline: true
   field_geographic_areas: true
   field_journal_publication_issue: true
   field_journal_publication_name: true
   field_media: true
   field_metatags: true
+  field_nonaffiliated_authors: true
   field_publish_date: true
   field_related_resources: true
   field_revision_date: true

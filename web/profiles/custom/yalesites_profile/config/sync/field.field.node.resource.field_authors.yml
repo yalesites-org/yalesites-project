@@ -10,8 +10,8 @@ id: node.resource.field_authors
 field_name: field_authors
 entity_type: node
 bundle: resource
-label: Authors
-description: 'Select the profile associated with the person in this post.'
+label: 'Affiliated Authors'
+description: 'Affiliated authors with profiles on the site. '
 required: false
 translatable: false
 default_value: {  }
