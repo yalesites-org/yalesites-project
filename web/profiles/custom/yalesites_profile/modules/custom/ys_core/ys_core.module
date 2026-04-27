@@ -1052,7 +1052,7 @@ function ys_core_configure_quick_links_url_validation(array &$form) {
 }
 
 /**
- * After-build callback to alter Linkit elements after widget processing.
+ * After-build callback to add the visible Quick Links URL error summary.
  */
 function ys_core_quick_links_after_build(array $form, FormStateInterface $form_state): array {
   ys_core_add_quick_links_url_error_summary($form, $form_state);
@@ -1064,57 +1064,6 @@ function ys_core_quick_links_after_build(array $form, FormStateInterface $form_s
  * Adds a visible form-level error summary inside the modal/form content.
  */
 function ys_core_add_quick_links_url_error_summary(array &$form, FormStateInterface $form_state) {
-  $invalid_uri = ys_core_get_bare_domain_quick_link_uri_from_form_state($form_state);
-  if ($invalid_uri === NULL) {
-    return;
-  }
-
-  $message = ys_core_quick_links_url_error_message($invalid_uri);
-  $summary = [
-    '#type' => 'container',
-    '#attributes' => [
-      'class' => ['messages', 'messages--error'],
-      'role' => 'alert',
-    ],
-    '#weight' => -1000,
-    'message' => [
-      '#plain_text' => $message,
-    ],
-  ];
-
-  if (isset($form['settings']['block_form']) && is_array($form['settings']['block_form'])) {
-    $form['settings']['block_form']['ys_core_link_error_summary'] = $summary;
-    return;
-  }
-
-  $form['ys_core_link_error_summary'] = $summary;
-}
-
-/**
- * Validation handler for Quick Links block URLs.
- */
-function ys_core_quick_links_validate_urls($form, FormStateInterface $form_state) {
-  $invalid_uri = ys_core_get_bare_domain_quick_link_uri_from_form_state($form_state);
-  if ($invalid_uri === NULL) {
-    return;
-  }
-
-  \Drupal::messenger()->addError(ys_core_quick_links_url_error_message($invalid_uri));
-}
-
-/**
- * Builds the Quick Links URL error message.
- */
-function ys_core_quick_links_url_error_message(string $uri) {
-  return t('The link URL @url must include a protocol, such as https://, for external links. Internal links should start with /.', [
-    '@url' => $uri,
-  ]);
-}
-
-/**
- * Finds a bare domain-style URL in submitted Quick Links field values.
- */
-function ys_core_get_bare_domain_quick_link_uri_from_form_state(FormStateInterface $form_state): ?string {
   $input = $form_state->getUserInput();
   $field_paths = [
     ['field_links'],
@@ -1124,19 +1073,64 @@ function ys_core_get_bare_domain_quick_link_uri_from_form_state(FormStateInterfa
   foreach ($field_paths as $field_path) {
     $links = NestedArray::getValue($input, $field_path, $exists);
     if (!$exists || !is_array($links)) {
-      $links = $form_state->getValue($field_path);
-    }
-    if (!is_array($links)) {
       continue;
     }
 
     $invalid_uri = ys_core_get_bare_domain_quick_link_uri($links);
-    if ($invalid_uri !== NULL) {
-      return $invalid_uri;
+    if ($invalid_uri === NULL) {
+      continue;
     }
-  }
 
-  return NULL;
+    $summary = [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => ['messages', 'messages--error'],
+        'role' => 'alert',
+      ],
+      '#weight' => -1000,
+      'message' => [
+        '#plain_text' => t('The link URL @url must include a protocol, such as https://, for external links. Internal links should start with /.', [
+          '@url' => $invalid_uri,
+        ]),
+      ],
+    ];
+
+    if (isset($form['settings']['block_form']) && is_array($form['settings']['block_form'])) {
+      $form['settings']['block_form']['ys_core_link_error_summary'] = $summary;
+      return;
+    }
+
+    $form['ys_core_link_error_summary'] = $summary;
+    return;
+  }
+}
+
+/**
+ * Validation handler for Quick Links block URLs.
+ */
+function ys_core_quick_links_validate_urls($form, FormStateInterface $form_state) {
+  $input = $form_state->getUserInput();
+  $field_paths = [
+    ['field_links'],
+    ['settings', 'block_form', 'field_links'],
+  ];
+
+  foreach ($field_paths as $field_path) {
+    $links = NestedArray::getValue($input, $field_path, $exists);
+    if (!$exists || !is_array($links)) {
+      continue;
+    }
+
+    $invalid_uri = ys_core_get_bare_domain_quick_link_uri($links);
+    if ($invalid_uri === NULL) {
+      continue;
+    }
+
+    \Drupal::messenger()->addError(t('The link URL @url must include a protocol, such as https://, for external links. Internal links should start with /.', [
+      '@url' => $invalid_uri,
+    ]));
+    return;
+  }
 }
 
 /**
