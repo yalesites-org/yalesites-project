@@ -231,13 +231,6 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     $form['#attached']['library'][] = 'ys_core/block_form';
   }
 
-  if (in_array($form_id, [
-    'block_content_quick_links_form',
-    'block_content_quick_links_edit_form',
-  ], TRUE)) {
-    $form['#validate'][] = 'ys_core_quick_links_normalize_urls';
-  }
-
   $layout_builder_block_forms = [
     'layout_builder_update_block',
     'layout_builder_add_block',
@@ -253,10 +246,6 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     ];
     if (in_array($block_type_name, $limited_block_types)) {
       $form['#attached']['library'][] = 'ys_core/block_form';
-    }
-
-    if ($block_type_name === 'quick_links') {
-      $form['#validate'][] = 'ys_core_quick_links_normalize_urls';
     }
 
     $emptyAdminLabel = $form['settings']['label']['#default_value'] ?? '';
@@ -279,6 +268,18 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
 
   // Add JavaScript preview functionality to Facts and Figures icon fields.
   _ys_core_attach_icon_preview($form, $form_state, $form_id);
+
+  if (
+    in_array($form_id, [
+      'block_content_quick_links_form',
+      'block_content_quick_links_edit_form',
+    ], TRUE) ||
+    in_array($form_id, $layout_builder_block_forms, TRUE) ||
+    isset($form['settings']['block_form']['field_links']['widget']) ||
+    isset($form['field_links']['widget'])
+  ) {
+    ys_core_configure_quick_links_url_validation($form);
+  }
 }
 
 /**
@@ -1036,56 +1037,141 @@ function ys_core_grand_hero_display_mode_callback($form, FormStateInterface $for
 }
 
 /**
- * Validation handler to normalize Quick Links block URLs.
+ * Configures Quick Links URL validation.
  */
-function ys_core_quick_links_normalize_urls($form, FormStateInterface $form_state) {
+function ys_core_configure_quick_links_url_validation(array &$form) {
+  $form['#attributes']['novalidate'] = 'novalidate';
+  $form['#after_build'] = $form['#after_build'] ?? [];
+  if (!in_array('ys_core_quick_links_after_build', $form['#after_build'], TRUE)) {
+    $form['#after_build'][] = 'ys_core_quick_links_after_build';
+  }
+  $form['#validate'] = $form['#validate'] ?? [];
+  if (!in_array('ys_core_quick_links_validate_urls', $form['#validate'], TRUE)) {
+    array_unshift($form['#validate'], 'ys_core_quick_links_validate_urls');
+  }
+}
+
+/**
+ * After-build callback to alter Linkit elements after widget processing.
+ */
+function ys_core_quick_links_after_build(array $form, FormStateInterface $form_state): array {
+  ys_core_add_quick_links_url_error_summary($form, $form_state);
+
+  return $form;
+}
+
+/**
+ * Adds a visible form-level error summary inside the modal/form content.
+ */
+function ys_core_add_quick_links_url_error_summary(array &$form, FormStateInterface $form_state) {
+  $invalid_uri = ys_core_get_bare_domain_quick_link_uri_from_form_state($form_state);
+  if ($invalid_uri === NULL) {
+    return;
+  }
+
+  $message = ys_core_quick_links_url_error_message($invalid_uri);
+  $summary = [
+    '#type' => 'container',
+    '#attributes' => [
+      'class' => ['messages', 'messages--error'],
+      'role' => 'alert',
+    ],
+    '#weight' => -1000,
+    'message' => [
+      '#plain_text' => $message,
+    ],
+  ];
+
+  if (isset($form['settings']['block_form']) && is_array($form['settings']['block_form'])) {
+    $form['settings']['block_form']['ys_core_link_error_summary'] = $summary;
+    return;
+  }
+
+  $form['ys_core_link_error_summary'] = $summary;
+}
+
+/**
+ * Validation handler for Quick Links block URLs.
+ */
+function ys_core_quick_links_validate_urls($form, FormStateInterface $form_state) {
+  $invalid_uri = ys_core_get_bare_domain_quick_link_uri_from_form_state($form_state);
+  if ($invalid_uri === NULL) {
+    return;
+  }
+
+  \Drupal::messenger()->addError(ys_core_quick_links_url_error_message($invalid_uri));
+}
+
+/**
+ * Builds the Quick Links URL error message.
+ */
+function ys_core_quick_links_url_error_message(string $uri) {
+  return t('The link URL @url must include a protocol, such as https://, for external links. Internal links should start with /.', [
+    '@url' => $uri,
+  ]);
+}
+
+/**
+ * Finds a bare domain-style URL in submitted Quick Links field values.
+ */
+function ys_core_get_bare_domain_quick_link_uri_from_form_state(FormStateInterface $form_state): ?string {
+  $input = $form_state->getUserInput();
   $field_paths = [
     ['field_links'],
     ['settings', 'block_form', 'field_links'],
   ];
 
   foreach ($field_paths as $field_path) {
-    $links = $form_state->getValue($field_path);
-
+    $links = NestedArray::getValue($input, $field_path, $exists);
+    if (!$exists || !is_array($links)) {
+      $links = $form_state->getValue($field_path);
+    }
     if (!is_array($links)) {
       continue;
     }
 
-    $changed = FALSE;
-    foreach ($links as $delta => $link) {
-      if (!is_numeric($delta) || !is_array($link) || empty($link['uri'])) {
-        continue;
-      }
-
-      $uri = trim($link['uri']);
-      $normalized_uri = ys_core_normalize_quick_link_uri($uri);
-      if ($normalized_uri === $uri) {
-        continue;
-      }
-
-      $links[$delta]['uri'] = $normalized_uri;
-      $changed = TRUE;
-    }
-
-    if ($changed) {
-      $form_state->setValue($field_path, $links);
+    $invalid_uri = ys_core_get_bare_domain_quick_link_uri($links);
+    if ($invalid_uri !== NULL) {
+      return $invalid_uri;
     }
   }
+
+  return NULL;
 }
 
 /**
- * Adds a protocol to bare domain-style Quick Links URLs.
+ * Finds a bare domain-style URL in Quick Links field values.
  */
-function ys_core_normalize_quick_link_uri(string $uri): string {
-  if (str_starts_with($uri, '/') || preg_match('/^[a-z][a-z0-9+.-]*:/i', $uri)) {
-    return $uri;
+function ys_core_get_bare_domain_quick_link_uri(array $values): ?string {
+  foreach ($values as $key => $value) {
+    if ($key === 'uri' && is_string($value)) {
+      $uri = trim($value);
+      if (ys_core_is_bare_domain_quick_link_uri($uri)) {
+        return $uri;
+      }
+      continue;
+    }
+
+    if (is_array($value)) {
+      $invalid_uri = ys_core_get_bare_domain_quick_link_uri($value);
+      if ($invalid_uri !== NULL) {
+        return $invalid_uri;
+      }
+    }
   }
 
-  if (preg_match('/^[A-Za-z0-9.-]+\.[A-Za-z]{2,}([\/?#].*)?$/', $uri)) {
-    return 'https://' . $uri;
+  return NULL;
+}
+
+/**
+ * Determines whether a URL looks like a bare external domain.
+ */
+function ys_core_is_bare_domain_quick_link_uri(string $uri): bool {
+  if ($uri === '' || str_starts_with($uri, '/') || preg_match('/^[a-z][a-z0-9+.-]*:/i', $uri)) {
+    return FALSE;
   }
 
-  return $uri;
+  return (bool) preg_match('/^[A-Za-z0-9.-]+\.[A-Za-z]{2,}([\/?#].*)?$/', $uri);
 }
 
 /**
