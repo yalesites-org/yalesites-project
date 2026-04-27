@@ -236,7 +236,7 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
       ],
       '#title' => $this->t('Field Display Options'),
       '#tree' => TRUE,
-      '#default_value' => ($isNewForm && empty($fieldOptionValue)) ? ['show_thumbnail', 'show_category'] : $fieldOptionDefaultValue,
+      '#default_value' => ($isNewForm && empty($fieldOptionValue)) ? ['show_thumbnail', 'show_category', 'show_teaser_text'] : $fieldOptionDefaultValue,
       'show_thumbnail' => [
         '#states' => [
           'visible' => [

@@ -330,14 +330,13 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
             }
           }
 
-          // Build a thumbnail render array for any media bundle that exposes
-          // a usable thumbnail (document, image, video, etc.). The Media
-          // module's generated `thumbnail` field is populated for all bundles
-          // and points at the source file for image media, so the same
-          // responsive image style works across types.
+          // Build a thumbnail render array for non-video media bundles that
+          // expose a usable thumbnail (document, image, etc.). Video bundles
+          // are excluded because the embedded player itself is the visual,
+          // and the auto-generated YouTube preview alongside it is redundant.
           $thumbnail = $media?->thumbnail;
 
-          if ($thumbnail) {
+          if ($mediaBundle !== 'video' && $thumbnail) {
             /** @var \Drupal\file\Entity\File $thumbnail_file */
             $referenced_entities = $thumbnail->referencedEntities();
             $thumbnail_file = reset($referenced_entities);
