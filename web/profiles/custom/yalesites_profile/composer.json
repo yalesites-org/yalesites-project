@@ -88,7 +88,7 @@
     "drupal/quick_node_clone": "1.22.0",
     "drupal/recaptcha": "3.4.0",
     "drupal/recaptcha_v3": "2.0.4",
-    "drupal/redirect": "1.x-dev",
+    "drupal/redirect": "1.13",
     "drupal/redis": "1.11.0",
     "drupal/role_delegation": "1.6.0",
     "drupal/search_api": "1.40.0",
@@ -169,9 +169,6 @@
         "Fix cloning of inline blocks and paragraphs: https://www.drupal.org/project/quick_node_clone/issues/3100117": "https://git.drupalcode.org/project/quick_node_clone/-/merge_requests/22.diff",
         "Unset book field during cloning to prevent duplicate entry errors": "patches/quick_node_clone/quick_node_clone-book-field-handling.patch",
         "Clone paragraph fields (entity_reference_revisions) in Layout Builder inline blocks": "patches/quick_node_clone/quick_node_clone-clone-lb-paragraph-fields.patch"
-      },
-      "drupal/redirect": {
-        "fix validation issue on adding url redirect: https://www.drupal.org/node/3057250": "https://git.drupalcode.org/project/redirect/-/merge_requests/133.diff"
       },
       "drupal/search_api_html_element_filter": {
         "Automated Drupal 11 compatibility fixes for search_api_html_element_filter": "https://www.drupal.org/files/issues/2024-03-24/search_api_html_element_filter.1.0.4.rector.patch"
