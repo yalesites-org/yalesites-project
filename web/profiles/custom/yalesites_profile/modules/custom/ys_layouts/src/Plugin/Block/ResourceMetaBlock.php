@@ -12,6 +12,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Url;
 use Drupal\node\NodeInterface;
+use Drupal\ys_layouts\Service\ResourceAuthorBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -62,6 +63,13 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
   protected $entityTypeManager;
 
   /**
+   * The resource author list builder.
+   *
+   * @var \Drupal\ys_layouts\Service\ResourceAuthorBuilder
+   */
+  protected $resourceAuthorBuilder;
+
+  /**
    * Constructs a new ResourceMetaBlock object.
    *
    * @param array $configuration
@@ -80,6 +88,8 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
    *   The date formatter.
    * @param \Drupal\Core\Entity\EntityTypeManager $entity_type_manager
    *   The entity type manager service.
+   * @param \Drupal\ys_layouts\Service\ResourceAuthorBuilder $resource_author_builder
+   *   The resource author list builder.
    */
   public function __construct(
     array $configuration,
@@ -90,6 +100,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
     RequestStack $request_stack,
     DateFormatter $date_formatter,
     EntityTypeManager $entity_type_manager,
+    ResourceAuthorBuilder $resource_author_builder,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
@@ -98,6 +109,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
     $this->requestStack = $request_stack;
     $this->dateFormatter = $date_formatter;
     $this->entityTypeManager = $entity_type_manager;
+    $this->resourceAuthorBuilder = $resource_author_builder;
   }
 
   /**
@@ -113,6 +125,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
       $container->get('request_stack'),
       $container->get('date.formatter'),
       $container->get('entity_type.manager'),
+      $container->get('ys_layouts.resource_author_builder'),
     );
   }
 
@@ -249,14 +262,10 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
         }
       }
 
-      // Build the combined author list.
-      // Affiliated authors come from field_authors (profile entity refs) and
-      // non-affiliated authors come from field_nonaffiliated_authors (Double
-      // Field). Both lists are merged and sorted by last name then first name
-      // using en_US Unicode collation. The result is a flat array of
-      // { label, url|null } so the template renders affiliated entries as
-      // links and non-affiliated entries as plain text.
-      $authors = $this->buildAuthors($node, $authorCacheTags);
+      // Combined author list: affiliated profile refs + non-affiliated rows,
+      // merged and sorted last-then-first. Same service feeds the view-row
+      // templates via atomic_preprocess_node() so output stays consistent.
+      $authors = $this->resourceAuthorBuilder->build($node, $authorCacheTags);
 
       // Handle External Source link field.
       if ($node->hasField('field_external_source') && !$node->get('field_external_source')->isEmpty()) {
@@ -379,107 +388,6 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
     }
 
     return $build;
-  }
-
-  /**
-   * Builds the merged author list for the resource.
-   *
-   * Combines affiliated authors (entity references to profile nodes) and
-   * non-affiliated authors (Double Field rows of first/last name) into a
-   * single list, sorted by last name then first name using en_US Unicode
-   * collation. Particles (van, de la) are preserved literally so "van der
-   * Berg" sorts under V and "de la Cruz" under D.
-   *
-   * @param \Drupal\node\NodeInterface $node
-   *   The Resource node being rendered.
-   * @param array $cache_tags
-   *   By-reference accumulator for cache tags from referenced profile
-   *   entities. Merged into the block's render array so author updates
-   *   invalidate the cached output.
-   *
-   * @return array
-   *   List of author entries, each an associative array with keys:
-   *   - label: Display string in "First Last" form.
-   *   - url: Profile URL for affiliated authors, NULL for non-affiliated.
-   */
-  protected function buildAuthors(NodeInterface $node, array &$cache_tags): array {
-    $entries = [];
-
-    // Affiliated: entity references to profile nodes.
-    if ($node->hasField('field_authors') && !$node->get('field_authors')->isEmpty()) {
-      foreach ($node->get('field_authors')->referencedEntities() as $profile) {
-        if (!$profile->access('view')) {
-          continue;
-        }
-        $first = $profile->hasField('field_first_name')
-          ? trim((string) $profile->get('field_first_name')->getString())
-          : '';
-        $last = $profile->hasField('field_last_name')
-          ? trim((string) $profile->get('field_last_name')->getString())
-          : '';
-        // Fall back to the profile label when either name part is missing,
-        // so author display always has a value even for legacy or partial
-        // profile records.
-        if ($first === '' || $last === '') {
-          $label = $profile->label();
-          $sort_last = $last !== '' ? $last : $profile->label();
-          $sort_first = $first;
-        }
-        else {
-          $label = $first . ' ' . $last;
-          $sort_last = $last;
-          $sort_first = $first;
-        }
-        $entries[] = [
-          'label' => $label,
-          'url' => $profile->toUrl()->toString(),
-          'sort_last' => $sort_last,
-          'sort_first' => $sort_first,
-        ];
-        $cache_tags = Cache::mergeTags($cache_tags, $profile->getCacheTags());
-      }
-    }
-
-    // Non-affiliated: Double Field rows with `first` and `second` columns.
-    if (
-      $node->hasField('field_nonaffiliated_authors')
-      && !$node->get('field_nonaffiliated_authors')->isEmpty()
-    ) {
-      foreach ($node->get('field_nonaffiliated_authors') as $item) {
-        $first = trim((string) ($item->first ?? ''));
-        $last = trim((string) ($item->second ?? ''));
-        if ($first === '' && $last === '') {
-          continue;
-        }
-        $entries[] = [
-          'label' => trim($first . ' ' . $last),
-          'url' => NULL,
-          'sort_last' => $last,
-          'sort_first' => $first,
-        ];
-      }
-    }
-
-    if (!$entries) {
-      return [];
-    }
-
-    // en_US Unicode collation: Ö collates near O, ä near a, etc.
-    // Particles are preserved literally per project requirement.
-    $collator = new \Collator('en_US');
-    usort($entries, function (array $a, array $b) use ($collator): int {
-      $cmp = $collator->compare($a['sort_last'], $b['sort_last']);
-      if ($cmp !== 0) {
-        return $cmp;
-      }
-      return $collator->compare($a['sort_first'], $b['sort_first']);
-    });
-
-    // Strip sort keys before returning to the template.
-    return array_map(static fn(array $entry): array => [
-      'label' => $entry['label'],
-      'url' => $entry['url'],
-    ], $entries);
   }
 
   /**
