@@ -229,6 +229,7 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
       '#options' => [
         'show_thumbnail' => $this->t('Show Teaser Image'),
         'show_category' => $this->t('Show Category'),
+        'show_tags' => $this->t('Show Tags'),
         'show_teaser_text' => $this->t('Show Teaser Text'),
         'show_discipline' => $this->t('Show Discipline'),
         'show_publication' => $this->t('Show Publication Information'),
@@ -268,6 +269,16 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
         ],
       ],
       'show_teaser_text' => [
+        '#states' => [
+          'visible' => [
+            $formSelectors['view_mode_input_selector'] => [
+              ['value' => 'card'],
+              ['value' => 'list_item'],
+            ],
+          ],
+        ],
+      ],
+      'show_tags' => [
         '#states' => [
           'visible' => [
             $formSelectors['view_mode_input_selector'] => [

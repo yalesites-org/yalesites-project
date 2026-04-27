@@ -91,6 +91,7 @@ function ys_views_content_resources_views_pre_render(ViewExecutable $view): void
       $row->_entity->show_publication = $field_display_options->show_publication ?? 0;
       $row->_entity->show_discipline = $field_display_options->show_discipline ?? 0;
       $row->_entity->show_teaser_text = $field_display_options->show_teaser_text ?? 0;
+      $row->_entity->show_tags = $field_display_options->show_tags ?? 0;
 
       $sticky = (bool) $row->_entity->get('sticky')->value;
       if ($sticky) {
@@ -133,9 +134,10 @@ function ys_views_content_resources_node_view(array &$build, NodeInterface $node
     //   per-block config properties set in
     //   ys_views_content_resources_views_pre_render() (show_category,
     //   show_thumbnail, show_publication, show_discipline, show_teaser_text,
-    //   pin_label). Currently disabled because the same node + view mode is
-    //   rendered with different config across blocks; uncached is correct but
-    //   expensive. Tracked as a follow-up to the YISP-101 audit.
+    //   show_tags, pin_label). Currently disabled because the same node +
+    //   view mode is rendered with different config across blocks; uncached
+    //   is correct but expensive. Tracked as a follow-up to the YISP-101
+    //   audit.
     $build['#cache']['max-age'] = 0;
   }
 }

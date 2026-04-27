@@ -330,6 +330,7 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
       'show_publication' => (int) !empty($paramsDecoded['field_options']['show_publication']),
       'show_discipline' => (int) !empty($paramsDecoded['field_options']['show_discipline']),
       'show_teaser_text' => (int) !empty($paramsDecoded['field_options']['show_teaser_text']),
+      'show_tags' => (int) !empty($paramsDecoded['field_options']['show_tags']),
     ];
 
     if ($paramsDecoded['display'] == 'all') {
