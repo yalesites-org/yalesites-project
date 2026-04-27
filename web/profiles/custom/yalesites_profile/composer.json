@@ -87,7 +87,7 @@
     "drupal/pathauto": "1.14.0",
     "drupal/quick_node_clone": "1.22.0",
     "drupal/recaptcha": "3.4.0",
-    "drupal/recaptcha_v3": "2.0.4",
+    "drupal/recaptcha_v3": "2.0.5",
     "drupal/redirect": "1.13",
     "drupal/redis": "1.11.0",
     "drupal/role_delegation": "1.6.0",
