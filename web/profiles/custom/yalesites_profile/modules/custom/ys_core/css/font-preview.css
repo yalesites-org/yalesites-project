@@ -43,6 +43,21 @@
   margin: 0;
 }
 
+/* Yale Old-Style Numerals / Mallory font pairing preview */
+.font-preview-yalenew-oldstyle .preview-heading {
+  font-family: "YaleNew", serif;
+  font-size: 1.75rem;
+  font-variant-numeric: oldstyle-nums;
+  margin-bottom: 0.75rem;
+}
+
+.font-preview-yalenew-oldstyle .preview-text {
+  font-family: "Mallory", sans-serif;
+  font-size: 1rem;
+  line-height: 1.4;
+  margin: 0;
+}
+
 /* Mallory font pairing preview */
 .font-preview-mallory .preview-heading {
   font-family: "Mallory", sans-serif;
