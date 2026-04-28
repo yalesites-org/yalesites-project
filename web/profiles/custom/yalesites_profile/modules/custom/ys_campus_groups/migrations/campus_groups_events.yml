@@ -199,6 +199,7 @@ destination:
     - field_localist_event_image_alt
     - field_localist_ics_url
     - field_event_source
+    - field_event_date
 migration_dependencies:
   required:
     - campus_groups_taxonomy
