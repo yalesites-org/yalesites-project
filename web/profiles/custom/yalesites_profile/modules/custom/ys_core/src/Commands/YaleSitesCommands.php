@@ -3,6 +3,7 @@
 namespace Drupal\ys_core\Commands;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drush\Commands\DrushCommands;
 
 /**
@@ -18,14 +19,24 @@ class YaleSitesCommands extends DrushCommands {
   protected $entityTypeManager;
 
   /**
+   * The module handler.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  protected $moduleHandler;
+
+  /**
    * Constructs a YaleSitesCommands object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The module handler.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler) {
     parent::__construct();
     $this->entityTypeManager = $entity_type_manager;
+    $this->moduleHandler = $module_handler;
   }
 
   /**
@@ -37,46 +48,17 @@ class YaleSitesCommands extends DrushCommands {
    *   Populates Academic Years vocabulary with terms.
    */
   public function populateAcademicYears() {
-    $term_storage = $this->entityTypeManager->getStorage('taxonomy_term');
-    $vocabulary_storage = $this->entityTypeManager->getStorage('taxonomy_vocabulary');
+    // Delegate to the shared helper in ys_core.install so the Drush command
+    // and ys_core_update_10010() use identical logic.
+    $this->moduleHandler->loadInclude('ys_core', 'install');
 
-    // Check if academic_years vocabulary exists.
+    $vocabulary_storage = $this->entityTypeManager->getStorage('taxonomy_vocabulary');
     if (!$vocabulary_storage->load('academic_years')) {
       $this->logger->error('Academic Years vocabulary does not exist.');
       return;
     }
 
-    // Get existing terms to avoid duplicates.
-    $existing_terms = $term_storage->loadByProperties(['vid' => 'academic_years']);
-    $existing_names = [];
-    foreach ($existing_terms as $term) {
-      $existing_names[] = $term->getName();
-    }
-
-    $this->logger->notice('Found ' . count($existing_names) . ' existing academic year terms.');
-
-    // Generate academic year terms from 2026-2027 back to 2000-2001.
-    $weight = 0;
-    $created = 0;
-    for ($start_year = 2026; $start_year >= 2000; $start_year--) {
-      $end_year = $start_year + 1;
-      $term_name = $start_year . '-' . $end_year;
-
-      // Skip if term already exists.
-      if (in_array($term_name, $existing_names)) {
-        continue;
-      }
-
-      $term_storage->create([
-        'vid' => 'academic_years',
-        'name' => $term_name,
-        'weight' => $weight,
-      ])->save();
-
-      $this->logger->info('Created term: ' . $term_name);
-      $created++;
-      $weight++;
-    }
+    $created = ys_core_populate_academic_years_terms();
 
     if ($created > 0) {
       $this->logger->success('Successfully created ' . $created . ' academic year terms.');

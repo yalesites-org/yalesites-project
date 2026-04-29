@@ -22,6 +22,25 @@ use Drupal\node\NodeInterface;
 class ResourceAuthorBuilder {
 
   /**
+   * Unicode collator used for last-then-first author sorting.
+   *
+   * @var \Collator
+   */
+  protected \Collator $collator;
+
+  /**
+   * Constructs a ResourceAuthorBuilder.
+   *
+   * @param \Collator $collator
+   *   Unicode collator (en_US) used for author sorting. Injected so tests
+   *   can swap in a different locale and to stay consistent with other
+   *   ys_layouts services.
+   */
+  public function __construct(\Collator $collator) {
+    $this->collator = $collator;
+  }
+
+  /**
    * Builds the merged, sorted author list for a Resource node.
    *
    * @param \Drupal\node\NodeInterface $node
@@ -93,7 +112,7 @@ class ResourceAuthorBuilder {
     }
 
     // en_US Unicode collation: Ö collates near O, ä near a, etc.
-    $collator = new \Collator('en_US');
+    $collator = $this->collator;
     usort($entries, function (array $a, array $b) use ($collator): int {
       $cmp = $collator->compare($a['sort_last'], $b['sort_last']);
       if ($cmp !== 0) {
