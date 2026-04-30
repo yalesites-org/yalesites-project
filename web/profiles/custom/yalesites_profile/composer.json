@@ -108,7 +108,7 @@
     "drupal/workflow_buttons": "1.0-beta7",
     "jjj/chosen": "2.2.1",
     "yalesites-org/ai_engine": "1.2.18",
-    "yalesites-org/atomic": "1.71.0",
+    "yalesites-org/atomic": "1.72.0",
     "yalesites-org/yale_cas": "v1.2.0"
   },
   "minimum-stability": "dev",
