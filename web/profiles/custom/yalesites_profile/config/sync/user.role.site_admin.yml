@@ -59,7 +59,6 @@ dependencies:
     - taxonomy.vocabulary.custom_vocab
     - taxonomy.vocabulary.dcn_types
     - taxonomy.vocabulary.discipline
-    - taxonomy.vocabulary.event_audience
     - taxonomy.vocabulary.event_category
     - taxonomy.vocabulary.geographic_areas
     - taxonomy.vocabulary.page_category
@@ -301,7 +300,6 @@ permissions:
   - 'delete terms in custom_vocab'
   - 'delete terms in dcn_types'
   - 'delete terms in discipline'
-  - 'delete terms in event_audience'
   - 'delete terms in event_category'
   - 'delete terms in geographic_areas'
   - 'delete terms in page_category'
