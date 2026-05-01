@@ -25,7 +25,7 @@ dependencies:
     - field.field.node.resource.field_metatags
     - field.field.node.resource.field_nonaffiliated_authors
     - field.field.node.resource.field_publish_date
-    - field.field.node.resource.field_related_resources
+    - field.field.node.resource.field_related_content
     - field.field.node.resource.field_revision_date
     - field.field.node.resource.field_tags
     - field.field.node.resource.field_teaser_media
@@ -119,26 +119,21 @@ third_party_settings:
       -
         layout_id: layout_onecol
         layout_settings:
-          label: 'Related Resources'
+          label: 'Related Content'
           context_mapping: {  }
           ys_layouts_sections_config:
             padding_options: default
         components:
-          b1e4f2a3-9c5d-4e7f-a8b2-1d3c6e9f0a4b:
-            uuid: b1e4f2a3-9c5d-4e7f-a8b2-1d3c6e9f0a4b
+          caee8682-e1e1-4901-9773-221f7190fcd3:
+            uuid: caee8682-e1e1-4901-9773-221f7190fcd3
             region: content
             configuration:
-              id: 'field_block:node:resource:field_related_resources'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: entity_reference_entity_view
-                label: hidden
-                settings:
-                  view_mode: title_date
-                  link: false
-                third_party_settings: {  }
+              id: related_content_block
+              label: 'Related Content'
+              label_display: ''
+              provider: ys_layouts
+              heading: 'Related Content'
+              context_mapping: {  }
             weight: 0
             additional: {  }
         third_party_settings: {  }
@@ -353,14 +348,13 @@ content:
     third_party_settings: {  }
     weight: 129
     region: content
-  field_related_resources:
-    type: entity_reference_entity_view
-    label: hidden
+  field_related_content:
+    type: entity_reference_label
+    label: above
     settings:
-      view_mode: card
-      link: false
+      link: true
     third_party_settings: {  }
-    weight: 125
+    weight: 130
     region: content
   field_revision_date:
     type: datetime_default

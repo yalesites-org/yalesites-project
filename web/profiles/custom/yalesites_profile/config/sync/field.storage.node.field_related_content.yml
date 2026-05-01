@@ -1,11 +1,11 @@
-uuid: 9bf13374-edd0-499c-8196-09511dfe9399
+uuid: d4f215a6-f091-44ed-988f-d89a514f5a0e
 langcode: en
 status: true
 dependencies:
   module:
     - node
-id: node.field_related_resources
-field_name: field_related_resources
+id: node.field_related_content
+field_name: field_related_content
 entity_type: node
 type: entity_reference
 settings:

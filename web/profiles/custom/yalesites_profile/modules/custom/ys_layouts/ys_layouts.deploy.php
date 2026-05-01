@@ -40,16 +40,3 @@ function ys_layouts_deploy_9004() {
   \Drupal::service('ys_layouts.updater')->updateTextFormats('content_spotlight', 'field_text');
   \Drupal::service('ys_layouts.updater')->updateTextFormats('content_spotlight_portrait', 'field_text');
 }
-
-/**
- * Retargets resource related-resources field block to title_date view mode.
- *
- * Resource nodes with stored Layout Builder overrides still pin the field
- * block to view_mode 'card', which now hides field_related_resources. This
- * deploy hook walks each resource node's stored layout and surgically updates
- * the view_mode on the field_block:node:resource:field_related_resources
- * component, preserving the rest of the override.
- */
-function ys_layouts_deploy_9005() {
-  \Drupal::service('ys_layouts.updater')->updateResourceRelatedResourcesViewMode();
-}

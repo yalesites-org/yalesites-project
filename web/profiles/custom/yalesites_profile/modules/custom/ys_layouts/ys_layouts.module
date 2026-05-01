@@ -112,6 +112,13 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'theme_selection' => NULL,
       ],
     ],
+    'ys_related_content_block' => [
+      'variables' => [
+        'related_content__heading' => NULL,
+        'related_content__heading_id' => NULL,
+        'related_content__view' => NULL,
+      ],
+    ],
   ];
 }
 

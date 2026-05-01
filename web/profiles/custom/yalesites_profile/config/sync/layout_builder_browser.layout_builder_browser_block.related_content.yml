@@ -1,0 +1,11 @@
+uuid: 13aae9f6-4df7-44b6-980f-54f97ddb2778
+langcode: en
+status: true
+dependencies: {  }
+id: related_content
+block_id: related_content_block
+category: featured_content
+label: 'Related Content'
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/view.svg
+image_alt: ''
+weight: -10

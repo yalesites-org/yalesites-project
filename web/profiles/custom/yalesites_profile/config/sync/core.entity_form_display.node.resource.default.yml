@@ -25,7 +25,7 @@ dependencies:
     - field.field.node.resource.field_metatags
     - field.field.node.resource.field_nonaffiliated_authors
     - field.field.node.resource.field_publish_date
-    - field.field.node.resource.field_related_resources
+    - field.field.node.resource.field_related_content
     - field.field.node.resource.field_revision_date
     - field.field.node.resource.field_tags
     - field.field.node.resource.field_teaser_media
@@ -74,7 +74,7 @@ third_party_settings:
       label: 'Publishing Settings'
       region: content
       parent_name: ''
-      weight: 5
+      weight: 6
       format_type: details_sidebar
       format_settings:
         classes: ''
@@ -91,7 +91,7 @@ third_party_settings:
       label: 'External Link'
       region: content
       parent_name: ''
-      weight: 7
+      weight: 8
       format_type: details_sidebar
       format_settings:
         classes: ''
@@ -126,7 +126,7 @@ third_party_settings:
         - field_category
         - field_content_description
         - field_media
-        - field_related_resources
+        - field_related_content
       label: 'Basic Info'
       region: content
       parent_name: group_resource_tabs
@@ -192,7 +192,7 @@ third_party_settings:
       label: 'Authors Group'
       region: content
       parent_name: group_publication_info
-      weight: 13
+      weight: 10
       format_type: fieldset
       format_settings:
         classes: 'ys-gin-grouped-fields '
@@ -231,7 +231,7 @@ mode: default
 content:
   field_abstract:
     type: text_textarea
-    weight: 15
+    weight: 12
     region: content
     settings:
       rows: 5
@@ -282,13 +282,13 @@ content:
     third_party_settings: {  }
   field_cf_dcn:
     type: dcn_field_default
-    weight: 14
+    weight: 11
     region: content
     settings: {  }
     third_party_settings: {  }
   field_citation:
     type: text_textarea
-    weight: 16
+    weight: 13
     region: content
     settings:
       rows: 5
@@ -343,7 +343,7 @@ content:
     third_party_settings: {  }
   field_journal_publication_issue:
     type: string_textfield
-    weight: 18
+    weight: 15
     region: content
     settings:
       size: 60
@@ -351,7 +351,7 @@ content:
     third_party_settings: {  }
   field_journal_publication_name:
     type: string_textfield
-    weight: 17
+    weight: 14
     region: content
     settings:
       size: 60
@@ -375,7 +375,7 @@ content:
         show_edit: '1'
   field_metatags:
     type: metatag_firehose
-    weight: 4
+    weight: 5
     region: content
     settings:
       sidebar: true
@@ -410,13 +410,13 @@ content:
     region: content
     settings: {  }
     third_party_settings: {  }
-  field_related_resources:
+  field_related_content:
     type: entity_reference_autocomplete
-    weight: 23
+    weight: 4
     region: content
     settings:
       match_operator: CONTAINS
-      match_limit: 20
+      match_limit: 15
       size: 60
       placeholder: ''
     third_party_settings: {  }
@@ -464,25 +464,25 @@ content:
     third_party_settings: {  }
   moderation_state:
     type: workflow_buttons
-    weight: 2
+    weight: 3
     region: content
     settings:
       show_current_state: false
     third_party_settings: {  }
   path:
     type: path
-    weight: 1
+    weight: 2
     region: content
     settings: {  }
     third_party_settings: {  }
   simple_sitemap:
-    weight: 8
+    weight: 9
     region: content
     settings: {  }
     third_party_settings: {  }
   status:
     type: boolean_checkbox
-    weight: 6
+    weight: 7
     region: content
     settings:
       display_label: true
@@ -503,7 +503,7 @@ content:
       placeholder: ''
     third_party_settings: {  }
   url_redirects:
-    weight: 3
+    weight: 4
     region: content
     settings: {  }
     third_party_settings: {  }

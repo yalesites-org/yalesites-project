@@ -235,64 +235,6 @@ class LayoutUpdater {
   }
 
   /**
-   * Retargets the field_related_resources field block in resource node layouts.
-   *
-   * Resource nodes that were edited in Layout Builder before the related-
-   * resources view mode change have a per-node layout override that pins the
-   * field block's formatter to view_mode 'card'. The default display has since
-   * moved to 'title_date' (a minimal title + date rendering). Default-display
-   * changes don't propagate to nodes that have stored overrides, so those nodes
-   * silently render nothing for related items (the card view mode now hides
-   * field_related_resources).
-   *
-   * Surgically updates each affected component's view_mode setting in place,
-   * leaving the rest of the per-node layout untouched.
-   */
-  public function updateResourceRelatedResourcesViewMode() {
-    foreach ($this->getAllNodeIds('resource') as $nid) {
-      $node = $this->entityTypeManager->getStorage('node')->load($nid);
-      if (!$node instanceof NodeInterface) {
-        continue;
-      }
-
-      /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $layout */
-      $layout = $node->get('layout_builder__layout');
-      if ($layout->isEmpty()) {
-        continue;
-      }
-
-      $changed = FALSE;
-      foreach ($layout->getSections() as $section) {
-        foreach ($section->getComponents() as $component) {
-          $config = $component->get('configuration');
-          if (
-            ($config['id'] ?? '') === 'field_block:node:resource:field_related_resources'
-            && ($config['formatter']['settings']['view_mode'] ?? NULL) === 'card'
-          ) {
-            $config['formatter']['settings']['view_mode'] = 'title_date';
-            $component->setConfiguration($config);
-            $changed = TRUE;
-          }
-        }
-      }
-
-      if (!$changed) {
-        continue;
-      }
-
-      try {
-        $node->save();
-      }
-      catch (EntityStorageException $e) {
-        $this->logger->error(
-          'Error updating related-resources view_mode for node @nid: @message',
-          ['@nid' => $nid, '@message' => $e->getMessage()]
-        );
-      }
-    }
-  }
-
-  /**
    * Gets a list of nodes with sections stored in the temporary storage.
    *
    * This method retrieves node IDs from the temporary storage table. These are

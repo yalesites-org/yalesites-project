@@ -1,0 +1,20 @@
+{#
+/**
+ * Drupal template for the `related_content_block` plugin.
+ *
+ * Variables come from RelatedContentBlock::build():
+ * - related_content__heading  Editor-set heading (defaults to "Related Content").
+ * - related_content__view     Lazy view render array; passing it through
+ *                             `{{ ... }}` lets Drupal render it before the
+ *                             molecule receives it as HTML and pipes it
+ *                             into the markup with `|raw`.
+ *
+ * @see \Drupal\ys_layouts\Plugin\Block\RelatedContentBlock
+ */
+#}
+
+{% include "@molecules/related-content/yds-related-content.twig" with {
+  related_content__heading: related_content__heading,
+  related_content__heading_id: related_content__heading_id,
+  related_content__view: related_content__view,
+} %}
