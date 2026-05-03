@@ -106,6 +106,10 @@
 # Ignore local lando settings. Each site will have unique values.
 .lando.local.yml
 
+# Ignore local MCP configs. Each developer's lando port is machine-specific.
+.mcp.json
+/.claude/settings.local.json
+
 # Ignore packages installed by Node.
 /node_modules
 package-lock.json
