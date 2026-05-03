@@ -135,7 +135,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
   public function build() {
 
     /** @var \Drupal\node\NodeInterface $node */
-    $node = $this->requestStack->getCurrentRequest()->attributes->get('node');
+    $node = $this->getCurrentNode();
     if (!($node instanceof NodeInterface) || $node->bundle() !== 'resource') {
       return [];
     }
@@ -394,7 +394,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
    */
   public function getCacheTags() {
     $tags = parent::getCacheTags();
-    $node = $this->routeMatch->getParameter('node');
+    $node = $this->getCurrentNode();
     if ($node instanceof NodeInterface) {
       $tags = Cache::mergeTags($tags, $node->getCacheTags());
     }
@@ -406,6 +406,29 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
    */
   public function getCacheContexts() {
     return Cache::mergeContexts(parent::getCacheContexts(), ['route', 'user.permissions']);
+  }
+
+  /**
+   * Get the current node from either route match or Layout Builder context.
+   */
+  protected function getCurrentNode() {
+
+    $request = $this->requestStack->getCurrentRequest();
+    $node = $request->attributes->get('node');
+
+    // When removing the contact block when one already exists,
+    // it no longer has access to the node object. Therefore, we must load it
+    // manually via the ajaxified path.
+    if (!$node) {
+      $layoutBuilderPath = $request->getPathInfo();
+      preg_match('/(node\.+(\d+))/', $layoutBuilderPath, $matches);
+      if (!empty($matches)) {
+        $nodeStorage = $this->entityTypeManager->getStorage('node');
+        $node = $nodeStorage->load($matches[2]);
+      }
+    }
+
+    return $node ?? NULL;
   }
 
 }
