@@ -5,12 +5,14 @@ namespace Drupal\ys_layouts\Plugin\Block;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Cache\Cache;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\node\NodeInterface;
 use Drupal\views\Views;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Block that renders the current node's Related Content list.
@@ -40,6 +42,20 @@ class RelatedContentBlock extends BlockBase implements ContainerFactoryPluginInt
   protected $routeMatch;
 
   /**
+   * The request stack.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  protected $requestStack;
+
+  /**
+   * The entity type manager service.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * Constructs a new RelatedContentBlock object.
    *
    * @param array $configuration
@@ -50,15 +66,23 @@ class RelatedContentBlock extends BlockBase implements ContainerFactoryPluginInt
    *   The plugin implementation definition.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The current route match.
+   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+   *   The request stack.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager service.
    */
   public function __construct(
     array $configuration,
     $plugin_id,
     $plugin_definition,
     RouteMatchInterface $route_match,
+    RequestStack $request_stack,
+    EntityTypeManagerInterface $entity_type_manager,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->routeMatch = $route_match;
+    $this->requestStack = $request_stack;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -70,6 +94,8 @@ class RelatedContentBlock extends BlockBase implements ContainerFactoryPluginInt
       $plugin_id,
       $plugin_definition,
       $container->get('current_route_match'),
+      $container->get('request_stack'),
+      $container->get('entity_type.manager'),
     );
   }
 
@@ -115,7 +141,7 @@ class RelatedContentBlock extends BlockBase implements ContainerFactoryPluginInt
    * {@inheritdoc}
    */
   public function build() {
-    $node = $this->routeMatch->getParameter('node');
+    $node = $this->getCurrentNode();
 
     // Bail when not on a node route, when the node has no related-content
     // field, or when the field is empty. Returning an empty render array lets
@@ -163,7 +189,7 @@ class RelatedContentBlock extends BlockBase implements ContainerFactoryPluginInt
    */
   public function getCacheTags() {
     $tags = parent::getCacheTags();
-    $node = $this->routeMatch->getParameter('node');
+    $node = $this->getCurrentNode();
     if ($node instanceof NodeInterface) {
       $tags = Cache::mergeTags($tags, $node->getCacheTags());
     }
@@ -175,6 +201,29 @@ class RelatedContentBlock extends BlockBase implements ContainerFactoryPluginInt
    */
   public function getCacheContexts() {
     return Cache::mergeContexts(parent::getCacheContexts(), ['route', 'url.path']);
+  }
+
+  /**
+   * Get the current node from either route match or Layout Builder context.
+   */
+  protected function getCurrentNode() {
+
+    $node = $this->routeMatch->getParameter('node');
+
+    // When removing the contact block when one already exists,
+    // it no longer has access to the node object. Therefore, we must load it
+    // manually via the ajaxified path.
+    if (!$node) {
+      $request = $this->requestStack->getCurrentRequest();
+      $layoutBuilderPath = $request->getPathInfo();
+      preg_match('/(node\.+(\d+))/', $layoutBuilderPath, $matches);
+      if (!empty($matches)) {
+        $nodeStorage = $this->entityTypeManager->getStorage('node');
+        $node = $nodeStorage->load($matches[2]);
+      }
+    }
+
+    return $node ?? NULL;
   }
 
 }
