@@ -4,7 +4,7 @@ status: true
 dependencies: {  }
 id: related_content
 block_id: related_content_block
-category: featured_content
+category: dynamic_content
 label: 'Related Content'
 image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/view.svg
 image_alt: ''

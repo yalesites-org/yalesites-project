@@ -27,6 +27,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   id = "related_content_block",
  *   admin_label = @Translation("Related Content"),
  *   category = @Translation("YaleSites Layouts"),
+ *   description = @Translation("Displays a curated list of related content as cards, sourced from the current page's Related Content field."),
  * )
  */
 class RelatedContentBlock extends BlockBase implements ContainerFactoryPluginInterface {
@@ -88,11 +89,15 @@ class RelatedContentBlock extends BlockBase implements ContainerFactoryPluginInt
     $form = parent::blockForm($form, $form_state);
     $config = $this->getConfiguration();
 
+    // Required so the rendered list always has a parent heading. The cards
+    // inside the block render as h3, so an empty/missing heading would skip
+    // a level and trigger an a11y violation (WCAG 1.3.1).
     $form['heading'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Heading'),
       '#description' => $this->t('Heading shown above the related content list.'),
       '#default_value' => $config['heading'] ?? 'Related Content',
+      '#required' => TRUE,
     ];
 
     return $form;
