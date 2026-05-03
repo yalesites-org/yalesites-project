@@ -110,7 +110,7 @@ third_party_settings:
       -
         layout_id: layout_onecol
         layout_settings:
-          label: 'Initial Content'
+          label: 'Content Section'
           context_mapping: {  }
           ys_layouts_sections_config:
             padding_options: default
