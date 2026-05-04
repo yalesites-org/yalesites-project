@@ -4,10 +4,15 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.node.teaser
+    - field.storage.node.field_journal_publication_name
     - field.storage.node.field_teaser_text
     - field.storage.node.field_teaser_title
+    - taxonomy.vocabulary.academic_years
+    - taxonomy.vocabulary.areas_of_study
     - taxonomy.vocabulary.audience
     - taxonomy.vocabulary.custom_vocab
+    - taxonomy.vocabulary.discipline
+    - taxonomy.vocabulary.geographic_areas
     - taxonomy.vocabulary.resource_category
   module:
     - node
@@ -240,7 +245,7 @@ display:
         options:
           perm: 'access content'
       cache:
-        type: none
+        type: tag
         options: {  }
       empty:
         area:
@@ -420,56 +425,6 @@ display:
             title: title
             field_teaser_text: field_teaser_text
             field_teaser_title: field_teaser_title
-        field_audience_target_id:
-          id: field_audience_target_id
-          table: node__field_audience
-          field: field_audience_target_id
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: taxonomy_index_tid
-          operator: or
-          value: {  }
-          group: 1
-          exposed: true
-          expose:
-            operator_id: field_audience_target_id_op
-            label: Audience
-            description: ''
-            use_operator: false
-            operator: field_audience_target_id_op
-            operator_limit_selection: false
-            operator_list: {  }
-            identifier: field_audience_target_id
-            required: false
-            remember: false
-            multiple: true
-            remember_roles:
-              authenticated: authenticated
-              anonymous: '0'
-              contributor: '0'
-              editor: '0'
-              site_admin: '0'
-              platform_admin: '0'
-            reduce: false
-          is_grouped: false
-          group_info:
-            label: ''
-            description: ''
-            identifier: ''
-            optional: true
-            widget: select
-            multiple: false
-            remember: false
-            default_group: All
-            default_group_multiple: {  }
-            group_items: {  }
-          reduce_duplicates: false
-          vid: audience
-          type: select
-          hierarchy: false
-          limit: true
-          error_message: true
         field_category_target_id:
           id: field_category_target_id
           table: node__field_category
@@ -615,6 +570,52 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
+        field_journal_publication_name_value:
+          id: field_journal_publication_name_value
+          table: node__field_journal_publication_name
+          field: field_journal_publication_name_value
+          relationship: none
+          group_type: group
+          admin_label: ''
+          entity_type: node
+          entity_field: field_journal_publication_name
+          plugin_id: string
+          operator: contains
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: field_journal_publication_name_value_op
+            label: 'Journal Publication Name'
+            description: ''
+            use_operator: false
+            operator: field_journal_publication_name_value_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: field_journal_publication_name_value
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+              anonymous: '0'
+              contributor: '0'
+              editor: '0'
+              site_admin: '0'
+              platform_admin: '0'
+            placeholder: ''
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
         exclude_taxonomy_terms:
           id: exclude_taxonomy_terms
           table: node_field_data
@@ -654,6 +655,265 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
+        field_academic_years_target_id:
+          id: field_academic_years_target_id
+          table: node__field_academic_years
+          field: field_academic_years_target_id
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: taxonomy_index_tid
+          operator: or
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: field_academic_years_target_id_op
+            label: 'Academic Year'
+            description: ''
+            use_operator: false
+            operator: field_academic_years_target_id_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: field_academic_years_target_id
+            required: false
+            remember: false
+            multiple: true
+            remember_roles:
+              authenticated: authenticated
+              anonymous: '0'
+              contributor: '0'
+              editor: '0'
+              site_admin: '0'
+              file_manager: '0'
+              platform_admin: '0'
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          reduce_duplicates: false
+          vid: academic_years
+          type: select
+          hierarchy: false
+          limit: true
+          error_message: true
+        field_audience_target_id:
+          id: field_audience_target_id
+          table: node__field_audience
+          field: field_audience_target_id
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: taxonomy_index_tid
+          operator: or
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: field_audience_target_id_op
+            label: Audience
+            description: ''
+            use_operator: false
+            operator: field_audience_target_id_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: field_audience_target_id
+            required: false
+            remember: false
+            multiple: true
+            remember_roles:
+              authenticated: authenticated
+              anonymous: '0'
+              contributor: '0'
+              editor: '0'
+              site_admin: '0'
+              file_manager: '0'
+              platform_admin: '0'
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          reduce_duplicates: false
+          vid: audience
+          type: select
+          hierarchy: false
+          limit: true
+          error_message: true
+        field_areas_of_study_target_id:
+          id: field_areas_of_study_target_id
+          table: node__field_areas_of_study
+          field: field_areas_of_study_target_id
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: taxonomy_index_tid
+          operator: or
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: field_areas_of_study_target_id_op
+            label: 'Areas of Study'
+            description: ''
+            use_operator: false
+            operator: field_areas_of_study_target_id_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: field_areas_of_study_target_id
+            required: false
+            remember: false
+            multiple: true
+            remember_roles:
+              authenticated: authenticated
+              anonymous: '0'
+              contributor: '0'
+              editor: '0'
+              site_admin: '0'
+              file_manager: '0'
+              platform_admin: '0'
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          reduce_duplicates: false
+          vid: areas_of_study
+          type: select
+          hierarchy: false
+          limit: true
+          error_message: true
+        field_discipline_target_id:
+          id: field_discipline_target_id
+          table: node__field_discipline
+          field: field_discipline_target_id
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: taxonomy_index_tid
+          operator: or
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: field_discipline_target_id_op
+            label: Discipline
+            description: ''
+            use_operator: false
+            operator: field_discipline_target_id_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: field_discipline_target_id
+            required: false
+            remember: false
+            multiple: true
+            remember_roles:
+              authenticated: authenticated
+              anonymous: '0'
+              contributor: '0'
+              editor: '0'
+              site_admin: '0'
+              file_manager: '0'
+              platform_admin: '0'
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          reduce_duplicates: false
+          vid: discipline
+          type: select
+          hierarchy: false
+          limit: true
+          error_message: true
+        field_geographic_areas_target_id:
+          id: field_geographic_areas_target_id
+          table: node__field_geographic_areas
+          field: field_geographic_areas_target_id
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: taxonomy_index_tid
+          operator: or
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: field_geographic_areas_target_id_op
+            label: 'Geographic Area'
+            description: ''
+            use_operator: false
+            operator: field_geographic_areas_target_id_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: field_geographic_areas_target_id
+            required: false
+            remember: false
+            multiple: true
+            remember_roles:
+              authenticated: authenticated
+              anonymous: '0'
+              contributor: '0'
+              editor: '0'
+              site_admin: '0'
+              file_manager: '0'
+              platform_admin: '0'
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          reduce_duplicates: false
+          vid: geographic_areas
+          type: select
+          hierarchy: false
+          limit: true
+          error_message: true
+      filter_groups:
+        operator: AND
+        groups:
+          1: AND
       style:
         type: ys_views_basic_dynamic_style
         options:

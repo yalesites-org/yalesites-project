@@ -1,0 +1,7 @@
+langcode: en
+status: true
+dependencies: {  }
+name: 'DCN Types'
+vid: dcn_types
+description: 'Document Control Number types (ISBN, ISPS ID, etc.)'
+weight: 0

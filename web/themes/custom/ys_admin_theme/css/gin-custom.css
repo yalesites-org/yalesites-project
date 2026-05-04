@@ -68,6 +68,24 @@ a.focal-point-preview-link {
   }
 }
 
+/* Visual grouping for related form fields (e.g. Authors fieldset).
+   Apply the class to a field_group container; the border + padding
+   draws a single box around the children, and the multi-value field
+   header inside is toned down so it reads as a related sub-field
+   instead of a standalone section. */
+.ys-gin-grouped-fields {
+  border: 1px solid var(--gin-border-color);
+  border-radius: var(--gin-border-m);
+  padding: 1rem 1.25rem;
+}
+.ys-gin-grouped-fields .field-multiple-table thead th {
+  background: transparent;
+  color: var(--gin-color-text);
+  font-size: var(--gin-font-size-s);
+  font-weight: 600;
+  border-radius: 0;
+}
+
 .action-link--icon-trash.action-link--danger::before,
 .button.button--danger::before {
   background-color: var(--gin-color-danger) !important;

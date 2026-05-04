@@ -936,11 +936,15 @@ function ys_core_form_views_exposed_form_alter(&$form, FormStateInterface $form_
   if (in_array($view->id(), ['views_basic_scaffold', 'views_basic_scaffold_events', 'content_resources'])) {
     // List of form elements to which Chosen should be applied.
     $chosen_filters = [
+      'field_academic_years_target_id',
+      'field_affiliation_target_id',
+      'field_areas_of_study_target_id',
+      'field_audience_target_id',
       'field_category_target_id',
       'field_category_target_id_1',
-      'field_affiliation_target_id',
       'field_custom_vocab_target_id',
-      'field_audience_target_id',
+      'field_discipline_target_id',
+      'field_geographic_areas_target_id',
       'post_year_filter',
       'resource_year_filter',
     ];

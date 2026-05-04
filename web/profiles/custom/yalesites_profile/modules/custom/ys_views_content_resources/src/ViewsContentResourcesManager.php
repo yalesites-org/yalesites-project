@@ -141,18 +141,18 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
    * @return void
    *   No return value.
    */
-  public function setupView(&$view, $params) {
+  public function setupView(&$view, $params = []) {
     static $setupRunning;
     if ($setupRunning) {
       return;
     }
     $setupRunning = TRUE;
-
-    $paramsDecoded = json_decode($params, TRUE);
+    $paramsDecoded = empty($params) ? [] : json_decode($params, TRUE);
     $pinned_to_top = isset($paramsDecoded['pinned_to_top']) ? (bool) $paramsDecoded['pinned_to_top'] : FALSE;
 
     $view->setDisplay('block_1');
-    $filterType = implode('+', $paramsDecoded['filters']['types']);
+
+    $filterType = empty($params) ? 'resource' : implode('+', $paramsDecoded['filters']['types']);
 
     // Retrieve the current filter options from the view's display settings.
     $filters = $view->getDisplay()->getOption('filters');
@@ -226,9 +226,19 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
       unset($filters['field_custom_vocab_target_id']);
     }
 
-    // Audience filter.
-    if (!isset($paramsDecoded['exposed_filter_options']['show_audience_filter'])) {
-      unset($filters['field_audience_target_id']);
+    // Exposed filters.
+    $exposed_filters = [
+      'show_audience_filter' => 'field_audience_target_id',
+      'show_academic_year_filter' => 'field_academic_years_target_id',
+      'show_discipline_filter' => 'field_discipline_target_id',
+      'show_areas_of_study_filter' => 'field_areas_of_study_target_id',
+      'show_geographic_areas_filter' => 'field_geographic_areas_target_id',
+    ];
+
+    foreach ($exposed_filters as $exposed_filter_option => $filter_name) {
+      if (!isset($paramsDecoded['exposed_filter_options'][$exposed_filter_option])) {
+        unset($filters[$filter_name]);
+      }
     }
 
     if (!isset($paramsDecoded['exposed_filter_options']['show_search_filter'])) {
@@ -242,6 +252,11 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     if (!isset($paramsDecoded['exposed_filter_options']['show_year_filter'])) {
       // Remove the 'Year' filter if the 'show_year_filter' is not set.
       unset($filters['resource_year_filter']);
+    }
+
+    if (!isset($paramsDecoded['exposed_filter_options']['show_journal_publication_name_filter'])) {
+      // Remove the 'Journal Publication Name' filter if not enabled.
+      unset($filters['field_journal_publication_name_value']);
     }
 
     // Set the modified filters back to the view display options.
@@ -312,6 +327,10 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     $field_display_options = [
       'show_category' => (int) !empty($paramsDecoded['field_options']['show_category']),
       'show_thumbnail' => (int) $no_field_display_options_saved || !empty($paramsDecoded['field_options']['show_thumbnail']),
+      'show_publication' => (int) !empty($paramsDecoded['field_options']['show_publication']),
+      'show_discipline' => (int) !empty($paramsDecoded['field_options']['show_discipline']),
+      'show_teaser_text' => (int) !empty($paramsDecoded['field_options']['show_teaser_text']),
+      'show_tags' => (int) !empty($paramsDecoded['field_options']['show_tags']),
     ];
 
     if ($paramsDecoded['display'] == 'all') {
@@ -554,6 +573,8 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
 
       case 'show_current_entity':
         $defaultParam = (empty($paramsDecoded['show_current_entity'])) ? 0 : $paramsDecoded['show_current_entity'];
+        break;
+
       case 'pinned_to_top':
         $defaultParam = (empty($paramsDecoded['pinned_to_top'])) ? FALSE : (bool) $paramsDecoded['pinned_to_top'];
         break;
@@ -615,13 +636,40 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
   }
 
   /**
+   * Vocabularies whose terms are exposed to the resource view widget.
+   *
+   * Mirrors the vocabularies referenced by the `content_resources` view and
+   * by resource-related fields. Bounding the set prevents loading every
+   * taxonomy term on the site into memory when rendering the widget.
+   */
+  private const ALLOWED_TAG_VOCABULARIES = [
+    'academic_years',
+    'areas_of_study',
+    'audience',
+    'custom_vocab',
+    'discipline',
+    'geographic_areas',
+    'resource_category',
+    'tags',
+  ];
+
+  /**
    * Returns an array of all tags.
    *
    * @return array
    *   An array of all taxonomy term IDs and labels.
    */
   public function getAllTags() : array {
-    $terms = $this->termStorage->loadMultiple();
+    $query = $this->termStorage->getQuery()
+      ->condition('vid', self::ALLOWED_TAG_VOCABULARIES, 'IN')
+      ->accessCheck(TRUE)
+      ->sort('name')
+      ->range(0, 1000);
+    $tids = $query->execute();
+    if (!$tids) {
+      return [];
+    }
+    $terms = $this->termStorage->loadMultiple($tids);
     $tagList = [];
 
     foreach ($terms as $term) {

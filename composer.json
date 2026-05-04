@@ -37,7 +37,8 @@
     "yalesites-org/yalesites_profile": "*"
   },
   "require-dev": {
-    "drupal/core-dev": "^10"
+    "drupal/core-dev": "^10",
+    "drupal/fpa": "^4.0"
   },
   "conflict": {
     "drupal/drupal": "*"
@@ -120,15 +121,16 @@
       "php": "8.3"
     },
     "allow-plugins": {
-      "dealerdirect/phpcodesniffer-composer-installer": true,
       "composer/installers": true,
       "cweagans/composer-patches": true,
-      "drupal/core-composer-scaffold": true,
-      "oomphinc/composer-installers-extender": true,
-      "drupal/core-project-message": true,
-      "phpstan/extension-installer": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true,
       "drupal/console-extend-plugin": true,
+      "drupal/core-composer-scaffold": true,
+      "drupal/core-project-message": true,
+      "oomphinc/composer-installers-extender": true,
       "php-http/discovery": true,
+      "phpstan/extension-installer": true,
+      "square360/copilot-drupal-instructions": true,
       "tbachert/spi": true
     }
   },

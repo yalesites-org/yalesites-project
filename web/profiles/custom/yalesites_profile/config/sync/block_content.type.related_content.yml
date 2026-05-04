@@ -1,0 +1,7 @@
+langcode: en
+status: true
+dependencies: {  }
+id: related_content
+label: 'Related Content'
+revision: true
+description: 'Shows a list of related content for the current page.'
