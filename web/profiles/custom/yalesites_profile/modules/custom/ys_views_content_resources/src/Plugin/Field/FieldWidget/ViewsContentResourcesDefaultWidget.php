@@ -229,16 +229,62 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
       '#options' => [
         'show_thumbnail' => $this->t('Show Teaser Image'),
         'show_category' => $this->t('Show Category'),
+        'show_tags' => $this->t('Show Tags'),
+        'show_teaser_text' => $this->t('Show Teaser Text'),
+        'show_discipline' => $this->t('Show Discipline'),
+        'show_publication' => $this->t('Show Publication Information'),
       ],
       '#title' => $this->t('Field Display Options'),
       '#tree' => TRUE,
-      '#default_value' => ($isNewForm && empty($fieldOptionValue)) ? ['show_thumbnail', 'show_category'] : $fieldOptionDefaultValue,
+      '#default_value' => ($isNewForm && empty($fieldOptionValue))
+        ? ['show_thumbnail', 'show_category', 'show_teaser_text']
+        : $fieldOptionDefaultValue,
       'show_thumbnail' => [
         '#states' => [
           'visible' => [
             $formSelectors['view_mode_input_selector'] => [
               ['value' => 'card'],
               ['value' => 'portrait_grid'],
+              ['value' => 'list_item'],
+            ],
+          ],
+        ],
+      ],
+      'show_publication' => [
+        '#states' => [
+          'visible' => [
+            $formSelectors['view_mode_input_selector'] => [
+              ['value' => 'card'],
+              ['value' => 'list_item'],
+            ],
+          ],
+        ],
+      ],
+      'show_discipline' => [
+        '#states' => [
+          'visible' => [
+            $formSelectors['view_mode_input_selector'] => [
+              ['value' => 'card'],
+              ['value' => 'list_item'],
+            ],
+          ],
+        ],
+      ],
+      'show_teaser_text' => [
+        '#states' => [
+          'visible' => [
+            $formSelectors['view_mode_input_selector'] => [
+              ['value' => 'card'],
+              ['value' => 'list_item'],
+            ],
+          ],
+        ],
+      ],
+      'show_tags' => [
+        '#states' => [
+          'visible' => [
+            $formSelectors['view_mode_input_selector'] => [
+              ['value' => 'card'],
               ['value' => 'list_item'],
             ],
           ],
@@ -252,9 +298,14 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
       '#options' => [
         'show_search_filter' => $this->t('Show Search'),
         'show_year_filter' => $this->t('Show Year'),
+        'show_journal_publication_name_filter' => $this->t('Show Journal Publication Name'),
         'show_category_filter' => $this->t('Show Category'),
         'show_custom_vocab_filter' => $this->t('Show @vocab', ['@vocab' => $custom_vocab_label]),
         'show_audience_filter' => $this->t('Show Audience'),
+        'show_academic_year_filter' => $this->t('Show Academic Year'),
+        'show_discipline_filter' => $this->t('Show Discipline'),
+        'show_areas_of_study_filter' => $this->t('Show Areas of Study'),
+        'show_geographic_areas_filter' => $this->t('Show Geographic Areas'),
       ],
       '#title' => $this->t('Exposed Filter Options'),
       '#tree' => TRUE,

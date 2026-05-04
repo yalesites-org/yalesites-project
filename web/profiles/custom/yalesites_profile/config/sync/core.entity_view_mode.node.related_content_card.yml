@@ -1,0 +1,11 @@
+uuid: 6f2c0a7e-9b6c-4d4f-9c5b-7a3b2d1e4c6a
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+id: node.related_content_card
+label: 'Related Content Card'
+description: 'Compact card used inside the Related Content block: bundle eyebrow + linked title.'
+targetEntityType: node
+cache: true

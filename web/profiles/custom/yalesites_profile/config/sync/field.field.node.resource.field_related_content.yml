@@ -1,0 +1,25 @@
+uuid: 8f278464-cfeb-4f1b-a436-45665f59caad
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_related_content
+    - node.type.resource
+id: node.resource.field_related_content
+field_name: field_related_content
+entity_type: node
+bundle: resource
+label: 'Related Content'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: views
+  handler_settings:
+    view:
+      view_name: entity_reference_for_fields
+      display_name: entity_reference_1
+      arguments: {  }
+field_type: entity_reference

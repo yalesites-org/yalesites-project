@@ -42,6 +42,7 @@ module:
   datetime: 0
   datetime_range: 0
   dblog: 0
+  double_field: 0
   dynamic_page_cache: 0
   editor: 0
   editor_advanced_link: 0
@@ -57,6 +58,7 @@ module:
   file_mdm: 0
   filter: 0
   focal_point: 0
+  fpa: 0
   gin_lb: 0
   gin_moderation_sidebar: 0
   gin_toolbar: 0
@@ -71,6 +73,7 @@ module:
   jquery_ui_datepicker: 0
   jquery_ui_slider: 0
   jquery_ui_touch_punch: 0
+  js_cookie: 0
   key: 0
   layout_builder: 0
   layout_builder_browser: 0
@@ -160,6 +163,7 @@ module:
   ys_book: 0
   ys_campus_groups: 0
   ys_captcha: 0
+  ys_dcn_field: 0
   ys_file_management: 0
   ys_integrations: 0
   ys_layouts: 0
