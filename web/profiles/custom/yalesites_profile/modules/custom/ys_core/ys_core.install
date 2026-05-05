@@ -1068,3 +1068,44 @@ function ys_core_update_10010() {
 
   return t('Populated Academic Years vocabulary with @count terms from 2026-2027 to 2000-2001.', ['@count' => $created]);
 }
+
+/**
+ * Remove fpa and js_cookie schema entries left behind after module removal.
+ *
+ * These modules were removed from composer.json without a proper drush
+ * pm-uninstall first. By the time this hook runs, the module files are already
+ * gone (composer install removed them), so we clean up the orphaned system
+ * schema entries manually to allow config import to succeed.
+ */
+function ys_core_update_10011() {
+  $modules = ['fpa', 'js_cookie'];
+  $removed = [];
+
+  foreach ($modules as $module) {
+    $schema_exists = \Drupal::database()
+      ->select('key_value', 'kv')
+      ->fields('kv', ['name'])
+      ->condition('collection', 'system.schema')
+      ->condition('name', $module)
+      ->execute()
+      ->fetchField();
+
+    if ($schema_exists) {
+      \Drupal::database()
+        ->delete('key_value')
+        ->condition('collection', 'system.schema')
+        ->condition('name', $module)
+        ->execute();
+
+      $removed[] = $module;
+    }
+  }
+
+  if (empty($removed)) {
+    return t('No fpa or js_cookie schema entries found; nothing to remove.');
+  }
+
+  return t('Removed system.schema entries for: @modules.', [
+    '@modules' => implode(', ', $removed),
+  ]);
+}
