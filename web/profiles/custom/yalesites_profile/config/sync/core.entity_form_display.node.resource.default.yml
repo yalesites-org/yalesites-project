@@ -5,7 +5,6 @@ dependencies:
   config:
     - field.field.node.resource.field_abstract
     - field.field.node.resource.field_academic_years
-    - field.field.node.resource.field_affiliation
     - field.field.node.resource.field_areas_of_study
     - field.field.node.resource.field_audience
     - field.field.node.resource.field_authors
@@ -168,7 +167,6 @@ third_party_settings:
         - field_audience
         - field_custom_vocab
         - field_geographic_areas
-        - field_affiliation
         - field_discipline
         - field_areas_of_study
         - field_tags
@@ -247,12 +245,6 @@ content:
   field_academic_years:
     type: chosen_select
     weight: 13
-    region: content
-    settings: {  }
-    third_party_settings: {  }
-  field_affiliation:
-    type: chosen_select
-    weight: 17
     region: content
     settings: {  }
     third_party_settings: {  }
