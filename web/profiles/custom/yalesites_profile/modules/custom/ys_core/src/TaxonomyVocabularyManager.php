@@ -118,6 +118,16 @@ class TaxonomyVocabularyManager {
             break;
           }
         }
+
+        // dcn_field is a custom field type that stores its vocabulary reference
+        // in a field setting rather than via entity_reference handler_settings.
+        if ($field->getType() === 'dcn_field') {
+          $dcn_vocab = $field->getSetting('dcn_type_vocabulary');
+          if ($dcn_vocab && $dcn_vocab === $vocabulary->id()) {
+            $content_types[] = $node_type->label();
+            break;
+          }
+        }
       }
     }
 
