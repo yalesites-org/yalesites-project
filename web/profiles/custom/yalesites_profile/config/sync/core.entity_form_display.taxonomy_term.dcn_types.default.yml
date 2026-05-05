@@ -1,0 +1,25 @@
+uuid: 93500644-e6ff-4b1a-89c6-d83fc30ec6fb
+langcode: en
+status: true
+dependencies:
+  config:
+    - taxonomy.vocabulary.dcn_types
+id: taxonomy_term.dcn_types.default
+targetEntityType: taxonomy_term
+bundle: dcn_types
+mode: default
+content:
+  name:
+    type: string_textfield
+    weight: 0
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+hidden:
+  description: true
+  path: true
+  revision_log_message: true
+  simple_sitemap: true
+  status: true
