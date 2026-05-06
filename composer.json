@@ -129,7 +129,6 @@
       "oomphinc/composer-installers-extender": true,
       "php-http/discovery": true,
       "phpstan/extension-installer": true,
-      "square360/copilot-drupal-instructions": true,
       "tbachert/spi": true
     }
   },
