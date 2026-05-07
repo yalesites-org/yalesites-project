@@ -1361,7 +1361,7 @@ function ys_core_set_block_field_defaults(string $block_type, string $field_name
  * Hides fields that aren't relevant for YaleSites editors.
  */
 function ys_core_form_menu_link_content_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
-  foreach (['description', 'view_mode', 'revision_log_message', 'expanded'] as $key) {
+  foreach (['description', 'menu_link_description', 'view_mode', 'revision_log_message', 'expanded'] as $key) {
     if (isset($form[$key])) {
       $form[$key]['#access'] = FALSE;
     }
