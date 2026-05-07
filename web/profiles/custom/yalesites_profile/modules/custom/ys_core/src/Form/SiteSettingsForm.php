@@ -244,11 +244,11 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     $form['font_pairing'] = [
       '#type' => 'radios',
       '#options' => [
-        'yalenew' => $this->t('Yale New (Old-Style Numerals) / Mallory (YaleNew with old-style numerals for headings and site title, Mallory for paragraph text)'),
+        'yalenew' => $this->t('Yale New (Old-Style Numerals) / Mallory (YaleNew with old-style numerals for headings, dates, and meta text; Mallory for paragraph text)'),
         'mallory' => $this->t('Mallory / Mallory (Mallory for headings, Mallory for paragraph text)'),
-        'yalenew-oldstyle' => $this->t('Yale New / Mallory (YaleNew for headings and site title, Mallory for paragraph text)'),
+        'yalenew-oldstyle' => $this->t('Yale New / Mallory (YaleNew with lining numerals for headings, dates, and meta text; Mallory for paragraph text)'),
       ],
-      '#description' => $this->t('This font pairing will apply site-wide and affect all heading levels (h1-h6)'),
+      '#description' => $this->t('This font pairing will apply site-wide and affect headings, dates, facts &amp; figures statistics, and meta text throughout the site.'),
       '#title' => $this->t('Font Pairing'),
       '#default_value' => $yaleConfig->get('font_pairing') ?? 'yalenew',
       '#prefix' => '<div class="font-pairing-selector">',
