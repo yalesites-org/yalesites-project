@@ -1361,11 +1361,27 @@ function ys_core_set_block_field_defaults(string $block_type, string $field_name
  * Hides fields that aren't relevant for YaleSites editors.
  */
 function ys_core_form_menu_link_content_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
-  foreach (['description', 'menu_link_description', 'view_mode', 'revision_log_message', 'expanded'] as $key) {
+  foreach (['description', 'view_mode', 'revision_log_message', 'expanded'] as $key) {
     if (isset($form[$key])) {
       $form[$key]['#access'] = FALSE;
     }
   }
+  // Claro (gin's base theme) creates 'menu_link_description' as a details
+  // wrapper around 'description' in its own hook_form_alter, which runs after
+  // all modules. Use #after_build so we can hide it after theme alters finish.
+  $form['#after_build'][] = 'ys_core_menu_link_content_form_after_build';
+}
+
+/**
+ * After-build callback for menu_link_content_form.
+ *
+ * Hides the 'menu_link_description' details wrapper created by the Claro theme.
+ */
+function ys_core_menu_link_content_form_after_build(array $form, FormStateInterface $form_state) {
+  if (isset($form['menu_link_description'])) {
+    $form['menu_link_description']['#access'] = FALSE;
+  }
+  return $form;
 }
 
 /**
