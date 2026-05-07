@@ -256,6 +256,7 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
             $formSelectors['view_mode_input_selector'] => [
               ['value' => 'card'],
               ['value' => 'list_item'],
+              ['value' => 'portrait_grid'],
             ],
           ],
         ],
@@ -266,6 +267,7 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
             $formSelectors['view_mode_input_selector'] => [
               ['value' => 'card'],
               ['value' => 'list_item'],
+              ['value' => 'portrait_grid'],
             ],
           ],
         ],
@@ -276,6 +278,7 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
             $formSelectors['view_mode_input_selector'] => [
               ['value' => 'card'],
               ['value' => 'list_item'],
+              ['value' => 'portrait_grid'],
             ],
           ],
         ],
@@ -286,6 +289,7 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
             $formSelectors['view_mode_input_selector'] => [
               ['value' => 'card'],
               ['value' => 'list_item'],
+              ['value' => 'portrait_grid'],
             ],
           ],
         ],
