@@ -37,8 +37,7 @@
     "yalesites-org/yalesites_profile": "*"
   },
   "require-dev": {
-    "drupal/core-dev": "^10",
-    "drupal/fpa": "^4.0"
+    "drupal/core-dev": "^10"
   },
   "conflict": {
     "drupal/drupal": "*"
@@ -130,7 +129,6 @@
       "oomphinc/composer-installers-extender": true,
       "php-http/discovery": true,
       "phpstan/extension-installer": true,
-      "square360/copilot-drupal-instructions": true,
       "tbachert/spi": true
     }
   },

@@ -1068,3 +1068,86 @@ function ys_core_update_10010() {
 
   return t('Populated Academic Years vocabulary with @count terms from 2026-2027 to 2000-2001.', ['@count' => $created]);
 }
+
+/**
+ * Remove fpa and js_cookie schema entries left behind after module removal.
+ *
+ * These modules were removed from composer.json without a proper drush
+ * pm-uninstall first. By the time this hook runs, the module files are already
+ * gone (composer install removed them), so we clean up the orphaned system
+ * schema entries manually to allow config import to succeed.
+ */
+function ys_core_update_10011() {
+  $modules = ['fpa', 'js_cookie'];
+  $removed = [];
+
+  foreach ($modules as $module) {
+    $schema_exists = \Drupal::database()
+      ->select('key_value', 'kv')
+      ->fields('kv', ['name'])
+      ->condition('collection', 'system.schema')
+      ->condition('name', $module)
+      ->execute()
+      ->fetchField();
+
+    if ($schema_exists) {
+      \Drupal::database()
+        ->delete('key_value')
+        ->condition('collection', 'system.schema')
+        ->condition('name', $module)
+        ->execute();
+
+      $removed[] = $module;
+    }
+  }
+
+  if (empty($removed)) {
+    return t('No fpa or js_cookie schema entries found; nothing to remove.');
+  }
+
+  return t('Removed system.schema entries for: @modules.', [
+    '@modules' => implode(', ', $removed),
+  ]);
+}
+
+/**
+ * Populate DCN Types vocabulary with default identifier type terms.
+ *
+ * New site installs receive these terms via the ys_starterkit terms migration.
+ * This hook seeds them on existing sites where the migration has already run.
+ */
+function ys_core_update_10012() {
+  $term_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
+
+  if (!\Drupal::entityTypeManager()->getStorage('taxonomy_vocabulary')->load('dcn_types')) {
+    return t('DCN Types vocabulary does not exist; skipping.');
+  }
+
+  $existing_names = array_map(
+    fn($term) => $term->getName(),
+    $term_storage->loadByProperties(['vid' => 'dcn_types'])
+  );
+
+  $default_terms = ['DOI', 'ISBN', 'ISSN', 'Report Number'];
+  $created = 0;
+
+  foreach ($default_terms as $weight => $term_name) {
+    if (in_array($term_name, $existing_names)) {
+      continue;
+    }
+
+    Term::create([
+      'vid' => 'dcn_types',
+      'name' => $term_name,
+      'weight' => $weight,
+    ])->save();
+
+    $created++;
+  }
+
+  if ($created === 0) {
+    return t('All DCN Types terms already exist; nothing to create.');
+  }
+
+  return t('Populated DCN Types vocabulary with @count terms.', ['@count' => $created]);
+}

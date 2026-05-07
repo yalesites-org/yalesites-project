@@ -58,7 +58,6 @@ module:
   file_mdm: 0
   filter: 0
   focal_point: 0
-  fpa: 0
   gin_lb: 0
   gin_moderation_sidebar: 0
   gin_toolbar: 0
@@ -73,7 +72,6 @@ module:
   jquery_ui_datepicker: 0
   jquery_ui_slider: 0
   jquery_ui_touch_punch: 0
-  js_cookie: 0
   key: 0
   layout_builder: 0
   layout_builder_browser: 0
