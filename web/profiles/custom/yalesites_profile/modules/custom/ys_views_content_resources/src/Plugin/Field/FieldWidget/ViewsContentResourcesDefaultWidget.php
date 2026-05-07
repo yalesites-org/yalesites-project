@@ -232,12 +232,15 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
         'show_tags' => $this->t('Show Tags'),
         'show_teaser_text' => $this->t('Show Teaser Text'),
         'show_discipline' => $this->t('Show Discipline'),
-        'show_publication' => $this->t('Show Publication Information'),
+        'show_journal_name' => $this->t('Show Journal/Publication Name'),
+        'show_journal_issue' => $this->t('Show Journal/Publication Issue'),
+        'show_authors' => $this->t('Show Authors'),
+        'show_publish_date' => $this->t('Show Publish Date'),
       ],
       '#title' => $this->t('Field Display Options'),
       '#tree' => TRUE,
       '#default_value' => ($isNewForm && empty($fieldOptionValue))
-        ? ['show_thumbnail', 'show_category', 'show_teaser_text']
+        ? ['show_thumbnail', 'show_teaser_text']
         : $fieldOptionDefaultValue,
       'show_thumbnail' => [
         '#states' => [
@@ -250,7 +253,40 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
           ],
         ],
       ],
-      'show_publication' => [
+      'show_journal_name' => [
+        '#states' => [
+          'visible' => [
+            $formSelectors['view_mode_input_selector'] => [
+              ['value' => 'card'],
+              ['value' => 'list_item'],
+              ['value' => 'portrait_grid'],
+            ],
+          ],
+        ],
+      ],
+      'show_journal_issue' => [
+        '#states' => [
+          'visible' => [
+            $formSelectors['view_mode_input_selector'] => [
+              ['value' => 'card'],
+              ['value' => 'list_item'],
+              ['value' => 'portrait_grid'],
+            ],
+          ],
+        ],
+      ],
+      'show_authors' => [
+        '#states' => [
+          'visible' => [
+            $formSelectors['view_mode_input_selector'] => [
+              ['value' => 'card'],
+              ['value' => 'list_item'],
+              ['value' => 'portrait_grid'],
+            ],
+          ],
+        ],
+      ],
+      'show_publish_date' => [
         '#states' => [
           'visible' => [
             $formSelectors['view_mode_input_selector'] => [
@@ -302,7 +338,6 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
       '#options' => [
         'show_search_filter' => $this->t('Show Search'),
         'show_year_filter' => $this->t('Show Year'),
-        'show_journal_publication_name_filter' => $this->t('Show Journal Publication Name'),
         'show_category_filter' => $this->t('Show Category'),
         'show_custom_vocab_filter' => $this->t('Show @vocab', ['@vocab' => $custom_vocab_label]),
         'show_audience_filter' => $this->t('Show Audience'),
@@ -314,6 +349,28 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
       '#title' => $this->t('Exposed Filter Options'),
       '#tree' => TRUE,
       '#default_value' => ($items[$delta]->params) ? $this->viewsContentResourcesManager->getDefaultParamValue('exposed_filter_options', $items[$delta]->params) : [],
+    ];
+
+    $form['group_user_selection']['entity_and_view_mode']['search_fields'] = [
+      '#type' => 'checkboxes',
+      '#options' => [
+        'title' => $this->t('Title'),
+        'field_teaser_text' => $this->t('Teaser Text'),
+        'field_teaser_title' => $this->t('Teaser Title'),
+        'field_journal_publication_name' => $this->t('Journal/Publication Name'),
+      ],
+      '#title' => $this->t('Search Fields'),
+      '#description' => $this->t('Select which fields the search filter will search across.'),
+      '#tree' => TRUE,
+      '#default_value' => ($items[$delta]->params)
+        ? $this->viewsContentResourcesManager->getDefaultParamValue('search_fields', $items[$delta]->params)
+        : ['title', 'field_teaser_text', 'field_teaser_title'],
+      '#element_validate' => [[static::class, 'validateSearchFields']],
+      '#states' => [
+        'visible' => [
+          $formSelectors['show_search_filter_selector'] => ['checked' => TRUE],
+        ],
+      ],
     ];
 
     $form['group_user_selection']['entity_and_view_mode']['category_filter_label'] = [
@@ -496,6 +553,22 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
   }
 
   /**
+   * Validates that at least one search field is selected.
+   */
+  public static function validateSearchFields(array &$element, FormStateInterface $form_state): void {
+    $parents = array_slice($element['#parents'], 0, -1);
+    $filterParents = array_merge($parents, ['exposed_filter_options', 'show_search_filter']);
+    $searchEnabled = $form_state->getValue($filterParents);
+
+    if ($searchEnabled) {
+      $selected = array_filter($element['#value']);
+      if (empty($selected)) {
+        $form_state->setError($element, t('At least one search field must be selected when search is enabled.'));
+      }
+    }
+  }
+
+  /**
    * Get data from user selection and save into params field.
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
@@ -514,6 +587,7 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
         ],
         "field_options" => $form['group_user_selection']['entity_and_view_mode']['field_options']['#value'],
         "exposed_filter_options" => $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options']['#value'],
+        "search_fields" => $form['group_user_selection']['entity_and_view_mode']['search_fields']['#value'],
         "category_filter_label" => $form['group_user_selection']['entity_and_view_mode']['category_filter_label']['#value'],
         "category_included_terms" => $form['group_user_selection']['entity_and_view_mode']['category_included_terms']['#value'],
         "custom_vocab_included_terms" => $form['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms']['#value'],
