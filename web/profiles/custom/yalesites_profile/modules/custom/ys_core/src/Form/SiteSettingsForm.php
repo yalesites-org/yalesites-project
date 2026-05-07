@@ -244,11 +244,11 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     $form['font_pairing'] = [
       '#type' => 'radios',
       '#options' => [
-        'yalenew' => $this->t('YaleNew / Mallory (YaleNew for headings, Mallory for paragraph text)'),
+        'yalenew' => $this->t('Yale New (Old-Style Numerals) / Mallory (YaleNew with old-style numerals for headings and other numeric text; Mallory for paragraph text)'),
         'mallory' => $this->t('Mallory / Mallory (Mallory for headings, Mallory for paragraph text)'),
-        'yalenew-oldstyle' => $this->t('Yale Old-Style Numerals / Mallory (YaleNew with old-style numerals for headings and site title, Mallory for paragraph text)'),
+        'yalenew-oldstyle' => $this->t('Yale New / Mallory (YaleNew with lining numerals for headings and other numeric text; Mallory for paragraph text)'),
       ],
-      '#description' => $this->t('This font pairing will apply site-wide and affect all heading levels (h1-h6)'),
+      '#description' => $this->t('This font pairing controls how numbers appear in headings and other numeric text across the site.'),
       '#title' => $this->t('Font Pairing'),
       '#default_value' => $yaleConfig->get('font_pairing') ?? 'yalenew',
       '#prefix' => '<div class="font-pairing-selector">',
@@ -273,13 +273,13 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
         'heading' => [
           '#type' => 'html_tag',
           '#tag' => 'h2',
-          '#value' => $this->t('YaleNew Heading Sample'),
+          '#value' => $this->t('1234567890'),
           '#attributes' => ['class' => ['preview-heading']],
         ],
         'text' => [
           '#type' => 'html_tag',
           '#tag' => 'p',
-          '#value' => $this->t('This is a sample paragraph in Mallory.'),
+          '#value' => $this->t('Old-Style Numerals — some digits (3, 4, 5, 7, 9) descend below the text baseline, similar to lowercase letters.'),
           '#attributes' => ['class' => ['preview-text']],
         ],
       ],
@@ -311,13 +311,13 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
         'heading' => [
           '#type' => 'html_tag',
           '#tag' => 'h2',
-          '#value' => $this->t('Yale Old-Style Numerals Heading Sample — 1234567890'),
+          '#value' => $this->t('1234567890'),
           '#attributes' => ['class' => ['preview-heading']],
         ],
         'text' => [
           '#type' => 'html_tag',
           '#tag' => 'p',
-          '#value' => $this->t('This is a sample paragraph in Mallory.'),
+          '#value' => $this->t('Lining Numerals — all digits align uniformly to the text baseline, similar to capital letters.'),
           '#attributes' => ['class' => ['preview-text']],
         ],
       ],
