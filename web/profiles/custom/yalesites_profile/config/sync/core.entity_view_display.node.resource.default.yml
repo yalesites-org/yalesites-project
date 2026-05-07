@@ -5,7 +5,6 @@ dependencies:
   config:
     - field.field.node.resource.field_abstract
     - field.field.node.resource.field_academic_years
-    - field.field.node.resource.field_affiliation
     - field.field.node.resource.field_areas_of_study
     - field.field.node.resource.field_audience
     - field.field.node.resource.field_authors
@@ -185,14 +184,6 @@ content:
       link: true
     third_party_settings: {  }
     weight: 118
-    region: content
-  field_affiliation:
-    type: entity_reference_label
-    label: above
-    settings:
-      link: true
-    third_party_settings: {  }
-    weight: 112
     region: content
   field_areas_of_study:
     type: entity_reference_label

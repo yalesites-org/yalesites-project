@@ -127,6 +127,7 @@ function ys_views_content_resources_node_view(array &$build, NodeInterface $node
     "card",
     "condensed",
     "list_item",
+    "portrait_grid",
   ];
 
   if (in_array($view_mode, $view_modes)) {

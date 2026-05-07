@@ -164,12 +164,11 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
 
     $category_filter_name = $category_filters[$filterType] ?? NULL;
 
-    // Show the exposed filter 'Category' or 'Affiliation'.
+    // Show the exposed filter 'Category'.
     if (!empty($paramsDecoded['exposed_filter_options']['show_category_filter']) && $category_filter_name) {
       $filters_to_unset = match ($filterType) {
         'resource' => [
           // 'field_category_target_id',
-          'field_affiliation_target_id',
         ],
         default => [],
       };
@@ -196,8 +195,8 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
       }
     }
     else {
-      // Remove all category and affiliation filters if 'show_category_filter'
-      // is not set or category filter name is not defined.
+      // Remove all category filters if 'show_category_filter' is not set or
+      // category filter name is not defined.
       foreach ($category_filters as $filter_name) {
         unset($filters[$filter_name]);
       }

@@ -207,7 +207,6 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
         'field_audience',
         'field_areas_of_study',
         'field_academic_years',
-        'field_affiliation',
         'field_geographic_areas',
         'field_tags',
         'field_custom_vocab',

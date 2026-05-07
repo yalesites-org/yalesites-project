@@ -174,15 +174,29 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     $form['sticky']['widget']['value']['#title'] = t('Pin to the beginning of list');
   }
 
-  // Hide Relations on taxonomy term edit page.
-  $vocabularyForms = [
-    'taxonomy_term_tags_form',
-    'taxonomy_term_event_category_form',
-    'taxonomy_term_post_category_form',
+  // Hide the Relations fieldset (parent terms + weight) on all taxonomy term
+  // forms. Add a vocabulary machine name to $allowRelations if a vocabulary
+  // explicitly requires hierarchical parent term support.
+  $allowRelations = [
+    'affiliation',
+    'audience',
+    'custom_vocab',
+    'event_audience',
+    'event_groups',
+    'event_place',
+    'event_sources',
+    'event_status',
+    'event_topics',
+    'event_type',
+    'localist_event_type',
+    'page_category',
   ];
 
-  if (in_array($form_id, $vocabularyForms)) {
-    $form['relations']['#access'] = FALSE;
+  if (str_starts_with($form_id, 'taxonomy_term_') && str_ends_with($form_id, '_form')) {
+    $vocab = substr($form_id, strlen('taxonomy_term_'), -strlen('_form'));
+    if (!in_array($vocab, $allowRelations)) {
+      $form['relations']['#access'] = FALSE;
+    }
   }
 
   // Increase length of taxonomy vocabulary description field.
@@ -937,7 +951,6 @@ function ys_core_form_views_exposed_form_alter(&$form, FormStateInterface $form_
     // List of form elements to which Chosen should be applied.
     $chosen_filters = [
       'field_academic_years_target_id',
-      'field_affiliation_target_id',
       'field_areas_of_study_target_id',
       'field_audience_target_id',
       'field_category_target_id',
