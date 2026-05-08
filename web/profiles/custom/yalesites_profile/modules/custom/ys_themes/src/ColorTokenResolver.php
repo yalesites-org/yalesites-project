@@ -621,7 +621,7 @@ class ColorTokenResolver {
 
     $is_section_layout = ($entity_type === 'layout_section' && $bundle === 'ys_layout_options');
     if ($is_section_layout) {
-      // Match YSLayoutOptions theme select: default + one–five (see ys_layouts).
+      // Match YSLayoutOptions theme select: default + one–five.
       $desired_order = ['default', 'one', 'two', 'three', 'four', 'five'];
       $palette_options = $this->reorderPaletteOptions($palette_options, $desired_order);
       $element['#options'] = $palette_options;
