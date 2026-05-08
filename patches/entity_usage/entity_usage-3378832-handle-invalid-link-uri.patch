@@ -1,9 +1,7 @@
 diff --git a/src/Plugin/EntityUsage/Track/Link.php b/src/Plugin/EntityUsage/Track/Link.php
-index 45f6a69..4b0287e 100644
 --- a/src/Plugin/EntityUsage/Track/Link.php
 +++ b/src/Plugin/EntityUsage/Track/Link.php
-@@ -23,14 +23,20 @@ class Link extends EntityUsageTrackBase {
-    */
+@@ -26,14 +26,19 @@ class Link extends EntityUsageTrackBase {
    public function getTargetEntities(FieldItemInterface $link): array {
      /** @var \Drupal\link\LinkItemInterface $link */
 -    if ($link->isExternal()) {
@@ -29,3 +27,5 @@ index 45f6a69..4b0287e 100644
  
      if (empty($entity_info)) {
        return [];
+     }
+
