@@ -1,0 +1,25 @@
+uuid: df788174-e26b-47aa-9b23-81708cd3616c
+langcode: en
+status: true
+dependencies:
+  config:
+    - taxonomy.vocabulary.areas_of_study
+id: taxonomy_term.areas_of_study.default
+targetEntityType: taxonomy_term
+bundle: areas_of_study
+mode: default
+content:
+  name:
+    type: string_textfield
+    weight: 0
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+hidden:
+  description: true
+  path: true
+  revision_log_message: true
+  simple_sitemap: true
+  status: true

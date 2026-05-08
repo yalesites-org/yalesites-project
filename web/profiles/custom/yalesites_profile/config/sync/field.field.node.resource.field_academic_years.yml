@@ -1,16 +1,16 @@
-uuid: 54828b6c-3e18-49cb-bfdd-4fb3e889f70e
+uuid: febc5c1b-b17b-4ba0-a19e-4728730f30a8
 langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.node.field_affiliation
+    - field.storage.node.field_academic_years
     - node.type.resource
-    - taxonomy.vocabulary.affiliation
-id: node.resource.field_affiliation
-field_name: field_affiliation
+    - taxonomy.vocabulary.academic_years
+id: node.resource.field_academic_years
+field_name: field_academic_years
 entity_type: node
 bundle: resource
-label: Affiliation
+label: 'Academic Years'
 description: ''
 required: false
 translatable: false
@@ -20,10 +20,10 @@ settings:
   handler: 'default:filter_existing_terms'
   handler_settings:
     target_bundles:
-      affiliation: affiliation
+      academic_years: academic_years
     sort:
       field: name
       direction: asc
-    auto_create: true
+    auto_create: false
     auto_create_bundle: ''
 field_type: entity_reference

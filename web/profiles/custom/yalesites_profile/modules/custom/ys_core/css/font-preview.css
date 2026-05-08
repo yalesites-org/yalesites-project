@@ -33,10 +33,28 @@
 .font-preview-yalenew .preview-heading {
   font-family: "YaleNew", serif;
   font-size: 1.75rem;
+  font-variant-numeric: oldstyle-nums;
+  font-feature-settings: "onum" 1;
   margin-bottom: 0.75rem;
 }
 
 .font-preview-yalenew .preview-text {
+  font-family: "Mallory", sans-serif;
+  font-size: 1rem;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Yale New / Mallory font pairing preview */
+.font-preview-yalenew-oldstyle .preview-heading {
+  font-family: "YaleNew", serif;
+  font-size: 1.75rem;
+  font-variant-numeric: normal;
+  font-feature-settings: "onum" 0;
+  margin-bottom: 0.75rem;
+}
+
+.font-preview-yalenew-oldstyle .preview-text {
   font-family: "Mallory", sans-serif;
   font-size: 1rem;
   line-height: 1.4;

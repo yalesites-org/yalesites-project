@@ -56,6 +56,14 @@ class ExternalSourceRedirectSubscriber implements EventSubscriberInterface {
       /** @var \Drupal\node\NodeInterface $node */
       $node = $this->routeMatch->getParameter('node');
 
+      // Resource pages render full metadata (citation, abstract, authors,
+      // External Source CTA in the meta block) — viewers expect the
+      // metadata page, not an immediate redirect to the publisher. Other
+      // bundles keep the existing redirect behaviour.
+      if ($node && $node->bundle() === 'resource') {
+        return;
+      }
+
       if (!empty($node) && $node->hasField(self::SOURCE_FIELD)) {
         // Reload the node from storage to ensure we have the latest data.
         // This prevents issues with cached entity data.

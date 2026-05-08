@@ -1,0 +1,7 @@
+name: 'YaleSites DCN Field'
+type: module
+description: 'Custom field type for Document Control Numbers with taxonomy reference.'
+package: YaleSites
+core_version_requirement: ^10 || ^11
+dependencies:
+  - drupal:taxonomy

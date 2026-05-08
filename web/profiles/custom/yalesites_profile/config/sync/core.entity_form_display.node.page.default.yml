@@ -8,7 +8,6 @@ dependencies:
     - field.field.node.page.field_collection_nav_position
     - field.field.node.page.field_custom_vocab
     - field.field.node.page.field_external_source
-
     - field.field.node.page.field_login_required
     - field.field.node.page.field_metatags
     - field.field.node.page.field_tags
@@ -116,7 +115,6 @@ content:
       placeholder_url: ''
       placeholder_title: ''
     third_party_settings: {  }
-
   field_login_required:
     type: boolean_checkbox
     weight: 7
