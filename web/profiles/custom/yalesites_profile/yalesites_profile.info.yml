@@ -1,6 +1,6 @@
 name: YaleSites Profile
 type: profile
-version: 2.20.0
+version: 2.21.1
 description: 'Install profile for managing YaleSites platform sites.'
 core_version_requirement: '^9 || ^10'
 

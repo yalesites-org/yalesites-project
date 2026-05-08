@@ -1,0 +1,27 @@
+uuid: bd941583-3707-4253-8e39-c0b3df4205ce
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.related_content
+    - field.storage.block_content.field_heading
+    - filter.format.heading_html
+  module:
+    - text
+id: block_content.related_content.field_heading
+field_name: field_heading
+entity_type: block_content
+bundle: related_content
+label: Heading
+description: ''
+required: false
+translatable: true
+default_value:
+  -
+    value: 'Related Content'
+    format: heading_html
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - heading_html
+field_type: text

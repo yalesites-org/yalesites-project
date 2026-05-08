@@ -1,0 +1,11 @@
+uuid: 6cb02eca-baa6-477d-80d0-6b6f5be6e10a
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: HHxwxdzMD4UmN9oTHc_gb74eH_Wjfz2rMp3KTfSZCn4
+name: 'DCN Types'
+vid: dcn_types
+description: 'Document Control Number types (ISBN, ISPS ID, etc.)'
+weight: 0
+new_revision: false

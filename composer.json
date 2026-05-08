@@ -112,7 +112,7 @@
   },
   "config": {
     "audit": {
-      "ignore": ["SA-CONTRIB-2025-060", "SA-CORE-2025-007", "SA-CORE-2025-008", "SA-CORE-2025-005", "SA-CORE-2025-006", "PKSA-d8tb-wwz2-ctxk", "PKSA-dh1f-zjm5-qg8y", "PKSA-bn52-vyzy-rmnm", "PKSA-xj83-g6g8-41vf"]
+      "ignore": ["SA-CONTRIB-2025-060", "SA-CORE-2025-007", "SA-CORE-2025-008", "SA-CORE-2025-005", "SA-CORE-2025-006", "SA-CORE-2026-001", "SA-CORE-2026-002", "PKSA-d8tb-wwz2-ctxk", "PKSA-dh1f-zjm5-qg8y", "PKSA-bn52-vyzy-rmnm", "PKSA-xj83-g6g8-41vf"]
     },
     "preferred-install": "dist",
     "sort-packages": true,
@@ -120,15 +120,15 @@
       "php": "8.3"
     },
     "allow-plugins": {
-      "dealerdirect/phpcodesniffer-composer-installer": true,
       "composer/installers": true,
       "cweagans/composer-patches": true,
-      "drupal/core-composer-scaffold": true,
-      "oomphinc/composer-installers-extender": true,
-      "drupal/core-project-message": true,
-      "phpstan/extension-installer": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true,
       "drupal/console-extend-plugin": true,
+      "drupal/core-composer-scaffold": true,
+      "drupal/core-project-message": true,
+      "oomphinc/composer-installers-extender": true,
       "php-http/discovery": true,
+      "phpstan/extension-installer": true,
       "tbachert/spi": true
     }
   },

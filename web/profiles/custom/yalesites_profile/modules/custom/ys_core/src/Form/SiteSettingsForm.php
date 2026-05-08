@@ -244,10 +244,11 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     $form['font_pairing'] = [
       '#type' => 'radios',
       '#options' => [
-        'yalenew' => $this->t('YaleNew (YaleNew for headings, Mallory for paragraph text)'),
-        'mallory' => $this->t('Mallory (Mallory for headings, Mallory for paragraph text)'),
+        'yalenew' => $this->t('Yale New (Old-Style Numerals) / Mallory (YaleNew with old-style numerals for headings and other numeric text; Mallory for paragraph text)'),
+        'mallory' => $this->t('Mallory / Mallory (Mallory for headings, Mallory for paragraph text)'),
+        'yalenew-oldstyle' => $this->t('Yale New / Mallory (YaleNew with lining numerals for headings and other numeric text; Mallory for paragraph text)'),
       ],
-      '#description' => $this->t('This font pairing will apply site-wide and affect all heading levels (h1-h6)'),
+      '#description' => $this->t('This font pairing controls how numbers appear in headings and other numeric text across the site.'),
       '#title' => $this->t('Font Pairing'),
       '#default_value' => $yaleConfig->get('font_pairing') ?? 'yalenew',
       '#prefix' => '<div class="font-pairing-selector">',
@@ -272,13 +273,13 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
         'heading' => [
           '#type' => 'html_tag',
           '#tag' => 'h2',
-          '#value' => $this->t('YaleNew Heading Sample'),
+          '#value' => $this->t('1234567890'),
           '#attributes' => ['class' => ['preview-heading']],
         ],
         'text' => [
           '#type' => 'html_tag',
           '#tag' => 'p',
-          '#value' => $this->t('This is a sample paragraph in Mallory.'),
+          '#value' => $this->t('Old-Style Numerals — some digits (3, 4, 5, 7, 9) descend below the text baseline, similar to lowercase letters.'),
           '#attributes' => ['class' => ['preview-text']],
         ],
       ],
@@ -298,6 +299,25 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
           '#type' => 'html_tag',
           '#tag' => 'p',
           '#value' => $this->t('This is a sample paragraph in Mallory.'),
+          '#attributes' => ['class' => ['preview-text']],
+        ],
+      ],
+      'yalenew-oldstyle' => [
+        '#type' => 'container',
+        '#attributes' => [
+          'class' => ['font-preview', 'font-preview-yalenew-oldstyle'],
+          'data-font-pairing' => 'yalenew-oldstyle',
+        ],
+        'heading' => [
+          '#type' => 'html_tag',
+          '#tag' => 'h2',
+          '#value' => $this->t('1234567890'),
+          '#attributes' => ['class' => ['preview-heading']],
+        ],
+        'text' => [
+          '#type' => 'html_tag',
+          '#tag' => 'p',
+          '#value' => $this->t('Lining Numerals — all digits align uniformly to the text baseline, similar to capital letters.'),
           '#attributes' => ['class' => ['preview-text']],
         ],
       ],
@@ -410,7 +430,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       ->set('page.posts', $form_state->getValue('site_page_posts'))
       ->set('page.events', $form_state->getValue('site_page_events'))
       ->set('seo.google_site_verification', $form_state->getValue('google_site_verification'))
-      ->set('taxonomy.custom_vocab_name', $form_state->getValue('custom_vocab_name'))
+      ->set('taxonomy.custom_vocab_name', $form_state->getValue('custom_vocab_name') ?: 'Custom Vocab')
       ->set('image_fallback.teaser', $form_state->getValue('teaser_image_fallback'))
       ->set('custom_favicon', $form_state->getValue('favicon'))
       ->set('font_pairing', $form_state->getValue('font_pairing'))
@@ -424,18 +444,19 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
 
     $yaleSiteConfig->save();
 
+    $submitted_vocab_name = $form_state->getValue('custom_vocab_name') ?: 'Custom Vocab';
     $custom_vocab_name = $this->configFactory->getEditable('taxonomy.vocabulary.custom_vocab')->get('name');
-    if ($custom_vocab_name !== $form_state->getValue('custom_vocab_name')) {
+    if ($custom_vocab_name !== $submitted_vocab_name) {
       // Update the custom vocab vocabulary name.
       $this->configFactory->getEditable('taxonomy.vocabulary.custom_vocab')
-        ->set('name', $form_state->getValue('custom_vocab_name'))
+        ->set('name', $submitted_vocab_name)
         ->save();
 
       $content_types = ['event', 'page', 'post', 'profile', 'resource'];
       // Update the custom vocab field label for each content type.
       foreach ($content_types as $type) {
         $this->configFactory->getEditable("field.field.node.{$type}.field_custom_vocab")
-          ->set('label', $form_state->getValue('custom_vocab_name'))
+          ->set('label', $submitted_vocab_name)
           ->save();
       }
       // Clear cache so the new label is reflected in the node form.

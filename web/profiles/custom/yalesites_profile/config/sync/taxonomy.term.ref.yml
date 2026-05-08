@@ -1,0 +1,10 @@
+_core:
+  default_config_hash: z4ASzwUAw04NoEhKHp_aSfaHXUAk4xWKenAH9vcdUDU
+langcode: en
+status: true
+dependencies:
+  config:
+    - taxonomy.vocabulary.dcn_types
+name: 'Ref #'
+vid: dcn_types
+weight: 1

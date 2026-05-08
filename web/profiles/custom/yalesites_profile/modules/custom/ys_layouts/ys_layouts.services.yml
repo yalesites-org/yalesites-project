@@ -7,3 +7,15 @@ services:
   ys_layouts.updater:
     class: Drupal\ys_layouts\Service\LayoutUpdater
     arguments: ['@config.factory', '@database', '@entity_type.manager', '@entity_field.manager', '@logger.channel.ys_layouts', '@messenger']
+  # en_US Unicode collator used by ResourceAuthorBuilder for last-then-first
+  # sorting of merged affiliated/non-affiliated authors. Registered as a
+  # service so it can be injected and overridden in tests if needed.
+  ys_layouts.author_collator:
+    class: Collator
+    arguments: ['en_US']
+  # Builds the merged + sorted author list for Resource nodes.
+  # Used by ResourceMetaBlock and atomic_preprocess_node() so the block
+  # render and the view-row templates produce identical output.
+  ys_layouts.resource_author_builder:
+    class: Drupal\ys_layouts\Service\ResourceAuthorBuilder
+    arguments: ['@ys_layouts.author_collator']

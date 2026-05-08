@@ -1,0 +1,33 @@
+uuid: e99c9ac6-f3b2-473e-9f0b-813b5cd6c593
+langcode: en
+status: true
+dependencies:
+  config:
+    - image.style.5_8_1120
+    - image.style.5_8_175
+    - image.style.5_8_320
+    - image.style.5_8_480
+    - image.style.5_8_540
+    - image.style.5_8_640
+    - image.style.5_8_800
+    - image.style.5_8_960
+id: card_grid_portrait_5_8
+label: 'Card Grid - Portrait (1:1.6)'
+image_style_mappings:
+  -
+    image_mapping_type: sizes
+    image_mapping:
+      sizes: '(min-width: 1344px) 540px, (min-width: 992px) 32vw, 50vw'
+      sizes_image_styles:
+        - '5_8_175'
+        - '5_8_320'
+        - '5_8_480'
+        - '5_8_540'
+        - '5_8_640'
+        - '5_8_800'
+        - '5_8_960'
+        - '5_8_1120'
+    breakpoint_id: responsive_image.viewport_sizing
+    multiplier: 1x
+breakpoint_group: responsive_image
+fallback_image_style: '5_8_320'

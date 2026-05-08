@@ -1,0 +1,19 @@
+uuid: c97a5507-b44e-4f96-8fe1-8c28ae482176
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_journal_publication_issue
+    - node.type.resource
+id: node.resource.field_journal_publication_issue
+field_name: field_journal_publication_issue
+entity_type: node
+bundle: resource
+label: 'Journal Publication Issue'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

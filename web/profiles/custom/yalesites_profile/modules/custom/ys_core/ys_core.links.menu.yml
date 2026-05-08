@@ -141,6 +141,46 @@ ys_core.taxonomy_interface_audience:
   title: Audience
   route_parameters:
     taxonomy_vocabulary: "audience"
+# Taxonomy interface - Academic Years
+ys_core.taxonomy_interface_academic_years:
+  description: "Manage academic years taxonomy"
+  parent: ys_core.taxonomy_interface
+  route_name: entity.taxonomy_vocabulary.overview_form
+  title: Academic Years
+  route_parameters:
+    taxonomy_vocabulary: "academic_years"
+# Taxonomy interface - Areas of Study
+ys_core.taxonomy_interface_areas_of_study:
+  description: "Manage areas of study taxonomy"
+  parent: ys_core.taxonomy_interface
+  route_name: entity.taxonomy_vocabulary.overview_form
+  title: Areas of Study
+  route_parameters:
+    taxonomy_vocabulary: "areas_of_study"
+# Taxonomy interface - DCN Types
+ys_core.taxonomy_interface_dcn_types:
+  description: "Manage DCN types taxonomy"
+  parent: ys_core.taxonomy_interface
+  route_name: entity.taxonomy_vocabulary.overview_form
+  title: DCN Types
+  route_parameters:
+    taxonomy_vocabulary: "dcn_types"
+# Taxonomy interface - Discipline
+ys_core.taxonomy_interface_discipline:
+  description: "Manage discipline taxonomy"
+  parent: ys_core.taxonomy_interface
+  route_name: entity.taxonomy_vocabulary.overview_form
+  title: Discipline
+  route_parameters:
+    taxonomy_vocabulary: "discipline"
+# Taxonomy interface - Geographic Areas
+ys_core.taxonomy_interface_geographic_areas:
+  description: "Manage geographic areas taxonomy"
+  parent: ys_core.taxonomy_interface
+  route_name: entity.taxonomy_vocabulary.overview_form
+  title: Geographic Areas
+  route_parameters:
+    taxonomy_vocabulary: "geographic_areas"
 # Taxonomy interface - Resource Category
 ys_core.taxonomy_interface_resource_category:
   description: "Manage resource category taxonomy"
