@@ -4,7 +4,7 @@ status: true
 dependencies:
   config:
     - field.storage.node.field_content_description
-    - filter.format.basic_html
+    - filter.format.restricted_html
     - node.type.resource
   module:
     - text
@@ -20,5 +20,5 @@ default_value: {  }
 default_value_callback: ''
 settings:
   allowed_formats:
-    - basic_html
+    - restricted_html
 field_type: text_long
