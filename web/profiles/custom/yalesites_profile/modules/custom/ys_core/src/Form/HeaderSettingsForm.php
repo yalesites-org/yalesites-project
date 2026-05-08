@@ -425,16 +425,21 @@ class HeaderSettingsForm extends ConfigFormBase {
     // Header settings config.
     $headerConfig = $this->config('ys_core.header_settings');
 
-    // Handle the filesystem if needed.
-    $this->ysMediaManager->handleMediaFilesystem(
-      $form_state->getValue('site_name_image'),
-      $headerConfig->get('site_name_image')
-    );
-
     $headerConfig->set('header_variation', $form_state->getValue('header_variation'));
-    $headerConfig->set('site_name_image', $form_state->getValue('site_name_image'));
-    $headerConfig->set('site_wide_branding_name', $form_state->getValue('site_wide_branding_name'));
-    $headerConfig->set('site_wide_branding_link', $form_state->getValue('site_wide_branding_link'));
+
+    // Only platform admins see (and may change) these fields; skip saving them
+    // for other roles to prevent overwriting existing values with NULL.
+    if (ys_core_allow_secret_items($this->currentUserSession)) {
+      // Handle the filesystem if needed.
+      $this->ysMediaManager->handleMediaFilesystem(
+        $form_state->getValue('site_name_image'),
+        $headerConfig->get('site_name_image')
+      );
+
+      $headerConfig->set('site_name_image', $form_state->getValue('site_name_image'));
+      $headerConfig->set('site_wide_branding_name', $form_state->getValue('site_wide_branding_name'));
+      $headerConfig->set('site_wide_branding_link', $form_state->getValue('site_wide_branding_link'));
+    }
     $headerConfig->set('nav_position', $form_state->getValue('nav_position'));
     $headerConfig->set('dropdown_button_title', $form_state->getValue('dropdown_button_title'));
     $headerConfig->set('cta_content', $form_state->getValue('cta_content'));
