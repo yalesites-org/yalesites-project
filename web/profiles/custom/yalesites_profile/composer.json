@@ -151,6 +151,9 @@
       "drupal/entity_redirect": {
         "fix layout route https://www.drupal.org/project/entity_redirect/issues/3352265": "https://git.drupalcode.org/project/entity_redirect/-/merge_requests/6.diff"
       },
+      "drupal/entity_usage": {
+        "Handle invalid link URIs without fatal error https://www.drupal.org/project/entity_usage/issues/3378832": "patches/entity_usage/entity_usage-3378832-handle-invalid-link-uri.patch"
+      },
       "drupal/gin": {
         "fix description toggle for CKEditor fields https://www.drupal.org/project/gin/issues/3316265": "https://git.drupalcode.org/project/gin/-/merge_requests/227.patch"
       },
