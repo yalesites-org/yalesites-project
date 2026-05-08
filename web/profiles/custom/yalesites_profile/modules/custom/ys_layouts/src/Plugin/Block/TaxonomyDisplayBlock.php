@@ -159,6 +159,7 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
             'three' => $this->t('Three'),
             'four' => $this->t('Four'),
             'five' => $this->t('Five'),
+            'six' => $this->t('Six'),
           ],
           '#default_value' => $this->configuration['theme_selection'] ?? 'one',
           '#process' => [
