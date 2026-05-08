@@ -1,0 +1,25 @@
+/**
+ * DCN Field Widget Inline Styling
+ */
+.dcn-field-widget-inline {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.dcn-field-widget-inline .dcn-field-item {
+  flex: 1;
+}
+
+.dcn-field-widget-inline .dcn-type {
+  flex: 0 0 200px;
+}
+
+.dcn-field-widget-inline .dcn-identifier {
+  flex: 1;
+}
+
+.dcn-field-widget-inline .form-item label {
+  display: block;
+  margin-bottom: 0.25rem;
+}

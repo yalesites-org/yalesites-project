@@ -175,15 +175,29 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     $form['sticky']['widget']['value']['#title'] = t('Pin to the beginning of list');
   }
 
-  // Hide Relations on taxonomy term edit page.
-  $vocabularyForms = [
-    'taxonomy_term_tags_form',
-    'taxonomy_term_event_category_form',
-    'taxonomy_term_post_category_form',
+  // Hide the Relations fieldset (parent terms + weight) on all taxonomy term
+  // forms. Add a vocabulary machine name to $allowRelations if a vocabulary
+  // explicitly requires hierarchical parent term support.
+  $allowRelations = [
+    'affiliation',
+    'audience',
+    'custom_vocab',
+    'event_audience',
+    'event_groups',
+    'event_place',
+    'event_sources',
+    'event_status',
+    'event_topics',
+    'event_type',
+    'localist_event_type',
+    'page_category',
   ];
 
-  if (in_array($form_id, $vocabularyForms)) {
-    $form['relations']['#access'] = FALSE;
+  if (str_starts_with($form_id, 'taxonomy_term_') && str_ends_with($form_id, '_form')) {
+    $vocab = substr($form_id, strlen('taxonomy_term_'), -strlen('_form'));
+    if (!in_array($vocab, $allowRelations)) {
+      $form['relations']['#access'] = FALSE;
+    }
   }
 
   // Increase length of taxonomy vocabulary description field.
@@ -950,11 +964,14 @@ function ys_core_form_views_exposed_form_alter(&$form, FormStateInterface $form_
   if (in_array($view->id(), ['views_basic_scaffold', 'views_basic_scaffold_events', 'content_resources'])) {
     // List of form elements to which Chosen should be applied.
     $chosen_filters = [
+      'field_academic_years_target_id',
+      'field_areas_of_study_target_id',
+      'field_audience_target_id',
       'field_category_target_id',
       'field_category_target_id_1',
-      'field_affiliation_target_id',
       'field_custom_vocab_target_id',
-      'field_audience_target_id',
+      'field_discipline_target_id',
+      'field_geographic_areas_target_id',
       'post_year_filter',
       'resource_year_filter',
     ];
@@ -1350,4 +1367,56 @@ function ys_core_set_block_field_defaults(string $block_type, string $field_name
   }
 
   return $updated_count;
+}
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter() for menu_link_content_form.
+ *
+ * Hides fields that aren't relevant for YaleSites editors.
+ */
+function ys_core_form_menu_link_content_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
+  foreach (['description', 'view_mode', 'revision_log_message', 'expanded'] as $key) {
+    if (isset($form[$key])) {
+      $form[$key]['#access'] = FALSE;
+    }
+  }
+  // Claro (gin's base theme) creates 'menu_link_description' as a details
+  // wrapper around 'description' in its own hook_form_alter, which runs after
+  // all modules. Use #after_build so we can hide it after theme alters finish.
+  $form['#after_build'][] = 'ys_core_menu_link_content_form_after_build';
+}
+
+/**
+ * After-build callback for menu_link_content_form.
+ *
+ * Hides the 'menu_link_description' details wrapper created by the Claro theme.
+ */
+function ys_core_menu_link_content_form_after_build(array $form, FormStateInterface $form_state) {
+  if (isset($form['menu_link_description'])) {
+    $form['menu_link_description']['#access'] = FALSE;
+  }
+  return $form;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter() for menu_edit_form.
+ *
+ * BigMenu adds a #theme => 'breadcrumb' element when editing children, but the
+ * Gin admin theme renders breadcrumbs in its own toolbar region, so the inline
+ * element is invisible. Replace it with a simple back link.
+ */
+function ys_core_form_menu_edit_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
+  $menu_link = \Drupal::request()->query->get('menu_link');
+  if (!$menu_link) {
+    return;
+  }
+
+  $menu = $form_state->getFormObject()->getEntity();
+  $form['breadcrumb'] = [
+    '#type' => 'link',
+    '#title' => t('Back to @label top level', ['@label' => $menu->label()]),
+    '#url' => $menu->toUrl('edit-form'),
+    '#attributes' => ['class' => ['button', 'button--small']],
+    '#weight' => -100,
+  ];
 }

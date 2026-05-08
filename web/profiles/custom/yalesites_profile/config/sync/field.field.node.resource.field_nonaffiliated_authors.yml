@@ -1,0 +1,39 @@
+uuid: ee321b08-0d2a-4dad-bfdc-437b4e66335f
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_nonaffiliated_authors
+    - node.type.resource
+  module:
+    - double_field
+id: node.resource.field_nonaffiliated_authors
+field_name: field_nonaffiliated_authors
+entity_type: node
+bundle: resource
+label: 'Non-Affiliated Authors'
+description: 'Authors without a site profile. Enter first name and last name separately so the combined author list can be sorted alphabetically.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  first:
+    label: 'First Name'
+    list: false
+    allowed_values: {  }
+    max: null
+    min: null
+    required: true
+    on_label: 'On'
+    off_label: 'Off'
+  second:
+    label: 'Last Name'
+    list: false
+    allowed_values: {  }
+    max: null
+    min: null
+    required: true
+    on_label: 'On'
+    off_label: 'Off'
+field_type: double_field

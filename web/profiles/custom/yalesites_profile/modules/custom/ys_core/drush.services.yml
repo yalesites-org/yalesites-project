@@ -1,0 +1,6 @@
+services:
+  ys_core.commands:
+    class: \Drupal\ys_core\Commands\YaleSitesCommands
+    arguments: ['@entity_type.manager', '@module_handler']
+    tags:
+      - { name: drush.command }

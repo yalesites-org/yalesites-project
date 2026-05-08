@@ -160,6 +160,26 @@
         "unique_id": 32,
         "vocabulary": "affiliation",
         "name": "Alumni"
+      },
+      {
+        "unique_id": 33,
+        "vocabulary": "dcn_types",
+        "name": "DOI"
+      },
+      {
+        "unique_id": 34,
+        "vocabulary": "dcn_types",
+        "name": "ISBN"
+      },
+      {
+        "unique_id": 35,
+        "vocabulary": "dcn_types",
+        "name": "ISSN"
+      },
+      {
+        "unique_id": 36,
+        "vocabulary": "dcn_types",
+        "name": "Report Number"
       }
     ]
   }

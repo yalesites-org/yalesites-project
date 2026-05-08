@@ -1,0 +1,25 @@
+uuid: 1cf9fcdc-ec1d-47c7-ab16-d706d2af8d45
+langcode: en
+status: true
+dependencies:
+  config:
+    - taxonomy.vocabulary.geographic_areas
+id: taxonomy_term.geographic_areas.default
+targetEntityType: taxonomy_term
+bundle: geographic_areas
+mode: default
+content:
+  name:
+    type: string_textfield
+    weight: 0
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+hidden:
+  description: true
+  path: true
+  revision_log_message: true
+  simple_sitemap: true
+  status: true
