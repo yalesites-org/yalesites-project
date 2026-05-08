@@ -159,8 +159,6 @@ function ys_book_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   // Handle book outline form (appears at /node/[nid]/outline).
   // Form ID pattern is node_{content_type}_book_outline_form.
   if (strpos($form_id, '_book_outline_form') !== FALSE) {
-    // Store form ID for later use in submit handler.
-    $form['#ys_book_form_id'] = $form_id;
     // Change "Book outline" fieldset title to "Collection outline".
     if (isset($form['book']['#title'])) {
       $form['book']['#title'] = t('Collection outline');
