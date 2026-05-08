@@ -122,7 +122,6 @@ third_party_settings:
     group_basic_info:
       children:
         - title
-        - field_category
         - field_content_description
         - field_media
         - field_related_content
@@ -165,6 +164,7 @@ third_party_settings:
       children:
         - field_academic_years
         - field_audience
+        - field_category
         - field_custom_vocab
         - field_geographic_areas
         - field_discipline
@@ -203,7 +203,6 @@ third_party_settings:
       children:
         - field_publish_date
         - field_date_format
-        - field_revision_date
       label: 'Date Group'
       region: content
       parent_name: group_publication_info
@@ -412,12 +411,6 @@ content:
       size: 60
       placeholder: ''
     third_party_settings: {  }
-  field_revision_date:
-    type: datetime_default
-    weight: 12
-    region: content
-    settings: {  }
-    third_party_settings: {  }
   field_tags:
     type: chosen_select
     weight: 21
@@ -501,6 +494,7 @@ content:
     third_party_settings: {  }
 hidden:
   created: true
+  field_revision_date: true
   layout_builder__layout: true
   promote: true
   revision_log: true

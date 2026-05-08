@@ -241,21 +241,42 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     }
 
     if (!isset($paramsDecoded['exposed_filter_options']['show_search_filter'])) {
-      // If the 'show_search_filter' option is not set,
-      // remove the 'combine' filter.
-      // The 'combine' filter is used for full-text search
-      // across multiple fields.
       unset($filters['combine']);
     }
+    else {
+      // Legacy: map old journal publication name filter to search fields.
+      if (!empty($paramsDecoded['exposed_filter_options']['show_journal_publication_name_filter'])
+          && empty($paramsDecoded['search_fields'])) {
+        $paramsDecoded['search_fields'] = [
+          'title' => 'title',
+          'field_teaser_text' => 'field_teaser_text',
+          'field_teaser_title' => 'field_teaser_title',
+          'field_journal_publication_name' => 'field_journal_publication_name',
+        ];
+      }
 
-    if (!isset($paramsDecoded['exposed_filter_options']['show_year_filter'])) {
-      // Remove the 'Year' filter if the 'show_year_filter' is not set.
-      unset($filters['resource_year_filter']);
+      if (!empty($paramsDecoded['search_fields']) && is_array($paramsDecoded['search_fields'])) {
+        $selectedFields = array_filter($paramsDecoded['search_fields']);
+        if (empty($selectedFields)) {
+          $selectedFields = [
+            'title' => 'title',
+            'field_teaser_text' => 'field_teaser_text',
+            'field_teaser_title' => 'field_teaser_title',
+          ];
+        }
+        $fieldsArray = [];
+        foreach ($selectedFields as $field) {
+          $fieldsArray[$field] = $field;
+        }
+        $filters['combine']['fields'] = $fieldsArray;
+      }
     }
 
-    if (!isset($paramsDecoded['exposed_filter_options']['show_journal_publication_name_filter'])) {
-      // Remove the 'Journal Publication Name' filter if not enabled.
-      unset($filters['field_journal_publication_name_value']);
+    // Remove legacy journal publication name filter.
+    unset($filters['field_journal_publication_name_value']);
+
+    if (!isset($paramsDecoded['exposed_filter_options']['show_year_filter'])) {
+      unset($filters['resource_year_filter']);
     }
 
     // Set the modified filters back to the view display options.
@@ -323,10 +344,22 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     // (pre-existing view)
     $no_field_display_options_saved = !array_key_exists('field_options', $paramsDecoded) || !is_array($paramsDecoded['field_options']);
 
+    // Legacy mapping: show_publication → individual fields.
+    if (!$no_field_display_options_saved && isset($paramsDecoded['field_options']['show_publication'])) {
+      $legacyValue = !empty($paramsDecoded['field_options']['show_publication']);
+      $paramsDecoded['field_options']['show_journal_name'] ??= $legacyValue;
+      $paramsDecoded['field_options']['show_journal_issue'] ??= $legacyValue;
+      $paramsDecoded['field_options']['show_authors'] ??= $legacyValue;
+      $paramsDecoded['field_options']['show_publish_date'] ??= $legacyValue;
+    }
+
     $field_display_options = [
       'show_category' => (int) !empty($paramsDecoded['field_options']['show_category']),
       'show_thumbnail' => (int) $no_field_display_options_saved || !empty($paramsDecoded['field_options']['show_thumbnail']),
-      'show_publication' => (int) !empty($paramsDecoded['field_options']['show_publication']),
+      'show_journal_name' => (int) !empty($paramsDecoded['field_options']['show_journal_name']),
+      'show_journal_issue' => (int) !empty($paramsDecoded['field_options']['show_journal_issue']),
+      'show_authors' => (int) !empty($paramsDecoded['field_options']['show_authors']),
+      'show_publish_date' => (int) !empty($paramsDecoded['field_options']['show_publish_date']),
       'show_discipline' => (int) !empty($paramsDecoded['field_options']['show_discipline']),
       'show_teaser_text' => (int) !empty($paramsDecoded['field_options']['show_teaser_text']),
       'show_tags' => (int) !empty($paramsDecoded['field_options']['show_tags']),
@@ -586,6 +619,20 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
         $defaultParam = (empty($paramsDecoded['field_options']) || !is_array($paramsDecoded['field_options'])) ? [] : $paramsDecoded['field_options'];
         break;
 
+      case 'search_fields':
+        if (!empty($paramsDecoded['search_fields'])
+            && is_array($paramsDecoded['search_fields'])) {
+          $defaultParam = $paramsDecoded['search_fields'];
+        }
+        else {
+          $defaultParam = [
+            'title' => 'title',
+            'field_teaser_text' => 'field_teaser_text',
+            'field_teaser_title' => 'field_teaser_title',
+          ];
+        }
+        break;
+
       default:
         $defaultParam = $paramsDecoded[$type] ?? NULL;
         break;
@@ -764,6 +811,7 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
           'view_mode_input_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][view_mode]"]',
           'view_mode_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
           'category_included_terms_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
+          'show_search_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_search_filter]"]',
           'show_category_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_category_filter]"]',
           'show_custom_vocab_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_custom_vocab_filter]"]',
           'custom_vocab_included_terms_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] : NULL,
@@ -833,6 +881,7 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
           'view_mode_input_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][view_mode]"]',
           'view_mode_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
           'category_included_terms_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
+          'show_search_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_search_filter]"]',
           'show_category_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_category_filter]"]',
           'show_custom_vocab_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_custom_vocab_filter]"]',
           'custom_vocab_included_terms_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] : NULL,
@@ -916,6 +965,7 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
         'view_mode_input_selector' => ':input[name="view_mode"]',
         'view_mode_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
         'category_included_terms_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
+        'show_search_filter_selector' => ':input[name="show_search_filter"]',
         'show_category_filter_selector' => ':input[name="show_category_filter"]',
         'show_custom_vocab_filter_selector' => ':input[name="show_custom_vocab_filter"]',
         'custom_vocab_included_terms_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] : NULL,
