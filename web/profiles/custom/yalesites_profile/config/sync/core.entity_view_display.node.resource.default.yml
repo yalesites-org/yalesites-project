@@ -131,8 +131,8 @@ third_party_settings:
               label: 'Related Content'
               label_display: ''
               provider: ys_layouts
-              heading: 'Related Content'
               context_mapping: {  }
+              heading: 'Related Content'
             weight: 0
             additional: {  }
         third_party_settings: {  }

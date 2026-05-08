@@ -1151,3 +1151,60 @@ function ys_core_update_10012() {
 
   return t('Populated DCN Types vocabulary with @count terms.', ['@count' => $created]);
 }
+
+/**
+ * Migrate Resource text fields from basic_html to restricted_html.
+ */
+function ys_core_update_10013(&$sandbox) {
+  $fields = ['field_abstract', 'field_citation', 'field_content_description'];
+  $allowed_tags = '<a><br><p><strong><em>';
+
+  $node_type = \Drupal::entityTypeManager()->getStorage('node_type')->load('resource');
+  if (!$node_type) {
+    return t('Resource content type does not exist; skipping text format migration.');
+  }
+
+  if (!isset($sandbox['nids'])) {
+    $sandbox['nids'] = array_values(\Drupal::entityQuery('node')
+      ->condition('type', 'resource')
+      ->accessCheck(FALSE)
+      ->execute());
+    $sandbox['total'] = count($sandbox['nids']);
+    $sandbox['current'] = 0;
+
+    if ($sandbox['total'] === 0) {
+      return t('No resource nodes found; nothing to migrate.');
+    }
+  }
+
+  $batch_size = 50;
+  $nids = array_slice($sandbox['nids'], $sandbox['current'], $batch_size);
+
+  $nodes = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($nids);
+  foreach ($nodes as $node) {
+    $changed = FALSE;
+    foreach ($fields as $field_name) {
+      if ($node->hasField($field_name) && !$node->get($field_name)->isEmpty()) {
+        $value = $node->get($field_name)->first();
+        if ($value->format === 'basic_html') {
+          $value->format = 'restricted_html';
+          $value->value = strip_tags($value->value, $allowed_tags);
+          $changed = TRUE;
+        }
+      }
+    }
+    if ($changed) {
+      $node->save();
+    }
+  }
+
+  $sandbox['current'] += $batch_size;
+  $sandbox['#finished'] = $sandbox['total'] > 0
+    ? min(1, $sandbox['current'] / $sandbox['total'])
+    : 1;
+
+  return t('Migrated text format for @current of @total resource nodes.', [
+    '@current' => min($sandbox['current'], $sandbox['total']),
+    '@total' => $sandbox['total'],
+  ]);
+}
