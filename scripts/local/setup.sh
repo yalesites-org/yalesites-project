@@ -42,6 +42,9 @@ terminus secret:site:local-generate yalesites-platform --filepath=./secrets.json
 npm install
 npm run build-with-install
 
+# Initialize the AI search pgvector collection and field schema.
+lando ai-search-init
+
 # Configure Composer to use source packaged versions.
 lando composer config --global 'preferred-install.yalesites-org/*' source
 

@@ -13,12 +13,7 @@ services:
     build_as_root:
       # Composer package drupal/ai_vdb_provider_postgres requires ext-pgsql / pdo_pgsql.
       - apt-get update -y && apt-get install -y libpq-dev && docker-php-ext-install -j "$(nproc)" pdo_pgsql pgsql
-    overrides:
-      environment:
-        # Used by Key pgvector_password + settings.lando.vector-db.php (optional overrides).
-        PGVECTOR_DB_PASSWORD: postgres
-        PGVECTOR_DB_USER: postgres
-        PGVECTOR_DB_DATABASE: pgvector
+    overrides: {}
   pgvector:
     type: postgres:16
     portforward: true
@@ -28,6 +23,10 @@ services:
       database: pgvector
     overrides:
       image: pgvector/pgvector:pg16
+      environment:
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_DB: pgvector
       volumes:
         - ./.lando/pgvector-init.sql:/docker-entrypoint-initdb.d/zzz-pgvector.sql:ro
 tooling:
@@ -40,3 +39,7 @@ tooling:
     service: pgvector
     cmd: psql -U postgres -d pgvector -c "CREATE EXTENSION IF NOT EXISTS vector;"
     description: Ensure the pgvector extension exists (needed if the DB volume was created before init SQL ran)
+  ai-search-init:
+    service: appserver
+    cmd: drush php:script /app/scripts/local/ai-search-init.php
+    description: Create pgvector collection and sync AI search index field schema (run after cim)

@@ -21,6 +21,13 @@ field_settings:
     dependencies:
       config:
         - field.storage.node.field_teaser_text
+  node_grants:
+    label: 'Node access information'
+    property_path: search_api_node_grants
+    type: string
+    indexed_locked: true
+    type_locked: true
+    hidden: true
   rendered_item:
     label: 'Rendered HTML output'
     property_path: rendered_item

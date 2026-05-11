@@ -10,24 +10,22 @@ name: 'AI Search'
 description: 'Vector search using PostgreSQL + pgvector and OpenAI embeddings.'
 backend: search_api_ai_search
 backend_config:
-  chat_model: gpt-3.5-turbo
+  chat_model: ''
   database: postgres
   database_settings:
-    database_name: drupal_ai
+    database_name: pgvector
     collection: yalesites_ai_search
     metric: cosine_similarity
     vector_index_strategy: none
   embeddings_engine: openai__text-embedding-3-small
   embeddings_engine_configuration:
-    set_dimensions: true
+    set_dimensions: false
     dimensions: 1536
   embedding_strategy: contextual_chunks
   embedding_strategy_configuration:
-    # Required by EmbeddingStrategyPluginBase::init(); empty config leaves
-    # $chunkMinOverlap uninitialized and causes 500 during batch indexing.
-    chunk_min_overlap: 100
     chunk_size: ''
-    skip_moderation: false
+    chunk_min_overlap: '100'
     contextual_content_max_percentage: '30'
+    skip_moderation: false
   embedding_strategy_details: ''
   include_raw_embedding_vector: false
