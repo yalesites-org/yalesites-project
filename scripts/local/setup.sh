@@ -31,6 +31,9 @@ fi
 # Start lando and create containers.
 lando start
 
+# PostgreSQL pgvector for local AI (see .lando.upstream.yml). Idempotent.
+lando pgvector-init
+
 # Generate local secrets file.
 terminus plugin:install pantheon-systems/terminus-secrets-manager-plugin
 terminus secret:site:local-generate yalesites-platform --filepath=./secrets.json

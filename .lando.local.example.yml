@@ -6,6 +6,11 @@
 # Copy and rename this file to .lando.local.yml and set any site specific
 # variables and overrides. The default values in this file will connect to the
 # YaleSite's integration environment.
+#
+# PostgreSQL + pgvector for local AI embeddings is defined in `.lando.upstream.yml`
+# (service `pgvector`). After rebuild: run `lando pgvector-init` if the vector
+# extension is missing. Drupal reads connection defaults from
+# `web/sites/default/settings.lando.vector-db.php` when LANDO=ON.
 
 # Set a local name for this application; this can be any value.
 name: yalesites-platform

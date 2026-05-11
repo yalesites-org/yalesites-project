@@ -18,6 +18,15 @@ $settings['container_yamls'][] = __DIR__ . '/services.yml';
  */
 include __DIR__ . "/settings.pantheon.php";
 
+// Lando: optional PostgreSQL/pgvector for contrib ai_vdb_provider_postgres (load before settings.local.php).
+$lando_on = ($_ENV['LANDO'] ?? getenv('LANDO')) === 'ON';
+if ($lando_on) {
+  $lando_vector_db = __DIR__ . '/settings.lando.vector-db.php';
+  if (file_exists($lando_vector_db)) {
+    include $lando_vector_db;
+  }
+}
+
 /**
  * Skipping permissions hardening will make scaffolding
  * work better, but will also raise a warning when you

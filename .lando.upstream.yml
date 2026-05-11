@@ -8,9 +8,29 @@ config:
   edge: true
   # Enable the REDIS cache
   cache: true
+services:
+  appserver:
+    build_as_root:
+      # Composer package drupal/ai_vdb_provider_postgres requires ext-pgsql / pdo_pgsql.
+      - apt-get update -y && apt-get install -y libpq-dev && docker-php-ext-install -j "$(nproc)" pdo_pgsql pgsql
+  pgvector:
+    type: postgres:16
+    portforward: true
+    creds:
+      user: postgres
+      password: postgres
+      database: pgvector
+    overrides:
+      image: pgvector/pgvector:pg16
+      volumes:
+        - ./.lando/pgvector-init.sql:/docker-entrypoint-initdb.d/zzz-pgvector.sql:ro
 tooling:
   phpunit:
     service: appserver
     user: www-data
     cmd:
       - appserver: php /app/vendor/bin/phpunit -c /app/phpunit.xml
+  pgvector-init:
+    service: pgvector
+    cmd: psql -U postgres -d pgvector -c "CREATE EXTENSION IF NOT EXISTS vector;"
+    description: Ensure the pgvector extension exists (needed if the DB volume was created before init SQL ran)
