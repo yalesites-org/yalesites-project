@@ -48,6 +48,11 @@ services:
       environment:
         COMPOSER_PROCESS_TIMEOUT: 1800
         CUSTOMER_SECRETS_FAKE_FILE: /app/secrets.json
+        # Match your pgvector Postgres service (Key pgvector_password + settings.lando.vector-db.php).
+        # After changing these, run `lando rebuild -y` so PHP receives them.
+        PGVECTOR_DB_PASSWORD: postgres
+        PGVECTOR_DB_USER: postgres
+        PGVECTOR_DB_DATABASE: pgvector
     # This is needed to expose the reverse proxy to the xdebug port (9003)
     xdebug: true
     build_as_root:

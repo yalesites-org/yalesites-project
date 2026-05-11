@@ -1,0 +1,8 @@
+_core:
+  default_config_hash: xBacXNIAeqGYsfpaWGL1l22dWVUT-YmLNlB3pdU0Czk
+prompt_logging: false
+prompt_logging_tags: ''
+default_providers: {  }
+request_timeout: 60
+allowed_hosts: {  }
+allowed_hosts_rewrite_links: false

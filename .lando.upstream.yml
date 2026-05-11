@@ -13,6 +13,12 @@ services:
     build_as_root:
       # Composer package drupal/ai_vdb_provider_postgres requires ext-pgsql / pdo_pgsql.
       - apt-get update -y && apt-get install -y libpq-dev && docker-php-ext-install -j "$(nproc)" pdo_pgsql pgsql
+    overrides:
+      environment:
+        # Used by Key pgvector_password + settings.lando.vector-db.php (optional overrides).
+        PGVECTOR_DB_PASSWORD: postgres
+        PGVECTOR_DB_USER: postgres
+        PGVECTOR_DB_DATABASE: pgvector
   pgvector:
     type: postgres:16
     portforward: true

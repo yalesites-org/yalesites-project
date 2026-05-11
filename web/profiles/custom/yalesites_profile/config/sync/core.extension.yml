@@ -7,11 +7,20 @@ module:
   addtoany: 0
   admin_toolbar: 0
   admin_toolbar_tools: 0
+  ai: 0
+  ai_agents: 0
+  ai_agents_explorer: 0
+  ai_api_explorer: 0
+  ai_assistant_api: 0
+  ai_chatbot: 0
   ai_engine: 0
   ai_engine_chat: 0
   ai_engine_embedding: 0
   ai_engine_feed: 0
   ai_engine_metadata: 0
+  ai_provider_openai: 0
+  ai_search: 0
+  ai_vdb_provider_postgres: 0
   allowed_formats: 0
   anchor_link: 0
   better_exposed_filters: 0
@@ -103,6 +112,7 @@ module:
   migrate_drupal: 0
   migrate_plus: 0
   migrate_tools: 0
+  modeler_api: 0
   moderation_sidebar: 0
   multiple_fields_remove_button: 0
   multivalue_form_element: 0

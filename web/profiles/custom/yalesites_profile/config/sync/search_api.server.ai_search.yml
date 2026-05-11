@@ -1,0 +1,27 @@
+uuid: 4325c520-1adf-4e8d-8951-e82cfa053c92
+langcode: en
+status: true
+dependencies:
+  module:
+    - ai_search
+    - ai_vdb_provider_postgres
+id: ai_search
+name: 'AI Search'
+description: 'Vector search using PostgreSQL + pgvector and OpenAI embeddings.'
+backend: search_api_ai_search
+backend_config:
+  chat_model: gpt-3.5-turbo
+  database: postgres
+  database_settings:
+    database_name: drupal_ai
+    collection: yalesites_ai_search
+    metric: cosine_similarity
+    vector_index_strategy: none
+  embeddings_engine: openai__text-embedding-3-small
+  embeddings_engine_configuration:
+    set_dimensions: true
+    dimensions: 1536
+  embedding_strategy: contextual_chunks
+  embedding_strategy_configuration: {  }
+  embedding_strategy_details: ''
+  include_raw_embedding_vector: false

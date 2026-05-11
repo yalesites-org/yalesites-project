@@ -1,0 +1,28 @@
+index_id: ai_content
+control_field_max_length: false
+exclude_chunk_from_metadata: false
+indexing_options:
+  rendered_item:
+    field_name: rendered_item
+    indexing_option: main_content
+    max: 0
+  field_teaser_text:
+    field_name: field_teaser_text
+    indexing_option: contextual_content
+    max: 0
+  type:
+    field_name: type
+    indexing_option: attributes
+    max: 0
+  status:
+    field_name: status
+    indexing_option: attributes
+    max: 0
+  uid:
+    field_name: uid
+    indexing_option: attributes
+    max: 0
+  node_grants:
+    field_name: node_grants
+    indexing_option: attributes
+    max: 0
