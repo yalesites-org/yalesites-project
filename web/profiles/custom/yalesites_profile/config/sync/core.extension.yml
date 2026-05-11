@@ -9,8 +9,6 @@ module:
   admin_toolbar_tools: 0
   ai: 0
   ai_agents: 0
-  ai_agents_explorer: 0
-  ai_api_explorer: 0
   ai_assistant_api: 0
   ai_chatbot: 0
   ai_engine: 0

@@ -18,17 +18,16 @@ $settings['container_yamls'][] = __DIR__ . '/services.yml';
  */
 include __DIR__ . "/settings.pantheon.php";
 
-// Lando: optional PostgreSQL/pgvector for contrib ai_vdb_provider_postgres (load before settings.local.php).
-$lando_on = ($_ENV['LANDO'] ?? getenv('LANDO')) === 'ON';
-if ($lando_on) {
-  $lando_vector_db = __DIR__ . '/settings.lando.vector-db.php';
-  if (file_exists($lando_vector_db)) {
-    include $lando_vector_db;
-  }
-  $lando_openai = __DIR__ . '/settings.lando.openai.php';
-  if (file_exists($lando_openai)) {
-    include $lando_openai;
-  }
+// Pantheon: remote pgvector connection for ai_vdb_provider_postgres.
+// Set PGVECTOR_HOST, PGVECTOR_PORT, PGVECTOR_USER, and PGVECTOR_DATABASE as
+// Pantheon environment variables. The password uses Key entity 'pgvector_password'
+// (Pantheon Secrets provider — add the secret via the Secrets Manager).
+if (!empty($_ENV['PANTHEON_ENVIRONMENT']) && getenv('PGVECTOR_HOST')) {
+  $config['ai_vdb_provider_postgres.settings']['host'] = getenv('PGVECTOR_HOST');
+  $config['ai_vdb_provider_postgres.settings']['port'] = (int) (getenv('PGVECTOR_PORT') ?: 5432);
+  $config['ai_vdb_provider_postgres.settings']['username'] = getenv('PGVECTOR_USER') ?: 'drupal_ai';
+  $config['ai_vdb_provider_postgres.settings']['default_database'] = getenv('PGVECTOR_DATABASE') ?: 'drupal_ai';
+  $config['ai_vdb_provider_postgres.settings']['password'] = 'pgvector_password';
 }
 
 /**

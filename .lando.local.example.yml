@@ -8,13 +8,16 @@
 # YaleSite's integration environment.
 #
 # PostgreSQL + pgvector for local AI embeddings is defined in `.lando.upstream.yml`
-# (service `pgvector`). After rebuild: run `lando pgvector-init` if the vector
-# extension is missing. Drupal reads connection defaults from
-# `web/sites/default/settings.lando.vector-db.php` when LANDO=ON.
+# (service `pgvector`). Connection settings are inlined in settings.php (LANDO block).
+# After a first-time setup or `lando rebuild -y`, run `lando pgvector-init` to
+# ensure the vector extension exists.
 #
-# OpenAI: Key `openai_api_key` uses Pantheon Secrets (same as mailchimp/recaptcha keys).
-# Add `openai_api_key` to gitignored `secrets.json` (OrgValues.default) or on Pantheon.
-# `settings.lando.openai.php` selects that Key locally.
+# AI secrets (openai_api_key, pgvector_password) use Pantheon Secrets — same
+# pattern as mailchimp_transactional_api_key and recaptcha_*. Add both secrets
+# to the gitignored secrets.json file (OrgValues.default scope) or run:
+#   terminus secret:site:set yalesites-platform openai_api_key <value>
+#   terminus secret:site:set yalesites-platform pgvector_password <value>
+# then regenerate secrets.json with `terminus secret:site:local-generate`.
 
 # Set a local name for this application; this can be any value.
 name: yalesites-platform
@@ -52,12 +55,6 @@ services:
       environment:
         COMPOSER_PROCESS_TIMEOUT: 1800
         CUSTOMER_SECRETS_FAKE_FILE: /app/secrets.json
-        # Match your pgvector Postgres service (Key pgvector_password + settings.lando.vector-db.php).
-        # After changing these, run `lando rebuild -y` so PHP receives them.
-        PGVECTOR_DB_PASSWORD: postgres
-        PGVECTOR_DB_USER: postgres
-        PGVECTOR_DB_DATABASE: pgvector
-        # OpenAI: add secret `openai_api_key` to gitignored secrets.json (Pantheon Secrets pattern).
     # This is needed to expose the reverse proxy to the xdebug port (9003)
     xdebug: true
     build_as_root:
