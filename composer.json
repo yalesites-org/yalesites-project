@@ -96,6 +96,15 @@
     "composer-exit-on-patch-failure": true,
     "patchLevel": {
       "drupal/core": "-p2"
+    },
+    "patches": {
+      "drupal/ai": {
+        "AI Search: default chunk_min_overlap when strategy config empty (avoid uninitialized typed property)": "patches/ai_search-chunk-min-overlap-default.patch",
+        "AI Search Vector DB Explorer: stringify extra data before CommonMark": "patches/ai_search-vector-db-explorer-stringify-extradate.patch"
+      },
+      "drupal/ai_vdb_provider_postgres": {
+        "Postgres VDB: is_field_multiple for Search API processor properties (no getFieldDefinition)": "patches/ai_vdb_provider_postgres-processor-property-is-multiple.patch"
+      }
     }
   },
   "config": {

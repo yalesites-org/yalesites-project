@@ -25,6 +25,10 @@ if ($lando_on) {
   if (file_exists($lando_vector_db)) {
     include $lando_vector_db;
   }
+  $lando_openai = __DIR__ . '/settings.lando.openai.php';
+  if (file_exists($lando_openai)) {
+    include $lando_openai;
+  }
 }
 
 /**

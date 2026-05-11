@@ -1,0 +1,17 @@
+diff --git a/modules/ai_search/src/Base/EmbeddingStrategyPluginBase.php b/modules/ai_search/src/Base/EmbeddingStrategyPluginBase.php
+--- a/modules/ai_search/src/Base/EmbeddingStrategyPluginBase.php
++++ b/modules/ai_search/src/Base/EmbeddingStrategyPluginBase.php
+@@ -133,8 +133,11 @@ abstract class EmbeddingStrategyPluginBase implements EmbeddingStrategyInterface
+       $this->chunkSize = $this->embeddingLlm->maxEmbeddingsInput($this->modelId);
+     }
+ 
+-    if (!empty($configuration['chunk_min_overlap'])) {
++    if (isset($configuration['chunk_min_overlap']) && $configuration['chunk_min_overlap'] !== '' && is_numeric($configuration['chunk_min_overlap'])) {
+       $this->chunkMinOverlap = (int) $configuration['chunk_min_overlap'];
+     }
++    else {
++      $this->chunkMinOverlap = (int) ($this->getDefaultConfigurationValues()['chunk_min_overlap'] ?? 0);
++    }
+   }
+ 
+   /**

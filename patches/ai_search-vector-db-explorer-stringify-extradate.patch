@@ -1,0 +1,23 @@
+diff --git a/modules/ai_search/src/Plugin/AiApiExplorer/VectorDBGenerator.php b/modules/ai_search/src/Plugin/AiApiExplorer/VectorDBGenerator.php
+--- a/modules/ai_search/src/Plugin/AiApiExplorer/VectorDBGenerator.php
++++ b/modules/ai_search/src/Plugin/AiApiExplorer/VectorDBGenerator.php
+@@ -206,8 +206,18 @@
+             $form['right']['response']['#context']['ai_response']['table']['#header'][$key] = ucfirst($key);
+           }
+ 
+-          $html = $converter ? $converter->convert($value) : $value;
++          // CommonMark::convert() requires a string; extra data may be arrays.
++          $display = is_string($value)
++            ? $value
++            : (is_scalar($value) || $value === NULL
++              ? (string) ($value ?? '')
++              : json_encode($value, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE));
+ 
++          $html = $converter ? $converter->convert($display) : $display;
++          if ($html instanceof \Stringable) {
++            $html = (string) $html;
++          }
++
+           $row_data[$key] = [
+             'data' => [
+               '#markup' => $html,

@@ -22,6 +22,12 @@ backend_config:
     set_dimensions: true
     dimensions: 1536
   embedding_strategy: contextual_chunks
-  embedding_strategy_configuration: {  }
+  embedding_strategy_configuration:
+    # Required by EmbeddingStrategyPluginBase::init(); empty config leaves
+    # $chunkMinOverlap uninitialized and causes 500 during batch indexing.
+    chunk_min_overlap: 100
+    chunk_size: ''
+    skip_moderation: false
+    contextual_content_max_percentage: '30'
   embedding_strategy_details: ''
   include_raw_embedding_vector: false

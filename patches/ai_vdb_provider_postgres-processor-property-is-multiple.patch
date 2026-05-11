@@ -1,0 +1,50 @@
+diff --git a/ai_vdb_provider_postgres.module b/ai_vdb_provider_postgres.module
+--- a/ai_vdb_provider_postgres.module
++++ b/ai_vdb_provider_postgres.module
+@@ -2,7 +2,9 @@
+ 
+ use Drupal\ai_search\Plugin\search_api\backend\SearchApiAiSearchBackend;
+ use Drupal\Core\Field\BaseFieldDefinition;
++use Drupal\Core\Field\TypedData\FieldItemDataDefinitionInterface;
+ use Drupal\search_api\IndexInterface;
++use Drupal\search_api\Processor\ProcessorPropertyInterface;
+ 
+ /**
+  * Implements hook_search_api_index_update().
+@@ -32,16 +34,26 @@
+ }
+ 
+ function ai_vdb_provider_postgres_is_field_multiple($field) {
+-    $field_definition = $field->getDataDefinition()->getFieldDefinition();
+-    if ($field_definition instanceof BaseFieldDefinition) {
+-      $field_cardinality = $field_definition->getCardinality();
+-    }
+-    else {
+-      $field_cardinality =
+-        $field_definition->get('fieldStorage')->getCardinality();
++    $data_definition = $field->getDataDefinition();
++    if ($data_definition instanceof ProcessorPropertyInterface) {
++      return $data_definition->isList();
+     }
+-    if ($field_cardinality === 1) {
+-      return FALSE;
++    if ($data_definition instanceof FieldItemDataDefinitionInterface) {
++      $field_definition = $data_definition->getFieldDefinition();
++      if ($field_definition instanceof BaseFieldDefinition) {
++        $field_cardinality = $field_definition->getCardinality();
++      }
++      else {
++        $field_cardinality =
++          $field_definition->get('fieldStorage')->getCardinality();
++      }
++      if ($field_cardinality === 1) {
++        return FALSE;
++      }
++      return TRUE;
+     }
+-    return TRUE;
++    if (method_exists($data_definition, 'isList')) {
++      return (bool) $data_definition->isList();
++    }
++    return FALSE;
+ }

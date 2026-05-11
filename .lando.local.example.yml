@@ -11,6 +11,10 @@
 # (service `pgvector`). After rebuild: run `lando pgvector-init` if the vector
 # extension is missing. Drupal reads connection defaults from
 # `web/sites/default/settings.lando.vector-db.php` when LANDO=ON.
+#
+# OpenAI: Key `openai_api_key` uses Pantheon Secrets (same as mailchimp/recaptcha keys).
+# Add `openai_api_key` to gitignored `secrets.json` (OrgValues.default) or on Pantheon.
+# `settings.lando.openai.php` selects that Key locally.
 
 # Set a local name for this application; this can be any value.
 name: yalesites-platform
@@ -53,6 +57,7 @@ services:
         PGVECTOR_DB_PASSWORD: postgres
         PGVECTOR_DB_USER: postgres
         PGVECTOR_DB_DATABASE: pgvector
+        # OpenAI: add secret `openai_api_key` to gitignored secrets.json (Pantheon Secrets pattern).
     # This is needed to expose the reverse proxy to the xdebug port (9003)
     xdebug: true
     build_as_root:
