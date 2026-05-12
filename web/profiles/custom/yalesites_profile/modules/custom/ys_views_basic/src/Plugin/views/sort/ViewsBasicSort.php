@@ -37,6 +37,11 @@ class ViewsBasicSort extends SortPluginBase {
 
         $query->addOrderBy(NULL, "node_field_data.sticky", 'DESC', 'views_basic_sort');
         $query->addOrderBy(NULL, "{$field}", $sortQueryOptions[1], 'views_basic_sort');
+        // Stable tiebreaker: when many rows share the same sort value (common
+        // with date fields stored only as month/year), MySQL returns rows in
+        // an unspecified order, causing results to shuffle on every reload.
+        // Sorting by nid in the same direction produces a deterministic order.
+        $query->addOrderBy(NULL, 'node_field_data.nid', $sortQueryOptions[1], 'views_basic_sort');
       }
     }
   }

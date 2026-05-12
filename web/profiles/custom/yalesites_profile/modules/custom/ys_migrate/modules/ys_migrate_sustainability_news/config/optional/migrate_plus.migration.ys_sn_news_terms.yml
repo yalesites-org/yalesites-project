@@ -1,0 +1,45 @@
+# Migration: YaleSite Sustainability News Terms Migration
+# Description: Migrates taxonomy terms from the Drupal 7 'Take Action Topic'
+# vocabulary (field_take_action_topics) to the Drupal 10 'post_category' vocabulary.
+#
+# The D7 vocabulary machine name was confirmed by running:
+#   SELECT name, machine_name FROM taxonomy_vocabulary;
+# on the D7 database. Confirmed value: 'take_action_topics'.
+
+id: ys_sn_news_terms
+label: 'YaleSites Sustainability News Terms'
+status: true
+dependencies:
+  enforced:
+    module:
+      - ys_migrate_sustainability_news
+class: Drupal\migrate\Plugin\Migration
+migration_tags:
+  - 'Drupal 7'
+  - taxonomy_vocabulary
+migration_group: ys_sn
+
+# Specifies the source is Drupal 7 terms from the 'Take Action Topics' vocabulary.
+# Confirmed machine name: 'take_action_topics'.
+source:
+  plugin: d7_taxonomy_term
+  bundle: take_action_topics
+  key: d7_sustainability
+
+# Define how each field or property is mapped to the Drupal 10 platform.
+process:
+  vid:
+    plugin: default_value
+    default_value: post_category
+  name: name
+  description: description/value
+  weight: weight
+  parent: parent
+
+# Drupal 7 news terms will be migrated into the post_category vocabulary.
+destination:
+  plugin: entity:taxonomy_term
+  default_bundle: post_category
+
+migration_dependencies:
+  required: {}

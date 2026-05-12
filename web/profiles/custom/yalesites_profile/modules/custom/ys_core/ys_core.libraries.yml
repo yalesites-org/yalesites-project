@@ -37,6 +37,7 @@ grand_hero_form:
 font_preview:
   css:
     theme:
+      https://yale-webfonts.yalespace.org/fonts.min.css: { type: external }
       css/font-preview.css: {}
   js:
     js/font-preview.js: {}

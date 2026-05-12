@@ -16,6 +16,7 @@ module:
   allowed_formats: 0
   anchor_link: 0
   better_exposed_filters: 0
+  bigmenu: 0
   block: 0
   block_content: 0
   book: 0
@@ -41,6 +42,7 @@ module:
   datetime: 0
   datetime_range: 0
   dblog: 0
+  double_field: 0
   dynamic_page_cache: 0
   editor: 0
   editor_advanced_link: 0
@@ -159,6 +161,7 @@ module:
   ys_book: 0
   ys_campus_groups: 0
   ys_captcha: 0
+  ys_dcn_field: 0
   ys_file_management: 0
   ys_integrations: 0
   ys_layouts: 0

@@ -21,7 +21,7 @@ class GitHubApplet extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $pattern = '/^https:\/\/yalesites-org\.github\.io\/(?<repo_name>[\w-]+)\/(?<app_directory>.*?)\/?$/';
+  protected static $pattern = '/^https:\/\/yalesites-org\.github\.io\/(?<repo_name>[\w-]+)\/(?<app_directory>[^?]*?)\/?(?:\?.*)?$/';
 
   /**
    * {@inheritdoc}
@@ -29,7 +29,30 @@ class GitHubApplet extends EmbedSourceBase implements EmbedSourceInterface {
   protected static $template = '
     <script type="module" crossorigin src="https://yalesites-org.github.io/{{ repo_name }}/{{ app_directory }}/app.js"></script>
     <link rel="stylesheet" crossorigin href="https://yalesites-org.github.io/{{ repo_name }}/{{ app_directory }}/app.css">
-    <div id="{{ repo_name }}"></div>';
+    <div id="{{ repo_name }}"{% for key, value in data_attrs %} data-{{ key }}="{{ value }}"{% endfor %}></div>';
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getParams(string $input): array {
+    $pathOnly = strtok($input, '?');
+    $params = parent::getParams($pathOnly);
+
+    $parsed = parse_url($input);
+    $dataAttrs = [];
+    if (!empty($parsed['query'])) {
+      parse_str($parsed['query'], $query);
+      foreach ($query as $key => $value) {
+        $safeKey = preg_replace('/[^a-z0-9-]/', '', strtolower($key));
+        if ($safeKey !== '' && $value !== '') {
+          $dataAttrs[$safeKey] = $value;
+        }
+      }
+    }
+    $params['data_attrs'] = $dataAttrs;
+
+    return $params;
+  }
 
   /**
    * {@inheritdoc}

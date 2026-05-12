@@ -58,6 +58,11 @@ class TaxonomyVocabularyManager {
       'page_category',
       'resource_category',
       'tags',
+      'academic_years',
+      'geographic_areas',
+      'areas_of_study',
+      'discipline',
+      'dcn_types',
     ];
   }
 
@@ -109,6 +114,16 @@ class TaxonomyVocabularyManager {
           $target_bundles = $handler_settings['target_bundles'] ?? [];
 
           if (!empty($target_bundles) && array_key_exists($vocabulary->id(), $target_bundles)) {
+            $content_types[] = $node_type->label();
+            break;
+          }
+        }
+
+        // dcn_field is a custom field type that stores its vocabulary reference
+        // in a field setting rather than via entity_reference handler_settings.
+        if ($field->getType() === 'dcn_field') {
+          $dcn_vocab = $field->getSetting('dcn_type_vocabulary');
+          if ($dcn_vocab && $dcn_vocab === $vocabulary->id()) {
             $content_types[] = $node_type->label();
             break;
           }

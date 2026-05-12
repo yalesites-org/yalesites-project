@@ -82,11 +82,16 @@ function ys_views_content_resources_views_pre_render(ViewExecutable $view): void
       $pin_label = $pin_options->pin_label;
     }
     $field_display_options = json_decode($view->args[7]);
-    // Loop through each row in the view's results and update the node's
-    // properties based on show_category and show_thumbnail configuration.
     foreach ($view->result as $row) {
       $row->_entity->show_category = $field_display_options->show_category;
       $row->_entity->show_thumbnail = $field_display_options->show_thumbnail;
+      $row->_entity->show_journal_name = $field_display_options->show_journal_name ?? 0;
+      $row->_entity->show_journal_issue = $field_display_options->show_journal_issue ?? 0;
+      $row->_entity->show_authors = $field_display_options->show_authors ?? 0;
+      $row->_entity->show_publish_date = $field_display_options->show_publish_date ?? 0;
+      $row->_entity->show_discipline = $field_display_options->show_discipline ?? 0;
+      $row->_entity->show_teaser_text = $field_display_options->show_teaser_text ?? 0;
+      $row->_entity->show_tags = $field_display_options->show_tags ?? 0;
 
       $sticky = (bool) $row->_entity->get('sticky')->value;
       if ($sticky) {
@@ -122,9 +127,18 @@ function ys_views_content_resources_node_view(array &$build, NodeInterface $node
     "card",
     "condensed",
     "list_item",
+    "portrait_grid",
   ];
 
   if (in_array($view_mode, $view_modes)) {
+    // @todo Replace `max-age: 0` with proper cache keys that vary by the
+    //   per-block config properties set in
+    //   ys_views_content_resources_views_pre_render() (show_category,
+    //   show_thumbnail, show_publication, show_discipline, show_teaser_text,
+    //   show_tags, pin_label). Currently disabled because the same node +
+    //   view mode is rendered with different config across blocks; uncached
+    //   is correct but expensive. Tracked as a follow-up to the YISP-101
+    //   audit.
     $build['#cache']['max-age'] = 0;
   }
 }
