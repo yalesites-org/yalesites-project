@@ -21,7 +21,7 @@ filters:
     status: true
     weight: -10
     settings:
-      allowed_html: '<a id target rel class="ck-anchor" href data-entity-type data-entity-uuid data-entity-substitution> <br> <p> <strong> <em>'
+      allowed_html: '<a id target rel class="ck-anchor" href data-entity-type data-entity-uuid data-entity-substitution> <br> <p> <strong> <em> <sub> <sup>'
       filter_html_help: true
       filter_html_nofollow: false
   filter_htmlcorrector:

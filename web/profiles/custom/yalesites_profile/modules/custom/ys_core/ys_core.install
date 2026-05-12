@@ -9,6 +9,13 @@ use Drupal\Component\Utility\Xss;
 use Drupal\taxonomy\Entity\Term;
 
 /**
+ * Implements hook_install().
+ */
+function ys_core_install() {
+  ys_core_populate_academic_years_terms();
+}
+
+/**
  * Implements hook_update().
  *
  * This update will update quicklinks blocks by removing any reference to a
@@ -998,4 +1005,206 @@ function ys_core_update_10009() {
 
   $logger->info('Updated @count link_grid block(s) with default field_line_treatment value.', ['@count' => $updated]);
   return t('Updated @count link_grid block(s) with default field_line_treatment value.', ['@count' => $updated]);
+}
+
+/**
+ * Helper function to populate Academic Years vocabulary.
+ *
+ * Generates academic year terms from 2026-2027 back to 2000-2001.
+ *
+ * @return int
+ *   The number of terms created.
+ */
+function ys_core_populate_academic_years_terms() {
+  $term_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
+
+  // Check if academic_years vocabulary exists.
+  $vocabulary_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_vocabulary');
+  if (!$vocabulary_storage->load('academic_years')) {
+    return 0;
+  }
+
+  // Get existing terms to avoid duplicates.
+  $existing_terms = $term_storage->loadByProperties(['vid' => 'academic_years']);
+  $existing_names = [];
+  foreach ($existing_terms as $term) {
+    $existing_names[] = $term->getName();
+  }
+
+  // Generate academic year terms from 2026-2027 back to 2000-2001.
+  $weight = 0;
+  $created = 0;
+  for ($start_year = 2026; $start_year >= 2000; $start_year--) {
+    $end_year = $start_year + 1;
+    $term_name = $start_year . '-' . $end_year;
+
+    // Skip if term already exists.
+    if (in_array($term_name, $existing_names)) {
+      continue;
+    }
+
+    Term::create([
+      'vid' => 'academic_years',
+      'name' => $term_name,
+      'weight' => $weight,
+    ])->save();
+
+    $created++;
+    $weight++;
+  }
+
+  return $created;
+}
+
+/**
+ * Populate Academic Years vocabulary from 2026-2027 back to 2000-2001.
+ */
+function ys_core_update_10010() {
+  $created = ys_core_populate_academic_years_terms();
+
+  if ($created === 0) {
+    return t('Academic Years vocabulary does not exist or all terms already exist.');
+  }
+
+  return t('Populated Academic Years vocabulary with @count terms from 2026-2027 to 2000-2001.', ['@count' => $created]);
+}
+
+/**
+ * Remove fpa and js_cookie schema entries left behind after module removal.
+ *
+ * These modules were removed from composer.json without a proper drush
+ * pm-uninstall first. By the time this hook runs, the module files are already
+ * gone (composer install removed them), so we clean up the orphaned system
+ * schema entries manually to allow config import to succeed.
+ */
+function ys_core_update_10011() {
+  $modules = ['fpa', 'js_cookie'];
+  $removed = [];
+
+  foreach ($modules as $module) {
+    $schema_exists = \Drupal::database()
+      ->select('key_value', 'kv')
+      ->fields('kv', ['name'])
+      ->condition('collection', 'system.schema')
+      ->condition('name', $module)
+      ->execute()
+      ->fetchField();
+
+    if ($schema_exists) {
+      \Drupal::database()
+        ->delete('key_value')
+        ->condition('collection', 'system.schema')
+        ->condition('name', $module)
+        ->execute();
+
+      $removed[] = $module;
+    }
+  }
+
+  if (empty($removed)) {
+    return t('No fpa or js_cookie schema entries found; nothing to remove.');
+  }
+
+  return t('Removed system.schema entries for: @modules.', [
+    '@modules' => implode(', ', $removed),
+  ]);
+}
+
+/**
+ * Populate DCN Types vocabulary with default identifier type terms.
+ *
+ * New site installs receive these terms via the ys_starterkit terms migration.
+ * This hook seeds them on existing sites where the migration has already run.
+ */
+function ys_core_update_10012() {
+  $term_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
+
+  if (!\Drupal::entityTypeManager()->getStorage('taxonomy_vocabulary')->load('dcn_types')) {
+    return t('DCN Types vocabulary does not exist; skipping.');
+  }
+
+  $existing_names = array_map(
+    fn($term) => $term->getName(),
+    $term_storage->loadByProperties(['vid' => 'dcn_types'])
+  );
+
+  $default_terms = ['DOI', 'ISBN', 'ISSN', 'Report Number'];
+  $created = 0;
+
+  foreach ($default_terms as $weight => $term_name) {
+    if (in_array($term_name, $existing_names)) {
+      continue;
+    }
+
+    Term::create([
+      'vid' => 'dcn_types',
+      'name' => $term_name,
+      'weight' => $weight,
+    ])->save();
+
+    $created++;
+  }
+
+  if ($created === 0) {
+    return t('All DCN Types terms already exist; nothing to create.');
+  }
+
+  return t('Populated DCN Types vocabulary with @count terms.', ['@count' => $created]);
+}
+
+/**
+ * Migrate Resource text fields from basic_html to restricted_html.
+ */
+function ys_core_update_10013(&$sandbox) {
+  $fields = ['field_abstract', 'field_citation', 'field_content_description'];
+  $allowed_tags = '<a><br><p><strong><em>';
+
+  $node_type = \Drupal::entityTypeManager()->getStorage('node_type')->load('resource');
+  if (!$node_type) {
+    return t('Resource content type does not exist; skipping text format migration.');
+  }
+
+  if (!isset($sandbox['nids'])) {
+    $sandbox['nids'] = array_values(\Drupal::entityQuery('node')
+      ->condition('type', 'resource')
+      ->accessCheck(FALSE)
+      ->execute());
+    $sandbox['total'] = count($sandbox['nids']);
+    $sandbox['current'] = 0;
+
+    if ($sandbox['total'] === 0) {
+      return t('No resource nodes found; nothing to migrate.');
+    }
+  }
+
+  $batch_size = 50;
+  $nids = array_slice($sandbox['nids'], $sandbox['current'], $batch_size);
+
+  $nodes = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($nids);
+  foreach ($nodes as $node) {
+    $changed = FALSE;
+    foreach ($fields as $field_name) {
+      if ($node->hasField($field_name) && !$node->get($field_name)->isEmpty()) {
+        $value = $node->get($field_name)->first();
+        if ($value->format === 'basic_html') {
+          $value->format = 'restricted_html';
+          $value->value = strip_tags($value->value, $allowed_tags);
+          $changed = TRUE;
+        }
+      }
+    }
+    if ($changed) {
+      $node->save();
+    }
+  }
+
+  $sandbox['current'] += $batch_size;
+  $sandbox['#finished'] = $sandbox['total'] > 0
+    ? min(1, $sandbox['current'] / $sandbox['total'])
+    : 1;
+
+  return t('Migrated text format for @current of @total resource nodes.', [
+    '@current' => min($sandbox['current'], $sandbox['total']),
+    '@total' => $sandbox['total'],
+  ]);
 }

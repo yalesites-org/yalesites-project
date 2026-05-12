@@ -54,7 +54,7 @@ third_party_settings:
     enabled: true
 name: Resource
 type: resource
-description: null
+description: 'Share resources such as PDFs, videos, and publications. Includes structured metadata for authors, citations, and abstracts.'
 help: null
 new_revision: true
 preview_mode: 0

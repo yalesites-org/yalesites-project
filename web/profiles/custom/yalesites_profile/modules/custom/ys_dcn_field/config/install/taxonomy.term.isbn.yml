@@ -1,0 +1,8 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - taxonomy.vocabulary.dcn_types
+name: ISBN
+vid: dcn_types
+weight: 0

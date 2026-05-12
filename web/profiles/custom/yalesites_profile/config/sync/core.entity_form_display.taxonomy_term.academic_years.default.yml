@@ -1,0 +1,25 @@
+uuid: bce1b44c-0e27-47a9-a768-0c45a45e43dc
+langcode: en
+status: true
+dependencies:
+  config:
+    - taxonomy.vocabulary.academic_years
+id: taxonomy_term.academic_years.default
+targetEntityType: taxonomy_term
+bundle: academic_years
+mode: default
+content:
+  name:
+    type: string_textfield
+    weight: 0
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+hidden:
+  description: true
+  path: true
+  revision_log_message: true
+  simple_sitemap: true
+  status: true
