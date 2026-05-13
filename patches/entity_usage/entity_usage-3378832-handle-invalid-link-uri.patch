@@ -1,0 +1,31 @@
+diff --git a/src/Plugin/EntityUsage/Track/Link.php b/src/Plugin/EntityUsage/Track/Link.php
+--- a/src/Plugin/EntityUsage/Track/Link.php
++++ b/src/Plugin/EntityUsage/Track/Link.php
+@@ -26,14 +26,19 @@ class Link extends EntityUsageTrackBase {
+   public function getTargetEntities(FieldItemInterface $link): array {
+     /** @var \Drupal\link\LinkItemInterface $link */
+-    if ($link->isExternal()) {
+-      $url = $link->getUrl()->toString();
+-      $entity_info = $this->urlToEntity->findEntityIdByUrl($url);
+-    }
+-    else {
+-      $url = $link->getUrl();
+-      $entity_info = $this->urlToEntity->findEntityIdByRoutedUrl($url);
++    try {
++      if ($link->isExternal()) {
++        $url = $link->getUrl()->toString();
++        $entity_info = $this->urlToEntity->findEntityIdByUrl($url);
++      }
++      else {
++        $url = $link->getUrl();
++        $entity_info = $this->urlToEntity->findEntityIdByRoutedUrl($url);
++      }
++    }
++    catch (\InvalidArgumentException) {
++      return [];
+     }
+ 
+     if (empty($entity_info)) {
+       return [];
+     }
+

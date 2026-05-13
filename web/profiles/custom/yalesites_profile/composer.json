@@ -47,7 +47,7 @@
     "drupal/editoria11y": "2.1.19",
     "drupal/emulsify_twig": "5.0.0",
     "drupal/entity_redirect": "2.x-dev",
-    "drupal/entity_usage": "2.0-beta24",
+    "drupal/entity_usage": "2.0-beta28",
     "drupal/environment_indicator": "4.0.22",
     "drupal/fast_404": "3.3.0",
     "drupal/field_group": "4.0.0",
@@ -151,6 +151,9 @@
       },
       "drupal/entity_redirect": {
         "fix layout route https://www.drupal.org/project/entity_redirect/issues/3352265": "https://git.drupalcode.org/project/entity_redirect/-/merge_requests/6.diff"
+      },
+      "drupal/entity_usage": {
+        "Handle invalid link URIs without fatal error https://www.drupal.org/project/entity_usage/issues/3378832": "patches/entity_usage/entity_usage-3378832-handle-invalid-link-uri.patch"
       },
       "drupal/gin": {
         "fix description toggle for CKEditor fields https://www.drupal.org/project/gin/issues/3316265": "https://git.drupalcode.org/project/gin/-/merge_requests/227.patch"
