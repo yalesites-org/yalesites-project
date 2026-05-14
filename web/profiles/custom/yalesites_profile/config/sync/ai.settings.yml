@@ -1,0 +1,7 @@
+_core:
+  default_config_hash: kzaY3K5U39bbRU-PdiFv2cuWUqKboxYricHoyjJ9gGM
+prompt_logging: false
+prompt_logging_tags: ''
+default_providers: {  }
+allowed_hosts: {  }
+allowed_hosts_rewrite_links: false
