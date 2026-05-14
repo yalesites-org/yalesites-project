@@ -7,11 +7,17 @@ module:
   addtoany: 0
   admin_toolbar: 0
   admin_toolbar_tools: 0
+  ai: 0
+  ai_agents: 0
+  ai_assistant_api: 0
+  ai_chatbot: 0
   ai_engine: 0
   ai_engine_chat: 0
   ai_engine_embedding: 0
   ai_engine_feed: 0
   ai_engine_metadata: 0
+  ai_search: 0
+  ai_vdb_provider_postgres: 0
   allowed_formats: 0
   anchor_link: 0
   better_exposed_filters: 0
@@ -165,6 +171,7 @@ module:
   ys_mail: 0
   ys_migrate: 0
   ys_node_access: 0
+  ys_portkey: 0
   ys_servicenow: 0
   ys_starterkit: 0
   ys_taxonomy_manager: 0
