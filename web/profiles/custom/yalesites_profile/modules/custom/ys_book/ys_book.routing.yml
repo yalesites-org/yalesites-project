@@ -15,18 +15,3 @@ book.admin_edit:
     _ys_book_outline_access: 'TRUE'
     _entity_access: 'node.view'
     node: \d+
-
-book.node_child_ordering:
-  path: '/node/{node}/child-ordering'
-  defaults:
-    _form: '\Drupal\book\Form\BookAdminEditForm'
-    _title: 'Re-order book pages and change titles'
-    parameters:
-      node:
-        type: entity:node
-  options:
-    _admin_route: TRUE
-  requirements:
-    _ys_book_outline_access: 'TRUE'
-    _entity_access: 'node.view'
-    node: \d+
