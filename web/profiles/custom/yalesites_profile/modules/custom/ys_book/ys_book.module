@@ -220,7 +220,7 @@ function ys_book_form_book_admin_edit_alter(&$form, FormStateInterface $form_sta
   }
 
   // Add cache invalidation submit handler.
-  $form['save']['#submit'][] = '_ys_book_admin_edit_submit';
+  $form['#submit'][] = '_ys_book_admin_edit_submit';
 }
 
 /**
