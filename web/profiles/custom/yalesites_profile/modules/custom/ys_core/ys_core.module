@@ -470,6 +470,62 @@ function ys_core_preprocess_menu(&$variables) {
       }
     }
   }
+
+  // Replace menu item URLs with external source URLs where applicable.
+  // When a menu item points to a node that has a populated
+  // field_external_source, swap the routed (internal) Url for one built from
+  // the external URI. The yds-text-link / getUrlType() cascade then classifies
+  // the link as external and applies the with-icon class plus
+  // data-link-type="external" attribute automatically.
+  if (!empty($variables['items'])) {
+    _ys_core_apply_external_source_to_menu_items($variables['items']);
+  }
+}
+
+/**
+ * Replaces menu item URLs with external source URLs where applicable.
+ *
+ * Recursively walks the menu tree. When an item points to a node whose
+ * field_external_source field has a value, the item's Url is replaced with a
+ * Url built from that external URI. This mirrors the behavior of the
+ * canonical-page redirect in ExternalSourceRedirectSubscriber so menu links
+ * resolve to the same destination as visiting the node directly.
+ *
+ * @param array $items
+ *   The menu items render array (mutated by reference).
+ */
+function _ys_core_apply_external_source_to_menu_items(array &$items) {
+  $node_storage = \Drupal::entityTypeManager()->getStorage('node');
+
+  foreach ($items as &$item) {
+    if (!empty($item['url'])
+      && $item['url'] instanceof Url
+      && $item['url']->isRouted()
+      && $item['url']->getRouteName() === 'entity.node.canonical'
+    ) {
+      $route_parameters = $item['url']->getRouteParameters();
+      if (!empty($route_parameters['node'])) {
+        $node = $node_storage->load($route_parameters['node']);
+        if ($node
+          && $node->hasField('field_external_source')
+          && !$node->get('field_external_source')->isEmpty()
+        ) {
+          $external_uri = $node->get('field_external_source')->first()->getValue()['uri'] ?? NULL;
+          if (!empty($external_uri)) {
+            try {
+              $item['url'] = Url::fromUri($external_uri);
+            }
+            catch (\Exception $e) {
+              // Invalid URI; leave the original (internal) Url in place.
+            }
+          }
+        }
+      }
+    }
+    if (!empty($item['below'])) {
+      _ys_core_apply_external_source_to_menu_items($item['below']);
+    }
+  }
 }
 
 /**
