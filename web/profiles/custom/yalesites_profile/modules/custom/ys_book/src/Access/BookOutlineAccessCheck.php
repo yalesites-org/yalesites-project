@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Access checker for content collection outline admin page.
+ */
 namespace Drupal\ys_book\Access;
 
 use Drupal\Core\Access\AccessResult;
@@ -9,6 +12,12 @@ use Drupal\Core\Session\AccountInterface;
 
 class BookOutlineAccessCheck implements AccessInterface {
 
+  /**
+   * Access checker for content collection outline admin page.
+   *
+   * @return AccessResultInterface
+   *   Allowed if either of two permissions is granted to account.
+   */
   public function access(AccountInterface $account): AccessResultInterface {
     $allowed = $account->hasPermission('administer book outlines')
       || $account->hasPermission('reorder book pages');
