@@ -1,0 +1,15 @@
+--- a/ai_vdb_provider_postgres.module
++++ b/ai_vdb_provider_postgres.module
+@@ -32,7 +32,11 @@
+ }
+
+ function ai_vdb_provider_postgres_is_field_multiple($field) {
+-    $field_definition = $field->getDataDefinition()->getFieldDefinition();
++    $data_definition = $field->getDataDefinition();
++    if (!($data_definition instanceof \Drupal\Core\Field\FieldItemDataDefinitionInterface)) {
++      return FALSE;
++    }
++    $field_definition = $data_definition->getFieldDefinition();
+     if ($field_definition instanceof BaseFieldDefinition) {
+       $field_cardinality = $field_definition->getCardinality();
+     }
