@@ -217,6 +217,9 @@
       },
       "drupal/ai_vdb_provider_azure_ai_search": {
         "Fix prepareFilters returning MongoDB-style array instead of OData filter string": "patches/ai_vdb_provider_azure_ai_search/odata-filter-string.patch"
+      },
+      "drupal/ai_vdb_provider_postgres": {
+        "Guard against computed Search API properties that lack getFieldDefinition()": "patches/ai/ai_vdb_provider_postgres-field-definition-guard.patch"
       }
     }
   }
