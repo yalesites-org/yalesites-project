@@ -6,6 +6,7 @@ callout:
       three: Three
       four: Four
       five: Five
+      six: Six
     default: one
   field_style_alignment:
     values:
@@ -20,6 +21,7 @@ cta_banner:
       three: Three
       four: Four
       five: Five
+      six: Six
     default: one
   field_style_position:
     values:
@@ -58,6 +60,7 @@ content_spotlight:
       three: 'Three'
       four: 'Four'
       five: 'Five'
+      six: 'Six'
     default: default
   field_style_alignment:
     values:
@@ -119,6 +122,7 @@ wrapped_text_callout:
       three: 'Three'
       four: 'Four'
       five: 'Five'
+      six: 'Six'
     default: one
 grand_hero:
   field_style_position:
@@ -138,6 +142,7 @@ grand_hero:
       three: Three
       four: Four
       five: Five
+      six: Six
     default: one
 divider:
   field_style_position:
@@ -171,6 +176,7 @@ content_spotlight_portrait:
       three: 'Three'
       four: 'Four'
       five: 'Five'
+      six: 'Six'
     default: default
   field_style_alignment:
     values:
@@ -198,6 +204,7 @@ tile:
       three: 'Three'
       four: 'Four'
       five: 'Five'
+      six: 'Six'
     default: one
 tiles:
   field_style_width:
@@ -231,6 +238,7 @@ facts:
       three: 'Three'
       four: 'Four'
       five: 'Five'
+      six: 'Six'
     default: one
   field_style_alignment:
     values:
@@ -245,6 +253,7 @@ quote_callout:
       three: 'Three'
       four: 'Four'
       five: 'Five'
+      six: 'Six'
     default: one
   field_style_variation:
     values:
@@ -264,6 +273,7 @@ link_grid:
       three: 'Three'
       four: 'Four'
       five: 'Five'
+      six: 'Six'
     default: one
 inline_message:
   field_style_color:
@@ -273,6 +283,7 @@ inline_message:
       three: Three
       four: 'Four'
       five: 'Five'
+      six: 'Six'
     default: one
 video:
   field_style_alignment:
@@ -295,6 +306,7 @@ accordion:
       three: 'Three'
       four: 'Four'
       five: 'Five'
+      six: 'Six'
     default: default
 video_banner:
   field_style_width:
