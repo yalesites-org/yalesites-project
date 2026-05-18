@@ -420,7 +420,8 @@ function ys_book_node_predelete($node) {
  *
  * This clears:
  * 1. The persistent cache entry for the navigation position function.
- * 2. The rendered page cache for all nodes in the book so headers re-render.
+ * 2. The rendered navigation block cache (tagged by bookTreeOutput).
+ * 3. The rendered page cache for all nodes in the book so headers re-render.
  *
  * @param int $bid
  *   The book ID (nid of the root book node).
@@ -434,7 +435,12 @@ function _ys_book_invalidate_collection_nav_cache(int $bid) {
   // the navigation position for this book.
   Cache::invalidateTags(['ys_collection_nav:' . $bid]);
 
-  // 3. Invalidate node cache tags for all nodes in the book.
+  // 3. Invalidate the cache tag that bookTreeOutput() sets on the navigation
+  // block render array. Without this, the block render cache keeps serving
+  // the old page order even after weights are saved.
+  Cache::invalidateTags(['config:system.book.' . $bid]);
+
+  // 4. Invalidate node cache tags for all nodes in the book.
   // This ensures the rendered pages are rebuilt with the new header.
   $nids = _ys_book_get_all_book_nids($bid);
   if (!empty($nids)) {
