@@ -3,3 +3,9 @@ services:
     class: Drupal\ys_ai\Access\SettingsEnabledAccessCheck
     arguments: ['@config.factory']
 
+  ys_ai.indexing_timing_subscriber:
+    class: Drupal\ys_ai\EventSubscriber\IndexingTimingSubscriber
+    arguments: ['@logger.factory']
+    tags:
+      - { name: event_subscriber }
+

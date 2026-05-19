@@ -3,6 +3,7 @@ _core:
 mode: simple
 ignored_config_entities:
   - 'ai_engine*'
+  - 'ai_vdb_provider_postgres.settings**'
   - 'cas.settings:forced_login.enabled'
   - 'cas.settings:forced_login.paths.negate'
   - 'cas.settings:forced_login.paths.pages'
@@ -20,6 +21,7 @@ ignored_config_entities:
   - 'ys_campus_groups*'
   - 'ys_core*'
   - 'ys_localist*'
+  - 'ys_portkey.settings*'
   - 'ys_servicenow*'
   - ys_themes.theme_settings
   - ~ys_core.integration_settings

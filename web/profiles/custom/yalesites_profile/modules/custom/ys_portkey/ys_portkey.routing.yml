@@ -1,0 +1,7 @@
+ys_portkey.settings_form:
+  path: '/admin/config/ai/providers/portkey'
+  defaults:
+    _form: '\Drupal\ys_portkey\Form\PortkeyConfigForm'
+    _title: 'Setup Portkey Models'
+  requirements:
+    _permission: 'administer ai providers'

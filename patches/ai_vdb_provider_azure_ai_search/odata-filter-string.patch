@@ -1,0 +1,148 @@
+--- a/src/Plugin/VdbProvider/AzureAiSearchProvider.php	2025-12-19 10:05:24.000000000 +0000
++++ b/src/Plugin/VdbProvider/AzureAiSearchProvider.php	2026-04-10 16:45:12.039345864 +0000
+@@ -428,101 +428,109 @@
+     $index = $query->getIndex();
+     $condition_group = $query->getConditionGroup();
+ 
+-    // Process filters, including handling nested groups.
+-    $filters = $this->processConditionGroup($index, $condition_group);
+-
+-    // Combine all filters with $and if there are multiple conditions.
+-    if ($filters) {
+-      return count($filters) > 1 ? ['$and' => $filters] : $filters[0];
+-    }
+-
+-    return [];
++    return $this->processConditionGroup($index, $condition_group);
+   }
+ 
+   /**
+-   * Processes a condition group, including handling nested condition groups.
++   * Processes a condition group into an OData filter string for Azure AI Search.
+    */
+-  private function processConditionGroup($index, ConditionGroupInterface $condition_group): array {
+-    $filters = [];
++  private function processConditionGroup($index, ConditionGroupInterface $condition_group): string {
++    $parts = [];
++    $conjunction = strtolower($condition_group->getConjunction());
+ 
+     foreach ($condition_group->getConditions() as $condition) {
+       // Check if the current condition is actually a nested ConditionGroup.
+       if ($condition instanceof ConditionGroupInterface) {
+-        // Recursively process the nested ConditionGroup.
+-        $nestedFilters = $this->processConditionGroup($index, $condition);
+-        if ($nestedFilters) {
+-          // Add the nested filters as a grouped condition.
+-          $filters[] = ['$and' => $nestedFilters];
++        $nested = $this->processConditionGroup($index, $condition);
++        if ($nested !== '') {
++          $parts[] = "($nested)";
+         }
+       }
+       else {
+         $fieldData = $index->getField($condition->getField());
+         $isMultiple = $fieldData ? $this->isMultiple($fieldData) : FALSE;
+         $values = is_array($condition->getValue()) ? $condition->getValue() : [$condition->getValue()];
+-        $filter = [];
++        $field = $condition->getField();
++        $operator = $condition->getOperator();
++        $part = '';
+ 
+         // Handle multiple values fields.
+         if ($isMultiple) {
+-          if (in_array($condition->getOperator(), ['=', 'IN'])) {
+-            // Use $in for Azure AI Search if the operator is '=' or 'IN'.
+-            $filter[$condition->getField()] = ['$in' => $values];
++          if (in_array($operator, ['=', 'IN'])) {
++            $escaped = implode(',', array_map(fn($v) => str_replace("'", "''", (string) $v), $values));
++            $part = "search.in($field, '$escaped', ',')";
+           }
+           else {
+             $this->messenger->addWarning('Azure AI Search does not support negative operator on multiple fields.');
+           }
+         }
+         else {
+-          // Handle single value fields based on the operator.
+-          switch ($condition->getOperator()) {
++          // Handle single value fields using OData filter syntax.
++          $formatted = $this->formatODataValue($values[0]);
++          switch ($operator) {
+             case '=':
+-              $filter[$condition->getField()] = ['$eq' => $values[0]];
++              $part = "$field eq $formatted";
+               break;
+ 
+             case '!=':
+-              $filter[$condition->getField()] = ['$ne' => $values[0]];
++              $part = "$field ne $formatted";
+               break;
+ 
+             case '>':
+-              $filter[$condition->getField()] = ['$gt' => $values[0]];
++              $part = "$field gt $formatted";
+               break;
+ 
+             case '>=':
+-              $filter[$condition->getField()] = ['$gte' => $values[0]];
++              $part = "$field ge $formatted";
+               break;
+ 
+             case '<':
+-              $filter[$condition->getField()] = ['$lt' => $values[0]];
++              $part = "$field lt $formatted";
+               break;
+ 
+             case '<=':
+-              $filter[$condition->getField()] = ['$lte' => $values[0]];
++              $part = "$field le $formatted";
+               break;
+ 
+             case 'IN':
+-              $filter[$condition->getField()] = ['$in' => $values];
++              $escaped = implode(',', array_map(fn($v) => str_replace("'", "''", (string) $v), $values));
++              $part = "search.in($field, '$escaped', ',')";
+               break;
+ 
+             case 'NOT IN':
+-              $filter[$condition->getField()] = ['$nin' => $values];
++              $escaped = implode(',', array_map(fn($v) => str_replace("'", "''", (string) $v), $values));
++              $part = "not search.in($field, '$escaped', ',')";
+               break;
+ 
+             default:
+               // If the operator is not supported, log a warning.
+               $this->messenger->addWarning('Operator @operator is not supported by Azure AI Search.', [
+-                '@operator' => $condition->getOperator(),
++                '@operator' => $operator,
+               ]);
+               break;
+           }
+         }
+ 
+-        // Add the prepared filter to the list.
+-        if ($filter) {
+-          $filters[] = $filter;
++        if ($part !== '') {
++          $parts[] = $part;
+         }
+       }
+     }
+ 
+-    return $filters;
++    return implode(" $conjunction ", $parts);
++  }
++
++  /**
++   * Formats a value as an OData literal for use in a filter expression.
++   */
++  private function formatODataValue(mixed $value): string {
++    if (is_bool($value)) {
++      return $value ? 'true' : 'false';
++    }
++    if (is_numeric($value)) {
++      return (string) $value;
++    }
++    return "'" . str_replace("'", "''", (string) $value) . "'";
+   }
+ 
+   /**
