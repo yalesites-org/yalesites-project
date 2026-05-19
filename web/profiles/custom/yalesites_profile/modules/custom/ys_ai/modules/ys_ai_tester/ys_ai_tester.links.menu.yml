@@ -1,0 +1,6 @@
+ys_ai.tester:
+  title: 'AI Tester'
+  description: 'Batch test AI assistant responses'
+  route_name: ys_ai.tester
+  parent: ys_ai.admin
+  weight: 10
