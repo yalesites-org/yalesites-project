@@ -1,0 +1,51 @@
+--- a/modules/ai_search/src/Plugin/AiFunctionCall/RagTool.php	2026-05-19 12:21:19
++++ b/modules/ai_search/src/Plugin/AiFunctionCall/RagTool.php	2026-05-19 12:21:45
+@@ -131,7 +131,9 @@
+         if ($min_score > $result->getScore()) {
+           continue;
+         }
+-        $end_results[] = "Search result: #$i:\n```\n" . $result->getExtraData('content') . "\n```\n\n";
++        $uri = $this->getResultUri($result);
++        $uri_line = $uri ? "\nURI: $uri" : '';
++        $end_results[] = "Search result: #$i:" . $uri_line . "\n```\n" . $result->getExtraData('content') . "\n```\n\n";
+         $i++;
+       }
+     }
+@@ -149,4 +151,37 @@
+     }
+   }
+ 
++  /**
++   * Get the relative URI for a search result entity.
++   *
++   * @param \Drupal\search_api\Item\ItemInterface $result
++   *   The search result item.
++   *
++   * @return string|null
++   *   Relative URI starting with /, or NULL if unavailable.
++   */
++  protected function getResultUri(\Drupal\search_api\Item\ItemInterface $result): ?string {
++    $entity_string = $result->getExtraData('drupal_entity_id');
++    if (!$entity_string) {
++      return NULL;
++    }
++    try {
++      $parts = explode(':', $entity_string);
++      if (count($parts) < 2) {
++        return NULL;
++      }
++      [$entity_type, $entity_id] = explode('/', $parts[1]);
++      $entity = $this->entityTypeManager->getStorage($entity_type)->load($entity_id);
++      if (!$entity) {
++        return NULL;
++      }
++      $url = $entity->toUrl();
++      $url->setAbsolute(FALSE);
++      return $url->toString();
++    }
++    catch (\Exception $e) {
++      return NULL;
++    }
++  }
++
+ }

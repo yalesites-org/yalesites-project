@@ -1,0 +1,68 @@
+--- a/modules/ai_chatbot/src/Controller/DeepChatApi.php	2026-05-19 12:06:56
++++ b/modules/ai_chatbot/src/Controller/DeepChatApi.php	2026-05-19 12:11:51
+@@ -268,6 +268,7 @@
+     ]);
+ 
+     $converter = $this->getCommonMarkConverter();
++    $assistantResponseText = $this->autoLinkRelativePaths($assistantResponseText);
+     $assistantResponseText = $this->rewriteMarkdownMessage($assistantResponseText);
+     $assistantResponseText = $converter ? $converter->convert($assistantResponseText) : $assistantResponseText;
+     $assistantResponseText = (string) $assistantResponseText;
+@@ -384,6 +385,25 @@
+   }
+ 
+   /**
++   * Convert bare URI/URL patterns to Markdown links before rendering.
++   *
++   * Handles the "URI: /path" format appended by RAG contextual content fields.
++   *
++   * @param string $text
++   *   The raw response text from the AI.
++   *
++   * @return string
++   *   Text with URI/URL patterns converted to Markdown link syntax.
++   */
++  public function autoLinkRelativePaths(string $text): string {
++    return preg_replace(
++      '/\b(URI|URL):\s*(\/[^\s<>"\')\]]+)/',
++      '[$2]($2)',
++      $text
++    );
++  }
++
++  /**
+    * Rewrite markdown message.
+    *
+    * @param string $message
+@@ -425,6 +445,7 @@
+    *   The type of message.
+    */
+   public function createSseMessage(string $message, bool $is_chunk = FALSE, string $type = 'html') {
++    $message = $this->autoLinkRelativePaths($message);
+     $message = $this->rewriteMarkdownMessage($message);
+     $converter = $this->getCommonMarkConverter();
+     if ($is_chunk) {
+@@ -475,14 +496,18 @@
+    *   The common mark converter.
+    */
+   public function getCommonMarkConverter() {
+-    $converter = NULL;
++    // Prefer GFM converter — it includes the Autolink extension which renders
++    // bare https:// URLs and user@domain.com emails as clickable links.
++    // @codingStandardsIgnoreLine
++    if (class_exists('League\CommonMark\GithubFlavoredMarkdownConverter')) {
++      // @codingStandardsIgnoreLine
++      return new \League\CommonMark\GithubFlavoredMarkdownConverter();
++    }
+     if (class_exists('League\CommonMark\CommonMarkConverter')) {
+-      // Ignore the non-use statement loading since this dependency may not
+-      // exist.
+       // @codingStandardsIgnoreLine
+-      $converter = new \League\CommonMark\CommonMarkConverter();
++      return new \League\CommonMark\CommonMarkConverter();
+     }
+-    return $converter;
++    return NULL;
+   }
+ 
+ }
