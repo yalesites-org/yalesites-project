@@ -273,12 +273,13 @@ class PortkeyProvider extends AiProviderClientBase implements
       }
       /** @var \Drupal\ai\OperationType\Chat\ChatMessage $message */
       foreach ($input->getMessages() as $message) {
-        $content = [
-          [
+        $content = [];
+        if ($message->getText() !== '') {
+          $content[] = [
             'type' => 'text',
             'text' => $message->getText(),
-          ],
-        ];
+          ];
+        }
         if (count($message->getImages())) {
           foreach ($message->getImages() as $image) {
             $content[] = [
@@ -291,7 +292,7 @@ class PortkeyProvider extends AiProviderClientBase implements
         }
         $new_message = [
           'role' => $message->getRole(),
-          'content' => $content,
+          'content' => !empty($content) ? $content : NULL,
         ];
 
         if ($message->getToolsId()) {
