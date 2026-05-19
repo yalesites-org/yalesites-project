@@ -135,7 +135,9 @@
     },
     "patches": {
       "drupal/ai": {
-        "Fix VdbSimilarityMetrics::from() crash when metric is null (Azure AI Search)": "patches/ai/ai_search-metric-enum-fix.patch"
+        "Fix VdbSimilarityMetrics::from() crash when metric is null (Azure AI Search)": "patches/ai/ai_search-metric-enum-fix.patch",
+        "Auto-link bare URLs and emails in chatbot responses": "patches/ai/ai_chatbot-autolink-urls-and-emails.patch",
+        "Include entity URI in RAG tool search results so the AI can cite sources": "patches/ai/ai_search-rag-tool-include-uri.patch"
       },
       "drupal/core": {
         "plural results summary https://www.drupal.org/project/drupal/issues/2888320": "https://www.drupal.org/files/issues/2024-06-21/2888320-92.patch",
