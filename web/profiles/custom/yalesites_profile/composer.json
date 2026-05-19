@@ -14,6 +14,7 @@
     "drupal/ai": "^1.1",
     "drupal/ai_agents": "^1.1",
     "drupal/ai_provider_azure": "^1.1@beta",
+    "drupal/ai_provider_openai": "^1.1",
     "drupal/ai_vdb_provider_azure_ai_search": "^1.1@beta",
     "drupal/allowed_formats": "3.0.1",
     "drupal/anchor_link": "3.0.4",
@@ -134,6 +135,9 @@
     "patches": {
       "drupal/ai": {
         "Fix VdbSimilarityMetrics::from() crash when metric is null (Azure AI Search)": "patches/ai/ai_search-metric-enum-fix.patch"
+      },
+      "drupal/ai_provider_openai": {
+        "Add custom host and headers support for OpenAI-compatible proxies like Portkey": "patches/ai_provider_openai/custom-host-headers.patch"
       },
       "drupal/core": {
         "plural results summary https://www.drupal.org/project/drupal/issues/2888320": "https://www.drupal.org/files/issues/2024-06-21/2888320-92.patch",

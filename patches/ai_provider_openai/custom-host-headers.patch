@@ -1,0 +1,165 @@
+--- a/src/Form/OpenAiConfigForm.php
++++ b/src/Form/OpenAiConfigForm.php
+@@ -81,7 +81,31 @@
+     ];
+
+     $form['advanced']['moderation'] = [
+-      '#markup' => '<p>' . $this->t('Moderation is always on by default for any text based call. You can disable it for each request either via code or by changing manually in ai_provider_openai.settings.yml.') . '</p>',
++      '#type' => 'checkbox',
++      '#title' => $this->t('Enable moderation'),
++      '#description' => $this->t('Run a moderation check before each text-based request. Disable when using a custom host that does not support the OpenAI /moderations endpoint (e.g., Portkey).'),
++      '#default_value' => $config->get('moderation'),
++    ];
++
++    $form['advanced']['host'] = [
++      '#type' => 'textfield',
++      '#title' => $this->t('Custom API Host'),
++      '#description' => $this->t('Override the default OpenAI API endpoint. Use for OpenAI-compatible proxies (e.g., https://api.portkey.ai/v1). When set, API key validation against api.openai.com is skipped.'),
++      '#default_value' => $config->get('host'),
++    ];
++
++    $form['advanced']['custom_model'] = [
++      '#type' => 'textfield',
++      '#title' => $this->t('Custom Model Name'),
++      '#description' => $this->t('Model name to use when a custom host is set. The proxy determines actual model routing; this value is passed in the request and shown in the model dropdown. E.g., claude-haiku-20241022'),
++      '#default_value' => $config->get('custom_model'),
++    ];
++
++    $form['advanced']['custom_headers'] = [
++      '#type' => 'textarea',
++      '#title' => $this->t('Custom HTTP Headers'),
++      '#description' => $this->t('Additional HTTP headers sent with every API request. One per line in "Header-Name: value" format. Use [key:key_name] to reference a Key module key instead of storing secrets in plain config. E.g., x-portkey-api-key: [key:portkey_key]'),
++      '#default_value' => $config->get('custom_headers'),
+     ];
+
+     return parent::buildForm($form, $form_state);
+@@ -102,12 +126,17 @@
+       $form_state->setErrorByName('api_key', $this->t('The API Key is invalid.'));
+       return;
+     }
+-    $client = \OpenAI::client($api_key);
+-    try {
+-      $client->models()->list();
+-    }
+-    catch (\Exception $e) {
+-      $form_state->setErrorByName('api_key', $this->t('The API Key is not working.'));
++    // Skip live OpenAI validation when a custom host is configured, since the
++    // key is for the proxy (e.g., Portkey), not OpenAI directly.
++    $host = $form_state->getValue('host');
++    if (empty($host)) {
++      $client = \OpenAI::client($api_key);
++      try {
++        $client->models()->list();
++      }
++      catch (\Exception $e) {
++        $form_state->setErrorByName('api_key', $this->t('The API Key is not working.'));
++      }
+     }
+
+   }
+@@ -117,11 +146,18 @@
+    */
+   public function submitForm(array &$form, FormStateInterface $form_state) {
+     $api_key = $this->keyRepository->getKey($form_state->getValue('api_key'))->getKeyValue();
+-    // If it all passed through, we do one last check of rate limits via chat.
+-    $this->openAiHelper->testRateLimit($api_key);
++    // Only check rate limits against api.openai.com when no custom host is set.
++    $host = $form_state->getValue('host');
++    if (empty($host)) {
++      $this->openAiHelper->testRateLimit($api_key);
++    }
+     // Retrieve the configuration.
+     $this->config(static::CONFIG_NAME)
+       ->set('api_key', $form_state->getValue('api_key'))
++      ->set('moderation', (bool) $form_state->getValue('moderation'))
++      ->set('host', $form_state->getValue('host'))
++      ->set('custom_model', $form_state->getValue('custom_model'))
++      ->set('custom_headers', $form_state->getValue('custom_headers'))
+       ->save();
+
+     // Set default models.
+--- a/src/Plugin/AiProvider/OpenAiProvider.php
++++ b/src/Plugin/AiProvider/OpenAiProvider.php
+@@ -317,11 +317,42 @@
+         $client->withBaseUri($this->getConfig()->get('host'));
+       }
+
++      // Apply any custom headers (e.g., for Portkey or other proxies).
++      // Header values may contain [key:key_name] placeholders which are
++      // resolved via the Key module so secrets are not stored in plain config.
++      $custom_headers = $this->getConfig()->get('custom_headers');
++      if (!empty($custom_headers)) {
++        foreach (explode("\n", $custom_headers) as $line) {
++          $line = trim($line);
++          if ($line !== '' && str_contains($line, ':')) {
++            [$name, $value] = explode(':', $line, 2);
++            $value = $this->resolveKeyPlaceholders(trim($value));
++            $client->withHttpHeader(trim($name), $value);
++          }
++        }
++      }
++
+       $this->client = $client->make();
+     }
+   }
+
+   /**
++   * Resolves [key:key_name] placeholders in a string using the Key module.
++   *
++   * @param string $value
++   *   The string that may contain [key:key_name] tokens.
++   *
++   * @return string
++   *   The string with placeholders replaced by their key values.
++   */
++  protected function resolveKeyPlaceholders(string $value): string {
++    return preg_replace_callback('/\[key:([^\]]+)\]/', function ($matches) {
++      $key = $this->keyRepository->getKey($matches[1]);
++      return $key ? ($key->getKeyValue() ?? $matches[0]) : $matches[0];
++    }, $value);
++  }
++
++  /**
+    * {@inheritdoc}
+    */
+   public function chat(array|string|ChatInput $input, string $model_id, array $tags = []): ChatOutput {
+@@ -389,6 +420,12 @@
+       'model' => $model_id,
+       'messages' => $chat_input,
+     ] + $this->configuration;
++    // When using a custom host (e.g., Portkey routing to Vertex AI or Anthropic
++    // models), both temperature and top_p cannot be set simultaneously. Prefer
++    // temperature and drop top_p from the payload.
++    if (!empty($this->getConfig()->get('host')) && isset($payload['temperature']) && isset($payload['top_p'])) {
++      unset($payload['top_p']);
++    }
+     // If we want to add tools to the input.
+     if (is_object($input) && method_exists($input, 'getChatTools') && $input->getChatTools()) {
+       $payload['tools'] = $input->getChatTools()->renderToolsArray();
+@@ -770,6 +807,14 @@
+   public function getModels(string $operation_type, $capabilities): array {
+     $models = [];
+
++    // When a custom host is configured (e.g., Portkey), model discovery via the
++    // API is unreliable or returns non-OpenAI model IDs. Return the configured
++    // custom model name instead so the model dropdown is usable.
++    $custom_model = $this->getConfig()->get('custom_model');
++    if (!empty($this->getConfig()->get('host')) && !empty($custom_model)) {
++      return [$custom_model => $custom_model];
++    }
++
+     $cache_key = 'openai_models_' . $operation_type . '_' . Crypt::hashBase64(Json::encode($capabilities));
+     $cache_data = $this->cacheBackend->get($cache_key);
+
+--- a/config/schema/ai_provider_openai.schema.yml
++++ b/config/schema/ai_provider_openai.schema.yml
+@@ -11,3 +11,9 @@
+     host:
+       type: string
+       label: 'The host to use for the API requests.'
++    custom_model:
++      type: string
++      label: 'Custom model name used when a custom host is configured.'
++    custom_headers:
++      type: string
++      label: 'Custom HTTP headers for API requests (one per line, Header-Name: value format).'
