@@ -209,6 +209,12 @@
       },
       "drupal/cas": {
         "Fix coffee url_generator.non_bubbling override for CAS logouts https://www.drupal.org/project/cas/issues/2948185": "https://www.drupal.org/files/issues/cas_logout_error-2948185-2.patch"
+      },
+      "drupal/search_api_html_element_filter": {
+        "Remove browser-level required from css_selectors to prevent hidden field blocking form submission": "patches/search_api_html_element_filter/css-selectors-hidden-required-field.patch"
+      },
+      "drupal/ai_vdb_provider_azure_ai_search": {
+        "Fix prepareFilters returning MongoDB-style array instead of OData filter string": "patches/ai_vdb_provider_azure_ai_search/odata-filter-string.patch"
       }
     }
   }
