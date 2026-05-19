@@ -105,6 +105,11 @@
     "composer-exit-on-patch-failure": true,
     "patchLevel": {
       "drupal/core": "-p2"
+    },
+    "patches": {
+      "drush/drush": {
+        "Add $options parameter to deploy() for Pantheon Drush 10 compatibility": "patches/drush/deploy-command-options-compat.patch"
+      }
     }
   },
   "config": {
