@@ -409,6 +409,7 @@ permissions:
   - 'manage media thumbnails settings'
   - 'manage ys ai system instructions'
   - 'mark as hidden in editoria11y'
+  - 'mark as ok in editoria11y'
   - 'override all authored by option'
   - 'override all authored on option'
   - 'override all promote to front page option'

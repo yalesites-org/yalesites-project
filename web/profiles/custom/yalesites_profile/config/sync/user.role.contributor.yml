@@ -351,6 +351,7 @@ permissions:
   - 'edit terms in tags'
   - 'manage editoria11y results'
   - 'mark as hidden in editoria11y'
+  - 'mark as ok in editoria11y'
   - 'override all sticky option'
   - 'override post authored on option'
   - 'revert all revisions'

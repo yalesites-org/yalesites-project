@@ -1,61 +1,33 @@
 _core:
-  default_config_hash: kIV1woSIwQ7BBcHoAOpa8a26XrvI2jcZbfTjDbLysno
+  default_config_hash: Qw6RGHR7OrfdZniY5gdke9ngqFwNZrlT-lb88h5zyMQ
+assertiveness: assertive
+ck5_table_headers: row
 content_root: ''
-assertiveness: smart
-no_load: ''
+custom_tests: 0
+detect_shadow: false
+disable_live: false
+disable_sync: false
+download_links: ''
+ed11y_theme: sleekTheme
+element_hides_overflow: ''
+embedded_content_warning: ''
+hidden_handlers: ''
+hide_edit_links: ''
 ignore_all_if_absent: ''
 ignore_elements: ''
-panel_no_cover: ''
-embedded_content_warning: ''
-download_links: ''
-link_strings_new_windows: ''
 ignore_link_strings: ''
+ignore_tests: {  }
 link_ignore_selector: 'svg.ext, svg.mailto, .link-purpose-text'
-hidden_handlers: ''
-element_hides_overflow: ''
-ed11y_theme: lightTheme
-panel_pin: right
-shadow_components: ''
-detect_shadow: false
-watch_for_changes: 'true'
-disable_sync: false
-preserve_params: 'search,keys,page,language,language_content_entity'
-redundant_prefix: ''
-custom_tests: 0
-disable_live: false
-live_h_inherit: ''
-live_h2: ''
+link_strings_new_windows: ''
+live_h2: 'form[id^="node-"] #edit-body-wrapper .ck-content'
 live_h3: ''
 live_h4: ''
-hide_edit_links: ''
-ck5_table_headers: none
-ignore_tests:
-  linkNewWindow: '0'
-  linkNoText: '0'
-  altEmptyLinked: '0'
-  linkDocument: '0'
-  linkTextIsURL: '0'
-  linkTextIsGeneric: '0'
-  textPossibleList: '0'
-  textPossibleHeading: '0'
-  textUppercase: '0'
-  tableNoHeaderCells: '0'
-  tableEmptyHeaderCell: '0'
-  tableContainsContentHeading: '0'
-  embedVideo: '0'
-  embedAudio: '0'
-  embedVisualization: '0'
-  embedTwitter: '0'
-  embedCustom: '0'
-  headingEmpty: '0'
-  headingIsLong: '0'
-  headingLevelSkipped: '0'
-  blockquoteIsShort: '0'
-  altMissing: '0'
-  altNull: '0'
-  altMeaningless: '0'
-  altURL: '0'
-  altImageOf: '0'
-  altDeadspace: '0'
-  altLong: '0'
-  altPartOfLinkWithText: '0'
+live_h_inherit: ''
+no_load: ''
+panel_no_cover: ''
+panel_pin: right
+preserve_params: 'search,keys,page,language,language_content_entity'
+redundant_prefix: ''
+shadow_components: ''
+tests_off: 'CONTRAST_WARNING_GRAPHIC,LINK_CLICK_HERE,LINK_IMAGE_ALT'
+watch_for_changes: checkRoots

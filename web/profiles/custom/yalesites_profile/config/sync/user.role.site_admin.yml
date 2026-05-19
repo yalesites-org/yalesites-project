@@ -378,6 +378,7 @@ permissions:
   - 'manage editoria11y results'
   - 'manage ys ai system instructions'
   - 'mark as hidden in editoria11y'
+  - 'mark as ok in editoria11y'
   - 'override all sticky option'
   - 'override post authored on option'
   - 'reorder book pages'
