@@ -43,9 +43,9 @@ class AiTesterBatch {
       }
 
       $runner = \Drupal::service('ai_assistant_api.runner');
-      // Give each question its own thread so history does not bleed across questions.
-      // setThreadsKey must precede setAssistant so the runner's internal guards
-      // (which only set threadId when empty) do not overwrite the isolation key.
+      // Give each question its own thread so history does not bleed.
+      // setThreadsKey must precede setAssistant so the runner's internal
+      // guards (which only set threadId when empty) do not overwrite the key.
       $runner->setThreadsKey("tester-{$run_id}-{$delta}");
       $runner->setAssistant($assistant);
       $runner->setUserMessage(new UserMessage($question));
