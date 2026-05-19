@@ -7,7 +7,7 @@ dependencies:
 id: event_topic
 label: 'Event Topic'
 type: 'canonical_entities:taxonomy_term'
-pattern: '[yale:event_landing_page_path]/event-topic/[term:name]'
+pattern: '/[yale:event_landing_page_path]/event-topic/[term:name]'
 selection_criteria:
   734728d7-0942-44e6-8f13-df3c871d7811:
     id: 'entity_bundle:taxonomy_term'
