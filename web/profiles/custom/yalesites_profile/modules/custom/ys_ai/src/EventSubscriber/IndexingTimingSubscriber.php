@@ -47,8 +47,8 @@ class IndexingTimingSubscriber implements EventSubscriberInterface {
    */
   public static function getSubscribedEvents(): array {
     return [
-      PreGenerateResponseEvent::EVENT_NAME => 'onPreGenerate',
-      PostGenerateResponseEvent::EVENT_NAME => 'onPostGenerate',
+      'ai.pre_generate_response' => 'onPreGenerate',
+      'ai.post_generate_response' => 'onPostGenerate',
       SearchApiEvents::INDEXING_ITEMS => ['onIndexingItems', 100],
       SearchApiEvents::ITEMS_INDEXED => ['onItemsIndexed', 100],
     ];
