@@ -92,7 +92,11 @@ class AiTesterForm extends FormBase {
     $form['prune']['keep_last'] = [
       '#type' => 'select',
       '#title' => $this->t('Keep the last'),
-      '#options' => [5 => '5 runs', 10 => '10 runs', 15 => '15 runs'],
+      '#options' => [
+        5 => $this->t('5 runs'),
+        10 => $this->t('10 runs'),
+        15 => $this->t('15 runs'),
+      ],
       '#default_value' => 10,
     ];
     $form['prune']['prune_submit'] = [
