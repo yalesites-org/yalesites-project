@@ -16,17 +16,13 @@ gateway:
   enabled: false
   recheck_time: 720
   paths:
-    id: request_path
+    id: null
     negate: false
     pages: '<front>'
   method: client_side
-  check_frequency: -2
 forced_login:
-  enabled: false
   paths:
-    id: request_path
-    negate: false
-    pages: ''
+    id: null
 user_accounts:
   prevent_normal_login: true
   auto_register: true
