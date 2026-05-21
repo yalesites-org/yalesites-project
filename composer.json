@@ -10,6 +10,19 @@
     "drupal": {
       "type": "composer",
       "url": "https://packages.drupal.org/8"
+    },
+    "chosen": {
+      "type": "package",
+      "package": {
+        "name": "jjj/chosen",
+        "version": "2.2.1",
+        "type": "drupal-library",
+        "source": {
+          "url": "https://github.com/JJJ/chosen.git",
+          "type": "git",
+          "reference": "2.2.1"
+        }
+      }
     }
   },
   "require": {
@@ -20,7 +33,6 @@
     "drupal/core-recommended": "10.6.9",
     "drush/drush": "^13",
     "league/commonmark": "^2.0",
-    "oomphinc/composer-installers-extender": "^2.0",
     "pantheon-systems/drupal-integrations": "^10",
     "yalesites-org/yalesites_profile": "*"
   },
@@ -54,9 +66,6 @@
         }
       }
     },
-    "installer-types": [
-      "npm-asset"
-    ],
     "installer-paths": {
       "web/core": [
         "type:drupal-core"
@@ -115,7 +124,6 @@
       "dealerdirect/phpcodesniffer-composer-installer": true,
       "drupal/core-composer-scaffold": true,
       "drupal/core-project-message": true,
-      "oomphinc/composer-installers-extender": true,
       "php-http/discovery": true,
       "phpstan/extension-installer": true,
       "tbachert/spi": true
