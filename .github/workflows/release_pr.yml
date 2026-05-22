@@ -53,7 +53,7 @@ jobs:
         config: ${{ secrets.SSH_CONFIG }}
 
     - name: Cache terminus
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       id: terminus-cache
       with:
         path: |
@@ -73,15 +73,15 @@ jobs:
       RELEASE_BRANCH: ${{ steps.get_release_number.outputs.release_branch }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         ref: master
         fetch-depth: 0
 
     - name: Setup node
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
-        node-version: 20
+        node-version: 24
 
     - name: Git setup
       run: |
@@ -135,7 +135,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Create pull request
       id: create_pull_request
@@ -151,7 +151,7 @@ jobs:
       RELEASE_SITES_DEPLOYED: ${{ vars.RELEASE_SITES_DEPLOYED }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         ref: ${{ env.RELEASE_BRANCH }}
         fetch-depth: 0
@@ -164,7 +164,7 @@ jobs:
         git config user.email github-actions@github.com
 
     - name: Restore cache
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       id: terminus-cache
       with:
         path: |
@@ -187,10 +187,10 @@ jobs:
     steps:
 
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
         
     - name: Restore cache
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       id: terminus-cache
       with:
         path: |
