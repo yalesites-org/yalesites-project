@@ -47,3 +47,4 @@ services:
     xdebug: true
     build_as_root:
       - git config --global --add safe.directory /app
+      - apt-get update && apt-get install -y libpq-dev && docker-php-ext-install pgsql

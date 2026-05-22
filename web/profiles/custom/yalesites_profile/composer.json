@@ -16,6 +16,7 @@
     "drupal/ai_provider_azure": "^1.1@beta",
     "drupal/ai_provider_openai": "^1.1",
     "drupal/ai_vdb_provider_azure_ai_search": "^1.1@beta",
+    "drupal/ai_vdb_provider_postgres": "^1.0@alpha",
     "drupal/allowed_formats": "3.0.1",
     "drupal/anchor_link": "3.0.4",
     "drupal/auto_entitylabel": "3.4",
