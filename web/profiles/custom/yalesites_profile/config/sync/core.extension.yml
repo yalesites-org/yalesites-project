@@ -16,6 +16,7 @@ module:
   ai_engine_feed: 0
   ai_engine_metadata: 0
   ai_search: 0
+  ai_vdb_provider_azure_ai_search: 0
   allowed_formats: 0
   anchor_link: 0
   better_exposed_filters: 0
