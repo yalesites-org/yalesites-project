@@ -1,33 +1,33 @@
 _core:
   default_config_hash: Qw6RGHR7OrfdZniY5gdke9ngqFwNZrlT-lb88h5zyMQ
-assertiveness: assertive
-ck5_table_headers: row
 content_root: ''
-custom_tests: 0
-detect_shadow: false
-disable_live: false
-disable_sync: false
-download_links: ''
-ed11y_theme: sleekTheme
-element_hides_overflow: ''
-embedded_content_warning: ''
-hidden_handlers: ''
-hide_edit_links: ''
+assertiveness: assertive
+no_load: ''
 ignore_all_if_absent: ''
 ignore_elements: ''
-ignore_link_strings: ''
-ignore_tests: {  }
-link_ignore_selector: 'svg.ext, svg.mailto, .link-purpose-text'
+panel_no_cover: ''
+embedded_content_warning: ''
+download_links: ''
 link_strings_new_windows: ''
+ignore_link_strings: ''
+link_ignore_selector: 'svg.ext, svg.mailto, .link-purpose-text'
+hidden_handlers: ''
+element_hides_overflow: ''
+ed11y_theme: sleekTheme
+panel_pin: right
+shadow_components: ''
+detect_shadow: false
+watch_for_changes: checkRoots
+disable_sync: false
+preserve_params: 'search,keys,page,language,language_content_entity'
+redundant_prefix: ''
+custom_tests: 0
+disable_live: false
+live_h_inherit: ''
 live_h2: 'form[id^="node-"] #edit-body-wrapper .ck-content'
 live_h3: ''
 live_h4: ''
-live_h_inherit: ''
-no_load: ''
-panel_no_cover: ''
-panel_pin: right
-preserve_params: 'search,keys,page,language,language_content_entity'
-redundant_prefix: ''
-shadow_components: ''
+hide_edit_links: ''
+ck5_table_headers: row
 tests_off: 'CONTRAST_WARNING_GRAPHIC,LINK_CLICK_HERE,LINK_IMAGE_ALT'
-watch_for_changes: checkRoots
+ignore_tests: {  }
