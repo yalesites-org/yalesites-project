@@ -21,15 +21,18 @@ gateway:
     pages: '<front>'
   method: client_side
 forced_login:
+  enabled: false
   paths:
     id: null
+    negate: false
+    pages: ''
 user_accounts:
   prevent_normal_login: true
   auto_register: true
   auto_register_follow_registration_policy: false
   email_assignment_strategy: 0
   email_hostname: noreply.yale.edu
-  email_attribute: mail
+  email_attribute: ''
   auto_assigned_roles: {  }
   restrict_password_management: true
   restrict_email_management: true
