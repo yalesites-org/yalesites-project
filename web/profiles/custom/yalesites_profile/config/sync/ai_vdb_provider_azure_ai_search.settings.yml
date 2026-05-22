@@ -1,5 +1,5 @@
-_core:
-  default_config_hash: imEDMIRYmFeCXTXoB26-lqwsJJ76OqPZiXsB4JtlNWw
-api_key: ''
+api_key: azure_ai_search_api_key
 url: ''
 api_version: ''
+_core:
+  default_config_hash: imEDMIRYmFeCXTXoB26-lqwsJJ76OqPZiXsB4JtlNWw

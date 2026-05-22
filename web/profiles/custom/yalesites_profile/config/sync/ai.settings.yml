@@ -4,5 +4,36 @@ prompt_logging: false
 prompt_logging_tags: ''
 default_providers: {  }
 request_timeout: 60
+models:
+  portkey:
+    embeddings:
+      openai-text-embedding-3-small:
+        operation_type: embeddings
+        model_id: openai-text-embedding-3-small
+        label: 'OpenAI Text Embedding 3 Small'
+        dimensions: '1536'
+        api_key: portkey_embedding_api_key
+        gateway_url: 'https://api.portkey.ai/v1'
+        custom_headers: ''
+        provider: portkey
+    chat:
+      anthropic-claude-45-haiku:
+        operation_type: chat
+        model_id: anthropic-claude-45-haiku
+        label: 'Anthropic Claude-4.5 Haiku'
+        chat_with_image_vision: 0
+        chat_with_audio: 0
+        chat_with_video: 0
+        chat_system_role: 1
+        chat_json_output: 0
+        chat_structured_response: 0
+        chat_tools: 0
+        chat_combined_tools_and_structured_response: 1
+        max_input_tokens: '200000'
+        max_output_tokens: '4096'
+        api_key: portkey_llm_api_key
+        gateway_url: 'https://api.portkey.ai/v1'
+        custom_headers: ''
+        provider: portkey
 allowed_hosts: {  }
 allowed_hosts_rewrite_links: false
