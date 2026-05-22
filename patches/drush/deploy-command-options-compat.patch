@@ -1,0 +1,11 @@
+--- a/src/Commands/core/DeployCommands.php
++++ b/src/Commands/core/DeployCommands.php
+@@ -34,7 +34,7 @@
+     #[CLI\Usage(name: 'drush deploy -v -y', description: 'Run updates with verbose logging and accept all prompts.')]
+     #[CLI\Version(version: '10.3')]
+     #[CLI\Topics(topics: [DocsCommands::DEPLOY])]
+-    public function deploy(): void
++    public function deploy(array $options = []): void
+     {
+         $self = $this->siteAliasManager->getSelf();
+         $redispatchOptions = Drush::redispatchOptions();
