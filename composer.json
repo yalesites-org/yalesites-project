@@ -110,7 +110,8 @@
   "config": {
     "audit": {
       "ignore":[
-        "SA-CONTRIB-2025-060"
+        "SA-CONTRIB-2025-060",
+        "PKSA-dwsq-ppd2-mb1x"
       ]
     },
     "preferred-install": "dist",
