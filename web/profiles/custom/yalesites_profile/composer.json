@@ -123,7 +123,7 @@
     },
     "sort-packages": true,
     "allow-plugins": {
-      "php-http/discovery": true
+      "php-http/discovery": false
     }
   },
   "extra": {
