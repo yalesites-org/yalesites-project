@@ -24,6 +24,12 @@ fi
 terminus -n env:wake "$TERMINUS_SITE.$TERMINUS_ENV" --retry=5 --delay=30
 
 # Run drush deploy - updb, cr, cim, cr, deploy:hook
+# Sleep 15s to give the appserver time to stabilize after the code push.
+# env:wake confirms HTTP responds but the service container may still be
+# compiling; without this pause drush deploy can fail with a misleading
+# "ConsoleErrorEvent not found" fatal caused by a transient class-load
+# failure during cold-start.
+sleep 15
 terminus -n drush "$TERMINUS_SITE.$TERMINUS_ENV" -- deploy -v -y
 
 # Clear the environment cache
