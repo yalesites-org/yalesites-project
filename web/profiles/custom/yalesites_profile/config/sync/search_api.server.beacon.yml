@@ -1,0 +1,30 @@
+uuid: d14838e6-13d9-47e1-9b15-57f806f9b23a
+langcode: en
+status: true
+dependencies:
+  module:
+    - ai_search
+    - ai_vdb_provider_azure_ai_search
+id: beacon
+name: Beacon
+description: ''
+backend: search_api_ai_search
+backend_config:
+  chat_model: portkey__anthropic-claude-45-haiku
+  database: azure_ai_search
+  database_settings:
+    collection: ''
+    api_version: '2023-11-01'
+    api_key: azure_ai_search_api_key
+  embeddings_engine: portkey__openai-text-embedding-3-small
+  embeddings_engine_configuration:
+    set_dimensions: false
+    dimensions: 1536
+  embedding_strategy: contextual_chunks
+  embedding_strategy_configuration:
+    chunk_size: '2000'
+    chunk_min_overlap: '300'
+    contextual_content_max_percentage: '30'
+    skip_moderation: false
+  embedding_strategy_details: ''
+  include_raw_embedding_vector: false
