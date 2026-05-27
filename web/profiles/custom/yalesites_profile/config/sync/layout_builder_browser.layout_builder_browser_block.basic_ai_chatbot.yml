@@ -1,0 +1,11 @@
+uuid: 5ea8b2a0-45b1-40d5-84e1-6cd3fa18a98b
+langcode: en
+status: true
+dependencies: {  }
+id: basic_ai_chatbot
+block_id: ai_chatbot_block
+category: dynamic_content
+label: 'Basic AI Chatbot'
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/ai-chatbot.svg
+image_alt: ''
+weight: -100

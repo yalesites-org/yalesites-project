@@ -1,0 +1,54 @@
+<svg viewBox="0 0 501 261" xmlns="http://www.w3.org/2000/svg">
+  <rect width="501" height="261" fill="white"/>
+
+  <!-- Chat window frame -->
+  <rect x="55" y="18" width="391" height="225" rx="5" fill="#EEEEEE" stroke="#D3D3D3" stroke-width="2"/>
+
+  <!-- Header bar -->
+  <rect x="55" y="18" width="391" height="52" rx="5" fill="#376C74"/>
+  <rect x="55" y="48" width="391" height="22" fill="#376C74"/>
+
+  <!-- Bot avatar -->
+  <circle cx="90" cy="44" r="18" fill="white" opacity="0.2"/>
+  <circle cx="90" cy="44" r="12" fill="white" opacity="0.35"/>
+  <!-- Sparkle (AI indicator) -->
+  <line x1="90" y1="36" x2="90" y2="52" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.9"/>
+  <line x1="82" y1="44" x2="98" y2="44" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.9"/>
+  <line x1="84" y1="38" x2="96" y2="50" stroke="white" stroke-width="1.5" stroke-linecap="round" opacity="0.55"/>
+  <line x1="96" y1="38" x2="84" y2="50" stroke="white" stroke-width="1.5" stroke-linecap="round" opacity="0.55"/>
+
+  <!-- Header name bar -->
+  <rect x="118" y="35" width="108" height="9" rx="3" fill="white" opacity="0.55"/>
+  <!-- Online status -->
+  <circle cx="120" cy="55" r="4" fill="#7ED88A"/>
+  <rect x="130" y="51" width="70" height="7" rx="3" fill="white" opacity="0.3"/>
+
+  <!-- Bot message 1 -->
+  <circle cx="82" cy="96" r="11" fill="#376C74" opacity="0.45"/>
+  <line x1="82" y1="90" x2="82" y2="102" stroke="white" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+  <line x1="76" y1="96" x2="88" y2="96" stroke="white" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+  <rect x="102" y="85" width="185" height="22" rx="4" fill="#376C74" opacity="0.28"/>
+
+  <!-- Bot message 2 -->
+  <circle cx="82" cy="122" r="11" fill="#376C74" opacity="0.45"/>
+  <line x1="82" y1="116" x2="82" y2="128" stroke="white" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+  <line x1="76" y1="122" x2="88" y2="122" stroke="white" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+  <rect x="102" y="111" width="235" height="22" rx="4" fill="#376C74" opacity="0.28"/>
+
+  <!-- User message (right-aligned) -->
+  <rect x="232" y="151" width="184" height="22" rx="4" fill="#D3D3D3"/>
+
+  <!-- Bot response with thinking dots -->
+  <circle cx="82" cy="192" r="11" fill="#376C74" opacity="0.45"/>
+  <line x1="82" y1="186" x2="82" y2="198" stroke="white" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+  <line x1="76" y1="192" x2="88" y2="192" stroke="white" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+  <rect x="102" y="181" width="115" height="22" rx="4" fill="#376C74" opacity="0.6"/>
+  <circle cx="120" cy="192" r="4.5" fill="white"/>
+  <circle cx="137" cy="192" r="4.5" fill="white" opacity="0.65"/>
+  <circle cx="154" cy="192" r="4.5" fill="white" opacity="0.35"/>
+
+  <!-- Input bar -->
+  <rect x="75" y="220" width="287" height="13" rx="4" fill="white"/>
+  <!-- Send button -->
+  <rect x="370" y="218" width="56" height="17" rx="4" fill="#376C74"/>
+</svg>

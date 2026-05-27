@@ -1,0 +1,11 @@
+uuid: ddde18eb-c437-44e3-aa11-6f813275bbe8
+langcode: en
+status: true
+dependencies: {  }
+id: deepchat_ai_bot
+block_id: ai_deepchat_block
+category: dynamic_content
+label: 'Deepchat AI Bot'
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/ai-chatbot.svg
+image_alt: ''
+weight: -100
