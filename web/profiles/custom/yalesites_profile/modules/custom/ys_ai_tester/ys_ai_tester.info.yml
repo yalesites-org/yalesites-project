@@ -1,0 +1,7 @@
+name: YS AI Tester
+type: module
+description: Batch AI response testing tool for YaleSites AI assistants.
+core_version_requirement: ^10 || ^11
+package: YaleSites
+dependencies:
+  - ai:ai_assistant_api
