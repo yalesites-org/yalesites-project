@@ -3,6 +3,7 @@ _core:
 mode: simple
 ignored_config_entities:
   - 'ai_engine*'
+  - 'ai_vdb_provider_azure_ai_search.settings:url'
   - 'cas.settings:forced_login.enabled'
   - 'cas.settings:forced_login.paths.negate'
   - 'cas.settings:forced_login.paths.pages'
@@ -14,7 +15,6 @@ ignored_config_entities:
   - 'google_analytics.settings:account'
   - 'google_tag*'
   - 'search_api.server.beacon:backend_config.database_settings.database_name'
-  - 'search_api.server.beacon:backend_config.database_settings.url'
   - 'system.site*'
   - 'taxonomy.vocabulary.custom_vocab:name'
   - 'ys_ai_system_instructions*'

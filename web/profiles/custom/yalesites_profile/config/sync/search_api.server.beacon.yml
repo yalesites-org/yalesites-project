@@ -13,6 +13,7 @@ backend_config:
   chat_model: portkey__anthropic-claude-45-haiku
   database: azure_ai_search
   database_settings:
+    database_name: ''
     collection: ''
     api_version: '2023-11-01'
     api_key: azure_ai_search_api_key

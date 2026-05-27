@@ -8,5 +8,6 @@ dependencies:
   - ai_engine
   - ai_engine_chat
   - ai_engine_embedding
+  - key
   - ys_core
   - ys_integrations

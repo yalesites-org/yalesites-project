@@ -3,3 +3,9 @@ services:
     class: Drupal\ys_ai\Access\SettingsEnabledAccessCheck
     arguments: ['@config.factory']
 
+  ys_ai.beacon_search_config_override:
+    class: Drupal\ys_ai\Config\BeaconSearchConfigOverride
+    arguments: ['@key.repository']
+    tags:
+      - { name: config.factory.override, priority: 5 }
+
