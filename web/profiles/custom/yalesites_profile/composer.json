@@ -12,6 +12,7 @@
     "drupal/addtoany": "2.0.7",
     "drupal/admin_toolbar": "3.6.3",
     "drupal/ai": "1.3.5",
+    "drupal/ai_agents": "1.3.0-rc1",
     "drupal/ai_vdb_provider_azure_ai_search": "1.1.0-beta2",
     "drupal/allowed_formats": "3.0.1",
     "drupal/anchor_link": "3.0.4",
