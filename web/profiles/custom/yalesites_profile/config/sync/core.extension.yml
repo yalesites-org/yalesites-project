@@ -8,6 +8,7 @@ module:
   admin_toolbar: 0
   admin_toolbar_tools: 0
   ai: 0
+  ai_agents: 0
   ai_assistant_api: 0
   ai_chatbot: 0
   ai_engine: 0
@@ -109,6 +110,7 @@ module:
   migrate_drupal: 0
   migrate_plus: 0
   migrate_tools: 0
+  modeler_api: 0
   moderation_sidebar: 0
   multiple_fields_remove_button: 0
   multivalue_form_element: 0
