@@ -1,0 +1,21 @@
+uuid: 37a0f6bb-8c18-4f76-a9eb-186476f7aa82
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.image_banner
+    - field.storage.block_content.field_style_width
+  module:
+    - options
+id: block_content.image_banner.field_style_width
+field_name: field_style_width
+entity_type: block_content
+bundle: image_banner
+label: 'Banner Width'
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ys_themes_default_value_function
+settings: {  }
+field_type: list_string
