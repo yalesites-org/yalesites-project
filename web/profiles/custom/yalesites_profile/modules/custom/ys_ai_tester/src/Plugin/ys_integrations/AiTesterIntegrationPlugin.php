@@ -1,0 +1,77 @@
+<?php
+
+namespace Drupal\ys_ai_tester\Plugin\ys_integrations;
+
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Url;
+use Drupal\ys_integrations\Attribute\Integration;
+use Drupal\ys_integrations\IntegrationPluginBase;
+
+/**
+ * Provides an AI Tester integration plugin.
+ */
+#[Integration(
+  id: 'ys_ai_tester',
+  label: new TranslatableMarkup('AI Tester'),
+  description: new TranslatableMarkup('Batch test AI assistant responses against a YAML fixture of prompts.'),
+)]
+class AiTesterIntegrationPlugin extends IntegrationPluginBase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isTurnedOn(): bool {
+    return $this->configFactory->get('ai_engine_chat.settings')->get('azure_base_url') != NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function configUrl() {
+    return Url::fromRoute('ys_ai.tester');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function syncUrl() {
+    return NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function build(): array {
+    $form = [];
+
+    $form['title'] = $this->pluginDefinition['label'];
+    $form['description'] = $this->pluginDefinition['description'];
+
+    $configUrl = $this->configUrl();
+    $configUrlAccess = $configUrl->access($this->currentUser);
+
+    if ($this->isTurnedOn()) {
+      $form['#actions']['configure'] = [
+        '#type' => 'link',
+        '#title' => $this->t('Open AI Tester'),
+        '#url' => $configUrl,
+        '#access' => $configUrlAccess,
+        '#attributes' => ['class' => ['button', 'button--primary']],
+      ];
+    }
+    else {
+      $form['#actions']['not_configured'] = [
+        '#markup' => '<p>' . $this->t('Configure the AI integration before using the tester.') . '</p>',
+      ];
+    }
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function save($form, $form_state): void {
+  }
+
+}
