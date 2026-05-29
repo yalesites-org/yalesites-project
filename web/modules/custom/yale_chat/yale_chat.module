@@ -1,0 +1,68 @@
+<?php
+
+/**
+ * @file
+ * Yale Chat module hooks.
+ */
+
+/**
+ * Implements hook_theme().
+ */
+function yale_chat_theme() {
+  return [
+    'yale_chat_button' => [
+      'variables' => [
+        'button_text' => NULL,
+        'icon_class' => NULL,
+      ],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_page_attachments_alter().
+ */
+function yale_chat_page_attachments_alter(array &$attachments) {
+  $config = \Drupal::config('yale_chat.settings');
+  if (!$config->get('enable')) {
+    return;
+  }
+
+  $attachments['#cache']['tags'][] = 'config:yale_chat.settings';
+  $attachments['#attached']['drupalSettings']['yale_chat'] = [
+    'initial_questions' => json_encode($config->get('initial_questions')),
+    'disclaimer' => $config->get('disclaimer'),
+    'footer' => $config->get('footer'),
+    'csrf_token' => \Drupal::service('csrf_token')->get('yale-chat/message'),
+  ];
+  $attachments['#attached']['library'][] = 'yale_chat/chat_widget';
+}
+
+/**
+ * Implements hook_page_bottom().
+ */
+function yale_chat_page_bottom(array &$page_bottom) {
+  $config = \Drupal::config('yale_chat.settings');
+  $current_theme = \Drupal::theme()->getActiveTheme()->getName();
+  $frontend_theme = \Drupal::config('system.theme')->get('default');
+
+  if (
+    $config->get('floating_button')
+    && $config->get('enable')
+    && $current_theme === $frontend_theme
+  ) {
+    $page_bottom[] = [
+      '#theme' => 'yale_chat_button',
+      '#button_text' => $config->get('floating_button_text'),
+      '#icon_class' => $config->get('floating_button_icon') ?? 'fa-comments',
+    ];
+  }
+}
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function yale_chat_preprocess_page(&$variables) {
+  $config = \Drupal::config('yale_chat.settings');
+  \Drupal::service('renderer')->addCacheableDependency($variables, $config);
+}

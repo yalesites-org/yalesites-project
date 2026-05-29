@@ -1,0 +1,30 @@
+yale_chat.settings:
+  type: config_object
+  label: 'Yale Chat settings'
+  mapping:
+    enable:
+      type: boolean
+      label: 'Enable chat widget'
+    assistant_id:
+      type: string
+      label: 'AI Assistant entity ID'
+    floating_button:
+      type: boolean
+      label: 'Show floating button'
+    floating_button_text:
+      type: string
+      label: 'Floating button text'
+    floating_button_icon:
+      type: string
+      label: 'Floating button icon class'
+    initial_questions:
+      type: sequence
+      label: 'Initial prompt suggestions'
+      sequence:
+        type: string
+    disclaimer:
+      type: string
+      label: 'Disclaimer text'
+    footer:
+      type: string
+      label: 'Footer HTML'

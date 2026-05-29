@@ -1,0 +1,10 @@
+name: Yale Chat
+type: module
+description: 'A Yale-branded AI chat widget backed by Drupal AI module and RAG search.'
+core_version_requirement: ^10 || ^11
+package: Yale
+
+dependencies:
+  - ai:ai_assistant_api
+  - ai:ai_search
+  - drupal:system

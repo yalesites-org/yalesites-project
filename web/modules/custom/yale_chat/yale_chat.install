@@ -1,0 +1,71 @@
+<?php
+
+/**
+ * @file
+ * Install and update functions for the Yale Chat module.
+ */
+
+/**
+ * Creates the default Yale Chat AI Assistant entity if it does not exist.
+ */
+function _yale_chat_create_default_assistant(): void {
+  $storage = \Drupal::entityTypeManager()->getStorage('ai_assistant');
+
+  if ($storage->load('yale_chat')) {
+    return;
+  }
+
+  $storage->create([
+    'id' => 'yale_chat',
+    'label' => 'Yale Chat',
+    'description' => 'Default assistant for the Yale Chat widget. Uses RAG search against the ai_content vector index.',
+    'llm_provider' => '__default__',
+    'llm_model' => '__default__',
+    'allow_history' => 'session',
+    'history_context_length' => 5,
+    'system_prompt' => '',
+    'pre_action_prompt' => '',
+    'instructions' => '',
+    'error_message' => 'Sorry, something went wrong. Please try again.',
+    'specific_error_messages' => [],
+    'llm_configuration' => [],
+    'roles' => [
+      'anonymous' => 'anonymous',
+      'authenticated' => 'authenticated',
+    ],
+    'use_function_calling' => FALSE,
+    'ai_agent' => '',
+    // rag_action pre-configured to query the ai_content Search API index.
+    'actions_enabled' => [
+      'rag_action' => [
+        'rag_0' => [
+          'database' => 'ai_content',
+          'description' => 'Yale website content — articles, pages, and other site content indexed for semantic search.',
+          'score_threshold' => 0.6,
+          'min_results' => 1,
+          'max_results' => 5,
+          'output_mode' => 'chunks',
+          'rendered_view_mode' => 'full',
+          'aggregated_llm' => '',
+          'access_check' => FALSE,
+          'try_reuse' => FALSE,
+          'context_threshold' => 0.1,
+        ],
+      ],
+    ],
+  ])->save();
+}
+
+/**
+ * Implements hook_install().
+ */
+function yale_chat_install(): void {
+  _yale_chat_create_default_assistant();
+}
+
+/**
+ * Create the default Yale Chat AI Assistant entity.
+ */
+function yale_chat_update_9001(): void {
+  _yale_chat_create_default_assistant();
+}

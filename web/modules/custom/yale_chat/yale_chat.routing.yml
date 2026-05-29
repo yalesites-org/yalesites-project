@@ -1,0 +1,26 @@
+yale_chat.message:
+  path: '/yale-chat/message'
+  defaults:
+    _controller: '\Drupal\yale_chat\Controller\YaleChatController::message'
+    _title: 'Yale Chat'
+  requirements:
+    _permission: 'use yale chat'
+  methods: [POST]
+
+yale_chat.clear:
+  path: '/yale-chat/clear'
+  defaults:
+    _controller: '\Drupal\yale_chat\Controller\YaleChatController::clear'
+    _title: 'Yale Chat Clear'
+  requirements:
+    _permission: 'use yale chat'
+  methods: [POST]
+
+yale_chat.settings:
+  path: '/admin/config/yale-chat/settings'
+  defaults:
+    _form: '\Drupal\yale_chat\Form\YaleChatSettingsForm'
+    _title: 'Yale Chat Settings'
+  requirements:
+    _permission: 'administer yale chat'
+

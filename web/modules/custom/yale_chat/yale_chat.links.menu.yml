@@ -1,0 +1,5 @@
+yale_chat.settings:
+  title: 'Yale Chat Settings'
+  parent: system.admin_config_system
+  route_name: yale_chat.settings
+  description: 'Configure the Yale Chat AI assistant widget.'

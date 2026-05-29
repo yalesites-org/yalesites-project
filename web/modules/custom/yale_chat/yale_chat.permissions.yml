@@ -1,0 +1,8 @@
+use yale chat:
+  title: 'Use Yale Chat'
+  description: 'Allow access to the Yale Chat AI assistant.'
+
+administer yale chat:
+  title: 'Administer Yale Chat'
+  description: 'Configure Yale Chat settings.'
+  restrict access: true
