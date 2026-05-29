@@ -30,13 +30,23 @@ class BeaconSearchConfigOverride implements ConfigFactoryOverrideInterface {
   protected $keyRepository;
 
   /**
+   * The active config storage, used to read stored values without overrides.
+   *
+   * @var \Drupal\Core\Config\StorageInterface
+   */
+  protected $configStorage;
+
+  /**
    * Constructs a BeaconSearchConfigOverride.
    *
    * @param \Drupal\key\KeyRepositoryInterface $key_repository
    *   The key repository.
+   * @param \Drupal\Core\Config\StorageInterface $config_storage
+   *   The active config storage.
    */
-  public function __construct(KeyRepositoryInterface $key_repository) {
+  public function __construct(KeyRepositoryInterface $key_repository, StorageInterface $config_storage) {
     $this->keyRepository = $key_repository;
+    $this->configStorage = $config_storage;
   }
 
   /**
@@ -53,15 +63,19 @@ class BeaconSearchConfigOverride implements ConfigFactoryOverrideInterface {
     }
 
     if (in_array(self::SERVER_CONFIG_NAME, $names, TRUE)) {
-      $database_name = $this->getDatabaseName();
-      if ($database_name !== '') {
-        $overrides[self::SERVER_CONFIG_NAME] = [
-          'backend_config' => [
-            'database_settings' => [
-              'database_name' => $database_name,
+      $stored = $this->configStorage->read(self::SERVER_CONFIG_NAME);
+      $storedName = $stored['backend_config']['database_settings']['database_name'] ?? '';
+      if ($storedName === '') {
+        $database_name = $this->getDatabaseName();
+        if ($database_name !== '') {
+          $overrides[self::SERVER_CONFIG_NAME] = [
+            'backend_config' => [
+              'database_settings' => [
+                'database_name' => $database_name,
+              ],
             ],
-          ],
-        ];
+          ];
+        }
       }
     }
 
@@ -105,22 +119,33 @@ class BeaconSearchConfigOverride implements ConfigFactoryOverrideInterface {
   }
 
   /**
-   * Derives the Azure index name from the Pantheon environment.
+   * Derives the Azure index name from the current environment.
    *
-   * Concatenates PANTHEON_SITE_NAME and PANTHEON_ENVIRONMENT with no
-   * separator, since the index naming format does not allow dashes between
-   * the site and environment.
+   * Checks Pantheon first, then Lando, then DDEV. Returns an empty string
+   * when none of those environments are detected.
    *
    * @return string
-   *   The derived database (index) name, or an empty string outside Pantheon.
+   *   The derived database (index) name, or an empty string when the
+   *   environment cannot be identified.
    */
   protected function getDatabaseName() {
     $site = $this->readEnv('PANTHEON_SITE_NAME');
     $env = $this->readEnv('PANTHEON_ENVIRONMENT');
-    if ($site === '' || $env === '') {
-      return '';
+    if ($site !== '' && $env !== '') {
+      return $site . '-' . $env;
     }
-    return $site . $env;
+
+    $lando = $this->readEnv('LANDO_APP_NAME');
+    if ($lando !== '') {
+      return $lando . '-local';
+    }
+
+    $ddev = $this->readEnv('DDEV_SITENAME');
+    if ($ddev !== '') {
+      return $ddev . '-local';
+    }
+
+    return '';
   }
 
   /**

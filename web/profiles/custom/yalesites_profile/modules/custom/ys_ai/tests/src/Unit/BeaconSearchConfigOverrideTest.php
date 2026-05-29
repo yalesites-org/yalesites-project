@@ -3,6 +3,7 @@
 namespace Drupal\Tests\ys_ai\Unit;
 
 use Drupal\Core\Cache\CacheableMetadata;
+use Drupal\Core\Config\StorageInterface;
 use Drupal\key\KeyInterface;
 use Drupal\key\KeyRepositoryInterface;
 use Drupal\Tests\UnitTestCase;
@@ -27,7 +28,7 @@ class BeaconSearchConfigOverrideTest extends UnitTestCase {
    */
   protected function setUp(): void {
     parent::setUp();
-    foreach (['PANTHEON_SITE_NAME', 'PANTHEON_ENVIRONMENT'] as $name) {
+    foreach (['PANTHEON_SITE_NAME', 'PANTHEON_ENVIRONMENT', 'LANDO_APP_NAME', 'DDEV_SITENAME'] as $name) {
       $this->envBackup[$name] = $_ENV[$name] ?? NULL;
       unset($_ENV[$name]);
       putenv($name);
@@ -73,11 +74,33 @@ class BeaconSearchConfigOverrideTest extends UnitTestCase {
   }
 
   /**
+   * Builds a config storage mock that returns the given database_name.
+   *
+   * @param string $databaseName
+   *   The stored database_name value (empty string simulates no saved value).
+   *
+   * @return \Drupal\Core\Config\StorageInterface
+   *   The mocked storage.
+   */
+  protected function storageReturning(string $databaseName) {
+    $storage = $this->createMock(StorageInterface::class);
+    $storage->method('read')->willReturn([
+      'backend_config' => [
+        'database_settings' => [
+          'database_name' => $databaseName,
+        ],
+      ],
+    ]);
+    return $storage;
+  }
+
+  /**
    * @covers ::loadOverrides
    */
   public function testUrlOverrideWhenKeyHasValue(): void {
     $override = new BeaconSearchConfigOverride(
-      $this->keyRepositoryReturning('https://example.search.windows.net')
+      $this->keyRepositoryReturning('https://example.search.windows.net'),
+      $this->storageReturning('')
     );
 
     $result = $override->loadOverrides(['ai_vdb_provider_azure_ai_search.settings']);
@@ -93,7 +116,8 @@ class BeaconSearchConfigOverrideTest extends UnitTestCase {
    */
   public function testUrlOverrideTrimsWhitespace(): void {
     $override = new BeaconSearchConfigOverride(
-      $this->keyRepositoryReturning("  https://example.search.windows.net\n")
+      $this->keyRepositoryReturning("  https://example.search.windows.net\n"),
+      $this->storageReturning('')
     );
 
     $result = $override->loadOverrides(['ai_vdb_provider_azure_ai_search.settings']);
@@ -108,7 +132,10 @@ class BeaconSearchConfigOverrideTest extends UnitTestCase {
    * @covers ::loadOverrides
    */
   public function testNoUrlOverrideWhenKeyMissing(): void {
-    $override = new BeaconSearchConfigOverride($this->keyRepositoryReturning(NULL));
+    $override = new BeaconSearchConfigOverride(
+      $this->keyRepositoryReturning(NULL),
+      $this->storageReturning('')
+    );
 
     $result = $override->loadOverrides(['ai_vdb_provider_azure_ai_search.settings']);
 
@@ -119,7 +146,10 @@ class BeaconSearchConfigOverrideTest extends UnitTestCase {
    * @covers ::loadOverrides
    */
   public function testNoUrlOverrideWhenKeyEmpty(): void {
-    $override = new BeaconSearchConfigOverride($this->keyRepositoryReturning(''));
+    $override = new BeaconSearchConfigOverride(
+      $this->keyRepositoryReturning(''),
+      $this->storageReturning('')
+    );
 
     $result = $override->loadOverrides(['ai_vdb_provider_azure_ai_search.settings']);
 
@@ -133,12 +163,15 @@ class BeaconSearchConfigOverrideTest extends UnitTestCase {
     $_ENV['PANTHEON_SITE_NAME'] = 'yalehospitality';
     $_ENV['PANTHEON_ENVIRONMENT'] = 'live';
 
-    $override = new BeaconSearchConfigOverride($this->keyRepositoryReturning(NULL));
+    $override = new BeaconSearchConfigOverride(
+      $this->keyRepositoryReturning(NULL),
+      $this->storageReturning('')
+    );
 
     $result = $override->loadOverrides(['search_api.server.beacon']);
 
     $this->assertSame(
-      'yalehospitalitylive',
+      'yalehospitality-live',
       $result['search_api.server.beacon']['backend_config']['database_settings']['database_name']
     );
   }
@@ -146,8 +179,11 @@ class BeaconSearchConfigOverrideTest extends UnitTestCase {
   /**
    * @covers ::loadOverrides
    */
-  public function testNoDatabaseNameOverrideOutsidePantheon(): void {
-    $override = new BeaconSearchConfigOverride($this->keyRepositoryReturning(NULL));
+  public function testNoDatabaseNameOverrideOutsideAnyKnownEnv(): void {
+    $override = new BeaconSearchConfigOverride(
+      $this->keyRepositoryReturning(NULL),
+      $this->storageReturning('')
+    );
 
     $result = $override->loadOverrides(['search_api.server.beacon']);
 
@@ -160,7 +196,81 @@ class BeaconSearchConfigOverrideTest extends UnitTestCase {
   public function testNoDatabaseNameOverrideWhenEnvironmentMissing(): void {
     $_ENV['PANTHEON_SITE_NAME'] = 'yalehospitality';
 
-    $override = new BeaconSearchConfigOverride($this->keyRepositoryReturning(NULL));
+    $override = new BeaconSearchConfigOverride(
+      $this->keyRepositoryReturning(NULL),
+      $this->storageReturning('')
+    );
+
+    $result = $override->loadOverrides(['search_api.server.beacon']);
+
+    $this->assertArrayNotHasKey('search_api.server.beacon', $result);
+  }
+
+  /**
+   * @covers ::loadOverrides
+   */
+  public function testNoDatabaseNameOverrideWhenStoredValuePresent(): void {
+    $_ENV['PANTHEON_SITE_NAME'] = 'yalehospitality';
+    $_ENV['PANTHEON_ENVIRONMENT'] = 'live';
+
+    $override = new BeaconSearchConfigOverride(
+      $this->keyRepositoryReturning(NULL),
+      $this->storageReturning('my-custom-index')
+    );
+
+    $result = $override->loadOverrides(['search_api.server.beacon']);
+
+    $this->assertArrayNotHasKey('search_api.server.beacon', $result);
+  }
+
+  /**
+   * @covers ::loadOverrides
+   */
+  public function testDatabaseNameDerivedOnLando(): void {
+    $_ENV['LANDO_APP_NAME'] = 'yalesites';
+
+    $override = new BeaconSearchConfigOverride(
+      $this->keyRepositoryReturning(NULL),
+      $this->storageReturning('')
+    );
+
+    $result = $override->loadOverrides(['search_api.server.beacon']);
+
+    $this->assertSame(
+      'yalesites-local',
+      $result['search_api.server.beacon']['backend_config']['database_settings']['database_name']
+    );
+  }
+
+  /**
+   * @covers ::loadOverrides
+   */
+  public function testDatabaseNameDerivedOnDdev(): void {
+    $_ENV['DDEV_SITENAME'] = 'yalesites-ddev';
+
+    $override = new BeaconSearchConfigOverride(
+      $this->keyRepositoryReturning(NULL),
+      $this->storageReturning('')
+    );
+
+    $result = $override->loadOverrides(['search_api.server.beacon']);
+
+    $this->assertSame(
+      'yalesites-ddev-local',
+      $result['search_api.server.beacon']['backend_config']['database_settings']['database_name']
+    );
+  }
+
+  /**
+   * @covers ::loadOverrides
+   */
+  public function testLandoNotUsedWhenStoredValuePresent(): void {
+    $_ENV['LANDO_APP_NAME'] = 'yalesites';
+
+    $override = new BeaconSearchConfigOverride(
+      $this->keyRepositoryReturning(NULL),
+      $this->storageReturning('my-custom-index')
+    );
 
     $result = $override->loadOverrides(['search_api.server.beacon']);
 
@@ -174,7 +284,8 @@ class BeaconSearchConfigOverrideTest extends UnitTestCase {
     $_ENV['PANTHEON_SITE_NAME'] = 'mysite';
     $_ENV['PANTHEON_ENVIRONMENT'] = 'dev';
     $override = new BeaconSearchConfigOverride(
-      $this->keyRepositoryReturning('https://example.search.windows.net')
+      $this->keyRepositoryReturning('https://example.search.windows.net'),
+      $this->storageReturning('')
     );
 
     $result = $override->loadOverrides([
@@ -183,7 +294,7 @@ class BeaconSearchConfigOverrideTest extends UnitTestCase {
     ]);
 
     $this->assertSame('https://example.search.windows.net', $result['ai_vdb_provider_azure_ai_search.settings']['url']);
-    $this->assertSame('mysitedev', $result['search_api.server.beacon']['backend_config']['database_settings']['database_name']);
+    $this->assertSame('mysite-dev', $result['search_api.server.beacon']['backend_config']['database_settings']['database_name']);
   }
 
   /**
@@ -193,7 +304,8 @@ class BeaconSearchConfigOverrideTest extends UnitTestCase {
     $_ENV['PANTHEON_SITE_NAME'] = 'mysite';
     $_ENV['PANTHEON_ENVIRONMENT'] = 'dev';
     $override = new BeaconSearchConfigOverride(
-      $this->keyRepositoryReturning('https://example.search.windows.net')
+      $this->keyRepositoryReturning('https://example.search.windows.net'),
+      $this->storageReturning('')
     );
 
     $result = $override->loadOverrides(['system.site', 'search_api.server.other']);
@@ -205,7 +317,10 @@ class BeaconSearchConfigOverrideTest extends UnitTestCase {
    * @covers ::getCacheSuffix
    */
   public function testCacheSuffix(): void {
-    $override = new BeaconSearchConfigOverride($this->keyRepositoryReturning(NULL));
+    $override = new BeaconSearchConfigOverride(
+      $this->keyRepositoryReturning(NULL),
+      $this->storageReturning('')
+    );
     $this->assertSame('ys_ai_beacon_search', $override->getCacheSuffix());
   }
 
@@ -213,7 +328,10 @@ class BeaconSearchConfigOverrideTest extends UnitTestCase {
    * @covers ::createConfigObject
    */
   public function testCreateConfigObjectReturnsNull(): void {
-    $override = new BeaconSearchConfigOverride($this->keyRepositoryReturning(NULL));
+    $override = new BeaconSearchConfigOverride(
+      $this->keyRepositoryReturning(NULL),
+      $this->storageReturning('')
+    );
     $this->assertNull($override->createConfigObject('any.name'));
   }
 
@@ -221,7 +339,10 @@ class BeaconSearchConfigOverrideTest extends UnitTestCase {
    * @covers ::getCacheableMetadata
    */
   public function testCacheableMetadataIsEmpty(): void {
-    $override = new BeaconSearchConfigOverride($this->keyRepositoryReturning(NULL));
+    $override = new BeaconSearchConfigOverride(
+      $this->keyRepositoryReturning(NULL),
+      $this->storageReturning('')
+    );
     $metadata = $override->getCacheableMetadata('ai_vdb_provider_azure_ai_search.settings');
     $this->assertInstanceOf(CacheableMetadata::class, $metadata);
     $this->assertSame([], $metadata->getCacheContexts());
