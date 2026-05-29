@@ -125,6 +125,11 @@
         "PKSA-dh1f-zjm5-qg8y",
         "PKSA-bn52-vyzy-rmnm",
         "PKSA-xj83-g6g8-41vf",
+        "PKSA-fbvq-z33h-r2np",
+        "PKSA-g9zw-qxh8-pq8w",
+        "PKSA-yd6k-t2gh-1m43",
+        "PKSA-1tmc-rt7x-12w6",
+        "PKSA-xx6c-6d96-db2w",
         "PKSA-5k7f-wvjj-jrgw",
         "PKSA-sjvz-tbbr-vwth",
         "PKSA-h8hf-ytnd-5t9q",
@@ -134,7 +139,8 @@
         "PKSA-3mcc-k66d-pydb",
         "PKSA-gw7n-z4yx-7xjt",
         "PKSA-dpx1-78wg-1kqs",
-        "PKSA-21g2-dzjv-sky5"
+        "PKSA-21g2-dzjv-sky5",
+        "PKSA-dwsq-ppd2-mb1x"
       ]
     },
     "preferred-install": "dist",
@@ -153,6 +159,13 @@
       "php-http/discovery": true,
       "phpstan/extension-installer": true,
       "tbachert/spi": true
+    }
+  },
+  "policy": {
+    "advisories": {
+      "ignore": [
+        "twig/twig"
+      ]
     }
   },
   "scripts": {
