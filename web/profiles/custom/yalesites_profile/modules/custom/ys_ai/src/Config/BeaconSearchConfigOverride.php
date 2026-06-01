@@ -56,9 +56,20 @@ class BeaconSearchConfigOverride implements ConfigFactoryOverrideInterface {
     $overrides = [];
 
     if (in_array(self::URL_CONFIG_NAME, $names, TRUE)) {
+      $vdb_overrides = [];
+
       $url = $this->getAzureUrl();
       if ($url !== '') {
-        $overrides[self::URL_CONFIG_NAME] = ['url' => $url];
+        $vdb_overrides['url'] = $url;
+      }
+
+      $api_version = $this->getServerApiVersion();
+      if ($api_version !== '') {
+        $vdb_overrides['api_version'] = $api_version;
+      }
+
+      if ($vdb_overrides !== []) {
+        $overrides[self::URL_CONFIG_NAME] = $vdb_overrides;
       }
     }
 
@@ -115,6 +126,22 @@ class BeaconSearchConfigOverride implements ConfigFactoryOverrideInterface {
       return '';
     }
     $value = $key->getKeyValue();
+    return is_string($value) ? trim($value) : '';
+  }
+
+  /**
+   * Reads the Azure API version from the Beacon search_api server config.
+   *
+   * The api_version belongs to the search_api server's backend settings; the
+   * Azure VDB provider reads it from its own global config at runtime, so we
+   * mirror the server value onto that global config to keep them in sync.
+   *
+   * @return string
+   *   The api_version, or an empty string when not set.
+   */
+  protected function getServerApiVersion() {
+    $stored = $this->configStorage->read(self::SERVER_CONFIG_NAME);
+    $value = $stored['backend_config']['database_settings']['api_version'] ?? '';
     return is_string($value) ? trim($value) : '';
   }
 
