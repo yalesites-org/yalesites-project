@@ -11,15 +11,16 @@
       "type": "composer",
       "url": "https://packages.drupal.org/8"
     },
-    "ckeditor5-anchor-drupal": {
+    "chosen": {
       "type": "package",
       "package": {
-        "name": "northernco/ckeditor5-anchor-drupal",
-        "version": "0.4.0",
+        "name": "jjj/chosen",
+        "version": "2.2.1",
         "type": "drupal-library",
-        "dist": {
-          "url": "https://registry.npmjs.org/@northernco/ckeditor5-anchor-drupal/-/ckeditor5-anchor-drupal-0.4.0.tgz",
-          "type": "tar"
+        "source": {
+          "url": "https://github.com/JJJ/chosen.git",
+          "type": "git",
+          "reference": "2.2.1"
         }
       }
     }
@@ -27,12 +28,11 @@
   "require": {
     "composer/installers": "^1.9",
     "cweagans/composer-patches": "^1.7",
-    "drupal/core-composer-scaffold": "10.3.14",
-    "drupal/core-project-message": "10.3.14",
-    "drupal/core-recommended": "10.3.14",
-    "drush/drush": "^11 || ^12",
+    "drupal/core-composer-scaffold": "10.6.10",
+    "drupal/core-project-message": "10.6.10",
+    "drupal/core-recommended": "10.6.10",
+    "drush/drush": "^13",
     "league/commonmark": "^2.0",
-    "oomphinc/composer-installers-extender": "^2.0",
     "pantheon-systems/drupal-integrations": "^10",
     "yalesites-org/yalesites_profile": "*"
   },
@@ -66,9 +66,6 @@
         }
       }
     },
-    "installer-types": [
-      "npm-asset"
-    ],
     "installer-paths": {
       "web/core": [
         "type:drupal-core"
@@ -113,34 +110,7 @@
   "config": {
     "audit": {
       "ignore":[
-        "SA-CONTRIB-2025-060",
-        "SA-CORE-2025-007",
-        "SA-CORE-2025-008",
-        "SA-CORE-2025-005",
-        "SA-CORE-2025-006",
-        "SA-CORE-2026-001",
-        "SA-CORE-2026-002",
-        "SA-CORE-2026-004",
-        "PKSA-d8tb-wwz2-ctxk",
-        "PKSA-dh1f-zjm5-qg8y",
-        "PKSA-bn52-vyzy-rmnm",
-        "PKSA-xj83-g6g8-41vf",
-        "PKSA-fbvq-z33h-r2np",
-        "PKSA-g9zw-qxh8-pq8w",
-        "PKSA-yd6k-t2gh-1m43",
-        "PKSA-1tmc-rt7x-12w6",
-        "PKSA-xx6c-6d96-db2w",
-        "PKSA-5k7f-wvjj-jrgw",
-        "PKSA-sjvz-tbbr-vwth",
-        "PKSA-h8hf-ytnd-5t9q",
-        "PKSA-wwb1-81rc-pd65",
-        "PKSA-kvv6-36cr-fkzb",
-        "PKSA-n14z-jjjg-g8vd",
-        "PKSA-3mcc-k66d-pydb",
-        "PKSA-gw7n-z4yx-7xjt",
-        "PKSA-dpx1-78wg-1kqs",
-        "PKSA-21g2-dzjv-sky5",
-        "PKSA-dwsq-ppd2-mb1x"
+        "SA-CONTRIB-2025-060"
       ]
     },
     "preferred-install": "dist",
@@ -152,10 +122,8 @@
       "composer/installers": true,
       "cweagans/composer-patches": true,
       "dealerdirect/phpcodesniffer-composer-installer": true,
-      "drupal/console-extend-plugin": true,
       "drupal/core-composer-scaffold": true,
       "drupal/core-project-message": true,
-      "oomphinc/composer-installers-extender": true,
       "php-http/discovery": true,
       "phpstan/extension-installer": true,
       "tbachert/spi": true
