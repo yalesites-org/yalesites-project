@@ -1,39 +1,83 @@
-<div>
-  {% if platform_version %}
-    <section class="platform-version">
-      <h2>Platform Information</h2>
-      <p><strong>Platform Version:</strong> {{ platform_version }}</p>
+{{ attach_library('ys_core/dashboard') }}
+<div class="ys-dashboard">
+
+  {% if announcements is not empty %}
+    <section class="ys-dashboard__section ys-dashboard__announcements" aria-labelledby="ys-dashboard-announcements-heading">
+      <h2 id="ys-dashboard-announcements-heading">{{ 'Announcements'|t }}</h2>
+      <ul class="ys-dashboard__announcement-list">
+        {% for announcement in announcements %}
+          <li class="ys-dashboard__announcement">
+            <h3 class="ys-dashboard__announcement-title">
+              {% if announcement.url %}
+                <a href="{{ announcement.url }}">{{ announcement.title }}</a>
+              {% else %}
+                {{ announcement.title }}
+              {% endif %}
+            </h3>
+            {% if announcement.date %}
+              <p class="ys-dashboard__announcement-date">
+                <time{% if announcement.timestamp %} datetime="{{ announcement.timestamp|date('c') }}"{% endif %}>{{ announcement.date }}</time>
+              </p>
+            {% endif %}
+            {% if announcement.summary %}
+              <p class="ys-dashboard__announcement-summary">{{ announcement.summary }}</p>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
     </section>
   {% endif %}
 
-  Welcome to the YaleSites dashboard.
-  {{ drupal_view('content', 'block_1') }}
-  <h2>Resources</h2>
-  <ul>
-    <li>
-      <a href="https://yalesites.yale.edu/resource-library/getting-started-with-yalesites">
-        YaleSites Getting Started Guide
-      </a>:
-      Help you navigate, create content, and perform all the basic site-building YaleSites features.
-    </li>
-    <li>
-      <a href="https://yalesites.yale.edu/resource-library/building-with-blocks">
-        Building With Blocks
-      </a>:
-      Help you understand YaleSites blocks and how to use them to make your content shine.
-    </li>
-    <li>
-      <a href="https://yalesites.yale.edu/resource-library/building-your-menu">
-        Building Your Menu
-      </a>:
-      Help you understand YaleSites menus and how to combine them with way-finding tactics to ensure users can easily navigate your YaleSite.
-    </li>
-  </ul>
-  <div class="more-link">
-    <a href="https://yalesites.yale.edu/resource-library">Find more resources</a>
+  <div class="ys-dashboard__columns">
+    <section class="ys-dashboard__section" aria-labelledby="ys-dashboard-latest-heading">
+      <h2 id="ys-dashboard-latest-heading">{{ 'Latest edits'|t }}</h2>
+      {{ drupal_view('ys_dashboard_latest_edits', 'block_1') }}
+    </section>
+    <section class="ys-dashboard__section" aria-labelledby="ys-dashboard-drafts-heading">
+      <h2 id="ys-dashboard-drafts-heading">{{ 'Recent drafts'|t }}</h2>
+      {{ drupal_view('ys_dashboard_recent_drafts', 'block_1') }}
+    </section>
   </div>
-  <h2>Report Feedback or a Bug</h2>
-  <a href="mailto:yalesites@yale.edu">
-    yalesites@yale.edu
-  </a>
+
+  <section class="ys-dashboard__section" aria-labelledby="ys-dashboard-editors-heading">
+    <h2 id="ys-dashboard-editors-heading">{{ 'Site editors'|t }}</h2>
+    {{ drupal_view('ys_dashboard_site_editors', 'block_1') }}
+  </section>
+
+  <section class="ys-dashboard__section ys-dashboard__resources" aria-labelledby="ys-dashboard-resources-heading">
+    <h2 id="ys-dashboard-resources-heading">{{ 'Resources'|t }}</h2>
+    <ul>
+      <li>
+        <a href="https://yalesites.yale.edu/resource-library/getting-started-with-yalesites">
+          {{ 'YaleSites Getting Started Guide'|t }}
+        </a>:
+        {{ 'Help you navigate, create content, and perform all the basic site-building YaleSites features.'|t }}
+      </li>
+      <li>
+        <a href="https://yalesites.yale.edu/resource-library/building-with-blocks">
+          {{ 'Building With Blocks'|t }}
+        </a>:
+        {{ 'Help you understand YaleSites blocks and how to use them to make your content shine.'|t }}
+      </li>
+      <li>
+        <a href="https://yalesites.yale.edu/resource-library/building-your-menu">
+          {{ 'Building Your Menu'|t }}
+        </a>:
+        {{ 'Help you understand YaleSites menus and how to combine them with way-finding tactics to ensure users can easily navigate your YaleSite.'|t }}
+      </li>
+    </ul>
+    <div class="more-link">
+      <a href="https://yalesites.yale.edu/resource-library">{{ 'Find more resources'|t }}</a>
+    </div>
+    <h3>{{ 'Report feedback or a bug'|t }}</h3>
+    <a href="mailto:yalesites@yale.edu">yalesites@yale.edu</a>
+  </section>
+
+  {% if platform_version %}
+    <section class="ys-dashboard__section platform-version" aria-labelledby="ys-dashboard-platform-heading">
+      <h2 id="ys-dashboard-platform-heading">{{ 'Platform information'|t }}</h2>
+      <p><strong>{{ 'Platform version:'|t }}</strong> {{ platform_version }}</p>
+    </section>
+  {% endif %}
+
 </div>

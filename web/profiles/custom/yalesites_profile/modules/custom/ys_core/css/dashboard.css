@@ -1,0 +1,62 @@
+/**
+ * Editorial dashboard layout.
+ *
+ * @see web/profiles/custom/yalesites_profile/modules/custom/ys_core/templates/ys-dashboard.html.twig
+ */
+
+.ys-dashboard__section {
+  margin-block-end: 2.5rem;
+}
+
+.ys-dashboard__section > h2 {
+  margin-block-end: 0.75rem;
+}
+
+/* Two-up area (Latest edits / Recent drafts) that collapses on narrow screens. */
+.ys-dashboard__columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  gap: 2.5rem;
+}
+
+.ys-dashboard__columns .ys-dashboard__section {
+  margin-block-end: 0;
+}
+
+.ys-dashboard__announcement-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ys-dashboard__announcement {
+  padding-block: 1rem;
+  border-block-end: 1px solid #d6d6d6;
+}
+
+.ys-dashboard__announcement:first-child {
+  padding-block-start: 0;
+}
+
+.ys-dashboard__announcement-title {
+  margin: 0 0 0.25rem;
+}
+
+.ys-dashboard__announcement-date {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+  color: #4a4a4a;
+}
+
+.ys-dashboard__announcement-summary {
+  margin: 0;
+}
+
+/* Keep the embedded Views tables fluid within their column. */
+.ys-dashboard table {
+  width: 100%;
+}
+
+.ys-dashboard__resources .more-link {
+  margin-block-start: 0.75rem;
+}

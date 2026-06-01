@@ -15,6 +15,10 @@ services:
   ys_core.media_manager:
     class: Drupal\ys_core\YaleSitesMediaManager
     arguments: ['@config.factory', '@entity_type.manager', '@file_url_generator']
+  # Fetches editorial dashboard announcements from a configured JSON feed.
+  ys_core.dashboard_announcements:
+    class: Drupal\ys_core\DashboardAnnouncements
+    arguments: ['@http_client', '@config.factory', '@keyvalue.expirable', '@date.formatter', '@logger.factory']
   # Redirect visitors to external source if set on the node.
   ys_core.external_source_redirect_subscriber:
     class: Drupal\ys_core\EventSubscriber\ExternalSourceRedirectSubscriber

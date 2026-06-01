@@ -1,0 +1,5 @@
+announcements_feed_url: 'https://yalesites.yale.edu/api/dashboard-announcements'
+announcements_limit: 5
+announcements_max_age: 3600
+announcements_source_enabled: false
+announcements_source_term: 'Dashboard Announcement'

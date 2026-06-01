@@ -4,6 +4,7 @@ namespace Drupal\ys_core\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Extension\InfoParserInterface;
+use Drupal\ys_core\DashboardAnnouncements;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -19,13 +20,23 @@ class DashboardController extends ControllerBase {
   protected $infoParser;
 
   /**
+   * The dashboard announcements service.
+   *
+   * @var \Drupal\ys_core\DashboardAnnouncements
+   */
+  protected DashboardAnnouncements $announcements;
+
+  /**
    * Constructs a DashboardController object.
    *
    * @param \Drupal\Core\Extension\InfoParserInterface $info_parser
    *   The info parser service.
+   * @param \Drupal\ys_core\DashboardAnnouncements $announcements
+   *   The dashboard announcements service.
    */
-  public function __construct(InfoParserInterface $info_parser) {
+  public function __construct(InfoParserInterface $info_parser, DashboardAnnouncements $announcements) {
     $this->infoParser = $info_parser;
+    $this->announcements = $announcements;
   }
 
   /**
@@ -33,7 +44,8 @@ class DashboardController extends ControllerBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('info_parser')
+      $container->get('info_parser'),
+      $container->get('ys_core.dashboard_announcements')
     );
   }
 
@@ -41,11 +53,14 @@ class DashboardController extends ControllerBase {
    * Dashboard page contents.
    */
   public function content() {
-    $platform_version = $this->getPlatformVersion();
-
     return [
       '#theme' => 'ys_dashboard',
-      '#platform_version' => $platform_version,
+      '#platform_version' => $this->getPlatformVersion(),
+      '#announcements' => $this->announcements->getAnnouncements(),
+      '#cache' => [
+        'contexts' => ['user.permissions'],
+        'tags' => ['config:ys_core.dashboard_settings'],
+      ],
     ];
   }
 

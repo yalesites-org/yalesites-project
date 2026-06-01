@@ -1,3 +1,7 @@
+dashboard:
+  css:
+    theme:
+      css/dashboard.css: {}
 node_layout_form:
   css:
     theme:

@@ -47,6 +47,13 @@ ys_core.admin_views_settings:
   route_name: ys_core.admin_views_settings
   title: "Views Settings"
   weight: 25
+# Dashboard settings form.
+ys_core.admin_dashboard_settings:
+  description: "Editorial dashboard settings, including the announcements feed."
+  parent: ys_core.admin_yalesites
+  route_name: ys_core.admin_dashboard_settings
+  title: "Dashboard Settings"
+  weight: 27
 # Google Tag settings form.
 ys_core.admin_google_tag_settings:
   description: "Google Tag settings."
