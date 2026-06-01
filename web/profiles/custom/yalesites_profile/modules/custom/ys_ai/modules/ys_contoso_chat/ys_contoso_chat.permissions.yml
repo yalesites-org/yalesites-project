@@ -1,0 +1,8 @@
+use ys contoso chat:
+  title: 'Use Yale Chat'
+  description: 'Allow access to the Yale Chat AI assistant.'
+
+administer ys contoso chat:
+  title: 'Administer Yale Chat'
+  description: 'Configure Yale Chat settings.'
+  restrict access: true

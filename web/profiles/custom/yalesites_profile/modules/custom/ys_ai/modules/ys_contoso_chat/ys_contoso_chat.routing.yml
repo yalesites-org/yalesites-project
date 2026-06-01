@@ -1,0 +1,25 @@
+ys_contoso_chat.message:
+  path: '/yale-chat/message'
+  defaults:
+    _controller: '\Drupal\ys_contoso_chat\Controller\YsContosoChatController::message'
+    _title: 'Yale Chat'
+  requirements:
+    _permission: 'use ys contoso chat'
+  methods: [POST]
+
+ys_contoso_chat.clear:
+  path: '/yale-chat/clear'
+  defaults:
+    _controller: '\Drupal\ys_contoso_chat\Controller\YsContosoChatController::clear'
+    _title: 'Yale Chat Clear'
+  requirements:
+    _permission: 'use ys contoso chat'
+  methods: [POST]
+
+ys_contoso_chat.settings:
+  path: '/admin/config/yale-chat/settings'
+  defaults:
+    _form: '\Drupal\ys_contoso_chat\Form\YsContosoChatSettingsForm'
+    _title: 'Yale Chat Settings'
+  requirements:
+    _permission: 'administer ys contoso chat'

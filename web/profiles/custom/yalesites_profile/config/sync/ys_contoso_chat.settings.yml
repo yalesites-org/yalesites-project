@@ -1,0 +1,10 @@
+_core:
+  default_config_hash: oUYHfriPDwVnW3OkWwaRv8G6FOC7e-dxep_MedPiTb8
+enable: false
+assistant_id: beacon
+floating_button: false
+floating_button_text: 'Ask Yale'
+floating_button_icon: fa-comments
+initial_questions: {  }
+disclaimer: ''
+footer: ''

@@ -1,0 +1,8 @@
+enable: false
+assistant_id: beacon
+floating_button: false
+floating_button_text: 'Ask Yale'
+floating_button_icon: 'fa-comments'
+initial_questions: []
+disclaimer: ''
+footer: ''
