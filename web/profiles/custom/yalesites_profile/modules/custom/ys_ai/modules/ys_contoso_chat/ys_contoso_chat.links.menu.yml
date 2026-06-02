@@ -1,5 +1,6 @@
 ys_contoso_chat.settings:
-  title: 'Yale Chat Settings'
-  parent: system.admin_config_system
-  route_name: ys_contoso_chat.settings
+  title: 'Yale Chat settings'
   description: 'Configure the Yale Chat AI assistant widget.'
+  route_name: ys_contoso_chat.settings
+  parent: ys_integrations.admin_yalesites_integrations
+  weight: 0
