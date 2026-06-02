@@ -8,4 +8,6 @@ configure: ys_contoso_chat.settings
 dependencies:
   - ai:ai_assistant_api
   - ai:ai_search
+  - drupal:filter
   - drupal:system
+  - ys_integrations

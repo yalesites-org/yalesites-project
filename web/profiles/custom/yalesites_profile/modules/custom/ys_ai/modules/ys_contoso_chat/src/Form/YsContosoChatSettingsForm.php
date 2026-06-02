@@ -67,6 +67,40 @@ class YsContosoChatSettingsForm extends ConfigFormBase {
       '#required' => TRUE,
     ];
 
+    $form['floating_button'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Show floating launch button'),
+      '#default_value' => $config->get('floating_button'),
+    ];
+
+    $form['floating_button_text'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Floating button label'),
+      '#default_value' => $config->get('floating_button_text') ?? 'Ask Beacon',
+      '#states' => [
+        'visible' => [
+          ':input[name="floating_button"]' => ['checked' => TRUE],
+        ],
+      ],
+    ];
+
+    $form['floating_button_icon'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Floating button icon'),
+      '#description' => $this->t('Select the icon to display on the floating chat button. Changes take effect immediately after saving.'),
+      '#options' => [
+        'fa-comments' => $this->t('Chat (default)'),
+        'fa-sparkles' => $this->t('Sparkles'),
+      ],
+      '#default_value' => $config->get('floating_button_icon') ?? 'fa-comments',
+      '#required' => TRUE,
+      '#states' => [
+        'visible' => [
+          ':input[name="floating_button"]' => ['checked' => TRUE],
+        ],
+      ],
+    ];
+
     $form['prompts'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Initial Prompt Suggestions'),
@@ -82,48 +116,21 @@ class YsContosoChatSettingsForm extends ConfigFormBase {
     }
 
     $form['disclaimer'] = [
-      '#type' => 'textarea',
+      '#type' => 'text_format',
       '#title' => $this->t('Disclaimer'),
-      '#description' => $this->t('Appears below the chat input. Plain text only, ~100 characters max.'),
+      '#description' => $this->t('Appears below the chat input. Limited HTML allowed (e.g. links).'),
       '#default_value' => $config->get('disclaimer') ?? '',
-      '#rows' => 2,
+      '#format' => 'restricted_html',
+      '#allowed_formats' => ['restricted_html'],
     ];
 
     $form['footer'] = [
-      '#type' => 'textarea',
+      '#type' => 'text_format',
       '#title' => $this->t('Footer'),
-      '#description' => $this->t('Displays at the bottom of the chat modal. Basic HTML allowed.'),
+      '#description' => $this->t('Displays at the bottom of the chat modal. Limited HTML allowed (e.g. links).'),
       '#default_value' => $config->get('footer') ?? '',
-      '#rows' => 2,
-    ];
-
-    $form['floating_button'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Show floating launch button'),
-      '#default_value' => $config->get('floating_button'),
-    ];
-
-    $form['floating_button_text'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Floating button label'),
-      '#default_value' => $config->get('floating_button_text') ?? 'Ask Yale',
-      '#states' => [
-        'visible' => [
-          ':input[name="floating_button"]' => ['checked' => TRUE],
-        ],
-      ],
-    ];
-
-    $form['floating_button_icon'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Floating button icon class'),
-      '#description' => $this->t('Font Awesome class, e.g. <code>fa-comments</code>.'),
-      '#default_value' => $config->get('floating_button_icon') ?? 'fa-comments',
-      '#states' => [
-        'visible' => [
-          ':input[name="floating_button"]' => ['checked' => TRUE],
-        ],
-      ],
+      '#format' => 'restricted_html',
+      '#allowed_formats' => ['restricted_html'],
     ];
 
     return parent::buildForm($form, $form_state);
@@ -137,8 +144,8 @@ class YsContosoChatSettingsForm extends ConfigFormBase {
       ->set('enable', (bool) $form_state->getValue('enable'))
       ->set('assistant_id', $form_state->getValue('assistant_id'))
       ->set('initial_questions', array_values(array_filter($form_state->getValue('prompts'))))
-      ->set('disclaimer', $form_state->getValue('disclaimer'))
-      ->set('footer', $form_state->getValue('footer'))
+      ->set('disclaimer', $form_state->getValue('disclaimer')['value'])
+      ->set('footer', $form_state->getValue('footer')['value'])
       ->set('floating_button', (bool) $form_state->getValue('floating_button'))
       ->set('floating_button_text', $form_state->getValue('floating_button_text'))
       ->set('floating_button_icon', $form_state->getValue('floating_button_icon'))

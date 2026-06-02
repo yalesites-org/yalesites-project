@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 const Disclaimer = () => {
   // Create a reference to store the div element
   const disclaimerRef = useRef<HTMLDivElement>(null);
-  let disclaimerText = document.getElementById("ai-engine-chat-widget")?.getAttribute('disclaimer') || '';
+  let disclaimerText = document.getElementById("yale-chat-widget")?.getAttribute('data-disclaimer') || '';
 
   // Set the innerHTML of the div element when the component mounts
   useEffect(() => {
