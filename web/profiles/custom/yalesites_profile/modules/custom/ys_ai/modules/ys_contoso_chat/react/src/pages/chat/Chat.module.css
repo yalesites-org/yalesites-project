@@ -14,6 +14,7 @@
 .container,
 .containerLoading {
     flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -22,6 +23,7 @@
 
 .chatRoot {
     flex: 1;
+    min-height: 0;
     display: flex;
     margin: 0;
     gap: 5px;
@@ -39,12 +41,11 @@
 
 .chatContainer {
     flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     max-width: var(--chat-width);
-    min-height: 450px;
-    max-height: 90vh;
     margin-left: auto;
     margin-right: auto;
     width: 100%;
@@ -106,20 +107,14 @@
 
 .chatMessageStream {
     flex-grow: 1;
+    min-height: 0;
     width: 100%;
-    height: 100%;
     overflow-y: auto;
     position: relative;
     display: flex;
     flex-flow: column nowrap;
     gap: 1rem;
-    padding-top: 60px;
-}
-
-@media screen and (min-width:800px) {
-    .chatMessageStream {
-        padding: 100px 0 0;
-    }
+    padding-top: 1rem;
 }
 
 .chatMessageStream a {

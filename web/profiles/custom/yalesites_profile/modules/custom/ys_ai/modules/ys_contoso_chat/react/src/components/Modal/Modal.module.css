@@ -45,6 +45,12 @@
     display: block;
     overflow-y: auto;
   }
+
+  .modalContentInner {
+    overflow: visible;
+    height: auto;
+    min-height: 0;
+  }
 }
 
 @media screen and (min-width:800px) {
@@ -63,9 +69,10 @@
 .modalContentInner {
   display: flex;
   flex-direction: column;
-  flex: 0 auto;
+  flex: 1 1 auto;
+  min-height: 0;
   height: 100%;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 /* Citation Varition - content inner*/
@@ -81,8 +88,8 @@
 
 .modalHeader {
   padding: 1rem;
-  position: absolute;
-  backdrop-filter: blur(10px);
+  position: relative;
+  flex: 0 0 auto;
   z-index: 900;
   width: 100%;
 }
