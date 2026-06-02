@@ -5,6 +5,7 @@ ys_contoso_chat.message:
     _title: 'Yale Chat'
   requirements:
     _permission: 'use ys contoso chat'
+    _csrf_request_header_token: 'TRUE'
   methods: [POST]
 
 ys_contoso_chat.clear:
@@ -14,6 +15,7 @@ ys_contoso_chat.clear:
     _title: 'Yale Chat Clear'
   requirements:
     _permission: 'use ys contoso chat'
+    _csrf_request_header_token: 'TRUE'
   methods: [POST]
 
 ys_contoso_chat.settings:

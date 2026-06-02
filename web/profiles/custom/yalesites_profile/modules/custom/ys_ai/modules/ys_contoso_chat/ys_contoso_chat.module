@@ -33,7 +33,6 @@ function ys_contoso_chat_page_attachments_alter(array &$attachments) {
     'initial_questions' => json_encode($config->get('initial_questions')),
     'disclaimer' => (string) check_markup($config->get('disclaimer') ?? '', 'restricted_html'),
     'footer' => (string) check_markup($config->get('footer') ?? '', 'restricted_html'),
-    'csrf_token' => \Drupal::service('csrf_token')->get('yale-chat/message'),
   ];
   $attachments['#attached']['library'][] = 'ys_contoso_chat/chat_widget';
 }

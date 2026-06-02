@@ -19,9 +19,5 @@
     "data-footer",
     drupalSettings.ys_contoso_chat.footer || ""
   );
-  chatWidget.setAttribute(
-    "data-csrf-token",
-    drupalSettings.ys_contoso_chat.csrf_token || ""
-  );
   document.body.appendChild(chatWidget);
 })();

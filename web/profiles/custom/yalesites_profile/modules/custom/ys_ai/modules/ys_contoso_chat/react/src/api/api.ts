@@ -1,9 +1,22 @@
 import { ChatMessage, Conversation, ConversationRequest } from './models';
 
-const WIDGET_ID = 'yale-chat-widget';
+let csrfTokenPromise: Promise<string> | null = null;
 
-function getCsrfToken(): string {
-  return document.getElementById(WIDGET_ID)?.getAttribute('data-csrf-token') ?? '';
+/**
+ * Fetch a session CSRF token from Drupal at runtime.
+ *
+ * The token must not be embedded in the (cacheable) page markup — a cached
+ * token does not match the visitor's session and is rejected. Drupal's
+ * /session/token endpoint returns a fresh token for the current session and
+ * is never cached. The result is memoised for the page load.
+ */
+function getCsrfToken(): Promise<string> {
+  if (!csrfTokenPromise) {
+    csrfTokenPromise = fetch('/session/token', { credentials: 'same-origin' })
+      .then((r) => (r.ok ? r.text() : ''))
+      .catch(() => '');
+  }
+  return csrfTokenPromise;
 }
 
 /**
@@ -17,11 +30,13 @@ export async function conversationApi(
   abortSignal: AbortSignal,
   conversationId?: string,
 ): Promise<Response> {
+  const csrfToken = await getCsrfToken();
   return fetch('/yale-chat/message', {
     method: 'POST',
+    credentials: 'same-origin',
     headers: {
       'Content-Type': 'application/json',
-      'X-CSRF-Token': getCsrfToken(),
+      'X-CSRF-Token': csrfToken,
     },
     body: JSON.stringify({
       messages: options.messages,
@@ -35,11 +50,13 @@ export async function conversationApi(
  * Clear the server-side session thread for a conversation.
  */
 export async function clearConversation(conversationId: string): Promise<void> {
+  const csrfToken = await getCsrfToken();
   await fetch('/yale-chat/clear', {
     method: 'POST',
+    credentials: 'same-origin',
     headers: {
       'Content-Type': 'application/json',
-      'X-CSRF-Token': getCsrfToken(),
+      'X-CSRF-Token': csrfToken,
     },
     body: JSON.stringify({ conversation_id: conversationId }),
   });

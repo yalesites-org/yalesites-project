@@ -3,7 +3,6 @@
 namespace Drupal\ys_contoso_chat\Controller;
 
 use Drupal\Component\Serialization\Json;
-use Drupal\Core\Access\CsrfTokenGenerator;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\ai\OperationType\Chat\StreamedChatMessageIterator;
 use Drupal\ai_assistant_api\AiAssistantApiRunner;
@@ -37,7 +36,6 @@ class YsContosoChatController extends ControllerBase {
    */
   public function __construct(
     protected AiAssistantApiRunner $runner,
-    protected CsrfTokenGenerator $csrfToken,
   ) {
   }
 
@@ -47,7 +45,6 @@ class YsContosoChatController extends ControllerBase {
   public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('ai_assistant_api.runner'),
-      $container->get('csrf_token'),
     );
   }
 
@@ -55,11 +52,6 @@ class YsContosoChatController extends ControllerBase {
    * Handles a chat message and streams the response.
    */
   public function message(Request $request): Response {
-    $token = $request->headers->get('X-CSRF-Token');
-    if (!$this->csrfToken->validate($token, 'yale-chat/message')) {
-      return new JsonResponse(['error' => 'Invalid CSRF token.'], 403);
-    }
-
     $body = Json::decode($request->getContent());
     $messages = $body['messages'] ?? [];
     $conversation_id = $body['conversation_id'] ?? NULL;
@@ -123,11 +115,6 @@ class YsContosoChatController extends ControllerBase {
    * Clears the session thread for a conversation.
    */
   public function clear(Request $request): JsonResponse {
-    $token = $request->headers->get('X-CSRF-Token');
-    if (!$this->csrfToken->validate($token, 'yale-chat/message')) {
-      return new JsonResponse(['error' => 'Invalid CSRF token.'], 403);
-    }
-
     $body = Json::decode($request->getContent());
     $conversation_id = $body['conversation_id'] ?? NULL;
 
