@@ -18,6 +18,7 @@ ignored_config_entities:
   - 'ys_ai_system_instructions*'
   - 'ys_alert.settings:alert'
   - 'ys_campus_groups*'
+  - 'ys_contoso_chat*'
   - 'ys_core*'
   - 'ys_localist*'
   - 'ys_servicenow*'
