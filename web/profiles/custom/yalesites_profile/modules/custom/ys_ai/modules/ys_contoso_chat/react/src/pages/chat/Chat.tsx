@@ -183,7 +183,7 @@ const Chat = () => {
 
         conversation.messages.push(assistantMessage);
         appStateContext?.dispatch({ type: 'UPDATE_CURRENT_CHAT', payload: conversation });
-        setMessages([...messages, assistantMessage]);
+        setMessages([...conversation.messages]);
       }
     } catch (e) {
       if (!abortController.signal.aborted) {
@@ -199,9 +199,9 @@ const Chat = () => {
         };
         conversation.messages.push(errorChatMsg);
         appStateContext?.dispatch({ type: 'UPDATE_CURRENT_CHAT', payload: conversation });
-        setMessages([...messages, errorChatMsg]);
+        setMessages([...conversation.messages]);
       } else {
-        setMessages([...messages, userMessage]);
+        setMessages([...conversation.messages]);
       }
     } finally {
       setIsLoading(false);
