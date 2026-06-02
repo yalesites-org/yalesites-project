@@ -6,6 +6,7 @@ dependencies:
     - media
     - media_entity_download
     - system
+    - ys_contoso_chat
 _core:
   default_config_hash: j5zLMOdJBqC0bMvSdth5UebkprJB8g_2FXHqhfpJzow
 id: anonymous
@@ -15,4 +16,5 @@ is_admin: false
 permissions:
   - 'access content'
   - 'download media'
+  - 'use ys contoso chat'
   - 'view media'

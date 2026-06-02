@@ -96,6 +96,7 @@ dependencies:
     - ys_ai_system_instructions
     - ys_alert
     - ys_campus_groups
+    - ys_contoso_chat
     - ys_core
     - ys_localist
 id: site_admin
@@ -125,6 +126,7 @@ permissions:
   - 'administer users'
   - 'administer utility-drop-button-navigation menu items'
   - 'administer utility-navigation menu items'
+  - 'administer ys contoso chat'
   - 'assign contributor role'
   - 'assign editor role'
   - 'assign site_admin role'

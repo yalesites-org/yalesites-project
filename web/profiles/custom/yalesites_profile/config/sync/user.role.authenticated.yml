@@ -13,6 +13,7 @@ dependencies:
     - media
     - media_entity_download
     - system
+    - ys_contoso_chat
 _core:
   default_config_hash: dJ0L2DNSj5q6XVZAGsuVDpJTh5UeYkIPwKrUOOpr8YI
 id: authenticated
@@ -27,4 +28,5 @@ permissions:
   - 'use text format heading_html'
   - 'use text format restricted_html'
   - 'use text format webform_default'
+  - 'use ys contoso chat'
   - 'view media'
