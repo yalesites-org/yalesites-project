@@ -4,6 +4,7 @@ namespace Drupal\ys_contoso_chat\Controller;
 
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Flood\FloodInterface;
 use Drupal\ai\OperationType\Chat\StreamedChatMessageIterator;
 use Drupal\ai_assistant_api\AiAssistantApiRunner;
 use Drupal\ai_assistant_api\Data\UserMessage;
@@ -32,10 +33,26 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class YsContosoChatController extends ControllerBase {
 
   /**
+   * Flood event name used to rate limit chat requests.
+   */
+  private const RATE_LIMIT_EVENT = 'ys_contoso_chat.message';
+
+  /**
+   * Maximum chat requests allowed per client IP within the time window.
+   */
+  private const RATE_LIMIT = 30;
+
+  /**
+   * Rate limit time window, in seconds.
+   */
+  private const RATE_WINDOW = 60;
+
+  /**
    * {@inheritdoc}
    */
   public function __construct(
     protected AiAssistantApiRunner $runner,
+    protected FloodInterface $flood,
   ) {
   }
 
@@ -45,6 +62,7 @@ class YsContosoChatController extends ControllerBase {
   public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('ai_assistant_api.runner'),
+      $container->get('flood'),
     );
   }
 
@@ -52,6 +70,18 @@ class YsContosoChatController extends ControllerBase {
    * Handles a chat message and streams the response.
    */
   public function message(Request $request): Response {
+    // Rate limit per client IP to protect the paid AI backend from abuse.
+    // Omitting the identifier keys the flood event on the client IP, so each
+    // IP has its own budget (this is not a site-wide limit).
+    if (!$this->flood->isAllowed(self::RATE_LIMIT_EVENT, self::RATE_LIMIT, self::RATE_WINDOW)) {
+      return new JsonResponse(
+        ['error' => 'Too many requests. Please wait a moment and try again.'],
+        429,
+        ['Retry-After' => self::RATE_WINDOW],
+      );
+    }
+    $this->flood->register(self::RATE_LIMIT_EVENT, self::RATE_WINDOW);
+
     $body = Json::decode($request->getContent());
     $messages = $body['messages'] ?? [];
     $conversation_id = $body['conversation_id'] ?? NULL;
