@@ -407,20 +407,34 @@ const Chat = () => {
           <div style={{ display: 'flex', flexFlow: 'row nowrap', gap: '1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
             <CommandBarButton
               role="button"
-              styles={{
-                icon: { color: '#FFFFFF' },
-                root: {
-                  color: '#FFFFFF',
-                  background: disabledButton() ? 'hsl(210,100%,21%)' : 'hsl(213, 66%, 45%)',
-                  cursor: disabledButton() ? '' : 'pointer',
-                  padding: '0.5rem 2rem',
-                },
-              }}
-              className={styles.clearChatBroomNoCosmos}
-              iconProps={{ iconName: 'Broom' }}
+              text="New chat"
+              iconProps={{ iconName: 'Add' }}
               onClick={newChat}
               disabled={disabledButton()}
-              aria-label="clear chat button"
+              aria-label="Start a new chat"
+              styles={{
+                root: {
+                  color: '#FFFFFF',
+                  backgroundColor: 'hsl(213, 66%, 45%)',
+                  height: '40px',
+                  padding: '0 1.25rem',
+                  borderRadius: '2rem',
+                  border: 'none',
+                  fontWeight: 600,
+                  flexShrink: 0,
+                  cursor: 'pointer',
+                  selectors: {
+                    ':focus-visible': { outline: '2px solid #286DC0', outlineOffset: '0.25rem' },
+                  },
+                },
+                rootHovered: { color: '#FFFFFF', backgroundColor: 'hsl(210, 100%, 21%)' },
+                rootPressed: { color: '#FFFFFF', backgroundColor: 'hsl(210, 100%, 21%)' },
+                rootDisabled: { color: '#FFFFFF', backgroundColor: '#9fb0c3' },
+                icon: { color: '#FFFFFF', fontSize: '1rem' },
+                iconHovered: { color: '#FFFFFF' },
+                iconPressed: { color: '#FFFFFF' },
+                label: { color: '#FFFFFF', fontWeight: 600, margin: '0 0 0 0.25rem' },
+              }}
             />
             <Disclaimer />
           </div>

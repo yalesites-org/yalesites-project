@@ -233,26 +233,6 @@
     background-color: hsl(210,100%,21%);
 }
 
-.clearChatBroomNoCosmos {
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    width: 40px;
-    height: 40px;
-    color: #FFFFFF;
-    border: 1px solid #D1D1D1;
-    z-index: 1;
-    border-radius: 1rem;
-}
-
-.clearChatBroomNoCosmos:hover {
-    background-color: hsl(210,100%,95%);
-}
-
-.clearChatBroomNoCosmos:focus-visible,
 .clearChatBroom:focus-visible {
     outline: 2px solid #286DC0;
     outline-offset: 0.25rem;
