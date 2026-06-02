@@ -87,15 +87,14 @@ class DashboardSettingsForm extends ConfigFormBase {
       '#type' => 'details',
       '#title' => $this->t('Announcements'),
       '#open' => TRUE,
-      '#description' => $this->t('Display platform announcements on the dashboard, pulled from a JSON feed published on yalesites.yale.edu.'),
+      '#description' => $this->t('Show platform announcements on the dashboard, pulled from the YaleSites platform feed.'),
     ];
 
-    $form['announcements']['announcements_feed_url'] = [
-      '#type' => 'url',
-      '#title' => $this->t('Feed URL'),
-      '#default_value' => $config->get('announcements_feed_url'),
-      '#description' => $this->t('The full URL of a JSON Feed (version 1.1). Leave blank to hide the announcements section.'),
-      '#maxlength' => 2048,
+    $form['announcements']['announcements_enabled'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Show platform announcements'),
+      '#default_value' => $config->get('announcements_enabled') ?? TRUE,
+      '#description' => $this->t('When enabled, the editorial dashboard displays announcements published by the YaleSites platform team.'),
     ];
 
     $form['announcements']['announcements_limit'] = [
@@ -105,6 +104,11 @@ class DashboardSettingsForm extends ConfigFormBase {
       '#min' => 1,
       '#max' => 25,
       '#description' => $this->t('How many announcements to show, most recent first.'),
+      '#states' => [
+        'visible' => [
+          ':input[name="announcements_enabled"]' => ['checked' => TRUE],
+        ],
+      ],
     ];
 
     $form['announcements']['announcements_max_age'] = [
@@ -113,6 +117,11 @@ class DashboardSettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('announcements_max_age') ?? 3600,
       '#min' => 60,
       '#description' => $this->t('How long to cache the feed before fetching it again. Defaults to 3600 (1 hour). The feed is fetched once per cache window for the whole site, regardless of how many editors view the dashboard.'),
+      '#states' => [
+        'visible' => [
+          ':input[name="announcements_enabled"]' => ['checked' => TRUE],
+        ],
+      ],
     ];
 
     $form['source'] = [
@@ -120,6 +129,8 @@ class DashboardSettingsForm extends ConfigFormBase {
       '#title' => $this->t('Announcements source'),
       '#open' => FALSE,
       '#description' => $this->t('Most sites leave this off and only <em>consume</em> the feed above. The platform site (yalesites.yale.edu) turns this on to <em>publish</em> the feed at <code>/api/dashboard-announcements</code> from its tagged posts.'),
+      // Only platform admins should be deciding which sites publish the feed.
+      '#access' => $this->isPlatformAdmin(),
     ];
 
     $form['source']['announcements_source_enabled'] = [
@@ -148,21 +159,30 @@ class DashboardSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $source_enabled = (bool) $form_state->getValue('announcements_source_enabled');
-    $source_term = trim($form_state->getValue('announcements_source_term'));
+    $is_platform_admin = $this->isPlatformAdmin();
 
-    $this->config('ys_core.dashboard_settings')
-      ->set('announcements_feed_url', trim($form_state->getValue('announcements_feed_url')))
+    $config = $this->config('ys_core.dashboard_settings')
+      ->set('announcements_enabled', (bool) $form_state->getValue('announcements_enabled'))
       ->set('announcements_limit', (int) $form_state->getValue('announcements_limit'))
-      ->set('announcements_max_age', (int) $form_state->getValue('announcements_max_age'))
-      ->set('announcements_source_enabled', $source_enabled)
-      ->set('announcements_source_term', $source_term)
-      ->save();
+      ->set('announcements_max_age', (int) $form_state->getValue('announcements_max_age'));
+
+    // The source group is hidden from non-platform-admins. Skip writing its
+    // values for them so a stray save doesn't clobber the platform setting.
+    $source_enabled = FALSE;
+    $source_term = '';
+    if ($is_platform_admin) {
+      $source_enabled = (bool) $form_state->getValue('announcements_source_enabled');
+      $source_term = trim($form_state->getValue('announcements_source_term'));
+      $config
+        ->set('announcements_source_enabled', $source_enabled)
+        ->set('announcements_source_term', $source_term);
+    }
+    $config->save();
 
     // When this site is publishing the feed, make sure the tag the editors will
     // use actually exists in the Tags vocabulary. Otherwise the endpoint would
     // silently return zero items until someone added it by hand.
-    if ($source_enabled && $source_term !== '') {
+    if ($is_platform_admin && $source_enabled && $source_term !== '') {
       $this->ensureAnnouncementTerm($source_term);
     }
 
@@ -171,6 +191,16 @@ class DashboardSettingsForm extends ConfigFormBase {
       ->delete(DashboardAnnouncements::STORE_KEY);
 
     parent::submitForm($form, $form_state);
+  }
+
+  /**
+   * Whether the current user can manage the announcements-source side.
+   *
+   * Platform admins (and user 1) decide which sites publish the feed.
+   */
+  protected function isPlatformAdmin(): bool {
+    $account = $this->currentUser();
+    return (int) $account->id() === 1 || in_array('platform_admin', $account->getRoles(), TRUE);
   }
 
   /**

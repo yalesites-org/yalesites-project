@@ -42,6 +42,16 @@ class DashboardAnnouncements {
    */
   const FAILURE_MAX_AGE = 300;
 
+  /**
+   * The canonical platform announcements feed URL.
+   *
+   * Used when `ys_core.dashboard_settings:announcements_feed_url` is empty,
+   * which is the default. The config key exists as a per-site override (set
+   * via drush, e.g. for staging environments) and is intentionally not
+   * exposed in the dashboard settings form.
+   */
+  const PLATFORM_FEED_URL = 'https://yalesites.yale.edu/api/dashboard-announcements';
+
   public function __construct(
     protected ClientInterface $httpClient,
     protected ConfigFactoryInterface $configFactory,
@@ -60,10 +70,12 @@ class DashboardAnnouncements {
    */
   public function getAnnouncements(): array {
     $config = $this->configFactory->get('ys_core.dashboard_settings');
-    $feed_url = trim((string) $config->get('announcements_feed_url'));
-    if ($feed_url === '') {
+    // Sites can opt out of consuming platform announcements via the dashboard
+    // settings form. Missing key defaults to enabled.
+    if ($config->get('announcements_enabled') === FALSE) {
       return [];
     }
+    $feed_url = trim((string) $config->get('announcements_feed_url')) ?: self::PLATFORM_FEED_URL;
 
     $store = $this->keyValueExpirable->get(self::STORE_COLLECTION);
     $cached = $store->get(self::STORE_KEY);
