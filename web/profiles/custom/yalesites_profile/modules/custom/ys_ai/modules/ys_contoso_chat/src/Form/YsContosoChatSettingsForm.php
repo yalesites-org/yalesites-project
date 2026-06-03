@@ -2,6 +2,8 @@
 
 namespace Drupal\ys_contoso_chat\Form;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -18,8 +20,11 @@ class YsContosoChatSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function __construct(
+    ConfigFactoryInterface $config_factory,
+    ?TypedConfigManagerInterface $typed_config_manager,
     protected EntityTypeManagerInterface $entityTypeManager,
   ) {
+    parent::__construct($config_factory, $typed_config_manager);
   }
 
   /**
@@ -27,6 +32,8 @@ class YsContosoChatSettingsForm extends ConfigFormBase {
    */
   public static function create(ContainerInterface $container): static {
     return new static(
+      $container->get('config.factory'),
+      $container->get('config.typed'),
       $container->get('entity_type.manager'),
     );
   }

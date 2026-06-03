@@ -21,7 +21,11 @@ class ContosoChatIntegrationPlugin extends IntegrationPluginBase {
    * {@inheritdoc}
    */
   public function isTurnedOn(): bool {
-    return (bool) $this->configFactory->get('ys_contoso_chat.settings')->get('enable');
+    $config = $this->configFactory->get('ys_contoso_chat.settings');
+    $assistant_id = $config->get('assistant_id');
+    return (bool) $config->get('enable')
+      && $assistant_id !== NULL
+      && $assistant_id !== '';
   }
 
   /**

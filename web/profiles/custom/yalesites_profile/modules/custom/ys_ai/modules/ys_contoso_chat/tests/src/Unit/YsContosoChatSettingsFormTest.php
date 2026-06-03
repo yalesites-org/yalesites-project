@@ -4,6 +4,7 @@ namespace Drupal\Tests\ys_contoso_chat\Unit;
 
 use Drupal\Core\Config\Config;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -67,9 +68,11 @@ class YsContosoChatSettingsFormTest extends UnitTestCase {
       ],
     ]);
 
+    $typed_config_manager = $this->createMock(TypedConfigManagerInterface::class);
+
     $this->buildContainer($current_user, $config_factory);
 
-    return new YsContosoChatSettingsForm($entity_type_manager);
+    return new YsContosoChatSettingsForm($config_factory, $typed_config_manager, $entity_type_manager);
   }
 
   /**
@@ -113,9 +116,11 @@ class YsContosoChatSettingsFormTest extends UnitTestCase {
       ],
     ]);
 
+    $typed_config_manager = $this->createMock(TypedConfigManagerInterface::class);
+
     $this->buildContainer($current_user, $config_factory);
 
-    $form = new YsContosoChatSettingsForm($entity_type_manager);
+    $form = new YsContosoChatSettingsForm($config_factory, $typed_config_manager, $entity_type_manager);
     $built = $form->buildForm([], new FormState());
     $this->assertStringContainsString('None selected', (string) $built['assistant_id']['#markup']);
   }
@@ -144,9 +149,11 @@ class YsContosoChatSettingsFormTest extends UnitTestCase {
     $entity_type_manager = $this->createMock(EntityTypeManagerInterface::class);
     $entity_type_manager->method('getStorage')->with('ai_assistant')->willReturn($storage);
 
+    $typed_config_manager = $this->createMock(TypedConfigManagerInterface::class);
+
     $this->buildContainer($current_user, $config_factory);
 
-    $form = new YsContosoChatSettingsForm($entity_type_manager);
+    $form = new YsContosoChatSettingsForm($config_factory, $typed_config_manager, $entity_type_manager);
     $form_state = new FormState();
     $form_state->setValue('assistant_id', 'hacked-value');
     $form_state->setValue('enable', FALSE);

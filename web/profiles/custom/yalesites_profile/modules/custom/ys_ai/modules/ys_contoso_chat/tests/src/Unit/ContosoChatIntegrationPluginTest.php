@@ -26,13 +26,18 @@ class ContosoChatIntegrationPluginTest extends UnitTestCase {
    *
    * @param bool|null $enable
    *   Value to return for ys_contoso_chat.settings:enable.
+   * @param string $assistantId
+   *   Value to return for ys_contoso_chat.settings:assistant_id.
    *
    * @return \Drupal\ys_contoso_chat\Plugin\ys_integrations\ContosoChatIntegrationPlugin
    *   The plugin under test.
    */
-  protected function buildPlugin($enable): ContosoChatIntegrationPlugin {
+  protected function buildPlugin($enable, string $assistantId = 'test-assistant'): ContosoChatIntegrationPlugin {
     $config_factory = $this->getConfigFactoryStub([
-      'ys_contoso_chat.settings' => ['enable' => $enable],
+      'ys_contoso_chat.settings' => [
+        'enable' => $enable,
+        'assistant_id' => $assistantId,
+      ],
     ]);
     $current_user = $this->createMock(AccountInterface::class);
     return new ContosoChatIntegrationPlugin($config_factory, self::PLUGIN_DEFINITION, $current_user);
@@ -74,6 +79,14 @@ class ContosoChatIntegrationPluginTest extends UnitTestCase {
    */
   public function testIsTurnedOffWhenUnset(): void {
     $plugin = $this->buildPlugin(NULL);
+    $this->assertFalse($plugin->isTurnedOn());
+  }
+
+  /**
+   * @covers ::isTurnedOn
+   */
+  public function testIsTurnedOffWhenEnabledButNoAssistantId(): void {
+    $plugin = $this->buildPlugin(TRUE, '');
     $this->assertFalse($plugin->isTurnedOn());
   }
 
