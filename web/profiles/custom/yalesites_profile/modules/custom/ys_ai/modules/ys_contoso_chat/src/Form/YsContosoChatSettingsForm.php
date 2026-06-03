@@ -57,15 +57,28 @@ class YsContosoChatSettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('enable'),
     ];
 
-    $form['assistant_id'] = [
-      '#type' => 'select',
-      '#title' => $this->t('AI Assistant'),
-      '#description' => $this->t('Select the AI Assistant entity to handle chat requests. Configure assistants at <a href="/admin/config/ai/assistants">AI Assistants</a>.'),
-      '#options' => $this->getAssistantOptions(),
-      '#empty_option' => $this->t('-- Select --'),
-      '#default_value' => $config->get('assistant_id'),
-      '#required' => TRUE,
-    ];
+    $is_user_1 = ($this->currentUser()->id() == 1);
+
+    if ($is_user_1) {
+      $form['assistant_id'] = [
+        '#type' => 'select',
+        '#title' => $this->t('AI Assistant'),
+        '#description' => $this->t('Select the AI Assistant entity to handle chat requests. Configure assistants at <a href="/admin/config/ai/assistants">AI Assistants</a>.'),
+        '#options' => $this->getAssistantOptions(),
+        '#empty_option' => $this->t('-- Select --'),
+        '#default_value' => $config->get('assistant_id'),
+        '#required' => TRUE,
+      ];
+    }
+    else {
+      $options = $this->getAssistantOptions();
+      $current = $config->get('assistant_id');
+      $form['assistant_id'] = [
+        '#type' => 'item',
+        '#title' => $this->t('AI Assistant'),
+        '#markup' => $options[$current] ?? $this->t('None selected'),
+      ];
+    }
 
     $form['floating_button'] = [
       '#type' => 'checkbox',
@@ -140,16 +153,20 @@ class YsContosoChatSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
-    $this->config(self::CONFIG_NAME)
+    $config = $this->config(self::CONFIG_NAME)
       ->set('enable', (bool) $form_state->getValue('enable'))
-      ->set('assistant_id', $form_state->getValue('assistant_id'))
       ->set('initial_questions', array_values(array_filter($form_state->getValue('prompts'))))
       ->set('disclaimer', $form_state->getValue('disclaimer')['value'])
       ->set('footer', $form_state->getValue('footer')['value'])
       ->set('floating_button', (bool) $form_state->getValue('floating_button'))
       ->set('floating_button_text', $form_state->getValue('floating_button_text'))
-      ->set('floating_button_icon', $form_state->getValue('floating_button_icon'))
-      ->save();
+      ->set('floating_button_icon', $form_state->getValue('floating_button_icon'));
+
+    if ($this->currentUser()->id() == 1) {
+      $config->set('assistant_id', $form_state->getValue('assistant_id'));
+    }
+
+    $config->save();
 
     parent::submitForm($form, $form_state);
   }
