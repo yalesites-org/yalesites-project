@@ -74,20 +74,23 @@ class BeaconSearchConfigOverrideTest extends UnitTestCase {
   }
 
   /**
-   * Builds a config storage mock that returns the given database_name.
+   * Builds a config storage mock returning the given stored Beacon settings.
    *
    * @param string $databaseName
    *   The stored database_name value (empty string simulates no saved value).
+   * @param string $url
+   *   The stored url value (empty string simulates no saved value).
    *
    * @return \Drupal\Core\Config\StorageInterface
    *   The mocked storage.
    */
-  protected function storageReturning(string $databaseName) {
+  protected function storageReturning(string $databaseName, string $url = '') {
     $storage = $this->createMock(StorageInterface::class);
     $storage->method('read')->willReturn([
       'backend_config' => [
         'database_settings' => [
           'database_name' => $databaseName,
+          'url' => $url,
         ],
       ],
     ]);
@@ -154,6 +157,28 @@ class BeaconSearchConfigOverrideTest extends UnitTestCase {
     $result = $override->loadOverrides(['ai_vdb_provider_azure_ai_search.settings']);
 
     $this->assertArrayNotHasKey('ai_vdb_provider_azure_ai_search.settings', $result);
+  }
+
+  /**
+   * An explicitly stored server URL must take precedence over the Key value.
+   *
+   * The client reads the URL from the global VDB config, so the override
+   * propagates the explicitly entered server URL there rather than the Key.
+   *
+   * @covers ::loadOverrides
+   */
+  public function testStoredUrlTakesPrecedenceOverKey(): void {
+    $override = new BeaconSearchConfigOverride(
+      $this->keyRepositoryReturning('https://key.search.windows.net'),
+      $this->storageReturning('', 'https://explicit.search.windows.net')
+    );
+
+    $result = $override->loadOverrides(['ai_vdb_provider_azure_ai_search.settings']);
+
+    $this->assertSame(
+      'https://explicit.search.windows.net',
+      $result['ai_vdb_provider_azure_ai_search.settings']['url']
+    );
   }
 
   /**
