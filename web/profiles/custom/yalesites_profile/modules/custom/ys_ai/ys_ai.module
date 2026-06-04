@@ -89,6 +89,14 @@ function ys_ai_form_search_api_server_form_alter(array &$form, FormStateInterfac
     $settings['database_name']['#required'] = FALSE;
     $settings['database_name']['#default_value'] = $stored_settings['database_name'] ?? '';
     $default_index = $override->getDatabaseName();
+    // The Azure backend rejects an empty index name on save. When the field is
+    // left blank, submit the derived default so validation passes; the presave
+    // hook then resets it to empty in stored config (see
+    // ys_ai_search_api_server_presave()), keeping the override authoritative.
+    if ($default_index !== '') {
+      $settings['database_name']['#ys_ai_default'] = $default_index;
+      $settings['database_name']['#element_validate'][] = 'ys_ai_beacon_search_default_value_validate';
+    }
     $settings['database_name']['#description'] = $default_index !== ''
       ? t('The default index for this environment is @index. Leave this field blank to use that default; entering a value here overrides it (clear the field to restore the default).', [
         '@index' => $default_index,
@@ -96,5 +104,22 @@ function ys_ai_form_search_api_server_form_alter(array &$form, FormStateInterfac
       : t('The default index for this environment is named @pattern. Leave this field blank to use that default; entering a value here overrides it (clear the field to restore the default).', [
         '@pattern' => '<pantheon-site-name>-<pantheon-environment-name>',
       ]);
+  }
+}
+
+/**
+ * Form element validate callback: submits the default value when left blank.
+ *
+ * The Azure AI Search backend rejects an empty index name during validation,
+ * which would block saving the Beacon server with the field left blank. When
+ * the field is empty we substitute the override-derived default (stored on the
+ * element as #ys_ai_default) so validation passes. The presave hook then resets
+ * the value back to empty in stored config, so the override remains the single
+ * source of truth and the per-environment value is never frozen in.
+ */
+function ys_ai_beacon_search_default_value_validate(array &$element, FormStateInterface $form_state) {
+  $value = $form_state->getValue($element['#parents']);
+  if (($value === NULL || $value === '') && !empty($element['#ys_ai_default'])) {
+    $form_state->setValueForElement($element, $element['#ys_ai_default']);
   }
 }
