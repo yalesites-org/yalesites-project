@@ -340,51 +340,39 @@ class BeaconSearchConfigOverrideTest extends UnitTestCase {
   }
 
   /**
-   * Index and URL equal to the derived defaults are reset to empty.
-   *
-   * @covers ::stripDefaultedValues
+   * The submit handler clears the index name when the editor left it blank.
    */
-  public function testStripDefaultedValuesBlanksDefaults(): void {
-    $_ENV['PANTHEON_SITE_NAME'] = 'mysite';
-    $_ENV['PANTHEON_ENVIRONMENT'] = 'dev';
-    $override = new BeaconSearchConfigOverride(
-      $this->keyRepositoryReturning('https://key.search.windows.net'),
-      $this->storageReturning('')
-    );
+  public function testServerSubmitClearsBlankIndexName(): void {
+    require_once __DIR__ . '/../../../ys_ai.module';
+    $parents = ['backend_config', 'database_settings', 'database_name'];
 
-    $result = $override->stripDefaultedValues([
-      'database_settings' => [
-        'database_name' => 'mysite-dev',
-        'url' => 'https://key.search.windows.net',
-      ],
-    ]);
+    $form_state = new FormState();
+    // The editor submitted an empty field.
+    $form_state->setUserInput(['backend_config' => ['database_settings' => ['database_name' => '']]]);
+    // Validation substituted the default into the value.
+    $form_state->setValue($parents, 'mysite-dev');
 
-    $this->assertSame('', $result['database_settings']['database_name']);
-    $this->assertSame('', $result['database_settings']['url']);
+    $form = [];
+    ys_ai_beacon_search_server_submit($form, $form_state);
+
+    $this->assertSame('', $form_state->getValue($parents));
   }
 
   /**
-   * Explicitly entered values that differ from the defaults are preserved.
-   *
-   * @covers ::stripDefaultedValues
+   * The submit handler keeps an explicitly entered index name.
    */
-  public function testStripDefaultedValuesKeepsCustomValues(): void {
-    $_ENV['PANTHEON_SITE_NAME'] = 'mysite';
-    $_ENV['PANTHEON_ENVIRONMENT'] = 'dev';
-    $override = new BeaconSearchConfigOverride(
-      $this->keyRepositoryReturning('https://key.search.windows.net'),
-      $this->storageReturning('')
-    );
+  public function testServerSubmitKeepsEnteredIndexName(): void {
+    require_once __DIR__ . '/../../../ys_ai.module';
+    $parents = ['backend_config', 'database_settings', 'database_name'];
 
-    $result = $override->stripDefaultedValues([
-      'database_settings' => [
-        'database_name' => 'custom-index',
-        'url' => 'https://custom.search.windows.net',
-      ],
-    ]);
+    $form_state = new FormState();
+    $form_state->setUserInput(['backend_config' => ['database_settings' => ['database_name' => 'custom-index']]]);
+    $form_state->setValue($parents, 'custom-index');
 
-    $this->assertSame('custom-index', $result['database_settings']['database_name']);
-    $this->assertSame('https://custom.search.windows.net', $result['database_settings']['url']);
+    $form = [];
+    ys_ai_beacon_search_server_submit($form, $form_state);
+
+    $this->assertSame('custom-index', $form_state->getValue($parents));
   }
 
   /**
