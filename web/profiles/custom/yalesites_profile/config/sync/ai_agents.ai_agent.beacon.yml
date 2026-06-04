@@ -29,6 +29,12 @@ system_prompt: |-
   - Include specific citations to pages on this site
   - Suggest relevant site links for additional information
 
+  ## Citations
+  - The search results provided to you are each labeled with a marker in the form [docN] (for example [doc1], [doc2]).
+  - When a statement in your answer is based on a search result, cite it by placing the matching [docN] marker inline immediately after that statement.
+  - Only cite markers that appear in the search results you were given; never invent a [docN] marker.
+  - If no search results were provided, answer without citation markers.
+
   ## When You Don't Know
   - Clearly acknowledge when information isn't available on this site
   - Don't speculate beyond the site's content
@@ -57,14 +63,14 @@ system_prompt: |-
   - Prioritize helping users accomplish their goals efficiently
 secured_system_prompt: null
 tools:
-  'ai_search:rag_search': true
+  'ys_contoso_chat:beacon_rag_search': true
 tool_settings: null
 orchestration_agent: true
 triage_agent: false
 max_loops: 3
 default_information_tools: null
 tool_usage_limits:
-  'ai_search:rag_search':
+  'ys_contoso_chat:beacon_rag_search':
     index:
       values:
         - beacon_index

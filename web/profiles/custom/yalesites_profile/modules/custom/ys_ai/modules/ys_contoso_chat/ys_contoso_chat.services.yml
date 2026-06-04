@@ -1,0 +1,3 @@
+services:
+  ys_contoso_chat.citation_store:
+    class: Drupal\ys_contoso_chat\Service\CitationStore

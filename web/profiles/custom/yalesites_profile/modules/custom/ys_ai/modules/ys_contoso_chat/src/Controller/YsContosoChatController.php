@@ -9,6 +9,7 @@ use Drupal\ai\OperationType\Chat\StreamedChatMessageIterator;
 use Drupal\ai_assistant_api\AiAssistantApiRunner;
 use Drupal\ai_assistant_api\Data\UserMessage;
 use Drupal\ai_assistant_api\Entity\AiAssistant;
+use Drupal\ys_contoso_chat\Service\CitationStore;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -53,6 +54,7 @@ class YsContosoChatController extends ControllerBase {
   public function __construct(
     protected AiAssistantApiRunner $runner,
     protected FloodInterface $flood,
+    protected CitationStore $citationStore,
   ) {
   }
 
@@ -63,6 +65,7 @@ class YsContosoChatController extends ControllerBase {
     return new static(
       $container->get('ai_assistant_api.runner'),
       $container->get('flood'),
+      $container->get('ys_contoso_chat.citation_store'),
     );
   }
 
@@ -120,6 +123,10 @@ class YsContosoChatController extends ControllerBase {
     $this->runner->setUserMessage(new UserMessage($user_text));
     $this->runner->setThrowException(TRUE);
 
+    // Clear any citations from a previous request so they never leak across
+    // turns; the RAG tool repopulates the store during process().
+    $this->citationStore->reset();
+
     try {
       $output = $this->runner->process();
       $normalized = $output->getNormalized();
@@ -129,16 +136,20 @@ class YsContosoChatController extends ControllerBase {
       return new JsonResponse(['error' => 'An error occurred. Please try again.'], 500);
     }
 
+    // RAG runs synchronously inside process(), so any citations are available
+    // now. Capture them by value for the streamed response closure.
+    $citations = $this->citationStore->getCitations();
+
     $response_id = $conversation_id ?? uniqid('yc-', TRUE);
 
     if ($normalized instanceof StreamedChatMessageIterator) {
-      return $this->streamResponse($normalized, $response_id);
+      return $this->streamResponse($normalized, $response_id, $citations);
     }
 
     // Non-streaming fallback: wrap the full text in the expected envelope.
     $text = $normalized->getText();
     $this->runner->setAssistantMessage($text);
-    return new JsonResponse($this->buildEnvelope($response_id, $text));
+    return new JsonResponse($this->buildEnvelope($response_id, $text, '', $citations));
   }
 
   /**
@@ -176,11 +187,18 @@ class YsContosoChatController extends ControllerBase {
    *
    * Content accumulates with each chunk so the UI renders partial text
    * progressively without managing diffs.
+   *
+   * @param \Drupal\ai\OperationType\Chat\StreamedChatMessageIterator $iterator
+   *   The streamed chat message iterator.
+   * @param string $response_id
+   *   The response identifier shared across all chunks.
+   * @param array[] $citations
+   *   RAG source citations to emit alongside the assistant message.
    */
-  protected function streamResponse(StreamedChatMessageIterator $iterator, string $response_id): StreamedResponse {
+  protected function streamResponse(StreamedChatMessageIterator $iterator, string $response_id, array $citations = []): StreamedResponse {
     $runner = $this->runner;
 
-    $response = new StreamedResponse(function () use ($iterator, $response_id, $runner) {
+    $response = new StreamedResponse(function () use ($iterator, $response_id, $runner, $citations) {
       $accumulated = '';
       $date = date('c');
 
@@ -188,7 +206,7 @@ class YsContosoChatController extends ControllerBase {
 
       foreach ($iterator as $chunk) {
         $accumulated .= $chunk->getText();
-        echo Json::encode($this->buildEnvelope($response_id, $accumulated, $date)) . "\n";
+        echo Json::encode($this->buildEnvelope($response_id, $accumulated, $date, $citations)) . "\n";
         flush();
       }
 
@@ -204,21 +222,45 @@ class YsContosoChatController extends ControllerBase {
 
   /**
    * Builds the Azure OpenAI-compatible response envelope.
+   *
+   * When citations are present, a "tool" message carrying the structured
+   * citation payload is placed before the assistant message. The React
+   * frontend reads the message immediately before the assistant message to
+   * render the "References" section, so ordering matters.
+   *
+   * @param string $id
+   *   The response identifier.
+   * @param string $content
+   *   The accumulated assistant text.
+   * @param string $date
+   *   The ISO-8601 timestamp for the messages.
+   * @param array[] $citations
+   *   RAG source citations; when empty, no tool message is emitted.
    */
-  protected function buildEnvelope(string $id, string $content, string $date = ''): array {
+  protected function buildEnvelope(string $id, string $content, string $date = '', array $citations = []): array {
+    $date = $date ?: date('c');
+    $messages = [];
+
+    if ($citations) {
+      $messages[] = [
+        'id' => $id,
+        'role' => 'tool',
+        'content' => Json::encode(['citations' => $citations, 'intent' => '']),
+        'date' => $date,
+      ];
+    }
+
+    $messages[] = [
+      'id' => $id,
+      'role' => 'assistant',
+      'content' => $content,
+      'date' => $date,
+    ];
+
     return [
       'id' => $id,
       'choices' => [
-        [
-          'messages' => [
-            [
-              'id' => $id,
-              'role' => 'assistant',
-              'content' => $content,
-              'date' => $date ?: date('c'),
-            ],
-          ],
-        ],
+        ['messages' => $messages],
       ],
     ];
   }
