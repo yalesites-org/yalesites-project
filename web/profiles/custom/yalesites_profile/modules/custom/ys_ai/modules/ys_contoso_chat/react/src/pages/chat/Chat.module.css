@@ -402,6 +402,28 @@
     flex-grow: 0;
 }
 
+.citationPanelLabel {
+    font-style: normal;
+    font-weight: 600;
+    font-size: 1rem;
+    line-height: 1.4;
+    color: #000000;
+    margin: 0 0 0.25rem;
+}
+
+.citationPanelSourceUrl {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 1rem;
+    line-height: 1.4;
+    margin: 0 0 1rem;
+    word-break: break-all;
+}
+
+.citationPanelSourceUrl a {
+    color: hsl(213, 66%, 45%);
+}
+
 .viewSourceButton {
     font-style: normal;
     font-weight: 600;
