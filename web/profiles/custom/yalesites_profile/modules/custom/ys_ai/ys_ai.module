@@ -4,3 +4,55 @@
  * @file
  * Module hooks for the ys_ai module.
  */
+
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter() for search_api_server_form.
+ *
+ * The Beacon (Azure AI Search) endpoint URL and index name are supplied at
+ * runtime by BeaconSearchConfigOverride when left blank, so they must not be
+ * required on the server form — otherwise editors cannot save unrelated
+ * changes while the fields appear empty. The field descriptions are replaced
+ * to show editors the actual value that will be used when the field is blank
+ * and to note that entering a value overrides that default. See
+ * \Drupal\ys_ai\Config\BeaconSearchConfigOverride for the value resolution.
+ *
+ * The database_settings subtree only exists once a backend and vector database
+ * are chosen, and only the Azure VDB provider builds these nested keys, so the
+ * guard scopes this alter to the Azure backend.
+ */
+function ys_ai_form_search_api_server_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
+  if (!isset($form['backend_config']['database_settings'])) {
+    return;
+  }
+  $settings = &$form['backend_config']['database_settings'];
+
+  /** @var \Drupal\ys_ai\Config\BeaconSearchConfigOverride $override */
+  $override = \Drupal::service('ys_ai.beacon_search_config_override');
+
+  if (isset($settings['url'])) {
+    $settings['url']['#required'] = FALSE;
+    $default_url = $override->getAzureUrl();
+    $settings['url']['#description'] = $default_url !== ''
+      ? t('The default Azure AI Search endpoint, taken from the %key key, is @url. Leave this field blank to use that default; entering a value here overrides it (clear the field to restore the default).', [
+        '%key' => 'azure_ai_search_url',
+        '@url' => $default_url,
+      ])
+      : t('The default Azure AI Search endpoint is taken from the %key key. Leave this field blank to use that default; entering a value here overrides it (clear the field to restore the default).', [
+        '%key' => 'azure_ai_search_url',
+      ]);
+  }
+
+  if (isset($settings['database_name'])) {
+    $settings['database_name']['#required'] = FALSE;
+    $default_index = $override->getDatabaseName();
+    $settings['database_name']['#description'] = $default_index !== ''
+      ? t('The default index for this environment is @index. Leave this field blank to use that default; entering a value here overrides it (clear the field to restore the default).', [
+        '@index' => $default_index,
+      ])
+      : t('The default index for this environment is named @pattern. Leave this field blank to use that default; entering a value here overrides it (clear the field to restore the default).', [
+        '@pattern' => '<pantheon-site-name>-<pantheon-environment-name>',
+      ]);
+  }
+}

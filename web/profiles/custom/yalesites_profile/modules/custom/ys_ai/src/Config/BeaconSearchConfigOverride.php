@@ -58,7 +58,14 @@ class BeaconSearchConfigOverride implements ConfigFactoryOverrideInterface {
     if (in_array(self::URL_CONFIG_NAME, $names, TRUE)) {
       $vdb_overrides = [];
 
-      $url = $this->getAzureUrl();
+      // The Azure VDB client reads its endpoint URL from this global config,
+      // but the server form stores an entered URL on the search_api server
+      // (the contrib backend does not propagate it here). Prefer an explicitly
+      // entered server URL so it takes effect, and fall back to the per-site
+      // Key when the field is left blank.
+      $stored = $this->configStorage->read(self::SERVER_CONFIG_NAME);
+      $storedUrl = trim($stored['backend_config']['database_settings']['url'] ?? '');
+      $url = $storedUrl !== '' ? $storedUrl : $this->getAzureUrl();
       if ($url !== '') {
         $vdb_overrides['url'] = $url;
       }
@@ -117,10 +124,13 @@ class BeaconSearchConfigOverride implements ConfigFactoryOverrideInterface {
   /**
    * Resolves the Azure AI Search URL from the configured Key entity.
    *
+   * Public so the server form can show editors the value that will be used
+   * when the URL field is left blank.
+   *
    * @return string
    *   The URL, or an empty string when no Key or value is available.
    */
-  protected function getAzureUrl() {
+  public function getAzureUrl() {
     $key = $this->keyRepository->getKey(self::URL_KEY_ID);
     if ($key === NULL) {
       return '';
@@ -149,13 +159,15 @@ class BeaconSearchConfigOverride implements ConfigFactoryOverrideInterface {
    * Derives the Azure index name from the current environment.
    *
    * Checks Pantheon first, then Lando, then DDEV. Returns an empty string
-   * when none of those environments are detected.
+   * when none of those environments are detected. Public so the server form
+   * can show editors the value that will be used when the index name field is
+   * left blank.
    *
    * @return string
    *   The derived database (index) name, or an empty string when the
    *   environment cannot be identified.
    */
-  protected function getDatabaseName() {
+  public function getDatabaseName() {
     $site = $this->readEnv('PANTHEON_SITE_NAME');
     $env = $this->readEnv('PANTHEON_ENVIRONMENT');
     if ($site !== '' && $env !== '') {
