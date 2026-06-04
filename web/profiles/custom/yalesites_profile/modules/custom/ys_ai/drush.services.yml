@@ -1,0 +1,6 @@
+services:
+  ys_ai.commands:
+    class: \Drupal\ys_ai\Commands\YsAiCommands
+    arguments: ['@ys_ai.beacon_index_provisioner']
+    tags:
+      - { name: drush.command }

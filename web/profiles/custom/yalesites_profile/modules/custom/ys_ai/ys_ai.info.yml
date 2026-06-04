@@ -8,6 +8,8 @@ dependencies:
   - ai_engine
   - ai_engine_chat
   - ai_engine_embedding
+  - ai_vdb_provider_azure_ai_search
   - key
+  - search_api
   - ys_core
   - ys_integrations

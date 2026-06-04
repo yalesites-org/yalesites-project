@@ -10,4 +10,5 @@ dependencies:
   - ai:ai_search
   - drupal:filter
   - drupal:system
+  - ys_ai
   - ys_integrations

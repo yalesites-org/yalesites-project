@@ -9,3 +9,11 @@ services:
     tags:
       - { name: config.factory.override, priority: 5 }
 
+  logger.channel.ys_ai:
+    parent: logger.channel_base
+    arguments: ['ys_ai']
+
+  ys_ai.beacon_index_provisioner:
+    class: Drupal\ys_ai\Service\BeaconIndexProvisioner
+    arguments: ['@config.factory', '@key.repository', '@azure_ai_search.api', '@logger.channel.ys_ai']
+

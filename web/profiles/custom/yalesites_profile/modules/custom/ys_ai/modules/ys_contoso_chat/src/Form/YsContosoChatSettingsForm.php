@@ -7,6 +7,7 @@ use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\ys_ai\Service\BeaconIndexProvisioner;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -23,6 +24,7 @@ class YsContosoChatSettingsForm extends ConfigFormBase {
     ConfigFactoryInterface $config_factory,
     ?TypedConfigManagerInterface $typed_config_manager,
     protected EntityTypeManagerInterface $entityTypeManager,
+    protected BeaconIndexProvisioner $beaconIndexProvisioner,
   ) {
     parent::__construct($config_factory, $typed_config_manager);
   }
@@ -35,6 +37,7 @@ class YsContosoChatSettingsForm extends ConfigFormBase {
       $container->get('config.factory'),
       $container->get('config.typed'),
       $container->get('entity_type.manager'),
+      $container->get('ys_ai.beacon_index_provisioner'),
     );
   }
 
@@ -174,6 +177,19 @@ class YsContosoChatSettingsForm extends ConfigFormBase {
     }
 
     $config->save();
+
+    // When chat is being enabled, make sure the Beacon Azure AI Search index
+    // the chatbot queries exists. The provisioner only creates it if missing,
+    // so enabling repeatedly is harmless.
+    if ((bool) $form_state->getValue('enable')) {
+      $result = $this->beaconIndexProvisioner->ensureIndexExists();
+      if ($result->isFailure()) {
+        $this->messenger()->addError($result->getMessage());
+      }
+      else {
+        $this->messenger()->addStatus($result->getMessage());
+      }
+    }
 
     parent::submitForm($form, $form_state);
   }
