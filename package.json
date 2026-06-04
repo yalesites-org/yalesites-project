@@ -45,13 +45,13 @@
   },
   "lint-staged": {
     "web/**/*.scss": [
-      "npm run lint:styles"
+      "npm run lint:styles:file"
     ],
     "web/**/*.js": [
-      "npm run lint:js"
+      "npm run lint:js:file"
     ],
     "web/**/*.{js,scss,php}": [
-      "npm run prettier"
+      "npm run prettier:file"
     ]
   },
   "release": {
