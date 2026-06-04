@@ -5,7 +5,30 @@
  * Module hooks for the ys_ai module.
  */
 
+use Drupal\Core\Entity\EntityFormInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\search_api\ServerInterface;
+use Drupal\ys_ai\Config\BeaconSearchConfigOverride;
+
+/**
+ * Implements hook_ENTITY_TYPE_presave() for search_api_server entities.
+ *
+ * Keeps the Beacon server's URL and index name empty in stored config when
+ * they only repeat the override-derived defaults. The server config entity is
+ * loaded with BeaconSearchConfigOverride applied, so saving it through the
+ * form (or any other path) would otherwise freeze the derived per-environment
+ * value into stored config — stopping the override from re-deriving it and
+ * leaking that value to other environments via config export. Normalising on
+ * presave makes the override authoritative regardless of how the save occurs.
+ */
+function ys_ai_search_api_server_presave(ServerInterface $server) {
+  if ('search_api.server.' . $server->id() !== BeaconSearchConfigOverride::SERVER_CONFIG_NAME) {
+    return;
+  }
+  /** @var \Drupal\ys_ai\Config\BeaconSearchConfigOverride $override */
+  $override = \Drupal::service('ys_ai.beacon_search_config_override');
+  $server->setBackendConfig($override->stripDefaultedValues($server->getBackendConfig()));
+}
 
 /**
  * Implements hook_form_BASE_FORM_ID_alter() for search_api_server_form.
@@ -18,21 +41,39 @@ use Drupal\Core\Form\FormStateInterface;
  * and to note that entering a value overrides that default. See
  * \Drupal\ys_ai\Config\BeaconSearchConfigOverride for the value resolution.
  *
- * The database_settings subtree only exists once a backend and vector database
- * are chosen, and only the Azure VDB provider builds these nested keys, so the
- * guard scopes this alter to the Azure backend.
+ * The fields' #default_value is reset to the override-free stored value so a
+ * cleared field displays (and re-saves) as blank. The server config entity is
+ * loaded with the override applied, so without this the index name field would
+ * show the override-supplied default and bake it into config on the next save,
+ * permanently defeating the override.
  */
 function ys_ai_form_search_api_server_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
   if (!isset($form['backend_config']['database_settings'])) {
     return;
   }
+
+  // Only the Beacon server's URL and index name are managed by the override.
+  $form_object = $form_state->getFormObject();
+  if (!$form_object instanceof EntityFormInterface) {
+    return;
+  }
+  if ('search_api.server.' . $form_object->getEntity()->id() !== BeaconSearchConfigOverride::SERVER_CONFIG_NAME) {
+    return;
+  }
+
   $settings = &$form['backend_config']['database_settings'];
 
   /** @var \Drupal\ys_ai\Config\BeaconSearchConfigOverride $override */
   $override = \Drupal::service('ys_ai.beacon_search_config_override');
 
+  // Read the stored (override-free) values so the form reflects what is
+  // actually saved rather than the override-supplied defaults.
+  $stored = \Drupal::service('config.storage')->read(BeaconSearchConfigOverride::SERVER_CONFIG_NAME) ?: [];
+  $stored_settings = $stored['backend_config']['database_settings'] ?? [];
+
   if (isset($settings['url'])) {
     $settings['url']['#required'] = FALSE;
+    $settings['url']['#default_value'] = $stored_settings['url'] ?? '';
     $default_url = $override->getAzureUrl();
     $settings['url']['#description'] = $default_url !== ''
       ? t('The default Azure AI Search endpoint, taken from the %key key, is @url. Leave this field blank to use that default; entering a value here overrides it (clear the field to restore the default).', [
@@ -46,6 +87,7 @@ function ys_ai_form_search_api_server_form_alter(array &$form, FormStateInterfac
 
   if (isset($settings['database_name'])) {
     $settings['database_name']['#required'] = FALSE;
+    $settings['database_name']['#default_value'] = $stored_settings['database_name'] ?? '';
     $default_index = $override->getDatabaseName();
     $settings['database_name']['#description'] = $default_index !== ''
       ? t('The default index for this environment is @index. Leave this field blank to use that default; entering a value here overrides it (clear the field to restore the default).', [
