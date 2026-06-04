@@ -4,6 +4,7 @@ namespace Drupal\Tests\ys_ai\Unit;
 
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Config\StorageInterface;
+use Drupal\Core\Form\FormState;
 use Drupal\key\KeyInterface;
 use Drupal\key\KeyRepositoryInterface;
 use Drupal\Tests\UnitTestCase;
@@ -384,6 +385,36 @@ class BeaconSearchConfigOverrideTest extends UnitTestCase {
 
     $this->assertSame('custom-index', $result['database_settings']['database_name']);
     $this->assertSame('https://custom.search.windows.net', $result['database_settings']['url']);
+  }
+
+  /**
+   * The blank-field validate callback substitutes the stored default.
+   */
+  public function testDefaultValueValidateFillsBlankField(): void {
+    require_once __DIR__ . '/../../../ys_ai.module';
+    $parents = ['backend_config', 'database_settings', 'database_name'];
+    $element = ['#parents' => $parents, '#ys_ai_default' => 'mysite-dev'];
+
+    $form_state = new FormState();
+    $form_state->setValue($parents, '');
+    ys_ai_beacon_search_default_value_validate($element, $form_state);
+
+    $this->assertSame('mysite-dev', $form_state->getValue($parents));
+  }
+
+  /**
+   * The validate callback leaves an explicitly entered value untouched.
+   */
+  public function testDefaultValueValidateKeepsEnteredValue(): void {
+    require_once __DIR__ . '/../../../ys_ai.module';
+    $parents = ['backend_config', 'database_settings', 'database_name'];
+    $element = ['#parents' => $parents, '#ys_ai_default' => 'mysite-dev'];
+
+    $form_state = new FormState();
+    $form_state->setValue($parents, 'custom-index');
+    ys_ai_beacon_search_default_value_validate($element, $form_state);
+
+    $this->assertSame('custom-index', $form_state->getValue($parents));
   }
 
   /**
