@@ -181,7 +181,12 @@ const Chat = () => {
           });
         }
 
-        conversation.messages.push(assistantMessage);
+        // Persist the tool message (carrying the citations) ahead of the
+        // assistant message so the rendered References/superscripts can read
+        // it via messages[index - 1]; dropping it leaves citations empty.
+        isEmpty(toolMessage)
+          ? conversation.messages.push(assistantMessage)
+          : conversation.messages.push(toolMessage, assistantMessage);
         appStateContext?.dispatch({ type: 'UPDATE_CURRENT_CHAT', payload: conversation });
         setMessages([...conversation.messages]);
       }
