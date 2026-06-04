@@ -101,38 +101,6 @@ class BeaconSearchConfigOverride implements ConfigFactoryOverrideInterface {
   }
 
   /**
-   * Blanks Beacon backend settings that merely repeat the derived defaults.
-   *
-   * The override supplies the URL and index name at runtime when they are
-   * stored empty. Because the Beacon server config entity is loaded with this
-   * override applied, re-saving it through the server form would otherwise
-   * freeze the derived per-environment value into stored config and stop the
-   * override from re-deriving it (and leak that value through config export to
-   * other environments). Resetting a value that equals its derived default
-   * back to empty keeps the override authoritative.
-   *
-   * @param array $backend_config
-   *   The Beacon server's backend configuration, with database_settings as a
-   *   top-level key (as returned by ServerInterface::getBackendConfig()).
-   *
-   * @return array
-   *   The backend configuration with any defaulted URL/index value blanked.
-   */
-  public function stripDefaultedValues(array $backend_config) {
-    $derived_index = $this->getDatabaseName();
-    if ($derived_index !== '' && ($backend_config['database_settings']['database_name'] ?? '') === $derived_index) {
-      $backend_config['database_settings']['database_name'] = '';
-    }
-
-    $default_url = $this->getAzureUrl();
-    if ($default_url !== '' && ($backend_config['database_settings']['url'] ?? '') === $default_url) {
-      $backend_config['database_settings']['url'] = '';
-    }
-
-    return $backend_config;
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function getCacheSuffix() {
