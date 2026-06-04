@@ -17,6 +17,11 @@ class BeaconIndexResult {
   const CREATED = 'created';
 
   /**
+   * The Azure index already existed and its schema was updated (--force).
+   */
+  const UPDATED = 'updated';
+
+  /**
    * The Azure index already existed; nothing was changed.
    */
   const EXISTS = 'exists';
@@ -53,6 +58,19 @@ class BeaconIndexResult {
    */
   public static function created(string $index_name): self {
     return new self(self::CREATED, sprintf('Created Azure AI Search index "%s".', $index_name), $index_name);
+  }
+
+  /**
+   * Creates an "updated" result.
+   *
+   * @param string $index_name
+   *   The Azure index name.
+   *
+   * @return self
+   *   The result.
+   */
+  public static function updated(string $index_name): self {
+    return new self(self::UPDATED, sprintf('Updated Azure AI Search index "%s".', $index_name), $index_name);
   }
 
   /**

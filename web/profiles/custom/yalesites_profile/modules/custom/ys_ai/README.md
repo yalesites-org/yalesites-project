@@ -24,9 +24,14 @@ Pantheon Secrets and the environment); nothing needs to be entered by hand.
 It can be triggered two ways, both backed by the same
 `ys_ai.beacon_index_provisioner` service:
 
-- Drush: `drush ys-ai:create-index` (alias `ys-ai-create-index`).
+- Drush: `drush ys-ai:create-index` (alias `ys-ai-create-index`). Pass
+  `--force` to create-or-update the index even when it already exists — use this
+  to roll out schema changes (such as new filterable fields) to an existing
+  index. Azure adds new fields in place; content must be re-indexed to populate
+  them.
 - Enabling the chat widget on the Yale Chat settings form; saving with chat
-  enabled ensures the index exists and reports the outcome.
+  enabled ensures the index exists and reports the outcome. (The form never
+  forces, so it will not rewrite an existing index.)
 
 Prerequisites: the Beacon search server must be configured and the Azure URL /
 API-key Key entities (Pantheon Secrets) available. If they are missing, the

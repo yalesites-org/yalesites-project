@@ -58,10 +58,16 @@ class BeaconIndexProvisioner {
   /**
    * Creates the Beacon Azure AI Search index if it does not already exist.
    *
+   * @param bool $force
+   *   When TRUE, skip the existence check and create-or-update the index even
+   *   if it already exists (Azure adds any new fields). Used by the
+   *   ys-ai:create-index --force option to roll out schema changes to existing
+   *   indexes; the default (FALSE) keeps the operation idempotent.
+   *
    * @return \Drupal\ys_ai\Service\BeaconIndexResult
-   *   The outcome: created, already-exists, or failed (with a reason).
+   *   The outcome: created, updated, already-exists, or failed (with a reason).
    */
-  public function ensureIndexExists(): BeaconIndexResult {
+  public function ensureIndexExists(bool $force = FALSE): BeaconIndexResult {
     $backend_config = $this->configFactory->get(self::SERVER_CONFIG)->get('backend_config');
     if (empty($backend_config)) {
       return BeaconIndexResult::failed('Beacon search server is not configured.');
@@ -91,10 +97,11 @@ class BeaconIndexProvisioner {
     try {
       $client = $this->azureClient->getClient($api_key);
 
-      // Idempotency: skip entirely when the index already exists. Azure's
-      // PUT /indexes/{name} is an upsert that would otherwise try to update an
-      // existing index and can fail on immutable fields.
-      if (!empty($client->describeIndex($index_name))) {
+      // Idempotency: skip entirely when the index already exists, unless
+      // forced. Azure's PUT /indexes/{name} is an upsert, so without --force we
+      // avoid touching an existing index (a PUT can fail on immutable field
+      // changes); with --force we apply the current schema (e.g. new fields).
+      if (!$force && !empty($client->describeIndex($index_name))) {
         $this->logger->info('Beacon index "@name" already exists; skipping creation.', ['@name' => $index_name]);
         return BeaconIndexResult::alreadyExists($index_name);
       }
@@ -108,8 +115,14 @@ class BeaconIndexProvisioner {
       $status = $response->getStatusCode();
       if ($status >= 200 && $status < 300) {
         $client->clearIndexesCache();
-        $this->logger->info('Created Beacon Azure AI Search index "@name".', ['@name' => $index_name]);
-        return BeaconIndexResult::created($index_name);
+        // Azure returns 201 when the index is created and 204 when an existing
+        // index is updated (new fields added under --force).
+        if ($status === 201) {
+          $this->logger->info('Created Beacon Azure AI Search index "@name".', ['@name' => $index_name]);
+          return BeaconIndexResult::created($index_name);
+        }
+        $this->logger->info('Updated Beacon Azure AI Search index "@name".', ['@name' => $index_name]);
+        return BeaconIndexResult::updated($index_name);
       }
 
       $this->logger->error('Azure AI Search returned HTTP @status creating index "@name".', [

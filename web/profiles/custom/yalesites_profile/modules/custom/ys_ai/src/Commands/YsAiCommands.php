@@ -32,12 +32,16 @@ class YsAiCommands extends DrushCommands {
    * Creates the Beacon Azure AI Search index for the chatbot if it is missing.
    *
    * @command ys-ai:create-index
+   * @option force Create or update the index even if it already exists, applying
+   *   the current schema (for example, to add new filterable fields).
    * @aliases ys-ai-create-index
    * @usage drush ys-ai:create-index
    *   Creates the Beacon Azure AI Search index if it does not already exist.
+   * @usage drush ys-ai:create-index --force
+   *   Applies the current schema to the index even if it already exists.
    */
-  public function createIndex(): int {
-    $result = $this->beaconIndexProvisioner->ensureIndexExists();
+  public function createIndex(array $options = ['force' => FALSE]): int {
+    $result = $this->beaconIndexProvisioner->ensureIndexExists((bool) $options['force']);
 
     if ($result->isFailure()) {
       $this->logger->error($result->getMessage());

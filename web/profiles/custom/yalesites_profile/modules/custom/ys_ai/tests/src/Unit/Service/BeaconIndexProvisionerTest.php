@@ -343,6 +343,49 @@ class BeaconIndexProvisionerTest extends UnitTestCase {
   }
 
   /**
+   * Force bypasses the existence check and updates an existing index (204).
+   *
+   * @covers ::ensureIndexExists
+   */
+  public function testForceUpdatesExistingIndex(): void {
+    $client = $this->createMock(AzureAiSearch::class);
+    $client->method('getClient')->willReturnSelf();
+    // In force mode the existence check is skipped entirely.
+    $client->expects($this->never())->method('describeIndex');
+    $client->expects($this->once())->method('request')
+      ->willReturn($this->response(204));
+    $client->expects($this->once())->method('clearIndexesCache');
+
+    $result = $this->provisioner(
+      $this->configFactory(self::VALID_BACKEND, 'https://x.search.windows.net', 'azure_key'),
+      $this->keyRepository('secret'),
+      $client
+    )->ensureIndexExists(TRUE);
+
+    $this->assertSame(BeaconIndexResult::UPDATED, $result->getStatus());
+  }
+
+  /**
+   * Force on a not-yet-existing index still reports created (201).
+   *
+   * @covers ::ensureIndexExists
+   */
+  public function testForceReportsCreatedOn201(): void {
+    $client = $this->createMock(AzureAiSearch::class);
+    $client->method('getClient')->willReturnSelf();
+    $client->expects($this->never())->method('describeIndex');
+    $client->method('request')->willReturn($this->response(201));
+
+    $result = $this->provisioner(
+      $this->configFactory(self::VALID_BACKEND, 'https://x.search.windows.net', 'azure_key'),
+      $this->keyRepository('secret'),
+      $client
+    )->ensureIndexExists(TRUE);
+
+    $this->assertSame(BeaconIndexResult::CREATED, $result->getStatus());
+  }
+
+  /**
    * @covers ::ensureIndexExists
    */
   public function testFailsWhenCreateReturnsNonSuccess(): void {

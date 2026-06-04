@@ -98,6 +98,50 @@ class YsAiCreateIndexCommandTest extends UnitTestCase {
   /**
    * @covers ::createIndex
    */
+  public function testUpdatedReportsSuccess(): void {
+    $logger = $this->recordingLogger();
+    $command = $this->command(BeaconIndexResult::updated('mysite-dev'), $logger);
+
+    $this->assertSame(DrushCommands::EXIT_SUCCESS, $command->createIndex());
+    $this->assertContains('success', $logger->calls);
+    $this->assertNotContains('error', $logger->calls);
+  }
+
+  /**
+   * The --force option is passed through to the provisioner.
+   *
+   * @covers ::createIndex
+   */
+  public function testForceOptionIsPassedThrough(): void {
+    $provisioner = $this->createMock(BeaconIndexProvisioner::class);
+    $provisioner->expects($this->once())->method('ensureIndexExists')
+      ->with(TRUE)
+      ->willReturn(BeaconIndexResult::updated('mysite-dev'));
+    $command = new YsAiCommands($provisioner);
+    $command->setLogger($this->recordingLogger());
+
+    $this->assertSame(DrushCommands::EXIT_SUCCESS, $command->createIndex(['force' => TRUE]));
+  }
+
+  /**
+   * Without --force the provisioner is called in idempotent mode.
+   *
+   * @covers ::createIndex
+   */
+  public function testDefaultsToNonForce(): void {
+    $provisioner = $this->createMock(BeaconIndexProvisioner::class);
+    $provisioner->expects($this->once())->method('ensureIndexExists')
+      ->with(FALSE)
+      ->willReturn(BeaconIndexResult::alreadyExists('mysite-dev'));
+    $command = new YsAiCommands($provisioner);
+    $command->setLogger($this->recordingLogger());
+
+    $this->assertSame(DrushCommands::EXIT_SUCCESS, $command->createIndex());
+  }
+
+  /**
+   * @covers ::createIndex
+   */
   public function testFailedReportsError(): void {
     $logger = $this->recordingLogger();
     $command = $this->command(BeaconIndexResult::failed('Beacon search server is not configured.'), $logger);
