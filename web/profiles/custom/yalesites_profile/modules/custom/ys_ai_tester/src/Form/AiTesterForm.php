@@ -23,6 +23,11 @@ use Symfony\Component\Yaml\Yaml;
 class AiTesterForm extends FormBase {
 
   /**
+   * Maximum allowed size, in bytes, for an uploaded YAML question file.
+   */
+  const MAX_UPLOAD_BYTES = 262144;
+
+  /**
    * {@inheritdoc}
    */
   public function __construct(
@@ -166,6 +171,24 @@ class AiTesterForm extends FormBase {
 
     if (!$file || !$file->isValid()) {
       $form_state->setErrorByName('yaml_file', $this->t('Please upload a valid YAML file.'));
+      return;
+    }
+
+    // Restrict to YAML files by extension. The content is only ever parsed as
+    // YAML (never stored or executed), but rejecting non-YAML uploads at the
+    // boundary is cheap defense in depth. MIME sniffing is intentionally not
+    // used: YAML has no reliable magic bytes and is commonly detected as
+    // text/plain, which would reject legitimate uploads.
+    $extension = strtolower(pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION));
+    if (!in_array($extension, ['yml', 'yaml'], TRUE)) {
+      $form_state->setErrorByName('yaml_file', $this->t('The file must be a .yml or .yaml file.'));
+      return;
+    }
+
+    if ($file->getSize() > self::MAX_UPLOAD_BYTES) {
+      $form_state->setErrorByName('yaml_file', $this->t('The file is too large. The maximum size is @max KB.', [
+        '@max' => (int) (self::MAX_UPLOAD_BYTES / 1024),
+      ]));
       return;
     }
 

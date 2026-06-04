@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\ys_ai_tester\Functional;
 
 use Drupal\Tests\BrowserTestBase;
+use Drupal\ys_ai_tester\Form\AiTesterForm;
 
 /**
  * Tests the AI Tester form.
@@ -77,6 +78,50 @@ class AiTesterFormTest extends BrowserTestBase {
       'Run test',
     );
     $this->assertSession()->pageTextContains('All YAML values must be strings');
+
+    unlink($tmp);
+  }
+
+  /**
+   * Tests that the form rejects a file without a .yml/.yaml extension.
+   */
+  public function testFormRejectsNonYamlExtension(): void {
+    $user = $this->drupalCreateUser(['use ys ai tester']);
+    $this->drupalLogin($user);
+
+    // Valid YAML content, but the wrong file extension.
+    $tmp = tempnam(sys_get_temp_dir(), 'yaml_') . '.txt';
+    file_put_contents($tmp, "- What is Yale?\n- Where is Yale?\n");
+
+    $this->drupalGet('/admin/config/yalesites/ys_ai/tester');
+    $this->submitForm(
+      ['files[yaml_file]' => $tmp],
+      'Run test',
+    );
+    $this->assertSession()->pageTextContains('The file must be a .yml or .yaml file');
+
+    unlink($tmp);
+  }
+
+  /**
+   * Tests that the form rejects a file larger than the allowed maximum.
+   */
+  public function testFormRejectsOversizedFile(): void {
+    $user = $this->drupalCreateUser(['use ys ai tester']);
+    $this->drupalLogin($user);
+
+    // A valid YAML list of strings that exceeds MAX_UPLOAD_BYTES.
+    $line = "- " . str_repeat('a', 60) . "\n";
+    $oversized = str_repeat($line, (int) ceil((AiTesterForm::MAX_UPLOAD_BYTES + 1024) / strlen($line)));
+    $tmp = tempnam(sys_get_temp_dir(), 'yaml_') . '.yml';
+    file_put_contents($tmp, $oversized);
+
+    $this->drupalGet('/admin/config/yalesites/ys_ai/tester');
+    $this->submitForm(
+      ['files[yaml_file]' => $tmp],
+      'Run test',
+    );
+    $this->assertSession()->pageTextContains('The file is too large');
 
     unlink($tmp);
   }
