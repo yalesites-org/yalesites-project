@@ -339,6 +339,54 @@ class BeaconSearchConfigOverrideTest extends UnitTestCase {
   }
 
   /**
+   * Index and URL equal to the derived defaults are reset to empty.
+   *
+   * @covers ::stripDefaultedValues
+   */
+  public function testStripDefaultedValuesBlanksDefaults(): void {
+    $_ENV['PANTHEON_SITE_NAME'] = 'mysite';
+    $_ENV['PANTHEON_ENVIRONMENT'] = 'dev';
+    $override = new BeaconSearchConfigOverride(
+      $this->keyRepositoryReturning('https://key.search.windows.net'),
+      $this->storageReturning('')
+    );
+
+    $result = $override->stripDefaultedValues([
+      'database_settings' => [
+        'database_name' => 'mysite-dev',
+        'url' => 'https://key.search.windows.net',
+      ],
+    ]);
+
+    $this->assertSame('', $result['database_settings']['database_name']);
+    $this->assertSame('', $result['database_settings']['url']);
+  }
+
+  /**
+   * Explicitly entered values that differ from the defaults are preserved.
+   *
+   * @covers ::stripDefaultedValues
+   */
+  public function testStripDefaultedValuesKeepsCustomValues(): void {
+    $_ENV['PANTHEON_SITE_NAME'] = 'mysite';
+    $_ENV['PANTHEON_ENVIRONMENT'] = 'dev';
+    $override = new BeaconSearchConfigOverride(
+      $this->keyRepositoryReturning('https://key.search.windows.net'),
+      $this->storageReturning('')
+    );
+
+    $result = $override->stripDefaultedValues([
+      'database_settings' => [
+        'database_name' => 'custom-index',
+        'url' => 'https://custom.search.windows.net',
+      ],
+    ]);
+
+    $this->assertSame('custom-index', $result['database_settings']['database_name']);
+    $this->assertSame('https://custom.search.windows.net', $result['database_settings']['url']);
+  }
+
+  /**
    * @covers ::getCacheSuffix
    */
   public function testCacheSuffix(): void {
