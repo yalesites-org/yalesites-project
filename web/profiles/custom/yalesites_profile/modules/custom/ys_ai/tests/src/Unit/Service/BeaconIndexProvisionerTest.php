@@ -433,6 +433,20 @@ class BeaconIndexProvisionerTest extends UnitTestCase {
     }
     $this->assertTrue($fields['id']['key']);
 
+    // Filterable attribute fields must mirror the AI Search index "Attributes"
+    // fields, and must be filterable.
+    foreach (['url_1', 'title_1', 'type', 'created', 'changed', 'status'] as $attr) {
+      $this->assertArrayHasKey($attr, $fields, "Missing attribute field: $attr");
+      $this->assertTrue($fields[$attr]['filterable'], "$attr must be filterable");
+    }
+    // search_api date and boolean field values reach metadata as integers
+    // (see EmbeddingBase::getValue), so created/changed/status are Edm.Int64,
+    // not DateTimeOffset/Boolean — using those would 400 on indexing.
+    $this->assertSame('Edm.Int64', $fields['created']['type']);
+    $this->assertSame('Edm.Int64', $fields['changed']['type']);
+    $this->assertSame('Edm.Int64', $fields['status']['type']);
+    $this->assertSame('Edm.String', $fields['type']['type']);
+
     $vector = $fields['vector'];
     $this->assertSame('Collection(Edm.Single)', $vector['type']);
     $this->assertTrue($vector['searchable']);

@@ -68,6 +68,69 @@
       "synonymMaps": []
     },
     {
+      "name": "url_1",
+      "type": "Edm.String",
+      "key": false,
+      "retrievable": true,
+      "searchable": false,
+      "filterable": true,
+      "sortable": false,
+      "facetable": false,
+      "synonymMaps": []
+    },
+    {
+      "name": "title_1",
+      "type": "Edm.String",
+      "key": false,
+      "retrievable": true,
+      "searchable": true,
+      "filterable": true,
+      "sortable": true,
+      "facetable": false,
+      "synonymMaps": []
+    },
+    {
+      "name": "type",
+      "type": "Edm.String",
+      "key": false,
+      "retrievable": true,
+      "searchable": false,
+      "filterable": true,
+      "sortable": true,
+      "facetable": true,
+      "synonymMaps": []
+    },
+    {
+      "name": "created",
+      "type": "Edm.Int64",
+      "key": false,
+      "retrievable": true,
+      "searchable": false,
+      "filterable": true,
+      "sortable": true,
+      "facetable": false
+    },
+    {
+      "name": "changed",
+      "type": "Edm.Int64",
+      "key": false,
+      "retrievable": true,
+      "searchable": false,
+      "filterable": true,
+      "sortable": true,
+      "facetable": false
+    },
+    {
+      "name": "status",
+      "type": "Edm.Int64",
+      "key": false,
+      "retrievable": true,
+      "searchable": false,
+      "filterable": true,
+      "sortable": true,
+      "facetable": true
+    },
+    {
       "name": "vector",
       "type": "Collection(Edm.Single)",
       "key": false,
