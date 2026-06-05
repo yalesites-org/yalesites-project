@@ -448,18 +448,22 @@
 /* Long URLs in the cited content (rendered as links) have no natural break
    points, so overflow-wrap is not enough; break them at any character so they
    stay inside the modal. Scoped to links only to avoid breaking normal prose. */
-.citationPanelContent a {
-    overflow-wrap: anywhere;
-    word-break: break-all;
-}
+/* Keep cited-content links inside the modal. The atomic theme's Link Purpose
+   decorator wraps each link's trailing text and its injected icon in
+   .link-purpose-nobreak { white-space: nowrap }, which forces a bare URL (one
+   unbreakable word) onto a single line and overflows the modal.
 
-/* The atomic theme's Link Purpose decorator wraps a link's trailing text and
-   its injected icon in .link-purpose-nobreak { white-space: nowrap }. For a
-   bare URL (a single unbreakable word) that forces the whole URL onto one line
-   and overflows the modal. Re-allow wrapping, scoped to the citation modal
-   only. !important is required to beat Link Purpose's own rule and is limited
-   to this scope. */
-.citationPanelContent .link-purpose-nobreak {
+   Two things are essential here:
+   1. .link-purpose-nobreak is a GLOBAL class, so inside this CSS module it must
+      be referenced with :global(); otherwise CSS Modules scopes/hashes it and
+      the selector never matches the real element.
+   2. Anchor on the real container div (.citationPanelContentContainer), not the
+      react-markdown className, so the descendant match is reliable.
+
+   Scoped to the citation modal only; !important is required to beat Link
+   Purpose's own rule and is limited to this scope. */
+.citationPanelContentContainer a,
+.citationPanelContentContainer :global(.link-purpose-nobreak) {
     white-space: normal !important;
     overflow-wrap: anywhere;
     word-break: break-all;
