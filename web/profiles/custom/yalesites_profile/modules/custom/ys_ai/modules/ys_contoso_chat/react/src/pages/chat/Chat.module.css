@@ -437,6 +437,14 @@
     font-size: 1rem;
 }
 
+/* Long URLs in the cited content (rendered as links) have no natural break
+   points, so overflow-wrap is not enough; break them at any character so they
+   stay inside the modal. Scoped to links only to avoid breaking normal prose. */
+.citationPanelContent a {
+    overflow-wrap: anywhere;
+    word-break: break-all;
+}
+
 .citationPanelLabel {
     font-style: normal;
     font-weight: 600;
