@@ -3,6 +3,9 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.node.resource.field_ai_description
+    - field.field.node.resource.field_ai_exclude
+    - field.field.node.resource.field_ai_tags
     - field.field.node.resource.field_abstract
     - field.field.node.resource.field_academic_years
     - field.field.node.resource.field_areas_of_study
@@ -48,6 +51,24 @@ dependencies:
     - ys_dcn_field
 third_party_settings:
   field_group:
+    group_ai_settings:
+      children:
+        - field_ai_exclude
+        - field_ai_description
+        - field_ai_tags
+      label: AI
+      region: content
+      parent_name: ''
+      weight: 99
+      format_type: details_sidebar
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        open: false
+        description: ''
+        required_fields: true
+        weight: 0
     group_teaser:
       children:
         - field_teaser_title
@@ -246,6 +267,29 @@ content:
     weight: 13
     region: content
     settings: {  }
+    third_party_settings: {  }
+  field_ai_description:
+    type: string_textarea
+    weight: 91
+    region: content
+    settings:
+      rows: 4
+      placeholder: ''
+    third_party_settings: {  }
+  field_ai_exclude:
+    type: boolean_checkbox
+    weight: 90
+    region: content
+    settings:
+      display_label: true
+    third_party_settings: {  }
+  field_ai_tags:
+    type: string_textfield
+    weight: 92
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
     third_party_settings: {  }
   field_areas_of_study:
     type: chosen_select

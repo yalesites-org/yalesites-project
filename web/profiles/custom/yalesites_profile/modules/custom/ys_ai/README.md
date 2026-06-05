@@ -69,3 +69,48 @@ type. The shipped Azure schema declares `created`/`changed` as
 
 Because this changes the Azure field type, rolling it out to an existing index
 requires `drush ys-ai:create-index --recreate` followed by a re-index.
+
+Access control (anonymous-only indexing)
+----------------------------------------
+
+The Beacon index powers a public chatbot, so it must only ever contain content
+an anonymous visitor is allowed to see. The stock Search API `content_access`
+processor cannot enforce this on the Azure backend: it filters at query time on
+a hidden `node_grants` field, but that field is not stored as a filterable Azure
+attribute (the backend supports no data types except `embeddings`), so the
+filter matches nothing and anonymous users receive no results.
+
+Instead the module provides a Search API *processor*, `ys_beacon_access_filter`
+(`src/Plugin/search_api/processor/BeaconAccessFilter.php`), enabled on the Beacon
+index. It enforces access at *index time* via `alterIndexedItems()`: any node an
+anonymous user cannot view (`$node->access('view', $anonymous)`) is removed
+before it is sent to Azure. Access is delegated to the node access system, so
+the YaleSites `ys_node_access` grants — which deny anonymous access to
+unpublished and CAS-protected (`field_login_required`) nodes — remain the single
+source of truth. Excluded content is never written to the index and therefore
+can never be returned to any user.
+
+The processor also enforces the per-node "Exclude from AI search" flag
+(`field_ai_exclude`, see below): flagged nodes are removed from the index.
+
+Because enforcement is at index time, toggling a node's published state, CAS
+protection, or AI-exclude flag takes effect on that node's next re-index (Search
+API marks the node for re-indexing on save).
+
+AI metadata fields
+------------------
+
+Three native node fields control AI ingestion, replacing the legacy
+`ai_engine` metatags (`ai_disable_indexing`, `ai_description`, `ai_tags`):
+
+- `field_ai_exclude` (boolean) — exclude this content from the AI index.
+- `field_ai_description` (long text) — extra content to ingest for this node.
+- `field_ai_tags` (text) — extra tags to ingest for this node.
+
+They appear in an "AI" group in the node form sidebar and are hidden when the
+Beacon search index is disabled (`ys_ai_form_node_form_alter()`); hiding never
+deletes stored values. The legacy `ai_engine` metatag group is removed from the metatag
+widget (`ys_ai_field_widget_single_element_metatag_firehose_form_alter()`) so the
+two surfaces do not compete while `ai_engine` is phased out. Existing metatag
+values are migrated to the new fields by
+`ys_ai_post_update_migrate_ai_metadata()`.

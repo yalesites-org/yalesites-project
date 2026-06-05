@@ -1,0 +1,23 @@
+uuid: 592233fb-87b2-44f5-9f14-409ae7f33a6e
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_ai_exclude
+    - node.type.post
+id: node.post.field_ai_exclude
+field_name: field_ai_exclude
+entity_type: node
+bundle: post
+label: 'Exclude from AI search'
+description: 'When checked, this content is excluded from the AI search index and is never returned by the chatbot.'
+required: false
+translatable: false
+default_value:
+  -
+    value: 0
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

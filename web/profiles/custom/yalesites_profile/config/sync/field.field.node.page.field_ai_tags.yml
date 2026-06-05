@@ -1,0 +1,19 @@
+uuid: 438dfc9f-ee70-4c9f-be6a-81bf92762bc6
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_ai_tags
+    - node.type.page
+id: node.page.field_ai_tags
+field_name: field_ai_tags
+entity_type: node
+bundle: page
+label: 'AI Tags'
+description: 'Additional tags to ingest into the AI model for this content.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

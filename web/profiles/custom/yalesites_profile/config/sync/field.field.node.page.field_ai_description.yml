@@ -1,0 +1,19 @@
+uuid: d22a4621-604b-46f5-8358-ecb5dbf41d92
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_ai_description
+    - node.type.page
+id: node.page.field_ai_description
+field_name: field_ai_description
+entity_type: node
+bundle: page
+label: 'AI Description'
+description: 'Additional content to ingest into the AI model for this content.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

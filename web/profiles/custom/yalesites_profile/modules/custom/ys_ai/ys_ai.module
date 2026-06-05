@@ -129,3 +129,54 @@ function ys_ai_beacon_search_server_submit(array &$form, FormStateInterface $for
     $form_state->setValue($parents, '');
   }
 }
+
+/**
+ * Determines whether the Beacon search index is enabled.
+ *
+ * The native AI metadata fields are only meaningful when content is being
+ * indexed for AI, which is governed by the Beacon index's enabled status.
+ *
+ * @return bool
+ *   TRUE when the beacon_index search index exists and is enabled.
+ */
+function _ys_ai_beacon_index_enabled(): bool {
+  $index = \Drupal::entityTypeManager()
+    ->getStorage('search_api_index')
+    ->load('beacon_index');
+  return $index !== NULL && $index->status();
+}
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter() for node_form.
+ *
+ * The native AI metadata fields (field_ai_exclude / field_ai_description /
+ * field_ai_tags) are only relevant when the Beacon search index is enabled.
+ * Hide their widgets when it is disabled so editors are not shown controls for
+ * a feature that is not active. Field values are stored independently of widget
+ * visibility, so hiding never destroys data and the values reappear if the
+ * index is re-enabled.
+ */
+function ys_ai_form_node_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
+  if (_ys_ai_beacon_index_enabled()) {
+    return;
+  }
+  foreach (['field_ai_exclude', 'field_ai_description', 'field_ai_tags'] as $field_name) {
+    if (isset($form[$field_name])) {
+      $form[$field_name]['#access'] = FALSE;
+    }
+  }
+}
+
+/**
+ * Implements hook_field_widget_single_element_WIDGET_TYPE_form_alter().
+ *
+ * The legacy AI metatags (the "ai_engine" metatag group provided by
+ * ai_engine_metadata) are replaced by the native field_ai_* fields. Remove the
+ * group from the metatag widget so editors do not see two competing surfaces
+ * for the same data while ai_engine is being phased out.
+ */
+function ys_ai_field_widget_single_element_metatag_firehose_form_alter(array &$field_widget_complete_form, FormStateInterface $form_state, array $context) {
+  if (isset($field_widget_complete_form['ai_engine'])) {
+    unset($field_widget_complete_form['ai_engine']);
+  }
+}
