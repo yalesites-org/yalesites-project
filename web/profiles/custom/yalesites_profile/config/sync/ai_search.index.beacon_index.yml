@@ -1,12 +1,36 @@
 control_field_max_length: false
 exclude_chunk_from_metadata: false
 indexing_options:
+  node_grants:
+    indexing_option: ''
+    max: -1
   rendered_item:
     indexing_option: main_content
     max: -1
   url:
     indexing_option: contextual_content
     max: -1
+  url_1:
+    indexing_option: attributes
+    max: -1
+  created:
+    indexing_option: attributes
+    max: -1
+  status:
+    indexing_option: attributes
+    max: -1
+  changed:
+    indexing_option: attributes
+    max: -1
+  type:
+    indexing_option: attributes
+    max: -1
+  uid:
+    indexing_option: ignore
+    max: -1
   title:
     indexing_option: contextual_content
+    max: -1
+  title_1:
+    indexing_option: attributes
     max: -1
