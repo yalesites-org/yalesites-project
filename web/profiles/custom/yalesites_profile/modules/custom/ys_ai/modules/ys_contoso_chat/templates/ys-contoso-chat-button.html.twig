@@ -1,6 +1,9 @@
 {{ attach_library('ys_contoso_chat/chat_button') }}
 
-<div class="yale-chat-button" role="region" aria-label="AI Chat">
+{# .yale-chat-button is listed in editoria11y.settings.yml ignore_elements to suppress a
+   false-positive flag. The icon is aria-hidden; the <span> provides the accessible name.
+   Do not remove this class without updating that config. #}
+<div id="launch-chat" class="yale-chat-button" role="region" aria-label="AI Chat">
   <a href="#launch-chat">
     <i class="fa-light {{ icon_class }}" aria-hidden="true"></i>
     <span>{{ button_text }}</span>
