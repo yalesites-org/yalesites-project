@@ -477,6 +477,16 @@ const Chat = () => {
                       className={styles.citationPanelContent}
                       children={activeCitation.content}
                       remarkPlugins={[remarkGfm]}
+                      components={{
+                        // Force long URLs in the cited content to wrap inside
+                        // the modal, independent of CSS-module class scoping.
+                        a: ({ node, ...props }) => (
+                          <a
+                            {...props}
+                            style={{ wordBreak: "break-all", overflowWrap: "anywhere" }}
+                          />
+                        ),
+                      }}
                     />
                   </div>
                 </div>
