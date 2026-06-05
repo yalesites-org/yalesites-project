@@ -22,7 +22,7 @@ backend_config:
   embeddings_engine_configuration:
     set_dimensions: false
     dimensions: 1536
-  embedding_strategy: contextual_chunks
+  embedding_strategy: ys_beacon_contextual_chunks
   embedding_strategy_configuration:
     chunk_size: '2000'
     chunk_min_overlap: '300'
