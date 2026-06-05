@@ -477,23 +477,6 @@ const Chat = () => {
                       className={styles.citationPanelContent}
                       children={activeCitation.content}
                       remarkPlugins={[remarkGfm]}
-                      components={{
-                        // Force long URLs in the cited content to wrap inside
-                        // the modal, independent of CSS-module class scoping.
-                        a: ({ node, ...props }) => (
-                          <a
-                            {...props}
-                            style={{
-                              display: "inline-block",
-                              maxWidth: "100%",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                              verticalAlign: "bottom",
-                            }}
-                          />
-                        ),
-                      }}
                     />
                   </div>
                 </div>
