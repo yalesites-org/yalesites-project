@@ -14,7 +14,6 @@ use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Core\Session\AccountProxy;
-use Drupal\Core\Template\Attribute;
 use Drupal\Core\Url;
 use Drupal\link\Plugin\Field\FieldWidget\LinkWidget;
 use Drupal\node\Entity\Node;
@@ -413,18 +412,6 @@ function _ys_core_normalize_bare_domain_uri(string $uri): string {
   }
 
   return $uri;
-}
-
-/**
- * Implements hook_preprocess_HOOK() for field_multiple_value_form.
- */
-function ys_core_preprocess_field_multiple_value_form(&$variables) {
-  if (
-    isset($variables['table']['#header'][0]['data']['#attributes']) &&
-    is_array($variables['table']['#header'][0]['data']['#attributes'])
-  ) {
-    $variables['table']['#header'][0]['data']['#attributes'] = new Attribute($variables['table']['#header'][0]['data']['#attributes']);
-  }
 }
 
 /**
