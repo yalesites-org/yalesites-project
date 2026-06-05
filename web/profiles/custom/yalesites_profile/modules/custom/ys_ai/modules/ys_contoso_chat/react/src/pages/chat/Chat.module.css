@@ -329,6 +329,10 @@
     gap: 0.5rem;
     z-index: 4;
     padding: 0 2rem 1rem;
+    /* Break long unbreakable strings (e.g. URLs in the cited content) so they
+       wrap inside the modal instead of overflowing its bounds. Inherited, so it
+       also applies to the rendered markdown content and any links. */
+    overflow-wrap: anywhere;
 }
 
 .citationPanelHeaderContainer {
@@ -400,6 +404,37 @@
     order: 1;
     align-self: stretch;
     flex-grow: 0;
+}
+
+/* Cited page content keeps its own heading tags; scope them down so a page's
+   large H1/H2 do not dominate the citation modal. Applies only inside the
+   citation panel content, not the chat answers. */
+.citationPanelContent h1,
+.citationPanelContent h2,
+.citationPanelContent h3,
+.citationPanelContent h4,
+.citationPanelContent h5,
+.citationPanelContent h6 {
+    line-height: 1.3;
+    margin: 0.75rem 0 0.25rem;
+}
+
+.citationPanelContent h1 {
+    font-size: 1.3rem;
+}
+
+.citationPanelContent h2 {
+    font-size: 1.2rem;
+}
+
+.citationPanelContent h3 {
+    font-size: 1.1rem;
+}
+
+.citationPanelContent h4,
+.citationPanelContent h5,
+.citationPanelContent h6 {
+    font-size: 1rem;
 }
 
 .citationPanelLabel {
