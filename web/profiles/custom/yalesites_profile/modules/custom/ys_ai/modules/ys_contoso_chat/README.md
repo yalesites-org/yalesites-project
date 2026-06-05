@@ -3,7 +3,9 @@
 A Yale-branded AI chat widget for YaleSites. It pairs a Drupal backend with a
 React front end. The backend answers questions with the Drupal AI module
 (`ai_assistant_api`) over a RAG index (`ai_search`), and the React widget renders
-the conversation in a modal on the public site.
+the conversation in a modal on the public site. Replies include numbered source
+citations linking back to the indexed pages the answer was drawn from (see
+[Source citations](#source-citations)).
 
 This module is a submodule of `ys_ai`.
 
@@ -71,6 +73,95 @@ rebuilt and committed whenever the React source changes.
    assistant, and streams the reply.
 5. "New chat" discards the client conversation and starts a fresh
    `conversation_id`, so the next message begins a new server-side session.
+
+## Source citations
+
+Replies cite the indexed pages they draw from. The answer text gets inline
+superscript markers, a "References:" row of buttons renders above the answer, and
+each button opens a modal showing the source title (linked), its URL, and the
+matched content. This is implemented across the agent, a custom RAG tool, a
+request-scoped service, the controller, and the React app.
+
+### How the Beacon assistant runs RAG
+
+The configured assistant (`beacon`) is set with `ai_agent: beacon` and
+`use_function_calling: false`, so it does not call tools directly — it delegates
+to the `ai_agents` "beacon" agent (`config/sync/ai_agents.ai_agent.beacon.yml`).
+That agent performs retrieval by invoking a function-call tool. We point it at a
+custom tool instead of the contrib `ai_search:rag_search` so we can capture the
+citation metadata that contrib discards.
+
+### Components
+
+- `src/Plugin/AiFunctionCall/BeaconRagTool.php` — a custom `AiFunctionCall`
+  plugin, id `ys_contoso_chat:beacon_rag_search`, that extends contrib
+  `RagTool`. It runs the same vector search against `beacon_index`, but for each
+  retrieved chunk it:
+  - labels the chunk with a 1-based `[docN]` marker in the text handed to the LLM,
+    so the model can cite it;
+  - reads the source metadata from the search result's extra data
+    (`title_1`, `url_1`, `type`, `content`, `drupal_long_id`);
+  - records an ordered citation row and pushes it into the citation store.
+  The marker order, the stored citation order, and the frontend's `citations[N-1]`
+  lookup must all agree, so a single loop index drives all three.
+- `src/Service/CitationStore.php` (service `ys_contoso_chat.citation_store`) — a
+  small request-scoped value holder. The tool runs deep inside the assistant
+  runner; the store carries its citations back out to the controller within the
+  same request. The controller calls `reset()` before each run so citations never
+  leak between turns.
+- `config/sync/ai_agents.ai_agent.beacon.yml` — the agent config:
+  `tools: { 'ys_contoso_chat:beacon_rag_search': true }`, `tool_usage_limits`
+  forcing `index=beacon_index`, `amount=10`, `min_score=0.5`, and a `## Citations`
+  block in `system_prompt` instructing the model to cite with `[docN]` markers and
+  to invent none. (The agent's `system_prompt` is the authoritative prompt at
+  runtime; the assistant entity delegates to it.)
+- `src/Controller/YsContosoChatController.php` — after `process()`, it reads
+  `CitationStore::getCitations()` and, in `buildEnvelope()`, prepends a `tool`-role
+  message carrying `{ citations, intent }` (JSON) ahead of the `assistant` message
+  in the response envelope. Both the streamed and non-streamed paths forward the
+  citations; in practice the agent returns a non-streamed `ChatMessage`, so the
+  JSON envelope path is the one used.
+
+### Frontend rendering
+
+- `react/src/components/Answer/AnswerParser.tsx` — `parseAnswer` finds `[docN]`
+  markers, replaces each with a superscript, de-dupes, and maps `[docN]` to
+  `citations[N - 1]`. A marker is only rendered if its citation exists.
+- `react/src/components/Answer/Answer.tsx` — renders the "References:" buttons row
+  above the answer, but only when there are citations.
+- `react/src/pages/chat/Chat.tsx` — `parseCitationFromMessage` reads the `tool`
+  message into the citation list, and the citation modal (opened from a References
+  button) shows the title (linked), the Source URL, and the Document Content.
+
+  Important: after a response completes, the chat must persist the `tool` message
+  ahead of the assistant message in `conversation.messages`
+  (`push(toolMessage, assistantMessage)`). The render reads citations from
+  `messages[index - 1]` relative to each assistant message, so dropping the tool
+  message leaves citations empty and markers show as raw `[docN]` text.
+
+### End-to-end flow
+
+1. The agent calls `ys_contoso_chat:beacon_rag_search`. The tool searches
+   `beacon_index`, labels results `[doc1]`, `[doc2]`, …, and stores a citation row
+   per result.
+2. The LLM writes its answer and cites the sources it used inline as `[docN]`.
+3. The controller emits a `tool` message containing the citations ahead of the
+   assistant text.
+4. The React app parses both: markers become superscripts, the References row
+   renders, and each button opens a modal for that source.
+
+### Behavior and limits
+
+- Citations render only for the `[docN]` markers the model actually emits. The
+  model decides both whether to search and whether to cite, so vague questions can
+  legitimately produce a reply with no citations. This is expected, not a bug.
+- The modal's title and link come from the index attributes `title_1` and
+  `url_1`. Indexes created before those fields existed will not populate them, so
+  the source must be (re)indexed with the current schema.
+- Unlike the prior Azure OpenAI "On Your Data" integration, which injected
+  citations server-side, this agent-based stack relies on prompting the model to
+  emit `[docN]`. It is therefore less deterministic; the system prompt is tuned to
+  encourage consistent citing.
 
 ## Configuration
 
@@ -173,6 +264,16 @@ Current coverage:
   correct on/off state from config, points at the settings route, returns the
   expected build array (Configure link, plus a "not enabled" notice when off),
   and that its sync and save operations are no-ops.
+- `CitationStoreTest`: set/get/reset round-trip and key reindexing for the
+  citation store service.
+- `BeaconRagToolTest`: with mocked result items, asserts the tool labels results
+  `[doc1]`, `[doc2]`, … in order, stores an aligned citation row per kept result,
+  honors `min_score` filtering with sequential numbering, and leaves the store
+  empty when there are no results.
+- `YsContosoChatControllerEnvelopeTest`: asserts `buildEnvelope` prepends a
+  `tool`-role message (valid `{ citations, intent }` JSON) before the assistant
+  message when citations are present, and emits only the assistant message when
+  there are none.
 
 The React app has no JavaScript test runner configured (Vite is used only for
 building). Front-end behavior is currently validated manually. Adding a runner
@@ -183,9 +284,19 @@ such as Vitest would be a separate piece of work if automated JS tests are wante
 - `ys_contoso_chat.routing.yml`: routes for message, clear, and settings.
 - `ys_contoso_chat.permissions.yml`: the two permissions.
 - `ys_contoso_chat.links.menu.yml`: settings link under the Integrations menu.
-- `src/Controller/YsContosoChatController.php`: message and clear endpoints.
+- `src/Controller/YsContosoChatController.php`: message and clear endpoints;
+  emits the citation `tool` message in the response envelope.
 - `src/Form/YsContosoChatSettingsForm.php`: settings form.
 - `src/Plugin/ys_integrations/ContosoChatIntegrationPlugin.php`: integration entry.
+- `src/Plugin/AiFunctionCall/BeaconRagTool.php`: custom RAG tool that adds `[docN]`
+  markers and collects citation metadata.
+- `src/Service/CitationStore.php`: request-scoped store carrying citations from the
+  tool to the controller (`ys_contoso_chat.services.yml` registers it).
+- `config/sync/ai_agents.ai_agent.beacon.yml` (in the profile config sync, not this
+  module): the Beacon agent config that points at the custom tool and carries the
+  `[docN]` citation prompt.
 - `ys_contoso_chat.module`: library attachment, floating button, theme.
 - `react/src`: React source. `react/static/assets`: committed build output.
+  Citation rendering lives in `components/Answer/AnswerParser.tsx`,
+  `components/Answer/Answer.tsx`, and `pages/chat/Chat.tsx`.
 - `templates/ys-contoso-chat-button.html.twig`: floating button markup.
