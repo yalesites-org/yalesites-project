@@ -22,6 +22,11 @@ class BeaconIndexResult {
   const UPDATED = 'updated';
 
   /**
+   * The Azure index was dropped and recreated from the schema (--recreate).
+   */
+  const RECREATED = 'recreated';
+
+  /**
    * The Azure index already existed; nothing was changed.
    */
   const EXISTS = 'exists';
@@ -71,6 +76,19 @@ class BeaconIndexResult {
    */
   public static function updated(string $index_name): self {
     return new self(self::UPDATED, sprintf('Updated Azure AI Search index "%s".', $index_name), $index_name);
+  }
+
+  /**
+   * Creates a "recreated" result.
+   *
+   * @param string $index_name
+   *   The Azure index name.
+   *
+   * @return self
+   *   The result.
+   */
+  public static function recreated(string $index_name): self {
+    return new self(self::RECREATED, sprintf('Recreated Azure AI Search index "%s" from the current schema. Re-index content to repopulate it.', $index_name), $index_name);
   }
 
   /**

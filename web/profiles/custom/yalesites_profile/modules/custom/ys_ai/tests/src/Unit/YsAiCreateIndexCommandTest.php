@@ -108,6 +108,18 @@ class YsAiCreateIndexCommandTest extends UnitTestCase {
   }
 
   /**
+   * @covers ::createIndex
+   */
+  public function testRecreatedReportsSuccess(): void {
+    $logger = $this->recordingLogger();
+    $command = $this->command(BeaconIndexResult::recreated('mysite-dev'), $logger);
+
+    $this->assertSame(DrushCommands::EXIT_SUCCESS, $command->createIndex(['recreate' => TRUE]));
+    $this->assertContains('success', $logger->calls);
+    $this->assertNotContains('error', $logger->calls);
+  }
+
+  /**
    * The --force option is passed through to the provisioner.
    *
    * @covers ::createIndex
@@ -115,7 +127,7 @@ class YsAiCreateIndexCommandTest extends UnitTestCase {
   public function testForceOptionIsPassedThrough(): void {
     $provisioner = $this->createMock(BeaconIndexProvisioner::class);
     $provisioner->expects($this->once())->method('ensureIndexExists')
-      ->with(TRUE)
+      ->with(TRUE, FALSE)
       ->willReturn(BeaconIndexResult::updated('mysite-dev'));
     $command = new YsAiCommands($provisioner);
     $command->setLogger($this->recordingLogger());
@@ -124,14 +136,30 @@ class YsAiCreateIndexCommandTest extends UnitTestCase {
   }
 
   /**
-   * Without --force the provisioner is called in idempotent mode.
+   * The --recreate option is passed through to the provisioner.
+   *
+   * @covers ::createIndex
+   */
+  public function testRecreateOptionIsPassedThrough(): void {
+    $provisioner = $this->createMock(BeaconIndexProvisioner::class);
+    $provisioner->expects($this->once())->method('ensureIndexExists')
+      ->with(FALSE, TRUE)
+      ->willReturn(BeaconIndexResult::recreated('mysite-dev'));
+    $command = new YsAiCommands($provisioner);
+    $command->setLogger($this->recordingLogger());
+
+    $this->assertSame(DrushCommands::EXIT_SUCCESS, $command->createIndex(['recreate' => TRUE]));
+  }
+
+  /**
+   * Without options the provisioner is called in idempotent mode.
    *
    * @covers ::createIndex
    */
   public function testDefaultsToNonForce(): void {
     $provisioner = $this->createMock(BeaconIndexProvisioner::class);
     $provisioner->expects($this->once())->method('ensureIndexExists')
-      ->with(FALSE)
+      ->with(FALSE, FALSE)
       ->willReturn(BeaconIndexResult::alreadyExists('mysite-dev'));
     $command = new YsAiCommands($provisioner);
     $command->setLogger($this->recordingLogger());

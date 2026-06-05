@@ -34,14 +34,23 @@ class YsAiCommands extends DrushCommands {
    * @command ys-ai:create-index
    * @option force Create or update the index even if it already exists, applying
    *   the current schema (for example, to add new filterable fields).
+   * @option recreate Drop the existing index and recreate it from the schema.
+   *   Required for schema changes Azure cannot apply in place (for example
+   *   changing a field's data type). This discards all indexed documents, so
+   *   re-index content afterwards (drush search-api:index beacon_index).
    * @aliases ys-ai-create-index
    * @usage drush ys-ai:create-index
    *   Creates the Beacon Azure AI Search index if it does not already exist.
    * @usage drush ys-ai:create-index --force
    *   Applies the current schema to the index even if it already exists.
+   * @usage drush ys-ai:create-index --recreate
+   *   Drops and recreates the index (then re-index content to repopulate it).
    */
-  public function createIndex(array $options = ['force' => FALSE]): int {
-    $result = $this->beaconIndexProvisioner->ensureIndexExists((bool) $options['force']);
+  public function createIndex(array $options = ['force' => FALSE, 'recreate' => FALSE]): int {
+    $result = $this->beaconIndexProvisioner->ensureIndexExists(
+      (bool) ($options['force'] ?? FALSE),
+      (bool) ($options['recreate'] ?? FALSE),
+    );
 
     if ($result->isFailure()) {
       $this->logger->error($result->getMessage());

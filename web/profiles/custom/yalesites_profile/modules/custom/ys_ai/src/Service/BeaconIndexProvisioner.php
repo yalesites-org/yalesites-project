@@ -63,11 +63,19 @@ class BeaconIndexProvisioner {
    *   if it already exists (Azure adds any new fields). Used by the
    *   ys-ai:create-index --force option to roll out schema changes to existing
    *   indexes; the default (FALSE) keeps the operation idempotent.
+   * @param bool $recreate
+   *   When TRUE, drop the existing index (if any) and recreate it from the
+   *   schema. Used by the ys-ai:create-index --recreate option for schema
+   *   changes Azure cannot apply in place (for example changing a field's data
+   *   type, such as Edm.Int64 to Edm.DateTimeOffset). This deletes all indexed
+   *   documents, so content must be re-indexed afterwards. Takes precedence
+   *   over $force.
    *
    * @return \Drupal\ys_ai\Service\BeaconIndexResult
-   *   The outcome: created, updated, already-exists, or failed (with a reason).
+   *   The outcome: created, updated, recreated, already-exists, or failed
+   *   (with a reason).
    */
-  public function ensureIndexExists(bool $force = FALSE): BeaconIndexResult {
+  public function ensureIndexExists(bool $force = FALSE, bool $recreate = FALSE): BeaconIndexResult {
     $backend_config = $this->configFactory->get(self::SERVER_CONFIG)->get('backend_config');
     if (empty($backend_config)) {
       return BeaconIndexResult::failed('Beacon search server is not configured.');
@@ -97,11 +105,33 @@ class BeaconIndexProvisioner {
     try {
       $client = $this->azureClient->getClient($api_key);
 
+      // Recreate: drop the existing index first. Azure's PUT /indexes/{name}
+      // cannot change a field's data type in place (e.g. Edm.Int64 to
+      // Edm.DateTimeOffset), so such schema changes require deleting and
+      // recreating the index. This discards all indexed documents, so content
+      // must be re-indexed afterwards.
+      if ($recreate) {
+        if (!empty($client->describeIndex($index_name))) {
+          $delete_status = $client->request('/indexes/' . $index_name, 'DELETE')->getStatusCode();
+          // Azure returns 204 on a successful delete; 404 means it is already
+          // gone. Anything else is a real failure. (Do not use isSuccessful(),
+          // which only treats 200 as success.)
+          $deleted = ($delete_status >= 200 && $delete_status < 300) || $delete_status === 404;
+          if (!$deleted) {
+            $this->logger->error('Azure AI Search returned HTTP @status deleting index "@name" for recreation.', [
+              '@status' => $delete_status,
+              '@name' => $index_name,
+            ]);
+            return BeaconIndexResult::failed(sprintf('Failed to delete Azure AI Search index "%s" for recreation (HTTP %d). See the AI Search logs for details.', $index_name, $delete_status), $index_name);
+          }
+          $client->clearIndexesCache();
+        }
+      }
       // Idempotency: skip entirely when the index already exists, unless
       // forced. Azure's PUT /indexes/{name} is an upsert, so without --force we
       // avoid touching an existing index (a PUT can fail on immutable field
       // changes); with --force we apply the current schema (e.g. new fields).
-      if (!$force && !empty($client->describeIndex($index_name))) {
+      elseif (!$force && !empty($client->describeIndex($index_name))) {
         $this->logger->info('Beacon index "@name" already exists; skipping creation.', ['@name' => $index_name]);
         return BeaconIndexResult::alreadyExists($index_name);
       }
@@ -115,6 +145,10 @@ class BeaconIndexProvisioner {
       $status = $response->getStatusCode();
       if ($status >= 200 && $status < 300) {
         $client->clearIndexesCache();
+        if ($recreate) {
+          $this->logger->info('Recreated Beacon Azure AI Search index "@name".', ['@name' => $index_name]);
+          return BeaconIndexResult::recreated($index_name);
+        }
         // Azure returns 201 when the index is created and 204 when an existing
         // index is updated (new fields added under --force).
         if ($status === 201) {

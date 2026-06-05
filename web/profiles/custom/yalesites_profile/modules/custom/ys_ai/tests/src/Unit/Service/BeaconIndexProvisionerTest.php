@@ -140,6 +140,9 @@ class BeaconIndexProvisionerTest extends UnitTestCase {
   protected function response(int $status): ResponseData {
     $response = $this->createMock(ResponseData::class);
     $response->method('getStatusCode')->willReturn($status);
+    // Mirror the real ResponseData::isSuccessful(), which treats only 200 as
+    // successful (Azure DELETE/PUT-update return 204, PUT-create returns 201).
+    $response->method('isSuccessful')->willReturn($status === 200);
     return $response;
   }
 
@@ -386,6 +389,97 @@ class BeaconIndexProvisionerTest extends UnitTestCase {
   }
 
   /**
+   * Recreate drops the existing index, recreates it, and reports recreated.
+   *
+   * @covers ::ensureIndexExists
+   */
+  public function testRecreateDropsAndRecreatesExistingIndex(): void {
+    $calls = [];
+    $client = $this->createMock(AzureAiSearch::class);
+    $client->method('getClient')->willReturnSelf();
+    $client->method('describeIndex')->with('mysite-dev')
+      ->willReturn(['name' => 'mysite-dev']);
+    $client->method('request')
+      ->willReturnCallback(function ($path, $method) use (&$calls) {
+        $calls[] = $method . ' ' . $path;
+        return $this->response($method === 'DELETE' ? 204 : 201);
+      });
+    $client->method('clearIndexesCache');
+
+    $result = $this->provisioner(
+      $this->configFactory(self::VALID_BACKEND, 'https://x.search.windows.net', 'azure_key'),
+      $this->keyRepository('secret'),
+      $client
+    )->ensureIndexExists(FALSE, TRUE);
+
+    $this->assertSame(BeaconIndexResult::RECREATED, $result->getStatus());
+    $this->assertStringContainsString('Recreated', $result->getMessage());
+    $this->assertStringContainsString('Re-index', $result->getMessage());
+    // The index is deleted before it is recreated with a PUT.
+    $this->assertSame([
+      'DELETE /indexes/mysite-dev',
+      'PUT /indexes/mysite-dev',
+    ], $calls);
+  }
+
+  /**
+   * Recreate on a missing index just creates it (no delete) and reports it.
+   *
+   * @covers ::ensureIndexExists
+   */
+  public function testRecreateCreatesWhenIndexMissing(): void {
+    $calls = [];
+    $client = $this->createMock(AzureAiSearch::class);
+    $client->method('getClient')->willReturnSelf();
+    $client->method('describeIndex')->willReturn([]);
+    $client->method('request')
+      ->willReturnCallback(function ($path, $method) use (&$calls) {
+        $calls[] = $method . ' ' . $path;
+        return $this->response(201);
+      });
+    $client->method('clearIndexesCache');
+
+    $result = $this->provisioner(
+      $this->configFactory(self::VALID_BACKEND, 'https://x.search.windows.net', 'azure_key'),
+      $this->keyRepository('secret'),
+      $client
+    )->ensureIndexExists(FALSE, TRUE);
+
+    $this->assertSame(BeaconIndexResult::RECREATED, $result->getStatus());
+    // No DELETE is issued when the index does not already exist.
+    $this->assertSame(['PUT /indexes/mysite-dev'], $calls);
+  }
+
+  /**
+   * A failed delete during recreate fails fast without recreating the index.
+   *
+   * @covers ::ensureIndexExists
+   */
+  public function testRecreateFailsWhenDeleteFails(): void {
+    $calls = [];
+    $client = $this->createMock(AzureAiSearch::class);
+    $client->method('getClient')->willReturnSelf();
+    $client->method('describeIndex')->willReturn(['name' => 'mysite-dev']);
+    $client->method('request')
+      ->willReturnCallback(function ($path, $method) use (&$calls) {
+        $calls[] = $method . ' ' . $path;
+        return $this->response(500);
+      });
+
+    $result = $this->provisioner(
+      $this->configFactory(self::VALID_BACKEND, 'https://x.search.windows.net', 'azure_key'),
+      $this->keyRepository('secret'),
+      $client
+    )->ensureIndexExists(FALSE, TRUE);
+
+    $this->assertSame(BeaconIndexResult::FAILED, $result->getStatus());
+    $this->assertStringContainsString('delete', $result->getMessage());
+    $this->assertStringContainsString('500', $result->getMessage());
+    // The PUT (recreate) is never attempted after a failed delete.
+    $this->assertSame(['DELETE /indexes/mysite-dev'], $calls);
+  }
+
+  /**
    * @covers ::ensureIndexExists
    */
   public function testFailsWhenCreateReturnsNonSuccess(): void {
@@ -482,11 +576,12 @@ class BeaconIndexProvisionerTest extends UnitTestCase {
       $this->assertArrayHasKey($attr, $fields, "Missing attribute field: $attr");
       $this->assertTrue($fields[$attr]['filterable'], "$attr must be filterable");
     }
-    // search_api date and boolean field values reach metadata as integers
-    // (see EmbeddingBase::getValue), so created/changed/status are Edm.Int64,
-    // not DateTimeOffset/Boolean — using those would 400 on indexing.
-    $this->assertSame('Edm.Int64', $fields['created']['type']);
-    $this->assertSame('Edm.Int64', $fields['changed']['type']);
+    // The created/changed date attributes are stored as DateTimeOffset so they
+    // are human-readable and sort/filter as real dates. The values are
+    // reformatted to ISO 8601 before indexing (Azure rejects epoch integers for
+    // DateTimeOffset). status stays Edm.Int64 (it is an integer, not a date).
+    $this->assertSame('Edm.DateTimeOffset', $fields['created']['type']);
+    $this->assertSame('Edm.DateTimeOffset', $fields['changed']['type']);
     $this->assertSame('Edm.Int64', $fields['status']['type']);
     $this->assertSame('Edm.String', $fields['type']['type']);
 
