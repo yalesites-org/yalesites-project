@@ -6,6 +6,7 @@
  */
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Element;
 use Drupal\node\Entity\Node;
 
 /**
@@ -45,6 +46,17 @@ function ys_admin_theme_set_title_on_node_edit_page(array &$variables) {
  * Implements hook_form_BASE_FORM_ID_alter() for node_form.
  */
 function ys_admin_theme_form_node_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Surface workflow action buttons instead of hiding them in Gin's "More
+  // actions" overflow: flag each submit so Gin shows it inline. Delete is a
+  // link, which Gin keeps in the overflow.
+  if (isset($form['actions'])) {
+    foreach (Element::children($form['actions']) as $action_key) {
+      if (($form['actions'][$action_key]['#type'] ?? '') === 'submit') {
+        $form['actions'][$action_key]['#gin_action_item'] = TRUE;
+      }
+    }
+  }
+
   /** @var Drupal\node\NodeForm $node_form */
   $node_form = $form_state->getFormObject();
 
