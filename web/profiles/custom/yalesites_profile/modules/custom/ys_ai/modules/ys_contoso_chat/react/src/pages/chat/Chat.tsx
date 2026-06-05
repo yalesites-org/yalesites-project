@@ -483,7 +483,14 @@ const Chat = () => {
                         a: ({ node, ...props }) => (
                           <a
                             {...props}
-                            style={{ wordBreak: "break-all", overflowWrap: "anywhere" }}
+                            style={{
+                              display: "inline-block",
+                              maxWidth: "100%",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              verticalAlign: "bottom",
+                            }}
                           />
                         ),
                       }}

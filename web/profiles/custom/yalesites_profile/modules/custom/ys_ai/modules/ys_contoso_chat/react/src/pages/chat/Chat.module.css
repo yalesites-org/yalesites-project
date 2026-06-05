@@ -317,6 +317,9 @@
     font-family: 'Mallory', sans-serif;
     justify-content: space-around;
     width: 100%;
+    /* Allow the flex item to shrink below its content's intrinsic width so a
+       long URL cannot force the panel wider than the modal. */
+    min-width: 0;
 }
 
 .citationPanelContentContainer {
@@ -333,6 +336,9 @@
        wrap inside the modal instead of overflowing its bounds. Inherited, so it
        also applies to the rendered markdown content and any links. */
     overflow-wrap: anywhere;
+    /* Allow this flex item to shrink so a long URL cannot push it wider than
+       the modal; without this the content keeps its full intrinsic width. */
+    min-width: 0;
 }
 
 .citationPanelHeaderContainer {
