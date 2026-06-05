@@ -148,7 +148,11 @@ citation metadata that contrib discards.
 3. The controller emits a `tool` message containing the citations ahead of the
    assistant text.
 4. The React app parses both: markers become superscripts, the References row
-   renders, and each button opens a modal for that source.
+   renders, and each button opens a modal for that source. The inline
+   superscripts are themselves clickable and open the same modal (a
+   `components.sup` override on the answer's ReactMarkdown maps the number back
+   to its citation). The modal shows the source title (linked), a "Source URL:"
+   line, and the "Document Content:".
 
 ### Behavior and limits
 
@@ -162,6 +166,27 @@ citation metadata that contrib discards.
   citations server-side, this agent-based stack relies on prompting the model to
   emit `[docN]`. It is therefore less deterministic; the system prompt is tuned to
   encourage consistent citing.
+
+### Gotchas when editing the modal styling
+
+- **Link Purpose decorates the modal links.** The atomic theme bundles
+  itmaybejj's Link Purpose (`component-library-twig` `link-treatment.js`). It
+  scans the whole `<body>` with a MutationObserver, so it also re-processes the
+  React-rendered citation links, wrapping each link's trailing text plus an
+  injected icon in `.link-purpose-nobreak { white-space: nowrap }`. A bare URL is
+  one unbreakable word, so that `nowrap` will push it past the modal and defeat
+  any `word-break`/`overflow-wrap` on the `<a>`. `Chat.module.css` counters this,
+  scoped to the modal, with `.citationPanelContentContainer
+  :global(.link-purpose-nobreak) { white-space: normal !important; ... }`, plus
+  `overflow-x: hidden` on the container as a hard backstop.
+- **`.link-purpose-nobreak` MUST be referenced with `:global()`.**
+  `Chat.module.css` is a CSS Module, so every bare class selector is hashed to a
+  local name. Writing `.link-purpose-nobreak` compiles to
+  `_link-purpose-nobreak_<hash>`, which never matches Link Purpose's real global
+  class — the rule silently does nothing. Use `:global(.link-purpose-nobreak)`,
+  and anchor it on a real element (`.citationPanelContentContainer`), not the
+  ReactMarkdown `className`, so the descendant match is reliable. This is the one
+  place `!important` is used, and it is limited to this scope.
 
 ## Configuration
 
@@ -233,6 +258,13 @@ npm run build
 
 This regenerates `react/static/assets/index.js` and `index.css`. Commit those
 build artifacts together with the source changes.
+
+**Always commit `index.js` and `index.css` as a pair from the same build.** The
+React app uses CSS Modules, whose class names are hashed per build. If you commit
+a freshly built `index.css` but keep the old `index.js` (or vice versa), the JS
+references class names that no longer exist in the CSS and *all* widget styling
+silently drops — the chat collapses to an unstyled state. They are coupled by
+design; never commit one without the other.
 
 After building, rebuild the Drupal cache so the new library is served:
 
