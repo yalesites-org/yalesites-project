@@ -17,3 +17,8 @@ services:
     class: Drupal\ys_ai\Service\BeaconIndexProvisioner
     arguments: ['@config.factory', '@key.repository', '@azure_ai_search.api', '@logger.channel.ys_ai']
 
+  ys_ai.beacon_server_config_subscriber:
+    class: Drupal\ys_ai\EventSubscriber\BeaconServerConfigSubscriber
+    tags:
+      - { name: event_subscriber }
+
