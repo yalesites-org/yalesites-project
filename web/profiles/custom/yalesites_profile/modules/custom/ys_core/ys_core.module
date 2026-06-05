@@ -16,6 +16,7 @@ use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Template\Attribute;
 use Drupal\Core\Url;
+use Drupal\link\Plugin\Field\FieldWidget\LinkWidget;
 use Drupal\node\Entity\Node;
 use Drupal\Component\Utility\NestedArray;
 
@@ -334,6 +335,84 @@ function ys_core_preprocess_block(&$variables) {
     }
   }
 
+}
+
+/**
+ * Implements hook_field_widget_single_element_form_alter().
+ *
+ * Prevents invalid link values from ever being stored. When an editor types a
+ * bare domain such as "google.com" (no scheme, no leading slash) the core link
+ * widget rewrites it to "internal:google.com" — an invalid internal URI because
+ * it lacks the leading slash. Building a Url object from that value throws an
+ * InvalidArgumentException, which white-screens any consumer that resolves the
+ * link (entity_usage, for example). We prepend a normalisation handler that
+ * runs before the core handler and rewrites bare domains to an explicit
+ * "https://" URL, matching the editor's intent.
+ *
+ * @see \Drupal\link\Plugin\Field\FieldWidget\LinkWidget::validateUriElement()
+ */
+function ys_core_field_widget_single_element_form_alter(array &$element, FormStateInterface $form_state, array $context) {
+  $widget = $context['widget'] ?? NULL;
+  if (
+    $widget instanceof LinkWidget &&
+    isset($element['uri']['#element_validate']) &&
+    is_array($element['uri']['#element_validate'])
+  ) {
+    array_unshift($element['uri']['#element_validate'], '_ys_core_normalize_link_uri');
+  }
+}
+
+/**
+ * Form element validation handler: normalises bare-domain link URIs.
+ *
+ * Runs before LinkWidget::validateUriElement() so the core handler receives a
+ * scheme-qualified URL and no longer treats the value as an invalid internal
+ * path.
+ */
+function _ys_core_normalize_link_uri(array &$element, FormStateInterface $form_state, array &$complete_form) {
+  $value = $element['#value'] ?? '';
+  if (!is_string($value)) {
+    return;
+  }
+
+  $normalized = _ys_core_normalize_bare_domain_uri($value);
+  if ($normalized !== $value) {
+    $element['#value'] = $normalized;
+    $form_state->setValueForElement($element, $normalized);
+  }
+}
+
+/**
+ * Adds an "https://" scheme to a bare domain entered in a link field.
+ *
+ * Values that are empty, internal paths ("/", "#", "?"), route tokens
+ * ("<front>", "<nolink>"), or already scheme-qualified ("https:", "mailto:",
+ * "internal:", "entity:", …) are returned unchanged. Only bare hosts such as
+ * "google.com" or "www.example.org/path?x=1" are rewritten.
+ */
+function _ys_core_normalize_bare_domain_uri(string $uri): string {
+  $trimmed = trim($uri);
+  if ($trimmed === '') {
+    return $uri;
+  }
+
+  // Internal paths, fragments, query strings, and route tokens are valid as-is.
+  if (in_array($trimmed[0], ['/', '#', '?', '<'], TRUE)) {
+    return $uri;
+  }
+
+  // Anything that already declares a scheme is left untouched.
+  if (preg_match('/^[a-z][a-z0-9+.\-]*:/i', $trimmed)) {
+    return $uri;
+  }
+
+  // A bare host (one or more dot-separated labels, optional port and path)
+  // is what the editor meant as an external link; supply the missing scheme.
+  if (preg_match('~^[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?)+(?::\d+)?(?:[/?#].*)?$~i', $trimmed)) {
+    return 'https://' . $trimmed;
+  }
+
+  return $uri;
 }
 
 /**
