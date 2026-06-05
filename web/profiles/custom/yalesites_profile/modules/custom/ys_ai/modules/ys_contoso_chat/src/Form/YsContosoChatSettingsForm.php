@@ -18,6 +18,16 @@ class YsContosoChatSettingsForm extends ConfigFormBase {
   const CONFIG_NAME = 'ys_contoso_chat.settings';
 
   /**
+   * The Search API server entity id that backs the Beacon chatbot.
+   */
+  const BEACON_SERVER_ID = 'beacon';
+
+  /**
+   * The Search API index entity id that backs the Beacon chatbot.
+   */
+  const BEACON_INDEX_ID = 'beacon_index';
+
+  /**
    * {@inheritdoc}
    */
   public function __construct(
@@ -178,20 +188,60 @@ class YsContosoChatSettingsForm extends ConfigFormBase {
 
     $config->save();
 
-    // When chat is being enabled, make sure the Beacon Azure AI Search index
-    // the chatbot queries exists. The provisioner only creates it if missing,
-    // so enabling repeatedly is harmless.
     if ((bool) $form_state->getValue('enable')) {
-      $result = $this->beaconIndexProvisioner->ensureIndexExists();
-      if ($result->isFailure()) {
-        $this->messenger()->addError($result->getMessage());
-      }
-      else {
-        $this->messenger()->addStatus($result->getMessage());
-      }
+      $this->enableBeaconStack();
+    }
+    else {
+      $this->disableBeaconStack();
     }
 
     parent::submitForm($form, $form_state);
+  }
+
+  /**
+   * Provisions and enables the Beacon Search API stack for the chatbot.
+   *
+   * Ensures the Azure AI Search index the chatbot queries exists (the
+   * provisioner only creates it if missing, so this is idempotent), then
+   * enables the Search API server and index and queues a full reindex.
+   * Enabling the server does not re-enable its indexes, so the index is
+   * enabled explicitly. If provisioning fails, the stack is left disabled
+   * because there is no remote index to write to.
+   */
+  protected function enableBeaconStack(): void {
+    $result = $this->beaconIndexProvisioner->ensureIndexExists();
+    if ($result->isFailure()) {
+      $this->messenger()->addError($result->getMessage());
+      return;
+    }
+    $this->messenger()->addStatus($result->getMessage());
+
+    $server = $this->entityTypeManager->getStorage('search_api_server')->load(self::BEACON_SERVER_ID);
+    if ($server && !$server->status()) {
+      $server->setStatus(TRUE)->save();
+    }
+
+    $index = $this->entityTypeManager->getStorage('search_api_index')->load(self::BEACON_INDEX_ID);
+    if ($index) {
+      if (!$index->status()) {
+        $index->setStatus(TRUE)->save();
+      }
+      $index->reindex();
+    }
+  }
+
+  /**
+   * Disables the Beacon Search API stack so indexing and embeddings stop.
+   *
+   * Disabling the server cascades to disabling its indexes (see
+   * search_api Server::preSave()), so the Azure index is left untouched and
+   * idle storage is preserved for a smooth re-enable.
+   */
+  protected function disableBeaconStack(): void {
+    $server = $this->entityTypeManager->getStorage('search_api_server')->load(self::BEACON_SERVER_ID);
+    if ($server && $server->status()) {
+      $server->setStatus(FALSE)->save();
+    }
   }
 
   /**

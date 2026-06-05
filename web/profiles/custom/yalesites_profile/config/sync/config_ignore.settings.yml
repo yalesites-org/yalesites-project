@@ -13,6 +13,8 @@ ignored_config_entities:
   - 'field.field.node.resource.field_custom_vocab:label'
   - 'google_analytics.settings:account'
   - 'google_tag*'
+  - 'search_api.index.beacon_index:status'
+  - 'search_api.server.beacon:status'
   - 'system.site*'
   - 'taxonomy.vocabulary.custom_vocab:name'
   - 'ys_ai_system_instructions*'

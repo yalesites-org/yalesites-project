@@ -1,6 +1,6 @@
 uuid: f609b963-2a41-4642-a15f-49e8923a6b9d
 langcode: en
-status: true
+status: false
 dependencies:
   config:
     - search_api.server.beacon
