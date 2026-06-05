@@ -210,6 +210,36 @@ export const Answer = ({
                         remarkPlugins={[remarkGfm, supersub]}
                         children={parsedAnswer.markdownFormatText}
                         className={styles.answerText}
+                        components={{
+                            // Make inline citation superscripts open the same
+                            // citation modal as the References buttons. supersub
+                            // renders each [docN] marker as a <sup> whose text is
+                            // the reindexed citation number.
+                            sup: ({ children }) => {
+                                const label = String(
+                                    Array.isArray(children) ? children.join("") : children ?? ""
+                                ).trim();
+                                const citation = parsedAnswer.citations.find(
+                                    (c) => c.reindex_id === label
+                                );
+                                if (!citation) {
+                                    return <sup>{children}</sup>;
+                                }
+                                return (
+                                    <sup>
+                                        <button
+                                            type="button"
+                                            className={styles.citationSuperscript}
+                                            title={citation.title ?? `Citation ${label}`}
+                                            aria-label={`Open citation ${label}${citation.title ? ": " + citation.title : ""}`}
+                                            onClick={() => onCitationClicked(citation)}
+                                        >
+                                            {children}
+                                        </button>
+                                    </sup>
+                                );
+                            },
+                        }}
                     />
                 </Stack.Item>
             </Stack>
