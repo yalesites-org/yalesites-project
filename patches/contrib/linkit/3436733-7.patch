@@ -1,0 +1,22 @@
+diff --git a/src/Utility/LinkitHelper.php b/src/Utility/LinkitHelper.php
+index e1ba0f7..6a3c11d 100644
+--- a/src/Utility/LinkitHelper.php
++++ b/src/Utility/LinkitHelper.php
+@@ -113,7 +113,7 @@ class LinkitHelper {
+       ->getDirectoryPath();
+ 
+     if (!empty($public_files_dir) && strpos($input, "/$public_files_dir") === 0) {
+-      return "base:$input";
++      return "base:" . urldecode($input);
+     }
+     $scheme = parse_url($input, PHP_URL_SCHEME);
+     // Check if the input already contains a scheme.
+@@ -121,7 +121,7 @@ class LinkitHelper {
+       return $input;
+     }
+ 
+-    return "internal:$input";
++    return "internal:" . urldecode($input);
+   }
+ 
+   /**
