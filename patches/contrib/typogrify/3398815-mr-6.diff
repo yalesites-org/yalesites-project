@@ -1,5 +1,5 @@
 diff --git a/src/Plugin/Filter/TypogrifyFilter.php b/src/Plugin/Filter/TypogrifyFilter.php
-index 6a6136b..93dca43 100644
+index c3280645bd393def2e6dcd85ad9649d88514edb4..eaffec40fee29362db74ee5060d14e57583f4593 100644
 --- a/src/Plugin/Filter/TypogrifyFilter.php
 +++ b/src/Plugin/Filter/TypogrifyFilter.php
 @@ -45,7 +45,7 @@ class TypogrifyFilter extends FilterBase {
@@ -12,7 +12,7 @@ index 6a6136b..93dca43 100644
    /**
     * The keys in the settings array that are array-valued.
 diff --git a/src/SmartyPants.php b/src/SmartyPants.php
-index 586a95c..ccef37c 100644
+index 1180e53162a636c40c7e4dedf0f851650f8d3932..662047faced848167a42176bb34baaa467ca55e5 100644
 --- a/src/SmartyPants.php
 +++ b/src/SmartyPants.php
 @@ -24,17 +24,17 @@ class SmartyPants {
@@ -63,17 +63,14 @@ index 586a95c..ccef37c 100644
              $span_lang = $matches[2];
            }
            elseif ($cur_token[1] == '</span>') {
-@@ -299,9 +296,9 @@ class SmartyPants {
+@@ -299,7 +296,7 @@ class SmartyPants {
        else {
          $t = $cur_token[1];
          // Remember last char of this token before processing.
 -        $last_char = mb_substr($t, -1);
 +        $last_char = mb_substr((string) $t, -1);
          if (!$in_pre) {
--          $quotes = self::i18nQuotes(isset($span_lang) ? $span_lang : $doc_lang);
-+          $quotes = self::i18nQuotes($span_lang ?? $doc_lang);
- 
-           $t = self::processEscapes($t);
+           $quotes = self::i18nQuotes($span_lang ?? $doc_lang);
  
 @@ -428,14 +425,14 @@ class SmartyPants {
        if ($cur_token[0] == "tag") {
@@ -254,21 +251,8 @@ index 586a95c..ccef37c 100644
          }
          $result .= $t;
        }
-diff --git a/src/TwigExtension/Typogrify.php b/src/TwigExtension/Typogrify.php
-index e6efcba..fb06112 100644
---- a/src/TwigExtension/Typogrify.php
-+++ b/src/TwigExtension/Typogrify.php
-@@ -20,7 +20,7 @@ class Typogrify extends AbstractExtension {
-    */
-   public function getFilters() {
-     return [
--      new TwigFilter('typogrify', [$this, 'filter'], ['is_safe' => ['html']]),
-+      new TwigFilter('typogrify', $this->filter(...), ['is_safe' => ['html']]),
-     ];
-   }
- 
 diff --git a/src/Typogrify.php b/src/Typogrify.php
-index 44855f0..9841c68 100644
+index 6c6a1338f3c33f223fcdaafe8590062e8fcb7d32..88d38a862e70143a94a625b053fc610409d38be2 100644
 --- a/src/Typogrify.php
 +++ b/src/Typogrify.php
 @@ -54,8 +54,8 @@ class Typogrify {
@@ -295,22 +279,13 @@ index 44855f0..9841c68 100644
            $result[] = $token[1];
          }
          else {
--          $result[] = preg_replace_callback($cap_finder, 'self::capWrapper', $token[1]);
-+          $result[] = preg_replace_callback($cap_finder, [self::class, 'capWrapper'], (string) $token[1]);
+-          $result[] = preg_replace_callback($cap_finder, [static::class, 'capWrapper'], $token[1]);
++          $result[] = preg_replace_callback($cap_finder, [static::class, 'capWrapper'], (string) $token[1]);
          }
        }
      }
-@@ -165,7 +165,7 @@ class Typogrify {
-                             /ix";
-     }
- 
--    return preg_replace_callback($quote_finder, 'self::quoteWrapper', $text);
-+    return preg_replace_callback($quote_finder, [self::class, 'quoteWrapper'], $text);
-   }
- 
-   /**
 diff --git a/src/UnicodeConversion.php b/src/UnicodeConversion.php
-index a58677c..40d4eed 100644
+index a58677c3e65a880b4a0d9802de5246a95e2769c4..40d4eed6810ee3fc86c13425d362bdeb20a5f5f3 100644
 --- a/src/UnicodeConversion.php
 +++ b/src/UnicodeConversion.php
 @@ -121,7 +121,7 @@ class UnicodeConversion {

@@ -1,0 +1,48 @@
+diff --git a/src/Element/MediaLibrary.php b/src/Element/MediaLibrary.php
+index 6914efc..1f3371c 100644
+--- a/src/Element/MediaLibrary.php
++++ b/src/Element/MediaLibrary.php
+@@ -331,7 +331,42 @@ class MediaLibrary extends FormElement {
+     $value = NULL;
+     // Process the submission of our form element.
+     if ($input !== FALSE && $input !== NULL && isset($input['media_library_selection'])) {
+-      $value = $input['media_library_selection'];
++      // Get all items, including newly added ones.
++      // This may not be the correct order.
++      $media_library_selection = explode(',', $input['media_library_selection']);
++
++      // Get the ordered items, this will not include newly added ones.
++      $order = [];
++      if (!empty($input['selection'])) {
++        foreach ($input['selection'] as $selection) {
++          if (!empty($selection['preview']['target_id'])) {
++            $order[] = $selection['preview']['target_id'];
++          }
++        }
++      }
++
++      // Order all the items, add new ones to the end.
++      // Do not use values as keys (like array_flip), because an item can appear multiple times in the array.
++      $values = [];
++      $new_values = [];
++      foreach ($media_library_selection as $item) {
++        // Look for an existing ordered item.
++        $key = array_search($item, $order, FALSE);
++        if ($key !== FALSE) {
++          $values[$key] = $item;
++          unset($order[$key]);
++        }
++        else {
++          $new_values[] = $item;
++        }
++      }
++
++      ksort($values);
++
++      // Add new items to the end.
++      $values = array_merge($values, $new_values);
++
++      $value = implode(',', $values);
+     }
+     elseif ($input === FALSE) {
+       if (!empty($element['#default_value'])) {
