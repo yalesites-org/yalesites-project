@@ -143,7 +143,7 @@ class BeaconRagTool extends RagTool {
       return;
     }
 
-    if (count($end_results)) {
+    if ($end_results !== []) {
       $this->citationStore->setCitations($citations);
       $output = "Results from searching in the rag index " . $this->index . " for the following prompt: " . $this->searchString . ".\n";
       $output .= "Cite the sources you use by including their [docN] markers inline in your answer.\n";

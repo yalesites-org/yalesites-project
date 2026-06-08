@@ -196,13 +196,11 @@ class YsContosoChatController extends ControllerBase {
    *   RAG source citations to emit alongside the assistant message.
    */
   protected function streamResponse(StreamedChatMessageIterator $iterator, string $response_id, array $citations = []): StreamedResponse {
-    $runner = $this->runner;
-
-    $response = new StreamedResponse(function () use ($iterator, $response_id, $runner, $citations) {
+    $response = new StreamedResponse(function () use ($iterator, $response_id, $citations) {
       $accumulated = '';
       $date = date('c');
 
-      $runner->startSession();
+      $this->runner->startSession();
 
       foreach ($iterator as $chunk) {
         $accumulated .= $chunk->getText();
@@ -210,7 +208,7 @@ class YsContosoChatController extends ControllerBase {
         flush();
       }
 
-      $runner->setAssistantMessage($accumulated);
+      $this->runner->setAssistantMessage($accumulated);
     });
 
     $response->headers->set('Content-Type', 'application/x-ndjson');

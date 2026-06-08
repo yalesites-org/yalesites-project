@@ -71,10 +71,4 @@ class ContosoChatIntegrationPlugin extends IntegrationPluginBase {
     return $form;
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function save($form, $form_state): void {
-  }
-
 }
