@@ -41,15 +41,7 @@ class AiTesterController extends ControllerBase {
    * Renders the detail page for a single tester run.
    */
   public function run(int $run_id): array {
-    $run = $this->database->query(
-      'SELECT id, created, assistant_id, yaml_filename, status
-       FROM {ys_ai_tester_run} WHERE id = :id',
-      [':id' => $run_id]
-    )->fetchObject();
-
-    if (!$run) {
-      throw new NotFoundHttpException();
-    }
+    $run = $this->loadRunOr404($run_id, 'id, created, assistant_id, yaml_filename, status');
 
     $results = $this->database->query(
       'SELECT * FROM {ys_ai_tester_result} WHERE run_id = :run_id ORDER BY delta ASC',
@@ -128,14 +120,7 @@ class AiTesterController extends ControllerBase {
    * Returns run results as a downloadable JSON file.
    */
   public function downloadJson(int $run_id): JsonResponse {
-    $run = $this->database->query(
-      'SELECT id FROM {ys_ai_tester_run} WHERE id = :id',
-      [':id' => $run_id]
-    )->fetchObject();
-
-    if (!$run) {
-      throw new NotFoundHttpException();
-    }
+    $this->loadRunOr404($run_id, 'id');
 
     $results = $this->database->query(
       'SELECT question, answer, citations FROM {ys_ai_tester_result}
@@ -161,8 +146,32 @@ class AiTesterController extends ControllerBase {
    * Returns the original uploaded YAML file as a download.
    */
   public function downloadYaml(int $run_id): Response {
+    $run = $this->loadRunOr404($run_id, 'yaml_content, yaml_filename');
+
+    $response = new Response($run->yaml_content);
+    $safe_filename = preg_replace('/[^\w.\-]/', '_', $run->yaml_filename);
+    $response->headers->set('Content-Type', 'application/x-yaml');
+    $response->headers->set('Content-Disposition', 'attachment; filename="' . $safe_filename . '"');
+    return $response;
+  }
+
+  /**
+   * Loads a tester run row by id, or throws a 404.
+   *
+   * @param int $run_id
+   *   The run id.
+   * @param string $fields
+   *   The columns to select (a code-controlled field list, not user input).
+   *
+   * @return object
+   *   The run row.
+   *
+   * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+   *   When no run with the given id exists.
+   */
+  private function loadRunOr404(int $run_id, string $fields): object {
     $run = $this->database->query(
-      'SELECT yaml_content, yaml_filename FROM {ys_ai_tester_run} WHERE id = :id',
+      'SELECT ' . $fields . ' FROM {ys_ai_tester_run} WHERE id = :id',
       [':id' => $run_id]
     )->fetchObject();
 
@@ -170,11 +179,7 @@ class AiTesterController extends ControllerBase {
       throw new NotFoundHttpException();
     }
 
-    $response = new Response($run->yaml_content);
-    $safe_filename = preg_replace('/[^\w.\-]/', '_', $run->yaml_filename);
-    $response->headers->set('Content-Type', 'application/x-yaml');
-    $response->headers->set('Content-Disposition', 'attachment; filename="' . $safe_filename . '"');
-    return $response;
+    return $run;
   }
 
   /**

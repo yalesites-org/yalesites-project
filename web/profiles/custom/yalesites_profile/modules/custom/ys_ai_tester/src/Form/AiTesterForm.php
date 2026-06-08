@@ -13,6 +13,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Url;
+use Drupal\ys_ai_tester\AiTesterBatch;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
@@ -71,10 +72,7 @@ class AiTesterForm extends FormBase {
 
     if ($this->currentUser->hasPermission('administer ai providers')) {
       $assistants = $this->entityTypeManager->getStorage('ai_assistant')->loadMultiple();
-      $options = [];
-      foreach ($assistants as $id => $assistant) {
-        $options[$id] = $assistant->label();
-      }
+      $options = array_map(fn ($assistant) => $assistant->label(), $assistants);
       $form['assistant_id'] = [
         '#type' => 'select',
         '#title' => $this->t('AI Assistant'),
@@ -252,7 +250,7 @@ class AiTesterForm extends FormBase {
     $operations = [];
     foreach ($questions as $delta => $question) {
       $operations[] = [
-        '\Drupal\ys_ai_tester\AiTesterBatch::processQuestion',
+        [AiTesterBatch::class, 'processQuestion'],
         [(int) $run_id, $assistant_id, $question, $delta],
       ];
     }
@@ -260,7 +258,7 @@ class AiTesterForm extends FormBase {
     batch_set([
       'title' => $this->t('Running AI tests'),
       'operations' => $operations,
-      'finished' => '\Drupal\ys_ai_tester\AiTesterBatch::finished',
+      'finished' => [AiTesterBatch::class, 'finished'],
       'progress_message' => $this->t('Processed @current of @total questions.'),
     ]);
   }

@@ -84,7 +84,7 @@ class AiTesterBatch {
       $context['results']['errors'][] = "Question {$delta}: DB write failed.";
     }
 
-    $context['results']['run_id'] ??= $run_id;
+    $context['results']['run_id'] = $run_id;
     $context['message'] = t('Processing question @num...', ['@num' => $delta + 1]);
   }
 
