@@ -39,11 +39,9 @@ const Modal = ({ show, close, children, header, footer, variant}: ModalProps) =>
 
         if (e.shiftKey && (focusedElement?.isSameNode(firstPlaceholderElement.current) || isFocusedElementADiv)) {
           e.preventDefault();
-          console.log("selecting last element", lastFocusableElement.current);
           lastFocusableElement.current?.focus();
         } else if (!e.shiftKey && (focusedElement?.isSameNode(lastPlaceholderElement.current) || isFocusedElementADiv)) {
           e.preventDefault();
-          console.log("selecting first element", firstFocusableElement.current);
           firstFocusableElement.current?.focus();
         }
       }, 1);

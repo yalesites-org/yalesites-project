@@ -170,7 +170,6 @@ export const ChatHistoryListItemCell: React.FC<ChatHistoryListItemCellProps> = (
             onClick={() => handleSelectItem()}
             onKeyDown={e => e.key === "Enter" || e.key === " " ? handleSelectItem() : null}
             verticalAlign='center'
-            // horizontal
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             styles={{
@@ -194,7 +193,7 @@ export const ChatHistoryListItemCell: React.FC<ChatHistoryListItemCellProps> = (
                                     onChange={chatHistoryTitleOnChange}
                                     onKeyDown={handleKeyPressEdit}
                                     // errorMessage={errorRename}
-                                    disabled={errorRename ? true : false}
+                                    disabled={!!errorRename}
                                 />
                             </Stack.Item>
                             {editTitle && (<Stack.Item>
@@ -270,7 +269,7 @@ export const ChatHistoryListItemGroups: React.FC<ChatHistoryListItemGroupsProps>
             return;
         }
         handleFetchHistory();
-        setOffset((offset) => offset += 25);
+        setOffset((offset) => offset + 25);
     }, [observerCounter]);
 
     const handleFetchHistory = async () => {
@@ -293,7 +292,7 @@ export const ChatHistoryListItemGroups: React.FC<ChatHistoryListItemGroupsProps>
         const observer = new IntersectionObserver(
             entries => {
                 if (entries[0].isIntersecting)
-                    setObserverCounter((observerCounter) => observerCounter += 1);
+                    setObserverCounter((observerCounter) => observerCounter + 1);
             },
             { threshold: 1 }
         );
