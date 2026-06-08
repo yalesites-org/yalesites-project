@@ -97,7 +97,6 @@
 /* Citation Varition - Header */
 .modalHeaderCitation {
   composes: modalHeader;
-  position: relative;
   max-width: 600px;
   margin: 0 auto;
   background-color: white;
@@ -136,7 +135,6 @@
 /* Citation Varition - Container */
 .modalContainerCitation {
   composes: modalContainer;
-  z-index: 900;
 }
 
 .modalHeaderContainer {
