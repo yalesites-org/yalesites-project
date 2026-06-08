@@ -104,6 +104,39 @@ lando xdebug-on            # Enable Xdebug
 lando xdebug-off           # Disable Xdebug
 ```
 
+### Running PHPUnit Tests
+
+The PHPUnit suites are configured in `phpunit.xml` (`unit`, `kernel`,
+`functional`, `functional-javascript`). Which database environment a suite needs
+depends on its type:
+
+- **Unit tests** need no database — run them directly:
+
+  ```bash
+  lando phpunit --testsuite unit
+  lando phpunit path/to/SomeUnitTest.php
+  ```
+
+- **Kernel and Functional tests** boot a real Drupal database and require the
+  `SIMPLETEST_DB` environment variable (it is left blank in `phpunit.xml` so it
+  can be supplied per environment). Point it at the Lando database service
+  (credentials come from `lando info` — by default database/user/password are all
+  `pantheon`, host `database`):
+
+  ```bash
+  lando ssh -c "env SIMPLETEST_DB=mysql://pantheon:pantheon@database/pantheon \
+    ./vendor/bin/phpunit path/to/SomeKernelTest.php"
+  ```
+
+  Kernel suites create and tear down their own prefixed tables in that database,
+  so they do not disturb your working site data.
+
+- **Functional tests** (BrowserTestBase) additionally need `SIMPLETEST_BASE_URL`
+  pointing at the in-container web server, e.g.
+  `SIMPLETEST_BASE_URL=http://appserver_nginx`. Note that the isolated functional
+  test-site install may not stand up in every local Lando setup; CI is the
+  reliable place to run them.
+
 ## Architecture Notes
 
 - **Configuration**: Managed through installation profile at `web/profiles/custom/yalesites_profile/config/sync/`
