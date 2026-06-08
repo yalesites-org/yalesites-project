@@ -109,8 +109,7 @@ class PortkeyProvider extends AiProviderClientBase implements
    * {@inheritdoc}
    */
   public function getApiDefinition(): array {
-    $definition = Yaml::parseFile($this->moduleHandler->getModule('ys_portkey')->getPath() . '/definitions/api_defaults.yml');
-    return $definition;
+    return Yaml::parseFile($this->moduleHandler->getModule('ys_portkey')->getPath() . '/definitions/api_defaults.yml');
   }
 
   /**
@@ -171,10 +170,7 @@ class PortkeyProvider extends AiProviderClientBase implements
    */
   protected function loadClient(array $model_config): void {
     $this->client = NULL;
-    $gateway_url = $model_config['gateway_url'] ?? 'https://api.portkey.ai/v1';
-    if (empty($gateway_url)) {
-      $gateway_url = 'https://api.portkey.ai/v1';
-    }
+    $gateway_url = ($model_config['gateway_url'] ?? '') ?: 'https://api.portkey.ai/v1';
 
     $client = \OpenAI::factory()
       ->withApiKey('portkey')
@@ -234,6 +230,30 @@ class PortkeyProvider extends AiProviderClientBase implements
       }
     }
     throw $lastException;
+  }
+
+  /**
+   * Translates an OpenAI client exception into the matching AI exception.
+   *
+   * @param \Exception $e
+   *   The exception thrown by the API call.
+   *
+   * @throws \Drupal\ai\Exception\AiRateLimitException
+   *   When the request was rate-limited or too large to process.
+   * @throws \Drupal\ai\Exception\AiQuotaException
+   *   When the account quota has been exhausted.
+   * @throws \Exception
+   *   The original exception when it maps to no specific AI exception.
+   */
+  protected function throwApiException(\Exception $e): never {
+    $message = $e->getMessage();
+    if (str_contains($message, 'Request too large') || str_contains($message, 'Too Many Requests')) {
+      throw new AiRateLimitException($message);
+    }
+    if (str_contains($message, 'You exceeded your current quota')) {
+      throw new AiQuotaException($message);
+    }
+    throw $e;
   }
 
   /**
@@ -317,14 +337,14 @@ class PortkeyProvider extends AiProviderClientBase implements
       unset($payload['top_p']);
     }
 
-    if (is_object($input) && method_exists($input, 'getChatTools') && $input->getChatTools()) {
+    if ($input instanceof ChatInput && $input->getChatTools()) {
       $payload['tools'] = $input->getChatTools()->renderToolsArray();
       foreach ($payload['tools'] as $key => $tool) {
         $payload['tools'][$key]['function']['strict'] = FALSE;
       }
     }
 
-    if (is_object($input) && method_exists($input, 'getChatStructuredJsonSchema') && $input->getChatStructuredJsonSchema()) {
+    if ($input instanceof ChatInput && $input->getChatStructuredJsonSchema()) {
       $payload['response_format'] = [
         'type' => 'json_schema',
         'json_schema' => $input->getChatStructuredJsonSchema(),
@@ -356,16 +376,7 @@ class PortkeyProvider extends AiProviderClientBase implements
       }
     }
     catch (\Exception $e) {
-      if (str_contains($e->getMessage(), 'Request too large')) {
-        throw new AiRateLimitException($e->getMessage());
-      }
-      if (str_contains($e->getMessage(), 'Too Many Requests')) {
-        throw new AiRateLimitException($e->getMessage());
-      }
-      if (str_contains($e->getMessage(), 'You exceeded your current quota')) {
-        throw new AiQuotaException($e->getMessage());
-      }
-      throw $e;
+      $this->throwApiException($e);
     }
 
     return new ChatOutput($message, $response, []);
@@ -398,16 +409,7 @@ class PortkeyProvider extends AiProviderClientBase implements
       );
     }
     catch (\Exception $e) {
-      if (str_contains($e->getMessage(), 'Request too large')) {
-        throw new AiRateLimitException($e->getMessage());
-      }
-      if (str_contains($e->getMessage(), 'Too Many Requests')) {
-        throw new AiRateLimitException($e->getMessage());
-      }
-      if (str_contains($e->getMessage(), 'You exceeded your current quota')) {
-        throw new AiQuotaException($e->getMessage());
-      }
-      throw $e;
+      $this->throwApiException($e);
     }
 
     return new EmbeddingsOutput($response['data'][0]['embedding'], $response, []);
