@@ -2,12 +2,14 @@
 
 /**
  * @file
- * Post update hooks for the ys_ai module.
+ * Deploy hooks for the ys_ai module.
  */
 
 use Drupal\Core\Utility\UpdateException;
 
 /**
+ * Implements hook_deploy_NAME().
+ *
  * Migrates legacy AI metatags to the native field_ai_* fields.
  *
  * The AI metadata previously stored in the ai_engine "ai_engine" metatag group
@@ -17,19 +19,23 @@ use Drupal\Core\Utility\UpdateException;
  * (the metatag group is hidden by the metatag-firehose form alter in
  * ys_ai.module).
  *
- * Runs as a post update so it executes after configuration import (drush
- * deploy), once the new fields exist. If the fields are not yet present the
- * update throws so it is retried after configuration import.
+ * Runs as a deploy hook rather than a post update so it executes *after*
+ * configuration import. In drush deploy, post updates run during the updatedb
+ * step which fires before config import, so the native fields would not yet
+ * exist; deploy hooks (drush deploy:hook) run after config import, once the
+ * fields have been created.
  */
-function ys_ai_post_update_migrate_ai_metadata(&$sandbox) {
-  // Ensure the native fields exist before migrating; otherwise this update has
-  // run before configuration import and must be retried afterwards.
+function ys_ai_deploy_10001(&$sandbox) {
+  // The native fields are imported from config sync, which has run by the time
+  // deploy hooks execute. Guard defensively: if they are somehow missing the
+  // hook fails and is retried on the next drush deploy (config import has
+  // already succeeded, so the retry will find the fields).
   $field_storage_definitions = \Drupal::service('entity_field.manager')
     ->getFieldStorageDefinitions('node');
   foreach (['field_ai_exclude', 'field_ai_description', 'field_ai_tags'] as $required) {
     if (!isset($field_storage_definitions[$required])) {
       throw new UpdateException(sprintf(
-        'The %s field does not exist yet. Import configuration (drush cim) before running this update.',
+        'The %s field does not exist after configuration import; cannot migrate AI metadata.',
         $required
       ));
     }

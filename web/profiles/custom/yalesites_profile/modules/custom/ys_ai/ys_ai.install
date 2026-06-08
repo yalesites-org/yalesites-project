@@ -1,0 +1,20 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall hooks for the ys_ai module.
+ */
+
+/**
+ * Implements hook_removed_post_updates().
+ *
+ * The ys_ai_post_update_migrate_ai_metadata post update was replaced by the
+ * deploy hook ys_ai_deploy_10001 so the migration runs after configuration
+ * import. This declaration prevents a RemovedPostUpdateNameException on
+ * environments where the original post update had already run.
+ */
+function ys_ai_removed_post_updates() {
+  return [
+    'ys_ai_post_update_migrate_ai_metadata' => '1.0.0',
+  ];
+}
