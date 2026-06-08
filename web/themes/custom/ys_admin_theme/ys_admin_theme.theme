@@ -63,6 +63,15 @@ function ys_admin_theme_form_node_form_alter(&$form, FormStateInterface $form_st
   /** @var Drupal\node\Entity\Node $node */
   $node = $node_form->getEntity();
 
+  // Demote the event "Archive" button. Prepended to run before Gin's
+  // after_build.
+  if ($node->bundle() === 'event') {
+    $form['#after_build'] = array_merge(
+      ['ys_admin_theme_demote_archive_button'],
+      $form['#after_build'] ?? []
+    );
+  }
+
   // Only run for page nodes.
   if ($node->bundle() !== 'page') {
     return;
@@ -144,4 +153,33 @@ function ys_admin_theme_book_fields_validate(&$form, FormStateInterface $form_st
       }
     }
   }
+}
+
+/**
+ * After-build: hide the "Archive" button on new nodes, else move it to kebab.
+ *
+ * @param array $form
+ *   The built form.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The current state of the form.
+ *
+ * @return array
+ *   The altered form.
+ */
+function ys_admin_theme_demote_archive_button(array $form, FormStateInterface $form_state) {
+  $is_new = $form_state->getFormObject()->getEntity()->isNew();
+
+  foreach (['actions', 'actions_top'] as $region) {
+    if (!isset($form[$region]['moderation_state_archived'])) {
+      continue;
+    }
+    if ($is_new) {
+      $form[$region]['moderation_state_archived']['#access'] = FALSE;
+    }
+    else {
+      $form[$region]['moderation_state_archived']['#gin_action_item'] = FALSE;
+    }
+  }
+
+  return $form;
 }
