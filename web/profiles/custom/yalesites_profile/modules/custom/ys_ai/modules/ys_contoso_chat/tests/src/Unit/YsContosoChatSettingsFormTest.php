@@ -104,6 +104,34 @@ class YsContosoChatSettingsFormTest extends UnitTestCase {
   }
 
   /**
+   * Submits the form as user 1 with the given provisioner and entity manager.
+   *
+   * @param \Drupal\ys_ai\Service\BeaconIndexProvisioner $provisioner
+   *   The provisioner mock with its per-test expectations.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager mock holding the server/index mocks.
+   * @param bool $enable
+   *   The submitted "enable" value.
+   */
+  protected function submitAsUserOne(BeaconIndexProvisioner $provisioner, EntityTypeManagerInterface $entity_type_manager, bool $enable): void {
+    $current_user = $this->createMock(AccountInterface::class);
+    $current_user->method('id')->willReturn(1);
+
+    $config_factory = $this->mockConfigFactory();
+    $this->buildContainer($current_user, $config_factory);
+
+    $form = new YsContosoChatSettingsForm(
+      $config_factory,
+      $this->createMock(TypedConfigManagerInterface::class),
+      $entity_type_manager,
+      $provisioner,
+    );
+
+    $form_array = [];
+    $form->submitForm($form_array, $this->submitFormState($enable));
+  }
+
+  /**
    * Builds the form with a config factory stub and a mocked current user.
    *
    * @param int $userId
@@ -245,9 +273,6 @@ class YsContosoChatSettingsFormTest extends UnitTestCase {
    * @covers ::enableBeaconStack
    */
   public function testEnableProvisionsEnablesStackAndReindexes(): void {
-    $current_user = $this->createMock(AccountInterface::class);
-    $current_user->method('id')->willReturn(1);
-
     $provisioner = $this->createMock(BeaconIndexProvisioner::class);
     $provisioner->expects($this->once())
       ->method('ensureIndexExists')
@@ -269,18 +294,7 @@ class YsContosoChatSettingsFormTest extends UnitTestCase {
       'search_api_index' => $this->mockStorage($index),
     ]);
 
-    $config_factory = $this->mockConfigFactory();
-    $this->buildContainer($current_user, $config_factory);
-
-    $form = new YsContosoChatSettingsForm(
-      $config_factory,
-      $this->createMock(TypedConfigManagerInterface::class),
-      $entity_type_manager,
-      $provisioner,
-    );
-
-    $form_array = [];
-    $form->submitForm($form_array, $this->submitFormState(TRUE));
+    $this->submitAsUserOne($provisioner, $entity_type_manager, TRUE);
   }
 
   /**
@@ -290,9 +304,6 @@ class YsContosoChatSettingsFormTest extends UnitTestCase {
    * @covers ::enableBeaconStack
    */
   public function testEnableLeavesStackDisabledWhenProvisioningFails(): void {
-    $current_user = $this->createMock(AccountInterface::class);
-    $current_user->method('id')->willReturn(1);
-
     $provisioner = $this->createMock(BeaconIndexProvisioner::class);
     $provisioner->expects($this->once())
       ->method('ensureIndexExists')
@@ -310,18 +321,7 @@ class YsContosoChatSettingsFormTest extends UnitTestCase {
       'search_api_index' => $this->mockStorage($index),
     ]);
 
-    $config_factory = $this->mockConfigFactory();
-    $this->buildContainer($current_user, $config_factory);
-
-    $form = new YsContosoChatSettingsForm(
-      $config_factory,
-      $this->createMock(TypedConfigManagerInterface::class),
-      $entity_type_manager,
-      $provisioner,
-    );
-
-    $form_array = [];
-    $form->submitForm($form_array, $this->submitFormState(TRUE));
+    $this->submitAsUserOne($provisioner, $entity_type_manager, TRUE);
   }
 
   /**
@@ -331,9 +331,6 @@ class YsContosoChatSettingsFormTest extends UnitTestCase {
    * @covers ::disableBeaconStack
    */
   public function testDisableDisablesServer(): void {
-    $current_user = $this->createMock(AccountInterface::class);
-    $current_user->method('id')->willReturn(1);
-
     $provisioner = $this->createMock(BeaconIndexProvisioner::class);
     $provisioner->expects($this->never())->method('ensureIndexExists');
 
@@ -346,18 +343,7 @@ class YsContosoChatSettingsFormTest extends UnitTestCase {
       'search_api_server' => $this->mockStorage($server),
     ]);
 
-    $config_factory = $this->mockConfigFactory();
-    $this->buildContainer($current_user, $config_factory);
-
-    $form = new YsContosoChatSettingsForm(
-      $config_factory,
-      $this->createMock(TypedConfigManagerInterface::class),
-      $entity_type_manager,
-      $provisioner,
-    );
-
-    $form_array = [];
-    $form->submitForm($form_array, $this->submitFormState(FALSE));
+    $this->submitAsUserOne($provisioner, $entity_type_manager, FALSE);
   }
 
   /**
@@ -367,9 +353,6 @@ class YsContosoChatSettingsFormTest extends UnitTestCase {
    * @covers ::enableBeaconStack
    */
   public function testEnableDoesNotResaveWhenAlreadyEnabled(): void {
-    $current_user = $this->createMock(AccountInterface::class);
-    $current_user->method('id')->willReturn(1);
-
     $provisioner = $this->createMock(BeaconIndexProvisioner::class);
     $provisioner->method('ensureIndexExists')->willReturn(BeaconIndexResult::alreadyExists('beacon-local'));
 
@@ -388,18 +371,7 @@ class YsContosoChatSettingsFormTest extends UnitTestCase {
       'search_api_index' => $this->mockStorage($index),
     ]);
 
-    $config_factory = $this->mockConfigFactory();
-    $this->buildContainer($current_user, $config_factory);
-
-    $form = new YsContosoChatSettingsForm(
-      $config_factory,
-      $this->createMock(TypedConfigManagerInterface::class),
-      $entity_type_manager,
-      $provisioner,
-    );
-
-    $form_array = [];
-    $form->submitForm($form_array, $this->submitFormState(TRUE));
+    $this->submitAsUserOne($provisioner, $entity_type_manager, TRUE);
   }
 
 }

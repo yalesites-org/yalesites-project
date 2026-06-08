@@ -59,35 +59,29 @@ class ContosoChatIntegrationPluginTest extends UnitTestCase {
   }
 
   /**
+   * Tests isTurnedOn() across enable and assistant_id combinations.
+   *
+   * @dataProvider isTurnedOnProvider
+   *
    * @covers ::isTurnedOn
    */
-  public function testIsTurnedOnWhenEnabled(): void {
-    $plugin = $this->buildPlugin(TRUE);
-    $this->assertTrue($plugin->isTurnedOn());
+  public function testIsTurnedOn($enable, string $assistantId, bool $expected): void {
+    $this->assertSame($expected, $this->buildPlugin($enable, $assistantId)->isTurnedOn());
   }
 
   /**
-   * @covers ::isTurnedOn
+   * Provides enable/assistant_id combinations and the expected on/off state.
+   *
+   * @return array
+   *   Cases of [enable, assistant_id, expected isTurnedOn()].
    */
-  public function testIsTurnedOffWhenDisabled(): void {
-    $plugin = $this->buildPlugin(FALSE);
-    $this->assertFalse($plugin->isTurnedOn());
-  }
-
-  /**
-   * @covers ::isTurnedOn
-   */
-  public function testIsTurnedOffWhenUnset(): void {
-    $plugin = $this->buildPlugin(NULL);
-    $this->assertFalse($plugin->isTurnedOn());
-  }
-
-  /**
-   * @covers ::isTurnedOn
-   */
-  public function testIsTurnedOffWhenEnabledButNoAssistantId(): void {
-    $plugin = $this->buildPlugin(TRUE, '');
-    $this->assertFalse($plugin->isTurnedOn());
+  public static function isTurnedOnProvider(): array {
+    return [
+      'enabled with assistant' => [TRUE, 'test-assistant', TRUE],
+      'disabled' => [FALSE, 'test-assistant', FALSE],
+      'unset' => [NULL, 'test-assistant', FALSE],
+      'enabled but no assistant' => [TRUE, '', FALSE],
+    ];
   }
 
   /**
