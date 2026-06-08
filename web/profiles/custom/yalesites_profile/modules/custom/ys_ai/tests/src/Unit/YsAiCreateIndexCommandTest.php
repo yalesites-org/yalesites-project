@@ -72,51 +72,34 @@ class YsAiCreateIndexCommandTest extends UnitTestCase {
   }
 
   /**
+   * Successful provisioning outcomes log success and exit successfully.
+   *
+   * @dataProvider successResultProvider
+   *
    * @covers ::createIndex
    */
-  public function testCreatedReportsSuccess(): void {
+  public function testSuccessResultsReportSuccess(BeaconIndexResult $result, array $options): void {
     $logger = $this->recordingLogger();
-    $command = $this->command(BeaconIndexResult::created('mysite-dev'), $logger);
+    $command = $this->command($result, $logger);
 
-    $this->assertSame(DrushCommands::EXIT_SUCCESS, $command->createIndex());
+    $this->assertSame(DrushCommands::EXIT_SUCCESS, $command->createIndex($options));
     $this->assertContains('success', $logger->calls);
     $this->assertNotContains('error', $logger->calls);
   }
 
   /**
-   * @covers ::createIndex
+   * Provides successful provisioning results and the options that produce them.
+   *
+   * @return array
+   *   Cases keyed by outcome, each [result, createIndex options].
    */
-  public function testExistsReportsSuccess(): void {
-    $logger = $this->recordingLogger();
-    $command = $this->command(BeaconIndexResult::alreadyExists('mysite-dev'), $logger);
-
-    $this->assertSame(DrushCommands::EXIT_SUCCESS, $command->createIndex());
-    $this->assertContains('success', $logger->calls);
-    $this->assertNotContains('error', $logger->calls);
-  }
-
-  /**
-   * @covers ::createIndex
-   */
-  public function testUpdatedReportsSuccess(): void {
-    $logger = $this->recordingLogger();
-    $command = $this->command(BeaconIndexResult::updated('mysite-dev'), $logger);
-
-    $this->assertSame(DrushCommands::EXIT_SUCCESS, $command->createIndex());
-    $this->assertContains('success', $logger->calls);
-    $this->assertNotContains('error', $logger->calls);
-  }
-
-  /**
-   * @covers ::createIndex
-   */
-  public function testRecreatedReportsSuccess(): void {
-    $logger = $this->recordingLogger();
-    $command = $this->command(BeaconIndexResult::recreated('mysite-dev'), $logger);
-
-    $this->assertSame(DrushCommands::EXIT_SUCCESS, $command->createIndex(['recreate' => TRUE]));
-    $this->assertContains('success', $logger->calls);
-    $this->assertNotContains('error', $logger->calls);
+  public static function successResultProvider(): array {
+    return [
+      'created' => [BeaconIndexResult::created('mysite-dev'), []],
+      'already exists' => [BeaconIndexResult::alreadyExists('mysite-dev'), []],
+      'updated' => [BeaconIndexResult::updated('mysite-dev'), []],
+      'recreated' => [BeaconIndexResult::recreated('mysite-dev'), ['recreate' => TRUE]],
+    ];
   }
 
   /**

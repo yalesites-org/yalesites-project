@@ -53,7 +53,6 @@ class BeaconContextualEmbeddingStrategyTest extends UnitTestCase {
 
     $this->assertSame('2023-11-14T22:13:20Z', $metadata['created']);
     $this->assertSame('2023-11-15T22:13:20Z', $metadata['changed']);
-    $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/', $metadata['created']);
     // A non-date attribute is left untouched.
     $this->assertSame('Hello', $metadata['title_1']);
   }
