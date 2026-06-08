@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\ys_portkey\Unit;
 
+use Drupal\Tests\UnitTestCase;
 use Drupal\ys_portkey\Form\PortkeyConfigForm;
-use PHPUnit\Framework\TestCase;
 
 /**
  * Tests the Portkey config form structure.
@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
  * @coversDefaultClass \Drupal\ys_portkey\Form\PortkeyConfigForm
  * @group ys_portkey
  */
-class PortkeyConfigFormTest extends TestCase {
+class PortkeyConfigFormTest extends UnitTestCase {
 
   /**
    * The form under test.

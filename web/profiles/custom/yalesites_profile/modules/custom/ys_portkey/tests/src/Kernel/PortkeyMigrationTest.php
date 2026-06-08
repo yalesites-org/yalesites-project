@@ -131,13 +131,7 @@ class PortkeyMigrationTest extends KernelTestBase {
    * Tests migration with empty model creates no entries but still cleans up.
    */
   public function testMigrationWithEmptyModel(): void {
-    $config = \Drupal::configFactory()->getEditable('ys_portkey.settings');
-    $config
-      ->set('api_key', 'some_key')
-      ->set('gateway_url', 'https://api.portkey.ai/v1')
-      ->set('model', '')
-      ->set('custom_headers', '')
-      ->save();
+    $this->setOldConfig('', 'some_key');
 
     $sandbox = [];
     ys_portkey_post_update_migrate_to_multi_instance($sandbox);
@@ -154,13 +148,7 @@ class PortkeyMigrationTest extends KernelTestBase {
    * Tests migration uses default gateway URL when none configured.
    */
   public function testMigrationDefaultGatewayUrl(): void {
-    $config = \Drupal::configFactory()->getEditable('ys_portkey.settings');
-    $config
-      ->set('api_key', 'key')
-      ->set('gateway_url', '')
-      ->set('model', 'test-model')
-      ->set('custom_headers', '')
-      ->save();
+    $this->setOldConfig('test-model', 'key', '');
 
     $sandbox = [];
     ys_portkey_post_update_migrate_to_multi_instance($sandbox);
