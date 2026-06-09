@@ -6,7 +6,6 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\ys_core\DashboardAnnouncements;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -19,11 +18,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class DashboardSettingsForm extends ConfigFormBase {
 
   /**
-   * The key/value expirable factory.
+   * The dashboard announcements service.
    *
-   * @var \Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface
+   * @var \Drupal\ys_core\DashboardAnnouncements
    */
-  protected KeyValueExpirableFactoryInterface $keyValueExpirable;
+  protected DashboardAnnouncements $announcements;
 
   /**
    * The entity type manager.
@@ -37,18 +36,18 @@ class DashboardSettingsForm extends ConfigFormBase {
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
-   * @param \Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface $key_value_expirable
-   *   The key/value expirable factory.
+   * @param \Drupal\ys_core\DashboardAnnouncements $announcements
+   *   The dashboard announcements service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    */
   final public function __construct(
     ConfigFactoryInterface $config_factory,
-    KeyValueExpirableFactoryInterface $key_value_expirable,
+    DashboardAnnouncements $announcements,
     EntityTypeManagerInterface $entity_type_manager,
   ) {
     parent::__construct($config_factory);
-    $this->keyValueExpirable = $key_value_expirable;
+    $this->announcements = $announcements;
     $this->entityTypeManager = $entity_type_manager;
   }
 
@@ -58,7 +57,7 @@ class DashboardSettingsForm extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory'),
-      $container->get('keyvalue.expirable'),
+      $container->get('ys_core.dashboard_announcements'),
       $container->get('entity_type.manager')
     );
   }
@@ -187,8 +186,7 @@ class DashboardSettingsForm extends ConfigFormBase {
     }
 
     // Drop the cached feed so the new settings take effect immediately.
-    $this->keyValueExpirable->get(DashboardAnnouncements::STORE_COLLECTION)
-      ->delete(DashboardAnnouncements::STORE_KEY);
+    $this->announcements->clearCache();
 
     parent::submitForm($form, $form_state);
   }
