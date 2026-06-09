@@ -105,7 +105,7 @@
     "drupal/twig_tweak": "3.4.2",
     "drupal/typogrify": "1.5.0",
     "drupal/upgrade_status": "4.3.10",
-    "drupal/webform": "6.3.0-beta9",
+    "drupal/webform": "6.3.0-rc1",
     "drupal/webprofiler": "10.3.1",
     "drupal/workflow_buttons": "1.0-beta7",
     "jjj/chosen": "2.2.1",
