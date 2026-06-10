@@ -12,12 +12,17 @@
   margin-block-end: 0.75rem;
 }
 
-/* Top 50/50 row: announcements (left) + resources/feedback/platform (right);
-   collapses to a single column on narrow screens. */
-.ys-dashboard__top {
+/* 50/50 grids that collapse to one column on narrow screens: the top row
+   (announcements + resources/feedback/platform) and the two-up area below
+   (Latest edits / Recent drafts). */
+.ys-dashboard__top,
+.ys-dashboard__columns {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
   gap: 2.5rem;
+}
+
+.ys-dashboard__top {
   margin-block-end: 2.5rem;
 }
 
@@ -32,13 +37,6 @@
 
 .ys-dashboard__feedback-button {
   display: inline-block;
-}
-
-/* Two-up area (Latest edits / Recent drafts) that collapses on narrow screens. */
-.ys-dashboard__columns {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
-  gap: 2.5rem;
 }
 
 .ys-dashboard__columns .ys-dashboard__section {
