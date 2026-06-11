@@ -17,7 +17,7 @@ use Drupal\Core\Session\AccountInterface;
 #[Integration(
   id: 'ys_ai_system_instructions',
   label: new TranslatableMarkup('AI System Instructions'),
-  description: new TranslatableMarkup('Manage AI system instructions with versioning and API synchronization.'),
+  description: new TranslatableMarkup("Manage the chatbot assistant's system instructions with versioning."),
 )]
 class SystemInstructionsIntegrationPlugin extends IntegrationPluginBase {
 
@@ -64,24 +64,7 @@ class SystemInstructionsIntegrationPlugin extends IntegrationPluginBase {
     $config = $this->configFactory->get('ys_ai_system_instructions.settings');
 
     // Check if system instructions are enabled.
-    if (!$config->get('system_instructions_enabled')) {
-      return FALSE;
-    }
-
-    // Verify all required API configuration is present.
-    $required_settings = [
-      'system_instructions_api_endpoint',
-      'system_instructions_web_app_name',
-      'system_instructions_api_key',
-    ];
-
-    foreach ($required_settings as $setting) {
-      if (empty($config->get($setting))) {
-        return FALSE;
-      }
-    }
-
-    return TRUE;
+    return (bool) $config->get('system_instructions_enabled');
   }
 
   /**
@@ -133,13 +116,6 @@ class SystemInstructionsIntegrationPlugin extends IntegrationPluginBase {
         ' | <strong>' . $this->t('Total versions:') . '</strong> ' .
         $stats['total_versions'] . '</p>',
       ];
-
-      if (!$current['synced']) {
-        $form['status']['sync_warning'] = [
-          '#markup' => '<div class="messages messages--warning">' .
-          $this->t('Warning: API sync issues detected') . '</div>',
-        ];
-      }
 
       $form['#actions']['manage'] = [
         '#type' => 'link',

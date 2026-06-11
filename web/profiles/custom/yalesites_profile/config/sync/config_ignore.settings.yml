@@ -2,6 +2,7 @@ _core:
   default_config_hash: UVH1aJ4b44UM-VdPVN7hNNuuVqfReJxwfVeDQH1Hvsk
 mode: simple
 ignored_config_entities:
+  - 'ai_assistant_api.ai_assistant.beacon:instructions'
   - 'ai_engine*'
   - 'ai_vdb_provider_azure_ai_search.settings:url'
   - 'cas.settings:forced_login.enabled'

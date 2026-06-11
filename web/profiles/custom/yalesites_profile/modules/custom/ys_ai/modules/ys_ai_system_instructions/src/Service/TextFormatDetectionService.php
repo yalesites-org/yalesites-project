@@ -360,68 +360,6 @@ class TextFormatDetectionService {
   }
 
   /**
-   * Escape markdown structure for safe API transmission.
-   *
-   * This preserves the original markdown formatting by escaping newlines
-   * and preserving indentation so it can be reconstructed perfectly.
-   *
-   * @param string $markdown
-   *   The markdown text to escape.
-   *
-   * @return string
-   *   The escaped markdown suitable for API transmission.
-   */
-  public function escapeMarkdownForApi(string $markdown): string {
-    $markdown = trim($markdown);
-
-    if (empty($markdown)) {
-      return '';
-    }
-
-    // Escape newlines to preserve line structure.
-    $escaped = str_replace("\n", "\\n", $markdown);
-
-    // Escape carriage returns if present.
-    $escaped = str_replace("\r", "\\r", $escaped);
-
-    // Escape tab characters to preserve indentation.
-    $escaped = str_replace("\t", "\\t", $escaped);
-
-    return $escaped;
-  }
-
-  /**
-   * Unescape markdown structure after API retrieval.
-   *
-   * This reconstructs the original markdown formatting by unescaping
-   * newlines and restoring proper structure.
-   *
-   * @param string $escaped_markdown
-   *   The escaped markdown from the API.
-   *
-   * @return string
-   *   The unescaped markdown with proper formatting.
-   */
-  public function unescapeMarkdownFromApi(string $escaped_markdown): string {
-    $escaped_markdown = trim($escaped_markdown);
-
-    if (empty($escaped_markdown)) {
-      return '';
-    }
-
-    // Unescape newlines to restore line structure.
-    $unescaped = str_replace("\\n", "\n", $escaped_markdown);
-
-    // Unescape carriage returns if present.
-    $unescaped = str_replace("\\r", "\r", $unescaped);
-
-    // Unescape tab characters to restore indentation.
-    $unescaped = str_replace("\\t", "\t", $unescaped);
-
-    return $unescaped;
-  }
-
-  /**
    * Format markdown that has been properly unescaped from API.
    *
    * This is a simpler version that works with properly structured markdown

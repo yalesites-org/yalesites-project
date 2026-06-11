@@ -252,90 +252,6 @@ MARKDOWN;
   }
 
   /**
-   * Tests escapeMarkdownForApi() preserves markdown structure.
-   *
-   * @covers ::escapeMarkdownForApi
-   */
-  public function testEscapeMarkdownForApi() {
-    $markdown = "# Header\n\n- Item one\n- Item two";
-
-    $escaped = $this->service->escapeMarkdownForApi($markdown);
-
-    // Should escape newlines.
-    $this->assertStringContainsString('\\n', $escaped);
-    $this->assertStringNotContainsString("\n", $escaped);
-    $this->assertStringContainsString('# Header', $escaped);
-  }
-
-  /**
-   * Tests escapeMarkdownForApi() with empty text.
-   *
-   * @covers ::escapeMarkdownForApi
-   */
-  public function testEscapeMarkdownForApiWithEmptyText() {
-    $result = $this->service->escapeMarkdownForApi('');
-
-    $this->assertEquals('', $result);
-  }
-
-  /**
-   * Tests escapeMarkdownForApi() preserves tabs and carriage returns.
-   *
-   * @covers ::escapeMarkdownForApi
-   */
-  public function testEscapeMarkdownForApiWithSpecialCharacters() {
-    $markdown = "Line one\nLine two\rLine three\tIndented";
-
-    $escaped = $this->service->escapeMarkdownForApi($markdown);
-
-    $this->assertStringContainsString('\\n', $escaped);
-    $this->assertStringContainsString('\\r', $escaped);
-    $this->assertStringContainsString('\\t', $escaped);
-  }
-
-  /**
-   * Tests unescapeMarkdownFromApi() restores original structure.
-   *
-   * @covers ::unescapeMarkdownFromApi
-   */
-  public function testUnescapeMarkdownFromApi() {
-    $escaped = "# Header\\n\\n- Item one\\n- Item two";
-
-    $unescaped = $this->service->unescapeMarkdownFromApi($escaped);
-
-    // Should restore newlines.
-    $this->assertStringContainsString("\n", $unescaped);
-    $this->assertStringNotContainsString('\\n', $unescaped);
-    $this->assertStringContainsString('# Header', $unescaped);
-  }
-
-  /**
-   * Tests unescapeMarkdownFromApi() with empty text.
-   *
-   * @covers ::unescapeMarkdownFromApi
-   */
-  public function testUnescapeMarkdownFromApiWithEmptyText() {
-    $result = $this->service->unescapeMarkdownFromApi('');
-
-    $this->assertEquals('', $result);
-  }
-
-  /**
-   * Tests roundtrip escape/unescape preserves content.
-   *
-   * @covers ::escapeMarkdownForApi
-   * @covers ::unescapeMarkdownFromApi
-   */
-  public function testEscapeUnescapeRoundtrip() {
-    $original = "# Project\n\n## Features\n\n- Feature one\n- Feature two\n\nTabs:\there";
-
-    $escaped = $this->service->escapeMarkdownForApi($original);
-    $restored = $this->service->unescapeMarkdownFromApi($escaped);
-
-    $this->assertEquals($original, $restored);
-  }
-
-  /**
    * Tests formatUnescapedMarkdown() returns trimmed text.
    *
    * @covers ::formatUnescapedMarkdown
@@ -487,25 +403,6 @@ MARKDOWN;
   }
 
   /**
-   * Tests integration of escape, unescape, and format.
-   *
-   * @covers ::escapeMarkdownForApi
-   * @covers ::unescapeMarkdownFromApi
-   * @covers ::formatUnescapedMarkdown
-   */
-  public function testFullWorkflowIntegration() {
-    $original = "# Project Title\n\n## Description\n\n- Feature A\n- Feature B";
-
-    // Simulate API workflow.
-    $escaped = $this->service->escapeMarkdownForApi($original);
-    $unescaped = $this->service->unescapeMarkdownFromApi($escaped);
-    $formatted = $this->service->formatUnescapedMarkdown($unescaped);
-
-    // Final result should match original (trimmed).
-    $this->assertEquals(trim($original), $formatted);
-  }
-
-  /**
    * Tests that removed methods are no longer present.
    *
    * Verifies the refactoring removed unused methods.
@@ -526,6 +423,9 @@ MARKDOWN;
       'extractDirectTextFromNode',
       'extractTextFromNode',
       'formatMarkdownTextFallback',
+      // Removed when the legacy Azure API path was retired.
+      'escapeMarkdownForApi',
+      'unescapeMarkdownFromApi',
     ];
 
     foreach ($removed_methods as $removed_method) {

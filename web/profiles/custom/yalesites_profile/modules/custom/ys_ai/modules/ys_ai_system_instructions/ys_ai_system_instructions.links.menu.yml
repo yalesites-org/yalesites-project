@@ -1,7 +1,7 @@
 # System Instructions settings
 ys_ai_system_instructions.settings:
   title: 'System Instructions Settings'
-  description: 'Configure system instructions API and limits'
+  description: 'Configure system instructions limits'
   route_name: ys_ai_system_instructions.settings
   parent: ai_engine.admin
   weight: 9

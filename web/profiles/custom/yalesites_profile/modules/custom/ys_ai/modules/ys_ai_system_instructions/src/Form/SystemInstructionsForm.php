@@ -84,104 +84,23 @@ class SystemInstructionsForm extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form['#attached']['library'][] = 'ys_ai_system_instructions/system_instructions';
 
-    // Create a wrapper for AJAX updates.
-    $form['form_wrapper'] = [
-      '#type' => 'container',
-      '#attributes' => ['id' => 'system-instructions-form-wrapper'],
+    $current = $this->instructionsManager->getCurrentInstructions();
+    $stats = $this->instructionsManager->getVersionStats();
+
+    // Explain what these instructions are and what they control. This scopes
+    // the form to this site's specific chatbot assistant so admins understand
+    // it is not a global/platform-wide override.
+    $form['intro'] = [
+      '#type' => 'item',
+      '#markup' => $this->t("<p><strong>System instructions</strong> are the standing guidance that shapes how this site's chatbot assistant behaves &mdash; its role, tone, and the guardrails it follows on every conversation. They apply only to the assistant powering this site's chatbot, not to any platform-wide or global behavior. Saving an update here makes it the active instruction the live chatbot uses.</p>"),
     ];
 
-    // Check if we need to show loading state.
-    // Show loading only on initial page load, not on AJAX rebuilds.
-    $show_loading = $form_state->get('show_loading');
-    $refreshed = $form_state->get('refreshed');
-
-    if ($show_loading === NULL && !$refreshed) {
-      // First time loading the form - show loading state.
-      $show_loading = TRUE;
-      $form_state->set('show_loading', TRUE);
-    }
-    else {
-      // Already refreshed or explicitly set to FALSE.
-      $show_loading = FALSE;
-    }
-
-    if ($show_loading) {
-      $form['form_wrapper']['loading'] = [
-        '#type' => 'container',
-        '#attributes' => ['class' => ['system-instructions-loading']],
-      ];
-
-      $form['form_wrapper']['loading']['spinner'] = [
-        '#type' => 'html_tag',
-        '#tag' => 'div',
-        '#attributes' => ['class' => ['ajax-progress', 'ajax-progress-throbber']],
-        '#value' => '<div class="throbber">&nbsp;</div>',
-      ];
-
-      $form['form_wrapper']['loading']['message'] = [
-        '#markup' => '<div class="message">' . $this->t('Syncing system instructions, please wait...') . '</div>',
-      ];
-
-      // Add auto-refresh after a short delay.
-      $form['form_wrapper']['refresh'] = [
-        '#type' => 'submit',
-        '#value' => $this->t('Loading...'),
-        '#ajax' => [
-          'callback' => '::ajaxRefreshForm',
-          'wrapper' => 'system-instructions-form-wrapper',
-          'progress' => [
-            'type' => 'none',
-          ],
-        ],
-        '#attributes' => [
-          'style' => 'display: none;',
-          'id' => 'system-instructions-refresh-btn',
-        ],
-        '#submit' => ['::ajaxRefreshSubmit'],
-        '#limit_validation_errors' => [],
-      ];
-
-      // Use JavaScript to auto-trigger the refresh.
-      $form['#attached']['drupalSettings']['ysAiSystemInstructions']['autoRefresh'] = TRUE;
-
-      return $form;
-    }
-
-    // Get current instructions and sync status.
-    try {
-      $current = $this->instructionsManager->getCurrentInstructions();
-      $stats = $this->instructionsManager->getVersionStats();
-    }
-    catch (\Exception $e) {
-      // If an unexpected error occurs, fall back to local version.
-      // The API service already handles known errors gracefully, but catch
-      // any unexpected exceptions here.
-      $active = $this->instructionsManager->getStorageService()->getActiveInstructions();
-      $current = [
-        'instructions' => $active ? $active['instructions'] : '',
-        'version' => $active ? (int) $active['version'] : 0,
-        'synced' => FALSE,
-        'sync_error' => 'Unable to sync with API. Using local version.',
-      ];
-      $stats = $this->instructionsManager->getVersionStats();
-    }
-
-    // Display sync status and version info.
-    $form['form_wrapper']['status'] = [
+    $form['status'] = [
       '#type' => 'container',
       '#attributes' => ['class' => ['system-instructions-status']],
     ];
 
-    if (!$current['synced']) {
-      $form['form_wrapper']['status']['sync_warning'] = [
-        '#type' => 'item',
-        '#markup' => $this->t('<div class="messages messages--warning">Warning: Could not sync system instructions: @error</div>', [
-          '@error' => $current['sync_error'],
-        ]),
-      ];
-    }
-
-    $form['form_wrapper']['status']['info'] = [
+    $form['status']['info'] = [
       '#type' => 'item',
       '#markup' => $this->t('<p><strong>Current version:</strong> @version | <strong>Total versions:</strong> @total | <a href="@history_url">View version history</a></p>', [
         '@version' => $current['version'] ?: $this->t('None'),
@@ -191,10 +110,10 @@ class SystemInstructionsForm extends FormBase {
     ];
 
     $max_length = $this->getMaxInstructionsLength();
-    $form['form_wrapper']['instructions'] = [
+    $form['instructions'] = [
       '#type' => 'textarea',
       '#title' => $this->t('System Instructions'),
-      '#description' => '<span id="instructions-character-count" class="character-count">' . $this->t('Content recommended length set to @max characters.', ['@max' => number_format($max_length)]) . '</span>',
+      '#description' => $this->t("Describe the assistant's purpose, scope, tone, and any limits it should respect. This text is sent to the model with every chat, so clear, specific guidance produces more consistent answers.") . ' <span id="instructions-character-count" class="character-count">' . $this->t('Content recommended length set to @max characters.', ['@max' => number_format($max_length)]) . '</span>',
       '#default_value' => $current['instructions'],
       '#rows' => 15,
       '#maxlength' => NULL,
@@ -206,30 +125,21 @@ class SystemInstructionsForm extends FormBase {
       '#required' => TRUE,
     ];
 
-    $form['form_wrapper']['notes'] = [
+    $form['notes'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Version Notes'),
       '#description' => $this->t('Optional notes about this version (e.g., "Updated for new features", "Fixed typo").'),
       '#maxlength' => 255,
     ];
 
-    $form['form_wrapper']['actions'] = [
+    $form['actions'] = [
       '#type' => 'actions',
     ];
 
-    $form['form_wrapper']['actions']['submit'] = [
+    $form['actions']['submit'] = [
       '#type' => 'submit',
-      '#value' => $this->t('Save and Sync Instructions'),
+      '#value' => $this->t('Save Instructions'),
       '#button_type' => 'primary',
-    ];
-
-    $form['form_wrapper']['actions']['sync'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Sync'),
-      '#submit' => ['::syncFromApi'],
-      '#attributes' => [
-        'title' => $this->t('Perform a manual sync'),
-      ],
     ];
 
     // Add JavaScript for character counting.
@@ -245,17 +155,6 @@ class SystemInstructionsForm extends FormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    // Skip validation during AJAX refresh.
-    $triggering_element = $form_state->getTriggeringElement();
-    if ($triggering_element && isset($triggering_element['#id']) && $triggering_element['#id'] === 'system-instructions-refresh-btn') {
-      return;
-    }
-
-    // Skip validation if we're still in loading state.
-    if ($form_state->get('show_loading')) {
-      return;
-    }
-
     $instructions = $form_state->getValue('instructions');
     $instructions = $instructions ? trim($instructions) : '';
 
@@ -288,52 +187,6 @@ class SystemInstructionsForm extends FormBase {
     else {
       $this->messenger()->addError($result['message']);
     }
-  }
-
-  /**
-   * Submit handler for sync from API.
-   */
-  public function syncFromApi(array &$form, FormStateInterface $form_state) {
-    $result = $this->instructionsManager->syncFromApi();
-
-    if ($result['success']) {
-      $this->messenger()->addMessage($result['message']);
-    }
-    else {
-      $this->messenger()->addError($result['message']);
-    }
-  }
-
-  /**
-   * Submit handler for force sync from API.
-   */
-  public function forceSyncFromApi(array &$form, FormStateInterface $form_state) {
-    $result = $this->instructionsManager->syncFromApi(TRUE);
-
-    if ($result['success']) {
-      $this->messenger()->addMessage($result['message']);
-    }
-    else {
-      $this->messenger()->addError($result['message']);
-    }
-  }
-
-  /**
-   * Submit handler for the AJAX refresh.
-   */
-  public function ajaxRefreshSubmit(array &$form, FormStateInterface $form_state) {
-    // Clear the loading state and rebuild the form.
-    $form_state->set('show_loading', FALSE);
-    $form_state->set('refreshed', TRUE);
-    $form_state->setRebuild();
-  }
-
-  /**
-   * AJAX callback to refresh the form after loading.
-   */
-  public function ajaxRefreshForm(array &$form, FormStateInterface $form_state) {
-    // Return the updated wrapper.
-    return $form['form_wrapper'];
   }
 
 }

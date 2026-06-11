@@ -2,25 +2,13 @@
 
 namespace Drupal\ys_ai_system_instructions\Service;
 
-use Drupal\Component\Datetime\TimeInterface;
-use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
  * Service for orchestrating system instructions management.
  */
 class SystemInstructionsManagerService {
-
-  use StringTranslationTrait;
-
-  /**
-   * The API service.
-   *
-   * @var \Drupal\ys_ai_system_instructions\Service\SystemInstructionsApiService
-   */
-  protected $apiService;
 
   /**
    * The storage service.
@@ -37,20 +25,6 @@ class SystemInstructionsManagerService {
   protected $logger;
 
   /**
-   * The key-value store for caching.
-   *
-   * @var \Drupal\Core\KeyValueStore\KeyValueStoreInterface
-   */
-  protected $keyValueStore;
-
-  /**
-   * The time service.
-   *
-   * @var \Drupal\Component\Datetime\TimeInterface
-   */
-  protected $time;
-
-  /**
    * The text format detection service.
    *
    * @var \Drupal\ys_ai_system_instructions\Service\TextFormatDetectionService
@@ -65,133 +39,36 @@ class SystemInstructionsManagerService {
   protected $currentUser;
 
   /**
-   * API sync cooldown period in seconds.
+   * The assistant writer.
+   *
+   * @var \Drupal\ys_ai_system_instructions\Service\SystemInstructionsAssistantWriter
    */
-  const API_SYNC_COOLDOWN = 10;
+  protected $assistantWriter;
 
   /**
    * Constructs a SystemInstructionsManagerService.
    *
-   * @param \Drupal\ys_ai_system_instructions\Service\SystemInstructionsApiService $api_service
-   *   The API service.
    * @param \Drupal\ys_ai_system_instructions\Service\SystemInstructionsStorageService $storage_service
    *   The storage service.
    * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
    *   The logger factory.
-   * @param \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $key_value_factory
-   *   The key-value store factory.
-   * @param \Drupal\Component\Datetime\TimeInterface $time
-   *   The time service.
    * @param \Drupal\ys_ai_system_instructions\Service\TextFormatDetectionService $text_format_detection
    *   The text format detection service.
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
    *   The current user.
+   * @param \Drupal\ys_ai_system_instructions\Service\SystemInstructionsAssistantWriter $assistant_writer
+   *   The assistant writer.
    */
-  public function __construct(SystemInstructionsApiService $api_service, SystemInstructionsStorageService $storage_service, LoggerChannelFactoryInterface $logger_factory, KeyValueFactoryInterface $key_value_factory, TimeInterface $time, TextFormatDetectionService $text_format_detection, AccountProxyInterface $current_user) {
-    $this->apiService = $api_service;
+  public function __construct(SystemInstructionsStorageService $storage_service, LoggerChannelFactoryInterface $logger_factory, TextFormatDetectionService $text_format_detection, AccountProxyInterface $current_user, SystemInstructionsAssistantWriter $assistant_writer) {
     $this->storageService = $storage_service;
     $this->logger = $logger_factory->get('ys_ai_system_instructions');
-    $this->keyValueStore = $key_value_factory->get('ys_ai_system_instructions');
-    $this->time = $time;
     $this->textFormatDetection = $text_format_detection;
     $this->currentUser = $current_user;
+    $this->assistantWriter = $assistant_writer;
   }
 
   /**
-   * Sync system instructions from API.
-   *
-   * This fetches the latest instructions from the API and creates a new
-   * version if they differ from the current active version. Includes a
-   * cooldown period to prevent excessive API calls.
-   *
-   * @param bool $force
-   *   Whether to force sync ignoring the cooldown period.
-   *
-   * @return array
-   *   Array with 'success' (bool), 'message' (string), 'version' (int).
-   */
-  public function syncFromApi(bool $force = FALSE): array {
-    // Check cooldown period unless forced.
-    if (!$force) {
-      $last_sync_time = $this->keyValueStore->get('last_api_sync_time', 0);
-      $current_time = $this->time->getRequestTime();
-      $time_since_last_sync = $current_time - $last_sync_time;
-
-      if ($time_since_last_sync < self::API_SYNC_COOLDOWN) {
-        $remaining_cooldown = self::API_SYNC_COOLDOWN - $time_since_last_sync;
-        return [
-          'success' => TRUE,
-          'local_success' => TRUE,
-          'api_success' => TRUE,
-          'skipped' => TRUE,
-          'message' => $this->t('API sync skipped. Please wait @seconds more seconds before syncing again.', [
-            '@seconds' => $remaining_cooldown,
-          ]),
-          'version' => $this->storageService->getActiveInstructions()['version'] ?? NULL,
-        ];
-      }
-    }
-
-    // Record the sync attempt time.
-    $this->keyValueStore->set('last_api_sync_time', $this->time->getRequestTime());
-
-    $api_result = $this->apiService->getSystemInstructions();
-
-    if (!$api_result['success']) {
-      // Log the error but don't fail the entire operation.
-      $this->logger->warning('API sync failed: @error', ['@error' => $api_result['error']]);
-
-      return [
-        'success' => FALSE,
-        'local_success' => TRUE,
-        'api_success' => FALSE,
-        'message' => 'Could not sync with API: ' . $api_result['error'] . ' (using local version)',
-        'api_error' => $api_result['error'],
-        'version' => $this->storageService->getActiveInstructions()['version'] ?? NULL,
-      ];
-    }
-
-    $api_instructions = $api_result['data'];
-
-    // Unescape and format the API instructions to restore proper structure.
-    $unescaped_instructions = $this->textFormatDetection->unescapeMarkdownFromApi($api_instructions);
-    $formatted_instructions = $this->textFormatDetection->formatUnescapedMarkdown($unescaped_instructions);
-
-    // Check if instructions differ from current active version.
-    if (!$this->storageService->areInstructionsDifferent($formatted_instructions)) {
-      return [
-        'success' => TRUE,
-        'local_success' => TRUE,
-        'api_success' => TRUE,
-        'message' => 'Instructions are already up to date.',
-        'version' => $this->storageService->getActiveInstructions()['version'] ?? NULL,
-      ];
-    }
-    $new_version = $this->storageService->createVersion(
-      $formatted_instructions,
-      'Synced from API',
-      1
-    );
-
-    $this->logger->info('System instructions synced from API. New version: @version', [
-      '@version' => $new_version,
-      'action' => 'sync_from_api',
-      'instructions_length' => strlen($formatted_instructions),
-      'created_by' => 1,
-      'source' => 'api_sync',
-    ]);
-
-    return [
-      'success' => TRUE,
-      'local_success' => TRUE,
-      'api_success' => TRUE,
-      'message' => 'Instructions synced successfully. New version: ' . $new_version,
-      'version' => $new_version,
-    ];
-  }
-
-  /**
-   * Save system instructions both locally and to API.
+   * Save system instructions and push them to the chatbot assistant.
    *
    * @param string $instructions
    *   The instructions to save.
@@ -226,8 +103,6 @@ class SystemInstructionsManagerService {
 
       return [
         'success' => TRUE,
-        'local_success' => TRUE,
-        'api_success' => TRUE,
         'message' => 'No changes detected. Instructions not saved.',
         'version' => $old_version,
       ];
@@ -245,15 +120,10 @@ class SystemInstructionsManagerService {
       'notes' => $notes,
     ]);
 
-    // Escape markdown for API transmission to preserve formatting.
-    $escaped_instructions = $this->textFormatDetection->escapeMarkdownForApi($instructions);
-
-    // Try to push to API.
-    $api_result = $this->apiService->setSystemInstructions($escaped_instructions);
-
-    if (!$api_result['success']) {
-      $this->logger->error('Failed to save system instructions to API: @error', [
-        '@error' => $api_result['error'],
+    // Push the active instructions to the chatbot's AI Assistant so the live
+    // chatbot uses them at runtime.
+    if (!$this->assistantWriter->writeInstructions($instructions)) {
+      $this->logger->error('Failed to update chatbot assistant with system instructions.', [
         'user_id' => $user_id,
         'user_name' => $user_name,
         'new_version' => $new_version,
@@ -262,10 +132,7 @@ class SystemInstructionsManagerService {
 
       return [
         'success' => FALSE,
-        'local_success' => TRUE,
-        'api_success' => FALSE,
-        'message' => 'Local version saved but API update failed: ' . $api_result['error'],
-        'api_error' => $api_result['error'],
+        'message' => 'Local version saved but the chatbot assistant could not be updated.',
         'version' => $new_version,
       ];
     }
@@ -281,24 +148,21 @@ class SystemInstructionsManagerService {
 
     return [
       'success' => TRUE,
-      'local_success' => TRUE,
-      'api_success' => TRUE,
       'message' => 'Instructions saved successfully. Version: ' . $new_version,
       'version' => $new_version,
     ];
   }
 
   /**
-   * Get current system instructions with API sync check.
-   *
-   * This method first tries to sync from the API, then returns the active
-   * instructions. If API sync fails, it returns the local active version.
+   * Get the current active system instructions.
    *
    * @return array
-   *   Array with 'instructions', 'version', 'synced', 'sync_error' keys.
+   *   Array with 'instructions' and 'version' keys.
    */
   public function getCurrentInstructions(): array {
-    $sync_result = $this->syncFromApi();
+    // Seed the first version from the chatbot assistant so existing/default
+    // instructions are never lost and the form is never blank.
+    $this->seedFromAssistantIfEmpty();
 
     $active = $this->storageService->getActiveInstructions();
 
@@ -306,21 +170,45 @@ class SystemInstructionsManagerService {
       return [
         'instructions' => '',
         'version' => 0,
-        'synced' => $sync_result['success'],
-        'sync_error' => $sync_result['success'] ? '' : $sync_result['message'],
       ];
     }
 
     return [
       'instructions' => $this->textFormatDetection->formatText($active['instructions']),
       'version' => (int) $active['version'],
-      'synced' => $sync_result['success'],
-      'sync_error' => $sync_result['success'] ? '' : $sync_result['message'],
     ];
   }
 
   /**
-   * Revert to a previous version and sync to API.
+   * Seed the first version from the chatbot assistant when none exists.
+   *
+   * On first use there are no local versions, but the chatbot's AI Assistant
+   * already holds instructions (an admin's prior value or the shipped default).
+   * Importing them as version 1 migrates that content without loss and keeps
+   * the editing form from showing up empty. The assistant already holds this
+   * text, so no write-back to the assistant is performed.
+   */
+  protected function seedFromAssistantIfEmpty(): void {
+    if ($this->storageService->getActiveInstructions()) {
+      return;
+    }
+
+    $assistant_instructions = $this->assistantWriter->readInstructions();
+    if (empty(trim((string) $assistant_instructions))) {
+      return;
+    }
+
+    $version = $this->storageService->createVersion($assistant_instructions, 'Imported from Beacon assistant');
+
+    $this->logger->info('Seeded system instructions version @version from the chatbot assistant.', [
+      '@version' => $version,
+      'action' => 'seed_from_assistant',
+      'instructions_length' => strlen($assistant_instructions),
+    ]);
+  }
+
+  /**
+   * Revert to a previous version and push it to the chatbot assistant.
    *
    * @param int $version
    *   The version number to revert to.
@@ -371,15 +259,10 @@ class SystemInstructionsManagerService {
       'instructions_length' => $instructions_length,
     ]);
 
-    // Escape markdown for API transmission to preserve formatting.
-    $escaped_instructions = $this->textFormatDetection->escapeMarkdownForApi($target_version['instructions']);
-
-    // Push to API.
-    $api_result = $this->apiService->setSystemInstructions($escaped_instructions);
-
-    if (!$api_result['success']) {
-      $this->logger->error('Failed to revert system instructions in API: @error', [
-        '@error' => $api_result['error'],
+    // Push the reverted instructions to the chatbot's AI Assistant so the live
+    // chatbot uses them at runtime.
+    if (!$this->assistantWriter->writeInstructions($target_version['instructions'])) {
+      $this->logger->error('Failed to update chatbot assistant when reverting system instructions.', [
         'user_id' => $user_id,
         'user_name' => $user_name,
         'target_version' => $version,
@@ -388,7 +271,7 @@ class SystemInstructionsManagerService {
 
       return [
         'success' => FALSE,
-        'message' => 'Local version reverted but API update failed: ' . $api_result['error'],
+        'message' => 'Local version reverted but the chatbot assistant could not be updated.',
       ];
     }
 

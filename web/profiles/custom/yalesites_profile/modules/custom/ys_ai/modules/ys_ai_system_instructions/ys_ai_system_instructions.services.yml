@@ -1,8 +1,4 @@
 services:
-  ys_ai_system_instructions.api:
-    class: Drupal\ys_ai_system_instructions\Service\SystemInstructionsApiService
-    arguments: ['@http_client', '@config.factory', '@key.repository', '@logger.factory']
-
   ys_ai_system_instructions.storage:
     class: Drupal\ys_ai_system_instructions\Service\SystemInstructionsStorageService
     arguments: ['@database', '@current_user', '@datetime.time', '@ys_ai_system_instructions.text_format_detection']
@@ -10,9 +6,13 @@ services:
   ys_ai_system_instructions.text_format_detection:
     class: Drupal\ys_ai_system_instructions\Service\TextFormatDetectionService
 
+  ys_ai_system_instructions.assistant_writer:
+    class: Drupal\ys_ai_system_instructions\Service\SystemInstructionsAssistantWriter
+    arguments: ['@entity_type.manager', '@config.factory', '@logger.factory']
+
   ys_ai_system_instructions.manager:
     class: Drupal\ys_ai_system_instructions\Service\SystemInstructionsManagerService
-    arguments: ['@ys_ai_system_instructions.api', '@ys_ai_system_instructions.storage', '@logger.factory', '@keyvalue', '@datetime.time', '@ys_ai_system_instructions.text_format_detection', '@current_user']
+    arguments: ['@ys_ai_system_instructions.storage', '@logger.factory', '@ys_ai_system_instructions.text_format_detection', '@current_user', '@ys_ai_system_instructions.assistant_writer']
 
   ys_ai_system_instructions.access_check:
     class: Drupal\ys_ai_system_instructions\Access\SystemInstructionsAccessCheck
