@@ -15,7 +15,13 @@ services:
 
   ys_ai.beacon_index_provisioner:
     class: Drupal\ys_ai\Service\BeaconIndexProvisioner
-    arguments: ['@config.factory', '@key.repository', '@azure_ai_search.api', '@logger.channel.ys_ai']
+    # The Azure client is optional (@?) so the service container can compile
+    # when the Azure AI Search module is not yet enabled. Without this, a
+    # first-time deploy that enables the module via config import cannot even
+    # bootstrap drush (the drush.services.yml command depends on this service),
+    # so `drush deploy` fails before `cim` can enable the module. The
+    # provisioner guards against a null client at runtime.
+    arguments: ['@config.factory', '@key.repository', '@?azure_ai_search.api', '@logger.channel.ys_ai']
 
   ys_ai.beacon_server_config_subscriber:
     class: Drupal\ys_ai\EventSubscriber\BeaconServerConfigSubscriber

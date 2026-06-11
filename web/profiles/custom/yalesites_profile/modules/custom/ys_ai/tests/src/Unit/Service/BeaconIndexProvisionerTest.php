@@ -194,6 +194,26 @@ class BeaconIndexProvisionerTest extends UnitTestCase {
   }
 
   /**
+   * Provisioning fails cleanly when the Azure provider is unavailable.
+   *
+   * The Azure client is optional so drush can bootstrap before the Azure AI
+   * Search module is enabled.
+   *
+   * @covers ::ensureIndexExists
+   */
+  public function testFailsWhenAzureProviderUnavailable(): void {
+    $result = (new BeaconIndexProvisioner(
+      $this->configFactory(self::VALID_BACKEND, 'https://x.search.windows.net', 'azure_key'),
+      $this->keyRepository('secret'),
+      NULL,
+      $this->logger
+    ))->ensureIndexExists();
+
+    $this->assertSame(BeaconIndexResult::FAILED, $result->getStatus());
+    $this->assertStringContainsString('not available', $result->getMessage());
+  }
+
+  /**
    * @covers ::ensureIndexExists
    */
   public function testFailsWhenIndexNameMissing(): void {

@@ -43,15 +43,16 @@ class BeaconIndexProvisioner {
    *   index name).
    * @param \Drupal\key\KeyRepositoryInterface $keyRepository
    *   The key repository, used to resolve the Azure API key value.
-   * @param \Drupal\ai_vdb_provider_azure_ai_search\AzureAiSearch $azureClient
-   *   The Azure AI Search API client.
+   * @param \Drupal\ai_vdb_provider_azure_ai_search\AzureAiSearch|null $azureClient
+   *   The Azure AI Search API client, or NULL when the Azure AI Search module
+   *   is not enabled (see the optional dependency in ys_ai.services.yml).
    * @param \Psr\Log\LoggerInterface $logger
    *   The ys_ai logger channel.
    */
   public function __construct(
     protected ConfigFactoryInterface $configFactory,
     protected KeyRepositoryInterface $keyRepository,
-    protected AzureAiSearch $azureClient,
+    protected ?AzureAiSearch $azureClient,
     protected LoggerInterface $logger,
   ) {}
 
@@ -76,6 +77,10 @@ class BeaconIndexProvisioner {
    *   (with a reason).
    */
   public function ensureIndexExists(bool $force = FALSE, bool $recreate = FALSE): BeaconIndexResult {
+    if ($this->azureClient === NULL) {
+      return BeaconIndexResult::failed('The Azure AI Search provider is not available.');
+    }
+
     $backend_config = $this->configFactory->get(self::SERVER_CONFIG)->get('backend_config');
     if (empty($backend_config)) {
       return BeaconIndexResult::failed('Beacon search server is not configured.');
