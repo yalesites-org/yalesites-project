@@ -1,0 +1,112 @@
+uuid: ac394444-a9a6-482b-9540-37ff878fb9bd
+langcode: en
+status: true
+dependencies:
+  config:
+    - search_api.server.ys_beacon
+  module:
+    - media
+    - node
+    - search_api
+    - ys_beacon
+id: ys_beacon
+name: 'Beacon Content Index'
+description: 'Content indexed into the Beacon vector database for AI retrieval. Disabled automatically until the site configures an Azure index name.'
+read_only: false
+field_settings:
+  ai_description:
+    label: 'AI Description'
+    property_path: ys_beacon_ai_description
+    type: string
+  ai_tags:
+    label: 'AI Tags'
+    property_path: ys_beacon_ai_tags
+    type: string
+  media_name:
+    label: 'Media name'
+    datasource_id: 'entity:media'
+    property_path: name
+    type: string
+    dependencies:
+      module:
+        - media
+  rendered_item:
+    label: 'Rendered HTML output'
+    property_path: rendered_item
+    type: text
+    configuration:
+      roles:
+        - anonymous
+      view_mode:
+        'entity:node':
+          event: default
+          page: default
+          post: default
+          profile: default
+          resource: default
+        'entity:media':
+          background_video: default
+          document: default
+          embed: default
+          image: default
+          video: default
+  title:
+    label: Title
+    datasource_id: 'entity:node'
+    property_path: title
+    type: string
+    dependencies:
+      module:
+        - node
+  url:
+    label: URI
+    property_path: search_api_url
+    type: string
+    configuration:
+      absolute: true
+datasource_settings:
+  'entity:media':
+    bundles:
+      default: false
+      selected: {  }
+    languages:
+      default: true
+      selected: {  }
+  'entity:node':
+    bundles:
+      default: true
+      selected: {  }
+    languages:
+      default: true
+      selected: {  }
+processor_settings:
+  add_url: {  }
+  entity_status: {  }
+  html_filter:
+    weights:
+      preprocess_index: -49
+      preprocess_query: -48
+    all_fields: false
+    fields:
+      - rendered_item
+    title: true
+    alt: true
+    tags:
+      b: 2.0
+      em: 1.0
+      h1: 5.0
+      h2: 3.0
+      h3: 2.0
+      strong: 2.0
+      u: 1.0
+  rendered_item: {  }
+  ys_beacon_ai_metadata: {  }
+  ys_beacon_exclude_ai_disabled: {  }
+tracker_settings:
+  default:
+    indexing_order: fifo
+options:
+  cron_limit: 20
+  index_directly: false
+  track_changes_in_references: true
+server: ys_beacon

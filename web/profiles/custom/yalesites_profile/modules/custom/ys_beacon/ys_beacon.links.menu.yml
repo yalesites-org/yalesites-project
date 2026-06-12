@@ -1,0 +1,20 @@
+ys_beacon.admin:
+  title: 'YaleSites Beacon'
+  description: 'Beacon AI chat configuration and management'
+  route_name: ys_beacon.settings
+  parent: ys_integrations.admin_yalesites_integrations
+  weight: 0
+
+ys_beacon.settings:
+  title: 'Beacon settings'
+  description: 'Configure Beacon chat display settings'
+  route_name: ys_beacon.settings
+  parent: ys_beacon.admin
+  weight: 0
+
+ys_beacon.admin_settings:
+  title: 'Beacon administration'
+  description: 'Configure Beacon service connections and retrieval'
+  route_name: ys_beacon.admin_settings
+  parent: ys_beacon.admin
+  weight: 1

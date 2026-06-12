@@ -1,0 +1,107 @@
+.questionInputContainer {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    position: relative;
+    gap: 1rem;
+}
+
+@media screen and (min-width:800px) {
+    .questionInputContainer {
+        flex-wrap: nowrap;
+        width: 100%;
+    }
+}
+
+.questionInputTextArea {
+    flex: 1 auto;
+    width: 100%;
+    line-height: 40px;
+    margin:0;
+    border-radius: 1rem;
+    overflow: hidden;
+}
+
+.questionInputTextArea textarea {
+    display: flex;
+    font-size: 1.1rem;
+    line-height: 1.2;
+    height: 100%;
+    padding: 1rem 3rem 1rem 1rem;
+    border: 0.2rem solid hsl(210, 100%, 21%);
+    border-radius: 1rem;
+    overflow: hidden;/* needed to hide ms-embedded unreachable styles */
+    font-weight: 600;
+}
+
+@media screen and (min-width:800px) {
+    .questionInputTextArea textarea {
+        padding: 2rem 7rem 1rem 1rem;
+    }
+}
+
+.questionInputTextArea textarea:focus,
+.questionInputTextArea textarea:focus-visible {
+    border-color: hsl(213, 66%, 45%);
+}
+
+.questionInputTextArea textarea:focus-visible {
+    outline: 2px solid #286DC0;
+    outline-offset: 0.25rem;
+}
+
+.questionInputSendButtonContainer {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    background-color: transparent;
+    border: none;
+}
+
+.questionInputSendButton,
+.questionInputSendButtonDisabled {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 70px;
+    height: 100%;
+}
+
+@media screen and (min-width:800px) {
+    .questionInputSendButton,
+    .questionInputSendButtonDisabled  {
+        flex: 1 auto;
+        width: 100px;
+        height: 100%;
+        padding: 1rem;
+    }
+}
+
+.questionInputSendButton svg {
+    fill: hsl(210, 100%, 21%);
+}
+
+.questionInputSendButtonDisabled svg {
+    fill: hsl(217, 15%, 76%);
+}
+
+.questionInputSendButtonContainer:focus-visible {
+    outline: 2px solid #286DC0;
+    outline-offset: 0.25rem;
+}
+
+.questionInputBottomBorder {
+    position: absolute;
+    width: 100%;
+    height: 4px;
+    left: 0%;
+    bottom: 0%;
+}
+
+.questionInputOptionsButton {
+    cursor: pointer;
+    width: 27px;
+    height: 30px;
+}

@@ -1,0 +1,23 @@
+ys_beacon.conversation:
+  path: '/api/ys-beacon/v1/conversation'
+  defaults:
+    _controller: '\Drupal\ys_beacon\Controller\ChatApiController::conversation'
+  methods: [POST]
+  requirements:
+    _access: 'TRUE'
+
+ys_beacon.settings:
+  path: '/admin/config/yalesites/ys-beacon'
+  defaults:
+    _form: '\Drupal\ys_beacon\Form\YsBeaconSettings'
+    _title: 'YaleSites Beacon settings'
+  requirements:
+    _permission: 'manage ys beacon settings'
+
+ys_beacon.admin_settings:
+  path: '/admin/config/yalesites/ys-beacon/admin'
+  defaults:
+    _form: '\Drupal\ys_beacon\Form\YsBeaconAdminSettings'
+    _title: 'YaleSites Beacon administration'
+  requirements:
+    _permission: 'administer ys beacon'

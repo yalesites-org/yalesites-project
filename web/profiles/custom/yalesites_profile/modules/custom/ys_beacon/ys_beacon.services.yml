@@ -1,0 +1,38 @@
+services:
+  logger.channel.ys_beacon:
+    parent: logger.channel_base
+    arguments: ['ys_beacon']
+
+  ys_beacon.rag_retriever:
+    class: Drupal\ys_beacon\Service\RagRetriever
+    arguments:
+      - '@entity_type.manager'
+      - '@config.factory'
+      - '@logger.channel.ys_beacon'
+
+  ys_beacon.prompt_builder:
+    class: Drupal\ys_beacon\Service\SystemPromptBuilder
+    arguments:
+      - '@config.factory'
+      - '@?ys_ai_system_instructions.storage'
+
+  ys_beacon.index_manager:
+    class: Drupal\ys_beacon\Service\BeaconIndexManager
+    arguments:
+      - '@config.factory'
+      - '@key.repository'
+      - '@http_client'
+      - '@logger.channel.ys_beacon'
+      - '@entity_type.manager'
+
+  ys_beacon.indexability:
+    class: Drupal\ys_beacon\Service\BeaconIndexability
+    arguments:
+      - '@metatag.manager'
+
+  ys_beacon.config_overrides:
+    class: Drupal\ys_beacon\Config\YsBeaconConfigOverrides
+    arguments:
+      - '@config.storage'
+    tags:
+      - { name: config.factory.override, priority: 5 }

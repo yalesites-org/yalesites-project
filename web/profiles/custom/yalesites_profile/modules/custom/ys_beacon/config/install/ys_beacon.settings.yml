@@ -1,0 +1,13 @@
+enable_chat: false
+floating_button: false
+floating_button_text: 'Beacon Chat'
+floating_button_icon: 'fa-comments'
+prompts: []
+disclaimer: ''
+footer: ''
+azure_index_name: ''
+azure_search_url_key: azure_ai_search_url
+top_k: 5
+score_threshold: 0.0
+streaming: true
+fallback_system_prompt: 'You are a helpful assistant for a Yale University website. Answer questions using only the provided sources. Cite each fact with its source marker, for example [doc1] or [doc2]. If the sources do not contain the answer, say that you do not know.'
