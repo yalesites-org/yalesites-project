@@ -4,16 +4,19 @@ namespace Drupal\ys_ai_system_instructions\Service;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 
 /**
- * Reads and writes the system instructions on the chatbot's AI Assistant.
+ * Reads and writes the system instructions the live chatbot uses at runtime.
  *
- * The live Yale Chat chatbot loads its instructions from an
- * `ai_assistant_api.ai_assistant` config entity at runtime (see
- * \Drupal\ys_contoso_chat\Controller\YsContosoChatController). This service is
- * the bridge that lets the system-instructions versioning UI update that
- * entity, so making a version active actually changes what the chatbot uses.
+ * The Yale Chat chatbot runs the configured `ai_assistant` entity through
+ * \Drupal\ai_assistant_api\AiAssistantApiRunner. When that assistant has an
+ * `ai_agent` set (and the ai_agents module is enabled), the runner delegates to
+ * the agent and the assistant's own `instructions` field is never read — the
+ * live prompt comes from the agent's `system_prompt` instead (see
+ * AiAssistantApiRunner::process()). This service resolves whichever field the
+ * runtime actually consumes, so editing system instructions changes the bot.
  */
 class SystemInstructionsAssistantWriter {
 
@@ -37,6 +40,13 @@ class SystemInstructionsAssistantWriter {
   protected $configFactory;
 
   /**
+   * The module handler.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  protected $moduleHandler;
+
+  /**
    * The logger.
    *
    * @var \Psr\Log\LoggerInterface
@@ -50,12 +60,15 @@ class SystemInstructionsAssistantWriter {
    *   The entity type manager.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The configuration factory.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The module handler.
    * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
    *   The logger factory.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, LoggerChannelFactoryInterface $logger_factory) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, ModuleHandlerInterface $module_handler, LoggerChannelFactoryInterface $logger_factory) {
     $this->entityTypeManager = $entity_type_manager;
     $this->configFactory = $config_factory;
+    $this->moduleHandler = $module_handler;
     $this->logger = $logger_factory->get('ys_ai_system_instructions');
   }
 
@@ -75,57 +88,134 @@ class SystemInstructionsAssistantWriter {
   }
 
   /**
-   * Read the current instructions from the chatbot's AI Assistant.
+   * Read the current instructions the live chatbot uses.
    *
    * @return string|null
-   *   The assistant instructions, or NULL if the assistant cannot be loaded.
+   *   The runtime instructions, or NULL if the target entity cannot be loaded.
    */
   public function readInstructions(): ?string {
-    $assistant = $this->loadAssistant();
-    if (!$assistant) {
+    $entity = $this->loadTargetEntity();
+    if (!$entity) {
       return NULL;
     }
 
-    return $assistant->get('instructions');
+    return $entity->get($this->resolveTarget()['field']);
   }
 
   /**
-   * Write instructions to the chatbot's AI Assistant.
+   * Write instructions to whichever entity the live chatbot reads at runtime.
    *
-   * Stores the raw instructions on the assistant's `instructions` field; the
-   * AI runner consumes this value directly, so no escaping is applied.
+   * Stores the raw instructions on the resolved field (the agent's
+   * `system_prompt` or the assistant's `instructions`); the runner consumes the
+   * value directly, so no escaping is applied.
    *
    * @param string $instructions
-   *   The instructions to store on the assistant.
+   *   The instructions to store.
    *
    * @return bool
-   *   TRUE if the assistant was updated, FALSE if it could not be loaded.
+   *   TRUE if the entity was updated, FALSE if it could not be loaded.
    */
   public function writeInstructions(string $instructions): bool {
-    $assistant = $this->loadAssistant();
-    if (!$assistant) {
-      $this->logger->warning('Could not update chatbot system instructions: AI Assistant "@id" not found.', [
-        '@id' => $this->getAssistantId(),
+    $entity = $this->loadTargetEntity();
+    if (!$entity) {
+      $this->logger->warning('Could not update chatbot system instructions: target config entity "@name" not found.', [
+        '@name' => $this->getTargetConfigName() ?? $this->getAssistantId(),
       ]);
       return FALSE;
     }
 
-    $assistant->set('instructions', $instructions);
-    $assistant->save();
+    $entity->set($this->resolveTarget()['field'], $instructions);
+    $entity->save();
 
     return TRUE;
   }
 
   /**
-   * Load the configured AI Assistant config entity.
+   * Get the config name of the entity the live chatbot reads at runtime.
+   *
+   * Used to read the shipped default from sync storage on first deploy.
+   *
+   * @return string|null
+   *   The config object name (e.g. `ai_agents.ai_agent.beacon`), or NULL if it
+   *   cannot be resolved.
+   */
+  public function getTargetConfigName(): ?string {
+    $target = $this->resolveTarget();
+    if (!$target) {
+      return NULL;
+    }
+
+    // getConfigPrefix() includes the provider (e.g. "ai_agents.ai_agent"), so
+    // the full config name is that prefix plus the entity id.
+    $prefix = $this->entityTypeManager
+      ->getDefinition($target['entity_type'])
+      ->getConfigPrefix();
+
+    return $prefix . '.' . $target['entity_id'];
+  }
+
+  /**
+   * Get the field on the target entity that holds the runtime instructions.
+   *
+   * @return string|null
+   *   The field name (`system_prompt` or `instructions`), or NULL if the
+   *   target cannot be resolved.
+   */
+  public function getTargetField(): ?string {
+    return $this->resolveTarget()['field'] ?? NULL;
+  }
+
+  /**
+   * Resolve the entity and field the live chatbot reads at runtime.
+   *
+   * Mirrors AiAssistantApiRunner: when the configured assistant delegates to an
+   * agent (and ai_agents is enabled), the agent's `system_prompt` is the live
+   * prompt; otherwise the assistant's own `instructions` field is used.
+   *
+   * @return array|null
+   *   An array with 'entity_type', 'entity_id', and 'field' keys, or NULL if
+   *   the configured assistant cannot be loaded.
+   */
+  protected function resolveTarget(): ?array {
+    $assistant_id = $this->getAssistantId();
+    $assistant = $this->entityTypeManager
+      ->getStorage('ai_assistant')
+      ->load($assistant_id);
+    if (!$assistant) {
+      return NULL;
+    }
+
+    $agent_id = $assistant->get('ai_agent');
+    if ($agent_id && $this->moduleHandler->moduleExists('ai_agents')) {
+      return [
+        'entity_type' => 'ai_agent',
+        'entity_id' => $agent_id,
+        'field' => 'system_prompt',
+      ];
+    }
+
+    return [
+      'entity_type' => 'ai_assistant',
+      'entity_id' => $assistant_id,
+      'field' => 'instructions',
+    ];
+  }
+
+  /**
+   * Load the resolved target config entity.
    *
    * @return \Drupal\Core\Config\Entity\ConfigEntityInterface|null
-   *   The assistant entity, or NULL if it does not exist.
+   *   The target entity, or NULL if it does not exist.
    */
-  protected function loadAssistant() {
+  protected function loadTargetEntity() {
+    $target = $this->resolveTarget();
+    if (!$target) {
+      return NULL;
+    }
+
     return $this->entityTypeManager
-      ->getStorage('ai_assistant')
-      ->load($this->getAssistantId());
+      ->getStorage($target['entity_type'])
+      ->load($target['entity_id']);
   }
 
 }
