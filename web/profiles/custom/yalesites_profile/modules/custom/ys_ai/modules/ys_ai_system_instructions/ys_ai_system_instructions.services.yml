@@ -14,6 +14,11 @@ services:
     class: Drupal\ys_ai_system_instructions\Service\SystemInstructionsManagerService
     arguments: ['@ys_ai_system_instructions.storage', '@logger.factory', '@ys_ai_system_instructions.text_format_detection', '@current_user', '@ys_ai_system_instructions.assistant_writer']
 
+  ys_ai_system_instructions.agent_system_prompt_import_subscriber:
+    class: Drupal\ys_ai_system_instructions\EventSubscriber\AgentSystemPromptImportSubscriber
+    tags:
+      - { name: event_subscriber }
+
   ys_ai_system_instructions.access_check:
     class: Drupal\ys_ai_system_instructions\Access\SystemInstructionsAccessCheck
     arguments: ['@config.factory']

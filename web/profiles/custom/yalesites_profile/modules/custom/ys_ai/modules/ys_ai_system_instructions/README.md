@@ -66,6 +66,13 @@ ai_agents.ai_agent.beacon:system_prompt
 This is a **key-level** ignore — only `system_prompt` is protected, not the rest
 of the agent entity, so other agent config still deploys normally.
 
+`AiAgent::$system_prompt` is a non-nullable typed `string`, so the config_ignore
+"strip on CREATE" behavior (no active value to preserve on a first import) would
+otherwise make the agent un-constructable and fatal the whole `cim`.
+`AgentSystemPromptImportSubscriber` runs just after config_ignore on the import
+transform and restores an empty string for the stripped key, so the first
+deploy succeeds and the deploy hook then seeds the real default.
+
 ## Settings
 
 The settings form at `/admin/config/ys-ai/system-instructions/settings` exposes:
