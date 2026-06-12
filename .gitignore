@@ -125,6 +125,7 @@ reference
 # Yalesites profile assets
 web/profiles/custom/yalesites_profile/composer.lock
 web/profiles/custom/yalesites_profile/vendor/
+web/profiles/custom/yalesites_profile/modules/custom/ys_beacon/react/node_modules/
 
 # Ignore symlinks for dev
 /atomic
