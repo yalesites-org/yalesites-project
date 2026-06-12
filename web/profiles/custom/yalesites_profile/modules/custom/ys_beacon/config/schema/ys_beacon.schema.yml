@@ -1,0 +1,46 @@
+ys_beacon.settings:
+  type: config_object
+  label: 'YaleSites Beacon settings'
+  mapping:
+    enable_chat:
+      type: boolean
+      label: 'Enable the chat widget'
+    floating_button:
+      type: boolean
+      label: 'Show the floating chat button'
+    floating_button_text:
+      type: label
+      label: 'Floating button text'
+    floating_button_icon:
+      type: string
+      label: 'Floating button icon class'
+    prompts:
+      type: sequence
+      label: 'Initial questions'
+      sequence:
+        type: label
+        label: 'Question'
+    disclaimer:
+      type: text
+      label: 'Disclaimer text'
+    footer:
+      type: text
+      label: 'Footer text'
+    azure_index_name:
+      type: string
+      label: 'Azure AI Search index (collection) name'
+    azure_search_url_key:
+      type: string
+      label: 'Key entity id holding the Azure AI Search endpoint URL'
+    top_k:
+      type: integer
+      label: 'Number of source chunks to retrieve'
+    score_threshold:
+      type: float
+      label: 'Minimum relevance score for retrieved chunks'
+    streaming:
+      type: boolean
+      label: 'Stream chat responses'
+    fallback_system_prompt:
+      type: text
+      label: 'System prompt used when no site system instructions exist'

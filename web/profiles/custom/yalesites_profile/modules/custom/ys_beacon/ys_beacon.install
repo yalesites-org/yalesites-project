@@ -1,0 +1,52 @@
+<?php
+
+/**
+ * @file
+ * Install and update functions for the ys_beacon module.
+ */
+
+/**
+ * Implements hook_install().
+ *
+ * Copies the editor-facing display settings from the legacy ai_engine chat
+ * the first time this module is installed. Connection settings (Portkey,
+ * Azure index) are not copied; they are configured fresh through the Beacon
+ * administration form.
+ *
+ * Key entities are NOT created here: the pantheon_secrets sync owns key
+ * creation from the platform secrets (portkey_llm_api_key,
+ * portkey_embedding_api_key, azure_ai_search_api_key, azure_ai_search_url),
+ * and pre-creating them makes that sync fail with "entity already exists".
+ */
+function ys_beacon_install() {
+  $legacy = \Drupal::config('ai_engine_chat.settings');
+  if ($legacy->isNew()) {
+    return;
+  }
+
+  $settings = \Drupal::configFactory()->getEditable('ys_beacon.settings');
+  $map = [
+    'floating_button' => 'floating_button',
+    'floating_button_text' => 'floating_button_text',
+    'floating_button_icon' => 'floating_button_icon',
+    'prompts' => 'prompts',
+    'disclaimer' => 'disclaimer',
+    'footer' => 'footer',
+  ];
+  $changed = FALSE;
+  foreach ($map as $target => $source) {
+    $value = $legacy->get($source);
+    // The legacy form saved starter questions under "prompts" but its install
+    // default used "initial_questions"; accept either.
+    if ($target === 'prompts' && ($value === NULL || $value === [])) {
+      $value = $legacy->get('initial_questions');
+    }
+    if ($value !== NULL && $value !== '' && $value !== []) {
+      $settings->set($target, $value);
+      $changed = TRUE;
+    }
+  }
+  if ($changed) {
+    $settings->save();
+  }
+}

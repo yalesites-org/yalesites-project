@@ -11,6 +11,8 @@
     "drupal/address": "2.0.4",
     "drupal/addtoany": "2.0.7",
     "drupal/admin_toolbar": "3.6.3",
+    "drupal/ai": "1.4.2",
+    "drupal/ai_vdb_provider_azure_ai_search": "1.1.0-beta2",
     "drupal/allowed_formats": "3.0.1",
     "drupal/anchor_link": "3.0.4",
     "drupal/auto_entitylabel": "3.4",

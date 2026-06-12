@@ -1,0 +1,6 @@
+ys_beacon_portkey.settings_form:
+  title: 'Portkey Configuration'
+  description: 'Configure the Portkey AI gateway provider.'
+  route_name: ys_beacon_portkey.settings_form
+  parent: ai.admin_providers
+  weight: 10

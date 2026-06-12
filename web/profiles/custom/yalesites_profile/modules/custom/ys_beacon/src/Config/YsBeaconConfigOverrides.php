@@ -1,0 +1,180 @@
+<?php
+
+namespace Drupal\ys_beacon\Config;
+
+use Drupal\Core\Cache\CacheableMetadata;
+use Drupal\Core\Config\ConfigFactoryOverrideInterface;
+use Drupal\Core\Config\StorageInterface;
+
+/**
+ * Injects per-site Beacon values into platform-managed configuration.
+ *
+ * The search server and vector database connection configuration are shipped
+ * in the profile config sync directory so they deploy identically to every
+ * site. The per-site values (the Azure AI Search index name and endpoint URL)
+ * live outside of synced config: the index name in ys_beacon.settings (which
+ * is config_ignored) and the endpoint URL in a key entity backed by Pantheon
+ * secrets. This override layers them in at runtime, so config imports never
+ * overwrite them. Search API explicitly supports overrides on server
+ * backend_config and index status.
+ *
+ * The index is also disabled at runtime until a site has configured its
+ * index name, so unconfigured sites never attempt to reach Azure.
+ */
+class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
+
+  /**
+   * Names of the configuration objects this class overrides.
+   */
+  protected const SERVER_CONFIG = 'search_api.server.ys_beacon';
+  protected const INDEX_CONFIG = 'search_api.index.ys_beacon';
+  protected const VDB_CONFIG = 'ai_vdb_provider_azure_ai_search.settings';
+
+  /**
+   * Static cache of the Azure Search endpoint URL from the key module.
+   *
+   * @var string|null
+   */
+  protected ?string $azureSearchUrl = NULL;
+
+  /**
+   * Guards against re-entrant key loading.
+   *
+   * @var bool
+   */
+  protected bool $loadingKey = FALSE;
+
+  public function __construct(
+    protected StorageInterface $configStorage,
+  ) {
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function loadOverrides($names) {
+    $overrides = [];
+    $relevant = array_intersect($names, [
+      self::SERVER_CONFIG,
+      self::INDEX_CONFIG,
+      self::VDB_CONFIG,
+    ]);
+    if (!$relevant) {
+      return $overrides;
+    }
+
+    $settings = $this->getSettings();
+    $index_name = $settings['azure_index_name'] ?? '';
+
+    if (in_array(self::SERVER_CONFIG, $relevant) && $index_name !== '') {
+      $overrides[self::SERVER_CONFIG] = [
+        'backend_config' => [
+          'database_settings' => [
+            'database_name' => $index_name,
+          ],
+        ],
+      ];
+    }
+
+    if (in_array(self::INDEX_CONFIG, $relevant) && $index_name === '') {
+      $overrides[self::INDEX_CONFIG] = ['status' => FALSE];
+    }
+
+    if (in_array(self::VDB_CONFIG, $relevant)) {
+      $url = $this->getAzureSearchUrl($settings['azure_search_url_key'] ?? '');
+      if ($url !== '') {
+        $overrides[self::VDB_CONFIG] = ['url' => $url];
+      }
+    }
+
+    return $overrides;
+  }
+
+  /**
+   * Reads the raw ys_beacon settings from active config storage.
+   *
+   * The raw storage is used instead of the config factory to avoid circular
+   * dependencies while overrides are being resolved. The read is deliberately
+   * not cached on this service: the cached storage layer already makes it
+   * cheap, it only happens for three config names, and caching it would
+   * serve stale overrides when ys_beacon settings are saved and then used in
+   * the same request (the index provisioning flow does exactly that).
+   *
+   * @return array
+   *   The raw settings, or an empty array before the module is installed.
+   */
+  protected function getSettings(): array {
+    return $this->configStorage->read('ys_beacon.settings') ?: [];
+  }
+
+  /**
+   * Resolves the Azure AI Search endpoint URL from a key entity.
+   *
+   * @param string $key_id
+   *   The key entity id holding the endpoint URL.
+   *
+   * @return string
+   *   The endpoint URL, or an empty string when unavailable.
+   */
+  protected function getAzureSearchUrl(string $key_id): string {
+    if ($this->azureSearchUrl !== NULL) {
+      return $this->azureSearchUrl;
+    }
+    if ($key_id === '' || $this->loadingKey) {
+      return '';
+    }
+
+    $this->loadingKey = TRUE;
+    try {
+      // The key repository is resolved lazily on purpose: this class is a
+      // config factory override instantiated during early bootstrap, and
+      // injecting key.repository (entity system, which itself loads config)
+      // would create a circular service dependency.
+      // phpcs:ignore DrupalPractice.Objects.GlobalDrupal.GlobalDrupal
+      if (\Drupal::hasService('key.repository')) {
+        // phpcs:ignore DrupalPractice.Objects.GlobalDrupal.GlobalDrupal
+        $key = \Drupal::service('key.repository')->getKey($key_id);
+        $this->azureSearchUrl = trim((string) ($key?->getKeyValue() ?? ''));
+      }
+      else {
+        $this->azureSearchUrl = '';
+      }
+    }
+    catch (\Throwable $e) {
+      // Key module not installed yet, key missing, or the secrets backend is
+      // unavailable. Leave the shipped configuration untouched.
+      $this->azureSearchUrl = '';
+    }
+    finally {
+      $this->loadingKey = FALSE;
+    }
+
+    return $this->azureSearchUrl;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheSuffix() {
+    return 'ys_beacon';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheableMetadata($name) {
+    $metadata = new CacheableMetadata();
+    if (in_array($name, [self::SERVER_CONFIG, self::INDEX_CONFIG, self::VDB_CONFIG])) {
+      $metadata->addCacheTags(['config:ys_beacon.settings']);
+    }
+    return $metadata;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function createConfigObject($name, $collection = StorageInterface::DEFAULT_COLLECTION) {
+    return NULL;
+  }
+
+}
