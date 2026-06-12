@@ -5,6 +5,7 @@ namespace Drupal\Tests\ys_beacon\Unit;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Tests\UnitTestCase;
+use Drupal\ys_beacon\Service\SystemInstructionsStorage;
 use Drupal\ys_beacon\Service\SystemPromptBuilder;
 
 /**
@@ -16,11 +17,11 @@ use Drupal\ys_beacon\Service\SystemPromptBuilder;
 class SystemPromptBuilderTest extends UnitTestCase {
 
   /**
-   * The prompt builder under test.
+   * The mocked config factory returning the fallback prompt.
    *
-   * @var \Drupal\ys_beacon\Service\SystemPromptBuilder
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
    */
-  protected SystemPromptBuilder $builder;
+  protected ConfigFactoryInterface $configFactory;
 
   /**
    * {@inheritdoc}
@@ -28,30 +29,43 @@ class SystemPromptBuilderTest extends UnitTestCase {
   protected function setUp(): void {
     parent::setUp();
 
-    // No instructions storage service is passed, exercising the fallback
-    // prompt path.
     $config = $this->createMock(ImmutableConfig::class);
     $config->method('get')
       ->with('fallback_system_prompt')
       ->willReturn('FALLBACK INSTRUCTIONS');
 
-    $config_factory = $this->createMock(ConfigFactoryInterface::class);
-    $config_factory->method('get')
+    $this->configFactory = $this->createMock(ConfigFactoryInterface::class);
+    $this->configFactory->method('get')
       ->with('ys_beacon.settings')
       ->willReturn($config);
+  }
 
-    $this->builder = new SystemPromptBuilder($config_factory);
+  /**
+   * Creates a prompt builder with the given active instructions row.
+   *
+   * @param array|null $active
+   *   The row returned by the storage's getActiveInstructions(), or NULL
+   *   when no version has been saved.
+   *
+   * @return \Drupal\ys_beacon\Service\SystemPromptBuilder
+   *   The builder under test.
+   */
+  protected function createBuilder(?array $active): SystemPromptBuilder {
+    $storage = $this->createMock(SystemInstructionsStorage::class);
+    $storage->method('getActiveInstructions')->willReturn($active);
+    return new SystemPromptBuilder($this->configFactory, $storage);
   }
 
   /**
    * @covers ::build
    */
   public function testBuildNumbersSourcesInOrder(): void {
+    $builder = $this->createBuilder(NULL);
     $citations = [
       ['title' => 'Page One', 'content' => 'Alpha content'],
       ['title' => 'Page Two', 'content' => 'Beta content'],
     ];
-    $prompt = $this->builder->build($citations);
+    $prompt = $builder->build($citations);
 
     $this->assertStringStartsWith('FALLBACK INSTRUCTIONS', $prompt);
     $this->assertStringContainsString("[doc1] Page One\nAlpha content", $prompt);
@@ -65,11 +79,25 @@ class SystemPromptBuilderTest extends UnitTestCase {
    * @covers ::build
    */
   public function testBuildWithoutSourcesInstructsHonesty(): void {
-    $prompt = $this->builder->build([]);
+    $builder = $this->createBuilder(NULL);
+    $prompt = $builder->build([]);
 
     $this->assertStringStartsWith('FALLBACK INSTRUCTIONS', $prompt);
     $this->assertStringContainsString('No sources were found', $prompt);
     $this->assertStringNotContainsString('[doc1]', $prompt);
+  }
+
+  /**
+   * @covers ::build
+   */
+  public function testBuildUsesActiveInstructionsOverFallback(): void {
+    $builder = $this->createBuilder(['instructions' => 'SITE INSTRUCTIONS']);
+    $prompt = $builder->build([
+      ['title' => 'Page One', 'content' => 'Alpha content'],
+    ]);
+
+    $this->assertStringStartsWith('SITE INSTRUCTIONS', $prompt);
+    $this->assertStringNotContainsString('FALLBACK INSTRUCTIONS', $prompt);
   }
 
 }

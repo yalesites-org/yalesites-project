@@ -21,3 +21,37 @@ ys_beacon.admin_settings:
     _title: 'YaleSites Beacon administration'
   requirements:
     _permission: 'administer ys beacon'
+
+ys_beacon.instructions:
+  path: '/admin/config/yalesites/ys-beacon/instructions'
+  defaults:
+    _form: '\Drupal\ys_beacon\Form\SystemInstructionsForm'
+    _title: 'Beacon system instructions'
+  requirements:
+    _ys_beacon_instructions_access: 'TRUE'
+
+ys_beacon.instructions_versions:
+  path: '/admin/config/yalesites/ys-beacon/instructions/versions'
+  defaults:
+    _controller: '\Drupal\ys_beacon\Controller\SystemInstructionsController::versionHistory'
+    _title: 'Beacon system instructions version history'
+  requirements:
+    _ys_beacon_instructions_access: 'TRUE'
+
+ys_beacon.instructions_view:
+  path: '/admin/config/yalesites/ys-beacon/instructions/versions/{version}'
+  defaults:
+    _controller: '\Drupal\ys_beacon\Controller\SystemInstructionsController::viewVersion'
+    _title: 'View Beacon system instructions version'
+  requirements:
+    _ys_beacon_instructions_access: 'TRUE'
+    version: \d+
+
+ys_beacon.instructions_revert:
+  path: '/admin/config/yalesites/ys-beacon/instructions/revert/{version}'
+  defaults:
+    _form: '\Drupal\ys_beacon\Form\SystemInstructionsRevertForm'
+    _title: 'Revert Beacon system instructions'
+  requirements:
+    _ys_beacon_instructions_access: 'TRUE'
+    version: \d+

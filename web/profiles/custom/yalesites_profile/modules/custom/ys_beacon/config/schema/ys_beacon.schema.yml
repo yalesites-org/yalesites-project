@@ -44,6 +44,12 @@ ys_beacon.settings:
     streaming:
       type: boolean
       label: 'Stream chat responses'
+    instructions_max_length:
+      type: integer
+      label: 'Maximum system instructions length in characters'
+    instructions_warning_threshold:
+      type: integer
+      label: 'Character count at which the instructions editor shows a warning'
     fallback_system_prompt:
       type: text
       label: 'System prompt used when no site system instructions exist'

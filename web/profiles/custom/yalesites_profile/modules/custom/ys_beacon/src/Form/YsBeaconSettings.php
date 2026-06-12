@@ -33,21 +33,11 @@ class YsBeaconSettings extends ConfigFormBase {
   protected BeaconIndexManager $indexManager;
 
   /**
-   * The system instructions access check, when that module is installed.
-   *
-   * @var object|null
-   */
-  protected ?object $systemInstructionsAccess;
-
-  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
     $instance = parent::create($container);
     $instance->indexManager = $container->get('ys_beacon.index_manager');
-    $instance->systemInstructionsAccess = $container->has('ys_ai_system_instructions.access_check')
-      ? $container->get('ys_ai_system_instructions.access_check')
-      : NULL;
     return $instance;
   }
 
@@ -146,21 +136,20 @@ class YsBeaconSettings extends ConfigFormBase {
       '#rows' => 2,
     ];
 
-    // Link to the per-site system instructions when the supporting module is
-    // available and the user has access.
-    if ($this->systemInstructionsAccess) {
-      $access = $this->systemInstructionsAccess->access($this->currentUser());
-      if ($access->isAllowed()) {
-        $form['system_instructions_link'] = [
-          '#type' => 'item',
-          '#title' => $this->t('System Instructions Management'),
-          '#description' => $this->t("Configure the AI assistant's behavior and responses."),
-          '#markup' => $this->t('<a href="@url">Manage System Instructions</a>', [
-            '@url' => Url::fromRoute('ys_ai_system_instructions.form')->toString(),
-          ]),
-          '#weight' => 100,
-        ];
-      }
+    // Link to the per-site system instructions when the user has access.
+    $instructions_url = Url::fromRoute('ys_beacon.instructions');
+    if ($instructions_url->access($this->currentUser())) {
+      $form['system_instructions_link'] = [
+        '#type' => 'item',
+        '#title' => $this->t('System Instructions Management'),
+        '#description' => $this->t("Configure the AI assistant's behavior and responses."),
+        '#weight' => 100,
+        'link' => [
+          '#type' => 'link',
+          '#title' => $this->t('Manage System Instructions'),
+          '#url' => $instructions_url,
+        ],
+      ];
     }
 
     return parent::buildForm($form, $form_state);

@@ -7,10 +7,9 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 /**
  * Assembles the system prompt for the Beacon chat assistant.
  *
- * Combines the per-site system instructions (managed through the
- * ys_ai_system_instructions module when available) with the retrieved,
- * numbered sources. Source markers follow the [docN] convention the chat
- * frontend turns into citation superscripts.
+ * Combines the per-site system instructions with the retrieved, numbered
+ * sources. Source markers follow the [docN] convention the chat frontend
+ * turns into citation superscripts.
  */
 class SystemPromptBuilder {
 
@@ -19,14 +18,12 @@ class SystemPromptBuilder {
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config factory.
-   * @param object|null $instructionsStorage
-   *   The ys_ai_system_instructions storage service when that module is
-   *   installed, NULL otherwise (optional service reference). Typed loosely
-   *   so this module never hard-depends on the class.
+   * @param \Drupal\ys_beacon\Service\SystemInstructionsStorage $instructionsStorage
+   *   The system instructions storage.
    */
   public function __construct(
     protected ConfigFactoryInterface $configFactory,
-    protected ?object $instructionsStorage = NULL,
+    protected SystemInstructionsStorage $instructionsStorage,
   ) {
   }
 
@@ -61,24 +58,18 @@ class SystemPromptBuilder {
   /**
    * Gets the per-site system instructions.
    *
-   * Reads the active instructions directly from the
-   * ys_ai_system_instructions storage service. The storage service is used
-   * instead of the manager service because the manager synchronizes from the
-   * legacy remote API on every read.
-   *
    * @return string
-   *   The system instructions, falling back to the configured default.
+   *   The active system instructions, falling back to the configured
+   *   default when no version has been saved yet.
    */
   protected function getSystemInstructions(): string {
     $instructions = '';
-    if ($this->instructionsStorage) {
-      try {
-        $active = $this->instructionsStorage->getActiveInstructions();
-        $instructions = trim((string) ($active['instructions'] ?? ''));
-      }
-      catch (\Throwable $e) {
-        // Table missing or module mid-install: use the fallback below.
-      }
+    try {
+      $active = $this->instructionsStorage->getActiveInstructions();
+      $instructions = trim((string) ($active['instructions'] ?? ''));
+    }
+    catch (\Throwable $e) {
+      // Table missing mid-install: use the fallback below.
     }
     if ($instructions === '') {
       $instructions = (string) $this->configFactory

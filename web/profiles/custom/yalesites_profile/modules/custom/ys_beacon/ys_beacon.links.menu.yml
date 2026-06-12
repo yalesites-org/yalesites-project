@@ -18,3 +18,10 @@ ys_beacon.admin_settings:
   route_name: ys_beacon.admin_settings
   parent: ys_beacon.admin
   weight: 1
+
+ys_beacon.instructions:
+  title: 'System instructions'
+  description: 'Manage the versioned Beacon system instructions'
+  route_name: ys_beacon.instructions
+  parent: ys_beacon.admin
+  weight: 2
