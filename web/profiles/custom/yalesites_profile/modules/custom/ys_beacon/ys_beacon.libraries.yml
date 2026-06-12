@@ -13,3 +13,16 @@ chat_button:
   css:
     theme:
       css/chat_button.css: {}
+system_instructions:
+  version: VERSION
+  js:
+    js/system-instructions.js: {}
+  css:
+    theme:
+      css/system-instructions.css: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings
+    - core/once
+    - gin/gin

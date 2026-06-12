@@ -10,11 +10,18 @@ services:
       - '@config.factory'
       - '@logger.channel.ys_beacon'
 
+  ys_beacon.system_instructions_storage:
+    class: Drupal\ys_beacon\Service\SystemInstructionsStorage
+    arguments:
+      - '@database'
+      - '@current_user'
+      - '@datetime.time'
+
   ys_beacon.prompt_builder:
     class: Drupal\ys_beacon\Service\SystemPromptBuilder
     arguments:
       - '@config.factory'
-      - '@?ys_ai_system_instructions.storage'
+      - '@ys_beacon.system_instructions_storage'
 
   ys_beacon.index_manager:
     class: Drupal\ys_beacon\Service\BeaconIndexManager
@@ -35,6 +42,13 @@ services:
     arguments:
       - '@metatag.manager'
       - '@token'
+
+  ys_beacon.system_instructions_access_check:
+    class: Drupal\ys_beacon\Access\SystemInstructionsAccessCheck
+    arguments:
+      - '@config.factory'
+    tags:
+      - { name: access_check, applies_to: _ys_beacon_instructions_access }
 
   ys_beacon.config_overrides:
     class: Drupal\ys_beacon\Config\YsBeaconConfigOverrides

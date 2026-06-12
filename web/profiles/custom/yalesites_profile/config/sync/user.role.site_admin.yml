@@ -379,6 +379,7 @@ permissions:
   - 'manage editoria11y results'
   - 'manage ys ai system instructions'
   - 'manage ys beacon settings'
+  - 'manage ys beacon system instructions'
   - 'mark as hidden in editoria11y'
   - 'mark as ok in editoria11y'
   - 'override all sticky option'
