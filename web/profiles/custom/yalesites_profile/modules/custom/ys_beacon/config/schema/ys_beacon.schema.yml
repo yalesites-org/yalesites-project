@@ -5,6 +5,9 @@ ys_beacon.settings:
     enable_chat:
       type: boolean
       label: 'Enable the chat widget'
+    enable_metadata_fields:
+      type: boolean
+      label: 'Show AI metadata fields on content forms'
     floating_button:
       type: boolean
       label: 'Show the floating chat button'

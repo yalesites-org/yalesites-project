@@ -30,6 +30,12 @@ services:
     arguments:
       - '@metatag.manager'
 
+  ys_beacon.ai_metadata_manager:
+    class: Drupal\ys_beacon\Service\AiMetadataManager
+    arguments:
+      - '@metatag.manager'
+      - '@token'
+
   ys_beacon.config_overrides:
     class: Drupal\ys_beacon\Config\YsBeaconConfigOverrides
     arguments:

@@ -126,6 +126,18 @@ class YsBeaconAdminSettings extends ConfigFormBase {
       '#rows' => 4,
     ];
 
+    $form['metadata'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Content metadata'),
+      '#open' => TRUE,
+    ];
+    $form['metadata']['enable_metadata_fields'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Show AI metadata fields on content forms'),
+      '#description' => $this->t('Exposes the AI Description, AI Tags, and disable-indexing fields on node and media forms.'),
+      '#default_value' => $config->get('enable_metadata_fields') ?? FALSE,
+    ];
+
     $form['indexing'] = [
       '#type' => 'details',
       '#title' => $this->t('Indexing'),
@@ -161,6 +173,7 @@ class YsBeaconAdminSettings extends ConfigFormBase {
       ->set('score_threshold', (float) $form_state->getValue('score_threshold'))
       ->set('streaming', (bool) $form_state->getValue('streaming'))
       ->set('fallback_system_prompt', $form_state->getValue('fallback_system_prompt'))
+      ->set('enable_metadata_fields', (bool) $form_state->getValue('enable_metadata_fields'))
       ->save();
 
     if ($new_index_name !== $previous_index_name) {
