@@ -4,19 +4,19 @@ namespace Drupal\ys_beacon\Plugin\search_api\processor;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Drupal\ai_engine_metadata\AiMetadataManager;
 use Drupal\search_api\Attribute\SearchApiProcessor;
 use Drupal\search_api\Datasource\DatasourceInterface;
 use Drupal\search_api\Item\ItemInterface;
 use Drupal\search_api\Processor\ProcessorPluginBase;
 use Drupal\search_api\Processor\ProcessorProperty;
+use Drupal\ys_beacon\Service\AiMetadataManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Adds the AI metadata tag values to the indexed data.
  *
- * Exposes the ai_description and ai_tags metatag values maintained by the
- * ai_engine_metadata module so they can be indexed as contextual content
+ * Exposes the ai_description and ai_tags metatag values maintained by this
+ * module's AI metadata tags so they can be indexed as contextual content
  * alongside each content chunk in the vector database.
  */
 #[SearchApiProcessor(
@@ -30,9 +30,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class AiMetadataProperties extends ProcessorPluginBase {
 
   /**
-   * The AI metadata manager from ai_engine_metadata.
+   * The AI metadata manager.
    *
-   * @var \Drupal\ai_engine_metadata\AiMetadataManager
+   * @var \Drupal\ys_beacon\Service\AiMetadataManager
    */
   protected AiMetadataManager $aiMetadataManager;
 
@@ -41,7 +41,7 @@ class AiMetadataProperties extends ProcessorPluginBase {
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     $processor = parent::create($container, $configuration, $plugin_id, $plugin_definition);
-    $processor->aiMetadataManager = $container->get('ai_engine_metadata.manager');
+    $processor->aiMetadataManager = $container->get('ys_beacon.ai_metadata_manager');
     return $processor;
   }
 

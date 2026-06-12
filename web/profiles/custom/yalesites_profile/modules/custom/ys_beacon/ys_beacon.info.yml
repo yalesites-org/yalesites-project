@@ -13,6 +13,5 @@ dependencies:
   - ai_vdb_provider_azure_ai_search:ai_vdb_provider_azure_ai_search
   - key:key
   - metatag:metatag
-  - ai_engine:ai_engine_metadata
   - ys_integrations:ys_integrations
   - ys_beacon:ys_beacon_portkey

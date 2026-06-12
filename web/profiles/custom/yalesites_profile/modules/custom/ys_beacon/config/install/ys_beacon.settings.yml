@@ -1,4 +1,5 @@
 enable_chat: false
+enable_metadata_fields: false
 floating_button: false
 floating_button_text: 'Beacon Chat'
 floating_button_icon: 'fa-comments'

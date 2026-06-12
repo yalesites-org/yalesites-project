@@ -7,6 +7,7 @@
 
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\search_api\Entity\Index;
 use Drupal\search_api\Utility\Utility;
@@ -129,6 +130,52 @@ function ys_beacon_entity_update(EntityInterface $entity) {
       '@message' => $e->getMessage(),
     ]);
   }
+}
+
+/**
+ * Implements hook_metatag_groups_alter().
+ *
+ * While the legacy ai_engine_metadata module is still installed, its
+ * ai_engine group definition remains but is empty: this module's tag
+ * definitions (same IDs, group ys_beacon) win plugin discovery. Metatag logs
+ * an error for every tagless group on each metatag form build, so drop the
+ * leftover group until ai_engine is uninstalled.
+ */
+function ys_beacon_metatag_groups_alter(&$definitions) {
+  unset($definitions['ai_engine']);
+}
+
+/**
+ * Implements hook_field_widget_single_element_WIDGET_TYPE_form_alter().
+ *
+ * Shows the AI Metadata group on entity forms only when the platform-level
+ * toggle is on, and defaults new media to excluded from the AI index.
+ */
+function ys_beacon_field_widget_single_element_metatag_firehose_form_alter(&$field_widget_complete_form, FormStateInterface $form_state, $context) {
+  $config = \Drupal::config('ys_beacon.settings');
+  /** @var \Drupal\Core\Entity\EntityForm $form_object */
+  $form_object = $form_state->getFormObject();
+  $entity = $form_object->getEntity();
+  if (!$config->get('enable_metadata_fields')) {
+    unset($field_widget_complete_form['ys_beacon']);
+  }
+  elseif (_ys_beacon_is_new_media_with_ai_tags($entity, $field_widget_complete_form)) {
+    $field_widget_complete_form['ys_beacon']['ai_disable_indexing']['#default_value'] = 'disabled';
+  }
+}
+
+/**
+ * Determines if the entity is a new media entity with AI metatags.
+ *
+ * @param \Drupal\Core\Entity\EntityInterface $entity
+ *   The entity to check.
+ * @param array $field_widget_complete_form
+ *   The form array to check.
+ */
+function _ys_beacon_is_new_media_with_ai_tags($entity, $field_widget_complete_form) {
+  return $entity->isNew() &&
+    $entity->getEntityTypeId() == 'media' &&
+    isset($field_widget_complete_form['ys_beacon']['ai_disable_indexing']);
 }
 
 /**
