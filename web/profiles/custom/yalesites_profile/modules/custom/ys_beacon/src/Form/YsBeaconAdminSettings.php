@@ -2,10 +2,12 @@
 
 namespace Drupal\ys_beacon\Form;
 
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\ys_beacon\Service\BeaconIndexManager;
+use Drupal\ys_beacon\Service\SystemPromptBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -125,6 +127,22 @@ class YsBeaconAdminSettings extends ConfigFormBase {
       '#default_value' => $config->get('fallback_system_prompt'),
       '#rows' => 4,
     ];
+    $form['retrieval']['platform_guardrail'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Platform guardrail (fixed)'),
+      '#open' => FALSE,
+      '#description' => $this->t('Defined in code and prepended to every chat request. It is identical on every YaleSites site and cannot be changed here.'),
+    ];
+    $form['retrieval']['platform_guardrail']['text'] = [
+      '#markup' => nl2br(Html::escape(SystemPromptBuilder::PLATFORM_GUARDRAIL)),
+    ];
+    $form['retrieval']['guardrail_supplement'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Additional guardrail rules for this site'),
+      '#description' => $this->t('Appended after the platform guardrail on every chat request. Use this to make this specific site stricter; it can add rules but never relax the platform guardrail.'),
+      '#default_value' => $config->get('guardrail_supplement'),
+      '#rows' => 4,
+    ];
 
     $form['metadata'] = [
       '#type' => 'details',
@@ -173,6 +191,7 @@ class YsBeaconAdminSettings extends ConfigFormBase {
       ->set('score_threshold', (float) $form_state->getValue('score_threshold'))
       ->set('streaming', (bool) $form_state->getValue('streaming'))
       ->set('fallback_system_prompt', $form_state->getValue('fallback_system_prompt'))
+      ->set('guardrail_supplement', $form_state->getValue('guardrail_supplement'))
       ->set('enable_metadata_fields', (bool) $form_state->getValue('enable_metadata_fields'))
       ->save();
 

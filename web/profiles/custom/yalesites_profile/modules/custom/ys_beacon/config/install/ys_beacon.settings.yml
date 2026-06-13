@@ -14,3 +14,4 @@ streaming: true
 instructions_max_length: 4000
 instructions_warning_threshold: 3500
 fallback_system_prompt: 'You are a helpful assistant for a Yale University website. Answer questions using only the provided sources. Cite each fact with its source marker, for example [doc1] or [doc2]. If the sources do not contain the answer, say that you do not know.'
+guardrail_supplement: ''

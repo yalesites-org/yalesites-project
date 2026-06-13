@@ -53,3 +53,6 @@ ys_beacon.settings:
     fallback_system_prompt:
       type: text
       label: 'System prompt used when no site system instructions exist'
+    guardrail_supplement:
+      type: text
+      label: 'Site-specific additions to the platform guardrail'

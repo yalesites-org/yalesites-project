@@ -3,7 +3,6 @@
 namespace Drupal\Tests\ys_beacon\Unit;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_beacon\Service\SystemInstructionsStorage;
 use Drupal\ys_beacon\Service\SystemPromptBuilder;
@@ -17,7 +16,7 @@ use Drupal\ys_beacon\Service\SystemPromptBuilder;
 class SystemPromptBuilderTest extends UnitTestCase {
 
   /**
-   * The mocked config factory returning the fallback prompt.
+   * The config factory returning the fallback prompt and no supplement.
    *
    * @var \Drupal\Core\Config\ConfigFactoryInterface
    */
@@ -29,15 +28,27 @@ class SystemPromptBuilderTest extends UnitTestCase {
   protected function setUp(): void {
     parent::setUp();
 
-    $config = $this->createMock(ImmutableConfig::class);
-    $config->method('get')
-      ->with('fallback_system_prompt')
-      ->willReturn('FALLBACK INSTRUCTIONS');
+    $this->configFactory = $this->stubConfigFactory('FALLBACK INSTRUCTIONS', '');
+  }
 
-    $this->configFactory = $this->createMock(ConfigFactoryInterface::class);
-    $this->configFactory->method('get')
-      ->with('ys_beacon.settings')
-      ->willReturn($config);
+  /**
+   * Builds a config factory whose ys_beacon.settings returns the given values.
+   *
+   * @param string $fallback
+   *   The fallback_system_prompt value.
+   * @param string $supplement
+   *   The guardrail_supplement value.
+   *
+   * @return \Drupal\Core\Config\ConfigFactoryInterface
+   *   The stub config factory.
+   */
+  protected function stubConfigFactory(string $fallback, string $supplement): ConfigFactoryInterface {
+    return $this->getConfigFactoryStub([
+      'ys_beacon.settings' => [
+        'fallback_system_prompt' => $fallback,
+        'guardrail_supplement' => $supplement,
+      ],
+    ]);
   }
 
   /**
@@ -46,14 +57,16 @@ class SystemPromptBuilderTest extends UnitTestCase {
    * @param array|null $active
    *   The row returned by the storage's getActiveInstructions(), or NULL
    *   when no version has been saved.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface|null $configFactory
+   *   An alternate config factory; defaults to the shared one from setUp().
    *
    * @return \Drupal\ys_beacon\Service\SystemPromptBuilder
    *   The builder under test.
    */
-  protected function createBuilder(?array $active): SystemPromptBuilder {
+  protected function createBuilder(?array $active, ?ConfigFactoryInterface $configFactory = NULL): SystemPromptBuilder {
     $storage = $this->createMock(SystemInstructionsStorage::class);
     $storage->method('getActiveInstructions')->willReturn($active);
-    return new SystemPromptBuilder($this->configFactory, $storage);
+    return new SystemPromptBuilder($configFactory ?? $this->configFactory, $storage);
   }
 
   /**
@@ -67,7 +80,13 @@ class SystemPromptBuilderTest extends UnitTestCase {
     ];
     $prompt = $builder->build($citations);
 
-    $this->assertStringStartsWith('FALLBACK INSTRUCTIONS', $prompt);
+    $this->assertStringStartsWith(SystemPromptBuilder::PLATFORM_GUARDRAIL, $prompt);
+    $this->assertStringContainsString('FALLBACK INSTRUCTIONS', $prompt);
+    $this->assertGreaterThan(
+      strpos($prompt, SystemPromptBuilder::PLATFORM_GUARDRAIL),
+      strpos($prompt, 'FALLBACK INSTRUCTIONS'),
+      'Site instructions follow the platform guardrail.',
+    );
     $this->assertStringContainsString("[doc1] Page One\nAlpha content", $prompt);
     $this->assertStringContainsString("[doc2] Page Two\nBeta content", $prompt);
     $this->assertStringContainsString('[doc1]', $prompt);
@@ -82,7 +101,8 @@ class SystemPromptBuilderTest extends UnitTestCase {
     $builder = $this->createBuilder(NULL);
     $prompt = $builder->build([]);
 
-    $this->assertStringStartsWith('FALLBACK INSTRUCTIONS', $prompt);
+    $this->assertStringStartsWith(SystemPromptBuilder::PLATFORM_GUARDRAIL, $prompt);
+    $this->assertStringContainsString('FALLBACK INSTRUCTIONS', $prompt);
     $this->assertStringContainsString('No sources were found', $prompt);
     $this->assertStringNotContainsString('[doc1]', $prompt);
   }
@@ -96,8 +116,48 @@ class SystemPromptBuilderTest extends UnitTestCase {
       ['title' => 'Page One', 'content' => 'Alpha content'],
     ]);
 
-    $this->assertStringStartsWith('SITE INSTRUCTIONS', $prompt);
+    $this->assertStringStartsWith(SystemPromptBuilder::PLATFORM_GUARDRAIL, $prompt);
+    $this->assertStringContainsString('SITE INSTRUCTIONS', $prompt);
     $this->assertStringNotContainsString('FALLBACK INSTRUCTIONS', $prompt);
+    $this->assertGreaterThan(
+      strpos($prompt, SystemPromptBuilder::PLATFORM_GUARDRAIL),
+      strpos($prompt, 'SITE INSTRUCTIONS'),
+      'Site instructions follow the platform guardrail.',
+    );
+  }
+
+  /**
+   * @covers ::build
+   */
+  public function testBuildAppendsGuardrailSupplementAfterGuardrail(): void {
+    $factory = $this->stubConfigFactory('FALLBACK INSTRUCTIONS', 'SITE SUPPLEMENT');
+    $builder = $this->createBuilder(['instructions' => 'SITE INSTRUCTIONS'], $factory);
+    $prompt = $builder->build([]);
+
+    $this->assertStringStartsWith(SystemPromptBuilder::PLATFORM_GUARDRAIL, $prompt);
+    $guardrail = strpos($prompt, SystemPromptBuilder::PLATFORM_GUARDRAIL);
+    $supplement = strpos($prompt, 'SITE SUPPLEMENT');
+    $instructions = strpos($prompt, 'SITE INSTRUCTIONS');
+    // The supplement sits between the platform guardrail and the site
+    // instructions, so it can only add restrictions, never relax them.
+    $this->assertGreaterThan($guardrail, $supplement, 'Supplement follows the platform guardrail.');
+    $this->assertGreaterThan($supplement, $instructions, 'Site instructions follow the supplement.');
+  }
+
+  /**
+   * @covers ::build
+   */
+  public function testBuildOmitsEmptySupplement(): void {
+    $factory = $this->stubConfigFactory('FALLBACK INSTRUCTIONS', "  \n ");
+    $builder = $this->createBuilder(NULL, $factory);
+    $prompt = $builder->build([]);
+
+    // A whitespace-only supplement leaves no stray blank segment: the platform
+    // guardrail is immediately followed by the instructions.
+    $this->assertStringContainsString(
+      SystemPromptBuilder::PLATFORM_GUARDRAIL . "\n\nFALLBACK INSTRUCTIONS",
+      $prompt,
+    );
   }
 
 }
