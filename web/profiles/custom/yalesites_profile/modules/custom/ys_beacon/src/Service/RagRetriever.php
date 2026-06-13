@@ -53,7 +53,16 @@ class RagRetriever {
       $results = $query->execute();
     }
     catch (\Throwable $e) {
-      $this->logger->error('Beacon retrieval failed: @message', ['@message' => $e->getMessage()]);
+      // Log the failure with enough context to diagnose an outage (which index,
+      // how long the question was) without recording the question text itself,
+      // which can contain personal data. The user-facing path still degrades
+      // quietly: an empty citation list means the assistant answers without
+      // sources rather than surfacing an error.
+      $this->logger->error('Beacon retrieval failed for index @index (question length @length): @message', [
+        '@index' => $index->id(),
+        '@length' => mb_strlen($question),
+        '@message' => $e->getMessage(),
+      ]);
       return [];
     }
 
