@@ -229,3 +229,25 @@ EOT;
     ])
     ->execute();
 }
+
+/**
+ * Set the configurable Search API index and server machine names.
+ *
+ * The chatbot's Search API index and server were previously hardcoded as the
+ * literal "ys_beacon"; they are now read from ys_beacon.settings so a second
+ * index can be added by configuration. Populate the defaults on existing sites
+ * so exported config is explicit; runtime already falls back to "ys_beacon".
+ */
+function ys_beacon_update_10001() {
+  $settings = \Drupal::configFactory()->getEditable('ys_beacon.settings');
+  $changed = FALSE;
+  foreach (['search_index_id', 'search_server_id'] as $key) {
+    if (!$settings->get($key)) {
+      $settings->set($key, 'ys_beacon');
+      $changed = TRUE;
+    }
+  }
+  if ($changed) {
+    $settings->save();
+  }
+}

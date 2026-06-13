@@ -29,6 +29,12 @@ ys_beacon.settings:
     footer:
       type: text
       label: 'Footer text'
+    search_index_id:
+      type: string
+      label: 'Search API index machine name backing the chatbot'
+    search_server_id:
+      type: string
+      label: 'Search API server machine name backing the chatbot'
     azure_index_name:
       type: string
       label: 'Azure AI Search index (collection) name'

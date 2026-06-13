@@ -6,6 +6,8 @@ floating_button_icon: 'fa-comments'
 prompts: []
 disclaimer: ''
 footer: ''
+search_index_id: ys_beacon
+search_server_id: ys_beacon
 azure_index_name: ''
 azure_search_url_key: ''
 top_k: 5

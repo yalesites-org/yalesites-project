@@ -67,7 +67,7 @@ class BeaconIndexManager {
     // The Beacon search index stays disabled at runtime until an index name
     // exists, so Search API never initialized its tracker. Rebuild it now
     // that the index is available.
-    $index = $this->entityTypeManager->getStorage('search_api_index')->load('ys_beacon');
+    $index = $this->entityTypeManager->getStorage('search_api_index')->load($this->searchIndexId());
     if ($index && $index->status()) {
       $index->rebuildTracker();
     }
@@ -267,9 +267,23 @@ class BeaconIndexManager {
    */
   protected function getEmbeddingDimensions(): int {
     $dimensions = $this->configFactory
-      ->get('search_api.server.ys_beacon')
+      ->get('search_api.server.' . $this->searchServerId())
       ->get('backend_config.embeddings_engine_configuration.dimensions');
     return (int) ($dimensions ?: 1536);
+  }
+
+  /**
+   * The Search API index machine name backing the chatbot.
+   */
+  protected function searchIndexId(): string {
+    return $this->configFactory->get('ys_beacon.settings')->get('search_index_id') ?: 'ys_beacon';
+  }
+
+  /**
+   * The Search API server machine name backing the chatbot.
+   */
+  protected function searchServerId(): string {
+    return $this->configFactory->get('ys_beacon.settings')->get('search_server_id') ?: 'ys_beacon';
   }
 
   /**

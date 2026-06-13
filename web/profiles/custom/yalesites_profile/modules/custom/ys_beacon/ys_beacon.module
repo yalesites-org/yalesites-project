@@ -109,7 +109,8 @@ function ys_beacon_entity_update(EntityInterface $entity) {
   }
 
   try {
-    $index = Index::load('ys_beacon');
+    $index_id = \Drupal::config('ys_beacon.settings')->get('search_index_id') ?: 'ys_beacon';
+    $index = Index::load($index_id);
     if (!$index || !$index->status() || !$index->isServerEnabled()) {
       return;
     }
