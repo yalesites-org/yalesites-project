@@ -56,6 +56,15 @@ services:
       - '@config.factory'
       - '@logger.channel.ys_beacon'
 
+  ys_beacon.content_feed_builder:
+    class: Drupal\ys_beacon\Service\ContentFeedBuilder
+    arguments:
+      - '@entity_type.manager'
+      - '@ys_beacon.indexability'
+      - '@ys_beacon.ai_metadata_manager'
+      - '@renderer'
+      - '@account_switcher'
+
   ys_beacon.system_instructions_access_check:
     class: Drupal\ys_beacon\Access\SystemInstructionsAccessCheck
     arguments:

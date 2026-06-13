@@ -118,6 +118,59 @@ available on the managed Pantheon platform; `smalot/pdfparser` works there
 unchanged. The parser is isolated behind `PdfTextExtractorInterface` so it can
 be swapped without touching the extraction orchestration.
 
+## Content feed API
+
+The push-based pipeline indexes content into Azure for the chatbot, but an
+external consumer that needs to *pull* content can read the JSON content feed,
+the equivalent of the legacy `/api/ai/v1/content` endpoint:
+
+```
+GET /api/ys-beacon/v1/content?type=node&page=1&page_size=50
+```
+
+- **Access controlled.** The route requires the `access ys beacon content feed`
+  permission; it is never public. Grant it only to trusted feed consumers.
+- **Same indexability rules as the index.** Items are filtered through
+  `BeaconIndexability`, so the feed exposes exactly what the chatbot indexes:
+  published, anonymously viewable, and not opted out via `ai_disable_indexing`.
+- **Parameters:** `type` (`node` or `media`, default `node`), `page` (1-based,
+  default 1), `page_size` (default 50, max 200). Because the per-item
+  indexability filter runs after the page window, a page may contain fewer than
+  `page_size` items; page until `data` is empty.
+
+Response shape:
+
+```json
+{
+  "data": [
+    {
+      "id": "node/123",
+      "type": "node",
+      "bundle": "page",
+      "uuid": "…",
+      "title": "…",
+      "url": "https://…",
+      "langcode": "en",
+      "created": "2026-01-01T00:00:00+00:00",
+      "changed": "2026-02-01T00:00:00+00:00",
+      "ai_description": "…",
+      "ai_tags": "…",
+      "content": "plain-text rendering of the default view (nodes only)"
+    }
+  ],
+  "pagination": {
+    "type": "node",
+    "page": 1,
+    "page_size": 50,
+    "total_records": 1234,
+    "total_pages": 25
+  }
+}
+```
+
+Node bodies are rendered as the anonymous user, so the feed never exposes
+content a logged-out visitor could not see.
+
 ## React widget
 
 Source lives in `react/` (Vite + TypeScript fork of the ai_engine_chat
