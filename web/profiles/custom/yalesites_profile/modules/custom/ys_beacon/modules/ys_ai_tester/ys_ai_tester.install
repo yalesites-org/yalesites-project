@@ -1,0 +1,45 @@
+<?php
+
+/**
+ * @file
+ * Install and uninstall functions for the YS AI Tester module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function ys_ai_tester_schema(): array {
+  $schema['ys_ai_tester_run'] = [
+    'description' => 'Stores AI tester batch runs.',
+    'fields' => [
+      'id' => ['type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE],
+      'uid' => ['type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0],
+      'created' => ['type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0],
+      'yaml_filename' => ['type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''],
+      'yaml_content' => ['type' => 'blob', 'size' => 'big', 'not null' => TRUE],
+      'status' => ['type' => 'varchar', 'length' => 32, 'not null' => TRUE, 'default' => 'processing'],
+      'question_count' => ['type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'created' => ['created'],
+      'uid' => ['uid'],
+    ],
+  ];
+
+  $schema['ys_ai_tester_result'] = [
+    'description' => 'Stores individual question results for AI tester runs.',
+    'fields' => [
+      'id' => ['type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE],
+      'run_id' => ['type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE],
+      'delta' => ['type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0],
+      'question' => ['type' => 'text', 'size' => 'medium', 'not null' => TRUE],
+      'answer' => ['type' => 'text', 'size' => 'big', 'not null' => TRUE],
+      'citations' => ['type' => 'text', 'size' => 'medium', 'not null' => TRUE],
+    ],
+    'primary key' => ['id'],
+    'indexes' => ['run_id' => ['run_id']],
+  ];
+
+  return $schema;
+}
