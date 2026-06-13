@@ -12,6 +12,22 @@ its `ai_engine_metadata` submodule, so the AI metadata tags editors already
 maintain (`ai_description`, `ai_tags`, `ai_disable_indexing`) keep working and
 flow into the vector index.
 
+## Naming
+
+The chat widget originates from Microsoft's "Contoso Chat" sample (by way of
+the `ai_engine_chat` widget it was forked from), and earlier development
+iterations carried that placeholder name as the module `ys_contoso_chat`. That
+placeholder is gone: this release ships the module as `ys_beacon` from the
+outset, and no `contoso` identifier remains anywhere in the custom code or
+configuration (machine name, PHP namespace, service ids, permissions, routes,
+config object, or React bundle).
+
+No rename migration hook is required. `ys_contoso_chat` was never released on
+`develop` or to production, so there is no installed base whose
+`ys_contoso_chat.settings` config or permission grants need migrating. Sites
+install `ys_beacon` directly. The rename tracked by issue #1291 is therefore
+satisfied by the consolidation rather than by an update hook.
+
 ## Architecture
 
 ```
