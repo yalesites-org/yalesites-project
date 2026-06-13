@@ -6,6 +6,14 @@ ys_beacon.conversation:
   requirements:
     _access: 'TRUE'
 
+ys_beacon.content_feed:
+  path: '/api/ys-beacon/v1/content'
+  defaults:
+    _controller: '\Drupal\ys_beacon\Controller\ContentFeedController::feed'
+  methods: [GET]
+  requirements:
+    _permission: 'access ys beacon content feed'
+
 ys_beacon.settings:
   path: '/admin/config/yalesites/ys-beacon'
   defaults:
