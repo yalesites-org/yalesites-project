@@ -88,6 +88,36 @@ a new index must be provisioned, and all content re-indexed.
 - Re-index everything: the button on the Beacon administration form, or
   `drush sapi-r ys_beacon && drush sapi-i ys_beacon`.
 
+## PDF text extraction
+
+PDFs carry their content inside the file, which Search API cannot read, so the
+chatbot could otherwise only see a PDF's filename and metadata. Beacon extracts
+the PDF text layer into a media field that Search API can index:
+
+- **Field:** `field_ai_pdf_text` (string_long) on the `document` media bundle,
+  shipped in the profile config sync. It is machine-populated, not edited by
+  hand. Add it to the Beacon index's `field_settings` to include PDF text in AI
+  search.
+- **Asynchronous:** on media insert, and on update when the uploaded file
+  changes, `ys_beacon` queues a `ys_beacon_pdf_text_extraction` job that runs on
+  cron, so uploading a large PDF never slows the editorial save.
+- **Opt-out and access respected:** extraction is skipped when
+  `ai_disable_indexing` is set, and only runs on sites where Beacon indexing is
+  configured.
+- **Image-only PDFs:** scanned PDFs with no text layer extract to an empty
+  string (logged, no error). There is no OCR.
+- **Size limit:** files larger than `ys_beacon.settings:pdf_extraction_max_bytes`
+  (default 20 MB) are skipped and logged, to bound memory and time.
+
+### Extraction library
+
+`smalot/pdfparser` (pinned in the profile `composer.json`) is used because it is
+pure PHP and needs no system binary. The common alternative,
+`spatie/pdf-to-text`, shells out to the `pdftotext` binary, which is not
+available on the managed Pantheon platform; `smalot/pdfparser` works there
+unchanged. The parser is isolated behind `PdfTextExtractorInterface` so it can
+be swapped without touching the extraction orchestration.
+
 ## React widget
 
 Source lives in `react/` (Vite + TypeScript fork of the ai_engine_chat

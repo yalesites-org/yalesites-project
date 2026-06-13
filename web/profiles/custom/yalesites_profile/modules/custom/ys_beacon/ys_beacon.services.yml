@@ -43,6 +43,19 @@ services:
       - '@metatag.manager'
       - '@token'
 
+  ys_beacon.pdf_text_extractor:
+    class: Drupal\ys_beacon\Service\SmalotPdfTextExtractor
+
+  ys_beacon.pdf_text_indexer:
+    class: Drupal\ys_beacon\Service\PdfTextIndexer
+    arguments:
+      - '@entity_type.manager'
+      - '@file_system'
+      - '@ys_beacon.pdf_text_extractor'
+      - '@ys_beacon.indexability'
+      - '@config.factory'
+      - '@logger.channel.ys_beacon'
+
   ys_beacon.system_instructions_access_check:
     class: Drupal\ys_beacon\Access\SystemInstructionsAccessCheck
     arguments:
