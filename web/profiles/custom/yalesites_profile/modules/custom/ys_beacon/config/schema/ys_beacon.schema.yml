@@ -41,6 +41,9 @@ ys_beacon.settings:
     azure_search_url_key:
       type: string
       label: 'Key entity id holding the Azure AI Search endpoint URL'
+    pdf_extraction_max_bytes:
+      type: integer
+      label: 'Maximum PDF size in bytes to extract text from'
     top_k:
       type: integer
       label: 'Number of source chunks to retrieve'

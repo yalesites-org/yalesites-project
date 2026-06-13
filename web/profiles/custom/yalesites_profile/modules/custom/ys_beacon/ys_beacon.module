@@ -9,6 +9,7 @@ use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\media\MediaInterface;
 use Drupal\search_api\Entity\Index;
 use Drupal\search_api\Utility\Utility;
 
@@ -88,6 +89,17 @@ function ys_beacon_page_attachments_alter(array &$attachments) {
  * embedding work stays out of the save path.
  */
 function ys_beacon_entity_update(EntityInterface $entity) {
+  if ($entity instanceof MediaInterface) {
+    // Re-extract PDF text only when the uploaded file actually changed (a
+    // replacement); saving our own extracted-text field must not re-queue.
+    $original = $entity->original ?? NULL;
+    $changed = !$original instanceof MediaInterface
+      || _ys_beacon_media_source_fid($entity) !== _ys_beacon_media_source_fid($original);
+    if ($changed) {
+      _ys_beacon_queue_pdf_extraction($entity);
+    }
+  }
+
   if (!in_array($entity->getEntityTypeId(), ['node', 'media'], TRUE)) {
     return;
   }
@@ -198,5 +210,54 @@ function ys_beacon_page_bottom(array &$page_bottom) {
       '#button_text' => $config->get('floating_button_text'),
       '#icon_class' => $config->get('floating_button_icon') ?? 'fa-comments',
     ];
+  }
+}
+
+/**
+ * Implements hook_entity_insert().
+ *
+ * Queues PDF text extraction for a newly uploaded document.
+ */
+function ys_beacon_entity_insert(EntityInterface $entity) {
+  if ($entity instanceof MediaInterface) {
+    _ys_beacon_queue_pdf_extraction($entity);
+  }
+}
+
+/**
+ * Queues background PDF text extraction for a media entity when appropriate.
+ *
+ * @param \Drupal\media\MediaInterface $media
+ *   The media entity that may hold a PDF.
+ */
+function _ys_beacon_queue_pdf_extraction(MediaInterface $media) {
+  // Only extract on sites where Beacon indexing is configured; without an
+  // index there is nothing to feed the extracted text into.
+  if (!\Drupal::config('ys_beacon.settings')->get('azure_index_name')) {
+    return;
+  }
+  /** @var \Drupal\ys_beacon\Service\PdfTextIndexer $indexer */
+  $indexer = \Drupal::service('ys_beacon.pdf_text_indexer');
+  if ($indexer->isExtractable($media)) {
+    \Drupal::queue('ys_beacon_pdf_text_extraction')->createItem(['media_id' => $media->id()]);
+  }
+}
+
+/**
+ * Returns the source file id of a media entity, or NULL.
+ *
+ * @param \Drupal\media\MediaInterface $media
+ *   The media entity.
+ *
+ * @return string|null
+ *   The source file id, or NULL when the media has no file source.
+ */
+function _ys_beacon_media_source_fid(MediaInterface $media): ?string {
+  try {
+    $fid = $media->getSource()->getSourceFieldValue($media);
+    return $fid !== NULL ? (string) $fid : NULL;
+  }
+  catch (\Throwable $e) {
+    return NULL;
   }
 }
