@@ -246,14 +246,21 @@ relevant sources below, then recreate the Azure index and re-index:
 Then apply the change to a site:
 
 ```
-drush ys-ai:create-index --recreate   # rebuild the Azure index to the new schema
-drush sapi-r ys_beacon                 # mark everything for re-indexing
-drush sapi-i ys_beacon                 # re-embed and push
+drush sapi-r ys_beacon   # mark everything for re-indexing
+drush sapi-i ys_beacon   # re-embed and push
 ```
 
-Changing the embedding model is a special case of the above: the vector
-`dimensions` must change with it, the index must be recreated, and all content
-re-indexed.
+If the Azure index schema itself changed (a new stored field, or new vector
+dimensions), the Azure index must be recreated, not just re-indexed: Beacon
+only ever adopts an existing Azure index and never alters it (see "Azure AI
+Search index provisioning" above). Delete the index in the Azure AI Search
+portal, then re-save the index name on the Beacon administration form
+(`/admin/config/yalesites/ys-beacon/admin`) so `BeaconIndexManager`
+re-provisions it to the new schema, and run the re-index above.
+
+Changing the embedding model is a special case of this: the vector
+`dimensions` must change with it, the Azure index must be recreated, and all
+content re-indexed.
 
 ## Upgrading the AI contrib stack
 
