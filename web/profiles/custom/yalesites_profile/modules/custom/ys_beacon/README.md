@@ -300,7 +300,8 @@ shipping broken citations.
 
 Source lives in `react/` (Vite + TypeScript fork of the ai_engine_chat
 widget, with chat history, feedback, and Azure auth removed). The built
-bundle in `react/static/` is committed; CI does not build module JavaScript.
+bundle in `react/static/` is committed because the Pantheon deploy platform
+has no build step.
 
 After changing `react/src`:
 
@@ -312,6 +313,23 @@ npm run build      # tsc && vite build -> react/static/assets
 ```
 
 Commit the regenerated `react/static` output together with the source change.
+
+The `.github/workflows/verify_beacon_bundle.yml` CI check rebuilds the bundle
+from source on every pull request that touches `react/` and fails if the
+result differs from the committed `react/static` output, so a source change
+that was not rebuilt and re-committed cannot reach the live site. The build is
+deterministic with the pinned Node (`.nvmrc`) and locked dependencies, so a
+clean rebuild reproduces the committed bundle exactly.
+
+### Source map decision
+
+The production source map (`react/static/assets/index.js.map`) is committed and
+shipped deliberately. The widget's source is already public in this repository,
+so the map exposes nothing secret; it builds deterministically (no parity risk);
+browsers fetch it only when developer tools are open, so it adds no cost for
+normal visitors; and it makes production debugging of the one widget that uses
+it far easier. To stop shipping it, set `build.sourcemap` to `false` in
+`react/vite.config.ts`, delete the committed `.map`, and rebuild.
 
 The conversation endpoint contract: NDJSON lines, each a complete
 `{id, model, created, object, choices: [{messages: [...]}]}` envelope. The
