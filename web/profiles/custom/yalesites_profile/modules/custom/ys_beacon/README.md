@@ -194,6 +194,32 @@ Reach it from the integrations dashboard or
 `/admin/config/yalesites/ys-beacon/tester` (permission: *Use YaleSites AI
 Tester*).
 
+## System instruction layers
+
+`SystemPromptBuilder::build()` assembles the chat system prompt from three
+layers, always in this order, and it is invoked on every Beacon chat request
+(`ChatApiController`), so the ordering is the actual injection point that
+reaches the model through Portkey:
+
+1. **Platform guardrail** - the Yale-wide baseline. It is defined as an
+   immutable constant in code (`SystemPromptBuilder::PLATFORM_GUARDRAIL`),
+   prepended first on every request, and declares precedence over all later
+   instructions and over source and user content. It is invisible to site
+   administrators and cannot be edited, blanked, or reordered per site.
+2. **Site guardrail supplement** - an optional per-site value
+   (`ys_beacon.settings:guardrail_supplement`) that sits *after* the platform
+   guardrail, so a site can only *add* restrictions, never relax the baseline.
+3. **Site system instructions** - the per-site assistant behavior, managed with
+   versioning (or the `fallback_system_prompt` when no version is saved).
+
+This is a deliberate design decision for issue #1143. The ticket envisioned the
+platform instruction as platform-admin-editable config; it is instead defined
+in code so it is identical on every site and cannot be weakened by any config
+edit, import, or compromised site administrator. Because it is always present,
+there is no "empty/unset platform instruction" state - the baseline always
+applies. The guardrail text contains no secrets, keys, or internal URLs, since
+prompt secrecy is not treated as a security boundary.
+
 ## React widget
 
 Source lives in `react/` (Vite + TypeScript fork of the ai_engine_chat
