@@ -171,6 +171,29 @@ Response shape:
 Node bodies are rendered as the anonymous user, so the feed never exposes
 content a logged-out visitor could not see.
 
+## Citations
+
+`CitationFormatter` is the single, server-side home for citation handling. Given
+the model's answer and the sources `RagRetriever` returned (in `[docN]` order),
+it de-duplicates sources by URL, flags which ones the model actually cited
+(`[docN]` present in the answer), and renumbers them for display. Both the chat
+and the AI tester build on `RagRetriever` for retrieval and on this formatter
+for the cited/de-duplicated list, so the two cannot drift.
+
+## AI tester
+
+The `ys_ai_tester` submodule batch-runs a YAML list of questions through the
+Beacon assistant for QA. It uses `BeaconAnswerService` (the non-streamed
+counterpart of the chat endpoint: same retrieval and system prompt, whole
+answer at once) and `CitationFormatter`, so each result shows **every** retrieved
+source as a linked title plus URL, flagged cited or "retrieved, not cited" —
+letting a tester evaluate citation quality, not just bare URLs. Citations are
+derived per question, so re-running never leaks citations across questions, and
+the JSON export carries the same structured citation fields shown on screen.
+Reach it from the integrations dashboard or
+`/admin/config/yalesites/ys-beacon/tester` (permission: *Use YaleSites AI
+Tester*).
+
 ## React widget
 
 Source lives in `react/` (Vite + TypeScript fork of the ai_engine_chat

@@ -10,6 +10,16 @@ services:
       - '@config.factory'
       - '@logger.channel.ys_beacon'
 
+  ys_beacon.citation_formatter:
+    class: Drupal\ys_beacon\Service\CitationFormatter
+
+  ys_beacon.beacon_answer:
+    class: Drupal\ys_beacon\Service\BeaconAnswerService
+    arguments:
+      - '@ai.provider'
+      - '@ys_beacon.rag_retriever'
+      - '@ys_beacon.prompt_builder'
+
   ys_beacon.system_instructions_storage:
     class: Drupal\ys_beacon\Service\SystemInstructionsStorage
     arguments:
