@@ -224,7 +224,7 @@ class YsBeaconAdminSettings extends ConfigFormBase {
    * and re-embedded into the vector database on the next indexing runs.
    */
   public function reindexAll(array &$form, FormStateInterface $form_state): void {
-    $index = $this->entityTypeManager->getStorage('search_api_index')->load('ys_beacon');
+    $index = $this->entityTypeManager->getStorage('search_api_index')->load($this->searchIndexId());
     if ($index && $index->status()) {
       $index->reindex();
       $this->messenger()->addStatus($this->t('All content has been queued for re-indexing into the Beacon vector database.'));
@@ -238,7 +238,7 @@ class YsBeaconAdminSettings extends ConfigFormBase {
    * Builds a short indexing status summary.
    */
   protected function indexStatusSummary(): string {
-    $index = $this->entityTypeManager->getStorage('search_api_index')->load('ys_beacon');
+    $index = $this->entityTypeManager->getStorage('search_api_index')->load($this->searchIndexId());
     if (!$index || !$index->status()) {
       return (string) $this->t('The Beacon index is currently disabled. It enables automatically once an Azure AI Search index name is configured.');
     }
@@ -252,6 +252,13 @@ class YsBeaconAdminSettings extends ConfigFormBase {
     catch (\Throwable $e) {
       return (string) $this->t('Index status unavailable.');
     }
+  }
+
+  /**
+   * The Search API index machine name backing the chatbot.
+   */
+  protected function searchIndexId(): string {
+    return $this->config('ys_beacon.settings')->get('search_index_id') ?: 'ys_beacon';
   }
 
 }

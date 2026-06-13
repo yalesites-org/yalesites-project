@@ -25,10 +25,13 @@ use Drupal\Core\Config\StorageInterface;
 class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
 
   /**
-   * Names of the configuration objects this class overrides.
+   * The vector-database connection config this class overrides.
+   *
+   * The search server and index config names are not constants: their machine
+   * names are configurable (ys_beacon.settings:search_server_id /
+   * search_index_id, defaulting to "ys_beacon"), so they are resolved at
+   * runtime to support a second index without code changes.
    */
-  protected const SERVER_CONFIG = 'search_api.server.ys_beacon';
-  protected const INDEX_CONFIG = 'search_api.index.ys_beacon';
   protected const VDB_CONFIG = 'ai_vdb_provider_azure_ai_search.settings';
 
   /**
@@ -63,20 +66,19 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
    */
   public function loadOverrides($names) {
     $overrides = [];
-    $relevant = array_intersect($names, [
-      self::SERVER_CONFIG,
-      self::INDEX_CONFIG,
-      self::VDB_CONFIG,
-    ]);
-    if (!$relevant) {
+    // Cheap early-out without reading settings: skip anything that cannot be
+    // one of our config objects.
+    if (!array_filter($names, [$this, 'mayBeRelevant'])) {
       return $overrides;
     }
 
     $settings = $this->getSettings();
+    $server_config = $this->serverConfigName($settings);
+    $index_config = $this->indexConfigName($settings);
     $index_name = $settings['azure_index_name'] ?? '';
 
-    if (in_array(self::SERVER_CONFIG, $relevant) && $index_name !== '') {
-      $overrides[self::SERVER_CONFIG] = [
+    if (in_array($server_config, $names, TRUE) && $index_name !== '') {
+      $overrides[$server_config] = [
         'backend_config' => [
           'database_settings' => [
             'database_name' => $index_name,
@@ -85,18 +87,18 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
       ];
     }
 
-    if (in_array(self::INDEX_CONFIG, $relevant)) {
+    if (in_array($index_config, $names, TRUE)) {
       // The chat toggle is the primary driver of index status: the settings
       // form enables or disables the index explicitly in sync with it. This
       // override only acts as a safety net, forcing the index off whenever
       // chat is disabled or no index name has been configured yet.
       $enable_chat = $settings['enable_chat'] ?? FALSE;
       if (!$enable_chat || $index_name === '') {
-        $overrides[self::INDEX_CONFIG] = ['status' => FALSE];
+        $overrides[$index_config] = ['status' => FALSE];
       }
     }
 
-    if (in_array(self::VDB_CONFIG, $relevant)) {
+    if (in_array(self::VDB_CONFIG, $names, TRUE)) {
       $url = $this->getAzureSearchUrl(($settings['azure_search_url_key'] ?? '') ?: self::DEFAULT_URL_KEY);
       if ($url !== '') {
         $overrides[self::VDB_CONFIG] = ['url' => $url];
@@ -104,6 +106,50 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
     }
 
     return $overrides;
+  }
+
+  /**
+   * Whether a config name could be one this override touches.
+   *
+   * A prefix/equality test that needs no settings read, so unrelated config
+   * loads stay cheap.
+   *
+   * @param string $name
+   *   The config object name.
+   *
+   * @return bool
+   *   TRUE when the name is the VDB settings or a search server/index object.
+   */
+  protected function mayBeRelevant(string $name): bool {
+    return $name === self::VDB_CONFIG
+      || str_starts_with($name, 'search_api.server.')
+      || str_starts_with($name, 'search_api.index.');
+  }
+
+  /**
+   * The search server config object name backing the chatbot.
+   *
+   * @param array $settings
+   *   The raw ys_beacon settings.
+   *
+   * @return string
+   *   The config object name.
+   */
+  protected function serverConfigName(array $settings): string {
+    return 'search_api.server.' . (($settings['search_server_id'] ?? '') ?: 'ys_beacon');
+  }
+
+  /**
+   * The search index config object name backing the chatbot.
+   *
+   * @param array $settings
+   *   The raw ys_beacon settings.
+   *
+   * @return string
+   *   The config object name.
+   */
+  protected function indexConfigName(array $settings): string {
+    return 'search_api.index.' . (($settings['search_index_id'] ?? '') ?: 'ys_beacon');
   }
 
   /**
@@ -180,8 +226,16 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
    */
   public function getCacheableMetadata($name) {
     $metadata = new CacheableMetadata();
-    if (in_array($name, [self::SERVER_CONFIG, self::INDEX_CONFIG, self::VDB_CONFIG])) {
-      $metadata->addCacheTags(['config:ys_beacon.settings']);
+    if ($this->mayBeRelevant($name)) {
+      $settings = $this->getSettings();
+      $ours = [
+        self::VDB_CONFIG,
+        $this->serverConfigName($settings),
+        $this->indexConfigName($settings),
+      ];
+      if (in_array($name, $ours, TRUE)) {
+        $metadata->addCacheTags(['config:ys_beacon.settings']);
+      }
     }
     // The injected endpoint URL is read from the key entity, so the override
     // must be invalidated when that key is created or changed (for example by

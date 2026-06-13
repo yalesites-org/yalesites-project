@@ -37,9 +37,10 @@ class RagRetriever {
    */
   public function retrieve(string $question): array {
     $settings = $this->configFactory->get('ys_beacon.settings');
+    $index_id = $settings->get('search_index_id') ?: 'ys_beacon';
 
     /** @var \Drupal\search_api\IndexInterface|null $index */
-    $index = $this->entityTypeManager->getStorage('search_api_index')->load('ys_beacon');
+    $index = $this->entityTypeManager->getStorage('search_api_index')->load($index_id);
     if (!$index || !$index->status()) {
       return [];
     }

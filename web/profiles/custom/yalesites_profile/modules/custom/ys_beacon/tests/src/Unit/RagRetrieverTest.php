@@ -11,7 +11,7 @@ use Drupal\ys_beacon\Service\RagRetriever;
 use Psr\Log\LoggerInterface;
 
 /**
- * Tests Beacon RAG retrieval failure logging and empty-index guards.
+ * Tests Beacon RAG retrieval: failure logging, guards, and index resolution.
  *
  * @group ys_beacon
  * @coversDefaultClass \Drupal\ys_beacon\Service\RagRetriever
@@ -66,6 +66,63 @@ class RagRetrieverTest extends UnitTestCase {
     $logger->expects($this->never())->method('error');
 
     $this->assertSame([], $this->makeRetriever($index, $logger)->retrieve('hi'));
+  }
+
+  /**
+   * The retriever loads the configured Search API index, not a hardcoded one.
+   *
+   * @covers ::retrieve
+   */
+  public function testRetrieveLoadsConfiguredIndexId(): void {
+    $index = $this->createMock(IndexInterface::class);
+    $index->method('status')->willReturn(FALSE);
+
+    $storage = $this->createMock(EntityStorageInterface::class);
+    // The configured id must be the one loaded.
+    $storage->expects($this->once())
+      ->method('load')
+      ->with('internal_corpus')
+      ->willReturn($index);
+
+    $entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
+    $entityTypeManager->method('getStorage')->with('search_api_index')->willReturn($storage);
+
+    $configFactory = $this->getConfigFactoryStub([
+      'ys_beacon.settings' => [
+        'search_index_id' => 'internal_corpus',
+        'top_k' => 5,
+        'score_threshold' => 0.0,
+      ],
+    ]);
+
+    $retriever = new RagRetriever($entityTypeManager, $configFactory, $this->createMock(LoggerInterface::class));
+    $this->assertSame([], $retriever->retrieve('hello'));
+  }
+
+  /**
+   * With no configured id, the retriever falls back to the default index.
+   *
+   * @covers ::retrieve
+   */
+  public function testRetrieveFallsBackToDefaultIndexId(): void {
+    $index = $this->createMock(IndexInterface::class);
+    $index->method('status')->willReturn(FALSE);
+
+    $storage = $this->createMock(EntityStorageInterface::class);
+    $storage->expects($this->once())
+      ->method('load')
+      ->with('ys_beacon')
+      ->willReturn($index);
+
+    $entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
+    $entityTypeManager->method('getStorage')->with('search_api_index')->willReturn($storage);
+
+    $configFactory = $this->getConfigFactoryStub([
+      'ys_beacon.settings' => ['top_k' => 5, 'score_threshold' => 0.0],
+    ]);
+
+    $retriever = new RagRetriever($entityTypeManager, $configFactory, $this->createMock(LoggerInterface::class));
+    $this->assertSame([], $retriever->retrieve('hello'));
   }
 
   /**

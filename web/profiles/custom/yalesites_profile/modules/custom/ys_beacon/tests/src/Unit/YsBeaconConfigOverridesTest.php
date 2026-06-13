@@ -3,14 +3,17 @@
 namespace Drupal\Tests\ys_beacon\Unit;
 
 use Drupal\Core\Config\StorageInterface;
-use Drupal\Tests\UnitTestCase;
 use Drupal\key\KeyInterface;
 use Drupal\key\KeyRepositoryInterface;
+use Drupal\Tests\UnitTestCase;
 use Drupal\ys_beacon\Config\YsBeaconConfigOverrides;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
- * Tests the Azure endpoint URL override resolution.
+ * Tests per-site Beacon config overrides.
+ *
+ * Covers the Azure endpoint URL resolution, the chat-toggle index status
+ * safety net, and the configurable search server/index machine names.
  *
  * @group ys_beacon
  * @coversDefaultClass \Drupal\ys_beacon\Config\YsBeaconConfigOverrides
@@ -173,6 +176,80 @@ class YsBeaconConfigOverridesTest extends UnitTestCase {
 
     $overrides = $override->loadOverrides([self::INDEX_CONFIG]);
     $this->assertFalse($overrides[self::INDEX_CONFIG]['status']);
+  }
+
+  /**
+   * By default the override targets the "ys_beacon" server and index.
+   *
+   * @covers ::loadOverrides
+   */
+  public function testDefaultServerAndIndexNames(): void {
+    $overrides = $this->overridesFor(['enable_chat' => TRUE, 'azure_index_name' => 'site-live'])
+      ->loadOverrides(['search_api.server.ys_beacon', 'search_api.index.ys_beacon']);
+
+    $this->assertSame(
+      'site-live',
+      $overrides['search_api.server.ys_beacon']['backend_config']['database_settings']['database_name'] ?? NULL,
+    );
+  }
+
+  /**
+   * A configured server/index id moves the overrides to the new config names.
+   *
+   * @covers ::loadOverrides
+   */
+  public function testConfigurableServerAndIndexNames(): void {
+    $service = $this->overridesFor([
+      'search_server_id' => 'internal',
+      'search_index_id' => 'internal',
+      'azure_index_name' => 'internal-live',
+    ]);
+
+    $server = $service->loadOverrides(['search_api.server.internal']);
+    $this->assertSame(
+      'internal-live',
+      $server['search_api.server.internal']['backend_config']['database_settings']['database_name'] ?? NULL,
+    );
+    // The old default name is no longer overridden.
+    $this->assertSame([], $service->loadOverrides(['search_api.server.ys_beacon']));
+  }
+
+  /**
+   * An unconfigured site disables the configured index by its real name.
+   *
+   * @covers ::loadOverrides
+   */
+  public function testUnconfiguredSiteDisablesConfiguredIndex(): void {
+    $overrides = $this->overridesFor([
+      'search_index_id' => 'internal',
+      'azure_index_name' => '',
+    ])->loadOverrides(['search_api.index.internal']);
+
+    $this->assertFalse($overrides['search_api.index.internal']['status'] ?? NULL);
+  }
+
+  /**
+   * Unrelated config names are skipped without reading settings.
+   *
+   * @covers ::loadOverrides
+   * @covers ::mayBeRelevant
+   */
+  public function testIrrelevantConfigIsIgnored(): void {
+    $storage = $this->createMock(StorageInterface::class);
+    // The early-out must not even read ys_beacon.settings for unrelated names.
+    $storage->expects($this->never())->method('read');
+    $service = new YsBeaconConfigOverrides($storage);
+
+    $this->assertSame([], $service->loadOverrides(['system.site', 'views.view.frontpage']));
+  }
+
+  /**
+   * Builds an override service backed by the given ys_beacon settings.
+   */
+  private function overridesFor(array $settings): YsBeaconConfigOverrides {
+    $storage = $this->createMock(StorageInterface::class);
+    $storage->method('read')->with('ys_beacon.settings')->willReturn($settings);
+    return new YsBeaconConfigOverrides($storage);
   }
 
 }
