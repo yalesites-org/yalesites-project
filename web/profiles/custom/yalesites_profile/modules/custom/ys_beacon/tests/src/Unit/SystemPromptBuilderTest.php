@@ -95,6 +95,53 @@ class SystemPromptBuilderTest extends UnitTestCase {
   }
 
   /**
+   * Locks the [docN] marker to citation-order contract.
+   *
+   * Regression guard for the chat citation feature: the Nth source must be
+   * labelled [docN] and the markers must appear in the same order as the
+   * citation list the retriever returned (the contract the response envelope
+   * and the React widget rely on). This fails in CI if a contrib change
+   * reorders or reshapes retrieved results.
+   *
+   * @covers ::build
+   */
+  public function testBuildLocksDocMarkerToCitationOrder(): void {
+    $builder = $this->createBuilder(NULL);
+    $citations = [
+      ['title' => 'First', 'content' => 'First body'],
+      ['title' => 'Second', 'content' => 'Second body'],
+      ['title' => 'Third', 'content' => 'Third body'],
+    ];
+    $prompt = $builder->build($citations);
+
+    // Each source is numbered by its 1-based position and carries that
+    // citation's title and content.
+    foreach ($citations as $index => $citation) {
+      $marker = '[doc' . ($index + 1) . '] ' . $citation['title'] . "\n" . $citation['content'];
+      $this->assertStringContainsString($marker, $prompt);
+    }
+
+    // The markers appear in ascending order, with no gaps and no renumbering.
+    $this->assertSame(
+      ['[doc1]', '[doc2]', '[doc3]'],
+      $this->extractMarkersInOrder($prompt),
+      'Markers must be sequential and ordered to match the citation list.',
+    );
+  }
+
+  /**
+   * Returns the source-list [docN] markers in the order they appear.
+   *
+   * Only markers that begin a line are real source entries; the citation
+   * instruction sentence contains inline example markers ("for example
+   * [doc1]") that must not be counted.
+   */
+  private function extractMarkersInOrder(string $prompt): array {
+    preg_match_all('/^(\[doc\d+\])/m', $prompt, $matches);
+    return $matches[1];
+  }
+
+  /**
    * The platform guardrail leads the prompt even with no site configuration.
    *
    * The guardrail is the platform-level instruction: it is injected on every

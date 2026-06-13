@@ -220,6 +220,75 @@ there is no "empty/unset platform instruction" state - the baseline always
 applies. The guardrail text contains no secrets, keys, or internal URLs, since
 prompt secrecy is not treated as a security boundary.
 
+## Maintaining the index fields
+
+What gets stored in the Beacon vector index is defined in several places that
+must stay in lockstep. To add or change an indexed field, edit all of the
+relevant sources below, then recreate the Azure index and re-index:
+
+1. **`config/sync/search_api.index.ys_beacon.yml`** - the Search API index
+   entity: which Drupal properties are indexed (`title`, `rendered_item`,
+   `ai_description`, `ai_tags`, `media_name`) and the processors applied.
+2. **`config/sync/search_api.server.ys_beacon.yml`** - the AI Search backend
+   config, including `backend_config.embeddings_engine_configuration.dimensions`
+   (the vector size; must match the embedding model).
+3. **`config/sync/ai_search.index.ys_beacon.yml`** - the ai_search metadata for
+   the index.
+4. **`config/sync/ai_vdb_provider_azure_ai_search.settings.yml`** - the Azure
+   connection, including the pinned Azure management `api-version` (default
+   `2023-11-01`; read by `BeaconIndexManager::request()`).
+5. **`src/Service/BeaconIndexManager.php`** - generates the Azure-side index
+   schema (field definitions, the `vector` field, the HNSW profile) from the
+   server's configured dimensions. The AI-metadata properties themselves come
+   from the `AiMetadataProperties` Search API processor; `ExcludeAiDisabled`
+   keeps opted-out content out of the index.
+
+Then apply the change to a site:
+
+```
+drush ys-ai:create-index --recreate   # rebuild the Azure index to the new schema
+drush sapi-r ys_beacon                 # mark everything for re-indexing
+drush sapi-i ys_beacon                 # re-embed and push
+```
+
+Changing the embedding model is a special case of the above: the vector
+`dimensions` must change with it, the index must be recreated, and all content
+re-indexed.
+
+## Upgrading the AI contrib stack
+
+Beacon extends and depends on the internal behavior of several fast-moving
+contributed modules. When bumping `ai`, `ai_search`, or
+`ai_vdb_provider_azure_ai_search`, re-verify these extension points (a change
+in any of them can break Beacon silently, so run `lando phpunit --group
+ys_beacon` after the bump):
+
+- **`PortkeyProvider extends OpenAiBasedProviderClientBase`**
+  (`modules/ys_beacon_portkey`) - reuses the OpenAI-based client and overrides
+  `handleApiException()` to map HTTP status codes to AI exceptions. Re-verify
+  if the base class's error handling or the `openai-php` `ErrorException` shape
+  changes.
+- **`RagRetriever`** depends on ai_search's chunked-result query mode: the
+  `search_api_ai_get_chunks_result` query option and the per-result extra data
+  (`content`, `drupal_entity_id`). Re-verify if ai_search changes its result
+  item shape.
+- **`BeaconIndexManager`** depends on the Azure VDB provider's schema template
+  and management API (`api-version`) and on the search server backend config
+  shape (`embeddings_engine_configuration.dimensions`).
+
+### Citation `[docN]` contract
+
+`SystemPromptBuilder::build()` is the single source of truth for the citation
+marker format: it numbers the retrieved sources `[doc1]`, `[doc2]`, ... in the
+exact order `RagRetriever` returns them, and instructs the model to cite with
+those markers. `ChatApiController` ships the same ordered citation list in the
+response envelope, and the React widget renders marker `[docN]` as
+`citations[N-1]`. The order of the markers and the order of the citation list
+must stay aligned. `SystemPromptBuilderTest::testBuildLocksDocMarkerToCitationOrder()`
+is a regression test that fails if that alignment breaks, so a contrib change
+that reorders or reshapes retrieved results is caught in CI rather than
+shipping broken citations.
+
 ## React widget
 
 Source lives in `react/` (Vite + TypeScript fork of the ai_engine_chat
