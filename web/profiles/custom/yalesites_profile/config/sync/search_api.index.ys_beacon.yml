@@ -38,18 +38,18 @@ field_settings:
       roles:
         - anonymous
       view_mode:
-        'entity:node':
-          event: default
-          page: default
-          post: default
-          profile: default
-          resource: default
         'entity:media':
           background_video: default
           document: default
           embed: default
           image: default
           video: default
+        'entity:node':
+          event: default
+          page: default
+          post: default
+          profile: default
+          resource: default
   title:
     label: Title
     datasource_id: 'entity:node'

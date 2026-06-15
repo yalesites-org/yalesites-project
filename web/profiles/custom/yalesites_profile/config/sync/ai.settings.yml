@@ -8,6 +8,6 @@ default_providers:
     provider_id: portkey
     model_id: text-embedding-3-small
 request_timeout: 120
-allowed_hosts: []
+allowed_hosts: {  }
 allowed_hosts_rewrite_links: false
-global_guardrails: []
+global_guardrails: {  }

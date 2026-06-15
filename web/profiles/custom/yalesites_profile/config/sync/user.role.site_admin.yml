@@ -94,6 +94,7 @@ dependencies:
     - webform
     - ys_ai
     - ys_ai_system_instructions
+    - ys_ai_tester
     - ys_alert
     - ys_beacon
     - ys_campus_groups
@@ -438,6 +439,7 @@ permissions:
   - 'use events transition restore'
   - 'use events transition restore_to_draft'
   - 'use moderation sidebar'
+  - 'use ys ai tester'
   - 'view all media revisions'
   - 'view all revisions'
   - 'view any accordion block content history'

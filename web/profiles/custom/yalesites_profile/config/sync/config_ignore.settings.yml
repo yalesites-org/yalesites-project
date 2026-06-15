@@ -13,10 +13,10 @@ ignored_config_entities:
   - 'field.field.node.resource.field_custom_vocab:label'
   - 'google_analytics.settings:account'
   - 'google_tag*'
-  - 'key.key.azure_ai_search_api_key'
-  - 'key.key.azure_ai_search_url'
-  - 'key.key.portkey_embedding_api_key'
-  - 'key.key.portkey_llm_api_key'
+  - key.key.azure_ai_search_api_key
+  - key.key.azure_ai_search_url
+  - key.key.portkey_embedding_api_key
+  - key.key.portkey_llm_api_key
   - 'system.site*'
   - 'taxonomy.vocabulary.custom_vocab:name'
   - 'ys_ai_system_instructions*'
