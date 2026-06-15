@@ -23,6 +23,11 @@ class YsBeaconConfigOverridesTest extends UnitTestCase {
   protected const VDB_CONFIG = 'ai_vdb_provider_azure_ai_search.settings';
 
   /**
+   * The Search API index config name whose status is overridden.
+   */
+  protected const INDEX_CONFIG = 'search_api.index.ys_beacon';
+
+  /**
    * Builds the override with stubbed settings and a stubbed key repository.
    *
    * @param array $settings
@@ -108,6 +113,66 @@ class YsBeaconConfigOverridesTest extends UnitTestCase {
 
     $overrides = $override->loadOverrides([self::VDB_CONFIG]);
     $this->assertArrayNotHasKey(self::VDB_CONFIG, $overrides);
+  }
+
+  /**
+   * The index is left enabled when chat is on and an index name is configured.
+   *
+   * @covers ::loadOverrides
+   */
+  public function testIndexNotForcedOffWhenChatEnabledAndIndexNamed(): void {
+    $override = $this->buildOverride(
+      ['enable_chat' => TRUE, 'azure_index_name' => 'somesite-live'],
+      [],
+    );
+
+    $overrides = $override->loadOverrides([self::INDEX_CONFIG]);
+    $this->assertArrayNotHasKey(self::INDEX_CONFIG, $overrides);
+  }
+
+  /**
+   * Disabling chat forces the index off even when an index name is configured.
+   *
+   * @covers ::loadOverrides
+   */
+  public function testIndexForcedOffWhenChatDisabled(): void {
+    $override = $this->buildOverride(
+      ['enable_chat' => FALSE, 'azure_index_name' => 'somesite-live'],
+      [],
+    );
+
+    $overrides = $override->loadOverrides([self::INDEX_CONFIG]);
+    $this->assertFalse($overrides[self::INDEX_CONFIG]['status']);
+  }
+
+  /**
+   * The index is forced off when no index name is configured yet.
+   *
+   * @covers ::loadOverrides
+   */
+  public function testIndexForcedOffWhenIndexNameEmpty(): void {
+    $override = $this->buildOverride(
+      ['enable_chat' => TRUE, 'azure_index_name' => ''],
+      [],
+    );
+
+    $overrides = $override->loadOverrides([self::INDEX_CONFIG]);
+    $this->assertFalse($overrides[self::INDEX_CONFIG]['status']);
+  }
+
+  /**
+   * The index is forced off when chat is off and no index name is set.
+   *
+   * @covers ::loadOverrides
+   */
+  public function testIndexForcedOffWhenChatDisabledAndIndexNameEmpty(): void {
+    $override = $this->buildOverride(
+      ['enable_chat' => FALSE, 'azure_index_name' => ''],
+      [],
+    );
+
+    $overrides = $override->loadOverrides([self::INDEX_CONFIG]);
+    $this->assertFalse($overrides[self::INDEX_CONFIG]['status']);
   }
 
 }
