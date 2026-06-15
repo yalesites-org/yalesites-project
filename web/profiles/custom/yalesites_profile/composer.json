@@ -30,7 +30,7 @@
     "drupal/custom_book_block": "2.0.0",
     "drupal/devel": "5.5.0",
     "drupal/devel_kint_extras": "1.1.6",
-    "drupal/double_field": "4.2",
+    "drupal/double_field": "5.0.0-rc2",
     "drupal/editor_advanced_link": "2.3.4",
     "drupal/editoria11y": "3.0.3",
     "drupal/emulsify_twig": "5.0.0",
