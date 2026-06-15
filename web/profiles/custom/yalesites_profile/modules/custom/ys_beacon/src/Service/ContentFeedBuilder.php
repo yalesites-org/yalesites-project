@@ -86,10 +86,19 @@ class ContentFeedBuilder {
       ->execute();
 
     $data = [];
-    foreach ($storage->loadMultiple($ids) as $entity) {
-      if ($entity instanceof ContentEntityInterface && $this->indexability->isIndexable($entity)) {
-        $data[] = $this->buildItem($entity);
+    // Build the whole page as the anonymous user in a single account switch
+    // rather than one per item: the feed only ever exposes content a
+    // logged-out visitor can see.
+    $this->accountSwitcher->switchTo(new AnonymousUserSession());
+    try {
+      foreach ($storage->loadMultiple($ids) as $entity) {
+        if ($entity instanceof ContentEntityInterface && $this->indexability->isIndexable($entity)) {
+          $data[] = $this->buildItem($entity);
+        }
       }
+    }
+    finally {
+      $this->accountSwitcher->switchBack();
     }
 
     return [
@@ -159,14 +168,14 @@ class ContentFeedBuilder {
   }
 
   /**
-   * Renders an entity's default view as anonymous, returning plain text.
+   * Renders an entity's default view, returning plain text.
    *
-   * Rendered as the anonymous user so the feed body matches what the chatbot
-   * indexes and never leaks content only privileged users can see. Isolation
-   * keeps the render's cache metadata out of the JSON response.
+   * The caller (build()) switches to the anonymous user for the whole page, so
+   * the feed body matches what the chatbot indexes and never leaks content only
+   * privileged users can see. Isolation keeps the render's cache metadata out
+   * of the JSON response.
    */
   protected function renderContent(ContentEntityInterface $entity): string {
-    $this->accountSwitcher->switchTo(new AnonymousUserSession());
     try {
       $build = $this->entityTypeManager
         ->getViewBuilder($entity->getEntityTypeId())
@@ -175,9 +184,6 @@ class ContentFeedBuilder {
     }
     catch (\Throwable $e) {
       $html = '';
-    }
-    finally {
-      $this->accountSwitcher->switchBack();
     }
     return trim((string) preg_replace('/\s+/', ' ', strip_tags($html)));
   }

@@ -89,10 +89,11 @@ function ys_beacon_page_attachments_alter(array &$attachments) {
  * embedding work stays out of the save path.
  */
 function ys_beacon_entity_update(EntityInterface $entity) {
+  $original = $entity->original ?? NULL;
+
   if ($entity instanceof MediaInterface) {
     // Re-extract PDF text only when the uploaded file actually changed (a
     // replacement); saving our own extracted-text field must not re-queue.
-    $original = $entity->original ?? NULL;
     $changed = !$original instanceof MediaInterface
       || _ys_beacon_media_source_fid($entity) !== _ys_beacon_media_source_fid($original);
     if ($changed) {
@@ -107,7 +108,6 @@ function ys_beacon_entity_update(EntityInterface $entity) {
   if (!\Drupal::config('ys_beacon.settings')->get('azure_index_name')) {
     return;
   }
-  $original = $entity->original ?? NULL;
   if (!$original) {
     return;
   }

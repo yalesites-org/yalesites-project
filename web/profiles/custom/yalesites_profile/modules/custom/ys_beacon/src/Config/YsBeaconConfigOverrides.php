@@ -226,23 +226,25 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
    */
   public function getCacheableMetadata($name) {
     $metadata = new CacheableMetadata();
-    if ($this->mayBeRelevant($name)) {
-      $settings = $this->getSettings();
-      $ours = [
-        self::VDB_CONFIG,
-        $this->serverConfigName($settings),
-        $this->indexConfigName($settings),
-      ];
-      if (in_array($name, $ours, TRUE)) {
-        $metadata->addCacheTags(['config:ys_beacon.settings']);
-      }
+    if (!$this->mayBeRelevant($name)) {
+      return $metadata;
+    }
+
+    $settings = $this->getSettings();
+    $ours = [
+      self::VDB_CONFIG,
+      $this->serverConfigName($settings),
+      $this->indexConfigName($settings),
+    ];
+    if (in_array($name, $ours, TRUE)) {
+      $metadata->addCacheTags(['config:ys_beacon.settings']);
     }
     // The injected endpoint URL is read from the key entity, so the override
     // must be invalidated when that key is created or changed (for example by
     // the pantheon_secrets sync). Without this, a newly synced key only takes
     // effect after a full cache rebuild.
     if ($name === self::VDB_CONFIG) {
-      $key_id = ($this->getSettings()['azure_search_url_key'] ?? '') ?: self::DEFAULT_URL_KEY;
+      $key_id = ($settings['azure_search_url_key'] ?? '') ?: self::DEFAULT_URL_KEY;
       $metadata->addCacheTags(['config:key.key.' . $key_id]);
     }
     return $metadata;
