@@ -78,7 +78,7 @@ datasource_settings:
     bundles:
       default: false
       selected:
-        document: document
+        - document
     languages:
       default: true
       selected: {  }
