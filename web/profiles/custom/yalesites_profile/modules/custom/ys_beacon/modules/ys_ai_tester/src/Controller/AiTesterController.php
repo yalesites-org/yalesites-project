@@ -136,8 +136,12 @@ class AiTesterController extends ControllerBase {
         : $this->t('retrieved, not cited');
 
       // The title links to its source when a URL is present; the cited flag
-      // lets a tester evaluate citation quality at a glance.
-      $link = ($url !== NULL && $url !== '')
+      // lets a tester evaluate citation quality at a glance. Only http(s)
+      // schemes become links: citation URLs come from server-side entity/file
+      // URLs today, but allowlisting the scheme keeps a javascript: URI from
+      // ever rendering as a live link if that ever changes.
+      $scheme = $url !== NULL ? strtolower((string) parse_url($url, PHP_URL_SCHEME)) : '';
+      $link = in_array($scheme, ['http', 'https'], TRUE)
         ? [
           '#type' => 'link',
           '#title' => $title,
