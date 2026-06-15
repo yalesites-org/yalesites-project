@@ -56,6 +56,9 @@ class SystemInstructionsSeedTest extends KernelTestBase {
     $this->assertCount(1, $rows);
     $this->assertSame(1, (int) $rows[0]->version);
     $this->assertSame(1, (int) $rows[0]->is_active);
+    // Default instructions are attributed to the system (uid 0), not an editor.
+    $this->assertSame(0, (int) $rows[0]->created_by);
+    $this->assertSame('Default YaleSites system instructions', $rows[0]->notes);
     $this->assertStringStartsWith('# YaleSites AI System Instruction', $rows[0]->instructions);
     // The seed must stay under the configured 4000-char instruction cap.
     $this->assertLessThan(4000, mb_strlen($rows[0]->instructions));
