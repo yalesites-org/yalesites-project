@@ -1,7 +1,7 @@
 name: 'YS Integrations'
 type: module
 description: 'Provides integrations for YS.'
-core_version_requirement: ^8 || ^9 || ^10
+core_version_requirement: ^8 || ^9 || ^10 || ^11
 package: YaleSites
 dependencies:
   - drupal:user

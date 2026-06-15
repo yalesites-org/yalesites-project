@@ -2,7 +2,7 @@ name: 'YaleSites Layouts'
 type: module
 description: 'Register Yale layouts.'
 package: Core
-core_version_requirement: '^9 || ^10'
+core_version_requirement: '^9 || ^10 || ^11'
 version: VERSION
 dependencies:
   - calendar_link
