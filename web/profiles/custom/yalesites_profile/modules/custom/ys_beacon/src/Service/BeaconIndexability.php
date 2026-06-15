@@ -13,9 +13,11 @@ use Drupal\metatag\MetatagManagerInterface;
  * Single home for the indexability rule, mirroring the legacy
  * ai_engine_embedding pipeline: content must be published, viewable by
  * anonymous visitors (the chat serves anonymous traffic), and not opted out
- * via the ai_disable_indexing metatag. Used by the ExcludeAiDisabled search
- * processor at indexing time and by the entity-update hook that removes
- * chunks immediately when content stops being indexable.
+ * via the ai_disable_indexing metatag. Media (PDFs, documents, images) is the
+ * exception: it is excluded by default and must be explicitly opted in. Used
+ * by the ExcludeAiDisabled search processor at indexing time and by the
+ * entity-update hook that removes chunks immediately when content stops being
+ * indexable.
  */
 class BeaconIndexability {
 
@@ -50,21 +52,26 @@ class BeaconIndexability {
    * Checks whether AI indexing is disabled for an entity via metatag.
    *
    * Mirrors EntityUpdate::isIndexingEnabled() from ai_engine_embedding,
-   * including token replacement, so behavior matches the legacy pipeline.
+   * including token replacement, so behavior matches the legacy pipeline -
+   * except that media defaults to excluded rather than included.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity being checked.
    *
    * @return bool
-   *   TRUE when the ai_disable_indexing metatag resolves to "disabled".
+   *   TRUE when the content is excluded from the AI index: the
+   *   ai_disable_indexing metatag resolves to "disabled", or the entity is
+   *   media that has not been explicitly opted in.
    */
   public function isIndexingDisabled(EntityInterface $entity): bool {
     $tags = $this->metatagManager->tagsFromEntityWithDefaults($entity);
-    // Most content never sets the tag: skip token replacement entirely then.
-    // It is by far the most expensive part of this check when run for every
-    // indexed item.
-    if (!isset($tags['ai_disable_indexing'])) {
-      return FALSE;
+    // When the tag was never set, media (PDFs, documents, images) is excluded
+    // by default: an editor must opt a media item in by unchecking "Disable
+    // indexing for AI feeds", which stores an explicit "enabled" value. Other
+    // entity types are included by default. This also skips the expensive
+    // token replacement below for the common unset case.
+    if (!isset($tags['ai_disable_indexing']) || $tags['ai_disable_indexing'] === '') {
+      return $entity->getEntityTypeId() === 'media';
     }
     // Token-replace only this tag. Metatag's per-entity token cache is primed
     // with whatever subset is passed first, which is harmless in the indexing

@@ -12,5 +12,7 @@ indexing_options:
     indexing_option: contextual_content
   ai_tags:
     indexing_option: contextual_content
+  field_ai_pdf_text:
+    indexing_option: main_content
   url:
     indexing_option: ignore

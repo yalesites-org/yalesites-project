@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.storage.media.field_ai_pdf_text
     - search_api.server.ys_beacon
   module:
     - media
@@ -22,6 +23,14 @@ field_settings:
     label: 'AI Tags'
     property_path: ys_beacon_ai_tags
     type: string
+  field_ai_pdf_text:
+    label: 'AI extracted PDF text'
+    datasource_id: 'entity:media'
+    property_path: field_ai_pdf_text
+    type: text
+    dependencies:
+      config:
+        - field.storage.media.field_ai_pdf_text
   media_name:
     label: 'Media name'
     datasource_id: 'entity:media'
@@ -68,7 +77,8 @@ datasource_settings:
   'entity:media':
     bundles:
       default: false
-      selected: {  }
+      selected:
+        document: document
     languages:
       default: true
       selected: {  }
