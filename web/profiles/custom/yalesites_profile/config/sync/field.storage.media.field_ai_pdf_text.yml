@@ -8,7 +8,8 @@ id: media.field_ai_pdf_text
 field_name: field_ai_pdf_text
 entity_type: media
 type: string_long
-settings: {  }
+settings:
+  case_sensitive: false
 module: core
 locked: false
 cardinality: 1

@@ -6,6 +6,7 @@ dependencies:
     - media
     - media_entity_download
     - system
+    - ys_beacon
 _core:
   default_config_hash: j5zLMOdJBqC0bMvSdth5UebkprJB8g_2FXHqhfpJzow
 id: anonymous
@@ -14,5 +15,6 @@ weight: -10
 is_admin: false
 permissions:
   - 'access content'
+  - 'access ys beacon content feed'
   - 'download media'
   - 'view media'
