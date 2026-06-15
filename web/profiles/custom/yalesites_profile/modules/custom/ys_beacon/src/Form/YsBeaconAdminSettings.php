@@ -6,6 +6,7 @@ use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\ys_beacon\Config\YsBeaconConfigOverrides;
 use Drupal\ys_beacon\Service\BeaconIndexManager;
 use Drupal\ys_beacon\Service\SystemPromptBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -87,7 +88,9 @@ class YsBeaconAdminSettings extends ConfigFormBase {
     $form['connection']['azure_search_url_key'] = [
       '#type' => 'key_select',
       '#title' => $this->t('Azure AI Search endpoint URL key'),
-      '#description' => $this->t('The key entity that holds the Azure AI Search endpoint URL.'),
+      '#description' => $this->t('The key entity that holds the Azure AI Search endpoint URL. Leave empty to use the platform default key (%default).', [
+        '%default' => YsBeaconConfigOverrides::DEFAULT_URL_KEY,
+      ]),
       '#default_value' => $config->get('azure_search_url_key'),
     ];
 

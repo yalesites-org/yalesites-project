@@ -31,6 +31,14 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
   protected const VDB_CONFIG = 'ai_vdb_provider_azure_ai_search.settings';
 
   /**
+   * Default key entity id holding the Azure AI Search endpoint URL.
+   *
+   * The endpoint key id is deliberately left blank in per-site config so it is
+   * never stored, so a blank pointer must resolve to this platform-wide key.
+   */
+  public const DEFAULT_URL_KEY = 'azure_ai_search_url';
+
+  /**
    * Static cache of the Azure Search endpoint URL from the key module.
    *
    * @var string|null
@@ -81,7 +89,7 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
     }
 
     if (in_array(self::VDB_CONFIG, $relevant)) {
-      $url = $this->getAzureSearchUrl($settings['azure_search_url_key'] ?? '');
+      $url = $this->getAzureSearchUrl(($settings['azure_search_url_key'] ?? '') ?: self::DEFAULT_URL_KEY);
       if ($url !== '') {
         $overrides[self::VDB_CONFIG] = ['url' => $url];
       }
@@ -166,6 +174,14 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
     $metadata = new CacheableMetadata();
     if (in_array($name, [self::SERVER_CONFIG, self::INDEX_CONFIG, self::VDB_CONFIG])) {
       $metadata->addCacheTags(['config:ys_beacon.settings']);
+    }
+    // The injected endpoint URL is read from the key entity, so the override
+    // must be invalidated when that key is created or changed (for example by
+    // the pantheon_secrets sync). Without this, a newly synced key only takes
+    // effect after a full cache rebuild.
+    if ($name === self::VDB_CONFIG) {
+      $key_id = ($this->getSettings()['azure_search_url_key'] ?? '') ?: self::DEFAULT_URL_KEY;
+      $metadata->addCacheTags(['config:key.key.' . $key_id]);
     }
     return $metadata;
   }
