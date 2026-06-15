@@ -184,7 +184,7 @@ class YsBeaconSettings extends ConfigFormBase {
     $enable_chat = (bool) $form_state->getValue('enable_chat');
     // Capture the previously saved toggle before the config is mutated so the
     // index status is only changed on an actual on/off transition.
-    $previous_enable = (bool) $this->config(self::CONFIG_NAME)->getOriginal('enable_chat', FALSE);
+    $previous_enable = (bool) $this->config(self::CONFIG_NAME)->getOriginal('enable_chat');
     $this->config(self::CONFIG_NAME)
       ->set('enable_chat', $enable_chat)
       ->set('floating_button', (bool) $form_state->getValue('floating_button'))
@@ -205,17 +205,23 @@ class YsBeaconSettings extends ConfigFormBase {
       return;
     }
 
-    if ($enable_chat && !$previous_enable) {
-      // Transition from disabled to enabled: ensure an index exists, then
-      // enable it and queue all content for indexing.
+    if ($enable_chat) {
+      // Ensure the index exists. Runs on first enable and also retries on a
+      // later re-save if an earlier provisioning attempt failed.
       if (!$this->config(self::CONFIG_NAME)->get('azure_index_name')) {
         $this->provisionIndex();
       }
-      $index->setStatus(TRUE)->save();
-      $index->reindex();
+      // Enable indexing and queue content when chat turns on, but only once an
+      // index actually exists: a failed provision leaves the index off (the
+      // config override forces it off while no index name is set), so we never
+      // enable an index with no Azure backing.
+      if (!$previous_enable && $this->config(self::CONFIG_NAME)->get('azure_index_name')) {
+        $index->setStatus(TRUE)->save();
+        $index->reindex();
+      }
     }
-    elseif (!$enable_chat && $previous_enable) {
-      // Transition from enabled to disabled: stop indexing.
+    elseif ($previous_enable) {
+      // Chat turned off: stop indexing.
       $index->setStatus(FALSE)->save();
     }
 
