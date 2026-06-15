@@ -14,7 +14,7 @@ embedded_content_warning: ''
 hidden_handlers: ''
 hide_edit_links: ''
 ignore_all_if_absent: ''
-ignore_elements: ''
+ignore_elements: '.ys-beacon-chat-button'
 ignore_link_strings: ''
 ignore_tests: {  }
 link_ignore_selector: 'svg.ext, svg.mailto, .link-purpose-text'
