@@ -7,7 +7,7 @@ prompts: []
 disclaimer: ''
 footer: ''
 azure_index_name: ''
-azure_search_url_key: azure_ai_search_url
+azure_search_url_key: ''
 top_k: 5
 score_threshold: 0.0
 streaming: true
