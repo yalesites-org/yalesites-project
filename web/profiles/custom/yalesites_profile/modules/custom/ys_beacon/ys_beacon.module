@@ -92,11 +92,13 @@ function ys_beacon_entity_update(EntityInterface $entity) {
   $original = $entity->original ?? NULL;
 
   if ($entity instanceof MediaInterface) {
-    // Re-extract PDF text only when the uploaded file actually changed (a
-    // replacement); saving our own extracted-text field must not re-queue.
-    $changed = !$original instanceof MediaInterface
-      || _ys_beacon_media_source_fid($entity) !== _ys_beacon_media_source_fid($original);
-    if ($changed) {
+    // Re-extract PDF text only on a genuine file replacement: there must be a
+    // prior revision to compare against and the source file id must differ.
+    // New media are handled by hook_entity_insert, and a save with no original
+    // (some programmatic saves) is not treated as a file change - this also
+    // ensures saving our own extracted-text field back never re-queues.
+    if ($original instanceof MediaInterface
+      && _ys_beacon_media_source_fid($entity) !== _ys_beacon_media_source_fid($original)) {
       _ys_beacon_queue_pdf_extraction($entity);
     }
   }
