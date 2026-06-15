@@ -18,8 +18,9 @@ use Drupal\Core\Config\StorageInterface;
  * overwrite them. Search API explicitly supports overrides on server
  * backend_config and index status.
  *
- * The index is also disabled at runtime until a site has configured its
- * index name, so unconfigured sites never attempt to reach Azure.
+ * The index is also disabled at runtime whenever the chat widget is turned
+ * off or a site has not configured its index name yet, so unconfigured or
+ * disabled sites never attempt to reach Azure.
  */
 class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
 
@@ -84,8 +85,15 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
       ];
     }
 
-    if (in_array(self::INDEX_CONFIG, $relevant) && $index_name === '') {
-      $overrides[self::INDEX_CONFIG] = ['status' => FALSE];
+    if (in_array(self::INDEX_CONFIG, $relevant)) {
+      // The chat toggle is the primary driver of index status: the settings
+      // form enables or disables the index explicitly in sync with it. This
+      // override only acts as a safety net, forcing the index off whenever
+      // chat is disabled or no index name has been configured yet.
+      $enable_chat = $settings['enable_chat'] ?? FALSE;
+      if (!$enable_chat || $index_name === '') {
+        $overrides[self::INDEX_CONFIG] = ['status' => FALSE];
+      }
     }
 
     if (in_array(self::VDB_CONFIG, $relevant)) {

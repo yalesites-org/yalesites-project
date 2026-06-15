@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_beacon\Form;
 
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
@@ -33,11 +34,19 @@ class YsBeaconSettings extends ConfigFormBase {
   protected BeaconIndexManager $indexManager;
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected EntityTypeManagerInterface $entityTypeManager;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
     $instance = parent::create($container);
     $instance->indexManager = $container->get('ys_beacon.index_manager');
+    $instance->entityTypeManager = $container->get('entity_type.manager');
     return $instance;
   }
 
@@ -173,6 +182,9 @@ class YsBeaconSettings extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $enable_chat = (bool) $form_state->getValue('enable_chat');
+    // Capture the previously saved toggle before the config is mutated so the
+    // index status is only changed on an actual on/off transition.
+    $previous_enable = (bool) $this->config(self::CONFIG_NAME)->getOriginal('enable_chat', FALSE);
     $this->config(self::CONFIG_NAME)
       ->set('enable_chat', $enable_chat)
       ->set('floating_button', (bool) $form_state->getValue('floating_button'))
@@ -183,8 +195,28 @@ class YsBeaconSettings extends ConfigFormBase {
       ->set('footer', $form_state->getValue('footer'))
       ->save();
 
-    if ($enable_chat && !$this->config(self::CONFIG_NAME)->get('azure_index_name')) {
-      $this->provisionIndex();
+    // Keep the Search API index status in sync with the chat toggle. The
+    // config override forces the index off while chat is disabled, so the
+    // explicit status changes only take effect for the matching transition.
+    $index = $this->entityTypeManager->getStorage('search_api_index')->load('ys_beacon');
+    if (!$index) {
+      // Abort if the index does not exist; this should never happen.
+      parent::submitForm($form, $form_state);
+      return;
+    }
+
+    if ($enable_chat && !$previous_enable) {
+      // Transition from disabled to enabled: ensure an index exists, then
+      // enable it and queue all content for indexing.
+      if (!$this->config(self::CONFIG_NAME)->get('azure_index_name')) {
+        $this->provisionIndex();
+      }
+      $index->setStatus(TRUE)->save();
+      $index->reindex();
+    }
+    elseif (!$enable_chat && $previous_enable) {
+      // Transition from enabled to disabled: stop indexing.
+      $index->setStatus(FALSE)->save();
     }
 
     parent::submitForm($form, $form_state);
