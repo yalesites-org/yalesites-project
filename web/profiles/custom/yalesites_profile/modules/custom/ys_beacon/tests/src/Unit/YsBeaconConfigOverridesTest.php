@@ -119,6 +119,41 @@ class YsBeaconConfigOverridesTest extends UnitTestCase {
   }
 
   /**
+   * The VDB override is invalidated when its endpoint-URL key changes.
+   *
+   * A newly synced Pantheon secret (the key entity) must take effect without a
+   * full cache rebuild, so the override's cache metadata must tag the resolved
+   * key - the default key for a blank pointer, the explicit key otherwise.
+   *
+   * @covers ::getCacheableMetadata
+   */
+  public function testVdbCacheMetadataTagsTheResolvedKey(): void {
+    $blank = $this->buildOverride(['azure_search_url_key' => ''], []);
+    $tags = $blank->getCacheableMetadata(self::VDB_CONFIG)->getCacheTags();
+    $this->assertContains('config:key.key.' . YsBeaconConfigOverrides::DEFAULT_URL_KEY, $tags);
+    $this->assertContains('config:ys_beacon.settings', $tags);
+
+    $explicit = $this->buildOverride(['azure_search_url_key' => 'custom_url_key'], []);
+    $this->assertContains(
+      'config:key.key.custom_url_key',
+      $explicit->getCacheableMetadata(self::VDB_CONFIG)->getCacheTags(),
+    );
+  }
+
+  /**
+   * Unrelated config gets no cache tags and is not read.
+   *
+   * @covers ::getCacheableMetadata
+   */
+  public function testUnrelatedConfigGetsNoCacheTags(): void {
+    $storage = $this->createMock(StorageInterface::class);
+    $storage->expects($this->never())->method('read');
+    $service = new YsBeaconConfigOverrides($storage);
+
+    $this->assertSame([], $service->getCacheableMetadata('system.site')->getCacheTags());
+  }
+
+  /**
    * The index is left enabled when chat is on and an index name is configured.
    *
    * @covers ::loadOverrides

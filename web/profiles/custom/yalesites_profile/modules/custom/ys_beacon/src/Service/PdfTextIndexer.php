@@ -90,6 +90,12 @@ class PdfTextIndexer {
 
     try {
       $text = $this->extractor->extractText($path);
+      if ($text === '') {
+        // A successful parse with no text means an image-only (scanned) PDF
+        // with no text layer: expected, log at info. Only reached when
+        // extraction did not throw, so a corrupt PDF is never mislabelled.
+        $this->logger->info('No extractable text in PDF for media @id (likely image-only).', ['@id' => $media->id()]);
+      }
     }
     catch (\RuntimeException $e) {
       // A corrupt or unreadable PDF must not crash the queue; record it and
@@ -99,11 +105,6 @@ class PdfTextIndexer {
         '@message' => $e->getMessage(),
       ]);
       $text = '';
-    }
-
-    if ($text === '') {
-      // Image-only (scanned) PDFs have no text layer: expected, log at info.
-      $this->logger->info('No extractable text in PDF for media @id (likely image-only).', ['@id' => $media->id()]);
     }
 
     // Only write when the value actually changes, so storing the result does

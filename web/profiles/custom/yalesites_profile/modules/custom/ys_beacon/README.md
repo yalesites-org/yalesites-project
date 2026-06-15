@@ -104,6 +104,9 @@ a new index must be provisioned, and all content re-indexed.
 - Re-index everything: the button on the Beacon administration form, or
   `drush sapi-r ys_beacon && drush sapi-i ys_beacon`.
 
+> The `drush` commands below use `ys_beacon`, the default Search API index id.
+> If a site overrides `ys_beacon.settings:search_index_id`, substitute that id.
+
 ## PDF text extraction
 
 PDFs carry their content inside the file, which Search API cannot read, so the
