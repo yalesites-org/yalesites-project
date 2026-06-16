@@ -33,6 +33,13 @@ class BeaconConfigDefaultsTest extends UnitTestCase {
   }
 
   /**
+   * The floating button icon ships fixed to the "sparkles" mark.
+   */
+  public function testFloatingButtonIconDefaultsToSparkles(): void {
+    $this->assertSame('fa-sparkles', $this->installSettings()['floating_button_icon']);
+  }
+
+  /**
    * The fallback prompt ships with the full YaleSites system instruction.
    */
   public function testFallbackPromptShipsYaleSitesInstruction(): void {

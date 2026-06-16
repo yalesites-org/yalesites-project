@@ -105,7 +105,6 @@ function ys_beacon_install() {
     $map = [
       'floating_button' => 'floating_button',
       'floating_button_text' => 'floating_button_text',
-      'floating_button_icon' => 'floating_button_icon',
       'prompts' => 'prompts',
       'disclaimer' => 'disclaimer',
       'footer' => 'footer',
@@ -253,4 +252,21 @@ function ys_beacon_update_10001() {
   if ($changed) {
     $settings->save();
   }
+}
+
+/**
+ * Force the floating chat button icon to the canonical "sparkles" mark.
+ *
+ * The icon is no longer site-configurable; every YaleSites site shows the same
+ * icon. Set fa-sparkles whenever the Beacon settings exist, covering both a
+ * legacy "chat" selection and sites that never stored the value at all.
+ */
+function ys_beacon_update_10002() {
+  $settings = \Drupal::configFactory()->getEditable('ys_beacon.settings');
+  // Only touch sites that actually have Beacon settings; never create the
+  // config object here.
+  if ($settings->isNew()) {
+    return;
+  }
+  $settings->set('floating_button_icon', 'fa-sparkles')->save();
 }

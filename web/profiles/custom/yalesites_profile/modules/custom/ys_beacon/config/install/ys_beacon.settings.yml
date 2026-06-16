@@ -2,7 +2,7 @@ enable_chat: false
 enable_metadata_fields: true
 floating_button: false
 floating_button_text: 'Beacon Chat'
-floating_button_icon: 'fa-comments'
+floating_button_icon: 'fa-sparkles'
 prompts: []
 disclaimer: ''
 footer: ''

@@ -29,6 +29,17 @@ class YsBeaconSettings extends ConfigFormBase {
   const CONFIG_NAME = 'ys_beacon.settings';
 
   /**
+   * The Font Awesome icon class always used for the floating chat button.
+   *
+   * The icon is no longer site-configurable: every YaleSites site shows the
+   * same "sparkles" mark. This constant is the single source of truth, written
+   * on save and used as the render fallback.
+   *
+   * @var string
+   */
+  const FLOATING_BUTTON_ICON = 'fa-sparkles';
+
+  /**
    * The Beacon index manager.
    *
    * @var \Drupal\ys_beacon\Service\BeaconIndexManager
@@ -102,19 +113,6 @@ class YsBeaconSettings extends ConfigFormBase {
       '#default_value' => $config->get('floating_button_text') ?: $this->t('Beacon Chat'),
       '#required' => TRUE,
       '#weight' => -8,
-    ];
-
-    $form['floating_button_icon'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Floating button icon'),
-      '#description' => $this->t('Select the icon to display on the floating chat button.'),
-      '#options' => [
-        'fa-comments' => $this->t('Chat (default)'),
-        'fa-sparkles' => $this->t('Sparkles'),
-      ],
-      '#default_value' => $config->get('floating_button_icon') ?? 'fa-comments',
-      '#required' => TRUE,
-      '#weight' => -7,
     ];
 
     $form['prompts'] = [
@@ -243,7 +241,7 @@ class YsBeaconSettings extends ConfigFormBase {
       ->set('enable_chat', $enable_chat)
       ->set('floating_button', (bool) $form_state->getValue('floating_button'))
       ->set('floating_button_text', $form_state->getValue('floating_button_text'))
-      ->set('floating_button_icon', $form_state->getValue('floating_button_icon'))
+      ->set('floating_button_icon', self::FLOATING_BUTTON_ICON)
       ->set('prompts', array_values(array_filter($form_state->getValue('prompts'))))
       ->set('disclaimer', $form_state->getValue('disclaimer'))
       ->set('footer', $form_state->getValue('footer'))
