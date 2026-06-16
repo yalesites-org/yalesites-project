@@ -32,19 +32,13 @@
   z-index: 1;
   display: flex;
   flex-flow: column nowrap;
+  overflow: hidden;
 }
 
 .modalCitation {
   composes: modalContent;
   background: transparent;
   justify-content: center;
-}
-
-@media screen and (max-width:500px) {
-  .modalContent {
-    display: block;
-    overflow-y: auto;
-  }
 }
 
 @media screen and (min-width:800px) {
@@ -63,17 +57,19 @@
 .modalContentInner {
   display: flex;
   flex-direction: column;
-  flex: 0 auto;
-  height: 100%;
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* Citation Varition - content inner*/
 .modalContentInnerCitation{
   composes: modalContentInner;
   justify-content: flex-start;
+  flex: 0 1 auto;
   height: auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
