@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect, useContext, useLayoutEffect, useMemo } from "react";
-import { CommandBarButton, Stack } from "@fluentui/react";
+import { Stack } from "@fluentui/react";
 import { SquareRegular, ErrorCircleRegular } from "@fluentui/react-icons";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from 'remark-gfm'
@@ -415,25 +415,14 @@ const Chat = () => {
                         />
                     </Stack>
                     <div style={{display: 'flex', flexFlow: 'row nowrap', gap: '1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%'}}>
-                        <CommandBarButton
-                            role="button"
-                            styles={{
-                                icon: {
-                                    color: '#FFFFFF',
-                                },
-                                root: {
-                                    color: '#FFFFFF',
-                                    background: disabledButton() ? "hsl(210,100%,21%)" : "hsl(213, 66%, 45%)",
-                                    cursor: disabledButton() ? "" : "pointer",
-                                    padding: '0.5rem 2rem',
-                                },
-                            }}
-                            className={styles.clearChatBroomNoCosmos}
-                            iconProps={{ iconName: 'Broom' }}
+                        <button
+                            type="button"
+                            className={styles.newChatButton}
                             onClick={newChat}
                             disabled={disabledButton()}
-                            aria-label="Start a new chat"
-                        />
+                        >
+                            New chat
+                        </button>
                         <Disclaimer />
                     </div>
                 </div>

@@ -9,3 +9,15 @@ body {
   padding: 0;
 }
 
+/*
+ * Lock the underlying page while the chat modal is open. The modal sets this
+ * attribute on <body> and stores the pre-lock scroll offset as an inline
+ * top value (see Layout.tsx). Using position: fixed (rather than only
+ * overflow: hidden) is required to stop touch scrolling from leaking through
+ * to the page on iOS Safari.
+ */
+body[data-body-frozen] {
+  position: fixed;
+  width: 100%;
+  overflow: hidden;
+}

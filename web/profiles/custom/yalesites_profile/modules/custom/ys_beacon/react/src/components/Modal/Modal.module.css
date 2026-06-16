@@ -66,6 +66,7 @@
   flex: 0 auto;
   height: 100%;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 /* Citation Varition - content inner*/
@@ -98,7 +99,8 @@
 
 @media screen and (max-width:500px) {
   .modalHeader {
-      position: relative;
+      position: sticky;
+      top: 0;
   }
 
   .modalFooter {
