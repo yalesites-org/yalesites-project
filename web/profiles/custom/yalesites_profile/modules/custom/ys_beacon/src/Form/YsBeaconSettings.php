@@ -2,11 +2,13 @@
 
 namespace Drupal\ys_beacon\Form;
 
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\ys_beacon\Service\BeaconIndexManager;
+use Drupal\ys_beacon\Service\SystemPromptBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -145,6 +147,58 @@ class YsBeaconSettings extends ConfigFormBase {
       '#rows' => 2,
     ];
 
+    $form['metadata'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Content metadata'),
+      '#open' => TRUE,
+      '#weight' => 10,
+    ];
+    $form['metadata']['enable_metadata_fields'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Show AI metadata fields on content forms'),
+      '#description' => $this->t('Exposes the AI Description, AI Tags, and disable-indexing fields on node and media forms.'),
+      '#default_value' => $config->get('enable_metadata_fields') ?? TRUE,
+    ];
+
+    $form['guardrail'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Guardrail'),
+      '#open' => FALSE,
+      '#weight' => 20,
+    ];
+    $form['guardrail']['platform_guardrail'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Platform guardrail (fixed)'),
+      '#open' => FALSE,
+      '#description' => $this->t('Defined in code and prepended to every chat request. It is identical on every YaleSites site and cannot be changed here.'),
+    ];
+    $form['guardrail']['platform_guardrail']['text'] = [
+      '#markup' => nl2br(Html::escape(SystemPromptBuilder::PLATFORM_GUARDRAIL)),
+    ];
+    $form['guardrail']['guardrail_supplement'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Additional guardrail rules for this site'),
+      '#description' => $this->t('Appended after the platform guardrail on every chat request. Use this to make this specific site stricter; it can add rules but never relax the platform guardrail.'),
+      '#default_value' => $config->get('guardrail_supplement'),
+      '#rows' => 4,
+    ];
+
+    $form['indexing'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Indexing'),
+      '#open' => TRUE,
+      '#weight' => 30,
+    ];
+    $form['indexing']['status'] = [
+      '#markup' => '<p>' . $this->indexStatusSummary() . '</p>',
+    ];
+    $form['indexing']['reindex'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Re-index all content'),
+      '#submit' => ['::reindexAll'],
+      '#limit_validation_errors' => [],
+    ];
+
     // Link to the per-site system instructions when the user has access.
     $instructions_url = Url::fromRoute('ys_beacon.instructions');
     if ($instructions_url->access($this->currentUser())) {
@@ -193,6 +247,8 @@ class YsBeaconSettings extends ConfigFormBase {
       ->set('prompts', array_values(array_filter($form_state->getValue('prompts'))))
       ->set('disclaimer', $form_state->getValue('disclaimer'))
       ->set('footer', $form_state->getValue('footer'))
+      ->set('guardrail_supplement', $form_state->getValue('guardrail_supplement'))
+      ->set('enable_metadata_fields', (bool) $form_state->getValue('enable_metadata_fields'))
       ->save();
 
     // Keep the Search API index status in sync with the chat toggle. The
@@ -244,6 +300,50 @@ class YsBeaconSettings extends ConfigFormBase {
       return;
     }
     $this->messenger()->addStatus($this->t('The search index %name is ready and site content has been queued for indexing.', ['%name' => $index_name]));
+  }
+
+  /**
+   * Submit handler queueing all content for re-indexing.
+   *
+   * Replaces the legacy "Upsert All Documents" action: items are re-tracked
+   * and re-embedded into the vector database on the next indexing runs.
+   */
+  public function reindexAll(array &$form, FormStateInterface $form_state): void {
+    $index = $this->entityTypeManager->getStorage('search_api_index')->load($this->searchIndexId());
+    if ($index && $index->status()) {
+      $index->reindex();
+      $this->messenger()->addStatus($this->t('All content has been queued for re-indexing into the Beacon vector database.'));
+    }
+    else {
+      $this->messenger()->addWarning($this->t('The Beacon index is not enabled on this site. Enable the chat widget first.'));
+    }
+  }
+
+  /**
+   * Builds a short indexing status summary.
+   */
+  protected function indexStatusSummary(): string {
+    $index = $this->entityTypeManager->getStorage('search_api_index')->load($this->searchIndexId());
+    if (!$index || !$index->status()) {
+      return (string) $this->t('The Beacon index is currently disabled. It enables automatically once the chat widget is turned on.');
+    }
+    try {
+      $tracker = $index->getTrackerInstance();
+      return (string) $this->t('@indexed of @total items indexed.', [
+        '@indexed' => $tracker->getIndexedItemsCount(),
+        '@total' => $tracker->getTotalItemsCount(),
+      ]);
+    }
+    catch (\Throwable $e) {
+      return (string) $this->t('Index status unavailable.');
+    }
+  }
+
+  /**
+   * The Search API index machine name backing the chatbot.
+   */
+  protected function searchIndexId(): string {
+    return $this->config(self::CONFIG_NAME)->get('search_index_id') ?: 'ys_beacon';
   }
 
 }
