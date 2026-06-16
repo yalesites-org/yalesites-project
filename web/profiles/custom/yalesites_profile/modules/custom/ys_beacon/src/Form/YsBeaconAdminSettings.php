@@ -2,21 +2,19 @@
 
 namespace Drupal\ys_beacon\Form;
 
-use Drupal\Component\Utility\Html;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\ys_beacon\Config\YsBeaconConfigOverrides;
 use Drupal\ys_beacon\Service\BeaconIndexManager;
-use Drupal\ys_beacon\Service\SystemPromptBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Platform-facing administration form for Beacon.
  *
- * Holds the sensitive, per-site connection and retrieval settings: the Azure
- * AI Search index name, retrieval tuning, and the re-index action that
- * replaces the legacy "Upsert All Documents" button.
+ * Holds the sensitive, platform-operator settings restricted by the "administer
+ * ys beacon" permission: the Azure AI Search index connection and the retrieval
+ * and response tuning (sources per answer, relevance threshold, streaming, and
+ * the fallback system prompt).
  */
 class YsBeaconAdminSettings extends ConfigFormBase {
 
@@ -26,13 +24,6 @@ class YsBeaconAdminSettings extends ConfigFormBase {
    * @var string
    */
   const CONFIG_NAME = 'ys_beacon.settings';
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
    * The Beacon index manager.
@@ -46,7 +37,6 @@ class YsBeaconAdminSettings extends ConfigFormBase {
    */
   public static function create(ContainerInterface $container) {
     $instance = parent::create($container);
-    $instance->entityTypeManager = $container->get('entity_type.manager');
     $instance->indexManager = $container->get('ys_beacon.index_manager');
     return $instance;
   }
@@ -130,49 +120,6 @@ class YsBeaconAdminSettings extends ConfigFormBase {
       '#default_value' => $config->get('fallback_system_prompt'),
       '#rows' => 4,
     ];
-    $form['retrieval']['platform_guardrail'] = [
-      '#type' => 'details',
-      '#title' => $this->t('Platform guardrail (fixed)'),
-      '#open' => FALSE,
-      '#description' => $this->t('Defined in code and prepended to every chat request. It is identical on every YaleSites site and cannot be changed here.'),
-    ];
-    $form['retrieval']['platform_guardrail']['text'] = [
-      '#markup' => nl2br(Html::escape(SystemPromptBuilder::PLATFORM_GUARDRAIL)),
-    ];
-    $form['retrieval']['guardrail_supplement'] = [
-      '#type' => 'textarea',
-      '#title' => $this->t('Additional guardrail rules for this site'),
-      '#description' => $this->t('Appended after the platform guardrail on every chat request. Use this to make this specific site stricter; it can add rules but never relax the platform guardrail.'),
-      '#default_value' => $config->get('guardrail_supplement'),
-      '#rows' => 4,
-    ];
-
-    $form['metadata'] = [
-      '#type' => 'details',
-      '#title' => $this->t('Content metadata'),
-      '#open' => TRUE,
-    ];
-    $form['metadata']['enable_metadata_fields'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Show AI metadata fields on content forms'),
-      '#description' => $this->t('Exposes the AI Description, AI Tags, and disable-indexing fields on node and media forms.'),
-      '#default_value' => $config->get('enable_metadata_fields') ?? FALSE,
-    ];
-
-    $form['indexing'] = [
-      '#type' => 'details',
-      '#title' => $this->t('Indexing'),
-      '#open' => TRUE,
-    ];
-    $form['indexing']['status'] = [
-      '#markup' => '<p>' . $this->indexStatusSummary() . '</p>',
-    ];
-    $form['indexing']['reindex'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Re-index all content'),
-      '#submit' => ['::reindexAll'],
-      '#limit_validation_errors' => [],
-    ];
 
     return parent::buildForm($form, $form_state);
   }
@@ -194,8 +141,6 @@ class YsBeaconAdminSettings extends ConfigFormBase {
       ->set('score_threshold', (float) $form_state->getValue('score_threshold'))
       ->set('streaming', (bool) $form_state->getValue('streaming'))
       ->set('fallback_system_prompt', $form_state->getValue('fallback_system_prompt'))
-      ->set('guardrail_supplement', $form_state->getValue('guardrail_supplement'))
-      ->set('enable_metadata_fields', (bool) $form_state->getValue('enable_metadata_fields'))
       ->save();
 
     if ($new_index_name !== $previous_index_name) {
@@ -215,50 +160,6 @@ class YsBeaconAdminSettings extends ConfigFormBase {
     }
 
     parent::submitForm($form, $form_state);
-  }
-
-  /**
-   * Submit handler queueing all content for re-indexing.
-   *
-   * Replaces the legacy "Upsert All Documents" action: items are re-tracked
-   * and re-embedded into the vector database on the next indexing runs.
-   */
-  public function reindexAll(array &$form, FormStateInterface $form_state): void {
-    $index = $this->entityTypeManager->getStorage('search_api_index')->load($this->searchIndexId());
-    if ($index && $index->status()) {
-      $index->reindex();
-      $this->messenger()->addStatus($this->t('All content has been queued for re-indexing into the Beacon vector database.'));
-    }
-    else {
-      $this->messenger()->addWarning($this->t('The Beacon index is not enabled on this site. Configure an Azure AI Search index name first.'));
-    }
-  }
-
-  /**
-   * Builds a short indexing status summary.
-   */
-  protected function indexStatusSummary(): string {
-    $index = $this->entityTypeManager->getStorage('search_api_index')->load($this->searchIndexId());
-    if (!$index || !$index->status()) {
-      return (string) $this->t('The Beacon index is currently disabled. It enables automatically once an Azure AI Search index name is configured.');
-    }
-    try {
-      $tracker = $index->getTrackerInstance();
-      return (string) $this->t('@indexed of @total items indexed.', [
-        '@indexed' => $tracker->getIndexedItemsCount(),
-        '@total' => $tracker->getTotalItemsCount(),
-      ]);
-    }
-    catch (\Throwable $e) {
-      return (string) $this->t('Index status unavailable.');
-    }
-  }
-
-  /**
-   * The Search API index machine name backing the chatbot.
-   */
-  protected function searchIndexId(): string {
-    return $this->config('ys_beacon.settings')->get('search_index_id') ?: 'ys_beacon';
   }
 
 }
