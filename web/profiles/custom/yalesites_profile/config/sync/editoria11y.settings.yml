@@ -4,7 +4,7 @@ content_root: ''
 assertiveness: assertive
 no_load: ''
 ignore_all_if_absent: ''
-ignore_elements: .ys-beacon-chat-button
+ignore_elements: '.ys-beacon-chat-button, a[href="#launch-chat"]'
 panel_no_cover: ''
 embedded_content_warning: ''
 download_links: ''
