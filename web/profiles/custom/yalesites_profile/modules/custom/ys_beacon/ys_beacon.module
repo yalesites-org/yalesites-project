@@ -12,6 +12,7 @@ use Drupal\Core\Url;
 use Drupal\media\MediaInterface;
 use Drupal\search_api\Entity\Index;
 use Drupal\search_api\Utility\Utility;
+use Drupal\ys_beacon\Form\YsBeaconSettings;
 
 /**
  * Implements hook_theme().
@@ -210,7 +211,7 @@ function ys_beacon_page_bottom(array &$page_bottom) {
     $page_bottom[] = [
       '#theme' => 'ys_beacon_chat_button',
       '#button_text' => $config->get('floating_button_text'),
-      '#icon_class' => $config->get('floating_button_icon') ?? 'fa-comments',
+      '#icon_class' => $config->get('floating_button_icon') ?? YsBeaconSettings::FLOATING_BUTTON_ICON,
     ];
   }
 }
