@@ -166,6 +166,9 @@ function _ys_beacon_seed_default_instructions(Connection $database) {
     return;
   }
 
+  // Keep this text in sync with the fallback_system_prompt default in
+  // config/install/ys_beacon.settings.yml: this seeds the active versioned
+  // instructions, while that key is the fallback used when none exist.
   $default_instructions = <<<'EOT'
 # YaleSites AI System Instruction
 
