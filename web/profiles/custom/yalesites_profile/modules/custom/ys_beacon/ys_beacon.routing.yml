@@ -12,7 +12,7 @@ ys_beacon.content_feed:
     _controller: '\Drupal\ys_beacon\Controller\ContentFeedController::feed'
   methods: [GET]
   requirements:
-    _permission: 'access ys beacon content feed'
+    _access: 'TRUE'
 
 ys_beacon.settings:
   path: '/admin/config/yalesites/ys-beacon'
