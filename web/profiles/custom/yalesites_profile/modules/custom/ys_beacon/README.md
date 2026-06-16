@@ -140,18 +140,21 @@ be swapped without touching the extraction orchestration.
 ## Content feed API
 
 The push-based pipeline indexes content into Azure for the chatbot, but an
-external consumer that needs to *pull* content can read the JSON content feed,
+external consumer that needs to _pull_ content can read the JSON content feed,
 the equivalent of the legacy `/api/ai/v1/content` endpoint:
 
 ```
 GET /api/ys-beacon/v1/content?type=node&page=1&page_size=50
 ```
 
-- **Access controlled.** The route requires the `access ys beacon content feed`
-  permission; it is never public. Grant it only to trusted feed consumers.
+- **Open to all users.** The route is accessible to any role, authenticated or
+  anonymous. There is no permission gate, because the feed only ever exposes
+  content a logged-out visitor could already read (see below).
 - **Same indexability rules as the index.** Items are filtered through
-  `BeaconIndexability`, so the feed exposes exactly what the chatbot indexes:
-  published, anonymously viewable, and not opted out via `ai_disable_indexing`.
+  `BeaconIndexability` while account-switched to the anonymous user, so the feed
+  exposes exactly what the chatbot indexes regardless of who calls it: published,
+  anonymously viewable (not CAS-protected), and not opted out via
+  `ai_disable_indexing`.
 - **Parameters:** `type` (`node` or `media`, default `node`), `page` (1-based,
   default 1), `page_size` (default 50, max 200). Because the per-item
   indexability filter runs after the page window, a page may contain fewer than
@@ -210,8 +213,8 @@ letting a tester evaluate citation quality, not just bare URLs. Citations are
 derived per question, so re-running never leaks citations across questions, and
 the JSON export carries the same structured citation fields shown on screen.
 Reach it from the integrations dashboard or
-`/admin/config/yalesites/ys-beacon/tester` (permission: *Use YaleSites AI
-Tester*).
+`/admin/config/yalesites/ys-beacon/tester` (permission: _Use YaleSites AI
+Tester_).
 
 ## System instruction layers
 
@@ -226,8 +229,8 @@ reaches the model through Portkey:
    instructions and over source and user content. It is invisible to site
    administrators and cannot be edited, blanked, or reordered per site.
 2. **Site guardrail supplement** - an optional per-site value
-   (`ys_beacon.settings:guardrail_supplement`) that sits *after* the platform
-   guardrail, so a site can only *add* restrictions, never relax the baseline.
+   (`ys_beacon.settings:guardrail_supplement`) that sits _after_ the platform
+   guardrail, so a site can only _add_ restrictions, never relax the baseline.
 3. **Site system instructions** - the per-site assistant behavior, managed with
    versioning (or the `fallback_system_prompt` when no version is saved).
 

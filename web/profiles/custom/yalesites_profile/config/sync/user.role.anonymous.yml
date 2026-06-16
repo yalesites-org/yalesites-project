@@ -15,6 +15,5 @@ weight: -10
 is_admin: false
 permissions:
   - 'access content'
-  - 'access ys beacon content feed'
   - 'download media'
   - 'view media'

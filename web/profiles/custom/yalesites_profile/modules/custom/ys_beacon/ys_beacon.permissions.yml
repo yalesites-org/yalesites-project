@@ -8,7 +8,3 @@ manage ys beacon settings:
 manage ys beacon system instructions:
   title: 'Manage Beacon system instructions'
   description: 'Create, view, and revert versions of the Beacon system instructions.'
-access ys beacon content feed:
-  title: 'Access the Beacon AI content feed'
-  description: 'Read the paginated JSON content feed at /api/ys-beacon/v1/content. Grant only to trusted external feed consumers.'
-  restrict access: true

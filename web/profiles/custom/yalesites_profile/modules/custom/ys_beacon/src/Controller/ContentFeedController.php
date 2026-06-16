@@ -11,8 +11,11 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Serves the AI content feed for external pull consumers.
  *
- * Access-controlled (the "access ys beacon content feed" permission); returns
- * a paginated, structured JSON list of the content the chatbot indexes.
+ * Open to all users (any role); returns a paginated, structured JSON list of
+ * the content the chatbot indexes. Access is unrestricted because
+ * ContentFeedBuilder builds every item as the anonymous user, so the feed only
+ * ever exposes content a logged-out visitor could read: published, anonymously
+ * viewable, and not opted out via the ai_disable_indexing metatag.
  */
 class ContentFeedController extends ControllerBase {
 
