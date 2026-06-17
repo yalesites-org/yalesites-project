@@ -4,7 +4,7 @@ status: true
 dependencies: {  }
 id: profile_condensed
 block_id: 'inline_block:profile_condensed'
-category: dynamic_content
+category: people_listings
 label: 'People - Condensed'
 image_path: ''
 image_alt: ''

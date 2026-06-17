@@ -4,7 +4,7 @@ status: true
 dependencies: {  }
 id: page_list_item
 block_id: 'inline_block:page_list_item'
-category: dynamic_content
+category: page_listings
 label: 'Pages - List'
 image_path: ''
 image_alt: ''

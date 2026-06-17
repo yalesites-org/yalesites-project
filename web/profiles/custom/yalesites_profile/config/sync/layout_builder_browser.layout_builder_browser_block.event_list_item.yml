@@ -4,7 +4,7 @@ status: true
 dependencies: {  }
 id: event_list_item
 block_id: 'inline_block:event_list_item'
-category: dynamic_content
+category: event_listings
 label: 'Events - List'
 image_path: ''
 image_alt: ''
