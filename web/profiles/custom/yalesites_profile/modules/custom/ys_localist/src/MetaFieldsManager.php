@@ -140,6 +140,30 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
   }
 
   /**
+   * Suppresses the registration CTA when an editor has opted to hide it.
+   *
+   * When hidden, both the register flag and the ticket/registration link are
+   * cleared so the event template — which renders the button from those values
+   * — shows no registration CTA (#953).
+   *
+   * @param bool $hide
+   *   Whether the editor opted to hide the registration button.
+   * @param bool $hasRegister
+   *   The computed register flag.
+   * @param string|null $ticketLink
+   *   The computed ticket/registration URL.
+   *
+   * @return array
+   *   A [hasRegister, ticketLink] pair with the suppression applied.
+   */
+  public static function applyRegisterSuppression(bool $hide, bool $hasRegister, ?string $ticketLink): array {
+    if ($hide) {
+      return [FALSE, NULL];
+    }
+    return [$hasRegister, $ticketLink];
+  }
+
+  /**
    * Gets event all fields.
    */
   public function getEventData($node) {
@@ -191,6 +215,15 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     else {
       $hasRegister = FALSE;
     }
+
+    // Editors can hide the registration / buy-tickets CTA on an event even
+    // when a registration link is present — the Localist feed (e.g. Campus
+    // Groups) always fills field_ticket_registration_url, so this gives the
+    // same opt-out the "Add to Calendar" link has (#953).
+    $hideRegister = $node->hasField('field_event_hide_register')
+      && !$node->get('field_event_hide_register')->isEmpty()
+      && (bool) $node->get('field_event_hide_register')->first()->getValue()['value'];
+    [$hasRegister, $ticketLink] = self::applyRegisterSuppression($hideRegister, $hasRegister, $ticketLink);
 
     // Dates.
     $dates = $node->field_event_date->getValue();

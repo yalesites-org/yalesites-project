@@ -1,0 +1,21 @@
+uuid: ff0ccd2a-ebd5-4dfe-98a7-225ebe0d278b
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_event_hide_register
+    - node.type.event
+id: node.event.field_event_hide_register
+field_name: field_event_hide_register
+entity_type: node
+bundle: event
+label: 'Hide registration button'
+description: 'Hide the Register / Buy Tickets button on this event, even when a registration link is present.'
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

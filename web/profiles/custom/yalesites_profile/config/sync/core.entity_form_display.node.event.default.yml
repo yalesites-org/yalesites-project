@@ -11,6 +11,7 @@ dependencies:
     - field.field.node.event.field_event_date
     - field.field.node.event.field_event_description
     - field.field.node.event.field_event_format
+    - field.field.node.event.field_event_hide_register
     - field.field.node.event.field_event_id
     - field.field.node.event.field_event_place
     - field.field.node.event.field_event_recurring
@@ -323,6 +324,13 @@ content:
     settings:
       rows: 5
       placeholder: ''
+    third_party_settings: {  }
+  field_event_hide_register:
+    type: boolean_checkbox
+    weight: 50
+    region: content
+    settings:
+      display_label: true
     third_party_settings: {  }
   field_event_id:
     type: string_textfield
