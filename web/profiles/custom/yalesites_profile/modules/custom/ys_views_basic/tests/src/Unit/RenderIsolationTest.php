@@ -155,4 +155,17 @@ class RenderIsolationTest extends UnitTestCase {
     $this->assertNotSame($a1, $b1, 'Different block UUIDs yield different pager elements.');
   }
 
+  /**
+   * show_current_entity does not fall through to the pinned_to_top case.
+   *
+   * Regression for a missing switch break that made getDefaultParamValue()
+   * return the pinned_to_top value when asked for show_current_entity.
+   *
+   * @covers ::getDefaultParamValue
+   */
+  public function testShowCurrentEntityDoesNotFallThroughToPinned() {
+    $params = json_encode(['show_current_entity' => 1, 'pinned_to_top' => FALSE]);
+    $this->assertSame(1, $this->manager()->getDefaultParamValue('show_current_entity', $params));
+  }
+
 }

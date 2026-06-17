@@ -1,0 +1,8 @@
+uuid: ce26b34c-7ce4-43f6-ab74-631b65d797e9
+langcode: en
+status: true
+dependencies: {  }
+id: post_card
+label: 'Posts - Card Grid'
+revision: true
+description: 'Posts - Card Grid listing block.'
