@@ -7,3 +7,13 @@ ys_views_basic:
   dependencies:
     - core/once
 
+ys_views_basic_preview:
+  css:
+    theme:
+      assets/css/views-basic-preview.css: {}
+  js:
+    assets/js/views-basic-preview.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+

@@ -156,6 +156,25 @@ class PostViewWidgetTest extends UnitTestCase {
   }
 
   /**
+   * The mockup preview panel is added with the content type in context (#1318).
+   *
+   * @covers \Drupal\ys_views_basic\Plugin\Field\FieldWidget\ViewsBasicWidgetBase::buildPreviewPanel
+   */
+  public function testPreviewPanel() {
+    $form = [];
+    $this->invoke($this->widget('post_card'), 'buildPreviewPanel', [&$form]);
+    $preview = $form['group_user_selection']['entity_and_view_mode']['preview'] ?? NULL;
+
+    $this->assertIsArray($preview);
+    $this->assertSame('inline_template', $preview['#type']);
+    $this->assertSame('post', $preview['#context']['content_type']);
+    $this->assertSame('card', $preview['#context']['view_mode']);
+    // The static template wires up the JS target classes and the no-query note.
+    $this->assertStringContainsString('vb-preview', $preview['#template']);
+    $this->assertStringContainsString('not a live query', $preview['#template']);
+  }
+
+  /**
    * The save path injects post_field_options into the stored params.
    *
    * @covers ::massageEntitySpecificParams
