@@ -1,0 +1,24 @@
+uuid: 2f862d69-6dd0-4879-a3bb-a5632b84a753
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.profile_card
+    - field.storage.block_content.field_heading
+    - filter.format.heading_html
+  module:
+    - text
+id: block_content.profile_card.field_heading
+field_name: field_heading
+entity_type: block_content
+bundle: profile_card
+label: 'View Heading'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - heading_html
+field_type: text
