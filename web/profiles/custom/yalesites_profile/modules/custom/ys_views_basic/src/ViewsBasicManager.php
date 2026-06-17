@@ -164,6 +164,95 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   const CONTENT_TYPE_PROFILE = 'profile';
 
   /**
+   * Definition of every listing block content bundle.
+   *
+   * The bundle id encodes the (content type, display mode) pair. This single
+   * source of truth (ADR DR-2/DR-4) is read by the per-content-type widgets to
+   * decide which form controls to build (capability flags) and to inject the
+   * view mode into the stored JSON, by this manager to resolve render
+   * mappings, and by the migration (#1169) to map legacy "view" blocks to
+   * their target bundle. It lives on the manager — not a widget — so the
+   * formatter and migration can reach it without depending on a form widget
+   * plugin (ADR DR-4: "do not push them into widget-only constants").
+   *
+   * Keys:
+   * - content_type: the node bundle the listing queries.
+   * - view_mode: the node view mode used to render each result.
+   * - supports_thumbnail: whether the "Show Teaser Image" option applies
+   *   (card and list_item only).
+   *
+   * The existing "event_calendar" bundle is intentionally absent: it uses a
+   * different field type (event_calendar_basic_params) and its own widget.
+   */
+  const LISTING_BUNDLES = [
+    'post_card' => [
+      'content_type' => self::CONTENT_TYPE_POST,
+      'view_mode' => 'card',
+      'supports_thumbnail' => TRUE,
+    ],
+    'post_list_item' => [
+      'content_type' => self::CONTENT_TYPE_POST,
+      'view_mode' => 'list_item',
+      'supports_thumbnail' => TRUE,
+    ],
+    'post_condensed' => [
+      'content_type' => self::CONTENT_TYPE_POST,
+      'view_mode' => 'condensed',
+      'supports_thumbnail' => FALSE,
+    ],
+    'event_card' => [
+      'content_type' => self::CONTENT_TYPE_EVENT,
+      'view_mode' => 'card',
+      'supports_thumbnail' => TRUE,
+    ],
+    'event_list_item' => [
+      'content_type' => self::CONTENT_TYPE_EVENT,
+      'view_mode' => 'list_item',
+      'supports_thumbnail' => TRUE,
+    ],
+    'event_condensed' => [
+      'content_type' => self::CONTENT_TYPE_EVENT,
+      'view_mode' => 'condensed',
+      'supports_thumbnail' => FALSE,
+    ],
+    'page_card' => [
+      'content_type' => self::CONTENT_TYPE_PAGE,
+      'view_mode' => 'card',
+      'supports_thumbnail' => TRUE,
+    ],
+    'page_list_item' => [
+      'content_type' => self::CONTENT_TYPE_PAGE,
+      'view_mode' => 'list_item',
+      'supports_thumbnail' => TRUE,
+    ],
+    'page_condensed' => [
+      'content_type' => self::CONTENT_TYPE_PAGE,
+      'view_mode' => 'condensed',
+      'supports_thumbnail' => FALSE,
+    ],
+    'profile_card' => [
+      'content_type' => self::CONTENT_TYPE_PROFILE,
+      'view_mode' => 'card',
+      'supports_thumbnail' => TRUE,
+    ],
+    'profile_list_item' => [
+      'content_type' => self::CONTENT_TYPE_PROFILE,
+      'view_mode' => 'list_item',
+      'supports_thumbnail' => TRUE,
+    ],
+    'profile_condensed' => [
+      'content_type' => self::CONTENT_TYPE_PROFILE,
+      'view_mode' => 'condensed',
+      'supports_thumbnail' => FALSE,
+    ],
+    'profile_directory' => [
+      'content_type' => self::CONTENT_TYPE_PROFILE,
+      'view_mode' => 'directory',
+      'supports_thumbnail' => FALSE,
+    ],
+  ];
+
+  /**
    * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
@@ -650,6 +739,65 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   public function sortByList($content_type) {
     $sortByList = self::ALLOWED_ENTITIES[$content_type]['sort_by'];
     return $sortByList;
+  }
+
+  /**
+   * Resolves the listing bundle definition for a block content bundle id.
+   *
+   * @param string $bundle
+   *   The block content bundle id (e.g. "post_card").
+   *
+   * @return array
+   *   The definition row: content_type, view_mode, supports_thumbnail.
+   *
+   * @throws \InvalidArgumentException
+   *   When the bundle is not a known listing bundle. A consumer asked about an
+   *   unknown bundle throws loudly rather than guessing a default (ADR DR-2).
+   */
+  public static function getListingBundleDefinition(string $bundle): array {
+    if (!isset(self::LISTING_BUNDLES[$bundle])) {
+      throw new \InvalidArgumentException(sprintf('Unknown Views Basic listing bundle "%s".', $bundle));
+    }
+    return self::LISTING_BUNDLES[$bundle];
+  }
+
+  /**
+   * Returns the content type a listing bundle queries.
+   *
+   * @param string $bundle
+   *   The block content bundle id.
+   *
+   * @return string
+   *   The content type machine name.
+   */
+  public static function getContentTypeForBundle(string $bundle): string {
+    return self::getListingBundleDefinition($bundle)['content_type'];
+  }
+
+  /**
+   * Returns the node view mode a listing bundle renders results in.
+   *
+   * @param string $bundle
+   *   The block content bundle id.
+   *
+   * @return string
+   *   The view mode machine name.
+   */
+  public static function getViewModeForBundle(string $bundle): string {
+    return self::getListingBundleDefinition($bundle)['view_mode'];
+  }
+
+  /**
+   * Returns whether a listing bundle offers the "Show Teaser Image" option.
+   *
+   * @param string $bundle
+   *   The block content bundle id.
+   *
+   * @return bool
+   *   TRUE when the bundle supports the thumbnail option (card/list_item).
+   */
+  public static function bundleSupportsThumbnail(string $bundle): bool {
+    return self::getListingBundleDefinition($bundle)['supports_thumbnail'];
   }
 
   /**
