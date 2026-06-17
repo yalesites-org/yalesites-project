@@ -110,4 +110,35 @@ class ListingBundleDefinitionTest extends UnitTestCase {
     $this->assertNull(ViewsBasicManager::migrationTargetBundle('post', NULL));
   }
 
+  /**
+   * Predecessor presets map each legacy block to a target bundle + params.
+   *
+   * @covers ::predecessorPreset
+   */
+  public function testPredecessorPreset() {
+    $post = ViewsBasicManager::predecessorPreset('post_list');
+    $this->assertSame('post_list_item', $post['target']);
+    $this->assertSame('list_item', $post['params']['view_mode']);
+    $this->assertSame(['post'], $post['params']['filters']['types']);
+    $this->assertSame('field_publish_date:DESC', $post['params']['sort_by']);
+    $this->assertTrue($post['params']['pinned_to_top']);
+
+    $event = ViewsBasicManager::predecessorPreset('event_list');
+    $this->assertSame('event_list_item', $event['target']);
+    $this->assertSame('future', $event['params']['filters']['event_time_period']);
+    $this->assertSame('field_event_date:ASC', $event['params']['sort_by']);
+
+    $directory = ViewsBasicManager::predecessorPreset('directory');
+    $this->assertSame('profile_directory', $directory['target']);
+    $this->assertSame('directory', $directory['params']['view_mode']);
+    $this->assertSame('field_last_name:ASC', $directory['params']['sort_by']);
+
+    // Every preset carries the common defaults so setupView never warns.
+    $this->assertArrayHasKey('operator', $post['params']);
+    $this->assertArrayHasKey('field_options', $post['params']);
+
+    $this->assertNull(ViewsBasicManager::predecessorPreset('view'));
+    $this->assertNull(ViewsBasicManager::predecessorPreset('unknown'));
+  }
+
 }

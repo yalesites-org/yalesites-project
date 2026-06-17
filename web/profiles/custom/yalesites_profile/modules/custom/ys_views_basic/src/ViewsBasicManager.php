@@ -881,6 +881,91 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   }
 
   /**
+   * Returns the target bundle and preset params for a predecessor block.
+   *
+   * The predecessor listing blocks (post_list, event_list, directory) embed a
+   * hard-coded Drupal View and carry no
+   * field_view_params. Superseding them means swapping each instance to the
+   * equivalent new bundle and pre-filling field_view_params with params that
+   * reproduce the predecessor View's query (ADR DR-10):
+   * - post_list  -> post_list_item: posts, sticky + publish-date DESC, 10/page.
+   * - event_list -> event_list_item: future events, event-date ASC.
+   * - directory  -> profile_directory: profiles, last-name A-Z, directory mode.
+   *
+   * These presets are best-effort reproductions and must be confirmed on
+   * staging with a before/after render diff (#1171) before the predecessor
+   * bundles and their Views are removed.
+   *
+   * @param string $legacy_bundle
+   *   The predecessor block content bundle id.
+   *
+   * @return array|null
+   *   ['target' => bundle id, 'params' => params array] or NULL if not a
+   *   known predecessor bundle.
+   */
+  public static function predecessorPreset(string $legacy_bundle): ?array {
+    $base = [
+      'field_options' => ['show_thumbnail' => 'show_thumbnail'],
+      'event_field_options' => [],
+      'post_field_options' => [],
+      'exposed_filter_options' => [],
+      'category_filter_label' => NULL,
+      'category_included_terms' => NULL,
+      'custom_vocab_included_terms' => NULL,
+      'operator' => '+',
+      'offset' => 0,
+      'show_current_entity' => 0,
+      'pinned_to_top' => FALSE,
+      'pin_label' => self::DEFAULT_PIN_LABEL,
+    ];
+    $presets = [
+      'post_list' => [
+        'target' => 'post_list_item',
+        'params' => [
+          'view_mode' => 'list_item',
+          'filters' => ['types' => ['post'], 'terms_include' => NULL, 'terms_exclude' => NULL],
+          'sort_by' => 'field_publish_date:DESC',
+          'display' => 'pager',
+          'limit' => 10,
+          'pinned_to_top' => TRUE,
+        ],
+      ],
+      'event_list' => [
+        'target' => 'event_list_item',
+        'params' => [
+          'view_mode' => 'list_item',
+          'filters' => [
+            'types' => ['event'],
+            'terms_include' => NULL,
+            'terms_exclude' => NULL,
+            'event_time_period' => 'future',
+          ],
+          'sort_by' => 'field_event_date:ASC',
+          'display' => 'all',
+          'limit' => 10,
+        ],
+      ],
+      'directory' => [
+        'target' => 'profile_directory',
+        'params' => [
+          'view_mode' => 'directory',
+          'filters' => ['types' => ['profile'], 'terms_include' => NULL, 'terms_exclude' => NULL],
+          'sort_by' => 'field_last_name:ASC',
+          'display' => 'all',
+          'limit' => 10,
+        ],
+      ],
+    ];
+    if (!isset($presets[$legacy_bundle])) {
+      return NULL;
+    }
+    return [
+      'target' => $presets[$legacy_bundle]['target'],
+      'params' => $presets[$legacy_bundle]['params'] + $base,
+    ];
+  }
+
+  /**
    * Returns a label given a content type and optional sub parameter.
    *
    * @param string $content_type
