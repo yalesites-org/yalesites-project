@@ -1,0 +1,107 @@
+/**
+ * @file
+ * Styling for the Views Basic authoring-form mockup preview (#1318).
+ *
+ * The preview is a compact, inline placeholder card shown below the field
+ * display options. It is intentionally simple — a visual aid, not a faithful
+ * theme render.
+ */
+
+.vb-preview-wrapper {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border: 1px dashed #b3b3b3;
+  border-radius: 4px;
+  background: #f7f7f7;
+}
+
+.vb-preview-wrapper__label {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.vb-preview-wrapper__note {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.vb-preview {
+  position: relative;
+  max-width: 22rem;
+  padding: 0.75rem;
+  border: 1px solid #d4d4d4;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.vb-preview__image {
+  display: block;
+  width: 100%;
+  height: 90px;
+  margin-bottom: 0.5rem;
+  border-radius: 2px;
+  background: #dcdcdc;
+  object-fit: cover;
+}
+
+.vb-preview__pinned {
+  display: inline-block;
+  margin-bottom: 0.4rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 2px;
+  background: #00356b; /* Yale blue. */
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.vb-preview__eyebrow {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #555;
+}
+
+.vb-preview__title {
+  margin: 0.15rem 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.vb-preview__meta {
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.vb-preview__category {
+  display: inline-block;
+  margin-top: 0.4rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 2px;
+  background: #eef1f5;
+  font-size: 0.72rem;
+}
+
+.vb-preview__tags {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 0.75rem;
+  color: #555;
+}
+
+.vb-preview__calendar {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.78rem;
+  text-decoration: underline;
+}
+
+/* Parts hidden via the [hidden] attribute toggled by the preview behavior. */
+.vb-preview [hidden] {
+  display: none;
+}
