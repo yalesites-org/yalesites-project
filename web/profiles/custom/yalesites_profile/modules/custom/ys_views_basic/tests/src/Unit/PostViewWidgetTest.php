@@ -133,6 +133,29 @@ class PostViewWidgetTest extends UnitTestCase {
   }
 
   /**
+   * The form is organised into titled, collapsible detail groups (#1317).
+   *
+   * Verifies the sectioning without moving fields: the container keys are
+   * unchanged so the form-selector/stored-JSON contract is preserved.
+   *
+   * @covers \Drupal\ys_views_basic\Plugin\Field\FieldWidget\ViewsBasicWidgetBase::initSelectionContainers
+   */
+  public function testFormSectionsAreGroupedDetails() {
+    $form = [];
+    $this->invoke($this->widget('post_card'), 'initSelectionContainers', [&$form]);
+    $groups = $form['group_user_selection'];
+
+    $this->assertSame('details', $groups['entity_and_view_mode']['#type']);
+    $this->assertSame('details', $groups['filter_and_sort']['#type']);
+    $this->assertSame('details', $groups['options']['#type']);
+    $this->assertFalse($groups['options']['#open'], 'Display options collapsed by default.');
+    $this->assertTrue($groups['entity_and_view_mode']['#open']);
+    // entity_specific stays a plain container so it is invisible when empty.
+    $this->assertSame('container', $groups['entity_specific']['#type']);
+    $this->assertArrayNotHasKey('#title', $groups['entity_specific']);
+  }
+
+  /**
    * The save path injects post_field_options into the stored params.
    *
    * @covers ::massageEntitySpecificParams
