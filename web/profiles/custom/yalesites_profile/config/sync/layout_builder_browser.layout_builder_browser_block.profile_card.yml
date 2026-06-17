@@ -1,0 +1,11 @@
+uuid: 80ef3b32-f537-42c2-9d12-34a264c5cb79
+langcode: en
+status: true
+dependencies: {  }
+id: profile_card
+block_id: 'inline_block:profile_card'
+category: dynamic_content
+label: 'People - Card Grid'
+image_path: ''
+image_alt: ''
+weight: 0

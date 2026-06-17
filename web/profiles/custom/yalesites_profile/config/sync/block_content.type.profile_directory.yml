@@ -1,0 +1,8 @@
+uuid: 13defa23-2084-4a9d-8961-ca055da8d246
+langcode: en
+status: true
+dependencies: {  }
+id: profile_directory
+label: 'People - Directory'
+revision: true
+description: 'People - Directory listing block.'
