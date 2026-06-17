@@ -1,0 +1,24 @@
+uuid: e26b9d4d-d991-42ed-8e2b-7f6fdf5d2143
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.event_list_item
+    - field.storage.block_content.field_heading
+    - filter.format.heading_html
+  module:
+    - text
+id: block_content.event_list_item.field_heading
+field_name: field_heading
+entity_type: block_content
+bundle: event_list_item
+label: 'View Heading'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - heading_html
+field_type: text
