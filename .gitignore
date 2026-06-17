@@ -106,10 +106,6 @@
 # Ignore local lando settings. Each site will have unique values.
 .lando.local.yml
 
-# Ignore local MCP configs. Each developer's lando port is machine-specific.
-.mcp.json
-/.claude/settings.local.json
-
 # Ignore packages installed by Node.
 /node_modules
 package-lock.json
@@ -117,9 +113,6 @@ package-lock.json
 # Local files
 .DS_Store
 .zip
-
-# AI session docs (local only — not committed)
-/docs-local/
 
 # Database references
 reference
@@ -140,12 +133,3 @@ web/profiles/custom/yalesites_profile/vendor/
 
 # Secrets for local use
 secrets.json
-
-# Copilot personal instruction files (local only)
-.ai/copilot/copilot.local.md
-copilot.local.md
-/docs/_template.md
-/.github/copilot-instructions.md
-/.ai
-/CLAUDE.md
-/.claude

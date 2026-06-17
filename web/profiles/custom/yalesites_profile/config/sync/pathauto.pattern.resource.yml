@@ -7,7 +7,7 @@ dependencies:
 id: resource
 label: Resource
 type: 'canonical_entities:node'
-pattern: 'resource/[node:title]'
+pattern: '/resource/[node:title]'
 selection_criteria:
   6ded474e-6911-4ac2-9800-541af1065e43:
     id: 'entity_bundle:node'

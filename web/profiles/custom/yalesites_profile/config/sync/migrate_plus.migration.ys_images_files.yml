@@ -68,4 +68,6 @@ process:
     default_value: 1
 destination:
   plugin: 'entity:file'
+idMap: {  }
 migration_dependencies: {  }
+include: null
