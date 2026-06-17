@@ -4,7 +4,7 @@ status: true
 dependencies: {  }
 id: post_condensed
 block_id: 'inline_block:post_condensed'
-category: dynamic_content
+category: post_listings
 label: 'Posts - Condensed'
 image_path: ''
 image_alt: ''

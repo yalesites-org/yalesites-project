@@ -4,7 +4,7 @@ status: true
 dependencies: {  }
 id: profile_card
 block_id: 'inline_block:profile_card'
-category: dynamic_content
+category: people_listings
 label: 'People - Card Grid'
 image_path: ''
 image_alt: ''

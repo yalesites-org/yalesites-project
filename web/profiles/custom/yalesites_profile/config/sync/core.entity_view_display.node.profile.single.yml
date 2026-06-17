@@ -101,7 +101,20 @@ third_party_settings:
               - 'inline_block:accordion'
               - 'inline_block:button_link'
               - 'inline_block:divider'
+              - 'inline_block:event_card'
+              - 'inline_block:event_condensed'
+              - 'inline_block:event_list_item'
               - 'inline_block:image'
+              - 'inline_block:page_card'
+              - 'inline_block:page_condensed'
+              - 'inline_block:page_list_item'
+              - 'inline_block:post_card'
+              - 'inline_block:post_condensed'
+              - 'inline_block:post_list_item'
+              - 'inline_block:profile_card'
+              - 'inline_block:profile_condensed'
+              - 'inline_block:profile_directory'
+              - 'inline_block:profile_list_item'
               - 'inline_block:pull_quote'
               - 'inline_block:reference_card'
               - 'inline_block:tabs'
@@ -113,6 +126,14 @@ third_party_settings:
             'Custom block types':
               - text
             'Inline blocks':
+              - 'inline_block:event_card'
+              - 'inline_block:event_condensed'
+              - 'inline_block:page_card'
+              - 'inline_block:page_condensed'
+              - 'inline_block:post_card'
+              - 'inline_block:post_condensed'
+              - 'inline_block:profile_card'
+              - 'inline_block:profile_condensed'
               - 'inline_block:text'
             'YaleSites Layouts':
               - profile_contact_block

@@ -129,13 +129,21 @@ third_party_settings:
               - 'inline_block:button_link'
               - 'inline_block:divider'
               - 'inline_block:embed'
+              - 'inline_block:event_card'
+              - 'inline_block:event_condensed'
               - 'inline_block:image'
               - 'inline_block:link_grid'
-              - 'inline_block:webform'
+              - 'inline_block:page_card'
+              - 'inline_block:page_condensed'
+              - 'inline_block:post_card'
+              - 'inline_block:post_condensed'
+              - 'inline_block:profile_card'
+              - 'inline_block:profile_condensed'
               - 'inline_block:pull_quote'
               - 'inline_block:tabs'
               - 'inline_block:text'
               - 'inline_block:video'
+              - 'inline_block:webform'
       restricted_categories:
         ys_layout_two_column_50_50:
           all_regions:
