@@ -95,7 +95,7 @@
     "drupal/role_delegation": "1.6.0",
     "drupal/search_api": "1.40.0",
     "drupal/search_api_exclude": "2.0.3",
-    "drupal/search_api_html_element_filter": "1.0.4",
+    "drupal/search_api_html_element_filter": "1.0.6",
     "drupal/section_library": "1.2.2",
     "drupal/selective_better_exposed_filters": "3.0.3",
     "drupal/simple_sitemap": "4.2.3",
