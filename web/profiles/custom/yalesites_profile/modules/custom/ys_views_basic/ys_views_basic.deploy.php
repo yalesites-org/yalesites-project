@@ -184,7 +184,7 @@ function ys_views_basic_deploy_10001() {
   // The rewrite reads each referenced block's CURRENT bundle rather than a
   // per-run map, so it is idempotent: re-running after an interrupted deploy
   // still rewrites any placement whose block has already been re-bundled.
-  $rewritten = _ys_views_basic_rewrite_view_placements($database, $logger);
+  $rewritten = _ys_views_basic_rewrite_placements($database, ['view'], $logger);
 
   // --- Post-run verification ---------------------------------------------.
   $remaining_views = (int) $block_storage->getQuery()
@@ -214,6 +214,103 @@ function ys_views_basic_deploy_10001() {
     '@rv' => $remaining_views,
     '@rr' => $remaining_refs,
   ]);
+}
+
+/**
+ * Supersedes the predecessor listing blocks (post_list/event_list/directory).
+ *
+ * Converts each predecessor block instance in place to the equivalent new
+ * listing bundle and pre-fills field_view_params with params reproducing the
+ * predecessor View's query (ADR DR-10), then rewrites the predecessor inline
+ * placements across all revisions. Idempotent and pre-flight logged like
+ * deploy_10001. The predecessor bundles and their embedded Views are removed
+ * separately, only after this migration is validated on staging (#1171).
+ */
+function ys_views_basic_deploy_10002() {
+  $logger = \Drupal::logger('ys_views_basic');
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+  $database = \Drupal::database();
+
+  $legacy_bundles = ['post_list', 'event_list', 'directory'];
+  $migrated = 0;
+  foreach ($legacy_bundles as $legacy) {
+    $preset = ViewsBasicManager::predecessorPreset($legacy);
+    if (!$preset) {
+      continue;
+    }
+    $ids = $block_storage->getQuery()
+      ->condition('type', $legacy)
+      ->accessCheck(FALSE)
+      ->execute();
+    $count = 0;
+    foreach ($block_storage->loadMultiple($ids) as $block) {
+      $block_id = $block->id();
+      $block->set('type', $preset['target']);
+      $block->save();
+      // Reload so the new bundle's field list (which includes
+      // field_view_params, absent on the predecessor bundle) is available,
+      // then pre-fill the params that reproduce the predecessor View's query.
+      $block = $block_storage->load($block_id);
+      $block->set('field_view_params', ['params' => json_encode($preset['params'])]);
+      $block->save();
+      // A bundle swap leaves prior field-table rows stamped with the old
+      // bundle; patch every block_content field table for this entity.
+      _ys_views_basic_patch_block_field_bundles($database, $block_id, $preset['target']);
+      $count++;
+      $migrated++;
+    }
+    if ($count) {
+      $logger->notice('Predecessor migration: converted @n "@legacy" blocks to @target.', [
+        '@n' => $count,
+        '@legacy' => $legacy,
+        '@target' => $preset['target'],
+      ]);
+    }
+  }
+
+  // Rewrite the predecessor inline-block placements across all revisions.
+  $rewritten = _ys_views_basic_rewrite_placements($database, $legacy_bundles, $logger);
+
+  // Clear caches so the rewritten layouts render with the new bundles.
+  \Drupal::service('cache.render')->invalidateAll();
+  if ($database->schema()->tableExists('key_value_expire')) {
+    $database->delete('key_value_expire')
+      ->condition('collection', 'tempstore.shared.layout_builder.section_storage.overrides')
+      ->execute();
+  }
+
+  return t('Predecessor migration: converted @m blocks; rewrote @r layout placements.', [
+    '@m' => $migrated,
+    '@r' => $rewritten,
+  ]);
+}
+
+/**
+ * Patches the bundle column on every block_content field table for an entity.
+ *
+ * A bundle swap + save updates the base table but leaves dedicated field-table
+ * rows stamped with the old bundle. Field values still load by entity id, but
+ * the bundle column is patched for consistency with bundle-scoped queries.
+ *
+ * @param \Drupal\Core\Database\Connection $database
+ *   The database connection.
+ * @param int|string $entity_id
+ *   The block content entity id.
+ * @param string $target
+ *   The new bundle id.
+ */
+function _ys_views_basic_patch_block_field_bundles($database, $entity_id, string $target): void {
+  $field_map = \Drupal::service('entity_field.manager')->getFieldMap()['block_content'] ?? [];
+  foreach (array_keys($field_map) as $field_name) {
+    foreach (["block_content__$field_name", "block_content_revision__$field_name"] as $table) {
+      if ($database->schema()->tableExists($table) && $database->schema()->fieldExists($table, 'bundle')) {
+        $database->update($table)
+          ->fields(['bundle' => $target])
+          ->condition('entity_id', $entity_id)
+          ->execute();
+      }
+    }
+  }
 }
 
 /**
@@ -265,34 +362,42 @@ function _ys_views_basic_count_placements($database, string $needle): int {
 }
 
 /**
- * Rewrites inline_block:view plugin IDs to their migrated target bundle.
+ * Rewrites legacy inline-block plugin IDs to their migrated target bundle.
  *
  * Walks every layout_builder__layout row (data and revision tables), and for
- * each component whose plugin id is inline_block:view, loads the referenced
- * block revision and — if that block has been re-bundled to a listing bundle —
- * rewrites the id to inline_block:<bundle>. Reading the block's current bundle
- * (rather than a per-run map) makes this idempotent and covers all revisions,
- * so publishing an old draft cannot resurrect the legacy plugin id pointing at
- * a re-bundled block (ADR DR-9). Mirrors deploy_10000's approach.
+ * each component whose plugin id is one of the given legacy ids
+ * (inline_block:<legacy>), loads the referenced block revision and — if that
+ * block has been re-bundled to a listing bundle — rewrites the id to
+ * inline_block:<bundle>. Reading the block's current bundle (rather than a
+ * per-run map) makes this idempotent and covers all revisions, so publishing an
+ * old draft cannot resurrect a legacy plugin id pointing at a re-bundled block
+ * (ADR DR-9/DR-10). Mirrors deploy_10000's approach.
  *
  * @param \Drupal\Core\Database\Connection $database
  *   The database connection.
+ * @param array $legacy_bundles
+ *   Legacy block content bundle ids whose inline_block:<bundle> placements
+ *   should be rewritten (e.g. ['view'] or ['post_list', 'event_list']).
  * @param \Psr\Log\LoggerInterface $logger
  *   The logger.
  *
  * @return int
  *   The number of layout rows rewritten.
  */
-function _ys_views_basic_rewrite_view_placements($database, $logger): int {
+function _ys_views_basic_rewrite_placements($database, array $legacy_bundles, $logger): int {
   $rewritten = 0;
   $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
   $listing_bundles = ViewsBasicManager::LISTING_BUNDLES;
+  $legacy_ids = array_map(fn($b) => 'inline_block:' . $b, $legacy_bundles);
 
   foreach (_ys_views_basic_layout_tables($database) as $table) {
-    $rows = $database->select($table, 't')
-      ->fields('t')
-      ->condition('t.layout_builder__layout_section', '%' . $database->escapeLike('inline_block:view"') . '%', 'LIKE')
-      ->execute();
+    // Select rows mentioning any of the legacy plugin ids.
+    $query = $database->select($table, 't')->fields('t');
+    $group = $query->orConditionGroup();
+    foreach ($legacy_ids as $legacy_id) {
+      $group->condition('t.layout_builder__layout_section', '%' . $database->escapeLike($legacy_id . '"') . '%', 'LIKE');
+    }
+    $rows = $query->condition($group)->execute();
 
     foreach ($rows as $row) {
       $section = @unserialize($row->layout_builder__layout_section, [
@@ -304,7 +409,7 @@ function _ys_views_basic_rewrite_view_placements($database, $logger): int {
       $changed = FALSE;
       foreach ($section->getComponents() as $component) {
         $config = $component->get('configuration');
-        if (($config['id'] ?? NULL) !== 'inline_block:view') {
+        if (!in_array($config['id'] ?? NULL, $legacy_ids, TRUE)) {
           continue;
         }
         $rid = $config['block_revision_id'] ?? NULL;
@@ -315,10 +420,11 @@ function _ys_views_basic_rewrite_view_placements($database, $logger): int {
           $changed = TRUE;
         }
         else {
-          // An inline_block:view placement whose block was not migrated (e.g.
-          // an orphaned/deleted block revision). Flag it for manual follow-up
+          // A legacy placement whose block was not migrated (e.g. an
+          // orphaned/deleted block revision). Flag it for manual follow-up
           // rather than silently leaving it.
-          $logger->warning('View migration: unrewritten inline_block:view placement in @table entity @e revision @r references block revision @rid.', [
+          $logger->warning('Listing migration: unrewritten @id placement in @table entity @e revision @r references block revision @rid.', [
+            '@id' => $config['id'] ?? 'NULL',
             '@table' => $table,
             '@e' => $row->entity_id,
             '@r' => $row->revision_id,
@@ -344,7 +450,10 @@ function _ys_views_basic_rewrite_view_placements($database, $logger): int {
   }
 
   if ($rewritten) {
-    $logger->notice('View migration: rewrote @n layout rows referencing inline_block:view.', ['@n' => $rewritten]);
+    $logger->notice('Listing migration: rewrote @n layout rows referencing @ids.', [
+      '@n' => $rewritten,
+      '@ids' => implode(', ', $legacy_ids),
+    ]);
   }
   return $rewritten;
 }

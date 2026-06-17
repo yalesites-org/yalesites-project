@@ -3,9 +3,9 @@ langcode: en
 status: true
 dependencies: {  }
 id: profile_directory
-block_id: 'inline_block:directory'
+block_id: 'inline_block:profile_directory'
 category: people_listings
-label: 'Profile Directory'
+label: 'People - Directory'
 image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/profile-directory.svg
 image_alt: ''
 weight: -15

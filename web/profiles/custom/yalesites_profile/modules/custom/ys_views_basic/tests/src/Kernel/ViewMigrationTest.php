@@ -57,7 +57,7 @@ class ViewMigrationTest extends KernelTestBase {
       'type' => 'views_basic_params',
     ])->save();
 
-    foreach (['view', 'post_card', 'profile_directory'] as $bundle) {
+    foreach (['view', 'post_card', 'post_list_item', 'profile_directory'] as $bundle) {
       BlockContentType::create(['id' => $bundle, 'label' => $bundle])->save();
       FieldConfig::create([
         'field_name' => 'field_view_params',
@@ -66,6 +66,11 @@ class ViewMigrationTest extends KernelTestBase {
         'label' => 'View params',
       ])->save();
     }
+
+    // The predecessor "post_list" bundle has no field_view_params (its query
+    // lives in an embedded View); the migration pre-fills the field after the
+    // swap to post_list_item.
+    BlockContentType::create(['id' => 'post_list', 'label' => 'Post Feed'])->save();
 
     $this->blockStorage = $this->container->get('entity_type.manager')->getStorage('block_content');
     require_once $this->container->get('extension.list.module')->getPath('ys_views_basic') . '/ys_views_basic.deploy.php';
@@ -156,6 +161,27 @@ class ViewMigrationTest extends KernelTestBase {
       ->count()
       ->execute();
     $this->assertSame(0, (int) $remaining);
+  }
+
+  /**
+   * The predecessor migration swaps bundle and pre-fills params (#1170).
+   */
+  public function testPredecessorMigration() {
+    // A predecessor "post_list" block carries no field_view_params.
+    $block = BlockContent::create(['type' => 'post_list', 'info' => 'Post feed']);
+    $block->save();
+
+    ys_views_basic_deploy_10002();
+    $this->blockStorage->resetCache();
+
+    $migrated = $this->blockStorage->load($block->id());
+    $this->assertSame('post_list_item', $migrated->bundle(), 'post_list is superseded by post_list_item.');
+
+    $params = json_decode($migrated->get('field_view_params')->first()->getValue()['params'], TRUE);
+    $this->assertSame('list_item', $params['view_mode']);
+    $this->assertSame(['post'], $params['filters']['types']);
+    $this->assertSame('field_publish_date:DESC', $params['sort_by']);
+    $this->assertTrue($params['pinned_to_top'], 'Post feed pins sticky items.');
   }
 
 }
