@@ -91,4 +91,23 @@ class ListingBundleDefinitionTest extends UnitTestCase {
     ViewsBasicManager::getListingBundleDefinition('view');
   }
 
+  /**
+   * The migration maps (type, view_mode) to the target bundle (#1169).
+   *
+   * @covers ::migrationTargetBundle
+   */
+  public function testMigrationTargetBundle() {
+    $this->assertSame('post_card', ViewsBasicManager::migrationTargetBundle('post', 'card'));
+    $this->assertSame('event_condensed', ViewsBasicManager::migrationTargetBundle('event', 'condensed'));
+    $this->assertSame('profile_directory', ViewsBasicManager::migrationTargetBundle('profile', 'directory'));
+    // Calendar is not a listing bundle (handled by deploy_10000).
+    $this->assertNull(ViewsBasicManager::migrationTargetBundle('event', 'calendar'));
+    // Directory is profile-only.
+    $this->assertNull(ViewsBasicManager::migrationTargetBundle('page', 'directory'));
+    // Unknown type and missing values do not map.
+    $this->assertNull(ViewsBasicManager::migrationTargetBundle('widget', 'card'));
+    $this->assertNull(ViewsBasicManager::migrationTargetBundle(NULL, 'card'));
+    $this->assertNull(ViewsBasicManager::migrationTargetBundle('post', NULL));
+  }
+
 }

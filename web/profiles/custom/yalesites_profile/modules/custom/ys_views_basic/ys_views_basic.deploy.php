@@ -5,6 +5,10 @@
  * Contains ys_views_basic.deploy.php.
  */
 
+use Drupal\layout_builder\Section;
+use Drupal\layout_builder\SectionComponent;
+use Drupal\ys_views_basic\ViewsBasicManager;
+
 /**
  * Converts view blocks with calendar view_mode to event_calendar blocks.
  */
@@ -98,4 +102,249 @@ function ys_views_basic_deploy_10000() {
       ->condition('collection', 'tempstore.shared.layout_builder.section_storage.overrides')
       ->execute();
   }
+}
+
+/**
+ * Migrates legacy "view" blocks to per-(content type, display mode) bundles.
+ *
+ * In-place bundle swap keyed on the stored content type and view mode together
+ * (ADR DR-9, ticket #1169): e.g. {post, card} -> post_card. Because every new
+ * bundle shares the existing field_view_params storage (DR-3) this copies no
+ * data. The hook is idempotent (blocks already in a target bundle are skipped),
+ * pre-flight counts and logs the work, rewrites inline_block:view plugin IDs
+ * across ALL revisions, and verifies zero remaining "view" blocks/references.
+ */
+function ys_views_basic_deploy_10001() {
+  $logger = \Drupal::logger('ys_views_basic');
+  $entity_type_manager = \Drupal::entityTypeManager();
+  $block_storage = $entity_type_manager->getStorage('block_content');
+  $database = \Drupal::database();
+
+  // --- Pre-flight ---------------------------------------------------------.
+  $view_ids = $block_storage->getQuery()
+    ->condition('type', 'view')
+    ->accessCheck(FALSE)
+    ->execute();
+  $logger->notice('View migration pre-flight: @count "view" blocks to evaluate.', ['@count' => count($view_ids)]);
+
+  // Inline-only placements are expected (DR-9/DR-12). Warn if any reusable
+  // (block_content:) placement of a listing exists, since this migration does
+  // not rewrite those.
+  $reusable = _ys_views_basic_count_placements($database, 'block_content:');
+  if ($reusable > 0) {
+    $logger->warning('View migration: found @n layout rows containing reusable (block_content:) placements; verify these on staging.', ['@n' => $reusable]);
+  }
+
+  // --- In-place bundle swap ----------------------------------------------.
+  $distribution = [];
+  $migrated = 0;
+  foreach ($block_storage->loadMultiple($view_ids) as $block) {
+    $params = $block->get('field_view_params')->isEmpty()
+      ? NULL
+      : ($block->get('field_view_params')->first()->getValue()['params'] ?? NULL);
+    $decoded = $params ? json_decode($params, TRUE) : NULL;
+    $type = $decoded['filters']['types'][0] ?? NULL;
+    $view_mode = $decoded['view_mode'] ?? NULL;
+    $target = ViewsBasicManager::migrationTargetBundle($type, $view_mode);
+
+    if ($target === NULL) {
+      $logger->warning('View migration: skipping block @id with unmappable (type=@t, view_mode=@v).', [
+        '@id' => $block->id(),
+        '@t' => $type ?? 'NULL',
+        '@v' => $view_mode ?? 'NULL',
+      ]);
+      continue;
+    }
+
+    $block->set('type', $target);
+    $block->save();
+
+    // A bundle swap + save leaves prior field-table rows stamped "view"; patch
+    // the bundle column on the data and revision tables. All revisions of a
+    // migrated block belong to the new bundle: the target is derived from the
+    // block's current params, one target per block (ADR DR-9).
+    foreach (['block_content__field_view_params', 'block_content_revision__field_view_params'] as $table) {
+      if ($database->schema()->tableExists($table)) {
+        $database->update($table)
+          ->fields(['bundle' => $target])
+          ->condition('entity_id', $block->id())
+          ->execute();
+      }
+    }
+
+    $distribution["$type/$view_mode"] = ($distribution["$type/$view_mode"] ?? 0) + 1;
+    $migrated++;
+  }
+  $logger->notice('View migration: swapped @n blocks. Distribution: @dist', [
+    '@n' => $migrated,
+    '@dist' => json_encode($distribution),
+  ]);
+
+  // --- Rewrite inline_block:view placements across ALL revisions ----------.
+  // The rewrite reads each referenced block's CURRENT bundle rather than a
+  // per-run map, so it is idempotent: re-running after an interrupted deploy
+  // still rewrites any placement whose block has already been re-bundled.
+  $rewritten = _ys_views_basic_rewrite_view_placements($database, $logger);
+
+  // --- Post-run verification ---------------------------------------------.
+  $remaining_views = (int) $block_storage->getQuery()
+    ->condition('type', 'view')
+    ->accessCheck(FALSE)
+    ->count()
+    ->execute();
+  $remaining_refs = _ys_views_basic_count_placements($database, 'inline_block:view"');
+  $logger->notice('View migration complete: @m blocks migrated, @r placements rewritten. Remaining "view" blocks: @rv; remaining inline_block:view references: @rr.', [
+    '@m' => $migrated,
+    '@r' => $rewritten,
+    '@rv' => $remaining_views,
+    '@rr' => $remaining_refs,
+  ]);
+
+  // Clear caches so the rewritten layouts render with the new bundles.
+  \Drupal::service('cache.render')->invalidateAll();
+  if ($database->schema()->tableExists('key_value_expire')) {
+    $database->delete('key_value_expire')
+      ->condition('collection', 'tempstore.shared.layout_builder.section_storage.overrides')
+      ->execute();
+  }
+
+  return t('Migrated @m view blocks; rewrote @r layout placements; @rv view blocks and @rr inline_block:view references remain.', [
+    '@m' => $migrated,
+    '@r' => $rewritten,
+    '@rv' => $remaining_views,
+    '@rr' => $remaining_refs,
+  ]);
+}
+
+/**
+ * Returns the layout_builder__layout tables (data + revision) that exist.
+ *
+ * @param \Drupal\Core\Database\Connection $database
+ *   The database connection.
+ *
+ * @return array
+ *   A list of existing table names holding serialized Section blobs.
+ */
+function _ys_views_basic_layout_tables($database): array {
+  $entity_field_manager = \Drupal::service('entity_field.manager');
+  $tables = [];
+  foreach ($entity_field_manager->getFieldMap() as $entity_type_id => $fields) {
+    if (!isset($fields['layout_builder__layout'])) {
+      continue;
+    }
+    foreach (["{$entity_type_id}__layout_builder__layout", "{$entity_type_id}_revision__layout_builder__layout"] as $table) {
+      if ($database->schema()->tableExists($table)) {
+        $tables[] = $table;
+      }
+    }
+  }
+  return $tables;
+}
+
+/**
+ * Counts layout rows whose serialized section contains a needle.
+ *
+ * @param \Drupal\Core\Database\Connection $database
+ *   The database connection.
+ * @param string $needle
+ *   The substring to look for in the serialized section blob.
+ *
+ * @return int
+ *   The number of matching rows.
+ */
+function _ys_views_basic_count_placements($database, string $needle): int {
+  $count = 0;
+  foreach (_ys_views_basic_layout_tables($database) as $table) {
+    $count += (int) $database->select($table, 't')
+      ->condition('t.layout_builder__layout_section', '%' . $database->escapeLike($needle) . '%', 'LIKE')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+  }
+  return $count;
+}
+
+/**
+ * Rewrites inline_block:view plugin IDs to their migrated target bundle.
+ *
+ * Walks every layout_builder__layout row (data and revision tables), and for
+ * each component whose plugin id is inline_block:view, loads the referenced
+ * block revision and — if that block has been re-bundled to a listing bundle —
+ * rewrites the id to inline_block:<bundle>. Reading the block's current bundle
+ * (rather than a per-run map) makes this idempotent and covers all revisions,
+ * so publishing an old draft cannot resurrect the legacy plugin id pointing at
+ * a re-bundled block (ADR DR-9). Mirrors deploy_10000's approach.
+ *
+ * @param \Drupal\Core\Database\Connection $database
+ *   The database connection.
+ * @param \Psr\Log\LoggerInterface $logger
+ *   The logger.
+ *
+ * @return int
+ *   The number of layout rows rewritten.
+ */
+function _ys_views_basic_rewrite_view_placements($database, $logger): int {
+  $rewritten = 0;
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+  $listing_bundles = ViewsBasicManager::LISTING_BUNDLES;
+
+  foreach (_ys_views_basic_layout_tables($database) as $table) {
+    $rows = $database->select($table, 't')
+      ->fields('t')
+      ->condition('t.layout_builder__layout_section', '%' . $database->escapeLike('inline_block:view"') . '%', 'LIKE')
+      ->execute();
+
+    foreach ($rows as $row) {
+      $section = @unserialize($row->layout_builder__layout_section, [
+        'allowed_classes' => [Section::class, SectionComponent::class],
+      ]);
+      if (!$section instanceof Section) {
+        continue;
+      }
+      $changed = FALSE;
+      foreach ($section->getComponents() as $component) {
+        $config = $component->get('configuration');
+        if (($config['id'] ?? NULL) !== 'inline_block:view') {
+          continue;
+        }
+        $rid = $config['block_revision_id'] ?? NULL;
+        $block = $rid ? $block_storage->loadRevision($rid) : NULL;
+        if ($block && isset($listing_bundles[$block->bundle()])) {
+          $config['id'] = 'inline_block:' . $block->bundle();
+          $component->setConfiguration($config);
+          $changed = TRUE;
+        }
+        else {
+          // An inline_block:view placement whose block was not migrated (e.g.
+          // an orphaned/deleted block revision). Flag it for manual follow-up
+          // rather than silently leaving it.
+          $logger->warning('View migration: unrewritten inline_block:view placement in @table entity @e revision @r references block revision @rid.', [
+            '@table' => $table,
+            '@e' => $row->entity_id,
+            '@r' => $row->revision_id,
+            '@rid' => $rid ?? 'NULL',
+          ]);
+        }
+      }
+      if (!$changed) {
+        continue;
+      }
+      // Match the exact row read, including langcode/deleted, so the update is
+      // unambiguous even if layouts ever become translatable.
+      $database->update($table)
+        ->fields(['layout_builder__layout_section' => serialize($section)])
+        ->condition('entity_id', $row->entity_id)
+        ->condition('revision_id', $row->revision_id)
+        ->condition('delta', $row->delta)
+        ->condition('langcode', $row->langcode)
+        ->condition('deleted', $row->deleted)
+        ->execute();
+      $rewritten++;
+    }
+  }
+
+  if ($rewritten) {
+    $logger->notice('View migration: rewrote @n layout rows referencing inline_block:view.', ['@n' => $rewritten]);
+  }
+  return $rewritten;
 }
