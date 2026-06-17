@@ -377,19 +377,45 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       ],
       '#weight' => 10,
     ];
-    $containers = [
-      'entity_and_view_mode' => ['views-basic--entity-view-mode'],
-      'filter_and_sort' => [],
-      'filter_options' => [],
-      'entity_specific' => [],
-      'options' => [],
+
+    // Sectioned, collapsible groups give the form a scannable structure
+    // (#1316/#1317). The container keys are unchanged so the form-selector
+    // paths and stored-JSON reads stay valid; only the rendered presentation
+    // changes from a flat column to titled groups. entity_specific stays a
+    // plain container so it is invisible when a content type (post, page,
+    // profile) adds nothing to it.
+    $details = [
+      'entity_and_view_mode' => [
+        'title' => $this->t('Field display & filters'),
+        'open' => TRUE,
+        'classes' => ['views-basic--entity-view-mode'],
+      ],
+      'filter_and_sort' => [
+        'title' => $this->t('Tags, sorting & pinned'),
+        'open' => TRUE,
+        'classes' => [],
+      ],
+      'options' => [
+        'title' => $this->t('Display options'),
+        'open' => FALSE,
+        'classes' => [],
+      ],
     ];
-    foreach ($containers as $name => $extra_classes) {
+    foreach ($details as $name => $group) {
       $form['group_user_selection'][$name] = [
-        '#type' => 'container',
-        '#attributes' => ['class' => array_merge(['grouped-items'], $extra_classes)],
+        '#type' => 'details',
+        '#title' => $group['title'],
+        '#open' => $group['open'],
+        '#attributes' => ['class' => array_merge(['grouped-items'], $group['classes'])],
       ];
     }
+
+    // entity_specific holds optional per-type controls (e.g. the event time
+    // period); keep it a plain container so it does not render an empty box.
+    $form['group_user_selection']['entity_specific'] = [
+      '#type' => 'container',
+      '#attributes' => ['class' => ['grouped-items']],
+    ];
   }
 
   /**
@@ -414,6 +440,8 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     if (ViewsBasicManager::bundleSupportsThumbnail($this->getBundle())) {
       $options['show_thumbnail'] = $this->t('Show Teaser Image');
     }
+    // Title for the field-display group of options (#1317).
+    $field_options_title = $this->t('Show on each result');
 
     // Default to the saved field options, falling back to showing the teaser
     // image on a brand-new block where that option is offered.
@@ -427,7 +455,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     $form['group_user_selection']['entity_and_view_mode']['field_options'] = [
       '#type' => 'checkboxes',
       '#options' => $options,
-      '#title' => $this->t('Field Display Options'),
+      '#title' => $field_options_title,
       '#tree' => TRUE,
       '#default_value' => is_array($saved) ? $saved : [],
     ];
@@ -505,7 +533,8 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     $tags = $this->viewsBasicManager->getAllTags();
 
     $form['group_user_selection']['filter_and_sort']['terms_include'] = [
-      '#title' => $this->t('Include content that uses the following tags or categories'),
+      '#title' => $this->t('Only show content tagged'),
+      '#description' => $this->t('Limit results to content using any of these tags or categories.'),
       '#type' => 'select',
       '#options' => $tags,
       '#chosen' => TRUE,
@@ -515,7 +544,8 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       '#default_value' => $params ? $this->viewsBasicManager->getDefaultParamValue('terms_include', $params) : [],
     ];
     $form['group_user_selection']['filter_and_sort']['terms_exclude'] = [
-      '#title' => $this->t('Exclude content that uses the following tags or categories'),
+      '#title' => $this->t('Hide content tagged'),
+      '#description' => $this->t('Remove results using any of these tags or categories.'),
       '#type' => 'select',
       '#options' => $tags,
       '#chosen' => TRUE,
@@ -526,11 +556,12 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     ];
     $form['group_user_selection']['filter_and_sort']['term_operator'] = [
       '#type' => 'radios',
-      '#title' => $this->t('Match Content That Has'),
+      '#title' => $this->t('Match content tagged with'),
+      '#description' => $this->t('"Any" shows content with at least one selected term; "All" requires every selected term.'),
       // "+" is OR and "," is AND.
       '#options' => [
-        '+' => $this->t('Can have any term listed in include/exclude terms'),
-        ',' => $this->t('Must have all terms listed in include/exclude terms'),
+        '+' => $this->t('Any of the selected terms'),
+        ',' => $this->t('All of the selected terms'),
       ],
       '#default_value' => $params ? $this->viewsBasicManager->getDefaultParamValue('operator', $params) : '+',
       '#attributes' => ['class' => ['term-operator-item']],
@@ -577,14 +608,15 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     $params = $items[$delta]->params;
     $form['group_user_selection']['filter_and_sort']['pinned_to_top'] = [
       '#type' => 'checkbox',
-      '#title' => $this->t('Show pinned label'),
-      '#description' => $this->t('Show a custom label for items pinned to the top of the list.'),
+      '#title' => $this->t('Highlight pinned items'),
+      '#description' => $this->t('Show a small label on items an editor has pinned to the top of this list.'),
       '#default_value' => $params ? $this->viewsBasicManager->getDefaultParamValue('pinned_to_top', $params) : FALSE,
     ];
     $pin_label = ($params ? $this->viewsBasicManager->getDefaultParamValue('pin_label', $params) : ViewsBasicManager::DEFAULT_PIN_LABEL) ?? ViewsBasicManager::DEFAULT_PIN_LABEL;
     $form['group_user_selection']['filter_and_sort']['pin_label'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Label to display for pinned items'),
+      '#title' => $this->t('Pinned-item label'),
+      '#description' => $this->t('Text shown on each pinned item (for example "Featured").'),
       '#default_value' => $pin_label,
       '#states' => [
         'visible' => [$formSelectors['pinned_to_top_selector'] => ['checked' => TRUE]],
@@ -609,7 +641,8 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
 
     $form['group_user_selection']['options']['display'] = [
       '#type' => 'select',
-      '#title' => $this->t('Number of Items to Display'),
+      '#title' => $this->t('How many items to show'),
+      '#description' => $this->t('Choose all matching items, a fixed number, or a paginated list.'),
       '#default_value' => $displayValue,
       '#options' => [
         'all' => $this->t('Display all items'),
@@ -627,15 +660,16 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       '#suffix' => '</div>',
     ];
     $form['group_user_selection']['options']['offset'] = [
-      '#title' => $this->t('Ignore Number of Results'),
-      '#description' => $this->t('Specify the number of results you want to ignore. If you enter "2", your view will omit the first two results that match the overall parameters you\'ve set in the view interface.'),
+      '#title' => $this->t('Skip the first results'),
+      '#description' => $this->t('Hide the first results that match — for example, enter 1 to omit the single newest item.'),
       '#type' => 'number',
       '#default_value' => $params ? $this->viewsBasicManager->getDefaultParamValue('offset', $params) : 0,
       '#min' => 0,
       '#attributes' => ['placeholder' => 0],
     ];
     $form['group_user_selection']['options']['show_current_entity'] = [
-      '#title' => $this->t('Include this content in view'),
+      '#title' => $this->t('Include the current page'),
+      '#description' => $this->t('When this block is placed on a content page, include that page in the results instead of excluding it.'),
       '#type' => 'checkbox',
       '#default_value' => $params ? $this->viewsBasicManager->getDefaultParamValue('show_current_entity', $params) : 0,
     ];
