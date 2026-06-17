@@ -25,6 +25,9 @@ dependencies:
     - block_content.type.inline_message
     - block_content.type.link_grid
     - block_content.type.media_grid
+    - block_content.type.page_card
+    - block_content.type.page_condensed
+    - block_content.type.page_list_item
     - block_content.type.post_card
     - block_content.type.post_condensed
     - block_content.type.post_list
@@ -196,6 +199,9 @@ permissions:
   - 'create media_grid block content'
   - 'create new books'
   - 'create page content'
+  - 'create page_card block content'
+  - 'create page_condensed block content'
+  - 'create page_list_item block content'
   - 'create post content'
   - 'create post_card block content'
   - 'create post_condensed block content'
@@ -285,6 +291,12 @@ permissions:
   - 'delete any media_grid block content'
   - 'delete any media_grid block content revisions'
   - 'delete any page content'
+  - 'delete any page_card block content'
+  - 'delete any page_card block content revisions'
+  - 'delete any page_condensed block content'
+  - 'delete any page_condensed block content revisions'
+  - 'delete any page_list_item block content'
+  - 'delete any page_list_item block content revisions'
   - 'delete any post content'
   - 'delete any post_card block content'
   - 'delete any post_card block content revisions'
@@ -380,6 +392,9 @@ permissions:
   - 'edit any link_grid block content'
   - 'edit any media_grid block content'
   - 'edit any page content'
+  - 'edit any page_card block content'
+  - 'edit any page_condensed block content'
+  - 'edit any page_list_item block content'
   - 'edit any post content'
   - 'edit any post_card block content'
   - 'edit any post_condensed block content'
@@ -469,6 +484,9 @@ permissions:
   - 'revert any inline_message block content revisions'
   - 'revert any link_grid block content revisions'
   - 'revert any media_grid block content revisions'
+  - 'revert any page_card block content revisions'
+  - 'revert any page_condensed block content revisions'
+  - 'revert any page_list_item block content revisions'
   - 'revert any post_card block content revisions'
   - 'revert any post_condensed block content revisions'
   - 'revert any post_list block content revisions'
@@ -529,6 +547,9 @@ permissions:
   - 'view any inline_message block content history'
   - 'view any link_grid block content history'
   - 'view any media_grid block content history'
+  - 'view any page_card block content history'
+  - 'view any page_condensed block content history'
+  - 'view any page_list_item block content history'
   - 'view any post_card block content history'
   - 'view any post_condensed block content history'
   - 'view any post_list block content history'
