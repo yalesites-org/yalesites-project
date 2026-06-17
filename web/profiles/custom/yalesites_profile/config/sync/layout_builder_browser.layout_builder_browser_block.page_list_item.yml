@@ -1,0 +1,11 @@
+uuid: e3e69ddd-1ada-44d2-8a8d-1d0b7fcdd21d
+langcode: en
+status: true
+dependencies: {  }
+id: page_list_item
+block_id: 'inline_block:page_list_item'
+category: dynamic_content
+label: 'Pages - List'
+image_path: ''
+image_alt: ''
+weight: 0
