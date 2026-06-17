@@ -132,7 +132,11 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
         ];
       }
       else {
-        $view = $this->viewsBasicManager->getView('rendered', $item->getValue()['params']);
+        // Pass the host block UUID so each instance gets an isolated, cloned
+        // view and a distinct pager element (#906 / #1306).
+        $block = $items->getEntity();
+        $blockUuid = $block ? $block->uuid() : NULL;
+        $view = $this->viewsBasicManager->getView('rendered', $item->getValue()['params'], $blockUuid);
         // Extract exposed widgets from the view.
         $exposedWidgets = NULL;
         if ($view && is_array($view) && isset($view['#view']) && isset($view['#view']->exposed_widgets)) {

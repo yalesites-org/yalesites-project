@@ -9,7 +9,8 @@ use Drupal\Core\Entity\EntityDisplayRepository;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\node\NodeInterface;
-use Drupal\views\Views;
+use Drupal\views\ViewEntityInterface;
+use Drupal\views\ViewExecutableFactory;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -288,6 +289,13 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   protected $cacheTagsInvalidator;
 
   /**
+   * The view executable factory.
+   *
+   * @var \Drupal\views\ViewExecutableFactory
+   */
+  protected $viewExecutableFactory;
+
+  /**
    * Constructs a new ViewsBasicManager object.
    */
   public function __construct(
@@ -295,12 +303,14 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     EntityDisplayRepository $entity_display_repository,
     RouteMatchInterface $route_match,
     CacheTagsInvalidatorInterface $cache_tags_invalidator,
+    ViewExecutableFactory $view_executable_factory,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityDisplayRepository = $entity_display_repository;
     $this->termStorage = $this->entityTypeManager->getStorage('taxonomy_term');
     $this->routeMatch = $route_match;
     $this->cacheTagsInvalidator = $cache_tags_invalidator;
+    $this->viewExecutableFactory = $view_executable_factory;
   }
 
   /**
@@ -312,26 +322,43 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       $container->get('entity_display.repository'),
       $container->get('current_route_match'),
       $container->get('cache_tags.invalidator'),
+      $container->get('views.executable'),
     );
   }
 
   /**
-   * Initializes the view based on the content type.
+   * Initializes an isolated view executable for the content type.
+   *
+   * Each call builds the executable from a *clone* of the scaffold view config
+   * entity. Views display handlers bind references into the storage entity
+   * (DisplayPluginCollection::initializePlugin takes the display array by
+   * reference, and setOption() writes through it), and the config entity
+   * storage caches a single shared instance. Without cloning, one block's
+   * setupView() mutations would leak into every other block on the page — the
+   * root cause of #906. Cloning gives every block instance its own storage so
+   * sort, limit, filters, pinned, and pagination cannot clobber each other.
+   *
+   * The original cached entity must never be handed to an executable: PHP
+   * clones preserve reference-bound array slots, so every consumer clones
+   * first to keep the cached original pristine (ADR DR-9 / #1306).
    *
    * @param array $types
    *   An array of content types.
    *
-   * @return \Drupal\views\ViewExecutable
-   *   The view object.
+   * @return \Drupal\views\ViewExecutable|null
+   *   The isolated view executable, or NULL when the scaffold view is missing.
    */
   public function initView($types) {
-    if (in_array('event', $types)) {
-      return Views::getView('views_basic_scaffold_events');
-    }
-    else {
-      return Views::getView('views_basic_scaffold');
+    $view_id = in_array('event', $types)
+      ? 'views_basic_scaffold_events'
+      : 'views_basic_scaffold';
+
+    $view_entity = $this->entityTypeManager->getStorage('view')->load($view_id);
+    if (!$view_entity instanceof ViewEntityInterface) {
+      return NULL;
     }
 
+    return $this->viewExecutableFactory->get(clone $view_entity);
   }
 
   /**
@@ -341,17 +368,14 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   The view object.
    * @param string $params
    *   The JSON encoded string of parameters.
+   * @param string|null $blockUuid
+   *   The host block content UUID, used to derive a per-instance pager element
+   *   so multiple paginated listings on one page paginate independently.
    *
    * @return void
    *   No return value.
    */
-  public function setupView(&$view, $params) {
-    static $setupRunning;
-    if ($setupRunning) {
-      return;
-    }
-    $setupRunning = TRUE;
-
+  public function setupView(&$view, $params, $blockUuid = NULL) {
     $paramsDecoded = json_decode($params, TRUE);
     $pinned_to_top = isset($paramsDecoded['pinned_to_top']) ? (bool) $paramsDecoded['pinned_to_top'] : FALSE;
 
@@ -495,6 +519,18 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
     // Set the modified filters back to the view display options.
     $view->getDisplay()->setOption('filters', $filters);
+
+    // Give each block instance a distinct pager element so that multiple
+    // paginated listings on one page do not share the same ?page= query
+    // argument (#906). The element is derived deterministically from the block
+    // UUID so it is stable across the full-page render and any AJAX pager call.
+    if ($blockUuid && ($paramsDecoded['display'] ?? NULL) === 'pager') {
+      $pager = $view->getDisplay()->getOption('pager');
+      if (is_array($pager)) {
+        $pager['options']['id'] = $this->pagerElementId($blockUuid);
+        $view->getDisplay()->setOption('pager', $pager);
+      }
+    }
 
     /*
      * Sets the arguments that will get passed to contextual filters as well
@@ -659,8 +695,26 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         $resultRow['#cache']['contexts'][] = 'url.query_args:page';
       }
     }
+  }
 
-    $setupRunning = FALSE;
+  /**
+   * Derives a small, stable pager element id from a block UUID.
+   *
+   * The element id indexes the comma-separated ?page= query argument, so it
+   * must be both stable across requests (so an AJAX pager call targets the
+   * same element the full-page render assigned) and small (so the query string
+   * stays compact). crc32 of the block UUID modulo 100 satisfies both; the
+   * collision probability for the handful of paginated blocks realistically
+   * placed on one page is negligible.
+   *
+   * @param string $uuid
+   *   The host block content UUID.
+   *
+   * @return int
+   *   A pager element id in the range 0-99.
+   */
+  protected function pagerElementId(string $uuid): int {
+    return abs(crc32($uuid)) % 100;
   }
 
   /**
@@ -672,26 +726,25 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   Type of view output: 'rendered' (used to allow 'count').
    * @param string $params
    *   JSON of the parameter settings.
+   * @param string|null $blockUuid
+   *   The host block content UUID, used to derive a per-instance pager element
+   *   so multiple paginated listings on one page paginate independently.
    *
-   * @return array|int
+   * @return array|int|null
    *   An array of a rendered view or a count of the number of results based
-   *   on the parameters specified.
+   *   on the parameters specified, or NULL when the scaffold view is missing.
    */
-  public function getView($type, $params) {
-    // Prevents views recursion.
-    static $running;
-    if ($running) {
-      return NULL;
-    }
-    $running = TRUE;
-
-    // Set up the view and initial decoded parameters.
+  public function getView($type, $params, $blockUuid = NULL) {
+    // Set up the view and initial decoded parameters. Each call gets its own
+    // isolated, cloned view (see initView), so the previous static recursion
+    // guards are no longer needed and nested views-basic placements now render
+    // instead of being silently skipped (#906 / #1306).
     $paramsDecoded = json_decode($params, TRUE);
     $view = $this->initView($paramsDecoded['filters']['types']);
-    $this->setupView($view, $params);
-
-    // End current view run.
-    $running = FALSE;
+    if ($view === NULL) {
+      return NULL;
+    }
+    $this->setupView($view, $params, $blockUuid);
 
     return $view;
   }
