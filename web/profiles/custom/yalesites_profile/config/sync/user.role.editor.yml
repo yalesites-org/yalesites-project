@@ -13,7 +13,10 @@ dependencies:
     - block_content.type.directory
     - block_content.type.divider
     - block_content.type.embed
+    - block_content.type.event_card
+    - block_content.type.event_condensed
     - block_content.type.event_list
+    - block_content.type.event_list_item
     - block_content.type.facts
     - block_content.type.gallery
     - block_content.type.grand_hero
@@ -146,7 +149,10 @@ permissions:
   - 'create embed block content'
   - 'create embed media'
   - 'create event content'
+  - 'create event_card block content'
+  - 'create event_condensed block content'
   - 'create event_list block content'
+  - 'create event_list_item block content'
   - 'create facts block content'
   - 'create gallery block content'
   - 'create grand_hero block content'
@@ -220,8 +226,14 @@ permissions:
   - 'delete any embed block content revisions'
   - 'delete any embed media'
   - 'delete any event content'
+  - 'delete any event_card block content'
+  - 'delete any event_card block content revisions'
+  - 'delete any event_condensed block content'
+  - 'delete any event_condensed block content revisions'
   - 'delete any event_list block content'
   - 'delete any event_list block content revisions'
+  - 'delete any event_list_item block content'
+  - 'delete any event_list_item block content revisions'
   - 'delete any facts block content'
   - 'delete any facts block content revisions'
   - 'delete any gallery block content'
@@ -320,7 +332,10 @@ permissions:
   - 'edit any embed block content'
   - 'edit any embed media'
   - 'edit any event content'
+  - 'edit any event_card block content'
+  - 'edit any event_condensed block content'
   - 'edit any event_list block content'
+  - 'edit any event_list_item block content'
   - 'edit any facts block content'
   - 'edit any gallery block content'
   - 'edit any grand_hero block content'
@@ -395,7 +410,10 @@ permissions:
   - 'revert any directory block content revisions'
   - 'revert any divider block content revisions'
   - 'revert any embed block content revisions'
+  - 'revert any event_card block content revisions'
+  - 'revert any event_condensed block content revisions'
   - 'revert any event_list block content revisions'
+  - 'revert any event_list_item block content revisions'
   - 'revert any facts block content revisions'
   - 'revert any gallery block content revisions'
   - 'revert any grand_hero block content revisions'
@@ -452,7 +470,10 @@ permissions:
   - 'view any directory block content history'
   - 'view any divider block content history'
   - 'view any embed block content history'
+  - 'view any event_card block content history'
+  - 'view any event_condensed block content history'
   - 'view any event_list block content history'
+  - 'view any event_list_item block content history'
   - 'view any facts block content history'
   - 'view any gallery block content history'
   - 'view any grand_hero block content history'

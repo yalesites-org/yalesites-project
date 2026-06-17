@@ -1,0 +1,8 @@
+uuid: bfe78353-5c93-475f-a5ba-8f0ad4d9af7d
+langcode: en
+status: true
+dependencies: {  }
+id: event_card
+label: 'Events - Card Grid'
+revision: true
+description: 'Events - Card Grid listing block.'
