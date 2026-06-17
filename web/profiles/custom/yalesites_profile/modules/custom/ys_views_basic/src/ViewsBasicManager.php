@@ -854,6 +854,33 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   }
 
   /**
+   * Resolves the target listing bundle for a legacy "view" block (#1169).
+   *
+   * The migration keys on the stored content type and view mode together: the
+   * target bundle id is "{content_type}_{view_mode}" when that pair is a known
+   * listing bundle. Returns NULL for anything that does not map (e.g. the
+   * calendar view mode, which deploy_10000 already converted to event_calendar,
+   * or a malformed/empty param set) so the migration can skip it loudly rather
+   * than guess (ADR DR-9).
+   *
+   * @param string|null $content_type
+   *   The stored content type (filters.types[0]).
+   * @param string|null $view_mode
+   *   The stored view mode.
+   *
+   * @return string|null
+   *   The target bundle id, or NULL when the pair does not map to a listing
+   *   bundle.
+   */
+  public static function migrationTargetBundle(?string $content_type, ?string $view_mode): ?string {
+    if ($content_type === NULL || $view_mode === NULL) {
+      return NULL;
+    }
+    $candidate = $content_type . '_' . $view_mode;
+    return isset(self::LISTING_BUNDLES[$candidate]) ? $candidate : NULL;
+  }
+
+  /**
    * Returns a label given a content type and optional sub parameter.
    *
    * @param string $content_type
