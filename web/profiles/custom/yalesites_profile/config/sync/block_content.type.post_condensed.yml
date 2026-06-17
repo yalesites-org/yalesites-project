@@ -1,0 +1,8 @@
+uuid: 9e46b62c-d334-42e1-b6a9-e67a738b8bd3
+langcode: en
+status: true
+dependencies: {  }
+id: post_condensed
+label: 'Posts - Condensed'
+revision: true
+description: 'Posts - Condensed listing block.'

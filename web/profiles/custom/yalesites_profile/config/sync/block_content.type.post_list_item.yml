@@ -1,0 +1,8 @@
+uuid: ee88ea55-49f6-4aba-86d1-dcc79c33efb4
+langcode: en
+status: true
+dependencies: {  }
+id: post_list_item
+label: 'Posts - List'
+revision: true
+description: 'Posts - List listing block.'
