@@ -316,6 +316,7 @@ image_banner:
     values:
       tall: Tall
       short: Short
+      mini: Mini
     default: tall
 video_banner:
   field_style_width:
