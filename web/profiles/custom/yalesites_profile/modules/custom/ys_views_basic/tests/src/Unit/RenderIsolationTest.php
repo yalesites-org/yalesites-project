@@ -156,7 +156,7 @@ class RenderIsolationTest extends UnitTestCase {
   }
 
   /**
-   * show_current_entity does not fall through to the pinned_to_top case.
+   * The show_current_entity param does not fall through to pinned_to_top.
    *
    * Regression for a missing switch break that made getDefaultParamValue()
    * return the pinned_to_top value when asked for show_current_entity.
