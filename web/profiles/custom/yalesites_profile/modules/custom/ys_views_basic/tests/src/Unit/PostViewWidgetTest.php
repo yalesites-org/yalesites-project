@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\ys_views_basic\Unit;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
@@ -172,6 +173,27 @@ class PostViewWidgetTest extends UnitTestCase {
     // The static template wires up the JS target classes and the no-query note.
     $this->assertStringContainsString('vb-preview', $preview['#template']);
     $this->assertStringContainsString('not a live query', $preview['#template']);
+  }
+
+  /**
+   * The preview is shown only on the creation form, not when reconfiguring.
+   *
+   * @covers \Drupal\ys_views_basic\Plugin\Field\FieldWidget\ViewsBasicWidgetBase::isCreateForm
+   */
+  public function testPreviewScopedToCreateForm() {
+    $widget = $this->widget('post_card');
+
+    $newBlock = $this->createMock(EntityInterface::class);
+    $newBlock->method('isNew')->willReturn(TRUE);
+    $createItems = $this->createMock(FieldItemListInterface::class);
+    $createItems->method('getEntity')->willReturn($newBlock);
+    $this->assertTrue($this->invoke($widget, 'isCreateForm', [$createItems]), 'Preview shows on the add-block form.');
+
+    $existingBlock = $this->createMock(EntityInterface::class);
+    $existingBlock->method('isNew')->willReturn(FALSE);
+    $editItems = $this->createMock(FieldItemListInterface::class);
+    $editItems->method('getEntity')->willReturn($existingBlock);
+    $this->assertFalse($this->invoke($widget, 'isCreateForm', [$editItems]), 'Preview is hidden when reconfiguring an existing block.');
   }
 
   /**
