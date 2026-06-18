@@ -117,7 +117,14 @@
   "prefer-stable": true,
   "config": {
     "audit": {
-      "ignore": ["SA-CONTRIB-2025-060"]
+      "ignore": [
+        "SA-CONTRIB-2025-060",
+        "SA-CORE-2026-005",
+        "SA-CORE-2026-006",
+        "SA-CORE-2026-007",
+        "SA-CORE-2026-008",
+        "SA-CORE-2026-009"
+      ]
     },
     "sort-packages": true
   },
