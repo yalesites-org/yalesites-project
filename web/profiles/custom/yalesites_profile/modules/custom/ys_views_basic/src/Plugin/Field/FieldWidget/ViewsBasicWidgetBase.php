@@ -268,10 +268,17 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       '#attributes' => ['class' => ['views-basic--params']],
     ];
 
+    // The live mockup preview is scoped to the block-creation form only
+    // (#1318): it helps a site builder picture the result while placing a new
+    // block and is not shown when reconfiguring an existing one.
+    $is_create_form = $this->isCreateForm($items);
+
     $this->initSelectionContainers($form);
     $this->buildFieldDisplayOptions($form, $items, $delta);
     $this->buildEntitySpecificOptions($form, $items, $delta);
-    $this->buildPreviewPanel($form);
+    if ($is_create_form) {
+      $this->buildPreviewPanel($form);
+    }
     $this->buildExposedFilterControls($form, $items, $delta, $formSelectors);
     $this->buildTermIncludeExclude($form, $items, $delta);
     $this->buildSortControl($form, $items, $delta);
@@ -280,9 +287,29 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     $this->buildHiddenParamsField($element, $items, $delta);
 
     $form['#attached']['library'][] = 'ys_views_basic/ys_views_basic';
-    $form['#attached']['library'][] = 'ys_views_basic/ys_views_basic_preview';
+    if ($is_create_form) {
+      $form['#attached']['library'][] = 'ys_views_basic/ys_views_basic_preview';
+    }
 
     return $element;
+  }
+
+  /**
+   * Determines whether the form is creating a new block (vs. configuring one).
+   *
+   * The live mockup preview (#1318) is scoped to the creation form. A new
+   * inline block's host entity is unsaved, so isNew() distinguishes the
+   * "Add block" form from the "Configure" form of an existing block.
+   *
+   * @param \Drupal\Core\Field\FieldItemListInterface $items
+   *   The field items whose host entity is the block being placed.
+   *
+   * @return bool
+   *   TRUE on the block-creation form, FALSE when reconfiguring.
+   */
+  protected function isCreateForm(FieldItemListInterface $items): bool {
+    $block = $items->getEntity();
+    return $block && $block->isNew();
   }
 
   /**
@@ -313,13 +340,15 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
   <div class="vb-preview" data-content-type="{{ content_type }}" data-view-mode="{{ view_mode }}">
     <span class="vb-preview__pinned" hidden>{{ 'Pinned'|t }}</span>
     <img class="vb-preview__image" alt="{{ 'Example teaser image placeholder'|t }}" src="{{ image_src }}">
-    {% if content_type == 'post' %}<span class="vb-preview__eyebrow">{{ 'Eyebrow'|t }}</span>{% endif %}
-    <p class="vb-preview__title">{{ 'Example Title'|t }}</p>
-    {% if content_type == 'event' %}<span class="vb-preview__meta">{{ 'Month 1, 2026 - 12:00 PM'|t }}</span>{% endif %}
-    {% if content_type == 'profile' %}<span class="vb-preview__meta">{{ 'Job Title'|t }}</span>{% endif %}
-    <span class="vb-preview__category">{{ 'Category Name'|t }}</span>
-    <span class="vb-preview__tags">{{ 'Tag A | Tag B'|t }}</span>
-    {% if content_type == 'event' %}<a class="vb-preview__calendar" href="#">{{ 'Add to Calendar'|t }}</a>{% endif %}
+    <div class="vb-preview__body">
+      {% if content_type == 'post' %}<span class="vb-preview__eyebrow">{{ 'Eyebrow'|t }}</span>{% endif %}
+      <p class="vb-preview__title">{{ 'Example Title'|t }}</p>
+      {% if content_type == 'event' %}<span class="vb-preview__meta">{{ 'Month 1, 2026 - 12:00 PM'|t }}</span>{% endif %}
+      {% if content_type == 'profile' %}<span class="vb-preview__meta">{{ 'Job Title'|t }}</span>{% endif %}
+      <span class="vb-preview__category">{{ 'Category Name'|t }}</span>
+      <span class="vb-preview__tags">{{ 'Tag A | Tag B'|t }}</span>
+      {% if content_type == 'event' %}<a class="vb-preview__calendar" href="#">{{ 'Add to Calendar'|t }}</a>{% endif %}
+    </div>
   </div>
 </div>
 TWIG,

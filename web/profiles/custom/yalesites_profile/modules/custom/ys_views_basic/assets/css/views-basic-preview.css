@@ -4,15 +4,20 @@
  *
  * The preview is a compact, inline placeholder card shown below the field
  * display options. It is intentionally simple — a visual aid, not a faithful
- * theme render.
+ * theme render — but it reflects the bundle's display mode (card, list,
+ * condensed, directory) so the layout matches what the block will produce.
+ *
+ * Colors are bound to Gin's admin-theme custom properties (with light-mode
+ * fallbacks) so the preview follows Gin's current color mode, including dark
+ * mode, automatically.
  */
 
 .vb-preview-wrapper {
   margin-top: 1rem;
   padding: 0.75rem;
-  border: 1px dashed #b3b3b3;
+  border: 1px dashed var(--gin-border-color, #b3b3b3);
   border-radius: 4px;
-  background: #f7f7f7;
+  background: var(--gin-bg-app, #f7f7f7);
 }
 
 .vb-preview-wrapper__label {
@@ -21,21 +26,23 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  color: var(--gin-color-title, inherit);
 }
 
 .vb-preview-wrapper__note {
   margin: 0 0 0.75rem;
   font-size: 0.8rem;
-  color: #555;
+  color: var(--gin-color-text-light, #555);
 }
 
 .vb-preview {
   position: relative;
   max-width: 22rem;
   padding: 0.75rem;
-  border: 1px solid #d4d4d4;
+  border: 1px solid var(--gin-border-color-layer, #d4d4d4);
   border-radius: 4px;
-  background: #fff;
+  background: var(--gin-bg-layer, #fff);
+  color: var(--gin-color-text, inherit);
 }
 
 .vb-preview__image {
@@ -44,16 +51,17 @@
   height: 90px;
   margin-bottom: 0.5rem;
   border-radius: 2px;
-  background: #dcdcdc;
+  background: var(--gin-bg-input, #dcdcdc);
   object-fit: cover;
 }
 
 .vb-preview__pinned {
-  display: inline-block;
-  margin-bottom: 0.4rem;
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
   padding: 0.1rem 0.45rem;
   border-radius: 2px;
-  background: #00356b; /* Yale blue. */
+  background: #00356b; /* Yale blue (brand badge — same in both modes). */
   color: #fff;
   font-size: 0.7rem;
   font-weight: 700;
@@ -64,18 +72,19 @@
   display: block;
   font-size: 0.75rem;
   font-weight: 700;
-  color: #555;
+  color: var(--gin-color-text-light, #555);
 }
 
 .vb-preview__title {
   margin: 0.15rem 0;
   font-size: 1rem;
   font-weight: 700;
+  color: var(--gin-color-title, inherit);
 }
 
 .vb-preview__meta {
   font-size: 0.8rem;
-  color: #555;
+  color: var(--gin-color-text-light, #555);
 }
 
 .vb-preview__category {
@@ -83,7 +92,8 @@
   margin-top: 0.4rem;
   padding: 0.1rem 0.4rem;
   border-radius: 2px;
-  background: #eef1f5;
+  background: var(--gin-bg-input, #eef1f5);
+  color: var(--gin-color-text, inherit);
   font-size: 0.72rem;
 }
 
@@ -91,7 +101,7 @@
   display: block;
   margin-top: 0.4rem;
   font-size: 0.75rem;
-  color: #555;
+  color: var(--gin-color-text-light, #555);
 }
 
 .vb-preview__calendar {
@@ -104,4 +114,47 @@
 /* Parts hidden via the [hidden] attribute toggled by the preview behavior. */
 .vb-preview [hidden] {
   display: none;
+}
+
+/*
+ * Per-display-mode layouts (#1318 QA). The bundle fixes the display mode, so
+ * data-view-mode is constant for a given block; each mode arranges the same
+ * parts differently to mirror the rendered listing.
+ */
+
+/* List: horizontal row with the thumbnail on the left. */
+.vb-preview[data-view-mode='list_item'] {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  max-width: 26rem;
+}
+
+.vb-preview[data-view-mode='list_item'] .vb-preview__image {
+  flex: 0 0 5rem;
+  height: 4rem;
+  margin-bottom: 0;
+}
+
+.vb-preview[data-view-mode='list_item'] .vb-preview__body {
+  flex: 1 1 auto;
+}
+
+/* Condensed: title and meta only — no teaser image. */
+.vb-preview[data-view-mode='condensed'] {
+  max-width: 26rem;
+}
+
+.vb-preview[data-view-mode='condensed'] .vb-preview__image {
+  display: none;
+}
+
+/* Directory (profiles): portrait grid — taller image, centered text. */
+.vb-preview[data-view-mode='directory'] {
+  max-width: 12rem;
+  text-align: center;
+}
+
+.vb-preview[data-view-mode='directory'] .vb-preview__image {
+  height: 11rem;
 }
