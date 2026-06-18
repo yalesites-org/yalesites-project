@@ -8,6 +8,30 @@
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\node\NodeInterface;
 use Drupal\views\ViewExecutable;
+use Drupal\ys_views_basic\ViewsBasicManager;
+
+/**
+ * Implements hook_theme_suggestions_HOOK_alter() for block.
+ *
+ * The per-(content type, display mode) listing bundles created by the views
+ * rework render identically to the legacy "view" block, but atomic registers
+ * block templates by bundle machine name, so the new bundles have no template
+ * and fall back to the default block render — printing the padding-options
+ * field and losing the heading/CTA styling. Reuse atomic's
+ * block--inline-block--view.html.twig for every listing bundle so they are a
+ * drop-in replacement (no atomic change required).
+ */
+function ys_views_basic_theme_suggestions_block_alter(array &$suggestions, array $variables) {
+  if (($variables['elements']['#base_plugin_id'] ?? NULL) !== 'inline_block') {
+    return;
+  }
+  $bundle = $variables['elements']['#derivative_plugin_id'] ?? NULL;
+  if ($bundle !== NULL && isset(ViewsBasicManager::LISTING_BUNDLES[$bundle])) {
+    // Appended last so it takes priority over the (template-less) per-bundle
+    // suggestion and resolves to block--inline-block--view.html.twig.
+    $suggestions[] = 'block__inline_block__view';
+  }
+}
 
 /**
  * Implements hook_theme().
