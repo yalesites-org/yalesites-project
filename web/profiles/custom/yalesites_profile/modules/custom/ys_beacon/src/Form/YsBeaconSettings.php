@@ -7,6 +7,9 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\search_api\IndexInterface;
+use Drupal\search_api\SearchApiException;
+use Drupal\search_api\Utility\IndexingBatchHelperInterface;
 use Drupal\ys_beacon\Service\BeaconIndexManager;
 use Drupal\ys_beacon\Service\SystemPromptBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -54,12 +57,20 @@ class YsBeaconSettings extends ConfigFormBase {
   protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
+   * The Search API indexing batch helper.
+   *
+   * @var \Drupal\search_api\Utility\IndexingBatchHelperInterface
+   */
+  protected IndexingBatchHelperInterface $indexingBatchHelper;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
     $instance = parent::create($container);
     $instance->indexManager = $container->get('ys_beacon.index_manager');
     $instance->entityTypeManager = $container->get('entity_type.manager');
+    $instance->indexingBatchHelper = $container->get('search_api.indexing_batch_helper');
     return $instance;
   }
 
@@ -196,6 +207,17 @@ class YsBeaconSettings extends ConfigFormBase {
       '#submit' => ['::reindexAll'],
       '#limit_validation_errors' => [],
     ];
+    $form['indexing']['index_now'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Index now'),
+      // Dedicated handler only: the main config submit must not run, so chat
+      // settings are not saved when the user just wants to flush the queue.
+      '#submit' => ['::indexNow'],
+      '#limit_validation_errors' => [],
+      // Disabled unless the Beacon index is enabled and has items waiting to be
+      // indexed. Mirrors Search API's own "Index now" disabled behaviour.
+      '#disabled' => $this->indexRemainingItems() < 1,
+    ];
 
     // Link to the per-site system instructions when the user has access.
     $instructions_url = Url::fromRoute('ys_beacon.instructions');
@@ -307,7 +329,7 @@ class YsBeaconSettings extends ConfigFormBase {
    * and re-embedded into the vector database on the next indexing runs.
    */
   public function reindexAll(array &$form, FormStateInterface $form_state): void {
-    $index = $this->entityTypeManager->getStorage('search_api_index')->load($this->searchIndexId());
+    $index = $this->loadBeaconIndex();
     if ($index && $index->status()) {
       $index->reindex();
       $this->messenger()->addStatus($this->t('All content has been queued for re-indexing into the Beacon vector database.'));
@@ -318,10 +340,42 @@ class YsBeaconSettings extends ConfigFormBase {
   }
 
   /**
+   * Submit handler running the Search API indexing batch for the Beacon index.
+   *
+   * Calls Search API's indexing batch helper directly so the only Search API
+   * capability exposed to site administrators is indexing this one index; no
+   * "administer search_api" permission or Search API route is required. Batch
+   * size and limit are intentionally omitted so the index's own defaults are
+   * used (all remaining items, in batches of the index cron_limit). Drupal's
+   * Form API runs the queued batch and returns the user to this form.
+   */
+  public function indexNow(array &$form, FormStateInterface $form_state): void {
+    $index = $this->loadBeaconIndex();
+    if (!$index || !$index->status()) {
+      $this->messenger()->addWarning($this->t('The Beacon index is not enabled on this site. Enable the chat widget first.'));
+      return;
+    }
+    // Re-check the queue server-side: the button's #disabled state is only
+    // evaluated at render time, so a stale page or a queue drained by cron
+    // between render and submit could otherwise start an empty batch, which
+    // Search API reports as a failure rather than a no-op.
+    if ($this->indexRemainingItems() < 1) {
+      $this->messenger()->addStatus($this->t('There is no content waiting to be indexed.'));
+      return;
+    }
+    try {
+      $this->indexingBatchHelper->createBatch($index);
+    }
+    catch (SearchApiException $e) {
+      $this->messenger()->addWarning($this->t('Unable to start indexing right now. Please try again shortly.'));
+    }
+  }
+
+  /**
    * Builds a short indexing status summary.
    */
   protected function indexStatusSummary(): string {
-    $index = $this->entityTypeManager->getStorage('search_api_index')->load($this->searchIndexId());
+    $index = $this->loadBeaconIndex();
     if (!$index || !$index->status()) {
       return (string) $this->t('The Beacon index is currently disabled. It enables automatically once the chat widget is turned on.');
     }
@@ -335,6 +389,35 @@ class YsBeaconSettings extends ConfigFormBase {
     catch (\Throwable $e) {
       return (string) $this->t('Index status unavailable.');
     }
+  }
+
+  /**
+   * Counts tracked items not yet indexed into the Beacon vector database.
+   *
+   * Returns 0 when the index is missing or disabled so the "Index now" button
+   * stays disabled in those states.
+   */
+  protected function indexRemainingItems(): int {
+    $index = $this->loadBeaconIndex();
+    if (!$index || !$index->status()) {
+      return 0;
+    }
+    try {
+      return (int) $index->getTrackerInstance()->getRemainingItemsCount();
+    }
+    catch (\Throwable $e) {
+      return 0;
+    }
+  }
+
+  /**
+   * Loads the Search API index backing the Beacon chatbot.
+   *
+   * @return \Drupal\search_api\IndexInterface|null
+   *   The index entity, or NULL when it does not exist.
+   */
+  protected function loadBeaconIndex(): ?IndexInterface {
+    return $this->entityTypeManager->getStorage('search_api_index')->load($this->searchIndexId());
   }
 
   /**
