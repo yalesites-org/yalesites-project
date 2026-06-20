@@ -96,11 +96,21 @@ class AiTesterForm extends FormBase {
 
     $form['history'] = $this->buildHistoryTable();
 
+    $form['compare_submit'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Compare selected'),
+      '#submit' => ['::compareSubmit'],
+      '#limit_validation_errors' => [['history']],
+    ];
+
     return $form;
   }
 
   /**
-   * Builds the run history table render array.
+   * Builds the run history tableselect render array.
+   *
+   * A tableselect (rather than a plain table) lets a user pick exactly two runs
+   * to compare; the per-row "View" link to a single run is preserved.
    */
   protected function buildHistoryTable(): array {
     $query = $this->database->select('ys_ai_tester_run', 'r')
@@ -111,15 +121,15 @@ class AiTesterForm extends FormBase {
     $query->addField('u', 'name');
     $rows = $query->execute()->fetchAll();
 
-    $table_rows = [];
+    $options = [];
     foreach ($rows as $row) {
-      $table_rows[] = [
-        $this->dateFormatter->format($row->created, 'short'),
-        $row->name ?? $this->t('Unknown'),
-        $row->yaml_filename,
-        $row->question_count,
-        $row->status,
-        [
+      $options[$row->id] = [
+        'date' => $this->dateFormatter->format($row->created, 'short'),
+        'user' => $row->name ?? $this->t('Unknown'),
+        'file' => $row->yaml_filename,
+        'questions' => $row->question_count,
+        'status' => $row->status,
+        'actions' => [
           'data' => Link::fromTextAndUrl(
             $this->t('View'),
             Url::fromRoute('ys_ai_tester.run', ['run_id' => $row->id])
@@ -129,17 +139,20 @@ class AiTesterForm extends FormBase {
     }
 
     return [
-      '#type' => 'table',
+      '#type' => 'tableselect',
+      // Exactly two runs are compared, so the "Select all" affordance would
+      // only invite a selection the compare handler rejects.
+      '#js_select' => FALSE,
       '#caption' => $this->t('Run History'),
       '#header' => [
-        $this->t('Date'),
-        $this->t('User'),
-        $this->t('File'),
-        $this->t('Questions'),
-        $this->t('Status'),
-        $this->t('Actions'),
+        'date' => $this->t('Date'),
+        'user' => $this->t('User'),
+        'file' => $this->t('File'),
+        'questions' => $this->t('Questions'),
+        'status' => $this->t('Status'),
+        'actions' => $this->t('Actions'),
       ],
-      '#rows' => $table_rows,
+      '#options' => $options,
       '#empty' => $this->t('No test runs yet.'),
     ];
   }
@@ -230,6 +243,26 @@ class AiTesterForm extends FormBase {
       'operations' => $operations,
       'finished' => [AiTesterBatch::class, 'finished'],
       'progress_message' => $this->t('Processed @current of @total questions.'),
+    ]);
+  }
+
+  /**
+   * Redirects to the comparison view for exactly two selected runs.
+   */
+  public function compareSubmit(array &$form, FormStateInterface $form_state): void {
+    $selected = array_keys(array_filter($form_state->getValue('history')));
+
+    if (count($selected) !== 2) {
+      $this->messenger()->addWarning($this->t('Select exactly two runs to compare.'));
+      $form_state->setRebuild();
+      return;
+    }
+
+    // Order ascending so the older run is always Run A (canonical URL).
+    sort($selected);
+    $form_state->setRedirect('ys_ai_tester.compare', [
+      'run_a' => $selected[0],
+      'run_b' => $selected[1],
     ]);
   }
 
