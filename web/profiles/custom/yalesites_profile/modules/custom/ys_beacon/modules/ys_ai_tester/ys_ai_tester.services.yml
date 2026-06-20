@@ -1,0 +1,5 @@
+services:
+  ys_ai_tester.run_comparator:
+    class: Drupal\ys_ai_tester\RunComparator
+    arguments:
+      - '@database'

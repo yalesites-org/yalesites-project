@@ -1,0 +1,95 @@
+/**
+ * @file
+ * AI Tester run comparison styling.
+ *
+ * Layered on the ys_admin_theme (base theme Gin): the comparison itself uses a
+ * core #type => table so Gin styles the grid. Only the diff highlight colors and
+ * the status badges need bespoke rules, expressed with Gin CSS custom properties
+ * and safe literal fallbacks.
+ */
+
+.ys-compare-summary {
+  margin-block-end: 1rem;
+  font-weight: 600;
+}
+
+.ys-compare-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-block-end: 1rem;
+}
+
+.ys-compare-meta__run {
+  flex: 1 1 14rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--gin-border-color-table, #d4d4d8);
+  border-radius: var(--gin-border-radius, 4px);
+  background: var(--gin-bg-layer2, #fff);
+}
+
+/* Word-level diff: core WordLevelDiff marks changed words with .diffchange in
+   both columns; the directional wrapper colors removals (Run A) and additions
+   (Run B). */
+.ys-diff {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.ys-diff--removed .diffchange {
+  background: var(--gin-color-danger-lightest, #fce8e8);
+  color: var(--gin-color-danger, #d72222);
+  text-decoration: line-through;
+}
+
+.ys-diff--added .diffchange {
+  background: #e6f4ea;
+  color: #18794e;
+}
+
+.ys-compare-side-meta {
+  margin-block-start: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--gin-color-text-light, #595c5e);
+}
+
+.ys-compare-side-meta--empty {
+  color: var(--gin-color-danger, #d72222);
+  font-weight: 600;
+}
+
+.ys-compare-unique {
+  margin-block-start: 0.25rem;
+  font-size: 0.8125rem;
+}
+
+.ys-compare-not-asked {
+  font-style: italic;
+  color: var(--gin-color-text-light, #595c5e);
+}
+
+/* Status badges. */
+.ys-compare-badge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ys-compare-badge--identical {
+  background: #e6f4ea;
+  color: #18794e;
+}
+
+.ys-compare-badge--differs {
+  background: var(--gin-color-warning-light, #fdf3da);
+  color: #7a5b1e;
+}
+
+.ys-compare-badge--only_a,
+.ys-compare-badge--only_b {
+  background: var(--gin-color-primary-light, #e7e9fb);
+  color: var(--gin-color-primary, #2d2eff);
+}

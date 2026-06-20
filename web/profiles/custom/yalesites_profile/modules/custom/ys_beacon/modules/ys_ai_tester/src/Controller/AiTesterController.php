@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace Drupal\ys_ai_tester\Controller;
 
+use Drupal\Component\Diff\WordLevelDiff;
+use Drupal\Component\Render\MarkupInterface;
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Datetime\DateFormatterInterface;
+use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
+use Drupal\ys_ai_tester\RunComparator;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,6 +29,7 @@ class AiTesterController extends ControllerBase {
   public function __construct(
     protected Connection $database,
     protected DateFormatterInterface $dateFormatter,
+    protected RunComparator $runComparator,
   ) {}
 
   /**
@@ -33,6 +39,7 @@ class AiTesterController extends ControllerBase {
     return new static(
       $container->get('database'),
       $container->get('date.formatter'),
+      $container->get('ys_ai_tester.run_comparator'),
     );
   }
 
@@ -201,6 +208,317 @@ class AiTesterController extends ControllerBase {
     $response->headers->set('Content-Type', 'application/x-yaml');
     $response->headers->set('Content-Disposition', 'attachment; filename="' . $safe_filename . '"');
     return $response;
+  }
+
+  /**
+   * Renders the side-by-side comparison of two tester runs.
+   */
+  public function compare(int $run_a, int $run_b): array {
+    $data = $this->runComparator->compare($run_a, $run_b);
+    $summary = $data['summary'];
+
+    $link_attrs = ['class' => ['button', 'button--link', 'button--link-purpose']];
+
+    $rows = [];
+    foreach ($data['pairs'] as $pair) {
+      $rows[] = $this->comparisonRow($pair);
+    }
+
+    return [
+      '#type' => 'container',
+      '#attached' => ['library' => ['ys_ai_tester/compare']],
+      'summary' => $this->wrap('ys-compare-summary', $this->t(
+        '@total compared · @differ differ · @identical identical · @a only in Run A · @b only in Run B',
+        [
+          '@total' => $summary['total_compared'],
+          '@differ' => $summary['differ'],
+          '@identical' => $summary['identical'],
+          '@a' => $summary['only_a'],
+          '@b' => $summary['only_b'],
+        ]
+      ), 'p'),
+      'meta' => [
+        '#type' => 'container',
+        '#attributes' => ['class' => ['ys-compare-meta']],
+        'a' => $this->runMetaBlock($this->t('Run A'), $data['run_a']),
+        'b' => $this->runMetaBlock($this->t('Run B'), $data['run_b']),
+      ],
+      'downloads' => [
+        '#type' => 'container',
+        'json' => [
+          '#type' => 'link',
+          '#title' => $this->t('Download JSON'),
+          '#url' => Url::fromRoute('ys_ai_tester.compare_json', ['run_a' => $run_a, 'run_b' => $run_b]),
+          '#attributes' => $link_attrs,
+        ],
+        'separator' => ['#markup' => ' '],
+        'csv' => [
+          '#type' => 'link',
+          '#title' => $this->t('Download CSV'),
+          '#url' => Url::fromRoute('ys_ai_tester.compare_csv', ['run_a' => $run_a, 'run_b' => $run_b]),
+          '#attributes' => $link_attrs,
+        ],
+      ],
+      'results' => [
+        '#type' => 'table',
+        '#responsive' => TRUE,
+        '#header' => [
+          $this->t('Status'),
+          $this->t('Question'),
+          $this->t('Run A'),
+          $this->t('Run B'),
+        ],
+        '#rows' => $rows,
+        '#empty' => $this->t('Neither run has any results.'),
+        '#attributes' => ['class' => ['table', 'cols-4']],
+        '#prefix' => '<div class="table-wrapper">',
+        '#suffix' => '</div>',
+      ],
+      'back' => [
+        '#type' => 'link',
+        '#title' => $this->t('Back to tester'),
+        '#url' => Url::fromRoute('ys_ai_tester.tester'),
+        '#attributes' => $link_attrs,
+      ],
+    ];
+  }
+
+  /**
+   * Wraps already-safe inner markup in a tagged element.
+   *
+   * Collapses the comparison view's repeated "<tag class>…</tag>" #markup
+   * fragments. Callers must pass inner content that is already safe (a t()
+   * string, an Html::escape() result, or the diff's own escaped markup); the
+   * class is built from internal, non-user values.
+   *
+   * @param string $class
+   *   The element class attribute.
+   * @param string|\Drupal\Component\Render\MarkupInterface $inner
+   *   The already-safe inner markup.
+   * @param string $tag
+   *   The HTML tag name.
+   *
+   * @return array
+   *   A #markup render element.
+   */
+  protected function wrap(string $class, string|MarkupInterface $inner, string $tag = 'div'): array {
+    return [
+      '#markup' => Markup::create('<' . $tag . ' class="' . $class . '">' . $inner . '</' . $tag . '>'),
+    ];
+  }
+
+  /**
+   * Builds the meta block for one run in the comparison header.
+   *
+   * @param string|\Drupal\Component\Render\MarkupInterface $label
+   *   The run label (e.g. a t() "Run A").
+   * @param array $meta
+   *   The run meta: id, created, yaml_filename, status.
+   *
+   * @return array
+   *   A #markup render element.
+   */
+  protected function runMetaBlock(string|MarkupInterface $label, array $meta): array {
+    return $this->wrap('ys-compare-meta__run', $this->t(
+      '<strong>@label — Run #@id</strong><br>@date<br>File: @file<br>Status: @status',
+      [
+        '@label' => $label,
+        '@id' => $meta['id'],
+        '@date' => $this->dateFormatter->format($meta['created'], 'medium'),
+        '@file' => $meta['yaml_filename'],
+        '@status' => $meta['status'],
+      ]
+    ));
+  }
+
+  /**
+   * Builds one comparison table row for a question pair.
+   */
+  protected function comparisonRow(array $pair): array {
+    $status = $pair['status'];
+    $badge = $this->wrap(
+      'ys-compare-badge ys-compare-badge--' . $status,
+      $this->statusLabel($status),
+      'span'
+    );
+
+    // A word-level diff only makes sense when both runs answered the question.
+    // Answers are escaped before diffing because the diff accumulator emits its
+    // word groups unescaped; the directional CSS class colors the changes.
+    $diff_a = $diff_b = NULL;
+    if ($pair['a'] !== NULL && $pair['b'] !== NULL) {
+      $diff = new WordLevelDiff(
+        explode("\n", Html::escape($pair['a']['answer'])),
+        explode("\n", Html::escape($pair['b']['answer'])),
+      );
+      $diff_a = implode('<br>', $diff->orig());
+      $diff_b = implode('<br>', $diff->closing());
+    }
+
+    return [
+      ['data' => $badge],
+      ['data' => ['#markup' => Html::escape($pair['question'])]],
+      ['data' => $this->sideCell($pair, 'a', $diff_a)],
+      ['data' => $this->sideCell($pair, 'b', $diff_b)],
+    ];
+  }
+
+  /**
+   * Builds one run's answer cell: diffed answer, signals, and unique sources.
+   */
+  protected function sideCell(array $pair, string $key, ?string $diff_html): array {
+    $side = $pair[$key];
+    if ($side === NULL) {
+      return $this->wrap(
+        'ys-compare-not-asked',
+        $this->t('— not asked in this run —'),
+        'span'
+      );
+    }
+
+    $direction = $key === 'a' ? 'removed' : 'added';
+    // $diff_html is built from already-escaped answer text plus the diff's own
+    // static <span>/<br> markup; the escaped answer is the only fallback.
+    $answer_html = $diff_html ?? Html::escape($side['answer']);
+
+    $cell = [
+      'answer' => $this->wrap('ys-diff ys-diff--' . $direction, $answer_html),
+    ];
+
+    if ($side['empty']) {
+      $cell['meta'] = $this->wrap(
+        'ys-compare-side-meta ys-compare-side-meta--empty',
+        $this->t('Empty answer')
+      );
+    }
+    else {
+      $cell['meta'] = $this->wrap('ys-compare-side-meta', $this->t(
+        '@chars chars · @cited of @retrieved sources cited',
+        [
+          '@chars' => $side['len'],
+          '@cited' => $side['cited'],
+          '@retrieved' => $side['retrieved'],
+        ]
+      ));
+    }
+
+    $unique = $pair['citation_overlap'][$key === 'a' ? 'only_a' : 'only_b'];
+    if ($unique) {
+      $titles = array_map(
+        static fn (array $source): string => trim($source['title']) !== '' ? $source['title'] : $source['url'],
+        $unique
+      );
+      $cell['unique'] = $this->wrap('ys-compare-unique', $this->t(
+        'Sources only here: @list',
+        ['@list' => implode(', ', $titles)]
+      ));
+    }
+
+    return $cell;
+  }
+
+  /**
+   * Returns the human-readable label for a pair status.
+   */
+  protected function statusLabel(string $status): string {
+    return match ($status) {
+      'identical' => (string) $this->t('Identical'),
+      'differs' => (string) $this->t('Differs'),
+      'only_a' => (string) $this->t('Only in Run A'),
+      'only_b' => (string) $this->t('Only in Run B'),
+      default => $status,
+    };
+  }
+
+  /**
+   * Returns the run comparison as a downloadable JSON file.
+   */
+  public function downloadComparisonJson(int $run_a, int $run_b): JsonResponse {
+    $data = $this->runComparator->compare($run_a, $run_b);
+
+    $response = new JsonResponse([
+      'run_a' => $data['run_a'],
+      'run_b' => $data['run_b'],
+      'summary' => $data['summary'],
+      'pairs' => $data['pairs'],
+    ]);
+    $response->headers->set(
+      'Content-Disposition',
+      'attachment; filename="compare-' . $run_a . '-' . $run_b . '.json"'
+    );
+    return $response;
+  }
+
+  /**
+   * Returns the run comparison as a downloadable CSV file.
+   */
+  public function downloadComparisonCsv(int $run_a, int $run_b): Response {
+    $data = $this->runComparator->compare($run_a, $run_b);
+
+    $handle = fopen('php://temp', 'r+');
+    fputcsv($handle, [
+      'question', 'status', 'answer_a', 'answer_b',
+      'cited_a', 'cited_b', 'len_a', 'len_b',
+      'shared_sources', 'only_a_sources', 'only_b_sources',
+    ]);
+
+    foreach ($data['pairs'] as $pair) {
+      $a = $pair['a'];
+      $b = $pair['b'];
+      $overlap = $pair['citation_overlap'];
+      fputcsv($handle, array_map([$this, 'csvCell'], [
+        $pair['question'],
+        $pair['status'],
+        $a['answer'] ?? '',
+        $b['answer'] ?? '',
+        (string) ($a['cited'] ?? ''),
+        (string) ($b['cited'] ?? ''),
+        (string) ($a['len'] ?? ''),
+        (string) ($b['len'] ?? ''),
+        $this->joinSourceUrls($overlap['both']),
+        $this->joinSourceUrls($overlap['only_a']),
+        $this->joinSourceUrls($overlap['only_b']),
+      ]));
+    }
+
+    rewind($handle);
+    $csv = stream_get_contents($handle);
+    fclose($handle);
+
+    $response = new Response($csv);
+    $response->headers->set('Content-Type', 'text/csv; charset=utf-8');
+    $response->headers->set(
+      'Content-Disposition',
+      'attachment; filename="compare-' . $run_a . '-' . $run_b . '.csv"'
+    );
+    return $response;
+  }
+
+  /**
+   * Joins citation URLs for a CSV cell.
+   */
+  protected function joinSourceUrls(array $sources): string {
+    return implode(' | ', array_map(static fn (array $s): string => (string) $s['url'], $sources));
+  }
+
+  /**
+   * Neutralizes spreadsheet formula injection in a CSV cell.
+   *
+   * Cells beginning with =, +, -, @ can be executed as formulas by a
+   * spreadsheet, including when the trigger hides behind leading whitespace or
+   * control characters. Prefixing a single quote forces the cell to be text.
+   */
+  protected function csvCell(string $value): string {
+    if ($value === '') {
+      return $value;
+    }
+
+    $trimmed = ltrim($value, " \t\r\n");
+    if (in_array($value[0], ["\t", "\r", "\n"], TRUE)
+      || ($trimmed !== '' && in_array($trimmed[0], ['=', '+', '-', '@'], TRUE))) {
+      return "'" . $value;
+    }
+    return $value;
   }
 
   /**
