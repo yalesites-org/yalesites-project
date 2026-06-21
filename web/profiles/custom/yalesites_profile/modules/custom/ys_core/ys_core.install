@@ -1212,7 +1212,7 @@ function ys_core_update_10013(&$sandbox) {
 /**
  * Install the Beacon AI chat stack before config import can delete its config.
  *
- * ys_beacon and its ys_beacon_portkey dependency hold per-site, config_ignored
+ * The ys_beacon and ys_beacon_portkey modules hold per-site, config_ignored
  * settings (chat toggle, prompts, provisioned index name, Portkey routing) that
  * are intentionally not exported to config/sync. ys_beacon is listed in synced
  * core.extension but is new to existing sites, so without this hook it would be
