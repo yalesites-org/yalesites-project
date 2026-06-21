@@ -156,19 +156,6 @@ class YsBeaconSettings extends ConfigFormBase {
       '#rows' => 2,
     ];
 
-    $form['metadata'] = [
-      '#type' => 'details',
-      '#title' => $this->t('Content metadata'),
-      '#open' => TRUE,
-      '#weight' => 10,
-    ];
-    $form['metadata']['enable_metadata_fields'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Show AI metadata fields on content forms'),
-      '#description' => $this->t('Exposes the AI Description, AI Tags, and disable-indexing fields on node and media forms.'),
-      '#default_value' => $config->get('enable_metadata_fields') ?? TRUE,
-    ];
-
     $form['guardrail'] = [
       '#type' => 'details',
       '#title' => $this->t('Guardrail'),
@@ -256,10 +243,15 @@ class YsBeaconSettings extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $enable_chat = (bool) $form_state->getValue('enable_chat');
+    $config = $this->config(self::CONFIG_NAME);
     // Capture the previously saved toggle before the config is mutated so the
     // index status is only changed on an actual on/off transition.
-    $previous_enable = (bool) $this->config(self::CONFIG_NAME)->getOriginal('enable_chat');
-    $this->config(self::CONFIG_NAME)
+    $previous_enable = (bool) $config->getOriginal('enable_chat');
+    // The AI metadata fields are always shown while the chatbot is on; their
+    // visibility is otherwise a platform-admin setting and is not editable on
+    // this form.
+    $enable_metadata_fields = $enable_chat || (bool) $config->get('enable_metadata_fields');
+    $config
       ->set('enable_chat', $enable_chat)
       ->set('floating_button', (bool) $form_state->getValue('floating_button'))
       ->set('floating_button_text', $form_state->getValue('floating_button_text'))
@@ -268,13 +260,13 @@ class YsBeaconSettings extends ConfigFormBase {
       ->set('disclaimer', $form_state->getValue('disclaimer'))
       ->set('footer', $form_state->getValue('footer'))
       ->set('guardrail_supplement', $form_state->getValue('guardrail_supplement'))
-      ->set('enable_metadata_fields', (bool) $form_state->getValue('enable_metadata_fields'))
+      ->set('enable_metadata_fields', $enable_metadata_fields)
       ->save();
 
     // Keep the Search API index status in sync with the chat toggle. The
     // config override forces the index off while chat is disabled, so the
     // explicit status changes only take effect for the matching transition.
-    $index = $this->entityTypeManager->getStorage('search_api_index')->load('ys_beacon');
+    $index = $this->entityTypeManager->getStorage('search_api_index')->load($this->searchIndexId());
     if (!$index) {
       // Abort if the index does not exist; this should never happen.
       parent::submitForm($form, $form_state);
