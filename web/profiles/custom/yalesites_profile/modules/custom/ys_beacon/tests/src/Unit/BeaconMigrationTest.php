@@ -115,16 +115,21 @@ class BeaconMigrationTest extends UnitTestCase {
   }
 
   /**
-   * Legacy chat off and Beacon off: nothing to migrate, no writes.
+   * Legacy chat off and Beacon off: nothing to enable; ai_engine already off.
+   *
+   * The migration still runs the ai_engine teardown on this path, but every
+   * legacy flag is already off, so no config is written.
    *
    * @covers ::migrate
    */
   public function testNoOpWhenLegacyOffAndBeaconOff(): void {
     $beacon = ['enable_chat' => FALSE, 'search_index_id' => 'ys_beacon'];
     $chat = ['enable' => FALSE];
+    $embedding = ['enable' => FALSE];
     $factory = $this->factory([
       'ys_beacon.settings' => $this->config($beacon),
       'ai_engine_chat.settings' => $this->config($chat),
+      'ai_engine_embedding.settings' => $this->config($embedding),
     ]);
     $index_manager = $this->createMock(BeaconIndexManager::class);
     $index_manager->expects($this->never())->method('provision');
@@ -140,6 +145,7 @@ class BeaconMigrationTest extends UnitTestCase {
 
     $this->assertFalse($beacon['enable_chat'], 'Beacon chat stays off.');
     $this->assertFalse($chat['enable'], 'Legacy chat is left untouched.');
+    $this->assertFalse($embedding['enable'], 'Legacy embedding is left untouched.');
   }
 
   /**
@@ -155,9 +161,11 @@ class BeaconMigrationTest extends UnitTestCase {
       'search_index_id' => 'ys_beacon',
     ];
     $chat = ['enable' => FALSE];
+    $embedding = ['enable' => FALSE];
     $factory = $this->factory([
       'ys_beacon.settings' => $this->config($beacon),
       'ai_engine_chat.settings' => $this->config($chat),
+      'ai_engine_embedding.settings' => $this->config($embedding),
     ]);
     $index_manager = $this->createMock(BeaconIndexManager::class);
     $index_manager->expects($this->never())->method('provision');
@@ -171,6 +179,9 @@ class BeaconMigrationTest extends UnitTestCase {
       $this->createMock(LoggerInterface::class),
     );
     $migration->migrate();
+
+    $this->assertTrue($beacon['enable_chat'], 'Beacon stays enabled.');
+    $this->assertFalse($chat['enable'], 'Legacy chat stays off.');
   }
 
   /**
@@ -187,10 +198,12 @@ class BeaconMigrationTest extends UnitTestCase {
     ];
     $chat = ['enable' => TRUE, 'floating_button' => TRUE];
     $embedding = ['enable' => TRUE];
+    $metadata = ['enable' => TRUE];
     $factory = $this->factory([
       'ys_beacon.settings' => $this->config($beacon),
       'ai_engine_chat.settings' => $this->config($chat),
       'ai_engine_embedding.settings' => $this->config($embedding),
+      'ai_engine_metadata.settings' => $this->config($metadata),
     ]);
 
     $index_manager = $this->createMock(BeaconIndexManager::class);
@@ -204,7 +217,7 @@ class BeaconMigrationTest extends UnitTestCase {
 
     $migration = new BeaconMigration(
       $factory,
-      $this->moduleHandler(),
+      $this->moduleHandler(['ai_engine_chat', 'ai_engine_embedding', 'ai_engine_metadata']),
       $index_manager,
       $this->entityTypeManager($index),
       $this->createMock(LoggerInterface::class),
@@ -216,6 +229,7 @@ class BeaconMigrationTest extends UnitTestCase {
     $this->assertFalse($chat['enable'], 'Legacy chat widget is disabled.');
     $this->assertFalse($chat['floating_button'], 'Legacy floating button is disabled.');
     $this->assertFalse($embedding['enable'], 'Legacy embedding is disabled.');
+    $this->assertFalse($metadata['enable'], 'Legacy ai_engine metadata is disabled.');
   }
 
   /**
