@@ -1208,3 +1208,34 @@ function ys_core_update_10013(&$sandbox) {
     '@total' => $sandbox['total'],
   ]);
 }
+
+/**
+ * Install the Beacon AI chat stack before config import can delete its config.
+ *
+ * ys_beacon and its ys_beacon_portkey dependency hold per-site, config_ignored
+ * settings (chat toggle, prompts, provisioned index name, Portkey routing) that
+ * are intentionally not exported to config/sync. ys_beacon is listed in synced
+ * core.extension but is new to existing sites, so without this hook it would be
+ * installed during `drush deploy`'s config import step - and config_ignore then
+ * strips its freshly created settings from the import set, deleting them and
+ * leaving the chatbot non-functional.
+ *
+ * `drush deploy` runs database updates (this hook) before config import, so
+ * installing the stack here means the settings already exist in active config
+ * when the importer runs and config_ignore preserves them. Brand-new sites get
+ * the stack from the profile install list instead. No-op once installed.
+ */
+function ys_core_update_10014() {
+  $modules = ['ys_beacon', 'ys_ai_tester'];
+  $to_install = array_filter(
+    $modules,
+    fn($module) => !\Drupal::moduleHandler()->moduleExists($module)
+  );
+  if (!$to_install) {
+    return t('Beacon AI chat stack already installed; nothing to do.');
+  }
+  \Drupal::service('module_installer')->install($to_install);
+  return t('Installed the Beacon AI chat stack: @modules.', [
+    '@modules' => implode(', ', $to_install),
+  ]);
+}
