@@ -62,16 +62,19 @@ class BeaconMigration {
     $legacy_chat_on = $this->legacyChatOn();
     $beacon_enabled = (bool) $settings->get('enable_chat');
 
-    // Common no-op: the legacy chat was never on and Beacon is not enabled, so
-    // there is nothing to carry over. The large majority of sites take this
-    // path on every cron run.
+    // Nothing to enable: the legacy chat was never on and Beacon is not on. The
+    // large majority of sites take this path. Still make sure the legacy
+    // ai_engine chat, embedding, and metadata are switched off so ai_engine is
+    // dormant platform-wide; disableLegacy() only writes when a flag is on.
     if (!$legacy_chat_on && !$beacon_enabled) {
+      $this->disableLegacy();
       return;
     }
 
     // Cutover already complete: Beacon is on with a provisioned index and the
-    // legacy widget is off.
+    // legacy widget is off. Keep ai_engine retired (idempotent) and stop.
     if ($beacon_enabled && $settings->get('azure_index_name') && !$legacy_chat_on) {
+      $this->disableLegacy();
       return;
     }
 
@@ -113,11 +116,11 @@ class BeaconMigration {
     }
     $index->reindex();
 
-    // Beacon is live and indexing. Retire the legacy ai_engine widgets so the
-    // two assistants never run together.
+    // Beacon is live and indexing. Retire the legacy ai_engine chat, embedding,
+    // and metadata so the two assistants never run together.
     $this->disableLegacy();
 
-    $this->logger->notice('Beacon migration complete: chat enabled, index %name queued for indexing, legacy ai_engine chat and embedding disabled.', ['%name' => $settings->get('azure_index_name')]);
+    $this->logger->notice('Beacon migration complete: chat enabled, index %name queued for indexing, legacy ai_engine chat, embedding and metadata disabled.', ['%name' => $settings->get('azure_index_name')]);
   }
 
   /**
@@ -137,25 +140,45 @@ class BeaconMigration {
   }
 
   /**
-   * Turns off the legacy ai_engine chat widget and embedding pipeline.
+   * Turns off the legacy ai_engine chat widget, embedding, and metadata.
    *
-   * Only writes when a flag is actually on, so repeat calls are no-ops. Both
-   * config objects are config_ignored, so these runtime changes survive future
-   * config imports.
+   * Beacon supersedes all three: the chat widget, the embedding pipeline, and
+   * the AI metadata fields (ys_beacon ships its own metatag plugins with the
+   * same IDs and its own enable_metadata_fields toggle). Only writes when a
+   * flag is actually on, so repeat calls are no-ops. All three config objects
+   * are config_ignored, so these runtime changes survive future config imports.
    */
   protected function disableLegacy(): void {
-    if ($this->moduleHandler->moduleExists('ai_engine_chat')) {
-      $chat = $this->configFactory->getEditable('ai_engine_chat.settings');
-      if ($chat->get('enable') || $chat->get('floating_button')) {
-        $chat->set('enable', FALSE)->set('floating_button', FALSE)->save();
-      }
+    $this->turnOffFlags('ai_engine_chat', 'ai_engine_chat.settings', ['enable', 'floating_button']);
+    $this->turnOffFlags('ai_engine_embedding', 'ai_engine_embedding.settings', ['enable']);
+    $this->turnOffFlags('ai_engine_metadata', 'ai_engine_metadata.settings', ['enable']);
+  }
+
+  /**
+   * Turns the given boolean flags off in a module's config, if any are on.
+   *
+   * No-op when the module is not installed or every flag is already off, so it
+   * never writes config (or invalidates its cache) needlessly.
+   *
+   * @param string $module
+   *   The module that owns the config; skipped when not installed.
+   * @param string $config_name
+   *   The config object name to edit.
+   * @param string[] $flags
+   *   The boolean keys to set to FALSE.
+   */
+  private function turnOffFlags(string $module, string $config_name, array $flags): void {
+    if (!$this->moduleHandler->moduleExists($module)) {
+      return;
     }
-    if ($this->moduleHandler->moduleExists('ai_engine_embedding')) {
-      $embedding = $this->configFactory->getEditable('ai_engine_embedding.settings');
-      if ($embedding->get('enable')) {
-        $embedding->set('enable', FALSE)->save();
-      }
+    $config = $this->configFactory->getEditable($config_name);
+    if (!array_filter($flags, fn($flag) => $config->get($flag))) {
+      return;
     }
+    foreach ($flags as $flag) {
+      $config->set($flag, FALSE);
+    }
+    $config->save();
   }
 
   /**
