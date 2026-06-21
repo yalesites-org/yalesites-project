@@ -121,6 +121,22 @@ class YsBeaconAdminSettings extends ConfigFormBase {
       '#rows' => 4,
     ];
 
+    $form['metadata'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Content metadata'),
+      '#open' => TRUE,
+    ];
+    $chat_enabled = (bool) $config->get('enable_chat');
+    $form['metadata']['enable_metadata_fields'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Show AI metadata fields on content forms'),
+      '#description' => $this->t('Exposes the AI Description, AI Tags, and disable-indexing fields on node and media forms. This is forced on, and cannot be turned off, while the chat widget is enabled.'),
+      // Forced on while chat is enabled, so show it checked and disabled rather
+      // than letting an admin uncheck a box whose value is then overridden.
+      '#default_value' => $chat_enabled ? TRUE : ($config->get('enable_metadata_fields') ?? TRUE),
+      '#disabled' => $chat_enabled,
+    ];
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -135,12 +151,17 @@ class YsBeaconAdminSettings extends ConfigFormBase {
     // The index name is intentionally not saved here: provision() persists it
     // only after the Azure index has been verified or created, so a failed
     // provisioning never leaves the site pointing at a nonexistent index.
+    // The chatbot requires the AI metadata fields, so an explicit "off" here is
+    // overridden whenever chat is enabled.
+    $enable_metadata_fields = (bool) $form_state->getValue('enable_metadata_fields')
+      || (bool) $config->get('enable_chat');
     $config
       ->set('azure_search_url_key', $form_state->getValue('azure_search_url_key'))
       ->set('top_k', (int) $form_state->getValue('top_k'))
       ->set('score_threshold', (float) $form_state->getValue('score_threshold'))
       ->set('streaming', (bool) $form_state->getValue('streaming'))
       ->set('fallback_system_prompt', $form_state->getValue('fallback_system_prompt'))
+      ->set('enable_metadata_fields', $enable_metadata_fields)
       ->save();
 
     if ($new_index_name !== $previous_index_name) {

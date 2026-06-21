@@ -149,6 +149,14 @@ function ys_beacon_install() {
   // copy). The helper no-ops when versions already exist, so migrations and
   // existing installs are never overwritten.
   _ys_beacon_seed_default_instructions($database);
+
+  // Kick off the legacy ai_engine to Beacon cutover. This is best-effort at
+  // install time: provisioning the Azure index needs a key the secrets sync
+  // may not have created yet, and the search index entity is imported from
+  // profile config after the module is installed. The work is idempotent and
+  // hook_cron() retries it until it completes, so a deferral here is expected
+  // and harmless.
+  \Drupal::service('ys_beacon.migration')->migrate();
 }
 
 /**
@@ -269,4 +277,16 @@ function ys_beacon_update_10002() {
     return;
   }
   $settings->set('floating_button_icon', 'fa-sparkles')->save();
+}
+
+/**
+ * Run the legacy ai_engine to Beacon cutover on existing installs.
+ *
+ * Sites that already had ys_beacon installed never ran the install-time cutover
+ * added in this change. Trigger it on deploy so a site whose legacy chatbot was
+ * on is switched to Beacon; the work is idempotent and a no-op where there is
+ * nothing to migrate, and hook_cron() still retries any deferred provisioning.
+ */
+function ys_beacon_update_10003() {
+  \Drupal::service('ys_beacon.migration')->migrate();
 }

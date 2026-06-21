@@ -44,6 +44,19 @@ function ys_beacon_legacy_chat_active(): bool {
 }
 
 /**
+ * Implements hook_cron().
+ *
+ * Drives the legacy ai_engine to Beacon cutover. The work is idempotent and
+ * cheap on the common paths (nothing to migrate, or already migrated), so it is
+ * safe to run every cron; it self-heals the cases that install time cannot
+ * complete, such as provisioning the Azure index once the secrets sync has
+ * created its key.
+ */
+function ys_beacon_cron() {
+  \Drupal::service('ys_beacon.migration')->migrate();
+}
+
+/**
  * Implements hook_page_attachments_alter().
  */
 function ys_beacon_page_attachments_alter(array &$attachments) {
