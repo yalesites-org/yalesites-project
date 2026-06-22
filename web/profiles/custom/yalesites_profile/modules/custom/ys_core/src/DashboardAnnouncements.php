@@ -61,6 +61,15 @@ class DashboardAnnouncements {
   const USER_DATA_MODULE = 'ys_core';
   const USER_DATA_LAST_SEEN = 'announcements_last_seen';
 
+  /**
+   * Cache tag invalidated whenever the cached feed contents change.
+   *
+   * Anything that renders feed content (the dashboard page, the menu badge)
+   * should depend on this tag so it picks up fresh items as soon as the
+   * keyvalue cache is cleared.
+   */
+  const FEED_CACHE_TAG = 'ys_core:announcements_feed';
+
   public function __construct(
     protected ClientInterface $httpClient,
     protected ConfigFactoryInterface $configFactory,
@@ -76,15 +85,6 @@ class DashboardAnnouncements {
   public static function unreadCacheTag(int|string $uid): string {
     return 'ys_core:dashboard_badge:' . $uid;
   }
-
-  /**
-   * Cache tag invalidated whenever the cached feed contents change.
-   *
-   * Anything that renders feed content (the dashboard page, the menu badge)
-   * should depend on this tag so it picks up fresh items as soon as the
-   * keyvalue cache is cleared.
-   */
-  const FEED_CACHE_TAG = 'ys_core:announcements_feed';
 
   /**
    * Returns announcements to display on the dashboard.
@@ -124,18 +124,28 @@ class DashboardAnnouncements {
 
     // Accept either a JSON Feed 1.1 envelope ({"items": [...]}) or a plain JSON
     // array of items, as produced by a Views REST export.
-    if (is_array($feed) && isset($feed['items']) && is_array($feed['items'])) {
-      $items = $feed['items'];
-    }
-    elseif (is_array($feed) && array_is_list($feed)) {
-      $items = $feed;
-    }
-    else {
-      $items = [];
+    $valid_format = FALSE;
+    $items = [];
+    if (is_array($feed)) {
+      if (isset($feed['items']) && is_array($feed['items'])) {
+        $valid_format = TRUE;
+        $items = $feed['items'];
+      }
+      elseif (array_is_list($feed)) {
+        $valid_format = TRUE;
+        $items = $feed;
+      }
     }
 
+    if (!$valid_format) {
+      $this->loggerFactory->get('ys_core')->warning('Dashboard announcements feed at @url returned an invalid format.', ['@url' => $feed_url]);
+      $store->setWithExpire(self::STORE_KEY, [], $max_age);
+      return [];
+    }
+
+    // A valid but empty feed is a legitimate state (no announcements right
+    // now), so cache it without logging.
     if (empty($items)) {
-      $this->loggerFactory->get('ys_core')->warning('Dashboard announcements feed at @url returned no items or an invalid format.', ['@url' => $feed_url]);
       $store->setWithExpire(self::STORE_KEY, [], $max_age);
       return [];
     }

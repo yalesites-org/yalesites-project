@@ -16,6 +16,7 @@ use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Url;
 use Drupal\node\Entity\Node;
+use Drupal\node\NodeInterface;
 use Drupal\Component\Utility\NestedArray;
 
 // Include coffee commands.
@@ -782,7 +783,7 @@ function ys_core_node_delete($node) {
  * dashboard or in the toolbar badge until that window expires.
  */
 function _ys_core_clear_announcements_cache_if_source($node) {
-  if (!$node instanceof \Drupal\node\NodeInterface) {
+  if (!$node instanceof NodeInterface) {
     return;
   }
   if ($node->bundle() !== 'post') {
