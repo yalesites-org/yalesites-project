@@ -35,8 +35,27 @@
   margin-block-end: 1rem;
 }
 
-.ys-dashboard__feedback-button {
+/* Platform information and the action stack sit side-by-side beneath
+   Resources, collapsing to one column when there isn't room. */
+.ys-dashboard__aside-split {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 1.5rem;
+}
+
+.ys-dashboard__aside-split > .ys-dashboard__section {
+  margin-block-end: 0;
+}
+
+.ys-dashboard__action-button {
   display: inline-block;
+  margin-block-end: 0.75rem;
+}
+
+.ys-dashboard__action-help {
+  margin: 0 0 1rem;
+  font-size: 0.875rem;
+  color: var(--gin-color-text-light, #4a4a4a);
 }
 
 .ys-dashboard__columns .ys-dashboard__section {

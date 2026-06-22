@@ -18,7 +18,11 @@ services:
   # Fetches editorial dashboard announcements from a configured JSON feed.
   ys_core.dashboard_announcements:
     class: Drupal\ys_core\DashboardAnnouncements
-    arguments: ['@http_client', '@config.factory', '@keyvalue.expirable', '@date.formatter', '@logger.factory']
+    arguments: ['@http_client', '@config.factory', '@keyvalue.expirable', '@date.formatter', '@logger.factory', '@user.data']
+  # Lazy builders for the dashboard menu badge.
+  ys_core.dashboard_toolbar_lazy_builders:
+    class: Drupal\ys_core\Toolbar\DashboardToolbarLazyBuilders
+    arguments: ['@ys_core.dashboard_announcements', '@entity_type.manager']
   # Redirect visitors to external source if set on the node.
   ys_core.external_source_redirect_subscriber:
     class: Drupal\ys_core\EventSubscriber\ExternalSourceRedirectSubscriber

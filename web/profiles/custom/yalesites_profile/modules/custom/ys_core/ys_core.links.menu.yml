@@ -1,10 +1,13 @@
-# Editorial dashboard added to 'Content' section of admin menu.
+# Editorial dashboard, surfaced as a top-level admin menu item.
 ys_core.admin_dashboard:
   description: "Editorial dashboard"
-  parent: system.admin_content
+  parent: system.admin
   route_name: ys_core.admin_dashboard
   title: "Dashboard"
-  weight: -20
+  weight: 60
+  options:
+    attributes:
+      class: ['toolbar-icon', 'toolbar-icon-dashboard', 'dashboard-menu-item']
 # Creates new section in the admin menu for YaleSites settings.
 ys_core.admin_yalesites:
   description: "Administer YaleSites settings."

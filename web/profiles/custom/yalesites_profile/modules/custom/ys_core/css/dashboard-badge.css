@@ -1,0 +1,28 @@
+/**
+ * Unread-announcements badge on the Dashboard admin menu link.
+ *
+ * Modeled on Drupal core's announcements_feed bell-icon dot, but rendered as
+ * a small red pill containing the count so editors can see how many items
+ * are waiting before they click through.
+ */
+
+.ys-dashboard-badge {
+  display: inline-block;
+  min-width: 1.25em;
+  margin-inline-start: 0.4em;
+  padding: 0 0.4em;
+  border-radius: 999px;
+  background-color: #d72c0d;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  vertical-align: baseline;
+}
+
+/* Gin toolbar's `.toolbar .toolbar-menu .toolbar-menu span` color rule wins
+   on specificity, so re-assert the badge's white text inside the toolbar. */
+.toolbar-menu .menu-item .ys-dashboard-badge.ys-dashboard-badge--unread {
+  color: #fff;
+}

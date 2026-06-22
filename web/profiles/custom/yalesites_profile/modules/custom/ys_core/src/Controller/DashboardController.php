@@ -53,13 +53,24 @@ class DashboardController extends ControllerBase {
    * Dashboard page contents.
    */
   public function content() {
+    $items = $this->announcements->getAnnouncements();
+    // Visiting the dashboard "sees" every current announcement, so clear the
+    // toolbar badge for this user.
+    $this->announcements->markAllRead($this->currentUser());
     return [
       '#theme' => 'ys_dashboard',
       '#platform_version' => $this->getPlatformVersion(),
-      '#announcements' => $this->announcements->getAnnouncements(),
+      '#announcements' => $items,
       '#cache' => [
         'contexts' => ['user.permissions'],
-        'tags' => ['config:ys_core.dashboard_settings'],
+        'tags' => [
+          'config:ys_core.dashboard_settings',
+          DashboardAnnouncements::FEED_CACHE_TAG,
+        ],
+        // Align with the consumer feed cache so pure-consumer sites (where no
+        // local node hook fires) still pick up new announcements within an
+        // hour. Source sites refresh immediately via the feed cache tag.
+        'max-age' => 3600,
       ],
     ];
   }

@@ -2,6 +2,10 @@ dashboard:
   css:
     theme:
       css/dashboard.css: {}
+dashboard_badge:
+  css:
+    theme:
+      css/dashboard-badge.css: {}
 node_layout_form:
   css:
     theme:

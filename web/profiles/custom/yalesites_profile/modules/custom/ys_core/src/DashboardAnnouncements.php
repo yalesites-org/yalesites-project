@@ -5,10 +5,13 @@ namespace Drupal\ys_core;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\Unicode;
 use Drupal\Component\Utility\UrlHelper;
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\user\UserDataInterface;
 use GuzzleHttp\ClientInterface;
 
 /**
@@ -52,13 +55,36 @@ class DashboardAnnouncements {
    */
   const PLATFORM_FEED_URL = 'https://yalesites.yale.edu/api/dashboard-announcements';
 
+  /**
+   * The user.data module/key for the "newest announcement seen" timestamp.
+   */
+  const USER_DATA_MODULE = 'ys_core';
+  const USER_DATA_LAST_SEEN = 'announcements_last_seen';
+
   public function __construct(
     protected ClientInterface $httpClient,
     protected ConfigFactoryInterface $configFactory,
     protected KeyValueExpirableFactoryInterface $keyValueExpirable,
     protected DateFormatterInterface $dateFormatter,
     protected LoggerChannelFactoryInterface $loggerFactory,
+    protected UserDataInterface $userData,
   ) {}
+
+  /**
+   * Cache tag for invalidating one user's badge render.
+   */
+  public static function unreadCacheTag(int|string $uid): string {
+    return 'ys_core:dashboard_badge:' . $uid;
+  }
+
+  /**
+   * Cache tag invalidated whenever the cached feed contents change.
+   *
+   * Anything that renders feed content (the dashboard page, the menu badge)
+   * should depend on this tag so it picks up fresh items as soon as the
+   * keyvalue cache is cleared.
+   */
+  const FEED_CACHE_TAG = 'ys_core:announcements_feed';
 
   /**
    * Returns announcements to display on the dashboard.
@@ -144,9 +170,68 @@ class DashboardAnnouncements {
 
   /**
    * Clears the cached announcements so the next request refetches the feed.
+   *
+   * Also invalidates the feed cache tag so the dashboard render and the
+   * toolbar badge re-render with the fresh items.
    */
   public function clearCache(): void {
     $this->keyValueExpirable->get(self::STORE_COLLECTION)->delete(self::STORE_KEY);
+    Cache::invalidateTags([self::FEED_CACHE_TAG]);
+  }
+
+  /**
+   * Counts announcements newer than the user's last-seen timestamp.
+   *
+   * Reads the already-cached feed, so this is a cheap operation that adds no
+   * extra HTTP requests to the upstream endpoint.
+   */
+  public function getUnreadCount(AccountInterface $account): int {
+    if ($account->isAnonymous()) {
+      return 0;
+    }
+    $items = $this->getAnnouncements();
+    if (empty($items)) {
+      return 0;
+    }
+    $last_seen = (int) ($this->userData->get(self::USER_DATA_MODULE, (int) $account->id(), self::USER_DATA_LAST_SEEN) ?? 0);
+    $count = 0;
+    foreach ($items as $item) {
+      if (!empty($item['timestamp']) && (int) $item['timestamp'] > $last_seen) {
+        $count++;
+      }
+    }
+    return $count;
+  }
+
+  /**
+   * Records that the user has seen every current announcement.
+   *
+   * Stores the newest current timestamp; future items dated later than that
+   * will count as unread.
+   */
+  public function markAllRead(AccountInterface $account): void {
+    if ($account->isAnonymous()) {
+      return;
+    }
+    $items = $this->getAnnouncements();
+    if (empty($items)) {
+      return;
+    }
+    $newest = 0;
+    foreach ($items as $item) {
+      if (!empty($item['timestamp']) && (int) $item['timestamp'] > $newest) {
+        $newest = (int) $item['timestamp'];
+      }
+    }
+    if ($newest === 0) {
+      return;
+    }
+    $uid = (int) $account->id();
+    $current = (int) ($this->userData->get(self::USER_DATA_MODULE, $uid, self::USER_DATA_LAST_SEEN) ?? 0);
+    if ($newest > $current) {
+      $this->userData->set(self::USER_DATA_MODULE, $uid, self::USER_DATA_LAST_SEEN, $newest);
+      Cache::invalidateTags([self::unreadCacheTag($uid)]);
+    }
   }
 
 }
