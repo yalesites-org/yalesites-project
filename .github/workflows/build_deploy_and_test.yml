@@ -40,7 +40,7 @@ jobs:
     env:
       SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       MACHINE_TOKEN: ${{ secrets.TERMINUS_TOKEN }}
-      SITE: ${{ secrets.PANTHEON_SITE_MACHINE_NAME }}
+      SITE: ${{ secrets.TERMINUS_SITE }}
     permissions:
       deployments: write
       contents: read
