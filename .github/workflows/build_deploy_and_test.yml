@@ -50,8 +50,16 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+    
+      - name: Install Terminus
+        uses: pantheon-systems/terminus-github-actions@v1
+        with:
+          pantheon-machine-token: ${{ env.MACHINE_TOKEN }}
 
-      - name: build frontend components
+      - name: Install Terminus Build Tools Plugin
+        run: terminus self:plugin:install terminus-build-tools-plugin
+
+      - name: Build frontend components
         env:
           BRANCH: ${{ github.head_ref || github.ref_name }}
           YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
@@ -83,6 +91,7 @@ jobs:
           machine_token: ${{ env.MACHINE_TOKEN }}
           site: ${{ env.SITE }}
           delete_old_environments: true
+          skip_terminus_install: true
 
       - name: Wake environment
         env:
