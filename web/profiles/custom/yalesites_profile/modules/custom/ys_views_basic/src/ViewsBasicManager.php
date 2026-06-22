@@ -371,11 +371,19 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * @param string|null $blockUuid
    *   The host block content UUID, used to derive a per-instance pager element
    *   so multiple paginated listings on one page paginate independently.
+   * @param bool $blockHasHeading
+   *   Whether the host block renders its own heading (its field_heading is not
+   *   empty). When TRUE the component-wrapper renders an H2 above the listing,
+   *   so each result card nests one level deeper (H3); when FALSE the cards are
+   *   the first heading under the page H1 and render at H2. Carried into the
+   *   field-display options so hook_views_pre_render() can stamp the level on
+   *   each result entity (mirrors how show_categories flows). Defaults to FALSE
+   *   so the AJAX/preview paths, which have no block entity, fall back to H2.
    *
    * @return void
    *   No return value.
    */
-  public function setupView(&$view, $params, $blockUuid = NULL) {
+  public function setupView(&$view, $params, $blockUuid = NULL, $blockHasHeading = FALSE) {
     $paramsDecoded = json_decode($params, TRUE);
     $pinned_to_top = isset($paramsDecoded['pinned_to_top']) ? (bool) $paramsDecoded['pinned_to_top'] : FALSE;
 
@@ -607,6 +615,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'show_categories' => (int) !empty($paramsDecoded['field_options']['show_categories']),
       'show_tags' => (int) !empty($paramsDecoded['field_options']['show_tags']),
       'show_thumbnail' => (int) $no_field_display_options_saved || !empty($paramsDecoded['field_options']['show_thumbnail']),
+      // Whether the host block renders its own heading; drives the per-result
+      // card heading level in hook_views_pre_render() (H3 when nested under the
+      // block heading, H2 when the cards are the first heading on the page).
+      'block_has_heading' => (int) $blockHasHeading,
     ];
 
     $event_field_display_options = [
@@ -687,6 +699,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         $resultRow['#cache']['keys'][] = $field_display_options['show_categories'];
         $resultRow['#cache']['keys'][] = $field_display_options['show_tags'];
         $resultRow['#cache']['keys'][] = $field_display_options['show_thumbnail'];
+        $resultRow['#cache']['keys'][] = $field_display_options['block_has_heading'];
         $resultRow['#cache']['keys'][] = $event_field_display_options['hide_add_to_calendar'];
         $resultRow['#cache']['keys'][] = $post_field_display_options['show_eyebrow'];
         $resultRow['#cache']['keys'][] = $pin_options['pinned_to_top'];
@@ -729,12 +742,15 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * @param string|null $blockUuid
    *   The host block content UUID, used to derive a per-instance pager element
    *   so multiple paginated listings on one page paginate independently.
+   * @param bool $blockHasHeading
+   *   Whether the host block renders its own heading; forwarded to setupView()
+   *   to set the per-result card heading level (see setupView()).
    *
    * @return array|int|null
    *   An array of a rendered view or a count of the number of results based
    *   on the parameters specified, or NULL when the scaffold view is missing.
    */
-  public function getView($type, $params, $blockUuid = NULL) {
+  public function getView($type, $params, $blockUuid = NULL, $blockHasHeading = FALSE) {
     // Set up the view and initial decoded parameters. Each call gets its own
     // isolated, cloned view (see initView), so the previous static recursion
     // guards are no longer needed and nested views-basic placements now render
@@ -744,7 +760,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     if ($view === NULL) {
       return NULL;
     }
-    $this->setupView($view, $params, $blockUuid);
+    $this->setupView($view, $params, $blockUuid, $blockHasHeading);
 
     return $view;
   }

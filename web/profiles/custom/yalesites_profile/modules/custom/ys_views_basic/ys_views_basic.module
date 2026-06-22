@@ -136,6 +136,12 @@ function ys_views_basic_views_pre_render(ViewExecutable $view): void {
       $row->_entity->show_thumbnail = $field_display_options->show_thumbnail;
       $row->_entity->hide_add_to_calendar = $event_field_display_options->hide_add_to_calendar;
       $row->_entity->show_eyebrow = $post_field_display_options->show_eyebrow;
+      // Context-derived heading level for each result card: H3 when the block
+      // renders its own heading (the cards nest under it), H2 when the cards
+      // are the first heading on the page. The listing node templates read
+      // node.card_heading_level (falling back to their own default for non
+      // listing renders, which never set this property).
+      $row->_entity->card_heading_level = !empty($field_display_options->block_has_heading) ? '3' : '2';
 
       $sticky = (bool) $row->_entity->get('sticky')->value;
       if ($sticky) {
@@ -174,7 +180,18 @@ function ys_views_basic_views_pre_view(ViewExecutable $view, $display_id, array 
   $processing[$object_id] = TRUE;
   try {
     $viewsBasicManager = \Drupal::service('ys_views_basic.views_basic_manager');
-    $viewsBasicManager->setupView($view, end($args));
+    // setupView() rebuilds the field-display options from the stored params,
+    // which do not carry the host block's heading-presence signal (it is a
+    // block-entity fact resolved by the formatter, not a saved param). Recover
+    // it from the incoming view arguments so exposed-filter and pager AJAX
+    // re-renders keep the same result-card heading level as the initial render.
+    // args[8] is the field_display_options JSON (see setupView() arg order).
+    $block_has_heading = FALSE;
+    if (isset($args[8])) {
+      $incoming_display = json_decode($args[8]);
+      $block_has_heading = !empty($incoming_display->block_has_heading);
+    }
+    $viewsBasicManager->setupView($view, end($args), NULL, $block_has_heading);
   }
   finally {
     unset($processing[$object_id]);

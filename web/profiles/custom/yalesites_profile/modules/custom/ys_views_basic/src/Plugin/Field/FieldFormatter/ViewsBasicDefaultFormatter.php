@@ -136,7 +136,12 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
         // view and a distinct pager element (#906 / #1306).
         $block = $items->getEntity();
         $blockUuid = $block ? $block->uuid() : NULL;
-        $view = $this->viewsBasicManager->getView('rendered', $item->getValue()['params'], $blockUuid);
+        // Whether the block renders its own heading determines the result-card
+        // heading level (H3 nested under the block heading, H2 without). The
+        // component-wrapper only renders the heading when field_heading is not
+        // empty, so mirror that condition here.
+        $blockHasHeading = $block && $block->hasField('field_heading') && !$block->get('field_heading')->isEmpty();
+        $view = $this->viewsBasicManager->getView('rendered', $item->getValue()['params'], $blockUuid, $blockHasHeading);
         // Extract exposed widgets from the view.
         $exposedWidgets = NULL;
         if ($view && is_array($view) && isset($view['#view']) && isset($view['#view']->exposed_widgets)) {
