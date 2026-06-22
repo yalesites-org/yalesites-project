@@ -90,6 +90,7 @@ jobs:
           ssh_key: ${{ env.SSH_KEY }}
           machine_token: ${{ env.MACHINE_TOKEN }}
           site: ${{ env.SITE }}
+          source_env: "dev"
           delete_old_environments: true
           skip_terminus_install: true
 
