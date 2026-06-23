@@ -49,12 +49,17 @@ class AnnouncementsFeedController extends ControllerBase {
 
     if ($tids) {
       $node_storage = $this->entityTypeManager()->getStorage('node');
+      // Sort by `changed` rather than `created` so that a post drafted weeks
+      // ago but published today still appears at the top of the feed and gets
+      // a current `date_published`. Consumers compare this against the
+      // per-user last-seen timestamp to decide what counts as unread, so
+      // using the publish-time-or-later value keeps the unread badge honest.
       $nids = $node_storage->getQuery()
         ->accessCheck(TRUE)
         ->condition('type', 'post')
         ->condition('status', 1)
         ->condition('field_tags', $tids, 'IN')
-        ->sort('created', 'DESC')
+        ->sort('changed', 'DESC')
         ->range(0, self::FEED_LIMIT)
         ->execute();
 
@@ -67,7 +72,7 @@ class AnnouncementsFeedController extends ControllerBase {
           'id' => (string) $node->id(),
           'title' => $node->getTitle(),
           'url' => $node->toUrl('canonical', ['absolute' => TRUE])->toString(),
-          'date_published' => date('c', $node->getCreatedTime()),
+          'date_published' => date('c', $node->getChangedTime()),
           'summary' => $summary,
         ];
         $cacheability->addCacheableDependency($node);
