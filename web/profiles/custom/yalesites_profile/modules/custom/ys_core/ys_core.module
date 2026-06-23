@@ -792,7 +792,15 @@ function _ys_core_clear_announcements_cache_if_source($node) {
   if (!\Drupal::config('ys_core.dashboard_settings')->get('announcements_source_enabled')) {
     return;
   }
+  // Clear the consumer's parsed-feed keyvalue and bust the dashboard/badge
+  // render caches via FEED_CACHE_TAG.
   \Drupal::service('ys_core.dashboard_announcements')->clearCache();
+
+  // Also bust the source endpoint's HTTP response cache. Drupal auto-
+  // invalidates `node_list:post` on insert and delete, but NOT on update — so
+  // a draft being published (an update) would leave the cached feed response
+  // serving stale items until the cache lifetime expires.
+  Cache::invalidateTags(['node_list:post']);
 }
 
 /**
