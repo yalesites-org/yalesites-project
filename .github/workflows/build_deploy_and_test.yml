@@ -76,6 +76,21 @@ jobs:
           delete_old_environments: true
           skip_terminus_install: true
 
+      - name: Wait for Pantheon sync_code workflow to finish
+        run: |
+          while true; do
+            status=$(terminus workflow:list "$SITE.$TARGET_ENV" --format=json --fields=env,workflow,user,status,started_at | jq -r --arg TARGET_ENV "$TARGET_ENV" '
+            limit(5; .[])
+            | select(.workflow == ("Sync code on \"" + $TARGET_ENV + "\"")) | .status
+            ')
+            echo "Current workflow status: $status"
+            if [[ "$status" != "running" ]]; then
+              echo "Workflow has finished with status: $status"
+              break
+            fi
+            sleep 10
+          done
+
       - name: Wake environment
         env:
           TARGET_ENV: ${{ steps.push-to-pantheon.outputs.target_env }}
