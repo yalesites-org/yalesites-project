@@ -8,11 +8,15 @@ use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
+use Drupal\Core\DependencyInjection\ClassResolverInterface;
 use Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\user\UserDataInterface;
+use Drupal\ys_core\Controller\AnnouncementsFeedController;
 use GuzzleHttp\ClientInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Fetches editorial dashboard announcements from a configured JSON feed.
@@ -77,6 +81,8 @@ class DashboardAnnouncements {
     protected DateFormatterInterface $dateFormatter,
     protected LoggerChannelFactoryInterface $loggerFactory,
     protected UserDataInterface $userData,
+    protected RequestStack $requestStack,
+    protected ClassResolverInterface $classResolver,
   ) {}
 
   /**
@@ -113,7 +119,7 @@ class DashboardAnnouncements {
     $max_age = (int) ($config->get('announcements_max_age') ?: 3600);
 
     try {
-      $body = (string) $this->httpClient->get($feed_url)->getBody();
+      $body = $this->fetchFeedBody($feed_url);
       $feed = Json::decode($body);
     }
     catch (\Throwable $e) {
@@ -187,6 +193,44 @@ class DashboardAnnouncements {
   public function clearCache(): void {
     $this->keyValueExpirable->get(self::STORE_COLLECTION)->delete(self::STORE_KEY);
     Cache::invalidateTags([self::FEED_CACHE_TAG]);
+  }
+
+  /**
+   * Returns the JSON feed body, bypassing HTTP for same-site fetches.
+   *
+   * When the configured feed URL points at the current site (e.g. on a
+   * single-site demo where this site is also the source) we skip the HTTP
+   * request and call the source controller directly. That avoids Pantheon
+   * edge cache + Drupal Page Cache serving the consumer a stale copy of a
+   * response we just invalidated.
+   *
+   * Cross-site consumers still use HTTP so they benefit from edge caching.
+   */
+  protected function fetchFeedBody(string $feed_url): string {
+    if ($this->isSameSiteUrl($feed_url)) {
+      try {
+        /** @var \Drupal\ys_core\Controller\AnnouncementsFeedController $controller */
+        $controller = $this->classResolver->getInstanceFromDefinition(AnnouncementsFeedController::class);
+        return (string) $controller->feed()->getContent();
+      }
+      catch (NotFoundHttpException $e) {
+        // Source endpoint is dormant on this site; treat as empty feed.
+        return '{"items":[]}';
+      }
+    }
+    return (string) $this->httpClient->get($feed_url)->getBody();
+  }
+
+  /**
+   * Whether the given feed URL points at the current site.
+   */
+  protected function isSameSiteUrl(string $url): bool {
+    $request = $this->requestStack->getCurrentRequest();
+    if (!$request) {
+      return FALSE;
+    }
+    $url_host = parse_url($url, PHP_URL_HOST);
+    return $url_host !== NULL && strcasecmp($url_host, $request->getHost()) === 0;
   }
 
   /**
