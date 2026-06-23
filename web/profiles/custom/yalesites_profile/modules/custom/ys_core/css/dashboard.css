@@ -1,0 +1,101 @@
+/**
+ * Editorial dashboard layout.
+ *
+ * @see web/profiles/custom/yalesites_profile/modules/custom/ys_core/templates/ys-dashboard.html.twig
+ */
+
+.ys-dashboard__section {
+  margin-block-end: 2.5rem;
+}
+
+.ys-dashboard__section > h2 {
+  margin-block-end: 0.75rem;
+}
+
+/* 50/50 grids that collapse to one column on narrow screens: the top row
+   (announcements + resources/feedback/platform) and the two-up area below
+   (Latest edits / Recent drafts). */
+.ys-dashboard__top,
+.ys-dashboard__columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  gap: 2.5rem;
+}
+
+.ys-dashboard__top {
+  margin-block-end: 2.5rem;
+}
+
+.ys-dashboard__top-main > .ys-dashboard__section {
+  margin-block-end: 0;
+}
+
+/* Keep the stacked cards in the right column close together. */
+.ys-dashboard__top-aside > .ys-dashboard__section {
+  margin-block-end: 1rem;
+}
+
+/* Platform information and the action stack sit side-by-side beneath
+   Resources, collapsing to one column when there isn't room. */
+.ys-dashboard__aside-split {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 1.5rem;
+}
+
+.ys-dashboard__aside-split > .ys-dashboard__section {
+  margin-block-end: 0;
+}
+
+.ys-dashboard__action-button {
+  display: inline-block;
+  margin-block-end: 0.75rem;
+}
+
+.ys-dashboard__action-help {
+  margin: 0 0 1rem;
+  font-size: 0.875rem;
+  color: var(--gin-color-text-light, #4a4a4a);
+}
+
+.ys-dashboard__columns .ys-dashboard__section {
+  margin-block-end: 0;
+}
+
+.ys-dashboard__announcement-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ys-dashboard__announcement {
+  padding-block: 1rem;
+  border-block-end: 1px solid var(--gin-border-color, #d6d6d6);
+}
+
+.ys-dashboard__announcement:first-child {
+  padding-block-start: 0;
+}
+
+.ys-dashboard__announcement-title {
+  margin: 0 0 0.25rem;
+}
+
+.ys-dashboard__announcement-date {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+  color: var(--gin-color-text-light, #4a4a4a);
+}
+
+.ys-dashboard__announcement-summary {
+  margin: 0;
+}
+
+/* Keep the embedded Views tables fluid within their column. */
+.ys-dashboard table {
+  width: 100%;
+}
+
+.ys-dashboard__resources .more-link {
+  margin-block-start: 0.75rem;
+}
