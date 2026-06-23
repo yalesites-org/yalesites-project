@@ -77,6 +77,8 @@ jobs:
           skip_terminus_install: true
 
       - name: Wait for Pantheon sync_code workflow to finish
+        env:
+          TARGET_ENV: ${{ steps.push-to-pantheon.outputs.target_env }}
         run: |
           while true; do
             status=$(terminus workflow:list "$SITE.$TARGET_ENV" --format=json --fields=env,workflow,user,status,started_at | jq -r --arg TARGET_ENV "$TARGET_ENV" '
