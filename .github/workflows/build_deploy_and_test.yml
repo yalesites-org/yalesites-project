@@ -80,18 +80,14 @@ jobs:
         env:
           TARGET_ENV: ${{ steps.push-to-pantheon.outputs.target_env }}
         run: |
-          PUSH_TIMESTAMP=$(date +%s)
           while true; do
-            status=$(terminus workflow:list "$SITE.$TARGET_ENV" --format=json --fields=env,workflow,user,status,started_at | jq -r --arg PUSH_TIMESTAMP "$PUSH_TIMESTAMP" --arg TARGET_ENV "$TARGET_ENV" '
-            limit(5; .[])
-            | select((.started_at > $PUSH_TIMESTAMP) and .workflow == ("Sync code on \"" + $TARGET_ENV + "\"")) | .status
-            ')
-            echo "Current workflow status: $status"
-            if [[ "$status" != "running" ]]; then
-              echo "Workflow has finished with status: $status"
-              break
-            fi
-            sleep 10
+          status=$(terminus workflow:info:status "$SITE.$TARGET_ENV" --field=status 2>/dev/null)
+          echo "Current workflow status: $status"
+          if [[ "$status" != "running" ]]; then
+            echo "Workflow has finished with status: $status"
+            break
+          fi
+          sleep 10
           done
 
       - name: Wake environment
