@@ -11,6 +11,7 @@ concurrency:
 
 jobs:
   static_tests:
+    name: Test
     runs-on: ubuntu-26.04
     env:
       YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
@@ -31,11 +32,12 @@ jobs:
             echo "::error::$unpinned_dependencies found in /web/profiles/custom/yalesites_profile/composer.json. Please switch to pinned versions." && exit 1
           fi
 
-      - name: run static tests
+      - name: Run static tests
         run: |
           ./.ci/test/static/run
 
   deploy_to_pantheon:
+    name: Deploy to Pantheon
     runs-on: ubuntu-26.04
     env:
       SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
