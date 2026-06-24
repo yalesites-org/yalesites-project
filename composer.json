@@ -173,13 +173,6 @@
       "tbachert/spi": true
     }
   },
-  "policy": {
-    "advisories": {
-      "ignore": [
-        "twig/twig"
-      ]
-    }
-  },
   "scripts": {
     "build-assets": [
       "@prepare-for-pantheon",
