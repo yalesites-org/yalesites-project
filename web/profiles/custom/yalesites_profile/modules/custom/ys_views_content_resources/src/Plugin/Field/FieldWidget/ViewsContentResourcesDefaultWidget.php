@@ -358,6 +358,7 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
         'field_teaser_text' => $this->t('Teaser Text'),
         'field_teaser_title' => $this->t('Teaser Title'),
         'field_journal_publication_name' => $this->t('Journal/Publication Name'),
+        'authors' => $this->t('Authors'),
       ],
       '#title' => $this->t('Search Fields'),
       '#description' => $this->t('Select which fields the search filter will search across.'),
