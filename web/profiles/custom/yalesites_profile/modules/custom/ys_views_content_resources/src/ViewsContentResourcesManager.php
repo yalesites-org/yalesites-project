@@ -58,6 +58,17 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
   const DEFAULT_PIN_LABEL = 'Pinned';
 
   /**
+   * Combine-filter field ids the 'authors' search option expands to.
+   *
+   * @var string[]
+   */
+  const AUTHOR_COMBINE_FIELDS = [
+    'author_profile_title',
+    'nonaffiliated_author_first',
+    'nonaffiliated_author_second',
+  ];
+
+  /**
    * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
@@ -178,13 +189,33 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
         unset($filters[$filter]);
       }
 
-      // Check if 'category_included_terms' is provided for the current
-      // filter type.
-      if (!empty($paramsDecoded['category_included_terms'])) {
-        $vid = "resource_category";
+      $vid = "resource_category";
 
-        // Limit the filter to specific terms if provided.
-        $filters[$category_filter_name]['value'] = $this->getChildTermsByParentId($paramsDecoded['category_included_terms'], $vid);
+      // Determine which category terms may appear in the exposed filter. When
+      // an included parent is set, the options are its child terms; otherwise
+      // the whole resource_category vocabulary is available.
+      if (!empty($paramsDecoded['category_included_terms'])) {
+        $available_terms = $this->getChildTermsByParentId($paramsDecoded['category_included_terms'], $vid);
+      }
+      else {
+        $available_terms = $this->getChildTermsByParentId(0, $vid);
+      }
+
+      // Remove any terms used to exclude content from the view. A category
+      // that filters content out would always return zero results if a visitor
+      // selected it, so it should never be offered as a filter option.
+      $excluded_terms = [];
+      if (!empty($paramsDecoded['filters']['terms_exclude'])) {
+        foreach ($paramsDecoded['filters']['terms_exclude'] as $term) {
+          $excluded_terms[] = $this->getTermId($term);
+        }
+      }
+      $available_terms = $this->reduceCategoryTermsForExposure($available_terms, $excluded_terms);
+
+      // Constrain the exposed options only when a parent limits the set or some
+      // terms were excluded; otherwise leave the full vocabulary available.
+      if (!empty($paramsDecoded['category_included_terms']) || $excluded_terms) {
+        $filters[$category_filter_name]['value'] = $available_terms;
         $filters[$category_filter_name]['limit'] = TRUE;
         $filters[$category_filter_name]['expose']['reduce'] = TRUE;
       }
@@ -264,11 +295,18 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
             'field_teaser_title' => 'field_teaser_title',
           ];
         }
-        $fieldsArray = [];
-        foreach ($selectedFields as $field) {
-          $fieldsArray[$field] = $field;
+
+        // The 'authors' option is a pseudo-field. Affiliated author names live
+        // on referenced Profile nodes and non-affiliated authors are a
+        // multi-value double_field, so neither is reachable by the combine
+        // filter as-is. expandSearchFields() maps the selection onto the real
+        // combine field ids and reports whether the author handlers (the
+        // relationship and extra fields) need injecting.
+        $combine = $this->expandSearchFields($selectedFields);
+        if ($combine['authors']) {
+          $this->addAuthorSearchHandlers($view);
         }
-        $filters['combine']['fields'] = $fieldsArray;
+        $filters['combine']['fields'] = $combine['fields'];
       }
     }
 
@@ -444,6 +482,150 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     }
 
     $setupRunning = FALSE;
+  }
+
+  /**
+   * Injects the handlers needed to search author names.
+   *
+   * The combine filter can only search real database columns on the resource
+   * node. Affiliated authors (field_authors) reference Profile nodes, so a
+   * relationship to the Profile exposes its title. Non-affiliated authors
+   * (field_nonaffiliated_authors) are a multi-value double_field whose first
+   * and second name columns must both be searchable. Every handler is excluded
+   * from display and only feeds the combine filter; DISTINCT collapses the row
+   * multiplication the multi-value joins introduce.
+   *
+   * @param \Drupal\views\ViewExecutable $view
+   *   The view being set up.
+   */
+  private function addAuthorSearchHandlers(&$view): void {
+    $display = $view->getDisplay();
+    $definitions = $this->authorSearchHandlerDefinitions();
+
+    // Merge so existing handlers are preserved; the author keys are unique.
+    $relationships = $display->getOption('relationships') ?: [];
+    $display->setOption('relationships', $relationships + $definitions['relationships']);
+
+    $fields = $display->getOption('fields') ?: [];
+    $display->setOption('fields', $fields + $definitions['fields']);
+
+    // Collapse the row multiplication the multi-value author joins introduce.
+    $query_options = $display->getOption('query') ?: [];
+    $query_options['options']['distinct'] = TRUE;
+    $display->setOption('query', $query_options);
+  }
+
+  /**
+   * Builds the relationship and field handler definitions for author search.
+   *
+   * Pure data builder, separated from addAuthorSearchHandlers() so it can be
+   * unit tested. Affiliated authors (field_authors) reference Profile nodes, so
+   * a relationship to the Profile exposes its title. Non-affiliated authors
+   * (field_nonaffiliated_authors) are a multi-value double_field whose first
+   * and second name columns are both needed. Every field is excluded from
+   * display and exists only to feed the combine filter.
+   *
+   * @return array
+   *   An array with 'relationships' and 'fields' keys of Views handler config.
+   */
+  public function authorSearchHandlerDefinitions(): array {
+    return [
+      'relationships' => [
+        'field_authors' => [
+          'id' => 'field_authors',
+          'table' => 'node__field_authors',
+          'field' => 'field_authors',
+          'relationship' => 'none',
+          'group_type' => 'group',
+          'admin_label' => 'Author profile',
+          'plugin_id' => 'standard',
+          'required' => FALSE,
+        ],
+      ],
+      'fields' => [
+        'author_profile_title' => [
+          'id' => 'author_profile_title',
+          'table' => 'node_field_data',
+          'field' => 'title',
+          'relationship' => 'field_authors',
+          'plugin_id' => 'field',
+          'entity_type' => 'node',
+          'entity_field' => 'title',
+          'exclude' => TRUE,
+          'label' => '',
+        ],
+        'nonaffiliated_author_first' => [
+          'id' => 'nonaffiliated_author_first',
+          'table' => 'node__field_nonaffiliated_authors',
+          'field' => 'field_nonaffiliated_authors_first',
+          'relationship' => 'none',
+          'plugin_id' => 'standard',
+          'exclude' => TRUE,
+          'label' => '',
+        ],
+        'nonaffiliated_author_second' => [
+          'id' => 'nonaffiliated_author_second',
+          'table' => 'node__field_nonaffiliated_authors',
+          'field' => 'field_nonaffiliated_authors_second',
+          'relationship' => 'none',
+          'plugin_id' => 'standard',
+          'exclude' => TRUE,
+          'label' => '',
+        ],
+      ],
+    ];
+  }
+
+  /**
+   * Maps selected search fields onto combine-filter field ids.
+   *
+   * The 'authors' option is a pseudo-field that expands to the author combine
+   * fields. Pure helper, separated for unit testing.
+   *
+   * @param array $selectedFields
+   *   The search field machine names selected by the editor.
+   *
+   * @return array
+   *   An array with 'fields' (combine field id => id) and 'authors' (bool,
+   *   whether the author handlers must be injected).
+   */
+  public function expandSearchFields(array $selectedFields): array {
+    $authors = in_array('authors', $selectedFields, TRUE);
+    $plain = array_filter($selectedFields, static fn ($field) => $field !== 'authors');
+
+    $fields = [];
+    foreach ($plain as $field) {
+      $fields[$field] = $field;
+    }
+    if ($authors) {
+      foreach (self::AUTHOR_COMBINE_FIELDS as $author_field) {
+        $fields[$author_field] = $author_field;
+      }
+    }
+
+    return ['fields' => $fields, 'authors' => $authors];
+  }
+
+  /**
+   * Removes excluded terms from the set of exposed category filter options.
+   *
+   * A category used to exclude content would always return zero results if a
+   * visitor selected it, so it must not appear as a filter option. Pure helper,
+   * separated for unit testing.
+   *
+   * @param array $available
+   *   Available term options keyed by term id.
+   * @param array $excluded
+   *   Term ids to remove.
+   *
+   * @return array
+   *   The available terms with the excluded ids removed.
+   */
+  public function reduceCategoryTermsForExposure(array $available, array $excluded): array {
+    if (!$excluded) {
+      return $available;
+    }
+    return array_diff_key($available, array_flip($excluded));
   }
 
   /**
