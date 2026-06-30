@@ -285,6 +285,7 @@ image_banner:
     values:
       tall: Tall
       short: Short
+      mini: Mini
     default: tall
 accordion:
   field_style_color:

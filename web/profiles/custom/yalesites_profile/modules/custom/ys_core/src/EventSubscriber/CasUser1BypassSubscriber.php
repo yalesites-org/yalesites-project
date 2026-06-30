@@ -44,7 +44,7 @@ class CasUser1BypassSubscriber implements EventSubscriberInterface {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents() {
-    $events[CasHelper::EVENT_PRE_REDIRECT][] = ['onPreRedirect', 100];
+    $events[CasPreRedirectEvent::class][] = ['onPreRedirect', 100];
     return $events;
   }
 
