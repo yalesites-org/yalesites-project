@@ -1,0 +1,292 @@
+<?php
+
+/**
+ * @file
+ * Install and update functions for the ys_beacon module.
+ */
+
+use Drupal\Core\Database\Connection;
+
+/**
+ * Implements hook_schema().
+ */
+function ys_beacon_schema() {
+  $schema['ys_beacon_system_instructions'] = [
+    'description' => 'Stores system instructions for the Beacon chat assistant with versioning.',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Primary key.',
+      ],
+      'instructions' => [
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+        'description' => 'The system instructions content.',
+      ],
+      'version' => [
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'Version number of the instructions.',
+      ],
+      'created_by' => [
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'User ID who created this version.',
+      ],
+      'created_date' => [
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'Unix timestamp when this version was created.',
+      ],
+      'is_active' => [
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Whether this version is currently active.',
+      ],
+      'notes' => [
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => FALSE,
+        'description' => 'Optional notes about this version.',
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'version' => ['version'],
+      'created_by' => ['created_by'],
+      'created_date' => ['created_date'],
+      'is_active' => ['is_active'],
+    ],
+    'foreign keys' => [
+      'created_by' => [
+        'table' => 'users',
+        'columns' => ['created_by' => 'uid'],
+      ],
+    ],
+  ];
+
+  return $schema;
+}
+
+/**
+ * Implements hook_install().
+ *
+ * Copies the editor-facing display settings from the legacy ai_engine chat
+ * the first time this module is installed. Connection settings (Portkey,
+ * Azure index) are not copied; they are configured fresh through the Beacon
+ * administration form.
+ *
+ * Also copies the per-site system instructions version history from the
+ * legacy ys_ai_system_instructions table when that module is (or was)
+ * installed, so the history survives its removal.
+ *
+ * Key entities are NOT created here: the pantheon_secrets sync owns key
+ * creation from the platform secrets (portkey_llm_api_key,
+ * portkey_embedding_api_key, azure_ai_search_api_key, azure_ai_search_url),
+ * and pre-creating them makes that sync fail with "entity already exists".
+ */
+function ys_beacon_install() {
+  $settings = \Drupal::configFactory()->getEditable('ys_beacon.settings');
+  $changed = FALSE;
+
+  // The AI metadata fields visibility toggle lived in its own legacy config.
+  $legacy_metadata = \Drupal::config('ai_engine_metadata.settings');
+  if (!$legacy_metadata->isNew()) {
+    $settings->set('enable_metadata_fields', (bool) $legacy_metadata->get('enable'));
+    $changed = TRUE;
+  }
+
+  $legacy = \Drupal::config('ai_engine_chat.settings');
+  if (!$legacy->isNew()) {
+    $map = [
+      'floating_button' => 'floating_button',
+      'floating_button_text' => 'floating_button_text',
+      'prompts' => 'prompts',
+      'disclaimer' => 'disclaimer',
+      'footer' => 'footer',
+    ];
+    foreach ($map as $target => $source) {
+      $value = $legacy->get($source);
+      // The legacy form saved starter questions under "prompts" but its
+      // install default used "initial_questions"; accept either.
+      if ($target === 'prompts' && ($value === NULL || $value === [])) {
+        $value = $legacy->get('initial_questions');
+      }
+      if ($value !== NULL && $value !== '' && $value !== []) {
+        $settings->set($target, $value);
+        $changed = TRUE;
+      }
+    }
+  }
+
+  if ($changed) {
+    $settings->save();
+  }
+
+  // Copy the legacy system instructions version history. Values are stored
+  // unescaped (escaping only ever happened on the legacy API wire), and the
+  // legacy service guarantees at most one is_active = 1 row.
+  // Deployment ordering matters: uninstalling ys_ai_system_instructions
+  // drops its table, so it must stay installed until after ys_beacon has
+  // been installed (a same-deploy swap would silently skip this copy).
+  $database = \Drupal::database();
+  if ($database->schema()->tableExists('ys_ai_system_instructions')) {
+    $rows = $database->select('ys_ai_system_instructions', 's')
+      ->fields('s', ['instructions', 'version', 'created_by', 'created_date', 'is_active', 'notes'])
+      ->orderBy('id')
+      ->execute()
+      ->fetchAll(\PDO::FETCH_ASSOC);
+    foreach ($rows as $row) {
+      $database->insert('ys_beacon_system_instructions')->fields($row)->execute();
+    }
+  }
+
+  // Seed default system instructions on a fresh install (no legacy history to
+  // copy). The helper no-ops when versions already exist, so migrations and
+  // existing installs are never overwritten.
+  _ys_beacon_seed_default_instructions($database);
+
+  // Kick off the legacy ai_engine to Beacon cutover. This is best-effort at
+  // install time: provisioning the Azure index needs a key the secrets sync
+  // may not have created yet, and the search index entity is imported from
+  // profile config after the module is installed. The work is idempotent and
+  // hook_cron() retries it until it completes, so a deferral here is expected
+  // and harmless.
+  \Drupal::service('ys_beacon.migration')->migrate();
+}
+
+/**
+ * Seeds the canonical default system instructions when none exist yet.
+ *
+ * Inserts version 1 as the active instruction only when the table is empty, so
+ * a migrated history or an existing install is never overwritten.
+ *
+ * @param \Drupal\Core\Database\Connection $database
+ *   The active database connection.
+ */
+function _ys_beacon_seed_default_instructions(Connection $database) {
+  if ((int) $database->select('ys_beacon_system_instructions')->countQuery()->execute()->fetchField() !== 0) {
+    return;
+  }
+
+  // Keep this text in sync with the fallback_system_prompt default in
+  // config/install/ys_beacon.settings.yml: this seeds the active versioned
+  // instructions, while that key is the fallback used when none exist.
+  $default_instructions = <<<'EOT'
+# YaleSites AI System Instruction
+
+## Identity & Purpose
+You are an AI assistant embedded on a Yale University website. Your purpose is to help users find information available on this specific site, answer their questions about the site's content, and assist with navigating the resources presented here. You support Yale's mission of advancing knowledge through excellent service and clear communication.
+
+## Information Sources
+- You have access only to the content on this specific website where you are deployed
+- Your knowledge is limited to what's published on this site
+- You provide citations to specific pages or sections when answering
+
+## Communication Approach
+- **Empathetic**: Understand users' needs and respond with care
+- **Concise**: Provide clear, direct answers without unnecessary elaboration
+- **Nuanced**: Recognize complexity while offering accessible explanations
+- **Accurate**: Only share information present on this site
+
+## Response Guidelines
+- Begin with a direct answer to the question when possible
+- Keep responses brief but complete
+- Use simple formatting to enhance readability
+- Include specific citations to pages on this site
+- Suggest relevant site links for additional information
+
+## When You Don't Know
+- Clearly acknowledge when information isn't available on this site
+- Don't speculate beyond the site's content
+- Suggest where on the site the user might look for related information
+- Offer to help reformulate the question if appropriate
+- Never pretend to know information not present on this site
+
+## Interaction Style
+- Be conversational but professional
+- Match your language to the academic context
+- Prioritize clarity over technical jargon
+- Use inclusive language accessible to diverse audiences
+- Maintain a warm, helpful tone that reflects Yale's values
+
+## Technical Considerations
+- You interact with site content that has been transformed into vector embeddings
+- You can only access content that has been properly indexed from this site
+- Your responses should respect the structure and organization of the site
+- Citations should help users locate the original content on this site
+
+## Ethical Guidelines
+- Respect privacy by not asking for or storing personal information
+- Maintain the academic integrity reflected on the site
+- Uphold Yale's commitment to "the free exchange of ideas in an ethical, interdependent, and diverse community"
+- Support accessibility through clear communication
+- Prioritize helping users accomplish their goals efficiently
+EOT;
+
+  $database->insert('ys_beacon_system_instructions')
+    ->fields([
+      'instructions' => $default_instructions,
+      'version' => 1,
+      'created_by' => 0,
+      'created_date' => \Drupal::service('datetime.time')->getRequestTime(),
+      'is_active' => 1,
+      'notes' => 'Default YaleSites system instructions',
+    ])
+    ->execute();
+}
+
+/**
+ * Set the configurable Search API index and server machine names.
+ *
+ * The chatbot's Search API index and server were previously hardcoded as the
+ * literal "ys_beacon"; they are now read from ys_beacon.settings so a second
+ * index can be added by configuration. Populate the defaults on existing sites
+ * so exported config is explicit; runtime already falls back to "ys_beacon".
+ */
+function ys_beacon_update_10001() {
+  $settings = \Drupal::configFactory()->getEditable('ys_beacon.settings');
+  $changed = FALSE;
+  foreach (['search_index_id', 'search_server_id'] as $key) {
+    if (!$settings->get($key)) {
+      $settings->set($key, 'ys_beacon');
+      $changed = TRUE;
+    }
+  }
+  if ($changed) {
+    $settings->save();
+  }
+}
+
+/**
+ * Force the floating chat button icon to the canonical "sparkles" mark.
+ *
+ * The icon is no longer site-configurable; every YaleSites site shows the same
+ * icon. Set fa-sparkles whenever the Beacon settings exist, covering both a
+ * legacy "chat" selection and sites that never stored the value at all.
+ */
+function ys_beacon_update_10002() {
+  $settings = \Drupal::configFactory()->getEditable('ys_beacon.settings');
+  // Only touch sites that actually have Beacon settings; never create the
+  // config object here.
+  if ($settings->isNew()) {
+    return;
+  }
+  $settings->set('floating_button_icon', 'fa-sparkles')->save();
+}
+
+/**
+ * Run the legacy ai_engine to Beacon cutover on existing installs.
+ *
+ * Sites that already had ys_beacon installed never ran the install-time cutover
+ * added in this change. Trigger it on deploy so a site whose legacy chatbot was
+ * on is switched to Beacon; the work is idempotent and a no-op where there is
+ * nothing to migrate, and hook_cron() still retries any deferred provisioning.
+ */
+function ys_beacon_update_10003() {
+  \Drupal::service('ys_beacon.migration')->migrate();
+}

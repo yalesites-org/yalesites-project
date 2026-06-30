@@ -7,11 +7,14 @@ module:
   addtoany: 0
   admin_toolbar: 0
   admin_toolbar_tools: 0
+  ai: 0
   ai_engine: 0
   ai_engine_chat: 0
   ai_engine_embedding: 0
   ai_engine_feed: 0
   ai_engine_metadata: 0
+  ai_search: 0
+  ai_vdb_provider_azure_ai_search: 0
   allowed_formats: 0
   anchor_link: 0
   better_exposed_filters: 0
@@ -153,7 +156,10 @@ module:
   yale_cas: 0
   ys_ai: 0
   ys_ai_system_instructions: 0
+  ys_ai_tester: 0
   ys_alert: 0
+  ys_beacon: 0
+  ys_beacon_portkey: 0
   ys_book: 0
   ys_campus_groups: 0
   ys_captcha: 0

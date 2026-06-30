@@ -1,0 +1,18 @@
+index_id: ys_beacon
+control_field_max_length: false
+exclude_chunk_from_metadata: false
+indexing_options:
+  rendered_item:
+    indexing_option: main_content
+  title:
+    indexing_option: contextual_content
+  media_name:
+    indexing_option: contextual_content
+  ai_description:
+    indexing_option: contextual_content
+  ai_tags:
+    indexing_option: contextual_content
+  field_ai_pdf_text:
+    indexing_option: main_content
+  url:
+    indexing_option: ignore

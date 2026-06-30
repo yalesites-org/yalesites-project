@@ -1,0 +1,67 @@
+ys_beacon.settings:
+  type: config_object
+  label: 'YaleSites Beacon settings'
+  mapping:
+    enable_chat:
+      type: boolean
+      label: 'Enable the chat widget'
+    enable_metadata_fields:
+      type: boolean
+      label: 'Show AI metadata fields on content forms'
+    floating_button:
+      type: boolean
+      label: 'Show the floating chat button'
+    floating_button_text:
+      type: label
+      label: 'Floating button text'
+    floating_button_icon:
+      type: string
+      label: 'Floating button icon class'
+    prompts:
+      type: sequence
+      label: 'Initial questions'
+      sequence:
+        type: label
+        label: 'Question'
+    disclaimer:
+      type: text
+      label: 'Disclaimer text'
+    footer:
+      type: text
+      label: 'Footer text'
+    search_index_id:
+      type: string
+      label: 'Search API index machine name backing the chatbot'
+    search_server_id:
+      type: string
+      label: 'Search API server machine name backing the chatbot'
+    azure_index_name:
+      type: string
+      label: 'Azure AI Search index (collection) name'
+    azure_search_url_key:
+      type: string
+      label: 'Key entity id holding the Azure AI Search endpoint URL'
+    pdf_extraction_max_bytes:
+      type: integer
+      label: 'Maximum PDF size in bytes to extract text from'
+    top_k:
+      type: integer
+      label: 'Number of source chunks to retrieve'
+    score_threshold:
+      type: float
+      label: 'Minimum relevance score for retrieved chunks'
+    streaming:
+      type: boolean
+      label: 'Stream chat responses'
+    instructions_max_length:
+      type: integer
+      label: 'Maximum system instructions length in characters'
+    instructions_warning_threshold:
+      type: integer
+      label: 'Character count at which the instructions editor shows a warning'
+    fallback_system_prompt:
+      type: text
+      label: 'System prompt used when no site system instructions exist'
+    guardrail_supplement:
+      type: text
+      label: 'Site-specific additions to the platform guardrail'

@@ -1,0 +1,64 @@
+ys_ai_tester.tester:
+  path: '/admin/config/yalesites/ys-beacon/tester'
+  defaults:
+    _form: '\Drupal\ys_ai_tester\Form\AiTesterForm'
+    _title: 'AI Tester'
+  requirements:
+    _permission: 'use ys ai tester'
+
+ys_ai_tester.run:
+  path: '/admin/config/yalesites/ys-beacon/tester/{run_id}'
+  defaults:
+    _controller: '\Drupal\ys_ai_tester\Controller\AiTesterController::run'
+    _title: 'AI Tester Run'
+  requirements:
+    _permission: 'use ys ai tester'
+    run_id: '\d+'
+
+ys_ai_tester.compare:
+  path: '/admin/config/yalesites/ys-beacon/tester/compare/{run_a}/{run_b}'
+  defaults:
+    _controller: '\Drupal\ys_ai_tester\Controller\AiTesterController::compare'
+    _title: 'Compare AI Tester Runs'
+  requirements:
+    _permission: 'use ys ai tester'
+    run_a: '\d+'
+    run_b: '\d+'
+
+ys_ai_tester.compare_json:
+  path: '/admin/config/yalesites/ys-beacon/tester/compare/{run_a}/{run_b}/download/json'
+  defaults:
+    _controller: '\Drupal\ys_ai_tester\Controller\AiTesterController::downloadComparisonJson'
+    _title: 'Download Comparison JSON'
+  requirements:
+    _permission: 'use ys ai tester'
+    run_a: '\d+'
+    run_b: '\d+'
+
+ys_ai_tester.compare_csv:
+  path: '/admin/config/yalesites/ys-beacon/tester/compare/{run_a}/{run_b}/download/csv'
+  defaults:
+    _controller: '\Drupal\ys_ai_tester\Controller\AiTesterController::downloadComparisonCsv'
+    _title: 'Download Comparison CSV'
+  requirements:
+    _permission: 'use ys ai tester'
+    run_a: '\d+'
+    run_b: '\d+'
+
+ys_ai_tester.download_json:
+  path: '/admin/config/yalesites/ys-beacon/tester/{run_id}/download/json'
+  defaults:
+    _controller: '\Drupal\ys_ai_tester\Controller\AiTesterController::downloadJson'
+    _title: 'Download JSON'
+  requirements:
+    _permission: 'use ys ai tester'
+    run_id: '\d+'
+
+ys_ai_tester.download_yaml:
+  path: '/admin/config/yalesites/ys-beacon/tester/{run_id}/download/yaml'
+  defaults:
+    _controller: '\Drupal\ys_ai_tester\Controller\AiTesterController::downloadYaml'
+    _title: 'Download YAML'
+  requirements:
+    _permission: 'use ys ai tester'
+    run_id: '\d+'

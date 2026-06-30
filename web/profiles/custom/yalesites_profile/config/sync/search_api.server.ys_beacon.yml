@@ -1,0 +1,30 @@
+uuid: c46a5137-ca8d-4954-9871-384b787c0ddc
+langcode: en
+status: true
+dependencies:
+  module:
+    - ai_search
+    - ai_vdb_provider_azure_ai_search
+    - ys_beacon_portkey
+id: ys_beacon
+name: 'Beacon AI Search'
+description: 'Vector database server for the Beacon AI assistant. The Azure index name and endpoint are provided per site at runtime via ys_beacon configuration overrides.'
+backend: search_api_ai_search
+backend_config:
+  chat_model: gpt-3.5-turbo
+  database: azure_ai_search
+  database_settings:
+    database_name: ''
+    collection: ''
+  embeddings_engine: portkey__text-embedding-3-small
+  embeddings_engine_configuration:
+    set_dimensions: true
+    dimensions: 1536
+  embedding_strategy: contextual_chunks
+  embedding_strategy_configuration:
+    chunk_size: '1024'
+    chunk_min_overlap: '128'
+    contextual_content_max_percentage: '30'
+    skip_moderation: true
+  embedding_strategy_details: ''
+  include_raw_embedding_vector: false

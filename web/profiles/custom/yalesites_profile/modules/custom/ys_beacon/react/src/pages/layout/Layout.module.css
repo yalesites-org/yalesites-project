@@ -1,0 +1,16 @@
+.layout {
+    display: flex;
+    flex-direction: column;
+    font-family: 'Mallory', sans-serif;
+    width: 100%;
+}
+
+.urlTextBox {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1;
+  color: #707070;
+  border: 1px solid #D1D1D1;
+  border-radius: 4px;
+}
