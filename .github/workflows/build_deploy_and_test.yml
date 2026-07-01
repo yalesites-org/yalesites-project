@@ -19,22 +19,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Check for contrib dependencies in root composer.json
-        run: |
-          contrib_check=$(jq -r '.require | with_entries(select(.key | test("(drupal\/(?!core).*$)"))) | keys | join(", ")' ./composer.json)
-          if [ -n "$contrib_check" ]; then
-            echo "::error::$contrib_check found in /composer.json and should be moved to /web/profiles/custom/yalesites_profile/composer.json" && exit 1
-          fi
-      - name: Check for unpinned dependencies
-        run: |
-          unpinned_dependencies=$(jq -r '.require | to_entries | map(select(.value | test("\\^|\\~|\\>|\\<")) | "\(.key): \(.value)") | join(", ")' ./web/profiles/custom/yalesites_profile/composer.json)
-          if [ -n "$unpinned_dependencies" ]; then
-            echo "::error::$unpinned_dependencies found in /web/profiles/custom/yalesites_profile/composer.json. Please switch to pinned versions." && exit 1
-          fi
-
-      - name: Run static tests
-        run: |
-          ./.ci/test/static/run
+      - parallel: 
+        - name: Check for contrib dependencies in root composer.json
+          run: |
+            contrib_check=$(jq -r '.require | with_entries(select(.key | test("(drupal\/(?!core).*$)"))) | keys | join(", ")' ./composer.json)
+            if [ -n "$contrib_check" ]; then
+              echo "::error::$contrib_check found in /composer.json and should be moved to /web/profiles/custom/yalesites_profile/composer.json" && exit 1
+            fi
+        - name: Check for unpinned dependencies
+          run: |
+            unpinned_dependencies=$(jq -r '.require | to_entries | map(select(.value | test("\\^|\\~|\\>|\\<")) | "\(.key): \(.value)") | join(", ")' ./web/profiles/custom/yalesites_profile/composer.json)
+            if [ -n "$unpinned_dependencies" ]; then
+              echo "::error::$unpinned_dependencies found in /web/profiles/custom/yalesites_profile/composer.json. Please switch to pinned versions." && exit 1
+            fi
+  
+        - name: Run static tests
+          run: ./.ci/test/static/run
 
   deploy_to_pantheon:
     name: Deploy to Pantheon
@@ -59,18 +59,18 @@ jobs:
       - name: Install Terminus Build Tools Plugin
         run: terminus self:plugin:install terminus-build-tools-plugin
 
-      - name: Composer install
-        uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
+      - parallel:
+        - name: Composer install
+          uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
 
-      - name: Build frontend components
-        env:
-          BRANCH: ${{ github.head_ref || github.ref_name }}
-          YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
-        run: |
-          ./.ci/build/build_frontend
+        - name: Build frontend components
+          env:
+            BRANCH: ${{ github.head_ref || github.ref_name }}
+            YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
+          run: ./.ci/build/build_frontend
 
-      - name: Disable Integrated Composer
-        run: yq -i '.build_step = false' pantheon.upstream.yml
+        - name: Disable Integrated Composer
+          run: yq -i '.build_step = false' pantheon.upstream.yml
 
       - name: Remove .git directories and git add
         run: |
