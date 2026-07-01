@@ -93,13 +93,14 @@ jobs:
           TARGET_ENV: ${{ steps.push-to-pantheon.outputs.target_env }}
         run: |
           while true; do
+          interval=5
           status=$(terminus workflow:info:status "$SITE.$TARGET_ENV" --field=status 2>/dev/null)
-          echo "Current workflow status: $status"
+          echo "Current workflow status: $status. Checking again in $interval seconds..."
           if [[ "$status" != "running" ]]; then
             echo "Workflow has finished with status: $status"
             break
           fi
-          sleep 10
+          sleep "$interval"
           done
 
       - name: Wake environment
