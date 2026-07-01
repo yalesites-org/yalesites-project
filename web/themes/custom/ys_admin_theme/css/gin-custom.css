@@ -106,7 +106,56 @@ a.focal-point-preview-link {
 }
 
 .form-element {
-  min-height: calc(var(--input-padding-vertical) * 3 + var(--input-line-height)) !important;
+  min-height: calc(var(--input-padding-vertical) * 3 + var(--input-line-height));
+}
+
+input.form-element:not([type=checkbox]):not([type=radio]):not([type=file]) {
+  min-height: calc(var(--input-padding-vertical) * 2 + var(--input-line-height));
+}
+
+.ui-autocomplete,
+.linkit-ui-autocomplete {
+  min-width: max-content;
+  max-width: calc(100vw - 2rem);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.linkit-ui-autocomplete.ui-widget {
+  max-width: none;
+}
+
+.ui-autocomplete .ui-menu-item {
+  white-space: nowrap;
+}
+
+.ui-autocomplete .ui-menu-item-wrapper {
+  display: block;
+  box-sizing: border-box;
+  min-width: 100%;
+  white-space: nowrap;
+  word-break: normal;
+  overflow-wrap: normal;
+  width: -webkit-fit-content;
+  width: -moz-fit-content;
+  width: fit-content;
+  max-width: none;
+}
+
+.linkit-ui-autocomplete .linkit-result-line-wrapper,
+.linkit-ui-autocomplete .linkit-result-line--title,
+.linkit-ui-autocomplete .linkit-result-line--description {
+  white-space: nowrap;
+}
+
+input.form-element.form-linkit-autocomplete,
+.claro-autocomplete input.form-element.form-autocomplete,
+input.form-element[type=url],
+input.form-element.form-autocomplete {
+  overflow-x: auto;
+  white-space: nowrap;
+  word-break: keep-all;
+  overflow-wrap: normal;
 }
 
 /* 
