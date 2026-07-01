@@ -66,14 +66,13 @@ jobs:
         run: |
           ./.ci/build/build_frontend
 
-      - name: Remove .git directories
-        run: find vendor web -type d -name .git -prune -exec rm -rf {} +
-
       - name: Disable Integrated Composer
         run: yq -i '.build_step = false' pantheon.upstream.yml
 
-      - name: Force add dependencies
-        run: git add -f pantheon.upstream.yml vendor web
+      - name: Remove .git directories and git add
+        run: |
+          find vendor web -type d -name .git -prune -exec rm -rf {} +
+          git add -f pantheon.upstream.yml vendor web
 
       - name: Push to Pantheon
         uses: pantheon-systems/push-to-pantheon@0.9.2
