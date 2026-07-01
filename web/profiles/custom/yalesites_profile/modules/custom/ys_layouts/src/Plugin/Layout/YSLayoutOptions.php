@@ -90,6 +90,7 @@ class YSLayoutOptions extends LayoutDefault implements ContainerFactoryPluginInt
         'two' => $this->t('Two'),
         'three' => $this->t('Three'),
         'four' => $this->t('Four'),
+        'five' => $this->t('Five'),
       ],
       '#weight' => 10,
       '#after_build' => [

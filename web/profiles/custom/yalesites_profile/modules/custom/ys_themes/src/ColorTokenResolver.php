@@ -338,28 +338,15 @@ class ColorTokenResolver {
    *   Optional per-theme slot identifier overrides, keyed by theme ID then
    *   by original slot identifier. Used to mirror SCSS-level slot remappings
    *   (e.g., ['four' => ['five' => 'two']]).
-   * @param array $direct_overrides
-   *   Optional per-theme, per-option-key overrides that bypass slot resolution
-   *   entirely and emit an arbitrary CSS variable string. Keyed by theme ID
-   *   then by option key (e.g., ['four' => ['five' =>
-   *   'var(--component-themes-five-background)']]).
    *
    * @return array
    *   Array of color styles keyed by global theme, then by component option.
    */
-  protected function buildColorStyles(array $slot_mapping, array $global_themes, array $slot_swaps = [], array $direct_overrides = []) {
+  protected function buildColorStyles(array $slot_mapping, array $global_themes, array $slot_swaps = []) {
     $all_color_styles = [];
     foreach ($global_themes as $global) {
       $all_color_styles[$global] = [];
       foreach ($slot_mapping as $option_key => $slot_identifier) {
-        // Direct override bypasses slot resolution entirely. Used when the
-        // SCSS sets a component-level variable rather than a global slot.
-        if (isset($direct_overrides[$global][$option_key])) {
-          $all_color_styles[$global][$option_key] = [
-            $direct_overrides[$global][$option_key],
-          ];
-          continue;
-        }
         // Apply per-theme slot swaps to mirror SCSS slot remapping behavior.
         $effective_slot = $slot_swaps[$global][$slot_identifier] ?? $slot_identifier;
         $all_color_styles[$global][$option_key] = [
@@ -387,57 +374,28 @@ class ColorTokenResolver {
   public function getColorStylesForEntity($entity_type = NULL, $bundle = NULL) {
     $global_themes = ['one', 'two', 'three', 'four', 'five', 'six', 'seven'];
 
-    // Layout section only: full symmetric swap for global theme 'four' (Onha).
-    // _yds-layout.scss applies the slot-two ↔ slot-five exchange directly to
-    // background colors with no component-themes-five-background override, so
-    // both swap directions are correct here.
-    $theme_four_layout_swap = [
+    // Mirrors the SCSS-level slot-two ↔ slot-five exchange for global theme
+    // 'four' (Onha). Applied to both layout sections and block content
+    // components so the color picker circles match what SCSS actually renders.
+    $theme_four_slot_swap = [
       'four' => [
         'two' => 'five',
         'five' => 'two',
       ],
     ];
 
-    // Block content components: only the slot-five→slot-two direction. These
-    // components override component-theme='five' backgrounds in global theme
-    // 'four' via --component-themes-five-background (see $direct_overrides
-    // below), so the slot-two→slot-five direction would be wrong for them.
-    $theme_four_block_swap = [
-      'four' => [
-        'five' => 'two',
-      ],
-    ];
-
-    // Direct override for option 'five' on callout-group components and
-    // quote_callout/link_grid. Their SCSS sets the component-theme='five'
-    // background to var(--component-themes-five-background) when
-    // data-global-theme='four', bypassing slot resolution entirely.
-    $theme_four_option_five_override = [
-      'four' => [
-        'five' => 'var(--component-themes-five-background)',
-      ],
-    ];
-
-    // Variant for facts: the component-themes-five-background override appears
-    // on data-component-theme='four' (not 'five') in the facts SCSS, so the
-    // direct override targets option 'four' here.
-    $theme_four_facts_override = [
-      'four' => [
-        'four' => 'var(--component-themes-five-background)',
-      ],
-    ];
-
     // Section layout mapping: one→slot-one, two→slot-four, three→slot-five,
-    // four→slot-two.
+    // four→slot-two, five→slot-nine.
     // Widget options: one=Blue Yale, two=Gray 100, three=Gray 800,
-    // four=Blue Medium.
+    // four=Blue Medium, five=Soft Oceanic (ONHA) / Gray 100 (others).
     if ($entity_type === 'layout_section' && $bundle === 'ys_layout_options') {
       return $this->buildColorStyles([
         'one' => 'one',
         'two' => 'four',
         'three' => 'five',
         'four' => 'two',
-      ], $global_themes, $theme_four_layout_swap);
+        'five' => 'nine',
+      ], $global_themes, $theme_four_slot_swap);
     }
 
     // Base mapping: options map directly to global slots (1:1).
@@ -448,11 +406,12 @@ class ColorTokenResolver {
       'three' => 'three',
       'four' => 'four',
       'five' => 'five',
+      'six' => 'nine',
     ];
     $all_color_styles = $this->buildColorStyles($base_mapping, $global_themes);
 
     // Callout mapping: one→slot-one, two→slot-four, three→slot-five,
-    // four→slot-three, five→slot-two.
+    // four→slot-three, five→slot-two, six→slot-nine.
     // Used by: callout, content_spotlight, content_spotlight_portrait,
     // cta_banner, grand_hero.
     if ($entity_type === 'block_content' && in_array($bundle, [
@@ -468,11 +427,12 @@ class ColorTokenResolver {
         'three' => 'five',
         'four' => 'three',
         'five' => 'two',
-      ], $global_themes, $theme_four_block_swap, $theme_four_option_five_override);
+        'six' => 'nine',
+      ], $global_themes, $theme_four_slot_swap);
     }
 
     // Facts mapping: one→slot-one, two→slot-four, three→slot-five,
-    // four→slot-two, five→slot-three.
+    // four→slot-two, five→slot-three, six→slot-nine.
     // Used by: facts (uses facts-and-figures-group organism).
     if ($entity_type === 'block_content' && $bundle === 'facts') {
       $all_color_styles = $this->buildColorStyles([
@@ -481,23 +441,33 @@ class ColorTokenResolver {
         'three' => 'five',
         'four' => 'two',
         'five' => 'three',
-      ], $global_themes, $theme_four_block_swap, $theme_four_facts_override);
+        'six' => 'nine',
+      ], $global_themes, $theme_four_slot_swap);
     }
 
-    // Quote-callout/Link-grid mapping: one→slot-one, two→slot-three,
-    // three→slot-five, four→slot-four, five→slot-two.
-    // Used by: quote_callout, link_grid.
-    if ($entity_type === 'block_content' && in_array($bundle, [
-      'quote_callout',
-      'link_grid',
-    ])) {
+    // Quote-callout mapping: one→slot-one, two→slot-three, three→slot-five,
+    // four→slot-four, five→slot-two, six→slot-nine.
+    if ($entity_type === 'block_content' && $bundle === 'quote_callout') {
       $all_color_styles = $this->buildColorStyles([
         'one' => 'one',
         'two' => 'three',
         'three' => 'five',
         'four' => 'four',
         'five' => 'two',
-      ], $global_themes, $theme_four_block_swap, $theme_four_option_five_override);
+        'six' => 'nine',
+      ], $global_themes, $theme_four_slot_swap);
+    }
+
+    // Link-grid mapping adds slot-nine as the sixth selectable option.
+    if ($entity_type === 'block_content' && $bundle === 'link_grid') {
+      $all_color_styles = $this->buildColorStyles([
+        'one' => 'one',
+        'two' => 'three',
+        'three' => 'five',
+        'four' => 'four',
+        'five' => 'two',
+        'six' => 'nine',
+      ], $global_themes, $theme_four_slot_swap);
     }
 
     // Inline-message mapping: one→slot-four, two→slot-one, three→slot-two,
@@ -511,6 +481,7 @@ class ColorTokenResolver {
         'three' => 'two',
         'four' => 'three',
         'five' => 'five',
+        'six' => 'nine',
       ], $global_themes);
     }
 
@@ -606,23 +577,6 @@ class ColorTokenResolver {
           $token_ref = $color_data['token'] ?? '';
         }
       }
-      elseif (preg_match(
-        '/--component-themes-([A-Za-z0-9_-]+)-([A-Za-z0-9_-]+)/',
-        $css_var,
-        $var_matches
-      )) {
-        // Resolve component-level token variables.
-        $component_theme = $var_matches[1];
-        $prop = $var_matches[2];
-        $json = json_decode(file_get_contents($this->jsonPath), TRUE);
-        $hsl_value = $json['component-themes'][$component_theme][$prop] ?? '';
-        if ($hsl_value) {
-          $hex_value = $this->hslToHex($hsl_value);
-          $color_lookup = $this->buildColorLookup($json);
-          $token_name = $color_lookup[$hsl_value] ?? '';
-          $token_ref = "component-themes-{$component_theme}-{$prop}";
-        }
-      }
     }
 
     return [
@@ -667,7 +621,8 @@ class ColorTokenResolver {
 
     $is_section_layout = ($entity_type === 'layout_section' && $bundle === 'ys_layout_options');
     if ($is_section_layout) {
-      $desired_order = ['default', 'one', 'two', 'three', 'four'];
+      // Match YSLayoutOptions theme select: default + one–five.
+      $desired_order = ['default', 'one', 'two', 'three', 'four', 'five'];
       $palette_options = $this->reorderPaletteOptions($palette_options, $desired_order);
       $element['#options'] = $palette_options;
     }
@@ -684,7 +639,7 @@ class ColorTokenResolver {
     }
 
     // Set palette order for section layouts.
-    $palette_order = $is_section_layout ? ['default', 'one', 'two', 'three', 'four'] : NULL;
+    $palette_order = $is_section_layout ? ['default', 'one', 'two', 'three', 'four', 'five'] : NULL;
 
     $palette_render = [
       '#theme' => 'component_color_picker',
