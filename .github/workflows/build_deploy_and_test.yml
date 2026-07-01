@@ -59,6 +59,9 @@ jobs:
       - name: Install Terminus Build Tools Plugin
         run: terminus self:plugin:install terminus-build-tools-plugin
 
+      - name: Composer install
+        uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # 4.0.0
+
       - name: Build frontend components
         env:
           BRANCH: ${{ github.head_ref || github.ref_name }}
