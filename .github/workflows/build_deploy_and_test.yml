@@ -60,7 +60,7 @@ jobs:
         run: terminus self:plugin:install terminus-build-tools-plugin
 
       - name: Composer install
-        uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # 4.0.0
+        uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
 
       - name: Build frontend components
         env:
