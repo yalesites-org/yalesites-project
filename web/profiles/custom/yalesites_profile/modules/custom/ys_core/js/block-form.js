@@ -13,6 +13,23 @@
         }
       }
 
+      /**
+       * True when a link field table row has a URI (core leaves an extra empty
+       * row for "add another" that must not count toward min/max).
+       */
+      function linkTableRowHasUri(row) {
+        const uriInputs = row.querySelectorAll(
+          'input[name*="[uri]"], input[name*="[link]"], input.js-linkit-autocomplete, input.linkit-widget-uri'
+        );
+        for (let i = 0; i < uriInputs.length; i += 1) {
+          const v = uriInputs[i].value;
+          if (v && String(v).trim() !== "") {
+            return true;
+          }
+        }
+        return false;
+      }
+
       /*
        * Function to validate that all media items contain media.
        *
@@ -23,11 +40,18 @@
        *   The error message or empty string.
        * */
       function getErrors(blockType) {
-        // Get all items of the specified type.
         const items = document.querySelectorAll(blockType.itemSelector);
-
-        // Count the number of items present.
-        const numberOfItems = items.length;
+        let numberOfItems;
+        if (blockType.onlyCountFilledLinkRows) {
+          numberOfItems = 0;
+          for (let i = 0; i < items.length; i += 1) {
+            if (linkTableRowHasUri(items[i])) {
+              numberOfItems += 1;
+            }
+          }
+        } else {
+          numberOfItems = items.length;
+        }
         if (
           numberOfItems < blockType.min ||
           (blockType.max > 0 && numberOfItems > blockType.max)
@@ -38,9 +62,7 @@
           } else {
             messageText = `Number of ${blockType.type} must be ${blockType.min} or more. `;
           }
-          return (
-            messageText + `Number of ${blockType.type} added: ${numberOfItems}.`
-          );
+          return `${messageText}Number of ${blockType.type} added: ${numberOfItems}.`;
         }
 
         // An empty string signifies no errors and resets validation for the input.
@@ -122,7 +144,9 @@
           type: "tabs",
         },
         {
-          // Quick links
+          // Quick Links: `field_links` is a multi-value link field (Linkit), not
+          // paragraphs — each draggable table row is one link delta.
+          onlyCountFilledLinkRows: true,
           itemSelector: "table[id^='field-links-values'] tr.draggable",
           inputSelector: [
             'input[data-drupal-selector^="edit-field-heading"]',
