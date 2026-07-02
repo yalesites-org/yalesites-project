@@ -1,0 +1,11 @@
+uuid: 92ee7831-a57a-420a-a5f9-7213ed27e6c2
+langcode: en
+status: true
+dependencies: {  }
+id: post_list_item
+block_id: 'inline_block:post_list_item'
+category: post_listings
+label: 'Posts - List'
+image_path: ''
+image_alt: ''
+weight: 0

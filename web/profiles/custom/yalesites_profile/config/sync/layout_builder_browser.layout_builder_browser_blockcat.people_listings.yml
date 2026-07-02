@@ -1,0 +1,10 @@
+uuid: f80ede73-160c-4365-900b-f8378dfa55c7
+langcode: en
+status: true
+dependencies: {  }
+id: people_listings
+label: 'People Listings'
+weight: 3
+opened: true
+image_path: ''
+image_alt: ''

@@ -1,0 +1,10 @@
+uuid: 8c7f5c47-eb84-4049-9011-dcc7380bf559
+langcode: en
+status: true
+dependencies: {  }
+id: page_listings
+label: 'Page Listings'
+weight: 4
+opened: true
+image_path: ''
+image_alt: ''

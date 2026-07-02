@@ -1,0 +1,11 @@
+uuid: 0a80c938-a120-4984-8652-3ea74c73cd19
+langcode: en
+status: true
+dependencies: {  }
+id: page_card
+block_id: 'inline_block:page_card'
+category: page_listings
+label: 'Pages - Card Grid'
+image_path: ''
+image_alt: ''
+weight: 0

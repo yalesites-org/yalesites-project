@@ -1,0 +1,11 @@
+uuid: 7a905654-d5a2-4d98-adc5-fb868dd2e36b
+langcode: en
+status: true
+dependencies: {  }
+id: event_list_item
+block_id: 'inline_block:event_list_item'
+category: event_listings
+label: 'Events - List'
+image_path: ''
+image_alt: ''
+weight: 0

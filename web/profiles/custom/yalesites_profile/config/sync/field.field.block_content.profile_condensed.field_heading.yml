@@ -1,0 +1,24 @@
+uuid: faaafca1-8dde-4ce4-858e-d16d220f0824
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.profile_condensed
+    - field.storage.block_content.field_heading
+    - filter.format.heading_html
+  module:
+    - text
+id: block_content.profile_condensed.field_heading
+field_name: field_heading
+entity_type: block_content
+bundle: profile_condensed
+label: 'View Heading'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - heading_html
+field_type: text

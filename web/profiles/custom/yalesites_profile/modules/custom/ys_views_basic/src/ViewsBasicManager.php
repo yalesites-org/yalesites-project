@@ -9,7 +9,8 @@ use Drupal\Core\Entity\EntityDisplayRepository;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\node\NodeInterface;
-use Drupal\views\Views;
+use Drupal\views\ViewEntityInterface;
+use Drupal\views\ViewExecutableFactory;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -164,6 +165,95 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   const CONTENT_TYPE_PROFILE = 'profile';
 
   /**
+   * Definition of every listing block content bundle.
+   *
+   * The bundle id encodes the (content type, display mode) pair. This single
+   * source of truth (ADR DR-2/DR-4) is read by the per-content-type widgets to
+   * decide which form controls to build (capability flags) and to inject the
+   * view mode into the stored JSON, by this manager to resolve render
+   * mappings, and by the migration (#1169) to map legacy "view" blocks to
+   * their target bundle. It lives on the manager — not a widget — so the
+   * formatter and migration can reach it without depending on a form widget
+   * plugin (ADR DR-4: "do not push them into widget-only constants").
+   *
+   * Keys:
+   * - content_type: the node bundle the listing queries.
+   * - view_mode: the node view mode used to render each result.
+   * - supports_thumbnail: whether the "Show Teaser Image" option applies
+   *   (card and list_item only).
+   *
+   * The existing "event_calendar" bundle is intentionally absent: it uses a
+   * different field type (event_calendar_basic_params) and its own widget.
+   */
+  const LISTING_BUNDLES = [
+    'post_card' => [
+      'content_type' => self::CONTENT_TYPE_POST,
+      'view_mode' => 'card',
+      'supports_thumbnail' => TRUE,
+    ],
+    'post_list_item' => [
+      'content_type' => self::CONTENT_TYPE_POST,
+      'view_mode' => 'list_item',
+      'supports_thumbnail' => TRUE,
+    ],
+    'post_condensed' => [
+      'content_type' => self::CONTENT_TYPE_POST,
+      'view_mode' => 'condensed',
+      'supports_thumbnail' => FALSE,
+    ],
+    'event_card' => [
+      'content_type' => self::CONTENT_TYPE_EVENT,
+      'view_mode' => 'card',
+      'supports_thumbnail' => TRUE,
+    ],
+    'event_list_item' => [
+      'content_type' => self::CONTENT_TYPE_EVENT,
+      'view_mode' => 'list_item',
+      'supports_thumbnail' => TRUE,
+    ],
+    'event_condensed' => [
+      'content_type' => self::CONTENT_TYPE_EVENT,
+      'view_mode' => 'condensed',
+      'supports_thumbnail' => FALSE,
+    ],
+    'page_card' => [
+      'content_type' => self::CONTENT_TYPE_PAGE,
+      'view_mode' => 'card',
+      'supports_thumbnail' => TRUE,
+    ],
+    'page_list_item' => [
+      'content_type' => self::CONTENT_TYPE_PAGE,
+      'view_mode' => 'list_item',
+      'supports_thumbnail' => TRUE,
+    ],
+    'page_condensed' => [
+      'content_type' => self::CONTENT_TYPE_PAGE,
+      'view_mode' => 'condensed',
+      'supports_thumbnail' => FALSE,
+    ],
+    'profile_card' => [
+      'content_type' => self::CONTENT_TYPE_PROFILE,
+      'view_mode' => 'card',
+      'supports_thumbnail' => TRUE,
+    ],
+    'profile_list_item' => [
+      'content_type' => self::CONTENT_TYPE_PROFILE,
+      'view_mode' => 'list_item',
+      'supports_thumbnail' => TRUE,
+    ],
+    'profile_condensed' => [
+      'content_type' => self::CONTENT_TYPE_PROFILE,
+      'view_mode' => 'condensed',
+      'supports_thumbnail' => FALSE,
+    ],
+    'profile_directory' => [
+      'content_type' => self::CONTENT_TYPE_PROFILE,
+      'view_mode' => 'directory',
+      'supports_thumbnail' => FALSE,
+    ],
+  ];
+
+  /**
    * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
@@ -199,6 +289,13 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   protected $cacheTagsInvalidator;
 
   /**
+   * The view executable factory.
+   *
+   * @var \Drupal\views\ViewExecutableFactory
+   */
+  protected $viewExecutableFactory;
+
+  /**
    * Constructs a new ViewsBasicManager object.
    */
   public function __construct(
@@ -206,12 +303,14 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     EntityDisplayRepository $entity_display_repository,
     RouteMatchInterface $route_match,
     CacheTagsInvalidatorInterface $cache_tags_invalidator,
+    ViewExecutableFactory $view_executable_factory,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityDisplayRepository = $entity_display_repository;
     $this->termStorage = $this->entityTypeManager->getStorage('taxonomy_term');
     $this->routeMatch = $route_match;
     $this->cacheTagsInvalidator = $cache_tags_invalidator;
+    $this->viewExecutableFactory = $view_executable_factory;
   }
 
   /**
@@ -223,26 +322,43 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       $container->get('entity_display.repository'),
       $container->get('current_route_match'),
       $container->get('cache_tags.invalidator'),
+      $container->get('views.executable'),
     );
   }
 
   /**
-   * Initializes the view based on the content type.
+   * Initializes an isolated view executable for the content type.
+   *
+   * Each call builds the executable from a *clone* of the scaffold view config
+   * entity. Views display handlers bind references into the storage entity
+   * (DisplayPluginCollection::initializePlugin takes the display array by
+   * reference, and setOption() writes through it), and the config entity
+   * storage caches a single shared instance. Without cloning, one block's
+   * setupView() mutations would leak into every other block on the page — the
+   * root cause of #906. Cloning gives every block instance its own storage so
+   * sort, limit, filters, pinned, and pagination cannot clobber each other.
+   *
+   * The original cached entity must never be handed to an executable: PHP
+   * clones preserve reference-bound array slots, so every consumer clones
+   * first to keep the cached original pristine (ADR DR-9 / #1306).
    *
    * @param array $types
    *   An array of content types.
    *
-   * @return \Drupal\views\ViewExecutable
-   *   The view object.
+   * @return \Drupal\views\ViewExecutable|null
+   *   The isolated view executable, or NULL when the scaffold view is missing.
    */
   public function initView($types) {
-    if (in_array('event', $types)) {
-      return Views::getView('views_basic_scaffold_events');
-    }
-    else {
-      return Views::getView('views_basic_scaffold');
+    $view_id = in_array('event', $types)
+      ? 'views_basic_scaffold_events'
+      : 'views_basic_scaffold';
+
+    $view_entity = $this->entityTypeManager->getStorage('view')->load($view_id);
+    if (!$view_entity instanceof ViewEntityInterface) {
+      return NULL;
     }
 
+    return $this->viewExecutableFactory->get(clone $view_entity);
   }
 
   /**
@@ -252,17 +368,22 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   The view object.
    * @param string $params
    *   The JSON encoded string of parameters.
+   * @param string|null $blockUuid
+   *   The host block content UUID, used to derive a per-instance pager element
+   *   so multiple paginated listings on one page paginate independently.
+   * @param bool $blockHasHeading
+   *   Whether the host block renders its own heading (its field_heading is not
+   *   empty). When TRUE the component-wrapper renders an H2 above the listing,
+   *   so each result card nests one level deeper (H3); when FALSE the cards are
+   *   the first heading under the page H1 and render at H2. Carried into the
+   *   field-display options so hook_views_pre_render() can stamp the level on
+   *   each result entity (mirrors how show_categories flows). Defaults to FALSE
+   *   so the AJAX/preview paths, which have no block entity, fall back to H2.
    *
    * @return void
    *   No return value.
    */
-  public function setupView(&$view, $params) {
-    static $setupRunning;
-    if ($setupRunning) {
-      return;
-    }
-    $setupRunning = TRUE;
-
+  public function setupView(&$view, $params, $blockUuid = NULL, $blockHasHeading = FALSE) {
     $paramsDecoded = json_decode($params, TRUE);
     $pinned_to_top = isset($paramsDecoded['pinned_to_top']) ? (bool) $paramsDecoded['pinned_to_top'] : FALSE;
 
@@ -407,6 +528,18 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     // Set the modified filters back to the view display options.
     $view->getDisplay()->setOption('filters', $filters);
 
+    // Give each block instance a distinct pager element so that multiple
+    // paginated listings on one page do not share the same ?page= query
+    // argument (#906). The element is derived deterministically from the block
+    // UUID so it is stable across the full-page render and any AJAX pager call.
+    if ($blockUuid && ($paramsDecoded['display'] ?? NULL) === 'pager') {
+      $pager = $view->getDisplay()->getOption('pager');
+      if (is_array($pager)) {
+        $pager['options']['id'] = $this->pagerElementId($blockUuid);
+        $view->getDisplay()->setOption('pager', $pager);
+      }
+    }
+
     /*
      * Sets the arguments that will get passed to contextual filters as well
      * as to the custom sort plugin (ViewsBasicSort), custom style
@@ -482,6 +615,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'show_categories' => (int) !empty($paramsDecoded['field_options']['show_categories']),
       'show_tags' => (int) !empty($paramsDecoded['field_options']['show_tags']),
       'show_thumbnail' => (int) $no_field_display_options_saved || !empty($paramsDecoded['field_options']['show_thumbnail']),
+      // Whether the host block renders its own heading; drives the per-result
+      // card heading level in hook_views_pre_render() (H3 when nested under the
+      // block heading, H2 when the cards are the first heading on the page).
+      'block_has_heading' => (int) $blockHasHeading,
     ];
 
     $event_field_display_options = [
@@ -562,6 +699,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         $resultRow['#cache']['keys'][] = $field_display_options['show_categories'];
         $resultRow['#cache']['keys'][] = $field_display_options['show_tags'];
         $resultRow['#cache']['keys'][] = $field_display_options['show_thumbnail'];
+        $resultRow['#cache']['keys'][] = $field_display_options['block_has_heading'];
         $resultRow['#cache']['keys'][] = $event_field_display_options['hide_add_to_calendar'];
         $resultRow['#cache']['keys'][] = $post_field_display_options['show_eyebrow'];
         $resultRow['#cache']['keys'][] = $pin_options['pinned_to_top'];
@@ -570,8 +708,26 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         $resultRow['#cache']['contexts'][] = 'url.query_args:page';
       }
     }
+  }
 
-    $setupRunning = FALSE;
+  /**
+   * Derives a small, stable pager element id from a block UUID.
+   *
+   * The element id indexes the comma-separated ?page= query argument, so it
+   * must be both stable across requests (so an AJAX pager call targets the
+   * same element the full-page render assigned) and small (so the query string
+   * stays compact). crc32 of the block UUID modulo 100 satisfies both; the
+   * collision probability for the handful of paginated blocks realistically
+   * placed on one page is negligible.
+   *
+   * @param string $uuid
+   *   The host block content UUID.
+   *
+   * @return int
+   *   A pager element id in the range 0-99.
+   */
+  protected function pagerElementId(string $uuid): int {
+    return abs(crc32($uuid)) % 100;
   }
 
   /**
@@ -583,26 +739,28 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   Type of view output: 'rendered' (used to allow 'count').
    * @param string $params
    *   JSON of the parameter settings.
+   * @param string|null $blockUuid
+   *   The host block content UUID, used to derive a per-instance pager element
+   *   so multiple paginated listings on one page paginate independently.
+   * @param bool $blockHasHeading
+   *   Whether the host block renders its own heading; forwarded to setupView()
+   *   to set the per-result card heading level (see setupView()).
    *
-   * @return array|int
+   * @return array|int|null
    *   An array of a rendered view or a count of the number of results based
-   *   on the parameters specified.
+   *   on the parameters specified, or NULL when the scaffold view is missing.
    */
-  public function getView($type, $params) {
-    // Prevents views recursion.
-    static $running;
-    if ($running) {
-      return NULL;
-    }
-    $running = TRUE;
-
-    // Set up the view and initial decoded parameters.
+  public function getView($type, $params, $blockUuid = NULL, $blockHasHeading = FALSE) {
+    // Set up the view and initial decoded parameters. Each call gets its own
+    // isolated, cloned view (see initView), so the previous static recursion
+    // guards are no longer needed and nested views-basic placements now render
+    // instead of being silently skipped (#906 / #1306).
     $paramsDecoded = json_decode($params, TRUE);
     $view = $this->initView($paramsDecoded['filters']['types']);
-    $this->setupView($view, $params);
-
-    // End current view run.
-    $running = FALSE;
+    if ($view === NULL) {
+      return NULL;
+    }
+    $this->setupView($view, $params, $blockUuid, $blockHasHeading);
 
     return $view;
   }
@@ -650,6 +808,177 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   public function sortByList($content_type) {
     $sortByList = self::ALLOWED_ENTITIES[$content_type]['sort_by'];
     return $sortByList;
+  }
+
+  /**
+   * Resolves the listing bundle definition for a block content bundle id.
+   *
+   * @param string $bundle
+   *   The block content bundle id (e.g. "post_card").
+   *
+   * @return array
+   *   The definition row: content_type, view_mode, supports_thumbnail.
+   *
+   * @throws \InvalidArgumentException
+   *   When the bundle is not a known listing bundle. A consumer asked about an
+   *   unknown bundle throws loudly rather than guessing a default (ADR DR-2).
+   */
+  public static function getListingBundleDefinition(string $bundle): array {
+    if (!isset(self::LISTING_BUNDLES[$bundle])) {
+      throw new \InvalidArgumentException(sprintf('Unknown Views Basic listing bundle "%s".', $bundle));
+    }
+    return self::LISTING_BUNDLES[$bundle];
+  }
+
+  /**
+   * Returns the content type a listing bundle queries.
+   *
+   * @param string $bundle
+   *   The block content bundle id.
+   *
+   * @return string
+   *   The content type machine name.
+   */
+  public static function getContentTypeForBundle(string $bundle): string {
+    return self::getListingBundleDefinition($bundle)['content_type'];
+  }
+
+  /**
+   * Returns the node view mode a listing bundle renders results in.
+   *
+   * @param string $bundle
+   *   The block content bundle id.
+   *
+   * @return string
+   *   The view mode machine name.
+   */
+  public static function getViewModeForBundle(string $bundle): string {
+    return self::getListingBundleDefinition($bundle)['view_mode'];
+  }
+
+  /**
+   * Returns whether a listing bundle offers the "Show Teaser Image" option.
+   *
+   * @param string $bundle
+   *   The block content bundle id.
+   *
+   * @return bool
+   *   TRUE when the bundle supports the thumbnail option (card/list_item).
+   */
+  public static function bundleSupportsThumbnail(string $bundle): bool {
+    return self::getListingBundleDefinition($bundle)['supports_thumbnail'];
+  }
+
+  /**
+   * Resolves the target listing bundle for a legacy "view" block (#1169).
+   *
+   * The migration keys on the stored content type and view mode together: the
+   * target bundle id is "{content_type}_{view_mode}" when that pair is a known
+   * listing bundle. Returns NULL for anything that does not map (e.g. the
+   * calendar view mode, which deploy_10000 already converted to event_calendar,
+   * or a malformed/empty param set) so the migration can skip it loudly rather
+   * than guess (ADR DR-9).
+   *
+   * @param string|null $content_type
+   *   The stored content type (filters.types[0]).
+   * @param string|null $view_mode
+   *   The stored view mode.
+   *
+   * @return string|null
+   *   The target bundle id, or NULL when the pair does not map to a listing
+   *   bundle.
+   */
+  public static function migrationTargetBundle(?string $content_type, ?string $view_mode): ?string {
+    if ($content_type === NULL || $view_mode === NULL) {
+      return NULL;
+    }
+    $candidate = $content_type . '_' . $view_mode;
+    return isset(self::LISTING_BUNDLES[$candidate]) ? $candidate : NULL;
+  }
+
+  /**
+   * Returns the target bundle and preset params for a predecessor block.
+   *
+   * The predecessor listing blocks (post_list, event_list, directory) embed a
+   * hard-coded Drupal View and carry no
+   * field_view_params. Superseding them means swapping each instance to the
+   * equivalent new bundle and pre-filling field_view_params with params that
+   * reproduce the predecessor View's query (ADR DR-10):
+   * - post_list  -> post_list_item: posts, sticky + publish-date DESC, 10/page.
+   * - event_list -> event_list_item: future events, event-date ASC.
+   * - directory  -> profile_directory: profiles, last-name A-Z, directory mode.
+   *
+   * These presets are best-effort reproductions and must be confirmed on
+   * staging with a before/after render diff (#1171) before the predecessor
+   * bundles and their Views are removed.
+   *
+   * @param string $legacy_bundle
+   *   The predecessor block content bundle id.
+   *
+   * @return array|null
+   *   ['target' => bundle id, 'params' => params array] or NULL if not a
+   *   known predecessor bundle.
+   */
+  public static function predecessorPreset(string $legacy_bundle): ?array {
+    $base = [
+      'field_options' => ['show_thumbnail' => 'show_thumbnail'],
+      'event_field_options' => [],
+      'post_field_options' => [],
+      'exposed_filter_options' => [],
+      'category_filter_label' => NULL,
+      'category_included_terms' => NULL,
+      'custom_vocab_included_terms' => NULL,
+      'operator' => '+',
+      'offset' => 0,
+      'show_current_entity' => 0,
+      'pinned_to_top' => FALSE,
+      'pin_label' => self::DEFAULT_PIN_LABEL,
+    ];
+    $presets = [
+      'post_list' => [
+        'target' => 'post_list_item',
+        'params' => [
+          'view_mode' => 'list_item',
+          'filters' => ['types' => ['post'], 'terms_include' => NULL, 'terms_exclude' => NULL],
+          'sort_by' => 'field_publish_date:DESC',
+          'display' => 'pager',
+          'limit' => 10,
+          'pinned_to_top' => TRUE,
+        ],
+      ],
+      'event_list' => [
+        'target' => 'event_list_item',
+        'params' => [
+          'view_mode' => 'list_item',
+          'filters' => [
+            'types' => ['event'],
+            'terms_include' => NULL,
+            'terms_exclude' => NULL,
+            'event_time_period' => 'future',
+          ],
+          'sort_by' => 'field_event_date:ASC',
+          'display' => 'all',
+          'limit' => 10,
+        ],
+      ],
+      'directory' => [
+        'target' => 'profile_directory',
+        'params' => [
+          'view_mode' => 'directory',
+          'filters' => ['types' => ['profile'], 'terms_include' => NULL, 'terms_exclude' => NULL],
+          'sort_by' => 'field_last_name:ASC',
+          'display' => 'all',
+          'limit' => 10,
+        ],
+      ],
+    ];
+    if (!isset($presets[$legacy_bundle])) {
+      return NULL;
+    }
+    return [
+      'target' => $presets[$legacy_bundle]['target'],
+      'params' => $presets[$legacy_bundle]['params'] + $base,
+    ];
   }
 
   /**
@@ -781,6 +1110,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
       case 'show_current_entity':
         $defaultParam = (empty($paramsDecoded['show_current_entity'])) ? 0 : $paramsDecoded['show_current_entity'];
+        break;
+
       case 'pinned_to_top':
         $defaultParam = (empty($paramsDecoded['pinned_to_top'])) ? FALSE : (bool) $paramsDecoded['pinned_to_top'];
         break;

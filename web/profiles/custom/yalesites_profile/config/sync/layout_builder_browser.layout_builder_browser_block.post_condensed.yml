@@ -1,0 +1,11 @@
+uuid: 3eeead45-c38c-4432-acf6-60d5095dc78a
+langcode: en
+status: true
+dependencies: {  }
+id: post_condensed
+block_id: 'inline_block:post_condensed'
+category: post_listings
+label: 'Posts - Condensed'
+image_path: ''
+image_alt: ''
+weight: 0

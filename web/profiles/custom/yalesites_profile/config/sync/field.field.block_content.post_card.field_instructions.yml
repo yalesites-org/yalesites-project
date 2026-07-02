@@ -1,0 +1,25 @@
+uuid: f62d00aa-d99d-4f0c-82f0-c66a7c51e24e
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.post_card
+    - field.storage.block_content.field_instructions
+  module:
+    - markup
+id: block_content.post_card.field_instructions
+field_name: field_instructions
+entity_type: block_content
+bundle: post_card
+label: Instructions
+description: ''
+required: false
+translatable: true
+default_value:
+  - {  }
+default_value_callback: ''
+settings:
+  markup:
+    value: "<p>View is a reference component that can pull from your content types to create a dynamic view on your webpage.</p>\r\n"
+    format: basic_html
+field_type: markup

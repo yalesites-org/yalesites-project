@@ -1,0 +1,8 @@
+uuid: f0dc47ff-9b68-440a-b020-38e8b36b6bc5
+langcode: en
+status: true
+dependencies: {  }
+id: page_list_item
+label: 'Pages - List'
+revision: true
+description: 'Pages - List listing block.'

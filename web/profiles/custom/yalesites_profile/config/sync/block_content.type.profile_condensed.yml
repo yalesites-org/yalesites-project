@@ -1,0 +1,8 @@
+uuid: f908f796-1e41-477e-a346-b70ce5489706
+langcode: en
+status: true
+dependencies: {  }
+id: profile_condensed
+label: 'People - Condensed'
+revision: true
+description: 'People - Condensed listing block.'
