@@ -32,7 +32,6 @@ jobs:
             if [ -n "$unpinned_dependencies" ]; then
               echo "::error::$unpinned_dependencies found in /web/profiles/custom/yalesites_profile/composer.json. Please switch to pinned versions." && exit 1
             fi
-  
         - name: Run static tests
           run: ./.ci/test/static/run
 
@@ -59,18 +58,17 @@ jobs:
       - name: Install Terminus Build Tools Plugin
         run: terminus self:plugin:install terminus-build-tools-plugin
 
-      - parallel:
-        - name: Composer install
-          uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
+      - name: Composer install
+        uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
 
-        - name: Build frontend components
-          env:
-            BRANCH: ${{ github.head_ref || github.ref_name }}
-            YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
-          run: ./.ci/build/build_frontend
+      - name: Build frontend components
+        env:
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+          YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
+        run: ./.ci/build/build_frontend
 
-        - name: Disable Integrated Composer
-          run: yq -i '.build_step = false' pantheon.upstream.yml
+      - name: Disable Integrated Composer
+        run: yq -i '.build_step = false' pantheon.upstream.yml
 
       - name: Remove .git directories and git add
         run: |
