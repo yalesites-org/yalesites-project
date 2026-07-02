@@ -6,11 +6,12 @@ use Drupal\Core\Form\FormState;
 use Drupal\KernelTests\KernelTestBase;
 
 /**
- * Tests the reCAPTCHA disclosure added when the badge is hidden.
+ * Tests ys_captcha's form alterations for forms carrying a captcha element.
  *
- * Google's reCAPTCHA terms require the "protected by reCAPTCHA" disclosure to
- * be shown in the user flow when the badge is hidden. ys_captcha adds it to
- * forms that carry a captcha element.
+ * The module adds the shared "form-item" class to the captcha fieldset so it
+ * lines up with the form's fields, and -- because Google's reCAPTCHA terms
+ * require the "protected by reCAPTCHA" disclosure to be shown in the user flow
+ * when the badge is hidden -- adds that disclosure inline.
  *
  * @group ys_captcha
  * @group yalesites
@@ -73,21 +74,34 @@ class ReCaptchaDisclosureTest extends KernelTestBase {
   }
 
   /**
-   * Disclosure is added when the badge is hidden and a captcha is present.
+   * Disclosure is added, via the inline-message component, when badge hidden.
    */
   public function testDisclosureAddedWhenBadgeHiddenAndCaptchaPresent(): void {
     $this->setHideBadge(TRUE);
     $form = $this->alter($this->formWithCaptcha());
 
     $this->assertArrayHasKey(self::DISCLOSURE_KEY, $form);
-    $markup = (string) $form[self::DISCLOSURE_KEY]['text']['#markup'];
-    $this->assertStringContainsString('reCAPTCHA', $markup);
-    $this->assertStringContainsString('https://policies.google.com/privacy', $markup);
-    $this->assertStringContainsString('https://policies.google.com/terms', $markup);
+    $this->assertSame('inline_template', $form[self::DISCLOSURE_KEY]['#type']);
+    $this->assertStringContainsString('@molecules/inline-message/yds-inline-message.twig', $form[self::DISCLOSURE_KEY]['#template']);
+
+    $content = (string) $form[self::DISCLOSURE_KEY]['#context']['content'];
+    $this->assertStringContainsString('reCAPTCHA', $content);
+    $this->assertStringContainsString('https://policies.google.com/privacy', $content);
+    $this->assertStringContainsString('https://policies.google.com/terms', $content);
   }
 
   /**
-   * Disclosure is added when the captcha element is nested (webform case).
+   * The captcha fieldset gets the form-item class regardless of badge state.
+   */
+  public function testCaptchaFieldsetGetsFormItemClass(): void {
+    $this->setHideBadge(FALSE);
+    $form = $this->alter($this->formWithCaptcha());
+
+    $this->assertContains('form-item', $form['captcha']['#attributes']['class']);
+  }
+
+  /**
+   * Nested captcha elements (webform case) get both alterations applied.
    */
   public function testDisclosureAddedForNestedCaptcha(): void {
     $this->setHideBadge(TRUE);
@@ -105,6 +119,7 @@ class ReCaptchaDisclosureTest extends KernelTestBase {
     $form = $this->alter($form);
 
     $this->assertArrayHasKey(self::DISCLOSURE_KEY, $form);
+    $this->assertContains('form-item', $form['elements']['wrapper']['captcha']['#attributes']['class']);
   }
 
   /**

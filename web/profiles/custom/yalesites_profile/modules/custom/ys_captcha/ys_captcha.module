@@ -35,33 +35,53 @@ function ys_captcha_form_recaptcha_v3_settings_alter(&$form, &$form_state, $form
 /**
  * Implements hook_form_alter().
  *
+ * Styles the captcha fieldset to line up with the form's fields, and -- when
+ * the reCAPTCHA v3 badge is hidden -- adds Google's required disclosure inline.
+ *
  * The reCAPTCHA v3 module hides its floating badge (via the "hide_badge"
  * setting) with CSS only. Google's reCAPTCHA terms permit hiding the badge
- * only if the disclosure is shown in the user flow instead, so add it to any
- * form that carries a captcha element.
+ * only if the disclosure is shown in the user flow instead.
  */
 function ys_captcha_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
-  // Only needed when the badge is hidden; the badge carries the disclosure
-  // itself when visible.
+  $captcha = &_ys_captcha_find_captcha($form);
+  if ($captcha === NULL) {
+    return;
+  }
+
+  // Constrain the contrib captcha fieldset to the shared form-field width and
+  // give it bottom spacing, reusing the form-item styling the same way the
+  // radio fieldset does. Applies whenever a captcha is present, independent of
+  // the badge setting.
+  $captcha['#attributes']['class'][] = 'form-item';
+
+  // The badge carries Google's disclosure itself when visible, so only add the
+  // inline disclosure when the badge is hidden.
   if (!\Drupal::config('recaptcha_v3.settings')->get('hide_badge')) {
     return;
   }
 
-  if (!_ys_captcha_form_has_captcha($form)) {
-    return;
-  }
-
+  // Render the disclosure inside the inline-message component so it gets a
+  // styled box with theme-guaranteed color contrast. The "data-embedded-
+  // components" marker stops the layout from applying its context-dependent
+  // site-gutter (which varies between one-column and multi-column regions);
+  // ys_captcha/disclosure then applies consistent internal padding and the
+  // spacing that separates the box from the form above.
   $form['ys_captcha_recaptcha_disclosure'] = [
-    '#type' => 'container',
+    '#type' => 'inline_template',
     // Sort below the form's fields and actions.
     '#weight' => 1000,
-    '#attributes' => ['class' => ['recaptcha-v3-disclosure']],
-    'text' => [
-      '#markup' => t('This site is protected by reCAPTCHA and the Google <a href=":privacy">Privacy Policy</a> and <a href=":terms">Terms of Service</a> apply.', [
+    '#template' => '<div class="ys-captcha-disclosure" data-embedded-components>{% include "@molecules/inline-message/yds-inline-message.twig" with { inline_message__content: content } %}</div>',
+    '#context' => [
+      'content' => t('This site is protected by reCAPTCHA and the Google <a href=":privacy">Privacy Policy</a> and <a href=":terms">Terms of Service</a> apply.', [
         ':privacy' => 'https://policies.google.com/privacy',
         ':terms' => 'https://policies.google.com/terms',
       ]),
+      // The inline-message icon resolves its sprite path from "directory",
+      // which Drupal normally injects into theme templates. inline_template
+      // does not, so pass the active theme's path explicitly.
+      'directory' => \Drupal::theme()->getActiveTheme()->getPath(),
     ],
+    '#attached' => ['library' => ['ys_captcha/disclosure']],
   ];
 }
 
@@ -80,24 +100,32 @@ function ys_captcha_module_implements_alter(&$implementations, $hook) {
 }
 
 /**
- * Checks whether a render array contains a captcha element.
+ * Finds the first captcha element in a render array, by reference.
+ *
+ * Recurses so nested captcha elements (for example those inside a webform's
+ * element tree) are found. Returning by reference lets callers alter the
+ * element in place.
  *
  * @param array $elements
- *   A render array (or subtree) to scan. Recurses so nested captcha elements
- *   (for example those inside a webform's element tree) are found.
+ *   A render array (or subtree) to scan.
  *
- * @return bool
- *   TRUE if any descendant element is of type 'captcha'.
+ * @return array|null
+ *   The first captcha element found, by reference, or NULL if none is present.
  */
-function _ys_captcha_form_has_captcha(array $elements) {
+function &_ys_captcha_find_captcha(array &$elements) {
+  $null = NULL;
   foreach (Element::children($elements) as $key) {
-    $child = $elements[$key];
-    if (isset($child['#type']) && $child['#type'] === 'captcha') {
-      return TRUE;
+    if (!is_array($elements[$key])) {
+      continue;
     }
-    if (_ys_captcha_form_has_captcha($child)) {
-      return TRUE;
+    if (isset($elements[$key]['#type']) && $elements[$key]['#type'] === 'captcha') {
+      return $elements[$key];
     }
+    $found = &_ys_captcha_find_captcha($elements[$key]);
+    if ($found !== NULL) {
+      return $found;
+    }
+    unset($found);
   }
-  return FALSE;
+  return $null;
 }
