@@ -47,4 +47,10 @@ module.exports = {
       accordion__theme: 'field_style_color',
     },
   },
+
+  lists: {
+    twig: 'components/01-atoms/lists/yds-list.twig',
+    props: 'components/01-atoms/lists/list-props.yml',
+    group: 'Atoms',
+  },
 };
