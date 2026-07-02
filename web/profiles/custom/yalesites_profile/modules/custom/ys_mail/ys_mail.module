@@ -9,10 +9,10 @@
  * Implements hook_form_FORM_ID_alter().
  */
 function ys_mail_form_mailchimp_transactional_admin_settings_alter(&$form, &$form_state, $form_id) {
-  // Disable the mailchimp_transactional_api_key field from the admin form as
-  // the value is set via Key via Pantheon Secrets.
-  $form['mailchimp_transactional_api_key']['#disabled'] = TRUE;
-  $form['mailchimp_transactional_api_key']['#default_value'] = 'HIDDEN';
+  // Disable the api_key field from the admin form as the value is set via Key
+  // via Pantheon Secrets.
+  $form['api_key']['#disabled'] = TRUE;
+  $form['api_key']['#default_value'] = 'HIDDEN';
 }
 
 /**
