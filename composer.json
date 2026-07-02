@@ -28,9 +28,9 @@
   "require": {
     "composer/installers": "^1.9",
     "cweagans/composer-patches": "^1.7",
-    "drupal/core-composer-scaffold": "10.6.11",
-    "drupal/core-project-message": "10.6.11",
-    "drupal/core-recommended": "10.6.11",
+    "drupal/core-composer-scaffold": "10.6.12",
+    "drupal/core-project-message": "10.6.12",
+    "drupal/core-recommended": "10.6.12",
     "drush/drush": "^13",
     "league/commonmark": "^2.0",
     "pantheon-systems/drupal-integrations": "^10",
@@ -108,10 +108,12 @@
     }
   },
   "config": {
-    "audit": {
-      "ignore":[
-        "SA-CONTRIB-2025-060"
-      ]
+    "policy": {
+      "advisories": {
+        "ignore-id":[
+          "SA-CONTRIB-2025-060"
+        ]
+      }
     },
     "preferred-install": "dist",
     "sort-packages": true,
