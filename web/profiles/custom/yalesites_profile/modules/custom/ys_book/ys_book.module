@@ -424,8 +424,13 @@ function ys_book_node_predelete($node) {
  *
  * @param int $bid
  *   The book ID (nid of the root book node).
+ * @param int[]|null $nids
+ *   (optional) The node IDs in the book. Callers that have already removed the
+ *   book outline rows (for example when deleting a whole collection) must pass
+ *   the node IDs captured beforehand, since they can no longer be queried.
+ *   Defaults to querying the current members of the book.
  */
-function _ys_book_invalidate_collection_nav_cache(int $bid) {
+function _ys_book_invalidate_collection_nav_cache(int $bid, ?array $nids = NULL) {
   // 1. Delete the persistent navigation position cache entry.
   \Drupal::cache()->delete('collection:nav_position:' . $bid);
 
@@ -436,7 +441,7 @@ function _ys_book_invalidate_collection_nav_cache(int $bid) {
 
   // 3. Invalidate node cache tags for all nodes in the book.
   // This ensures the rendered pages are rebuilt with the new header.
-  $nids = _ys_book_get_all_book_nids($bid);
+  $nids = $nids ?? _ys_book_get_all_book_nids($bid);
   if (!empty($nids)) {
     $tags = [];
     foreach ($nids as $nid) {
@@ -444,6 +449,41 @@ function _ys_book_invalidate_collection_nav_cache(int $bid) {
     }
     Cache::invalidateTags($tags);
   }
+}
+
+/**
+ * Deletes a content collection while keeping its pages as standalone content.
+ *
+ * A content collection is a Drupal book. This removes every page from the book
+ * outline — dismantling the collection grouping and navigation — without
+ * deleting any page node. Pages are removed deepest-first so the contrib book
+ * manager never promotes a child into a new standalone collection:
+ * BookManager::deleteFromBook() only promotes the children of a top-level page,
+ * and by the time the top-level page is reached it has no remaining children.
+ *
+ * @param int $bid
+ *   The book ID (nid of the collection's top-level page).
+ */
+function _ys_book_dismantle_collection(int $bid) {
+  /** @var \Drupal\book\BookManagerInterface $book_manager */
+  $book_manager = \Drupal::service('book.manager');
+
+  // Capture the node IDs before removing outline rows so the caches can still
+  // be invalidated afterwards.
+  $nids = _ys_book_get_all_book_nids($bid);
+  if (empty($nids)) {
+    return;
+  }
+
+  // Order the pages deepest-first before removing them from the outline.
+  $links = $book_manager->loadBookLinks($nids, FALSE);
+  usort($links, fn(array $a, array $b) => $b['depth'] <=> $a['depth']);
+
+  foreach ($links as $link) {
+    $book_manager->deleteFromBook((int) $link['nid']);
+  }
+
+  _ys_book_invalidate_collection_nav_cache($bid, $nids);
 }
 
 /**
