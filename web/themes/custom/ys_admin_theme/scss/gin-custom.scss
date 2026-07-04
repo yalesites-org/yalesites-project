@@ -281,6 +281,22 @@ a.focal-point-preview-link {
     }
   }
 
+  /**
+   * "Skip to main content" link contrast (Issue #1048)
+   *
+   * Gin sets the skip link's text to --gin-color-button-text, which flips to
+   * #111 (near-black) in dark mode, while Claro keeps the skip-link background
+   * at --color-gray-800 (#55565b). That pairing is only 2.58:1, failing WCAG
+   * 2.1 AA. Restore Claro's intended light text (--color-white), which Claro
+   * itself uses for the skip link in every state, for 7.32:1.
+   *
+   * Scoping under .gin--dark-mode gives (0,3,0) specificity, beating Gin's
+   * .visually-hidden.skip-link rule (0,2,0) without needing !important.
+   */
+  .visually-hidden.skip-link {
+    color: var(--color-white);
+  }
+
 }
 
 /* stylelint-enable */
