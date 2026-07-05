@@ -12,3 +12,16 @@ services:
   # Alias to allow type-hinting against the interface.
   Drupal\ys_file_management\Service\MediaFileDeleterInterface:
     alias: ys_file_management.media_file_deleter
+
+  ys_file_management.media_link_converter:
+    class: Drupal\ys_file_management\Service\MediaLinkConverter
+    arguments:
+      - '@entity_type.manager'
+      - '@entity_field.manager'
+      - '@entity.repository'
+      - '@file_url_generator'
+      - '@logger.factory'
+
+  # Alias to allow type-hinting against the interface.
+  Drupal\ys_file_management\Service\MediaLinkConverterInterface:
+    alias: ys_file_management.media_link_converter
