@@ -18,6 +18,7 @@ use Drupal\Core\Url;
 use Drupal\node\Entity\Node;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\ys_core\Editoria11yRouteSuppressor;
+use Drupal\ys_core\WebformContextualLinksSuppressor;
 
 // Include coffee commands.
 require_once __DIR__ . '/ys_core.coffee.inc';
@@ -83,6 +84,18 @@ function ys_core_theme($existing, $type, $theme, $path): array {
  * Implements hook_form_alter().
  */
 function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Strip the Webform module's contextual "edit" links (Test, Results, Build,
+  // Settings) from Pre-Built Form submission forms when the page is being
+  // viewed rather than edited in Layout Builder. Without this, users with
+  // "access contextual links" get an edit icon exposing submission data on the
+  // live page. The links are attached in the Webform module's #after_build, so
+  // a #pre_render (a later phase) reliably removes them before the contextual
+  // placeholder is built.
+  if (str_starts_with($form_id, 'webform_submission')
+    && WebformContextualLinksSuppressor::shouldSuppress(\Drupal::routeMatch()->getRouteName())) {
+    $form['#pre_render'][] = [WebformContextualLinksSuppressor::class, 'preRender'];
+  }
+
   if ($form_id === 'layout_builder_update_block' || $form_id === 'layout_builder_add_block') {
     $block_type = ys_core_get_block_type($form, $form_state);
 
