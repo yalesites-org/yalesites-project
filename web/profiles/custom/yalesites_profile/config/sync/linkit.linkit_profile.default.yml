@@ -53,13 +53,3 @@ matchers:
     uuid: fc376fae-0029-4b92-9905-c5a021f32fc5
     settings: {  }
     weight: -10
-  7a6406c1-fb96-416d-bfe4-31dca268bb26:
-    id: 'entity:media'
-    uuid: 7a6406c1-fb96-416d-bfe4-31dca268bb26
-    settings:
-      metadata: ''
-      bundles: {  }
-      group_by_bundle: false
-      substitution_type: media_download_inline
-      limit: 100
-    weight: -6
