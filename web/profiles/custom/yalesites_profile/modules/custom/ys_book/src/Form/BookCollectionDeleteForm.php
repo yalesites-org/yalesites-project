@@ -77,7 +77,7 @@ class BookCollectionDeleteForm extends ConfirmFormBase {
     $form['pages_label'] = [
       '#type' => 'html_tag',
       '#tag' => 'p',
-      '#value' => $this->t('These pages will be kept as standalone content:'),
+      '#value' => $this->t('Pages that will remain as standalone content:'),
       '#weight' => 9,
     ];
     $form['pages'] = [
@@ -93,14 +93,14 @@ class BookCollectionDeleteForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function getQuestion(): TranslatableMarkup {
-    return $this->t('Are you sure you want to delete the collection %title?', ['%title' => $this->node->label()]);
+    return $this->t('Delete the %title collection?', ['%title' => $this->node->label()]);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getDescription(): TranslatableMarkup {
-    return $this->t('The collection grouping and navigation will be removed. Every page will be kept as standalone content. This action cannot be undone.');
+    return $this->t("Your pages won't be deleted. They'll stay published as standalone content — you'll just lose the collection's shared navigation and grouping. This can't be undone.");
   }
 
   /**
