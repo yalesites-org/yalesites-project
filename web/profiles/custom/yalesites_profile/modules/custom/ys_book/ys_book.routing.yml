@@ -15,3 +15,18 @@ book.admin_edit:
     _ys_book_outline_access: 'TRUE'
     _entity_access: 'node.view'
     node: \d+
+
+ys_book.collection_delete:
+  path: '/admin/structure/book/{node}/delete'
+  defaults:
+    _form: '\Drupal\ys_book\Form\BookCollectionDeleteForm'
+    _title: 'Delete collection'
+  requirements:
+    _permission: 'administer book outlines'
+    _entity_access: 'node.view'
+    node: \d+
+  options:
+    parameters:
+      node:
+        type: 'entity:node'
+    _admin_route: TRUE
