@@ -157,7 +157,7 @@ class PostViewWidgetTest extends UnitTestCase {
   }
 
   /**
-   * The mockup preview panel is added with the content type in context (#1318).
+   * The mockup preview panel is themed with the content type variable (#1318).
    *
    * @covers \Drupal\ys_views_basic\Plugin\Field\FieldWidget\ViewsBasicWidgetBase::buildPreviewPanel
    */
@@ -167,12 +167,12 @@ class PostViewWidgetTest extends UnitTestCase {
     $preview = $form['group_user_selection']['entity_and_view_mode']['preview'] ?? NULL;
 
     $this->assertIsArray($preview);
-    $this->assertSame('inline_template', $preview['#type']);
-    $this->assertSame('post', $preview['#context']['content_type']);
-    $this->assertSame('card', $preview['#context']['view_mode']);
-    // The static template wires up the JS target classes and the no-query note.
-    $this->assertStringContainsString('vb-preview', $preview['#template']);
-    $this->assertStringContainsString('not a live query', $preview['#template']);
+    // The panel renders via the views_basic_mockup_preview theme hook; the
+    // markup lives in the template, so assert the hook and its variables.
+    $this->assertSame('views_basic_mockup_preview', $preview['#theme']);
+    $this->assertSame('post', $preview['#content_type']);
+    $this->assertSame('card', $preview['#view_mode']);
+    $this->assertSame(100, $preview['#weight']);
   }
 
   /**

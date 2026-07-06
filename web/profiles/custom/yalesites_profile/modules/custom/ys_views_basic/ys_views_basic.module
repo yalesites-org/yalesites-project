@@ -64,6 +64,15 @@ function ys_views_basic_theme($existing, $type, $theme, $path): array {
         'month_data' => [],
       ],
     ],
+    // Authoring-form live mockup preview panel (#1318); see
+    // ViewsBasicWidgetBase::buildPreviewPanel().
+    'views_basic_mockup_preview' => [
+      'variables' => [
+        'content_type' => NULL,
+        'view_mode' => NULL,
+        'image_src' => NULL,
+      ],
+    ],
   ];
 }
 

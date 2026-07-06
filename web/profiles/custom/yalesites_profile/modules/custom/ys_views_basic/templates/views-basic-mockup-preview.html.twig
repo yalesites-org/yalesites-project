@@ -1,0 +1,36 @@
+{#
+/**
+ * @file
+ * Default theme implementation for the Views Basic authoring-form mockup preview.
+ *
+ * A static, client-side placeholder card (#1318) shown while placing a new
+ * listing block. views-basic-preview.js toggles the parts by class as the site
+ * builder changes the Field Display options; no query is run. Each toggleable
+ * part is rendered visible so the panel degrades gracefully without JS — except
+ * `.vb-preview__pinned`, which starts hidden and is revealed by the behavior.
+ *
+ * Available variables:
+ * - content_type: The listing content type machine name (post/event/page/
+ *   profile); gates which parts render and feeds data-content-type.
+ * - view_mode: The node view mode; feeds data-view-mode for the CSS layout
+ *   variants (list_item/condensed/directory).
+ * - image_src: Placeholder teaser image src (a 1x1 transparent GIF).
+ */
+#}
+<div class="vb-preview-wrapper" role="group" aria-label="{{ 'Result preview'|t }}">
+  <p class="vb-preview-wrapper__label">{{ 'Preview'|t }}</p>
+  <p class="vb-preview-wrapper__note">{{ 'Example content that updates as you change the Field Display options. This is a mockup, not a live query.'|t }}</p>
+  <div class="vb-preview" data-content-type="{{ content_type }}" data-view-mode="{{ view_mode }}">
+    <span class="vb-preview__pinned" hidden>{{ 'Pinned'|t }}</span>
+    <img class="vb-preview__image" alt="{{ 'Example teaser image placeholder'|t }}" src="{{ image_src }}">
+    <div class="vb-preview__body">
+      {% if content_type == 'post' %}<span class="vb-preview__eyebrow">{{ 'Eyebrow'|t }}</span>{% endif %}
+      <p class="vb-preview__title">{{ 'Example Title'|t }}</p>
+      {% if content_type == 'event' %}<span class="vb-preview__meta">{{ 'Month 1, 2026 - 12:00 PM'|t }}</span>{% endif %}
+      {% if content_type == 'profile' %}<span class="vb-preview__meta">{{ 'Job Title'|t }}</span>{% endif %}
+      <span class="vb-preview__category">{{ 'Category Name'|t }}</span>
+      <span class="vb-preview__tags">{{ 'Tag A | Tag B'|t }}</span>
+      {% if content_type == 'event' %}<a class="vb-preview__calendar" href="#">{{ 'Add to Calendar'|t }}</a>{% endif %}
+    </div>
+  </div>
+</div>

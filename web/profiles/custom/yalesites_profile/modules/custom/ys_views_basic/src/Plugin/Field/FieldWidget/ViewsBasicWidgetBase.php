@@ -315,11 +315,13 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
   /**
    * Builds the live, client-side mockup preview panel (#1318).
    *
-   * Renders a compact placeholder card below the field-display options whose
-   * parts the preview behavior (views-basic-preview.js) shows/hides as the site
-   * builder toggles the Field Display and pinned settings. The content is
-   * entirely static placeholder text — no query is run — and each toggleable
-   * part is rendered visible so the panel degrades gracefully without JS.
+   * Renders a compact placeholder card below the field-display options (markup
+   * in the `views_basic_mockup_preview` theme hook,
+   * templates/views-basic-mockup-preview.html.twig) whose parts the preview
+   * behavior (views-basic-preview.js) shows/hides as the site builder toggles
+   * the Field Display and pinned settings. The content is entirely static
+   * placeholder text — no query is run — and each toggleable part is rendered
+   * visible so the panel degrades gracefully without JS.
    *
    * The compact inline panel suits both the larger creation dialog and the
    * sidebar edit context; a split-pane variant for the creation dialog is a
@@ -329,35 +331,13 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
    *   The form array, passed by reference.
    */
   protected function buildPreviewPanel(array &$form): void {
-    $content_type = $this->getContentType();
     $form['group_user_selection']['entity_and_view_mode']['preview'] = [
-      '#type' => 'inline_template',
+      '#theme' => 'views_basic_mockup_preview',
       '#weight' => 100,
-      '#template' => <<<'TWIG'
-<div class="vb-preview-wrapper" role="group" aria-label="{{ 'Result preview'|t }}">
-  <p class="vb-preview-wrapper__label">{{ 'Preview'|t }}</p>
-  <p class="vb-preview-wrapper__note">{{ 'Example content that updates as you change the Field Display options. This is a mockup, not a live query.'|t }}</p>
-  <div class="vb-preview" data-content-type="{{ content_type }}" data-view-mode="{{ view_mode }}">
-    <span class="vb-preview__pinned" hidden>{{ 'Pinned'|t }}</span>
-    <img class="vb-preview__image" alt="{{ 'Example teaser image placeholder'|t }}" src="{{ image_src }}">
-    <div class="vb-preview__body">
-      {% if content_type == 'post' %}<span class="vb-preview__eyebrow">{{ 'Eyebrow'|t }}</span>{% endif %}
-      <p class="vb-preview__title">{{ 'Example Title'|t }}</p>
-      {% if content_type == 'event' %}<span class="vb-preview__meta">{{ 'Month 1, 2026 - 12:00 PM'|t }}</span>{% endif %}
-      {% if content_type == 'profile' %}<span class="vb-preview__meta">{{ 'Job Title'|t }}</span>{% endif %}
-      <span class="vb-preview__category">{{ 'Category Name'|t }}</span>
-      <span class="vb-preview__tags">{{ 'Tag A | Tag B'|t }}</span>
-      {% if content_type == 'event' %}<a class="vb-preview__calendar" href="#">{{ 'Add to Calendar'|t }}</a>{% endif %}
-    </div>
-  </div>
-</div>
-TWIG,
-      '#context' => [
-        'content_type' => $content_type,
-        'view_mode' => $this->getViewMode(),
-        // 1x1 transparent GIF; the CSS shows the placeholder as a grey box.
-        'image_src' => 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
-      ],
+      '#content_type' => $this->getContentType(),
+      '#view_mode' => $this->getViewMode(),
+      // 1x1 transparent GIF; the CSS shows the placeholder as a grey box.
+      '#image_src' => 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
     ];
   }
 
