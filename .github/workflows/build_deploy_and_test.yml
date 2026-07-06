@@ -73,7 +73,7 @@ jobs:
           git add -f pantheon.upstream.yml vendor web
 
       - name: Push to Pantheon
-        uses: pantheon-systems/push-to-pantheon@0.9.2
+        uses: pantheon-systems/push-to-pantheon@0.9.3
         id: push-to-pantheon
         with:
           ssh_key: ${{ env.SSH_KEY }}
