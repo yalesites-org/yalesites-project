@@ -77,6 +77,13 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
   ];
 
   /**
+   * The accessible title to use when the editor leaves Title blank.
+   *
+   * @var string
+   */
+  protected static $defaultTitle = '';
+
+  /**
    * Creates a plugin instance.
    *
    * @param array $configuration
@@ -172,7 +179,7 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
     return [
       '#theme' => 'embed_wrapper',
       '#embedType' => $this->getPluginId(),
-      '#title' => $params['title'],
+      '#title' => trim($params['title']) !== '' ? $params['title'] : static::$defaultTitle,
       '#url' => $this->getUrl($params),
       '#displayAttributes' => $displayAttributes,
       '#embedSource' => [
