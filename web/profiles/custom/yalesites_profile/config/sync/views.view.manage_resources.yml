@@ -21,7 +21,7 @@ dependencies:
 id: manage_resources
 label: 'Manage Resources'
 module: views
-description: 'Interface used by authors to manage post content.'
+description: 'Interface used by authors to manage resource content.'
 tag: ''
 base_table: node_field_data
 base_field: nid
@@ -770,7 +770,7 @@ display:
           plugin_id: text
           empty: true
           content:
-            value: 'Your site does not have any post content'
+            value: 'Your site does not have any resource content.'
             format: basic_html
           tokenize: false
       sorts:
@@ -1118,7 +1118,7 @@ display:
           plugin_id: text
           empty: false
           content:
-            value: 'The post content type is useful for posted articles, posts, and stories, about your organization as featured content or in a reverse-chronological content feed. '
+            value: 'Resource content is useful for sharing PDFs, videos, and publications, with structured metadata for authors, citations, and abstracts.'
             format: basic_html
           tokenize: false
       footer: {  }
