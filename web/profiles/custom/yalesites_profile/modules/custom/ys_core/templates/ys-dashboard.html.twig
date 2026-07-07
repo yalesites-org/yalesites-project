@@ -55,18 +55,20 @@
       </section>
 
       <div class="ys-dashboard__aside-split">
-        {% if platform_version %}
-          <section class="ys-dashboard__section platform-version" aria-labelledby="ys-dashboard-platform-heading">
-            <h2 id="ys-dashboard-platform-heading">{{ 'Platform information'|t }}</h2>
-            <p><strong>{{ 'Platform version:'|t }}</strong> {{ platform_version }}</p>
-          </section>
-        {% endif %}
+        <div class="ys-dashboard__aside-column">
+          <a href="mailto:yalesites@yale.edu" class="button button--primary ys-dashboard__action-button">{{ 'Report feedback'|t }}</a>
+          {% if platform_version %}
+            <section class="ys-dashboard__section platform-version" aria-labelledby="ys-dashboard-platform-heading">
+              <h2 id="ys-dashboard-platform-heading">{{ 'Platform information'|t }}</h2>
+              <p><strong>{{ 'Platform version:'|t }}</strong> {{ platform_version }}</p>
+            </section>
+          {% endif %}
+        </div>
 
-        <section class="ys-dashboard__section ys-dashboard__actions" aria-labelledby="ys-dashboard-actions-heading">
-          <h2 id="ys-dashboard-actions-heading" class="visually-hidden">{{ 'Additional actions'|t }}</h2>
+        <section class="ys-dashboard__section ys-dashboard__actions" aria-labelledby="ys-dashboard-siteimprove-heading">
+          <h2 id="ys-dashboard-siteimprove-heading" class="visually-hidden">{{ 'Siteimprove'|t }}</h2>
           <a href="https://my2.siteimprove.com/Auth/Saml2/66356571" target="_blank" rel="noopener noreferrer" class="button button--primary ys-dashboard__action-button">{{ 'Siteimprove'|t }}</a>
           <p class="ys-dashboard__action-help">{{ 'Access your Siteimprove dashboard here. For more information about how to use Siteimprove, visit our <a href=":url">Getting Started with Siteimprove guide</a>.'|t({':url': 'https://yalesites.yale.edu/explore-resources/working-with-content/getting-started-with-siteimprove'}) }}</p>
-          <a href="mailto:yalesites@yale.edu" class="button button--primary ys-dashboard__action-button">{{ 'Report feedback'|t }}</a>
         </section>
       </div>
     </aside>

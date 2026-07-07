@@ -99,7 +99,7 @@ class DashboardSettingsForm extends ConfigFormBase {
     $form['announcements']['announcements_limit'] = [
       '#type' => 'number',
       '#title' => $this->t('Maximum announcements'),
-      '#default_value' => $config->get('announcements_limit') ?? 5,
+      '#default_value' => $config->get('announcements_limit') ?? 3,
       '#min' => 1,
       '#max' => 25,
       '#description' => $this->t('How many announcements to show, most recent first.'),

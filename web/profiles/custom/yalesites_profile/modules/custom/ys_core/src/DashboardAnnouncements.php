@@ -115,7 +115,7 @@ class DashboardAnnouncements {
       return $cached;
     }
 
-    $limit = (int) ($config->get('announcements_limit') ?: 5);
+    $limit = (int) ($config->get('announcements_limit') ?: 3);
     $max_age = (int) ($config->get('announcements_max_age') ?: 3600);
 
     try {

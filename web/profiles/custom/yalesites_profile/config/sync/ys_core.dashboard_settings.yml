@@ -1,6 +1,6 @@
 announcements_enabled: true
 announcements_feed_url: ''
-announcements_limit: 5
+announcements_limit: 3
 announcements_max_age: 3600
 announcements_source_enabled: false
 announcements_source_term: 'Dashboard Announcement'

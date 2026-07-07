@@ -21,6 +21,21 @@
   vertical-align: baseline;
 }
 
+/* Gauge/speedometer icon on the Dashboard admin toolbar link, in the spirit
+   of FontAwesome's `gauge` icon. Uses a CSS mask so the icon color follows
+   the surrounding text color (light/dark themes, hover states, etc.). */
+a.toolbar-icon-dashboard.dashboard-menu-item::before {
+  content: "";
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  margin-inline-end: 0.4em;
+  vertical-align: -0.125em;
+  background-color: currentColor;
+  -webkit-mask: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3a9 9 0 0 0-9 9c0 2.4.94 4.58 2.46 6.19a1 1 0 0 0 1.42-1.42A7 7 0 1 1 19 12a7 7 0 0 1-2.12 5.02 1 1 0 0 0 1.42 1.42A9 9 0 0 0 21 12a9 9 0 0 0-9-9z'/%3E%3Cpath d='M15.5 8.5l-4 3.5a1.5 1.5 0 1 0 2.12 2.12l3.5-4-1.62-1.62z'/%3E%3C/svg%3E") no-repeat center / contain;
+  mask: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3a9 9 0 0 0-9 9c0 2.4.94 4.58 2.46 6.19a1 1 0 0 0 1.42-1.42A7 7 0 1 1 19 12a7 7 0 0 1-2.12 5.02 1 1 0 0 0 1.42 1.42A9 9 0 0 0 21 12a9 9 0 0 0-9-9z'/%3E%3Cpath d='M15.5 8.5l-4 3.5a1.5 1.5 0 1 0 2.12 2.12l3.5-4-1.62-1.62z'/%3E%3C/svg%3E") no-repeat center / contain;
+}
+
 /* Gin toolbar's `.toolbar .toolbar-menu .toolbar-menu span` color rule wins
    on specificity, so re-assert the badge's white text inside the toolbar. */
 .toolbar-menu .menu-item .ys-dashboard-badge.ys-dashboard-badge--unread {
