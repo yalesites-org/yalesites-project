@@ -21,10 +21,10 @@ class AiTesterIntegrationPlugin extends IntegrationPluginBase {
    * {@inheritdoc}
    */
   public function isTurnedOn(): bool {
-    // The tester runs questions through Beacon, which needs an index; mirror
-    // the Beacon integration's "configured" signal.
-    $config = $this->configFactory->get('ys_beacon.settings');
-    return $config->get('enable_chat') || !empty($config->get('azure_index_name'));
+    // The tester runs its prompts through Beacon chat, so it is available only
+    // when chat is enabled. The Azure index name is derived at runtime and is
+    // no longer a reliable "configured" signal.
+    return (bool) $this->configFactory->get('ys_beacon.settings')->get('enable_chat');
   }
 
   /**

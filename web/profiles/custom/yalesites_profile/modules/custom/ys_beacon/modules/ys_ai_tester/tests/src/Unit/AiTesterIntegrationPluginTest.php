@@ -58,15 +58,16 @@ class AiTesterIntegrationPluginTest extends UnitTestCase {
   /**
    * @covers ::isTurnedOn
    */
-  public function testIsTurnedOnWhenBeaconConfigured(): void {
-    $this->assertTrue($this->buildPlugin(['azure_index_name' => 'site-live'])->isTurnedOn());
+  public function testIsTurnedOnWhenChatEnabled(): void {
     $this->assertTrue($this->buildPlugin(['enable_chat' => TRUE])->isTurnedOn());
   }
 
   /**
    * @covers ::isTurnedOn
    */
-  public function testIsTurnedOffWhenBeaconUnconfigured(): void {
+  public function testIsTurnedOffWhenChatDisabled(): void {
+    // An index name alone no longer turns the tester on; chat must be enabled.
+    $this->assertFalse($this->buildPlugin(['azure_index_name' => 'site-live'])->isTurnedOn());
     $this->assertFalse($this->buildPlugin(['azure_index_name' => '', 'enable_chat' => FALSE])->isTurnedOn());
   }
 
@@ -92,7 +93,7 @@ class AiTesterIntegrationPluginTest extends UnitTestCase {
    */
   public function testBuildIncludesConfigureLinkWhenTurnedOn(): void {
     $this->setUpUrlContainer();
-    $form = $this->buildPlugin(['azure_index_name' => 'site-live'])->build();
+    $form = $this->buildPlugin(['enable_chat' => TRUE])->build();
     $this->assertArrayHasKey('configure', $form['#actions']);
     $this->assertArrayNotHasKey('not_configured', $form['#actions']);
     $this->assertSame('link', $form['#actions']['configure']['#type']);

@@ -73,8 +73,10 @@ class BeaconIntegrationPlugin extends IntegrationPluginBase {
    * {@inheritdoc}
    */
   public function isTurnedOn(): bool {
-    $config = $this->configFactory->get('ys_beacon.settings');
-    return $config->get('enable_chat') || !empty($config->get('azure_index_name'));
+    // The Beacon card must always be actionable: admins reach the Configure and
+    // Manage Instructions screens from here to enable chat and set the index
+    // name, so the card can never gate itself off.
+    return TRUE;
   }
 
   /**
