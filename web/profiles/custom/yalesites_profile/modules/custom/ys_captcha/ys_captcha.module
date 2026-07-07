@@ -5,6 +5,9 @@
  * The ys_captcha module.
  */
 
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Element;
+
 /**
  * Implements hook_form_FORM_ID_alter().
  */
@@ -27,4 +30,102 @@ function ys_captcha_form_recaptcha_v3_settings_alter(&$form, &$form_state, $form
   $form['site_key']['#default_value'] = "HIDDEN";
   $form['secret_key']['#disabled'] = TRUE;
   $form['secret_key']['#default_value'] = "HIDDEN";
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * Styles the captcha fieldset to line up with the form's fields, and -- when
+ * the reCAPTCHA v3 badge is hidden -- adds Google's required disclosure inline.
+ *
+ * The reCAPTCHA v3 module hides its floating badge (via the "hide_badge"
+ * setting) with CSS only. Google's reCAPTCHA terms permit hiding the badge
+ * only if the disclosure is shown in the user flow instead.
+ */
+function ys_captcha_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
+  $captcha = &_ys_captcha_find_captcha($form);
+  if ($captcha === NULL) {
+    return;
+  }
+
+  // Constrain the contrib captcha fieldset to the shared form-field width and
+  // give it bottom spacing, reusing the form-item styling the same way the
+  // radio fieldset does. Applies whenever a captcha is present, independent of
+  // the badge setting.
+  $captcha['#attributes']['class'][] = 'form-item';
+
+  // The badge carries Google's disclosure itself when visible, so only add the
+  // inline disclosure when the badge is hidden.
+  if (!\Drupal::config('recaptcha_v3.settings')->get('hide_badge')) {
+    return;
+  }
+
+  // Render the disclosure inside the inline-message component so it gets a
+  // styled box with theme-guaranteed color contrast. The "data-embedded-
+  // components" marker stops the layout from applying its context-dependent
+  // site-gutter (which varies between one-column and multi-column regions);
+  // ys_captcha/disclosure then applies consistent internal padding and the
+  // spacing that separates the box from the form above.
+  $form['ys_captcha_recaptcha_disclosure'] = [
+    '#type' => 'inline_template',
+    // Sort below the form's fields and actions.
+    '#weight' => 1000,
+    '#template' => '<div class="ys-captcha-disclosure" data-embedded-components>{% include "@molecules/inline-message/yds-inline-message.twig" with { inline_message__content: content } %}</div>',
+    '#context' => [
+      'content' => t('This site is protected by reCAPTCHA and the Google <a href=":privacy">Privacy Policy</a> and <a href=":terms">Terms of Service</a> apply.', [
+        ':privacy' => 'https://policies.google.com/privacy',
+        ':terms' => 'https://policies.google.com/terms',
+      ]),
+      // The inline-message icon resolves its sprite path from "directory",
+      // which Drupal normally injects into theme templates. inline_template
+      // does not, so pass the active theme's path explicitly.
+      'directory' => \Drupal::theme()->getActiveTheme()->getPath(),
+    ],
+    '#attached' => ['library' => ['ys_captcha/disclosure']],
+  ];
+}
+
+/**
+ * Implements hook_module_implements_alter().
+ *
+ * Run this module's form_alter after the captcha module's, so the captcha
+ * element it injects is present when we scan the form for it.
+ */
+function ys_captcha_module_implements_alter(&$implementations, $hook) {
+  if ($hook === 'form_alter' && isset($implementations['ys_captcha'])) {
+    $group = $implementations['ys_captcha'];
+    unset($implementations['ys_captcha']);
+    $implementations['ys_captcha'] = $group;
+  }
+}
+
+/**
+ * Finds the first captcha element in a render array, by reference.
+ *
+ * Recurses so nested captcha elements (for example those inside a webform's
+ * element tree) are found. Returning by reference lets callers alter the
+ * element in place.
+ *
+ * @param array $elements
+ *   A render array (or subtree) to scan.
+ *
+ * @return array|null
+ *   The first captcha element found, by reference, or NULL if none is present.
+ */
+function &_ys_captcha_find_captcha(array &$elements) {
+  $null = NULL;
+  foreach (Element::children($elements) as $key) {
+    if (!is_array($elements[$key])) {
+      continue;
+    }
+    if (isset($elements[$key]['#type']) && $elements[$key]['#type'] === 'captcha') {
+      return $elements[$key];
+    }
+    $found = &_ys_captcha_find_captcha($elements[$key]);
+    if ($found !== NULL) {
+      return $found;
+    }
+    unset($found);
+  }
+  return $null;
 }

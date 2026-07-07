@@ -1,5 +1,7 @@
 {% if displayAttributes['isIframe'] %}
   <iframe data-embed-type="{{ embedType }}" src="{{ url }}" title="{{ title }}" height="{{ displayAttributes['height'] }}" width="{{ displayAttributes['width'] }} scrolling="{{ displayAttributes['scrolling'] }}" frameborder="{{ displayAttributes['frameborder'] }}"></iframe>   
+{% elseif title|trim != '' %}
+  <div role="group" aria-label="{{ title }}">{{ embedSource }}</div>
 {% else %}
   {{ embedSource }}
 {% endif %}

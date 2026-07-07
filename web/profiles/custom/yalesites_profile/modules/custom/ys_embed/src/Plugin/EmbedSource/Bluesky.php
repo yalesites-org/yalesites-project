@@ -31,6 +31,11 @@ class Bluesky extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
+  protected static $defaultTitle = 'Bluesky post embed';
+
+  /**
+   * {@inheritdoc}
+   */
   protected static $instructions = 'To embed a Bluesky post, go to the post on bsky.app, click the share icon, and select "Embed post". Click on "Copy code" to copy the entire embed code including both the blockquote and script tags.';
 
   /**

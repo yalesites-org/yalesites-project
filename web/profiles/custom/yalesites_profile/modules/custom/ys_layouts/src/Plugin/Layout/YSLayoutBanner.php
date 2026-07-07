@@ -32,7 +32,7 @@ class YSLayoutBanner extends LayoutDefault {
 
     // Test to see if moderation control is here, and if we show controls.
     foreach ($content as $block) {
-      if (str_contains($block['#plugin_id'], 'moderation_control')) {
+      if (str_contains($block['#plugin_id'] ?? '', 'moderation_control')) {
         $route_match = \Drupal::routeMatch();
         $entity = $route_match->getParameter('node') ?? $route_match->getParameter('entity');
         if (
