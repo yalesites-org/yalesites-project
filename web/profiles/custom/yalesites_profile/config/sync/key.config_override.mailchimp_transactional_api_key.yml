@@ -10,5 +10,5 @@ label: 'Mailchimp Transactional API Key'
 config_type: system.simple
 config_prefix: ''
 config_name: mailchimp_transactional.settings
-config_item: mailchimp_transactional_api_key
+config_item: api_key
 key_id: mailchimp_transactional_api_key
