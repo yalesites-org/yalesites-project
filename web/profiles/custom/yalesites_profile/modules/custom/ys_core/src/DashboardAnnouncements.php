@@ -3,6 +3,7 @@
 namespace Drupal\ys_core;
 
 use Drupal\Component\Serialization\Json;
+use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\Unicode;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Cache\Cache;
@@ -174,7 +175,7 @@ class DashboardAnnouncements {
       $announcements[] = [
         'title' => isset($item['title']) ? (string) $item['title'] : '',
         'url' => isset($item['url']) ? UrlHelper::stripDangerousProtocols((string) $item['url']) : '',
-        'summary' => trim(Unicode::truncate(strip_tags((string) $summary_source), 300, TRUE, TRUE)),
+        'summary' => trim(Unicode::truncate(Html::decodeEntities(strip_tags((string) $summary_source)), 300, TRUE, TRUE)),
         'timestamp' => $timestamp ?: NULL,
         'date' => $timestamp ? $this->dateFormatter->format($timestamp, 'custom', 'F j, Y') : '',
       ];
