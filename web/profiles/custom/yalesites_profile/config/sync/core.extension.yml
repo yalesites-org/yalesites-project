@@ -167,7 +167,6 @@ module:
   ys_mathjax: 0
   ys_migrate: 0
   ys_node_access: 0
-  ys_servicenow: 0
   ys_starterkit: 0
   ys_taxonomy_manager: 0
   ys_toolbar: 0
