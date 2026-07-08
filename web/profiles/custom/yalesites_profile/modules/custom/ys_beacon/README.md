@@ -99,8 +99,28 @@ a new index must be provisioned, and all content re-indexed.
 
 ## Indexing operations
 
-- Content is indexed on cron (`index_directly` is off so entity saves never
-  block on embedding calls).
+- Content is indexed immediately on save (`index_directly` is on). Search API
+  runs the embedding calls after the response is sent (in `kernel.terminate`),
+  so the editor's save returns without waiting on them, and a freshly published
+  or edited page is answerable by the chat without a cron run or a manual
+  "Index now". Items are still tracked, so cron remains the backstop for
+  anything the request did not finish.
+- Deletes remove the item from the vector database synchronously during the
+  delete request, so removed content stops being cited promptly.
+- Bulk changes are indexed at the end of the request in `cron_limit`-sized
+  chunks; anything that does not finish before the request ends stays tracked
+  and is drained by the next cron run. Two cases produce a large end-of-request
+  batch: a single request that saves many nodes (a migration, Feeds/JSON:API
+  import, or a `drush` loop), and — because `track_changes_in_references` is on
+  — editing one entity that many indexed items reference (a taxonomy term,
+  menu, or shared media), which re-embeds every referencing item. Both run
+  after the response is sent, so the editor is not blocked, but they can occupy
+  a worker and drive embedding-API cost for the batch's duration. Batch-API
+  bulk operations already spread their saves across requests; a genuinely large
+  programmatic import should wrap its save loop in
+  `Index::startBatchTracking()`/`stopBatchTracking()` to defer indexing to
+  cron. (Immediate indexing is gated on the index being enabled, so nothing
+  runs while chat is off; see "Per-site configuration" above.)
 - Re-index everything: the button on the Beacon administration form, or
   `drush sapi-r ys_beacon && drush sapi-i ys_beacon`.
 
