@@ -158,3 +158,49 @@
 .vb-preview[data-view-mode='directory'] .vb-preview__image {
   height: 11rem;
 }
+
+/*
+ * Two-column layout for the "Field display & filters" tab on the block-create
+ * form (#1318): the field controls stack in a left column while the live
+ * preview sits in the right. Anchored with :has() to the tab that actually
+ * carries a preview, so it only takes effect on the create form (the preview
+ * is not built when reconfiguring an existing block), and gated behind a
+ * container query so the single-column stack is kept where two columns will
+ * not fit — e.g. the narrow (~460px) Layout Builder off-canvas tray. This rule
+ * is layout only (no colors), so it needs no separate dark-mode handling; the
+ * preview card's own colors already follow Gin's light/dark mode above.
+ */
+.views-basic--entity-view-mode:has(> .claro-details__wrapper > .vb-preview-wrapper) {
+  container-type: inline-size;
+}
+
+@container (min-width: 40rem) {
+  .views-basic--entity-view-mode:has(> .claro-details__wrapper > .vb-preview-wrapper) > .claro-details__wrapper {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(14rem, 18rem);
+    gap: 0 1.5rem;
+    align-items: start;
+  }
+
+  /* Field controls flow down the left column. */
+  .views-basic--entity-view-mode:has(> .claro-details__wrapper > .vb-preview-wrapper) > .claro-details__wrapper > * {
+    grid-column: 1;
+    min-width: 0;
+  }
+
+  /*
+   * Preview pinned to the top of the right column. The row span comfortably
+   * exceeds the handful of left-column controls so the preview shares — rather
+   * than owns — their rows, and so never forces one tall row that would gap the
+   * left column; align-self holds it at its natural height, and sticky keeps it
+   * in view while the taller left column scrolls.
+   */
+  .views-basic--entity-view-mode:has(> .claro-details__wrapper > .vb-preview-wrapper) > .claro-details__wrapper > .vb-preview-wrapper {
+    grid-column: 2;
+    grid-row: 1 / span 20;
+    align-self: start;
+    margin-top: 0;
+    position: sticky;
+    top: 0;
+  }
+}
