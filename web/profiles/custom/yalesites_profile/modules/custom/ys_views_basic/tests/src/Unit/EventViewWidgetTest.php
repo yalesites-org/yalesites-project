@@ -116,7 +116,7 @@ class EventViewWidgetTest extends UnitTestCase {
     $this->assertIsArray($event_options);
     $this->assertArrayHasKey('hide_add_to_calendar', $event_options['#options']);
 
-    $time_period = $form['group_user_selection']['entity_specific']['event_time_period'] ?? NULL;
+    $time_period = $form['group_user_selection']['options']['event_time_period'] ?? NULL;
     $this->assertIsArray($time_period);
     $this->assertSame('future', $time_period['#default_value']);
     $this->assertArrayHasKey('past', $time_period['#options']);
@@ -134,7 +134,7 @@ class EventViewWidgetTest extends UnitTestCase {
         'entity_and_view_mode' => [
           'event_field_options' => ['#value' => ['hide_add_to_calendar' => 'hide_add_to_calendar']],
         ],
-        'entity_specific' => [
+        'options' => [
           'event_time_period' => ['#value' => 'past'],
         ],
       ],

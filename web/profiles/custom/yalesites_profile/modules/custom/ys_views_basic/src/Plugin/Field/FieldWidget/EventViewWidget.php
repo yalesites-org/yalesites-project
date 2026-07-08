@@ -63,7 +63,7 @@ class EventViewWidget extends ViewsBasicWidgetBase {
     ];
 
     $icon_base = '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/';
-    $form['group_user_selection']['entity_specific']['event_time_period'] = [
+    $form['group_user_selection']['options']['event_time_period'] = [
       '#type' => 'radios',
       '#title' => $this->t('Event Time Period'),
       '#options' => [
@@ -72,6 +72,10 @@ class EventViewWidget extends ViewsBasicWidgetBase {
         self::TIME_PERIOD_ALL => $this->t('All Events') . '<img src="' . $icon_base . 'event-time-all.svg" alt="All Events icon showing a calendar.">',
       ],
       '#default_value' => $params ? $this->viewsBasicManager->getDefaultParamValue('event_time_period', $params) : self::TIME_PERIOD_FUTURE,
+      // Lead the Display options group: the display/limit/offset/
+      // show_current_entity controls carry no #weight (i.e. 0), so a negative
+      // weight floats this event-scoping control to the top of the group.
+      '#weight' => -10,
       '#prefix' => '<div id="edit-event-time-period">',
       '#suffix' => '</div>',
     ];
@@ -83,7 +87,7 @@ class EventViewWidget extends ViewsBasicWidgetBase {
   protected function massageEntitySpecificParams(array &$paramData, array $form, FormStateInterface $form_state): void {
     $selection = $form['group_user_selection'];
     $paramData['event_field_options'] = $selection['entity_and_view_mode']['event_field_options']['#value'];
-    $paramData['filters']['event_time_period'] = $selection['entity_specific']['event_time_period']['#value'];
+    $paramData['filters']['event_time_period'] = $selection['options']['event_time_period']['#value'];
   }
 
 }
