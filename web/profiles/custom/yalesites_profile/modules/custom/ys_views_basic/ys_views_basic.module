@@ -281,6 +281,9 @@ function ys_views_basic_form_alter(array &$form, FormStateInterface $form_state,
   }
 
   $block_form['#process'][] = '_ys_views_basic_listing_form_tabs';
+
+  // Space out the horizontal tab bar (Gin collapses the field_group defaults).
+  $form['#attached']['library'][] = 'ys_views_basic/listing_form_tabs';
 }
 
 /**

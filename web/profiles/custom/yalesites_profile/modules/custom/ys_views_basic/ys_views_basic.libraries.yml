@@ -17,3 +17,8 @@ ys_views_basic_preview:
     - core/drupal
     - core/once
 
+listing_form_tabs:
+  css:
+    theme:
+      assets/css/views-basic-form-tabs.css: {}
+
