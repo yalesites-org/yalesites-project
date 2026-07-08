@@ -170,12 +170,12 @@
  * is layout only (no colors), so it needs no separate dark-mode handling; the
  * preview card's own colors already follow Gin's light/dark mode above.
  */
-.views-basic--entity-view-mode:has(> .claro-details__wrapper > .vb-preview-wrapper) {
+.views-basic--entity-view-mode:has(> .details-wrapper > .vb-preview-wrapper) {
   container-type: inline-size;
 }
 
 @container (min-width: 40rem) {
-  .views-basic--entity-view-mode:has(> .claro-details__wrapper > .vb-preview-wrapper) > .claro-details__wrapper {
+  .views-basic--entity-view-mode:has(> .details-wrapper > .vb-preview-wrapper) > .details-wrapper {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(14rem, 18rem);
     gap: 0 1.5rem;
@@ -183,7 +183,7 @@
   }
 
   /* Field controls flow down the left column. */
-  .views-basic--entity-view-mode:has(> .claro-details__wrapper > .vb-preview-wrapper) > .claro-details__wrapper > * {
+  .views-basic--entity-view-mode:has(> .details-wrapper > .vb-preview-wrapper) > .details-wrapper > * {
     grid-column: 1;
     min-width: 0;
   }
@@ -195,7 +195,7 @@
    * left column; align-self holds it at its natural height, and sticky keeps it
    * in view while the taller left column scrolls.
    */
-  .views-basic--entity-view-mode:has(> .claro-details__wrapper > .vb-preview-wrapper) > .claro-details__wrapper > .vb-preview-wrapper {
+  .views-basic--entity-view-mode:has(> .details-wrapper > .vb-preview-wrapper) > .details-wrapper > .vb-preview-wrapper {
     grid-column: 2;
     grid-row: 1 / span 20;
     align-self: start;
