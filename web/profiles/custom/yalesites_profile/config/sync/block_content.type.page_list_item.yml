@@ -3,6 +3,6 @@ langcode: en
 status: true
 dependencies: {  }
 id: page_list_item
-label: 'Pages - List'
+label: 'Pages - List View'
 revision: true
 description: 'Pages - List listing block.'

@@ -3,8 +3,8 @@ langcode: en
 status: true
 dependencies: {  }
 id: event_listings
-label: 'Event Listings'
+label: 'Event Views'
 weight: 2
 opened: true
-image_path: ''
-image_alt: ''
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/view-placeholder.svg
+image_alt: 'Placeholder listing icon'

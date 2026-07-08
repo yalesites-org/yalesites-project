@@ -3,6 +3,6 @@ langcode: en
 status: true
 dependencies: {  }
 id: event_list_item
-label: 'Events - List'
+label: 'Events - List View'
 revision: true
 description: 'Events - List listing block.'

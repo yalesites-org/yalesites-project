@@ -5,7 +5,7 @@ dependencies: {  }
 id: page_card
 block_id: 'inline_block:page_card'
 category: page_listings
-label: 'Pages - Card Grid'
+label: 'Pages - Card Grid View'
 image_path: ''
 image_alt: ''
 weight: 0

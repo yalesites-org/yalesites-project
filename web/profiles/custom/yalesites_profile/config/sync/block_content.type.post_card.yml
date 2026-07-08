@@ -3,6 +3,6 @@ langcode: en
 status: true
 dependencies: {  }
 id: post_card
-label: 'Posts - Card Grid'
+label: 'Posts - Card Grid View'
 revision: true
 description: 'Posts - Card Grid listing block.'

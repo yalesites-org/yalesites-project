@@ -5,7 +5,7 @@ dependencies: {  }
 id: post_card
 block_id: 'inline_block:post_card'
 category: post_listings
-label: 'Posts - Card Grid'
+label: 'Posts - Card Grid View'
 image_path: ''
 image_alt: ''
 weight: 0

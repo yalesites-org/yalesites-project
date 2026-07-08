@@ -3,6 +3,6 @@ langcode: en
 status: true
 dependencies: {  }
 id: event_card
-label: 'Events - Card Grid'
+label: 'Events - Card Grid View'
 revision: true
 description: 'Events - Card Grid listing block.'

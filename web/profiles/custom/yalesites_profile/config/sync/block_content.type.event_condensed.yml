@@ -3,6 +3,6 @@ langcode: en
 status: true
 dependencies: {  }
 id: event_condensed
-label: 'Events - Condensed'
+label: 'Events - Condensed View'
 revision: true
 description: 'Events - Condensed listing block.'

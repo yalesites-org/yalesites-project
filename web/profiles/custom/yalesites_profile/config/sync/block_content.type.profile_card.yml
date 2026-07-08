@@ -3,6 +3,6 @@ langcode: en
 status: true
 dependencies: {  }
 id: profile_card
-label: 'People - Card Grid'
+label: 'People - Card Grid View'
 revision: true
 description: 'People - Card Grid listing block.'

@@ -5,7 +5,7 @@ dependencies: {  }
 id: post_list_item
 block_id: 'inline_block:post_list_item'
 category: post_listings
-label: 'Posts - List'
+label: 'Posts - List View'
 image_path: ''
 image_alt: ''
 weight: 0

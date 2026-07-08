@@ -3,6 +3,6 @@ langcode: en
 status: true
 dependencies: {  }
 id: profile_directory
-label: 'People - Directory'
+label: 'People - Directory View'
 revision: true
 description: 'People - Directory listing block.'

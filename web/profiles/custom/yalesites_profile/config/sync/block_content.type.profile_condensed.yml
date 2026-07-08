@@ -3,6 +3,6 @@ langcode: en
 status: true
 dependencies: {  }
 id: profile_condensed
-label: 'People - Condensed'
+label: 'People - Condensed View'
 revision: true
 description: 'People - Condensed listing block.'

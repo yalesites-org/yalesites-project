@@ -5,7 +5,7 @@ dependencies: {  }
 id: profile_list_item
 block_id: 'inline_block:profile_list_item'
 category: people_listings
-label: 'People - List'
+label: 'People - List View'
 image_path: ''
 image_alt: ''
 weight: 0

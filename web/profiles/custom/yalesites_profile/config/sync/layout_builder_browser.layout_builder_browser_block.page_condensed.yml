@@ -5,7 +5,7 @@ dependencies: {  }
 id: page_condensed
 block_id: 'inline_block:page_condensed'
 category: page_listings
-label: 'Pages - Condensed'
+label: 'Pages - Condensed View'
 image_path: ''
 image_alt: ''
 weight: 0

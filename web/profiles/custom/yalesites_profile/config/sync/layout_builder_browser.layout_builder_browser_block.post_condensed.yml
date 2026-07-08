@@ -5,7 +5,7 @@ dependencies: {  }
 id: post_condensed
 block_id: 'inline_block:post_condensed'
 category: post_listings
-label: 'Posts - Condensed'
+label: 'Posts - Condensed View'
 image_path: ''
 image_alt: ''
 weight: 0

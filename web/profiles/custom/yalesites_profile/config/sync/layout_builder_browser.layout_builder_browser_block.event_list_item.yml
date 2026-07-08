@@ -5,7 +5,7 @@ dependencies: {  }
 id: event_list_item
 block_id: 'inline_block:event_list_item'
 category: event_listings
-label: 'Events - List'
+label: 'Events - List View'
 image_path: ''
 image_alt: ''
 weight: 0

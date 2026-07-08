@@ -5,7 +5,7 @@ dependencies: {  }
 id: page_list_item
 block_id: 'inline_block:page_list_item'
 category: page_listings
-label: 'Pages - List'
+label: 'Pages - List View'
 image_path: ''
 image_alt: ''
 weight: 0

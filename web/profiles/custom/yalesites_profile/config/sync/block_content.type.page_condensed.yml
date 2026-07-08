@@ -3,6 +3,6 @@ langcode: en
 status: true
 dependencies: {  }
 id: page_condensed
-label: 'Pages - Condensed'
+label: 'Pages - Condensed View'
 revision: true
 description: 'Pages - Condensed listing block.'

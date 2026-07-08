@@ -3,6 +3,6 @@ langcode: en
 status: true
 dependencies: {  }
 id: profile_list_item
-label: 'People - List'
+label: 'People - List View'
 revision: true
 description: 'People - List listing block.'
