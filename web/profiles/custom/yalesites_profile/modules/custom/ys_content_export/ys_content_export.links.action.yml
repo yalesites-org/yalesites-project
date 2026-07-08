@@ -1,0 +1,29 @@
+ys_content_export.export_pages:
+  route_name: ys_content_export.export_pages
+  title: 'Export to CSV'
+  appears_on:
+    - view.manage_pages.page_1
+
+ys_content_export.export_posts:
+  route_name: ys_content_export.export_posts
+  title: 'Export to CSV'
+  appears_on:
+    - view.manage_posts.page_1
+
+ys_content_export.export_events:
+  route_name: ys_content_export.export_events
+  title: 'Export to CSV'
+  appears_on:
+    - view.manage_events.page_1
+
+ys_content_export.export_profiles:
+  route_name: ys_content_export.export_profiles
+  title: 'Export to CSV'
+  appears_on:
+    - view.manage_profiles.page_1
+
+ys_content_export.export_resources:
+  route_name: ys_content_export.export_resources
+  title: 'Export to CSV'
+  appears_on:
+    - view.manage_resources.page_1
