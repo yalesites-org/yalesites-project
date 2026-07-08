@@ -285,7 +285,10 @@ class YsBeaconSettings extends ConfigFormBase {
       // enable an index with no Azure backing.
       if (!$previous_enable && $this->config(self::CONFIG_NAME)->get('azure_index_name')) {
         $index->setStatus(TRUE)->save();
-        $index->reindex();
+        // Rebuild the tracker so existing content is queued for indexing on
+        // the freshly enabled index: reindex() only re-flags already-tracked
+        // items and leaves a never-seeded tracker empty (issue #1383).
+        $index->rebuildTracker();
       }
     }
     elseif ($previous_enable) {
@@ -299,8 +302,9 @@ class YsBeaconSettings extends ConfigFormBase {
   /**
    * Provisions the site's search index when chat is first enabled.
    *
-   * Creates the per-site Azure AI Search index only when it does not exist
-   * yet, stores its name, and queues all site content for indexing.
+   * Creates the per-site Azure AI Search index only when it does not exist yet
+   * and stores its name. The caller enables the index and rebuilds its tracker
+   * to queue existing content once provisioning has succeeded.
    */
   protected function provisionIndex(): void {
     try {
@@ -323,7 +327,11 @@ class YsBeaconSettings extends ConfigFormBase {
   public function reindexAll(array &$form, FormStateInterface $form_state): void {
     $index = $this->loadBeaconIndex();
     if ($index && $index->status()) {
-      $index->reindex();
+      // rebuildTracker() re-enumerates the datasources and marks every item
+      // for indexing, so it repopulates a never-seeded tracker as well as
+      // re-queueing tracked content; reindex() would only do the latter
+      // (issue #1383).
+      $index->rebuildTracker();
       $this->messenger()->addStatus($this->t('All content has been queued for re-indexing into the Beacon vector database.'));
     }
     else {
