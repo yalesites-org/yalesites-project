@@ -120,8 +120,10 @@ function ys_beacon_entity_update(EntityInterface $entity) {
   if (!in_array($entity->getEntityTypeId(), ['node', 'media'], TRUE)) {
     return;
   }
-  // Cheap gate: skip everything on sites where Beacon indexing is off.
-  if (!\Drupal::config('ys_beacon.settings')->get('azure_index_name')) {
+  // Cheap gate: skip everything on sites where a platform admin has not
+  // authorized Beacon, or where Beacon indexing is not configured.
+  if (!\Drupal::service('ys_beacon.authorization')->isAuthorized()
+    || !\Drupal::config('ys_beacon.settings')->get('azure_index_name')) {
     return;
   }
   if (!$original) {
@@ -247,6 +249,10 @@ function ys_beacon_entity_insert(EntityInterface $entity) {
  *   The media entity that may hold a PDF.
  */
 function _ys_beacon_queue_pdf_extraction(MediaInterface $media) {
+  // Nothing runs on sites where a platform admin has not authorized Beacon.
+  if (!\Drupal::service('ys_beacon.authorization')->isAuthorized()) {
+    return;
+  }
   // Only extract on sites where Beacon indexing is configured; without an
   // index there is nothing to feed the extracted text into.
   if (!\Drupal::config('ys_beacon.settings')->get('azure_index_name')) {

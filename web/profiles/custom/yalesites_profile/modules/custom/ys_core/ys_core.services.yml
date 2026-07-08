@@ -39,4 +39,10 @@ services:
     arguments: ['@current_user', '@request_stack']
     tags:
       - { name: event_subscriber }
+  # Manages platform-admin-only settings sections (extensible plugin type).
+  ys_core.platform_admin_setting_manager:
+    class: Drupal\ys_core\PlatformAdminSettingManager
+    arguments: ['@container.namespaces', '@cache.default', '@module_handler']
+    tags:
+      - { name: 'default_plugin_manager' }
 

@@ -21,6 +21,12 @@ use Drupal\Core\Config\StorageInterface;
  * The index is also disabled at runtime whenever the chat widget is turned
  * off or a site has not configured its index name yet, so unconfigured or
  * disabled sites never attempt to reach Azure.
+ *
+ * Finally, when a platform admin has not authorized Beacon for a site, this
+ * override forces the chat off (ys_beacon.settings:enable_chat) so the site
+ * behaves exactly as if the site admin had disabled it: the widget, APIs, and
+ * index all stand down. The authorization flag is read from raw storage, so
+ * this never re-enters the config factory while overrides resolve.
  */
 class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
 
@@ -33,6 +39,11 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
    * runtime to support a second index without code changes.
    */
   protected const VDB_CONFIG = 'ai_vdb_provider_azure_ai_search.settings';
+
+  /**
+   * The Beacon settings config whose chat toggle this class overrides.
+   */
+  protected const SETTINGS_CONFIG = 'ys_beacon.settings';
 
   /**
    * Default key entity id holding the Azure AI Search endpoint URL.
@@ -77,6 +88,21 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
     $index_config = $this->indexConfigName($settings);
     $index_name = $settings['azure_index_name'] ?? '';
 
+    // A site is only "chat enabled" when its own toggle is on AND a platform
+    // admin has authorized Beacon for it. Folding authorization in here means
+    // an unauthorized site behaves exactly as if chat were turned off, without
+    // touching the site admin's saved enable_chat value.
+    $authorized = !empty($settings['platform_authorized']);
+    $enable_chat = ($settings['enable_chat'] ?? FALSE) && $authorized;
+
+    // When Beacon is not authorized, force the chat off for every consumer that
+    // reads enable_chat through the config factory (the widget attach, the
+    // conversation API, the floating button). The saved value is untouched, so
+    // re-authorizing restores it.
+    if (!$authorized && in_array(self::SETTINGS_CONFIG, $names, TRUE)) {
+      $overrides[self::SETTINGS_CONFIG] = ['enable_chat' => FALSE];
+    }
+
     if (in_array($server_config, $names, TRUE) && $index_name !== '') {
       $overrides[$server_config] = [
         'backend_config' => [
@@ -91,8 +117,8 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
       // The chat toggle is the primary driver of index status: the settings
       // form enables or disables the index explicitly in sync with it. This
       // override only acts as a safety net, forcing the index off whenever
-      // chat is disabled or no index name has been configured yet.
-      $enable_chat = $settings['enable_chat'] ?? FALSE;
+      // chat is disabled (including an unauthorized site) or no index name has
+      // been configured yet.
       if (!$enable_chat || $index_name === '') {
         $overrides[$index_config] = ['status' => FALSE];
       }
@@ -122,6 +148,7 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
    */
   protected function mayBeRelevant(string $name): bool {
     return $name === self::VDB_CONFIG
+      || $name === self::SETTINGS_CONFIG
       || str_starts_with($name, 'search_api.server.')
       || str_starts_with($name, 'search_api.index.');
   }
@@ -233,6 +260,7 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
     $settings = $this->getSettings();
     $ours = [
       self::VDB_CONFIG,
+      self::SETTINGS_CONFIG,
       $this->serverConfigName($settings),
       $this->indexConfigName($settings),
     ];

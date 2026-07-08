@@ -5,6 +5,7 @@ ys_ai_tester.tester:
     _title: 'AI Tester'
   requirements:
     _permission: 'use ys ai tester'
+    _ys_beacon_authorized: 'TRUE'
 
 ys_ai_tester.run:
   path: '/admin/config/yalesites/ys-beacon/tester/{run_id}'
@@ -13,6 +14,7 @@ ys_ai_tester.run:
     _title: 'AI Tester Run'
   requirements:
     _permission: 'use ys ai tester'
+    _ys_beacon_authorized: 'TRUE'
     run_id: '\d+'
 
 ys_ai_tester.compare:
@@ -22,6 +24,7 @@ ys_ai_tester.compare:
     _title: 'Compare AI Tester Runs'
   requirements:
     _permission: 'use ys ai tester'
+    _ys_beacon_authorized: 'TRUE'
     run_a: '\d+'
     run_b: '\d+'
 
@@ -32,6 +35,7 @@ ys_ai_tester.compare_json:
     _title: 'Download Comparison JSON'
   requirements:
     _permission: 'use ys ai tester'
+    _ys_beacon_authorized: 'TRUE'
     run_a: '\d+'
     run_b: '\d+'
 
@@ -42,6 +46,7 @@ ys_ai_tester.compare_csv:
     _title: 'Download Comparison CSV'
   requirements:
     _permission: 'use ys ai tester'
+    _ys_beacon_authorized: 'TRUE'
     run_a: '\d+'
     run_b: '\d+'
 
@@ -52,6 +57,7 @@ ys_ai_tester.download_json:
     _title: 'Download JSON'
   requirements:
     _permission: 'use ys ai tester'
+    _ys_beacon_authorized: 'TRUE'
     run_id: '\d+'
 
 ys_ai_tester.download_yaml:
@@ -61,4 +67,5 @@ ys_ai_tester.download_yaml:
     _title: 'Download YAML'
   requirements:
     _permission: 'use ys ai tester'
+    _ys_beacon_authorized: 'TRUE'
     run_id: '\d+'

@@ -144,6 +144,7 @@ permissions:
   - 'administer coffee'
   - 'administer google_tag_container'
   - 'administer main menu items'
+  - 'administer platform admin settings'
   - 'administer redirects'
   - 'administer users'
   - 'administer utility-drop-button-navigation menu items'

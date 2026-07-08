@@ -290,3 +290,25 @@ function ys_beacon_update_10002() {
 function ys_beacon_update_10003() {
   \Drupal::service('ys_beacon.migration')->migrate();
 }
+
+/**
+ * Authorize Beacon on sites already using it so no live site loses it.
+ *
+ * The new platform_authorized flag gates every Beacon surface and ships off by
+ * default, so a platform admin must authorize each site. Sites already running
+ * Beacon (chat enabled, or the ys_beacon integration turned on) must keep it,
+ * so authorize them here. This runs in the updatedb phase before config:import;
+ * ys_beacon.settings is config_ignored, so the per-site value survives the
+ * import.
+ */
+function ys_beacon_update_10004() {
+  $settings = \Drupal::configFactory()->getEditable('ys_beacon.settings');
+  // Only act on sites that actually have Beacon settings; never create the
+  // config object here.
+  if ($settings->isNew()) {
+    return;
+  }
+  $in_use = (bool) $settings->get('enable_chat')
+    || (bool) \Drupal::config('ys_integrations.integration_settings')->get('ys_beacon');
+  $settings->set('platform_authorized', $in_use)->save();
+}
