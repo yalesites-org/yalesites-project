@@ -7,6 +7,7 @@ dependencies:
     - improve_line_breaks_filter
     - linkit
     - typogrify
+    - ys_mathjax
 name: 'Basic HTML'
 format: basic_html
 weight: 0
@@ -63,6 +64,12 @@ filters:
     weight: 0
     settings:
       filter_url_length: 72
+  filter_ys_mathjax:
+    id: filter_ys_mathjax
+    provider: ys_mathjax
+    status: true
+    weight: 100
+    settings: {  }
   improve_line_breaks_filter:
     id: improve_line_breaks_filter
     provider: improve_line_breaks_filter
