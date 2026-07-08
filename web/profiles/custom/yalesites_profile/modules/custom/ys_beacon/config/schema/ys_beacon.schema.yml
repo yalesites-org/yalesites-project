@@ -5,6 +5,9 @@ ys_beacon.settings:
     enable_chat:
       type: boolean
       label: 'Enable the chat widget'
+    platform_authorized:
+      type: boolean
+      label: 'Platform admin has authorized Beacon for this site'
     enable_metadata_fields:
       type: boolean
       label: 'Show AI metadata fields on content forms'

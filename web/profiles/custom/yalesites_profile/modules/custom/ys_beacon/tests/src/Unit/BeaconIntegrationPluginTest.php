@@ -5,6 +5,7 @@ namespace Drupal\Tests\ys_beacon\Unit;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Tests\UnitTestCase;
+use Drupal\ys_beacon\BeaconAuthorization;
 use Drupal\ys_beacon\Plugin\ys_integrations\BeaconIntegrationPlugin;
 use Drupal\ys_beacon\Service\SystemInstructionsStorage;
 
@@ -42,21 +43,25 @@ class BeaconIntegrationPluginTest extends UnitTestCase {
       $this->createMock(AccountInterface::class),
       $this->createMock(SystemInstructionsStorage::class),
       $this->createMock(DateFormatterInterface::class),
+      new BeaconAuthorization($config_factory),
     );
   }
 
   /**
-   * The Beacon card is always actionable, regardless of chat/index config.
+   * The card is actionable only once the platform authorizes Beacon.
    *
-   * Admins reach Configure / Manage Instructions from the card to enable chat
-   * and set the index name, so the card must never gate itself off.
+   * The card drives the Configure / Manage Instructions actions; until a
+   * platform admin authorizes Beacon for the site it must show "not
+   * configured", independent of the site admin's chat/index settings.
    *
    * @covers ::isTurnedOn
    */
-  public function testIsAlwaysTurnedOn(): void {
-    $this->assertTrue($this->buildPlugin([])->isTurnedOn());
-    $this->assertTrue($this->buildPlugin(['enable_chat' => FALSE, 'azure_index_name' => ''])->isTurnedOn());
-    $this->assertTrue($this->buildPlugin(['enable_chat' => TRUE, 'azure_index_name' => 'site-live'])->isTurnedOn());
+  public function testIsTurnedOnReflectsAuthorization(): void {
+    $this->assertFalse($this->buildPlugin([])->isTurnedOn());
+    $this->assertFalse($this->buildPlugin(['platform_authorized' => FALSE])->isTurnedOn());
+    // The chat/index settings do not make the card actionable on their own.
+    $this->assertFalse($this->buildPlugin(['enable_chat' => TRUE, 'azure_index_name' => 'site-live'])->isTurnedOn());
+    $this->assertTrue($this->buildPlugin(['platform_authorized' => TRUE])->isTurnedOn());
   }
 
 }

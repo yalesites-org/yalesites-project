@@ -7,6 +7,7 @@ use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
+use Drupal\ys_beacon\BeaconAuthorization;
 use Drupal\ys_beacon\Service\SystemInstructionsStorage;
 use Drupal\ys_integrations\Attribute\Integration;
 use Drupal\ys_integrations\IntegrationPluginBase;
@@ -37,6 +38,13 @@ class BeaconIntegrationPlugin extends IntegrationPluginBase {
   protected DateFormatterInterface $dateFormatter;
 
   /**
+   * The Beacon authorization service.
+   *
+   * @var \Drupal\ys_beacon\BeaconAuthorization
+   */
+  protected BeaconAuthorization $beaconAuthorization;
+
+  /**
    * Constructs a new BeaconIntegrationPlugin object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -49,11 +57,14 @@ class BeaconIntegrationPlugin extends IntegrationPluginBase {
    *   The system instructions storage.
    * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
    *   The date formatter.
+   * @param \Drupal\ys_beacon\BeaconAuthorization $beacon_authorization
+   *   The Beacon authorization service.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, array $plugin_definition, AccountInterface $current_user, SystemInstructionsStorage $instructions_storage, DateFormatterInterface $date_formatter) {
+  public function __construct(ConfigFactoryInterface $config_factory, array $plugin_definition, AccountInterface $current_user, SystemInstructionsStorage $instructions_storage, DateFormatterInterface $date_formatter, BeaconAuthorization $beacon_authorization) {
     parent::__construct($config_factory, $plugin_definition, $current_user);
     $this->instructionsStorage = $instructions_storage;
     $this->dateFormatter = $date_formatter;
+    $this->beaconAuthorization = $beacon_authorization;
   }
 
   /**
@@ -66,6 +77,7 @@ class BeaconIntegrationPlugin extends IntegrationPluginBase {
       $container->get('current_user'),
       $container->get('ys_beacon.system_instructions_storage'),
       $container->get('date.formatter'),
+      $container->get('ys_beacon.authorization'),
     );
   }
 
@@ -73,10 +85,10 @@ class BeaconIntegrationPlugin extends IntegrationPluginBase {
    * {@inheritdoc}
    */
   public function isTurnedOn(): bool {
-    // The Beacon card must always be actionable: admins reach the Configure and
-    // Manage Instructions screens from here to enable chat and set the index
-    // name, so the card can never gate itself off.
-    return TRUE;
+    // The card is actionable only once a platform admin has authorized Beacon
+    // for this site; otherwise it shows "not configured". Site admins reach the
+    // Configure and Manage Instructions screens from the actionable card.
+    return $this->beaconAuthorization->isAuthorized();
   }
 
   /**

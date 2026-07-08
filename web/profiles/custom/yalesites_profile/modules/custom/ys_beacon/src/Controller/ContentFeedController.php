@@ -3,6 +3,7 @@
 namespace Drupal\ys_beacon\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\ys_beacon\BeaconAuthorization;
 use Drupal\ys_beacon\Service\ContentFeedBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -16,11 +17,15 @@ use Symfony\Component\HttpFoundation\Request;
  * ContentFeedBuilder builds every item as the anonymous user, so the feed only
  * ever exposes content a logged-out visitor could read: published, anonymously
  * viewable, and not opted out via the ai_disable_indexing metatag.
+ *
+ * The feed is closed with a 403 on sites where a platform admin has not
+ * authorized Beacon, so no AI-related activity runs there.
  */
 class ContentFeedController extends ControllerBase {
 
   public function __construct(
     protected ContentFeedBuilder $feedBuilder,
+    protected BeaconAuthorization $beaconAuthorization,
   ) {
   }
 
@@ -28,7 +33,10 @@ class ContentFeedController extends ControllerBase {
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static($container->get('ys_beacon.content_feed_builder'));
+    return new static(
+      $container->get('ys_beacon.content_feed_builder'),
+      $container->get('ys_beacon.authorization'),
+    );
   }
 
   /**
@@ -44,6 +52,10 @@ class ContentFeedController extends ControllerBase {
    *   The feed payload, or a 400 for an unsupported type.
    */
   public function feed(Request $request): JsonResponse {
+    if (!$this->beaconAuthorization->isAuthorized()) {
+      return new JsonResponse(['error' => 'The content feed is not enabled.'], 403);
+    }
+
     $type = (string) $request->query->get('type', 'node');
     $page = (int) $request->query->get('page', 1);
     $page_size = (int) $request->query->get('page_size', ContentFeedBuilder::DEFAULT_PAGE_SIZE);

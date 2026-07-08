@@ -84,12 +84,24 @@ services:
       - '@renderer'
       - '@account_switcher'
 
+  ys_beacon.authorization:
+    class: Drupal\ys_beacon\BeaconAuthorization
+    arguments:
+      - '@config.factory'
+
   ys_beacon.system_instructions_access_check:
     class: Drupal\ys_beacon\Access\SystemInstructionsAccessCheck
     arguments:
       - '@config.factory'
     tags:
       - { name: access_check, applies_to: _ys_beacon_instructions_access }
+
+  ys_beacon.authorized_access_check:
+    class: Drupal\ys_beacon\Access\BeaconAuthorizedAccessCheck
+    arguments:
+      - '@ys_beacon.authorization'
+    tags:
+      - { name: access_check, applies_to: _ys_beacon_authorized }
 
   ys_beacon.config_overrides:
     class: Drupal\ys_beacon\Config\YsBeaconConfigOverrides

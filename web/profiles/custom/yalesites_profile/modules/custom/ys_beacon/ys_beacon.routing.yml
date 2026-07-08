@@ -21,6 +21,7 @@ ys_beacon.settings:
     _title: 'YaleSites Beacon settings'
   requirements:
     _permission: 'manage ys beacon settings'
+    _ys_beacon_authorized: 'TRUE'
 
 ys_beacon.admin_settings:
   path: '/admin/config/yalesites/ys-beacon/admin'
@@ -37,6 +38,7 @@ ys_beacon.instructions:
     _title: 'Beacon system instructions'
   requirements:
     _ys_beacon_instructions_access: 'TRUE'
+    _ys_beacon_authorized: 'TRUE'
 
 ys_beacon.instructions_versions:
   path: '/admin/config/yalesites/ys-beacon/instructions/versions'
@@ -45,6 +47,7 @@ ys_beacon.instructions_versions:
     _title: 'Beacon system instructions version history'
   requirements:
     _ys_beacon_instructions_access: 'TRUE'
+    _ys_beacon_authorized: 'TRUE'
 
 ys_beacon.instructions_view:
   path: '/admin/config/yalesites/ys-beacon/instructions/versions/{version}'
@@ -53,6 +56,7 @@ ys_beacon.instructions_view:
     _title: 'View Beacon system instructions version'
   requirements:
     _ys_beacon_instructions_access: 'TRUE'
+    _ys_beacon_authorized: 'TRUE'
     version: \d+
 
 ys_beacon.instructions_revert:
@@ -62,4 +66,5 @@ ys_beacon.instructions_revert:
     _title: 'Revert Beacon system instructions'
   requirements:
     _ys_beacon_instructions_access: 'TRUE'
+    _ys_beacon_authorized: 'TRUE'
     version: \d+

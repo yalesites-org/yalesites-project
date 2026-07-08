@@ -31,6 +31,11 @@ class YsBeaconConfigOverridesTest extends UnitTestCase {
   protected const INDEX_CONFIG = 'search_api.index.ys_beacon';
 
   /**
+   * The Beacon settings config name whose chat toggle is overridden.
+   */
+  protected const SETTINGS_CONFIG = 'ys_beacon.settings';
+
+  /**
    * Builds the override with stubbed settings and a stubbed key repository.
    *
    * @param array $settings
@@ -154,18 +159,63 @@ class YsBeaconConfigOverridesTest extends UnitTestCase {
   }
 
   /**
-   * The index is left enabled when chat is on and an index name is configured.
+   * The index is left enabled when chat is on, authorized, and index named.
    *
    * @covers ::loadOverrides
    */
   public function testIndexNotForcedOffWhenChatEnabledAndIndexNamed(): void {
     $override = $this->buildOverride(
-      ['enable_chat' => TRUE, 'azure_index_name' => 'somesite-live'],
+      ['enable_chat' => TRUE, 'platform_authorized' => TRUE, 'azure_index_name' => 'somesite-live'],
       [],
     );
 
     $overrides = $override->loadOverrides([self::INDEX_CONFIG]);
     $this->assertArrayNotHasKey(self::INDEX_CONFIG, $overrides);
+  }
+
+  /**
+   * An unauthorized site has its chat toggle forced off for all consumers.
+   *
+   * @covers ::loadOverrides
+   */
+  public function testEnableChatForcedOffWhenNotAuthorized(): void {
+    $override = $this->buildOverride(
+      ['enable_chat' => TRUE, 'platform_authorized' => FALSE],
+      [],
+    );
+
+    $overrides = $override->loadOverrides([self::SETTINGS_CONFIG]);
+    $this->assertFalse($overrides[self::SETTINGS_CONFIG]['enable_chat']);
+  }
+
+  /**
+   * An authorized site's saved chat toggle is left untouched.
+   *
+   * @covers ::loadOverrides
+   */
+  public function testEnableChatNotOverriddenWhenAuthorized(): void {
+    $override = $this->buildOverride(
+      ['enable_chat' => TRUE, 'platform_authorized' => TRUE],
+      [],
+    );
+
+    $overrides = $override->loadOverrides([self::SETTINGS_CONFIG]);
+    $this->assertArrayNotHasKey(self::SETTINGS_CONFIG, $overrides);
+  }
+
+  /**
+   * An unauthorized site forces the index off even with chat on and named.
+   *
+   * @covers ::loadOverrides
+   */
+  public function testIndexForcedOffWhenNotAuthorized(): void {
+    $override = $this->buildOverride(
+      ['enable_chat' => TRUE, 'platform_authorized' => FALSE, 'azure_index_name' => 'somesite-live'],
+      [],
+    );
+
+    $overrides = $override->loadOverrides([self::INDEX_CONFIG]);
+    $this->assertFalse($overrides[self::INDEX_CONFIG]['status']);
   }
 
   /**

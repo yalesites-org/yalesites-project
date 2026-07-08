@@ -33,6 +33,13 @@ class BeaconConfigDefaultsTest extends UnitTestCase {
   }
 
   /**
+   * Beacon ships unauthorized: a platform admin must turn it on per site.
+   */
+  public function testPlatformAuthorizedDefaultsToOff(): void {
+    $this->assertFalse($this->installSettings()['platform_authorized']);
+  }
+
+  /**
    * The floating button icon ships fixed to the "sparkles" mark.
    */
   public function testFloatingButtonIconDefaultsToSparkles(): void {

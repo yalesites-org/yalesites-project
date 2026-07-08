@@ -1,4 +1,5 @@
 enable_chat: false
+platform_authorized: false
 enable_metadata_fields: true
 floating_button: false
 floating_button_text: 'Beacon Chat'
