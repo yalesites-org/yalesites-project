@@ -117,13 +117,8 @@ class YsExpandBookManager extends ExpandBookManager {
 
   /**
    * {@inheritdoc}
-   *
-   * @param array $tree
-   *   The book tree data.
-   * @param int $depth
-   *   The current depth in the tree (0 = top-level, 1+ = secondary/dropdown).
    */
-  protected function buildItems(array $tree, int $depth = 0): array {
+  protected function buildItems(array $tree): array {
 
     $items = [];
     $langcode = $this->languageManager->getCurrentLanguage(LanguageInterface::TYPE_CONTENT)->getId();
@@ -165,19 +160,16 @@ class YsExpandBookManager extends ExpandBookManager {
       // Allow book-specific theme overrides.
       $element['attributes'] = new Attribute();
 
-      // Store the node title for use by secondary menu items and the cloned
-      // top-level item that is prepended to the dropdown in preprocess_block.
+      // Store the node title for use by the cloned top-level item that is
+      // prepended to the dropdown in ys_book_preprocess_block().
       $element['node_title'] = $data['link']['node_title'] ?? $data['link']['title'];
 
-      // Top-level items use the menu link title (which may be a custom title
-      // set in the Content Collection sidebar widget). Secondary/dropdown items
-      // use the node title instead.
-      if ($depth === 0) {
-        $element['title'] = $data['link']['title'];
-      }
-      else {
-        $element['title'] = $element['node_title'];
-      }
+      // Use the menu link title at every depth (it may be a custom title
+      // set in the Content Collection sidebar widget, or fall back to the
+      // node title if none was set). The synthetic clone of the top-level
+      // item that reappears inside its own dropdown is a special case
+      // handled separately in ys_book_preprocess_block().
+      $element['title'] = $data['link']['title'];
 
       if (isset($data['link']['is_cas']) && $data['link']['is_cas']) {
         $element['is_cas'] = TRUE;
@@ -189,7 +181,7 @@ class YsExpandBookManager extends ExpandBookManager {
 
       $element['localized_options'] = !empty($data['link']['localized_options']) ? $data['link']['localized_options'] : [];
       $element['localized_options']['set_active_class'] = TRUE;
-      $element['below'] = $data['below'] ? $this->buildItems($data['below'], $depth + 1) : [];
+      $element['below'] = $data['below'] ? $this->buildItems($data['below']) : [];
       $element['original_link'] = $data['link'];
 
       // Index using the link's unique nid.
