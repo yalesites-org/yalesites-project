@@ -3,7 +3,6 @@
 namespace Drupal\ys_core\EventSubscriber;
 
 use Drupal\cas\Event\CasPreRedirectEvent;
-use Drupal\cas\Service\CasHelper;
 use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
