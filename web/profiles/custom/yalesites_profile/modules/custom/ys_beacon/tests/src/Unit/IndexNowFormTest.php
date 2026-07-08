@@ -222,6 +222,48 @@ class IndexNowFormTest extends UnitTestCase {
   }
 
   /**
+   * Re-index all content rebuilds the tracker so existing content is queued.
+   *
+   * Uses rebuildTracker(), not reindex(): reindex() only re-flags items already
+   * in the tracker and cannot populate one that was never seeded, which is the
+   * "0 of 0 pages indexed" defect in issue #1383.
+   *
+   * @covers ::reindexAll
+   */
+  public function testReindexAllRebuildsTrackerWhenEnabled(): void {
+    $index = $this->createMock(IndexInterface::class);
+    $index->method('status')->willReturn(TRUE);
+    $index->expects($this->once())->method('rebuildTracker');
+    $index->expects($this->never())->method('reindex');
+    $messenger = $this->createMock(MessengerInterface::class);
+    $messenger->expects($this->once())->method('addStatus');
+    $messenger->expects($this->never())->method('addWarning');
+
+    $form = $this->buildForm($index, NULL, $messenger);
+    $form_array = [];
+    $form->reindexAll($form_array, $this->createMock(FormStateInterface::class));
+  }
+
+  /**
+   * Re-index all content on a disabled index warns and never rebuilds.
+   *
+   * @covers ::reindexAll
+   */
+  public function testReindexAllWarnsWhenDisabled(): void {
+    $index = $this->createMock(IndexInterface::class);
+    $index->method('status')->willReturn(FALSE);
+    $index->expects($this->never())->method('rebuildTracker');
+    $index->expects($this->never())->method('reindex');
+    $messenger = $this->createMock(MessengerInterface::class);
+    $messenger->expects($this->once())->method('addWarning');
+    $messenger->expects($this->never())->method('addStatus');
+
+    $form = $this->buildForm($index, NULL, $messenger);
+    $form_array = [];
+    $form->reindexAll($form_array, $this->createMock(FormStateInterface::class));
+  }
+
+  /**
    * A locked/failed batch surfaces a warning instead of a fatal error.
    *
    * @covers ::indexNow

@@ -213,7 +213,10 @@ class BeaconMigrationTest extends UnitTestCase {
     $index->method('status')->willReturn(FALSE);
     $index->expects($this->once())->method('setStatus')->with(TRUE)->willReturnSelf();
     $index->expects($this->once())->method('save');
-    $index->expects($this->once())->method('reindex');
+    // The tracker is rebuilt (not just re-flagged) so existing content is
+    // enumerated into a freshly enabled index (issue #1383).
+    $index->expects($this->once())->method('rebuildTracker');
+    $index->expects($this->never())->method('reindex');
 
     $migration = new BeaconMigration(
       $factory,
@@ -333,9 +336,10 @@ class BeaconMigrationTest extends UnitTestCase {
 
     $index = $this->createMock(IndexInterface::class);
     $index->method('status')->willReturn(TRUE);
-    // Already enabled, so the status is not rewritten; only re-queued.
+    // Already enabled, so the status is not rewritten; the tracker is rebuilt.
     $index->expects($this->never())->method('setStatus');
-    $index->expects($this->once())->method('reindex');
+    $index->expects($this->once())->method('rebuildTracker');
+    $index->expects($this->never())->method('reindex');
 
     $migration = new BeaconMigration(
       $factory,

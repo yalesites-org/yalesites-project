@@ -90,9 +90,9 @@ class BeaconMigration {
     }
 
     // Ensure the per-site Azure index exists. provision() persists the index
-    // name and rebuilds Search API tracking; on a connection failure it throws,
-    // and we defer to the next run rather than tearing the legacy widget down
-    // before Beacon can actually answer.
+    // name; on a connection failure it throws, and we defer to the next run
+    // rather than tearing the legacy widget down before Beacon can actually
+    // answer.
     if (!$settings->get('azure_index_name')) {
       try {
         $this->indexManager->provision();
@@ -114,7 +114,11 @@ class BeaconMigration {
     if (!$index->status()) {
       $index->setStatus(TRUE)->save();
     }
-    $index->reindex();
+    // Rebuild the tracker so existing content is queued for indexing;
+    // reindex() only re-flags already-tracked items and cannot seed an empty
+    // tracker (issue #1383). Under update-mode deploys the enumeration is
+    // deferred to the next cron run.
+    $index->rebuildTracker();
 
     // Beacon is live and indexing. Retire the legacy ai_engine chat, embedding,
     // and metadata so the two assistants never run together.
