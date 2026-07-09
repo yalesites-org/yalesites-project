@@ -117,6 +117,6 @@ tracker_settings:
     indexing_order: fifo
 options:
   cron_limit: 20
-  index_directly: false
+  index_directly: true
   track_changes_in_references: true
 server: ys_beacon
