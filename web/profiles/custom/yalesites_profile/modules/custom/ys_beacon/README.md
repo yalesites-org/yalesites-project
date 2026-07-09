@@ -51,10 +51,14 @@ Submodule `ys_beacon_portkey` provides the `portkey` AI provider plugin
 
 The module is installed on every site and is off by default.
 
-1. Pantheon secrets (per site or org-wide), surfaced as key entities with the
-   same ids by the pantheon_secrets sync (`/admin/config/system/keys/pantheon`
-   or `drush pantheon-secrets:sync`). Beacon never creates key entities
-   itself - the sync owns them:
+1. Pantheon secrets (per site or org-wide). The four key entities ship as
+   `key.key.*` config and are created automatically by `config:import` (the
+   same pattern as the recaptcha/mailchimp keys), so they pre-exist on every
+   site without a manual sync. Each entity is only a pointer
+   (`key_provider: pantheon`); the value resolves live from Pantheon at read
+   time and is never stored in Drupal config. Beacon never creates key entities
+   programmatically, and `drush pantheon-secrets:sync` still works for ad-hoc
+   secrets but is no longer required for these four:
    - `portkey_llm_api_key` - Portkey API key for chat
    - `portkey_embedding_api_key` - Portkey API key for embeddings
    - `azure_ai_search_api_key` - Azure AI Search admin key
@@ -66,11 +70,12 @@ The module is installed on every site and is off by default.
    `/admin/config/yalesites/ys-beacon` (also reachable from
    `/admin/integrations`).
 
-Per-site values are never overwritten by config imports: all `ys_beacon*`
-config and the four key entities are in `config_ignore`, and the index name
-and endpoint URL are layered onto the synced `search_api.server.ys_beacon`
-and `ai_vdb_provider_azure_ai_search.settings` config at runtime by
-`YsBeaconConfigOverrides`.
+Secret values are never stored in Drupal config: the four key entities are
+Pantheon pointers whose values resolve live at read time. Per-site `ys_beacon*`
+config stays in `config_ignore` so index/chat settings are not overwritten by
+config imports, and the index name and endpoint URL are layered onto the synced
+`search_api.server.ys_beacon` and `ai_vdb_provider_azure_ai_search.settings`
+config at runtime by `YsBeaconConfigOverrides`.
 
 ## Azure AI Search index provisioning
 
@@ -381,9 +386,13 @@ deltas. `[docN]` markers in the answer map to `citations[N-1]`.
 
 ## Local development
 
-Pantheon-provider keys cannot resolve locally. Create config-provider keys at
-`/admin/config/system/keys` with the ids listed above (or pick different keys
-in the Beacon and Portkey forms), then:
+The four key ids above are created by `config:import` as pantheon-provider
+entities, so do not create keys with those ids yourself - they already exist.
+Where the local environment can reach the Pantheon secrets they resolve as-is;
+where it cannot, create a config-provider key under a *different* id at
+`/admin/config/system/keys`, put your dev value in it, and select it in the
+Beacon and Portkey forms (`ys_beacon_portkey.settings` is in `config_ignore`, so
+a local Portkey selection persists across imports). Then:
 
 ```
 lando drush en ys_beacon -y
