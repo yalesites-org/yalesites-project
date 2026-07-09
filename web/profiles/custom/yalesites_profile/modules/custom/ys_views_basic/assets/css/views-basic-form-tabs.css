@@ -1,13 +1,15 @@
 /*
  * Listing block form tabs (#1299).
  *
- * Gin strips field_group's default horizontal-tab dividers/padding and applies
- * negative margins, so the tab labels collide (they read as one run of text).
- * Re-space them into clearly separated, padded tabs sitting on a shared
- * baseline. Loaded only on the listing block authoring forms (via the
- * ys_views_basic/listing-form-tabs library, attached in the tabs form_alter)
- * and scoped to the block configure form, so no other field_group tabs are
- * touched.
+ * In the Layout Builder modal, gin_lb tags each horizontal-tab button with
+ * .glb-claro-details, whose `margin: 0 -0.25em 0 -1.25em !important`
+ * (gin_lb/dist/css/gin_lb.css) pulls every tab ~20px left over its neighbour,
+ * so the labels collide (they read as one run of text). Re-space them into
+ * clearly separated, padded tabs sitting on a shared baseline; the margin reset
+ * needs !important to win against that rule. Loaded only on the listing block
+ * authoring forms (via the ys_views_basic/listing-form-tabs library, attached
+ * in the tabs form_alter) and scoped to the block configure form, so no other
+ * field_group tabs are touched.
  */
 .layout-builder-configure-block .horizontal-tabs-list {
   display: flex;
@@ -20,7 +22,7 @@
 
 .layout-builder-configure-block .horizontal-tabs-list .horizontal-tab-button {
   float: none;
-  margin: 0;
+  margin: 0 !important;
   padding: 0;
   border: 0;
   list-style: none;
