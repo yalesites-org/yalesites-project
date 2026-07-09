@@ -3,6 +3,7 @@
 namespace Drupal\Tests\ys_content_export\Unit;
 
 use Drupal\Tests\UnitTestCase;
+use Drupal\node\NodeInterface;
 use Drupal\ys_content_export\ContentExportBuilder;
 
 /**
@@ -57,12 +58,22 @@ class ContentExportBuilderTest extends UnitTestCase {
   public function testGetColumns(): void {
     $page = ContentExportBuilder::getColumns('page');
     $this->assertSame(
-      ['title', 'url', 'published', 'field_tags', 'field_audience', 'field_custom_vocab', 'field_category'],
+      [
+        'title',
+        'url',
+        'published',
+        'cas_protected',
+        'field_tags',
+        'field_audience',
+        'field_custom_vocab',
+        'field_category',
+      ],
       array_keys($page)
     );
     $this->assertSame('Title', $page['title']);
     $this->assertSame('URL', $page['url']);
     $this->assertSame('Published', $page['published']);
+    $this->assertSame('CAS Protected', $page['cas_protected']);
     $this->assertSame('Category', $page['field_category']);
 
     $this->assertSame('Event Category', ContentExportBuilder::getColumns('event')['field_category']);
@@ -80,6 +91,47 @@ class ContentExportBuilderTest extends UnitTestCase {
       $this->assertArrayHasKey('field_audience', $columns);
       $this->assertArrayHasKey('field_custom_vocab', $columns);
     }
+  }
+
+  /**
+   * Tests the CAS Protected cell renders the login-required flag as Yes/No.
+   *
+   * @param bool $has_field
+   *   Whether the node has the field_login_required field.
+   * @param mixed $value
+   *   The stored boolean value when the field is present.
+   * @param string $expected
+   *   The expected cell output.
+   *
+   * @dataProvider casProtectedProvider
+   * @covers ::cellValue
+   */
+  public function testCasProtectedCell(bool $has_field, $value, string $expected): void {
+    $node = $this->createMock(NodeInterface::class);
+    $node->method('hasField')->with('field_login_required')->willReturn($has_field);
+    if ($has_field) {
+      // NodeInterface::get() has no return-type declaration, so a lightweight
+      // object exposing ->value is enough to exercise the cell logic.
+      $node->method('get')->with('field_login_required')->willReturn((object) ['value' => $value]);
+    }
+
+    $method = new \ReflectionMethod(ContentExportBuilder::class, 'cellValue');
+    $method->setAccessible(TRUE);
+    $this->assertSame($expected, $method->invoke(NULL, $node, 'cas_protected'));
+  }
+
+  /**
+   * Provides login-required states and their expected cell output.
+   *
+   * @return array
+   *   Cases: [has_field, value, expected].
+   */
+  public static function casProtectedProvider(): array {
+    return [
+      'protected on' => [TRUE, '1', 'Yes'],
+      'protected off' => [TRUE, '0', 'No'],
+      'field absent' => [FALSE, NULL, 'No'],
+    ];
   }
 
 }

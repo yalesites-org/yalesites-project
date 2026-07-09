@@ -10,7 +10,8 @@ On any Manage Content page (e.g. `admin/content/manage-pages`) use the **Export
 to CSV** button. The file opens in Excel, Numbers, or Google Sheets and
 includes one row per item with these columns:
 
-- **Title**, **URL** (path alias), **Published** (Yes/No)
+- **Title**, **URL** (path alias), **Published** (Yes/No), and
+  **CAS Protected** (Yes/No — whether the item requires CAS login)
 - **Tags**, **Audience**, **Custom Vocab** (on every type)
 - The type's category column — **Category** (Pages, Posts), **Event Category**,
   **Resource Category** — or **Affiliation** (Profiles)

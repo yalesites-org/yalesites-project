@@ -45,13 +45,14 @@ class ContentExportBuilder {
    *
    * @return array
    *   Ordered map of column key (a node field name, or one of the pseudo keys
-   *   title/url/published) to its header label.
+   *   title/url/published/cas_protected) to its header label.
    */
   public static function getColumns(string $bundle): array {
     $columns = [
       'title' => 'Title',
       'url' => 'URL',
       'published' => 'Published',
+      'cas_protected' => 'CAS Protected',
     ];
     $columns += self::SHARED_TAXONOMY;
     $columns += self::BUNDLE_TAXONOMY[$bundle] ?? [];
@@ -91,6 +92,10 @@ class ContentExportBuilder {
 
       case 'published':
         return $node->isPublished() ? 'Yes' : 'No';
+
+      case 'cas_protected':
+        return $node->hasField('field_login_required') && $node->get('field_login_required')->value
+          ? 'Yes' : 'No';
 
       default:
         if (!$node->hasField($key)) {
