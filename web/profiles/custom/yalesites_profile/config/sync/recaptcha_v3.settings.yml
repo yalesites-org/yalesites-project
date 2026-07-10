@@ -7,3 +7,4 @@ verify_hostname: true
 default_challenge: recaptcha/reCAPTCHA
 error_message: 'Antibot verification failed.'
 cacheable: false
+hide_badge: true

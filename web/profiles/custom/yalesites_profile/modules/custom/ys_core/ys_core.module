@@ -17,6 +17,7 @@ use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Url;
 use Drupal\node\Entity\Node;
 use Drupal\Component\Utility\NestedArray;
+use Drupal\ys_core\Editoria11yRouteSuppressor;
 
 // Include coffee commands.
 require_once __DIR__ . '/ys_core.coffee.inc';
@@ -513,6 +514,30 @@ function ys_core_page_attachments(array &$page) {
 }
 
 /**
+ * Implements hook_page_attachments_alter().
+ */
+function ys_core_page_attachments_alter(array &$attachments) {
+  // The Editoria11y accessibility checker attaches its library on every page
+  // (including authoring forms), where its overlay adds no value. Remove it on
+  // admin/authoring routes so it only runs on front-facing content and on
+  // Editoria11y's own pages. Done in the alter so it runs after Editoria11y's
+  // own hook_page_attachments().
+  $libraries = $attachments['#attached']['library'] ?? [];
+  if (!in_array('editoria11y/editoria11y', $libraries, TRUE)) {
+    return;
+  }
+
+  $route_name = \Drupal::routeMatch()->getRouteName();
+  $is_admin_route = \Drupal::service('router.admin_context')->isAdminRoute();
+  if (Editoria11yRouteSuppressor::shouldSuppress($route_name, $is_admin_route)) {
+    $attachments['#attached']['library'] = array_values(array_diff($libraries, [
+      'editoria11y/editoria11y',
+      'editoria11y/editoria11y-dashboard',
+    ]));
+  }
+}
+
+/**
  * Helper function to determine if SiteImprove should load on the current page.
  *
  * @return bool
@@ -931,6 +956,7 @@ function ys_core_form_views_exposed_form_alter(&$form, FormStateInterface $form_
     // List of form elements to which Chosen should be applied.
     $chosen_filters = [
       'field_academic_years_target_id',
+      'field_affiliation_target_id',
       'field_areas_of_study_target_id',
       'field_audience_target_id',
       'field_category_target_id',

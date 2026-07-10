@@ -6,6 +6,7 @@
  */
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Element;
 use Drupal\node\Entity\Node;
 
 /**
@@ -45,11 +46,31 @@ function ys_admin_theme_set_title_on_node_edit_page(array &$variables) {
  * Implements hook_form_BASE_FORM_ID_alter() for node_form.
  */
 function ys_admin_theme_form_node_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Surface workflow action buttons instead of hiding them in Gin's "More
+  // actions" overflow: flag each submit so Gin shows it inline. Delete is a
+  // link, which Gin keeps in the overflow.
+  if (isset($form['actions'])) {
+    foreach (Element::children($form['actions']) as $action_key) {
+      if (($form['actions'][$action_key]['#type'] ?? '') === 'submit') {
+        $form['actions'][$action_key]['#gin_action_item'] = TRUE;
+      }
+    }
+  }
+
   /** @var Drupal\node\NodeForm $node_form */
   $node_form = $form_state->getFormObject();
 
   /** @var Drupal\node\Entity\Node $node */
   $node = $node_form->getEntity();
+
+  // Hide the "Archive" button on new nodes. Prepended to run before Gin's
+  // after_build.
+  if ($node->isNew()) {
+    $form['#after_build'] = array_merge(
+      ['ys_admin_theme_hide_archive_button'],
+      $form['#after_build'] ?? []
+    );
+  }
 
   // Only run for page nodes.
   if ($node->bundle() !== 'page') {
@@ -132,4 +153,26 @@ function ys_admin_theme_book_fields_validate(&$form, FormStateInterface $form_st
       }
     }
   }
+}
+
+/**
+ * After-build: hide the "Archive" workflow button (used on new nodes).
+ *
+ * @param array $form
+ *   The built form.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The current state of the form.
+ *
+ * @return array
+ *   The altered form.
+ */
+function ys_admin_theme_hide_archive_button(array $form, FormStateInterface $form_state) {
+  // workflow_buttons copies the actions into actions_top under Gin.
+  foreach (['actions', 'actions_top'] as $region) {
+    if (isset($form[$region]['moderation_state_archived'])) {
+      $form[$region]['moderation_state_archived']['#access'] = FALSE;
+    }
+  }
+
+  return $form;
 }

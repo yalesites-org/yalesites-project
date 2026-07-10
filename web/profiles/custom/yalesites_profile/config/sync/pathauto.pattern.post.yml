@@ -7,7 +7,7 @@ dependencies:
 id: post
 label: Post
 type: 'canonical_entities:node'
-pattern: '[yale:post_landing_page_path]/[node:field_publish_date:date:custom:Y-m-d]-[node:title]'
+pattern: '/[yale:post_landing_page_path]/[node:field_publish_date:date:custom:Y-m-d]-[node:title]'
 selection_criteria:
   d2b465dc-45d7-44e9-bd6f-a0b2794f2767:
     id: 'entity_bundle:node'

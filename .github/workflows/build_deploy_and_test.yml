@@ -1,221 +1,114 @@
 name: Build, deploy and test
+
 on:
   pull_request:
-    branches-ignore:
-      - master
-defaults:
-  run:
-    shell: bash
-env:
-  TZ: '/usr/share/zoneinfo/America/Los_Angeles'
-  TERM: dumb
-  ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
-  ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-  ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
-  GITHUB_TOKEN: ${{ github.token }}
-  TERMINUS_TOKEN: ${{ secrets.TERMINUS_TOKEN }}
-  TEST_SITE_NAME: ${{ secrets.TERMINUS_SITE }}
-  CI_BRANCH: ${{ github.head_ref || github.ref_name }}
-  COMMIT_SHA: ${{ github.sha }}
-  CI_BUILD_NUMBER: ${{ github.run_number }}
-  DEFAULT_SITE: ${{ secrets.TERMINUS_SITE }}
-  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-  GITHUB_OWNER: ${{ github.repository_owner }}
-  CI_PROJECT_NAME: ${{ github.repository }}
-  PR_NUMBER: ${{ github.event.number }}
-  CI_PULL_REQUEST: ${{ github.event.pull_request._links.html.href }}
+    types: [opened, synchronize]
+    branches-ignore: master
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
 
 jobs:
-  configure_env_vars:
-    container:
-      image: quay.io/pantheon-public/build-tools-ci:9.x-php8.3
-      options: --user root
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref || github.ref_name }}
-          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
-
-      - name: Set bash_env env var
-        run: echo BASH_ENV=${RUNNER_TEMP}/bash_env.txt >> $GITHUB_ENV
-
-      - name: Cache bash_env.txt
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-bash-env
-        with:
-          path: ${{ env.BASH_ENV }}
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.run_number }}
-
-      # Set TERMINUS_ENV and related environment variables.
-      # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
-      - name: setup-environment-vars
-        run: |
-          if [ "$CI_BRANCH" != "master" ]; then
-            # Test vars not set means trigger = push.
-            if [ -z "$PR_NUMBER" ]; then
-              # Var not set means trigger = push.
-              export PR_NUMBER=`curl -u "${GITHUB_OWNER}:${GITHUB_TOKEN}" \
-                -H "Accept: application/vnd.github.groot-preview+json" \
-                "https://api.github.com/repos/${CI_PROJECT_NAME}/commits/${COMMIT_SHA}/pulls" | \
-                jq '.[0].number | select(.!=null)'`
-            fi
-
-            if [ -z "$CI_PULL_REQUEST" ]; then
-              export CI_PULL_REQUEST=`curl -u "${GITHUB_OWNER}:${GITHUB_TOKEN}" \
-                -H "Accept: application/vnd.github.groot-preview+json" \
-                "https://api.github.com/repos/${CI_PROJECT_NAME}/commits/${COMMIT_SHA}/pulls" | \
-                jq '.[0].html_url | select(.!=null)'`
-            fi
-          fi
-
-          export CI_PROJECT_REPONAME=${GITHUB_REPOSITORY#*/}
-          export CI_PROJECT_USERNAME=${GITHUB_REPOSITORY_OWNER}
-          /build-tools-ci/scripts/set-environment
-          GITHUB_WORKFLOW_URL=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
-          echo "export CI_BUILD_URL='${GITHUB_WORKFLOW_URL}'" >> $BASH_ENV
-          echo "export CI_NODE_INDEX=0" >> $BASH_ENV
-          echo "export CI_REPOSITORY_URL='https://github.com/${GITHUB_REPOSITORY}'" >> $BASH_ENV
-          echo "export ARTIFACTS_DIR_URL='${GITHUB_WORKFLOW_URL}/#artifacts'" >> $BASH_ENV
-
   static_tests:
-    container:
-      image: quay.io/pantheon-public/build-tools-ci:9.x-php8.3
-      options: --user root
-    runs-on: ubuntu-latest
+    name: Test
+    runs-on: ubuntu-26.04
     env:
       YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref || github.ref_name }}
-          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+        uses: actions/checkout@v7
 
-      - name: Cache composer cache
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-composer-cache
-        with:
-          path: ~/.composer/cache
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-
-      # Set TERMINUS_ENV and related environment variables.
-      # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
-      - name: setup-environment-vars
-        run: /build-tools-ci/scripts/set-environment
-
-      - name: Check for contrib dependencies in root composer.json
-        run: |
-          contrib_check=$(jq -r '.require | with_entries(select(.key | test("(drupal\/(?!core).*$)"))) | keys | join(", ")' ./composer.json)
-          if [ -n "$contrib_check" ]; then
-            echo "::error::$contrib_check found in /composer.json and should be moved to /web/profiles/custom/yalesites_profile/composer.json" && exit 1
-          fi
-      - name: Check for unpinned dependencies
-        run: |
-          unpinned_dependencies=$(jq -r '.require | to_entries | map(select(.value | test("\\^|\\~|\\>|\\<")) | "\(.key): \(.value)") | join(", ")' ./web/profiles/custom/yalesites_profile/composer.json)
-          if [ -n "$unpinned_dependencies" ]; then
-            echo "::error::$unpinned_dependencies found in /web/profiles/custom/yalesites_profile/composer.json. Please switch to pinned versions." && exit 1
-          fi
-
-      - name: run static tests
-        run: |
-          ./.ci/test/static/run
+      - parallel: 
+        - name: Check for contrib dependencies in root composer.json
+          run: |
+            contrib_check=$(jq -r '.require | with_entries(select(.key | test("(drupal\/(?!core).*$)"))) | keys | join(", ")' ./composer.json)
+            if [ -n "$contrib_check" ]; then
+              echo "::error::$contrib_check found in /composer.json and should be moved to /web/profiles/custom/yalesites_profile/composer.json" && exit 1
+            fi
+        - name: Check for unpinned dependencies
+          run: |
+            unpinned_dependencies=$(jq -r '.require | to_entries | map(select(.value | test("\\^|\\~|\\>|\\<")) | "\(.key): \(.value)") | join(", ")' ./web/profiles/custom/yalesites_profile/composer.json)
+            if [ -n "$unpinned_dependencies" ]; then
+              echo "::error::$unpinned_dependencies found in /web/profiles/custom/yalesites_profile/composer.json. Please switch to pinned versions." && exit 1
+            fi
+        - name: Run static tests
+          run: ./.ci/test/static/run
 
   deploy_to_pantheon:
-    container:
-      image: quay.io/pantheon-public/build-tools-ci:9.x-php8.3
-      options: --user root
-    runs-on: ubuntu-latest
-    needs: [configure_env_vars, static_tests]
+    name: Deploy to Pantheon
+    runs-on: ubuntu-26.04
+    env:
+      SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      MACHINE_TOKEN: ${{ secrets.TERMINUS_TOKEN }}
+      SITE: ${{ secrets.TERMINUS_SITE }}
+    permissions:
+      deployments: write
+      contents: read
+      pull-requests: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
+    
+      - name: Install Terminus
+        uses: pantheon-systems/terminus-github-actions@v1
         with:
-          ref: ${{ github.head_ref || github.ref_name }}
-          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
-          fetch-depth: 0
+          pantheon-machine-token: ${{ env.MACHINE_TOKEN }}
 
-      # Workaround for https://github.com/actions/runner/issues/2033
-      - name: Set git safe.directory
-        run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Install Terminus Build Tools Plugin
+        run: terminus self:plugin:install terminus-build-tools-plugin
 
-      - name: Set bash_env env var
-        run: echo BASH_ENV=${RUNNER_TEMP}/bash_env.txt >> $GITHUB_ENV
-
-      - name: Cache bash_env.txt
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-bash-env
-        with:
-          path: ${{ env.BASH_ENV }}
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.run_number }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-
-      - name: Cache composer cache
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-composer-cache
-        with:
-          path: ~/.composer/cache
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-
-      - name: Cache vendor folder
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-vendor
-        with:
-          path: ./vendor
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/composer.lock') }}
-
-      - name: Cache drush folder
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-drush
-        with:
-          path: ./drush
-          key: ${{ runner.os }}-build-${{ env.cache-name }}
-
-      # Set TERMINUS_ENV and related environment variables.
-      # https://github.com/pantheon-systems/docker-build-tools-ci/blob/6.x/scripts/set-environment
-      - name: setup-environment-vars
-        run: /build-tools-ci/scripts/set-environment
-
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: build frontend components
+      - name: Build frontend components
         env:
           BRANCH: ${{ github.head_ref || github.ref_name }}
           YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
-        run: |
-          ./.ci/build/build_frontend
+        run: ./.ci/build/build_frontend
 
-      # Deploy to Pantheon
-      - name: deploy to Pantheon
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          TERMINUS_BUILD_TOOLS_WORKFLOW_TIMEOUT: 600
+      - name: Disable Integrated Composer
+        run: yq -i '.build_step = false' pantheon.upstream.yml
+
+      - name: Remove .git directories and git add
         run: |
-          echo "$SSH_PRIVATE_KEY" > ../private.key
-          chmod 600 ../private.key
-          eval `ssh-agent -s`
-          ssh-add ../private.key
-          source $BASH_ENV
-          ./.ci/deploy/pantheon/dev-multidev
+          find vendor web -type d -name .git -prune -exec rm -rf {} +
+          git add -f pantheon.upstream.yml vendor web
+
+      - name: Push to Pantheon
+        uses: pantheon-systems/push-to-pantheon@0.9.3
+        id: push-to-pantheon
+        with:
+          ssh_key: ${{ env.SSH_KEY }}
+          machine_token: ${{ env.MACHINE_TOKEN }}
+          site: ${{ env.SITE }}
+          source_env: "dev"
+          delete_old_environments: true
+          skip_terminus_install: true
+
+      - name: Wait for Pantheon sync_code workflow to finish
+        env:
+          TARGET_ENV: ${{ steps.push-to-pantheon.outputs.target_env }}
+        run: |
+          while true; do
+          interval=5
+          status=$(terminus workflow:info:status "$SITE.$TARGET_ENV" --field=status 2>/dev/null)
+          echo "Current workflow status: $status. Checking again in $interval seconds..."
+          if [[ "$status" != "running" ]]; then
+            echo "Workflow has finished with status: $status"
+            break
+          fi
+          sleep "$interval"
+          done
+
+      - name: Wake environment
+        env:
+          TARGET_ENV: ${{ steps.push-to-pantheon.outputs.target_env }}
+        run: terminus -n env:wake "$SITE.$TARGET_ENV" --retry=5 --delay=30
+
+      - name: Run Drush deploy
+        env:
+          TARGET_ENV: ${{ steps.push-to-pantheon.outputs.target_env }}
+        run: terminus -n drush "$SITE.$TARGET_ENV" -- deploy -v -y
+
+      - name: Clear Pantheon cache
+        env:
+          TARGET_ENV: ${{ steps.push-to-pantheon.outputs.target_env }}
+        run: terminus -n env:clear-cache "$SITE.$TARGET_ENV"

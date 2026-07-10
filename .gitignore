@@ -1,9 +1,3 @@
-/web/themes/contrib/
-# :::::::::::::::::::::: cut ::::::::::::::::::::::
-
-# Put ignore patterns for build artifacts above the cut line
-# so they are ignored in the source repo and committed
-# to Pantheon.
 # This file contains .gitignore rules that are often used with Drupal projects.
 # Because .gitignore is specific to your site and its deployment processes, you
 # may need to uncomment, add, or remove rules.
@@ -106,10 +100,6 @@
 # Ignore local lando settings. Each site will have unique values.
 .lando.local.yml
 
-# Ignore local MCP configs. Each developer's lando port is machine-specific.
-.mcp.json
-/.claude/settings.local.json
-
 # Ignore packages installed by Node.
 /node_modules
 package-lock.json
@@ -117,9 +107,6 @@ package-lock.json
 # Local files
 .DS_Store
 .zip
-
-# AI session docs (local only — not committed)
-/docs-local/
 
 # Database references
 reference
@@ -140,12 +127,3 @@ web/profiles/custom/yalesites_profile/vendor/
 
 # Secrets for local use
 secrets.json
-
-# Copilot personal instruction files (local only)
-.ai/copilot/copilot.local.md
-copilot.local.md
-/docs/_template.md
-/.github/copilot-instructions.md
-/.ai
-/CLAUDE.md
-/.claude
