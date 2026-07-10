@@ -264,14 +264,15 @@ class YsBeaconConfigOverridesTest extends UnitTestCase {
   }
 
   /**
-   * A read-only site adds the read_only override to the index config.
+   * The read-only flag is no longer applied as a runtime index override.
    *
-   * A borrowing site keeps its index enabled so the shared collection can be
-   * queried, but marks it read-only so Search API never writes to it.
+   * It is persisted onto the index entity by BeaconIndexManager instead, so a
+   * read-only site's index config carries no override here and stays enabled so
+   * the collection can still be queried.
    *
    * @covers ::loadOverrides
    */
-  public function testReadOnlyOverridesIndexWhenSet(): void {
+  public function testReadOnlyIsNotOverridden(): void {
     $override = $this->buildOverride(
       [
         'enable_chat' => TRUE,
@@ -282,86 +283,29 @@ class YsBeaconConfigOverridesTest extends UnitTestCase {
       [],
     );
 
-    $index = $override->loadOverrides([self::INDEX_CONFIG])[self::INDEX_CONFIG];
-    $this->assertTrue($index['read_only']);
-    // The index stays enabled so the borrowed collection can still be queried.
-    $this->assertArrayNotHasKey('status', $index);
+    // Chat is on, authorized, and an index is named, so no status override
+    // fires; and read_only is no longer overridden, so the index config is
+    // untouched entirely.
+    $this->assertArrayNotHasKey(self::INDEX_CONFIG, $override->loadOverrides([self::INDEX_CONFIG]));
   }
 
   /**
-   * A writable site (the default) gets no read_only override.
+   * The search server config is no longer overridden.
+   *
+   * The per-site Azure database name is persisted onto search_api.server by
+   * BeaconIndexManager, not layered on at runtime, so this class leaves server
+   * config alone and its name never even reaches the relevance check.
    *
    * @covers ::loadOverrides
+   * @covers ::mayBeRelevant
    */
-  public function testNoReadOnlyOverrideWhenUnset(): void {
-    $unset = $this->buildOverride(
-      ['enable_chat' => TRUE, 'platform_authorized' => TRUE, 'azure_index_name' => 'my-site-live'],
-      [],
-    );
-    $this->assertArrayNotHasKey(self::INDEX_CONFIG, $unset->loadOverrides([self::INDEX_CONFIG]));
-
-    $explicit_false = $this->buildOverride(
-      [
-        'enable_chat' => TRUE,
-        'platform_authorized' => TRUE,
-        'azure_index_name' => 'my-site-live',
-        'read_only' => FALSE,
-      ],
-      [],
-    );
-    $this->assertArrayNotHasKey(self::INDEX_CONFIG, $explicit_false->loadOverrides([self::INDEX_CONFIG]));
-  }
-
-  /**
-   * Read-only composes with the chat-off status safety net.
-   *
-   * @covers ::loadOverrides
-   */
-  public function testReadOnlyComposesWithStatusOverride(): void {
+  public function testServerConfigIsNotOverridden(): void {
     $override = $this->buildOverride(
-      ['enable_chat' => FALSE, 'azure_index_name' => 'other-site-live', 'read_only' => TRUE],
+      ['enable_chat' => TRUE, 'platform_authorized' => TRUE, 'azure_index_name' => 'site-live'],
       [],
     );
 
-    $index = $override->loadOverrides([self::INDEX_CONFIG])[self::INDEX_CONFIG];
-    $this->assertFalse($index['status']);
-    $this->assertTrue($index['read_only']);
-  }
-
-  /**
-   * By default the override targets the "ys_beacon" server and index.
-   *
-   * @covers ::loadOverrides
-   */
-  public function testDefaultServerAndIndexNames(): void {
-    $overrides = $this->overridesFor(['enable_chat' => TRUE, 'azure_index_name' => 'site-live'])
-      ->loadOverrides(['search_api.server.ys_beacon', 'search_api.index.ys_beacon']);
-
-    $this->assertSame(
-      'site-live',
-      $overrides['search_api.server.ys_beacon']['backend_config']['database_settings']['database_name'] ?? NULL,
-    );
-  }
-
-  /**
-   * A configured server/index id moves the overrides to the new config names.
-   *
-   * @covers ::loadOverrides
-   */
-  public function testConfigurableServerAndIndexNames(): void {
-    $service = $this->overridesFor([
-      'search_server_id' => 'internal',
-      'search_index_id' => 'internal',
-      'azure_index_name' => 'internal-live',
-    ]);
-
-    $server = $service->loadOverrides(['search_api.server.internal']);
-    $this->assertSame(
-      'internal-live',
-      $server['search_api.server.internal']['backend_config']['database_settings']['database_name'] ?? NULL,
-    );
-    // The old default name is no longer overridden.
-    $this->assertSame([], $service->loadOverrides(['search_api.server.ys_beacon']));
+    $this->assertSame([], $override->loadOverrides(['search_api.server.ys_beacon']));
   }
 
   /**

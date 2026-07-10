@@ -9,27 +9,24 @@ use Drupal\Core\Config\StorageInterface;
 /**
  * Injects per-site Beacon values into platform-managed configuration.
  *
- * The search server and vector database connection configuration are shipped
- * in the profile config sync directory so they deploy identically to every
- * site. The per-site values (the Azure AI Search index name and endpoint URL)
- * live outside of synced config: the index name in ys_beacon.settings (which
- * is config_ignored) and the endpoint URL in a key entity backed by Pantheon
- * secrets. This override layers them in at runtime, so config imports never
- * overwrite them. Search API honors overrides on the loaded index entity, so
- * this class drives the index status and the read-only flag as well as the
- * server backend_config.
+ * Two things are layered in at runtime rather than stored in synced config: the
+ * Azure AI Search endpoint URL (resolved from a key entity backed by Pantheon
+ * secrets) on the vector database connection config, and safety-net toggles on
+ * the search index status and the Beacon chat setting.
  *
- * A site can borrow another site's collection by pointing its index name at
- * that collection and turning on ys_beacon.settings:read_only. This override
- * then marks the index read-only at runtime, so Search API's automatic write
- * paths (indexing, cron, clear, delete-time removal) stand down and the site
- * queries the shared collection without writing to it. Like the index name, the
- * flag lives in the config-ignored ys_beacon.settings, so it survives config
- * import.
+ * The per-site index name and read-only flag are NOT overridden here: they are
+ * persisted directly onto the real Search API config (the server's Azure
+ * database name and the index's read_only flag) by
+ * BeaconIndexManager::propagateConnection(), and kept through config import by
+ * config-ignoring those keys. Persisting them - rather than overriding at
+ * runtime - keeps the Search API admin UI truthful and points the chat query at
+ * the configured collection.
  *
- * The index is also disabled at runtime whenever the chat widget is turned
- * off or a site has not configured its index name yet, so unconfigured or
- * disabled sites never attempt to reach Azure.
+ * The index status is forced off at runtime whenever the chat widget is turned
+ * off, the site is unauthorized, or no index name is configured yet, so
+ * unconfigured or disabled sites never reach Azure. Status is the one index
+ * value still derived at runtime because it depends on the platform
+ * authorization and chat toggle, which can change without a settings-form save.
  *
  * Finally, when a platform admin has not authorized Beacon for a site, this
  * override forces the chat off (ys_beacon.settings:enable_chat) so the site
@@ -42,10 +39,10 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
   /**
    * The vector-database connection config this class overrides.
    *
-   * The search server and index config names are not constants: their machine
-   * names are configurable (ys_beacon.settings:search_server_id /
-   * search_index_id, defaulting to "ys_beacon"), so they are resolved at
-   * runtime to support a second index without code changes.
+   * The search index config name is not a constant: its machine name is
+   * configurable (ys_beacon.settings:search_index_id, defaulting to
+   * "ys_beacon"), so it is resolved at runtime to support a second index
+   * without code changes.
    */
   protected const VDB_CONFIG = 'ai_vdb_provider_azure_ai_search.settings';
 
@@ -93,7 +90,6 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
     }
 
     $settings = $this->getSettings();
-    $server_config = $this->serverConfigName($settings);
     $index_config = $this->indexConfigName($settings);
     $index_name = $settings['azure_index_name'] ?? '';
 
@@ -112,16 +108,6 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
       $overrides[self::SETTINGS_CONFIG] = ['enable_chat' => FALSE];
     }
 
-    if (in_array($server_config, $names, TRUE) && $index_name !== '') {
-      $overrides[$server_config] = [
-        'backend_config' => [
-          'database_settings' => [
-            'database_name' => $index_name,
-          ],
-        ],
-      ];
-    }
-
     if (in_array($index_config, $names, TRUE)) {
       // The chat toggle is the primary driver of index status: the settings
       // form enables or disables the index explicitly in sync with it. This
@@ -130,17 +116,6 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
       // been configured yet.
       if (!$enable_chat || $index_name === '') {
         $overrides[$index_config]['status'] = FALSE;
-      }
-      // A site borrowing another site's collection marks its index read-only so
-      // it queries the shared collection but never writes to it. This gates
-      // Search API's automatic write paths (immediate indexing, cron, the
-      // indexing batch helper, clear, and delete-time removal) and the Beacon
-      // site-facing indexing controls, all of which load the index with
-      // overrides applied. Search API's own index admin UI loads the index
-      // override-free, so it is not gated here; that UI requires "administer
-      // search_api", which no Beacon site role is granted.
-      if (!empty($settings['read_only'])) {
-        $overrides[$index_config]['read_only'] = TRUE;
       }
     }
 
@@ -164,26 +139,13 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
    *   The config object name.
    *
    * @return bool
-   *   TRUE when the name is the VDB settings or a search server/index object.
+   *   TRUE when the name is the VDB settings, the Beacon settings, or a search
+   *   index object.
    */
   protected function mayBeRelevant(string $name): bool {
     return $name === self::VDB_CONFIG
       || $name === self::SETTINGS_CONFIG
-      || str_starts_with($name, 'search_api.server.')
       || str_starts_with($name, 'search_api.index.');
-  }
-
-  /**
-   * The search server config object name backing the chatbot.
-   *
-   * @param array $settings
-   *   The raw ys_beacon settings.
-   *
-   * @return string
-   *   The config object name.
-   */
-  protected function serverConfigName(array $settings): string {
-    return 'search_api.server.' . (($settings['search_server_id'] ?? '') ?: 'ys_beacon');
   }
 
   /**
@@ -281,7 +243,6 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
     $ours = [
       self::VDB_CONFIG,
       self::SETTINGS_CONFIG,
-      $this->serverConfigName($settings),
       $this->indexConfigName($settings),
     ];
     if (in_array($name, $ours, TRUE)) {

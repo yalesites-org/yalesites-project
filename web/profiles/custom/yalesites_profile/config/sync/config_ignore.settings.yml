@@ -17,6 +17,8 @@ ignored_config_entities:
   - key.key.azure_ai_search_url
   - key.key.portkey_embedding_api_key
   - key.key.portkey_llm_api_key
+  - 'search_api.index.ys_beacon:read_only'
+  - 'search_api.server.ys_beacon:backend_config.database_settings.database_name'
   - 'system.site*'
   - 'taxonomy.vocabulary.custom_vocab:name'
   - 'ys_ai_system_instructions*'

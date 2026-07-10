@@ -66,39 +66,51 @@ The module is installed on every site and is off by default.
    `/admin/config/yalesites/ys-beacon` (also reachable from
    `/admin/integrations`).
 
-Per-site values are never overwritten by config imports: all `ys_beacon*`
-config and the four key entities are in `config_ignore`, and the index name
-and endpoint URL are layered onto the synced `search_api.server.ys_beacon`
-and `ai_vdb_provider_azure_ai_search.settings` config at runtime by
-`YsBeaconConfigOverrides`.
+Per-site values are never overwritten by config imports. All `ys_beacon*` config
+and the four key entities are in `config_ignore`. The per-site index name and
+read-only flag are persisted onto the real Search API config
+(`search_api.server.ys_beacon`'s Azure database name and
+`search_api.index.ys_beacon`'s `read_only` flag) by
+`BeaconIndexManager::propagateConnection()`, with those two keys config-ignored so
+the import keeps them. The Azure endpoint URL is still layered onto
+`ai_vdb_provider_azure_ai_search.settings` at runtime from a key entity by
+`YsBeaconConfigOverrides`, which also forces the index status off while chat is
+disabled or the site is unauthorized.
 
 ### Borrowing another site's index (read-only)
 
 A site can query another site's collection (for example a shared or parent
 corpus) instead of maintaining its own. Point the index name at that collection
-(`azure_index_name`) and turn on **Read-only** on the Beacon administration form
-(`ys_beacon.settings:read_only`). The borrowing site then answers from the
-shared collection but never writes to it: immediate indexing, cron indexing, the
-"Re-index all content" / "Index now" controls, `clear`, and delete-time document
-removal are all suppressed, because `YsBeaconConfigOverrides` sets the Search API
-index `read_only` flag at runtime and Search API gates those write paths on
-`IndexInterface::isReadOnly()`. The site-facing settings form hides the indexing
-controls and shows a note in this state. Like the index name, the flag lives in
-the config-ignored `ys_beacon.settings`, so it survives `drush deploy` /
-`drush cim` without config-ignoring a new `search_api.index.*` key.
+(`azure_index_name`) and turn on **Read-only** on the Beacon administration form.
+The borrowing site then answers from the shared collection but never writes to
+it: immediate indexing, cron indexing, the "Re-index all content" / "Index now"
+controls, `clear`, and delete-time document removal are all suppressed, because
+the form persists the Search API index `read_only` flag onto the index entity
+(`BeaconIndexManager::propagateConnection()`) and Search API gates those write
+paths on `IndexInterface::isReadOnly()`. Because the flag is persisted on the
+entity rather than only applied as a runtime override, Search API's own index
+admin UI reflects it too, so its "Index now" / clear / reindex actions stand down
+as well. The site-facing settings form hides the indexing controls and shows a
+note in this state.
 
-Because the flag is applied as a runtime config override rather than persisted on
-the index entity, Search API's own index admin UI - which loads the index
-override-free - does not reflect it, so its "Index now" / clear / reindex actions
-would still write to the collection. That UI requires the `administer search_api`
-permission, which no YaleSites role is granted (site administrators manage Beacon
-through `manage ys beacon settings`), so it is reachable only by a platform
-operator. If that path ever needs closing, persist `read_only` on the entity and
-config-ignore the `search_api.index.*:read_only` key instead.
+The read-only flag and the borrowed index name live in the config-ignored
+`ys_beacon.settings` as the site preference, and are written onto the synced
+`search_api.index.ys_beacon` (`read_only`) and `search_api.server.ys_beacon`
+(Azure database name) config. Those two keys are themselves config-ignored
+(`search_api.index.ys_beacon:read_only` and
+`search_api.server.ys_beacon:backend_config.database_settings.database_name`), so
+a per-site value survives `drush deploy` / `drush cim`. These `config_ignore`
+entries are keyed to the default `ys_beacon` index/server machine names; a site
+that overrides `search_index_id` / `search_server_id` (the multi-index
+capability) must add matching `config_ignore` keys for its names, or config
+import will reset the persisted database name and read-only flag.
 
 (A read-only index still tracks items locally in Search API, but tracking is
 local bookkeeping and never reaches the borrowed collection, so the owning
-site's data is untouched.)
+site's data is untouched. Retrieving and citing content that belongs to a
+*different* site's collection additionally requires the cross-site citation work
+tracked in the shared multi-tenant index epic; a same-content borrow - for
+example across environments of one site - works today.)
 
 ## Azure AI Search index provisioning
 

@@ -315,9 +315,9 @@ class IndexNowFormTest extends UnitTestCase {
   /**
    * Status changes are persisted on an override-free copy of the index.
    *
-   * The runtime config override (status and read_only) must never be baked into
-   * the synced search_api.index config, so the save loads the index
-   * override-free rather than through the overrides-applied load().
+   * The runtime status config override must never be baked into the synced
+   * search_api.index config, so the save loads the index override-free rather
+   * than through the overrides-applied load().
    *
    * @covers ::saveIndexStatus
    */
