@@ -6,6 +6,7 @@ use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\search_api\IndexInterface;
 use Drupal\search_api\SearchApiException;
@@ -185,26 +186,37 @@ class YsBeaconSettings extends ConfigFormBase {
       '#open' => TRUE,
       '#weight' => 30,
     ];
-    $form['indexing']['status'] = [
-      '#markup' => '<p>' . $this->indexStatusSummary() . '</p>',
-    ];
-    $form['indexing']['reindex'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Re-index all content'),
-      '#submit' => ['::reindexAll'],
-      '#limit_validation_errors' => [],
-    ];
-    $form['indexing']['index_now'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Index now'),
-      // Dedicated handler only: the main config submit must not run, so chat
-      // settings are not saved when the user just wants to flush the queue.
-      '#submit' => ['::indexNow'],
-      '#limit_validation_errors' => [],
-      // Disabled unless the Beacon index is enabled and has items waiting to be
-      // indexed. Mirrors Search API's own "Index now" disabled behaviour.
-      '#disabled' => $this->indexRemainingItems() < 1,
-    ];
+    $index = $this->loadBeaconIndex();
+    if ($index && $index->isReadOnly()) {
+      // This site borrows another site's collection: content indexing is owned
+      // by that site, so the local re-index / index-now controls are hidden and
+      // the status is replaced with a short explanatory note.
+      $form['indexing']['status'] = [
+        '#markup' => '<p>' . $this->readOnlyNotice() . '</p>',
+      ];
+    }
+    else {
+      $form['indexing']['status'] = [
+        '#markup' => '<p>' . $this->indexStatusSummary() . '</p>',
+      ];
+      $form['indexing']['reindex'] = [
+        '#type' => 'submit',
+        '#value' => $this->t('Re-index all content'),
+        '#submit' => ['::reindexAll'],
+        '#limit_validation_errors' => [],
+      ];
+      $form['indexing']['index_now'] = [
+        '#type' => 'submit',
+        '#value' => $this->t('Index now'),
+        // Dedicated handler only: the main config submit must not run, so chat
+        // settings are not saved when the user just wants to flush the queue.
+        '#submit' => ['::indexNow'],
+        '#limit_validation_errors' => [],
+        // Disabled unless the Beacon index is enabled and has items waiting to
+        // be indexed. Mirrors Search API's own "Index now" disabled behaviour.
+        '#disabled' => $this->indexRemainingItems() < 1,
+      ];
+    }
 
     // Link to the per-site system instructions when the user has access.
     $instructions_url = Url::fromRoute('ys_beacon.instructions');
@@ -266,7 +278,7 @@ class YsBeaconSettings extends ConfigFormBase {
     // Keep the Search API index status in sync with the chat toggle. The
     // config override forces the index off while chat is disabled, so the
     // explicit status changes only take effect for the matching transition.
-    $index = $this->entityTypeManager->getStorage('search_api_index')->load($this->searchIndexId());
+    $index = $this->loadBeaconIndex();
     if (!$index) {
       // Abort if the index does not exist; this should never happen.
       parent::submitForm($form, $form_state);
@@ -284,7 +296,7 @@ class YsBeaconSettings extends ConfigFormBase {
       // config override forces it off while no index name is set), so we never
       // enable an index with no Azure backing.
       if (!$previous_enable && $this->config(self::CONFIG_NAME)->get('azure_index_name')) {
-        $index->setStatus(TRUE)->save();
+        $this->saveIndexStatus(TRUE);
         // Rebuild the tracker so existing content is queued for indexing on
         // the freshly enabled index: reindex() only re-flags already-tracked
         // items and leaves a never-seeded tracker empty (issue #1383).
@@ -293,7 +305,7 @@ class YsBeaconSettings extends ConfigFormBase {
     }
     elseif ($previous_enable) {
       // Chat turned off: stop indexing.
-      $index->setStatus(FALSE)->save();
+      $this->saveIndexStatus(FALSE);
     }
 
     parent::submitForm($form, $form_state);
@@ -326,6 +338,10 @@ class YsBeaconSettings extends ConfigFormBase {
    */
   public function reindexAll(array &$form, FormStateInterface $form_state): void {
     $index = $this->loadBeaconIndex();
+    if ($index && $index->isReadOnly()) {
+      $this->messenger()->addWarning($this->readOnlyNotice());
+      return;
+    }
     if ($index && $index->status()) {
       // rebuildTracker() re-enumerates the datasources and marks every item
       // for indexing, so it repopulates a never-seeded tracker as well as
@@ -351,6 +367,10 @@ class YsBeaconSettings extends ConfigFormBase {
    */
   public function indexNow(array &$form, FormStateInterface $form_state): void {
     $index = $this->loadBeaconIndex();
+    if ($index && $index->isReadOnly()) {
+      $this->messenger()->addWarning($this->readOnlyNotice());
+      return;
+    }
     if (!$index || !$index->status()) {
       $this->messenger()->addWarning($this->t('The Beacon index is not enabled on this site. Enable the chat widget first.'));
       return;
@@ -411,6 +431,16 @@ class YsBeaconSettings extends ConfigFormBase {
   }
 
   /**
+   * The note shown when the Beacon index borrows another site's collection.
+   *
+   * Displayed in place of the indexing controls and returned by the indexing
+   * submit handlers when they are blocked, so the wording lives in one place.
+   */
+  protected function readOnlyNotice(): TranslatableMarkup {
+    return $this->t('This site uses a shared, read-only index; content indexing is managed by the owning site.');
+  }
+
+  /**
    * Loads the Search API index backing the Beacon chatbot.
    *
    * @return \Drupal\search_api\IndexInterface|null
@@ -418,6 +448,22 @@ class YsBeaconSettings extends ConfigFormBase {
    */
   protected function loadBeaconIndex(): ?IndexInterface {
     return $this->entityTypeManager->getStorage('search_api_index')->load($this->searchIndexId());
+  }
+
+  /**
+   * Persists the Beacon index enabled/disabled status.
+   *
+   * Saves an override-free copy of the index so the runtime status and
+   * read-only overrides layered on by YsBeaconConfigOverrides are never baked
+   * into the synced search_api.index config (which, unlike ys_beacon.settings,
+   * is written back by config import). Mirrors Search API's own CommandHelper,
+   * which reloads override-free before persisting a status change.
+   */
+  protected function saveIndexStatus(bool $status): void {
+    $index = $this->entityTypeManager->getStorage('search_api_index')->loadOverrideFree($this->searchIndexId());
+    if ($index) {
+      $index->setStatus($status)->save();
+    }
   }
 
   /**

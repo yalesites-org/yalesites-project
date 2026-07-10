@@ -15,8 +15,17 @@ use Drupal\Core\Config\StorageInterface;
  * live outside of synced config: the index name in ys_beacon.settings (which
  * is config_ignored) and the endpoint URL in a key entity backed by Pantheon
  * secrets. This override layers them in at runtime, so config imports never
- * overwrite them. Search API explicitly supports overrides on server
- * backend_config and index status.
+ * overwrite them. Search API honors overrides on the loaded index entity, so
+ * this class drives the index status and the read-only flag as well as the
+ * server backend_config.
+ *
+ * A site can borrow another site's collection by pointing its index name at
+ * that collection and turning on ys_beacon.settings:read_only. This override
+ * then marks the index read-only at runtime, so Search API's automatic write
+ * paths (indexing, cron, clear, delete-time removal) stand down and the site
+ * queries the shared collection without writing to it. Like the index name, the
+ * flag lives in the config-ignored ys_beacon.settings, so it survives config
+ * import.
  *
  * The index is also disabled at runtime whenever the chat widget is turned
  * off or a site has not configured its index name yet, so unconfigured or
@@ -120,7 +129,18 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
       // chat is disabled (including an unauthorized site) or no index name has
       // been configured yet.
       if (!$enable_chat || $index_name === '') {
-        $overrides[$index_config] = ['status' => FALSE];
+        $overrides[$index_config]['status'] = FALSE;
+      }
+      // A site borrowing another site's collection marks its index read-only so
+      // it queries the shared collection but never writes to it. This gates
+      // Search API's automatic write paths (immediate indexing, cron, the
+      // indexing batch helper, clear, and delete-time removal) and the Beacon
+      // site-facing indexing controls, all of which load the index with
+      // overrides applied. Search API's own index admin UI loads the index
+      // override-free, so it is not gated here; that UI requires "administer
+      // search_api", which no Beacon site role is granted.
+      if (!empty($settings['read_only'])) {
+        $overrides[$index_config]['read_only'] = TRUE;
       }
     }
 

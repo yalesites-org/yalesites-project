@@ -72,6 +72,34 @@ and endpoint URL are layered onto the synced `search_api.server.ys_beacon`
 and `ai_vdb_provider_azure_ai_search.settings` config at runtime by
 `YsBeaconConfigOverrides`.
 
+### Borrowing another site's index (read-only)
+
+A site can query another site's collection (for example a shared or parent
+corpus) instead of maintaining its own. Point the index name at that collection
+(`azure_index_name`) and turn on **Read-only** on the Beacon administration form
+(`ys_beacon.settings:read_only`). The borrowing site then answers from the
+shared collection but never writes to it: immediate indexing, cron indexing, the
+"Re-index all content" / "Index now" controls, `clear`, and delete-time document
+removal are all suppressed, because `YsBeaconConfigOverrides` sets the Search API
+index `read_only` flag at runtime and Search API gates those write paths on
+`IndexInterface::isReadOnly()`. The site-facing settings form hides the indexing
+controls and shows a note in this state. Like the index name, the flag lives in
+the config-ignored `ys_beacon.settings`, so it survives `drush deploy` /
+`drush cim` without config-ignoring a new `search_api.index.*` key.
+
+Because the flag is applied as a runtime config override rather than persisted on
+the index entity, Search API's own index admin UI - which loads the index
+override-free - does not reflect it, so its "Index now" / clear / reindex actions
+would still write to the collection. That UI requires the `administer search_api`
+permission, which no YaleSites role is granted (site administrators manage Beacon
+through `manage ys beacon settings`), so it is reachable only by a platform
+operator. If that path ever needs closing, persist `read_only` on the entity and
+config-ignore the `search_api.index.*:read_only` key instead.
+
+(A read-only index still tracks items locally in Search API, but tracking is
+local bookkeeping and never reaches the borrowed collection, so the owning
+site's data is untouched.)
+
 ## Azure AI Search index provisioning
 
 Indexes are provisioned automatically by `BeaconIndexManager`:

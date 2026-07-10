@@ -312,3 +312,25 @@ function ys_beacon_update_10004() {
     || (bool) \Drupal::config('ys_integrations.integration_settings')->get('ys_beacon');
   $settings->set('platform_authorized', $in_use)->save();
 }
+
+/**
+ * Seed the Beacon index read-only flag on existing sites.
+ *
+ * The new ys_beacon.settings:read_only flag lets a site borrow another site's
+ * Azure collection and query it without ever writing to it. It ships off, so
+ * seed the explicit FALSE on existing sites for explicit exported config;
+ * runtime already treats an absent value as not-read-only. This runs in the
+ * updatedb phase before config:import; ys_beacon.settings is config_ignored,
+ * so a per-site read-only value set later survives the import.
+ */
+function ys_beacon_update_10005() {
+  $settings = \Drupal::configFactory()->getEditable('ys_beacon.settings');
+  // Only touch sites that actually have Beacon settings; never create the
+  // config object here.
+  if ($settings->isNew()) {
+    return;
+  }
+  if ($settings->get('read_only') === NULL) {
+    $settings->set('read_only', FALSE)->save();
+  }
+}

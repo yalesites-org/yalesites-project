@@ -264,6 +264,71 @@ class YsBeaconConfigOverridesTest extends UnitTestCase {
   }
 
   /**
+   * A read-only site adds the read_only override to the index config.
+   *
+   * A borrowing site keeps its index enabled so the shared collection can be
+   * queried, but marks it read-only so Search API never writes to it.
+   *
+   * @covers ::loadOverrides
+   */
+  public function testReadOnlyOverridesIndexWhenSet(): void {
+    $override = $this->buildOverride(
+      [
+        'enable_chat' => TRUE,
+        'platform_authorized' => TRUE,
+        'azure_index_name' => 'other-site-live',
+        'read_only' => TRUE,
+      ],
+      [],
+    );
+
+    $index = $override->loadOverrides([self::INDEX_CONFIG])[self::INDEX_CONFIG];
+    $this->assertTrue($index['read_only']);
+    // The index stays enabled so the borrowed collection can still be queried.
+    $this->assertArrayNotHasKey('status', $index);
+  }
+
+  /**
+   * A writable site (the default) gets no read_only override.
+   *
+   * @covers ::loadOverrides
+   */
+  public function testNoReadOnlyOverrideWhenUnset(): void {
+    $unset = $this->buildOverride(
+      ['enable_chat' => TRUE, 'platform_authorized' => TRUE, 'azure_index_name' => 'my-site-live'],
+      [],
+    );
+    $this->assertArrayNotHasKey(self::INDEX_CONFIG, $unset->loadOverrides([self::INDEX_CONFIG]));
+
+    $explicit_false = $this->buildOverride(
+      [
+        'enable_chat' => TRUE,
+        'platform_authorized' => TRUE,
+        'azure_index_name' => 'my-site-live',
+        'read_only' => FALSE,
+      ],
+      [],
+    );
+    $this->assertArrayNotHasKey(self::INDEX_CONFIG, $explicit_false->loadOverrides([self::INDEX_CONFIG]));
+  }
+
+  /**
+   * Read-only composes with the chat-off status safety net.
+   *
+   * @covers ::loadOverrides
+   */
+  public function testReadOnlyComposesWithStatusOverride(): void {
+    $override = $this->buildOverride(
+      ['enable_chat' => FALSE, 'azure_index_name' => 'other-site-live', 'read_only' => TRUE],
+      [],
+    );
+
+    $index = $override->loadOverrides([self::INDEX_CONFIG])[self::INDEX_CONFIG];
+    $this->assertFalse($index['status']);
+    $this->assertTrue($index['read_only']);
+  }
+
+  /**
    * By default the override targets the "ys_beacon" server and index.
    *
    * @covers ::loadOverrides

@@ -83,6 +83,12 @@ class YsBeaconAdminSettings extends ConfigFormBase {
       ]),
       '#default_value' => $config->get('azure_search_url_key'),
     ];
+    $form['connection']['read_only'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Read-only (borrow another site’s index)'),
+      '#description' => $this->t('When enabled, this site queries the index above but never writes to it: no indexing, re-indexing, clearing, or delete-time removal. Use this when the index name points at a collection owned by another site, so that site’s data is never modified. Leave off for a site that owns and indexes its own content.'),
+      '#default_value' => (bool) $config->get('read_only'),
+    ];
 
     $form['retrieval'] = [
       '#type' => 'details',
@@ -147,6 +153,7 @@ class YsBeaconAdminSettings extends ConfigFormBase {
     $config = $this->config(self::CONFIG_NAME);
     $previous_index_name = $config->get('azure_index_name');
     $new_index_name = $form_state->getValue('azure_index_name');
+    $read_only = (bool) $form_state->getValue('read_only');
 
     // The index name is intentionally not saved here: provision() persists it
     // only after the Azure index has been verified or created, so a failed
@@ -162,10 +169,19 @@ class YsBeaconAdminSettings extends ConfigFormBase {
       ->set('streaming', (bool) $form_state->getValue('streaming'))
       ->set('fallback_system_prompt', $form_state->getValue('fallback_system_prompt'))
       ->set('enable_metadata_fields', $enable_metadata_fields)
+      ->set('read_only', $read_only)
       ->save();
 
     if ($new_index_name !== $previous_index_name) {
-      if ($new_index_name) {
+      if ($new_index_name && $read_only) {
+        // Borrowing another site's collection: point at it, do not provision.
+        // A read-only site must never create, write to, or queue content into
+        // the shared collection, so skip provision() (which would create a
+        // missing index and rebuild the tracker) and just persist the name.
+        $this->config(self::CONFIG_NAME)->set('azure_index_name', $new_index_name)->save();
+        $this->messenger()->addStatus($this->t('This site now reads from the shared, read-only index %name. Content indexing is managed by the owning site.', ['%name' => $new_index_name]));
+      }
+      elseif ($new_index_name) {
         try {
           $this->indexManager->provision($new_index_name);
           $this->messenger()->addStatus($this->t('All existing content has been queued for indexing into the Beacon vector database.'));
