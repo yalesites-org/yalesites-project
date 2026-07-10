@@ -47,6 +47,13 @@ class BeaconConfigDefaultsTest extends UnitTestCase {
   }
 
   /**
+   * The index ships writable: read-only is opt-in per borrowing site.
+   */
+  public function testReadOnlyDefaultsToOff(): void {
+    $this->assertFalse($this->installSettings()['read_only']);
+  }
+
+  /**
    * The fallback prompt ships with the full YaleSites system instruction.
    */
   public function testFallbackPromptShipsYaleSitesInstruction(): void {

@@ -9,8 +9,10 @@ use Drupal\search_api\Entity\Server;
  * Tests that importing the Beacon search server on a fresh site is safe.
  *
  * The Beacon search server ships in synced config with an empty per-site index
- * name (`database_name: ''`); the real name is layered in at read time by
- * YsBeaconConfigOverrides. Saving a `search_api.server.*` config fires
+ * name (`database_name: ''`); the real name is written onto the server config
+ * per site by BeaconIndexManager::propagateConnection() when the index is
+ * provisioned or a borrowed collection is set, and a fresh site has it empty
+ * until then. Saving a `search_api.server.*` config fires
  * ai_search's NewServerEventSubscriber, which reaches into the configured
  * vector-database backend. On a brand-new site that has no Azure index yet,
  * that path must not throw an uncaught error and abort the whole config
@@ -86,7 +88,7 @@ class BeaconServerImportTest extends KernelTestBase {
     $this->assertSame(
       '',
       $loaded->getBackendConfig()['database_settings']['database_name'],
-      'The stored index name stays empty; the real value is supplied at read time by YsBeaconConfigOverrides.',
+      'A freshly imported server keeps the empty default; the per-site name is written later by BeaconIndexManager::propagateConnection().',
     );
   }
 

@@ -312,3 +312,49 @@ function ys_beacon_update_10004() {
     || (bool) \Drupal::config('ys_integrations.integration_settings')->get('ys_beacon');
   $settings->set('platform_authorized', $in_use)->save();
 }
+
+/**
+ * Seed the Beacon index read-only flag on existing sites.
+ *
+ * The new ys_beacon.settings:read_only flag lets a site borrow another site's
+ * Azure collection and query it without ever writing to it. It ships off, so
+ * seed the explicit FALSE on existing sites for explicit exported config;
+ * runtime already treats an absent value as not-read-only. This runs in the
+ * updatedb phase before config:import; ys_beacon.settings is config_ignored,
+ * so a per-site read-only value set later survives the import.
+ */
+function ys_beacon_update_10005() {
+  $settings = \Drupal::configFactory()->getEditable('ys_beacon.settings');
+  // Only touch sites that actually have Beacon settings; never create the
+  // config object here.
+  if ($settings->isNew()) {
+    return;
+  }
+  if ($settings->get('read_only') === NULL) {
+    $settings->set('read_only', FALSE)->save();
+  }
+}
+
+/**
+ * Persist the per-site index connection into the real search_api config.
+ *
+ * The Azure index name and read-only flag were previously applied only as
+ * runtime config overrides. They are now written onto search_api.server
+ * (backend_config database_name) and search_api.index (read_only), with those
+ * keys config-ignored so they survive import, and the overrides removed.
+ * Backfill existing sites from their saved ys_beacon.settings so removing the
+ * overrides never leaves the search server pointing at an empty database. This
+ * runs in the updatedb phase before config:import; the config-ignore entries
+ * added in the same deploy then keep the written values through the import.
+ */
+function ys_beacon_update_10006() {
+  $settings = \Drupal::config('ys_beacon.settings');
+  $index_name = (string) $settings->get('azure_index_name');
+  // An unconfigured site has nothing to propagate; its server database stays
+  // empty and the index stays disabled by the status override.
+  if ($index_name === '') {
+    return;
+  }
+  \Drupal::service('ys_beacon.index_manager')
+    ->propagateConnection($index_name, (bool) $settings->get('read_only'));
+}

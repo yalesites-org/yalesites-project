@@ -11,6 +11,7 @@ search_index_id: ys_beacon
 search_server_id: ys_beacon
 azure_index_name: ''
 azure_search_url_key: ''
+read_only: false
 pdf_extraction_max_bytes: 20971520
 top_k: 5
 score_threshold: 0.0
