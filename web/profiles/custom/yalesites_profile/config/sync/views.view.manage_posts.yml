@@ -1002,7 +1002,7 @@ display:
           exposed: true
           expose:
             operator_id: field_category_target_id_op
-            label: Categories
+            label: Category
             description: ''
             use_operator: false
             operator: field_category_target_id_op
