@@ -16,3 +16,7 @@ indexing_options:
     indexing_option: main_content
   url:
     indexing_option: ignore
+  citation_title:
+    indexing_option: attributes
+  citation_url:
+    indexing_option: attributes

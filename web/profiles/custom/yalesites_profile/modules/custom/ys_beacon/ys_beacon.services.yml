@@ -3,12 +3,18 @@ services:
     parent: logger.channel_base
     arguments: ['ys_beacon']
 
+  ys_beacon.entity_citation_resolver:
+    class: Drupal\ys_beacon\Service\EntityCitationResolver
+    arguments:
+      - '@entity_type.manager'
+
   ys_beacon.rag_retriever:
     class: Drupal\ys_beacon\Service\RagRetriever
     arguments:
       - '@entity_type.manager'
       - '@config.factory'
       - '@logger.channel.ys_beacon'
+      - '@ys_beacon.entity_citation_resolver'
 
   ys_beacon.citation_formatter:
     class: Drupal\ys_beacon\Service\CitationFormatter
