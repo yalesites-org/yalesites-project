@@ -20,6 +20,24 @@ use Drupal\ys_beacon\Service\BeaconIndexManager;
 class BeaconIndexManagerTest extends UnitTestCase {
 
   /**
+   * Clears Pantheon environment variables so site-id tests are deterministic.
+   */
+  protected function setUp(): void {
+    parent::setUp();
+    putenv('PANTHEON_SITE_NAME');
+    putenv('PANTHEON_ENVIRONMENT');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function tearDown(): void {
+    putenv('PANTHEON_SITE_NAME');
+    putenv('PANTHEON_ENVIRONMENT');
+    parent::tearDown();
+  }
+
+  /**
    * @covers ::sanitizeIndexName
    * @dataProvider providerSanitizeIndexName
    */
@@ -190,6 +208,126 @@ class BeaconIndexManagerTest extends UnitTestCase {
     $etm_property = new \ReflectionProperty($manager, 'entityTypeManager');
     $etm_property->setAccessible(TRUE);
     $etm_property->setValue($manager, $etm);
+
+    return $manager;
+  }
+
+  /**
+   * The site key is the Pantheon site and environment, sanitized.
+   *
+   * @covers ::getSiteId
+   */
+  public function testGetSiteIdUsesPantheonSiteAndEnvironment(): void {
+    putenv('PANTHEON_SITE_NAME=My-Site');
+    putenv('PANTHEON_ENVIRONMENT=LIVE');
+    $manager = $this->buildManagerWithSiteUuid('unused-uuid');
+
+    $this->assertSame('my-site-live', $manager->getSiteId());
+  }
+
+  /**
+   * Off Pantheon (local dev), the site key falls back to the site UUID slug.
+   *
+   * @covers ::getSiteId
+   */
+  public function testGetSiteIdFallsBackToSiteUuidLocally(): void {
+    $manager = $this->buildManagerWithSiteUuid('cb91b104-1d1e-42b7-a3a5-d0f6715e459c');
+
+    $this->assertSame('beacon-cb91b104', $manager->getSiteId());
+  }
+
+  /**
+   * The index schema carries a retrievable, filterable site_id column.
+   *
+   * A shared collection can then store and scope by the per-site key.
+   *
+   * @covers ::buildIndexSchema
+   */
+  public function testBuildIndexSchemaIncludesRetrievableSiteId(): void {
+    $manager = $this->buildManagerWithSiteUuid('unused-uuid');
+    $method = new \ReflectionMethod($manager, 'buildIndexSchema');
+    $method->setAccessible(TRUE);
+
+    $schema = $method->invoke($manager, 'shared-index');
+    $fields = array_column($schema['fields'], NULL, 'name');
+
+    $this->assertArrayHasKey('site_id', $fields);
+    $this->assertTrue($fields['site_id']['retrievable']);
+    $this->assertTrue($fields['site_id']['filterable']);
+  }
+
+  /**
+   * Re-provisioning drops an existing index before recreating it.
+   *
+   * @covers ::reprovision
+   */
+  public function testReprovisionDropsExistingIndexBeforeRecreating(): void {
+    $manager = $this->getMockBuilder(BeaconIndexManager::class)
+      ->disableOriginalConstructor()
+      ->onlyMethods(['indexExists', 'deleteIndex', 'provision'])
+      ->getMock();
+    $manager->method('indexExists')->with('shared-index')->willReturn(TRUE);
+    $manager->expects($this->once())->method('deleteIndex')->with('shared-index');
+    $manager->expects($this->once())->method('provision')->with('shared-index')->willReturn('shared-index');
+
+    $this->assertSame('shared-index', $manager->reprovision('shared-index'));
+  }
+
+  /**
+   * A missing index is provisioned without a destructive delete.
+   *
+   * @covers ::reprovision
+   */
+  public function testReprovisionSkipsDeleteWhenIndexMissing(): void {
+    $manager = $this->getMockBuilder(BeaconIndexManager::class)
+      ->disableOriginalConstructor()
+      ->onlyMethods(['indexExists', 'deleteIndex', 'provision'])
+      ->getMock();
+    $manager->method('indexExists')->with('shared-index')->willReturn(FALSE);
+    $manager->expects($this->never())->method('deleteIndex');
+    $manager->expects($this->once())->method('provision')->with('shared-index')->willReturn('shared-index');
+
+    $this->assertSame('shared-index', $manager->reprovision('shared-index'));
+  }
+
+  /**
+   * Builds a manager with a stubbed config factory for site-id/schema tests.
+   *
+   * The config factory yields a fixed system.site UUID and the default Beacon
+   * server embedding dimensions.
+   *
+   * @param string $uuid
+   *   The system.site UUID to return.
+   *
+   * @return \Drupal\ys_beacon\Service\BeaconIndexManager
+   *   The manager under test with only its config factory wired.
+   */
+  private function buildManagerWithSiteUuid(string $uuid): BeaconIndexManager {
+    $site = $this->createMock(Config::class);
+    $site->method('get')->willReturnCallback(fn (string $key) => $key === 'uuid' ? $uuid : NULL);
+
+    $settings = $this->createMock(Config::class);
+    $settings->method('get')->willReturnCallback(
+      fn (string $key) => in_array($key, ['search_server_id', 'search_index_id'], TRUE) ? 'ys_beacon' : NULL,
+    );
+
+    $server = $this->createMock(Config::class);
+    $server->method('get')->willReturnCallback(
+      fn (string $key) => $key === 'backend_config.embeddings_engine_configuration.dimensions' ? 1536 : NULL,
+    );
+
+    $config_factory = $this->createMock(ConfigFactoryInterface::class);
+    $config_factory->method('get')->willReturnCallback(fn (string $name) => match ($name) {
+      'system.site' => $site,
+      'ys_beacon.settings' => $settings,
+      'search_api.server.ys_beacon' => $server,
+      default => $this->createMock(Config::class),
+    });
+
+    $manager = (new \ReflectionClass(BeaconIndexManager::class))->newInstanceWithoutConstructor();
+    $config_property = new \ReflectionProperty($manager, 'configFactory');
+    $config_property->setAccessible(TRUE);
+    $config_property->setValue($manager, $config_factory);
 
     return $manager;
   }

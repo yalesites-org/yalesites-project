@@ -76,6 +76,35 @@ class BeaconIndexManager {
   }
 
   /**
+   * Recreates the site's index with the current schema and re-queues indexing.
+   *
+   * An existing Azure index is never modified in place (createIndex() uses
+   * POST /indexes, which fails when the index exists), so when the schema
+   * changes - for example the site_id field added for shared-collection write
+   * isolation (yalesites-org/YaleSites-Internal#1392) - a provisioned index
+   * must be dropped and recreated. provision() then rebuilds Search API
+   * tracking, queuing a full reindex that rewrites every document in the
+   * current format.
+   *
+   * @param string|null $name
+   *   The index name, or NULL to use the configured (or default) one.
+   *
+   * @return string
+   *   The recreated index name.
+   *
+   * @throws \RuntimeException
+   *   When the index cannot be dropped or recreated.
+   */
+  public function reprovision(?string $name = NULL): string {
+    $name = $name
+      ?: ($this->configFactory->get('ys_beacon.settings')->get('azure_index_name') ?: $this->getDefaultIndexName());
+    if ($this->indexExists($name)) {
+      $this->deleteIndex($name);
+    }
+    return $this->provision($name);
+  }
+
+  /**
    * Persists the per-site index connection into the real Search API config.
    *
    * Writes the per-site Azure index name onto the search server's database name
@@ -150,12 +179,33 @@ class BeaconIndexManager {
    * Builds the default per-site index name.
    *
    * Uses the Pantheon site name and environment when available, falling back
-   * to a site-UUID-based name elsewhere (local development).
+   * to a site-UUID-based name elsewhere (local development). In the single
+   * index-per-site model this is also the site's identity, so it delegates to
+   * getSiteId().
    *
    * @return string
    *   A valid Azure AI Search index name, unique per site and environment.
    */
   public function getDefaultIndexName(): string {
+    return $this->getSiteId();
+  }
+
+  /**
+   * Returns the stable per-site key that isolates this site's documents.
+   *
+   * This is the single source of truth for "which Beacon site is this",
+   * derived from the Pantheon site name and environment (falling back to a
+   * site-UUID slug in local development). The Beacon Azure VDB provider stamps
+   * it onto every document and scopes reads/deletes by it, so multiple sites
+   * can safely share one Azure collection. It is distinct from the collection
+   * name (which may be shared): a site's identity never changes when it starts
+   * writing into a shared index.
+   *
+   * @return string
+   *   The per-site key, sanitized to the Azure name charset (lowercase
+   *   letters, digits and dashes) so it is safe to embed in OData filters.
+   */
+  public function getSiteId(): string {
     $site = getenv('PANTHEON_SITE_NAME') ?: '';
     $env = getenv('PANTHEON_ENVIRONMENT') ?: '';
     $name = trim($site . '-' . $env, '-');
@@ -241,6 +291,25 @@ class BeaconIndexManager {
   }
 
   /**
+   * Deletes an index.
+   *
+   * @param string $name
+   *   The index name.
+   *
+   * @throws \RuntimeException
+   *   When deletion fails.
+   */
+  protected function deleteIndex(string $name): void {
+    try {
+      $this->request('DELETE', "/indexes('$name')");
+      $this->logger->notice('Deleted Azure AI Search index @name.', ['@name' => $name]);
+    }
+    catch (\Throwable $e) {
+      throw new \RuntimeException('Azure AI Search index deletion failed: ' . $e->getMessage(), 0, $e);
+    }
+  }
+
+  /**
    * Builds the index schema expected by the AI Search backend.
    *
    * Field set matches the Azure VDB provider documentation template plus the
@@ -276,6 +345,10 @@ class BeaconIndexManager {
         $string_field('drupal_long_id'),
         $string_field('index_id'),
         $string_field('server_id'),
+        // Beacon-owned per-site key (not a contrib document field). The
+        // beacon_azure_ai_search provider writes it on insert and scopes
+        // reads/deletes by it so multiple sites can share one collection.
+        $string_field('site_id'),
         [
           'name' => 'content',
           'type' => 'Edm.String',

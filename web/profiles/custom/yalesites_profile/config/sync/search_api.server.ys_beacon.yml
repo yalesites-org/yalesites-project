@@ -12,7 +12,7 @@ description: 'Vector database server for the Beacon AI assistant. The Azure inde
 backend: search_api_ai_search
 backend_config:
   chat_model: gpt-3.5-turbo
-  database: azure_ai_search
+  database: beacon_azure_ai_search
   database_settings:
     database_name: ''
     collection: ''
