@@ -360,5 +360,12 @@ function _ys_views_basic_listing_form_tabs(array $element, FormStateInterface $f
     }
   }
 
+  // Those three groups now render inside the tab bar via #group (the event
+  // time-period control lives in the "options" group, so it moves into the
+  // Display options tab too). What remains directly under group_user_selection
+  // is only empty helper containers, so it renders as a stray empty <div>; drop
+  // the wrapper so nothing is emitted.
+  $element['group_user_selection']['#theme_wrappers'] = [];
+
   return $element;
 }

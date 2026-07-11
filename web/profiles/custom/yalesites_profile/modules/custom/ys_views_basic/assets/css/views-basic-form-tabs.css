@@ -34,3 +34,22 @@
   white-space: nowrap;
   text-decoration: none;
 }
+
+/*
+ * Align the first tab's label with the panel's left edge. The tab bar's left
+ * edge already lines up with the pane content, but the button's 1rem left
+ * padding insets the first label ~16px past it; drop that padding on the first
+ * tab so its text sits flush with the fields below.
+ */
+.layout-builder-configure-block .horizontal-tabs-list .horizontal-tab-button:first-child a {
+  padding-left: 0;
+}
+
+/*
+ * Give the tab panes the same layer background the rest of the form uses. The
+ * panes wrapper is otherwise transparent, so in Gin dark mode it shows the
+ * near-black app background instead of the lighter gray form surface.
+ */
+.layout-builder-configure-block .horizontal-tabs-panes {
+  background: var(--gin-bg-layer, #fff);
+}

@@ -7,12 +7,23 @@
  * theme render — but it reflects the bundle's display mode (card, list,
  * condensed, directory) so the layout matches what the block will produce.
  *
- * Colors are bound to Gin's admin-theme custom properties (with light-mode
- * fallbacks) so the preview follows Gin's current color mode, including dark
- * mode, automatically.
+ * The card is pinned to light-mode colors regardless of the admin theme's mode:
+ * it represents front-facing content, which the live site always renders in
+ * light mode. Gin's color custom properties are re-declared with fixed light
+ * values on the wrapper below, so every var(--gin-*) usage inside resolves to
+ * those regardless of Gin's dark mode.
  */
 
 .vb-preview-wrapper {
+  /* Pin the preview to light mode — see file header. */
+  --gin-bg-app: #f7f7f7;
+  --gin-bg-layer: #fff;
+  --gin-bg-input: #e9edf2;
+  --gin-border-color: #b3b3b3;
+  --gin-border-color-layer: #d4d4d4;
+  --gin-color-title: #1b1b1b;
+  --gin-color-text: #1b1b1b;
+  --gin-color-text-light: #555;
   margin-top: 1rem;
   padding: 0.75rem;
   border: 1px dashed var(--gin-border-color, #b3b3b3);
@@ -168,7 +179,7 @@
  * container query so the single-column stack is kept where two columns will
  * not fit — e.g. the narrow (~460px) Layout Builder off-canvas tray. This rule
  * is layout only (no colors), so it needs no separate dark-mode handling; the
- * preview card's own colors already follow Gin's light/dark mode above.
+ * preview card's own colors are pinned to light mode above.
  */
 .views-basic--entity-view-mode:has(> .details-wrapper > .vb-preview-wrapper) {
   container-type: inline-size;
@@ -177,7 +188,7 @@
 @container (min-width: 40rem) {
   .views-basic--entity-view-mode:has(> .details-wrapper > .vb-preview-wrapper) > .details-wrapper {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(14rem, 18rem);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 0 1.5rem;
     align-items: start;
   }
@@ -189,18 +200,16 @@
   }
 
   /*
-   * Preview pinned to the top of the right column. The row span comfortably
-   * exceeds the handful of left-column controls so the preview shares — rather
-   * than owns — their rows, and so never forces one tall row that would gap the
-   * left column; align-self holds it at its natural height, and sticky keeps it
-   * in view while the taller left column scrolls.
+   * Preview occupies the right half, top-aligned with the first control. It
+   * spans the control rows (rather than owning a single row) so its height
+   * never forces one tall grid row that would gap the left column; align-self
+   * holds it at its natural height. No sticky positioning — it scrolls with the
+   * form instead of floating pinned to the corner.
    */
   .views-basic--entity-view-mode:has(> .details-wrapper > .vb-preview-wrapper) > .details-wrapper > .vb-preview-wrapper {
     grid-column: 2;
     grid-row: 1 / span 20;
     align-self: start;
     margin-top: 0;
-    position: sticky;
-    top: 0;
   }
 }
