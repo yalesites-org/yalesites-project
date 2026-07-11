@@ -16,18 +16,22 @@ includes one row per item with these columns:
 - The type's category column — **Category** (Pages, Posts), **Event Category**,
   **Resource Category** — or **Affiliation** (Profiles)
 
-Taxonomy cells list every applied term, separated by "; ". The export reflects
-the same items you can see in the Manage view (published and unpublished, subject
-to your access).
+Taxonomy cells list every applied term, separated by ", " (matching the on-screen
+columns). The export reflects the same items you see in the Manage view — including
+any filters or search you have applied — and both published and unpublished items,
+subject to your access.
 
 ## For developers
 
 - `ContentExportBuilder` — pure column map + row builder; `sanitizeCell()`
   neutralises CSV formula injection (values starting with `=`, `+`, `-`, `@`,
   tab or carriage return are prefixed with a quote). Unit tested.
-- `Controller\ContentExportController::export($bundle)` — streams the CSV,
-  gated by the `yalesites manage settings` permission (same as the Manage
-  views).
+- `Controller\ContentExportController::export($bundle, $request)` — resolves the
+  matching Manage view's filtered node ids (replaying the request's exposed-filter
+  query) and streams the CSV in chunks, gated by the `yalesites manage settings`
+  permission (same as the Manage views).
+- `Plugin\Menu\LocalAction\ContentExportLocalAction` — forwards the Manage page's
+  active filter query onto the export link so the button exports what you see.
 - One route + one menu local action per content type, so the button appears on
   each Manage view page.
 

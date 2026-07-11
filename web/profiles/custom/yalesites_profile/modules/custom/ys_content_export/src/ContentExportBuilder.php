@@ -105,7 +105,7 @@ class ContentExportBuilder {
         foreach ($node->get($key)->referencedEntities() as $term) {
           $names[] = $term->label();
         }
-        return implode('; ', $names);
+        return implode(', ', $names);
     }
   }
 

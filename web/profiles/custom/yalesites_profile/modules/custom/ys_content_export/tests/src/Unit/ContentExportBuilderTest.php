@@ -2,6 +2,8 @@
 
 namespace Drupal\Tests\ys_content_export\Unit;
 
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\node\NodeInterface;
 use Drupal\ys_content_export\ContentExportBuilder;
@@ -118,6 +120,32 @@ class ContentExportBuilderTest extends UnitTestCase {
     $method = new \ReflectionMethod(ContentExportBuilder::class, 'cellValue');
     $method->setAccessible(TRUE);
     $this->assertSame($expected, $method->invoke(NULL, $node, 'cas_protected'));
+  }
+
+  /**
+   * Tests taxonomy cells join term names with ", " (matches on-screen).
+   *
+   * The Manage views render multi-value taxonomy columns comma-separated, so
+   * the CSV export uses the same separator instead of a semicolon.
+   *
+   * @covers ::cellValue
+   */
+  public function testTaxonomyCellJoinsTermsWithComma(): void {
+    $term_a = $this->createMock(EntityInterface::class);
+    $term_a->method('label')->willReturn('Alpha');
+    $term_b = $this->createMock(EntityInterface::class);
+    $term_b->method('label')->willReturn('Beta');
+
+    $field_list = $this->createMock(EntityReferenceFieldItemListInterface::class);
+    $field_list->method('referencedEntities')->willReturn([$term_a, $term_b]);
+
+    $node = $this->createMock(NodeInterface::class);
+    $node->method('hasField')->with('field_tags')->willReturn(TRUE);
+    $node->method('get')->with('field_tags')->willReturn($field_list);
+
+    $method = new \ReflectionMethod(ContentExportBuilder::class, 'cellValue');
+    $method->setAccessible(TRUE);
+    $this->assertSame('Alpha, Beta', $method->invoke(NULL, $node, 'field_tags'));
   }
 
   /**

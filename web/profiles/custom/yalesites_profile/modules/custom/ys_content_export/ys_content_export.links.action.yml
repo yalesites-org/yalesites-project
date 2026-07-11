@@ -1,29 +1,34 @@
 ys_content_export.export_pages:
   route_name: ys_content_export.export_pages
+  class: 'Drupal\ys_content_export\Plugin\Menu\LocalAction\ContentExportLocalAction'
   title: 'Export to CSV'
   appears_on:
     - view.manage_pages.page_1
 
 ys_content_export.export_posts:
   route_name: ys_content_export.export_posts
+  class: 'Drupal\ys_content_export\Plugin\Menu\LocalAction\ContentExportLocalAction'
   title: 'Export to CSV'
   appears_on:
     - view.manage_posts.page_1
 
 ys_content_export.export_events:
   route_name: ys_content_export.export_events
+  class: 'Drupal\ys_content_export\Plugin\Menu\LocalAction\ContentExportLocalAction'
   title: 'Export to CSV'
   appears_on:
     - view.manage_events.page_1
 
 ys_content_export.export_profiles:
   route_name: ys_content_export.export_profiles
+  class: 'Drupal\ys_content_export\Plugin\Menu\LocalAction\ContentExportLocalAction'
   title: 'Export to CSV'
   appears_on:
     - view.manage_profiles.page_1
 
 ys_content_export.export_resources:
   route_name: ys_content_export.export_resources
+  class: 'Drupal\ys_content_export\Plugin\Menu\LocalAction\ContentExportLocalAction'
   title: 'Export to CSV'
   appears_on:
     - view.manage_resources.page_1
