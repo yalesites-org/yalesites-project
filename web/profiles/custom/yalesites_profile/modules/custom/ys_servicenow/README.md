@@ -38,3 +38,11 @@ From there, you can then specify the multidev specific information.  The key mus
 `terminus secrets:site:set <siteName>.<env> servicenow_auth '{"username":"username","password":"password"}'`
 
 Then simply sync pantheon secrets in the keys configuration to bring in the key; remember that there is a time delay on when that becomes available for sync.
+
+## Running tests
+
+Run the module's PHPUnit tests inside Lando:
+
+```
+lando ssh -c "env SIMPLETEST_DB=mysql://pantheon:pantheon@database/pantheon php /app/vendor/bin/phpunit -c /app/phpunit.xml /app/web/profiles/custom/yalesites_profile/modules/custom/ys_servicenow/tests --testdox"
+```
