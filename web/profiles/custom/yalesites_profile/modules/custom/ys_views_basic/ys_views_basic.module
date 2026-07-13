@@ -73,6 +73,7 @@ function ys_views_basic_theme($existing, $type, $theme, $path): array {
         'content_type' => NULL,
         'view_mode' => NULL,
         'image_src' => NULL,
+        'font_pairing' => NULL,
       ],
     ],
   ];

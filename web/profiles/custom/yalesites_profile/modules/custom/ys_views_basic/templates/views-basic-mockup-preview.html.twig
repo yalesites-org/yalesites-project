@@ -15,22 +15,29 @@
  * - view_mode: The node view mode; feeds data-view-mode for the CSS layout
  *   variants (list_item/condensed/directory).
  * - image_src: Placeholder teaser image src (a 1x1 transparent GIF).
+ * - font_pairing: The site's configured Font Pairing (ys_core.site:
+ *   font_pairing — yalenew/mallory/yalenew-oldstyle); feeds data-font-pairing
+ *   so the card's heading typeface matches the live front-end render.
  */
 #}
 <div class="vb-preview-wrapper" role="group" aria-label="{{ 'Result preview'|t }}">
-  <p class="vb-preview-wrapper__label">{{ 'Preview'|t }}</p>
-  <p class="vb-preview-wrapper__note">{{ 'Example content that updates as you change the Field Display options. This is a mockup, not a live query.'|t }}</p>
-  <div class="vb-preview" data-content-type="{{ content_type }}" data-view-mode="{{ view_mode }}">
-    <span class="vb-preview__pinned" hidden>{{ 'Pinned'|t }}</span>
-    <img class="vb-preview__image" alt="{{ 'Example teaser image placeholder'|t }}" src="{{ image_src }}">
-    <div class="vb-preview__body">
-      {% if content_type == 'post' %}<span class="vb-preview__eyebrow">{{ 'Eyebrow'|t }}</span>{% endif %}
-      <p class="vb-preview__title">{{ 'Example Title'|t }}</p>
-      {% if content_type == 'event' %}<span class="vb-preview__meta">{{ 'Month 1, 2026 - 12:00 PM'|t }}</span>{% endif %}
-      {% if content_type == 'profile' %}<span class="vb-preview__meta">{{ 'Job Title'|t }}</span>{% endif %}
-      <span class="vb-preview__category">{{ 'Category Name'|t }}</span>
-      <span class="vb-preview__tags">{{ 'Tag A | Tag B'|t }}</span>
-      {% if content_type == 'event' %}<a class="vb-preview__calendar" href="#">{{ 'Add to Calendar'|t }}</a>{% endif %}
+  <div class="vb-preview-wrapper__header">
+    <p class="vb-preview-wrapper__label">{{ 'Preview'|t }}</p>
+    <p class="vb-preview-wrapper__note">{{ 'Example content that updates as you change the Field Display options. This is a mockup, not a live query.'|t }}</p>
+  </div>
+  <div class="vb-preview-wrapper__stage">
+    <div class="vb-preview" data-content-type="{{ content_type }}" data-view-mode="{{ view_mode }}" data-font-pairing="{{ font_pairing }}">
+      <span class="vb-preview__pinned" hidden>{{ 'Pinned'|t }}</span>
+      <img class="vb-preview__image" alt="{{ 'Example teaser image placeholder'|t }}" src="{{ image_src }}">
+      <div class="vb-preview__body">
+        {% if content_type == 'post' %}<span class="vb-preview__eyebrow">{{ 'Eyebrow'|t }}</span>{% endif %}
+        <p class="vb-preview__title">{{ 'Example Title'|t }}</p>
+        {% if content_type == 'event' %}<span class="vb-preview__meta">{{ 'Month 1, 2026 - 12:00 PM'|t }}</span>{% endif %}
+        {% if content_type == 'profile' %}<span class="vb-preview__meta">{{ 'Job Title'|t }}</span>{% endif %}
+        <span class="vb-preview__category">{{ 'Category A | Category B'|t }}</span>
+        <span class="vb-preview__tags">{{ 'Tag A | Tag B'|t }}</span>
+        {% if content_type == 'event' %}<a class="vb-preview__calendar" href="#">{{ 'Add to Calendar'|t }}</a>{% endif %}
+      </div>
     </div>
   </div>
 </div>
