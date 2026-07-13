@@ -105,7 +105,10 @@ global-themes:
         value: "{color.gray.800.value}"
       slot-eight:
         value: "{color.basic.white.value}"
+      slot-nine:
+        value: "{color.gray.100.value}"
   ```
+  - `slot-nine` is reserved for the secondary background variant in our global theme palettes. In the current implementation, ONHA uses `soft-oceanic` and the other themes use a neutral gray background.
   - Add your new theme, following the same convention shown above. If there are `three` themes already entered, and yours would be number `four`, name it accordingly.
   - For example (say we wanted to use the new `brown` value we added above): 
 
@@ -130,6 +133,8 @@ global-themes:
         value: "{color.gray.800.value}"
       slot-eight:
         value: "{color.basic.white.value}"
+      slot-nine:
+        value: "{color.gray.100.value}"
 ```
 
 - **Step 2**: Compile your changes
@@ -152,6 +157,7 @@ global-themes:
 - **Step 5**: 
   - Unless you are adding a brand new `slot-NUMBER` value (e.g. `slot-four`) to the new global theme, the new theme will be included in every component context which iterates over the global theme token values.
   - If you have added a new `slot-NUMBER` then you'll need to add a new variable and map it accodingly to each component in which it is applicable.
+  - `slot-nine` should be treated as a secondary background variant. Use it for palette-driven alternate light backgrounds rather than adding component-specific color bypasses.
 
 ---
 **Step 6**:
