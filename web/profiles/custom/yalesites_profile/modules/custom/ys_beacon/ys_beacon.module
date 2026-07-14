@@ -5,6 +5,7 @@
  * Contains ys_beacon.module functions.
  */
 
+use Drupal\config_ignore\ConfigIgnoreConfig;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -141,7 +142,10 @@ function ys_beacon_entity_update(EntityInterface $entity) {
   try {
     $index_id = \Drupal::config('ys_beacon.settings')->get('search_index_id') ?: 'ys_beacon';
     $index = Index::load($index_id);
-    if (!$index || !$index->status() || !$index->isServerEnabled()) {
+    // A read-only site borrows another site's collection and must never write
+    // to it, so skip the immediate removal just as Search API's own
+    // Index::trackItemsDeleted() skips the server delete for a read-only index.
+    if (!$index || !$index->status() || $index->isReadOnly() || !$index->isServerEnabled()) {
       return;
     }
     $datasource_id = 'entity:' . $entity->getEntityTypeId();
@@ -174,6 +178,35 @@ function ys_beacon_entity_update(EntityInterface $entity) {
  */
 function ys_beacon_metatag_groups_alter(&$definitions) {
   unset($definitions['ai_engine']);
+}
+
+/**
+ * Implements hook_config_ignore_ignored_alter().
+ *
+ * The per-site Azure index (database) name persisted onto the Beacon search
+ * server is config-ignored so a provisioned site keeps it across deploys
+ * (yalesites-org/YaleSites-Internal#1387). config_ignore's simple mode applies
+ * that ignore to create as well as update, so on a brand-new site - where the
+ * server is created, not updated - the incoming database_name key is stripped.
+ * ai_search's NewServerEventSubscriber then reaches the vector-database backend
+ * with a null name and aborts the whole config import with a TypeError
+ * (yalesites-org/YaleSites-Internal#1393).
+ *
+ * Scope that ignore away from create on import (the deploy path) by dropping
+ * it from that one operation, so a fresh import keeps the shipped empty default
+ * (a harmless present value). The import-update ignore still protects a
+ * provisioned site's persisted name on every later deploy, and the export
+ * ignores are left untouched so the per-site name never leaks into synced
+ * config.
+ */
+function ys_beacon_config_ignore_ignored_alter(ConfigIgnoreConfig $ignored) {
+  $entry = 'search_api.server.ys_beacon:'
+    . 'backend_config.database_settings.database_name';
+  $create = $ignored->getList('import', 'create');
+  if (in_array($entry, $create, TRUE)) {
+    $create = array_values(array_diff($create, [$entry]));
+    $ignored->setList('import', 'create', $create);
+  }
 }
 
 /**

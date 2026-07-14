@@ -60,9 +60,9 @@ class BeaconIndexManager {
   public function provision(?string $name = NULL): string {
     $name = $this->ensureIndex($name);
 
-    $this->configFactory->getEditable('ys_beacon.settings')
-      ->set('azure_index_name', $name)
-      ->save();
+    // A provisioned index is owned and written by this site, so persist the
+    // connection into the real Search API config as writable (read-only off).
+    $this->propagateConnection($name, FALSE);
 
     // The Beacon search index stays disabled at runtime until an index name
     // exists, so Search API never initialized its tracker. Rebuild it now
@@ -73,6 +73,56 @@ class BeaconIndexManager {
     }
 
     return $name;
+  }
+
+  /**
+   * Persists the per-site index connection into the real Search API config.
+   *
+   * Writes the per-site Azure index name onto the search server's database name
+   * and the read-only flag onto the search index entity, both on an
+   * override-free load so the runtime overrides layered on by
+   * YsBeaconConfigOverrides are never baked into the synced config. Persisting
+   * (rather than only overriding at runtime) makes the real search_api config
+   * authoritative: the Search API admin UI reflects the read-only state, and
+   * the chat query targets the configured collection instead of an empty one.
+   * The values also live in the config-ignored ys_beacon.settings as the site
+   * preference; the search_api copies survive config import because the
+   * database-name and read-only keys are config-ignored.
+   *
+   * @param string $index_name
+   *   The Azure AI Search index (collection) name this site connects to. An
+   *   empty string clears the connection (Beacon indexing disabled).
+   * @param bool $read_only
+   *   TRUE when this site borrows the collection and must never write to it.
+   */
+  public function propagateConnection(string $index_name, bool $read_only): void {
+    // Each store is written only when its value actually changes: repeated
+    // no-op saves would needlessly invalidate config caches and re-fire the
+    // search server's save subscriber. Comparing the wanted value against the
+    // persisted one also self-heals drift (for example a manual edit through
+    // Search API's own admin UI) on the next save.
+    $settings = $this->configFactory->getEditable('ys_beacon.settings');
+    if ($settings->get('azure_index_name') !== $index_name
+      || (bool) $settings->get('read_only') !== $read_only) {
+      $settings->set('azure_index_name', $index_name)
+        ->set('read_only', $read_only)
+        ->save();
+    }
+
+    $server = $this->entityTypeManager->getStorage('search_api_server')->loadOverrideFree($this->searchServerId());
+    if ($server) {
+      $backend_config = $server->get('backend_config');
+      $current = $backend_config['database_settings']['database_name'] ?? NULL;
+      if ($current !== $index_name) {
+        $backend_config['database_settings']['database_name'] = $index_name;
+        $server->set('backend_config', $backend_config)->save();
+      }
+    }
+
+    $index = $this->entityTypeManager->getStorage('search_api_index')->loadOverrideFree($this->searchIndexId());
+    if ($index && $index->isReadOnly() !== $read_only) {
+      $index->set('read_only', $read_only)->save();
+    }
   }
 
   /**

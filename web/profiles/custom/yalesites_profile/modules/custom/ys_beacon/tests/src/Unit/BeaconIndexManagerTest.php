@@ -2,6 +2,12 @@
 
 namespace Drupal\Tests\ys_beacon\Unit;
 
+use Drupal\Core\Config\Config;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\Entity\ConfigEntityStorageInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\search_api\IndexInterface;
+use Drupal\search_api\ServerInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_beacon\Service\BeaconIndexManager;
 
@@ -41,6 +47,151 @@ class BeaconIndexManagerTest extends UnitTestCase {
         str_repeat('a', 127),
       ],
     ];
+  }
+
+  /**
+   * A read-only borrow persists the connection into real Search API config.
+   *
+   * The call writes the Azure index name onto the search server's database name
+   * and the read-only flag onto the index entity, both override-free, plus the
+   * ys_beacon.settings preference - so the real config (not just a runtime
+   * override) is authoritative and the chat query targets the collection.
+   *
+   * @covers ::propagateConnection
+   */
+  public function testPropagateConnectionWritesRealConfig(): void {
+    $captured = [];
+    // Currently a writable "old-name" site; borrow "borrowed-collection".
+    $manager = $this->buildManagerCapturing($captured, 'old-name', FALSE);
+
+    $manager->propagateConnection('borrowed-collection', TRUE);
+
+    // The Beacon settings preference is saved.
+    $this->assertSame('borrowed-collection', $captured['settings']['azure_index_name']);
+    $this->assertTrue($captured['settings']['read_only']);
+    // The server's Azure database name is updated; sibling backend_config keys
+    // are preserved (merged into the existing config, not replaced).
+    $this->assertSame('borrowed-collection', $captured['server']['backend_config']['database_settings']['database_name']);
+    $this->assertSame('portkey', $captured['server']['backend_config']['embeddings_engine']);
+    // The index read-only flag is persisted on the entity.
+    $this->assertTrue($captured['index']['read_only']);
+  }
+
+  /**
+   * A writable (non-borrow) connection sets the name and clears read-only.
+   *
+   * @covers ::propagateConnection
+   */
+  public function testPropagateConnectionWritableClearsReadOnly(): void {
+    $captured = [];
+    // Currently a read-only "old" borrow; switch to a writable "my-own-index".
+    $manager = $this->buildManagerCapturing($captured, 'old', TRUE);
+
+    $manager->propagateConnection('my-own-index', FALSE);
+
+    $this->assertSame('my-own-index', $captured['settings']['azure_index_name']);
+    $this->assertFalse($captured['settings']['read_only']);
+    $this->assertSame('my-own-index', $captured['server']['backend_config']['database_settings']['database_name']);
+    $this->assertFalse($captured['index']['read_only']);
+  }
+
+  /**
+   * An unchanged connection writes nothing (no redundant saves or subscribers).
+   *
+   * @covers ::propagateConnection
+   */
+  public function testPropagateConnectionSkipsUnchangedValues(): void {
+    $captured = [];
+    // Already read-only on "shared-idx"; re-save the identical values.
+    $manager = $this->buildManagerCapturing($captured, 'shared-idx', TRUE);
+
+    $manager->propagateConnection('shared-idx', TRUE);
+
+    // Nothing changed, so no store is written (a missing key means skipped).
+    $this->assertArrayNotHasKey('settings', $captured);
+    $this->assertArrayNotHasKey('server', $captured);
+    $this->assertArrayNotHasKey('index', $captured);
+  }
+
+  /**
+   * Builds a BeaconIndexManager whose config writes are captured by reference.
+   *
+   * @param array $captured
+   *   Populated with the values written to ys_beacon.settings ('settings'), the
+   *   search server ('server'), and the search index ('index'); a store absent
+   *   from the array means propagateConnection() skipped writing it.
+   * @param string $current_name
+   *   The index name currently persisted (settings + server database name), so
+   *   change-detection can decide whether a write is needed.
+   * @param bool $current_read_only
+   *   The read-only flag currently persisted (settings + index entity).
+   *
+   * @return \Drupal\ys_beacon\Service\BeaconIndexManager
+   *   The manager under test with only the two used dependencies wired.
+   */
+  private function buildManagerCapturing(
+    array &$captured,
+    string $current_name,
+    bool $current_read_only,
+  ): BeaconIndexManager {
+    $editable = $this->createMock(Config::class);
+    $editable->method('get')->willReturnCallback(fn (string $key) => match ($key) {
+      'azure_index_name' => $current_name,
+      'read_only' => $current_read_only,
+      default => NULL,
+    });
+    $editable->method('set')->willReturnCallback(function (string $key, $value) use (&$captured, $editable) {
+      $captured['settings'][$key] = $value;
+      return $editable;
+    });
+    $editable->method('save')->willReturnSelf();
+
+    $immutable = $this->createMock(Config::class);
+    $immutable->method('get')->willReturnCallback(
+      fn (string $key) => in_array($key, ['search_server_id', 'search_index_id'], TRUE) ? 'ys_beacon' : NULL,
+    );
+
+    $config_factory = $this->createMock(ConfigFactoryInterface::class);
+    $config_factory->method('getEditable')->with('ys_beacon.settings')->willReturn($editable);
+    $config_factory->method('get')->with('ys_beacon.settings')->willReturn($immutable);
+
+    $server = $this->createMock(ServerInterface::class);
+    $server->method('get')->with('backend_config')->willReturn([
+      'database_settings' => ['database_name' => $current_name],
+      'embeddings_engine' => 'portkey',
+    ]);
+    $server->method('set')->willReturnCallback(function (string $key, $value) use (&$captured, $server) {
+      $captured['server'][$key] = $value;
+      return $server;
+    });
+    $server->method('save')->willReturn(1);
+    $server_storage = $this->createMock(ConfigEntityStorageInterface::class);
+    $server_storage->method('loadOverrideFree')->with('ys_beacon')->willReturn($server);
+
+    $index = $this->createMock(IndexInterface::class);
+    $index->method('isReadOnly')->willReturn($current_read_only);
+    $index->method('set')->willReturnCallback(function (string $key, $value) use (&$captured, $index) {
+      $captured['index'][$key] = $value;
+      return $index;
+    });
+    $index->method('save')->willReturn(1);
+    $index_storage = $this->createMock(ConfigEntityStorageInterface::class);
+    $index_storage->method('loadOverrideFree')->with('ys_beacon')->willReturn($index);
+
+    $etm = $this->createMock(EntityTypeManagerInterface::class);
+    $etm->method('getStorage')->willReturnCallback(
+      fn (string $type) => $type === 'search_api_server' ? $server_storage : $index_storage,
+    );
+
+    $manager = (new \ReflectionClass(BeaconIndexManager::class))->newInstanceWithoutConstructor();
+    $config_property = new \ReflectionProperty($manager, 'configFactory');
+    $config_property->setAccessible(TRUE);
+    $config_property->setValue($manager, $config_factory);
+    $etm_property = new \ReflectionProperty($manager, 'entityTypeManager');
+    $etm_property->setAccessible(TRUE);
+    $etm_property->setValue($manager, $etm);
+
+    return $manager;
   }
 
 }

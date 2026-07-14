@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\ys_beacon\Unit;
 
+use Drupal\Core\Config\Entity\ConfigEntityStorageInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -261,6 +262,83 @@ class IndexNowFormTest extends UnitTestCase {
     $form = $this->buildForm($index, NULL, $messenger);
     $form_array = [];
     $form->reindexAll($form_array, $this->createMock(FormStateInterface::class));
+  }
+
+  /**
+   * A read-only index blocks re-index: it warns and never rebuilds the tracker.
+   *
+   * A borrowing site must never write to the shared collection, so the local
+   * "Re-index all content" control is a no-op guarded server-side.
+   *
+   * @covers ::reindexAll
+   */
+  public function testReindexAllBlockedWhenReadOnly(): void {
+    $index = $this->createMock(IndexInterface::class);
+    $index->method('isReadOnly')->willReturn(TRUE);
+    // Enabled, so without the read-only guard it would rebuild the tracker;
+    // the guard must short-circuit before that.
+    $index->method('status')->willReturn(TRUE);
+    $index->expects($this->never())->method('rebuildTracker');
+    $messenger = $this->createMock(MessengerInterface::class);
+    $messenger->expects($this->once())->method('addWarning');
+    $messenger->expects($this->never())->method('addStatus');
+
+    $form = $this->buildForm($index, NULL, $messenger);
+    $form_array = [];
+    $form->reindexAll($form_array, $this->createMock(FormStateInterface::class));
+  }
+
+  /**
+   * A read-only index blocks "Index now": it warns and never starts a batch.
+   *
+   * @covers ::indexNow
+   */
+  public function testIndexNowBlockedWhenReadOnly(): void {
+    $index = $this->createMock(IndexInterface::class);
+    $index->method('isReadOnly')->willReturn(TRUE);
+    // Enabled with items queued, so without the read-only guard it would start
+    // a batch; the guard must short-circuit before that.
+    $index->method('status')->willReturn(TRUE);
+    $tracker = $this->createMock(TrackerInterface::class);
+    $tracker->method('getRemainingItemsCount')->willReturn(5);
+    $index->method('getTrackerInstance')->willReturn($tracker);
+    $helper = $this->createMock(IndexingBatchHelperInterface::class);
+    $helper->expects($this->never())->method('createBatch');
+    $messenger = $this->createMock(MessengerInterface::class);
+    $messenger->expects($this->once())->method('addWarning');
+
+    $form = $this->buildForm($index, $helper, $messenger);
+    $form_array = [];
+    $form->indexNow($form_array, $this->createMock(FormStateInterface::class));
+  }
+
+  /**
+   * Status changes are persisted on an override-free copy of the index.
+   *
+   * The runtime status config override must never be baked into the synced
+   * search_api.index config, so the save loads the index override-free rather
+   * than through the overrides-applied load().
+   *
+   * @covers ::saveIndexStatus
+   */
+  public function testSaveIndexStatusUsesOverrideFreeLoad(): void {
+    $index = $this->createMock(IndexInterface::class);
+    $index->expects($this->once())->method('setStatus')->with(TRUE)->willReturnSelf();
+    $index->expects($this->once())->method('save');
+
+    $storage = $this->createMock(ConfigEntityStorageInterface::class);
+    $storage->expects($this->once())->method('loadOverrideFree')->with('ys_beacon')->willReturn($index);
+    $storage->expects($this->never())->method('load');
+    $entity_type_manager = $this->createMock(EntityTypeManagerInterface::class);
+    $entity_type_manager->method('getStorage')->with('search_api_index')->willReturn($storage);
+
+    $form = (new \ReflectionClass(YsBeaconSettings::class))->newInstanceWithoutConstructor();
+    $this->setProtected($form, 'entityTypeManager', $entity_type_manager);
+    $this->setProtected($form, 'configFactory', $this->getConfigFactoryStub([
+      'ys_beacon.settings' => ['search_index_id' => 'ys_beacon'],
+    ]));
+
+    $this->invoke($form, 'saveIndexStatus', [TRUE]);
   }
 
   /**

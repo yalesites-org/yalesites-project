@@ -83,6 +83,12 @@ class YsBeaconAdminSettings extends ConfigFormBase {
       ]),
       '#default_value' => $config->get('azure_search_url_key'),
     ];
+    $form['connection']['read_only'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Read-only (borrow another site’s index)'),
+      '#description' => $this->t('When enabled, this site queries the index above but never writes to it: no indexing, re-indexing, clearing, or delete-time removal. Use this when the index name points at a collection owned by another site, so that site’s data is never modified. Leave off for a site that owns and indexes its own content.'),
+      '#default_value' => (bool) $config->get('read_only'),
+    ];
 
     $form['retrieval'] = [
       '#type' => 'details',
@@ -146,11 +152,14 @@ class YsBeaconAdminSettings extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $config = $this->config(self::CONFIG_NAME);
     $previous_index_name = $config->get('azure_index_name');
+    $previous_read_only = (bool) $config->get('read_only');
     $new_index_name = $form_state->getValue('azure_index_name');
+    $read_only = (bool) $form_state->getValue('read_only');
 
-    // The index name is intentionally not saved here: provision() persists it
-    // only after the Azure index has been verified or created, so a failed
-    // provisioning never leaves the site pointing at a nonexistent index.
+    // The index name and read-only flag are intentionally not saved here:
+    // propagateConnection() below persists them onto both the Beacon settings
+    // and the real Search API config (server database name + index read-only
+    // flag), so they never drift and the admin UI stays truthful.
     // The chatbot requires the AI metadata fields, so an explicit "off" here is
     // overridden whenever chat is enabled.
     $enable_metadata_fields = (bool) $form_state->getValue('enable_metadata_fields')
@@ -164,19 +173,32 @@ class YsBeaconAdminSettings extends ConfigFormBase {
       ->set('enable_metadata_fields', $enable_metadata_fields)
       ->save();
 
-    if ($new_index_name !== $previous_index_name) {
-      if ($new_index_name) {
-        try {
-          $this->indexManager->provision($new_index_name);
-          $this->messenger()->addStatus($this->t('All existing content has been queued for indexing into the Beacon vector database.'));
-        }
-        catch (\RuntimeException $e) {
-          $this->messenger()->addWarning($this->t('The index name was not saved: Azure AI Search could not be reached to verify or create the index. @message', ['@message' => $e->getMessage()]));
-        }
+    // Provision when a writable site points at a NEW index, or switches an
+    // existing index from read-only (borrowed) back to writable: both need the
+    // Azure index verified/created and the Search API tracker (re)built so the
+    // site's content is queued. provision() persists the connection only after
+    // the Azure index is confirmed, so a failed provisioning never leaves the
+    // site pointing at a nonexistent index. Read-only borrows never provision.
+    if ($new_index_name && !$read_only
+      && ($new_index_name !== $previous_index_name || $previous_read_only)) {
+      try {
+        $this->indexManager->provision($new_index_name);
+        $this->messenger()->addStatus($this->t('All existing content has been queued for indexing into the Beacon vector database.'));
       }
-      else {
-        // Explicitly clearing the index name disables Beacon indexing.
-        $this->config(self::CONFIG_NAME)->set('azure_index_name', '')->save();
+      catch (\RuntimeException $e) {
+        $this->messenger()->addWarning($this->t('The index name was not saved: Azure AI Search could not be reached to verify or create the index. @message', ['@message' => $e->getMessage()]));
+      }
+    }
+    else {
+      // Everything else - borrowing another site's collection read-only,
+      // clearing the index name, or a save that only toggles read-only on the
+      // current index - writes the connection straight into the real config
+      // without provisioning. A read-only site must never create, write to, or
+      // queue content into the collection, so provision() (which would create a
+      // missing index and rebuild the tracker) is skipped.
+      $this->indexManager->propagateConnection($new_index_name, $read_only);
+      if ($new_index_name && $read_only && $new_index_name !== $previous_index_name) {
+        $this->messenger()->addStatus($this->t('This site now reads from the shared, read-only index %name. Content indexing is managed by the owning site.', ['%name' => $new_index_name]));
       }
     }
 
