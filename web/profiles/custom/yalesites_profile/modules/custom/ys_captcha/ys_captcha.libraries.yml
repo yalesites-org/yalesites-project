@@ -1,0 +1,4 @@
+disclosure:
+  css:
+    theme:
+      css/recaptcha-disclosure.css: {}
