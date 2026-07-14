@@ -1,7 +1,7 @@
 name: "YaleSites Views Content Resources"
 type: module
 description: "Views Content Resources allows content editors to insert customized resource views."
-core_version_requirement: '^9 || ^10'
+core_version_requirement: '^9 || ^10 || ^11'
 package: YaleSites
 dependencies:
   - field
