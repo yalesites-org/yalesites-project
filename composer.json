@@ -28,9 +28,9 @@
   "require": {
     "composer/installers": "^1.9",
     "cweagans/composer-patches": "^1.7",
-    "drupal/core-composer-scaffold": "11.3.12",
-    "drupal/core-project-message": "11.3.12",
-    "drupal/core-recommended": "11.3.12",
+    "drupal/core-composer-scaffold": "11.4.3",
+    "drupal/core-project-message": "11.4.3",
+    "drupal/core-recommended": "11.4.3",
     "drush/drush": "^13",
     "league/commonmark": "^2.0",
     "pantheon-systems/drupal-integrations": "^10",
