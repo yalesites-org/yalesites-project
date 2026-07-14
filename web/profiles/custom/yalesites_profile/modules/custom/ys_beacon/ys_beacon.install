@@ -84,10 +84,14 @@ function ys_beacon_schema() {
  * legacy ys_ai_system_instructions table when that module is (or was)
  * installed, so the history survives its removal.
  *
- * Key entities are NOT created here: the pantheon_secrets sync owns key
- * creation from the platform secrets (portkey_llm_api_key,
- * portkey_embedding_api_key, azure_ai_search_api_key, azure_ai_search_url),
- * and pre-creating them makes that sync fail with "entity already exists".
+ * Key entities are NOT created here. The four platform-secret keys
+ * (portkey_llm_api_key, portkey_embedding_api_key, azure_ai_search_api_key,
+ * azure_ai_search_url) ship as key.key.* config and are created by
+ * config:import, exactly like the recaptcha/mailchimp keys; their values
+ * resolve live from Pantheon and are never stored in config. Creating them
+ * here programmatically would clash with that config, and the pantheon_secrets
+ * sync still coexists (it skips secrets already backed by a key via its
+ * secret_name).
  */
 function ys_beacon_install() {
   $settings = \Drupal::configFactory()->getEditable('ys_beacon.settings');
