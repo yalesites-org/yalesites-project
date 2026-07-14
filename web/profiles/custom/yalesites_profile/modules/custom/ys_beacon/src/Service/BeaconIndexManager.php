@@ -268,6 +268,19 @@ class BeaconIndexManager {
       'facetable' => TRUE,
     ];
 
+    // Retrievable-only string fields: stored and returned for citations, but
+    // not searched, filtered, sorted, or faceted on.
+    $retrievable_field = static fn (string $field_name): array => [
+      'name' => $field_name,
+      'type' => 'Edm.String',
+      'key' => FALSE,
+      'retrievable' => TRUE,
+      'searchable' => FALSE,
+      'filterable' => FALSE,
+      'sortable' => FALSE,
+      'facetable' => FALSE,
+    ];
+
     return [
       'name' => $name,
       'fields' => [
@@ -276,16 +289,12 @@ class BeaconIndexManager {
         $string_field('drupal_long_id'),
         $string_field('index_id'),
         $string_field('server_id'),
-        [
-          'name' => 'content',
-          'type' => 'Edm.String',
-          'key' => FALSE,
-          'retrievable' => TRUE,
-          'searchable' => FALSE,
-          'filterable' => FALSE,
-          'sortable' => FALSE,
-          'facetable' => FALSE,
-        ],
+        $retrievable_field('content'),
+        // Title and absolute URL stored per document so a site querying a
+        // shared collection can cite content whose Drupal entity does not
+        // exist locally.
+        $retrievable_field('citation_title'),
+        $retrievable_field('citation_url'),
         [
           'name' => 'vector',
           'type' => 'Collection(Edm.Single)',

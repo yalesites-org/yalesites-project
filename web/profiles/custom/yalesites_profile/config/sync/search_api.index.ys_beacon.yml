@@ -23,6 +23,14 @@ field_settings:
     label: 'AI Tags'
     property_path: ys_beacon_ai_tags
     type: string
+  citation_title:
+    label: 'Citation title'
+    property_path: ys_beacon_citation_title
+    type: string
+  citation_url:
+    label: 'Citation URL'
+    property_path: ys_beacon_citation_url
+    type: string
   field_ai_pdf_text:
     label: 'AI extracted PDF text'
     datasource_id: 'entity:media'
@@ -111,6 +119,7 @@ processor_settings:
       u: 1.0
   rendered_item: {  }
   ys_beacon_ai_metadata: {  }
+  ys_beacon_citation_fields: {  }
   ys_beacon_exclude_ai_disabled: {  }
 tracker_settings:
   default:
