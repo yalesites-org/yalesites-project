@@ -5,6 +5,7 @@ namespace Drupal\ys_views_basic\Plugin\Field\FieldWidget;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
@@ -54,6 +55,13 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
   protected $entityTypeManager;
 
   /**
+   * The config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
+
+  /**
    * Memoized label of the custom_vocab vocabulary.
    *
    * @var string|null
@@ -77,6 +85,8 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
    *   The ViewsBasic management service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config factory service.
    */
   public function __construct(
     $plugin_id,
@@ -86,6 +96,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     array $third_party_settings,
     ViewsBasicManager $views_basic_manager,
     EntityTypeManagerInterface $entity_type_manager,
+    ConfigFactoryInterface $config_factory,
   ) {
     parent::__construct(
       $plugin_id,
@@ -96,6 +107,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     );
     $this->viewsBasicManager = $views_basic_manager;
     $this->entityTypeManager = $entity_type_manager;
+    $this->configFactory = $config_factory;
   }
 
   /**
@@ -114,7 +126,8 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       $configuration['settings'],
       $configuration['third_party_settings'],
       $container->get('ys_views_basic.views_basic_manager'),
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('config.factory')
     );
   }
 
@@ -338,6 +351,11 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       '#view_mode' => $this->getViewMode(),
       // 1x1 transparent GIF; the CSS shows the placeholder as a grey box.
       '#image_src' => 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
+      // Mirrors the site's configured heading typeface (Site Settings > Font
+      // Pairing) so the mockup reads like the live front-end render. The
+      // webfonts themselves load via the ys_views_basic_preview library's
+      // dependency on ys_core/font_preview.
+      '#font_pairing' => $this->configFactory->get('ys_core.site')->get('font_pairing') ?? 'yalenew',
     ];
   }
 
