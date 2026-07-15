@@ -337,6 +337,19 @@ class BeaconIndexManager {
       'facetable' => TRUE,
     ];
 
+    // Retrievable-only string fields: stored and returned for citations, but
+    // not searched, filtered, sorted, or faceted on.
+    $retrievable_field = static fn (string $field_name): array => [
+      'name' => $field_name,
+      'type' => 'Edm.String',
+      'key' => FALSE,
+      'retrievable' => TRUE,
+      'searchable' => FALSE,
+      'filterable' => FALSE,
+      'sortable' => FALSE,
+      'facetable' => FALSE,
+    ];
+
     return [
       'name' => $name,
       'fields' => [
@@ -349,30 +362,12 @@ class BeaconIndexManager {
         // beacon_azure_ai_search provider writes it on insert and scopes
         // reads/deletes by it so multiple sites can share one collection.
         $string_field('site_id'),
-        [
-          'name' => 'content',
-          'type' => 'Edm.String',
-          'key' => FALSE,
-          'retrievable' => TRUE,
-          'searchable' => FALSE,
-          'filterable' => FALSE,
-          'sortable' => FALSE,
-          'facetable' => FALSE,
-        ],
-        // The source's absolute URL, written from the Search API "url" field
-        // (search_api_url, absolute) so a citation can link to the owning
-        // site's page. Required for cross-site reads: a borrowing site has no
-        // local entity for another site's chunk and so cannot derive the URL.
-        [
-          'name' => 'url',
-          'type' => 'Edm.String',
-          'key' => FALSE,
-          'retrievable' => TRUE,
-          'searchable' => FALSE,
-          'filterable' => FALSE,
-          'sortable' => FALSE,
-          'facetable' => FALSE,
-        ],
+        $retrievable_field('content'),
+        // Title and absolute URL stored per document so a site querying a
+        // shared collection can cite content whose Drupal entity does not
+        // exist locally.
+        $retrievable_field('citation_title'),
+        $retrievable_field('citation_url'),
         [
           'name' => 'vector',
           'type' => 'Collection(Edm.Single)',

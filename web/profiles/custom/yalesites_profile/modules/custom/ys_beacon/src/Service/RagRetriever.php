@@ -5,8 +5,8 @@ namespace Drupal\ys_beacon\Service;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\media\MediaInterface;
 use Drupal\search_api\IndexInterface;
+use Drupal\search_api\Item\ItemInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -22,6 +22,7 @@ class RagRetriever {
     protected EntityTypeManagerInterface $entityTypeManager,
     protected ConfigFactoryInterface $configFactory,
     protected LoggerInterface $logger,
+    protected EntityCitationResolver $citationResolver,
   ) {
   }
 
@@ -46,17 +47,27 @@ class RagRetriever {
       return [];
     }
 
+    // A read-only site borrows another site's (shared) collection: the cited
+    // documents belong to other sites and have no local entity to load or
+    // access-check, so citations are built from the title and URL stored on
+    // each document instead. A writable site that opts into querying the whole
+    // shared collection (query_entire_index) gets a mix of its own chunks and
+    // other sites' chunks. This is only safe because protected content is never
+    // written to the index (the Beacon indexing security hardening is the sole
+    // safeguard once per-visitor access is bypassed for shared retrieval).
+    $read_only = $index->isReadOnly();
+
     try {
       $query = $index->query([
         'limit' => (int) ($settings->get('top_k') ?: 5),
       ]);
       $query->setOption('search_api_ai_get_chunks_result', TRUE);
-      if ($whole_index) {
-        // Other sites' chunks in a shared collection have no local entity, so
-        // the backend's own per-result access check would drop them before they
-        // ever reach us. Bypass it for this query only; this site's own chunks
-        // are still access-checked per result below, and other sites' content
-        // is trusted public (only public content is indexed).
+      // Reading beyond this site's own documents - a read-only borrow or a
+      // whole-collection query - surfaces other sites' chunks that have no
+      // local entity, so the backend's own per-result access check would drop
+      // them. Bypass it for this query only; this site's own chunks are still
+      // access-checked per result below.
+      if ($read_only || $whole_index) {
         $query->setOption('search_api_bypass_access', TRUE);
       }
       $query->keys($question);
@@ -92,58 +103,212 @@ class RagRetriever {
       $items[] = $item;
     }
 
-    // Resolve entities only for this site's own chunks. A foreign chunk keeps
-    // its "<site>:" prefix, so its id names no local datasource; loading it
-    // would only log a "could not load" warning on every query.
-    $own_items = array_filter($items, static fn ($item): bool => str_starts_with(
+    // A read-only borrow reads only other sites' documents, so cite them all
+    // from stored fields. A writable site querying the whole collection gets a
+    // mix (own via local entity, foreign from stored fields); otherwise every
+    // result is this site's own.
+    if ($read_only) {
+      return $this->buildStoredCitations($items);
+    }
+    if ($whole_index) {
+      return $this->buildMixedCitations($index, $items);
+    }
+    return $this->buildEntityCitations($index, $items);
+  }
+
+  /**
+   * Builds citations from the title/URL stored on each document.
+   *
+   * Used for chunks whose Drupal entity cannot (or must not) be loaded locally:
+   * a read-only borrowed collection whose documents belong to another site.
+   * Access is not re-checked here; the write-side invariant that protected
+   * content is never indexed is the only safeguard for shared retrieval.
+   *
+   * @param \Drupal\search_api\Item\ItemInterface[] $items
+   *   The filtered result items.
+   *
+   * @return array[]
+   *   Citation arrays.
+   */
+  protected function buildStoredCitations(array $items): array {
+    $citations = [];
+    foreach ($items as $item) {
+      $citations[] = $this->storedCitation($item);
+    }
+    return $citations;
+  }
+
+  /**
+   * Builds citations by loading each chunk's local entity.
+   *
+   * Used for a site's own writable index, where the current visitor's view
+   * access is enforced per result and chunks whose entity has been deleted,
+   * unpublished, or access-restricted are dropped.
+   *
+   * @param \Drupal\search_api\IndexInterface $index
+   *   The Beacon index.
+   * @param \Drupal\search_api\Item\ItemInterface[] $items
+   *   The filtered result items.
+   *
+   * @return array[]
+   *   Citation arrays.
+   */
+  protected function buildEntityCitations(IndexInterface $index, array $items): array {
+    $entities = $this->loadEntities($index, $items);
+    $citations = [];
+    foreach ($items as $item) {
+      $citation = $this->entityCitation($item, $entities);
+      if ($citation !== NULL) {
+        $citations[] = $citation;
+      }
+    }
+    return $citations;
+  }
+
+  /**
+   * Builds citations for a whole-collection query of own and foreign chunks.
+   *
+   * This site's own chunks keep the local "entity:..." id and are cited (and
+   * access-checked) through their local entity; another site's chunks keep a
+   * "<site>:" prefix, have no local entity, and are cited from the title/URL
+   * stored on the document. Relevance order is preserved across both kinds.
+   *
+   * @param \Drupal\search_api\IndexInterface $index
+   *   The Beacon index.
+   * @param \Drupal\search_api\Item\ItemInterface[] $items
+   *   The filtered result items.
+   *
+   * @return array[]
+   *   Citation arrays.
+   */
+  protected function buildMixedCitations(IndexInterface $index, array $items): array {
+    // Load entities only for this site's own chunks; a foreign chunk's id names
+    // no local datasource, so loading it would only log a warning per query.
+    $own_items = array_filter($items, static fn (ItemInterface $item): bool => str_starts_with(
       (string) ($item->getExtraData('drupal_entity_id') ?: $item->getId()),
       'entity:',
     ));
     $entities = $this->loadEntities($index, $own_items);
+
     $citations = [];
     foreach ($items as $item) {
       $combined_id = (string) ($item->getExtraData('drupal_entity_id') ?: $item->getId());
-      $content = trim((string) $item->getExtraData('content'));
-
-      // A chunk from another site in a shared collection keeps its "<site>:"
-      // prefix (the provider only strips this site's own prefix), so it never
-      // starts with "entity:" and has no local entity to resolve. Cite it from
-      // index data alone - content plus the owning site's absolute URL, stored
-      // on the document at index time - and only when this site is configured
-      // to query the whole collection; its content is trusted public.
       if (!str_starts_with($combined_id, 'entity:')) {
-        if (!$whole_index) {
-          continue;
-        }
-        $title = '';
-        $url = ((string) $item->getExtraData('url')) ?: NULL;
+        $citations[] = $this->storedCitation($item);
+        continue;
       }
-      else {
-        $entity = $entities[$combined_id] ?? NULL;
-        // Never quote content the current visitor cannot view. The AI Search
-        // backend access-checks results too (unless bypassed for whole-index
-        // reads); this guards the window where a chunk is still in the vector
-        // database after its entity was deleted, unpublished, or restricted.
-        if (!$entity || !$entity->access('view')) {
-          continue;
-        }
-        $title = (string) $entity->label();
-        $url = $this->getEntityUrl($entity);
+      $citation = $this->entityCitation($item, $entities);
+      if ($citation !== NULL) {
+        $citations[] = $citation;
       }
-
-      $citations[] = [
-        'content' => $content,
-        'id' => $item->getId(),
-        'title' => $title,
-        'filepath' => NULL,
-        'url' => $url,
-        'metadata' => NULL,
-        'chunk_id' => $item->getId(),
-        'reindex_id' => NULL,
-      ];
     }
-
     return $citations;
+  }
+
+  /**
+   * Builds one citation from the title/URL stored on a document.
+   *
+   * @param \Drupal\search_api\Item\ItemInterface $item
+   *   The result item.
+   *
+   * @return array
+   *   A citation array.
+   */
+  protected function storedCitation(ItemInterface $item): array {
+    $title = $this->decodeStoredValue((string) $item->getExtraData('citation_title'));
+    $url = $this->decodeStoredValue((string) $item->getExtraData('citation_url'));
+    return $this->buildCitation(
+      $item,
+      // Fall back to a generic label only for documents indexed before the
+      // citation fields existed; a re-indexed corpus always stores a title.
+      $title !== '' ? $title : 'Source',
+      $url !== '' ? $url : NULL,
+    );
+  }
+
+  /**
+   * Builds one citation from a chunk's local entity, or NULL when unusable.
+   *
+   * Never quotes content the current visitor cannot view: the entity must load
+   * and pass a view access check. This also guards the window where a chunk is
+   * still in the vector database after its entity was deleted, unpublished, or
+   * access-restricted.
+   *
+   * @param \Drupal\search_api\Item\ItemInterface $item
+   *   The result item.
+   * @param \Drupal\Core\Entity\ContentEntityInterface[] $entities
+   *   Entities keyed by combined item id.
+   *
+   * @return array|null
+   *   A citation array, or NULL when no accessible entity backs the chunk.
+   */
+  protected function entityCitation(ItemInterface $item, array $entities): ?array {
+    $combined_id = (string) ($item->getExtraData('drupal_entity_id') ?: $item->getId());
+    $entity = $entities[$combined_id] ?? NULL;
+    if (!$entity || !$entity->access('view')) {
+      return NULL;
+    }
+    return $this->buildCitation(
+      $item,
+      $this->citationResolver->title($entity),
+      $this->citationResolver->url($entity),
+    );
+  }
+
+  /**
+   * Assembles a citation array from an item plus its title and URL.
+   *
+   * The shape is the contract consumed by the chat frontend and the AI tester
+   * (see retrieve()); keeping it in one place guarantees the stored-field and
+   * local-entity paths emit identically-shaped citations.
+   *
+   * @param \Drupal\search_api\Item\ItemInterface $item
+   *   The result item supplying content and ids.
+   * @param string $title
+   *   The citation title.
+   * @param string|null $url
+   *   The citation URL, or NULL when none is available.
+   *
+   * @return array
+   *   A citation array.
+   */
+  protected function buildCitation(ItemInterface $item, string $title, ?string $url): array {
+    return [
+      'content' => trim((string) $item->getExtraData('content')),
+      'id' => $item->getId(),
+      'title' => $title,
+      'filepath' => NULL,
+      'url' => $url,
+      'metadata' => NULL,
+      'chunk_id' => $item->getId(),
+      'reindex_id' => NULL,
+    ];
+  }
+
+  /**
+   * Reverses the escaping the ai_search indexer applies to stored attributes.
+   *
+   * Retrievable "attributes" fields (citation_title/citation_url) pass through
+   * the ai_search embedding strategy's HTML-to-Markdown converter at index time
+   * (EmbeddingBase::getValue), which backslash-escapes Markdown punctuation
+   * ("annual_report" -> "annual\_report") and HTML-encodes entities
+   * ("&" -> "&amp;"). Undo both so a stored citation title/URL matches the
+   * value the local-entity path derives live. (Removable once Beacon owns the
+   * write seam and can store these fields raw.)
+   *
+   * @param string $value
+   *   The stored (escaped) field value.
+   *
+   * @return string
+   *   The decoded value.
+   */
+  protected function decodeStoredValue(string $value): string {
+    if ($value === '') {
+      return '';
+    }
+    $value = html_entity_decode($value, ENT_QUOTES | ENT_HTML5);
+    // Strip a single backslash placed before any ASCII punctuation character.
+    return preg_replace('/\\\\([\x21-\x2f\x3a-\x40\x5b-\x60\x7b-\x7e])/', '$1', $value);
   }
 
   /**
@@ -181,40 +346,6 @@ class RagRetriever {
       ]);
     }
     return $entities;
-  }
-
-  /**
-   * Builds the citation URL for an entity.
-   *
-   * Media items link directly to their source file when possible, matching
-   * the legacy ai_engine feed behavior; everything else uses the canonical
-   * entity URL.
-   *
-   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
-   *   The entity to link to.
-   *
-   * @return string|null
-   *   An absolute URL, or NULL when none can be generated.
-   */
-  protected function getEntityUrl(ContentEntityInterface $entity): ?string {
-    try {
-      if ($entity instanceof MediaInterface) {
-        $fid = $entity->getSource()->getSourceFieldValue($entity);
-        if ($fid && is_numeric($fid)) {
-          $file = $this->entityTypeManager->getStorage('file')->load($fid);
-          if ($file) {
-            return $file->createFileUrl(FALSE);
-          }
-        }
-      }
-      if ($entity->hasLinkTemplate('canonical')) {
-        return $entity->toUrl('canonical', ['absolute' => TRUE])->toString();
-      }
-    }
-    catch (\Throwable $e) {
-      // Fall through to NULL: a citation without a link is still usable.
-    }
-    return NULL;
   }
 
 }

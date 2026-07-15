@@ -68,6 +68,39 @@ class BeaconIndexManagerTest extends UnitTestCase {
   }
 
   /**
+   * The Azure schema declares retrievable citation title and URL fields.
+   *
+   * Cross-site citations read these back off each document, so both must exist
+   * and be retrievable (but not searchable/filterable — they are display data).
+   *
+   * @covers ::buildIndexSchema
+   */
+  public function testBuildIndexSchemaIncludesCitationFields(): void {
+    // All config lookups fall through to defaults (server id, dimensions).
+    $config = $this->createMock(Config::class);
+    $config->method('get')->willReturn(NULL);
+    $config_factory = $this->createMock(ConfigFactoryInterface::class);
+    $config_factory->method('get')->willReturn($config);
+
+    $manager = (new \ReflectionClass(BeaconIndexManager::class))->newInstanceWithoutConstructor();
+    $config_property = new \ReflectionProperty($manager, 'configFactory');
+    $config_property->setAccessible(TRUE);
+    $config_property->setValue($manager, $config_factory);
+
+    $method = new \ReflectionMethod($manager, 'buildIndexSchema');
+    $method->setAccessible(TRUE);
+    $schema = $method->invoke($manager, 'test-index');
+
+    $fields = array_column($schema['fields'], NULL, 'name');
+    $this->assertArrayHasKey('citation_title', $fields);
+    $this->assertArrayHasKey('citation_url', $fields);
+    $this->assertTrue($fields['citation_title']['retrievable']);
+    $this->assertTrue($fields['citation_url']['retrievable']);
+    $this->assertFalse($fields['citation_title']['searchable']);
+    $this->assertFalse($fields['citation_url']['filterable']);
+  }
+
+  /**
    * A read-only borrow persists the connection into real Search API config.
    *
    * The call writes the Azure index name onto the search server's database name
@@ -254,26 +287,6 @@ class BeaconIndexManagerTest extends UnitTestCase {
     $this->assertArrayHasKey('site_id', $fields);
     $this->assertTrue($fields['site_id']['retrievable']);
     $this->assertTrue($fields['site_id']['filterable']);
-  }
-
-  /**
-   * The index schema carries a retrievable url column for citations.
-   *
-   * A borrowing site has no local entity for another site's chunk, so the
-   * owning site's absolute URL must be retrievable straight from the document.
-   *
-   * @covers ::buildIndexSchema
-   */
-  public function testBuildIndexSchemaIncludesRetrievableUrl(): void {
-    $manager = $this->buildManagerWithSiteUuid('unused-uuid');
-    $method = new \ReflectionMethod($manager, 'buildIndexSchema');
-    $method->setAccessible(TRUE);
-
-    $schema = $method->invoke($manager, 'shared-index');
-    $fields = array_column($schema['fields'], NULL, 'name');
-
-    $this->assertArrayHasKey('url', $fields);
-    $this->assertTrue($fields['url']['retrievable']);
   }
 
   /**
