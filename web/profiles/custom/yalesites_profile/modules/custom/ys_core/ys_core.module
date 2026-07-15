@@ -15,9 +15,11 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Url;
+use Drupal\link\Plugin\Field\FieldWidget\LinkWidget;
 use Drupal\node\Entity\Node;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\ys_core\Editoria11yRouteSuppressor;
+use Drupal\ys_core\WebformContextualLinksSuppressor;
 
 // Include coffee commands.
 require_once __DIR__ . '/ys_core.coffee.inc';
@@ -83,6 +85,18 @@ function ys_core_theme($existing, $type, $theme, $path): array {
  * Implements hook_form_alter().
  */
 function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Strip the Webform module's contextual "edit" links (Test, Results, Build,
+  // Settings) from Pre-Built Form submission forms when the page is being
+  // viewed rather than edited in Layout Builder. Without this, users with
+  // "access contextual links" get an edit icon exposing submission data on the
+  // live page. The links are attached in the Webform module's #after_build, so
+  // a #pre_render (a later phase) reliably removes them before the contextual
+  // placeholder is built.
+  if (str_starts_with($form_id, 'webform_submission')
+    && WebformContextualLinksSuppressor::shouldSuppress(\Drupal::routeMatch()->getRouteName())) {
+    $form['#pre_render'][] = [WebformContextualLinksSuppressor::class, 'preRender'];
+  }
+
   if ($form_id === 'layout_builder_update_block' || $form_id === 'layout_builder_add_block') {
     $block_type = ys_core_get_block_type($form, $form_state);
 
@@ -289,6 +303,7 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
 
   // Add JavaScript preview functionality to Facts and Figures icon fields.
   _ys_core_attach_icon_preview($form, $form_state, $form_id);
+
 }
 
 /**
@@ -340,6 +355,84 @@ function ys_core_preprocess_block(&$variables) {
     }
   }
 
+}
+
+/**
+ * Implements hook_field_widget_single_element_form_alter().
+ *
+ * Prevents invalid link values from ever being stored. When an editor types a
+ * bare domain such as "google.com" (no scheme, no leading slash) the core link
+ * widget rewrites it to "internal:google.com" — an invalid internal URI because
+ * it lacks the leading slash. Building a Url object from that value throws an
+ * InvalidArgumentException, which white-screens any consumer that resolves the
+ * link (entity_usage, for example). We prepend a normalisation handler that
+ * runs before the core handler and rewrites bare domains to an explicit
+ * "https://" URL, matching the editor's intent.
+ *
+ * @see \Drupal\link\Plugin\Field\FieldWidget\LinkWidget::validateUriElement()
+ */
+function ys_core_field_widget_single_element_form_alter(array &$element, FormStateInterface $form_state, array $context) {
+  $widget = $context['widget'] ?? NULL;
+  if (
+    $widget instanceof LinkWidget &&
+    isset($element['uri']['#element_validate']) &&
+    is_array($element['uri']['#element_validate'])
+  ) {
+    array_unshift($element['uri']['#element_validate'], '_ys_core_normalize_link_uri');
+  }
+}
+
+/**
+ * Form element validation handler: normalises bare-domain link URIs.
+ *
+ * Runs before LinkWidget::validateUriElement() so the core handler receives a
+ * scheme-qualified URL and no longer treats the value as an invalid internal
+ * path.
+ */
+function _ys_core_normalize_link_uri(array &$element, FormStateInterface $form_state, array &$complete_form) {
+  $value = $element['#value'] ?? '';
+  if (!is_string($value)) {
+    return;
+  }
+
+  $normalized = _ys_core_normalize_bare_domain_uri($value);
+  if ($normalized !== $value) {
+    $element['#value'] = $normalized;
+    $form_state->setValueForElement($element, $normalized);
+  }
+}
+
+/**
+ * Adds an "https://" scheme to a bare domain entered in a link field.
+ *
+ * Values that are empty, internal paths ("/", "#", "?"), route tokens
+ * ("<front>", "<nolink>"), or already scheme-qualified ("https:", "mailto:",
+ * "internal:", "entity:", …) are returned unchanged. Only bare hosts such as
+ * "google.com" or "www.example.org/path?x=1" are rewritten.
+ */
+function _ys_core_normalize_bare_domain_uri(string $uri): string {
+  $trimmed = trim($uri);
+  if ($trimmed === '') {
+    return $uri;
+  }
+
+  // Internal paths, fragments, query strings, and route tokens are valid as-is.
+  if (in_array($trimmed[0], ['/', '#', '?', '<'], TRUE)) {
+    return $uri;
+  }
+
+  // Anything that already declares a scheme is left untouched.
+  if (preg_match('/^[a-z][a-z0-9+.\-]*:/i', $trimmed)) {
+    return $uri;
+  }
+
+  // A bare host (one or more dot-separated labels, optional port and path)
+  // is what the editor meant as an external link; supply the missing scheme.
+  if (preg_match('~^[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?)+(?::\d+)?(?:[/?#].*)?$~i', $trimmed)) {
+    return 'https://' . $trimmed;
+  }
+
+  return $uri;
 }
 
 /**
@@ -476,6 +569,62 @@ function ys_core_preprocess_menu(&$variables) {
           }
         }
       }
+    }
+  }
+
+  // Replace menu item URLs with external source URLs where applicable.
+  // When a menu item points to a node that has a populated
+  // field_external_source, swap the routed (internal) Url for one built from
+  // the external URI. The yds-text-link / getUrlType() cascade then classifies
+  // the link as external and applies the with-icon class plus
+  // data-link-type="external" attribute automatically.
+  if (!empty($variables['items'])) {
+    _ys_core_apply_external_source_to_menu_items($variables['items']);
+  }
+}
+
+/**
+ * Replaces menu item URLs with external source URLs where applicable.
+ *
+ * Recursively walks the menu tree. When an item points to a node whose
+ * field_external_source field has a value, the item's Url is replaced with a
+ * Url built from that external URI. This mirrors the behavior of the
+ * canonical-page redirect in ExternalSourceRedirectSubscriber so menu links
+ * resolve to the same destination as visiting the node directly.
+ *
+ * @param array $items
+ *   The menu items render array (mutated by reference).
+ */
+function _ys_core_apply_external_source_to_menu_items(array &$items) {
+  $node_storage = \Drupal::entityTypeManager()->getStorage('node');
+
+  foreach ($items as &$item) {
+    if (!empty($item['url'])
+      && $item['url'] instanceof Url
+      && $item['url']->isRouted()
+      && $item['url']->getRouteName() === 'entity.node.canonical'
+    ) {
+      $route_parameters = $item['url']->getRouteParameters();
+      if (!empty($route_parameters['node'])) {
+        $node = $node_storage->load($route_parameters['node']);
+        if ($node
+          && $node->hasField('field_external_source')
+          && !$node->get('field_external_source')->isEmpty()
+        ) {
+          $external_uri = $node->get('field_external_source')->first()->getValue()['uri'] ?? NULL;
+          if (!empty($external_uri)) {
+            try {
+              $item['url'] = Url::fromUri($external_uri);
+            }
+            catch (\Exception $e) {
+              // Invalid URI; leave the original (internal) Url in place.
+            }
+          }
+        }
+      }
+    }
+    if (!empty($item['below'])) {
+      _ys_core_apply_external_source_to_menu_items($item['below']);
     }
   }
 }

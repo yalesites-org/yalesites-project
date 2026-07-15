@@ -1,0 +1,21 @@
+uuid: cd1a9a40-26ff-44b5-ac82-a3ff6766f73f
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.cta_banner
+    - field.storage.block_content.field_style_width
+  module:
+    - options
+id: block_content.cta_banner.field_style_width
+field_name: field_style_width
+entity_type: block_content
+bundle: cta_banner
+label: 'Banner Width'
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ys_themes_default_value_function
+settings: {  }
+field_type: list_string
