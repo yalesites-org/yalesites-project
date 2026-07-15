@@ -10,6 +10,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\node\NodeInterface;
 use Drupal\ys_layouts\Plugin\Block\ResourceMetaBlock;
+use Drupal\ys_layouts\Service\MediaAltResolver;
 use Drupal\ys_layouts\Service\ResourceAuthorBuilder;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpFoundation\Request;
@@ -68,6 +69,13 @@ class ResourceMetaBlockTest extends UnitTestCase {
   protected $resourceAuthorBuilder;
 
   /**
+   * The media alt resolver mock.
+   *
+   * @var \Drupal\ys_layouts\Service\MediaAltResolver|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $mediaAltResolver;
+
+  /**
    * The block plugin under test.
    *
    * @var \Drupal\ys_layouts\Plugin\Block\ResourceMetaBlock
@@ -86,6 +94,7 @@ class ResourceMetaBlockTest extends UnitTestCase {
     $this->dateFormatter = $this->createMock(DateFormatter::class);
     $this->entityTypeManager = $this->createMock(EntityTypeManager::class);
     $this->resourceAuthorBuilder = $this->createMock(ResourceAuthorBuilder::class);
+    $this->mediaAltResolver = $this->createMock(MediaAltResolver::class);
 
     $this->block = new ResourceMetaBlock(
       [],
@@ -96,7 +105,8 @@ class ResourceMetaBlockTest extends UnitTestCase {
       $this->requestStack,
       $this->dateFormatter,
       $this->entityTypeManager,
-      $this->resourceAuthorBuilder
+      $this->resourceAuthorBuilder,
+      $this->mediaAltResolver
     );
   }
 
