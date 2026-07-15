@@ -359,6 +359,20 @@ class BeaconIndexManager {
           'sortable' => FALSE,
           'facetable' => FALSE,
         ],
+        // The source's absolute URL, written from the Search API "url" field
+        // (search_api_url, absolute) so a citation can link to the owning
+        // site's page. Required for cross-site reads: a borrowing site has no
+        // local entity for another site's chunk and so cannot derive the URL.
+        [
+          'name' => 'url',
+          'type' => 'Edm.String',
+          'key' => FALSE,
+          'retrievable' => TRUE,
+          'searchable' => FALSE,
+          'filterable' => FALSE,
+          'sortable' => FALSE,
+          'facetable' => FALSE,
+        ],
         [
           'name' => 'vector',
           'type' => 'Collection(Edm.Single)',

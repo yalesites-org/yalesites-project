@@ -392,3 +392,31 @@ function ys_beacon_update_10007() {
   }
   \Drupal::service('ys_beacon.index_manager')->reprovision();
 }
+
+/**
+ * Recreate the Beacon Azure index with the url schema and reindex.
+ *
+ * A retrievable url field is added so citations can link to the owning site's
+ * page. It is required for cross-site reads (query_entire_index): a site
+ * borrowing another site's chunk has no local entity to derive the URL from, so
+ * the owning site's absolute URL must be stored on the document itself (the
+ * Search API "url" field is switched from ignore to a filterable attribute in
+ * config so it is written on index). Azure never modifies an index in place, so
+ * drop and recreate it with the current schema and queue a full reindex. Only a
+ * site that owns a provisioned, writable index is touched; a site that
+ * provisions fresh after this deploy, or a read-only borrower, is left alone.
+ *
+ * As with the site_id migration, a failure aborts the update rather than being
+ * swallowed: reprovision() checks indexExists() before any destructive delete,
+ * so a plain outage aborts without having touched the index and Drupal re-runs
+ * the update on the next deploy. The queued reindex runs afterwards on cron.
+ */
+function ys_beacon_update_10008() {
+  $settings = \Drupal::config('ys_beacon.settings');
+  // Only a site that owns a writable, provisioned index has one of its own to
+  // recreate. A read-only borrower must never write to the collection it reads.
+  if ((string) $settings->get('azure_index_name') === '' || (bool) $settings->get('read_only')) {
+    return;
+  }
+  \Drupal::service('ys_beacon.index_manager')->reprovision();
+}

@@ -38,6 +38,7 @@ class RagRetriever {
   public function retrieve(string $question): array {
     $settings = $this->configFactory->get('ys_beacon.settings');
     $index_id = $settings->get('search_index_id') ?: 'ys_beacon';
+    $whole_index = (bool) $settings->get('query_entire_index');
 
     /** @var \Drupal\search_api\IndexInterface|null $index */
     $index = $this->entityTypeManager->getStorage('search_api_index')->load($index_id);
@@ -50,6 +51,14 @@ class RagRetriever {
         'limit' => (int) ($settings->get('top_k') ?: 5),
       ]);
       $query->setOption('search_api_ai_get_chunks_result', TRUE);
+      if ($whole_index) {
+        // Other sites' chunks in a shared collection have no local entity, so
+        // the backend's own per-result access check would drop them before they
+        // ever reach us. Bypass it for this query only; this site's own chunks
+        // are still access-checked per result below, and other sites' content
+        // is trusted public (only public content is indexed).
+        $query->setOption('search_api_bypass_access', TRUE);
+      }
       $query->keys($question);
       $results = $query->execute();
     }
@@ -83,24 +92,51 @@ class RagRetriever {
       $items[] = $item;
     }
 
-    $entities = $this->loadEntities($index, $items);
+    // Resolve entities only for this site's own chunks. A foreign chunk keeps
+    // its "<site>:" prefix, so its id names no local datasource; loading it
+    // would only log a "could not load" warning on every query.
+    $own_items = array_filter($items, static fn ($item): bool => str_starts_with(
+      (string) ($item->getExtraData('drupal_entity_id') ?: $item->getId()),
+      'entity:',
+    ));
+    $entities = $this->loadEntities($index, $own_items);
     $citations = [];
     foreach ($items as $item) {
       $combined_id = (string) ($item->getExtraData('drupal_entity_id') ?: $item->getId());
-      $entity = $entities[$combined_id] ?? NULL;
-      // Never quote content the current visitor cannot view. The AI Search
-      // backend access-checks results too; this guards the window where a
-      // chunk is still in the vector database after its entity was deleted,
-      // unpublished, or access-restricted.
-      if (!$entity || !$entity->access('view')) {
-        continue;
+      $content = trim((string) $item->getExtraData('content'));
+
+      // A chunk from another site in a shared collection keeps its "<site>:"
+      // prefix (the provider only strips this site's own prefix), so it never
+      // starts with "entity:" and has no local entity to resolve. Cite it from
+      // index data alone - content plus the owning site's absolute URL, stored
+      // on the document at index time - and only when this site is configured
+      // to query the whole collection; its content is trusted public.
+      if (!str_starts_with($combined_id, 'entity:')) {
+        if (!$whole_index) {
+          continue;
+        }
+        $title = '';
+        $url = ((string) $item->getExtraData('url')) ?: NULL;
       }
+      else {
+        $entity = $entities[$combined_id] ?? NULL;
+        // Never quote content the current visitor cannot view. The AI Search
+        // backend access-checks results too (unless bypassed for whole-index
+        // reads); this guards the window where a chunk is still in the vector
+        // database after its entity was deleted, unpublished, or restricted.
+        if (!$entity || !$entity->access('view')) {
+          continue;
+        }
+        $title = (string) $entity->label();
+        $url = $this->getEntityUrl($entity);
+      }
+
       $citations[] = [
-        'content' => trim((string) $item->getExtraData('content')),
+        'content' => $content,
         'id' => $item->getId(),
-        'title' => $entity->label(),
+        'title' => $title,
         'filepath' => NULL,
-        'url' => $this->getEntityUrl($entity),
+        'url' => $url,
         'metadata' => NULL,
         'chunk_id' => $item->getId(),
         'reindex_id' => NULL,

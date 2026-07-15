@@ -257,6 +257,26 @@ class BeaconIndexManagerTest extends UnitTestCase {
   }
 
   /**
+   * The index schema carries a retrievable url column for citations.
+   *
+   * A borrowing site has no local entity for another site's chunk, so the
+   * owning site's absolute URL must be retrievable straight from the document.
+   *
+   * @covers ::buildIndexSchema
+   */
+  public function testBuildIndexSchemaIncludesRetrievableUrl(): void {
+    $manager = $this->buildManagerWithSiteUuid('unused-uuid');
+    $method = new \ReflectionMethod($manager, 'buildIndexSchema');
+    $method->setAccessible(TRUE);
+
+    $schema = $method->invoke($manager, 'shared-index');
+    $fields = array_column($schema['fields'], NULL, 'name');
+
+    $this->assertArrayHasKey('url', $fields);
+    $this->assertTrue($fields['url']['retrievable']);
+  }
+
+  /**
    * Re-provisioning drops an existing index before recreating it.
    *
    * @covers ::reprovision

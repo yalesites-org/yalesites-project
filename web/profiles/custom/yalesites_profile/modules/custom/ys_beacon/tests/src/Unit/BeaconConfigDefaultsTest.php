@@ -54,6 +54,13 @@ class BeaconConfigDefaultsTest extends UnitTestCase {
   }
 
   /**
+   * Reads ship scoped to this site: whole-index querying is opt-in per site.
+   */
+  public function testQueryEntireIndexDefaultsToOff(): void {
+    $this->assertFalse($this->installSettings()['query_entire_index']);
+  }
+
+  /**
    * The fallback prompt ships with the full YaleSites system instruction.
    */
   public function testFallbackPromptShipsYaleSitesInstruction(): void {

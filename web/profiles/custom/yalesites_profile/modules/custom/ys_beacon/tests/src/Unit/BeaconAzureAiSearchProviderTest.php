@@ -201,6 +201,29 @@ class BeaconAzureAiSearchProviderTest extends UnitTestCase {
   }
 
   /**
+   * With query_entire_index on, a writable site drops the per-site read scope.
+   *
+   * A site sharing one collection can be configured to answer from every site's
+   * content, so reads are not scoped even though it still writes its own
+   * (site-keyed) documents.
+   *
+   * @covers ::prepareFilters
+   */
+  public function testPrepareFiltersSkipsSiteScopeWhenQueryingEntireIndex(): void {
+    $provider = $this->makeProvider('sitea', TRUE);
+
+    // No conditions: no filter at all, so the whole shared collection matches.
+    $this->assertSame('', $provider->prepareFilters($this->makeQuery('AND', [])));
+
+    // With a condition: the condition is emitted, but still no site scope.
+    $condition = new Condition('type', 'page', '=');
+    $this->assertSame(
+      "type eq 'page'",
+      $provider->prepareFilters($this->makeQuery('AND', [$condition], ['type' => FALSE])),
+    );
+  }
+
+  /**
    * A single-quote in a value is OData-escaped by doubling it.
    *
    * @covers ::escapeOdataLiteral
@@ -261,15 +284,27 @@ class BeaconAzureAiSearchProviderTest extends UnitTestCase {
 
   /**
    * Builds a provider whose getSiteId() is stubbed to a fixed site key.
+   *
+   * @param string $site_id
+   *   The site key getSiteId() should return.
+   * @param bool $query_entire_index
+   *   The ys_beacon.settings:query_entire_index value prepareFilters() reads to
+   *   decide whether to drop the per-site read scope.
    */
-  private function makeProvider(string $site_id): BeaconAzureAiSearchProvider {
+  private function makeProvider(string $site_id, bool $query_entire_index = FALSE): BeaconAzureAiSearchProvider {
     $index_manager = $this->createMock(BeaconIndexManager::class);
     $index_manager->method('getSiteId')->willReturn($site_id);
 
     $provider = (new \ReflectionClass(BeaconAzureAiSearchProvider::class))->newInstanceWithoutConstructor();
-    $property = new \ReflectionProperty($provider, 'beaconIndexManager');
-    $property->setAccessible(TRUE);
-    $property->setValue($provider, $index_manager);
+    $manager_property = new \ReflectionProperty($provider, 'beaconIndexManager');
+    $manager_property->setAccessible(TRUE);
+    $manager_property->setValue($provider, $index_manager);
+
+    $config_property = new \ReflectionProperty($provider, 'configFactory');
+    $config_property->setAccessible(TRUE);
+    $config_property->setValue($provider, $this->getConfigFactoryStub([
+      'ys_beacon.settings' => ['query_entire_index' => $query_entire_index],
+    ]));
 
     return $provider;
   }

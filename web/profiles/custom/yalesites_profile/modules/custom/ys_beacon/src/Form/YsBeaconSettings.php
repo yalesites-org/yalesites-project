@@ -216,6 +216,18 @@ class YsBeaconSettings extends ConfigFormBase {
         // be indexed. Mirrors Search API's own "Index now" disabled behaviour.
         '#disabled' => $this->indexRemainingItems() < 1,
       ];
+      // When several sites share one Azure collection, each normally only reads
+      // its own slice (writes stay isolated by the per-site document key). Turn
+      // this on so the chatbot answers from every site's content in the shared
+      // collection instead. Other sites' content is served without this site's
+      // per-entity access check, so only enable it where the shared index holds
+      // publicly viewable content.
+      $form['indexing']['query_entire_index'] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Answer from every site in a shared index'),
+        '#description' => $this->t("Query all content in the assigned Azure collection, not just this site's. Use only when the collection is shared and its content is public."),
+        '#default_value' => $config->get('query_entire_index') ?? FALSE,
+      ];
     }
 
     // Link to the per-site system instructions when the user has access.
@@ -273,6 +285,7 @@ class YsBeaconSettings extends ConfigFormBase {
       ->set('footer', $form_state->getValue('footer'))
       ->set('guardrail_supplement', $form_state->getValue('guardrail_supplement'))
       ->set('enable_metadata_fields', $enable_metadata_fields)
+      ->set('query_entire_index', (bool) $form_state->getValue('query_entire_index'))
       ->save();
 
     // Keep the Search API index status in sync with the chat toggle. The

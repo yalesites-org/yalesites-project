@@ -153,12 +153,16 @@ class BeaconAzureAiSearchProvider extends AzureAiSearchProvider {
     $index = $query->getIndex();
     $conditions = $this->buildConditionFilter($index, $query->getConditionGroup());
 
-    // A read-only site borrows another site's dedicated collection
-    // (yalesites-org/YaleSites-Internal#1387). That collection holds the owner
-    // site's key, so scoping by THIS site's key would match none of it; skip
-    // the site scope and query the borrowed collection as-is. (Writers never
-    // reach this branch: read-only sites do not index.)
-    if ($index->isReadOnly()) {
+    // Skip the per-site read scope when this site is meant to see the whole
+    // collection:
+    // - a read-only borrow (yalesites-org/YaleSites-Internal#1387): the
+    //   collection holds the owner site's key, so scoping by THIS site's key
+    //   would match none of it (writers never reach this: read-only sites do
+    //   not index);
+    // - a site configured to answer from every site's content in a shared
+    //   collection (query_entire_index).
+    // Writes stay isolated regardless, via the per-site document key.
+    if ($index->isReadOnly() || $this->queryEntireIndex()) {
       return $conditions;
     }
 
@@ -208,6 +212,19 @@ class BeaconAzureAiSearchProvider extends AzureAiSearchProvider {
    */
   protected function getSiteId(): string {
     return $this->beaconIndexManager->getSiteId();
+  }
+
+  /**
+   * Whether this site reads the whole shared collection, not just its slice.
+   *
+   * @return bool
+   *   TRUE when the query_entire_index setting is on, so reads are not scoped
+   *   to this site's own documents.
+   */
+  protected function queryEntireIndex(): bool {
+    return (bool) $this->configFactory
+      ->get('ys_beacon.settings')
+      ->get('query_entire_index');
   }
 
   /**
