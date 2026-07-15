@@ -4,6 +4,7 @@ namespace Drupal\Tests\ys_file_management\Unit;
 
 use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\File\Exception\FileException;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
@@ -67,6 +68,13 @@ class MediaFileDeleterTest extends UnitTestCase {
   protected $cacheTagsInvalidator;
 
   /**
+   * The module handler mock.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $moduleHandler;
+
+  /**
    * The MediaFileDeleter service under test.
    *
    * @var \Drupal\ys_file_management\Service\MediaFileDeleter
@@ -86,6 +94,7 @@ class MediaFileDeleterTest extends UnitTestCase {
     $this->loggerFactory = $this->createMock(LoggerChannelFactoryInterface::class);
     $this->streamWrapperManager = $this->createMock(StreamWrapperManagerInterface::class);
     $this->cacheTagsInvalidator = $this->createMock(CacheTagsInvalidatorInterface::class);
+    $this->moduleHandler = $this->createMock(ModuleHandlerInterface::class);
 
     // Configure logger factory to return logger channel.
     $this->loggerFactory->method('get')
@@ -98,7 +107,8 @@ class MediaFileDeleterTest extends UnitTestCase {
       $this->messenger,
       $this->loggerFactory,
       $this->streamWrapperManager,
-      $this->cacheTagsInvalidator
+      $this->cacheTagsInvalidator,
+      $this->moduleHandler
     );
 
     // Add string translation mock.
