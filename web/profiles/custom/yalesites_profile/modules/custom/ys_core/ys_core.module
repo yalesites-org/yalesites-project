@@ -17,6 +17,7 @@ use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Url;
 use Drupal\link\Plugin\Field\FieldWidget\LinkWidget;
 use Drupal\node\Entity\Node;
+use Drupal\node\NodeInterface;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\ys_core\Editoria11yRouteSuppressor;
 use Drupal\ys_core\WebformContextualLinksSuppressor;
@@ -45,6 +46,7 @@ function ys_core_theme($existing, $type, $theme, $path): array {
     'ys_dashboard' => [
       'variables' => [
         'platform_version' => NULL,
+        'announcements' => [],
       ],
     ],
     'ys_social_links' => [
@@ -501,6 +503,9 @@ function ys_core_user_login_form_submit($form, FormStateInterface $form_state) {
  * Implements theme_preprocess_menu().
  */
 function ys_core_preprocess_menu(&$variables) {
+  if ($variables['menu_name'] === 'admin') {
+    _ys_core_attach_dashboard_badge($variables);
+  }
   if ($variables['menu_name'] == 'main') {
     // If submenu, add the top level link as the first link in the submenu.
     foreach ($variables['items'] as &$menuItem) {
@@ -932,12 +937,62 @@ function ys_core_taxonomy_term_update() {
 }
 
 /**
+ * Implements hook_ENTITY_insert().
+ *
+ * Refresh the announcements feed cache when a new post is created on a site
+ * that is publishing the announcements feed.
+ */
+function ys_core_node_insert($node) {
+  _ys_core_clear_announcements_cache_if_source($node);
+}
+
+/**
+ * Implements hook_ENTITY_delete().
+ *
+ * Refresh the announcements feed cache when a post is deleted on a site
+ * that is publishing the announcements feed.
+ */
+function ys_core_node_delete($node) {
+  _ys_core_clear_announcements_cache_if_source($node);
+}
+
+/**
+ * Clears the announcements cache when a post changes on a source site.
+ *
+ * Without this, the consumer keyvalue cache holds the previous set of items
+ * for up to an hour, so newly-published announcements would not appear on the
+ * dashboard or in the toolbar badge until that window expires.
+ */
+function _ys_core_clear_announcements_cache_if_source($node) {
+  if (!$node instanceof NodeInterface) {
+    return;
+  }
+  if ($node->bundle() !== 'post') {
+    return;
+  }
+  if (!\Drupal::config('ys_core.dashboard_settings')->get('announcements_source_enabled')) {
+    return;
+  }
+  // Clear the consumer's parsed-feed keyvalue and bust the dashboard/badge
+  // render caches via FEED_CACHE_TAG.
+  \Drupal::service('ys_core.dashboard_announcements')->clearCache();
+
+  // Also bust the source endpoint's HTTP response cache. Drupal auto-
+  // invalidates `node_list:post` on insert and delete, but NOT on update — so
+  // a draft being published (an update) would leave the cached feed response
+  // serving stale items until the cache lifetime expires.
+  Cache::invalidateTags(['node_list:post']);
+}
+
+/**
  * Implements hook_ENTITY_update().
  *
  * Clears entity and page cache when field_external_source is updated on a node.
  * This ensures the ExternalSourceRedirectSubscriber sees fresh field data.
  */
 function ys_core_node_update($node) {
+  _ys_core_clear_announcements_cache_if_source($node);
+
   // Only process nodes that have the external source field.
   if (!$node->hasField('field_external_source')) {
     return;
@@ -1326,6 +1381,58 @@ function ys_core_facts_icon_allowed_values(FieldStorageDefinitionInterface $defi
   /** @var \Drupal\ys_core\FactsAndFiguresIconManager $icon_manager */
   $icon_manager = \Drupal::service('ys_core.facts_and_figures_icon_manager');
   return $icon_manager->getFlatIconOptions();
+}
+
+/**
+ * Attaches the unread-announcements badge to the Dashboard admin menu link.
+ *
+ * Wraps the link title in an inline template that includes a #lazy_builder
+ * placeholder. This keeps the surrounding admin menu render cache shared
+ * across users while the count is resolved per-user at render time.
+ */
+function _ys_core_attach_dashboard_badge(array &$variables) {
+  $current_user = \Drupal::currentUser();
+  if ($current_user->isAnonymous()) {
+    return;
+  }
+  $uid = (int) $current_user->id();
+  if (_ys_core_attach_dashboard_badge_walk($variables['items'], $uid)) {
+    $variables['#attached']['library'][] = 'ys_core/dashboard_badge';
+  }
+}
+
+/**
+ * Recursively walks menu items looking for the Dashboard link to badge.
+ *
+ * The admin menu nests its real top-level entries under a root
+ * `system.admin` wrapper, so we cannot assume the link is at depth 0.
+ */
+function _ys_core_attach_dashboard_badge_walk(array &$items, int $uid): bool {
+  $found = FALSE;
+  foreach ($items as &$item) {
+    $url = $item['url'] ?? NULL;
+    if ($url instanceof Url && $url->isRouted() && $url->getRouteName() === 'ys_core.admin_dashboard') {
+      $item['title'] = [
+        '#type' => 'inline_template',
+        '#template' => '{{ label }}{{ badge }}',
+        '#context' => [
+          'label' => $item['title'],
+          'badge' => [
+            '#lazy_builder' => [
+              'ys_core.dashboard_toolbar_lazy_builders:renderBadge',
+              [(string) $uid],
+            ],
+            '#create_placeholder' => TRUE,
+          ],
+        ],
+      ];
+      $found = TRUE;
+    }
+    if (!empty($item['below']) && is_array($item['below'])) {
+      $found = _ys_core_attach_dashboard_badge_walk($item['below'], $uid) || $found;
+    }
+  }
+  return $found;
 }
 
 /**
