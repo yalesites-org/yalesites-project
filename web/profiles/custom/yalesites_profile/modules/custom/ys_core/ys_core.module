@@ -115,7 +115,14 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
       }
     }
 
-    if ($block_type === 'grand_hero') {
+    // Only applies to inline block forms, where the entity subform lives at
+    // settings.block_form. Reusable (Custom Block Library) placements expose
+    // the subform at a different path, so these settings.block_form
+    // assumptions (including the ys_core_grand_hero_validate handler) must not
+    // run for them; otherwise the validator reads empty values from the wrong
+    // path and flags every required field as missing. See
+    // yalesites-org/YaleSites-Internal#1381.
+    if ($block_type === 'grand_hero' && isset($form['settings']['block_form'])) {
 
       // Get the block entity.
       $block = $form['settings']['block_form']['#block'];
