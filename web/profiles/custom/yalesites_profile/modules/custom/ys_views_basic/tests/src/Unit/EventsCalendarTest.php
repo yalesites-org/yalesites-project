@@ -583,4 +583,85 @@ class EventsCalendarTest extends UnitTestCase {
     $this->assertSame(['status', 1], [$conditions[1][0], $conditions[1][1]]);
   }
 
+  /**
+   * Trailing overflow cells belong to the month after the viewed one.
+   *
+   * Regression coverage for yalesites-org/YaleSites-Internal#1379: the trailing
+   * overflow cells in a month grid's last row were tagged with the wrong month
+   * because the next month was derived from the last day of the current month
+   * via DrupalDateTime::modify('+1 month'), which overflows for any 31-day
+   * month whose successor is shorter (e.g. 2026-08-31 + 1 month lands on
+   * 2026-10-01, not September). The fix anchors the next month on the first of
+   * the month, which is safe in every month.
+   *
+   * @covers ::getCalendar
+   *
+   * @dataProvider trailingOverflowProvider
+   */
+  public function testTrailingOverflowMonth(string $month, string $year, string $expectedMonth, string $expectedYear): void {
+    $this->configureNodeStorageToReturn([]);
+
+    $calendar = $this->eventsCalendar->getCalendar($month, $year);
+    $lastRow = end($calendar);
+
+    // Trailing overflow cells are the last-row cells that fall outside the
+    // viewed month.
+    $overflow = array_values(array_filter(
+      $lastRow,
+      fn(array $cell): bool => $cell['date']['month'] !== $month
+    ));
+
+    // Independently derive how many trailing overflow cells this month should
+    // have (0 when the month ends on a Saturday) using a plain DateTime, so the
+    // assertions hold for any month instead of depending on the fixture only
+    // listing months whose last day is not a Saturday.
+    $lastWeekday = (int) (new \DateTime("$year-$month-01"))
+      ->modify('last day of this month')
+      ->format('w');
+    $this->assertCount(
+      6 - $lastWeekday,
+      $overflow,
+      "Unexpected number of trailing overflow cells for $month/$year."
+    );
+
+    foreach ($overflow as $cell) {
+      $this->assertSame(
+        $expectedMonth,
+        $cell['date']['month'],
+        "Trailing overflow cell for $month/$year should belong to month $expectedMonth, got {$cell['date']['month']}."
+      );
+      $this->assertSame(
+        $expectedYear,
+        $cell['date']['year'],
+        "Trailing overflow cell for $month/$year should belong to year $expectedYear, got {$cell['date']['year']}."
+      );
+    }
+  }
+
+  /**
+   * Provides viewed months and the month/year the trailing overflow belongs to.
+   *
+   * @return array
+   *   Each case: [viewed month, viewed year, expected overflow month, year].
+   */
+  public static function trailingOverflowProvider(): array {
+    return [
+      // Regression cases: 31-day month whose successor is shorter. Before the
+      // fix these overflowed two months ahead.
+      'August -> September' => ['08', '2026', '09', '2026'],
+      'January -> February' => ['01', '2025', '02', '2025'],
+      'March -> April' => ['03', '2026', '04', '2026'],
+      'May -> June' => ['05', '2026', '06', '2026'],
+      'October -> November' => ['10', '2025', '11', '2025'],
+
+      // Controls that must stay correct after the fix.
+      // December rolls the year over.
+      'December -> January (year rollover)' => ['12', '2026', '01', '2027'],
+      // July's successor (August) also has 31 days: never overflowed.
+      'July -> August' => ['07', '2026', '08', '2026'],
+      // February has fewer than 31 days: never overflowed.
+      'February -> March' => ['02', '2025', '03', '2025'],
+    ];
+  }
+
 }

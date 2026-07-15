@@ -2,12 +2,12 @@
 
 namespace Drupal\Tests\ys_campus_groups\Unit;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
+use Drupal\Core\Utility\UnroutedUrlAssemblerInterface;
 use Drupal\key\KeyInterface;
 use Drupal\key\KeyRepositoryInterface;
 use Drupal\migrate\Plugin\MigrationInterface;
+use Drupal\migrate_plus\DataParserPluginManager;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_campus_groups\Plugin\migrate\source\CampusGroupUrl;
 
@@ -22,78 +22,125 @@ use Drupal\ys_campus_groups\Plugin\migrate\source\CampusGroupUrl;
 class CampusGroupUrlTest extends UnitTestCase {
 
   /**
-   * Puts a mocked 'ys_campus_groups.settings' config into the container.
+   * The plugin instantiates and builds its source URL from configuration.
    *
-   * @param array $values
-   *   Config key/value pairs returned by Config::get().
-   */
-  protected function setConfig(array $values): void {
-    $config = $this->createMock(ImmutableConfig::class);
-    $config->method('get')->willReturnCallback(function ($key) use ($values) {
-      return $values[$key] ?? NULL;
-    });
-
-    $config_factory = $this->createMock(ConfigFactoryInterface::class);
-    $config_factory->method('getEditable')
-      ->with('ys_campus_groups.settings')
-      ->willReturn($config);
-
-    $container = new ContainerBuilder();
-    $container->set('config.factory', $config_factory);
-    \Drupal::setContainer($container);
-  }
-
-  /**
-   * Locks in the current constructor behavior for the GAP.
-   *
-   * Paired with testConstructShouldSucceedWithConfiguredEndpoint() -- delete
-   * once the GAP is fixed.
-   *
-   * CampusGroupUrl::__construct() calls
-   * parent::__construct($configuration, $plugin_id, $plugin_definition,
-   * $migration) with only four arguments, but migrate_plus's
-   * Url::__construct() requires a fifth, non-default $parserPluginManager
-   * argument. PHP throws an ArgumentCountError as soon as the parent
-   * constructor is invoked -- before any of its body runs -- so every
-   * CampusGroupUrl instantiation fails and the campus_groups_events
-   * migration can never execute.
-   *
-   * @covers ::__construct
-   */
-  public function testConstructThrowsArgumentCountErrorCurrentBehavior(): void {
-    $this->setConfig(['campus_groups_endpoint' => NULL]);
-    $migration = $this->createMock(MigrationInterface::class);
-
-    $this->expectException(\ArgumentCountError::class);
-
-    new CampusGroupUrl(
-      ['urls' => 'test.xml', 'fields' => [], 'ids' => []],
-      'campus_groups_url',
-      [],
-      $migration
-    );
-  }
-
-  /**
-   * Paired with testConstructThrowsArgumentCountErrorCurrentBehavior().
-   *
-   * GAP: CampusGroupUrl::__construct() never passes the required
-   * $parserPluginManager argument through to migrate_plus's
-   * Url::__construct(), so instantiating the source plugin always throws a
-   * fatal ArgumentCountError and the campus_groups_events migration cannot
-   * run.
+   * Regression coverage for the hotfix: CampusGroupUrl::__construct() must
+   * accept and forward migrate_plus Url::__construct()'s fifth argument
+   * ($parserPluginManager). Before the fix every instantiation threw a fatal
+   * ArgumentCountError, so the campus_groups_events migration could not run.
    *
    * @covers ::__construct
    */
   public function testConstructShouldSucceedWithConfiguredEndpoint(): void {
-    $this->markTestSkipped('GAP: CampusGroupUrl::__construct() calls parent::__construct() with only 4 of the 5 arguments required by migrate_plus\'s Url::__construct() (missing $parserPluginManager), so every instantiation -- and therefore the campus_groups_events migration -- throws a fatal ArgumentCountError -- see ~/Documents/Claude/not_dave/module-tests-20260710/ys_campus_groups.md');
+    // The group ID is a fabricated placeholder, never a real production value.
+    $config_factory = $this->getConfigFactoryStub([
+      'ys_campus_groups.settings' => [
+        'campus_groups_endpoint' => 'https://example.com/events',
+        'campus_groups_api_key' => 'campus_groups_key',
+        'campus_groups_groupids' => '12345',
+      ],
+    ]);
+
+    // No key is resolved, so no auth header is added -- keeps this test focused
+    // on constructor argument forwarding.
+    $key_repository = $this->createMock(KeyRepositoryInterface::class);
+    $key_repository->method('getKey')->willReturn(NULL);
+
+    // Url::toString() resolves external URLs through this service.
+    $assembler = $this->createMock(UnroutedUrlAssemblerInterface::class);
+    $assembler->method('assemble')->willReturnCallback(
+      function ($uri, array $options = []) {
+        return $uri . '?' . http_build_query($options['query'] ?? []);
+      }
+    );
+
+    $container = new ContainerBuilder();
+    $container->set('config.factory', $config_factory);
+    $container->set('key.repository', $key_repository);
+    $container->set('unrouted_url_assembler', $assembler);
+    \Drupal::setContainer($container);
+
+    $migration = $this->createMock(MigrationInterface::class);
+    $parser_plugin_manager = $this->createMock(DataParserPluginManager::class);
+
+    $plugin = new CampusGroupUrl(
+      ['urls' => 'test.xml', 'fields' => [], 'ids' => []],
+      'campus_groups_url',
+      [],
+      $migration,
+      $parser_plugin_manager
+    );
+
+    $this->assertInstanceOf(CampusGroupUrl::class, $plugin);
+
+    // The configured endpoint and query parameters drive the source URL
+    // (Url::__toString() returns the built source URLs).
+    $source_url = (string) $plugin;
+    $this->assertStringContainsString('https://example.com/events', $source_url);
+    $this->assertStringContainsString('future_day_range=365', $source_url);
+    $this->assertStringContainsString('group_ids=12345', $source_url);
+  }
+
+  /**
+   * A resolved API key is injected as the x-cg-api-secret request header.
+   *
+   * Covers the constructor's key-present branch: the campus_groups_events
+   * migration authenticates to the Campus Groups API via this header, so a
+   * regression that dropped or renamed it would otherwise pass unnoticed.
+   *
+   * @covers ::__construct
+   */
+  public function testConstructInjectsApiKeyHeaderWhenKeyPresent(): void {
+    // The group ID is a fabricated placeholder, never a real production value.
+    $config_factory = $this->getConfigFactoryStub([
+      'ys_campus_groups.settings' => [
+        'campus_groups_endpoint' => 'https://example.com/events',
+        'campus_groups_api_key' => 'campus_groups_key',
+        'campus_groups_groupids' => '12345',
+      ],
+    ]);
+
+    $key = $this->createMock(KeyInterface::class);
+    $key->method('getKeyValue')->willReturn('secret-value');
+    $key_repository = $this->createMock(KeyRepositoryInterface::class);
+    $key_repository->method('getKey')->with('campus_groups_key')->willReturn($key);
+
+    $assembler = $this->createMock(UnroutedUrlAssemblerInterface::class);
+    $assembler->method('assemble')->willReturnCallback(
+      function ($uri, array $options = []) {
+        return $uri . '?' . http_build_query($options['query'] ?? []);
+      }
+    );
+
+    $container = new ContainerBuilder();
+    $container->set('config.factory', $config_factory);
+    $container->set('key.repository', $key_repository);
+    $container->set('unrouted_url_assembler', $assembler);
+    \Drupal::setContainer($container);
+
+    $migration = $this->createMock(MigrationInterface::class);
+    $parser_plugin_manager = $this->createMock(DataParserPluginManager::class);
+
+    $plugin = new CampusGroupUrl(
+      ['urls' => 'test.xml', 'fields' => [], 'ids' => []],
+      'campus_groups_url',
+      [],
+      $migration,
+      $parser_plugin_manager
+    );
+
+    $property = new \ReflectionProperty($plugin, 'configuration');
+    $property->setAccessible(TRUE);
+    $configuration = $property->getValue($plugin);
+
+    $this->assertSame('secret-value', $configuration['headers']['x-cg-api-secret']);
   }
 
   /**
    * GetApiKeyFromKeysModule() returns the key value when the key exists.
    *
-   * Constructed via reflection without invoking the (broken) constructor, so
-   * this leaf logic can be exercised despite the GAP above.
+   * Constructed via reflection so the leaf key-lookup logic can be exercised
+   * without standing up the full migrate source plugin.
    *
    * @covers ::getApiKeyFromKeysModule
    */

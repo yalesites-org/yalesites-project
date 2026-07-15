@@ -57,6 +57,7 @@
 /drush/Commands/contrib/
 /web/core/
 /web/modules/contrib/
+/web/themes/contrib/
 /web/profiles/contrib/
 /web/libraries/
 /web/private/scripts/quicksilver
@@ -110,11 +111,6 @@ package-lock.json
 
 # Database references
 reference
-
-# Ignore contrib themes except atomic.
-# `terminus build:gitignore:cut` allows these lines to work in CI.
-/web/themes/contrib/*
-!/web/themes/contrib/atomic/
 
 # Yalesites profile assets
 web/profiles/custom/yalesites_profile/composer.lock

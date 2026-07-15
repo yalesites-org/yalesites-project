@@ -29,6 +29,6 @@ third_party_settings:
         external: ''
 name: 'Page Category'
 vid: page_category
-description: null
+description: 'Used to categorize pages for filtering and display in views across the site. Site admins may add their own terms as needed.'
 weight: 0
 new_revision: false

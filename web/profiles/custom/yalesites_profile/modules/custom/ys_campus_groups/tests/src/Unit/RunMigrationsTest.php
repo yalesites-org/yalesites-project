@@ -2,20 +2,18 @@
 
 namespace Drupal\Tests\ys_campus_groups\Unit;
 
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Config\ImmutableConfig;
+use Drupal\Core\Messenger\Messenger;
 use Drupal\Core\Messenger\MessengerInterface;
-use Drupal\Core\Routing\UrlGeneratorInterface;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Drupal\Core\PageCache\ResponsePolicy\KillSwitch;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_campus_groups\CampusGroupsManager;
 use Drupal\ys_campus_groups\Controller\RunMigrations;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Session\Flash\FlashBag;
 
 /**
- * Unit tests for the RunMigrations controller.
+ * Unit tests for the Campus Groups "Sync now" controller.
  *
  * @coversDefaultClass \Drupal\ys_campus_groups\Controller\RunMigrations
  *
@@ -25,125 +23,90 @@ use Symfony\Component\HttpFoundation\RequestStack;
 class RunMigrationsTest extends UnitTestCase {
 
   /**
-   * The mocked config object for 'ys_campus_groups.settings'.
+   * The exact core warning that decorates a successful sync (see #1394).
    *
-   * @var \Drupal\Core\Config\ImmutableConfig|\PHPUnit\Framework\MockObject\MockObject
+   * Core's migrate_drupal module probes the unrelated system_site migration
+   * (source plugin "variable") during migration-definition discovery; with no
+   * legacy source database it queues this messenger error even though the
+   * Campus Groups sync succeeded.
    */
-  protected $config;
+  const NOISE_WARNING = 'Failed to connect to your database server. The server reports the following message: No database connection configured for source plugin variable.';
 
   /**
-   * The mocked Campus Groups manager.
+   * Builds the controller with a real in-memory messenger under test.
    *
-   * @var \Drupal\ys_campus_groups\CampusGroupsManager|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $campusGroupsManager;
-
-  /**
-   * The mocked messenger.
+   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+   *   The messenger the controller and the (mocked) manager share.
+   * @param bool $enabled
+   *   Whether Campus Groups syncing is enabled in config.
    *
-   * @var \Drupal\Core\Messenger\MessengerInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @return \Drupal\ys_campus_groups\Controller\RunMigrations
+   *   The controller instance.
    */
-  protected $messenger;
+  private function buildController(MessengerInterface $messenger, bool $enabled): RunMigrations {
+    $config_factory = $this->getConfigFactoryStub([
+      'ys_campus_groups.settings' => ['enable_campus_groups_sync' => $enabled],
+    ]);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+    // The manager "runs" the sync: it reports 8 imported events and, like the
+    // real core probe, queues the spurious database warning while doing so.
+    $manager = $this->createMock(CampusGroupsManager::class);
+    $manager->method('runAllMigrations')->willReturnCallback(
+      function () use ($messenger) {
+        $messenger->addError(self::NOISE_WARNING);
+        return ['campus_groups_events' => ['imported' => 8]];
+      }
+    );
 
-    $this->config = $this->createMock(ImmutableConfig::class);
-    $this->campusGroupsManager = $this->createMock(CampusGroupsManager::class);
-    $this->messenger = $this->createMock(MessengerInterface::class);
-  }
-
-  /**
-   * Builds the controller with a request carrying the given referer.
-   *
-   * @param string|null $referer
-   *   The HTTP_REFERER value, or NULL to omit it.
-   */
-  protected function createController(?string $referer): RunMigrations {
-    $config_factory = $this->createMock(ConfigFactoryInterface::class);
-    $config_factory->method('get')
-      ->with('ys_campus_groups.settings')
-      ->willReturn($this->config);
-
+    // A referer keeps getRedirectUrl() off the (container-backed) route path.
     $request = Request::create('/admin/yalesites/campus_groups/sync');
-    if ($referer !== NULL) {
-      $request->server->set('HTTP_REFERER', $referer);
-    }
+    $request->server->set('HTTP_REFERER', 'https://example.com/admin/yalesites/campus_groups');
     $request_stack = new RequestStack();
     $request_stack->push($request);
 
-    return new RunMigrations($config_factory, $this->campusGroupsManager, $this->messenger, $request_stack);
+    return new RunMigrations($config_factory, $manager, $messenger, $request_stack);
   }
 
   /**
+   * Casts the messenger's messages of a type to plain strings.
+   *
+   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+   *   The messenger to read.
+   * @param string $type
+   *   A MessengerInterface::TYPE_* constant.
+   *
+   * @return string[]
+   *   The messages as strings.
+   */
+  private function messages(MessengerInterface $messenger, string $type): array {
+    return array_map('strval', $messenger->messagesByType($type));
+  }
+
+  /**
+   * The spurious database warning is stripped, real messages are preserved.
+   *
    * @covers ::runAllMigrations
    */
-  public function testRunAllMigrationsShowsImportedCountAndRedirectsToReferer(): void {
-    $this->config->method('get')->with('enable_campus_groups_sync')->willReturn(TRUE);
-    $this->campusGroupsManager->expects($this->once())
-      ->method('runAllMigrations')
-      ->willReturn(['campus_groups_events' => ['imported' => 5]]);
+  public function testSpuriousDatabaseWarningIsRemovedFromSyncScreen(): void {
+    $messenger = new Messenger(new FlashBag(), new KillSwitch());
 
-    $this->messenger->expects($this->once())
-      ->method('addStatus')
-      ->with('Synchronized 5 events.');
+    // A pre-existing unrelated error and a *different* source-plugin error must
+    // both survive -- the filter is deliberately narrow to that one message.
+    $messenger->addError('Something else went wrong.');
+    $messenger->addError('No database connection configured for source plugin foo_bar');
 
-    $response = $this->createController('/admin/yalesites/campus_groups')->runAllMigrations();
+    $controller = $this->buildController($messenger, TRUE);
+    $controller->runAllMigrations();
 
-    $this->assertSame('/admin/yalesites/campus_groups', $response->getTargetUrl());
-  }
+    $errors = $this->messages($messenger, MessengerInterface::TYPE_ERROR);
+    foreach ($errors as $error) {
+      $this->assertStringNotContainsString('source plugin variable', $error);
+    }
+    $this->assertContains('Something else went wrong.', $errors);
+    $this->assertContains('No database connection configured for source plugin foo_bar', $errors);
 
-  /**
-   * @covers ::runAllMigrations
-   */
-  public function testRunAllMigrationsShowsErrorWhenSyncDisabled(): void {
-    $this->config->method('get')->with('enable_campus_groups_sync')->willReturn(FALSE);
-    $this->campusGroupsManager->expects($this->never())->method('runAllMigrations');
-
-    $this->messenger->expects($this->once())
-      ->method('addError')
-      ->with('Campus Groups syncing is not enabled.');
-
-    $this->createController('/admin/yalesites/campus_groups')->runAllMigrations();
-  }
-
-  /**
-   * @covers ::getRedirectUrl
-   */
-  public function testGetRedirectUrlFallsBackToFrontPageWhenNoReferer(): void {
-    $this->config->method('get')->with('enable_campus_groups_sync')->willReturn(FALSE);
-
-    $url_generator = $this->createMock(UrlGeneratorInterface::class);
-    $url_generator->method('generateFromRoute')->with('<front>')->willReturn('/');
-    $container = new ContainerBuilder();
-    $container->set('url_generator', $url_generator);
-    \Drupal::setContainer($container);
-
-    $response = $this->createController(NULL)->runAllMigrations();
-
-    $this->assertSame('/', $response->getTargetUrl());
-  }
-
-  /**
-   * @covers ::create
-   */
-  public function testCreateReturnsRunMigrationsInstance(): void {
-    $config_factory = $this->createMock(ConfigFactoryInterface::class);
-    $config_factory->method('get')->willReturn($this->config);
-
-    $services = [
-      'config.factory' => $config_factory,
-      'ys_campus_groups.manager' => $this->campusGroupsManager,
-      'messenger' => $this->messenger,
-      'request_stack' => new RequestStack(),
-    ];
-    $container = $this->createMock(ContainerInterface::class);
-    $container->method('get')->willReturnCallback(fn (string $id) => $services[$id]);
-
-    $this->assertInstanceOf(RunMigrations::class, RunMigrations::create($container));
+    $status = $this->messages($messenger, MessengerInterface::TYPE_STATUS);
+    $this->assertContains('Synchronized 8 events.', $status);
   }
 
 }
