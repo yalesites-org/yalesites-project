@@ -89,8 +89,11 @@ class EventsCalendar implements EventsCalendarInterface {
     $previousMonth = $previousMonthDate->format('m');
     $previousYear = $previousMonthDate->format('Y');
 
-    // Calculate the next month and year.
-    $nextMonthDate = clone $lastDayOfMonth;
+    // Calculate the next month and year. Anchor on the first of the month, not
+    // the last day: modifying a 31st by '+1 month' overflows when the following
+    // month is shorter (e.g. Aug 31 + 1 month lands on Oct 1), which would tag
+    // the trailing overflow cells with the wrong month.
+    $nextMonthDate = clone $firstDayOfMonth;
     $nextMonthDate->modify('+1 month');
     $nextMonth = $nextMonthDate->format('m');
     $nextYear = $nextMonthDate->format('Y');
