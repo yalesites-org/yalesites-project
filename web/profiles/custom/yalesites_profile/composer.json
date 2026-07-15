@@ -152,9 +152,9 @@
         "Show help text for only users who have permission https://www.drupal.org/project/layout_builder_lock/issues/3497055": "patches/contrib/layout_builder_lock/3497055-mr-26.patch"
       },
       "drupal/linkit": {
-        "Add phone number matcher https://www.drupal.org/project/linkit/issues/3273630": "https://git.drupalcode.org/project/linkit/-/merge_requests/36.diff",
-        "Fix linkit autocomplete alias selection https://www.drupal.org/project/linkit/issues/2877535": "https://www.drupal.org/files/issues/2026-05-19/linkit-2877535-62-revised-7.0.15.patch",
-        "Decode file URLs (link field) https://www.drupal.org/project/linkit/issues/3436733": "https://www.drupal.org/files/issues/2024-04-11/3436733-5-linkit-link-field-with-php81-deprecation.patch"
+        "Add phone number matcher https://www.drupal.org/project/linkit/issues/3273630": "patches/contrib/linkit/3273630-mr-36.diff",
+        "Fix linkit autocomplete alias selection https://www.drupal.org/project/linkit/issues/2877535": "patches/contrib/linkit/2877535-99.patch",
+        "Decode file URLs (link field) https://www.drupal.org/project/linkit/issues/3436733": "patches/contrib/linkit/3436733-5.patch"
       },
       "drupal/media_library_form_element": {
         "Order Media items https://www.drupal.org/project/media_library_form_element/issues/3168027": "patches/contrib/media_library_form_element/3168027-8.patch"
