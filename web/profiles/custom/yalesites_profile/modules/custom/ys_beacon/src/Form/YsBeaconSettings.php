@@ -286,9 +286,11 @@ class YsBeaconSettings extends ConfigFormBase {
     }
 
     if ($enable_chat) {
-      // Ensure the index exists. Runs on first enable and also retries on a
-      // later re-save if an earlier provisioning attempt failed.
-      if (!$this->config(self::CONFIG_NAME)->get('azure_index_name')) {
+      // Ensure the assigned index actually exists in Azure, creating it if it
+      // does not: first enable (no name yet), a retry after a failed provision,
+      // or an index that was deleted or whose configured name was changed to
+      // one not yet created. An already-existing index is left untouched.
+      if ($this->configuredIndexMissing()) {
         $this->provisionIndex();
       }
       // Enable indexing and queue content when chat turns on, but only once an
@@ -312,15 +314,18 @@ class YsBeaconSettings extends ConfigFormBase {
   }
 
   /**
-   * Provisions the site's search index when chat is first enabled.
+   * Provisions the site's search index, creating it when it does not exist.
    *
-   * Creates the per-site Azure AI Search index only when it does not exist yet
-   * and stores its name. The caller enables the index and rebuilds its tracker
-   * to queue existing content once provisioning has succeeded.
+   * Targets the configured Azure index name, falling back to the per-site
+   * default when none is assigned yet, and creates it only when it is missing,
+   * then stores its name and queues existing content for indexing.
    */
   protected function provisionIndex(): void {
+    // Provision the index this site is configured to use so a custom or shared
+    // name is (re)created, not just the per-site default.
+    $configured = (string) $this->config(self::CONFIG_NAME)->get('azure_index_name');
     try {
-      $index_name = $this->indexManager->provision();
+      $index_name = $this->indexManager->provision($configured ?: NULL);
     }
     catch (\RuntimeException $e) {
       $this->logger('ys_beacon')->error('Automatic index provisioning failed: @message', ['@message' => $e->getMessage()]);
@@ -328,6 +333,37 @@ class YsBeaconSettings extends ConfigFormBase {
       return;
     }
     $this->messenger()->addStatus($this->t('The search index %name is ready and site content has been queued for indexing.', ['%name' => $index_name]));
+  }
+
+  /**
+   * Whether the configured Azure index still needs to be created.
+   *
+   * TRUE when this site is writable and either has no index name assigned yet
+   * or the assigned index no longer exists in Azure (deleted, or a newly chosen
+   * name). A read-only borrower never provisions the collection it reads, and
+   * an unreachable endpoint returns FALSE so a transient outage neither blocks
+   * the save nor triggers a doomed provision on every re-save.
+   *
+   * @return bool
+   *   TRUE when provisioning should run.
+   */
+  protected function configuredIndexMissing(): bool {
+    $config = $this->config(self::CONFIG_NAME);
+    // A read-only borrower must never create or write the collection it reads.
+    if ($config->get('read_only')) {
+      return FALSE;
+    }
+    $name = (string) $config->get('azure_index_name');
+    if ($name === '') {
+      return TRUE;
+    }
+    try {
+      return !$this->indexManager->indexExists($name);
+    }
+    catch (\RuntimeException $e) {
+      // Azure unreachable: don't block the save or attempt a doomed provision.
+      return FALSE;
+    }
   }
 
   /**

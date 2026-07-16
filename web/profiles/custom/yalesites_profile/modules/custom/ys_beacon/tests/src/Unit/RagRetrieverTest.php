@@ -371,9 +371,126 @@ class RagRetrieverTest extends UnitTestCase {
   }
 
   /**
+   * A writable site querying the whole collection mixes own and foreign chunks.
+   *
+   * With query_entire_index on, the backend access check is bypassed and each
+   * result is cited by kind: this site's own chunk (id "entity:...") via its
+   * local entity/resolver, and another site's chunk (id "<site>:...", no local
+   * entity) from the title/URL stored on the document. Relevance order holds.
+   *
+   * @covers ::retrieve
+   * @covers ::buildMixedCitations
+   */
+  public function testWholeIndexModeMixesOwnAndForeignCitations(): void {
+    $own = $this->makeItem('entity:node/1:en', 'entity:node/1:en:entity_node_1_en_0', 'Local answer', 0.9);
+    $foreign = $this->makeItem('siteb:entity:node/9:en', 'siteb:entity:node/9:en:siteb_entity_node_9_en_0', 'Alan is a professor.', 0.8, 'About Alan', 'https://siteb.example/about/alan');
+
+    $results = $this->createMock(ResultSetInterface::class);
+    $results->method('getResultItems')->willReturn([$own, $foreign]);
+
+    $options = [];
+    $query = $this->createMock(QueryInterface::class);
+    $query->method('setOption')->willReturnCallback(function (string $key, $value) use ($query, &$options) {
+      $options[$key] = $value;
+      return $query;
+    });
+    $query->method('keys')->willReturnSelf();
+    $query->method('execute')->willReturn($results);
+
+    // This site's node resolves and is viewable; the foreign id has none.
+    $entity = $this->createMock(ContentEntityInterface::class);
+    $entity->method('access')->with('view')->willReturn(TRUE);
+    $typed = $this->createMock(ComplexDataInterface::class);
+    $typed->method('getValue')->willReturn($entity);
+
+    $index = $this->createMock(IndexInterface::class);
+    $index->method('status')->willReturn(TRUE);
+    $index->method('id')->willReturn('ys_beacon');
+    $index->method('isReadOnly')->willReturn(FALSE);
+    $index->method('query')->willReturn($query);
+    // Only this site's own chunk is entity-loaded; the foreign id is not.
+    $index->method('loadItemsMultiple')->willReturn(['entity:node/1:en' => $typed]);
+
+    $resolver = $this->createMock(EntityCitationResolver::class);
+    $resolver->method('title')->with($entity)->willReturn('Local Node');
+    $resolver->method('url')->with($entity)->willReturn('https://site.example/local');
+
+    $citations = $this->makeRetriever($index, $this->createMock(LoggerInterface::class), $resolver, TRUE)
+      ->retrieve('Who is Alan?');
+
+    // Whole-index mode bypasses the backend check so foreign chunks survive.
+    $this->assertArrayHasKey('search_api_bypass_access', $options);
+    $this->assertTrue($options['search_api_bypass_access']);
+    $this->assertCount(2, $citations);
+    // Own chunk cited via the local entity, in relevance order.
+    $this->assertSame('Local Node', $citations[0]['title']);
+    $this->assertSame('https://site.example/local', $citations[0]['url']);
+    $this->assertSame('Local answer', $citations[0]['content']);
+    // Foreign chunk cited from the stored citation fields.
+    $this->assertSame('About Alan', $citations[1]['title']);
+    $this->assertSame('https://siteb.example/about/alan', $citations[1]['url']);
+    $this->assertSame('Alan is a professor.', $citations[1]['content']);
+  }
+
+  /**
+   * A writable site with whole-index off stays site-scoped and drops foreign.
+   *
+   * Isolation is the default: access is not bypassed, and a foreign chunk that
+   * has no local entity is dropped rather than surfaced.
+   *
+   * @covers ::retrieve
+   */
+  public function testWritableWithoutWholeIndexDropsForeignChunk(): void {
+    $foreign = $this->makeItem('siteb:entity:node/9:en', 'siteb:entity:node/9:en:siteb_entity_node_9_en_0', 'Alan is a professor.', 0.8, 'About Alan', 'https://siteb.example/about/alan');
+
+    $results = $this->createMock(ResultSetInterface::class);
+    $results->method('getResultItems')->willReturn([$foreign]);
+
+    $options = [];
+    $query = $this->createMock(QueryInterface::class);
+    $query->method('setOption')->willReturnCallback(function (string $key, $value) use ($query, &$options) {
+      $options[$key] = $value;
+      return $query;
+    });
+    $query->method('keys')->willReturnSelf();
+    $query->method('execute')->willReturn($results);
+
+    $index = $this->createMock(IndexInterface::class);
+    $index->method('status')->willReturn(TRUE);
+    $index->method('id')->willReturn('ys_beacon');
+    $index->method('isReadOnly')->willReturn(FALSE);
+    $index->method('query')->willReturn($query);
+    $index->method('loadItemsMultiple')->willReturn([]);
+
+    $citations = $this->makeRetriever($index, $this->createMock(LoggerInterface::class))->retrieve('Who is Alan?');
+
+    $this->assertArrayNotHasKey('search_api_bypass_access', $options);
+    $this->assertSame([], $citations);
+  }
+
+  /**
+   * Builds a search_api result item stub with optional stored citation fields.
+   */
+  private function makeItem(string $drupal_entity_id, string $id, string $content, float $score, string $citation_title = '', string $citation_url = ''): ItemInterface {
+    $item = $this->createMock(ItemInterface::class);
+    $item->method('getId')->willReturn($id);
+    $item->method('getScore')->willReturn($score);
+    $item->method('getExtraData')->willReturnCallback(function (string $key) use ($drupal_entity_id, $content, $citation_title, $citation_url) {
+      return match ($key) {
+        'drupal_entity_id' => $drupal_entity_id,
+        'content' => $content,
+        'citation_title' => $citation_title,
+        'citation_url' => $citation_url,
+        default => NULL,
+      };
+    });
+    return $item;
+  }
+
+  /**
    * Builds a RagRetriever wired to the given index, logger, and resolver.
    */
-  private function makeRetriever(IndexInterface $index, LoggerInterface $logger, ?EntityCitationResolver $resolver = NULL): RagRetriever {
+  private function makeRetriever(IndexInterface $index, LoggerInterface $logger, ?EntityCitationResolver $resolver = NULL, bool $query_entire_index = FALSE): RagRetriever {
     $storage = $this->createMock(EntityStorageInterface::class);
     $storage->method('load')->with('ys_beacon')->willReturn($index);
 
@@ -381,7 +498,11 @@ class RagRetrieverTest extends UnitTestCase {
     $entityTypeManager->method('getStorage')->with('search_api_index')->willReturn($storage);
 
     $configFactory = $this->getConfigFactoryStub([
-      'ys_beacon.settings' => ['top_k' => 5, 'score_threshold' => 0.0],
+      'ys_beacon.settings' => [
+        'top_k' => 5,
+        'score_threshold' => 0.0,
+        'query_entire_index' => $query_entire_index,
+      ],
     ]);
 
     return new RagRetriever($entityTypeManager, $configFactory, $logger, $resolver ?? $this->createMock(EntityCitationResolver::class));

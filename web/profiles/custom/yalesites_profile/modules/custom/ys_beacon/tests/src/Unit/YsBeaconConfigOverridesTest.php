@@ -113,6 +113,44 @@ class YsBeaconConfigOverridesTest extends UnitTestCase {
   }
 
   /**
+   * A scheme-less endpoint key value is normalized to an https URL.
+   *
+   * A Pantheon secret holding a bare host would otherwise reach Guzzle without
+   * a scheme, failing every Azure request (including index creation) with "The
+   * scheme "" is not allowed by the protocols request option".
+   *
+   * @covers ::loadOverrides
+   * @covers ::getAzureSearchUrl
+   * @covers ::normalizeEndpoint
+   */
+  public function testBareHostEndpointGetsHttpsScheme(): void {
+    $override = $this->buildOverride(
+      ['azure_search_url_key' => ''],
+      [YsBeaconConfigOverrides::DEFAULT_URL_KEY => 'example.search.windows.net'],
+    );
+
+    $overrides = $override->loadOverrides([self::VDB_CONFIG]);
+    $this->assertSame('https://example.search.windows.net', $overrides[self::VDB_CONFIG]['url']);
+  }
+
+  /**
+   * A protocol-relative endpoint key value is normalized to an https URL.
+   *
+   * @covers ::loadOverrides
+   * @covers ::getAzureSearchUrl
+   * @covers ::normalizeEndpoint
+   */
+  public function testProtocolRelativeEndpointGetsHttpsScheme(): void {
+    $override = $this->buildOverride(
+      ['azure_search_url_key' => ''],
+      [YsBeaconConfigOverrides::DEFAULT_URL_KEY => '//example.search.windows.net'],
+    );
+
+    $overrides = $override->loadOverrides([self::VDB_CONFIG]);
+    $this->assertSame('https://example.search.windows.net', $overrides[self::VDB_CONFIG]['url']);
+  }
+
+  /**
    * @covers ::loadOverrides
    * @covers ::getAzureSearchUrl
    */

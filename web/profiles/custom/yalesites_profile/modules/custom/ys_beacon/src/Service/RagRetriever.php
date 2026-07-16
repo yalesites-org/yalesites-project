@@ -39,6 +39,7 @@ class RagRetriever {
   public function retrieve(string $question): array {
     $settings = $this->configFactory->get('ys_beacon.settings');
     $index_id = $settings->get('search_index_id') ?: 'ys_beacon';
+    $whole_index = (bool) $settings->get('query_entire_index');
 
     /** @var \Drupal\search_api\IndexInterface|null $index */
     $index = $this->entityTypeManager->getStorage('search_api_index')->load($index_id);
@@ -49,9 +50,11 @@ class RagRetriever {
     // A read-only site borrows another site's (shared) collection: the cited
     // documents belong to other sites and have no local entity to load or
     // access-check, so citations are built from the title and URL stored on
-    // each document instead. This is only safe because protected content is
-    // never written to the index (the Beacon indexing security hardening is the
-    // sole safeguard once per-visitor access is bypassed for shared retrieval).
+    // each document instead. A writable site that opts into querying the whole
+    // shared collection (query_entire_index) gets a mix of its own chunks and
+    // other sites' chunks. This is only safe because protected content is never
+    // written to the index (the Beacon indexing security hardening is the sole
+    // safeguard once per-visitor access is bypassed for shared retrieval).
     $read_only = $index->isReadOnly();
 
     try {
@@ -59,7 +62,12 @@ class RagRetriever {
         'limit' => (int) ($settings->get('top_k') ?: 5),
       ]);
       $query->setOption('search_api_ai_get_chunks_result', TRUE);
-      if ($read_only) {
+      // Reading beyond this site's own documents - a read-only borrow or a
+      // whole-collection query - surfaces other sites' chunks that have no
+      // local entity, so the backend's own per-result access check would drop
+      // them. Bypass it for this query only; this site's own chunks are still
+      // access-checked per result below.
+      if ($read_only || $whole_index) {
         $query->setOption('search_api_bypass_access', TRUE);
       }
       $query->keys($question);
@@ -95,18 +103,26 @@ class RagRetriever {
       $items[] = $item;
     }
 
-    return $read_only
-      ? $this->buildStoredCitations($items)
-      : $this->buildEntityCitations($index, $items);
+    // A read-only borrow reads only other sites' documents, so cite them all
+    // from stored fields. A writable site querying the whole collection gets a
+    // mix (own via local entity, foreign from stored fields); otherwise every
+    // result is this site's own.
+    if ($read_only) {
+      return $this->buildStoredCitations($items);
+    }
+    if ($whole_index) {
+      return $this->buildMixedCitations($index, $items);
+    }
+    return $this->buildEntityCitations($index, $items);
   }
 
   /**
    * Builds citations from the title/URL stored on each document.
    *
-   * Used for a read-only (shared/borrowed) index whose documents belong to
-   * other sites and cannot be loaded as local entities. Access is not
-   * re-checked here: the write-side invariant that protected content is never
-   * indexed is the only safeguard for shared retrieval.
+   * Used for chunks whose Drupal entity cannot (or must not) be loaded locally:
+   * a read-only borrowed collection whose documents belong to another site.
+   * Access is not re-checked here; the write-side invariant that protected
+   * content is never indexed is the only safeguard for shared retrieval.
    *
    * @param \Drupal\search_api\Item\ItemInterface[] $items
    *   The filtered result items.
@@ -117,15 +133,7 @@ class RagRetriever {
   protected function buildStoredCitations(array $items): array {
     $citations = [];
     foreach ($items as $item) {
-      $title = $this->decodeStoredValue((string) $item->getExtraData('citation_title'));
-      $url = $this->decodeStoredValue((string) $item->getExtraData('citation_url'));
-      $citations[] = $this->buildCitation(
-        $item,
-        // Fall back to a generic label only for documents indexed before the
-        // citation fields existed; a re-indexed corpus always stores a title.
-        $title !== '' ? $title : 'Source',
-        $url !== '' ? $url : NULL,
-      );
+      $citations[] = $this->storedCitation($item);
     }
     return $citations;
   }
@@ -149,23 +157,102 @@ class RagRetriever {
     $entities = $this->loadEntities($index, $items);
     $citations = [];
     foreach ($items as $item) {
+      $citation = $this->entityCitation($item, $entities);
+      if ($citation !== NULL) {
+        $citations[] = $citation;
+      }
+    }
+    return $citations;
+  }
+
+  /**
+   * Builds citations for a whole-collection query of own and foreign chunks.
+   *
+   * This site's own chunks keep the local "entity:..." id and are cited (and
+   * access-checked) through their local entity; another site's chunks keep a
+   * "<site>:" prefix, have no local entity, and are cited from the title/URL
+   * stored on the document. Relevance order is preserved across both kinds.
+   *
+   * @param \Drupal\search_api\IndexInterface $index
+   *   The Beacon index.
+   * @param \Drupal\search_api\Item\ItemInterface[] $items
+   *   The filtered result items.
+   *
+   * @return array[]
+   *   Citation arrays.
+   */
+  protected function buildMixedCitations(IndexInterface $index, array $items): array {
+    // Load entities only for this site's own chunks; a foreign chunk's id names
+    // no local datasource, so loading it would only log a warning per query.
+    $own_items = array_filter($items, static fn (ItemInterface $item): bool => str_starts_with(
+      (string) ($item->getExtraData('drupal_entity_id') ?: $item->getId()),
+      'entity:',
+    ));
+    $entities = $this->loadEntities($index, $own_items);
+
+    $citations = [];
+    foreach ($items as $item) {
       $combined_id = (string) ($item->getExtraData('drupal_entity_id') ?: $item->getId());
-      $entity = $entities[$combined_id] ?? NULL;
-      // Never quote content the current visitor cannot view. The AI Search
-      // backend access-checks results too; this guards the window where a
-      // chunk is still in the vector database after its entity was deleted,
-      // unpublished, or access-restricted.
-      if (!$entity || !$entity->access('view')) {
+      if (!str_starts_with($combined_id, 'entity:')) {
+        $citations[] = $this->storedCitation($item);
         continue;
       }
-      $citations[] = $this->buildCitation(
-        $item,
-        $this->citationResolver->title($entity),
-        $this->citationResolver->url($entity),
-      );
+      $citation = $this->entityCitation($item, $entities);
+      if ($citation !== NULL) {
+        $citations[] = $citation;
+      }
     }
-
     return $citations;
+  }
+
+  /**
+   * Builds one citation from the title/URL stored on a document.
+   *
+   * @param \Drupal\search_api\Item\ItemInterface $item
+   *   The result item.
+   *
+   * @return array
+   *   A citation array.
+   */
+  protected function storedCitation(ItemInterface $item): array {
+    $title = $this->decodeStoredValue((string) $item->getExtraData('citation_title'));
+    $url = $this->decodeStoredValue((string) $item->getExtraData('citation_url'));
+    return $this->buildCitation(
+      $item,
+      // Fall back to a generic label only for documents indexed before the
+      // citation fields existed; a re-indexed corpus always stores a title.
+      $title !== '' ? $title : 'Source',
+      $url !== '' ? $url : NULL,
+    );
+  }
+
+  /**
+   * Builds one citation from a chunk's local entity, or NULL when unusable.
+   *
+   * Never quotes content the current visitor cannot view: the entity must load
+   * and pass a view access check. This also guards the window where a chunk is
+   * still in the vector database after its entity was deleted, unpublished, or
+   * access-restricted.
+   *
+   * @param \Drupal\search_api\Item\ItemInterface $item
+   *   The result item.
+   * @param \Drupal\Core\Entity\ContentEntityInterface[] $entities
+   *   Entities keyed by combined item id.
+   *
+   * @return array|null
+   *   A citation array, or NULL when no accessible entity backs the chunk.
+   */
+  protected function entityCitation(ItemInterface $item, array $entities): ?array {
+    $combined_id = (string) ($item->getExtraData('drupal_entity_id') ?: $item->getId());
+    $entity = $entities[$combined_id] ?? NULL;
+    if (!$entity || !$entity->access('view')) {
+      return NULL;
+    }
+    return $this->buildCitation(
+      $item,
+      $this->citationResolver->title($entity),
+      $this->citationResolver->url($entity),
+    );
   }
 
   /**

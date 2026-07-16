@@ -47,6 +47,9 @@ ys_beacon.settings:
     read_only:
       type: boolean
       label: 'Query the search index but never write to it (borrow another site''s index)'
+    query_entire_index:
+      type: boolean
+      label: 'Query every site''s content in a shared index, not just this site''s'
     pdf_extraction_max_bytes:
       type: integer
       label: 'Maximum PDF size in bytes to extract text from'

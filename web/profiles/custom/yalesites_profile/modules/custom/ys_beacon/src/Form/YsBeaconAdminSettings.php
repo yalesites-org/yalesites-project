@@ -89,6 +89,12 @@ class YsBeaconAdminSettings extends ConfigFormBase {
       '#description' => $this->t('When enabled, this site queries the index above but never writes to it: no indexing, re-indexing, clearing, or delete-time removal. Use this when the index name points at a collection owned by another site, so that site’s data is never modified. Leave off for a site that owns and indexes its own content.'),
       '#default_value' => (bool) $config->get('read_only'),
     ];
+    $form['connection']['query_entire_index'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Answer from every site in a shared index'),
+      '#description' => $this->t("Query all content in the assigned index, not just this site's. Use only when the index is a shared collection and its content is public. Leave off for normal per-site isolation."),
+      '#default_value' => (bool) $config->get('query_entire_index'),
+    ];
 
     $form['retrieval'] = [
       '#type' => 'details',
@@ -171,6 +177,7 @@ class YsBeaconAdminSettings extends ConfigFormBase {
       ->set('streaming', (bool) $form_state->getValue('streaming'))
       ->set('fallback_system_prompt', $form_state->getValue('fallback_system_prompt'))
       ->set('enable_metadata_fields', $enable_metadata_fields)
+      ->set('query_entire_index', (bool) $form_state->getValue('query_entire_index'))
       ->save();
 
     // Provision when a writable site points at a NEW index, or switches an

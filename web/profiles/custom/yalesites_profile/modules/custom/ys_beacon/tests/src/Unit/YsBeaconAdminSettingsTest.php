@@ -167,4 +167,48 @@ class YsBeaconAdminSettingsTest extends UnitTestCase {
     $built['form']->submitForm($form_array, $form_state);
   }
 
+  /**
+   * The whole-index query toggle is persisted from the admin form value.
+   *
+   * @covers ::submitForm
+   */
+  public function testQueryEntireIndexIsPersisted(): void {
+    $captured = [];
+    $config = $this->createMock(Config::class);
+    $config->method('get')->willReturnCallback(fn (string $key) => match ($key) {
+      // Same writable index name, so submit propagates without provisioning.
+      'azure_index_name' => 'my-site-live',
+      'read_only' => FALSE,
+      default => NULL,
+    });
+    $config->method('set')->willReturnCallback(function (string $key, $value) use (&$captured, $config) {
+      $captured[$key] = $value;
+      return $config;
+    });
+    $config->method('save')->willReturnSelf();
+
+    $factory = $this->createMock(ConfigFactoryInterface::class);
+    $factory->method('get')->willReturn($config);
+    $factory->method('getEditable')->willReturn($config);
+
+    $index_manager = $this->createMock(BeaconIndexManager::class);
+
+    $form = (new \ReflectionClass(YsBeaconAdminSettings::class))->newInstanceWithoutConstructor();
+    $this->setProtected($form, 'configFactory', $factory);
+    $this->setProtected($form, 'indexManager', $index_manager);
+    $this->setProtected($form, 'messenger', $this->createMock(MessengerInterface::class));
+    $this->setProtected($form, 'stringTranslation', $this->getStringTranslationStub());
+
+    $form_state = new FormState();
+    $form_state->setValue('azure_index_name', 'my-site-live');
+    $form_state->setValue('read_only', 0);
+    $form_state->setValue('query_entire_index', 1);
+
+    $form_array = [];
+    $form->submitForm($form_array, $form_state);
+
+    $this->assertArrayHasKey('query_entire_index', $captured);
+    $this->assertTrue($captured['query_entire_index']);
+  }
+
 }

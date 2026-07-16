@@ -1,0 +1,76 @@
+diff --git a/src/AzureAiSearch.php b/src/AzureAiSearch.php
+--- a/src/AzureAiSearch.php
++++ b/src/AzureAiSearch.php
+@@ -211,24 +211,21 @@
+    *   The index name.
+    */
+   public function insert(array $data, string $index_name): void {
+-    try {
+-      $index = $this->entityTypeManager->getStorage('search_api_index')->load($data['index_id']);
+-      $data['@search.action'] = 'mergeOrUpload';
+-      $data['id'] = str_replace([':', '/'], '_', $data['drupal_long_id']);
++    $data['@search.action'] = 'mergeOrUpload';
++    $data['id'] = str_replace([':', '/'], '_', $data['drupal_long_id']);
+ 
+-      $this->getClientForIndex($index_name)->request('/indexes/' . $index_name . '/docs/index', 'POST', [
+-        'json' => [
+-          'value' => [$data],
+-        ],
+-      ]);
+-    }
+-    catch (\Exception $exception) {
+-      $this->messenger->addWarning($this->t('An exception occurred while attempting to insert or update data in Azure AI Search: @exception', [
+-        '@exception' => $exception->getMessage(),
+-      ]));
+-      $this->loggerChannelFactory->get('ai_search')->warning('An exception occurred while attempting to insert or update data in Azure AI Search: @exception', [
+-        '@exception' => $exception->getMessage(),
+-      ]);
++    $response = $this->getClientForIndex($index_name)->request('/indexes/' . $index_name . '/docs/index', 'POST', [
++      'json' => [
++        'value' => [$data],
++      ],
++    ]);
++
++    // request() logs the Azure error detail but returns a failed ResponseData
++    // instead of throwing; surface it so Search API does not mark the item
++    // indexed when the write was rejected (otherwise the failure is swallowed
++    // and reported as a successful index - silent data loss).
++    if (!$response->isSuccessful()) {
++      throw new \RuntimeException(sprintf('Azure AI Search rejected the document upload for index "%s" (HTTP %d); see the ai_search log for details.', $index_name, $response->getStatusCode()));
+     }
+   }
+ 
+@@ -249,21 +246,19 @@
+       ];
+     }
+ 
+-    try {
+-      $this->getClientForIndex($index_name)->request('/indexes/' . $index_name . '/docs/index', 'POST', [
+-        'json' => [
+-          'value' => $data,
+-        ],
+-      ]);
++    $response = $this->getClientForIndex($index_name)->request('/indexes/' . $index_name . '/docs/index', 'POST', [
++      'json' => [
++        'value' => $data,
++      ],
++    ]);
++
++    // request() logs the Azure error detail but returns a failed ResponseData
++    // instead of throwing; surface it so a failed delete is not reported as a
++    // successful removal (otherwise stale documents linger while Search API
++    // believes they were removed).
++    if (!$response->isSuccessful()) {
++      throw new \RuntimeException(sprintf('Azure AI Search rejected the document delete for index "%s" (HTTP %d); see the ai_search log for details.', $index_name, $response->getStatusCode()));
+     }
+-    catch (\Exception $exception) {
+-      $this->messenger->addWarning($this->t('An exception occurred while attempting to delete data in Azure AI Search: @exception', [
+-        '@exception' => $exception->getMessage(),
+-      ]));
+-      $this->loggerChannelFactory->get('ai_search')->warning('An exception occurred while attempting to delete data in Azure AI Search: @exception', [
+-        '@exception' => $exception->getMessage(),
+-      ]);
+-    }
+   }
+ 
+   /**

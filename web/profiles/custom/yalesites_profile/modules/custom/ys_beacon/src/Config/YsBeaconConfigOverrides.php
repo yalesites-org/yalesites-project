@@ -205,7 +205,7 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
       if (\Drupal::hasService('key.repository')) {
         // phpcs:ignore DrupalPractice.Objects.GlobalDrupal.GlobalDrupal
         $key = \Drupal::service('key.repository')->getKey($key_id);
-        $this->azureSearchUrl = trim((string) ($key?->getKeyValue() ?? ''));
+        $this->azureSearchUrl = self::normalizeEndpoint((string) ($key?->getKeyValue() ?? ''));
       }
       else {
         $this->azureSearchUrl = '';
@@ -221,6 +221,35 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
     }
 
     return $this->azureSearchUrl;
+  }
+
+  /**
+   * Normalizes an Azure AI Search endpoint into an absolute URL.
+   *
+   * The endpoint is read from a Pantheon-backed key that sometimes stores a
+   * bare host (or a protocol-relative value) rather than a full URL. Guzzle
+   * rejects a scheme-less request URI ("The scheme \"\" is not allowed by the
+   * protocols request option"), which fails index provisioning and every Azure
+   * request, so default a missing scheme to https - Azure AI Search is only
+   * ever served over https.
+   *
+   * @param string $url
+   *   The raw endpoint value from the key entity.
+   *
+   * @return string
+   *   The endpoint with a scheme, or an empty string when none was configured.
+   */
+  public static function normalizeEndpoint(string $url): string {
+    $url = trim($url);
+    if ($url === '') {
+      return '';
+    }
+    // Leave an already-absolute URL (any scheme) untouched.
+    if (preg_match('#^[a-z][a-z0-9+.-]*://#i', $url)) {
+      return $url;
+    }
+    // Bare host or protocol-relative "//host": Azure is https-only.
+    return 'https://' . ltrim($url, '/');
   }
 
   /**
