@@ -12,6 +12,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Url;
 use Drupal\node\NodeInterface;
+use Drupal\ys_layouts\Service\MediaAltResolver;
 use Drupal\ys_layouts\Service\ResourceAuthorBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -70,6 +71,13 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
   protected $resourceAuthorBuilder;
 
   /**
+   * The media cover-image alt text resolver.
+   *
+   * @var \Drupal\ys_layouts\Service\MediaAltResolver
+   */
+  protected $mediaAltResolver;
+
+  /**
    * Constructs a new ResourceMetaBlock object.
    *
    * @param array $configuration
@@ -90,6 +98,8 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
    *   The entity type manager service.
    * @param \Drupal\ys_layouts\Service\ResourceAuthorBuilder $resource_author_builder
    *   The resource author list builder.
+   * @param \Drupal\ys_layouts\Service\MediaAltResolver $media_alt_resolver
+   *   The media cover-image alt text resolver.
    */
   public function __construct(
     array $configuration,
@@ -101,6 +111,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
     DateFormatter $date_formatter,
     EntityTypeManager $entity_type_manager,
     ResourceAuthorBuilder $resource_author_builder,
+    MediaAltResolver $media_alt_resolver,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
@@ -110,6 +121,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
     $this->dateFormatter = $date_formatter;
     $this->entityTypeManager = $entity_type_manager;
     $this->resourceAuthorBuilder = $resource_author_builder;
+    $this->mediaAltResolver = $media_alt_resolver;
   }
 
   /**
@@ -126,6 +138,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
       $container->get('date.formatter'),
       $container->get('entity_type.manager'),
       $container->get('ys_layouts.resource_author_builder'),
+      $container->get('ys_layouts.media_alt_resolver'),
     );
   }
 
@@ -349,7 +362,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
                 '#width' => $thumbnail?->width,
                 '#attributes' => [
                   'loading' => 'lazy',
-                  'alt' => $media->label(),
+                  'alt' => $this->mediaAltResolver->resolve($media),
                 ],
               ];
             }

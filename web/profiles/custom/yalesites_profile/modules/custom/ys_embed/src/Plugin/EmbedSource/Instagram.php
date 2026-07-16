@@ -31,6 +31,11 @@ class Instagram extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
+  protected static $defaultTitle = 'Instagram post embed';
+
+  /**
+   * {@inheritdoc}
+   */
   protected static $instructions = 'Find the embed code for an Instagram post by clicking the (...) more options icon on a post and clicking "Embed".';
 
   /**

@@ -1,0 +1,18 @@
+/**
+ * @file
+ * Layout for the reCAPTCHA disclosure rendered below a form.
+ *
+ * The disclosure uses the inline-message component, contained to the form's
+ * width rather than the full page. This adds the gap that separates it from
+ * the form above, plus consistent internal padding so the content is not flush
+ * against the box edge in layouts (such as multi-column) where the component's
+ * usual site-gutter is suppressed. Both values reuse shared spacing tokens.
+ */
+
+.ys-captcha-disclosure {
+  margin-block-start: var(--size-spacing-7);
+}
+
+.ys-captcha-disclosure .inline-message {
+  padding-inline: var(--size-spacing-site-gutter);
+}
