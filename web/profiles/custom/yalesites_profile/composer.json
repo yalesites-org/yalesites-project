@@ -137,7 +137,7 @@
         "Add reusable option to inline block creation https://www.drupal.org/project/drupal/issues/2999491": "patches/drupal-core/2999491-162.patch",
         "Update \"Add reusable option to inline block creation\" patch with local changes to save block if it didn't save": "patches/drupal-core/1330eff91b1234979cf697a66a48e34eb116b441-1.patch",
         "renderPlain on a node render array causes RuntimeException if the node renders a view programmatically": "patches/drupal-core/3350137-9.patch",
-        "Ajax exposed filters not working for multiple instances": "patches/drupal-core/3163299-126.patch"
+        "Ajax exposed filters not working for multiple instances": "patches/drupal-core/3163299-140.patch"
       },
       "drupal/entity_redirect": {
         "fix layout route https://www.drupal.org/project/entity_redirect/issues/3352265": "patches/contrib/entity_redirect/3352265-mr-6.diff"

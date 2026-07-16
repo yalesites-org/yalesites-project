@@ -1,7 +1,7 @@
 From 69a51de2460f1029007f7fc009f0edc173f8dbc6 Mon Sep 17 00:00:00 2001
-From: Laura Johnson <laura@fourkitchens.com>
-Date: Thu, 13 Feb 2025 15:13:50 -0600
-Subject: Applied patch 3163299-110-D10.3.5.patch with original form ID for media library forms.
+From: Sean Adams-Hiett <sean-adams-hiett@uiowa.edu>
+Date: Tue, 27 Feb 2024 15:13:50 -0600
+Subject: [PATCH] Applied patch 3163299-110-D10.2.patch.
 
 ---
  .../MediaOverviewTest.php                     |   2 +-
@@ -96,7 +96,7 @@ index 417d97971e92..798534b05869 100644
 +    else {
 +      $form['#attributes']['data-drupal-target-view'] = $view->storage->id() . '-' . $display['id'];
 +    }
-+    $form['#id'] = Html::getUniqueId(Html::cleanCssIdentifier('views_exposed_form-' . $view->storage->id() . '-' . $display['id']));
++    $form['#id'] = Html::cleanCssIdentifier('views_exposed_form-' . $view->storage->id() . '-' . $display['id']);
 +
      // Labels are built too late for inline form errors to work, resulting
      // in duplicated messages.
@@ -448,146 +448,3 @@ index bc75f8f21073..c244c837db80 100644
 -- 
 GitLab
 
-
-From 85fbcb347a4d23946f4a2c9e18133e52031fe95e Mon Sep 17 00:00:00 2001
-From: CI Bot <laura@fourkitchens.com>
-Date: Thu, 13 Feb 2025 10:08:42 -0500
-Subject: [PATCH 2/4] fix: 3163299 keep view id original for media library
- views
-
----
- core/modules/views/js/ajax_view.js            |  2 +-
- .../views/src/Form/ViewsExposedForm.php       | 29 ++++++++++---------
- 2 files changed, 17 insertions(+), 14 deletions(-)
-
-diff --git a/core/modules/views/js/ajax_view.js b/core/modules/views/js/ajax_view.js
-index 31013177ae92..a1d651559000 100644
---- a/core/modules/views/js/ajax_view.js
-+++ b/core/modules/views/js/ajax_view.js
-@@ -101,7 +101,7 @@
- 
-     // Add the ajax to exposed forms.
-     this.$exposed_form = $(
--      `form.views-exposed-form[data-drupal-target-view="${settings.view_dom_id}"], form.views-exposed-form[data-drupal-target-view="${settings.view_name}-${settings.view_display_id}"]`,
-+      `.view-media-library form#views-exposed-form-${settings.view_name.replace(/_/g,'-')}-${settings.view_display_id.replace(/_/g, '-')}, form.views-exposed-form[data-drupal-target-view="${settings.view_dom_id}"], form.views-exposed-form[data-drupal-target-view="${settings.view_name}-${settings.view_display_id}"]`,
-     );
-     once('exposed-form', this.$exposed_form).forEach(
-       this.attachExposedFormAjax.bind(this),
-diff --git a/core/modules/views/src/Form/ViewsExposedForm.php b/core/modules/views/src/Form/ViewsExposedForm.php
-index 798534b05869..a46c4aa4e098 100644
---- a/core/modules/views/src/Form/ViewsExposedForm.php
-+++ b/core/modules/views/src/Form/ViewsExposedForm.php
-@@ -136,20 +136,23 @@ public function buildForm(array $form, FormStateInterface $form_state) {
- 
-     $form['#action'] = $form_action;
-     $form['#theme'] = $view->buildThemeFunctions('views_exposed_form');
--    // There is no way to determine the relationship between a particular view
--    // and the corresponding exposed form, because the form can be built
--    // outside of the view processing pipeline, e.g. as an exposed form block.
--
--    // If a view has the dom ID already set, rely on it.
--    if (!empty($view->dom_id)) {
--      $form['#attributes']['data-drupal-target-view'] = $view->dom_id;
--    }
--    // Otherwise, rely on the view ID + display ID combination, assuming that
--    // multiple exposed form blocks will be controlling the very same views.
--    else {
--      $form['#attributes']['data-drupal-target-view'] = $view->storage->id() . '-' . $display['id'];
-+    $form['#id'] = Html::cleanCssIdentifier('views_exposed_form-' . $view->storage->id() . '-' . $display['id']);
-+    // Media library forms should keep their original IDs.
-+    if ($view->storage->id() !== 'media_library') {
-+      // There is no way to determine the relationship between a particular view
-+      // and the corresponding exposed form, because the form can be built
-+      // outside of the view processing pipeline, e.g. as an exposed form block.
-+      // If a view has the dom ID already set, rely on it.
-+      if (!empty($view->dom_id)) {
-+        $form['#attributes']['data-drupal-target-view'] = $view->dom_id;
-+      }
-+      // Otherwise, rely on the view ID + display ID combination, assuming that
-+      // multiple exposed form blocks will be controlling the very same views.
-+      else {
-+        $form['#attributes']['data-drupal-target-view'] = $view->storage->id() . '-' . $display['id'];
-+      }
-+      $form['#id'] = Html::getUniqueId(Html::cleanCssIdentifier('views_exposed_form-' . $view->storage->id() . '-' . $display['id']));
-     }
--    $form['#id'] = Html::getUniqueId(Html::cleanCssIdentifier('views_exposed_form-' . $view->storage->id() . '-' . $display['id']));
- 
-     // Labels are built too late for inline form errors to work, resulting
-     // in duplicated messages.
--- 
-GitLab
-
-
-From f3271e3d99bd09e9591bcf10d6d6995756d89dea Mon Sep 17 00:00:00 2001
-From: CI Bot <laura@fourkitchens.com>
-Date: Thu, 13 Feb 2025 10:21:06 -0500
-Subject: [PATCH 3/4] fix: 3163299 fix linting issues
-
----
- core/modules/views/js/ajax_view.js                              | 2 +-
- .../views/tests/src/Kernel/Plugin/ExposedFormRenderTest.php     | 1 -
- 2 files changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/core/modules/views/js/ajax_view.js b/core/modules/views/js/ajax_view.js
-index a1d651559000..0b624768fa7d 100644
---- a/core/modules/views/js/ajax_view.js
-+++ b/core/modules/views/js/ajax_view.js
-@@ -101,7 +101,7 @@
- 
-     // Add the ajax to exposed forms.
-     this.$exposed_form = $(
--      `.view-media-library form#views-exposed-form-${settings.view_name.replace(/_/g,'-')}-${settings.view_display_id.replace(/_/g, '-')}, form.views-exposed-form[data-drupal-target-view="${settings.view_dom_id}"], form.views-exposed-form[data-drupal-target-view="${settings.view_name}-${settings.view_display_id}"]`,
-+      `.view-media-library form#views-exposed-form-${settings.view_name.replace(/_/g, '-')}-${settings.view_display_id.replace(/_/g, '-')}, form.views-exposed-form[data-drupal-target-view="${settings.view_dom_id}"], form.views-exposed-form[data-drupal-target-view="${settings.view_name}-${settings.view_display_id}"]`,
-     );
-     once('exposed-form', this.$exposed_form).forEach(
-       this.attachExposedFormAjax.bind(this),
-diff --git a/core/modules/views/tests/src/Kernel/Plugin/ExposedFormRenderTest.php b/core/modules/views/tests/src/Kernel/Plugin/ExposedFormRenderTest.php
-index c244c837db80..924ecbde7c46 100644
---- a/core/modules/views/tests/src/Kernel/Plugin/ExposedFormRenderTest.php
-+++ b/core/modules/views/tests/src/Kernel/Plugin/ExposedFormRenderTest.php
-@@ -2,7 +2,6 @@
- 
- namespace Drupal\Tests\views\Kernel\Plugin;
- 
--use Drupal\Component\Utility\Html;
- use Drupal\node\Entity\NodeType;
- use Drupal\Tests\views\Kernel\ViewsKernelTestBase;
- use Drupal\views\Views;
--- 
-GitLab
-
-
-From 6a3880d2f505046582961044ac2db030c5626eb1 Mon Sep 17 00:00:00 2001
-From: CI Bot <laura@fourkitchens.com>
-Date: Thu, 13 Feb 2025 10:29:19 -0500
-Subject: [PATCH 4/4] fix: 3163299 fix linting issue with prettier
-
----
- core/modules/views/js/ajax_view.js | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
-
-diff --git a/core/modules/views/js/ajax_view.js b/core/modules/views/js/ajax_view.js
-index 0b624768fa7d..62427e9977f8 100644
---- a/core/modules/views/js/ajax_view.js
-+++ b/core/modules/views/js/ajax_view.js
-@@ -101,7 +101,17 @@
- 
-     // Add the ajax to exposed forms.
-     this.$exposed_form = $(
--      `.view-media-library form#views-exposed-form-${settings.view_name.replace(/_/g, '-')}-${settings.view_display_id.replace(/_/g, '-')}, form.views-exposed-form[data-drupal-target-view="${settings.view_dom_id}"], form.views-exposed-form[data-drupal-target-view="${settings.view_name}-${settings.view_display_id}"]`,
-+      `.view-media-library form#views-exposed-form-${settings.view_name.replace(
-+        /_/g,
-+        '-',
-+      )}-${settings.view_display_id.replace(
-+        /_/g,
-+        '-',
-+      )}, form.views-exposed-form[data-drupal-target-view="${
-+        settings.view_dom_id
-+      }"], form.views-exposed-form[data-drupal-target-view="${
-+        settings.view_name
-+      }-${settings.view_display_id}"]`,
-     );
-     once('exposed-form', this.$exposed_form).forEach(
-       this.attachExposedFormAjax.bind(this),
--- 
-GitLab
