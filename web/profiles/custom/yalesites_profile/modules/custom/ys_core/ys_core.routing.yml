@@ -46,6 +46,23 @@ ys_core.admin_views_settings:
     _title: 'Views Settings'
   requirements:
     _permission: 'yalesites manage settings'
+# Dashboard settings form.
+ys_core.admin_dashboard_settings:
+  path: '/admin/yalesites/dashboard-settings'
+  defaults:
+    _form: '\Drupal\ys_core\Form\DashboardSettingsForm'
+    _title: 'Dashboard Settings'
+  requirements:
+    _permission: 'yalesites manage settings'
+# JSON feed of announcement posts. Returns 404 unless this site is configured
+# as an announcements source (ys_core.dashboard_settings:announcements_source_enabled).
+ys_core.dashboard_announcements_feed:
+  path: '/api/dashboard-announcements'
+  defaults:
+    _controller: '\Drupal\ys_core\Controller\AnnouncementsFeedController::feed'
+  requirements:
+    _access: 'TRUE'
+  methods: [GET]
 # Dynamic search page.
 ys_core.search_page:
   path: '/search'

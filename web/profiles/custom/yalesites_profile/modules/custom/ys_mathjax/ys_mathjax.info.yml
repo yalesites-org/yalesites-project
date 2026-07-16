@@ -1,0 +1,8 @@
+name: YaleSites MathJax
+type: module
+description: 'Renders LaTeX/MathML math notation in the WYSIWYG Text block via MathJax, attaching the library only on pages that actually contain math.'
+core_version_requirement: '^10 || ^11'
+package: YaleSites
+dependencies:
+  - drupal:filter
+  - mathjax:mathjax
