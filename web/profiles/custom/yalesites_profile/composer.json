@@ -130,58 +130,58 @@
     },
     "patches": {
       "drupal/core": {
-        "plural results summary https://www.drupal.org/project/drupal/issues/2888320": "https://www.drupal.org/files/issues/2024-06-21/2888320-92.patch",
-        "Add reusable option to inline block creation https://www.drupal.org/project/drupal/issues/2999491": "https://www.drupal.org/files/issues/2024-07-17/drupal-2999491-162.patch",
-        "Update \"Add reusable option to inline block creation\" patch with local changes to save block if it didn't save": "patches/layout_builder/1330eff91b1234979cf697a66a48e34eb116b441-1.patch",
-        "renderPlain on a node render array causes RuntimeException if the node renders a view programmatically": "https://www.drupal.org/files/issues/2023-03-27/core-render-plain-runtime-exception-3350137-9.patch",
-        "Ajax exposed filters not working for multiple instances": "https://www.drupal.org/files/issues/2025-02-13/3163299-126-ajax-exposed-filters-not-media-library.patch",
-        "Fix removeClass() on array in claro_preprocess_field_multiple_value_form when Paragraphs restructures the multi-value form header (Gallery add-block WSOD) https://www.drupal.org/project/drupal/issues/3099026": "patches/core/3099026-claro-field-multiple-value-form-instanceof.patch"
+        "plural results summary https://www.drupal.org/project/drupal/issues/2888320": "patches/drupal-core/2888320-92.patch",
+        "Add reusable option to inline block creation https://www.drupal.org/project/drupal/issues/2999491": "patches/drupal-core/2999491-162.patch",
+        "Update \"Add reusable option to inline block creation\" patch with local changes to save block if it didn't save": "patches/drupal-core/1330eff91b1234979cf697a66a48e34eb116b441-1.patch",
+        "renderPlain on a node render array causes RuntimeException if the node renders a view programmatically": "patches/drupal-core/3350137-9.patch",
+        "Ajax exposed filters not working for multiple instances": "patches/drupal-core/3163299-126.patch",
+        "Fix removeClass() on array in claro_preprocess_field_multiple_value_form when Paragraphs restructures the multi-value form header (Gallery add-block WSOD) https://www.drupal.org/project/drupal/issues/3099026": "patches/drupal-core/3099026-claro-field-multiple-value-form-instanceof.patch"
       },
       "drupal/entity_redirect": {
-        "fix layout route https://www.drupal.org/project/entity_redirect/issues/3352265": "https://git.drupalcode.org/project/entity_redirect/-/merge_requests/6.diff"
+        "fix layout route https://www.drupal.org/project/entity_redirect/issues/3352265": "patches/contrib/entity_redirect/3352265-mr-6.diff"
       },
       "drupal/focal_point": {
-        "Limit image styles on preview page": "https://git.drupalcode.org/project/focal_point/-/merge_requests/27.diff"
+        "Limit image styles on preview page": "patches/contrib/focal_point/2830678-mr-27.diff"
       },
       "drupal/gin": {
-        "fix description toggle for CKEditor fields https://www.drupal.org/project/gin/issues/3316265": "https://git.drupalcode.org/project/gin/-/merge_requests/227.patch"
+        "fix description toggle for CKEditor fields https://www.drupal.org/project/gin/issues/3316265": "patches/contrib/gin/3316265-mr-227.patch"
       },
       "drupal/layout_builder_browser": {
-        "Add grouping of reusable blocks (3409153) and add fallback images (3408935) - can't use both patches from d.o would cause merge conflict, combined patch": "patches/layout_builder_browser/3408935-and-3409153-9.patch"
+        "Add grouping of reusable blocks (3409153) and add fallback images (3408935) - can't use both patches from d.o would cause merge conflict, combined patch": "patches/contrib/layout_builder_browser/3408935-and-3409153-9.patch"
       },
       "drupal/layout_builder_lock": {
-        "Show help text for only users who have permission https://www.drupal.org/project/layout_builder_lock/issues/3497055": "https://git.drupalcode.org/project/layout_builder_lock/-/merge_requests/26.patch"
+        "Show help text for only users who have permission https://www.drupal.org/project/layout_builder_lock/issues/3497055": "patches/contrib/layout_builder_lock/3497055-mr-26.patch"
       },
       "drupal/linkit": {
-        "Add phone number matcher https://www.drupal.org/project/linkit/issues/3273630": "https://git.drupalcode.org/project/linkit/-/merge_requests/36.diff",
-        "Fix linkit autocomplete alias selection https://www.drupal.org/project/linkit/issues/2877535": "https://www.drupal.org/files/issues/2026-05-19/linkit-2877535-62-revised-7.0.15.patch",
-        "Decode file URLs (link field) https://www.drupal.org/project/linkit/issues/3436733": "https://www.drupal.org/files/issues/2024-04-11/3436733-5-linkit-link-field-with-php81-deprecation.patch"
+        "Add phone number matcher https://www.drupal.org/project/linkit/issues/3273630": "patches/contrib/linkit/3273630-mr-36.diff",
+        "Fix linkit autocomplete alias selection https://www.drupal.org/project/linkit/issues/2877535": "patches/contrib/linkit/2877535-99.patch",
+        "Decode file URLs (link field) https://www.drupal.org/project/linkit/issues/3436733": "patches/contrib/linkit/3436733-5.patch"
       },
       "drupal/media_library_form_element": {
-        "Order Media items https://www.drupal.org/project/media_library_form_element/issues/3168027": "https://www.drupal.org/files/issues/2022-01-22/order_media_items-3168027-8.patch"
+        "Order Media items https://www.drupal.org/project/media_library_form_element/issues/3168027": "patches/contrib/media_library_form_element/3168027-8.patch"
       },
       "drupal/menu_item_limit": {
-        "Can permissions be set for specific roles? https://www.drupal.org/project/menu_item_limit/issues/3458139": "https://git.drupalcode.org/project/menu_item_limit/-/merge_requests/12.patch"
+        "Can permissions be set for specific roles? https://www.drupal.org/project/menu_item_limit/issues/3458139": "patches/contrib/menu_item_limit/3458139-mr-12.patch"
       },
       "drupal/migrate_plus": {
-        "Allow callback for Url source, and single item Json plugin https://www.drupal.org/project/migrate_plus/issues/3040427": "https://www.drupal.org/files/issues/2025-07-20/3040427-66-migrate_plus_multiple_urls.patch"
+        "Allow callback for Url source, and single item Json plugin https://www.drupal.org/project/migrate_plus/issues/3040427": "patches/contrib/migrate_plus/3040427-66.patch"
       },
       "drupal/paragraphs": {
-        "hide remove button https://www.drupal.org/project/paragraphs/issues/2919186": "https://www.drupal.org/files/issues/2020-05-13/hide_field_required_paragraphs_remove_button_1.patch"
+        "hide remove button https://www.drupal.org/project/paragraphs/issues/2919186": "patches/contrib/paragraphs/2919186-1.patch"
       },
       "drupal/quick_node_clone": {
-        "Fix cloning of inline blocks and paragraphs: https://www.drupal.org/project/quick_node_clone/issues/3100117": "https://git.drupalcode.org/project/quick_node_clone/-/merge_requests/22.diff",
-        "Unset book field during cloning to prevent duplicate entry errors": "patches/quick_node_clone/quick_node_clone-book-field-handling.patch",
-        "Clone paragraph fields (entity_reference_revisions) in Layout Builder inline blocks": "patches/quick_node_clone/quick_node_clone-clone-lb-paragraph-fields.patch"
+        "Fix cloning of inline blocks and paragraphs: https://www.drupal.org/project/quick_node_clone/issues/3100117": "patches/contrib/quick_node_clone/3100117-mr-32.diff",
+        "Unset book field during cloning to prevent duplicate entry errors": "patches/contrib/quick_node_clone/quick_node_clone-book-field-handling.patch",
+        "Clone paragraph fields (entity_reference_revisions) in Layout Builder inline blocks": "patches/contrib/quick_node_clone/quick_node_clone-clone-lb-paragraph-fields.patch"
       },
       "drupal/search_api_html_element_filter": {
-        "Automated Drupal 11 compatibility fixes for search_api_html_element_filter": "https://www.drupal.org/files/issues/2024-03-24/search_api_html_element_filter.1.0.4.rector.patch"
+        "Automated Drupal 11 compatibility fixes for search_api_html_element_filter": "patches/contrib/search_api_html_element_filter/3434382-2.patch"
       },
       "drupal/selective_better_exposed_filters": {
-        "Hide form when no options are available:": "patches/selective_better_exposed_filters/selective_better_exposed_filters-3432551.patch"
+        "Hide form when no options are available:": "patches/contrib/selective_better_exposed_filters/selective_better_exposed_filters-3432551.patch"
       },
       "drupal/typogrify": {
-        "update deprecated php for v8.2 https://www.drupal.org/project/typogrify/issues/3398815": "https://git.drupalcode.org/project/typogrify/-/merge_requests/6.diff"
+        "update deprecated php for v8.2 https://www.drupal.org/project/typogrify/issues/3398815": "patches/contrib/typogrify/3398815-mr-6.diff"
       }
     }
   }

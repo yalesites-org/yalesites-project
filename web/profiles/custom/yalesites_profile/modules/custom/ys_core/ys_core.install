@@ -1309,3 +1309,59 @@ function ys_core_update_10015() {
 
   return t('Removed system.schema entry for @module.', ['@module' => $module]);
 }
+
+/**
+ * Finish uninstalling ys_servicenow by removing it from active core.extension.
+ *
+ * Ys_servicenow was removed from the codebase (issue #1372) and update 10015
+ * cleared its system.schema entry, but the module was left listed as installed
+ * in the active core.extension. Its files are gone, so
+ * ModuleInstaller::uninstall() cannot run (it needs the files to invoke the
+ * module's uninstall hooks), and a config import fails because it cannot
+ * reconcile removing an installed-but-missing module. Existing sites still
+ * carry it in core.extension, so remove it directly here: the deploy runs
+ * updatedb before config import, so this clears the module first and the
+ * import then succeeds across all sites. The system.schema entry is cleaned
+ * defensively too, so a site that somehow skipped 10015 is still repaired.
+ */
+function ys_core_update_10016() {
+  $module = 'ys_servicenow';
+  $cleaned = [];
+
+  // Remove from the active core.extension module list. The module's files are
+  // gone, so this direct edit stands in for ModuleInstaller::uninstall().
+  $extension = \Drupal::configFactory()->getEditable('core.extension');
+  $modules = $extension->get('module') ?? [];
+  if (array_key_exists($module, $modules)) {
+    unset($modules[$module]);
+    $extension->set('module', $modules)->save();
+    $cleaned[] = 'core.extension';
+  }
+
+  // Defensively clear the orphaned system.schema entry (10015 already does this
+  // on most sites; safe to repeat).
+  $schema_exists = \Drupal::database()
+    ->select('key_value', 'kv')
+    ->fields('kv', ['name'])
+    ->condition('collection', 'system.schema')
+    ->condition('name', $module)
+    ->execute()
+    ->fetchField();
+  if ($schema_exists) {
+    \Drupal::database()
+      ->delete('key_value')
+      ->condition('collection', 'system.schema')
+      ->condition('name', $module)
+      ->execute();
+    $cleaned[] = 'system.schema';
+  }
+
+  if (empty($cleaned)) {
+    return t('@module already fully removed; nothing to do.', ['@module' => $module]);
+  }
+
+  return t('Uninstalled @module (cleaned: @what).', [
+    '@module' => $module,
+    '@what' => implode(', ', $cleaned),
+  ]);
+}
