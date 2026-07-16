@@ -1210,6 +1210,107 @@ function ys_core_update_10013(&$sandbox) {
 }
 
 /**
+ * Populate the Page Category vocabulary with default starter terms.
+ *
+ * The vocabulary shipped empty, so the selector gave editors no guidance
+ * (issue #575). Seed a starting set of terms, skipping any that already exist
+ * by name so the helper is safe to re-run and does not clobber site-added
+ * terms.
+ *
+ * @return int
+ *   The number of terms created.
+ */
+function ys_core_populate_page_category_terms() {
+  $vocabulary_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_vocabulary');
+  if (!$vocabulary_storage->load('page_category')) {
+    return 0;
+  }
+
+  $term_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
+
+  // Existing term names, to avoid duplicates on re-run.
+  $existing_names = [];
+  foreach ($term_storage->loadByProperties(['vid' => 'page_category']) as $term) {
+    $existing_names[] = $term->getName();
+  }
+
+  $default_terms = [
+    'Featured',
+    'About',
+    'Research',
+    'Academics',
+    'Contact',
+    'Landing Page',
+  ];
+
+  $created = 0;
+  foreach ($default_terms as $weight => $name) {
+    if (in_array($name, $existing_names, TRUE)) {
+      continue;
+    }
+
+    Term::create([
+      'vid' => 'page_category',
+      'name' => $name,
+      'weight' => $weight,
+    ])->save();
+
+    $created++;
+  }
+
+  return $created;
+}
+
+/**
+ * Populate the Page Category vocabulary with default starter terms.
+ *
+ * New site installs receive these terms via the ys_starterkit terms migration.
+ * This hook seeds them on existing sites where the migration has already run.
+ */
+function ys_core_update_10014() {
+  $created = ys_core_populate_page_category_terms();
+
+  if ($created === 0) {
+    return t('Page Category vocabulary does not exist or all default terms already exist.');
+  }
+
+  return t('Populated Page Category vocabulary with @count default terms.', ['@count' => $created]);
+}
+
+/**
+ * Remove the ys_servicenow system.schema entry after module removal.
+ *
+ * The unused ys_servicenow module was removed (issue #1372). By the time this
+ * hook runs on an existing site the module files are already gone, so - like
+ * ys_core_update_10011 - we clean up the orphaned system.schema entry manually
+ * so config import (which no longer lists the module in core.extension) can
+ * succeed.
+ */
+function ys_core_update_10015() {
+  $module = 'ys_servicenow';
+
+  $schema_exists = \Drupal::database()
+    ->select('key_value', 'kv')
+    ->fields('kv', ['name'])
+    ->condition('collection', 'system.schema')
+    ->condition('name', $module)
+    ->execute()
+    ->fetchField();
+
+  if (!$schema_exists) {
+    return t('No @module schema entry found; nothing to remove.', ['@module' => $module]);
+  }
+
+  \Drupal::database()
+    ->delete('key_value')
+    ->condition('collection', 'system.schema')
+    ->condition('name', $module)
+    ->execute();
+
+  return t('Removed system.schema entry for @module.', ['@module' => $module]);
+}
+
+/**
  * Install the Beacon AI chat stack before config import can delete its config.
  *
  * The ys_beacon and ys_beacon_portkey modules hold per-site, config_ignored
@@ -1225,7 +1326,7 @@ function ys_core_update_10013(&$sandbox) {
  * when the importer runs and config_ignore preserves them. Brand-new sites get
  * the stack from the profile install list instead. No-op once installed.
  */
-function ys_core_update_10014() {
+function ys_core_update_10016() {
   $modules = ['ys_beacon', 'ys_ai_tester'];
   $to_install = array_filter(
     $modules,
