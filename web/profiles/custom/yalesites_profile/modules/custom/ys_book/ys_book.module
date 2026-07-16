@@ -392,6 +392,13 @@ function _ys_book_save_menu_link_title(NodeInterface $node): void {
       ->fields(['title' => $title])
       ->condition('nid', $node->id())
       ->execute();
+
+    // BookManager::doBookTreeBuild() permanently caches the book tree
+    // (including link titles) under a 'bid:<bid>' tag. That cache is only
+    // busted by core on outline structure changes, so a title-only update
+    // via this raw query must invalidate it manually or the tree (and any
+    // nav built from it) keeps serving the stale title.
+    Cache::invalidateTags(['bid:' . $book_link['bid']]);
   }
 }
 
@@ -554,6 +561,12 @@ function ys_book_book_admin_edit_form_submit(array &$form, FormStateInterface $f
           ->fields(['title' => $title_to_save])
           ->condition('nid', $nid)
           ->execute();
+
+        // See _ys_book_save_menu_link_title() for why this is required:
+        // BookManager::doBookTreeBuild() permanently caches the tree under
+        // a 'bid:<bid>' tag that this raw title update wouldn't otherwise
+        // invalidate.
+        Cache::invalidateTags(['bid:' . $link['bid']]);
       }
     }
 
