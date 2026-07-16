@@ -1,39 +1,93 @@
-<div>
-  {% if platform_version %}
-    <section class="platform-version">
-      <h2>Platform Information</h2>
-      <p><strong>Platform Version:</strong> {{ platform_version }}</p>
-    </section>
-  {% endif %}
+{{ attach_library('ys_core/dashboard') }}
+<div class="ys-dashboard">
 
-  Welcome to the YaleSites dashboard.
-  {{ drupal_view('content', 'block_1') }}
-  <h2>Resources</h2>
-  <ul>
-    <li>
-      <a href="https://yalesites.yale.edu/resource-library/getting-started-with-yalesites">
-        YaleSites Getting Started Guide
-      </a>:
-      Help you navigate, create content, and perform all the basic site-building YaleSites features.
-    </li>
-    <li>
-      <a href="https://yalesites.yale.edu/resource-library/building-with-blocks">
-        Building With Blocks
-      </a>:
-      Help you understand YaleSites blocks and how to use them to make your content shine.
-    </li>
-    <li>
-      <a href="https://yalesites.yale.edu/resource-library/building-your-menu">
-        Building Your Menu
-      </a>:
-      Help you understand YaleSites menus and how to combine them with way-finding tactics to ensure users can easily navigate your YaleSite.
-    </li>
-  </ul>
-  <div class="more-link">
-    <a href="https://yalesites.yale.edu/resource-library">Find more resources</a>
+  {# Top row: announcements on the left, resources / feedback / platform info on the right. #}
+  <div class="ys-dashboard__top">
+    {% if announcements is not empty %}
+      <div class="ys-dashboard__top-main">
+        <section class="ys-dashboard__section ys-dashboard__announcements" aria-labelledby="ys-dashboard-announcements-heading">
+          <h2 id="ys-dashboard-announcements-heading">{{ 'Announcements'|t }}</h2>
+          <ul class="ys-dashboard__announcement-list">
+            {% for announcement in announcements %}
+              <li class="ys-dashboard__announcement">
+                <h3 class="ys-dashboard__announcement-title">
+                  {% if announcement.url %}
+                    <a href="{{ announcement.url }}">{{ announcement.title }}</a>
+                  {% else %}
+                    {{ announcement.title }}
+                  {% endif %}
+                </h3>
+                {% if announcement.date %}
+                  <p class="ys-dashboard__announcement-date">
+                    <time{% if announcement.timestamp %} datetime="{{ announcement.timestamp|date('c') }}"{% endif %}>{{ announcement.date }}</time>
+                  </p>
+                {% endif %}
+                {% if announcement.summary %}
+                  <p class="ys-dashboard__announcement-summary">{{ announcement.summary }}</p>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        </section>
+      </div>
+    {% endif %}
+
+    <aside class="ys-dashboard__top-aside">
+      <section class="ys-dashboard__section ys-dashboard__resources" aria-labelledby="ys-dashboard-resources-heading">
+        <h2 id="ys-dashboard-resources-heading">{{ 'Resources'|t }}</h2>
+        <ul>
+          <li>
+            <a href="https://yalesites.yale.edu/explore-resources/learn-the-basics">{{ 'Learn the Basics'|t }}</a> &mdash;
+            {{ 'Navigate the interface, create content, and start building your site with confidence.'|t }}
+          </li>
+          <li>
+            <a href="https://yalesites.yale.edu/explore-resources/user-guide">{{ 'User Guide'|t }}</a> &mdash;
+            {{ 'Detailed step-by-step instructions for all platform features, including content creation, sitewide settings, and going live.'|t }}
+          </li>
+          <li>
+            <a href="https://yalesites.yale.edu/trainings#officehours">{{ 'Office Hours'|t }}</a> &mdash;
+            {{ 'Connect live with the YaleSites team to ask questions and get hands-on help.'|t }}
+          </li>
+        </ul>
+        <div class="more-link">
+          <a href="https://yalesites.yale.edu/resource-library">{{ 'Find more resources'|t }}</a>
+        </div>
+      </section>
+
+      <div class="ys-dashboard__aside-split">
+        <div class="ys-dashboard__aside-column">
+          <a href="mailto:yalesites@yale.edu" class="button button--primary ys-dashboard__action-button">{{ 'Report feedback'|t }}</a>
+          {% if platform_version %}
+            <section class="ys-dashboard__section platform-version" aria-labelledby="ys-dashboard-platform-heading">
+              <h2 id="ys-dashboard-platform-heading">{{ 'Platform information'|t }}</h2>
+              <p><strong>{{ 'Platform version:'|t }}</strong> {{ platform_version }}</p>
+            </section>
+          {% endif %}
+        </div>
+
+        <section class="ys-dashboard__section ys-dashboard__actions" aria-labelledby="ys-dashboard-siteimprove-heading">
+          <h2 id="ys-dashboard-siteimprove-heading" class="visually-hidden">{{ 'Siteimprove'|t }}</h2>
+          <a href="https://my2.siteimprove.com/Auth/Saml2/66356571" target="_blank" rel="noopener noreferrer" class="button button--primary ys-dashboard__action-button">{{ 'Siteimprove'|t }}</a>
+          <p class="ys-dashboard__action-help">{{ 'Access your Siteimprove dashboard here. For more information about how to use Siteimprove, visit our <a href=":url">Getting Started with Siteimprove guide</a>.'|t({':url': 'https://yalesites.yale.edu/explore-resources/working-with-content/getting-started-with-siteimprove'}) }}</p>
+        </section>
+      </div>
+    </aside>
   </div>
-  <h2>Report Feedback or a Bug</h2>
-  <a href="mailto:yalesites@yale.edu">
-    yalesites@yale.edu
-  </a>
+
+  <div class="ys-dashboard__columns">
+    <section class="ys-dashboard__section" aria-labelledby="ys-dashboard-latest-heading">
+      <h2 id="ys-dashboard-latest-heading">{{ 'Latest edits'|t }}</h2>
+      {{ drupal_view('ys_dashboard_latest_edits', 'block_1') }}
+    </section>
+    <section class="ys-dashboard__section" aria-labelledby="ys-dashboard-drafts-heading">
+      <h2 id="ys-dashboard-drafts-heading">{{ 'Recent drafts'|t }}</h2>
+      {{ drupal_view('ys_dashboard_recent_drafts', 'block_1') }}
+    </section>
+  </div>
+
+  <section class="ys-dashboard__section" aria-labelledby="ys-dashboard-editors-heading">
+    <h2 id="ys-dashboard-editors-heading">{{ 'Site editors'|t }}</h2>
+    {{ drupal_view('ys_dashboard_site_editors', 'block_1') }}
+  </section>
+
 </div>

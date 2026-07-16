@@ -85,3 +85,15 @@ The legacy `view` block and the predecessor `post_list` / `event_list` /
 `ys_views_basic_deploy_10001()` / `_10002()` deploy hooks. The legacy `view`
 bundle is kept in config as a safety net; a status-report warning surfaces any
 unconverted instance. See [`CHANGELOG.md`](CHANGELOG.md).
+
+## Running tests
+
+This module has PHPUnit tests under `tests/src/` covering ViewsBasicManager, the EventsCalendar service, and several Views plugins. Run them from the project root on the local Lando environment, passing the module's `tests` path so PHPUnit only discovers this module's tests (not Drupal core/contrib):
+
+```bash
+lando ssh -c "env SIMPLETEST_DB=mysql://pantheon:pantheon@database/pantheon \
+  php /app/vendor/bin/phpunit -c /app/phpunit.xml \
+  /app/web/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/tests"
+```
+
+Add `--testdox` for readable output.

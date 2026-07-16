@@ -1,0 +1,123 @@
+diff --git a/js/linkit.autocomplete.js b/js/linkit.autocomplete.js
+index 01c7fa2..6a63b26 100644
+--- a/js/linkit.autocomplete.js
++++ b/js/linkit.autocomplete.js
+@@ -67,7 +67,7 @@
+     const $context = $(event.target).closest('form,fieldset,tr,.linkit-widget-container,.field--widget-linkit');
+     setMetadata(ui.item, $context, event.target);
+ 
+-    event.target.value = ui.item.path;
++    event.target.value = ui.item.alias ? ui.item.alias : ui.item.path;
+     // Keep the stored focusin value in sync so the focusout check
+     // does not treat the autocomplete selection as a manual edit.
+     $(event.target).data('linkit-uri-on-focusin', ui.item.path);
+diff --git a/src/Element/Linkit.php b/src/Element/Linkit.php
+index 1c5a06b..0b4ba7e 100644
+--- a/src/Element/Linkit.php
++++ b/src/Element/Linkit.php
+@@ -47,6 +47,14 @@ class Linkit extends FormElementBase {
+    * {@inheritdoc}
+    */
+   public static function valueCallback(&$element, $input, FormStateInterface $form_state) {
++    if (!empty($input) && \Drupal::moduleHandler()->moduleExists('path_alias')) {
++      /** @var \Drupal\path_alias\AliasManagerInterface $aliasManager */
++      $aliasManager = \Drupal::service('path_alias.manager');
++      $path = $aliasManager->getPathByAlias($input);
++      if ($path !== $input) {
++        $input = $path;
++      }
++    }
+     return Textfield::valueCallback($element, $input, $form_state);
+   }
+ 
+@@ -92,6 +100,21 @@ class Linkit extends FormElementBase {
+    * {@inheritdoc}
+    */
+   public static function preRenderLinkitElement($element) {
++    if (empty($element['#default_value']) || empty($element['#value'])) {
++      return Textfield::preRenderTextfield($element);
++    }
++    if ($element['#value'][0] !== '/') {
++      return Textfield::preRenderTextfield($element);
++    }
++    if (\Drupal::moduleHandler()->moduleExists('path_alias')) {
++      /** @var \Drupal\path_alias\AliasManagerInterface $aliasManager */
++      $aliasManager = \Drupal::service('path_alias.manager');
++      $alias = $aliasManager->getAliasByPath($element['#value']);
++      if ($alias !== $element['#value']) {
++        $element['#default_value'] = $alias;
++        $element['#value'] = $alias;
++      }
++    }
+     return Textfield::preRenderTextfield($element);
+   }
+ 
+diff --git a/src/Plugin/Linkit/Matcher/EntityMatcher.php b/src/Plugin/Linkit/Matcher/EntityMatcher.php
+index ae3dc48..370cbd4 100644
+--- a/src/Plugin/Linkit/Matcher/EntityMatcher.php
++++ b/src/Plugin/Linkit/Matcher/EntityMatcher.php
+@@ -433,7 +433,8 @@ class EntityMatcher extends ConfigurableMatcherBase {
+       ->setEntityTypeId($entity->getEntityTypeId())
+       ->setSubstitutionId($this->configuration['substitution_type'])
+       ->setStatus($this->buildStatus($entity))
+-      ->setPath($this->buildPath($entity));
++      ->setPath($this->buildPath($entity))
++      ->setAlias($this->buildPath($entity));
+ 
+     return $suggestion;
+   }
+@@ -498,7 +499,7 @@ class EntityMatcher extends ConfigurableMatcherBase {
+    *   The path for this entity.
+    */
+   protected function buildPath(EntityInterface $entity) {
+-    $path = $entity->toUrl('canonical', ['path_processing' => FALSE])->toString();
++    $path = $entity->toUrl('canonical')->toString();
+     // For media entities, check if standalone URLs are allowed. If not, then
+     // strip '/edit' from the end of the canonical URL returned
+     // by $entity->toUrl().
+diff --git a/src/Suggestion/EntitySuggestion.php b/src/Suggestion/EntitySuggestion.php
+index bd55db3..e1a5c33 100644
+--- a/src/Suggestion/EntitySuggestion.php
++++ b/src/Suggestion/EntitySuggestion.php
+@@ -7,6 +7,13 @@ namespace Drupal\linkit\Suggestion;
+  */
+ class EntitySuggestion extends DescriptionSuggestion {
+ 
++  /**
++   * The entity's path alias.
++   *
++   * @var string
++   */
++  protected $alias;
++
+   /**
+    * The entity uuid.
+    *
+@@ -28,6 +35,19 @@ class EntitySuggestion extends DescriptionSuggestion {
+    */
+   protected $substitutionId;
+ 
++  /**
++   * Sets the path alias.
++   *
++   * @param string $alias
++   *   The path alias.
++   *
++   * @return $this
++   */
++  public function setAlias($alias) {
++    $this->alias = $alias;
++    return $this;
++  }
++
+   /**
+    * Sets the entity uuid.
+    *
+@@ -76,6 +96,7 @@ class EntitySuggestion extends DescriptionSuggestion {
+       'entity_uuid' => $this->entityUuid,
+       'entity_type_id' => $this->entityTypeId,
+       'substitution_id' => $this->substitutionId,
++      'alias' => $this->alias,
+     ];
+   }
+ 
