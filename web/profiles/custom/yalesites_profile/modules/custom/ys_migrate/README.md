@@ -76,3 +76,27 @@ drush migrate:import ys_onha_program_body
 # Migrate 266 nodes from the Drupal 7 'program' content type to the 'page' content type in Drupal 10, attaching body content using Layout Builder.
 drush migrate:import ys_onha_programs
 ```
+
+## Running tests
+
+This module has PHPUnit tests under `tests/src/Unit/` for the CSV importer (`CsvValidatorService`, `TaxonomyResolverService`, `ProfileImportService`, `ProfileCsvImportForm`). Run them from the project root on the local Lando environment, passing the module's `tests` path so PHPUnit only discovers this module's tests (not Drupal core/contrib):
+
+```bash
+lando ssh -c "env SIMPLETEST_DB=mysql://pantheon:pantheon@database/pantheon \
+  php /app/vendor/bin/phpunit -c /app/phpunit.xml \
+  /app/web/profiles/custom/yalesites_profile/modules/custom/ys_migrate/tests"
+```
+
+Add `--testdox` for readable output. Unit-only tests (no database) can also be run with the shorthand `lando phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_migrate/tests`.
+
+The `ys_migrate_onha` and `ys_migrate_sustainability_news` submodules each have their own tests, under their own `tests/src/Unit/` directories, covering their migrate process/source plugins. Run each the same way, substituting its own `tests` path, e.g.:
+
+```bash
+lando ssh -c "env SIMPLETEST_DB=mysql://pantheon:pantheon@database/pantheon \
+  php /app/vendor/bin/phpunit -c /app/phpunit.xml \
+  /app/web/profiles/custom/yalesites_profile/modules/custom/ys_migrate/modules/ys_migrate_onha/tests"
+
+lando ssh -c "env SIMPLETEST_DB=mysql://pantheon:pantheon@database/pantheon \
+  php /app/vendor/bin/phpunit -c /app/phpunit.xml \
+  /app/web/profiles/custom/yalesites_profile/modules/custom/ys_migrate/modules/ys_migrate_sustainability_news/tests"
+```

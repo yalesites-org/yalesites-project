@@ -119,44 +119,67 @@ process:
      from_format: 'Y-m-d\TH:i:s.0000000P'
      to_format: 'U'
   field_tags:
-    plugin: entity_generate
-    entity_type: taxonomy_term
-    value_key: name
-    bundle_key: vid
-    bundle: tags
-    source: event_tags
+    -
+      plugin: skip_on_empty
+      method: process
+      source: event_tags
+    -
+      plugin: entity_generate
+      entity_type: taxonomy_term
+      value_key: name
+      bundle_key: vid
+      bundle: tags
   field_localist_event_type:
-    plugin: entity_generate
-    entity_type: taxonomy_term
-    value_key: name
-    bundle_key: vid
-    bundle: localist_event_type
-    source: event_type
+    -
+      plugin: skip_on_empty
+      method: process
+      source: event_type
+    -
+      plugin: entity_generate
+      entity_type: taxonomy_term
+      value_key: name
+      bundle_key: vid
+      bundle: localist_event_type
   field_category:
-    plugin: entity_generate
-    entity_type: taxonomy_term
-    value_key: name
-    bundle_key: vid
-    bundle: event_category
-    source: event_category
+    -
+      plugin: skip_on_empty
+      method: process
+      source: event_category
+    -
+      plugin: entity_generate
+      entity_type: taxonomy_term
+      value_key: name
+      bundle_key: vid
+      bundle: event_category
   field_localist_group:
-    plugin: entity_generate
-    entity_type: taxonomy_term
-    value_key: name
-    bundle_key: vid
-    bundle: event_groups
-    source: event_group
+    -
+      plugin: skip_on_empty
+      method: process
+      source: event_group
+    -
+      plugin: entity_generate
+      entity_type: taxonomy_term
+      value_key: name
+      bundle_key: vid
+      bundle: event_groups
   field_event_status:
-    plugin: entity_generate
-    entity_type: taxonomy_term
-    value_key: name
-    bundle_key: vid
-    bundle: event_status
-    source: event_status  
+    -
+      plugin: skip_on_empty
+      method: process
+      source: event_status
+    -
+      plugin: entity_generate
+      entity_type: taxonomy_term
+      value_key: name
+      bundle_key: vid
+      bundle: event_status
   field_event_topics:
     -
-      plugin: explode
+      plugin: skip_on_empty
+      method: process
       source: event_topics
+    -
+      plugin: explode
       delimiter: ','
     -
       plugin: callback

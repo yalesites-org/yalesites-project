@@ -23,6 +23,5 @@ ignored_config_entities:
   - 'ys_campus_groups*'
   - 'ys_core*'
   - 'ys_localist*'
-  - 'ys_servicenow*'
   - ys_themes.theme_settings
   - ~ys_core.integration_settings

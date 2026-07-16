@@ -18,6 +18,20 @@ use Symfony\Component\HttpFoundation\RequestStack;
 class RunMigrations extends ControllerBase implements ContainerInjectionInterface {
 
   /**
+   * Marker for the spurious legacy-database warning to strip from the screen.
+   *
+   * Whenever migration definitions are rebuilt, core's
+   * migrate_drupal_migration_plugins_alter() probes the unrelated system_site
+   * migration (whose source is the "variable" plugin) to detect a legacy
+   * Drupal source database. This platform has none, so that probe fails and
+   * core queues a "Failed to connect to your database server" messenger error
+   * containing this text -- even though the Campus Groups sync (an HTTP feed,
+   * not a database source) succeeded. It is harmless noise, unrelated to
+   * Campus Groups. See yalesites-org/YaleSites-Internal#1394.
+   */
+  const SPURIOUS_MIGRATE_DB_WARNING = 'No database connection configured for source plugin variable';
+
+  /**
    * Configuration Factory.
    *
    * @var \Drupal\Core\Config\ConfigFactoryInterface
@@ -99,6 +113,7 @@ class RunMigrations extends ControllerBase implements ContainerInjectionInterfac
   public function runAllMigrations() {
     if ($this->campusGroupsConfig->get('enable_campus_groups_sync')) {
       $messageData = $this->campusGroupsManager->runAllMigrations();
+      $this->removeSpuriousMigrateDatabaseWarning();
       if ($messageData) {
         $eventsImported = $messageData['campus_groups_events']['imported'];
         $message = "Synchronized $eventsImported events.";
@@ -129,6 +144,30 @@ class RunMigrations extends ControllerBase implements ContainerInjectionInterfac
     }
 
     return $referer;
+  }
+
+  /**
+   * Removes the harmless legacy-database warning core queues during sync.
+   *
+   * See self::SPURIOUS_MIGRATE_DB_WARNING for why the message appears. The
+   * match is intentionally narrow (that one message only): if core ever
+   * rewords it we simply stop matching and the still-harmless message
+   * reappears, which is safer than a broad filter that could hide a genuinely
+   * different database error. All other errors are preserved.
+   */
+  private function removeSpuriousMigrateDatabaseWarning(): void {
+    $messenger = $this->messenger();
+    $errors = $messenger->messagesByType(MessengerInterface::TYPE_ERROR);
+    if (!$errors) {
+      return;
+    }
+
+    $messenger->deleteByType(MessengerInterface::TYPE_ERROR);
+    foreach ($errors as $error) {
+      if (!str_contains((string) $error, self::SPURIOUS_MIGRATE_DB_WARNING)) {
+        $messenger->addError($error);
+      }
+    }
   }
 
 }
