@@ -1365,3 +1365,66 @@ function ys_core_update_10016() {
     '@what' => implode(', ', $cleaned),
   ]);
 }
+
+/**
+ * Re-repair sites still carrying ys_servicenow in active core.extension.
+ *
+ * Update 10016 removes ys_servicenow from the active core.extension, but a
+ * hook_update_N runs only once per site. Some existing sites still list
+ * ys_servicenow in active core.extension even though 10016 is recorded as run:
+ * a `drush deploy` whose synced config still referenced the (now file-less)
+ * module made the config importer try to install ys_servicenow, and
+ * ModuleInstaller::install() writes the module into active core.extension
+ * before it fails resolving the missing files. That left the module in
+ * core.extension while ys_core's schema had already advanced past 10016, so
+ * 10016 never runs again to clean it up.
+ *
+ * On those sites every later deploy dies in config import: installing any new
+ * module rebuilds the full module list from active core.extension
+ * (ModuleInstaller::install()), and getPath('ys_servicenow') throws
+ * UnknownExtensionException because the files are gone. Synced config no longer
+ * references ys_servicenow, so the only remaining fix is to strip it from
+ * active core.extension again under a fresh schema number. updatedb runs before
+ * config import, so this clears the module first and the import then succeeds.
+ * Idempotent: a no-op on sites already clean.
+ */
+function ys_core_update_10018() {
+  $module = 'ys_servicenow';
+  $cleaned = [];
+
+  // Remove from the active core.extension module list. The module's files are
+  // gone, so this direct edit stands in for ModuleInstaller::uninstall().
+  $extension = \Drupal::configFactory()->getEditable('core.extension');
+  $modules = $extension->get('module') ?? [];
+  if (array_key_exists($module, $modules)) {
+    unset($modules[$module]);
+    $extension->set('module', $modules)->save();
+    $cleaned[] = 'core.extension';
+  }
+
+  // Defensively clear any orphaned system.schema entry too.
+  $schema_exists = \Drupal::database()
+    ->select('key_value', 'kv')
+    ->fields('kv', ['name'])
+    ->condition('collection', 'system.schema')
+    ->condition('name', $module)
+    ->execute()
+    ->fetchField();
+  if ($schema_exists) {
+    \Drupal::database()
+      ->delete('key_value')
+      ->condition('collection', 'system.schema')
+      ->condition('name', $module)
+      ->execute();
+    $cleaned[] = 'system.schema';
+  }
+
+  if (empty($cleaned)) {
+    return t('@module already fully removed; nothing to do.', ['@module' => $module]);
+  }
+
+  return t('Uninstalled @module (cleaned: @what).', [
+    '@module' => $module,
+    '@what' => implode(', ', $cleaned),
+  ]);
+}
