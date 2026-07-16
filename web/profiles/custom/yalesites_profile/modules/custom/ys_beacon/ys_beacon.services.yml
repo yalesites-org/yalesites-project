@@ -26,6 +26,9 @@ services:
       - '@ys_beacon.rag_retriever'
       - '@ys_beacon.prompt_builder'
 
+  ys_beacon.markdown_converter:
+    class: Drupal\ys_beacon\Service\MarkdownConverter
+
   ys_beacon.system_instructions_storage:
     class: Drupal\ys_beacon\Service\SystemInstructionsStorage
     arguments:
