@@ -163,7 +163,7 @@ content:
       placeholder: ''
     third_party_settings: {  }
   field_affiliation:
-    type: options_select
+    type: chosen_select
     weight: 31
     region: content
     settings: {  }
@@ -243,7 +243,7 @@ content:
       media_types: {  }
     third_party_settings:
       media_library_edit:
-        show_edit: '1'
+        show_edit: true
   field_metatags:
     type: metatag_firehose
     weight: 8

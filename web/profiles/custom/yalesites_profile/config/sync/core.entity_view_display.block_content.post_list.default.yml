@@ -6,7 +6,9 @@ dependencies:
     - block_content.type.post_list
     - field.field.block_content.post_list.field_heading
     - field.field.block_content.post_list.field_instructions
+    - field.field.block_content.post_list.field_padding_options
   module:
+    - options
     - text
 id: block_content.post_list.default
 targetEntityType: block_content
@@ -19,6 +21,13 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 0
+    region: content
+  field_padding_options:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 10
     region: content
 hidden:
   field_instructions: true

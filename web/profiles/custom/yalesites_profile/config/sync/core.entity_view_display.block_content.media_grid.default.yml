@@ -7,8 +7,10 @@ dependencies:
     - field.field.block_content.media_grid.field_heading
     - field.field.block_content.media_grid.field_instructions
     - field.field.block_content.media_grid.field_media_grid_items
+    - field.field.block_content.media_grid.field_padding_options
   module:
     - entity_reference_revisions
+    - options
     - text
 id: block_content.media_grid.default
 targetEntityType: block_content
@@ -30,6 +32,13 @@ content:
       link: ''
     third_party_settings: {  }
     weight: 1
+    region: content
+  field_padding_options:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 10
     region: content
 hidden:
   field_instructions: true

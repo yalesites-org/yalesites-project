@@ -1,0 +1,36 @@
+_core:
+  default_config_hash: C6AdZBCR0WnfPK8ujj1079pWqBsd2gyKa2rQQHBfCe4
+exclude_paths: "/contextual/*\r\n/toolbar/*\r\n/edit/*\r\n*.js\r\n*.css"
+exclude_toolbar: /media/oembed
+intercept_redirects: false
+purge_on_cache_clear: true
+active_toolbar_items:
+  assets: assets
+  blocks: blocks
+  cache: cache
+  database: database
+  devel: devel
+  events: events
+  frontend: frontend
+  memory: memory
+  request: request
+  routing: routing
+  state: state
+  theme: theme
+  ajax: '0'
+  configs: '0'
+  extensions: '0'
+  forms: '0'
+  http: '0'
+  mail: '0'
+  services: '0'
+  time: '0'
+  translations: '0'
+  user: '0'
+  views: '0'
+query_sort: source
+query_highlight: 10
+query_detailed_output_threshold: 1000
+ide: 'phpstorm://open?file=%f&line=%l'
+ide_remote_path: ''
+ide_local_path: ''

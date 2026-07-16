@@ -1,3 +1,19 @@
 .replacement-taxonomy-help ~ p {
   display: none;
 }
+
+/* Column widths */
+.taxonomy-vocabulary-listing th:nth-child(1),
+.taxonomy-vocabulary-listing td:nth-child(1) {
+  width: 30%;
+}
+
+.taxonomy-vocabulary-listing th:nth-child(2),
+.taxonomy-vocabulary-listing td:nth-child(2) {
+  width: 50%;
+}
+
+.taxonomy-vocabulary-listing th:nth-child(3),
+.taxonomy-vocabulary-listing td:nth-child(3) {
+  width: 20%;
+}

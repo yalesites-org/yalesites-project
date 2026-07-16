@@ -7,7 +7,7 @@ dependencies:
 id: profile
 label: Profile
 type: 'canonical_entities:node'
-pattern: 'profile/[node:title]'
+pattern: '/profile/[node:title]'
 selection_criteria:
   edb5c23c-e944-45e9-be99-aaf36f9871ad:
     id: 'entity_bundle:node'

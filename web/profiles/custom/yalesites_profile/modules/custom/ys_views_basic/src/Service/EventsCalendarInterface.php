@@ -16,11 +16,13 @@ interface EventsCalendarInterface {
    *   The month as a two-digit string (e.g., '06').
    * @param string $year
    *   The year as a four-digit string (e.g., 'yyyy').
+   * @param array $filters
+   *   (optional) An associative array of filters, e.g. taxonomy term IDs.
    *
    * @return array
    *   A two-dimensional array representing the calendar grid.
    */
-  public function getCalendar(string $month, string $year): array;
+  public function getCalendar(string $month, string $year, array $filters = []): array;
 
   /**
    * Creates a calendar cell array for a given day.

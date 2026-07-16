@@ -9,16 +9,24 @@ services:
   # Twig functions for passing core settings to templates.
   ys_core.core_twig_extension:
     class: Drupal\ys_core\CoreTwigExtension
-    arguments: ['@config.factory', '@ys_core.media_manager', '@request_stack']
+    arguments: ['@config.factory', '@ys_core.media_manager', '@request_stack', '@logger.factory']
     tags:
       - { name: twig.extension }
   ys_core.media_manager:
     class: Drupal\ys_core\YaleSitesMediaManager
     arguments: ['@config.factory', '@entity_type.manager', '@file_url_generator']
+  # Fetches editorial dashboard announcements from a configured JSON feed.
+  ys_core.dashboard_announcements:
+    class: Drupal\ys_core\DashboardAnnouncements
+    arguments: ['@http_client', '@config.factory', '@keyvalue.expirable', '@date.formatter', '@logger.factory', '@user.data', '@request_stack', '@class_resolver']
+  # Lazy builders for the dashboard menu badge.
+  ys_core.dashboard_toolbar_lazy_builders:
+    class: Drupal\ys_core\Toolbar\DashboardToolbarLazyBuilders
+    arguments: ['@ys_core.dashboard_announcements', '@entity_type.manager']
   # Redirect visitors to external source if set on the node.
   ys_core.external_source_redirect_subscriber:
     class: Drupal\ys_core\EventSubscriber\ExternalSourceRedirectSubscriber
-    arguments: ['@current_route_match']
+    arguments: ['@current_route_match', '@entity_type.manager']
     tags:
       - { name: 'event_subscriber' }
   ys_core.moderation_sidebar_controller_alter:
@@ -26,3 +34,17 @@ services:
     arguments: []
     tags:
       - { name: event_subscriber }
+  ys_core.taxonomy_vocabulary_manager:
+    class: Drupal\ys_core\TaxonomyVocabularyManager
+    arguments: ['@entity_type.manager', '@entity_field.manager']
+  # Service for managing Facts and Figures icon options.
+  ys_core.facts_and_figures_icon_manager:
+    class: Drupal\ys_core\FactsAndFiguresIconManager
+    arguments: ['@cache.default', '@module_handler', '@logger.factory']
+  # Provides user 1 bypass for CAS forced login.
+  ys_core.cas_user1_bypass_subscriber:
+    class: Drupal\ys_core\EventSubscriber\CasUser1BypassSubscriber
+    arguments: ['@current_user', '@request_stack']
+    tags:
+      - { name: event_subscriber }
+

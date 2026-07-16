@@ -30,3 +30,18 @@ ys_core.link_add_profile:
   title: 'Add profile'
   appears_on:
     - view.manage_profiles.page_1
+# Adds an action link to the manage resources interface
+ys_core.link_add_resources:
+  route_name: node.add
+  route_parameters:
+    node_type: 'resource'
+  title: 'Add resource'
+  appears_on:
+    - view.manage_resources.page_1
+
+cas.bulk_add_cas_users:
+  title: 'Add NetId user(s)'
+  route_name: cas.bulk_add_cas_users
+  appears_on:
+    - entity.user.collection
+  weight: 1

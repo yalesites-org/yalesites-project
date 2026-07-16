@@ -81,7 +81,7 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
 
     /** @var \Drupal\node\NodeInterface $node */
     $node = $this->routeMatch->getParameter('node');
-    if (!($node instanceof NodeInterface)) {
+    if (!($node instanceof NodeInterface || ($node && $node->bundle() !== 'event'))) {
       return [];
     }
 
@@ -101,6 +101,7 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
       '#event_audience' => $eventFieldData['event_audience'],
       '#event_topics' => $eventFieldData['event_topics'],
       '#description' => $eventFieldData['description'],
+      '#room' => $eventFieldData['room'],
       '#event_meta__cta_primary__href' => $eventFieldData['external_website_url'],
       '#event_meta__cta_primary__content' => $eventFieldData['external_website_title'],
       '#event_experience' => $eventFieldData['experience'],
@@ -112,6 +113,9 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
       '#localist_url' => $eventFieldData['localist_url'],
       '#stream_url' => $eventFieldData['stream_url'],
       '#stream_embed_code' => $eventFieldData['stream_embed_code'],
+      '#event_source' => $eventFieldData['event_source'],
+      '#event_featured_date' => $eventFieldData['event_featured_date'],
+      '#event_featured_index' => $eventFieldData['event_featured_index'],
     ];
   }
 

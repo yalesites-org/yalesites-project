@@ -1,16 +1,16 @@
 /* stylelint-disable */
 :root {
   --gin-font: Mallory, sans-serif;
-  --gin-font-size-h1: 1.75rem;
-  --gin-font-size-h2: 1.5rem;
-  --gin-font-size-h3: 1.25rem;
+  --gin-font-size-h1: 1.438rem;
+  --gin-font-size-h2: 1.188rem;
+  --gin-font-size-h3: 0.938rem;
   --gin-border-m: 0.313rem;
   --jui-dropdown-bg-color: var(--gin-bg-layer);
   --input-fg-color--placeholder: var(--gin-color-text);
 }
 :root h1,
 :root h2 {
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .views-bulk-actions__item .button--primary:not(:disabled, .is-disabled) {
@@ -49,9 +49,41 @@ a.focal-point-preview-link {
     gap: 1rem;
     grid-template-columns: repeat(2, 1fr);
   }
-  .ys-gin-two-column-wrapper .form-element {
+  .ys-gin-two-column-wrapper .form-element, .ys-gin-two-column-wrapper .form-item {
     width: 100%;
+    min-width: 100%;
   }
+}
+
+/* Three column layout for profile add/edit form */
+@media screen and (min-width: 1000px) {
+  .ys-gin-three-column-wrapper {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .ys-gin-three-column-wrapper .form-element, .ys-gin-three-column-wrapper .form-item {
+    width: 100%;
+    min-width: 100%;
+  }
+}
+
+/* Visual grouping for related form fields (e.g. Authors fieldset).
+   Apply the class to a field_group container; the border + padding
+   draws a single box around the children, and the multi-value field
+   header inside is toned down so it reads as a related sub-field
+   instead of a standalone section. */
+.ys-gin-grouped-fields {
+  border: 1px solid var(--gin-border-color);
+  border-radius: var(--gin-border-m);
+  padding: 1rem 1.25rem;
+}
+.ys-gin-grouped-fields .field-multiple-table thead th {
+  background: transparent;
+  color: var(--gin-color-text);
+  font-size: var(--gin-font-size-s);
+  font-weight: 600;
+  border-radius: 0;
 }
 
 .action-link--icon-trash.action-link--danger::before,
@@ -64,6 +96,226 @@ a.focal-point-preview-link {
   background-color: var(--gin-bg-layer) !important;
 }
 
-/* stylelint-enable */
+.gin--dark-mode .fancytree-title {
+  color: var(--gin-color-text);
+}
 
-/*# sourceMappingURL=gin-custom.css.map */
+.gin--dark-mode .fancytree-active .fancytree-title,
+.gin--dark-mode .fancytree-selected .fancytree-title {
+  background-color: var(--gin-bg-layer2);
+}
+
+.form-element {
+  min-height: calc(var(--input-padding-vertical) * 3 + var(--input-line-height));
+}
+
+input.form-element:not([type=checkbox]):not([type=radio]):not([type=file]) {
+  min-height: calc(var(--input-padding-vertical) * 2 + var(--input-line-height));
+}
+
+.ui-autocomplete,
+.linkit-ui-autocomplete {
+  min-width: max-content;
+  max-width: calc(100vw - 2rem);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.linkit-ui-autocomplete.ui-widget {
+  max-width: none;
+}
+
+.ui-autocomplete .ui-menu-item {
+  white-space: nowrap;
+}
+
+.ui-autocomplete .ui-menu-item-wrapper {
+  display: block;
+  box-sizing: border-box;
+  min-width: 100%;
+  white-space: nowrap;
+  word-break: normal;
+  overflow-wrap: normal;
+  width: -webkit-fit-content;
+  width: -moz-fit-content;
+  width: fit-content;
+  max-width: none;
+}
+
+.linkit-ui-autocomplete .linkit-result-line-wrapper,
+.linkit-ui-autocomplete .linkit-result-line--title,
+.linkit-ui-autocomplete .linkit-result-line--description {
+  white-space: nowrap;
+}
+
+input.form-element.form-linkit-autocomplete,
+.claro-autocomplete input.form-element.form-autocomplete,
+input.form-element[type=url],
+input.form-element.form-autocomplete {
+  overflow-x: auto;
+  white-space: nowrap;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+
+/* 
+ * Dark mode asterisk contrast fix for WCAG 2.1 AA compliance
+ * YSP-1083: Required field asterisks fail color contrast in dark mode
+ * 
+ * Gin's dark mode was missing the --gin-color-danger-light variable that exists
+ * in light mode. This adds the missing variable with a color that meets WCAG 2.1 AA
+ * contrast requirements (4.5:1 ratio) and updates asterisks to use it.
+ * This maintains consistency with Gin's existing color system.
+ */
+.gin--dark-mode {
+  /* Add missing danger-light variable for dark mode (matches Gin's color system) */
+  --gin-color-danger-light: #ff8080;
+  /* Use the variable for required field asterisks */
+  /**
+   * WCAG 2.1 AA Contrast Fixes - Issue #1086
+   *
+   * The following overrides address contrast failures in dark mode that were
+   * identified during accessibility audits. All fixes target WCAG 2.1 AA
+   * compliance (4.5:1 for normal text, 3:1 for UI components/large text).
+   *
+   * These overrides only affect dark mode; light mode remains unchanged.
+   */
+  /**
+   * Status indicator pills for published/unpublished content
+   *
+   * Original Gin variables produced insufficient contrast in dark mode:
+   * - "Yes" (published) green text on green background: 3.39:1
+   * - "No" (unpublished) gray text on semi-transparent white: 3.49:1
+   *
+   * Solution: Increase text brightness and adjust background transparency
+   * - Published pill now achieves 5.12:1 contrast
+   * - Unpublished pill now achieves 4.87:1 contrast
+   */
+  --gin-status-success-text: #6bd4a1;
+  --gin-status-success-bg: rgba(38, 167, 105, 0.18);
+  --gin-status-text: #e0e0e2;
+  --gin-status-bg: rgba(255, 255, 255, 0.12);
+  /**
+   * Form description and help text links (Gin-specific contexts)
+   *
+   * Problem: Links inside Gin form help text were inheriting the parent's light
+   * gray color (#9e9fa0) instead of using the intended link color. This created
+   * a critical failure at 1.47:1 contrast, making links nearly invisible.
+   *
+   * Solution: Force link color using Gin's primary color variable which provides
+   * 7.12:1 contrast on dark backgrounds.
+   *
+   * Note: Media library and block creation links are handled in admin-ui.scss
+   */
+  /**
+   * Help text and form descriptions
+   *
+   * Problem: Default help text uses --gin-color-text-light (#9e9fa0) which has
+   * insufficient contrast on dark backgrounds, making instructions nearly invisible.
+   *
+   * Solution: Override to use standard text color for better readability while
+   * maintaining visual hierarchy through font size/weight.
+   *
+   * Achieves: Improved contrast from ~2:1 to ~11:1 (WCAG AAA compliant)
+   *
+   * Targets:
+   * - .form-item__description, .fieldset__description, .fieldset__prefix: Standard form help text
+   * - .glb-form-item__description, .glb-fieldset__description: GinLB form help text
+   * - .counter: Character counter from maxlength module
+   * - .claro-details__summary-summary: Summary text in collapsible details
+   * - .field-option__description: Field option descriptions
+   * - .admin-item__description: Admin page descriptions
+   */
+  /**
+   * Media edit dialog vertical tabs menu (Issue #1112)
+   *
+   * Problem: The "Metadata" section heading in media edit dialogs uses bright blue
+   * text and border (--gin-color-primary) on a dark background, failing WCAG 2.1 AA
+   * contrast requirements. Additionally, hover states create poor contrast with light
+   * text on light backgrounds.
+   *
+   * Solution:
+   * - Use white text color for selected vertical tab menu items in dialogs
+   * - Change the left border indicator from blue to white for better visibility
+   * - On hover, use dark text color to ensure readability against light backgrounds
+   *
+   * Achieves: ~13:1 contrast ratio for normal state, ~11:1 for hover state
+   * (WCAG AAA compliant)
+   *
+   * Context: Applies specifically to .ui-dialog vertical tabs to avoid affecting
+   * other uses of vertical tabs elsewhere in the admin interface.
+   */
+  /**
+   * "Skip to main content" link contrast (Issue #1048)
+   *
+   * Gin sets the skip link's text to --gin-color-button-text, which flips to
+   * #111 (near-black) in dark mode, while Claro keeps the skip-link background
+   * at --color-gray-800 (#55565b). That pairing is only 2.58:1, failing WCAG
+   * 2.1 AA. Restore Claro's intended light text (--color-white), which Claro
+   * itself uses for the skip link in every state, for 7.32:1.
+   *
+   * Scoping under .gin--dark-mode gives (0,3,0) specificity, beating Gin's
+   * .visually-hidden.skip-link rule (0,2,0) without needing !important.
+   */
+}
+.gin--dark-mode .form-item__label.form-required::after,
+.gin--dark-mode .fieldset__label.form-required::after,
+.gin--dark-mode .form-required > .fieldset__label::after,
+.gin--dark-mode .horizontal-tab-button .form-required::after,
+.gin--dark-mode .vertical-tabs__menu-link .form-required::after {
+  color: var(--gin-color-danger-light);
+}
+.gin--dark-mode .required-mark::after {
+  background: var(--gin-color-danger-light);
+}
+.gin--dark-mode .form-item__description a,
+.gin--dark-mode .fieldset__description a,
+.gin--dark-mode .ui-dialog .form-item__description a {
+  color: var(--gin-color-primary) !important;
+}
+.gin--dark-mode .form-item__description a:hover,
+.gin--dark-mode .fieldset__description a:hover,
+.gin--dark-mode .ui-dialog .form-item__description a:hover {
+  color: var(--gin-color-primary-hover) !important;
+  text-decoration: underline;
+}
+.gin--dark-mode .form-item__description a:focus,
+.gin--dark-mode .fieldset__description a:focus,
+.gin--dark-mode .ui-dialog .form-item__description a:focus {
+  outline: 2px solid var(--gin-color-focus);
+  outline-offset: 1px;
+}
+.gin--dark-mode .form-item__description,
+.gin--dark-mode .fieldset__description,
+.gin--dark-mode .fieldset__prefix,
+.gin--dark-mode .glb-form-item__description,
+.gin--dark-mode .glb-fieldset__description,
+.gin--dark-mode .counter,
+.gin--dark-mode .claro-details__summary-summary,
+.gin--dark-mode .field-option__description,
+.gin--dark-mode .admin-item__description {
+  color: var(--gin-color-text) !important;
+}
+.gin--dark-mode .ui-dialog .vertical-tabs__menu-item.is-selected .vertical-tabs__menu-link {
+  color: var(--gin-color-text) !important;
+}
+.gin--dark-mode .ui-dialog .vertical-tabs__menu-item.is-selected .vertical-tabs__menu-link::before {
+  border-color: var(--gin-color-text) !important;
+}
+.gin--dark-mode .ui-dialog .vertical-tabs__menu-item.is-selected .vertical-tabs__menu-link:hover {
+  color: var(--gin-bg-layer) !important;
+}
+.gin--dark-mode .ui-dialog .vertical-tabs__menu-item.is-selected .vertical-tabs__menu-link:hover::before {
+  border-color: var(--gin-bg-layer) !important;
+}
+.gin--dark-mode .ui-dialog .vertical-tabs__menu-item.is-selected .vertical-tabs__menu-link:active {
+  color: var(--gin-bg-layer) !important;
+}
+.gin--dark-mode .ui-dialog .vertical-tabs__menu-item.is-selected .vertical-tabs__menu-link:active::before {
+  border-color: var(--gin-bg-layer) !important;
+}
+.gin--dark-mode .visually-hidden.skip-link {
+  color: var(--color-white);
+}
+
+/* stylelint-enable */

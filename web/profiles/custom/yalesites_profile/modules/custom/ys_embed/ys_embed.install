@@ -203,10 +203,38 @@ function ys_embed_update_9006() {
 }
 
 /**
+ * Copies the new GitHub Applet icon to the media-icons/generic.
+ */
+function ys_embed_update_9007() {
+  _copy_embed_file('github.png');
+}
+
+/**
  * Implements hook_update().
  *
  * Copy SpringShare LibCal icon.
  */
 function ys_embed_update_10001() {
+  // The LibCal embed source and its springshare-libcal.png icon were removed in
+  // issue #1371. This historical update hook is retained as migration history;
+  // _copy_embed_file() tolerates the now-missing source file, so it is a no-op.
   _copy_embed_file('springshare-libcal.png');
+}
+
+/**
+ * Implements hook_update().
+ *
+ * Copy Google Maps icon.
+ */
+function ys_embed_update_10002() {
+  _copy_embed_file('googlemaps.png');
+}
+
+/**
+ * Implements hook_update().
+ *
+ * Copy Bluesky icon.
+ */
+function ys_embed_update_10003() {
+  _copy_embed_file('bluesky.png');
 }

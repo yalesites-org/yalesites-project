@@ -5,6 +5,7 @@ dependencies:
   config:
     - field.field.node.page.field_audience
     - field.field.node.page.field_category
+    - field.field.node.page.field_collection_nav_position
     - field.field.node.page.field_custom_vocab
     - field.field.node.page.field_external_source
     - field.field.node.page.field_login_required
@@ -91,6 +92,12 @@ content:
   field_category:
     type: chosen_select
     weight: 1
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_collection_nav_position:
+    type: options_select
+    weight: 14
     region: content
     settings: {  }
     third_party_settings: {  }

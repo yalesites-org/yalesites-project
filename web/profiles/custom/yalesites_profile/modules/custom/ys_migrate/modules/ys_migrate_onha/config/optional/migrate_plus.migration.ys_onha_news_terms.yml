@@ -1,0 +1,35 @@
+# Migration: YaleSite ONHA News Terms Migrations
+# Description: Migrates taxonomy terms related to the Drupal 7 'news' vocabulary
+# to the Drupal 10 'post_category' vocabulary as part of the news migration.
+
+id: ys_onha_news_terms
+label: YaleSites ONHA News Terms
+status: true
+class: Drupal\migrate\Plugin\Migration
+migration_tags:
+  - 'Drupal 7'
+  - taxonomy_vocabulary
+migration_group: ys_onha
+
+# Specifies the source is Drupal 7 terms of the 'news' vocabulary.
+source:
+  plugin: d7_taxonomy_term
+  bundle: news
+
+# Define how each field or property is mapped to the Drupal 10 platform.
+process:
+  vid:
+    plugin: default_value
+    default_value: post_category
+  name: name
+  description: description/value
+  weight: weight
+  parent: parent
+
+# Drupal 7 news terms will be migrated into the post_category vocabulary.
+destination:
+  plugin: entity:taxonomy_term
+  default_bundle: post_category
+
+migration_dependencies:
+  required: { }

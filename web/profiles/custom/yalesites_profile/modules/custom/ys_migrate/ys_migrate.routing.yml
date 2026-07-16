@@ -1,0 +1,7 @@
+ys_migrate.profile_csv_import:
+  path: '/admin/content/manage-profiles/csv-import'
+  defaults:
+    _form: '\Drupal\ys_migrate\Form\ProfileCsvImportForm'
+    _title: 'Profile CSV Import'
+  requirements:
+    _permission: 'create profile content'

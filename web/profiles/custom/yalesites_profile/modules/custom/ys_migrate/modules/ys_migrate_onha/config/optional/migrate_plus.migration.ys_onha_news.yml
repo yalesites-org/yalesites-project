@@ -1,0 +1,73 @@
+# Migration: YaleSite ONHA News Migrations
+# Description: Migrates Drupal 7 'news' content to Drupal 10 'posts'. Currently
+# all news items act as external links, so there are not body fields or media to
+# include in the migration.
+
+id: ys_onha_news
+label: YaleSites ONHA News
+status: true
+class: Drupal\migrate\Plugin\Migration
+migration_tags:
+  - 'Drupal 7'
+  - Content
+migration_group: ys_onha
+
+# Specifies the source is Drupal 7 nodes of the 'news' content type.
+source:
+  plugin: d7_node
+  node_type: news
+
+# Define how each field or property is mapped to the Drupal 10 platform.
+process:
+  langcode:
+    plugin: default_value
+    source: language
+    default_value: 'und'
+  title: title
+  status: status
+  created: created
+  changed: changed
+  promote: promote
+  sticky: sticky
+  # The date format storage has changed in the new platform.
+  field_publish_date:
+    plugin: sub_process
+    source: field_date
+    process:
+      value:
+        plugin: format_date
+        from_format: 'Y-m-d H:i:s'
+        to_format: 'Y-m-d'
+        source: value
+  # All posts on ONHA uses the external link mechanism.
+  field_external_source:
+    plugin: field_link
+    source: field_link_to_external_story
+    uri_scheme: 'https://'
+  # Tag all posts with the taxonomy terms from a previous migration.
+  field_category:
+    plugin: migration_lookup
+    migration: ys_onha_news_terms
+    source: field_news_type
+  uid:
+    plugin: default_value
+    default_value: constants/admin_uid
+  # Maps the moderation state of the content using a static_map.
+  # Defaults to "draft" if the source value does not match any map entry.
+  moderation_state:
+    plugin: static_map
+    source: status
+    default_value: draft
+    map:
+      '0': draft
+      '1': published
+
+# Drupal 7 news content will be migrated into the post content type.
+destination:
+  plugin: entity:node
+  default_bundle: post
+
+# This migration can only be run after all news taxonomy terms are migrated.
+migration_dependencies:
+  required:
+    - ys_onha_news_terms

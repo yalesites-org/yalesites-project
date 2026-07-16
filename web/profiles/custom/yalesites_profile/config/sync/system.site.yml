@@ -3,7 +3,7 @@ _core:
 langcode: en
 uuid: 3be7d457-cc13-4e03-bde2-d004a9e0f46e
 name: 'Your Site Title'
-mail: noreply@yale.edu
+mail: noreply@noreply.yale.edu
 slogan: ''
 page:
   403: ''

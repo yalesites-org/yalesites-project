@@ -95,9 +95,13 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
       ]);
     }
 
+    $entity = $this->routeMatch->getParameter('node');
+
+    // Always show breadcrumbs for book pages.
+    $alwaysShowBreadcrumbs = FALSE;
+
     // Adds the post or event title to the end of the breadcrumbs.
     if ($this->yaleSitesBreadcrumbsManager->hasLandingPage($this->routeMatch)) {
-      $entity = $this->routeMatch->getParameter('node');
       array_push($links, [
         'title' => $entity->getTitle(),
         'url' => $entity->toLink()->getUrl()->toString(),
@@ -108,6 +112,7 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
     return [
       '#theme' => 'ys_breadcrumb_block',
       '#items' => $links,
+      '#always_show_breadcrumbs' => $alwaysShowBreadcrumbs,
     ];
   }
 

@@ -157,6 +157,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     $ticketCost = $node->field_ticket_cost->first() ? $node->field_ticket_cost->first()->getValue()['value'] : NULL;
     $costButtonText = $ticketCost ? 'Buy Tickets' : 'Register';
     $description = $node->field_event_description->first() ? $node->field_event_description->first()->getValue()['value'] : NULL;
+    $room = $node->field_event_room->first() ? $node->field_event_room->first()->getValue()['value'] : NULL;
     $externalEventWebsiteUrl = ($node->field_event_cta->first()) ? Url::fromUri($node->field_event_cta->first()->getValue()['uri'])->toString() : NULL;
     $externalEventWebsiteTitle = ($node->field_event_cta->first()) ? $node->field_event_cta->first()->getValue()['title'] : NULL;
     $localistImageUrl = ($node->field_localist_event_image_url->first()) ? Url::fromUri($node->field_localist_event_image_url->first()->getValue()['uri'])->toString() : NULL;
@@ -165,6 +166,15 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     $localistUrl = ($node->field_localist_event_url->first()) ? Url::fromUri($node->field_localist_event_url->first()->getValue()['uri'])->toString() : NULL;
     $streamUrl = ($node->field_stream_url->first()) ? Url::fromUri($node->field_stream_url->first()->getValue()['uri'])->toString() : NULL;
     $streamEmbedCode = $node->field_stream_embed_code->first() ? $node->field_stream_embed_code->first()->getValue()['value'] : NULL;
+
+    // Retrieve the source taxonomy term name.
+    $sourceTaxonomyTermName = '';
+    if ($node->field_event_source->first()) {
+      $termId = $node->field_event_source->first()->getValue()['target_id'];
+      $term = $this->entityTypeManager->getStorage('taxonomy_term')->load($termId);
+      $sourceTaxonomyTermName = $term->getName();
+    }
+    $eventSource = $sourceTaxonomyTermName;
 
     // Localist register ticket changes.
     $localistRegisterTickets = $hasRegister ? $this->localistManager->getTicketInfo($localistId) : NULL;
@@ -183,24 +193,10 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     }
 
     // Dates.
-    $dates = [];
-    if ($dates = $node->field_event_date->getValue()) {
-      foreach ($dates as $key => $date) {
-        $dates[$key]['formatted_start_date'] = $this->dateFormatter->format($date['value'], 'event_date_only');
-        $dates[$key]['formatted_start_time'] = $this->dateFormatter->format($date['value'], 'event_time_only');
-        $dates[$key]['formatted_end_date'] = $this->dateFormatter->format($date['end_value'], 'event_date_only');
-        $dates[$key]['formatted_end_time'] = $this->dateFormatter->format($date['end_value'], 'event_time_only');
-        $dates[$key]['original_start'] = $date['value'];
-        $dates[$key]['original_end'] = $date['end_value'];
-        $dates[$key]['is_all_day'] = $this->isAllDay($date['value'], $date['end_value']);
-        // Remove older dates.
-        if ($date['end_value'] < time()) {
-          unset($dates[$key]);
-        }
-      }
-      // Sort dates - first date is next upcoming date.
-      asort($dates);
-    }
+    $dates = $node->field_event_date->getValue();
+    $this->orderEventDates($dates);
+    $featuredIndex = $this->getFeaturedDateIndex($dates);
+    $featuredDate = $this->getFeaturedDateFromIndex($dates, $featuredIndex);
 
     // Teaser responsive image.
     $teaserMediaRender = [];
@@ -208,13 +204,14 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     if ($teaserMediaId) {
       /** @var Drupal\media\Entity\Media $teaserMedia */
       if ($teaserMedia = $this->entityTypeManager->getStorage('media')->load($teaserMediaId)) {
-        /** @var Drupal\file\FileStorage $fileEntity */
-        $fileEntity = $this->entityTypeManager->getStorage('file');
-        $teaserImageFileUri = $fileEntity->load($teaserMedia->field_media_image->target_id)->getFileUri();
+        /** @var Drupal\file\FileStorage $fileEntityStorage */
+        $fileEntityStorage = $this->entityTypeManager->getStorage('file');
+        $teaserImageFileUri = $fileEntityStorage->load($teaserMedia->field_media_image->target_id)->getFileUri();
+        $isTeaserImageLandscape = $teaserMedia->get('thumbnail')->width > $teaserMedia->get('thumbnail')->height;
 
         $teaserMediaRender = [
           '#type' => 'responsive_image',
-          '#responsive_image_style_id' => 'card_featured_3_2',
+          '#responsive_image_style_id' => $isTeaserImageLandscape ? 'card_featured_3_2' : 'content_spotlight_portrait',
           '#uri' => $teaserImageFileUri,
           '#attributes' => [
             'alt' => $teaserMedia->get('field_media_image')->first()->get('alt')->getValue(),
@@ -279,6 +276,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       'ticket_url' => $ticketLink,
       'ticket_cost' => $ticketCost,
       'description' => $description,
+      'room' => $room,
       'external_website_url' => $externalEventWebsiteUrl,
       'external_website_title' => $externalEventWebsiteTitle,
       'localist_image_url' => $localistImageUrl,
@@ -293,7 +291,127 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       'localist_url' => $localistUrl,
       'stream_url' => $streamUrl,
       'stream_embed_code' => $streamEmbedCode,
+      'event_source' => $eventSource,
+      'event_featured_date' => $featuredDate,
+      'event_featured_index' => $featuredIndex,
     ];
+  }
+
+  /**
+   * Orders event dates by start date.
+   *
+   * @param array $dates
+   *   An array of dates.
+   *
+   * @return void
+   *   The array is passed by reference.
+   */
+  protected function orderEventDates(&$dates) {
+    if ($dates) {
+      foreach ($dates as $key => $date) {
+        $dates[$key]['formatted_start_date'] = $this->dateFormatter->format($date['value'], 'event_date_only');
+        $dates[$key]['formatted_start_time'] = $this->dateFormatter->format($date['value'], 'event_time_only');
+        $dates[$key]['formatted_end_date'] = $this->dateFormatter->format($date['end_value'], 'event_date_only');
+        $dates[$key]['formatted_end_time'] = $this->dateFormatter->format($date['end_value'], 'event_time_only');
+        $dates[$key]['original_start'] = $date['value'];
+        $dates[$key]['original_end'] = $date['end_value'];
+        $dates[$key]['is_all_day'] = $this->isAllDay($date['value'], $date['end_value']);
+        $dates[$key]['is_past_event'] = $date['end_value'] < time();
+      }
+      // Sort dates - first date is next upcoming date.
+      asort($dates);
+      // Reindex the array so position matches array keys.
+      $dates = array_values($dates);
+    }
+  }
+
+  /**
+   * Get the index of the featured date from the list of dates.
+   *
+   * @param array $dates
+   *   An array of dates.
+   *
+   * @return int|null
+   *   The index of the featured date or NULL.
+   */
+  protected function getFeaturedDateIndex($dates) {
+    $featuredIndex = NULL;
+
+    if (!is_array($dates)) {
+      return $dates;
+    }
+
+    // Track the position (0, 1, 2...) not the array key.
+    $position = 0;
+    foreach ($dates as $date) {
+      if ($date['end_value'] >= time()) {
+        $featuredIndex = $position;
+        break;
+      }
+      $position++;
+    }
+
+    if (!isset($featuredIndex)) {
+      // If no upcoming date, use the last position.
+      $featuredIndex = count($dates) - 1;
+    }
+
+    return $featuredIndex;
+  }
+
+  /**
+   * Get the first upcoming date from the list of dates.
+   *
+   * @param array $dates
+   *   An array of dates.
+   *
+   * @return array|NodeInterface
+   *   The first upcoming date or what was passed.
+   */
+  protected function getFeaturedDate($dates) {
+    $featuredDate = NULL;
+
+    if (!is_array($dates)) {
+      return $dates;
+    }
+
+    // Get the first date that is not in the past.
+    foreach ($dates as $date) {
+      if ($date['end_value'] >= time()) {
+        $featuredDate = $date;
+        break;
+      }
+    }
+
+    // If none were found, use the last element.
+    if (!$featuredDate) {
+      $featuredDate = end($dates);
+    }
+
+    return $featuredDate;
+  }
+
+  /**
+   * Get the featured date from the list of dates by index.
+   *
+   * @param array $dates
+   *   An array of dates.
+   * @param int $index
+   *   The index of the date to return.
+   *
+   * @return array|NodeInterface
+   *   The date at the given index or what was passed.
+   */
+  protected function getFeaturedDateFromIndex($dates, $index) {
+    if (!is_array($dates)) {
+      return $dates;
+    }
+
+    if (isset($dates[$index])) {
+      return $dates[$index];
+    }
+
+    return end($dates);
   }
 
 }

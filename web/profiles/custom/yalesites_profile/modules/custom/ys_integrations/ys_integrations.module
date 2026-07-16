@@ -1,0 +1,19 @@
+<?php
+
+/**
+ * @file
+ * Contains ys_integrations.module.
+ */
+
+/**
+ * Add template file for social links.
+ *
+ * Implements hook_theme().
+ */
+function ys_integrations_theme($existing, $type, $theme, $path): array {
+  return [
+    'ys_integrations_block' => [
+      'variables' => ['content' => NULL],
+    ],
+  ];
+}

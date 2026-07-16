@@ -6,6 +6,7 @@ dependencies:
     - node.type.page
     - node.type.post
     - node.type.profile
+    - node.type.resource
   module:
     - content_moderation
 id: editorial
@@ -14,7 +15,7 @@ type: content_moderation
 type_settings:
   states:
     archived:
-      label: Archived
+      label: Unpublished
       weight: 5
       published: false
       default_revision: true
@@ -30,7 +31,7 @@ type_settings:
       default_revision: true
   transitions:
     archive:
-      label: Archive
+      label: Unpublish
       from:
         - published
       to: archived
@@ -66,4 +67,5 @@ type_settings:
       - page
       - post
       - profile
+      - resource
   default_moderation_state: draft

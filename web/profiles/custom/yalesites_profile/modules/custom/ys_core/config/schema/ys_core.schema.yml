@@ -1,0 +1,22 @@
+ys_core.dashboard_settings:
+  type: config_object
+  label: 'YaleSites dashboard settings'
+  mapping:
+    announcements_enabled:
+      type: boolean
+      label: 'Show platform announcements on the dashboard'
+    announcements_feed_url:
+      type: string
+      label: 'Announcements feed URL override (set via drush; falls back to the platform feed when empty)'
+    announcements_limit:
+      type: integer
+      label: 'Maximum number of announcements to display'
+    announcements_max_age:
+      type: integer
+      label: 'Announcements cache lifetime in seconds'
+    announcements_source_enabled:
+      type: boolean
+      label: 'Publish an announcements feed from this site'
+    announcements_source_term:
+      type: string
+      label: 'Taxonomy term name used to tag announcement posts'

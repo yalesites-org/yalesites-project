@@ -28,7 +28,6 @@
     "test": "./scripts/local/test.sh"
   },
   "devDependencies": {
-    "@saithodev/semantic-release-backmerge": "^4.0.1",
     "@semantic-release/git": "^10.0.1",
     "@yalesites-org/eslint-config-and-other-formatting": "^1.20.0",
     "eslint-config-drupal": "^5.0.2",
@@ -87,15 +86,6 @@
             "web/profiles/custom/yalesites_profile/yalesites_profile.info.yml"
           ],
           "message": "chore: bump yalesites_profile to ${nextRelease.version} [skip ci]"
-        }
-      ],
-      [
-        "@saithodev/semantic-release-backmerge",
-        {
-          "backmergeBranches": [
-            "develop"
-          ],
-          "backmergeStrategy": "merge"
         }
       ],
       "@semantic-release/github"

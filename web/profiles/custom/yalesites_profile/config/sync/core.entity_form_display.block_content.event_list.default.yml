@@ -6,6 +6,7 @@ dependencies:
     - block_content.type.event_list
     - field.field.block_content.event_list.field_heading
     - field.field.block_content.event_list.field_instructions
+    - field.field.block_content.event_list.field_padding_options
   module:
     - allowed_formats
     - markup
@@ -33,7 +34,13 @@ content:
         maxlength_js_enforce: false
   field_instructions:
     type: markup
-    weight: 0
+    weight: -1
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_padding_options:
+    type: options_select
+    weight: 10
     region: content
     settings: {  }
     third_party_settings: {  }

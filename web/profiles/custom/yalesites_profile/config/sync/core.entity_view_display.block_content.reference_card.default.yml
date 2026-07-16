@@ -6,6 +6,7 @@ dependencies:
     - block_content.type.reference_card
     - field.field.block_content.reference_card.field_content_ref
     - field.field.block_content.reference_card.field_instructions
+    - field.field.block_content.reference_card.field_padding_options
     - field.field.block_content.reference_card.field_show_teaser_lead_in
     - field.field.block_content.reference_card.field_style_variation
   module:
@@ -23,6 +24,13 @@ content:
       link: false
     third_party_settings: {  }
     weight: 0
+    region: content
+  field_padding_options:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 10
     region: content
   field_show_teaser_lead_in:
     type: boolean

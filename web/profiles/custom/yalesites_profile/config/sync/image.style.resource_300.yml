@@ -1,0 +1,21 @@
+uuid: 0dd62036-4075-4167-8b9c-f8059d94a1c0
+langcode: en
+status: true
+dependencies: {  }
+name: resource_300
+label: 'Resource (300)'
+effects:
+  dbda8dee-8dd6-408b-9f71-a4aa408dd164:
+    uuid: dbda8dee-8dd6-408b-9f71-a4aa408dd164
+    id: image_scale
+    weight: 1
+    data:
+      width: 300
+      height: null
+      upscale: false
+  152ceb15-261a-4ae0-9420-98cbea0425b3:
+    uuid: 152ceb15-261a-4ae0-9420-98cbea0425b3
+    id: image_convert
+    weight: 2
+    data:
+      extension: webp

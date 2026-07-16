@@ -3,6 +3,7 @@
 namespace Drupal\ys_campus_groups\Plugin\migrate\source;
 
 use Drupal\migrate\Plugin\MigrationInterface;
+use Drupal\migrate_plus\DataParserPluginManager;
 use Drupal\migrate_plus\Plugin\migrate\source\Url;
 use Drupal\Core\Url as UrlObject;
 
@@ -15,12 +16,12 @@ use Drupal\Core\Url as UrlObject;
  */
 class CampusGroupUrl extends Url {
   // The number of days in the future to retrieve events.
-  const DAYS = 120;
+  const DAYS = 365;
 
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, DataParserPluginManager $parserPluginManager) {
     $config = \Drupal::configFactory()->getEditable('ys_campus_groups.settings');
 
     $url = $config->get('campus_groups_endpoint');
@@ -47,7 +48,7 @@ class CampusGroupUrl extends Url {
       }
     }
 
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $migration);
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $migration, $parserPluginManager);
   }
 
   /**

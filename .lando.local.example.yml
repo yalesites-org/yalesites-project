@@ -45,3 +45,5 @@ services:
         CUSTOMER_SECRETS_FAKE_FILE: /app/secrets.json
     # This is needed to expose the reverse proxy to the xdebug port (9003)
     xdebug: true
+    build_as_root:
+      - git config --global --add safe.directory /app

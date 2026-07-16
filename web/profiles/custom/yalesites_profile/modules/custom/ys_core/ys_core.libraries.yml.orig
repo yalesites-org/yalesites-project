@@ -1,0 +1,51 @@
+node_layout_form:
+  css:
+    theme:
+      css/layout-builder-browser.css: {}
+      css/multifield-form.css: { }
+taxonomy_form:
+  css:
+    theme:
+      css/taxonomy-form.css: {}
+siteimprove:
+  js:
+    https://siteimproveanalytics.com/js/siteanalyze_66356571.js: { type: external, attributes: { async: true } }
+header_footer_settings:
+  css:
+    theme:
+      css/header-footer-settings.css: {}
+  js:
+    js/header-footer-settings.js: {}
+block_form:
+  js:
+    js/block-form.js: {}
+gcse:
+  css:
+    theme:
+      css/gcse.css: {}
+  js:
+    js/gcse.js: {}
+grand_hero_form:
+  version: 1.x
+  js:
+    js/grand-hero-form.js: {}
+  dependencies:
+    - core/drupal
+    - core/drupal.states
+    - core/jquery
+    - core/once
+<<<<<<< HEAD
+=======
+facts_icon_preview:
+  version: 1.x
+  css:
+    theme:
+      css/facts-icon-preview.css: {}
+  js:
+    js/facts-icon-preview-chosen.js: {}
+  dependencies:
+    - core/drupal
+    - core/jquery
+    - core/once
+    - chosen/chosen
+>>>>>>> 84269ca2 (feat(YSP-918): implement Facts and Figures icon admin interface)

@@ -1,0 +1,33 @@
+uuid: a26db9eb-354f-4cdc-9d8b-f6c9839594d4
+langcode: en
+status: true
+dependencies:
+  module:
+    - block_content
+    - options
+id: block_content.field_padding_options
+field_name: field_padding_options
+entity_type: block_content
+type: list_string
+settings:
+  allowed_values:
+    -
+      value: default
+      label: 'Padding on both top and bottom'
+    -
+      value: no_top
+      label: 'No top padding'
+    -
+      value: no_bottom
+      label: 'No bottom padding'
+    -
+      value: no_padding
+      label: 'No padding (removes both top and bottom padding)'
+  allowed_values_function: ''
+module: options
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

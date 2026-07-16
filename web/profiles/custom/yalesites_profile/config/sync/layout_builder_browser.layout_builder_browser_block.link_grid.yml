@@ -4,8 +4,8 @@ status: true
 dependencies: {  }
 id: link_grid
 block_id: 'inline_block:link_grid'
-category: basic
+category: calls_to_action
 label: 'Link Grid'
 image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/link-grid.svg
 image_alt: ''
-weight: -2
+weight: -14

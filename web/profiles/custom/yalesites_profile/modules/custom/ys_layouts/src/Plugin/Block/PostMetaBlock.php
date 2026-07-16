@@ -98,7 +98,7 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
 
     /** @var \Drupal\node\NodeInterface $node */
     $node = $this->requestStack->getCurrentRequest()->attributes->get('node');
-    if (!($node instanceof NodeInterface)) {
+    if (!($node instanceof NodeInterface) || $node->bundle() !== 'post') {
       return [];
     }
 
@@ -106,6 +106,7 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
     $author = NULL;
     $publishDate = NULL;
     $dateFormatted = NULL;
+    $post_authors = NULL;
 
     $route = $this->routeMatch->getRouteObject();
 
@@ -116,7 +117,12 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
       $publishDate = strtotime($node->field_publish_date->first()->getValue()['value']);
       $dateFormatted = $this->dateFormatter->format($publishDate, '', 'c');
       $showReadTime = ($node->field_show_read_time->first()) ? $node->field_show_read_time->first()->getValue()['value'] : NULL;
-      $hideSharing = ($node->field_hide_sharing_links->first()) ? $node->field_hide_sharing_links->first()->getValue()['value'] : NULL;
+      $showSocialMediaSharingLinks = ($node->field_show_social_media_sharing->first()) ? $node->field_show_social_media_sharing->first()->getValue()['value'] : NULL;
+      $post_authors = [];
+      if ($author) {
+        $post_authors[] = ['title' => $author, 'url' => NULL, 'isLink' => FALSE];
+      }
+      $post_authors = array_merge($post_authors, $this->getPostAuthorLinks($node->field_authors));
     }
 
     return [
@@ -125,8 +131,35 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
       '#author' => $author,
       '#date_formatted' => $dateFormatted,
       '#show_read_time' => $showReadTime,
-      '#hide_sharing' => $hideSharing,
+      '#show_social_media_sharing_links' => $showSocialMediaSharingLinks,
+      '#post_authors' => $post_authors,
     ];
+  }
+
+  /**
+   * Get post author links to be rendered ourselves.
+   *
+   * @param array $authorReferences
+   *   The author references.
+   *
+   * @return array
+   *   The authors title and url.
+   */
+  protected function getPostAuthorLinks($authorReferences) {
+    $authors = [];
+
+    if ($authorReferences) {
+      foreach ($authorReferences as $authorReference) {
+        $author = $authorReference->entity;
+        $authors[] = [
+          'title' => $author->getTitle(),
+          'url' => $author->toUrl()->toString(),
+          'isLink' => TRUE,
+        ];
+      }
+    }
+    return $authors;
+
   }
 
 }

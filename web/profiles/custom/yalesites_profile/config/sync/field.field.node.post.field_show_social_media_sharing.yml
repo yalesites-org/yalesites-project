@@ -1,0 +1,23 @@
+uuid: b72c8d96-30c8-4898-92ab-811d8eff1e2e
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_show_social_media_sharing
+    - node.type.post
+id: node.post.field_show_social_media_sharing
+field_name: field_show_social_media_sharing
+entity_type: node
+bundle: post
+label: 'Show Social Media Sharing Links'
+description: ''
+required: false
+translatable: false
+default_value:
+  -
+    value: 0
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

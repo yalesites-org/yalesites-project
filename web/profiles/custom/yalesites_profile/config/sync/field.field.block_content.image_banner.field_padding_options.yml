@@ -1,0 +1,23 @@
+uuid: d16f724a-b9f0-4488-8c77-1454ca562ebe
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.image_banner
+    - field.storage.block_content.field_padding_options
+  module:
+    - options
+id: block_content.image_banner.field_padding_options
+field_name: field_padding_options
+entity_type: block_content
+bundle: image_banner
+label: 'Padding Options'
+description: 'Choose the padding configuration for this block. Each block may have a different default value depending on which Block you selected. Reference this resource on YaleSites block padding.'
+required: true
+translatable: true
+default_value:
+  -
+    value: no_padding
+default_value_callback: ''
+settings: {  }
+field_type: list_string

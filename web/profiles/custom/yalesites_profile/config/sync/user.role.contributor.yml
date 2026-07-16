@@ -28,6 +28,7 @@ dependencies:
     - block_content.type.quick_links
     - block_content.type.quote_callout
     - block_content.type.reference_card
+    - block_content.type.resource_view
     - block_content.type.tabs
     - block_content.type.text
     - block_content.type.tiles
@@ -36,10 +37,12 @@ dependencies:
     - block_content.type.view
     - block_content.type.webform
     - block_content.type.wrapped_image
+    - block_content.type.wrapped_text_callout
     - core.entity_view_display.node.event.default
     - core.entity_view_display.node.page.default
     - core.entity_view_display.node.post.default
     - core.entity_view_display.node.profile.default
+    - core.entity_view_display.node.resource.default
     - media.type.audio
     - media.type.background_video
     - media.type.document
@@ -50,21 +53,30 @@ dependencies:
     - node.type.page
     - node.type.post
     - node.type.profile
+    - node.type.resource
+    - taxonomy.vocabulary.academic_years
     - taxonomy.vocabulary.affiliation
+    - taxonomy.vocabulary.areas_of_study
     - taxonomy.vocabulary.audience
     - taxonomy.vocabulary.custom_vocab
+    - taxonomy.vocabulary.dcn_types
+    - taxonomy.vocabulary.discipline
     - taxonomy.vocabulary.event_category
+    - taxonomy.vocabulary.geographic_areas
     - taxonomy.vocabulary.page_category
     - taxonomy.vocabulary.post_category
+    - taxonomy.vocabulary.resource_category
     - taxonomy.vocabulary.tags
     - workflows.workflow.editorial
     - workflows.workflow.events
   module:
     - block_content
     - book
+    - coffee
     - content_moderation
     - contextual
     - editoria11y
+    - environment_indicator
     - file
     - layout_builder
     - media
@@ -88,8 +100,10 @@ weight: -8
 is_admin: null
 permissions:
   - 'access block library'
+  - 'access coffee'
   - 'access content overview'
   - 'access contextual links'
+  - 'access environment indicator'
   - 'access files overview'
   - 'access media overview'
   - 'access printer-friendly version'
@@ -108,10 +122,12 @@ permissions:
   - 'clone page content'
   - 'clone post content'
   - 'clone profile content'
+  - 'clone resource content'
   - 'configure editable event node layout overrides'
   - 'configure editable page node layout overrides'
   - 'configure editable post node layout overrides'
   - 'configure editable profile node layout overrides'
+  - 'configure editable resource node layout overrides'
   - 'create accordion block content'
   - 'create and edit custom blocks'
   - 'create audio block content'
@@ -148,14 +164,22 @@ permissions:
   - 'create quick_links block content'
   - 'create quote_callout block content'
   - 'create reference_card block content'
+  - 'create resource content'
+  - 'create resource_view block content'
   - 'create reusable blocks'
   - 'create tabs block content'
+  - 'create terms in academic_years'
   - 'create terms in affiliation'
+  - 'create terms in areas_of_study'
   - 'create terms in audience'
   - 'create terms in custom_vocab'
+  - 'create terms in dcn_types'
+  - 'create terms in discipline'
   - 'create terms in event_category'
+  - 'create terms in geographic_areas'
   - 'create terms in page_category'
   - 'create terms in post_category'
+  - 'create terms in resource_category'
   - 'create terms in tags'
   - 'create text block content'
   - 'create tiles block content'
@@ -166,6 +190,7 @@ permissions:
   - 'create view block content'
   - 'create webform block content'
   - 'create wrapped_image block content'
+  - 'create wrapped_text_callout block content'
   - 'delete any accordion block content'
   - 'delete any accordion block content revisions'
   - 'delete any audio block content'
@@ -223,6 +248,9 @@ permissions:
   - 'delete any quote_callout block content revisions'
   - 'delete any reference_card block content'
   - 'delete any reference_card block content revisions'
+  - 'delete any resource content'
+  - 'delete any resource_view block content'
+  - 'delete any resource_view block content revisions'
   - 'delete any tabs block content'
   - 'delete any tabs block content revisions'
   - 'delete any text block content'
@@ -240,17 +268,26 @@ permissions:
   - 'delete any webform submission'
   - 'delete any wrapped_image block content'
   - 'delete any wrapped_image block content revisions'
+  - 'delete any wrapped_text_callout block content'
+  - 'delete any wrapped_text_callout block content revisions'
   - 'delete own audio media'
   - 'delete own event content'
   - 'delete own page content'
   - 'delete own post content'
   - 'delete own profile content'
+  - 'delete own resource content'
+  - 'delete terms in academic_years'
   - 'delete terms in affiliation'
+  - 'delete terms in areas_of_study'
   - 'delete terms in audience'
   - 'delete terms in custom_vocab'
+  - 'delete terms in dcn_types'
+  - 'delete terms in discipline'
   - 'delete terms in event_category'
+  - 'delete terms in geographic_areas'
   - 'delete terms in page_category'
   - 'delete terms in post_category'
+  - 'delete terms in resource_category'
   - 'delete terms in tags'
   - 'edit any accordion block content'
   - 'edit any audio block content'
@@ -286,6 +323,8 @@ permissions:
   - 'edit any quick_links block content'
   - 'edit any quote_callout block content'
   - 'edit any reference_card block content'
+  - 'edit any resource content'
+  - 'edit any resource_view block content'
   - 'edit any tabs block content'
   - 'edit any text block content'
   - 'edit any tiles block content'
@@ -296,6 +335,7 @@ permissions:
   - 'edit any webform block content'
   - 'edit any webform submission'
   - 'edit any wrapped_image block content'
+  - 'edit any wrapped_text_callout block content'
   - 'edit own audio media'
   - 'edit own background_video media'
   - 'edit own document media'
@@ -305,16 +345,25 @@ permissions:
   - 'edit own page content'
   - 'edit own post content'
   - 'edit own profile content'
+  - 'edit own resource content'
   - 'edit own video media'
   - 'edit own webform submission'
+  - 'edit terms in academic_years'
   - 'edit terms in affiliation'
+  - 'edit terms in areas_of_study'
   - 'edit terms in audience'
   - 'edit terms in custom_vocab'
+  - 'edit terms in dcn_types'
+  - 'edit terms in discipline'
   - 'edit terms in event_category'
+  - 'edit terms in geographic_areas'
   - 'edit terms in page_category'
   - 'edit terms in post_category'
+  - 'edit terms in resource_category'
   - 'edit terms in tags'
+  - 'manage editoria11y results'
   - 'mark as hidden in editoria11y'
+  - 'mark as ok in editoria11y'
   - 'override all sticky option'
   - 'override post authored on option'
   - 'revert all revisions'
@@ -344,6 +393,7 @@ permissions:
   - 'revert any quick_links block content revisions'
   - 'revert any quote_callout block content revisions'
   - 'revert any reference_card block content revisions'
+  - 'revert any resource_view block content revisions'
   - 'revert any tabs block content revisions'
   - 'revert any text block content revisions'
   - 'revert any tiles block content revisions'
@@ -352,10 +402,12 @@ permissions:
   - 'revert any view block content revisions'
   - 'revert any webform block content revisions'
   - 'revert any wrapped_image block content revisions'
+  - 'revert any wrapped_text_callout block content revisions'
   - 'revert event revisions'
   - 'revert page revisions'
   - 'revert post revisions'
   - 'revert profile revisions'
+  - 'revert resource revisions'
   - 'update any media'
   - 'update media'
   - 'use editorial transition create_new_draft'
@@ -389,6 +441,7 @@ permissions:
   - 'view any quick_links block content history'
   - 'view any quote_callout block content history'
   - 'view any reference_card block content history'
+  - 'view any resource_view block content history'
   - 'view any tabs block content history'
   - 'view any text block content history'
   - 'view any tiles block content history'
@@ -399,6 +452,7 @@ permissions:
   - 'view any webform block content history'
   - 'view any webform submission'
   - 'view any wrapped_image block content history'
+  - 'view any wrapped_text_callout block content history'
   - 'view editoria11y checker'
   - 'view event revisions'
   - 'view latest version'
@@ -408,6 +462,7 @@ permissions:
   - 'view page revisions'
   - 'view post revisions'
   - 'view profile revisions'
+  - 'view resource revisions'
   - 'view the administration theme'
   - 'view unpublished paragraphs'
   - 'view vocabulary labels'

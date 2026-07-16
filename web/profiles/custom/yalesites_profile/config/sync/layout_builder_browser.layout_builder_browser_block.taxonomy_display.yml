@@ -4,8 +4,8 @@ status: true
 dependencies: {  }
 id: taxonomy_display
 block_id: ys_taxonomy_display_block
-category: advanced
+category: dynamic_content
 label: 'Taxonomy Display'
 image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/taxonomy-display.svg
 image_alt: ''
-weight: -100
+weight: -14

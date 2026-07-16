@@ -1,0 +1,11 @@
+uuid: 0bb59ae3-abb6-4862-a935-e2b37de6a8cd
+langcode: en
+status: true
+dependencies: {  }
+id: resource_view
+block_id: 'inline_block:resource_view'
+category: dynamic_content
+label: 'Resource View'
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/resource-view.svg
+image_alt: ''
+weight: null

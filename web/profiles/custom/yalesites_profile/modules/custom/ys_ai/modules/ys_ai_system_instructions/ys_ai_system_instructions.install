@@ -1,0 +1,71 @@
+<?php
+
+/**
+ * @file
+ * Installation file for YS AI System Instructions module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function ys_ai_system_instructions_schema() {
+  $schema['ys_ai_system_instructions'] = [
+    'description' => 'Stores system instructions for YaleSites AI chat with versioning.',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Primary key.',
+      ],
+      'instructions' => [
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+        'description' => 'The system instructions content.',
+      ],
+      'version' => [
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'Version number of the instructions.',
+      ],
+      'created_by' => [
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'User ID who created this version.',
+      ],
+      'created_date' => [
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'Unix timestamp when this version was created.',
+      ],
+      'is_active' => [
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Whether this version is currently active.',
+      ],
+      'notes' => [
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => FALSE,
+        'description' => 'Optional notes about this version.',
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'version' => ['version'],
+      'created_by' => ['created_by'],
+      'created_date' => ['created_date'],
+      'is_active' => ['is_active'],
+    ],
+    'foreign keys' => [
+      'created_by' => [
+        'table' => 'users',
+        'columns' => ['created_by' => 'uid'],
+      ],
+    ],
+  ];
+
+  return $schema;
+}

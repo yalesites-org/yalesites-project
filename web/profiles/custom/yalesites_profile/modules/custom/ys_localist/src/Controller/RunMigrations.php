@@ -10,6 +10,7 @@ use Drupal\Core\Url;
 use Drupal\ys_localist\LocalistManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Runs Localist migrations on request.
@@ -38,16 +39,25 @@ class RunMigrations extends ControllerBase implements ContainerInjectionInterfac
   protected $messenger;
 
   /**
+   * The request stack.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  protected $requestStack;
+
+  /**
    * Constructs a new RunMigrations object.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
     LocalistManager $localist_manager,
     MessengerInterface $messenger,
+    RequestStack $request_stack,
   ) {
     $this->localistConfig = $config_factory->get('ys_localist.settings');
     $this->localistManager = $localist_manager;
     $this->messenger = $messenger;
+    $this->requestStack = $request_stack;
   }
 
   /**
@@ -55,10 +65,11 @@ class RunMigrations extends ControllerBase implements ContainerInjectionInterfac
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('config.factory'),
-      $container->get('ys_localist.manager'),
-      $container->get('messenger'),
-    );
+          $container->get('config.factory'),
+          $container->get('ys_localist.manager'),
+          $container->get('messenger'),
+          $container->get('request_stack')
+      );
   }
 
   /**
@@ -80,7 +91,7 @@ class RunMigrations extends ControllerBase implements ContainerInjectionInterfac
       $this->messenger()->addError($message);
     }
 
-    $redirectUrl = Url::fromRoute('ys_localist.settings')->toString();
+    $redirectUrl = $this->getRedirectUrl();
     $response = new RedirectResponse($redirectUrl);
     return $response;
 
@@ -107,10 +118,26 @@ class RunMigrations extends ControllerBase implements ContainerInjectionInterfac
       $this->messenger()->addError($message);
     }
 
-    $redirectUrl = Url::fromRoute('ys_localist.settings')->toString();
+    $redirectUrl = $this->getRedirectUrl();
     $response = new RedirectResponse($redirectUrl);
     return $response;
 
+  }
+
+  /**
+   * Retrieves the URL to redirect to after the migration is run.
+   *
+   * @return string
+   *   The URL to redirect to.
+   */
+  protected function getRedirectUrl(): string {
+    $referer = $this->requestStack->getCurrentRequest()->server->get('HTTP_REFERER');
+
+    if ($referer == NULL) {
+      $referer = Url::fromRoute('<front>')->toString();
+    }
+
+    return $referer;
   }
 
 }

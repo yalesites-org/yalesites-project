@@ -6,14 +6,6 @@ ys_core.admin_yalesites:
     _title: 'YaleSites'
   requirements:
     _permission: 'yalesites manage settings'
-# Creates a new section in the admin menu for integrations
-ys_core.admin_yalesites_integrations:
-  path: '/admin/yalesites/integrations'
-  defaults:
-    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
-    _title: 'Integrations'
-  requirements:
-    _permission: 'yalesites manage settings'
 # Sitewide settings form.
 ys_core.admin_site_settings:
   path: '/admin/yalesites/settings'
@@ -54,6 +46,23 @@ ys_core.admin_views_settings:
     _title: 'Views Settings'
   requirements:
     _permission: 'yalesites manage settings'
+# Dashboard settings form.
+ys_core.admin_dashboard_settings:
+  path: '/admin/yalesites/dashboard-settings'
+  defaults:
+    _form: '\Drupal\ys_core\Form\DashboardSettingsForm'
+    _title: 'Dashboard Settings'
+  requirements:
+    _permission: 'yalesites manage settings'
+# JSON feed of announcement posts. Returns 404 unless this site is configured
+# as an announcements source (ys_core.dashboard_settings:announcements_source_enabled).
+ys_core.dashboard_announcements_feed:
+  path: '/api/dashboard-announcements'
+  defaults:
+    _controller: '\Drupal\ys_core\Controller\AnnouncementsFeedController::feed'
+  requirements:
+    _access: 'TRUE'
+  methods: [GET]
 # Dynamic search page.
 ys_core.search_page:
   path: '/search'
@@ -62,3 +71,12 @@ ys_core.search_page:
     _controller: '\Drupal\ys_core\Controller\SearchController::searchPage'
   requirements:
     _access: 'TRUE'
+# Facts and Figures icon preview endpoint.
+ys_core.facts_icon_preview:
+  path: '/admin/ys_core/facts-icon-preview'
+  defaults:
+    _controller: '\Drupal\ys_core\Controller\FactsIconPreviewController::renderIcon'
+  requirements:
+    _permission: 'access content'
+  methods: [GET]
+

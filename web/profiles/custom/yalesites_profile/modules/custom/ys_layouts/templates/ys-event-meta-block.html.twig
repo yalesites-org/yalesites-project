@@ -20,16 +20,22 @@
     postal_code
     latitude
     longitude
+  room - The room number or name for the event location
   event_types - an array of event types with the following keys:
     name
     url - this links to the Drupal taxonomy URL which we may or may not use in v1.
   description - a WYSIWYG description
   event_meta__cta_primary__href - An external event URL
   event_meta__cta_primary__content - External event URL text
+  event_meta__with_calendar - Whether the add to calendar link should show
 
 #}
+
+{% set event_meta__with_calendar = TRUE %}
+{% if (event_source == "Campus Groups") %}
+  {% set event_meta__with_calendar = FALSE %}
+{% endif %}
 
 {# All TWIG variables are named appropriately and pass through to this template #}
 {{ attach_library('atomic/event-localist') }}
 {% include '@molecules/meta/event-meta/yds-event-meta-localist.twig' %}
-

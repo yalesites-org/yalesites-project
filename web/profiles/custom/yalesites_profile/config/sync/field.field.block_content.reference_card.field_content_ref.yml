@@ -6,8 +6,10 @@ dependencies:
     - block_content.type.reference_card
     - field.storage.block_content.field_content_ref
     - node.type.event
+    - node.type.page
     - node.type.post
     - node.type.profile
+    - node.type.resource
 id: block_content.reference_card.field_content_ref
 field_name: field_content_ref
 entity_type: block_content
@@ -19,15 +21,17 @@ translatable: false
 default_value: {  }
 default_value_callback: ''
 settings:
-  handler: 'default:node'
+  handler: cas_aware
   handler_settings:
     target_bundles:
       event: event
+      page: page
       post: post
       profile: profile
+      resource: resource
     sort:
       field: _none
       direction: ASC
-    auto_create: false
+    auto_create: 0
     auto_create_bundle: event
 field_type: entity_reference

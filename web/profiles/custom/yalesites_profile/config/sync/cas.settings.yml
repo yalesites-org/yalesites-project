@@ -10,21 +10,20 @@ server:
   hostname: secure.its.yale.edu
   port: 443
   path: /cas
-  verify: 0
-  cert: ''
+  verify: 1
+  cert: /etc/pki/tls/certs/ca-bundle.crt
 gateway:
   enabled: false
-  recheck_time: -1
+  recheck_time: 720
   paths:
-    id: request_path
+    id: null
     negate: false
-    pages: ''
-  method: null
-  check_frequency: -2
+    pages: '<front>'
+  method: client_side
 forced_login:
   enabled: false
   paths:
-    id: request_path
+    id: null
     negate: false
     pages: ''
 user_accounts:
@@ -33,7 +32,7 @@ user_accounts:
   auto_register_follow_registration_policy: false
   email_assignment_strategy: 0
   email_hostname: noreply.yale.edu
-  email_attribute: mail
+  email_attribute: ''
   auto_assigned_roles: {  }
   restrict_password_management: true
   restrict_email_management: true

@@ -1,0 +1,323 @@
+/**
+ * @file
+ * Component Color Picker widget styles.
+ */
+
+.palette-selector {
+  position: relative;
+  display: inline-block;
+}
+
+/* Hide any palette-option divs that are outside the palette-visual-container */
+.component-color-picker-wrapper > .palette-option,
+.component-color-picker-wrapper .form-item > .palette-option,
+.component-color-picker-wrapper .js-form-item > .palette-option {
+  display: none !important;
+}
+
+.palette-select-hidden {
+  position: absolute !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 0 !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  clip: rect(0, 0, 0, 0) !important;
+  clip-path: inset(50%) !important;
+}
+
+/* Remove space from form item wrapper when it contains hidden select */
+.component-color-picker-wrapper .form-type--select,
+.component-color-picker-wrapper .js-form-item {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.component-color-picker-wrapper .form-type--select .form-select {
+  margin: 0;
+}
+
+.palette-visual-container {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.5rem;
+  cursor: pointer;
+  position: relative;
+}
+
+.expand-indicator:hover {
+  background: rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+}
+
+/* Dark mode support for expand indicator */
+[data-gin-accent] .expand-indicator,
+.gin--dark-mode .expand-indicator,
+body.gin--dark-mode .expand-indicator {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+[data-gin-accent] .expand-indicator:hover,
+.gin--dark-mode .expand-indicator:hover,
+body.gin--dark-mode .expand-indicator:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+@media (prefers-color-scheme: dark) {
+  .expand-indicator {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .expand-indicator:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.9);
+  }
+}
+
+.expand-indicator:active {
+  transform: translateY(0);
+}
+
+.expand-indicator svg {
+  width: 12px;
+  height: 12px;
+}
+
+.palette-selector.expanded .expand-indicator {
+  transform: rotate(180deg);
+}
+
+.palette-selector.expanded .expand-indicator:hover {
+  transform: rotate(180deg) translateY(1px);
+}
+
+/* All options are always visible */
+.palette-option {
+  opacity: 1;
+  max-width: 200px;
+  width: auto;
+  min-width: auto;
+  overflow: visible;
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+  flex-basis: auto;
+  position: relative;
+  visibility: visible;
+  height: auto;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.palette-option:last-child {
+  margin-right: 0;
+}
+
+/* Selected state styling */
+.palette-option[data-selected="true"] {
+  background-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 2px solid rgba(0, 0, 0, 0.4);
+  transform: scale(1.02);
+  color: #000;
+}
+
+.palette-option[data-selected="true"] .palette-circle {
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.3), 0 3px 10px rgba(0, 0, 0, 0.25);
+  transform: scale(1.1);
+}
+
+/* Selected state text - light mode only */
+:not(.gin--dark-mode) .palette-option[data-selected="true"] .palette-token-name,
+body:not(.gin--dark-mode) .palette-option[data-selected="true"] .palette-token-name {
+  font-weight: 600;
+  color: #000;
+}
+
+:not(.gin--dark-mode) .palette-option[data-selected="true"] .palette-hex-code,
+body:not(.gin--dark-mode) .palette-option[data-selected="true"] .palette-hex-code {
+  font-weight: 600;
+  color: #333;
+}
+
+/* Dark mode support for selected state */
+.gin--dark-mode .palette-option[data-selected="true"],
+body.gin--dark-mode .palette-option[data-selected="true"] {
+  background-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+}
+
+.gin--dark-mode .palette-option[data-selected="true"] .palette-circle,
+body.gin--dark-mode .palette-option[data-selected="true"] .palette-circle {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4), 0 3px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* Selected state text - dark mode */
+[data-gin-accent] .palette-option[data-selected="true"] .palette-token-name,
+.gin--dark-mode .palette-option[data-selected="true"] .palette-token-name,
+body.gin--dark-mode .palette-option[data-selected="true"] .palette-token-name,
+.gin--dark-mode .component-color-picker-wrapper .palette-option[data-selected="true"] .palette-token-name,
+body.gin--dark-mode .component-color-picker-wrapper .palette-option[data-selected="true"] .palette-token-name,
+[data-gin-accent] .palette-option[data-selected="true"] .palette-hex-code,
+.gin--dark-mode .palette-option[data-selected="true"] .palette-hex-code,
+body.gin--dark-mode .palette-option[data-selected="true"] .palette-hex-code,
+.gin--dark-mode .component-color-picker-wrapper .palette-option[data-selected="true"] .palette-hex-code,
+body.gin--dark-mode .component-color-picker-wrapper .palette-option[data-selected="true"] .palette-hex-code {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  .palette-option[data-selected="true"] {
+    background-color: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.6);
+  }
+
+  .palette-option[data-selected="true"] .palette-circle {
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4), 0 3px 10px rgba(0, 0, 0, 0.4);
+  }
+
+  .component-color-picker-wrapper .palette-option[data-selected="true"] .palette-token-name,
+  .component-color-picker-wrapper .palette-option[data-selected="true"] .palette-hex-code {
+    font-weight: 600;
+    color: #ffffff;
+  }
+}
+
+.palette-color-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 4px;
+  transition: transform 0.15s ease, width 0.15s ease, max-width 0.15s ease, padding 0.15s ease;
+  white-space: nowrap;
+  width: auto;
+  max-width: none;
+  min-width: auto;
+  overflow: visible;
+}
+
+.palette-circle-container {
+  display: block;
+}
+
+.palette-option:hover .palette-color-wrapper {
+  transform: translateY(-2px);
+}
+
+.palette-color-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  text-align: center;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.palette-token-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #111;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.palette-hex-code {
+  font-size: 0.72rem;
+  font-family: monospace;
+  color: #222;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* Color info is always visible */
+.palette-option .palette-color-info {
+  opacity: 1;
+}
+
+/* Dark mode adjustments for color info */
+.gin--dark-mode .palette-token-name,
+body.gin--dark-mode .palette-token-name {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.gin--dark-mode .palette-hex-code,
+body.gin--dark-mode .palette-hex-code {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+@media (prefers-color-scheme: dark) {
+  .palette-token-name {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .palette-hex-code {
+    color: rgba(255, 255, 255, 0.85);
+  }
+}
+
+.palette-circle {
+  display: inline-block;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: transform 0.15s ease;
+  /* Background color is applied via JavaScript from data-color attribute */
+}
+
+.palette-option:hover .palette-circle {
+  transform: scale(1.1);
+}
+
+.palette-option[data-selected="true"] .palette-circle {
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Dark mode adjustments for palette circles */
+[data-gin-accent] .palette-circle,
+.gin--dark-mode .palette-circle,
+body.gin--dark-mode .palette-circle {
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+[data-gin-accent] .palette-option[data-selected="true"] .palette-circle,
+.gin--dark-mode .palette-option[data-selected="true"] .palette-circle,
+body.gin--dark-mode .palette-option[data-selected="true"] .palette-circle {
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  .palette-circle {
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  }
+
+  .palette-option[data-selected="true"] .palette-circle {
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+  }
+}
+

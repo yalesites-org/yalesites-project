@@ -1,0 +1,11 @@
+uuid: da07f57a-2a43-4970-b0ac-98cf9bfff7e6
+langcode: en
+status: true
+dependencies:
+  module:
+    - media
+id: media.resource_thumbnail
+label: 'Resource Thumbnail'
+description: ''
+targetEntityType: media
+cache: true

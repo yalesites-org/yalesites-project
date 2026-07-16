@@ -6,7 +6,6 @@ global:
 tokens:
   css:
     theme:
-      node_modules/@yalesites-org/tokens/build/tokens.css: {}
       css/gin-custom.css: {}
 favicon_preview:
   css:

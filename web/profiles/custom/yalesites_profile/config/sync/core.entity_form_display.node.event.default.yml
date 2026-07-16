@@ -51,6 +51,7 @@ dependencies:
     - markup
     - maxlength
     - media_library
+    - media_library_edit
     - metatag
     - path
     - smart_date
@@ -148,7 +149,7 @@ third_party_settings:
         id: ''
         formatter: closed
         description: ''
-        required_fields: true
+        required_fields: false
     group_classifications:
       children:
         - field_tags
@@ -492,7 +493,10 @@ content:
     region: content
     settings:
       media_types: {  }
-    third_party_settings: {  }
+    third_party_settings:
+      media_library_edit:
+        show_edit: true
+        edit_form_mode: default
   field_teaser_text:
     type: text_textarea
     weight: 13

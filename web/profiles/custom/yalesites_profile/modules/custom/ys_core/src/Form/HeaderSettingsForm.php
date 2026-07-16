@@ -171,11 +171,6 @@ class HeaderSettingsForm extends ConfigFormBase {
       ],
     ];
 
-    $form['protected_content_container'] = [
-      '#type' => 'details',
-      '#title' => $this->t('Protected Content'),
-    ];
-
     $form['nav_position_container'] = [
       '#type' => 'details',
       '#title' => $this->t('Navigation Position'),
@@ -281,14 +276,7 @@ class HeaderSettingsForm extends ConfigFormBase {
 
     }
 
-    $form['protected_content_container']['enable_cas_menu_links'] = [
-      '#type' => 'checkbox',
-      '#description' => $this->t('When enabled, anonymous users can see links that point to CAS-only content in the menus. The user will still have to login to view these items.'),
-      '#title' => $this->t('Enable CAS menu items'),
-      '#default_value' => $headerConfig->get('enable_cas_menu_links'),
-    ];
-
-    $form['protected_content_container']['enable_cas_search'] = [
+    $form['site_search_container']['enable_cas_search'] = [
       '#type' => 'checkbox',
       '#description' => $this->t('When enabled, anonymous users can see titles only of CAS-only content in search. The user will still have to login to view these items.'),
       '#title' => $this->t('Enable CAS search'),
@@ -380,6 +368,26 @@ class HeaderSettingsForm extends ConfigFormBase {
       ],
     ];
 
+    $form['site_search_container']['enable_all_yale_search'] = [
+      '#type' => 'checkbox',
+      '#description' => $this->t('When enabled, users will see a tab on the search results page to view results across all Yale sites. Powered by Google Programmable Search Engine.'),
+      '#title' => $this->t('Enable All Yale Search'),
+      '#default_value' => $headerConfig->get('search.enable_all_yale_search'),
+      '#states' => [
+        'invisible' => [
+          [
+            ':input[name="enable_search_form"]' => ['checked' => FALSE],
+          ],
+          'or',
+          [
+            ':input[name="header_variation"]' => [
+              'value' => 'focus',
+            ],
+          ],
+        ],
+      ],
+    ];
+
     $form['full_screen_homepage_image_container']['focus_header_image'] = [
       '#type' => 'media_library',
       '#allowed_bundles' => ['image'],
@@ -417,16 +425,21 @@ class HeaderSettingsForm extends ConfigFormBase {
     // Header settings config.
     $headerConfig = $this->config('ys_core.header_settings');
 
-    // Handle the filesystem if needed.
-    $this->ysMediaManager->handleMediaFilesystem(
-      $form_state->getValue('site_name_image'),
-      $headerConfig->get('site_name_image')
-    );
-
     $headerConfig->set('header_variation', $form_state->getValue('header_variation'));
-    $headerConfig->set('site_name_image', $form_state->getValue('site_name_image'));
-    $headerConfig->set('site_wide_branding_name', $form_state->getValue('site_wide_branding_name'));
-    $headerConfig->set('site_wide_branding_link', $form_state->getValue('site_wide_branding_link'));
+
+    // Only platform admins see (and may change) these fields; skip saving them
+    // for other roles to prevent overwriting existing values with NULL.
+    if (ys_core_allow_secret_items($this->currentUserSession)) {
+      // Handle the filesystem if needed.
+      $this->ysMediaManager->handleMediaFilesystem(
+        $form_state->getValue('site_name_image'),
+        $headerConfig->get('site_name_image')
+      );
+
+      $headerConfig->set('site_name_image', $form_state->getValue('site_name_image'));
+      $headerConfig->set('site_wide_branding_name', $form_state->getValue('site_wide_branding_name'));
+      $headerConfig->set('site_wide_branding_link', $form_state->getValue('site_wide_branding_link'));
+    }
     $headerConfig->set('nav_position', $form_state->getValue('nav_position'));
     $headerConfig->set('dropdown_button_title', $form_state->getValue('dropdown_button_title'));
     $headerConfig->set('cta_content', $form_state->getValue('cta_content'));
@@ -438,7 +451,12 @@ class HeaderSettingsForm extends ConfigFormBase {
     else {
       $headerConfig->set('search.enable_cas_search', 0);
     }
-    $headerConfig->set('enable_cas_menu_links', $form_state->getValue('enable_cas_menu_links'));
+    if ($form_state->getValue('enable_search_form') && $form_state->getValue('enable_all_yale_search')) {
+      $headerConfig->set('search.enable_all_yale_search', $form_state->getValue('enable_all_yale_search'));
+    }
+    else {
+      $headerConfig->set('search.enable_all_yale_search', 0);
+    }
     $headerConfig->set('focus_header_image', $form_state->getValue('focus_header_image'));
 
     $headerConfig->save();

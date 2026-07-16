@@ -36,8 +36,6 @@ settings:
   plugins:
     ckeditor5_alignment:
       enabled_alignments:
-        - center
-        - justify
         - left
         - right
     ckeditor5_codeBlock:
@@ -121,15 +119,18 @@ settings:
         - '<blockquote cite>'
         - '<ul type>'
         - '<ol type>'
-        - '<h2 id>'
-        - '<h3 id>'
-        - '<h4 id>'
-        - '<h5 id>'
-        - '<h6 id>'
-        - '<a hreflang title>'
+        - '<h2 id aria-level>'
+        - '<h3 id aria-level>'
+        - '<h4 id aria-level>'
+        - '<h5 id aria-level>'
+        - '<h6 id aria-level>'
+        - '<a hreflang>'
     editor_advanced_link_link:
       enabled_attributes:
+        - class
+        - id
         - target
+        - title
     linkit_extension:
       linkit_enabled: true
       linkit_profile: default

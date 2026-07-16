@@ -10,9 +10,13 @@ dependencies:
     - field.field.block_content.grand_hero.field_link
     - field.field.block_content.grand_hero.field_link_two
     - field.field.block_content.grand_hero.field_media
+    - field.field.block_content.grand_hero.field_overlay_png
+    - field.field.block_content.grand_hero.field_padding_options
+    - field.field.block_content.grand_hero.field_replace_heading_with_image
     - field.field.block_content.grand_hero.field_style_color
     - field.field.block_content.grand_hero.field_style_position
     - field.field.block_content.grand_hero.field_style_variation
+    - field.field.block_content.grand_hero.field_style_width
     - field.field.block_content.grand_hero.field_text
   module:
     - allowed_formats
@@ -22,6 +26,7 @@ dependencies:
     - media_library
     - media_library_edit
     - text
+    - ys_themes
 id: block_content.grand_hero.default
 targetEntityType: block_content
 bundle: grand_hero
@@ -29,7 +34,7 @@ mode: default
 content:
   field_heading:
     type: text_textfield
-    weight: 3
+    weight: 4
     region: content
     settings:
       size: 60
@@ -44,7 +49,7 @@ content:
         maxlength_js_enforce: false
   field_heading_level:
     type: options_select
-    weight: 9
+    weight: 11
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -56,7 +61,7 @@ content:
     third_party_settings: {  }
   field_link:
     type: linkit
-    weight: 6
+    weight: 8
     region: content
     settings:
       placeholder_url: ''
@@ -66,7 +71,7 @@ content:
     third_party_settings: {  }
   field_link_two:
     type: linkit
-    weight: 7
+    weight: 9
     region: content
     settings:
       placeholder_url: ''
@@ -84,28 +89,57 @@ content:
         - background_video
     third_party_settings:
       media_library_edit:
-        show_edit: '1'
-  field_style_color:
+        show_edit: true
+  field_overlay_png:
+    type: media_library_widget
+    weight: 13
+    region: content
+    settings:
+      media_types: {  }
+    third_party_settings:
+      media_library_edit:
+        show_edit: true
+        edit_form_mode: default
+  field_padding_options:
     type: options_select
-    weight: 3
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_replace_heading_with_image:
+    type: boolean_checkbox
+    weight: 12
+    region: content
+    settings:
+      display_label: true
+    third_party_settings: {  }
+  field_style_color:
+    type: component_color_picker
+    weight: 5
     region: content
     settings: {  }
     third_party_settings: {  }
   field_style_position:
     type: options_select
-    weight: 8
+    weight: 10
     region: content
     settings: {  }
     third_party_settings: {  }
   field_style_variation:
     type: options_select
-    weight: 5
+    weight: 7
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_style_width:
+    type: options_select
+    weight: 8
     region: content
     settings: {  }
     third_party_settings: {  }
   field_text:
     type: text_textarea
-    weight: 4
+    weight: 6
     region: content
     settings:
       rows: 3

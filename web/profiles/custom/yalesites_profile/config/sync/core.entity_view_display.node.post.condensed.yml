@@ -6,6 +6,7 @@ dependencies:
     - core.entity_view_mode.node.condensed
     - field.field.node.post.field_audience
     - field.field.node.post.field_author
+    - field.field.node.post.field_authors
     - field.field.node.post.field_category
     - field.field.node.post.field_custom_vocab
     - field.field.node.post.field_external_source
@@ -14,6 +15,7 @@ dependencies:
     - field.field.node.post.field_metatags
     - field.field.node.post.field_publish_date
     - field.field.node.post.field_show_read_time
+    - field.field.node.post.field_show_social_media_sharing
     - field.field.node.post.field_tags
     - field.field.node.post.field_teaser_lead_in
     - field.field.node.post.field_teaser_media
@@ -94,14 +96,16 @@ content:
     region: content
 hidden:
   addtoany: true
-  field_author: true
-  field_category: true
-  field_hide_sharing_links: true
   field_audience: true
+  field_author: true
+  field_authors: true
+  field_category: true
   field_custom_vocab: true
+  field_hide_sharing_links: true
   field_login_required: true
   field_metatags: true
   field_show_read_time: true
+  field_show_social_media_sharing: true
   field_tags: true
   field_teaser_media: true
   field_teaser_text: true

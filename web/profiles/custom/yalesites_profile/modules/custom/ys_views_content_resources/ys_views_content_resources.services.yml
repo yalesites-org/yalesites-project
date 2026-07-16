@@ -1,0 +1,5 @@
+services:
+  # Service for managing views content_resources plugins.
+  ys_views_content_resources.views_content_resources_manager:
+    class: Drupal\ys_views_content_resources\ViewsContentResourcesManager
+    arguments: ['@entity_type.manager', '@entity_display.repository', '@current_route_match', '@cache_tags.invalidator']

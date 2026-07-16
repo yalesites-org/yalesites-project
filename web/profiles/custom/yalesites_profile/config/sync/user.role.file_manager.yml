@@ -1,0 +1,27 @@
+uuid: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+langcode: en
+status: true
+dependencies:
+  config:
+    - media.type.background_video
+    - media.type.document
+    - media.type.image
+  module:
+    - file
+    - media
+    - ys_file_management
+id: file_manager
+label: 'File Manager'
+weight: -5
+is_admin: null
+permissions:
+  - 'access files overview'
+  - 'access media overview'
+  - 'delete any background_video media'
+  - 'delete any document media'
+  - 'delete any image media'
+  - 'delete media'
+  - 'manage media files'
+  - 'update any media'
+  - 'update media'
+  - 'view all media revisions'

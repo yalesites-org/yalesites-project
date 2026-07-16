@@ -1,6 +1,6 @@
-((Drupal) => {
+((Drupal, once, $) => {
   Drupal.behaviors.ysViewsBasic = {
-    attach: function () { // eslint-disable-line
+    attach: function (context) { // eslint-disable-line
       // Function to handle radio input checked behavior based on radio element selection.
       function handleRadioInputs(radioGroup) {
         // Get references to the radio input elements within the specified group
@@ -31,7 +31,7 @@
         'input[name="block_form[group_user_selection][entity_and_view_mode][view_mode]"]',
         'input[name="view_mode"]',
         'input[name="settings[block_form][group_user_selection][filter_and_sort][term_operator]"',
-        'input[name="block_form[group_user_selection][filter_and_sort][term_operator]"',
+        'input[name="block_form[group_user_selection][filter_and_sort][term_operator]"]',
         'input[name="term_operator"]',
         'input[name="settings[block_form][group_user_selection][entity_specific][event_time_period]"]',
         'input[name="block_form[group_user_selection][entity_specific][event_time_period]"]',
@@ -97,6 +97,27 @@
       entityTypes.forEach(input => input.addEventListener('change', updateVisibility));
       viewModes.forEach(input => input.addEventListener('change', updateVisibility));
       updateVisibility();
+
+      // Handle Enter key submission in event calendar filter form search field.
+      const searchFields = once(
+        'event-calendar-search-enter',
+        'form#event-calendar-filter-form input[name="search"], form#event-calendar-filter-form .form-item-search input[type="text"]',
+        context
+      );
+
+      searchFields.forEach((searchField) => {
+        searchField.addEventListener('keydown', function(event) {
+          if (event.key === 'Enter' || event.keyCode === 13) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            const form = this.closest('form');
+            const submitButton = form?.querySelector('input[type="submit"], button[type="submit"], .form-submit, .button--primary');
+            if (submitButton) {
+              $(submitButton).trigger('mousedown').trigger('click');
+            }
+          }
+        });
+      });
     },
   };
-})(Drupal);
+})(Drupal, once, jQuery);

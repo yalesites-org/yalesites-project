@@ -1,0 +1,17 @@
+diff --git a/src/Entity/QuickNodeCloneEntityFormBuilder.php b/src/Entity/QuickNodeCloneEntityFormBuilder.php
+index 7cf5bf7..ccf8e2a 100755
+--- a/src/Entity/QuickNodeCloneEntityFormBuilder.php
++++ b/src/Entity/QuickNodeCloneEntityFormBuilder.php
+@@ -162,6 +162,12 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
+         }
+       }
+
++      // Unset book field to prevent duplicate entry errors.
++      // Book hierarchy shouldn't automatically clone as clones should be independent.
++      if ($translated_node->hasField('book')) {
++        unset($translated_node->book);
++      }
++
+       $prepend_text = "";
+       $title_prepend_config = $this->getConfigSettings('text_to_prepend_to_title');
+       if (!empty($title_prepend_config)) {

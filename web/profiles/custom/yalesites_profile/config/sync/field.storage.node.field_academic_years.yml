@@ -1,0 +1,20 @@
+uuid: 2a33a5b0-402d-402f-8fe5-8fbe5bb5b713
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+    - taxonomy
+id: node.field_academic_years
+field_name: field_academic_years
+entity_type: node
+type: entity_reference
+settings:
+  target_type: taxonomy_term
+module: core
+locked: false
+cardinality: -1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

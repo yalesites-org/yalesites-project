@@ -1,10 +1,13 @@
-# Editorial dashboard added to 'Content' section of admin menu.
+# Editorial dashboard, surfaced as a top-level admin menu item.
 ys_core.admin_dashboard:
   description: "Editorial dashboard"
-  parent: system.admin_content
+  parent: system.admin
   route_name: ys_core.admin_dashboard
   title: "Dashboard"
-  weight: -20
+  weight: 60
+  options:
+    attributes:
+      class: ['toolbar-icon', 'toolbar-icon-dashboard', 'dashboard-menu-item']
 # Creates new section in the admin menu for YaleSites settings.
 ys_core.admin_yalesites:
   description: "Administer YaleSites settings."
@@ -47,6 +50,20 @@ ys_core.admin_views_settings:
   route_name: ys_core.admin_views_settings
   title: "Views Settings"
   weight: 25
+# Dashboard settings form.
+ys_core.admin_dashboard_settings:
+  description: "Editorial dashboard settings, including the announcements feed."
+  parent: ys_core.admin_yalesites
+  route_name: ys_core.admin_dashboard_settings
+  title: "Dashboard Settings"
+  weight: 27
+# Google Tag settings form.
+ys_core.admin_google_tag_settings:
+  description: "Google Tag settings."
+  parent: ys_core.admin_yalesites
+  route_name: entity.google_tag_container.single_form
+  title: "Google Tag Settings"
+  weight: 30
 # Menu interface
 ys_core.menu_interface:
   description: "Manage menus"
@@ -54,13 +71,6 @@ ys_core.menu_interface:
   route_name: entity.menu.collection
   title: Manage Menus
   weight: 20
-# Create a new section for integrations
-ys_core.admin_yalesites_integrations:
-  description: "YaleSites integrations with other systems."
-  parent: ys_core.admin_yalesites
-  route_name: ys_core.admin_yalesites_integrations
-  title: "Integrations"
-  weight: 30
 # main menu edit form.
 ys_core.menu_main_edit:
   description: "Manage main navigation"
@@ -141,6 +151,54 @@ ys_core.taxonomy_interface_audience:
   title: Audience
   route_parameters:
     taxonomy_vocabulary: "audience"
+# Taxonomy interface - Academic Years
+ys_core.taxonomy_interface_academic_years:
+  description: "Manage academic years taxonomy"
+  parent: ys_core.taxonomy_interface
+  route_name: entity.taxonomy_vocabulary.overview_form
+  title: Academic Years
+  route_parameters:
+    taxonomy_vocabulary: "academic_years"
+# Taxonomy interface - Areas of Study
+ys_core.taxonomy_interface_areas_of_study:
+  description: "Manage areas of study taxonomy"
+  parent: ys_core.taxonomy_interface
+  route_name: entity.taxonomy_vocabulary.overview_form
+  title: Areas of Study
+  route_parameters:
+    taxonomy_vocabulary: "areas_of_study"
+# Taxonomy interface - DCN Types
+ys_core.taxonomy_interface_dcn_types:
+  description: "Manage DCN types taxonomy"
+  parent: ys_core.taxonomy_interface
+  route_name: entity.taxonomy_vocabulary.overview_form
+  title: DCN Types
+  route_parameters:
+    taxonomy_vocabulary: "dcn_types"
+# Taxonomy interface - Discipline
+ys_core.taxonomy_interface_discipline:
+  description: "Manage discipline taxonomy"
+  parent: ys_core.taxonomy_interface
+  route_name: entity.taxonomy_vocabulary.overview_form
+  title: Discipline
+  route_parameters:
+    taxonomy_vocabulary: "discipline"
+# Taxonomy interface - Geographic Areas
+ys_core.taxonomy_interface_geographic_areas:
+  description: "Manage geographic areas taxonomy"
+  parent: ys_core.taxonomy_interface
+  route_name: entity.taxonomy_vocabulary.overview_form
+  title: Geographic Areas
+  route_parameters:
+    taxonomy_vocabulary: "geographic_areas"
+# Taxonomy interface - Resource Category
+ys_core.taxonomy_interface_resource_category:
+  description: "Manage resource category taxonomy"
+  parent: ys_core.taxonomy_interface
+  route_name: entity.taxonomy_vocabulary.overview_form
+  title: Resource Category
+  route_parameters:
+    taxonomy_vocabulary: "resource_category"
 # Taxonomy interface - Custom Vocab
 ys_core.taxonomy_interface_custom_vocab:
   description: "Manage custom vocabularoy taxonomy"
@@ -159,3 +217,14 @@ ys_core.custom_block_library:
   route_parameters:
     menu: "main"
   weight: 20
+# Coffee menu item
+ys_core.coffee:
+  title: 'Find'
+  description: 'Use alt+d to start Coffee and search for a page to go to'
+  route_name: '<none>'
+  parent: system.admin
+  weight: 50
+  options:
+    attributes:
+      class: ['toolbar-icon', 'toolbar-icon-coffee', 'coffee-menu-item']
+      title: 'Use alt+d to start Coffee and search for a page to go to'

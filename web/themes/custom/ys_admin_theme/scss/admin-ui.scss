@@ -12,3 +12,31 @@
 .toolbar-horizontal .local-tasks-toolbar-tab .toolbar-menu {
   float: none;
 }
+
+// Adjust error state colors for checkboxes and labels in Gin dark mode to
+// improve contrast and visibility on Gin's backgrounds.
+.gin--dark-mode {
+  .layout-builder-configure-block {
+    .fieldset__label.has-error {
+      color: var(--gin-color-info);
+    }
+
+    .form-boolean.error {
+      border-color: var(--gin-color-info);
+      box-shadow: inset 0 0 0 1px var(--gin-color-info);
+    }
+
+    .form-boolean--type-checkbox.error:checked {
+      background-color: white;
+    }
+
+    .form-boolean.error:checked {
+      &:hover,
+      &:active,
+      &:active:hover {
+        border-color: var(--gin-color-info);
+        color: white;
+      }
+    }
+  }
+}

@@ -1,0 +1,86 @@
+# Migration: YaleSite ONHA Program Node Migrations
+# Description: Configuration to migrate "program" nodes from ONHA Drupal 7 site
+# to a Drupal 10 site using the Layout Builder for content layout.
+
+id: ys_onha_programs
+label: YaleSites ONHA Programs
+status: true
+class: Drupal\migrate\Plugin\Migration
+migration_tags:
+  - 'Drupal 7'
+  - Content
+migration_group: ys_onha
+
+# Specifies the source is Drupal 7 nodes of the 'program' content type.
+source:
+  plugin: d7_node
+  node_type: program
+
+# Define how each field or property is mapped to the Drupal 10 platform.
+process:
+  langcode:
+    plugin: default_value
+    source: language
+    default_value: 'und'
+  title: title
+  status: status
+  created: created
+  changed: changed
+  promote: promote
+  sticky: sticky
+  uid:
+    plugin: default_value
+    default_value: constants/admin_uid
+  # The Drupal 7 body summary field is now the Drupal 10 teaser field.
+  field_teaser_text/value:
+    plugin: get
+    source: 'body/0/summary'
+  field_teaser_text/format:
+    plugin: default_value
+    default_value: 'heading_html'
+
+  # Taxonomy term mapping: The "field_initiative" terms in Drupal 7 are already
+  # created as "field_category" content in Drupal 10. Map to the new term IDs.
+  field_category:
+    plugin: static_map
+    source: field_initiative
+    bypass: true
+    map:
+      '6': '46'
+      '5': '47'
+      '9': '48'
+      '11': '49'
+      '8': '50'
+      '7': '51'
+      '10': '52'
+      '12': '53'
+
+  # Use existing 'Program' term to tag all imported nodes.
+  field_tags:
+    plugin: default_value
+    default_value: '509'
+
+  # Custom plugin to convert body text into Layout Builder sections.
+  # Uses the node ID (nid) as a reference to process body fields into blocks.
+  layout_builder__layout:
+    plugin: onha_body_to_layout_builder
+    source: nid
+
+  # Maps the moderation state of the content using a static_map.
+  # Defaults to "draft" if the source value does not match any map entry.
+  moderation_state:
+    plugin: static_map
+    source: status
+    default_value: draft
+    map:
+      '0': draft
+      '1': published
+
+# Drupal 7 program content will be migrated into the unified page content type.
+destination:
+  plugin: entity:node
+  default_bundle: page
+
+migration_dependencies:
+  required:
+    - ys_onha_program_body

@@ -1,0 +1,15 @@
+uuid: 1e138cb0-ffb1-4b7b-96b9-7405017bc157
+langcode: en
+status: true
+dependencies: {  }
+name: grand_hero_overlay_image
+label: 'Grand Hero Overlay Image'
+effects:
+  87408a13-700b-497c-9eac-c7aeba496d99:
+    uuid: 87408a13-700b-497c-9eac-c7aeba496d99
+    id: image_scale
+    weight: 1
+    data:
+      width: 1400
+      height: 280
+      upscale: false

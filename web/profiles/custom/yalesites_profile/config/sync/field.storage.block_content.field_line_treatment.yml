@@ -1,0 +1,33 @@
+uuid: b009a801-9ace-43ba-8597-b2cb70a7565e
+langcode: en
+status: true
+dependencies:
+  module:
+    - block_content
+    - options
+id: block_content.field_line_treatment
+field_name: field_line_treatment
+entity_type: block_content
+type: list_string
+settings:
+  allowed_values:
+    -
+      value: default
+      label: Default
+    -
+      value: all_strong_lines
+      label: 'All Strong Lines'
+    -
+      value: all_light_lines
+      label: 'All Light Lines'
+    -
+      value: no_lines
+      label: 'No Lines'
+  allowed_values_function: ''
+module: options
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

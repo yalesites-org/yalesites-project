@@ -6,6 +6,8 @@
  */
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\EntityContextDefinition;
 
@@ -25,6 +27,7 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'ticket_url' => NULL,
         'ticket_cost' => NULL,
         'place' => [],
+        'room' => NULL,
         'event_types' => [],
         'event_audience' => [],
         'event_topics' => [],
@@ -40,6 +43,10 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'localist_url' => NULL,
         'stream_url' => NULL,
         'stream_embed_code' => NULL,
+        'event_source' => NULL,
+        'event_id' => NULL,
+        'event_featured_date' => NULL,
+        'event_featured_index' => NULL,
       ],
     ],
     'ys_page_meta_block' => [
@@ -54,7 +61,8 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'author' => NULL,
         'date_formatted' => NULL,
         'show_read_time' => NULL,
-        'hide_sharing' => NULL,
+        'show_social_media_sharing_links' => NULL,
+        'post_authors' => NULL,
       ],
     ],
     'ys_profile_meta_block' => [
@@ -75,12 +83,41 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'email' => NULL,
         'phone' => NULL,
         'address' => [],
+        'padding_options' => 'default',
+      ],
+    ],
+    'ys_resource_meta_block' => [
+      'variables' => [
+        'resource_meta__heading' => NULL,
+        'resource_meta__category' => NULL,
+        'resource_meta__publish_date' => NULL,
+        'resource_meta__metadata' => [],
+        'resource_meta__resource_type' => NULL,
+        'resource_meta__download_url' => NULL,
+        'resource_meta__download_label' => NULL,
+        'resource_meta__download_aria_label' => NULL,
+        'resource_meta__media_id' => NULL,
+        'resource_meta__document_image' => NULL,
+        'resource_meta__description' => NULL,
+        'resource_meta__citation' => NULL,
+        'resource_meta__abstract' => NULL,
+        'resource_meta__journal_publication_name' => NULL,
+        'resource_meta__journal_publication_issue' => NULL,
+        'resource_meta__authors' => [],
+        'resource_meta__external_source' => [],
       ],
     ],
     'ys_taxonomy_display_block' => [
       'variables' => [
         'items' => [],
         'theme_selection' => NULL,
+      ],
+    ],
+    'ys_related_content_block' => [
+      'variables' => [
+        'related_content__heading' => NULL,
+        'related_content__heading_id' => NULL,
+        'related_content__view' => NULL,
       ],
     ],
   ];
@@ -110,9 +147,74 @@ function ys_layouts_preprocess_block(&$variables) {
     }
   }
 
-  // Add layout_section variable for styling.
+  // Add layout_section variable for styling (Layout Builder context only).
   if (!empty($variables['elements']['#configuration']['provider']) && $variables['elements']['#configuration']['provider'] === 'layout_builder') {
     _ys_layouts_add_layout_section($variables);
+
+    // Add block padding options from the field.
+    if (isset($variables['content']['#block_content'])) {
+      $block_content = $variables['content']['#block_content'];
+      if ($block_content->hasField('field_padding_options') && !$block_content->get('field_padding_options')->isEmpty()) {
+        $padding_value = $block_content->get('field_padding_options')->value;
+        if ($padding_value) {
+          // Replace underscores with hyphens for CSS classes.
+          $variables['padding_options'] = str_replace('_', '-', $padding_value);
+        }
+      }
+
+      // Add line treatment value for link_grid blocks.
+      if ($block_content->bundle() === 'link_grid' && $block_content->hasField('field_line_treatment') && !$block_content->get('field_line_treatment')->isEmpty()) {
+        $variables['link_grid__line_treatment'] = $block_content->get('field_line_treatment')->value;
+      }
+    }
+  }
+
+  // Add block padding options from the field.
+  if (isset($variables['content']['#block_content'])) {
+    $block_content = $variables['content']['#block_content'];
+    $block_type = $block_content->bundle();
+
+    // Add line treatment value for link_grid blocks.
+    if ($block_type === 'link_grid' && $block_content->hasField('field_line_treatment') && !$block_content->get('field_line_treatment')->isEmpty()) {
+      $variables['link_grid__line_treatment'] = $block_content->get('field_line_treatment')->value;
+    }
+
+    // Set default padding based on block type.
+    $default_padding = 'default';
+    $no_padding_blocks = [
+      'text',
+      'wrapped_text_callout',
+      'grand_hero',
+      'image_banner',
+      'cta_banner',
+      'video_banner',
+      'image',
+    ];
+
+    if (in_array($block_type, $no_padding_blocks)) {
+      $default_padding = 'no-padding';
+    }
+
+    if ($block_content->hasField('field_padding_options') && !$block_content->get('field_padding_options')->isEmpty()) {
+      $padding_value = $block_content->get('field_padding_options')->value;
+      if ($padding_value) {
+        // Replace underscores with hyphens for CSS classes.
+        $variables['padding_options'] = str_replace('_', '-', $padding_value);
+      }
+    }
+    else {
+      // Use block-specific default if no padding options set.
+      $variables['padding_options'] = $default_padding;
+    }
+  }
+
+  // Handle padding options for plugin blocks (non-content entity blocks).
+  if (!isset($variables['padding_options']) && isset($variables['elements']['#configuration']['padding_options'])) {
+    $padding_value = $variables['elements']['#configuration']['padding_options'];
+    if ($padding_value) {
+      // Replace underscores with hyphens for CSS classes.
+      $variables['padding_options'] = str_replace('_', '-', $padding_value);
+    }
   }
 }
 
@@ -125,7 +227,7 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
   if ($form_id == 'layout_builder_update_block' || $form_id == 'layout_builder_add_block') {
     if (isset($form['reusable'])) {
       $form['reusable']['#title'] = t('Reusable Block');
-      $form['reusable']['#description'] = t('Create reusable content with Reusable Blocks. Changes made to a Reusable Block’s content are reflected anywhere the Block is used. This setting cannot be changed after saving.');
+      $form['reusable']['#description'] = t("Create reusable content with Reusable Blocks. Changes made to a Reusable Block's content are reflected anywhere the Block is used. This setting cannot be changed after saving.");
 
       $form['info']['#title'] = t('Reusable Block title');
       $form['info']['#description'] = t('Add a short, descriptive title to easily find and reuse the Reusable Block. Defaults to Administrative label if no title is provided.');
@@ -179,6 +281,100 @@ function _ys_layouts_add_layout_section(&$variables) {
             $variables['layout_section'] = $section->getLayoutId();
             break 2;
           }
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function ys_layouts_form_layout_builder_configure_section_alter(&$form, FormStateInterface $form_state, $form_id) {
+
+  // Add padding options to the section config form.
+  $form_object = $form_state->getFormObject();
+  $config = $form_object->getCurrentLayout()->getConfiguration();
+
+  $form['padding_options'] = [
+    '#type' => 'select',
+    '#title' => t('Section padding options'),
+    '#options' => [
+      'default' => t('Default'),
+      'no_top' => t('No top padding'),
+      'no_bottom' => t('No bottom padding'),
+      'no_padding' => t('No padding (top and bottom)'),
+    ],
+    '#default_value' => $config['ys_layouts_sections_config']['padding_options'] ?? 'default',
+    '#description' => t("To create connected sections, use 'No bottom padding' on the first section and 'No top padding' on the section below it. Default padding maintains standard spacing for optimal readability."),
+    '#weight' => 0,
+    '#wrapper_attributes' => [
+      'class' => ['glb-canvas-form__settings'],
+    ],
+  ];
+
+  // Add our submit handler to the form.
+  array_unshift($form['#submit'], '_ys_layouts_sections_config_submit_form');
+
+}
+
+/**
+ * Custom submit handler for submitting layout builder section config form.
+ *
+ * @param array $form
+ *   The form array.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state object.
+ */
+function _ys_layouts_sections_config_submit_form($form, FormStateInterface $form_state) {
+  $form_object = $form_state->getFormObject();
+  $config = $form_object->getCurrentLayout()->getConfiguration();
+  if (!$config) {
+    $config = [];
+  }
+  $config['ys_layouts_sections_config'] = [
+    'padding_options' => $form_state->getValue('padding_options'),
+  ];
+
+  $form_object
+    ->getCurrentLayout()
+    ->setConfiguration($config);
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function ys_layouts_preprocess_layout(&$variables) {
+  // Add the Layout Builder section configuration to the $variables.
+  if (isset($variables['settings']['ys_layouts_sections_config'])) {
+    $config = $variables['settings']['ys_layouts_sections_config'];
+
+    if (isset($config['padding_options']) && $config['padding_options']) {
+      // Replace underscores with hyphens.
+      $padding_options = str_replace('_', '-', $config['padding_options']);
+      $variables['settings']['padding'] = $padding_options;
+    }
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for the page_meta layout.
+ *
+ * Reads the breadcrumb visibility setting from the Page Meta block and exposes
+ * it to the layout template, which renders the breadcrumb block at the layout
+ * level rather than inside the block itself. Breadcrumbs default to visible so
+ * existing pages are unaffected.
+ */
+function ys_layouts_preprocess_layout__page_meta(&$variables) {
+  $variables['show_breadcrumbs'] = TRUE;
+
+  $entity = $variables['content']['#entity'] ?? NULL;
+  if ($entity instanceof FieldableEntityInterface && $entity->hasField('layout_builder__layout')) {
+    foreach ($entity->get('layout_builder__layout')->getSections() as $section) {
+      foreach ($section->getComponents() as $component) {
+        $configuration = $component->get('configuration');
+        if (($configuration['id'] ?? '') === 'page_meta_block' && ($configuration['breadcrumb_display'] ?? 'visible') === 'hidden') {
+          $variables['show_breadcrumbs'] = FALSE;
         }
       }
     }

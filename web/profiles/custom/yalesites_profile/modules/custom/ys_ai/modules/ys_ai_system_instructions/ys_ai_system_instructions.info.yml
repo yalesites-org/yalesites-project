@@ -1,0 +1,11 @@
+name: YS AI System Instructions
+type: module
+description: System instructions management for YaleSites AI with versioning and API sync.
+core_version_requirement: ^10 || ^11
+package: YaleSites
+dependencies:
+  - ys_ai
+  - ai_engine
+  - key
+  - ys_integrations
+configure: ys_ai_system_instructions.settings

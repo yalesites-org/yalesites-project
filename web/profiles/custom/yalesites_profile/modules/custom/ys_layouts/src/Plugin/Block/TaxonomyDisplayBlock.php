@@ -13,6 +13,7 @@ use Drupal\Core\Plugin\ContextAwarePluginInterface;
 use Drupal\Core\Plugin\ContextAwarePluginTrait;
 use Drupal\Core\Routing\CurrentRouteMatch;
 use Drupal\node\Entity\Node;
+use Drupal\ys_themes\ColorTokenResolver;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -52,6 +53,13 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
   protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
+   * The color token resolver.
+   *
+   * @var \Drupal\ys_themes\ColorTokenResolver
+   */
+  protected ColorTokenResolver $colorTokenResolver;
+
+  /**
    * Constructs the plugin instance.
    */
   public function __construct(
@@ -61,11 +69,13 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
     EntityTypeManagerInterface $entityTypeManager,
     CurrentRouteMatch $routeMatch,
     RequestStack $requestStack,
+    ColorTokenResolver $colorTokenResolver,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->entityTypeManager = $entityTypeManager;
     $this->routeMatch = $routeMatch;
     $this->requestStack = $requestStack;
+    $this->colorTokenResolver = $colorTokenResolver;
   }
 
   /**
@@ -79,6 +89,7 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
       $container->get('entity_type.manager'),
       $container->get('current_route_match'),
       $container->get('request_stack'),
+      $container->get('ys_themes.color_token_resolver'),
     );
   }
 
@@ -149,7 +160,10 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
             'four' => $this->t('Four'),
             'five' => $this->t('Five'),
           ],
-          '#default_value' => $this->configuration['theme_selection'] ?? 'default',
+          '#default_value' => $this->configuration['theme_selection'] ?? 'one',
+          '#process' => [
+            [$this, 'processColorPicker'],
+          ],
         ];
 
       }
@@ -233,6 +247,39 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
     }
 
     return $node ?? NULL;
+  }
+
+  /**
+   * Process callback to add the color picker palette UI.
+   *
+   * Wraps the ColorTokenResolver processColorPicker method with the correct
+   * entity type and bundle to use the callout/content_spotlight mapping.
+   *
+   * @param array $element
+   *   The form element.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   * @param array $complete_form
+   *   The complete form.
+   *
+   * @return array
+   *   The processed form element.
+   */
+  public function processColorPicker(
+    array &$element,
+    FormStateInterface $form_state,
+    array &$complete_form,
+  ) {
+    // Use 'block_content' and 'callout' to get the same color mapping as
+    // callout, content_spotlight, content_spotlight_portrait, cta_banner,
+    // and grand_hero blocks.
+    return $this->colorTokenResolver->processColorPicker(
+      $element,
+      $form_state,
+      $complete_form,
+      'block_content',
+      'callout',
+    );
   }
 
 }

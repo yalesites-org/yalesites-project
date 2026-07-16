@@ -1,0 +1,17 @@
+uuid: 47db3b2b-fa0e-4d6e-bf08-bc4938ad637f
+langcode: en
+status: true
+dependencies:
+  module:
+    - focal_point
+name: '5_8_960'
+label: '5:8 (960)'
+effects:
+  b38d6565-fb39-479b-ac1e-b74318aed85a:
+    uuid: b38d6565-fb39-479b-ac1e-b74318aed85a
+    id: focal_point_scale_and_crop
+    weight: 2
+    data:
+      width: 960
+      height: 1536
+      crop_type: focal_point

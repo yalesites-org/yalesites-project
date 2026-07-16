@@ -6,7 +6,9 @@ dependencies:
     - block_content.type.link_grid
     - field.field.block_content.link_grid.field_heading
     - field.field.block_content.link_grid.field_instructions
+    - field.field.block_content.link_grid.field_line_treatment
     - field.field.block_content.link_grid.field_link_lists
+    - field.field.block_content.link_grid.field_padding_options
     - field.field.block_content.link_grid.field_style_color
   module:
     - allowed_formats
@@ -15,6 +17,7 @@ dependencies:
     - paragraphs
     - paragraphs_features
     - text
+    - ys_themes
 id: block_content.link_grid.default
 targetEntityType: block_content
 bundle: link_grid
@@ -37,13 +40,19 @@ content:
         maxlength_js_enforce: false
   field_instructions:
     type: markup
-    weight: 0
+    weight: -1
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_line_treatment:
+    type: options_select
+    weight: 6
     region: content
     settings: {  }
     third_party_settings: {  }
   field_link_lists:
     type: paragraphs
-    weight: 2
+    weight: 3
     region: content
     settings:
       title: 'Link List'
@@ -58,6 +67,7 @@ content:
       features:
         add_above: add_above
         collapse_edit_all: collapse_edit_all
+        convert: '0'
         duplicate: duplicate
     third_party_settings:
       paragraphs_features:
@@ -65,9 +75,16 @@ content:
         add_in_between_link_count: 3
         delete_confirmation: true
         show_drag_and_drop: true
-  field_style_color:
+        show_collapse_all: true
+  field_padding_options:
     type: options_select
-    weight: 3
+    weight: 5
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_style_color:
+    type: component_color_picker
+    weight: 4
     region: content
     settings: {  }
     third_party_settings: {  }

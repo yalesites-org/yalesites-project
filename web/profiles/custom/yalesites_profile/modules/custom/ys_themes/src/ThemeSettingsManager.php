@@ -52,6 +52,14 @@ class ThemeSettingsManager {
           'label' => 'It’s Your Yale',
           'color_theme' => 'five',
         ],
+        'six' => [
+          'label' => 'AI',
+          'color_theme' => 'six',
+        ],
+        'seven' => [
+          'label' => 'Whitney Humanities Center',
+          'color_theme' => 'seven',
+        ],
       ],
     ],
     'button_theme' => [
@@ -91,9 +99,9 @@ class ThemeSettingsManager {
       ],
     ],
     'book_navigation' => [
-      'name' => 'Book Navigation theme',
+      'name' => 'Content Collection Navigation Theme',
       'prop_type' => 'element',
-      'selector' => '[data-component-theme]',
+      'selector' => '.in-this-section[data-component-theme]',
       'default' => 'one',
       'values' => [
         'one' => [

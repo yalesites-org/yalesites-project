@@ -6,8 +6,10 @@ dependencies:
     - block_content.type.directory
     - field.field.block_content.directory.field_heading
     - field.field.block_content.directory.field_instructions
+    - field.field.block_content.directory.field_padding_options
   module:
     - allowed_formats
+    - hide_revision_field
     - markup
     - maxlength
     - text
@@ -33,7 +35,13 @@ content:
         maxlength_js_enforce: false
   field_instructions:
     type: markup
-    weight: 0
+    weight: -1
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_padding_options:
+    type: options_select
+    weight: 3
     region: content
     settings: {  }
     third_party_settings: {  }

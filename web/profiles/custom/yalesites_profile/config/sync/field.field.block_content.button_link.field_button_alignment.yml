@@ -1,0 +1,21 @@
+uuid: 9b0c1d2e-3f4a-5b6c-7d8e-9f0a1b2c3d4e
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.button_link
+    - field.storage.block_content.field_button_alignment
+  module:
+    - ys_themes
+id: block_content.button_link.field_button_alignment
+field_name: field_button_alignment
+entity_type: block_content
+bundle: button_link
+label: 'Button Alignment'
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ys_themes_default_value_function
+settings: {  }
+field_type: list_string

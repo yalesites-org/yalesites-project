@@ -9,6 +9,13 @@ use Drupal\Component\Utility\Xss;
 use Drupal\taxonomy\Entity\Term;
 
 /**
+ * Implements hook_install().
+ */
+function ys_core_install() {
+  ys_core_populate_academic_years_terms();
+}
+
+/**
  * Implements hook_update().
  *
  * This update will update quicklinks blocks by removing any reference to a
@@ -247,4 +254,1177 @@ function ys_core_update_10001() {
       $term->save();
     }
   }
+}
+
+/**
+ * Implements hook_update().
+ *
+ * This update will set a default field_style_color for content spotlights.
+ */
+function ys_core_update_10002() {
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+  $query = $block_storage->getQuery();
+  $query->accessCheck(FALSE)
+    ->condition('type', ['content_spotlight', 'content_spotlight_portrait'], 'IN');
+
+  $ids = $query->execute();
+
+  foreach ($ids as $id) {
+    $block = $block_storage->load($id);
+    $latestRevisionId = $block_storage->getLatestRevisionId($id);
+
+    if (!$latestRevisionId) {
+      $latestRevision = $block_storage->createRevision($block);
+    }
+    else {
+      $latestRevision = $block_storage->loadRevision($latestRevisionId);
+    }
+
+    if ($latestRevision->get('field_style_color')->isEmpty()) {
+      $latestRevision->set('field_style_color', 'default');
+      $latestRevision->save();
+    }
+
+  }
+
+}
+
+/**
+ * Implements hook_update().
+ *
+ * Converts all site_mail fields that currently have
+ * noreply@yale.edu to noreply@noreply.yale.edu.
+ */
+function ys_core_update_10003() {
+  $config = \Drupal::configFactory()->getEditable('system.site');
+
+  $site_mail = $config->get('mail');
+  if ($site_mail == "noreply@yale.edu") {
+    $new_site_mail = "noreply@noreply.yale.edu";
+    $config->set('mail', $new_site_mail);
+    $config->save();
+    \Drupal::messenger()->addStatus("Site email updated from {$site_mail} to {$new_site_mail}.");
+  }
+  else {
+    // Log that the site email was skipped.
+    \Drupal::messenger()->addStatus("Site email not updated as it was set to {$site_mail}.");
+  }
+}
+
+/**
+ * Implements hook_update().
+ *
+ * This update will update paragraph Facts and Figure Item block's
+ * field_text format from Heading HTML to Restricted.  Doing so
+ * will allow links to be used.
+ */
+function ys_core_update_10004() {
+
+  $query = \Drupal::entityQuery('paragraph')
+    ->accessCheck(FALSE)
+    ->condition('type', 'facts_item')
+    ->condition('field_text.format', 'heading_html')
+    ->allRevisions();
+
+  $ids = $query->execute();
+  $paragraph_storage = \Drupal::entityTypeManager()->getStorage('paragraph');
+
+  foreach ($ids as $revision_id => $id) {
+    $paragraph = $paragraph_storage->loadRevision($revision_id);
+
+    if ($paragraph && $paragraph->id() == $id) {
+      $new_field_text = ['format' => 'restricted_html', 'value' => $paragraph->field_text->value];
+      $paragraph->set('field_text', $new_field_text);
+      $paragraph->save();
+    }
+  }
+}
+
+/**
+ * Implements hook_update().
+ *
+ * Adds icon functionality to Facts and Figures items.
+ * Creates the field_icon field and sets default values for existing items.
+ */
+function ys_core_update_10005() {
+  $entity_type_manager = \Drupal::entityTypeManager();
+
+  // Check if field storage already exists.
+  $field_storage = $entity_type_manager->getStorage('field_storage_config')->load('paragraph.field_icon');
+  if (!$field_storage) {
+    // Create field storage configuration.
+    $field_storage = $entity_type_manager->getStorage('field_storage_config')->create([
+      'id' => 'paragraph.field_icon',
+      'field_name' => 'field_icon',
+      'entity_type' => 'paragraph',
+      'type' => 'list_string',
+      'settings' => [
+        'allowed_values' => [],
+        'allowed_values_function' => 'ys_core_facts_icon_allowed_values',
+      ],
+      'module' => 'options',
+      'locked' => FALSE,
+      'cardinality' => 1,
+      'translatable' => FALSE,
+    ]);
+    $field_storage->save();
+  }
+
+  // Check if field instance already exists.
+  $field = $entity_type_manager->getStorage('field_config')->load('paragraph.facts_item.field_icon');
+  if (!$field) {
+    // Create field instance configuration.
+    $field = $entity_type_manager->getStorage('field_config')->create([
+      'id' => 'paragraph.facts_item.field_icon',
+      'field_name' => 'field_icon',
+      'entity_type' => 'paragraph',
+      'bundle' => 'facts_item',
+      'label' => 'Icon',
+      'description' => 'Choose an icon to display with this fact or figure. Icons help users quickly understand and categorize information. Select "None" if you don\'t want to display an icon.',
+      'required' => FALSE,
+      'translatable' => FALSE,
+      'default_value' => [['value' => '_none']],
+      'settings' => [
+        'allowed_values' => [],
+        'allowed_values_function' => '',
+      ],
+      'field_type' => 'list_string',
+    ]);
+    $field->save();
+  }
+
+  // Update form display.
+  $form_display = $entity_type_manager->getStorage('entity_form_display')->load('paragraph.facts_item.default');
+  if ($form_display) {
+    $form_display->setComponent('field_icon', [
+      'type' => 'options_select',
+      'weight' => 1,
+      'region' => 'content',
+      'settings' => [],
+      'third_party_settings' => [],
+    ]);
+    $form_display->save();
+  }
+
+  // Update view display (hide the field).
+  $view_display = $entity_type_manager->getStorage('entity_view_display')->load('paragraph.facts_item.default');
+  if ($view_display) {
+    $hidden_components = $view_display->get('hidden');
+    $hidden_components['field_icon'] = TRUE;
+    $view_display->set('hidden', $hidden_components);
+    $view_display->save();
+  }
+
+  // Clear field and entity caches.
+  \Drupal::service('entity_field.manager')->clearCachedFieldDefinitions();
+  \Drupal::entityTypeManager()->clearCachedDefinitions();
+
+  // Set default icon value for existing facts_item paragraphs.
+  $query = \Drupal::entityQuery('paragraph')
+    ->accessCheck(FALSE)
+    ->condition('type', 'facts_item');
+
+  $ids = $query->execute();
+  $paragraph_storage = \Drupal::entityTypeManager()->getStorage('paragraph');
+
+  foreach ($ids as $id) {
+    $paragraph = $paragraph_storage->load($id);
+    if ($paragraph && $paragraph->hasField('field_icon')) {
+      // Set default value to '_none' for existing items.
+      if ($paragraph->get('field_icon')->isEmpty()) {
+        $paragraph->set('field_icon', '_none');
+        $paragraph->save();
+      }
+    }
+  }
+
+  \Drupal::messenger()->addStatus(t('Facts and Figures icon functionality has been successfully added.'));
+}
+
+/**
+ * Gets block IDs that are the first content block in a banner section.
+ *
+ * This function examines all page nodes with Layout Builder overrides to find
+ * blocks that are positioned as the first content block in the banner section.
+ * The content moderation control block is excluded from this check.
+ *
+ * @return array
+ *   Array of block content IDs that are first in a banner section.
+ */
+function ys_core_get_first_banner_block_ids() {
+  $first_banner_block_ids = [];
+  $node_storage = \Drupal::entityTypeManager()->getStorage('node');
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+
+  // Get all page nodes.
+  $query = \Drupal::entityQuery('node')
+    ->accessCheck(FALSE)
+    ->condition('type', 'page');
+  $nids = $query->execute();
+
+  foreach ($nids as $nid) {
+    $node = $node_storage->load($nid);
+    if (!$node) {
+      continue;
+    }
+
+    $layout = $node->get('layout_builder__layout');
+
+    // Skip nodes using default layout (no overrides).
+    if ($layout->isEmpty()) {
+      continue;
+    }
+
+    $sections = $layout->getSections();
+
+    foreach ($sections as $section) {
+      // Find the banner section.
+      if ($section->getLayoutId() === 'ys_layout_banner') {
+        // Get components in the banner's content region, sorted by weight.
+        $banner_components = $section->getComponentsByRegion('content');
+
+        // Find the first content block (skip content moderation control).
+        foreach ($banner_components as $component) {
+          $config = $component->get('configuration');
+          $plugin_id = $config['id'];
+
+          // Skip the content moderation control block.
+          if ($plugin_id === 'extra_field_block:node:page:content_moderation_control') {
+            continue;
+          }
+
+          // Check if this is an inline block with a revision ID.
+          if (!empty($config['block_revision_id'])) {
+            $block = $block_storage->loadRevision($config['block_revision_id']);
+            if ($block) {
+              $first_banner_block_ids[] = (int) $block->id();
+            }
+          }
+
+          // We found the first content block, stop looking.
+          break;
+        }
+
+        // We found the banner section, stop looking.
+        break;
+      }
+    }
+  }
+
+  return array_unique($first_banner_block_ids);
+}
+
+/**
+ * Implements hook_update().
+ *
+ * Sets default padding values for all existing blocks with empty
+ * field_padding_options.
+ *
+ * Uses sandbox API to process blocks in chunks to avoid timeouts on sites
+ * with large numbers of blocks.
+ */
+function ys_core_update_10006(&$sandbox) {
+  $block_defaults = [
+    // Blocks with no_padding default.
+    'grand_hero' => 'no_padding',
+    'image_banner' => 'no_padding',
+    'image' => 'no_padding',
+    'text' => 'no_padding',
+    'wrapped_text_callout' => 'no_padding',
+    // All other blocks with default padding.
+    'accordion' => 'default',
+    'button_link' => 'default',
+    'callout' => 'default',
+    'content_spotlight' => 'default',
+    'content_spotlight_portrait' => 'default',
+    'cta_banner' => 'default',
+    'custom_cards' => 'default',
+    'directory' => 'default',
+    'divider' => 'default',
+    'embed' => 'default',
+    'event_list' => 'default',
+    'facts' => 'default',
+    'gallery' => 'default',
+    'inline_message' => 'default',
+    'link_grid' => 'default',
+    'media_grid' => 'default',
+    'post_list' => 'default',
+    'pull_quote' => 'default',
+    'quick_links' => 'default',
+    'quote_callout' => 'default',
+    'reference_card' => 'default',
+    'resource_view' => 'default',
+    'tabs' => 'default',
+    'tiles' => 'default',
+    'video' => 'default',
+    'video_banner' => 'default',
+    'view' => 'default',
+    'webform' => 'default',
+    'wrapped_image' => 'default',
+  ];
+
+  $logger = \Drupal::logger('ys_core');
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+
+  // Initialize sandbox on first run.
+  if (!isset($sandbox['current_type_index'])) {
+    $sandbox['block_types'] = array_keys($block_defaults);
+    $sandbox['current_type_index'] = 0;
+    $sandbox['current_block_index'] = 0;
+    $sandbox['total_updated'] = 0;
+    $sandbox['results'] = [];
+    $sandbox['type_results'] = [];
+
+    // Calculate total blocks to process.
+    $sandbox['total_blocks'] = 0;
+    foreach ($sandbox['block_types'] as $block_type) {
+      $query = $block_storage->getQuery();
+      $query->accessCheck(FALSE)
+        ->condition('type', $block_type);
+      $count = $query->count()->execute();
+      $sandbox['total_blocks'] += $count;
+    }
+
+    $sandbox['processed_blocks'] = 0;
+
+    if ($sandbox['total_blocks'] == 0) {
+      $sandbox['#finished'] = 1;
+      return t('No blocks found to update.');
+    }
+  }
+
+  // Process blocks in chunks.
+  $blocks_per_iteration = 50;
+  $current_type_index = $sandbox['current_type_index'];
+  $block_types = $sandbox['block_types'];
+
+  // Check if we've processed all block types.
+  if ($current_type_index >= count($block_types)) {
+    $sandbox['#finished'] = 1;
+
+    // Log final results.
+    $logger->info('Block padding defaults update completed. Updated @count total block(s).', ['@count' => $sandbox['total_updated']]);
+
+    if (!empty($sandbox['results'])) {
+      foreach ($sandbox['results'] as $result) {
+        $logger->info($result);
+      }
+      return t('Successfully updated @count block(s) with default padding values. See logs for details.', ['@count' => $sandbox['total_updated']]);
+    }
+    else {
+      $logger->info('No blocks needed padding value updates.');
+      return t('No blocks needed padding value updates.');
+    }
+  }
+
+  $current_type = $block_types[$current_type_index];
+  $default_value = $block_defaults[$current_type];
+
+  // Query blocks of current type.
+  $query = $block_storage->getQuery();
+  $query->accessCheck(FALSE)
+    ->condition('type', $current_type)
+    ->range($sandbox['current_block_index'], $blocks_per_iteration);
+
+  $ids = $query->execute();
+
+  // Process blocks.
+  $updated_in_iteration = 0;
+  foreach ($ids as $id) {
+    $block = $block_storage->load($id);
+    $latestRevisionId = $block_storage->getLatestRevisionId($id);
+
+    if (!$latestRevisionId) {
+      $latestRevision = $block_storage->createRevision($block);
+    }
+    else {
+      $latestRevision = $block_storage->loadRevision($latestRevisionId);
+    }
+
+    // Only update if the field exists and is empty.
+    if ($latestRevision->hasField('field_padding_options') && $latestRevision->get('field_padding_options')->isEmpty()) {
+      $latestRevision->set('field_padding_options', $default_value);
+      $latestRevision->save();
+      $updated_in_iteration++;
+      $sandbox['total_updated']++;
+
+      // Track updates per type.
+      if (!isset($sandbox['type_results'][$current_type])) {
+        $sandbox['type_results'][$current_type] = 0;
+      }
+      $sandbox['type_results'][$current_type]++;
+    }
+
+    $sandbox['processed_blocks']++;
+  }
+
+  // Move to next position.
+  if (count($ids) < $blocks_per_iteration) {
+    // Finished with this block type, move to next.
+    if (isset($sandbox['type_results'][$current_type]) && $sandbox['type_results'][$current_type] > 0) {
+      $sandbox['results'][] = t('@type: @count block(s) set to "@value"', [
+        '@type' => $current_type,
+        '@count' => $sandbox['type_results'][$current_type],
+        '@value' => $default_value,
+      ]);
+    }
+
+    $sandbox['current_type_index']++;
+    $sandbox['current_block_index'] = 0;
+  }
+  else {
+    // More blocks in this type to process.
+    $sandbox['current_block_index'] += $blocks_per_iteration;
+  }
+
+  // Calculate progress.
+  $sandbox['#finished'] = $sandbox['total_blocks'] > 0
+    ? $sandbox['processed_blocks'] / $sandbox['total_blocks']
+    : 1;
+}
+
+/**
+ * Implements hook_update().
+ *
+ * Sets default button alignment and button style values for all existing
+ * button_link blocks with empty field_button_alignment or
+ * field_button_style_consistency.
+ *
+ * Uses sandbox API to process blocks in chunks to avoid timeouts on sites
+ * with large numbers of blocks.
+ */
+function ys_core_update_10007(&$sandbox) {
+  $logger = \Drupal::logger('ys_core');
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+
+  // Initialize sandbox on first run.
+  if (!isset($sandbox['current_field_index'])) {
+    $sandbox['fields'] = [
+      'field_button_alignment' => 'left',
+      'field_button_style_consistency' => 'filled_outline',
+    ];
+    $sandbox['field_keys'] = array_keys($sandbox['fields']);
+    $sandbox['current_field_index'] = 0;
+    $sandbox['current_block_index'] = 0;
+    $sandbox['total_updated'] = 0;
+    $sandbox['field_results'] = [];
+
+    // Calculate total button_link blocks.
+    $query = $block_storage->getQuery();
+    $query->accessCheck(FALSE)
+      ->condition('type', 'button_link');
+    $sandbox['total_blocks'] = $query->count()->execute();
+    $sandbox['processed_blocks'] = 0;
+
+    // Total iterations = blocks * number of fields.
+    $sandbox['total_iterations'] = $sandbox['total_blocks'] * count($sandbox['fields']);
+    $sandbox['current_iteration'] = 0;
+
+    if ($sandbox['total_blocks'] == 0) {
+      $sandbox['#finished'] = 1;
+      return t('No button_link blocks found to update.');
+    }
+  }
+
+  // Process blocks in chunks.
+  $blocks_per_iteration = 50;
+  $current_field_index = $sandbox['current_field_index'];
+  $field_keys = $sandbox['field_keys'];
+
+  // Check if we've processed all fields.
+  if ($current_field_index >= count($field_keys)) {
+    $sandbox['#finished'] = 1;
+
+    // Log final results.
+    $logger->info('Button link defaults update completed. Updated @count total field(s).', ['@count' => $sandbox['total_updated']]);
+
+    if (!empty($sandbox['field_results'])) {
+      $results = [];
+      foreach ($sandbox['field_results'] as $field_name => $count) {
+        $field_label = $field_name == 'field_button_alignment' ? 'Button Alignment' : 'Button Style';
+        $field_value = $sandbox['fields'][$field_name];
+        $results[] = t('button_link: @count block(s) set @label to "@value"', [
+          '@count' => $count,
+          '@label' => $field_label,
+          '@value' => $field_value,
+        ]);
+      }
+
+      foreach ($results as $result) {
+        $logger->info($result);
+      }
+      return t('Successfully updated @count button link field(s) with default values. See logs for details.', ['@count' => $sandbox['total_updated']]);
+    }
+    else {
+      $logger->info('No button link blocks needed default value updates.');
+      return t('No button link blocks needed default value updates.');
+    }
+  }
+
+  $current_field = $field_keys[$current_field_index];
+  $default_value = $sandbox['fields'][$current_field];
+
+  // Query button_link blocks.
+  $query = $block_storage->getQuery();
+  $query->accessCheck(FALSE)
+    ->condition('type', 'button_link')
+    ->range($sandbox['current_block_index'], $blocks_per_iteration);
+
+  $ids = $query->execute();
+
+  // Process blocks.
+  foreach ($ids as $id) {
+    $block = $block_storage->load($id);
+    $latestRevisionId = $block_storage->getLatestRevisionId($id);
+
+    if (!$latestRevisionId) {
+      $latestRevision = $block_storage->createRevision($block);
+    }
+    else {
+      $latestRevision = $block_storage->loadRevision($latestRevisionId);
+    }
+
+    // Only update if the field exists and is empty.
+    if ($latestRevision->hasField($current_field) && $latestRevision->get($current_field)->isEmpty()) {
+      $latestRevision->set($current_field, $default_value);
+      $latestRevision->save();
+      $sandbox['total_updated']++;
+
+      // Track updates per field.
+      if (!isset($sandbox['field_results'][$current_field])) {
+        $sandbox['field_results'][$current_field] = 0;
+      }
+      $sandbox['field_results'][$current_field]++;
+    }
+
+    $sandbox['current_iteration']++;
+  }
+
+  // Move to next position.
+  if (count($ids) < $blocks_per_iteration) {
+    // Finished with this field, move to next field and reset block index.
+    $sandbox['current_field_index']++;
+    $sandbox['current_block_index'] = 0;
+    $sandbox['processed_blocks'] = 0;
+  }
+  else {
+    // More blocks to process for this field.
+    $sandbox['current_block_index'] += $blocks_per_iteration;
+    $sandbox['processed_blocks'] += count($ids);
+  }
+
+  // Calculate progress.
+  $sandbox['#finished'] = $sandbox['total_iterations'] > 0
+    ? $sandbox['current_iteration'] / $sandbox['total_iterations']
+    : 1;
+}
+
+/**
+ * Implements hook_update().
+ *
+ * Updates padding for blocks that are first in banner sections.
+ *
+ * Blocks that appear as the first content block in a banner section and
+ * currently have 'default' padding will be updated to 'no_top'.
+ * Only applies to banner block types that would have received 'default'
+ * padding from update 10006 (cta_banner, content_spotlight, and
+ * content_spotlight_portrait).
+ *
+ * Uses sandbox API to process blocks in chunks to avoid timeouts on sites
+ * with large numbers of blocks.
+ */
+function ys_core_update_10008(&$sandbox) {
+  // Block types that are allowed in banners and have 'default' padding.
+  // These are the only types that need adjustment when first in banner.
+  $banner_block_types = [
+    'cta_banner',
+    'content_spotlight',
+    'content_spotlight_portrait',
+  ];
+
+  $logger = \Drupal::logger('ys_core');
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+
+  // Initialize sandbox on first run.
+  if (!isset($sandbox['current_type_index'])) {
+    // Get list of block IDs that are first content blocks in banner sections.
+    $sandbox['first_banner_block_ids'] = ys_core_get_first_banner_block_ids();
+    $sandbox['block_types'] = $banner_block_types;
+    $sandbox['current_type_index'] = 0;
+    $sandbox['current_block_index'] = 0;
+    $sandbox['total_updated'] = 0;
+    $sandbox['results'] = [];
+    $sandbox['type_results'] = [];
+
+    // Calculate total blocks to process.
+    $sandbox['total_blocks'] = 0;
+    foreach ($sandbox['block_types'] as $block_type) {
+      $query = $block_storage->getQuery();
+      $query->accessCheck(FALSE)
+        ->condition('type', $block_type);
+      $count = $query->count()->execute();
+      $sandbox['total_blocks'] += $count;
+    }
+
+    $sandbox['processed_blocks'] = 0;
+
+    if ($sandbox['total_blocks'] == 0) {
+      $sandbox['#finished'] = 1;
+      return t('No banner blocks found to update.');
+    }
+  }
+
+  // Process blocks in chunks.
+  $blocks_per_iteration = 50;
+  $current_type_index = $sandbox['current_type_index'];
+  $block_types = $sandbox['block_types'];
+
+  // Check if we've processed all block types.
+  if ($current_type_index >= count($block_types)) {
+    $sandbox['#finished'] = 1;
+
+    // Log final results.
+    $logger->info('First banner block padding update completed. Updated @count total block(s).', ['@count' => $sandbox['total_updated']]);
+
+    if (!empty($sandbox['results'])) {
+      foreach ($sandbox['results'] as $result) {
+        $logger->info($result);
+      }
+      return t('Successfully updated @count first banner block(s) to no_top. See logs for details.', ['@count' => $sandbox['total_updated']]);
+    }
+    else {
+      $logger->info('No first banner blocks needed padding value updates.');
+      return t('No first banner blocks needed padding value updates.');
+    }
+  }
+
+  $current_type = $block_types[$current_type_index];
+  $first_banner_block_ids = $sandbox['first_banner_block_ids'];
+
+  // Query blocks of current type.
+  $query = $block_storage->getQuery();
+  $query->accessCheck(FALSE)
+    ->condition('type', $current_type)
+    ->range($sandbox['current_block_index'], $blocks_per_iteration);
+
+  $ids = $query->execute();
+
+  // Process blocks.
+  $updated_in_iteration = 0;
+  foreach ($ids as $id) {
+    $block = $block_storage->load($id);
+    $latestRevisionId = $block_storage->getLatestRevisionId($id);
+
+    if (!$latestRevisionId) {
+      $latestRevision = $block_storage->createRevision($block);
+    }
+    else {
+      $latestRevision = $block_storage->loadRevision($latestRevisionId);
+    }
+
+    // Only update if this block is first in a banner section AND
+    // currently has 'default' padding.
+    if ($latestRevision->hasField('field_padding_options') &&
+        !$latestRevision->get('field_padding_options')->isEmpty() &&
+        $latestRevision->get('field_padding_options')->value === 'default' &&
+        in_array($id, $first_banner_block_ids)) {
+
+      $latestRevision->set('field_padding_options', 'no_top');
+      $latestRevision->save();
+      $updated_in_iteration++;
+      $sandbox['total_updated']++;
+
+      // Track updates per type.
+      if (!isset($sandbox['type_results'][$current_type])) {
+        $sandbox['type_results'][$current_type] = 0;
+      }
+      $sandbox['type_results'][$current_type]++;
+    }
+
+    $sandbox['processed_blocks']++;
+  }
+
+  // Move to next position.
+  if (count($ids) < $blocks_per_iteration) {
+    // Finished with this block type, move to next.
+    if (isset($sandbox['type_results'][$current_type]) && $sandbox['type_results'][$current_type] > 0) {
+      $sandbox['results'][] = t('@type: @count block(s) updated from "default" to "no_top"', [
+        '@type' => $current_type,
+        '@count' => $sandbox['type_results'][$current_type],
+      ]);
+    }
+
+    $sandbox['current_type_index']++;
+    $sandbox['current_block_index'] = 0;
+  }
+  else {
+    // More blocks in this type to process.
+    $sandbox['current_block_index'] += $blocks_per_iteration;
+  }
+
+  // Calculate progress.
+  $sandbox['#finished'] = $sandbox['total_blocks'] > 0
+    ? $sandbox['processed_blocks'] / $sandbox['total_blocks']
+    : 1;
+}
+
+/**
+ * Implements hook_update().
+ *
+ * Sets default field_line_treatment value to 'default' for all existing
+ * link_grid blocks that don't have this field set.
+ */
+function ys_core_update_10009() {
+  $logger = \Drupal::logger('ys_core');
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+
+  // Query all link_grid blocks.
+  $query = $block_storage->getQuery();
+  $query->accessCheck(FALSE)
+    ->condition('type', 'link_grid');
+  $ids = $query->execute();
+
+  if (empty($ids)) {
+    return t('No link_grid blocks found to update.');
+  }
+
+  $updated = 0;
+  foreach ($ids as $id) {
+    $block = $block_storage->load($id);
+    if (!$block) {
+      continue;
+    }
+
+    // Check if field_line_treatment is empty and set to 'default'.
+    if ($block->hasField('field_line_treatment') && $block->get('field_line_treatment')->isEmpty()) {
+      $block->set('field_line_treatment', 'default');
+      $block->save();
+      $updated++;
+    }
+  }
+
+  $logger->info('Updated @count link_grid block(s) with default field_line_treatment value.', ['@count' => $updated]);
+  return t('Updated @count link_grid block(s) with default field_line_treatment value.', ['@count' => $updated]);
+}
+
+/**
+ * Helper function to populate Academic Years vocabulary.
+ *
+ * Generates academic year terms from 2026-2027 back to 2000-2001.
+ *
+ * @return int
+ *   The number of terms created.
+ */
+function ys_core_populate_academic_years_terms() {
+  $term_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
+
+  // Check if academic_years vocabulary exists.
+  $vocabulary_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_vocabulary');
+  if (!$vocabulary_storage->load('academic_years')) {
+    return 0;
+  }
+
+  // Get existing terms to avoid duplicates.
+  $existing_terms = $term_storage->loadByProperties(['vid' => 'academic_years']);
+  $existing_names = [];
+  foreach ($existing_terms as $term) {
+    $existing_names[] = $term->getName();
+  }
+
+  // Generate academic year terms from 2026-2027 back to 2000-2001.
+  $weight = 0;
+  $created = 0;
+  for ($start_year = 2026; $start_year >= 2000; $start_year--) {
+    $end_year = $start_year + 1;
+    $term_name = $start_year . '-' . $end_year;
+
+    // Skip if term already exists.
+    if (in_array($term_name, $existing_names)) {
+      continue;
+    }
+
+    Term::create([
+      'vid' => 'academic_years',
+      'name' => $term_name,
+      'weight' => $weight,
+    ])->save();
+
+    $created++;
+    $weight++;
+  }
+
+  return $created;
+}
+
+/**
+ * Populate Academic Years vocabulary from 2026-2027 back to 2000-2001.
+ */
+function ys_core_update_10010() {
+  $created = ys_core_populate_academic_years_terms();
+
+  if ($created === 0) {
+    return t('Academic Years vocabulary does not exist or all terms already exist.');
+  }
+
+  return t('Populated Academic Years vocabulary with @count terms from 2026-2027 to 2000-2001.', ['@count' => $created]);
+}
+
+/**
+ * Remove fpa and js_cookie schema entries left behind after module removal.
+ *
+ * These modules were removed from composer.json without a proper drush
+ * pm-uninstall first. By the time this hook runs, the module files are already
+ * gone (composer install removed them), so we clean up the orphaned system
+ * schema entries manually to allow config import to succeed.
+ */
+function ys_core_update_10011() {
+  $modules = ['fpa', 'js_cookie'];
+  $removed = [];
+
+  foreach ($modules as $module) {
+    $schema_exists = \Drupal::database()
+      ->select('key_value', 'kv')
+      ->fields('kv', ['name'])
+      ->condition('collection', 'system.schema')
+      ->condition('name', $module)
+      ->execute()
+      ->fetchField();
+
+    if ($schema_exists) {
+      \Drupal::database()
+        ->delete('key_value')
+        ->condition('collection', 'system.schema')
+        ->condition('name', $module)
+        ->execute();
+
+      $removed[] = $module;
+    }
+  }
+
+  if (empty($removed)) {
+    return t('No fpa or js_cookie schema entries found; nothing to remove.');
+  }
+
+  return t('Removed system.schema entries for: @modules.', [
+    '@modules' => implode(', ', $removed),
+  ]);
+}
+
+/**
+ * Populate DCN Types vocabulary with default identifier type terms.
+ *
+ * New site installs receive these terms via the ys_starterkit terms migration.
+ * This hook seeds them on existing sites where the migration has already run.
+ */
+function ys_core_update_10012() {
+  $term_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
+
+  if (!\Drupal::entityTypeManager()->getStorage('taxonomy_vocabulary')->load('dcn_types')) {
+    return t('DCN Types vocabulary does not exist; skipping.');
+  }
+
+  $existing_names = array_map(
+    fn($term) => $term->getName(),
+    $term_storage->loadByProperties(['vid' => 'dcn_types'])
+  );
+
+  $default_terms = ['DOI', 'ISBN', 'ISSN', 'Report Number'];
+  $created = 0;
+
+  foreach ($default_terms as $weight => $term_name) {
+    if (in_array($term_name, $existing_names)) {
+      continue;
+    }
+
+    Term::create([
+      'vid' => 'dcn_types',
+      'name' => $term_name,
+      'weight' => $weight,
+    ])->save();
+
+    $created++;
+  }
+
+  if ($created === 0) {
+    return t('All DCN Types terms already exist; nothing to create.');
+  }
+
+  return t('Populated DCN Types vocabulary with @count terms.', ['@count' => $created]);
+}
+
+/**
+ * Migrate Resource text fields from basic_html to restricted_html.
+ */
+function ys_core_update_10013(&$sandbox) {
+  $fields = ['field_abstract', 'field_citation', 'field_content_description'];
+  $allowed_tags = '<a><br><p><strong><em>';
+
+  $node_type = \Drupal::entityTypeManager()->getStorage('node_type')->load('resource');
+  if (!$node_type) {
+    return t('Resource content type does not exist; skipping text format migration.');
+  }
+
+  if (!isset($sandbox['nids'])) {
+    $sandbox['nids'] = array_values(\Drupal::entityQuery('node')
+      ->condition('type', 'resource')
+      ->accessCheck(FALSE)
+      ->execute());
+    $sandbox['total'] = count($sandbox['nids']);
+    $sandbox['current'] = 0;
+
+    if ($sandbox['total'] === 0) {
+      return t('No resource nodes found; nothing to migrate.');
+    }
+  }
+
+  $batch_size = 50;
+  $nids = array_slice($sandbox['nids'], $sandbox['current'], $batch_size);
+
+  $nodes = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($nids);
+  foreach ($nodes as $node) {
+    $changed = FALSE;
+    foreach ($fields as $field_name) {
+      if ($node->hasField($field_name) && !$node->get($field_name)->isEmpty()) {
+        $value = $node->get($field_name)->first();
+        if ($value->format === 'basic_html') {
+          $value->format = 'restricted_html';
+          $value->value = strip_tags($value->value, $allowed_tags);
+          $changed = TRUE;
+        }
+      }
+    }
+    if ($changed) {
+      $node->save();
+    }
+  }
+
+  $sandbox['current'] += $batch_size;
+  $sandbox['#finished'] = $sandbox['total'] > 0
+    ? min(1, $sandbox['current'] / $sandbox['total'])
+    : 1;
+
+  return t('Migrated text format for @current of @total resource nodes.', [
+    '@current' => min($sandbox['current'], $sandbox['total']),
+    '@total' => $sandbox['total'],
+  ]);
+}
+
+/**
+ * Populate the Page Category vocabulary with default starter terms.
+ *
+ * The vocabulary shipped empty, so the selector gave editors no guidance
+ * (issue #575). Seed a starting set of terms, skipping any that already exist
+ * by name so the helper is safe to re-run and does not clobber site-added
+ * terms.
+ *
+ * @return int
+ *   The number of terms created.
+ */
+function ys_core_populate_page_category_terms() {
+  $vocabulary_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_vocabulary');
+  if (!$vocabulary_storage->load('page_category')) {
+    return 0;
+  }
+
+  $term_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
+
+  // Existing term names, to avoid duplicates on re-run.
+  $existing_names = [];
+  foreach ($term_storage->loadByProperties(['vid' => 'page_category']) as $term) {
+    $existing_names[] = $term->getName();
+  }
+
+  $default_terms = [
+    'Featured',
+    'About',
+    'Research',
+    'Academics',
+    'Contact',
+    'Landing Page',
+  ];
+
+  $created = 0;
+  foreach ($default_terms as $weight => $name) {
+    if (in_array($name, $existing_names, TRUE)) {
+      continue;
+    }
+
+    Term::create([
+      'vid' => 'page_category',
+      'name' => $name,
+      'weight' => $weight,
+    ])->save();
+
+    $created++;
+  }
+
+  return $created;
+}
+
+/**
+ * Populate the Page Category vocabulary with default starter terms.
+ *
+ * New site installs receive these terms via the ys_starterkit terms migration.
+ * This hook seeds them on existing sites where the migration has already run.
+ */
+function ys_core_update_10014() {
+  $created = ys_core_populate_page_category_terms();
+
+  if ($created === 0) {
+    return t('Page Category vocabulary does not exist or all default terms already exist.');
+  }
+
+  return t('Populated Page Category vocabulary with @count default terms.', ['@count' => $created]);
+}
+
+/**
+ * Remove the ys_servicenow system.schema entry after module removal.
+ *
+ * The unused ys_servicenow module was removed (issue #1372). By the time this
+ * hook runs on an existing site the module files are already gone, so - like
+ * ys_core_update_10011 - we clean up the orphaned system.schema entry manually
+ * so config import (which no longer lists the module in core.extension) can
+ * succeed.
+ */
+function ys_core_update_10015() {
+  $module = 'ys_servicenow';
+
+  $schema_exists = \Drupal::database()
+    ->select('key_value', 'kv')
+    ->fields('kv', ['name'])
+    ->condition('collection', 'system.schema')
+    ->condition('name', $module)
+    ->execute()
+    ->fetchField();
+
+  if (!$schema_exists) {
+    return t('No @module schema entry found; nothing to remove.', ['@module' => $module]);
+  }
+
+  \Drupal::database()
+    ->delete('key_value')
+    ->condition('collection', 'system.schema')
+    ->condition('name', $module)
+    ->execute();
+
+  return t('Removed system.schema entry for @module.', ['@module' => $module]);
+}
+
+/**
+ * Finish uninstalling ys_servicenow by removing it from active core.extension.
+ *
+ * Ys_servicenow was removed from the codebase (issue #1372) and update 10015
+ * cleared its system.schema entry, but the module was left listed as installed
+ * in the active core.extension. Its files are gone, so
+ * ModuleInstaller::uninstall() cannot run (it needs the files to invoke the
+ * module's uninstall hooks), and a config import fails because it cannot
+ * reconcile removing an installed-but-missing module. Existing sites still
+ * carry it in core.extension, so remove it directly here: the deploy runs
+ * updatedb before config import, so this clears the module first and the
+ * import then succeeds across all sites. The system.schema entry is cleaned
+ * defensively too, so a site that somehow skipped 10015 is still repaired.
+ */
+function ys_core_update_10016() {
+  $module = 'ys_servicenow';
+  $cleaned = [];
+
+  // Remove from the active core.extension module list. The module's files are
+  // gone, so this direct edit stands in for ModuleInstaller::uninstall().
+  $extension = \Drupal::configFactory()->getEditable('core.extension');
+  $modules = $extension->get('module') ?? [];
+  if (array_key_exists($module, $modules)) {
+    unset($modules[$module]);
+    $extension->set('module', $modules)->save();
+    $cleaned[] = 'core.extension';
+  }
+
+  // Defensively clear the orphaned system.schema entry (10015 already does this
+  // on most sites; safe to repeat).
+  $schema_exists = \Drupal::database()
+    ->select('key_value', 'kv')
+    ->fields('kv', ['name'])
+    ->condition('collection', 'system.schema')
+    ->condition('name', $module)
+    ->execute()
+    ->fetchField();
+  if ($schema_exists) {
+    \Drupal::database()
+      ->delete('key_value')
+      ->condition('collection', 'system.schema')
+      ->condition('name', $module)
+      ->execute();
+    $cleaned[] = 'system.schema';
+  }
+
+  if (empty($cleaned)) {
+    return t('@module already fully removed; nothing to do.', ['@module' => $module]);
+  }
+
+  return t('Uninstalled @module (cleaned: @what).', [
+    '@module' => $module,
+    '@what' => implode(', ', $cleaned),
+  ]);
+}
+
+/**
+ * Re-repair sites still carrying ys_servicenow in active core.extension.
+ *
+ * Update 10016 removes ys_servicenow from the active core.extension, but a
+ * hook_update_N runs only once per site. Some existing sites still list
+ * ys_servicenow in active core.extension even though 10016 is recorded as run:
+ * a `drush deploy` whose synced config still referenced the (now file-less)
+ * module made the config importer try to install ys_servicenow, and
+ * ModuleInstaller::install() writes the module into active core.extension
+ * before it fails resolving the missing files. That left the module in
+ * core.extension while ys_core's schema had already advanced past 10016, so
+ * 10016 never runs again to clean it up.
+ *
+ * On those sites every later deploy dies in config import: installing any new
+ * module rebuilds the full module list from active core.extension
+ * (ModuleInstaller::install()), and getPath('ys_servicenow') throws
+ * UnknownExtensionException because the files are gone. Synced config no longer
+ * references ys_servicenow, so the only remaining fix is to strip it from
+ * active core.extension again under a fresh schema number. updatedb runs before
+ * config import, so this clears the module first and the import then succeeds.
+ * Idempotent: a no-op on sites already clean.
+ */
+function ys_core_update_10018() {
+  $module = 'ys_servicenow';
+  $cleaned = [];
+
+  // Remove from the active core.extension module list. The module's files are
+  // gone, so this direct edit stands in for ModuleInstaller::uninstall().
+  $extension = \Drupal::configFactory()->getEditable('core.extension');
+  $modules = $extension->get('module') ?? [];
+  if (array_key_exists($module, $modules)) {
+    unset($modules[$module]);
+    $extension->set('module', $modules)->save();
+    $cleaned[] = 'core.extension';
+  }
+
+  // Defensively clear any orphaned system.schema entry too.
+  $schema_exists = \Drupal::database()
+    ->select('key_value', 'kv')
+    ->fields('kv', ['name'])
+    ->condition('collection', 'system.schema')
+    ->condition('name', $module)
+    ->execute()
+    ->fetchField();
+  if ($schema_exists) {
+    \Drupal::database()
+      ->delete('key_value')
+      ->condition('collection', 'system.schema')
+      ->condition('name', $module)
+      ->execute();
+    $cleaned[] = 'system.schema';
+  }
+
+  if (empty($cleaned)) {
+    return t('@module already fully removed; nothing to do.', ['@module' => $module]);
+  }
+
+  return t('Uninstalled @module (cleaned: @what).', [
+    '@module' => $module,
+    '@what' => implode(', ', $cleaned),
+  ]);
 }

@@ -1,0 +1,19 @@
+uuid: b7281f75-c1d5-46ac-8671-485b2cb280d3
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_list_heading
+    - paragraphs.paragraphs_type.link_list
+id: paragraph.link_list.field_list_heading
+field_name: field_list_heading
+entity_type: paragraph
+bundle: link_list
+label: 'Link list heading'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

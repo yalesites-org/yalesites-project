@@ -1,0 +1,6 @@
+# Adds an action link to the manage profiles interface.
+ys_migrate.csv_import_profiles:
+  route_name: ys_migrate.profile_csv_import
+  title: 'CSV Import'
+  appears_on:
+    - view.manage_profiles.page_1

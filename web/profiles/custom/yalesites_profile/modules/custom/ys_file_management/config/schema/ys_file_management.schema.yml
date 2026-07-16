@@ -1,0 +1,12 @@
+# Schema for YaleSites File Management configuration.
+
+ys_file_management.settings:
+  type: config_object
+  label: 'YaleSites File Management settings'
+  mapping:
+    delete_file_default:
+      type: boolean
+      label: 'Delete file by default'
+    disable_delete_control:
+      type: boolean
+      label: 'Disable delete control'

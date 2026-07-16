@@ -1,0 +1,169 @@
+/**
+ * @file
+ * Styles for Facts and Figures icon preview functionality.
+ * 
+ * Provides styling for the live icon preview in the admin interface.
+ * Compatible with Chosen select enhancement.
+ */
+
+/* Wrapper to position select and preview side by side */
+.icon-field-wrapper {
+  display: flex;
+  gap: var(--gin-spacing-s);
+  align-items: stretch;
+}
+
+.icon-field-wrapper .form-select,
+.icon-field-wrapper .chosen-container {
+  flex: 1;
+  min-width: 0; /* Allow flexbox item to shrink */
+}
+
+.icon-preview {
+  margin: 0;
+  padding: var(--gin-spacing-s);
+  border: 1px solid var(--gin-border-color);
+  border-radius: var(--gin-border-xs);
+  background-color: var(--gin-bg-input);
+  display: flex;
+  align-items: center;
+  transition: var(--gin-transition);
+  font-size: var(--gin-font-size-s);
+  line-height: 1.4;
+  color: var(--gin-color-text);
+  flex-shrink: 0;
+  width: fit-content;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.icon-preview.has-fallback {
+  border-color: var(--gin-color-warning);
+  background-color: var(--gin-bg-warning-light);
+}
+
+.icon-preview-icon {
+  width: var(--gin-spacing-xl);
+  height: var(--gin-spacing-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--gin-bg-layer);
+  border: 1px solid var(--gin-border-color-secondary);
+  border-radius: var(--gin-border-xs);
+  color: var(--gin-color-text);
+  font-size: var(--gin-font-size);
+  flex-shrink: 0;
+}
+
+.icon-preview-icon svg {
+  width: var(--gin-spacing-l);
+  height: var(--gin-spacing-l);
+  fill: currentColor;
+}
+
+.icon-preview-icon i {
+  display: inline-block;
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  line-height: 1;
+}
+
+.no-icon-selected {
+  font-size: var(--gin-font-size-s);
+  color: var(--gin-color-text-light);
+  font-style: italic;
+  width: 100%;
+}
+
+.preview-loading {
+  font-size: var(--gin-font-size-s);
+  color: var(--gin-color-text-light);
+  font-style: italic;
+  width: 100%;
+}
+
+.preview-fallback {
+  font-size: var(--gin-font-size-s);
+  color: var(--gin-color-warning);
+  font-weight: var(--gin-font-weight-semibold);
+  width: 100%;
+}
+
+/* Focus states for accessibility */
+.icon-field-wrapper .facts-icon-selector:focus ~ .icon-preview,
+.icon-field-wrapper .chosen-container:focus-within ~ .icon-preview {
+  outline: 2px solid var(--gin-color-focus);
+  outline-offset: 2px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .icon-field-wrapper {
+    flex-direction: column;
+    gap: var(--gin-spacing-xs);
+  }
+  
+  .icon-preview {
+    min-width: 0;
+    max-width: none;
+  }
+  
+  .icon-preview-icon {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+}
+
+/* Dark mode support (if implemented) */
+@media (prefers-color-scheme: dark) {
+  .icon-preview {
+    background-color: #1f2937;
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+  
+  .icon-preview.has-fallback {
+    background-color: #451a03;
+    border-color: #f59e0b;
+  }
+  
+  .icon-preview-icon {
+    background-color: #374151;
+    border-color: #6b7280;
+    color: #f9fafb;
+  }
+  
+  .no-icon-selected {
+    color: #9ca3af;
+  }
+  
+  .preview-loading {
+    color: #9ca3af;
+  }
+  
+  .preview-fallback {
+    color: #fbbf24;
+  }
+}
+
+/* Chosen width styling to match other form elements */
+.field--widget-options-select div.chosen-container.form-select,
+#drupal-off-canvas-wrapper .field--widget-options-select div.chosen-container.form-select {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.field--widget-options-select div.chosen-container.form-select .chosen-single,
+#drupal-off-canvas-wrapper .field--widget-options-select div.chosen-container.form-select .chosen-single {
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.field--widget-options-select div.chosen-container.form-select .chosen-drop,
+#drupal-off-canvas-wrapper .field--widget-options-select div.chosen-container.form-select .chosen-drop {
+  width: 100% !important;
+  box-sizing: border-box;
+}
+

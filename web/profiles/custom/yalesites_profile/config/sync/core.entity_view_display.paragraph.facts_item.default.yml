@@ -4,9 +4,11 @@ status: true
 dependencies:
   config:
     - field.field.paragraph.facts_item.field_heading
+    - field.field.paragraph.facts_item.field_icon
     - field.field.paragraph.facts_item.field_text
     - paragraphs.paragraphs_type.facts_item
   module:
+    - options
     - text
 id: paragraph.facts_item.default
 targetEntityType: paragraph
@@ -28,4 +30,5 @@ content:
     weight: 2
     region: content
 hidden:
+  field_icon: true
   search_api_excerpt: true

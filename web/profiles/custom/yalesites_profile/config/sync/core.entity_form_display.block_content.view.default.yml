@@ -7,6 +7,7 @@ dependencies:
     - field.field.block_content.view.field_heading
     - field.field.block_content.view.field_heading_links
     - field.field.block_content.view.field_instructions
+    - field.field.block_content.view.field_padding_options
     - field.field.block_content.view.field_view_params
   module:
     - allowed_formats
@@ -81,6 +82,12 @@ content:
   field_instructions:
     type: markup
     weight: 0
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_padding_options:
+    type: options_select
+    weight: 10
     region: content
     settings: {  }
     third_party_settings: {  }

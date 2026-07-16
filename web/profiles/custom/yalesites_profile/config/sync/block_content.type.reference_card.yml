@@ -30,4 +30,4 @@ third_party_settings:
 id: reference_card
 label: 'Reference card'
 revision: true
-description: 'Select an existing Post, Event, or Profile to display a single card.'
+description: 'Select an existing Page, Post, Event, or Profile to display a single card.'

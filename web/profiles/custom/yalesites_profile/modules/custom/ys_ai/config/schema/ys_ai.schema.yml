@@ -1,0 +1,22 @@
+ys_ai.settings:
+  type: config_object
+  label: 'YaleSites AI settings'
+  mapping:
+    enable:
+      type: boolean
+      label: 'Enable chat widget'
+    enable_embedding:
+      type: boolean
+      label: 'Enable embedding services'
+    prompts:
+      type: sequence
+      label: 'Initial prompts'
+      sequence:
+        type: string
+        label: 'Prompt text'
+    disclaimer:
+      type: text
+      label: 'Disclaimer text'
+    footer:
+      type: text
+      label: 'Footer text'

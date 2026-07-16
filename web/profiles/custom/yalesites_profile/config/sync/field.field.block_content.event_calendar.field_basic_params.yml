@@ -1,0 +1,21 @@
+uuid: 0efc95d0-be1c-44cc-bffa-dafc2e19c017
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.event_calendar
+    - field.storage.block_content.field_basic_params
+  module:
+    - ys_views_basic
+id: block_content.event_calendar.field_basic_params
+field_name: field_basic_params
+entity_type: block_content
+bundle: event_calendar
+label: 'Basic params'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: event_calendar_basic_params

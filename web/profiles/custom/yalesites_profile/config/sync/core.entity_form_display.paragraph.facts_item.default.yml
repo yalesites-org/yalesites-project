@@ -4,10 +4,12 @@ status: true
 dependencies:
   config:
     - field.field.paragraph.facts_item.field_heading
+    - field.field.paragraph.facts_item.field_icon
     - field.field.paragraph.facts_item.field_text
     - paragraphs.paragraphs_type.facts_item
   module:
     - allowed_formats
+    - chosen_field
     - maxlength
     - text
 id: paragraph.facts_item.default
@@ -17,7 +19,7 @@ mode: default
 content:
   field_heading:
     type: text_textfield
-    weight: 0
+    weight: 1
     region: content
     settings:
       size: 60
@@ -30,6 +32,12 @@ content:
         maxlength_js: 80
         maxlength_js_label: 'Content recommended length set to @limit characters, remaining: <strong>@remaining</strong>'
         maxlength_js_enforce: false
+  field_icon:
+    type: chosen_select
+    weight: 0
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_text:
     type: text_textarea
     weight: 2

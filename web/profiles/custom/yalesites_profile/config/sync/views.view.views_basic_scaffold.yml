@@ -243,7 +243,7 @@ display:
             items_per_page_options_all_label: '- All -'
             offset: 0
             offset_label: Offset
-          quantity: '9'
+          quantity: '5'
       exposed_form:
         type: basic
         options:
@@ -272,7 +272,7 @@ display:
           plugin_id: text
           empty: true
           content:
-            value: 'No results found.'
+            value: "<div class=\"view-empty-wrapper\">\r\n   <h2 class=\"inline-message__heading\">Nothing to share right now.</h2>\r\n   <p class=\"inline-message__text\">Please check back soon or explore our site.</p>\r\n</div>"
             format: basic_html
           tokenize: false
       sorts:
@@ -498,6 +498,45 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
+        post_publish_date:
+          id: post_publish_date
+          table: node_field_data
+          field: post_publish_date
+          relationship: none
+          group_type: group
+          admin_label: ''
+          entity_type: node
+          plugin_id: post_publish_date
+          operator: '='
+          value: ''
+          group: 1
+          exposed: false
+          expose:
+            operator_id: ''
+            label: ''
+            description: ''
+            use_operator: false
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: ''
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
         combine:
           id: combine
           table: views
@@ -561,7 +600,7 @@ display:
           exposed: true
           expose:
             operator_id: post_year_filter_op
-            label: 'News by Year'
+            label: 'View by Year'
             description: ''
             use_operator: false
             operator: post_year_filter_op
@@ -861,7 +900,7 @@ display:
         options:
           query_comment: ''
           disable_sql_rewrite: false
-          distinct: false
+          distinct: true
           replica: false
           query_tags: {  }
       relationships: {  }

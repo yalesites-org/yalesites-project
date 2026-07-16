@@ -15,6 +15,7 @@ dependencies:
     - maxlength
     - media_library
     - text
+    - ys_themes
 id: paragraph.tile.default
 targetEntityType: paragraph
 bundle: tile
@@ -56,7 +57,7 @@ content:
       media_types: {  }
     third_party_settings: {  }
   field_style_color:
-    type: options_select
+    type: component_color_picker
     weight: 4
     region: content
     settings: {  }
