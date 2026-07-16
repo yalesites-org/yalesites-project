@@ -83,6 +83,7 @@ module:
   mailchimp_transactional: 0
   mailsystem: 0
   markup: 0
+  mathjax: 0
   maxlength: 0
   media: 0
   media_entity_download: 0
@@ -157,15 +158,16 @@ module:
   ys_book: 0
   ys_campus_groups: 0
   ys_captcha: 0
+  ys_content_export: 0
   ys_dcn_field: 0
   ys_file_management: 0
   ys_integrations: 0
   ys_layouts: 0
   ys_localist: 0
   ys_mail: 0
+  ys_mathjax: 0
   ys_migrate: 0
   ys_node_access: 0
-  ys_servicenow: 0
   ys_starterkit: 0
   ys_taxonomy_manager: 0
   ys_toolbar: 0

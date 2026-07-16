@@ -1,0 +1,13 @@
+diff --git a/search_api_html_element_filter.info.yml b/search_api_html_element_filter.info.yml
+index 361fdd1..2341b0a 100644
+--- a/search_api_html_element_filter.info.yml
++++ b/search_api_html_element_filter.info.yml
+@@ -1,7 +1,7 @@
+ name: 'Search API HTML Element Filter'
+ description: Includes a Search API preprocess plugin that can be used to remove certain elements from markup before it is indexed
+ type: module
+-core_version_requirement: ^8 || ^9 || ^10
++core_version_requirement: ^8 || ^9 || ^10 || ^11
+ package: Search
+ dependencies:
+   - search_api:search_api

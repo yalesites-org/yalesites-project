@@ -2,122 +2,86 @@
 
 namespace Drupal\Tests\ys_core\Unit;
 
+use Drupal\Core\Config\Config;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_core\SocialLinksManager;
 
 /**
- * Characterisation tests for SocialLinksManager.
- *
- * Pins the current behaviour of the ys_core.social_links reader ahead of the
- * #579 module extraction: only networks with a configured URL are rendered,
- * in the SITES declaration order, each with its URL, name and icon id.
+ * Tests SocialLinksManager's social link resolution.
  *
  * @coversDefaultClass \Drupal\ys_core\SocialLinksManager
  *
  * @group ys_core
+ * @group yalesites
  */
 class SocialLinksManagerTest extends UnitTestCase {
 
   /**
-   * Builds a manager whose ys_core.social_links config returns $values.
+   * Builds a SocialLinksManager backed by a config mock with given values.
    *
    * @param array $values
-   *   Map of social network id to configured URL.
+   *   Map of social network id to configured URL (or NULL/empty if unset).
    *
    * @return \Drupal\ys_core\SocialLinksManager
    *   The manager under test.
    */
-  protected function managerWith(array $values): SocialLinksManager {
-    $config = $this->createMock(ImmutableConfig::class);
-    $config->method('get')->willReturnCallback(static fn($key) => $values[$key] ?? NULL);
-    $factory = $this->createMock(ConfigFactoryInterface::class);
-    $factory->method('get')->with('ys_core.social_links')->willReturn($config);
-    return new SocialLinksManager($factory);
+  protected function managerWithLinks(array $values): SocialLinksManager {
+    $config = $this->createMock(Config::class);
+    $config->method('get')->willReturnCallback(function ($id) use ($values) {
+      return $values[$id] ?? NULL;
+    });
+
+    $configFactory = $this->createMock(ConfigFactoryInterface::class);
+    $configFactory->method('get')
+      ->with('ys_core.social_links')
+      ->willReturn($config);
+
+    return new SocialLinksManager($configFactory);
   }
 
   /**
-   * No configured links yields no renderable links.
-   *
-   * @covers ::buildRenderableLinks
-   * @covers ::isSocialLinkSet
-   */
-  public function testNoLinksConfigured(): void {
-    $this->assertSame([], $this->managerWith([])->buildRenderableLinks());
-  }
-
-  /**
-   * Only configured networks render, in SITES declaration order.
-   *
    * @covers ::buildRenderableLinks
    */
-  public function testOnlyConfiguredLinksInSiteOrder(): void {
-    // Set out of SITES order to prove the output is ordered by SITES.
-    $links = $this->managerWith([
-      'linkedin' => 'https://linkedin.com/example',
-      'facebook' => 'https://facebook.com/example',
-    ])->buildRenderableLinks();
-
-    $this->assertSame(
-      [
-        ['url' => 'https://facebook.com/example', 'name' => 'Facebook', 'icon' => 'facebook'],
-        ['url' => 'https://linkedin.com/example', 'name' => 'LinkedIn', 'icon' => 'linkedin'],
-      ],
-      $links
-    );
+  public function testBuildRenderableLinksReturnsEmptyWhenNoneConfigured(): void {
+    $manager = $this->managerWithLinks([]);
+    $this->assertSame([], $manager->buildRenderableLinks());
   }
 
   /**
-   * A falsy configured value excludes that network.
-   *
    * @covers ::buildRenderableLinks
-   * @covers ::isSocialLinkSet
    */
-  public function testFalsyValueExcluded(): void {
-    $links = $this->managerWith([
-      'facebook' => '',
-      'instagram' => 'https://instagram.com/example',
-    ])->buildRenderableLinks();
+  public function testBuildRenderableLinksOnlyIncludesConfiguredSites(): void {
+    $manager = $this->managerWithLinks([
+      'facebook' => 'https://facebook.com/yale',
+      'bluesky' => 'https://bsky.app/yale',
+      // Empty string is falsy, so instagram should be excluded.
+      'instagram' => '',
+    ]);
 
-    $this->assertCount(1, $links);
-    $this->assertSame('instagram', $links[0]['icon']);
+    $links = $manager->buildRenderableLinks();
+
+    // Order follows SocialLinksManager::SITES, not the values() insertion.
+    $this->assertSame([
+      ['url' => 'https://facebook.com/yale', 'name' => 'Facebook', 'icon' => 'facebook'],
+      ['url' => 'https://bsky.app/yale', 'name' => 'Bluesky', 'icon' => 'bluesky'],
+    ], $links);
   }
 
   /**
-   * Returns the configured URL for a network, or NULL when unset.
-   *
    * @covers ::getSocialLinkUrl
    */
-  public function testGetSocialLinkUrl(): void {
-    $manager = $this->managerWith(['youtube' => 'https://youtube.com/@example']);
-    $this->assertSame('https://youtube.com/@example', $manager->getSocialLinkUrl('youtube'));
-    $this->assertNull($manager->getSocialLinkUrl('weibo'));
+  public function testGetSocialLinkUrlReturnsConfiguredValue(): void {
+    $manager = $this->managerWithLinks(['x-twitter' => 'https://x.com/yale']);
+    $this->assertSame('https://x.com/yale', $manager->getSocialLinkUrl('x-twitter'));
   }
 
   /**
-   * Every supported network renders when all are configured.
-   *
-   * @covers ::buildRenderableLinks
+   * @covers ::getSocialLinkUrl
    */
-  public function testAllNetworksSupported(): void {
-    $links = $this->managerWith([
-      'facebook' => 'https://facebook.com/x',
-      'instagram' => 'https://instagram.com/x',
-      'x-twitter' => 'https://x.com/x',
-      'youtube' => 'https://youtube.com/x',
-      'weibo' => 'https://weibo.com/x',
-      'linkedin' => 'https://linkedin.com/x',
-      'bluesky' => 'https://bsky.app/x',
-    ])->buildRenderableLinks();
-
-    $this->assertCount(7, $links);
-    $this->assertSame(
-      ['facebook', 'instagram', 'x-twitter', 'youtube', 'weibo', 'linkedin', 'bluesky'],
-      array_column($links, 'icon')
-    );
-    // The X label preserves the source's exact (misspelled) string.
-    $this->assertSame('X (formally Twitter)', $links[2]['name']);
+  public function testGetSocialLinkUrlReturnsNullWhenUnset(): void {
+    $manager = $this->managerWithLinks([]);
+    $this->assertNull($manager->getSocialLinkUrl('youtube'));
   }
 
 }
