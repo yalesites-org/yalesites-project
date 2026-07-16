@@ -105,6 +105,11 @@
     "composer-exit-on-patch-failure": true,
     "patchLevel": {
       "drupal/core": "-p2"
+    },
+    "patches": {
+      "drupal/ai_vdb_provider_azure_ai_search": {
+        "Throw on a rejected document upload instead of reporting a silent success (YaleSites-Internal#1392)": "patches/ai_vdb_provider_azure_ai_search/insert-throws-on-failed-write.patch"
+      }
     }
   },
   "config": {
