@@ -29,7 +29,7 @@ ys_beacon.admin_settings:
     _form: '\Drupal\ys_beacon\Form\YsBeaconAdminSettings'
     _title: 'YaleSites Beacon administration'
   requirements:
-    _permission: 'administer ys beacon'
+    _ys_beacon_admin_access: 'TRUE'
 
 ys_beacon.instructions:
   path: '/admin/config/yalesites/ys-beacon/instructions'
