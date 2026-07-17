@@ -26,6 +26,9 @@ services:
       - '@ys_beacon.rag_retriever'
       - '@ys_beacon.prompt_builder'
 
+  ys_beacon.markdown_converter:
+    class: Drupal\ys_beacon\Service\MarkdownConverter
+
   ys_beacon.system_instructions_storage:
     class: Drupal\ys_beacon\Service\SystemInstructionsStorage
     arguments:
@@ -108,6 +111,11 @@ services:
       - '@ys_beacon.authorization'
     tags:
       - { name: access_check, applies_to: _ys_beacon_authorized }
+
+  ys_beacon.admin_access_check:
+    class: Drupal\ys_beacon\Access\BeaconAdminAccessCheck
+    tags:
+      - { name: access_check, applies_to: _ys_beacon_admin_access }
 
   ys_beacon.config_overrides:
     class: Drupal\ys_beacon\Config\YsBeaconConfigOverrides

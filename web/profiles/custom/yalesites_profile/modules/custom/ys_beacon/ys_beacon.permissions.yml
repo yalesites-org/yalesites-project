@@ -1,7 +1,3 @@
-administer ys beacon:
-  title: 'Administer YaleSites Beacon'
-  description: 'Enable services and change sensitive Beacon settings.'
-  restrict access: true
 manage ys beacon settings:
   title: 'Manage YaleSites Beacon settings'
   description: 'Set and update Beacon content and display settings.'
