@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Chat from "./Chat";
@@ -54,5 +54,33 @@ describe("New chat button", () => {
       type: "UPDATE_CURRENT_CHAT",
       payload: null,
     });
+  });
+});
+
+describe("Chat input accessibility wiring", () => {
+  beforeEach(() => {
+    const widget = document.createElement("div");
+    widget.id = "ys-beacon-chat-widget";
+    widget.setAttribute(
+      "data-disclaimer",
+      "AI generated content may be incorrect."
+    );
+    document.body.appendChild(widget);
+  });
+
+  afterEach(() => {
+    document.getElementById("ys-beacon-chat-widget")?.remove();
+  });
+
+  it("points the question input's aria-describedby at the rendered disclaimer", () => {
+    renderChat();
+
+    const input = screen.getByRole("textbox");
+    const describedById = input.getAttribute("aria-describedby");
+    expect(describedById).toBeTruthy();
+
+    const disclaimer = document.getElementById(describedById as string);
+    expect(disclaimer).toBeInTheDocument();
+    expect(disclaimer).toHaveTextContent("AI generated content may be incorrect.");
   });
 });
