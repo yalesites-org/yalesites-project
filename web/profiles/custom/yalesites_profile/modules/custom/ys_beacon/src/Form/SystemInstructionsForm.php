@@ -5,15 +5,18 @@ namespace Drupal\ys_beacon\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\ys_beacon\Service\MarkdownConverter;
 use Drupal\ys_beacon\Service\SystemInstructionsStorage;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Form for managing the Beacon system instructions.
  *
- * Saving creates a new version in the local storage; the active version is
- * read at request time when the chat prompt is built, so no synchronization
- * step is needed.
+ * Instructions are authored in a CKEditor WYSIWYG (the restricted_html format)
+ * but stored and consumed as Markdown: HTML is converted to Markdown on save
+ * and back to HTML when the form loads. Saving creates a new version in local
+ * storage; the active version is read at request time when the chat prompt is
+ * built, so no synchronization step is needed.
  */
 class SystemInstructionsForm extends FormBase {
 
@@ -25,13 +28,23 @@ class SystemInstructionsForm extends FormBase {
   protected SystemInstructionsStorage $storage;
 
   /**
+   * The Markdown/HTML converter.
+   *
+   * @var \Drupal\ys_beacon\Service\MarkdownConverter
+   */
+  protected MarkdownConverter $markdownConverter;
+
+  /**
    * Constructs a SystemInstructionsForm.
    *
    * @param \Drupal\ys_beacon\Service\SystemInstructionsStorage $storage
    *   The system instructions storage.
+   * @param \Drupal\ys_beacon\Service\MarkdownConverter $markdown_converter
+   *   The Markdown/HTML converter.
    */
-  public function __construct(SystemInstructionsStorage $storage) {
+  public function __construct(SystemInstructionsStorage $storage, MarkdownConverter $markdown_converter) {
     $this->storage = $storage;
+    $this->markdownConverter = $markdown_converter;
   }
 
   /**
@@ -39,7 +52,8 @@ class SystemInstructionsForm extends FormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('ys_beacon.system_instructions_storage')
+      $container->get('ys_beacon.system_instructions_storage'),
+      $container->get('ys_beacon.markdown_converter')
     );
   }
 
@@ -94,16 +108,26 @@ class SystemInstructionsForm extends FormBase {
 
     $max_length = $this->getMaxInstructionsLength();
     $form['instructions'] = [
-      '#type' => 'textarea',
+      '#type' => 'text_format',
       '#title' => $this->t('System Instructions'),
-      '#description' => '<span id="instructions-character-count" class="character-count">' . $this->t('Content recommended length set to @max characters.', ['@max' => number_format($max_length)]) . '</span>',
-      '#default_value' => $active ? $active['instructions'] : '',
+      '#default_value' => $active ? $this->markdownConverter->toHtml($active['instructions']) : '',
+      '#format' => 'restricted_html',
+      '#allowed_formats' => ['restricted_html'],
       '#rows' => 15,
-      '#maxlength' => NULL,
-      '#attributes' => [
-        'data-maxlength' => $max_length,
-      ],
       '#required' => TRUE,
+    ];
+
+    // Character counter rendered below the editor; the JS keeps it in sync with
+    // the CKEditor content (see js/system-instructions.js).
+    $form['instructions_character_count'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'div',
+      '#value' => $this->t('Content recommended length set to @max characters.', ['@max' => number_format($max_length)]),
+      '#attributes' => [
+        'id' => 'instructions-character-count',
+        'class' => ['character-count'],
+        'aria-live' => 'polite',
+      ],
     ];
 
     $form['notes'] = [
@@ -125,6 +149,7 @@ class SystemInstructionsForm extends FormBase {
 
     // Settings for the character counter behavior.
     $form['#attached']['drupalSettings']['ysBeaconSystemInstructions'] = [
+      'maxLength' => $max_length,
       'warningThreshold' => $this->getWarningThreshold(),
     ];
 
@@ -135,12 +160,19 @@ class SystemInstructionsForm extends FormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    $raw = (string) $form_state->getValue('instructions');
-    $instructions = trim($raw);
+    // The text_format element returns ['value' => html, 'format' => ...]; the
+    // canonical stored form is the Markdown converted from that HTML, so all
+    // validation (and the saved value) operates on the Markdown.
+    $value = $form_state->getValue('instructions');
+    $html = is_array($value) ? (string) ($value['value'] ?? '') : (string) $value;
+    $instructions = $this->markdownConverter->toMarkdown($html);
+
+    // Stash the converted Markdown so submitForm() does not re-convert.
+    $form_state->setValue('instructions_markdown', $instructions);
 
     // Core's #required check only catches a truly empty value; reject
-    // whitespace-only input here without doubling the empty-field error.
-    if ($instructions === '' && $raw !== '') {
+    // whitespace-only / markup-only input here without doubling the error.
+    if ($instructions === '' && trim($html) !== '') {
       $form_state->setErrorByName('instructions', $this->t('System instructions cannot be empty.'));
     }
 
@@ -157,7 +189,8 @@ class SystemInstructionsForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $instructions = trim($form_state->getValue('instructions'));
+    // Use the Markdown converted in validateForm() (canonical stored form).
+    $instructions = trim((string) $form_state->getValue('instructions_markdown'));
     $notes = trim($form_state->getValue('notes'));
 
     if (!$this->storage->areInstructionsDifferent($instructions)) {
