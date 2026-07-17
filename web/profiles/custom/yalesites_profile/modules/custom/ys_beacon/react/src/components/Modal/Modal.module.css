@@ -59,7 +59,8 @@
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* Citation Varition - content inner*/
@@ -78,9 +79,7 @@
 
 .modalHeader {
   padding: 1rem;
-  position: absolute;
-  backdrop-filter: blur(10px);
-  z-index: 900;
+  flex: 0 0 auto;
   width: 100%;
 }
 
@@ -94,11 +93,6 @@
 }
 
 @media screen and (max-width:500px) {
-  .modalHeader {
-      position: sticky;
-      top: 0;
-  }
-
   .modalFooter {
     position: relative;
   }
