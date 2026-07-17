@@ -134,4 +134,92 @@ class AiTesterCompareRenderTest extends UnitTestCase {
     $this->assertCount(4, $build['results']['#rows'][0]);
   }
 
+  /**
+   * The compare view renders unique sources as new-window citation links.
+   *
+   * @covers ::sideCell
+   * @covers ::citationLink
+   */
+  public function testCompareUniqueSourcesAreNewWindowLinks(): void {
+    $data = [
+      'run_a' => ['id' => 2, 'created' => 1000, 'yaml_filename' => 'a.yml', 'status' => 'complete'],
+      'run_b' => ['id' => 3, 'created' => 2000, 'yaml_filename' => 'b.yml', 'status' => 'complete'],
+      'pairs' => [
+        [
+          'question' => 'What is Yale?',
+          'status' => 'differs',
+          'a' => $this->side('Yale is a university.', 1, 2, FALSE),
+          'b' => $this->side('Yale is a private university.', 2, 2, FALSE),
+          'len_delta' => 7,
+          'citation_overlap' => [
+            'both' => [],
+            'only_a' => [
+              ['url' => 'https://a.example', 'title' => 'About A'],
+              ['url' => 'javascript:alert(1)', 'title' => 'Sneaky'],
+            ],
+            'only_b' => [['url' => 'https://news.yale.edu', 'title' => 'News']],
+          ],
+        ],
+      ],
+      'summary' => [
+        'total_compared' => 1,
+        'differ' => 1,
+        'identical' => 0,
+        'only_a' => 0,
+        'only_b' => 0,
+      ],
+    ];
+
+    $build = $this->controllerReturning($data)->compare(2, 3);
+    // Row 0, column index 2 is Run A's side cell; its 'unique' element lists
+    // the sources only Run A retrieved.
+    $unique = $build['results']['#rows'][0][2]['data']['unique'];
+
+    // The http(s) source becomes a link that opens in a new window, hardened
+    // with rel and carrying the visually-hidden a11y cue.
+    $link = $unique['link_0'];
+    $this->assertSame('link', $link['#type']);
+    $this->assertSame('_blank', $link['#attributes']['target']);
+    $this->assertSame('noopener noreferrer', $link['#attributes']['rel']);
+    $this->assertSame('https://a.example', $link['#url']->getUri());
+    $title = (string) $link['#title'];
+    $this->assertStringContainsString('About A', $title);
+    $this->assertStringContainsString('visually-hidden', $title);
+    $this->assertStringContainsString('opens in new window', $title);
+
+    // A non-http(s) URL never renders as a live link — it degrades to text.
+    $sneaky = $unique['link_1'];
+    $this->assertArrayNotHasKey('#type', $sneaky);
+    $this->assertArrayHasKey('#markup', $sneaky);
+    $this->assertStringNotContainsString('<a', (string) $sneaky['#markup']);
+  }
+
+  /**
+   * The single-run detail view links citations the same new-window way.
+   *
+   * @covers ::buildCitationsCell
+   * @covers ::citationLink
+   */
+  public function testDetailCitationsAreNewWindowLinks(): void {
+    $controller = $this->controllerReturning([]);
+    $method = new \ReflectionMethod($controller, 'buildCitationsCell');
+    $method->setAccessible(TRUE);
+
+    $cell = $method->invoke($controller, [
+      ['title' => 'Yale', 'url' => 'https://yale.edu', 'cited' => TRUE],
+      ['title' => 'No link', 'url' => 'mailto:x@example.com', 'cited' => FALSE],
+    ]);
+
+    $link = $cell['#items'][0]['link'];
+    $this->assertSame('link', $link['#type']);
+    $this->assertSame('_blank', $link['#attributes']['target']);
+    $this->assertSame('noopener noreferrer', $link['#attributes']['rel']);
+    $this->assertStringContainsString('opens in new window', (string) $link['#title']);
+
+    // Non-http(s) citation stays plain text.
+    $fallback = $cell['#items'][1]['link'];
+    $this->assertArrayNotHasKey('#type', $fallback);
+    $this->assertArrayHasKey('#markup', $fallback);
+  }
+
 }
