@@ -2,21 +2,26 @@
 
 namespace Drupal\ys_beacon\Form;
 
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\ys_beacon\Config\YsBeaconConfigOverrides;
 use Drupal\ys_beacon\Service\BeaconIndexManager;
+use Drupal\ys_beacon\Service\SystemPromptBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Platform-facing administration form for Beacon.
  *
  * Holds the sensitive, platform-operator settings restricted by the "administer
- * ys beacon" permission: the Azure AI Search index connection and the retrieval
+ * ys beacon" permission: the Azure AI Search index connection, the retrieval
  * and response tuning (sources per answer, relevance threshold, streaming, and
- * the fallback system prompt).
+ * the fallback system prompt), the site guardrail supplement, and the content
+ * indexing controls (re-index all / index now).
  */
 class YsBeaconAdminSettings extends ConfigFormBase {
+
+  use BeaconIndexingControlsTrait;
 
   /**
    * Config name.
@@ -38,6 +43,8 @@ class YsBeaconAdminSettings extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     $instance = parent::create($container);
     $instance->indexManager = $container->get('ys_beacon.index_manager');
+    $instance->entityTypeManager = $container->get('entity_type.manager');
+    $instance->indexingBatchHelper = $container->get('search_api.indexing_batch_helper');
     return $instance;
   }
 
@@ -149,6 +156,33 @@ class YsBeaconAdminSettings extends ConfigFormBase {
       '#disabled' => $chat_enabled,
     ];
 
+    $form['guardrail'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Guardrail'),
+      '#open' => FALSE,
+      '#weight' => 20,
+    ];
+    $form['guardrail']['platform_guardrail'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Platform guardrail (fixed)'),
+      '#open' => FALSE,
+      '#description' => $this->t('Defined in code and prepended to every chat request. It is identical on every YaleSites site and cannot be changed here.'),
+    ];
+    $form['guardrail']['platform_guardrail']['text'] = [
+      '#markup' => nl2br(Html::escape(SystemPromptBuilder::PLATFORM_GUARDRAIL)),
+    ];
+    $form['guardrail']['guardrail_supplement'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Additional guardrail rules for this site'),
+      '#description' => $this->t('Appended after the platform guardrail on every chat request. Use this to make this specific site stricter; it can add rules but never relax the platform guardrail.'),
+      '#default_value' => $config->get('guardrail_supplement'),
+      '#rows' => 4,
+    ];
+
+    // Both indexing controls live here; "Index now" is also mirrored on the
+    // site settings form.
+    $form['indexing'] = $this->buildIndexingControls(TRUE);
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -176,6 +210,7 @@ class YsBeaconAdminSettings extends ConfigFormBase {
       ->set('score_threshold', (float) $form_state->getValue('score_threshold'))
       ->set('streaming', (bool) $form_state->getValue('streaming'))
       ->set('fallback_system_prompt', $form_state->getValue('fallback_system_prompt'))
+      ->set('guardrail_supplement', $form_state->getValue('guardrail_supplement'))
       ->set('enable_metadata_fields', $enable_metadata_fields)
       ->set('query_entire_index', (bool) $form_state->getValue('query_entire_index'))
       ->save();

@@ -97,6 +97,11 @@ class IndexNowFormTest extends UnitTestCase {
     else {
       $tracker = $this->createMock(TrackerInterface::class);
       $tracker->method('getRemainingItemsCount')->willReturn($remaining);
+      // Stubbed as ints so indexStatusSummary()'s "@indexed of @total"
+      // placeholders never receive NULL (deprecated) when a caller renders the
+      // status alongside the remaining-items count.
+      $tracker->method('getIndexedItemsCount')->willReturn(0);
+      $tracker->method('getTotalItemsCount')->willReturn($remaining);
       $index->method('getTrackerInstance')->willReturn($tracker);
     }
     return $index;
@@ -339,6 +344,21 @@ class IndexNowFormTest extends UnitTestCase {
     ]));
 
     $this->invoke($form, 'saveIndexStatus', [TRUE]);
+  }
+
+  /**
+   * The site settings form mirrors "Index now" only, never "Re-index all".
+   *
+   * The re-index control moved to the Beacon administration form, so the site
+   * form asks the shared trait to build its indexing controls without it.
+   *
+   * @covers ::buildIndexingControls
+   */
+  public function testBuildIndexingControlsOmitsReindexOnSiteForm(): void {
+    $form = $this->buildForm($this->indexMock(TRUE, 5));
+    $element = $this->invoke($form, 'buildIndexingControls', [FALSE]);
+    $this->assertArrayNotHasKey('reindex', $element);
+    $this->assertArrayHasKey('index_now', $element);
   }
 
   /**
