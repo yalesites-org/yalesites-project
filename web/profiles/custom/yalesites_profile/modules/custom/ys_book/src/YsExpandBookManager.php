@@ -160,15 +160,12 @@ class YsExpandBookManager extends ExpandBookManager {
       // Allow book-specific theme overrides.
       $element['attributes'] = new Attribute();
 
-      // Store the node title for use by the cloned top-level item that is
-      // prepended to the dropdown in ys_book_preprocess_block().
+      // Store the node title separately in case a theme needs it.
       $element['node_title'] = $data['link']['node_title'] ?? $data['link']['title'];
 
       // Use the menu link title at every depth (it may be a custom title
       // set in the Content Collection sidebar widget, or fall back to the
-      // node title if none was set). The synthetic clone of the top-level
-      // item that reappears inside its own dropdown is a special case
-      // handled separately in ys_book_preprocess_block().
+      // node title if none was set).
       $element['title'] = $data['link']['title'];
 
       if (isset($data['link']['is_cas']) && $data['link']['is_cas']) {

@@ -431,11 +431,6 @@ function ys_book_preprocess_block(&$variables) {
         // We don't want any other subitems, just the top level.
         $clonedMenuItem['below'] = NULL;
 
-        // The cloned item appears in the dropdown, so use the node title
-        // rather than the menu link title (which is used for the top-level
-        // label only).
-        $clonedMenuItem['title'] = $clonedMenuItem['node_title'] ?? $clonedMenuItem['title'];
-
         array_unshift($menuItem['below'], $clonedMenuItem);
       }
     }
