@@ -143,21 +143,9 @@ class AiTesterController extends ControllerBase {
         : $this->t('retrieved, not cited');
 
       // The title links to its source when a URL is present; the cited flag
-      // lets a tester evaluate citation quality at a glance. Only http(s)
-      // schemes become links: citation URLs come from server-side entity/file
-      // URLs today, but allowlisting the scheme keeps a javascript: URI from
-      // ever rendering as a live link if that ever changes.
-      $scheme = $url !== NULL ? strtolower((string) parse_url($url, PHP_URL_SCHEME)) : '';
-      $link = in_array($scheme, ['http', 'https'], TRUE)
-        ? [
-          '#type' => 'link',
-          '#title' => $title,
-          '#url' => Url::fromUri($url),
-        ]
-        : ['#markup' => htmlspecialchars($title, ENT_QUOTES)];
-
+      // lets a tester evaluate citation quality at a glance.
       $items[] = [
-        'link' => $link,
+        'link' => $this->citationLink($title, $url),
         'flag' => ['#markup' => ' — <em>' . $flag . '</em>'],
         'url' => ($url !== NULL && $url !== '')
           ? ['#markup' => '<br><small>' . htmlspecialchars($url, ENT_QUOTES) . '</small>']
@@ -168,6 +156,46 @@ class AiTesterController extends ControllerBase {
     return [
       '#theme' => 'item_list',
       '#items' => $items,
+    ];
+  }
+
+  /**
+   * Builds a citation link that opens its source in a new window.
+   *
+   * Only http(s) URLs become links; any other scheme (or an empty/absent URL)
+   * degrades to escaped plain text. Citation URLs come from server-side
+   * entity/file URLs today, but allowlisting the scheme keeps a javascript:
+   * URI from ever rendering as a live link if that changes. New-window links
+   * carry rel="noopener noreferrer" and a visually-hidden "(opens in new
+   * window)" cue so assistive-tech users are warned of the context switch
+   * (WCAG 2.1 AA, technique G201).
+   *
+   * @param string $title
+   *   The link text.
+   * @param string|null $url
+   *   The citation URL, or NULL when the source has none.
+   *
+   * @return array
+   *   A #type link render element, or a #markup text fallback when the URL is
+   *   empty or not an http(s) link.
+   */
+  protected function citationLink(string $title, ?string $url): array {
+    $scheme = $url !== NULL ? strtolower((string) parse_url($url, PHP_URL_SCHEME)) : '';
+    if (!in_array($scheme, ['http', 'https'], TRUE)) {
+      return ['#markup' => htmlspecialchars($title, ENT_QUOTES)];
+    }
+
+    return [
+      '#type' => 'link',
+      '#title' => Markup::create(
+        htmlspecialchars($title, ENT_QUOTES)
+        . '<span class="visually-hidden"> ' . $this->t('(opens in new window)') . '</span>'
+      ),
+      '#url' => Url::fromUri($url),
+      '#attributes' => [
+        'target' => '_blank',
+        'rel' => 'noopener noreferrer',
+      ],
     ];
   }
 
@@ -404,14 +432,21 @@ class AiTesterController extends ControllerBase {
 
     $unique = $pair['citation_overlap'][$key === 'a' ? 'only_a' : 'only_b'];
     if ($unique) {
-      $titles = array_map(
-        static fn (array $source): string => trim($source['title']) !== '' ? $source['title'] : $source['url'],
-        $unique
-      );
-      $cell['unique'] = $this->wrap('ys-compare-unique', $this->t(
-        'Sources only here: @list',
-        ['@list' => implode(', ', $titles)]
-      ));
+      // Each unique source renders as a new-window link (falling back to text
+      // when non-linkable) so a reviewer can open a source without losing the
+      // comparison; a comma joins them into the "Sources only here:" line.
+      $cell['unique'] = [
+        '#type' => 'container',
+        '#attributes' => ['class' => ['ys-compare-unique']],
+        'label' => ['#markup' => $this->t('Sources only here:') . ' '],
+      ];
+      foreach (array_values($unique) as $i => $source) {
+        if ($i > 0) {
+          $cell['unique']['sep_' . $i] = ['#markup' => ', '];
+        }
+        $title = trim($source['title']) !== '' ? $source['title'] : $source['url'];
+        $cell['unique']['link_' . $i] = $this->citationLink($title, $source['url']);
+      }
     }
 
     return $cell;
