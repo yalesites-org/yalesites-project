@@ -58,12 +58,14 @@
   font-weight: var(--gin-font-weight-normal);
 }
 
-.form-textarea[data-maxlength].warning {
-  border-color: var(--gin-color-warning);
+.character-count.warning {
+  color: var(--gin-color-warning);
+  font-weight: var(--gin-font-weight-bold);
 }
 
-.form-textarea[data-maxlength].error {
-  border-color: var(--gin-color-danger);
+.character-count.error {
+  color: var(--gin-color-danger);
+  font-weight: var(--gin-font-weight-bold);
 }
 
 @media (max-width: 768px) {

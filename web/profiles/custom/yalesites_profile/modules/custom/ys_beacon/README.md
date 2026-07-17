@@ -63,12 +63,27 @@ The module is installed on every site and is off by default.
    - `portkey_embedding_api_key` - Portkey API key for embeddings
    - `azure_ai_search_api_key` - Azure AI Search admin key
    - `azure_ai_search_url` - Azure AI Search endpoint URL
-2. A platform administrator sets the per-site Azure index name at
-   `/admin/config/yalesites/ys-beacon/admin`. Until this is set, the Beacon
-   search index stays disabled at runtime and no Azure traffic occurs.
+2. User 1 (the platform superadmin) sets the per-site Azure index name at
+   `/admin/config/yalesites/ys-beacon/admin`. This administration form is
+   restricted to user 1 only — no other role, however privileged, can reach it
+   (`\Drupal\ys_beacon\Access\BeaconAdminAccessCheck`). Until the index name is
+   set, the Beacon search index stays disabled at runtime and no Azure traffic
+   occurs.
 3. A site administrator enables the chat widget at
    `/admin/config/yalesites/ys-beacon` (also reachable from
    `/admin/integrations`).
+
+Platform operators can also drive Beacon for a site from the **Beacon (AI Chat)**
+section of the Platform Admin Settings page (`/admin/yalesites/platform-admin-settings`,
+contributed by the `BeaconPlatformAdminSetting` plugin) without opening the
+per-site forms. Besides the "Allow site admins to configure and use Beacon"
+authorization flag, that section exposes an **Enable chat widget** toggle and
+**Re-index all content** / **Index now** buttons. These reuse the site settings
+form's handlers verbatim (via the class resolver) and the same
+`ys_beacon.settings:enable_chat` flag, so toggling or indexing from either place
+stays consistent. The indexing buttons follow the same guards as the site form:
+they are hidden with an explanatory note when the site borrows a read-only index,
+and "Index now" is disabled when nothing is queued.
 
 Secret values are never stored in Drupal config: the four key entities are
 Pantheon pointers (created by `config:import` as `key.key.*` config) whose
@@ -168,8 +183,9 @@ a new index must be provisioned, and all content re-indexed.
   `Index::startBatchTracking()`/`stopBatchTracking()` to defer indexing to
   cron. (Immediate indexing is gated on the index being enabled, so nothing
   runs while chat is off; see "Per-site configuration" above.)
-- Re-index everything: the button on the Beacon administration form, or
-  `drush sapi-r ys_beacon && drush sapi-i ys_beacon`.
+- Re-index everything: the button on the Beacon administration form, the same
+  "Re-index all content" / "Index now" buttons in the Platform Admin Settings
+  Beacon (AI Chat) section, or `drush sapi-r ys_beacon && drush sapi-i ys_beacon`.
 
 > The `drush` commands below use `ys_beacon`, the default Search API index id.
 > If a site overrides `ys_beacon.settings:search_index_id`, substitute that id.
