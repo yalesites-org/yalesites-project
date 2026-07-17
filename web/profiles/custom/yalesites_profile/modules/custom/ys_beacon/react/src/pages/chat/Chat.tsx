@@ -289,20 +289,21 @@ const Chat = () => {
         const questionPrompts = initialQuestions ? initialQuestions : [];
 
         /**
+         * Returns the first `num` prompts in the order the admin configured
+         * them, so they always display in the same sequence they were entered.
          *
-         * @param num A number of prompts to return
-         * @returns
+         * @param num The maximum number of prompts to return
+         * @returns The configured prompts, in order, capped at `num`
          */
-        const getMultipleRandomQuestionPrompts = (num: number | undefined) => {
-            const shuffled = [...questionPrompts].sort(() => 0.5 - Math.random());
-            return shuffled.slice(0, num);
+        const getInitialQuestionPrompts = (num: number | undefined) => {
+            return questionPrompts.slice(0, num);
         }
 
         /**
          * A list of prompts to show when the chat is empty.
          */
         if (!promptsLoaded) {
-            setPromptList(getMultipleRandomQuestionPrompts(4))
+            setPromptList(getInitialQuestionPrompts(4))
             setpromptsLoaded(true)
         }
     }, []);
