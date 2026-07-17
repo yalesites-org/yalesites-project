@@ -111,9 +111,10 @@ the form persists the Search API index `read_only` flag onto the index entity
 paths on `IndexInterface::isReadOnly()`. Because the flag is persisted on the
 entity rather than only applied as a runtime override, Search API's own index
 admin UI reflects it too, so its "Index now" / clear / reindex actions stand down
-as well. Both the site settings form (which mirrors "Index now") and the Beacon
-administration form (which hosts "Re-index all content" and "Index now") hide
-their indexing controls and show a note in this state.
+as well. Both the site settings form (which mirrors "Index now", and "Re-index
+all content" in the initial state) and the Beacon administration form (which
+hosts "Re-index all content" and "Index now") hide their indexing controls and
+show a note in this state.
 
 The read-only flag and the borrowed index name live in the config-ignored
 `ys_beacon.settings` as the site preference, and are written onto the synced
@@ -186,6 +187,11 @@ a new index must be provisioned, and all content re-indexed.
 - Re-index everything: the button on the Beacon administration form, the same
   "Re-index all content" / "Index now" buttons in the Platform Admin Settings
   Beacon (AI Chat) section, or `drush sapi-r ys_beacon && drush sapi-i ys_beacon`.
+  The site settings form (`/admin/config/yalesites/ys-beacon`) also surfaces
+  "Re-index all content" in the initial state only — the index enabled but with
+  nothing tracked yet (the "0 of 0" state right after the chat widget is first
+  turned on) — so a site administrator can seed indexing without leaving that
+  form; it disappears once any content is tracked.
 
 > The `drush` commands below use `ys_beacon`, the default Search API index id.
 > If a site overrides `ys_beacon.settings:search_index_id`, substitute that id.

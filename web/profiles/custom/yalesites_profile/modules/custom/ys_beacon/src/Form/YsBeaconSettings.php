@@ -138,9 +138,11 @@ class YsBeaconSettings extends ConfigFormBase {
       '#rows' => 2,
     ];
 
-    // Only the "Index now" control is mirrored here; the "Re-index all content"
-    // control lives on the Beacon administration form.
-    $form['indexing'] = $this->buildIndexingControls(FALSE);
+    // "Index now" is always mirrored here. The re-index control primarily
+    // lives on the Beacon administration form; the site form mirrors it only
+    // in the initial "0 of 0" state so an administrator can seed indexing
+    // right after enabling the chat widget. See shouldMirrorReindex().
+    $form['indexing'] = $this->buildIndexingControls($this->shouldMirrorReindex());
 
     // Link to the per-site system instructions when the user has access.
     $instructions_url = Url::fromRoute('ys_beacon.instructions');
@@ -234,6 +236,33 @@ class YsBeaconSettings extends ConfigFormBase {
     }
 
     parent::submitForm($form, $form_state);
+  }
+
+  /**
+   * Whether the site form should mirror the "Re-index all content" control.
+   *
+   * That control primarily lives on the Beacon administration form. The site
+   * settings form surfaces it only in the initial state - the index enabled but
+   * with nothing tracked yet (the "0 of 0" state right after the chat widget is
+   * first turned on) - so a site administrator can seed indexing from here.
+   * Once any content is tracked, re-indexing belongs on the administration form
+   * and the control is hidden here. A read-only borrower never writes its
+   * collection, so it is never offered either.
+   *
+   * @return bool
+   *   TRUE when the re-index control should appear on the site settings form.
+   */
+  protected function shouldMirrorReindex(): bool {
+    $index = $this->loadBeaconIndex();
+    if (!$index || !$index->status() || $index->isReadOnly()) {
+      return FALSE;
+    }
+    try {
+      return $index->getTrackerInstance()->getTotalItemsCount() === 0;
+    }
+    catch (\Throwable $e) {
+      return FALSE;
+    }
   }
 
   /**
