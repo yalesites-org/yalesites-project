@@ -57,6 +57,49 @@ describe("New chat button", () => {
   });
 });
 
+describe("Initial question prompts", () => {
+  // Configure MORE prompts than are shown so the test verifies both the order
+  // AND the selection: the component must show the first four in configured
+  // order, not a shuffled subset. A reintroduced random shuffle would render a
+  // different subset and/or order and fail this, without relying on any
+  // engine-specific Array.sort behavior.
+  const configuredPrompts = [
+    "First question",
+    "Second question",
+    "Third question",
+    "Fourth question",
+    "Fifth question",
+    "Sixth question",
+  ];
+  const expectedVisiblePrompts = configuredPrompts.slice(0, 4);
+
+  const mountWidgetWithPrompts = (prompts: string[]) => {
+    const widget = document.createElement("div");
+    widget.id = "ys-beacon-chat-widget";
+    widget.setAttribute("data-initial-questions", JSON.stringify(prompts));
+    document.body.appendChild(widget);
+  };
+
+  const renderedPrompts = () =>
+    screen
+      .getAllByRole("button")
+      .map((button) => button.textContent ?? "")
+      .map((text) => configuredPrompts.find((prompt) => text.includes(prompt)))
+      .filter((prompt): prompt is string => Boolean(prompt));
+
+  afterEach(() => {
+    document.getElementById("ys-beacon-chat-widget")?.remove();
+  });
+
+  it("shows the first four configured prompts in configured order, not a shuffled subset", () => {
+    mountWidgetWithPrompts(configuredPrompts);
+
+    renderChat();
+
+    expect(renderedPrompts()).toEqual(expectedVisiblePrompts);
+  });
+});
+
 describe("Chat input accessibility wiring", () => {
   beforeEach(() => {
     const widget = document.createElement("div");
