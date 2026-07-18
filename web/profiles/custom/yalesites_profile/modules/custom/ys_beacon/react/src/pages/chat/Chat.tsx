@@ -33,6 +33,10 @@ const enum messageStatus {
     Done = "Done"
 }
 
+// Ties the question input to the disclaimer via aria-describedby: the input sets
+// aria-describedby to this id and the disclaimer renders with it.
+const DISCLAIMER_ID = "ys-beacon-chat-disclaimer";
+
 const Chat = () => {
 
     // Gets initial questions. Static per page load, so parse once.
@@ -409,6 +413,7 @@ const Chat = () => {
                             placeholder="Ask any question..."
                             disabled={isLoading}
                             providedQuestion={providedQuestion}
+                            describedById={DISCLAIMER_ID}
                             onSend={(question, id) => {
                                 makeApiRequest(question, id)
                             }}
@@ -424,7 +429,7 @@ const Chat = () => {
                         >
                             New chat
                         </button>
-                        <Disclaimer />
+                        <Disclaimer id={DISCLAIMER_ID} />
                     </div>
                 </div>
                 {/* Citation Panel */}
