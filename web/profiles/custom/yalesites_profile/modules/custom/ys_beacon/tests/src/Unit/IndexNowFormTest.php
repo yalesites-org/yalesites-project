@@ -97,6 +97,11 @@ class IndexNowFormTest extends UnitTestCase {
     else {
       $tracker = $this->createMock(TrackerInterface::class);
       $tracker->method('getRemainingItemsCount')->willReturn($remaining);
+      // Stubbed as ints so indexStatusSummary()'s "@indexed of @total"
+      // placeholders never receive NULL (deprecated) when a caller renders the
+      // status alongside the remaining-items count.
+      $tracker->method('getIndexedItemsCount')->willReturn(0);
+      $tracker->method('getTotalItemsCount')->willReturn($remaining);
       $index->method('getTrackerInstance')->willReturn($tracker);
     }
     return $index;
@@ -339,6 +344,93 @@ class IndexNowFormTest extends UnitTestCase {
     ]));
 
     $this->invoke($form, 'saveIndexStatus', [TRUE]);
+  }
+
+  /**
+   * The shared builder omits "Re-index all" when told not to include it.
+   *
+   * The re-index control primarily lives on the Beacon administration form; the
+   * site settings form only mirrors it in the initial "0 of 0" state (see
+   * ::shouldMirrorReindex), passing FALSE otherwise. This asserts the trait
+   * honours that flag.
+   *
+   * @covers ::buildIndexingControls
+   */
+  public function testBuildIndexingControlsOmitsReindexOnSiteForm(): void {
+    $form = $this->buildForm($this->indexMock(TRUE, 5));
+    $element = $this->invoke($form, 'buildIndexingControls', [FALSE]);
+    $this->assertArrayNotHasKey('reindex', $element);
+    $this->assertArrayHasKey('index_now', $element);
+  }
+
+  /**
+   * The site form mirrors "Re-index all" in the initial "0 of 0" state.
+   *
+   * That is the index enabled but with nothing tracked yet, right after the
+   * chat widget is first turned on.
+   *
+   * @covers ::shouldMirrorReindex
+   */
+  public function testMirrorsReindexWhenEnabledAndNothingTracked(): void {
+    $form = $this->buildForm($this->indexMock(TRUE, 0));
+    $this->assertTrue($this->invoke($form, 'shouldMirrorReindex'));
+  }
+
+  /**
+   * Once any content is tracked, the site form hides "Re-index all".
+   *
+   * @covers ::shouldMirrorReindex
+   */
+  public function testHidesReindexWhenContentTracked(): void {
+    $form = $this->buildForm($this->indexMock(TRUE, 6));
+    $this->assertFalse($this->invoke($form, 'shouldMirrorReindex'));
+  }
+
+  /**
+   * A disabled index never offers re-index and never consults the tracker.
+   *
+   * @covers ::shouldMirrorReindex
+   */
+  public function testHidesReindexWhenIndexDisabled(): void {
+    $index = $this->createMock(IndexInterface::class);
+    $index->method('status')->willReturn(FALSE);
+    $index->expects($this->never())->method('getTrackerInstance');
+    $form = $this->buildForm($index);
+    $this->assertFalse($this->invoke($form, 'shouldMirrorReindex'));
+  }
+
+  /**
+   * A missing index never offers re-index.
+   *
+   * @covers ::shouldMirrorReindex
+   */
+  public function testHidesReindexWhenIndexMissing(): void {
+    $form = $this->buildForm(NULL);
+    $this->assertFalse($this->invoke($form, 'shouldMirrorReindex'));
+  }
+
+  /**
+   * A read-only borrower never offers re-index, without reading the tracker.
+   *
+   * @covers ::shouldMirrorReindex
+   */
+  public function testHidesReindexWhenReadOnly(): void {
+    $index = $this->createMock(IndexInterface::class);
+    $index->method('status')->willReturn(TRUE);
+    $index->method('isReadOnly')->willReturn(TRUE);
+    $index->expects($this->never())->method('getTrackerInstance');
+    $form = $this->buildForm($index);
+    $this->assertFalse($this->invoke($form, 'shouldMirrorReindex'));
+  }
+
+  /**
+   * A tracker error degrades to hiding the control rather than crashing.
+   *
+   * @covers ::shouldMirrorReindex
+   */
+  public function testHidesReindexOnTrackerError(): void {
+    $form = $this->buildForm($this->indexMock(TRUE, NULL));
+    $this->assertFalse($this->invoke($form, 'shouldMirrorReindex'));
   }
 
   /**
