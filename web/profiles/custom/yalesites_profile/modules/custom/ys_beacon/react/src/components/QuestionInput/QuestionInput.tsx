@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { Stack, TextField } from "@fluentui/react";
 import styles from "./QuestionInput.module.css";
 
@@ -9,10 +9,12 @@ interface Props {
     clearOnSend?: boolean;
     conversationId?: string;
     providedQuestion?: string;
+    describedById?: string;
 }
 
-export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conversationId, providedQuestion }: Props) => {
+export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conversationId, providedQuestion, describedById }: Props) => {
     const [question, setQuestion] = useState<string>(providedQuestion ?? "");
+    const inputId = useId();
 
     /**
      * If a question is provided, set it as the question state.
@@ -54,9 +56,11 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
 
     return (
         <Stack horizontal className={styles.questionInputContainer}>
+            <label htmlFor={inputId} className={styles.visuallyHidden}>Ask a question</label>
             <TextField
+                id={inputId}
                 className={styles.questionInputTextArea}
-                ariaLabel="Ask a question"
+                aria-describedby={describedById}
                 placeholder={placeholder}
                 multiline
                 resizable={false}
@@ -67,7 +71,7 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                 inputClassName={styles.questionInputItem}
             />
             <button className={styles.questionInputSendButtonContainer}
-                aria-label="Ask question button"
+                aria-label="Ask question"
                 onClick={sendQuestion}
                 onKeyDown={e => e.key === "Enter" || e.key === " " ? sendQuestion() : null}
                 aria-disabled= {sendQuestionDisabled}

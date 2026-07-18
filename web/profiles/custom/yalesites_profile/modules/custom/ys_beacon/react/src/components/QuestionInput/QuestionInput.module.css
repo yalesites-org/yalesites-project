@@ -7,6 +7,22 @@
     gap: 1rem;
 }
 
+/* Off-screen clip technique: keeps the input's associated label in the
+   accessibility tree (so it supplies the accessible name) while hiding it
+   visually. Bundled with the widget so the label never depends on the host
+   theme also defining a `.visually-hidden` class. */
+.visuallyHidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 @media screen and (min-width:800px) {
     .questionInputContainer {
         flex-wrap: nowrap;
