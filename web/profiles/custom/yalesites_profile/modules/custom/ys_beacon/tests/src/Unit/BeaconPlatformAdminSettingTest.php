@@ -237,6 +237,56 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
   }
 
   /**
+   * Enabling the chat widget forces the AI metadata fields on.
+   *
+   * The site settings form used to guarantee "chat on implies AI metadata
+   * fields on"; with enabling now only on this page, it must preserve that
+   * invariant so editors keep the AI Description/Tags fields the live chatbot
+   * relies on, even if the fields were previously turned off.
+   *
+   * @covers ::submitSettings
+   */
+  public function testEnableForcesMetadataFieldsOn(): void {
+    $settings = [
+      'enable_chat' => FALSE,
+      'enable_metadata_fields' => FALSE,
+      'read_only' => FALSE,
+      'azure_index_name' => 'my-index',
+      'search_index_id' => 'ys_beacon',
+    ];
+    $config = $this->createMock(Config::class);
+    $config->method('get')->willReturnCallback(fn (string $key) => $settings[$key] ?? NULL);
+    $set = [];
+    $config->method('set')->willReturnCallback(function (string $key, $value) use (&$set, $config) {
+      $set[$key] = $value;
+      return $config;
+    });
+    $config->method('save')->willReturnSelf();
+
+    $factory = $this->createMock(ConfigFactoryInterface::class);
+    $factory->method('getEditable')->with('ys_beacon.settings')->willReturn($config);
+    $factory->method('get')->with('ys_beacon.settings')->willReturn($config);
+
+    $index = $this->createMock(IndexInterface::class);
+    $index->method('setStatus')->willReturnSelf();
+    $entity_type_manager = $this->entityTypeManagerWithWritableIndex($index);
+
+    $index_manager = $this->createMock(BeaconIndexManager::class);
+    $index_manager->method('indexExists')->with('my-index')->willReturn(TRUE);
+
+    $plugin = $this->plugin($factory, $entity_type_manager, $index_manager);
+
+    $form_state = new FormState();
+    $form_state->setValue(['ys_beacon', 'platform_authorized'], 1);
+    $form_state->setValue(['ys_beacon', 'enable_chat'], 1);
+    $form = [];
+    $plugin->submitSettings($form, $form_state);
+
+    $this->assertTrue($set['enable_metadata_fields']);
+    $this->assertTrue($set['enable_chat']);
+  }
+
+  /**
    * A first enable provisions the missing index and queues content.
    *
    * @covers ::submitSettings

@@ -4,18 +4,19 @@ namespace Drupal\Tests\ys_beacon\Unit;
 
 use Drupal\Core\Config\Config;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_beacon\Form\YsBeaconSettings;
-use Drupal\ys_beacon\Service\BeaconIndexManager;
 
 /**
- * Tests the site Beacon settings form's create-if-missing provisioning.
+ * Tests the site Beacon settings form's submit handler.
  *
- * Enabling the chat widget must (re)create the index this site is configured to
- * use whenever it does not actually exist - first enable, a failed retry, a
- * deleted index, or a newly chosen name - while leaving an existing index and a
- * read-only borrow untouched.
+ * Enabling the chat widget and driving indexing moved to the platform admin
+ * settings page (yalesites-org/YaleSites-Internal#1430), so the site form now
+ * persists only the presentation settings. It must never write enable_chat -
+ * doing so would overwrite the value a platform admin set - nor the
+ * platform-admin-managed enable_metadata_fields.
  *
  * @group ys_beacon
  * @coversDefaultClass \Drupal\ys_beacon\Form\YsBeaconSettings
@@ -23,124 +24,84 @@ use Drupal\ys_beacon\Service\BeaconIndexManager;
 class YsBeaconSettingsTest extends UnitTestCase {
 
   /**
-   * A read-only borrow never provisions the collection it reads.
+   * The form saves the presentation settings the site admin can edit.
    *
-   * @covers ::configuredIndexMissing
+   * @covers ::submitForm
    */
-  public function testReadOnlyBorrowIsNeverMissing(): void {
-    $index_manager = $this->createMock(BeaconIndexManager::class);
-    $index_manager->expects($this->never())->method('indexExists');
-    $form = $this->makeForm($index_manager, ['read_only' => TRUE, 'azure_index_name' => 'shared-idx']);
+  public function testSubmitSavesPresentationSettings(): void {
+    $saved = $this->submit([
+      'floating_button' => TRUE,
+      'floating_button_text' => 'Ask Beacon',
+      'prompts' => ['One', '', 'Two'],
+      'disclaimer' => 'Be careful.',
+      'footer' => 'Footer text.',
+    ]);
 
-    $this->assertFalse($this->invoke($form, 'configuredIndexMissing'));
+    $this->assertTrue($saved['floating_button']);
+    $this->assertSame('Ask Beacon', $saved['floating_button_text']);
+    $this->assertSame(YsBeaconSettings::FLOATING_BUTTON_ICON, $saved['floating_button_icon']);
+    // Empty prompts are filtered out and the list is re-indexed.
+    $this->assertSame(['One', 'Two'], $saved['prompts']);
+    $this->assertSame('Be careful.', $saved['disclaimer']);
+    $this->assertSame('Footer text.', $saved['footer']);
   }
 
   /**
-   * A site with no index name assigned yet needs provisioning.
+   * The form never writes the platform-admin-managed chat/indexing settings.
    *
-   * @covers ::configuredIndexMissing
+   * Enable_chat is owned by the platform admin settings page; writing it here
+   * would overwrite the platform admin's value. enable_metadata_fields is
+   * likewise a platform-admin concern and must be left untouched.
+   *
+   * @covers ::submitForm
    */
-  public function testUnassignedIndexIsMissing(): void {
-    $index_manager = $this->createMock(BeaconIndexManager::class);
-    $index_manager->expects($this->never())->method('indexExists');
-    $form = $this->makeForm($index_manager, ['read_only' => FALSE, 'azure_index_name' => '']);
+  public function testSubmitDoesNotWritePlatformAdminSettings(): void {
+    $saved = $this->submit([
+      'floating_button' => FALSE,
+      'floating_button_text' => 'Beacon Chat',
+      'prompts' => [],
+      'disclaimer' => '',
+      'footer' => '',
+    ]);
 
-    $this->assertTrue($this->invoke($form, 'configuredIndexMissing'));
+    $this->assertArrayNotHasKey('enable_chat', $saved);
+    $this->assertArrayNotHasKey('enable_metadata_fields', $saved);
   }
 
   /**
-   * An assigned index that exists in Azure needs no provisioning.
+   * Submits the form with the given values and returns the saved config map.
    *
-   * @covers ::configuredIndexMissing
+   * @param array $values
+   *   Submitted form values keyed by element name.
+   *
+   * @return array
+   *   The keys written to ys_beacon.settings mapped to their saved values.
    */
-  public function testExistingIndexIsNotMissing(): void {
-    $index_manager = $this->createMock(BeaconIndexManager::class);
-    $index_manager->expects($this->once())->method('indexExists')->with('my-index')->willReturn(TRUE);
-    $form = $this->makeForm($index_manager, ['read_only' => FALSE, 'azure_index_name' => 'my-index']);
-
-    $this->assertFalse($this->invoke($form, 'configuredIndexMissing'));
-  }
-
-  /**
-   * An assigned index deleted from Azure is missing and must be provisioned.
-   *
-   * @covers ::configuredIndexMissing
-   */
-  public function testDeletedIndexIsMissing(): void {
-    $index_manager = $this->createMock(BeaconIndexManager::class);
-    $index_manager->expects($this->once())->method('indexExists')->with('my-index')->willReturn(FALSE);
-    $form = $this->makeForm($index_manager, ['read_only' => FALSE, 'azure_index_name' => 'my-index']);
-
-    $this->assertTrue($this->invoke($form, 'configuredIndexMissing'));
-  }
-
-  /**
-   * An unreachable Azure endpoint neither blocks the save nor forces a retry.
-   *
-   * @covers ::configuredIndexMissing
-   */
-  public function testUnreachableAzureIsTreatedAsNotMissing(): void {
-    $index_manager = $this->createMock(BeaconIndexManager::class);
-    $index_manager->method('indexExists')->willThrowException(new \RuntimeException('unreachable'));
-    $form = $this->makeForm($index_manager, ['read_only' => FALSE, 'azure_index_name' => 'my-index']);
-
-    $this->assertFalse($this->invoke($form, 'configuredIndexMissing'));
-  }
-
-  /**
-   * Provisioning targets the configured index name, not the per-site default.
-   *
-   * @covers ::provisionIndex
-   */
-  public function testProvisionIndexUsesConfiguredName(): void {
-    $index_manager = $this->createMock(BeaconIndexManager::class);
-    $index_manager->expects($this->once())->method('provision')->with('special-idx')->willReturn('special-idx');
-    $form = $this->makeForm($index_manager, ['read_only' => FALSE, 'azure_index_name' => 'special-idx']);
-
-    $this->invoke($form, 'provisionIndex');
-  }
-
-  /**
-   * With no name assigned, provisioning falls back to the per-site default.
-   *
-   * @covers ::provisionIndex
-   */
-  public function testProvisionIndexFallsBackToDefault(): void {
-    $index_manager = $this->createMock(BeaconIndexManager::class);
-    // A NULL argument makes BeaconIndexManager::provision() use the default.
-    $index_manager->expects($this->once())->method('provision')->with(NULL)->willReturn('site-default');
-    $form = $this->makeForm($index_manager, ['read_only' => FALSE, 'azure_index_name' => '']);
-
-    $this->invoke($form, 'provisionIndex');
-  }
-
-  /**
-   * Builds the form with a config mock and index manager, sans constructor.
-   *
-   * @param \Drupal\ys_beacon\Service\BeaconIndexManager $index_manager
-   *   The index manager double.
-   * @param array $settings
-   *   The ys_beacon.settings values keyed by name (read_only,
-   *   azure_index_name).
-   *
-   * @return \Drupal\ys_beacon\Form\YsBeaconSettings
-   *   The form under test.
-   */
-  private function makeForm(BeaconIndexManager $index_manager, array $settings): YsBeaconSettings {
+  private function submit(array $values): array {
+    $saved = [];
     $config = $this->createMock(Config::class);
-    $config->method('get')->willReturnCallback(fn (string $key) => $settings[$key] ?? NULL);
+    $config->method('set')->willReturnCallback(function (string $key, $value) use (&$saved, $config) {
+      $saved[$key] = $value;
+      return $config;
+    });
+    $config->method('save')->willReturnSelf();
 
     $factory = $this->createMock(ConfigFactoryInterface::class);
     $factory->method('get')->willReturn($config);
     $factory->method('getEditable')->willReturn($config);
 
+    $form_state = $this->createMock(FormStateInterface::class);
+    $form_state->method('getValue')->willReturnCallback(fn (string $key) => $values[$key] ?? NULL);
+
     $form = (new \ReflectionClass(YsBeaconSettings::class))->newInstanceWithoutConstructor();
     $this->setProtected($form, 'configFactory', $factory);
-    $this->setProtected($form, 'indexManager', $index_manager);
     $this->setProtected($form, 'messenger', $this->createMock(MessengerInterface::class));
     $this->setProtected($form, 'stringTranslation', $this->getStringTranslationStub());
 
-    return $form;
+    $form_array = [];
+    $form->submitForm($form_array, $form_state);
+
+    return $saved;
   }
 
   /**
@@ -150,15 +111,6 @@ class YsBeaconSettingsTest extends UnitTestCase {
     $reflection = new \ReflectionProperty($object, $property);
     $reflection->setAccessible(TRUE);
     $reflection->setValue($object, $value);
-  }
-
-  /**
-   * Invokes a protected method via reflection.
-   */
-  private function invoke(object $object, string $method): mixed {
-    $reflection = new \ReflectionMethod($object, $method);
-    $reflection->setAccessible(TRUE);
-    return $reflection->invoke($object);
   }
 
 }
