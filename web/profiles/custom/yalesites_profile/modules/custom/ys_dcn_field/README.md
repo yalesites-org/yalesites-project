@@ -137,4 +137,4 @@ lando ssh -c "env SIMPLETEST_DB=mysql://pantheon:pantheon@database/pantheon \
 
 Add `--testdox` for readable output. Unit-only tests (no database) can also be run with the shorthand `lando phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_dcn_field/tests`.
 
-Note: the kernel tests set `$strictConfigSchema = FALSE` because the module ships no config schema for its field settings (`dcn_type_vocabulary`); adding that schema is a recommended follow-up.
+Note: the module ships a config schema (`config/schema/ys_dcn_field.schema.yml`) covering its field, formatter, and widget settings, so the kernel tests run with strict config-schema validation enabled.
