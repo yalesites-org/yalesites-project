@@ -456,49 +456,31 @@ class ViewsBasicManagerTest extends UnitTestCase {
   }
 
   /**
-   * Tests get default param value show current entity actually returns.
+   * GetDefaultParamValue('show_current_entity', ...) returns its own value.
    *
-   * CURRENT (buggy) behavior: 'show_current_entity' falls through to
-   * 'pinned_to_top' and returns the pinned_to_top value instead.
-   *
-   * The switch case for 'show_current_entity' at ViewsBasicManager.php:782
-   * is missing a `break;` statement, so execution falls through into the
-   * adjacent 'pinned_to_top' case and $defaultParam is overwritten before
-   * being returned. Calling getDefaultParamValue('show_current_entity', ...)
-   * therefore never returns the show_current_entity value at all -- it
-   * always returns the (bool) pinned_to_top default instead. Paired with
-   * testGetDefaultParamValueShowCurrentEntityShouldReturnItsOwnValue() --
-   * delete once the GAP is fixed.
+   * With the `break;` after the show_current_entity case, execution no longer
+   * falls through into pinned_to_top, so the show_current_entity default is
+   * returned as-is rather than being overwritten by the pinned_to_top value.
    *
    * @covers ::getDefaultParamValue
    */
-  public function testGetDefaultParamValueShowCurrentEntityActuallyReturnsPinnedToTopValue() {
-    // show_current_entity is truthy, pinned_to_top is unset (=> FALSE):
-    // the fallthrough clobbers the show_current_entity result with FALSE.
-    $params = json_encode(['show_current_entity' => 1]);
-    $this->assertFalse($this->manager->getDefaultParamValue('show_current_entity', $params));
+  public function testGetDefaultParamValueShowCurrentEntityReturnsItsOwnValue() {
+    // A stored value is returned as-is, not overwritten by pinned_to_top.
+    $params = json_encode(['show_current_entity' => 1, 'pinned_to_top' => FALSE]);
+    $this->assertSame(1, $this->manager->getDefaultParamValue('show_current_entity', $params));
 
-    // show_current_entity is unset, pinned_to_top is TRUE: fallthrough
-    // returns TRUE, not the expected show_current_entity default of 0.
-    $params = json_encode(['pinned_to_top' => TRUE]);
-    $this->assertTrue($this->manager->getDefaultParamValue('show_current_entity', $params));
+    // An unset value falls back to the case's own 0 default.
+    $this->assertSame(0, $this->manager->getDefaultParamValue('show_current_entity', json_encode([])));
   }
 
   /**
-   * Tests get default param value show current entity should return its own.
-   *
-   * GAP: missing `break;` after the 'show_current_entity' case in
-   * getDefaultParamValue() (ViewsBasicManager.php:782) makes it fall through
-   * to 'pinned_to_top' and return the wrong value -- see
-   * ~/Documents/Claude/not_dave/module-tests-20260710/ys_views_basic.md.
+   * GetDefaultParamValue('pinned_to_top', ...) returns its boolean default.
    *
    * @covers ::getDefaultParamValue
    */
-  public function testGetDefaultParamValueShowCurrentEntityShouldReturnItsOwnValue() {
-    $this->markTestSkipped('GAP: missing `break;` after the show_current_entity case in ViewsBasicManager::getDefaultParamValue() makes it fall through to pinned_to_top and return the wrong value -- see ~/Documents/Claude/not_dave/module-tests-20260710/ys_views_basic.md');
-
-    $params = json_encode(['show_current_entity' => 1, 'pinned_to_top' => FALSE]);
-    $this->assertEquals(1, $this->manager->getDefaultParamValue('show_current_entity', $params));
+  public function testGetDefaultParamValuePinnedToTopReturnsBoolean() {
+    $this->assertTrue($this->manager->getDefaultParamValue('pinned_to_top', json_encode(['pinned_to_top' => TRUE])));
+    $this->assertFalse($this->manager->getDefaultParamValue('pinned_to_top', json_encode([])));
   }
 
   /**
