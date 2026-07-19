@@ -159,6 +159,13 @@ class YsExpandBookManager extends ExpandBookManager {
 
       // Allow book-specific theme overrides.
       $element['attributes'] = new Attribute();
+
+      // Store the node title separately in case a theme needs it.
+      $element['node_title'] = $data['link']['node_title'] ?? $data['link']['title'];
+
+      // Use the menu link title at every depth (it may be a custom title
+      // set in the Content Collection sidebar widget, or fall back to the
+      // node title if none was set).
       $element['title'] = $data['link']['title'];
 
       if (isset($data['link']['is_cas']) && $data['link']['is_cas']) {
@@ -247,11 +254,17 @@ class YsExpandBookManager extends ExpandBookManager {
     // cache-related issues between environments.
     $link['is_cas'] = $node && $node->hasField('field_login_required') && (bool) $node->get('field_login_required')->value;
 
-    // Localize the link title. The node label will be the value for the
-    // current language.
+    // Localize the link title. Use the custom menu link title from the book
+    // table if one has been set, otherwise fall back to the node title.
     if ($node) {
       $node = $this->entityRepository->getTranslationFromContext($node);
-      $link['title'] = $node->label();
+
+      // Always store the node title so secondary menu items can use it.
+      $link['node_title'] = $node->label();
+
+      if (empty($link['title'])) {
+        $link['title'] = $node->label();
+      }
     }
     $link['options'] = [];
     return $link;

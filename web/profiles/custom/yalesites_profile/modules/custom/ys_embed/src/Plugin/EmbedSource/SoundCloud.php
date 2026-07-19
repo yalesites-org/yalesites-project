@@ -26,7 +26,7 @@ class SoundCloud extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $template = '<iframe title="{{ title }}" width="100%" height="240px" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/{{ track_id }}&color=%02366900&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true"></iframe>';
+  protected static $template = '<iframe title="{{ title }}" width="100%" height="240px" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/{{ track_or_playlist }}/{{ track_id }}&color=%02366900&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true"></iframe>';
 
   /**
    * {@inheritdoc}
@@ -54,8 +54,9 @@ class SoundCloud extends EmbedSourceBase implements EmbedSourceInterface {
    * {@inheritdoc}
    */
   public function getUrl(array $params): string {
+    $type = $params['track_or_playlist'];
     $track_id = $params['track_id'];
-    return 'https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/' . $track_id;
+    return 'https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/' . $type . '/' . $track_id;
   }
 
 }
