@@ -43,45 +43,49 @@ function ys_node_access_node_grants($account, $op) {
  */
 function ys_node_access_node_access_records($node) {
 
-  $private = FALSE;
-
   $nodeAccessManager = new NodeAccessManager();
-  // Saving a node, check login required field to set the appropriate grants.
+
+  // Unpublished nodes are left to Drupal core's unpublished-content access
+  // (the owner with "view own unpublished content", or "view any unpublished
+  // content"). This module only CAS-gates published pages, so it must not
+  // hand out a view grant for a draft. A grant_view = 0 record keeps this
+  // realm's record set non-empty -- so core does not add its default public
+  // "all" grant -- while granting nobody view access.
+  if (!$node->isPublished()) {
+    return [
+      [
+        'realm' => $nodeAccessManager::YS_NODE_ACCESS_REALM,
+        'gid' => $nodeAccessManager::YS_NODE_ACCESS_GRANT_ID_PRIVATE,
+        'grant_view' => 0,
+        'grant_update' => 0,
+        'grant_delete' => 0,
+        'priority' => 0,
+      ],
+    ];
+  }
+
+  // Published nodes: gate on field_login_required. Login-required pages get the
+  // PRIVATE grant (authenticated/CAS users only); everything else is PUBLIC.
+  $login_required = FALSE;
   if ($node->hasField('field_login_required')) {
     $login_required_value = $node->get('field_login_required')->getValue();
     $login_required = !empty($login_required_value) && $login_required_value[0]['value'] == 1;
-
-    if ($login_required || !$node->isPublished()) {
-      $private = TRUE;
-    }
-    else {
-      $private = FALSE;
-    }
   }
 
-  // Update the node_access table for this node with the correct grants.
-  if ($private) {
-    $grants[] = [
+  $gid = $login_required
+    ? $nodeAccessManager::YS_NODE_ACCESS_GRANT_ID_PRIVATE
+    : $nodeAccessManager::YS_NODE_ACCESS_GRANT_ID_PUBLIC;
+
+  return [
+    [
       'realm' => $nodeAccessManager::YS_NODE_ACCESS_REALM,
-      'gid' => $nodeAccessManager::YS_NODE_ACCESS_GRANT_ID_PRIVATE,
+      'gid' => $gid,
       'grant_view' => 1,
       'grant_update' => 0,
       'grant_delete' => 0,
       'priority' => 0,
-    ];
-  }
-  else {
-    $grants[] = [
-      'realm' => $nodeAccessManager::YS_NODE_ACCESS_REALM,
-      'gid' => $nodeAccessManager::YS_NODE_ACCESS_GRANT_ID_PUBLIC,
-      'grant_view' => 1,
-      'grant_update' => 0,
-      'grant_delete' => 0,
-      'priority' => 0,
-    ];
-  }
-
-  return $grants;
+    ],
+  ];
 }
 
 /**

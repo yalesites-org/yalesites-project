@@ -53,32 +53,31 @@ class GoogleMapsTest extends UnitTestCase {
   }
 
   /**
-   * CHARACTERIZATION: a multi-line Google Maps iframe fails to validate.
+   * A multi-line iframe (newline before src) validates.
    *
-   * The pattern omits the "s" (DOTALL) modifier that the sibling
-   * GoogleCalendar plugin uses for the same shape of iframe match, so any
-   * embed code copied from a source that wraps attributes onto separate
-   * lines is silently rejected.
-   *
-   * Paired with testMatchShouldAcceptMultilineIframe() -- delete once the
-   * GAP is fixed.
+   * $pattern uses "[^>]*" before src (like the sibling GoogleCalendar plugin),
+   * which spans newlines within the opening tag, so an embed copied from a
+   * source that wraps attributes onto separate lines is accepted.
    *
    * @covers ::isValid
    */
-  public function testIsValidRejectsIframeWithNewlineBeforeSrc(): void {
+  public function testMatchAcceptsMultilineIframe(): void {
     $multiline = "<iframe\nsrc=\"https://www.google.com/maps/embed?pb=abc\" width=\"600\"></iframe>";
-    $this->assertFalse(GoogleMaps::isValid($multiline));
+    $this->assertTrue(GoogleMaps::isValid($multiline));
   }
 
   /**
-   * GAP: GoogleMaps::isValid() should accept a multi-line iframe.
+   * A paste with a leading non-Google iframe is rejected, not silently trimmed.
    *
-   * It should match the same way GoogleCalendar::isValid() does, by adding
-   * the "s" (DOTALL) modifier to $pattern so "." matches across newlines --
-   * see ~/Documents/Claude/not_dave/module-tests-20260710/ys_embed.md.
+   * "[^>]*" before src cannot cross the ">" that closes a preceding element,
+   * so a multi-element paste does not match (and validation fails) rather than
+   * matching only the trailing Google Maps iframe and discarding the rest.
+   *
+   * @covers ::isValid
    */
-  public function testMatchShouldAcceptMultilineIframe(): void {
-    $this->markTestSkipped('GAP: GoogleMaps::isValid() rejects a multi-line iframe because $pattern is missing the "s" (DOTALL) modifier that GoogleCalendar uses -- see ~/Documents/Claude/not_dave/module-tests-20260710/ys_embed.md');
+  public function testIsValidRejectsMultiElementPasteWithLeadingIframe(): void {
+    $paste = "<iframe src=\"https://evil.com/x\"></iframe>\n<iframe src=\"https://www.google.com/maps/embed?pb=X\"></iframe>";
+    $this->assertFalse(GoogleMaps::isValid($paste));
   }
 
   /**
