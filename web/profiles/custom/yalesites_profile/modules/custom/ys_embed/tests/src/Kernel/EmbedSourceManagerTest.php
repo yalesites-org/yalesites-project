@@ -169,25 +169,15 @@ class EmbedSourceManagerTest extends KernelTestBase {
   }
 
   /**
-   * Tests load plugin by id returns null instead of broken plugin for.
+   * LoadPluginById() returns the Broken plugin for an unregistered ID.
    *
-   * CHARACTERIZATION: loadPluginById() documents that an unrecognized plugin
-   * ID falls back to the Broken plugin, but the implementation reads
-   * $this->instances[static::BROKEN_ID] directly without ever populating it
-   * first. On a fresh manager (nothing has called loadPluginById('broken')
-   * yet), this returns NULL and raises an "Undefined array key" warning
-   * instead of the documented Broken plugin instance.
-   *
-   * This is reachable in production: EmbedDefaultFormatter::viewElements()
-   * calls loadPluginById($item->embed_source) with a value read directly
-   * from stored field data, which can be stale/legacy.
-   *
-   * Paired with testLoadPluginByIdShouldReturnBrokenPluginForUnregisteredId()
-   * -- delete once the GAP is fixed.
+   * LoadPluginById() lazily instantiates and returns the Broken plugin for an
+   * unregistered plugin ID (per its docblock) rather than returning NULL with
+   * an "Undefined array key" warning.
    *
    * @covers ::loadPluginById
    */
-  public function testLoadPluginByIdReturnsNullInsteadOfBrokenPluginForUnregisteredId(): void {
+  public function testLoadPluginByIdReturnsBrokenPluginForUnregisteredId(): void {
     $captured = [];
     set_error_handler(function (int $errno, string $errstr) use (&$captured): bool {
       $captured[] = $errstr;
@@ -201,21 +191,8 @@ class EmbedSourceManagerTest extends KernelTestBase {
       restore_error_handler();
     }
 
-    $this->assertNull($result);
-    $this->assertNotEmpty($captured);
-    $this->assertStringContainsString('Undefined array key', $captured[0]);
-  }
-
-  /**
-   * Tests load plugin by id should return broken plugin for unregistered id.
-   *
-   * GAP: loadPluginById() should lazily instantiate and return the Broken
-   * plugin for an unregistered plugin ID per its own docblock, instead of
-   * returning NULL with an "Undefined array key" warning -- see
-   * ~/Documents/Claude/not_dave/module-tests-20260710/ys_embed.md.
-   */
-  public function testLoadPluginByIdShouldReturnBrokenPluginForUnregisteredId(): void {
-    $this->markTestSkipped('GAP: EmbedSourceManager::loadPluginById() should return the cached Broken plugin instance for an unregistered plugin ID (per its own docblock) instead of returning NULL with an "Undefined array key" warning, because $this->instances[BROKEN_ID] is read without ever being populated -- see ~/Documents/Claude/not_dave/module-tests-20260710/ys_embed.md');
+    $this->assertInstanceOf(Broken::class, $result);
+    $this->assertSame([], $captured);
   }
 
 }

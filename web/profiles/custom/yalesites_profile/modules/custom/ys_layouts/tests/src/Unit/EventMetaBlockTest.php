@@ -122,37 +122,19 @@ class EventMetaBlockTest extends UnitTestCase {
   }
 
   /**
-   * A non-event node still renders full event meta output (current bug).
-   *
-   * The bail condition in build() is
-   * `!($node instanceof NodeInterface || ($node && $node->bundle() !==
-   * 'event'))`. Because any NodeInterface makes the first half of the OR
-   * TRUE regardless of bundle, the negation is always FALSE for a real node
-   * -- so the block builds event meta data for ANY node bundle, not just
-   * 'event'. Paired with testBuildShouldReturnEmptyForNonEventNode() --
-   * delete once the GAP is fixed.
-   *
-   * @covers ::build
-   */
-  public function testBuildRendersEventDataForNonEventNode(): void {
-    $node = $this->createMock(NodeInterface::class);
-    $node->method('bundle')->willReturn('page');
-    $this->routeMatch->method('getParameter')->with('node')->willReturn($node);
-    $this->metaFieldsManager->method('getEventData')->with($node)->willReturn($this->eventFieldData);
-
-    $build = $this->buildBlock()->build();
-
-    $this->assertSame('ys_event_meta_block', $build['#theme']);
-    $this->assertSame('Fall Concert', $build['#event_title__heading']);
-  }
-
-  /**
    * A non-event node should render nothing.
    *
    * @covers ::build
    */
   public function testBuildShouldReturnEmptyForNonEventNode(): void {
-    $this->markTestSkipped('GAP: EventMetaBlock::build() builds full event meta output for any NodeInterface regardless of bundle -- see ~/Documents/Claude/not_dave/module-tests-20260710/ys_layouts.md');
+    $node = $this->createMock(NodeInterface::class);
+    $node->method('bundle')->willReturn('page');
+    $this->routeMatch->method('getParameter')->with('node')->willReturn($node);
+    $this->metaFieldsManager->expects($this->never())->method('getEventData');
+
+    $build = $this->buildBlock()->build();
+
+    $this->assertSame([], $build);
   }
 
 }

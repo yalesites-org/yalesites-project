@@ -294,7 +294,7 @@ class ToolbarItemsService {
           $route,
           $this->redirectDestination->getAsArray(),
         ),
-        '#access' => 'yalesites manage settings',
+        '#access' => $this->account->hasPermission('yalesites manage settings'),
         '#attributes' => [
           'class' => [
             'use-ajax',
