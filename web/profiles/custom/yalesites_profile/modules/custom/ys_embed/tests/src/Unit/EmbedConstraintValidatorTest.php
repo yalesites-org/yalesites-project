@@ -208,34 +208,16 @@ class EmbedConstraintValidatorTest extends UnitTestCase {
   }
 
   /**
-   * CHARACTERIZATION: isVideo() false-positives on a non-video URL.
+   * IsVideo() matches on the parsed host, not a substring.
    *
-   * It flags a URL as a video embed even when "youtube.com" merely appears
-   * elsewhere in the string, because $p1 uses an unescaped "." (matches any
-   * character, not a literal dot) and a leading "\S+" with no host
-   * anchoring. A legitimate non-video embed whose URL happens to contain
-   * that substring is wrongly rejected as "should use the Video component
-   * instead".
-   *
-   * Paired with testIsVideoShouldOnlyMatchTheActualHost() -- delete once the
-   * GAP is fixed.
+   * IsVideo() anchors on parse_url()'s host, so a non-video URL that merely
+   * contains "youtube.com" elsewhere in the string is not misclassified as a
+   * video embed.
    *
    * @covers ::isVideo
    */
-  public function testIsVideoFalsePositivesOnUnrelatedHostContainingYoutubeSubstring(): void {
-    $this->assertTrue($this->invokeProtected('isVideo', 'https://evil.com/redirect?to=youtube.com/x'));
-  }
-
-  /**
-   * GAP: isVideo() should anchor its match to the actual request host.
-   *
-   * It should anchor $p1 to the actual host (e.g. via parse_url()) and
-   * escape the literal "." in "youtube.com", instead of a bare
-   * "\S+.youtube.com" that matches the substring anywhere in the string --
-   * see ~/Documents/Claude/not_dave/module-tests-20260710/ys_embed.md.
-   */
-  public function testIsVideoShouldOnlyMatchTheActualHost(): void {
-    $this->markTestSkipped('GAP: EmbedConstraintValidator::isVideo() wrongly classifies a non-YouTube URL as a video embed because its regex is unanchored and its "." is unescaped -- see ~/Documents/Claude/not_dave/module-tests-20260710/ys_embed.md');
+  public function testIsVideoOnlyMatchesTheActualHost(): void {
+    $this->assertFalse($this->invokeProtected('isVideo', 'https://evil.com/redirect?to=youtube.com/x'));
   }
 
   /**

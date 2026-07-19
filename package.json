@@ -39,14 +39,14 @@
     "shelljs": "^0.8.5"
   },
   "lint-staged": {
-    "web/**/*.scss": [
-      "npm run lint:styles"
+    "{web/modules/custom,web/themes/contrib/atomic,web/themes/custom,web/profiles/custom}/**/*.scss": [
+      "stylelint --color"
     ],
-    "web/**/*.js": [
-      "npm run lint:js"
+    "{web/modules/custom,web/themes/custom,web/profiles/custom}/**/*.js": [
+      "eslint --color --no-error-on-unmatched-pattern --format stylish"
     ],
-    "web/**/*.{js,scss,php}": [
-      "npm run prettier"
+    "{.github,docs,web/profiles/custom,web/modules/custom,web/themes/contrib/atomic,web/themes/custom}/**/*.{json,md,js,html,scss}": [
+      "prettier --ignore-unknown --list-different"
     ]
   },
   "release": {

@@ -184,14 +184,17 @@ class NodeAccessGrantsTest extends KernelTestBase {
   }
 
   /**
-   * Tests hook_node_access_records() for an unpublished, non-gated node.
+   * Tests hook_node_access_records() defers an unpublished node to core.
    *
-   * Unpublished status alone is enough to mark the node private, as long as
-   * the content type carries field_login_required.
+   * The module writes a grant_view = 0 record for unpublished nodes: this
+   * keeps its realm's record set non-empty (so core does not fall back to the
+   * default public "all" grant) while granting no view access itself, leaving
+   * unpublished-content access to Drupal core (owner + "view own/any
+   * unpublished content").
    *
    * @covers ::ys_node_access_node_access_records
    */
-  public function testNodeAccessRecordsPrivateWhenUnpublished() {
+  public function testNodeAccessRecordsUnpublishedDefersToCore() {
     $node = Node::create([
       'type' => 'protected_type',
       'title' => 'Unpublished',
@@ -199,7 +202,15 @@ class NodeAccessGrantsTest extends KernelTestBase {
       'status' => 0,
     ]);
 
-    $this->assertEquals(NodeAccessManager::YS_NODE_ACCESS_GRANT_ID_PRIVATE, ys_node_access_node_access_records($node)[0]['gid']);
+    $this->assertEquals([[
+      'realm' => NodeAccessManager::YS_NODE_ACCESS_REALM,
+      'gid' => NodeAccessManager::YS_NODE_ACCESS_GRANT_ID_PRIVATE,
+      'grant_view' => 0,
+      'grant_update' => 0,
+      'grant_delete' => 0,
+      'priority' => 0,
+    ],
+    ], ys_node_access_node_access_records($node));
   }
 
   /**
@@ -238,21 +249,14 @@ class NodeAccessGrantsTest extends KernelTestBase {
   }
 
   /**
-   * Any authenticated user can view another user's unpublished content.
+   * Unpublished-view access should require ownership or the permission.
    *
-   * Ys_node_access_node_access_records() marks a node private (grant ID
-   * PRIVATE) whenever it is unpublished, but ys_node_access_node_grants()
-   * hands every authenticated user both the PUBLIC and PRIVATE grant IDs --
-   * not only owners or accounts with "view own unpublished content" -- so
-   * any logged-in user can view any other user's unpublished draft, on any
-   * content type that carries field_login_required (page, post, event,
-   * profile, resource in production). This is broader than Drupal's normal
-   * unpublished-content protection and broader than this module's stated
-   * purpose of CAS-gating specific pages. Paired with
-   * testUnpublishedNodeAccessShouldRespectOwnershipAndPermission() -- delete
-   * once the GAP is fixed.
+   * GAP: it should still require ownership or the "view own unpublished
+   * content" permission, not just being logged in.
    */
-  public function testAnyAuthenticatedUserCanViewAnotherUsersUnpublishedNode() {
+  public function testUnpublishedNodeAccessShouldRespectOwnershipAndPermission() {
+    $access_handler = \Drupal::entityTypeManager()->getAccessControlHandler('node');
+
     $owner = User::create(['name' => 'owner', 'uid' => 3]);
     $owner->save();
 
@@ -265,48 +269,19 @@ class NodeAccessGrantsTest extends KernelTestBase {
     ]);
     $node->save();
 
-    // $this->authenticated owns nothing here and has no "view own
-    // unpublished content" permission, yet can still view the draft.
+    // A plain authenticated user who neither owns the draft nor holds "view
+    // own unpublished content" cannot view it.
     $this->assertFalse($this->authenticated->hasPermission('view own unpublished content'));
-    $this->assertTrue($node->access('view', $this->authenticated));
-  }
+    $this->assertFalse($node->access('view', $this->authenticated));
 
-  /**
-   * Unpublished-view access should require ownership or the permission.
-   *
-   * GAP: it should still require ownership or the "view own unpublished
-   * content" permission, not just being logged in.
-   */
-  public function testUnpublishedNodeAccessShouldRespectOwnershipAndPermission() {
-    $this->markTestSkipped('GAP: any authenticated user can view any other user\'s unpublished node on a content type with field_login_required, regardless of ownership or the "view own unpublished content" permission -- see ~/Documents/Claude/not_dave/module-tests-20260710/ys_node_access.md');
-  }
-
-  /**
-   * A content type without field_login_required stays public when unpublished.
-   *
-   * Ys_node_access_node_access_records() only marks a node private when
-   * $node->hasField('field_login_required') is true; if a content type
-   * never gets the field attached (e.g. a new type added through the
-   * Drupal UI, which nothing in this module or its .install hook prevents),
-   * $private stays FALSE regardless of publish status, so the node gets a
-   * PUBLIC grant record and is visible to anonymous users even while
-   * unpublished. In production every shipped content type (page, post,
-   * event, profile, resource) currently has the field, so this is latent
-   * rather than actively exploited today -- but it activates automatically
-   * for any new content type a site builder adds without attaching the
-   * field. Paired with testUnpublishedNodeWithoutFieldShouldStayPrivate()
-   * -- delete once the GAP is fixed.
-   */
-  public function testUnpublishedNodeWithoutLoginRequiredFieldIsPubliclyViewable() {
-    $node = Node::create([
-      'type' => 'unprotected_type',
-      'title' => 'Unpublished, no field',
-      'status' => 0,
-    ]);
-    $node->save();
-
-    $this->assertFalse($node->hasField('field_login_required'));
-    $this->assertTrue($node->access('view', $this->anonymous));
+    // Once "view own unpublished content" is granted, the owner can view their
+    // own draft, but a non-owner still cannot -- ownership is respected, not
+    // just login state.
+    Role::load(RoleInterface::AUTHENTICATED_ID)->grantPermission('view own unpublished content')->save();
+    $access_handler->resetCache();
+    $this->assertTrue($node->access('view', User::load($owner->id())));
+    $access_handler->resetCache();
+    $this->assertFalse($node->access('view', User::load($this->authenticated->id())));
   }
 
   /**
@@ -316,7 +291,17 @@ class NodeAccessGrantsTest extends KernelTestBase {
    * even while unpublished.
    */
   public function testUnpublishedNodeWithoutFieldShouldStayPrivate() {
-    $this->markTestSkipped('GAP: nodes on a content type that never received field_login_required are always granted a PUBLIC access record by ys_node_access_node_access_records(), so they are visible to anonymous users even while unpublished -- see ~/Documents/Claude/not_dave/module-tests-20260710/ys_node_access.md');
+    $node = Node::create([
+      'type' => 'unprotected_type',
+      'title' => 'Unpublished, no field',
+      'status' => 0,
+    ]);
+    $node->save();
+
+    // Even though the content type never received field_login_required, an
+    // unpublished node must not be exposed to anonymous users.
+    $this->assertFalse($node->hasField('field_login_required'));
+    $this->assertFalse($node->access('view', $this->anonymous));
   }
 
 }
