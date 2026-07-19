@@ -465,8 +465,22 @@ class ViewsBasicManagerTest extends UnitTestCase {
    * @covers ::getDefaultParamValue
    */
   public function testGetDefaultParamValueShowCurrentEntityReturnsItsOwnValue() {
+    // A stored value is returned as-is, not overwritten by pinned_to_top.
     $params = json_encode(['show_current_entity' => 1, 'pinned_to_top' => FALSE]);
-    $this->assertEquals(1, $this->manager->getDefaultParamValue('show_current_entity', $params));
+    $this->assertSame(1, $this->manager->getDefaultParamValue('show_current_entity', $params));
+
+    // An unset value falls back to the case's own 0 default.
+    $this->assertSame(0, $this->manager->getDefaultParamValue('show_current_entity', json_encode([])));
+  }
+
+  /**
+   * GetDefaultParamValue('pinned_to_top', ...) returns its boolean default.
+   *
+   * @covers ::getDefaultParamValue
+   */
+  public function testGetDefaultParamValuePinnedToTopReturnsBoolean() {
+    $this->assertTrue($this->manager->getDefaultParamValue('pinned_to_top', json_encode(['pinned_to_top' => TRUE])));
+    $this->assertFalse($this->manager->getDefaultParamValue('pinned_to_top', json_encode([])));
   }
 
   /**
