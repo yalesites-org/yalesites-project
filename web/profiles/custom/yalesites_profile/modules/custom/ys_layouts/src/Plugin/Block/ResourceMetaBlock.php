@@ -259,7 +259,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
           $dcn_type = $item->getDcnType();
           $dcn_identifier = $item->dcn_identifier;
 
-          if ($dcn_type && $dcn_identifier) {
+          if ($dcn_type && $dcn_identifier !== NULL && $dcn_identifier !== '') {
             $dcn_items[] = [
               '#plain_text' => $dcn_type->getName() . ' ' . $dcn_identifier,
             ];
