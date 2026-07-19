@@ -73,17 +73,11 @@ class LocalistJsonTest extends UnitTestCase {
   }
 
   /**
-   * Current behavior: each page URL compounds every prior page's suffix.
+   * Instances aggregate across pages, keyed by their parent event id.
    *
-   * GetSourceData() reassigns its $url parameter in place each iteration of
-   * the paging loop ("$url = "$url&page=$i";") instead of appending to the
-   * original base URL. As a result, the URL fetched for page 2 is
-   * "...&page=1&page=2" rather than "...&page=2", and it keeps growing with
-   * every additional page. This still works against Localist's API today
-   * (duplicate query keys resolve to the last one), but produces
-   * ever-longer, redundant URLs and is fragile if that API behavior ever
-   * changes. Paired with testGetSourceDataShouldFetchEachPageFromTheBaseUrl()
-   * -- delete once the GAP is fixed.
+   * Across a two-page fetch, event instances accumulate under their parent
+   * event while "localist_data" ends up holding the last page's copy of the
+   * event; an all-day event (no "end") gets a synthetic 23h59m duration.
    *
    * @covers ::getSourceData
    */
@@ -155,14 +149,11 @@ class LocalistJsonTest extends UnitTestCase {
       ],
     ]);
 
-    // getSourceData() reassigns $url in place each iteration ("$url =
-    // "$url&page=$i") instead of appending to the original base URL, so the
-    // fetched URL compounds every prior page suffix -- see
-    // testGetSourceDataShouldFetchEachPageFromTheBaseUrl() below.
+    // Each page is fetched from the base URL with its own "&page=N" suffix.
     $this->dataFetcher->method('getResponseContent')->willReturnMap([
       [$url, $countCheck],
       ["$url&page=1", $page1],
-      ["$url&page=1&page=2", $page2],
+      ["$url&page=2", $page2],
     ]);
 
     $parser = $this->createParser();
@@ -185,10 +176,30 @@ class LocalistJsonTest extends UnitTestCase {
   }
 
   /**
-   * GAP test: each page should be fetched from the original base URL.
+   * Each page is fetched from the original base URL, not a compounded one.
+   *
+   * GetSourceData() appends "&page=N" to the base URL for each page rather
+   * than reassigning $url in place, so page 2 is fetched from "...&page=2"
+   * (not "...&page=1&page=2").
+   *
+   * @covers ::getSourceData
    */
   public function testGetSourceDataShouldFetchEachPageFromTheBaseUrl() {
-    $this->markTestSkipped('GAP: LocalistJson::getSourceData() reassigns $url in place each paging iteration ("$url = "$url&page=$i";"), so the URL fetched for page N compounds every prior page\'s "&page=" suffix instead of appending to the original base URL -- see ~/Documents/Claude/not_dave/module-tests-20260710/ys_localist.md');
+    $url = 'https://events.yale.edu/api/2/events';
+    $countCheck = '{"page": {"total": 2}, "events": []}';
+    $emptyPage = '{"events": []}';
+
+    $requested = [];
+    $this->dataFetcher->method('getResponseContent')
+      ->willReturnCallback(function ($requestedUrl) use ($url, $countCheck, $emptyPage, &$requested) {
+        $requested[] = $requestedUrl;
+        return $requestedUrl === $url ? $countCheck : $emptyPage;
+      });
+
+    $parser = $this->createParser();
+    $this->getSourceData($parser, $url);
+
+    $this->assertSame([$url, "$url&page=1", "$url&page=2"], $requested);
   }
 
   /**
