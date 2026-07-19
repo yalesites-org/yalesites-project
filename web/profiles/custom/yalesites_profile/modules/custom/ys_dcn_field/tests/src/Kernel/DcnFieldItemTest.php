@@ -21,16 +21,6 @@ class DcnFieldItemTest extends KernelTestBase {
 
   /**
    * {@inheritdoc}
-   *
-   * The module ships no config schema for its field settings, so strict schema
-   * checking would fail on every field save. It is disabled here to exercise
-   * real field behavior; the missing schema is logged as a GAP.
-   */
-  // phpcs:ignore DrupalPractice.Objects.StrictSchemaDisabled.StrictConfigSchema
-  protected $strictConfigSchema = FALSE;
-
-  /**
-   * {@inheritdoc}
    */
   protected static $modules = [
     'system',
@@ -128,32 +118,14 @@ class DcnFieldItemTest extends KernelTestBase {
   }
 
   /**
-   * Locks in the current (buggy) isEmpty() result for a literal "0".
+   * A lone "0" identifier is not empty, so it survives empty-item filtering.
    *
-   * Paired with testIsEmptyShouldTreatZeroIdentifierAsNotEmpty() -- delete once
-   * the GAP is fixed.
-   *
-   * @covers ::isEmpty
-   */
-  public function testIsEmptyCurrentBehaviorTreatsZeroIdentifierAsEmpty() {
-    $entity = $this->createTestEntity([
-      'field_dcn' => [
-        'dcn_identifier' => '0',
-      ],
-    ]);
-    // PHP's empty('0') is TRUE, so a lone "0" identifier is (incorrectly)
-    // treated the same as no value at all.
-    $this->assertTrue($entity->field_dcn->isEmpty());
-  }
-
-  /**
-   * Paired with testIsEmptyCurrentBehaviorTreatsZeroIdentifierAsEmpty().
+   * IsEmpty() returning FALSE keeps the item from being dropped by
+   * FieldItemList::filterEmptyItems() when the entity is saved.
    *
    * @covers ::isEmpty
    */
   public function testIsEmptyShouldTreatZeroIdentifierAsNotEmpty() {
-    $this->markTestSkipped('GAP: DcnFieldItem::isEmpty() uses empty() on dcn_identifier, so a literal "0" identifier is misreported as empty and gets stripped by preSave() -- see ~/Documents/Claude/not_dave/module-tests-20260710/ys_dcn_field.md');
-
     $entity = $this->createTestEntity([
       'field_dcn' => [
         'dcn_identifier' => '0',
