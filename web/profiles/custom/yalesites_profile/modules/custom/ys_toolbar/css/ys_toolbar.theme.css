@@ -64,6 +64,17 @@ behind the a.toolbar-icon element. */
   mask-image: url('../images/more_actions.svg');
 }
 
+/* Settings — the top-level "Settings" admin menu item points at the custom
+   ys_core.admin_yalesites route, which Gin has no icon for, so it falls back to
+   a blank sprite. Gin renders toolbar icons via `--icon`, so override that
+   custom property (works in both horizontal and vertical toolbar states) to give
+   Settings a gear icon matching the other top-level items. A root-relative URL is
+   required: a relative `url()` inside a custom property resolves against Gin's
+   consuming stylesheet, not this file, so it would 404. */
+.toolbar-icon.toolbar-icon-ys-core-admin-yalesites {
+  --icon: url("/profiles/custom/yalesites_profile/modules/custom/ys_toolbar/images/gear.svg");
+}
+
 /*
 //
 // Toolbar //
