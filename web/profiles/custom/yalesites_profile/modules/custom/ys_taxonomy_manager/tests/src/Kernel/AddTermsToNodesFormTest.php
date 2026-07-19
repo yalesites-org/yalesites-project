@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\ys_taxonomy_manager\Kernel;
 
-use Drupal\Core\Database\InvalidQueryException;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Url;
 use Drupal\field\Entity\FieldConfig;
@@ -114,36 +113,15 @@ class AddTermsToNodesFormTest extends KernelTestBase {
   }
 
   /**
-   * Locks in that buildForm() throws for a vocabulary no bundle references.
+   * Shows "No nodes found" when no bundle references the vocabulary.
    *
-   * Paired with
-   * testBuildFormShouldShowMessageWhenNoBundleReferencesVocabulary() -- delete
-   * once the GAP is fixed. When no node bundle has an entity_reference field
-   * targeting the vocabulary, $relevantBundles is empty and the node query
-   * builds an invalid `type IN ()` condition, so buildForm() throws instead of
-   * showing the "No nodes found" message it intends to.
-   *
-   * @covers ::buildForm
-   */
-  public function testBuildFormThrowsWhenNoBundleReferencesVocabulary() {
-    $empty_vocabulary = Vocabulary::create(['vid' => 'empty_vocab', 'name' => 'Empty Vocab']);
-    $empty_vocabulary->save();
-
-    $form_state = new FormState();
-    $this->expectException(InvalidQueryException::class);
-    $this->form->buildForm([], $form_state, $empty_vocabulary);
-  }
-
-  /**
-   * Should show "No nodes found" when no bundle references the vocabulary.
-   *
-   * Paired with testBuildFormThrowsWhenNoBundleReferencesVocabulary().
+   * With the empty-bundles guard in buildForm(), a vocabulary that no content
+   * type references yields the "No nodes found" message instead of throwing an
+   * invalid-query exception.
    *
    * @covers ::buildForm
    */
   public function testBuildFormShouldShowMessageWhenNoBundleReferencesVocabulary() {
-    $this->markTestSkipped('GAP: AddTermsToNodesForm::buildForm() builds an empty "type IN ()" node query when no node bundle references the vocabulary, throwing InvalidQueryException instead of showing the intended "No nodes found" message -- see ~/Documents/Claude/not_dave/module-tests-20260710/ys_taxonomy_manager.md');
-
     $empty_vocabulary = Vocabulary::create(['vid' => 'empty_vocab', 'name' => 'Empty Vocab']);
     $empty_vocabulary->save();
 
