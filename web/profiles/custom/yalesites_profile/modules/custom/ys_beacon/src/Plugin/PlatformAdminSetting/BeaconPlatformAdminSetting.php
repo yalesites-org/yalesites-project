@@ -281,9 +281,11 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
    * exists. Provisioning is gated on configuredIndexMissing() -
    * which treats an unreachable endpoint as "not missing" - so a transient
    * Azure outage on re-enable keeps an existing index enabled for cron to
-   * catch up rather than disabling it. A read-only borrower never provisions
-   * or writes the collection it reads; it just enables the local index to
-   * query it.
+   * catch up rather than disabling it. Either way the resolved endpoint is
+   * pinned for a writable index (freshly provisioned or adopted) so it is not
+   * moved by a later Pantheon-secret change. A read-only borrower never
+   * provisions, pins, or writes the collection it reads; it just enables the
+   * local index to query it.
    *
    * @param \Drupal\Core\Config\Config $settings
    *   The editable ys_beacon.settings config.
@@ -318,6 +320,13 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
     // the datasources so a never-seeded tracker is populated, not just
     // re-flagged (issue #1383), matching the site settings form.
     if ($name !== '') {
+      // Pin the resolved endpoint for this writable site's index. provision()
+      // already pins a freshly created one, but when the index already existed
+      // provisioning was skipped above, so pin here too - otherwise a site that
+      // adopted an existing index would never pin and would follow a later
+      // Pantheon-secret change (yalesites-org/YaleSites-Internal#1440).
+      // Idempotent when provision() already pinned it.
+      $this->indexManager->pinSearchUrl();
       $this->setIndexStatus(TRUE);
       $this->loadBeaconIndex()?->rebuildTracker();
     }

@@ -377,6 +377,10 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
   /**
    * Re-enabling with an existing index enables it without re-provisioning.
    *
+   * It is never re-provisioned, but the resolved endpoint is still pinned so an
+   * adopted index survives a later Pantheon-secret change
+   * (yalesites-org/YaleSites-Internal#1440).
+   *
    * @covers ::submitSettings
    * @covers ::enableIndex
    * @covers ::configuredIndexMissing
@@ -404,9 +408,12 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
     $entity_type_manager = $this->entityTypeManagerWithWritableIndex($index);
 
     $index_manager = $this->createMock(BeaconIndexManager::class);
-    // The index already exists, so it must never be re-provisioned.
+    // The index already exists, so it must never be re-provisioned - but the
+    // resolved endpoint is still pinned so the adopted index is not moved by a
+    // later Pantheon-secret change.
     $index_manager->expects($this->once())->method('indexExists')->with('my-index')->willReturn(TRUE);
     $index_manager->expects($this->never())->method('provision');
+    $index_manager->expects($this->once())->method('pinSearchUrl')->willReturn(TRUE);
 
     $messenger = $this->createMock(MessengerInterface::class);
     $messenger->expects($this->never())->method('addStatus');
@@ -545,6 +552,9 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
   /**
    * A read-only borrow enables the index but never provisions or writes it.
    *
+   * A borrower does not own the collection it reads, so it must never pin the
+   * endpoint either (yalesites-org/YaleSites-Internal#1440).
+   *
    * @covers ::submitSettings
    * @covers ::enableIndex
    */
@@ -568,6 +578,7 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
 
     $index_manager = $this->createMock(BeaconIndexManager::class);
     $index_manager->expects($this->never())->method('provision');
+    $index_manager->expects($this->never())->method('pinSearchUrl');
 
     $plugin = $this->plugin($factory, $entity_type_manager, $index_manager);
 
