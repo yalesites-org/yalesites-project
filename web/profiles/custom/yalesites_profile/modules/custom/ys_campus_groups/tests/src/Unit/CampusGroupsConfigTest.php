@@ -48,45 +48,24 @@ class CampusGroupsConfigTest extends UnitTestCase {
   }
 
   /**
-   * Locks in the current getConfig() behavior for the GAP.
+   * CampusGroupsConfig must read the same config the rest of the module uses.
    *
-   * Paired with testGetConfigShouldUseCampusGroupsSettingsName() -- delete
-   * once the GAP is fixed.
-   *
-   * CampusGroupsConfig requests the config object named
-   * "ys_campus_group.settings" (singular "group"), but every other class in
-   * this module -- CampusGroupsSettings, CampusGroupsIntegrationPlugin,
-   * RunMigrations, CampusGroupUrl, and the cron hook -- reads and writes
-   * "ys_campus_groups.settings" (plural). The service is not currently
-   * registered or used anywhere in the module, so this typo is latent rather
-   * than actively causing incorrect behavior today.
-   *
-   * @covers ::__construct
-   * @covers ::getConfig
-   */
-  public function testGetConfigUsesSingularConfigNameCurrentBehavior(): void {
-    $this->configFactory->expects($this->once())
-      ->method('getEditable')
-      ->with('ys_campus_group.settings')
-      ->willReturn($this->createMock(ImmutableConfig::class));
-
-    $service = new CampusGroupsConfig($this->configFactory);
-    $service->getConfig();
-  }
-
-  /**
-   * Paired with testGetConfigUsesSingularConfigNameCurrentBehavior().
-   *
-   * GAP: CampusGroupsConfig reads "ys_campus_group.settings" (singular)
-   * while the rest of the module reads and writes "ys_campus_groups.settings"
-   * (plural), so if this service is ever wired up it will silently see a
-   * different config object than the settings form saves to.
+   * Every other class in the module (CampusGroupsSettings,
+   * CampusGroupsIntegrationPlugin, RunMigrations, CampusGroupUrl) reads and
+   * writes "ys_campus_groups.settings" (plural), so CampusGroupsConfig must
+   * request that same object, not the singular "ys_campus_group.settings".
    *
    * @covers ::__construct
    * @covers ::getConfig
    */
   public function testGetConfigShouldUseCampusGroupsSettingsName(): void {
-    $this->markTestSkipped('GAP: CampusGroupsConfig::__construct() calls $config_factory->getEditable(\'ys_campus_group.settings\') (singular), but every other class in the module uses \'ys_campus_groups.settings\' (plural) -- see ~/Documents/Claude/not_dave/module-tests-20260710/ys_campus_groups.md');
+    $this->configFactory->expects($this->once())
+      ->method('getEditable')
+      ->with('ys_campus_groups.settings')
+      ->willReturn($this->createMock(ImmutableConfig::class));
+
+    $service = new CampusGroupsConfig($this->configFactory);
+    $service->getConfig();
   }
 
 }
