@@ -44,9 +44,6 @@ ys_beacon.settings:
     azure_search_url_key:
       type: string
       label: 'Key entity id holding the Azure AI Search endpoint URL'
-    max_indexes:
-      type: integer
-      label: 'Maximum indexes allowed on the target Azure AI Search service'
     read_only:
       type: boolean
       label: 'Query the search index but never write to it (borrow another site''s index)'

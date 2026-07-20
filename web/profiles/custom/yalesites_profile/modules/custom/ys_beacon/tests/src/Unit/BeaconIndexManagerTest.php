@@ -475,11 +475,11 @@ class BeaconIndexManagerTest extends UnitTestCase {
 
     $manager = $this->getMockBuilder(BeaconIndexManager::class)
       ->disableOriginalConstructor()
-      ->onlyMethods(['indexExists', 'countIndexes', 'maxIndexes', 'createIndex'])
+      ->onlyMethods(['indexExists', 'countIndexes', 'createIndex'])
       ->getMock();
     $manager->method('indexExists')->with('new-index')->willReturn(FALSE);
+    // Well under the fixed MAX_INDEXES (50), so creation proceeds.
     $manager->method('countIndexes')->willReturn(10);
-    $manager->method('maxIndexes')->willReturn(50);
     $manager->expects($this->once())->method('createIndex')->with('new-index');
     $this->injectLogger($manager, $logger);
 
@@ -489,7 +489,7 @@ class BeaconIndexManagerTest extends UnitTestCase {
   /**
    * EnsureIndex refuses to create a new index when the service is at capacity.
    *
-   * A count meeting or exceeding the configured limit is a hard failure:
+   * A count meeting or exceeding the fixed service limit is a hard failure:
    * nothing is created, an error is logged pointing at the fix (provision a new
    * service and update the Pantheon secret), and a RuntimeException propagates
    * so callers persist nothing (yalesites-org/YaleSites-Internal#1440).
@@ -504,11 +504,11 @@ class BeaconIndexManagerTest extends UnitTestCase {
 
     $manager = $this->getMockBuilder(BeaconIndexManager::class)
       ->disableOriginalConstructor()
-      ->onlyMethods(['indexExists', 'countIndexes', 'maxIndexes', 'createIndex'])
+      ->onlyMethods(['indexExists', 'countIndexes', 'createIndex'])
       ->getMock();
     $manager->method('indexExists')->with('new-index')->willReturn(FALSE);
+    // At the fixed MAX_INDEXES (50), so creation is refused.
     $manager->method('countIndexes')->willReturn(50);
-    $manager->method('maxIndexes')->willReturn(50);
     $manager->expects($this->never())->method('createIndex');
     $this->injectLogger($manager, $logger);
 
@@ -569,19 +569,6 @@ class BeaconIndexManagerTest extends UnitTestCase {
   }
 
   /**
-   * MaxIndexes reads the configured limit, falling back to the shipped default.
-   *
-   * @covers ::maxIndexes
-   */
-  public function testMaxIndexesReadsConfigWithDefaultFallback(): void {
-    $configured = $this->invokeMaxIndexes($this->buildManagerWithBeaconSettings(['max_indexes' => 40]));
-    $this->assertSame(40, $configured);
-
-    $default = $this->invokeMaxIndexes($this->buildManagerWithBeaconSettings([]));
-    $this->assertSame(BeaconIndexManager::DEFAULT_MAX_INDEXES, $default);
-  }
-
-  /**
    * Pins the resolved endpoint so a later secret change skips this site.
    *
    * @covers ::pinSearchUrl
@@ -633,15 +620,6 @@ class BeaconIndexManagerTest extends UnitTestCase {
   }
 
   /**
-   * Invokes the protected maxIndexes() method.
-   */
-  private function invokeMaxIndexes(BeaconIndexManager $manager): int {
-    $method = new \ReflectionMethod($manager, 'maxIndexes');
-    $method->setAccessible(TRUE);
-    return $method->invoke($manager);
-  }
-
-  /**
    * Builds a manager whose Azure management API returns the given JSON body.
    *
    * Wires the real request() path (config factory, key repository, HTTP client)
@@ -680,26 +658,6 @@ class BeaconIndexManagerTest extends UnitTestCase {
     $this->setProperty($manager, 'configFactory', $config_factory);
     $this->setProperty($manager, 'keyRepository', $key_repository);
     $this->setProperty($manager, 'httpClient', $http_client);
-    return $manager;
-  }
-
-  /**
-   * Builds a manager whose ys_beacon.settings returns the given values.
-   *
-   * @param array $settings
-   *   The ys_beacon.settings values keyed by config key.
-   *
-   * @return \Drupal\ys_beacon\Service\BeaconIndexManager
-   *   The manager under test with only its config factory wired.
-   */
-  private function buildManagerWithBeaconSettings(array $settings): BeaconIndexManager {
-    $config = $this->createMock(Config::class);
-    $config->method('get')->willReturnCallback(fn (string $key) => $settings[$key] ?? NULL);
-    $config_factory = $this->createMock(ConfigFactoryInterface::class);
-    $config_factory->method('get')->with('ys_beacon.settings')->willReturn($config);
-
-    $manager = (new \ReflectionClass(BeaconIndexManager::class))->newInstanceWithoutConstructor();
-    $this->setProperty($manager, 'configFactory', $config_factory);
     return $manager;
   }
 

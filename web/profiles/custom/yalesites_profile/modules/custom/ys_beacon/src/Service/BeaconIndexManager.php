@@ -31,16 +31,17 @@ class BeaconIndexManager {
   protected const MAX_NAME_LENGTH = 128;
 
   /**
-   * Default maximum number of indexes one Azure AI Search service may hold.
+   * Maximum number of indexes one Azure AI Search service may hold.
    *
    * A single Azure AI Search service caps how many indexes it can contain, and
    * creating another once it is full fails. Beacon refuses to create past this
    * limit and logs an actionable error instead of hitting an opaque Azure
-   * rejection. This constant is the single source of the default; a site can
-   * override it live via ys_beacon.settings:max_indexes without a deploy
-   * (yalesites-org/YaleSites-Internal#1440).
+   * rejection. This is a fixed property of the shared search service, the same
+   * for every site on it - not a per-site preference; if the cap ever changes
+   * we change it here (and provision/repoint search services to match), so it
+   * lives in this one constant (yalesites-org/YaleSites-Internal#1440).
    */
-  public const DEFAULT_MAX_INDEXES = 50;
+  public const MAX_INDEXES = 50;
 
   public function __construct(
     protected ConfigFactoryInterface $configFactory,
@@ -346,25 +347,24 @@ class BeaconIndexManager {
    * Fails when the target service has no room for another index.
    *
    * A single Azure AI Search service caps how many indexes it can hold, so
-   * before creating one Beacon checks the current index count against the
-   * configured limit. When the service is full it logs a clear, referenceable
-   * error - pointing at the fix (provision a new service and update the
-   * Pantheon secret) - and throws, so the caller persists nothing
-   * (yalesites-org/YaleSites-Internal#1440).
+   * before creating one Beacon checks the current index count against the fixed
+   * service limit (self::MAX_INDEXES). When the service is full it logs a
+   * clear, referenceable error - pointing at the fix (provision a new service
+   * and update the Pantheon secret) - and throws, so the caller persists
+   * nothing (yalesites-org/YaleSites-Internal#1440).
    *
    * @throws \RuntimeException
-   *   When the service is at or over the configured index limit, or the index
-   *   count cannot be read.
+   *   When the service is at or over the index limit, or the index count cannot
+   *   be read.
    */
   protected function assertCapacity(): void {
     $count = $this->countIndexes();
-    $limit = $this->maxIndexes();
-    if ($count >= $limit) {
+    if ($count >= self::MAX_INDEXES) {
       $this->logger->error('Azure AI Search service is at capacity: @count of @limit indexes exist, so a new Beacon index cannot be created. Provision a new Azure AI Search service and update the "azure_ai_search_url" Pantheon secret so sites without an index create it on the new service.', [
         '@count' => $count,
-        '@limit' => $limit,
+        '@limit' => self::MAX_INDEXES,
       ]);
-      throw new \RuntimeException(sprintf('Azure AI Search service is at capacity (%d of %d indexes); cannot create a new index.', $count, $limit));
+      throw new \RuntimeException(sprintf('Azure AI Search service is at capacity (%d of %d indexes); cannot create a new index.', $count, self::MAX_INDEXES));
     }
   }
 
@@ -392,21 +392,6 @@ class BeaconIndexManager {
       throw new \RuntimeException('Azure AI Search returned an unexpected response listing indexes; refusing to assume the service is empty.');
     }
     return count($response['value']);
-  }
-
-  /**
-   * The maximum number of indexes allowed on the target service.
-   *
-   * Reads the site override (ys_beacon.settings:max_indexes) when set, falling
-   * back to the shipped default so the limit lives in a single, easily updated
-   * place (yalesites-org/YaleSites-Internal#1440).
-   *
-   * @return int
-   *   The index limit.
-   */
-  protected function maxIndexes(): int {
-    $configured = $this->configFactory->get('ys_beacon.settings')->get('max_indexes');
-    return is_numeric($configured) ? (int) $configured : self::DEFAULT_MAX_INDEXES;
   }
 
   /**
