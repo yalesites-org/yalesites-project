@@ -305,7 +305,11 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
         // control); warn the operator and stop before enabling a backing-less
         // index.
         $this->logger->error('Automatic index provisioning failed: @message', ['@message' => $e->getMessage()]);
-        $this->messenger->addWarning($this->t('The chat widget is enabled, but the search index could not be created automatically. The assistant will not find site content until the index is configured in the Beacon administration settings.'));
+        // Surface the specific reason: a capacity failure needs an ops action
+        // (a new Azure service + Pantheon secret), which the generic "configure
+        // it in Beacon settings" advice would misdirect
+        // (yalesites-org/YaleSites-Internal#1440).
+        $this->messenger->addWarning($this->t('The chat widget is enabled, but the search index could not be created automatically: @message Until this is resolved, the assistant will not find site content.', ['@message' => $e->getMessage()]));
         return;
       }
     }

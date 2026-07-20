@@ -42,13 +42,19 @@ class YsBeaconConfigOverridesTest extends UnitTestCase {
    *   The raw ys_beacon.settings returned by the config storage.
    * @param array $keys
    *   Map of key id => resolved value. A missing id resolves to no key entity.
+   * @param string $pinned_url
+   *   The endpoint already pinned on the raw VDB connection config, if any.
    *
    * @return \Drupal\ys_beacon\Config\YsBeaconConfigOverrides
    *   The override under test, with a key.repository placed in the container.
    */
-  protected function buildOverride(array $settings, array $keys): YsBeaconConfigOverrides {
+  protected function buildOverride(array $settings, array $keys, string $pinned_url = ''): YsBeaconConfigOverrides {
     $storage = $this->createMock(StorageInterface::class);
-    $storage->method('read')->with('ys_beacon.settings')->willReturn($settings);
+    $storage->method('read')->willReturnCallback(fn (string $name) => match ($name) {
+      'ys_beacon.settings' => $settings,
+      self::VDB_CONFIG => ['url' => $pinned_url],
+      default => [],
+    });
 
     $repository = $this->createMock(KeyRepositoryInterface::class);
     $repository->method('getKey')->willReturnCallback(function (string $id) use ($keys): ?KeyInterface {
@@ -382,6 +388,45 @@ class YsBeaconConfigOverridesTest extends UnitTestCase {
     $storage = $this->createMock(StorageInterface::class);
     $storage->method('read')->with('ys_beacon.settings')->willReturn($settings);
     return new YsBeaconConfigOverrides($storage);
+  }
+
+  /**
+   * A pinned endpoint is left to the real config; the secret is not layered.
+   *
+   * Once a site has created its index it pins the resolved endpoint onto the
+   * VDB connection config, so this override steps aside and a later change to
+   * the shared Pantheon secret only moves sites that have not created an index
+   * yet (yalesites-org/YaleSites-Internal#1440).
+   *
+   * @covers ::loadOverrides
+   * @covers ::hasPinnedUrl
+   */
+  public function testPinnedUrlIsLeftToTheRealConfig(): void {
+    $override = $this->buildOverride(
+      [],
+      [YsBeaconConfigOverrides::DEFAULT_URL_KEY => 'https://secret.search.windows.net'],
+      'https://pinned.search.windows.net',
+    );
+
+    // No override applied, so the pinned value on the config stands.
+    $this->assertArrayNotHasKey(self::VDB_CONFIG, $override->loadOverrides([self::VDB_CONFIG]));
+  }
+
+  /**
+   * With no pinned URL the endpoint still resolves from the secret-backed key.
+   *
+   * @covers ::loadOverrides
+   * @covers ::hasPinnedUrl
+   */
+  public function testUnpinnedSiteResolvesUrlFromSecret(): void {
+    $override = $this->buildOverride(
+      ['azure_search_url_key' => ''],
+      [YsBeaconConfigOverrides::DEFAULT_URL_KEY => 'https://secret.search.windows.net'],
+      '',
+    );
+
+    $overrides = $override->loadOverrides([self::VDB_CONFIG]);
+    $this->assertSame('https://secret.search.windows.net', $overrides[self::VDB_CONFIG]['url']);
   }
 
 }

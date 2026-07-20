@@ -119,7 +119,13 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
       }
     }
 
-    if (in_array(self::VDB_CONFIG, $names, TRUE)) {
+    if (in_array(self::VDB_CONFIG, $names, TRUE) && !$this->hasPinnedUrl()) {
+      // Only layer the secret-backed endpoint over the connection config when
+      // the site has NOT pinned one. Once a site creates an index it pins the
+      // resolved URL onto this config (config-ignored), and this override then
+      // steps aside so a later change to the shared Pantheon secret only moves
+      // sites that have not created an index yet
+      // (yalesites-org/YaleSites-Internal#1440).
       $url = $this->getAzureSearchUrl(($settings['azure_search_url_key'] ?? '') ?: self::DEFAULT_URL_KEY);
       if ($url !== '') {
         $overrides[self::VDB_CONFIG] = ['url' => $url];
@@ -176,6 +182,24 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
    */
   protected function getSettings(): array {
     return $this->configStorage->read('ys_beacon.settings') ?: [];
+  }
+
+  /**
+   * Whether this site has pinned an Azure AI Search endpoint.
+   *
+   * A pinned endpoint is a non-empty url persisted directly onto the VDB
+   * connection config by BeaconIndexManager::pinSearchUrl() once the site
+   * created its index; the two sides share this "non-empty url means pinned"
+   * invariant. It is read from raw storage to see the persisted value rather
+   * than this override's own layered one, and to avoid re-entering the config
+   * factory while overrides resolve.
+   *
+   * @return bool
+   *   TRUE when the connection config already carries a pinned endpoint URL.
+   */
+  protected function hasPinnedUrl(): bool {
+    $connection = $this->configStorage->read(self::VDB_CONFIG) ?: [];
+    return trim((string) ($connection['url'] ?? '')) !== '';
   }
 
   /**

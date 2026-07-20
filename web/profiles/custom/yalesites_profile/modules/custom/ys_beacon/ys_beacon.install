@@ -483,3 +483,30 @@ function ys_beacon_update_10011() {
   }
   \Drupal::service('ys_beacon.index_manager')->reprovision();
 }
+
+/**
+ * Pin the resolved Azure AI Search endpoint for existing provisioned sites.
+ *
+ * Issue yalesites-org/YaleSites-Internal#1440 makes a site pin its resolved
+ * endpoint once it owns an index, so a later change to the shared Pantheon
+ * secret only moves sites that have not created an index yet. That guarantee
+ * only holds for the current fleet if existing sites are pinned before the
+ * secret is ever repointed, so backfill them here. Only a site that owns a
+ * writable, provisioned index is pinned; a read-only borrower or a site with no
+ * index keeps resolving the endpoint from the secret. pinSearchUrl() is a pure
+ * config operation (no Azure round-trip), so it is safe in the updatedb phase;
+ * it writes the pin onto the VDB connection config's url, which is
+ * config-ignored and so survives the config:import later in the same deploy.
+ */
+function ys_beacon_update_10012() {
+  $settings = \Drupal::config('ys_beacon.settings');
+  if ((string) $settings->get('azure_index_name') === '' || (bool) $settings->get('read_only')) {
+    return;
+  }
+  // A site that owns a writable index should have a resolvable endpoint to pin.
+  // If it does not, surface it rather than leave the site silently unpinned and
+  // so vulnerable to a later Pantheon-secret repoint.
+  if (!\Drupal::service('ys_beacon.index_manager')->pinSearchUrl()) {
+    \Drupal::logger('ys_beacon')->warning('Beacon endpoint pin backfill: site owns the writable index "@name" but its Azure AI Search endpoint did not resolve, so it was left unpinned. It will keep resolving the endpoint from the Pantheon secret.', ['@name' => $settings->get('azure_index_name')]);
+  }
+}

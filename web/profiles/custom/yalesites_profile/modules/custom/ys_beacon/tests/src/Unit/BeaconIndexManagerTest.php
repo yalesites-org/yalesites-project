@@ -6,10 +6,16 @@ use Drupal\Core\Config\Config;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\Entity\ConfigEntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\key\KeyInterface;
+use Drupal\key\KeyRepositoryInterface;
 use Drupal\search_api\IndexInterface;
 use Drupal\search_api\ServerInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_beacon\Service\BeaconIndexManager;
+use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Psr7\Utils;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Tests Azure AI Search index name sanitization.
@@ -362,7 +368,7 @@ class BeaconIndexManagerTest extends UnitTestCase {
       ->getMock();
     $manager->method('indexExists')->with('shared-index')->willReturn(TRUE);
     $manager->expects($this->once())->method('deleteIndex')->with('shared-index');
-    $manager->expects($this->once())->method('provision')->with('shared-index')->willReturn('shared-index');
+    $manager->expects($this->once())->method('provision')->with('shared-index', FALSE)->willReturn('shared-index');
 
     $this->assertSame('shared-index', $manager->reprovision('shared-index'));
   }
@@ -379,7 +385,7 @@ class BeaconIndexManagerTest extends UnitTestCase {
       ->getMock();
     $manager->method('indexExists')->with('shared-index')->willReturn(FALSE);
     $manager->expects($this->never())->method('deleteIndex');
-    $manager->expects($this->once())->method('provision')->with('shared-index')->willReturn('shared-index');
+    $manager->expects($this->once())->method('provision')->with('shared-index', FALSE)->willReturn('shared-index');
 
     $this->assertSame('shared-index', $manager->reprovision('shared-index'));
   }
@@ -424,6 +430,323 @@ class BeaconIndexManagerTest extends UnitTestCase {
     $config_property->setValue($manager, $config_factory);
 
     return $manager;
+  }
+
+  /**
+   * EnsureIndex adopts a pre-existing index and logs that it was already there.
+   *
+   * An index already on the target service is adopted as-is (never re-created)
+   * and the adoption is logged at notice level for traceability - neutrally,
+   * since it is expected on a borrow-to-writable switch and only surprising on
+   * a first-time provision (yalesites-org/YaleSites-Internal#1440).
+   *
+   * @covers ::ensureIndex
+   */
+  public function testEnsureIndexAdoptsExistingIndexAndLogsIt(): void {
+    $logger = $this->createMock(LoggerInterface::class);
+    $logger->expects($this->once())->method('notice')
+      ->with($this->stringContains('already'), $this->anything());
+    $logger->expects($this->never())->method('warning');
+    $logger->expects($this->never())->method('error');
+
+    $manager = $this->getMockBuilder(BeaconIndexManager::class)
+      ->disableOriginalConstructor()
+      ->onlyMethods(['indexExists', 'countIndexes', 'createIndex'])
+      ->getMock();
+    $manager->method('indexExists')->with('shared-index')->willReturn(TRUE);
+    // An adopted index is neither counted against capacity nor re-created.
+    $manager->expects($this->never())->method('countIndexes');
+    $manager->expects($this->never())->method('createIndex');
+    $this->injectLogger($manager, $logger);
+
+    $this->assertSame('shared-index', $manager->ensureIndex('shared-index'));
+  }
+
+  /**
+   * EnsureIndex creates a missing index when the service has capacity.
+   *
+   * @covers ::ensureIndex
+   */
+  public function testEnsureIndexCreatesWhenServiceHasCapacity(): void {
+    $logger = $this->createMock(LoggerInterface::class);
+    $logger->expects($this->once())->method('notice')
+      ->with($this->stringContains('Created'), $this->anything());
+    $logger->expects($this->never())->method('error');
+
+    $manager = $this->getMockBuilder(BeaconIndexManager::class)
+      ->disableOriginalConstructor()
+      ->onlyMethods(['indexExists', 'countIndexes', 'maxIndexes', 'createIndex'])
+      ->getMock();
+    $manager->method('indexExists')->with('new-index')->willReturn(FALSE);
+    $manager->method('countIndexes')->willReturn(10);
+    $manager->method('maxIndexes')->willReturn(50);
+    $manager->expects($this->once())->method('createIndex')->with('new-index');
+    $this->injectLogger($manager, $logger);
+
+    $this->assertSame('new-index', $manager->ensureIndex('new-index'));
+  }
+
+  /**
+   * EnsureIndex refuses to create a new index when the service is at capacity.
+   *
+   * A count meeting or exceeding the configured limit is a hard failure:
+   * nothing is created, an error is logged pointing at the fix (provision a new
+   * service and update the Pantheon secret), and a RuntimeException propagates
+   * so callers persist nothing (yalesites-org/YaleSites-Internal#1440).
+   *
+   * @covers ::ensureIndex
+   * @covers ::assertCapacity
+   */
+  public function testEnsureIndexFailsWhenServiceAtCapacity(): void {
+    $logger = $this->createMock(LoggerInterface::class);
+    $logger->expects($this->once())->method('error')
+      ->with($this->stringContains('capacity'), $this->anything());
+
+    $manager = $this->getMockBuilder(BeaconIndexManager::class)
+      ->disableOriginalConstructor()
+      ->onlyMethods(['indexExists', 'countIndexes', 'maxIndexes', 'createIndex'])
+      ->getMock();
+    $manager->method('indexExists')->with('new-index')->willReturn(FALSE);
+    $manager->method('countIndexes')->willReturn(50);
+    $manager->method('maxIndexes')->willReturn(50);
+    $manager->expects($this->never())->method('createIndex');
+    $this->injectLogger($manager, $logger);
+
+    $this->expectException(\RuntimeException::class);
+    $this->expectExceptionMessage('capacity');
+    $manager->ensureIndex('new-index');
+  }
+
+  /**
+   * CountIndexes returns the number of indexes reported by the service.
+   *
+   * Azure AI Search returns the index list under a top-level "value" key; the
+   * length of that array is the total index count the capacity guard checks.
+   *
+   * @covers ::countIndexes
+   * @dataProvider providerCountIndexes
+   */
+  public function testCountIndexes(string $json, int $expected): void {
+    $manager = $this->buildManagerWithHttpBody($json);
+    $this->assertSame($expected, $manager->countIndexes());
+  }
+
+  /**
+   * Data provider for the service index count.
+   */
+  public static function providerCountIndexes(): array {
+    return [
+      'three indexes' => ['{"value":[{"name":"a"},{"name":"b"},{"name":"c"}]}', 3],
+      'empty service' => ['{"value":[]}', 0],
+    ];
+  }
+
+  /**
+   * CountIndexes fails closed on a 2xx that is not a real index listing.
+   *
+   * A repointed endpoint answering 200 with a non-Azure body must not be read
+   * as an empty service, which would bypass the capacity guard
+   * (yalesites-org/YaleSites-Internal#1440).
+   *
+   * @covers ::countIndexes
+   * @dataProvider providerMalformedIndexListing
+   */
+  public function testCountIndexesRejectsMalformedResponse(string $json): void {
+    $manager = $this->buildManagerWithHttpBody($json);
+    $this->expectException(\RuntimeException::class);
+    $manager->countIndexes();
+  }
+
+  /**
+   * Data provider for 2xx bodies that are not a valid index listing.
+   */
+  public static function providerMalformedIndexListing(): array {
+    return [
+      'no value key' => ['{"error":"nope"}'],
+      'non-json html body' => ['<html>login</html>'],
+      'value is a scalar' => ['{"value":5}'],
+    ];
+  }
+
+  /**
+   * MaxIndexes reads the configured limit, falling back to the shipped default.
+   *
+   * @covers ::maxIndexes
+   */
+  public function testMaxIndexesReadsConfigWithDefaultFallback(): void {
+    $configured = $this->invokeMaxIndexes($this->buildManagerWithBeaconSettings(['max_indexes' => 40]));
+    $this->assertSame(40, $configured);
+
+    $default = $this->invokeMaxIndexes($this->buildManagerWithBeaconSettings([]));
+    $this->assertSame(BeaconIndexManager::DEFAULT_MAX_INDEXES, $default);
+  }
+
+  /**
+   * Pins the resolved endpoint so a later secret change skips this site.
+   *
+   * @covers ::pinSearchUrl
+   */
+  public function testPinSearchUrlPersistsResolvedEndpoint(): void {
+    $captured = [];
+    $manager = $this->buildManagerForPin('https://svc.search.windows.net', '', $captured);
+    $this->assertTrue($manager->pinSearchUrl());
+    $this->assertSame('https://svc.search.windows.net', $captured['url'] ?? NULL);
+  }
+
+  /**
+   * PinSearchUrl writes nothing when the endpoint is already pinned unchanged.
+   *
+   * @covers ::pinSearchUrl
+   */
+  public function testPinSearchUrlSkipsWhenUnchanged(): void {
+    $captured = [];
+    $manager = $this->buildManagerForPin(
+      'https://svc.search.windows.net',
+      'https://svc.search.windows.net',
+      $captured,
+    );
+    // The endpoint still resolved, so it is reported pinned even though the
+    // already-current value is not re-written.
+    $this->assertTrue($manager->pinSearchUrl());
+    $this->assertArrayNotHasKey('url', $captured);
+  }
+
+  /**
+   * PinSearchUrl persists nothing when no endpoint resolves (keep the secret).
+   *
+   * @covers ::pinSearchUrl
+   */
+  public function testPinSearchUrlSkipsWhenNoEndpointResolves(): void {
+    $captured = [];
+    $manager = $this->buildManagerForPin('', '', $captured);
+    // Nothing resolved: reported unpinned so callers can surface it, and no
+    // value is written.
+    $this->assertFalse($manager->pinSearchUrl());
+    $this->assertArrayNotHasKey('url', $captured);
+  }
+
+  /**
+   * Injects a logger into a manager under test.
+   */
+  private function injectLogger(BeaconIndexManager $manager, LoggerInterface $logger): void {
+    $this->setProperty($manager, 'logger', $logger);
+  }
+
+  /**
+   * Invokes the protected maxIndexes() method.
+   */
+  private function invokeMaxIndexes(BeaconIndexManager $manager): int {
+    $method = new \ReflectionMethod($manager, 'maxIndexes');
+    $method->setAccessible(TRUE);
+    return $method->invoke($manager);
+  }
+
+  /**
+   * Builds a manager whose Azure management API returns the given JSON body.
+   *
+   * Wires the real request() path (config factory, key repository, HTTP client)
+   * so a single stubbed HTTP response drives countIndexes().
+   *
+   * @param string $json
+   *   The JSON body the stubbed HTTP client returns.
+   *
+   * @return \Drupal\ys_beacon\Service\BeaconIndexManager
+   *   The manager under test with its request() dependencies wired.
+   */
+  private function buildManagerWithHttpBody(string $json): BeaconIndexManager {
+    $vdb = $this->createMock(Config::class);
+    $vdb->method('get')->willReturnCallback(fn (string $key) => match ($key) {
+      'url' => 'https://svc.search.windows.net',
+      'api_version' => '2023-11-01',
+      'api_key' => 'azure_ai_search_api_key',
+      default => NULL,
+    });
+    $config_factory = $this->createMock(ConfigFactoryInterface::class);
+    $config_factory->method('get')->willReturnCallback(
+      fn (string $name) => $name === 'ai_vdb_provider_azure_ai_search.settings' ? $vdb : $this->createMock(Config::class),
+    );
+
+    $key = $this->createMock(KeyInterface::class);
+    $key->method('getKeyValue')->willReturn('admin-key');
+    $key_repository = $this->createMock(KeyRepositoryInterface::class);
+    $key_repository->method('getKey')->with('azure_ai_search_api_key')->willReturn($key);
+
+    $response = $this->createMock(ResponseInterface::class);
+    $response->method('getBody')->willReturn(Utils::streamFor($json));
+    $http_client = $this->createMock(ClientInterface::class);
+    $http_client->method('request')->willReturn($response);
+
+    $manager = (new \ReflectionClass(BeaconIndexManager::class))->newInstanceWithoutConstructor();
+    $this->setProperty($manager, 'configFactory', $config_factory);
+    $this->setProperty($manager, 'keyRepository', $key_repository);
+    $this->setProperty($manager, 'httpClient', $http_client);
+    return $manager;
+  }
+
+  /**
+   * Builds a manager whose ys_beacon.settings returns the given values.
+   *
+   * @param array $settings
+   *   The ys_beacon.settings values keyed by config key.
+   *
+   * @return \Drupal\ys_beacon\Service\BeaconIndexManager
+   *   The manager under test with only its config factory wired.
+   */
+  private function buildManagerWithBeaconSettings(array $settings): BeaconIndexManager {
+    $config = $this->createMock(Config::class);
+    $config->method('get')->willReturnCallback(fn (string $key) => $settings[$key] ?? NULL);
+    $config_factory = $this->createMock(ConfigFactoryInterface::class);
+    $config_factory->method('get')->with('ys_beacon.settings')->willReturn($config);
+
+    $manager = (new \ReflectionClass(BeaconIndexManager::class))->newInstanceWithoutConstructor();
+    $this->setProperty($manager, 'configFactory', $config_factory);
+    return $manager;
+  }
+
+  /**
+   * Builds a manager for pinSearchUrl() tests.
+   *
+   * @param string $resolved_url
+   *   The endpoint the VDB config currently resolves to (the override-applied
+   *   value pinSearchUrl reads back).
+   * @param string $current_pin
+   *   The endpoint already pinned on the raw VDB connection config.
+   * @param array $captured
+   *   Populated with any value written to the VDB connection config.
+   *
+   * @return \Drupal\ys_beacon\Service\BeaconIndexManager
+   *   The manager under test with only its config factory wired.
+   */
+  private function buildManagerForPin(string $resolved_url, string $current_pin, array &$captured): BeaconIndexManager {
+    // The immutable (override-applied) VDB config pinSearchUrl reads back.
+    $immutable = $this->createMock(Config::class);
+    $immutable->method('get')->with('url')->willReturn($resolved_url);
+
+    // The editable (raw) VDB config pinSearchUrl writes the pinned url onto.
+    $editable = $this->createMock(Config::class);
+    $editable->method('get')->with('url')->willReturn($current_pin);
+    $editable->method('set')->willReturnCallback(function (string $key, $value) use (&$captured, $editable) {
+      $captured[$key] = $value;
+      return $editable;
+    });
+    $editable->method('save')->willReturnSelf();
+
+    $config_factory = $this->createMock(ConfigFactoryInterface::class);
+    $config_factory->method('get')->with('ai_vdb_provider_azure_ai_search.settings')->willReturn($immutable);
+    $config_factory->method('getEditable')->with('ai_vdb_provider_azure_ai_search.settings')->willReturn($editable);
+
+    $manager = (new \ReflectionClass(BeaconIndexManager::class))->newInstanceWithoutConstructor();
+    $this->setProperty($manager, 'configFactory', $config_factory);
+    return $manager;
+  }
+
+  /**
+   * Sets a protected property on the manager under test.
+   */
+  private function setProperty(BeaconIndexManager $manager, string $name, mixed $value): void {
+    $property = new \ReflectionProperty(BeaconIndexManager::class, $name);
+    $property->setAccessible(TRUE);
+    $property->setValue($manager, $value);
   }
 
 }
