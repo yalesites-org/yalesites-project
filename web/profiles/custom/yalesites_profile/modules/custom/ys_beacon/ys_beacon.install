@@ -423,3 +423,32 @@ function ys_beacon_update_10009() {
   }
   \Drupal::service('ys_beacon.index_manager')->reprovision();
 }
+
+/**
+ * Recreate the Beacon Azure index with the updated_at schema and reindex.
+ *
+ * Issue yalesites-org/YaleSites-Internal#1434 adds a typed updated_at
+ * (Edm.DateTimeOffset, filterable + sortable) field recording when each chunk
+ * was last written to the index, so chunks can be sorted and filtered by index
+ * freshness in the Azure portal. Azure never modifies an index in place, so an
+ * index provisioned by the earlier citation-field migration (update 10009) must
+ * be dropped and recreated with the current schema and fully reindexed, which
+ * also stamps updated_at onto every existing chunk. Only a site that owns a
+ * provisioned, writable index is touched; a fresh provision or a read-only
+ * borrower is left alone.
+ *
+ * As with the earlier schema migrations, a failure aborts the update rather
+ * than being swallowed: reprovision() checks indexExists() before any
+ * destructive delete, so a plain outage aborts without having touched the index
+ * and Drupal re-runs the update on the next deploy. The queued reindex runs
+ * afterwards on cron.
+ */
+function ys_beacon_update_10010() {
+  $settings = \Drupal::config('ys_beacon.settings');
+  // Only a site that owns a writable, provisioned index has one of its own to
+  // recreate. A read-only borrower must never write to the collection it reads.
+  if ((string) $settings->get('azure_index_name') === '' || (bool) $settings->get('read_only')) {
+    return;
+  }
+  \Drupal::service('ys_beacon.index_manager')->reprovision();
+}
