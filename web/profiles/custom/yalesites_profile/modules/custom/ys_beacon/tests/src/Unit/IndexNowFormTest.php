@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\ys_beacon\Unit;
 
-use Drupal\Core\Config\Entity\ConfigEntityStorageInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -318,119 +317,37 @@ class IndexNowFormTest extends UnitTestCase {
   }
 
   /**
-   * Status changes are persisted on an override-free copy of the index.
+   * The read-only status shows item counts for a writable, enabled index.
    *
-   * The runtime status config override must never be baked into the synced
-   * search_api.index config, so the save loads the index override-free rather
-   * than through the overrides-applied load().
-   *
-   * @covers ::saveIndexStatus
+   * @covers ::indexStatusMarkup
    */
-  public function testSaveIndexStatusUsesOverrideFreeLoad(): void {
-    $index = $this->createMock(IndexInterface::class);
-    $index->expects($this->once())->method('setStatus')->with(TRUE)->willReturnSelf();
-    $index->expects($this->once())->method('save');
-
-    $storage = $this->createMock(ConfigEntityStorageInterface::class);
-    $storage->expects($this->once())->method('loadOverrideFree')->with('ys_beacon')->willReturn($index);
-    $storage->expects($this->never())->method('load');
-    $entity_type_manager = $this->createMock(EntityTypeManagerInterface::class);
-    $entity_type_manager->method('getStorage')->with('search_api_index')->willReturn($storage);
-
-    $form = (new \ReflectionClass(YsBeaconSettings::class))->newInstanceWithoutConstructor();
-    $this->setProtected($form, 'entityTypeManager', $entity_type_manager);
-    $this->setProtected($form, 'configFactory', $this->getConfigFactoryStub([
-      'ys_beacon.settings' => ['search_index_id' => 'ys_beacon'],
-    ]));
-
-    $this->invoke($form, 'saveIndexStatus', [TRUE]);
-  }
-
-  /**
-   * The shared builder omits "Re-index all" when told not to include it.
-   *
-   * The re-index control primarily lives on the Beacon administration form; the
-   * site settings form only mirrors it in the initial "0 of 0" state (see
-   * ::shouldMirrorReindex), passing FALSE otherwise. This asserts the trait
-   * honours that flag.
-   *
-   * @covers ::buildIndexingControls
-   */
-  public function testBuildIndexingControlsOmitsReindexOnSiteForm(): void {
+  public function testIndexStatusMarkupShowsCountsWhenEnabled(): void {
     $form = $this->buildForm($this->indexMock(TRUE, 5));
-    $element = $this->invoke($form, 'buildIndexingControls', [FALSE]);
-    $this->assertArrayNotHasKey('reindex', $element);
-    $this->assertArrayHasKey('index_now', $element);
+    $this->assertStringContainsString('items indexed', $this->invoke($form, 'indexStatusMarkup'));
   }
 
   /**
-   * The site form mirrors "Re-index all" in the initial "0 of 0" state.
+   * A disabled index reports the disabled status rather than item counts.
    *
-   * That is the index enabled but with nothing tracked yet, right after the
-   * chat widget is first turned on.
-   *
-   * @covers ::shouldMirrorReindex
+   * @covers ::indexStatusMarkup
    */
-  public function testMirrorsReindexWhenEnabledAndNothingTracked(): void {
-    $form = $this->buildForm($this->indexMock(TRUE, 0));
-    $this->assertTrue($this->invoke($form, 'shouldMirrorReindex'));
-  }
-
-  /**
-   * Once any content is tracked, the site form hides "Re-index all".
-   *
-   * @covers ::shouldMirrorReindex
-   */
-  public function testHidesReindexWhenContentTracked(): void {
-    $form = $this->buildForm($this->indexMock(TRUE, 6));
-    $this->assertFalse($this->invoke($form, 'shouldMirrorReindex'));
-  }
-
-  /**
-   * A disabled index never offers re-index and never consults the tracker.
-   *
-   * @covers ::shouldMirrorReindex
-   */
-  public function testHidesReindexWhenIndexDisabled(): void {
+  public function testIndexStatusMarkupShowsDisabledStatus(): void {
     $index = $this->createMock(IndexInterface::class);
     $index->method('status')->willReturn(FALSE);
-    $index->expects($this->never())->method('getTrackerInstance');
     $form = $this->buildForm($index);
-    $this->assertFalse($this->invoke($form, 'shouldMirrorReindex'));
+    $this->assertStringContainsString('disabled', strtolower($this->invoke($form, 'indexStatusMarkup')));
   }
 
   /**
-   * A missing index never offers re-index.
+   * A read-only borrow shows the shared-collection notice, not item counts.
    *
-   * @covers ::shouldMirrorReindex
+   * @covers ::indexStatusMarkup
    */
-  public function testHidesReindexWhenIndexMissing(): void {
-    $form = $this->buildForm(NULL);
-    $this->assertFalse($this->invoke($form, 'shouldMirrorReindex'));
-  }
-
-  /**
-   * A read-only borrower never offers re-index, without reading the tracker.
-   *
-   * @covers ::shouldMirrorReindex
-   */
-  public function testHidesReindexWhenReadOnly(): void {
+  public function testIndexStatusMarkupShowsReadOnlyNotice(): void {
     $index = $this->createMock(IndexInterface::class);
-    $index->method('status')->willReturn(TRUE);
     $index->method('isReadOnly')->willReturn(TRUE);
-    $index->expects($this->never())->method('getTrackerInstance');
     $form = $this->buildForm($index);
-    $this->assertFalse($this->invoke($form, 'shouldMirrorReindex'));
-  }
-
-  /**
-   * A tracker error degrades to hiding the control rather than crashing.
-   *
-   * @covers ::shouldMirrorReindex
-   */
-  public function testHidesReindexOnTrackerError(): void {
-    $form = $this->buildForm($this->indexMock(TRUE, NULL));
-    $this->assertFalse($this->invoke($form, 'shouldMirrorReindex'));
+    $this->assertStringContainsString('read-only', strtolower($this->invoke($form, 'indexStatusMarkup')));
   }
 
   /**
