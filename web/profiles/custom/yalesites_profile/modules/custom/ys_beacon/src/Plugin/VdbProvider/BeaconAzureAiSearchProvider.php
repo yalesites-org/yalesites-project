@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_beacon\Plugin\VdbProvider;
 
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Messenger\MessengerInterface;
@@ -74,6 +75,7 @@ class BeaconAzureAiSearchProvider extends AzureAiSearchProvider {
     MessengerInterface $messenger,
     AzureAiSearch $azure_ai_search,
     protected BeaconIndexManager $beaconIndexManager,
+    protected TimeInterface $time,
   ) {
     parent::__construct(
       $pluginId,
@@ -101,6 +103,7 @@ class BeaconAzureAiSearchProvider extends AzureAiSearchProvider {
       $container->get('messenger'),
       $container->get('azure_ai_search.api'),
       $container->get('ys_beacon.index_manager'),
+      $container->get('datetime.time'),
     );
   }
 
@@ -233,7 +236,8 @@ class BeaconAzureAiSearchProvider extends AzureAiSearchProvider {
    * Prefixing drupal_long_id namespaces the Azure key the client derives from
    * it, so two sites' node/123 no longer share a key; prefixing
    * drupal_entity_id scopes the delete/fetch lookup; site_id records the key in
-   * a retrievable, filterable column.
+   * a retrievable, filterable column; updated_at records the index-write time
+   * in a filterable/sortable date column.
    *
    * @param array $data
    *   The document the ai_search backend assembled.
@@ -251,6 +255,9 @@ class BeaconAzureAiSearchProvider extends AzureAiSearchProvider {
       $data['drupal_entity_id'] = $prefix . $data['drupal_entity_id'];
     }
     $data['site_id'] = $site_id;
+    // The single insert path, so updated_at refreshes on every (re)index of
+    // the chunk, including cron reindex and reprovision.
+    $data['updated_at'] = gmdate('c', $this->time->getCurrentTime());
     return $data;
   }
 

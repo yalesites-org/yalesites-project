@@ -290,6 +290,34 @@ class BeaconIndexManagerTest extends UnitTestCase {
   }
 
   /**
+   * The index schema carries a filterable, sortable updated_at date column.
+   *
+   * The last-indexed timestamp is stored as a typed Edm.DateTimeOffset (not a
+   * string attribute) so chunks can be sorted and filtered by index freshness
+   * directly in the Azure portal (yalesites-org/YaleSites-Internal#1434). It is
+   * freshness metadata, so it is retrievable but not full-text searched or
+   * faceted on.
+   *
+   * @covers ::buildIndexSchema
+   */
+  public function testBuildIndexSchemaIncludesUpdatedAt(): void {
+    $manager = $this->buildManagerWithSiteUuid('unused-uuid');
+    $method = new \ReflectionMethod($manager, 'buildIndexSchema');
+    $method->setAccessible(TRUE);
+
+    $schema = $method->invoke($manager, 'shared-index');
+    $fields = array_column($schema['fields'], NULL, 'name');
+
+    $this->assertArrayHasKey('updated_at', $fields);
+    $this->assertSame('Edm.DateTimeOffset', $fields['updated_at']['type']);
+    $this->assertTrue($fields['updated_at']['retrievable']);
+    $this->assertTrue($fields['updated_at']['filterable']);
+    $this->assertTrue($fields['updated_at']['sortable']);
+    $this->assertFalse($fields['updated_at']['searchable']);
+    $this->assertFalse($fields['updated_at']['facetable']);
+  }
+
+  /**
    * Re-provisioning drops an existing index before recreating it.
    *
    * @covers ::reprovision
