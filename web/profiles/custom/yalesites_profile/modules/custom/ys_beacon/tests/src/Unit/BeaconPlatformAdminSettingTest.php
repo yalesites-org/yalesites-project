@@ -93,14 +93,16 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
   }
 
   /**
-   * Builds an index mock with the given read-only, status and remaining count.
+   * Builds an index mock with the given read-only, status and item counts.
    */
-  private function indexMock(bool $read_only, bool $enabled, int $remaining): IndexInterface {
+  private function indexMock(bool $read_only, bool $enabled, int $remaining, int $indexed = 0, int $total = 0): IndexInterface {
     $index = $this->createMock(IndexInterface::class);
     $index->method('isReadOnly')->willReturn($read_only);
     $index->method('status')->willReturn($enabled);
     $tracker = $this->createMock(TrackerInterface::class);
     $tracker->method('getRemainingItemsCount')->willReturn($remaining);
+    $tracker->method('getIndexedItemsCount')->willReturn($indexed);
+    $tracker->method('getTotalItemsCount')->willReturn($total);
     $index->method('getTrackerInstance')->willReturn($tracker);
     return $index;
   }
@@ -199,6 +201,44 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
     $this->assertArrayHasKey('read_only_notice', $form['indexing']);
     $this->assertArrayNotHasKey('reindex', $form['indexing']);
     $this->assertArrayNotHasKey('index_now', $form['indexing']);
+    // The count status belongs with the controls, not the read-only note.
+    $this->assertArrayNotHasKey('status', $form['indexing']);
+  }
+
+  /**
+   * An enabled index shows the "X of Y items indexed" count with the controls.
+   *
+   * Mirrors the read-only status site admins see on the Beacon settings form
+   * so platform admins can tell whether indexing succeeded, next to the
+   * Re-index / Index now buttons.
+   *
+   * @covers ::buildSettings
+   * @covers ::indexStatusSummary
+   */
+  public function testIndexStatusShowsCountWhenWritable(): void {
+    $factory = $this->getConfigFactoryStub(['ys_beacon.settings' => ['search_index_id' => 'ys_beacon']]);
+    $plugin = $this->plugin($factory, $this->entityTypeManagerWithIndex($this->indexMock(FALSE, TRUE, 48, 3, 51)));
+
+    $form = $plugin->buildSettings([], new FormState());
+
+    $this->assertArrayHasKey('status', $form['indexing']);
+    $this->assertStringContainsString('3 of 51 items indexed.', (string) $form['indexing']['status']['#markup']);
+  }
+
+  /**
+   * A disabled index shows the "index disabled" note instead of a count.
+   *
+   * @covers ::buildSettings
+   * @covers ::indexStatusSummary
+   */
+  public function testIndexStatusShowsDisabledMessageWhenIndexDisabled(): void {
+    $factory = $this->getConfigFactoryStub(['ys_beacon.settings' => ['search_index_id' => 'ys_beacon']]);
+    $plugin = $this->plugin($factory, $this->entityTypeManagerWithIndex($this->indexMock(FALSE, FALSE, 0)));
+
+    $form = $plugin->buildSettings([], new FormState());
+
+    $this->assertArrayHasKey('status', $form['indexing']);
+    $this->assertStringContainsString('currently disabled', (string) $form['indexing']['status']['#markup']);
   }
 
   /**

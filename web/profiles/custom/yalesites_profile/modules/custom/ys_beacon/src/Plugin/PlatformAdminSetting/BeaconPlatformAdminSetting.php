@@ -158,6 +158,12 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
       ];
     }
     else {
+      // Show the "X of Y items indexed" count with the controls so platform
+      // admins can tell whether indexing succeeded, mirroring the read-only
+      // status the per-site settings form shows site admins.
+      $form['indexing']['status'] = [
+        '#markup' => '<p>' . $this->indexStatusSummary($index) . '</p>',
+      ];
       $form['indexing']['reindex'] = [
         '#type' => 'submit',
         '#name' => 'ys_beacon_reindex_all',
@@ -366,6 +372,37 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
    */
   protected function loadBeaconIndex(): ?IndexInterface {
     return $this->entityTypeManager->getStorage('search_api_index')->load($this->searchIndexId());
+  }
+
+  /**
+   * Builds a short indexing status summary for the platform admin display.
+   *
+   * Mirrors the per-site settings form's read-only status (via
+   * BeaconIndexingControlsTrait::indexStatusSummary()) so platform admins see
+   * the same "@indexed of @total items indexed" count next to the indexing
+   * controls. Kept as a parallel copy because this plugin extends
+   * PlatformAdminSettingBase, not the ConfigFormBase the trait requires.
+   *
+   * @param \Drupal\search_api\IndexInterface|null $index
+   *   The Beacon index, or NULL when it does not exist.
+   *
+   * @return string
+   *   The status text.
+   */
+  protected function indexStatusSummary(?IndexInterface $index): string {
+    if (!$index || !$index->status()) {
+      return (string) $this->t('The Beacon index is currently disabled. It enables automatically once the chat widget is turned on.');
+    }
+    try {
+      $tracker = $index->getTrackerInstance();
+      return (string) $this->t('@indexed of @total items indexed.', [
+        '@indexed' => $tracker->getIndexedItemsCount(),
+        '@total' => $tracker->getTotalItemsCount(),
+      ]);
+    }
+    catch (\Throwable $e) {
+      return (string) $this->t('Index status unavailable.');
+    }
   }
 
   /**
