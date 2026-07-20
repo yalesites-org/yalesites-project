@@ -175,6 +175,23 @@ trait BeaconIndexingControlsTrait {
   }
 
   /**
+   * The index status text for a read-only display.
+   *
+   * Returns the shared-collection notice when this site borrows a read-only
+   * index, otherwise the "@indexed of @total items indexed" summary. Used where
+   * the status is shown without the indexing controls (the site settings form).
+   *
+   * @return string
+   *   The status text.
+   */
+  protected function indexStatusMarkup(): string {
+    $index = $this->loadBeaconIndex();
+    return $index && $index->isReadOnly()
+      ? (string) $this->readOnlyNotice()
+      : $this->indexStatusSummary();
+  }
+
+  /**
    * Counts tracked items not yet indexed into the Beacon vector database.
    *
    * Returns 0 when the index is missing or disabled so the "Index now" button

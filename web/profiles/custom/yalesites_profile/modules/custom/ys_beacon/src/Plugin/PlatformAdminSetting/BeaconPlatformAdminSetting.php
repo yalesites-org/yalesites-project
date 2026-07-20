@@ -32,9 +32,10 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * YsBeaconSettings::reindexAll() / ::indexNow() through the class resolver, so
  * the tracker-rebuild and search_api.indexing_batch_helper batch paths (and
  * their read-only / disabled / empty-queue guards) are shared, not duplicated.
- * The chat toggle reads and writes the same ys_beacon.settings:enable_chat flag
- * as the site control and mirrors its on/off index side effects via
- * BeaconIndexManager, so toggling from either place stays consistent.
+ * The chat toggle writes ys_beacon.settings:enable_chat - the flag the chat
+ * widget reads across the site - and manages its on/off index side effects via
+ * BeaconIndexManager. It is the only place the widget is enabled or disabled;
+ * the per-site settings form shows that state read-only.
  */
 #[PlatformAdminSetting(
   id: 'ys_beacon',
@@ -140,7 +141,7 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
     $form['enable_chat'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Enable chat widget'),
-      '#description' => $this->t('Turn the Beacon chat widget on or off for this site. This is the same setting as the site-level Enable chat widget control and stays in sync with it.'),
+      '#description' => $this->t('Turn the Beacon chat widget on or off for this site.'),
       '#default_value' => (bool) $settings->get('enable_chat'),
     ];
 
@@ -157,6 +158,12 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
       ];
     }
     else {
+      // Show the "X of Y items indexed" count with the controls so platform
+      // admins can tell whether indexing succeeded, mirroring the read-only
+      // status the per-site settings form shows site admins.
+      $form['indexing']['status'] = [
+        '#markup' => '<p>' . $this->indexStatusSummary($index) . '</p>',
+      ];
       $form['indexing']['reindex'] = [
         '#type' => 'submit',
         '#name' => 'ys_beacon_reindex_all',
@@ -207,11 +214,18 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
     $previous_enable = (bool) $settings->get('enable_chat');
     $settings
       ->set(BeaconAuthorization::FLAG, $authorized)
-      ->set('enable_chat', $enable_chat)
-      ->save();
+      ->set('enable_chat', $enable_chat);
+    // The AI metadata fields (AI Description/Tags and the per-page index
+    // exclusion) back the live chatbot, so enabling chat forces them on -
+    // preserving the invariant the site settings form enforced before enabling
+    // moved here. Their visibility is otherwise a platform-admin concern.
+    if ($enable_chat) {
+      $settings->set('enable_metadata_fields', TRUE);
+    }
+    $settings->save();
 
-    // Keep the Search API index in sync with the chat toggle so enabling or
-    // disabling from this page behaves like the site settings form.
+    // Keep the Search API index in sync with the chat toggle: enable and seed
+    // it on turn-on, disable it on turn-off.
     if ($enable_chat && !$previous_enable) {
       $this->enableIndex($settings);
     }
@@ -262,10 +276,9 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
   /**
    * Enables the Beacon index in sync with the chat toggle turning on.
    *
-   * Mirrors YsBeaconSettings::submitForm()'s enable path so this page behaves
-   * exactly like the site form: provision only when the configured index is
-   * actually missing, then enable indexing and queue existing content once an
-   * index name exists. Provisioning is gated on configuredIndexMissing() -
+   * Provisions the index only when the configured index is actually missing,
+   * then enables indexing and queues existing content once an index name
+   * exists. Provisioning is gated on configuredIndexMissing() -
    * which treats an unreachable endpoint as "not missing" - so a transient
    * Azure outage on re-enable keeps an existing index enabled for cron to
    * catch up rather than disabling it. A read-only borrower never provisions
@@ -309,9 +322,9 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
   /**
    * Whether the configured Azure index still needs to be created.
    *
-   * Mirrors YsBeaconSettings::configuredIndexMissing(): TRUE when the site has
-   * no index name assigned yet or the assigned index no longer exists in Azure
-   * (deleted, or a newly chosen name). An unreachable endpoint returns FALSE so
+   * TRUE when the site has no index name assigned yet or the assigned index no
+   * longer exists in Azure (deleted, or a newly chosen name). An unreachable
+   * endpoint returns FALSE so
    * a transient outage neither triggers a doomed provision nor disables an
    * existing index. The caller guarantees a writable (non-read-only) site.
    *
@@ -339,7 +352,7 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
    *
    * Loads the index override-free so the runtime status/read-only overrides
    * layered on by YsBeaconConfigOverrides are never baked into the synced
-   * search_api.index config, matching YsBeaconSettings::saveIndexStatus().
+   * search_api.index config.
    *
    * @param bool $status
    *   The index status to persist.
@@ -359,6 +372,37 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
    */
   protected function loadBeaconIndex(): ?IndexInterface {
     return $this->entityTypeManager->getStorage('search_api_index')->load($this->searchIndexId());
+  }
+
+  /**
+   * Builds a short indexing status summary for the platform admin display.
+   *
+   * Mirrors the per-site settings form's read-only status (via
+   * BeaconIndexingControlsTrait::indexStatusSummary()) so platform admins see
+   * the same "@indexed of @total items indexed" count next to the indexing
+   * controls. Kept as a parallel copy because this plugin extends
+   * PlatformAdminSettingBase, not the ConfigFormBase the trait requires.
+   *
+   * @param \Drupal\search_api\IndexInterface|null $index
+   *   The Beacon index, or NULL when it does not exist.
+   *
+   * @return string
+   *   The status text.
+   */
+  protected function indexStatusSummary(?IndexInterface $index): string {
+    if (!$index || !$index->status()) {
+      return (string) $this->t('The Beacon index is currently disabled. It enables automatically once the chat widget is turned on.');
+    }
+    try {
+      $tracker = $index->getTrackerInstance();
+      return (string) $this->t('@indexed of @total items indexed.', [
+        '@indexed' => $tracker->getIndexedItemsCount(),
+        '@total' => $tracker->getTotalItemsCount(),
+      ]);
+    }
+    catch (\Throwable $e) {
+      return (string) $this->t('Index status unavailable.');
+    }
   }
 
   /**
