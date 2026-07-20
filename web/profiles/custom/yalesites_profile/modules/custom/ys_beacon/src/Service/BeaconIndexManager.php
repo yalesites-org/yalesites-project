@@ -368,6 +368,20 @@ class BeaconIndexManager {
         // exist locally.
         $retrievable_field('citation_title'),
         $retrievable_field('citation_url'),
+        // Last-indexed timestamp, stamped on every insert (ISO 8601 UTC)
+        // by the beacon_azure_ai_search provider so chunks can be sorted
+        // and filtered by index freshness in the Azure portal
+        // (yalesites-org/YaleSites-Internal#1434).
+        [
+          'name' => 'updated_at',
+          'type' => 'Edm.DateTimeOffset',
+          'key' => FALSE,
+          'retrievable' => TRUE,
+          'searchable' => FALSE,
+          'filterable' => TRUE,
+          'sortable' => TRUE,
+          'facetable' => FALSE,
+        ],
         [
           'name' => 'vector',
           'type' => 'Collection(Edm.Single)',

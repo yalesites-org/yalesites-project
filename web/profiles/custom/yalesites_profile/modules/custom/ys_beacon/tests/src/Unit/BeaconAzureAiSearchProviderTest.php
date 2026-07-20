@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\ys_beacon\Unit;
 
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\TypedData\DataDefinitionInterface;
 use Drupal\ai_vdb_provider_azure_ai_search\AzureAiSearch;
 use Drupal\search_api\IndexInterface;
@@ -25,6 +26,14 @@ use Drupal\ys_beacon\Service\BeaconIndexManager;
  * @coversDefaultClass \Drupal\ys_beacon\Plugin\VdbProvider\BeaconAzureAiSearchProvider
  */
 class BeaconAzureAiSearchProviderTest extends UnitTestCase {
+
+  /**
+   * A fixed index-write time and its ISO 8601 UTC rendering.
+   *
+   * The clock is stubbed so updated_at is asserted against an exact value.
+   */
+  private const FIXED_TIME = 1700000000;
+  private const FIXED_TIME_ISO = '2023-11-14T22:13:20+00:00';
 
   /**
    * Namespacing makes two sites' node/1 distinct in a shared collection.
@@ -58,6 +67,30 @@ class BeaconAzureAiSearchProviderTest extends UnitTestCase {
     // Untouched fields pass through.
     $this->assertSame('Hello', $data['content']);
     $this->assertSame('ys_beacon', $data['index_id']);
+  }
+
+  /**
+   * Each written document is stamped with the current index-write time.
+   *
+   * Updated_at records when the chunk was last written to the index, as an
+   * ISO 8601 UTC string Azure stores in a filterable/sortable DateTimeOffset
+   * column (yalesites-org/YaleSites-Internal#1434). It is stamped here on the
+   * single insert path, so it refreshes on every (re)index of the chunk.
+   *
+   * @covers ::namespaceDocument
+   */
+  public function testNamespaceDocumentStampsUpdatedAt(): void {
+    $provider = $this->makeProvider('sitea');
+
+    $data = $this->invoke($provider, 'namespaceDocument', [
+      [
+        'drupal_long_id' => 'entity:node/1:en:0',
+        'drupal_entity_id' => 'entity:node/1:en',
+        'content' => 'Hello',
+      ],
+    ]);
+
+    $this->assertSame(self::FIXED_TIME_ISO, $data['updated_at']);
   }
 
   /**
@@ -306,6 +339,8 @@ class BeaconAzureAiSearchProviderTest extends UnitTestCase {
       'ys_beacon.settings' => ['query_entire_index' => $query_entire_index],
     ]));
 
+    $this->stubTime($provider);
+
     return $provider;
   }
 
@@ -333,6 +368,8 @@ class BeaconAzureAiSearchProviderTest extends UnitTestCase {
     $property = new \ReflectionProperty($provider, 'beaconIndexManager');
     $property->setAccessible(TRUE);
     $property->setValue($provider, $index_manager);
+
+    $this->stubTime($provider);
 
     return $provider;
   }
@@ -375,6 +412,20 @@ class BeaconAzureAiSearchProviderTest extends UnitTestCase {
     $query->method('getConditionGroup')->willReturn($group);
 
     return $query;
+  }
+
+  /**
+   * Stubs the injected time service on a provider to a fixed clock.
+   *
+   * @param object $provider
+   *   The provider under test whose protected time property to set.
+   */
+  private function stubTime(object $provider): void {
+    $time = $this->createMock(TimeInterface::class);
+    $time->method('getCurrentTime')->willReturn(self::FIXED_TIME);
+    $property = new \ReflectionProperty($provider, 'time');
+    $property->setAccessible(TRUE);
+    $property->setValue($provider, $time);
   }
 
   /**
