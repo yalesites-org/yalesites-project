@@ -452,3 +452,34 @@ function ys_beacon_update_10010() {
   }
   \Drupal::service('ys_beacon.index_manager')->reprovision();
 }
+
+/**
+ * Recreate the Beacon Azure index with searchable citation/content fields.
+ *
+ * Issue yalesites-org/YaleSites-Internal#1439 makes the content,
+ * citation_title, and citation_url fields queryable for debugging in the
+ * Azure portal: content becomes searchable, and citation_title and
+ * citation_url become searchable, filterable, and sortable (previously all
+ * three were retrievable-only). This is portal-only inspection and does not
+ * affect DrupalAI retrieval, which is a pure vector search. Azure cannot
+ * change a field's searchable/filterable/sortable attributes in place, so an
+ * index provisioned by the earlier updated_at migration (update 10010) must
+ * be dropped and recreated with the current schema and fully reindexed. Only
+ * a site that owns a provisioned, writable index is touched; a fresh
+ * provision or a read-only borrower is left alone.
+ *
+ * As with the earlier schema migrations, a failure aborts the update rather
+ * than being swallowed: reprovision() checks indexExists() before any
+ * destructive delete, so a plain outage aborts without having touched the
+ * index and Drupal re-runs the update on the next deploy. The queued reindex
+ * runs on cron.
+ */
+function ys_beacon_update_10011() {
+  $settings = \Drupal::config('ys_beacon.settings');
+  // Only a site that owns a writable, provisioned index has one of its own to
+  // recreate. A read-only borrower must never write to the collection it reads.
+  if ((string) $settings->get('azure_index_name') === '' || (bool) $settings->get('read_only')) {
+    return;
+  }
+  \Drupal::service('ys_beacon.index_manager')->reprovision();
+}

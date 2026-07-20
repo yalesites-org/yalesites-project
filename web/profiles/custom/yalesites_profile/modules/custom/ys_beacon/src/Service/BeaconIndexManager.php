@@ -337,8 +337,9 @@ class BeaconIndexManager {
       'facetable' => TRUE,
     ];
 
-    // Retrievable-only string fields: stored and returned for citations, but
-    // not searched, filtered, sorted, or faceted on.
+    // Retrievable-only string field base: returned but not searched, filtered,
+    // sorted, or faceted on. content overrides searchable to TRUE (below) for
+    // portal keyword debugging.
     $retrievable_field = static fn (string $field_name): array => [
       'name' => $field_name,
       'type' => 'Edm.String',
@@ -362,12 +363,18 @@ class BeaconIndexManager {
         // beacon_azure_ai_search provider writes it on insert and scopes
         // reads/deletes by it so multiple sites can share one collection.
         $string_field('site_id'),
-        $retrievable_field('content'),
-        // Title and absolute URL stored per document so a site querying a
-        // shared collection can cite content whose Drupal entity does not
-        // exist locally.
-        $retrievable_field('citation_title'),
-        $retrievable_field('citation_url'),
+        // Chunk text: retrievable, and searchable so it can be keyword-searched
+        // in the Azure portal for debugging. Not filtered, sorted, or faceted;
+        // matching full chunk text is not useful.
+        // See yalesites-org/YaleSites-Internal#1439.
+        ['searchable' => TRUE] + $retrievable_field('content'),
+        // Title and absolute URL stored per document so a site querying
+        // a shared collection can cite content whose Drupal entity does
+        // not exist locally. Fully queryable (search/filter/sort/facet)
+        // so a page's chunks can be found and grouped in the Azure portal
+        // (yalesites-org/YaleSites-Internal#1439).
+        $string_field('citation_title'),
+        $string_field('citation_url'),
         // Last-indexed timestamp, stamped on every insert (ISO 8601 UTC)
         // by the beacon_azure_ai_search provider so chunks can be sorted
         // and filtered by index freshness in the Azure portal

@@ -68,10 +68,12 @@ class BeaconIndexManagerTest extends UnitTestCase {
   }
 
   /**
-   * The Azure schema declares retrievable citation title and URL fields.
+   * The Azure schema declares queryable citation title and URL fields.
    *
-   * Cross-site citations read these back off each document, so both must exist
-   * and be retrievable (but not searchable/filterable — they are display data).
+   * Cross-site citations read these back off each document, so both must be
+   * retrievable; they are also searchable, filterable, and sortable so a page's
+   * chunks can be found, filtered, and grouped in the Azure portal for
+   * debugging (yalesites-org/YaleSites-Internal#1439).
    *
    * @covers ::buildIndexSchema
    */
@@ -94,10 +96,41 @@ class BeaconIndexManagerTest extends UnitTestCase {
     $fields = array_column($schema['fields'], NULL, 'name');
     $this->assertArrayHasKey('citation_title', $fields);
     $this->assertArrayHasKey('citation_url', $fields);
-    $this->assertTrue($fields['citation_title']['retrievable']);
-    $this->assertTrue($fields['citation_url']['retrievable']);
-    $this->assertFalse($fields['citation_title']['searchable']);
-    $this->assertFalse($fields['citation_url']['filterable']);
+    // Retrievable for citations and fully queryable (searchable, filterable,
+    // sortable) for portal debugging.
+    foreach (['citation_title', 'citation_url'] as $name) {
+      $this->assertTrue($fields[$name]['retrievable']);
+      $this->assertTrue($fields[$name]['searchable']);
+      $this->assertTrue($fields[$name]['filterable']);
+      $this->assertTrue($fields[$name]['sortable']);
+      $this->assertTrue($fields[$name]['facetable']);
+    }
+  }
+
+  /**
+   * The Azure schema makes content searchable for portal keyword debugging.
+   *
+   * Content stays retrievable and becomes searchable so chunk text can be
+   * keyword-searched in the Azure portal, but it is not filtered, sorted, or
+   * faceted on — matching on full chunk text is not useful
+   * (yalesites-org/YaleSites-Internal#1439).
+   *
+   * @covers ::buildIndexSchema
+   */
+  public function testBuildIndexSchemaContentIsSearchable(): void {
+    $manager = $this->buildManagerWithSiteUuid('unused-uuid');
+    $method = new \ReflectionMethod($manager, 'buildIndexSchema');
+    $method->setAccessible(TRUE);
+
+    $schema = $method->invoke($manager, 'shared-index');
+    $fields = array_column($schema['fields'], NULL, 'name');
+
+    $this->assertArrayHasKey('content', $fields);
+    $this->assertTrue($fields['content']['retrievable']);
+    $this->assertTrue($fields['content']['searchable']);
+    $this->assertFalse($fields['content']['filterable']);
+    $this->assertFalse($fields['content']['sortable']);
+    $this->assertFalse($fields['content']['facetable']);
   }
 
   /**
