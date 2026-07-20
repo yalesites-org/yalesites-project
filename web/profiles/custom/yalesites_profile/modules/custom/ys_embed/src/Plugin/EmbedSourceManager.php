@@ -172,7 +172,7 @@ class EmbedSourceManager extends DefaultPluginManager {
     foreach ($this->getSources() as $plugin_id => $source) {
       $this->loadPluginById($plugin_id);
     }
-    return $this->instance;
+    return $this->instances;
   }
 
 }
