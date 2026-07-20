@@ -21,16 +21,6 @@ class DcnFieldDefaultWidgetTest extends KernelTestBase {
 
   /**
    * {@inheritdoc}
-   *
-   * The module ships no config schema for its field settings, so strict schema
-   * checking would fail on every field save. It is disabled here to exercise
-   * real field behavior; the missing schema is logged as a GAP.
-   */
-  // phpcs:ignore DrupalPractice.Objects.StrictSchemaDisabled.StrictConfigSchema
-  protected $strictConfigSchema = FALSE;
-
-  /**
-   * {@inheritdoc}
    */
   protected static $modules = [
     'system',

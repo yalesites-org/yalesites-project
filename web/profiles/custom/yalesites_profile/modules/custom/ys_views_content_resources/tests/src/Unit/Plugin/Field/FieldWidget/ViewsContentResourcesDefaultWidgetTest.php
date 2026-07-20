@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\ys_views_content_resources\Unit\Plugin\Field\FieldWidget;
 
-use PHPUnit\Framework\Error\Warning;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
@@ -191,9 +190,8 @@ class ViewsContentResourcesDefaultWidgetTest extends UnitTestCase {
   /**
    * A brand-new block defaults field_options to thumbnail + teaser text.
    *
-   * A content type is already selected (isolating this test from the
-   * separately documented GAP around an unset content type), but no
-   * field_options have been stored yet.
+   * A content type is already selected, but no field_options have been stored
+   * yet.
    *
    * @covers ::formElement
    */
@@ -345,40 +343,14 @@ class ViewsContentResourcesDefaultWidgetTest extends UnitTestCase {
   }
 
   /**
-   * Current behavior: reading an unset $entityValue fatals in strict tests.
+   * FormElement() builds without error when no content type is stored.
    *
-   * ViewsContentResourcesDefaultWidget::formElement() only assigns
-   * $entityValue inside `if (!empty($decodedParams['filters']['types'][0]))`,
-   * then unconditionally reads it a few lines later when calling
-   * getFormSelectors(). That is an "Undefined variable $entityValue" PHP
-   * warning whenever a block has no stored content type yet (e.g. a
-   * brand-new, unsaved block) -- which, under PHPUnit's strict
-   * warnings-as-errors handling, is fatal. In production Drupal the warning
-   * is only logged and execution continues with NULL; $entityValue is not
-   * even read by getFormSelectors() itself, so real users see no visible
-   * effect -- but it is still a real bug. Paired with
-   * testFormElementShouldNotErrorWithoutStoredContentType() -- delete once
-   * the GAP is fixed.
-   *
-   * @covers ::formElement
-   */
-  public function testFormElementCurrentBehaviorErrorsWithoutStoredContentType() {
-    $this->expectException(Warning::class);
-    $this->expectExceptionMessage('Undefined variable $entityValue');
-
-    $items = $this->createItemsWithParams(NULL);
-    $form = [];
-    $this->widget->formElement($items, 0, [], $form, $this->createFormState());
-  }
-
-  /**
-   * Paired with testFormElementCurrentBehaviorErrorsWithoutStoredContentType().
+   * $entityValue is initialized before use, so a brand-new/unsaved block (empty
+   * params) no longer triggers an "Undefined variable $entityValue" warning.
    *
    * @covers ::formElement
    */
   public function testFormElementShouldNotErrorWithoutStoredContentType() {
-    $this->markTestSkipped('GAP: ViewsContentResourcesDefaultWidget::formElement() reads $entityValue without initializing it when the stored params have no filters.types[0] (e.g. a brand-new, unsaved block) -- see ~/Documents/Claude/not_dave/module-tests-20260710/ys_views_content_resources.md');
-
     $items = $this->createItemsWithParams(NULL);
     $form = [];
     $element = $this->widget->formElement($items, 0, [], $form, $this->createFormState());

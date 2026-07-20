@@ -78,11 +78,17 @@ class EmbedConstraintValidator extends ConstraintValidator implements ContainerI
    *   TRUE if the embed code matches one of the remote video providers.
    */
   protected function isVideo(string $input): bool {
-    $p1 = "^https:\/\/\S+.youtube.com\/\S+";
-    $p2 = "^https:\/\/youtu.be\/\S+";
-    $p3 = "^https:\/\/vimeo.com\/\S+";
-    $pattern = "/{$p1}|{$p2}|{$p3}/";
-    return (bool) preg_match($pattern, $input, $matches);
+    $host = parse_url(trim($input), PHP_URL_HOST);
+    if (!$host) {
+      return FALSE;
+    }
+    $host = strtolower($host);
+    foreach (['youtube.com', 'youtu.be', 'vimeo.com'] as $video_host) {
+      if ($host === $video_host || str_ends_with($host, '.' . $video_host)) {
+        return TRUE;
+      }
+    }
+    return FALSE;
   }
 
   /**

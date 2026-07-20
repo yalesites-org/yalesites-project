@@ -60,35 +60,17 @@ class JWPlayerTest extends UnitTestCase {
   }
 
   /**
-   * Tests is valid rejects own documented example.
+   * The plugin's own documented example validates.
    *
-   * CHARACTERIZATION: the plugin's own getExample() embed code does not
-   * actually validate, because the example wraps the "src" attribute onto a
-   * new line while $pattern has no "s" (DOTALL) modifier -- "." cannot cross
-   * the newline between "<iframe ...\n" and "src=...". An editor who copies
-   * the documented example verbatim gets a validation failure.
-   *
-   * Paired with testMatchShouldAcceptDocumentedExample() -- delete once the
-   * GAP is fixed.
+   * $pattern carries the "s" (DOTALL) modifier so "." spans the newline the
+   * multi-line $example wraps before its src attribute; an editor who copies
+   * the documented example verbatim gets a valid embed.
    *
    * @covers ::isValid
    * @covers ::getExample
    */
-  public function testIsValidRejectsOwnDocumentedExample(): void {
-    $this->assertFalse(JWPlayer::isValid(JWPlayer::getExample()));
-  }
-
-  /**
-   * Tests match should accept documented example.
-   *
-   * GAP: JWPlayer::getExample() should produce an embed code that
-   * JWPlayer::isValid() accepts, since it is shown to editors as the
-   * canonical example. Either add the "s" modifier to $pattern (matching how
-   * GoogleCalendar handles multi-line iframes) or reflow the example onto a
-   * single line. See the module's test log for details.
-   */
-  public function testMatchShouldAcceptDocumentedExample(): void {
-    $this->markTestSkipped('GAP: JWPlayer::getExample() embed code fails JWPlayer::isValid() because $pattern lacks the "s" (DOTALL) modifier needed for its multi-line src attribute -- see ~/Documents/Claude/not_dave/module-tests-20260710/ys_embed.md');
+  public function testMatchAcceptsDocumentedExample(): void {
+    $this->assertTrue(JWPlayer::isValid(JWPlayer::getExample()));
   }
 
   /**
