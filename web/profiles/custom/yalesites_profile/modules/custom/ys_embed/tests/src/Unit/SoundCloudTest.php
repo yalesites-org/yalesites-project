@@ -92,36 +92,19 @@ class SoundCloudTest extends UnitTestCase {
   }
 
   /**
-   * CHARACTERIZATION: getUrl() always reconstructs a tracks API URL.
+   * GetUrl() reconstructs the playlists endpoint for a playlist embed.
    *
-   * It rebuilds a "/tracks/{id}" URL even when the embed code matched as a
-   * playlist -- it captures "track_or_playlist" for validation but never
-   * reads it back out when building the URL. A playlist embed is
-   * re-pointed at the tracks API endpoint instead of the playlists one.
-   *
-   * Paired with testGetUrlShouldUsePlaylistsEndpointForPlaylistEmbeds() --
-   * delete once the GAP is fixed.
+   * GetUrl() reads the captured "track_or_playlist" group, so a playlist embed
+   * yields a "/playlists/{id}" URL rather than the tracks endpoint.
    *
    * @covers ::getUrl
    */
-  public function testGetUrlAlwaysBuildsTracksApiUrlRegardlessOfType(): void {
+  public function testGetUrlUsesPlaylistsEndpointForPlaylistEmbeds(): void {
     $params = $this->plugin->getParams(self::PLAYLIST_EMBED);
     $this->assertSame(
-      'https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/123456',
+      'https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/123456',
       $this->plugin->getUrl($params)
     );
-  }
-
-  /**
-   * Tests get url should use playlists endpoint for playlist embeds.
-   *
-   * GAP: getUrl() should reconstruct "/playlists/{id}" when the embed
-   * matched as a playlist, using the captured "track_or_playlist" group
-   * instead of hardcoding "tracks" -- see
-   * ~/Documents/Claude/not_dave/module-tests-20260710/ys_embed.md.
-   */
-  public function testGetUrlShouldUsePlaylistsEndpointForPlaylistEmbeds(): void {
-    $this->markTestSkipped('GAP: SoundCloud::getUrl() hardcodes "/tracks/" and ignores the captured "track_or_playlist" group, so a playlist embed is reconstructed with the wrong API endpoint -- see ~/Documents/Claude/not_dave/module-tests-20260710/ys_embed.md');
   }
 
   /**

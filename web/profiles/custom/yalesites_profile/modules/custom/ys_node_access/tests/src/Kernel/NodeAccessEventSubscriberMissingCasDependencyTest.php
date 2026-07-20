@@ -13,20 +13,17 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
-use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
 /**
  * Tests NodeAccessEventSubscriber::on403() when the 'cas' module is absent.
  *
  * Ys_node_access.info.yml declares only "drupal:node" as a dependency, but
- * on403() unconditionally calls Url::fromRoute('cas.login', ...), a route
- * that only exists when the contrib 'cas' module is installed. On every
- * real YaleSites site 'cas' is enabled via config (core.extension.yml), so
- * this is latent rather than active -- but nothing in Drupal's dependency
- * system stops 'cas' from being disabled while ys_node_access stays
- * enabled. This test characterizes what happens if that were to occur.
- * Paired with testMissingCasRouteShouldDegradeGracefully() -- delete once
- * the GAP is fixed.
+ * on403() redirects to the 'cas.login' route, which only exists when the
+ * contrib 'cas' module is installed. On every real YaleSites site 'cas' is
+ * enabled via config (core.extension.yml), but nothing in Drupal's dependency
+ * system stops 'cas' from being disabled while ys_node_access stays enabled.
+ * on403() must degrade gracefully (leave the default 403 in place) rather than
+ * throw a RouteNotFoundException.
  *
  * @group yalesites
  * @group ys_node_access
@@ -46,12 +43,14 @@ class NodeAccessEventSubscriberMissingCasDependencyTest extends KernelTestBase {
   ];
 
   /**
-   * An anonymous visit to a gated node fatals when 'cas' is absent.
+   * On403() degrades gracefully when the 'cas' module is absent.
    *
-   * It throws a RouteNotFoundException instead of falling back to the default
-   * 403, because 'cas' (an undeclared dependency) is not installed.
+   * 'cas' is not a declared dependency of ys_node_access, so its login route
+   * may be unavailable. In that case on403() must leave the default 403 in
+   * place (set no redirect response) instead of throwing a
+   * RouteNotFoundException.
    */
-  public function testUncaughtExceptionWhenCasModuleAbsent() {
+  public function testMissingCasRouteShouldDegradeGracefully() {
     $this->installEntitySchema('node');
     $this->installEntitySchema('user');
     // Saving the node below runs ys_node_access_node_access_records(), which
@@ -89,15 +88,11 @@ class NodeAccessEventSubscriberMissingCasDependencyTest extends KernelTestBase {
     );
 
     $subscriber = new NodeAccessEventSubscriber(new AnonymousUserSession());
-    $this->expectException(RouteNotFoundException::class);
     $subscriber->on403($event);
-  }
 
-  /**
-   * GAP: on403() should not fatal when 'cas' is unavailable.
-   */
-  public function testMissingCasRouteShouldDegradeGracefully() {
-    $this->markTestSkipped('GAP: NodeAccessEventSubscriber::on403() calls Url::fromRoute(\'cas.login\', ...) unconditionally; if the \'cas\' module is ever disabled while ys_node_access stays enabled (nothing enforces this, since ys_node_access.info.yml does not declare cas as a dependency), an anonymous visit to a published, login-required node throws an uncaught RouteNotFoundException instead of a normal 403 -- see ~/Documents/Claude/not_dave/module-tests-20260710/ys_node_access.md');
+    // With 'cas' absent, no redirect response is set and the default 403
+    // response stands.
+    $this->assertNull($event->getResponse());
   }
 
 }

@@ -348,18 +348,14 @@ class ProfileImportServiceTest extends UnitTestCase {
   }
 
   /**
-   * CURRENT BEHAVIOR: a failed node creation is silently dropped.
+   * A failed node creation is reported in the errors list, not dropped.
    *
-   * Paired with testProcessImportShouldReportFailedNodeCreation() -- delete
-   * once the GAP is fixed.
-   *
-   * createProfileNode() already logs the failure and returns NULL, but
-   * processImport() does not record it in either the "skipped" count or the
-   * "errors" list -- the row simply vanishes from the reported results.
+   * When createProfileNode() returns NULL, processImport() records the row in
+   * the returned "errors" list instead of silently omitting it.
    *
    * @covers ::processImport
    */
-  public function testProcessImportSilentlyDropsFailedNodeCreation() {
+  public function testProcessImportShouldReportFailedNodeCreation() {
     $service = $this->partialProfileImport(['prepareProfileData', 'findExistingProfile', 'createProfileNode']);
     $service->method('prepareProfileData')->willReturn(['display_name' => 'Someone', 'email' => '']);
     $service->method('createProfileNode')->willReturn(NULL);
@@ -367,22 +363,11 @@ class ProfileImportServiceTest extends UnitTestCase {
     $result = $service->processImport([['row' => 1]], TRUE);
 
     $this->assertSame(0, $result['created']);
-    $this->assertSame(0, $result['skipped']);
-    $this->assertSame([], $result['errors']);
-  }
-
-  /**
-   * GAP: processImport() should report a failed node creation.
-   *
-   * It currently silently drops rows where createProfileNode() fails
-   * (returns NULL) without incrementing any counter or recording an error,
-   * even though createProfileNode() already logged the failure -- see
-   * ~/Documents/Claude/not_dave/module-tests-20260710/ys_migrate.md.
-   *
-   * @covers ::processImport
-   */
-  public function testProcessImportShouldReportFailedNodeCreation() {
-    $this->markTestSkipped('GAP: processImport() silently drops rows where createProfileNode() fails (returns NULL) without incrementing any counter or recording an error, even though createProfileNode() already logged the failure -- see ~/Documents/Claude/not_dave/module-tests-20260710/ys_migrate.md');
+    $this->assertCount(1, $result['errors']);
+    // The single data row is CSV row 2 (header + 1), and the message carries
+    // the profile's display name.
+    $this->assertStringContainsString('Row 2', (string) $result['errors'][0]);
+    $this->assertStringContainsString('Someone', (string) $result['errors'][0]);
   }
 
   /**
