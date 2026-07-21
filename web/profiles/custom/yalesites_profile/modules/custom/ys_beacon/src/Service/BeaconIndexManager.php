@@ -4,7 +4,7 @@ namespace Drupal\ys_beacon\Service;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\key\KeyRepositoryInterface;
+use Drupal\ys_beacon\Config\YsBeaconConfigOverrides;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
 use Psr\Log\LoggerInterface;
@@ -45,7 +45,7 @@ class BeaconIndexManager {
 
   public function __construct(
     protected ConfigFactoryInterface $configFactory,
-    protected KeyRepositoryInterface $keyRepository,
+    protected BeaconCredentials $credentials,
     protected ClientInterface $httpClient,
     protected LoggerInterface $logger,
     protected EntityTypeManagerInterface $entityTypeManager,
@@ -131,6 +131,63 @@ class BeaconIndexManager {
       $this->deleteIndex($name);
     }
     return $this->provision($name, FALSE);
+  }
+
+  /**
+   * Repoints this site to a different Azure AI Search service and provisions.
+   *
+   * Moving an already-provisioned site to another service means pinning the
+   * new endpoint and creating its index there; the paired API key then follows
+   * automatically from the shared map. Capacity is enforced - this is a
+   * genuinely new index on the target service. The index on the previous
+   * service is left in place (orphaned, for manual cleanup). If provisioning
+   * on the new service fails, the endpoint is rolled back so the site keeps
+   * talking to its existing index rather than being stranded
+   * (yalesites-org/YaleSites-Internal#1448).
+   *
+   * @param string $url
+   *   The new Azure AI Search endpoint URL.
+   *
+   * @return string
+   *   The provisioned index name on the new service.
+   *
+   * @throws \InvalidArgumentException
+   *   When no endpoint URL is given.
+   * @throws \RuntimeException
+   *   When the target endpoint has no API key in the map, or provisioning
+   *   fails.
+   */
+  public function repin(string $url): string {
+    $endpoint = YsBeaconConfigOverrides::normalizeEndpoint($url);
+    if ($endpoint === '') {
+      throw new \InvalidArgumentException('A non-empty Azure AI Search endpoint URL is required.');
+    }
+    // Fail closed before changing anything if the new service has no key in the
+    // map: the site could reach it but never authenticate against it.
+    if ($this->credentials->apiKeyForEndpoint($endpoint) === NULL) {
+      throw new \RuntimeException(sprintf('Refusing to repin to "%s": no API key is defined for it in the "azure_ai_search_api_keys" map.', $endpoint));
+    }
+    // Pin the new endpoint; the connection url is config-ignored, so it stands.
+    $connection = $this->configFactory->getEditable('ai_vdb_provider_azure_ai_search.settings');
+    $previous = (string) $connection->get('url');
+    $connection->set('url', $endpoint)->save();
+    try {
+      // Create/adopt the index on the new service and queue a full reindex.
+      $name = $this->provision();
+    }
+    catch (\Throwable $e) {
+      // Provisioning on the new service failed (e.g. it is at the index cap).
+      // Roll the endpoint back: the url is config-ignored, so leaving it
+      // changed would strand the site pointing at an index-less service
+      // with no deploy-time recovery.
+      $connection->set('url', $previous)->save();
+      throw $e;
+    }
+    $this->logger->notice('Repinned Beacon to Azure AI Search endpoint @url; index @name is now provisioned there and content is queued for reindex. Any index on the previous service is orphaned and can be removed manually.', [
+      '@url' => $endpoint,
+      '@name' => $name,
+    ]);
+    return $name;
   }
 
   /**
@@ -591,11 +648,20 @@ class BeaconIndexManager {
     $settings = $this->configFactory->get('ai_vdb_provider_azure_ai_search.settings');
     $url = rtrim((string) $settings->get('url'), '/');
     $api_version = (string) $settings->get('api_version');
-    $key_id = (string) $settings->get('api_key');
-    $api_key = $key_id ? $this->keyRepository->getKey($key_id)?->getKeyValue() : NULL;
+    // Resolve the API key paired with this endpoint from the shared map, the
+    // same way the query path does, so provisioning uses the right per-service
+    // key when several services are live
+    // (yalesites-org/YaleSites-Internal#1448).
+    $api_key = $this->credentials->apiKeyForEndpoint($url);
 
-    if (!$url || !$api_key) {
-      throw new \RuntimeException('The Azure AI Search connection is not configured: endpoint URL or API key is missing.');
+    if (!$url) {
+      throw new \RuntimeException('The Azure AI Search connection is not configured: endpoint URL is missing.');
+    }
+    if (!$api_key) {
+      // The resolver has already logged the actionable reason; surface a
+      // specific message so a provisioning failure names the endpoint rather
+      // than a generic "not configured".
+      throw new \RuntimeException(sprintf('No Azure AI Search API key resolved for endpoint "%s"; add it to the "azure_ai_search_api_keys" map.', $url));
     }
 
     $options = [
