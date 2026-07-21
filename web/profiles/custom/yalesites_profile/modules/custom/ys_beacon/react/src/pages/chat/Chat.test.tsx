@@ -231,3 +231,180 @@ describe("Chat input accessibility wiring", () => {
     expect(disclaimer).toHaveTextContent("AI generated content may be incorrect.");
   });
 });
+
+describe("Chat input describedby with no configured disclaimer (#1441)", () => {
+  // No data-disclaimer set: the disclaimer element would render empty, so
+  // aria-describedby must not point at an empty element (WCAG 1.3.1).
+  beforeEach(() => {
+    const widget = document.createElement("div");
+    widget.id = "ys-beacon-chat-widget";
+    document.body.appendChild(widget);
+  });
+
+  afterEach(() => {
+    document.getElementById("ys-beacon-chat-widget")?.remove();
+  });
+
+  it("does not wire aria-describedby or render an empty disclaimer when none is configured", () => {
+    renderChat();
+
+    const input = screen.getByRole("textbox");
+    expect(input.getAttribute("aria-describedby")).toBeNull();
+    expect(document.getElementById("ys-beacon-chat-disclaimer")).toBeNull();
+  });
+});
+
+describe("Citation overlay accessibility (#1441)", () => {
+  beforeEach(() => {
+    const widget = document.createElement("div");
+    widget.id = "ys-beacon-chat-widget";
+    document.body.appendChild(widget);
+  });
+
+  afterEach(() => {
+    document.getElementById("ys-beacon-chat-widget")?.remove();
+  });
+
+  // Citation content carries a markdown heading so the demote-heading behaviour
+  // (no injected page-level <h1>) can be asserted.
+  const conversationWithRichCitation = (): Conversation => ({
+    id: "conversation-1",
+    title: "Office hours",
+    messages: [
+      {
+        id: "message-tool",
+        role: "tool",
+        content: JSON.stringify({
+          citations: [
+            {
+              content: "# Injected Source Heading\n\nOffice hours are 9am to 5pm.",
+              id: "1",
+              title: "Example Source",
+              filepath: null,
+              url: "https://example.com",
+              metadata: null,
+              chunk_id: null,
+              reindex_id: null,
+            },
+          ],
+          intent: "",
+        }),
+        date: "2026-01-01T00:00:00Z",
+      },
+      {
+        id: "message-assistant",
+        role: "assistant",
+        content: "Office hours are listed in the handbook. [doc1]",
+        date: "2026-01-01T00:00:00Z",
+      },
+    ],
+    date: "2026-01-01T00:00:00Z",
+  });
+
+  const openCitation = async () => {
+    await userEvent.click(screen.getByRole("button", { name: "Citation 1" }));
+  };
+
+  it("names the overlay dialog and titles it with a heading (WCAG 4.1.2)", async () => {
+    renderChat({ currentChat: conversationWithRichCitation() });
+
+    await openCitation();
+
+    expect(
+      screen.getByRole("dialog", { name: "Citations" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Citations" })
+    ).toBeInTheDocument();
+  });
+
+  it("renders the citation source as a real external link that announces the new tab (WCAG 2.1.1/4.1.2/3.2.5)", async () => {
+    renderChat({ currentChat: conversationWithRichCitation() });
+
+    await openCitation();
+
+    const link = screen.getByRole("link", { name: /Example Source/i });
+    expect(link).toHaveAttribute("href", "https://example.com");
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link.getAttribute("rel") ?? "").toContain("noopener");
+    expect(link).toHaveAccessibleName(/opens in a new tab/i);
+    // The old fake <h5 role="link"> is gone: the title is not a heading.
+    expect(
+      screen.queryByRole("heading", { name: /Example Source/i })
+    ).not.toBeInTheDocument();
+  });
+
+  // The citation url comes from the external RAG/search backend; only http(s)
+  // sources become a clickable link so a non-http scheme can't reach href.
+  const conversationWithScheme = (url: string): Conversation => ({
+    id: "conversation-1",
+    title: "Office hours",
+    messages: [
+      {
+        id: "message-tool",
+        role: "tool",
+        content: JSON.stringify({
+          citations: [
+            {
+              content: "Office hours are 9am to 5pm.",
+              id: "1",
+              title: "Example Source",
+              filepath: null,
+              url,
+              metadata: null,
+              chunk_id: null,
+              reindex_id: null,
+            },
+          ],
+          intent: "",
+        }),
+        date: "2026-01-01T00:00:00Z",
+      },
+      {
+        id: "message-assistant",
+        role: "assistant",
+        content: "See the handbook. [doc1]",
+        date: "2026-01-01T00:00:00Z",
+      },
+    ],
+    date: "2026-01-01T00:00:00Z",
+  });
+
+  it("renders a non-http(s) citation source as plain text, never a link", async () => {
+    // eslint-disable-next-line no-script-url
+    renderChat({ currentChat: conversationWithScheme("javascript:alert(1)") });
+
+    await openCitation();
+
+    expect(screen.getByText("Example Source")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Example Source/i })).not.toBeInTheDocument();
+  });
+
+  it("does not inject a page-level <h1> from citation source content (WCAG 1.3.1/2.4.6)", async () => {
+    renderChat({ currentChat: conversationWithRichCitation() });
+
+    await openCitation();
+
+    expect(document.querySelector("h1")).toBeNull();
+    // The source's own top-level heading is demoted to nest under the dialog title.
+    expect(
+      screen.getByRole("heading", { name: "Injected Source Heading", level: 3 })
+    ).toBeInTheDocument();
+  });
+
+  it("returns focus to the triggering citation button when the overlay closes (WCAG 2.4.3)", async () => {
+    renderChat({ currentChat: conversationWithRichCitation() });
+
+    const chip = screen.getByRole("button", { name: "Citation 1" });
+    await userEvent.click(chip);
+    expect(
+      screen.getByRole("dialog", { name: "Citations" })
+    ).toBeInTheDocument();
+
+    await userEvent.click(
+      screen.getByRole("button", { name: /close modal/i })
+    );
+
+    expect(chip).toHaveFocus();
+  });
+});

@@ -31,17 +31,40 @@ const Layout = () => {
         document.body.setAttribute('data-modal-active', 'true');
         document.body.setAttribute('data-body-frozen', 'true');
         document.body.style.top = `-${scrollY}px`;
+
+        // Remove the underlying page from the accessibility tree and the tab
+        // order while the modal is open, so the dialog is a true modal context
+        // (WCAG 1.3.1 / 4.1.2). Everything except the Beacon widget host (which
+        // holds the modal) is marked inert; only elements this effect set are
+        // cleared on close, so any pre-existing inert stays untouched.
+        const widget = document.getElementById('ys-beacon-chat-widget');
+        const inerted: HTMLElement[] = [];
+        Array.from(document.body.children).forEach((child) => {
+            if (child === widget || child.tagName === 'SCRIPT' || child.tagName === 'STYLE') {
+                return;
+            }
+            const el = child as HTMLElement;
+            if (!el.hasAttribute('inert')) {
+                el.setAttribute('inert', '');
+                inerted.push(el);
+            }
+        });
+
         return () => {
             document.body.removeAttribute('data-modal-active');
             document.body.removeAttribute('data-body-frozen');
             document.body.style.top = '';
             window.scrollTo(0, scrollY);
+            inerted.forEach((el) => el.removeAttribute('inert'));
         };
     }, [isModalOpen]);
 
     const LandingHeader = () => {
         return (
-            <img src={aiLogo} className={styles.modalHeaderTitle} alt="AskYale" />
+            <>
+                <h2 className={styles.visuallyHidden}>Beacon chat</h2>
+                <img src={aiLogo} className={styles.modalHeaderTitle} alt="Beacon" />
+            </>
         );
     }
     /**
@@ -66,6 +89,7 @@ const Layout = () => {
           footer={<Footer />}
           close={handleCloseModal}
           variant={""}
+          ariaLabel="Beacon chat"
         >
           <Chat />
         </Modal>
@@ -76,7 +100,7 @@ const Layout = () => {
         onClick={handleOpenModal}
         className="visually-hidden"
       >
-        Try askYale Now
+        Try Beacon Now
       </button>
     </div>
   );

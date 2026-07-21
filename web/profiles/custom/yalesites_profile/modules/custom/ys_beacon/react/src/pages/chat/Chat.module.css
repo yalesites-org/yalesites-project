@@ -333,6 +333,7 @@
 }
 
 .citationPanelHeader {
+    margin: 0;
     font-style: normal;
     font-weight: 600;
     font-size: 1rem;
@@ -342,6 +343,20 @@
     flex: none;
     order: 0;
     flex-grow: 0;
+}
+
+/* Off-screen clip technique: supplies "(opens in a new tab)" to the citation
+   source link's accessible name without showing redundant text on screen. */
+.visuallyHidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 .citationPanelDismiss {
@@ -356,11 +371,15 @@
 }
 
 .citationPanelTitle {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
     font-style: normal;
     font-weight: 600;
     font-size: 1.3rem;
     line-height: 1;
     color: hsl(213, 66%, 45%);
+    text-decoration: none;
     margin-top: 1rem;
     margin-bottom: 1rem;
     gap: 0.25rem;

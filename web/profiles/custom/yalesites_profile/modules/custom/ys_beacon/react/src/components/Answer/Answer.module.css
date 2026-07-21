@@ -197,6 +197,7 @@
 
 .clickableSup {
     box-sizing: border-box;
+    position: relative;
     display: inline-flex;
     flex-direction: column;
     justify-content: center;
@@ -219,6 +220,18 @@
     background: none;
     font-family: inherit;
     border-radius: 2px;
+}
+
+/* The visible marker stays a compact 14px superscript, but the pointer/touch
+   target is enlarged to at least 24x24px via a centered overlay (WCAG 2.5.8). */
+.clickableSup::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 24px;
+    min-height: 24px;
 }
 
 .clickableSup:hover {
